@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The layout a <see cref="BitCarousel"/> takes while it is no wider than a given breakpoint.

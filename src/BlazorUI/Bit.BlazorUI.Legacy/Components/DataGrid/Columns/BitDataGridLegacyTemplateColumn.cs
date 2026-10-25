@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
 /// Represents a <see cref="BitDataGridLegacy{TGridItem}"/> column whose cells render a supplied template.

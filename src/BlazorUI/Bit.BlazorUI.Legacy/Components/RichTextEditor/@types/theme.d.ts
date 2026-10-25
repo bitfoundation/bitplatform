@@ -1,4 +1,4 @@
-interface ThemeOptions {
+﻿interface ThemeOptions {
     modules: Record<string, unknown> & {
         toolbar?: null | ToolbarProps;
     };

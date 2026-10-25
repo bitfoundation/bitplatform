@@ -1,0 +1,92 @@
+﻿@page "/examples/moving-handles"
+@using System.Globalization
+
+<PageTitle>Moving Handles · Blow</PageTitle>
+
+<ExampleScaffold Title="Moving Handles"
+                 Summary="A node's handles can change while the app runs: here the Source node gains and loses outputs, the ones that stay spread out again along its side, and every edge follows its handle to the new place. Edges name their handles by id, so what happens to an edge whose handle is gone is up to you.">
+    <Toolbar>
+        <button class="btn btn-primary" @onclick="AddHandle">Add handle</button>
+        <button class="btn btn-secondary" @onclick="RemoveHandle" disabled="@(_handleCount <= 1)">Remove handle</button>
+        <label><input type="checkbox" @bind="_dropEdges" /> Remove a removed handle's edges</label>
+        <span class="bb-muted">@_handleCount source handle(s)</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <NodeTemplate Context="node">
+                @if (node.Id == "src")
+                {
+                    <div class="mh-node">@node.Label</div>
+                    @for (var i = 0; i < _handleCount; i++)
+                    {
+                        // Invariant: in a culture with a decimal comma, 33,33% is not CSS.
+                        var top = string.Create(CultureInfo.InvariantCulture, $"top:{(i + 1) * 100.0 / (_handleCount + 1)}%");
+                        <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="@($"h{i}")" Style="@top" />
+                    }
+                }
+                else
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" />
+                    <div class="mh-node">@node.Label</div>
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Press <strong>Add handle</strong>: a new output appears on the right of Source, the others move up to make room, and both edges slide along with their handles.</li>
+        <li><strong>Drag</strong> from a new handle to A or B to connect it.</li>
+        <li>Press <strong>Remove handle</strong>: the last output goes, and with it the edges that started there. It is disabled when one handle is left.</li>
+        <li>Untick <strong>Remove a removed handle's edges</strong> and remove a handle with an edge on it: the edge stays, drawn from the middle of Source's bottom side. <strong>Add handle</strong> brings the handle back, and the edge returns to it.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>The handles are ordinary markup: the <code>NodeTemplate</code> draws <code>_handleCount</code> <code>BlowHandle</code>s with ids <code>h0</code>, <code>h1</code>, ... and spreads them with <code>Style="top:N%"</code>. An edge picks its handle by <code>SourceHandle</code>.</li>
+        <li>Where a handle sits is measured by the browser. Adding or removing one is noticed on its own, and the node is read again - including the handles that moved to make room.</li>
+        <li><code>UpdateNodeInternals("src")</code> asks for that read explicitly, for the named node only. It is the call to make whenever a node's handles change in a way nothing resizes - moved by a style, switched to another side - which the browser cannot report; <code>Refresh(remeasure: true)</code> reads every node.</li>
+        <li>An edge whose handle no longer exists is still drawn, from the middle of the node's <code>SourcePosition</code> side (<code>Bottom</code> by default) - so removing the handle's edges, as this page does unless you untick the box, is the application's decision.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .mh-node { padding: 12px 16px; font-weight: 600; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _handleCount = 2;
+    private bool _dropEdges = true;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "src", Label = "Source", Position = new(60, 100), Height = 120 },
+            new BlowNode { Id = "a", Label = "A", Position = new(360, 40) },
+            new BlowNode { Id = "b", Label = "B", Position = new(360, 180) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e0", Source = "src", SourceHandle = "h0", Target = "a" },
+            new BlowEdge { Id = "e1", Source = "src", SourceHandle = "h1", Target = "b" },
+        ];
+    }
+
+    private void AddHandle()
+    {
+        _handleCount++;
+        _flow?.UpdateNodeInternals("src");
+    }
+
+    private void RemoveHandle()
+    {
+        if (_handleCount <= 1) return;
+        _handleCount--;
+        if (_dropEdges) _edges.RemoveAll(e => e.Source == "src" && e.SourceHandle == $"h{_handleCount}");
+        _flow?.UpdateNodeInternals("src");
+    }
+}

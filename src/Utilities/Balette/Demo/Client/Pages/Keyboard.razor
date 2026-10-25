@@ -1,0 +1,418 @@
+﻿@page "/keyboard"
+@implements IDisposable
+@inject IBaletteService Palette
+@inject BaletteOptions Options
+
+<PageTitle>Keyboard and shortcuts · Balette</PageTitle>
+
+<div class="bb-intro">
+    <h1>Keyboard &amp; shortcuts</h1>
+    <p class="bb-subtitle">
+        The palette is built to be driven without a mouse. Inside it every key has a job; outside it, any command can
+        carry a global shortcut - a chord such as <kbd>@Mod</kbd> <kbd>/</kbd> or a sequence such as <kbd>G</kbd> then
+        <kbd>S</kbd> - that runs it with the palette closed. Shortcuts are written once, as text, and displayed in the
+        platform's own symbols.
+    </p>
+</div>
+
+<PaletteBar />
+
+@* Save draft claims Alt+Q while this page is on screen; the conflicts section registers a second command on the same keys. *@
+<BaletteCommands Commands="_pageCommands" />
+
+<section class="bb-card" id="shortcuts">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Inside the palette</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Keys</th><th>Does</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        @foreach (var toggle in ToggleShortcuts)
+                        {
+                            <BaletteShortcutHint Shortcut="toggle" IsMac="Palette.IsMac" Class="demo-inline-hint" />
+                        }
+                    </td>
+                    <td>Open or close (the toggle shortcuts of this app)</td>
+                </tr>
+                <tr><td><kbd>↑</kbd> <kbd>↓</kbd>, <kbd>Ctrl</kbd> <kbd>N</kbd> / <kbd>P</kbd>, <kbd>Ctrl</kbd> <kbd>J</kbd> / <kbd>K</kbd></td><td>Move, wrapping around at either end unless <code>Loop</code> is off (J/K with <code>VimBindings</code>)</td></tr>
+                <tr><td><kbd>Home</kbd> <kbd>End</kbd> <kbd>PgUp</kbd> <kbd>PgDn</kbd></td><td>Jump to the first, the last, or ten rows on</td></tr>
+                <tr><td><kbd>Enter</kbd></td><td>Run, open a page, flip a toggle, check a row on a multi-select page, or arm and then confirm a destructive command</td></tr>
+                <tr><td><kbd>Space</kbd> (empty box)</td><td>Check a row on a multi-select page</td></tr>
+                <tr><td><kbd>@Mod</kbd> <kbd>Enter</kbd></td><td>Apply a multi-select page, run the row's first secondary action, or open a link in a new tab</td></tr>
+                <tr><td><kbd>Tab</kbd>, <kbd>→</kbd> (empty box), a right click</td><td>Open the action panel of the active row</td></tr>
+                <tr><td><kbd>Backspace</kbd>, <kbd>←</kbd> (empty box)</td><td>Back one page</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>Cancel a confirmation, then go back, then close</td></tr>
+                <tr><td><kbd>@Mod</kbd> <kbd>Shift</kbd> <kbd>P</kbd></td><td>Pin or unpin the active row - inside the palette its own chord wins over this app's toggle on the same keys</td></tr>
+                <tr><td><kbd>Shift</kbd> <kbd>Del</kbd></td><td>Forget the active row from the recents</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        These keys are claimed in the browser before Blazor sees them, so <kbd>Tab</kbd> never leaves the dialog and
+        <kbd>Backspace</kbd> never deletes text it should not, even over a slow Blazor Server connection. In right-to-left text
+        <kbd>←</kbd> and <kbd>→</kbd> trade places: <kbd>→</kbd> points back to the start of the line, so it goes back a page.
+        Inside the palette its own chords also win over a toggle bound to the same keys: with this app's Vim bindings,
+        <kbd>Ctrl</kbd> <kbd>K</kbd> moves up rather than closing.
+    </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Global shortcuts in this app</h3>
+    <p>
+        Every command registered with a global shortcut, read from the registry right now - leave a page and its own
+        shortcuts disappear from this table, because they disappear from the palette. Close the palette and press one; press
+        <kbd>G</kbd> on its own and the status below - and the one at the bottom of the window - waits for the next key.
+    </p>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">The registry's shortcuts</span></div>
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr><th>Shortcut</th><th>Command</th><th>Group</th><th>Kind</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var command in Palette.Commands.Where(c => c.Shortcut is not null && c.GlobalShortcut).OrderBy(c => c.Shortcut!.IsSequence).ThenBy(c => c.Group))
+                    {
+                        <tr>
+                            <td><BaletteShortcutHint Shortcut="command.Shortcut" IsMac="Palette.IsMac" /></td>
+                            <td>@command.Title</td>
+                            <td class="bb-soft">@command.Group</td>
+                            <td>@(command.Shortcut!.IsSequence ? "sequence" : "chord")</td>
+                        </tr>
+                    }
+                    <tr>
+                        <td><BaletteShortcutHint Shortcut="NewIssueShortcut" IsMac="Palette.IsMac" /></td>
+                        <td>New issue</td>
+                        <td class="bb-soft">Quick create</td>
+                        <td>chord, declared in markup</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="demo-statusbar" role="status">
+            <span>Last run: <strong>@(_last ?? "nothing yet")</strong></span>
+            <span>Sequence: <strong>@(_pending is null ? "none in progress" : $"{_pending.ToDisplayString(Palette.IsMac)}, waiting for the next key")</strong></span>
+        </div>
+    </div>
+    <p>
+        The registered shortcuts are synced to the browser as strings and matched there, so only a completed shortcut crosses
+        the interop boundary - typing on the page never causes a round trip. A sequence waits <code>SequenceTimeoutMs</code>
+        (@Options.SequenceTimeoutMs ms) for its next chord. Whatever needs the palette opens it: a command with a page or a
+        confirmation, and a handler that answers with a page, a prompt or a toast that stays open - <kbd>F2</kbd> opens on the
+        rename prompt. A confirmation started this way gets a page of its own, so the second <kbd>Enter</kbd> confirms that
+        command and no other. Only a command that can run claims its keys: the shortcut of a disabled command, or of one its
+        <code>VisibleWhen</code> hides, is left to the page.
+    </p>
+</section>
+
+<section class="bb-card" id="sequences">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Sequences in progress</h3>
+    <p>
+        After the first chords of a sequence - <kbd>G</kbd> of <kbd>G</kbd> <kbd>S</kbd> - a small status near the bottom of
+        the page shows them and says the next key is awaited, as VS Code does in its status bar, and screen readers announce
+        it (<code>data-balette="sequence"</code>, <code>BaletteStrings.SequencePending</code>). It goes when the sequence
+        completes, breaks off or times out. <code>options.ShowSequenceHint = false</code> turns it off;
+        <code>IBaletteService.SequencePending</code> reports it to code either way - with the chords pressed so far, then
+        null - which is what the status line above listens to:
+    </p>
+    <pre class="bb-code">@SequenceExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Typing is not a shortcut</h3>
+    <p>
+        A plain key pressed in a text box is typing, so <kbd>G</kbd> then <kbd>S</kbd> does nothing here. A chord with a
+        modifier still works - <kbd>@Mod</kbd> <kbd>K</kbd> opens the palette and <kbd>Alt</kbd> <kbd>Z</kbd> flips word
+        wrap - because nobody types those by accident. Inputs, text areas, selects and content-editable elements all count
+        (<code>SuppressShortcutsInEditableElements</code>).
+    </p>
+    <label class="bb-field demo-try-box">
+        Try it
+        <input type="text" placeholder="Type g then s here…" aria-label="Typing area" />
+    </label>
+    <div class="bb-note">
+        This site has a second palette: the documentation search in its header, which answers to <kbd>/</kbd> because
+        <kbd>@Mod</kbd> <kbd>K</kbd> is Balette's. Whichever of the two is open owns the keyboard - a chord pressed in the
+        docs search does not open Balette on top of it, and a <kbd>/</kbd> pressed in Balette does not open the search.
+    </div>
+</section>
+
+<section class="bb-card" id="layouts">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Keyboard layouts, held keys and input methods</h3>
+    <ul class="bb-detail-list">
+        <li>A shortcut is matched on the character the key types and, when that is not an ASCII character, on the key it sits
+            on as well (<code>KeyboardEvent.code</code>, as VS Code does): <kbd>Ctrl</kbd> <kbd>K</kbd> works when a Russian
+            layout types <code>л</code>, and <kbd>G</kbd> <kbd>S</kbd> when a Persian one types <code>ل</code>
+            <code>س</code>. A Latin layout such as Dvorak or AZERTY keeps its own letters.</li>
+        <li>A held key's repeats are claimed - the browser does not act on them - but run nothing, so a held
+            <kbd>Ctrl</kbd> <kbd>K</kbd> does not flicker the palette open and shut.</li>
+        <li>A character typed with AltGr, or with Option or Alt alone (<code>Ω</code> for Option+Z on a Mac), is typing when
+            it lands in a text field, not the shortcut its physical key would make.</li>
+        <li>Keys that belong to an input method's composition (<code>isComposing</code>, or <code>keyCode</code> 229) are
+            never shortcuts, so confirming a Japanese or Chinese candidate with <kbd>Enter</kbd> does not run the active
+            row.</li>
+    </ul>
+</section>
+
+<section class="bb-card" id="syntax">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Shortcut syntax</h3>
+    <p>
+        Chords are separated by spaces and keys inside a chord by <code>+</code>. <code>Mod</code> is <kbd>⌘</kbd> on macOS
+        and <kbd>Ctrl</kbd> elsewhere. Modifiers have aliases (<code>Control</code>, <code>Cmd</code>, <code>Command</code>,
+        <code>Win</code>, <code>Option</code>, <code>Opt</code>, <code>⌃</code>, <code>⇧</code>, <code>⌥</code>,
+        <code>⌘</code>), and so do keys (<code>Esc</code>, <code>Return</code>, <code>Space</code>, <code>Del</code>,
+        <code>Up</code>, <code>PgDn</code>, <code>Plus</code>, <code>Comma</code>, <code>Slash</code>…).
+        <code>BaletteKeyboardShortcut.Parse</code> throws a <code>FormatException</code> for a chord without a key or with
+        two; <code>TryParse</code> does not, and a string converts implicitly wherever a shortcut is expected. Type one:
+    </p>
+    <div class="bb-fields" role="toolbar" aria-label="Shortcut parser">
+        <label class="bb-field demo-grow">
+            Shortcut
+            <input type="text" @bind="_shortcutText" @bind:event="oninput" aria-label="Shortcut to parse" autocomplete="off" spellcheck="false" />
+        </label>
+    </div>
+    <div class="bb-try">
+        @foreach (var sample in ShortcutSamples)
+        {
+            <button type="button" class="btn btn-outline demo-chip" @onclick="() => _shortcutText = sample"><code>@sample</code></button>
+        }
+    </div>
+    @if (BaletteKeyboardShortcut.TryParse(_shortcutText, out var parsed))
+    {
+        <dl class="bb-params demo-parsed">
+            <dt>On macOS</dt>
+            <dd><BaletteShortcutHint Shortcut="parsed" IsMac="true" /></dd>
+            <dt>Elsewhere</dt>
+            <dd><BaletteShortcutHint Shortcut="parsed" IsMac="false" /></dd>
+            <dt>In words</dt>
+            <dd>@parsed.ToDisplayString(isMac: false)</dd>
+            <dt>Normalized</dt>
+            <dd><code>@parsed.Normalized</code></dd>
+            <dt>Kind</dt>
+            <dd>@(parsed.IsSequence ? $"a sequence of {parsed.Chords.Count} chords" : "a chord")</dd>
+        </dl>
+    }
+    else
+    {
+        <p class="bb-note bb-note-warn">Not a shortcut: <code>TryParse</code> says no, and <code>Parse</code> would throw a <code>FormatException</code>.</p>
+    }
+    <pre class="bb-code">@ShortcutExample</pre>
+</section>
+
+<section class="bb-card" id="conflicts">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Conflicts</h3>
+    <p>
+        When several commands claim one global shortcut, the one registered last wins - the rule ids follow too - so a page's
+        own <kbd>@Mod</kbd> <kbd>S</kbd> takes over from the layout's while the page is shown. The palette logs a warning,
+        once each, for:
+    </p>
+    <ul class="bb-detail-list">
+        <li>a shortcut several commands claim;</li>
+        <li>one the toggle shortcut takes, so the command never runs from it;</li>
+        <li>a sequence that can never complete because its first chords are a shortcut of their own - <kbd>G</kbd>
+            registered next to <kbd>G</kbd> <kbd>I</kbd>;</li>
+        <li>one browsers keep for themselves and never hand to a page (<kbd>@Mod</kbd> <kbd>W</kbd>, <kbd>@Mod</kbd>
+            <kbd>T</kbd>, <kbd>@Mod</kbd> <kbd>N</kbd>, <kbd>Ctrl</kbd> <kbd>Tab</kbd>…).</li>
+    </ul>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Two commands, one shortcut</span></div>
+        <p>
+            This page registers <em>Save draft</em> on <kbd>Alt</kbd> <kbd>Q</kbd>. Register <em>Save and publish</em> on the
+            same keys and, with the palette closed, <kbd>Alt</kbd> <kbd>Q</kbd> runs it instead - the later registration
+            wins - while the browser's console shows the palette's warning naming both. Dispose it and the keys are
+            <em>Save draft</em>'s again.
+        </p>
+        <div class="bb-try">
+            <button type="button" class="btn btn-secondary" @onclick="ToggleOverride">@(_override is null ? "Register \"Save and publish\" on Alt+Q" : "Dispose \"Save and publish\"")</button>
+        </div>
+        <p class="bb-muted demo-small" role="status">
+            <kbd>Alt</kbd> <kbd>Q</kbd> runs <strong>@(_override is null ? "Save draft" : "Save and publish")</strong>
+            · Last pressed: <strong>@(_conflictLast ?? "not yet")</strong>
+        </p>
+    </div>
+</section>
+
+<section class="bb-card" id="platform">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Platform-aware hints</h3>
+    <p>
+        The palette detects macOS and iOS once it starts, and every hint follows: <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>K</kbd>
+        there, <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>K</kbd> elsewhere. <code>IBaletteService.IsMac</code> exposes the result
+        to your own UI - this browser is <strong>@(Palette.IsMac ? "a Mac" : "not a Mac")</strong> - and
+        <code>PlatformDetected</code> says when it is known. <code>BaletteShortcutHint</code> renders any shortcut the same
+        way the palette does, with an accessible name in words ("Ctrl+K", "G then S") while its key caps are hidden from
+        screen readers, and <code>BaletteTrigger</code> updates itself. Every hint on this page is one.
+    </p>
+    <pre class="bb-code">@HintExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The options behind it</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Option</th><th>Here</th><th>Effect</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>ToggleShortcut</code></td><td><code>@Options.ToggleShortcut</code></td><td>Opens and closes the palette; <code>Mod</code> is ⌘ on macOS and Ctrl elsewhere. The palette's <code>ToggleShortcut</code> parameter overrides it.</td></tr>
+                <tr><td class="bb-table-key"><code>AdditionalToggleShortcuts</code></td><td><code>@string.Join(", ", Options.AdditionalToggleShortcuts)</code></td><td>More keys for the same.</td></tr>
+                <tr><td class="bb-table-key"><code>SequenceTimeoutMs</code></td><td><code>@Options.SequenceTimeoutMs</code></td><td>How long <kbd>G</kbd> waits for the next key.</td></tr>
+                <tr><td class="bb-table-key"><code>ShowSequenceHint</code></td><td><code>@Options.ShowSequenceHint</code></td><td>The status that shows a sequence in progress.</td></tr>
+                <tr><td class="bb-table-key"><code>SuppressShortcutsInEditableElements</code></td><td><code>@Options.SuppressShortcutsInEditableElements</code></td><td>Plain keys in inputs are typing, as above.</td></tr>
+                <tr><td class="bb-table-key"><code>Loop</code></td><td><code>@Options.Loop</code></td><td>Past the last row comes the first again.</td></tr>
+                <tr><td class="bb-table-key"><code>VimBindings</code></td><td><code>@Options.VimBindings</code></td><td><kbd>Ctrl</kbd> <kbd>J</kbd> / <kbd>K</kbd> move inside the list.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p><code>Loop</code> and <code>VimBindings</code> can also be set on one palette, with the parameters of the same names.</p>
+</section>
+
+<section class="bb-card" id="accessibility">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Accessibility</h3>
+    <ul class="bb-detail-list">
+        <li>A native modal <code>&lt;dialog&gt;</code>: it sits in the top layer, traps focus, makes the page behind it inert,
+            locks scrolling, and gives focus back to whatever had it when it closes.</li>
+        <li>The WAI-ARIA combobox pattern: focus stays on the input, a <code>combobox</code> controlling a
+            <code>listbox</code>; <code>aria-activedescendant</code> points at the active <code>option</code>, which carries
+            <code>aria-selected</code>, so screen readers follow the selection without focus moving.</li>
+        <li>Each group is a <code>role="group"</code> named by its heading (the grouped listbox), so screen readers say which
+            group an option is in. The list is a listbox only while it lists something - the empty, loading and error states
+            are statuses and alerts instead - and the combobox's <code>aria-expanded</code> follows. On a prompt the input is a
+            plain text field named by the prompt's question. In a virtualized list each option carries
+            <code>aria-posinset</code> and <code>aria-setsize</code>.</li>
+        <li>A multi-select page adds <code>aria-multiselectable</code> and marks its checked options <code>aria-checked</code>
+            and nothing else - one state per list, as the pattern asks.</li>
+        <li>Polite live regions, present before anything is announced in them, say the result count after every search, the
+            page the palette moved to ("Theme. 3 results available"), loading, and every toast; errors are announced
+            assertively. The list is <code>aria-busy</code> while it loads.</li>
+        <li>A toggle's state and a pinned command are spoken ("On", "Off", "Pinned"), not only drawn; disabled commands are
+            <code>aria-disabled</code> and say why; group headings are presentational, so they are not read as options.</li>
+        <li>Shortcut hints have an accessible name in words, and the trigger declares <code>aria-keyshortcuts</code>. The
+            close button's accessible name holds its visible "Esc" (WCAG 2.5.3), and the buttons are at least 24 px.</li>
+        <li>Mouse hover moves the active row only after the pointer actually moves, so a list that scrolls under a resting
+            pointer does not steal the selection from the keyboard; <code>DisablePointerSelection</code> turns hover off
+            completely. Clicking a row leaves the focus in the input.</li>
+        <li>More contrast, forced colours, reduced motion and right-to-left layouts are styled for - see
+            <a href="theming#adapts">Theming</a> and <a href="localization">Localization</a>.</li>
+    </ul>
+    <div class="bb-note">
+        The browser suite runs axe-core (WCAG 2.2 A and AA rules) over the root list, search results, a nested page, a
+        multi-select page and a prompt, in light and dark, with this site's theme and with the library's defaults, and reads
+        Chromium's accessibility tree directly. An automated audit finds only part of the problems; it is not a claim of
+        conformance, and screen reader testing by people who use them remains the measure.
+    </div>
+</section>
+
+@code {
+    private const string ShortcutExample = """
+        BaletteCmd.New("Copy share link").Shortcut("Mod+Shift+C")      // a chord: ⌘⇧C or Ctrl+Shift+C
+        BaletteCmd.Navigate("Settings", "/settings").Shortcut("G S")    // a sequence: G, then S
+        BaletteCmd.New("Search").Shortcut("/", global: true)            // a single key; ignored while typing in a field
+        BaletteCmd.New("Find in page").Shortcut("Mod+F", global: false) // shown as a hint only
+
+        options.ToggleShortcut = "Mod+K";                               // the default
+        options.AdditionalToggleShortcuts.Add("Mod+Shift+P");
+
+        BaletteKeyboardShortcut shortcut = "Ctrl+Shift+P";              // a string converts implicitly
+        bool ok = BaletteKeyboardShortcut.TryParse("Ctrl+Shift", out _);   // false: no key
+        """;
+
+    private const string SequenceExample = """
+        Palette.SequencePending += pending =>
+        {
+            // "G" after the first key of G S, null once it completed, broke off or timed out.
+            _pending = pending;
+            InvokeAsync(StateHasChanged);
+        };
+        """;
+
+    private const string HintExample = """
+        <BaletteShortcutHint Shortcut="command.Shortcut" IsMac="Palette.IsMac" />
+
+        @code {
+            // IsMac is known once the palette has started in the browser.
+            protected override void OnInitialized() => Palette.PlatformDetected += () => InvokeAsync(StateHasChanged);
+        }
+        """;
+
+    private static readonly string[] ShortcutSamples = ["Mod+K", "Ctrl+Shift+P", "G I", "Cmd+Option+Up", "Shift+?", "Alt+Comma", "Ctrl+Shift", "A+B"];
+
+    private static readonly BaletteKeyboardShortcut NewIssueShortcut = "C";
+
+    private string? _last;
+    private BaletteKeyboardShortcut? _pending;
+    private string _shortcutText = "Mod+Shift+K";
+    private List<BaletteCommand> _pageCommands = [];
+    private IDisposable? _override;
+    private string? _conflictLast;
+
+    private string Mod => Palette.IsMac ? "⌘" : "Ctrl";
+
+    private IEnumerable<BaletteKeyboardShortcut> ToggleShortcuts
+        => Options.ToggleShortcut is null ? Options.AdditionalToggleShortcuts : [Options.ToggleShortcut, .. Options.AdditionalToggleShortcuts];
+
+    protected override void OnInitialized()
+    {
+        _pageCommands =
+        [
+            BaletteCmd.New("Save draft").Group("This page").Shortcut("Alt+Q").Keywords("store", "keep")
+                .Description("Registered by Pages/Keyboard.razor on Alt+Q, which the conflicts section lets a second command claim.")
+                .Handler(() => SaveWith("Save draft")),
+        ];
+
+        Palette.CommandsChanged += Refresh;
+        Palette.CommandExecuted += OnExecuted;
+        // Every hint on this page reads IsMac, which is only known once the palette has started in the browser.
+        Palette.PlatformDetected += Refresh;
+        Palette.SequencePending += OnSequencePending;
+    }
+
+    private void OnExecuted(object? sender, BaletteCommandExecutedEventArgs e)
+    {
+        _last = $"{e.Command.Title} at {DateTime.Now:HH:mm:ss}";
+        Refresh();
+    }
+
+    /// <summary>
+    /// A second command on Alt+Q, registered after the page's own, so it wins the keys until its handle is disposed. The
+    /// palette logs the conflict once, as a warning.
+    /// </summary>
+    private void ToggleOverride()
+    {
+        if (_override is not null)
+        {
+            _override.Dispose();
+            _override = null;
+            return;
+        }
+
+        _override = Palette.Register(BaletteCmd.New("Save and publish").Group("This page").Shortcut("Alt+Q").Keywords("store", "release")
+            .Description("Registered by a button on Pages/Keyboard.razor on the keys Save draft has: the later registration wins.")
+            .Handler(() => SaveWith("Save and publish")));
+    }
+
+    private void SaveWith(string title)
+    {
+        _conflictLast = $"{title} at {DateTime.Now:HH:mm:ss}";
+        Refresh();
+    }
+
+    private void OnSequencePending(BaletteKeyboardShortcut? pending)
+    {
+        _pending = pending;
+        Refresh();
+    }
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Palette.CommandsChanged -= Refresh;
+        Palette.CommandExecuted -= OnExecuted;
+        Palette.PlatformDetected -= Refresh;
+        Palette.SequencePending -= OnSequencePending;
+        _override?.Dispose();
+    }
+}

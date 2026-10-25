@@ -1,11 +1,11 @@
 {
     "name": "Boilerplate",
-    "image": "mcr.microsoft.com/dotnet/sdk:10.0.401",
+    "image": "mcr.microsoft.com/dotnet/sdk:10.0.402",
     "hostRequirements": {
         "cpus": 4
     },
     "waitFor": "onCreateCommand",
-    "postCreateCommand": "dotnet dev-certs https --trust",
+    "onCreateCommand": "dotnet tool install --global Bit.Cli --version 10.7.0 && /root/.dotnet/tools/bit setup --yes",
     "customizations": {
         "codespaces": {
             "openFiles": [
@@ -34,19 +34,14 @@
         5031
     ],
     "features": {
-        "ghcr.io/microsoft/aspire-devcontainer-feature/aspire:3": {},
-        "ghcr.io/devcontainers/features/powershell:2": {},
-        "ghcr.io/devcontainers/features/docker-in-docker:4": {},
-        "ghcr.io/devcontainers/features/node:2": {
-            "version": "24"
-        },
-        "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-            "version": "1",
-            "helm": "3",
-            "minikube": "1"
-        }
+        "ghcr.io/devcontainers/features/docker-in-docker:4": {}
+    },
+    "containerEnv": {
+        "DEVCONTAINER": "true",
+        "SSL_CERT_DIR": "/root/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"
     },
     "remoteEnv": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PATH": "${containerEnv:PATH}:/root/.dotnet/tools"
     }
 }

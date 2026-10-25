@@ -1,0 +1,92 @@
+﻿@page "/examples/empty"
+
+<PageTitle>Empty · Blow</PageTitle>
+
+<ExampleScaffold Title="Empty"
+                 Summary="A canvas that starts with no nodes: add them at runtime by appending to the Nodes list, then connect them. OnNodesInitialized reports when what you added has been measured, and NodesInitialized answers the same question later - the cue for any work that needs real node sizes.">
+    <Toolbar>
+        <button class="btn btn-primary" @onclick="AddNode">Add node</button>
+        <button class="btn btn-secondary" @onclick="LineUp">Line up</button>
+        <button class="btn btn-secondary" @onclick="Clear">Clear</button>
+        <span class="bb-muted">@_nodes.Count node(s) · OnNodesInitialized raised @_initializedCount time(s)</span>
+        @if (_firstSize is not null)
+        {
+            <span class="bb-muted">@_firstSize</span>
+        }
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" OnNodesInitialized="OnNodesInitialized">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Press <strong>Add node</strong> a few times: each node lands at a random spot. <strong>Drag from one node's handle</strong> to another's to connect them.</li>
+        <li>Watch the toolbar as the first node lands: once it has been measured, <code>OnNodesInitialized</code> fires, the counter goes up and the size the browser measured is shown. Adding more nodes does not raise it again.</li>
+        <li>Press <strong>Line up</strong> to set the nodes side by side, spaced by their measured widths, and bring the row into view. On an empty canvas it does nothing.</li>
+        <li>Press <strong>Clear</strong> to empty both lists, then add a node again: the counter goes up a second time.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>Nodes</code> and <code>Edges</code> start as empty lists. Adding a <code>BlowNode</code> to the list is all it takes: on its next render the canvas draws the node and measures it, with no <code>Refresh</code> call needed.</li>
+        <li>Without <code>FitViewOnInit</code> the canvas opens at the default viewport - no pan, zoom 1 - so flow position (0, 0) is the pane's top-left corner.</li>
+        <li><code>OnNodesInitialized</code> is raised when the canvas goes from having nothing measured to every visible node measured. A node added later is measured straight after the render that draws it, so here the event comes once per empty canvas. <code>BlowNode.Measured</code> holds the size, in flow units.</li>
+        <li><code>NodesInitialized</code> gives the same answer as a property, for code that runs later: Line up checks it before reading <code>Measured.Width</code>, and it is false while the canvas is empty.</li>
+        <li><code>FitViewAsync</code> with <code>BlowFitViewOptions { MaxZoom = 1, Duration = 300 }</code> eases the row into view without zooming in past full size.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _id;
+    private int _initializedCount;
+    private string? _firstSize;
+
+    private void AddNode()
+    {
+        _id++;
+
+        // Appending to the list is all it takes: the canvas draws and measures a node it has not seen before on its
+        // next render, which this click causes.
+        _nodes.Add(new BlowNode
+        {
+            Id = _id.ToString(),
+            Label = $"Node {_id}",
+            Position = new(Random.Shared.Next(0, 400), Random.Shared.Next(0, 300)),
+        });
+    }
+
+    // Raised once every visible node has a measured size. Only the first node onto an empty canvas makes that true
+    // anew: each later one is measured straight after the render that draws it, before the canvas checks again.
+    private void OnNodesInitialized()
+    {
+        _initializedCount++;
+        if (_nodes.FirstOrDefault() is { } first)
+            _firstSize = $"{first.Label} measured at {first.Measured.Width:0} × {first.Measured.Height:0}";
+    }
+
+    private async Task LineUp()
+    {
+        // A layout that reads sizes waits for real ones. NodesInitialized is false on an empty canvas too, where
+        // there is nothing to arrange.
+        if (_flow is not { NodesInitialized: true }) return;
+
+        double x = 0;
+        foreach (var node in _nodes)
+        {
+            node.Position = new(x, 0);
+            x += node.Measured.Width + 40;
+        }
+
+        await _flow.FitViewAsync(new BlowFitViewOptions { MaxZoom = 1, Duration = 300 });
+    }
+
+    private void Clear()
+    {
+        _nodes.Clear();
+        _edges.Clear();
+        _id = 0;
+        _firstSize = null;
+    }
+}

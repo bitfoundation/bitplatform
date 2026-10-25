@@ -1,4 +1,4 @@
-declare class Composition {
+﻿declare class Composition {
     private scroll;
     private emitter;
     isComposing: boolean;

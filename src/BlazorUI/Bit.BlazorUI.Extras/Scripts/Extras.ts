@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class Extras {
         public static applyRootClasses(cssClasses: string[], cssVariables: any) {
             cssClasses?.forEach(c => document.documentElement.classList.add(c));
@@ -84,12 +84,22 @@ namespace BitBlazorUI {
             if (!el.bitPreventKeysHandler) {
                 el.bitPreventKeysHandler = (e: KeyboardEvent) => {
                     // A key pressed with a modifier is a different gesture (Ctrl+Home jumps to the
-                    // start of a text, Alt+ArrowDown is a browser shortcut), so only the bare key
-                    // the component actually handles is suppressed.
-                    if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+                    // start of a text, Shift+ArrowDown extends a selection), so a bare key in the list
+                    // suppresses only the bare key. A modified key the component acts on as well (the
+                    // Alt+ArrowUp that closes a combobox's list, whose default scrolls the page) is
+                    // listed with its modifiers, in the order Control, Alt, Shift, Meta:
+                    // "Alt+ArrowUp".
+                    const modifiers = (e.ctrlKey ? 'Control+' : '') + (e.altKey ? 'Alt+' : '')
+                                    + (e.shiftKey ? 'Shift+' : '') + (e.metaKey ? 'Meta+' : '');
 
+                    // "Character" stands for every key that types one character (Shift allowed, Space
+                    // excepted): a control that applies what is typed itself - a letter on a combobox
+                    // that opens its list and puts the letter in the list's search box - keeps the
+                    // browser from typing it a second time into the box the focus has moved to by then.
                     const ks: string[] = el.bitPreventKeys ?? [];
-                    if (ks.indexOf(e.key) === -1) return;
+                    const character = ks.indexOf('Character') !== -1 && e.key.length === 1 && e.key !== ' '
+                                   && !e.ctrlKey && !e.altKey && !e.metaKey && !Utils.isComposingKey(e);
+                    if (!character && ks.indexOf(modifiers + e.key) === -1) return;
 
                     const target: string | undefined = el.bitPreventKeysTarget;
                     if (target) {
@@ -123,19 +133,124 @@ namespace BitBlazorUI {
         // that opens below the fold is shown without the page jumping under a reader who could already see
         // it. The smooth scroll is a courtesy rather than a requirement, so it is dropped for a reader who
         // has asked for less motion.
+        // A panel that has just been opened is still as small as it was when this runs - its transition starts
+        // with the render that opened it - so a header already in view is all there is to bring into view yet,
+        // and the panel would then grow off the screen. So the element is brought into view now (a panel opened
+        // off screen shows its header at once) and again once the transitions of its own box have played out,
+        // at its full size. The wait is not handed back to .NET, whose render would otherwise wait on it; a
+        // reader who scrolls, presses a key or touches the page meanwhile has taken over, and is left alone.
         public static scrollIntoView(element: HTMLElement) {
             if (!element) return;
 
-            try {
-                const reduced = typeof window.matchMedia === 'function'
-                    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            Extras.scrollNearest(element);
 
+            const events = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+            let interrupted = false;
+            const interrupt = () => { interrupted = true; };
+            events.forEach(e => window.addEventListener(e, interrupt, { capture: true, passive: true }));
+
+            Extras.transitionsSettled(element, 3000)
+                .then(() => {
+                    events.forEach(e => window.removeEventListener(e, interrupt, { capture: true }));
+
+                    if (interrupted || !element.isConnected) return;
+
+                    Extras.scrollNearest(element);
+                });
+        }
+
+        // Resolves once the transitions of the element's own box - on the element and on its direct children, which
+        // is where an opening panel grows - have played out. A transition is finite, unlike a spinner's animation
+        // deeper in the content, and the timeout bounds the wait all the same.
+        private static async transitionsSettled(element: HTMLElement, timeout: number) {
+            if (typeof element.getAnimations !== 'function') return;
+
+            const transitions = [element, ...Array.from(element.children)]
+                .flatMap(e => e.getAnimations())
+                .filter(a => typeof CSSTransition !== 'undefined' && a instanceof CSSTransition);
+
+            if (transitions.length === 0) return;
+
+            await Promise.race([
+                Promise.all(transitions.map(a => a.finished.catch(() => { }))),
+                new Promise(resolve => setTimeout(resolve, timeout)),
+            ]);
+        }
+
+        private static scrollNearest(element: HTMLElement) {
+            try {
                 element.scrollIntoView({
-                    behavior: reduced ? 'auto' : 'smooth',
+                    behavior: Extras.animates(element) ? 'smooth' : 'auto',
                     block: 'nearest',
                     inline: 'nearest'
                 });
             } catch (e) { console.error('BitBlazorUI.Extras.scrollIntoView:', e); }
+        }
+
+        // Holds the element where it sits in the viewport right now while the layout above it changes: a list of
+        // accordions closing the panels above a find-in-page match it has just revealed, which the browser has
+        // already scrolled to - the close arrives a render later and runs over a transition, and every pixel it
+        // gives up would pull the match up by as much. Each frame scrolls the drift back out of the element's
+        // scroller, until the element has held still for a while after moving, the reader scrolls on their own, or
+        // the time runs out.
+        public static keepInPlace(element: HTMLElement) {
+            if (!element || !element.isConnected) return;
+
+            const scroller = Extras.scrollParent(element);
+            const top = element.getBoundingClientRect().top;
+            const deadline = performance.now() + 3000;
+            const events = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+
+            let moved = false;
+            let still = 0;
+            let stopped = false;
+
+            const stop = () => {
+                stopped = true;
+                events.forEach(e => window.removeEventListener(e, stop, true));
+            };
+
+            events.forEach(e => window.addEventListener(e, stop, { capture: true, passive: true }));
+
+            const frame = () => {
+                if (stopped) return;
+
+                if (!element.isConnected || performance.now() > deadline || (moved && still > 15)) {
+                    stop();
+                    return;
+                }
+
+                const drift = element.getBoundingClientRect().top - top;
+
+                if (Math.abs(drift) >= 0.5) {
+                    scroller.scrollBy({ top: drift, behavior: 'instant' });
+                    moved = true;
+                    still = 0;
+                } else {
+                    still++;
+                }
+
+                requestAnimationFrame(frame);
+            };
+
+            requestAnimationFrame(frame);
+        }
+
+        // The nearest ancestor that scrolls vertically, or the document's own scroller when none does.
+        private static scrollParent(element: HTMLElement): Element {
+            let node = element.parentElement;
+
+            while (node && node !== document.body && node !== document.documentElement) {
+                const overflow = getComputedStyle(node).overflowY;
+
+                if ((overflow === 'auto' || overflow === 'scroll' || overflow === 'overlay') && node.scrollHeight > node.clientHeight) {
+                    return node;
+                }
+
+                node = node.parentElement;
+            }
+
+            return document.scrollingElement ?? document.documentElement;
         }
 
         // Answers with the indexes of the provided elements in the order they appear in the document, so a
@@ -232,6 +347,18 @@ namespace BitBlazorUI {
             } catch (e) { console.error('BitBlazorUI.Extras.scrollOptionIntoView:', e); }
         }
 
+        // The IANA id of the time zone the browser runs in - the visitor's own, which on Blazor Server is
+        // not the one TimeZoneInfo.Local reads (the server's). Engines built on CLDR may answer with an id
+        // IANA has since renamed (Asia/Calcutta, Europe/Kiev), which the C# side resolves. Null where the
+        // engine cannot tell.
+        public static getTimeZone(): string | null {
+            try {
+                return Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+            } catch {
+                return null;
+            }
+        }
+
         // Puts text on the clipboard, throwing when it could not be done so that the caller can tell.
         // The async Clipboard API is the only one that works without a user gesture heuristic, but it
         // is unavailable outside a secure context and in a few older browsers, so a hidden textarea and
@@ -276,78 +403,83 @@ namespace BitBlazorUI {
             }
         }
 
+        // Both loaders cache per asset, not per list: two components asking for
+        // overlapping-but-unequal lists have to await the very same load, instead of one of
+        // them finding the other's still-loading tag in the document and taking it for ready.
+
         private static _initScriptsPromises: { [key: string]: Promise<unknown> } = {};
         public static async initScripts(scripts: string[], isModule: boolean) {
-            const key = scripts.join('|');
+            return Promise.all(scripts.map(s => Extras.initScript(s, isModule)));
+        }
+
+        private static initScript(url: string, isModule: boolean) {
+            const key = `${isModule ? 'module' : 'script'}|${url}`;
             if (Extras._initScriptsPromises[key] !== undefined) {
                 return Extras._initScriptsPromises[key];
             }
 
             const allScripts = Array.from(document.scripts).map(s => s.src);
-            const notAddedScripts = scripts.filter(s => !allScripts.find(as => as.includes(s)));
+            if (allScripts.find(as => as.includes(url))) return Promise.resolve();
 
-            if (notAddedScripts.length == 0) return Promise.resolve();
-
-            const promise = new Promise(async (res: any, rej: any) => {
-                try {
-                    await Promise.all(notAddedScripts.map(addScript));
-                    res();
-                } catch (e: any) {
-                    rej(e);
+            const promise = new Promise((res, rej) => {
+                const script = document.createElement('script');
+                script.src = url;
+                if (isModule) {
+                    script.type = 'module';
                 }
+                script.onload = res;
+                script.onerror = e => {
+                    // The dead tag goes out with the forgotten promise, otherwise the scan
+                    // above would find it and take a retry for an already loaded script.
+                    script.remove();
+                    rej(e);
+                };
+                document.body.appendChild(script);
             });
 
-            Extras._initScriptsPromises[key] = promise;
-            return promise;
-
-            async function addScript(url: string) {
-                return new Promise((res, rej) => {
-                    const script = document.createElement('script');
-                    script.src = url;
-                    if (isModule) {
-                        script.type = 'module';
-                    }
-                    script.onload = res;
-                    script.onerror = rej;
-                    document.body.appendChild(script);
-                })
-            }
+            // A rejected load is not remembered: caching it would make one CDN hiccup
+            // permanent for the life of the document, so a later mount could never retry.
+            Extras._initScriptsPromises[key] = promise.catch((e: any) => {
+                delete Extras._initScriptsPromises[key];
+                throw e;
+            });
+            return Extras._initScriptsPromises[key];
         }
 
         private static _initStylesheetsPromises: { [key: string]: Promise<unknown> } = {};
-        public static async initStylesheets(stylesheets: string[], isModule: boolean) {
-            const key = stylesheets.join('|');
-            if (Extras._initStylesheetsPromises[key] !== undefined) {
-                return Extras._initStylesheetsPromises[key];
+        public static async initStylesheets(stylesheets: string[]) {
+            return Promise.all(stylesheets.map(s => Extras.initStylesheet(s)));
+        }
+
+        private static initStylesheet(url: string) {
+            if (Extras._initStylesheetsPromises[url] !== undefined) {
+                return Extras._initStylesheetsPromises[url];
             }
 
-            const allStylesheets = Array.from(document.links).filter(l => l.rel === 'stylesheet').map(s => s.href);
-            const notAddedStylesheets = stylesheets.filter(s => !allStylesheets.find(as => as.includes(s)));
+            // Queried, not read off document.links, which holds only <a> and <area> elements.
+            const links = document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]');
+            const allStylesheets = Array.from(links).map(l => l.href);
+            if (allStylesheets.find(as => as.includes(url))) return Promise.resolve();
 
-            if (notAddedStylesheets.length == 0) return Promise.resolve();
-
-            const promise = new Promise(async (res: any, rej: any) => {
-                try {
-                    await Promise.all(notAddedStylesheets.map(addStylesheet));
-                    res();
-                } catch (e: any) {
+            const promise = new Promise((res, rej) => {
+                const link = document.createElement('link');
+                link.href = url;
+                link.rel = 'stylesheet';
+                link.onload = res;
+                link.onerror = e => {
+                    link.remove();
                     rej(e);
-                }
+                };
+                document.head.appendChild(link);
             });
 
-            Extras._initStylesheetsPromises[key] = promise;
-            return promise;
-
-            async function addStylesheet(url: string) {
-                return new Promise((res, rej) => {
-                    const link = document.createElement('link');
-                    link.href = url;
-                    link.rel = 'stylesheet';
-                    link.onload = res;
-                    link.onerror = rej;
-                    document.head.appendChild(link);
-                })
-            }
+            // A rejected load is not remembered: caching it would make one CDN hiccup
+            // permanent for the life of the document, so a later mount could never retry.
+            Extras._initStylesheetsPromises[url] = promise.catch((e: any) => {
+                delete Extras._initStylesheetsPromises[url];
+                throw e;
+            });
+            return Extras._initStylesheetsPromises[url];
         }
 
 
@@ -384,3 +516,5 @@ namespace BitBlazorUI {
         }
     }
 }
+
+// bit-lazy: teardown Extras.disposePreventKeys

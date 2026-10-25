@@ -34,11 +34,11 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitMarkdownEditorShouldRespectIsEnabled(bool isEnabled)
+    public void BitMarkdownEditorShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-mde");
@@ -209,10 +209,11 @@ public class BitMarkdownEditorTests : BunitTestContext
         var component = RenderComponent<BitMarkdownEditor>();
 
         // Top-level toolbar buttons (dropdown triggers included, but not the buttons
-        // rendered inside a dropdown menu).
+        // rendered inside a dropdown menu). The upload button waits for an upload handler.
         var buttons = component.FindAll(".bit-mde-btn:not(.bit-mde-mi)");
 
-        Assert.AreEqual(BitMarkdownEditorToolbar.Default.Count(i => i.Type is not BitMarkdownEditorToolbarItemType.Separator), buttons.Count);
+        Assert.AreEqual(BitMarkdownEditorToolbar.Default.Count(i => i.Type is not (BitMarkdownEditorToolbarItemType.Separator or BitMarkdownEditorToolbarItemType.ImageUpload)), buttons.Count);
+        Assert.AreEqual(0, component.FindAll("[data-cmd=upload]").Count);
 
         // The default toolbar includes a heading dropdown with menu items.
         var menuItems = component.FindAll(".bit-mde-mi");
@@ -287,7 +288,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         var root = component.Find(".bit-mde");
 
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-mde-height:10rem"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-MarkdownEditor-height:10rem"));
     }
 
     [TestMethod]
@@ -650,12 +651,30 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         component.Find("[data-cmd=preview]").Click();
         Assert.AreEqual(BitMarkdownEditorMode.Split, component.Instance.Mode);
+        Assert.AreEqual(BitMarkdownEditorMode.Split, mode);
 
         await component.Instance._OnShortcut("mode");
         Assert.AreEqual(BitMarkdownEditorMode.Preview, component.Instance.Mode);
+        Assert.AreEqual(BitMarkdownEditorMode.Preview, mode);
 
         await component.Instance._OnShortcut("mode");
         Assert.AreEqual(BitMarkdownEditorMode.Edit, component.Instance.Mode);
+        Assert.AreEqual(BitMarkdownEditorMode.Edit, mode);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldNotCycleAModeBoundOneWay()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitMarkdownEditorMode.Edit);
+        });
+
+        await component.Instance._OnShortcut("mode");
+
+        // A Mode written without a binding is the page's decision, and nothing is announced for a cycle that did not happen.
+        Assert.AreEqual(BitMarkdownEditorMode.Edit, component.Instance.Mode);
+        Assert.AreEqual(string.Empty, component.Find(".bit-mde-ann").TextContent);
     }
 
     [TestMethod]
@@ -712,6 +731,80 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         await component.Instance._OnEscape();
         Assert.IsFalse(component.Instance.FullScreen);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorFindPanelShouldClaimTheEscapeThatClosesIt()
+    {
+        // The find boxes, and the panes whose Escape the script hands to .NET, carry data-bit-esc (Utils.claimEscape)
+        // while the panel is open, so a dialog around the editor stays open on the press that closes it - and only
+        // then: with nothing to close, the key is the dialog's.
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+
+        await component.Instance._OnShortcut("find");
+
+        Assert.AreEqual("claim", component.Find(".bit-mde-txa").GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-mde-ppn").GetAttribute("data-bit-esc"));
+        Assert.IsTrue(component.FindAll(".bit-mde-fni").All(i => i.GetAttribute("data-bit-esc") == "claim"));
+
+        await component.FindAll(".bit-mde-fni")[1].KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-mde-fnd").Count);
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorHelpDialogShouldClaimTheEscapeThatClosesIt()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        component.Find("[data-cmd=help]").Click();
+
+        Assert.AreEqual("claim", component.Find(".bit-mde-hcr").GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-mde-txa").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-mde-hcr").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-mde-hcr").Count);
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldClaimTheEscapeThatLeavesFullScreen()
+    {
+        var fullScreen = true;
+
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Bind(p => p.FullScreen, fullScreen, v => fullScreen = v);
+        });
+
+        Assert.AreEqual("claim", component.Find(".bit-mde-txa").GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-mde-ppn").GetAttribute("data-bit-esc"));
+
+        await component.Instance._OnEscape();
+
+        Assert.IsFalse(component.Instance.FullScreen);
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldNotClaimTheEscapeOfAOneWayFullScreen()
+    {
+        // A FullScreen bound one way cannot be left (the Escape changes nothing), so the key is left to a dialog
+        // around the editor.
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.FullScreen, true);
+        });
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+
+        await component.Instance._OnEscape();
+
+        Assert.IsTrue(component.Instance.FullScreen);
     }
 
     [TestMethod]
@@ -1272,8 +1365,8 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         var style = component.Find(".bit-mde").GetAttribute("style");
 
-        Assert.Contains("--bit-mde-min-height:8rem", style);
-        Assert.Contains("--bit-mde-max-height:30rem", style);
+        Assert.Contains("--bit-MarkdownEditor-min-height:8rem", style);
+        Assert.Contains("--bit-MarkdownEditor-max-height:30rem", style);
     }
 
     [TestMethod]
@@ -1671,10 +1764,14 @@ public class BitMarkdownEditorTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
-        foreach (var button in component.FindAll(".bit-mde-btn"))
+        // A disabled editor that drew no toolbar would leave the loop below nothing to check.
+        var buttons = component.FindAll(".bit-mde-btn");
+        Assert.IsNotEmpty(buttons);
+
+        foreach (var button in buttons)
         {
             Assert.IsTrue(button.HasAttribute("disabled"), button.GetAttribute("data-cmd"));
         }
@@ -1738,21 +1835,30 @@ public class BitMarkdownEditorTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMarkdownEditorShouldNotHideItsFocusGuardsFromAssistiveTech()
+    public void BitMarkdownEditorShouldTrapTheFocusOfItsHelpDialogInTheScript()
     {
         var component = RenderComponent<BitMarkdownEditor>();
 
         component.Find("[data-cmd=help]").Click();
 
-        var guards = component.FindAll(".bit-mde-guard");
-        Assert.AreEqual(2, guards.Count);
+        // Tab is kept inside the dialog by the library's one focus trap, which wraps the focus as the key goes down,
+        // rather than by focus guards bounced back through .NET, which let quick Tabs land outside it first.
+        var dialog = component.Find("[role=dialog]");
+        var id = dialog.GetAttribute("id");
+        Assert.IsFalse(string.IsNullOrEmpty(id));
+        Assert.AreEqual(0, component.FindAll(".bit-mde-guard").Count);
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"];
+        Assert.AreEqual(1, setup.Count);
+        Assert.AreEqual(id, setup[0].Arguments[0]);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
 
-        foreach (var guard in guards)
-        {
-            // Focusable and aria-hidden at once is the aria-hidden-focus violation.
-            Assert.AreEqual("0", guard.GetAttribute("tabindex"));
-            Assert.IsNull(guard.GetAttribute("aria-hidden"));
-        }
+        component.Find(".bit-mde-hcl").Click();
+
+        Assert.AreEqual(0, component.FindAll("[role=dialog]").Count);
+        var dispose = Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"];
+        Assert.AreEqual(1, dispose.Count);
+        Assert.AreEqual(id, dispose[0].Arguments[0]);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
     }
 
     [TestMethod]

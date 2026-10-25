@@ -40,8 +40,8 @@ public partial class Header : AppComponentBase
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(disposing);
-
         unsubscribePageTitleChanged?.Invoke();
+
+        await base.DisposeAsync(disposing);
     }
 }

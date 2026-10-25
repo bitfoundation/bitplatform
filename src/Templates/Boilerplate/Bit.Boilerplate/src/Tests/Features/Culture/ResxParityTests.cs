@@ -8,7 +8,7 @@ using System.Xml.Linq;
 namespace Boilerplate.Tests.Features.Culture;
 
 /// <summary>
-/// The ten locales of each resource family are not written by hand. <c>Bit.ResxTranslator</c> fills the nine
+/// The ten locales of each resource family are not written by hand. <c>bit translate</c> fills the nine
 /// translations from the neutral file with an LLM, and the four CD pipelines run it on every deploy. That is the
 /// whole reason these assertions exist: the failure mode of a machine translator is not a compile error, it is a
 /// value that is subtly wrong in exactly one language, in a resource nobody on the team reads.
@@ -184,7 +184,7 @@ public class ResxParityTests
     }
 
     /// <summary>
-    /// The three families, resolved from disk rather than listed, so a new locale is covered the day it is added.
+    /// The four families, resolved from disk rather than listed, so a new locale is covered the day it is added.
     /// <c>EmailStrings</c> is globbed through <c>src/Server/*</c> because the project directory carries the
     /// generated project's name in every configuration but this one.
     /// </summary>
@@ -196,6 +196,7 @@ public class ResxParityTests
         [
             Path.Combine(templateRoot, "src", "Shared", "Resources", "AppStrings.resx"),
             Path.Combine(templateRoot, "src", "Shared", "Resources", "IdentityStrings.resx"),
+            Path.Combine(templateRoot, "src", "Shared", "Resources", "BitBlazorUIStrings.resx"),
             .. Directory.GetFiles(Path.Combine(templateRoot, "src", "Server"), "EmailStrings.resx", SearchOption.AllDirectories)
         ];
 

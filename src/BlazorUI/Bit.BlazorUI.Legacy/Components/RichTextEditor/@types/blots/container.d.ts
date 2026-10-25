@@ -1,2 +1,2 @@
-declare class Container extends ContainerBlot {
+﻿declare class Container extends ContainerBlot {
 }

@@ -10,7 +10,9 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Icon;
 [TestClass]
 public class BitIconTests : BunitTestContext
 {
-    private const string CLASS = "bit-ico bit-ico-pri bit-ico-md bit-ico-txt";
+    // An unset Color and Size publish no class, so the public --bit-Icon-* variables restyle the default while an
+    // explicit value - which does publish its class - wins over them.
+    private const string CLASS = "bit-ico bit-ico-txt";
 
     // An icon with nothing to name it is decorative, so it is hidden from assistive technology and
     // carries no role. Every markup expectation that does not set a name therefore carries this.
@@ -24,15 +26,36 @@ public class BitIconTests : BunitTestContext
         component.MarkupMatches(@$"<i {HIDDEN} class=""{CLASS}"" id:ignore />");
     }
 
+    [TestMethod]
+    public void BitIconShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitIcon>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Icon-* variables restyle the default while an
+        // explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-ico");
+        var published = new[]
+        {
+            "bit-ico-pri", "bit-ico-sec", "bit-ico-ter", "bit-ico-inf", "bit-ico-suc", "bit-ico-wrn", "bit-ico-swr", "bit-ico-err",
+            "bit-ico-pbg", "bit-ico-sbg", "bit-ico-tbg", "bit-ico-pfg", "bit-ico-sfg", "bit-ico-tfg", "bit-ico-pbr", "bit-ico-sbr", "bit-ico-tbr",
+            "bit-ico-sm", "bit-ico-md", "bit-ico-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
     [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
-    public void BitIconShouldRespectIsEnabled(bool isEnabled)
+    public void BitIconShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitIcon>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var cssClass = isEnabled ? null : " bit-dis";
@@ -41,7 +64,7 @@ public class BitIconTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitIconShouldRespectIsEnabledChangingAfterRender()
+    public void BitIconShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitIcon>();
 
@@ -49,7 +72,7 @@ public class BitIconTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@$"<i class=""{CLASS} bit-dis"" {HIDDEN} id:ignore />");
@@ -430,13 +453,13 @@ public class BitIconTests : BunitTestContext
 
         var sizeClass = size switch
         {
-            BitSize.Small => "bit-ico-sm",
-            BitSize.Medium => "bit-ico-md",
-            BitSize.Large => "bit-ico-lg",
-            _ => "bit-ico-md"
+            BitSize.Small => " bit-ico-sm",
+            BitSize.Medium => " bit-ico-md",
+            BitSize.Large => " bit-ico-lg",
+            _ => string.Empty
         };
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-txt {sizeClass}"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt{sizeClass}"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -451,7 +474,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Size, BitSize.Large);
         });
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-txt bit-ico-lg"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt bit-ico-lg"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod,
@@ -520,27 +543,27 @@ public class BitIconTests : BunitTestContext
 
         var colorClass = color switch
         {
-            BitColor.Primary => "bit-ico-pri",
-            BitColor.Secondary => "bit-ico-sec",
-            BitColor.Tertiary => "bit-ico-ter",
-            BitColor.Info => "bit-ico-inf",
-            BitColor.Success => "bit-ico-suc",
-            BitColor.Warning => "bit-ico-wrn",
-            BitColor.SevereWarning => "bit-ico-swr",
-            BitColor.Error => "bit-ico-err",
-            BitColor.PrimaryBackground => "bit-ico-pbg",
-            BitColor.SecondaryBackground => "bit-ico-sbg",
-            BitColor.TertiaryBackground => "bit-ico-tbg",
-            BitColor.PrimaryForeground => "bit-ico-pfg",
-            BitColor.SecondaryForeground => "bit-ico-sfg",
-            BitColor.TertiaryForeground => "bit-ico-tfg",
-            BitColor.PrimaryBorder => "bit-ico-pbr",
-            BitColor.SecondaryBorder => "bit-ico-sbr",
-            BitColor.TertiaryBorder => "bit-ico-tbr",
-            _ => "bit-ico-pri"
+            BitColor.Primary => " bit-ico-pri",
+            BitColor.Secondary => " bit-ico-sec",
+            BitColor.Tertiary => " bit-ico-ter",
+            BitColor.Info => " bit-ico-inf",
+            BitColor.Success => " bit-ico-suc",
+            BitColor.Warning => " bit-ico-wrn",
+            BitColor.SevereWarning => " bit-ico-swr",
+            BitColor.Error => " bit-ico-err",
+            BitColor.PrimaryBackground => " bit-ico-pbg",
+            BitColor.SecondaryBackground => " bit-ico-sbg",
+            BitColor.TertiaryBackground => " bit-ico-tbg",
+            BitColor.PrimaryForeground => " bit-ico-pfg",
+            BitColor.SecondaryForeground => " bit-ico-sfg",
+            BitColor.TertiaryForeground => " bit-ico-tfg",
+            BitColor.PrimaryBorder => " bit-ico-pbr",
+            BitColor.SecondaryBorder => " bit-ico-sbr",
+            BitColor.TertiaryBorder => " bit-ico-tbr",
+            _ => string.Empty
         };
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-md bit-ico-txt {colorClass}"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt{colorClass}"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -555,7 +578,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Color, BitColor.Error);
         });
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-md bit-ico-txt bit-ico-err"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt bit-ico-err"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod,
@@ -579,7 +602,7 @@ public class BitIconTests : BunitTestContext
             _ => "bit-ico-txt"
         };
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-md {variantClass}"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico {variantClass}"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -594,7 +617,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Variant, BitVariant.Fill);
         });
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-md bit-ico-fil"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-fil"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod,
@@ -661,7 +684,9 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.RotateAngle, angle);
         });
 
-        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:{angle}deg"" class=""{CLASS} bit-ico-trn"" {HIDDEN} id:ignore />");
+        // The CSS value is culture-free, so the expected one is too: a culture such as fa-IR or ar-SA writes a
+        // negative number with a bidi mark in front of its sign.
+        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:{angle.ToString(CultureInfo.InvariantCulture)}deg"" class=""{CLASS} bit-ico-trn"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -706,19 +731,21 @@ public class BitIconTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitIconShouldWriteTheRotateAngleWithAnInvariantDecimalSeparator()
+    public void BitIconShouldWriteTheRotateAngleInvariantly()
     {
         var culture = CultureInfo.CurrentCulture;
         CultureInfo.CurrentCulture = new CultureInfo("fa-IR");
 
         try
         {
+            // The angle is a whole number, so the only part of it a culture writes differently is the sign: fa-IR puts
+            // a bidi mark in front of it, which no CSS parser reads as a number.
             var component = RenderComponent<BitIcon>(parameters =>
             {
-                parameters.Add(p => p.RotateAngle, 45);
+                parameters.Add(p => p.RotateAngle, -45);
             });
 
-            Assert.AreEqual("--bit-ico-rotate:45deg", component.Find("i").GetAttribute("style"));
+            Assert.AreEqual("--bit-ico-rotate:-45deg", component.Find("i").GetAttribute("style"));
         }
         finally
         {
@@ -937,7 +964,81 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.TabIndex, "3");
         });
 
-        component.MarkupMatches(@$"<i tabindex=""3"" class=""{CLASS}"" {HIDDEN} id:ignore />");
+        // A tab stop is never hidden: aria-hidden on an element the focus lands on is a stop the screen reader
+        // has been told does not exist. With no glyph to fall back to it has no name either, which the Title
+        // docs tell the author to give it.
+        component.MarkupMatches(@$"<i tabindex=""3"" class=""{CLASS}"" id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconThatIsATabStopShouldNotFallBackToAClassList()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("fa-solid fa-circle-info"));
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        // "fa-solid fa-circle-info" is a class list and not a name, so it is never read out.
+        var icon = component.Find("i");
+
+        Assert.IsFalse(icon.HasAttribute("aria-label"));
+        Assert.IsFalse(icon.HasAttribute("role"));
+        Assert.IsFalse(icon.HasAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitIconThatIsATabStopShouldBeNamedByItsTitleWhateverItDraws()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("fa-solid fa-circle-info"));
+            parameters.Add(p => p.TabIndex, "0");
+            parameters.Add(p => p.Title, "More about this field");
+        });
+
+        var icon = component.Find("i");
+
+        Assert.AreEqual("img", icon.GetAttribute("role"));
+        Assert.AreEqual("More about this field", icon.GetAttribute("title"));
+        Assert.IsFalse(icon.HasAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitIconWithANegativeTabIndexShouldStayHidden()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "-1");
+        });
+
+        component.MarkupMatches(@$"<i tabindex=""-1"" class=""{CLASS}"" {HIDDEN} id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconThatIsATabStopShouldFallBackToTheIconNameAsAPicture()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Info");
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        // Focusable without a handler, it is a picture rather than a control, named the way an unnamed button is.
+        component.MarkupMatches(@$"<i role=""img"" tabindex=""0"" aria-label=""Info"" class=""{CLASS} bit-icon bit-icon--Info"" id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconThatIsATabStopShouldKeepItsOwnName()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Info");
+            parameters.Add(p => p.TabIndex, "0");
+            parameters.Add(p => p.Title, "More about this field");
+        });
+
+        component.MarkupMatches(@$"<i role=""img"" title=""More about this field"" tabindex=""0"" class=""{CLASS} bit-icon bit-icon--Info"" id:ignore />");
     }
 
     [TestMethod]
@@ -991,6 +1092,51 @@ public class BitIconTests : BunitTestContext
         });
 
         component.MarkupMatches(@$"<i role=""button"" tabindex=""0"" aria-label=""Delete this row"" class=""{CLASS} bit-icon bit-icon--Delete bit-ico-int"" id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconWithOnClickShouldBeNamedByItsTitleOverItsGlyph()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "FavoriteStar");
+            parameters.Add(p => p.Title, "Favorite");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        // A button takes its name from its content before its title, and the glyph drawn through ::before is
+        // content, so the Title is written as the aria-label too rather than left to describe a private-use character.
+        var icon = component.Find("i");
+
+        Assert.AreEqual("button", icon.GetAttribute("role"));
+        Assert.AreEqual("Favorite", icon.GetAttribute("aria-label"));
+        Assert.AreEqual("Favorite", icon.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitIconWithOnClickShouldPreferItsAriaLabelOverItsTitle()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "Delete this row");
+            parameters.Add(p => p.Title, "Deletes it for good");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        Assert.AreEqual("Delete this row", component.Find("i").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitIconWithoutOnClickShouldKeepItsTitleAsItsOnlyName()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Info");
+            parameters.Add(p => p.Title, "More about this field");
+        });
+
+        // An img takes no name from its content, so its title already is its name.
+        Assert.IsFalse(component.Find("i").HasAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -1086,7 +1232,7 @@ public class BitIconTests : BunitTestContext
         {
             parameters.Add(p => p.IconName, "Delete");
             parameters.Add(p => p.OnClick, () => clicked++);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@$"<i role=""button"" tabindex=""-1"" aria-label=""Delete"" aria-disabled=""true"" class=""{CLASS} bit-icon bit-icon--Delete bit-ico-int bit-dis"" id:ignore />");
@@ -1128,6 +1274,26 @@ public class BitIconTests : BunitTestContext
         Assert.AreEqual(0, clicked);
 
         component.Find("i").KeyUp(new KeyboardEventArgs { Key = " ", Code = "Space" });
+
+        Assert.AreEqual(1, clicked);
+    }
+
+    [TestMethod,
+        DataRow("Spacebar", null),
+        DataRow("Unidentified", "Space")
+    ]
+    public void BitIconShouldReadTheSpaceKeyHoweverTheBrowserSpellsIt(string key, string? code)
+    {
+        var clicked = 0;
+
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => clicked++);
+        });
+
+        // The legacy "Spacebar" name of the older engines, and a code of "Space" beside a key the engine could not name.
+        component.Find("i").KeyDown(new KeyboardEventArgs { Key = key, Code = code! });
+        component.Find("i").KeyUp(new KeyboardEventArgs { Key = key, Code = code! });
 
         Assert.AreEqual(1, clicked);
     }
@@ -1198,8 +1364,8 @@ public class BitIconTests : BunitTestContext
 
         component.Find("i").KeyDown(new KeyboardEventArgs { Key = " ", Code = "Space" });
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
         component.Find("i").KeyUp(new KeyboardEventArgs { Key = " ", Code = "Space" });
 
@@ -1280,6 +1446,37 @@ public class BitIconTests : BunitTestContext
 
         Assert.AreEqual(2, invocations.Count);
         Assert.AreEqual(0, ((string[])invocations[1].Arguments[1]!).Length);
+    }
+
+    [TestMethod]
+    public void BitIconShouldTryRegisteringThePreventedKeysAgainAfterAFailedCall()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Utils.registerPreventKeys", _ => true).SetException(new Microsoft.JSInterop.JSException("boom"));
+
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        // A call that did not land is not a listener: flagging it beforehand would leave the guard believing one is
+        // installed and never let it be tried again. The failure itself only costs the page-scroll prevention.
+        component.Render(parameters => parameters.Add(p => p.Color, BitColor.Error));
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"].Count);
+    }
+
+    [TestMethod]
+    public void BitIconShouldRegisterThePreventedKeysOnTheRoot()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerPreventKeys");
+
+        Assert.AreEqual(component.Instance.RootElement, invocation.Arguments[0]);
+        CollectionAssert.AreEquivalent(new[] { " ", "Spacebar" }, (string[])invocation.Arguments[1]!);
     }
 
     [TestMethod]
@@ -1415,6 +1612,53 @@ public class BitIconTests : BunitTestContext
         Assert.IsFalse(component.Find("i").ClassList.Contains("bit-ico-dly"));
     }
 
+    [TestMethod,
+        DataRow(3, "3"),
+        DataRow(1, "1"),
+        DataRow(0, "0"),
+        DataRow(-2, "0")
+    ]
+    public void BitIconShouldRespectAnimationIterationCount(int count, string expected)
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Animation, BitIconAnimation.Shake);
+            parameters.Add(p => p.AnimationIterationCount, count);
+        });
+
+        // A negative count would be dropped by the browser and leave the animation looping, so it is clamped.
+        component.MarkupMatches(@$"<i style=""--bit-ico-anm-itr:{expected}"" class=""{CLASS} bit-ico-shk bit-ico-itr"" {HIDDEN} id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconShouldLoopWithoutAnIterationCount()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Animation, BitIconAnimation.Shake);
+        });
+
+        Assert.IsFalse(component.Find("i").ClassList.Contains("bit-ico-itr"));
+        Assert.IsFalse((component.Find("i").GetAttribute("style") ?? "").Contains("--bit-ico-anm-itr"));
+    }
+
+    [TestMethod]
+    public void BitIconShouldRespectAnimationIterationCountChangingAfterRender()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Animation, BitIconAnimation.Bounce);
+            parameters.Add(p => p.AnimationIterationCount, 2);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.AnimationIterationCount, (int?)null);
+        });
+
+        component.MarkupMatches(@$"<i class=""{CLASS} bit-ico-bnc"" {HIDDEN} id:ignore />");
+    }
+
     [TestMethod]
     public void BitIconShouldNotActivateFromTheKeyboardWhenDisabled()
     {
@@ -1423,7 +1667,7 @@ public class BitIconTests : BunitTestContext
         var component = RenderComponent<BitIcon>(parameters =>
         {
             parameters.Add(p => p.OnClick, () => clicked++);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.Find("i").KeyDown(new KeyboardEventArgs { Key = "Enter" });
@@ -1445,7 +1689,7 @@ public class BitIconTests : BunitTestContext
     {
         var component = RenderComponent<BitIconParamsTest>();
 
-        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:90deg;--bit-ico-anm-dur:2s"" class=""bit-ico bit-ico-err bit-ico-lg bit-ico-out bit-ico-fxw bit-ico-cir bit-ico-inl bit-ico-trn bit-ico-spn bit-ico-anm"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:90deg;--bit-ico-anm-dur:2s;--bit-ico-anm-itr:3"" class=""bit-ico bit-ico-err bit-ico-lg bit-ico-out bit-ico-fxw bit-ico-cir bit-ico-inl bit-ico-trn bit-ico-spn bit-ico-anm bit-ico-itr"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -1453,7 +1697,7 @@ public class BitIconTests : BunitTestContext
     {
         var component = RenderComponent<BitIconParamsOverrideTest>();
 
-        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:90deg;--bit-ico-anm-dur:2s"" class=""bit-ico bit-ico-suc bit-ico-lg bit-ico-out bit-ico-fxw bit-ico-cir bit-ico-inl bit-ico-trn bit-ico-spn bit-ico-anm"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:90deg;--bit-ico-anm-dur:2s;--bit-ico-anm-itr:3"" class=""bit-ico bit-ico-suc bit-ico-lg bit-ico-out bit-ico-fxw bit-ico-cir bit-ico-inl bit-ico-trn bit-ico-spn bit-ico-anm bit-ico-itr"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -1467,5 +1711,61 @@ public class BitIconTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.FocusAsync());
 
         Context.JSInterop.VerifyFocusAsyncInvoke();
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public async Task BitIconFocusAsyncShouldPassThePreventScrollFlagItIsGiven(bool preventScroll)
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        if (preventScroll)
+        {
+            await component.Instance.FocusAsync(true);
+        }
+        else
+        {
+            await component.Instance.FocusAsync();
+        }
+
+        var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        Assert.AreEqual(1, invocations.Count);
+        Assert.AreEqual(component.Instance.RootElement, invocations[0].Arguments[0]);
+        Assert.AreEqual(preventScroll, invocations[0].Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitIconShouldFindTheSplattedAriaHiddenAndAriaLabelledByWhateverTheyAreCased()
+    {
+        // Attribute names are case insensitive, so a differently cased aria-hidden or aria-labelledby is still the
+        // page's own: the icon neither hides an icon the page kept visible nor leaves a named one unnamed.
+        var visible = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitIcon>(0);
+            builder.AddAttribute(1, nameof(BitIcon.IconName), "Add");
+            builder.AddAttribute(2, "Aria-Hidden", "false");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("false", visible.Find(".bit-ico").GetAttribute("aria-hidden"));
+
+        var named = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitIcon>(0);
+            builder.AddAttribute(1, nameof(BitIcon.IconName), "Add");
+            builder.AddAttribute(2, "Aria-Labelledby", "add-caption");
+            builder.CloseComponent();
+        });
+
+        var root = named.Find(".bit-ico");
+
+        Assert.AreEqual("img", root.GetAttribute("role"));
+        Assert.IsFalse(root.HasAttribute("aria-hidden"));
     }
 }

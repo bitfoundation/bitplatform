@@ -1,0 +1,90 @@
+﻿@page "/disable-sort"
+
+<PageTitle>Disabling sorting · Bortable</PageTitle>
+
+<div class="bb-intro">
+    <h1>Disabling sorting</h1>
+    <p class="bb-subtitle">
+        Four parameters decide what a list lets happen: <code>Sort</code> whether its own order can change,
+        <code>Put</code> whether items may be dropped into it, <code>Pull</code> whether they may leave it, and
+        <code>Disabled</code>, which turns every drag of the list off. Each sample below changes one of them.
+    </p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> No sorting, no put</h3>
+    <p class="bb-card-desc">
+        The Source has <code>Sort="false"</code> and <code>Put="false"</code>: its items cannot be reordered and nothing
+        can be dropped into it, but they can still be dragged out into the Target. A list of things to pick from.
+    </p>
+
+    <div class="bb-demo">
+        <PickList />
+    </div>
+
+    <DemoCode For="typeof(PickList)" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Items that never leave</h3>
+    <p class="bb-card-desc">
+        Pinned has <code>Pull="BortablePull.None"</code>: its items sort among themselves, and items from Others can
+        be dropped into it, but nothing can be dragged out of it again.
+    </p>
+
+    <div class="bb-demo">
+        <PinnedList />
+    </div>
+
+    <DemoCode For="typeof(PinnedList)" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A disabled list</h3>
+    <p class="bb-card-desc">
+        <code>Disabled="true"</code> turns every drag behaviour of the list off: its items cannot be picked up - by the
+        mouse, a finger or the keyboard - and nothing can be dropped into it. Its container gets the
+        <code>bit-bortable-disabled</code> class, which this page draws dashed. Tick the box to lock the list while,
+        say, its contents are being saved.
+    </p>
+
+    <div class="bb-demo">
+        <DisabledList />
+    </div>
+
+    <DemoCode For="typeof(DisabledList)" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>Drag <em>Item 1</em> down the Source: nothing moves. Drag it into the Target: it goes. Try to drag it back: the Source does not take it.</li>
+        <li>Drag <em>Rent</em> down Pinned: it sorts. Drag <em>Gym</em> from Others into Pinned: it goes in - and now it stays there.</li>
+        <li>
+            Tick <code>Disabled</code> and try to drag from the Archive, or into it from the Desk: neither works, and the
+            Archive's items are no longer a tab stop. Untick it and both work again.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Which one to use</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>Default</th><th>Reorder within</th><th>Drag out</th><th>Drop in</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Sort="false"</code></td><td><code>true</code></td><td>No</td><td>Yes</td><td>Yes, where it is dropped - <code>Sort</code> keeps the list's own items in their order, it does not refuse others</td></tr>
+                <tr><td class="bb-table-key"><code>Put="false"</code></td><td><code>true</code></td><td>Yes</td><td>Yes</td><td>No</td></tr>
+                <tr><td class="bb-table-key"><code>Pull="BortablePull.None"</code></td><td><code>Move</code></td><td>Yes</td><td>No</td><td>Yes</td></tr>
+                <tr><td class="bb-table-key"><code>Pull="BortablePull.Clone"</code></td><td><code>Move</code></td><td>Yes</td><td>As a copy (see <a href="cloning">cloning</a>)</td><td>Yes</td></tr>
+                <tr><td class="bb-table-key"><code>Disabled="true"</code></td><td><code>false</code></td><td>No</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="bb-note">
+        A read-only list - an array, say - behaves as if it had <code>Sort="false"</code>, <code>Put="false"</code> and
+        a <code>Pull</code> of <code>None</code>, except that a <code>Clone</code> pull still copies from it.
+    </div>
+</section>

@@ -1,0 +1,422 @@
+﻿@page "/e2e/phone-input"
+
+<PageTitle>BitPhoneInput E2E</PageTitle>
+
+<h1>BitPhoneInput</h1>
+
+<E2ESection Id="basic" Title="Basic & binding">
+    <BitPhoneInput Id="phi-basic" DefaultCountry="BitCountries.UnitedStates" Placeholder="Enter your number"
+                   @bind-Value="_value" @bind-Number="_number" @bind-Country="_country" />
+    <span id="basic-value">@(_value ?? "null")</span>
+    <span id="basic-number">@(_number ?? "null")</span>
+    <span id="basic-country">@(_country?.Iso2 ?? "null")</span>
+    <button id="btn-set-value" @onclick="@(() => _value = "+4917012345678")">Set a German value</button>
+    <button id="btn-set-country" @onclick="() => _country = BitCountries.France">Set France</button>
+    <button id="btn-set-number" @onclick="@(() => _number = "612345678")">Set a number</button>
+    <button id="btn-clear-value" @onclick="() => _value = null">Clear value</button>
+</E2ESection>
+
+<E2ESection Id="label" Title="Label & description">
+    <BitPhoneInput Id="phi-label" Label="Phone number" DefaultCountry="BitCountries.Germany" />
+    <BitPhoneInput Id="phi-required" Label="Mobile" Required DefaultCountry="BitCountries.Germany" />
+    <BitPhoneInput Id="phi-description" Label="Work" Description="Office hours only." DefaultCountry="BitCountries.Germany" />
+    <BitPhoneInput Id="phi-label-template" DefaultCountry="BitCountries.Germany">
+        <LabelTemplate><b class="custom-label">Templated label</b></LabelTemplate>
+        <DescriptionTemplate><i class="custom-description">Templated description</i></DescriptionTemplate>
+    </BitPhoneInput>
+    <BitPhoneInput Id="phi-aria" AriaLabel="Phone field" Title="Phone title" DefaultCountry="BitCountries.Germany" />
+</E2ESection>
+
+<E2ESection Id="custom" Title="Custom countries">
+    <BitPhoneInput Id="phi-countries" Countries="_customCountries" DefaultCountry="BitCountries.Canada" />
+    <BitPhoneInput Id="phi-exclude" ExcludeCountries="_excludedCountries" />
+    <BitPhoneInput Id="phi-preferred" PreferredCountries="_preferredCountries" />
+</E2ESection>
+
+<E2ESection Id="search" Title="Search box">
+    <BitPhoneInput Id="phi-search" DefaultCountry="BitCountries.France" SearchBoxPlaceholder="Country or code"
+                   NoResultsMessage="No matching country" @bind-Country="_searchCountry" />
+    <span id="search-country">@(_searchCountry?.Iso2 ?? "null")</span>
+    <BitPhoneInput Id="phi-nosearch" NoSearchBox DefaultCountry="BitCountries.France" @bind-Country="_noSearchCountry" />
+    <span id="nosearch-country">@(_noSearchCountry?.Iso2 ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="display" Title="Dropdown display">
+    <BitPhoneInput Id="phi-noflags" NoFlags DefaultCountry="BitCountries.Japan" />
+    <BitPhoneInput Id="phi-nodialcode" NoDialCode DefaultCountry="BitCountries.Japan" />
+    <BitPhoneInput Id="phi-dropdown-placeholder" DropdownPlaceholder="Country" />
+    <BitPhoneInput Id="phi-flag-selector" FlagUrlSelector="GetFlagUrl" DefaultCountry="BitCountries.Canada" Countries="_customCountries" />
+    <BitPhoneInput Id="phi-nodropdown" NoDropdown DefaultCountry="BitCountries.Japan" Immediate @bind-Value="_noDropdownValue" />
+    <span id="nodropdown-value">@(_noDropdownValue ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="clear" Title="Clear button">
+    <BitPhoneInput Id="phi-clear" ShowClearButton DefaultCountry="BitCountries.Italy" @bind-Value="_clearValue"
+                   OnClear="() => _clearCount++" ClearButtonAriaLabel="Erase" />
+    <span id="clear-count">@_clearCount</span>
+    <span id="clear-value">@(_clearValue ?? "null")</span>
+    <BitPhoneInput Id="phi-clear-silent" ShowClearButton ClearedAnnouncement="" DefaultCountry="BitCountries.Italy" Value="+390612345678" />
+    <BitPhoneInput Id="phi-clear-said" ShowClearButton ClearedAnnouncement="Number erased" DefaultCountry="BitCountries.Italy" Value="+390612345678" />
+    <BitPhoneInput Id="phi-clear-template" ShowClearButton DefaultCountry="BitCountries.Italy" Value="+390612345678">
+        <ClearButtonTemplate><span class="clear-template">x</span></ClearButtonTemplate>
+    </BitPhoneInput>
+    <BitPhoneInput Id="phi-clear-icon" ShowClearButton ClearButtonIcon="@BitIconInfo.Css("my-clear-icon")" DefaultCountry="BitCountries.Italy" Value="+390612345678" />
+    <BitPhoneInput Id="phi-clear-iconname" ShowClearButton ClearButtonIconName="@BitIconName.Delete" DefaultCountry="BitCountries.Italy" Value="+390612345678" />
+</E2ESection>
+
+<E2ESection Id="strict" Title="Strict & MaxLength">
+    <BitPhoneInput Id="phi-strict" Strict Immediate DefaultCountry="BitCountries.Netherlands" @bind-Value="_strictValue" />
+    <span id="strict-value">@(_strictValue ?? "null")</span>
+    <BitPhoneInput Id="phi-maxlength" MaxLength="10" DefaultCountry="BitCountries.Netherlands" />
+</E2ESection>
+
+<E2ESection Id="variants" Title="Variants">
+    <BitPhoneInput Id="phi-plain" DefaultCountry="BitCountries.Sweden" />
+    <BitPhoneInput Id="phi-noborder" NoBorder DefaultCountry="BitCountries.Sweden" />
+    <BitPhoneInput Id="phi-underlined" Underlined DefaultCountry="BitCountries.Sweden" />
+    <div style="width: 600px;">
+        <BitPhoneInput Id="phi-fullwidth" FullWidth DefaultCountry="BitCountries.Sweden" />
+        <BitPhoneInput Id="phi-notfullwidth" DefaultCountry="BitCountries.Sweden" />
+    </div>
+    <BitPhoneInput Id="phi-bg-primary" Background="BitColorKind.Primary" />
+    <BitPhoneInput Id="phi-bg-secondary" Background="BitColorKind.Secondary" />
+    <BitPhoneInput Id="phi-bg-tertiary" Background="BitColorKind.Tertiary" />
+    <BitPhoneInput Id="phi-bg-transparent" Background="BitColorKind.Transparent" />
+    <BitPhoneInput Id="phi-brd-primary" Border="BitColorKind.Primary" />
+    <BitPhoneInput Id="phi-brd-secondary" Border="BitColorKind.Secondary" />
+    <BitPhoneInput Id="phi-brd-tertiary" Border="BitColorKind.Tertiary" />
+    <BitPhoneInput Id="phi-brd-transparent" Border="BitColorKind.Transparent" />
+</E2ESection>
+
+<E2ESection Id="immediate" Title="Immediate">
+    <BitPhoneInput Id="phi-lazy" DefaultCountry="BitCountries.UnitedStates" @bind-Value="_lazyValue" />
+    <span id="lazy-value">@(_lazyValue ?? "null")</span>
+    <BitPhoneInput Id="phi-immediate" Immediate DefaultCountry="BitCountries.UnitedStates" @bind-Value="_immediateValue" />
+    <span id="immediate-value">@(_immediateValue ?? "null")</span>
+    <BitPhoneInput Id="phi-debounce" Immediate DebounceTime="400" DefaultCountry="BitCountries.UnitedStates"
+                   Value="@_debounceValue" ValueChanged="v => { _debounceValue = v; _debounceChanges++; }" />
+    <span id="debounce-value">@(_debounceValue ?? "null")</span>
+    <span id="debounce-changes">@_debounceChanges</span>
+    <BitPhoneInput Id="phi-throttle" Immediate ThrottleTime="400" DefaultCountry="BitCountries.UnitedStates"
+                   Value="@_throttleValue" ValueChanged="v => { _throttleValue = v; _throttleChanges++; }" />
+    <span id="throttle-value">@(_throttleValue ?? "null")</span>
+    <span id="throttle-changes">@_throttleChanges</span>
+</E2ESection>
+
+<E2ESection Id="prefix" Title="National prefix">
+    <BitPhoneInput Id="phi-prefix" Immediate DefaultCountry="BitCountries.Germany" @bind-Value="_prefixValue" />
+    <span id="prefix-value">@(_prefixValue ?? "null")</span>
+    <BitPhoneInput Id="phi-keepprefix" KeepNationalPrefix Immediate DefaultCountry="BitCountries.Germany" @bind-Value="_keepPrefixValue" />
+    <span id="keepprefix-value">@(_keepPrefixValue ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="format" Title="Format as you type">
+    <BitPhoneInput Id="phi-mask" Mask="(###) ###-####" Immediate DefaultCountry="BitCountries.UnitedStates" @bind-Value="_maskValue" @bind-Number="_maskNumber" />
+    <span id="mask-value">@(_maskValue ?? "null")</span>
+    <span id="mask-number">@(_maskNumber ?? "null")</span>
+    <BitPhoneInput Id="phi-mask-selector" MaskSelector="GetMask" Immediate DefaultCountry="BitCountries.UnitedStates" @bind-Value="_maskSelectorValue" />
+    <span id="mask-selector-value">@(_maskSelectorValue ?? "null")</span>
+    <BitPhoneInput Id="phi-autoplaceholder" AutoPlaceholder MaskSelector="GetMask" DefaultCountry="BitCountries.UnitedStates" />
+</E2ESection>
+
+<E2ESection Id="validation" Title="Validation">
+    <BitPhoneInput Id="phi-invalid" Invalid DefaultCountry="BitCountries.Spain" Value="+34123" />
+    <BitPhoneInput Id="phi-error" ErrorMessage="That number is already registered." Description="Nine digits."
+                   DefaultCountry="BitCountries.Spain" Value="+34600123456" />
+    <BitPhoneInput Id="phi-error-template" DefaultCountry="BitCountries.Spain">
+        <ErrorMessageTemplate><b class="custom-error">Templated error</b></ErrorMessageTemplate>
+    </BitPhoneInput>
+    <EditForm Model="_model" OnValidSubmit="() => _submitted = true" novalidate>
+        <DataAnnotationsValidator />
+        <BitPhoneInput Id="phi-form" Label="Phone number" Required Immediate DefaultCountry="BitCountries.Spain" @bind-Value="_model.Phone" />
+        <ValidationMessage For="() => _model.Phone" />
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="submitted">@(_submitted ? $"Submitted: {_model.Phone}" : "not submitted")</span>
+    <EditForm Model="_model2" novalidate>
+        <DataAnnotationsValidator />
+        <BitPhoneInput Id="phi-form-novalidate" NoValidate DefaultCountry="BitCountries.Spain" @bind-Value="_model2.Phone" />
+        <div id="novalidate-message"><ValidationMessage For="() => _model2.Phone" /></div>
+        <button id="btn-submit-2" type="submit">Submit</button>
+    </EditForm>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled & ReadOnly">
+    <BitPhoneInput Id="phi-disabled" Disabled="_disabled" DefaultCountry="BitCountries.Spain" Value="+341234567" ShowClearButton
+                   HtmlAttributes="@(new() { ["onpointerdown"] = EventCallback.Factory.Create<PointerEventArgs>(this, () => _pagePointerDowns++), ["ondblclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _pageDblClicks++) })" />
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="page-pointerdowns">@_pagePointerDowns</span>
+    <span id="page-dblclicks">@_pageDblClicks</span>
+    <BitPhoneInput Id="phi-readonly" ReadOnly ShowClearButton DefaultCountry="BitCountries.Spain" Value="+341234567" />
+</E2ESection>
+
+<E2ESection Id="callout" Title="Callout">
+    <BitPhoneInput Id="phi-maxheight" MaxHeight="200" DropDirection="BitDropDirection.All" DefaultCountry="BitCountries.Norway" />
+    <BitPhoneInput Id="phi-nowrap" NoWrapNavigation NoSearchBox />
+    <BitPhoneInput Id="phi-wrap" NoSearchBox />
+    <BitPhoneInput Id="phi-responsive" Responsive Label="Responsive phone" DefaultCountry="BitCountries.Brazil"
+                   ResponsiveCloseButtonAriaLabel="Close the list" />
+    <BitPhoneInput Id="phi-responsive-icon" Responsive Label="Icon" ResponsiveCloseIcon="@BitIconInfo.Css("my-close-icon")" />
+    <BitPhoneInput Id="phi-responsive-iconname" Responsive Label="Icon name" ResponsiveCloseIconName="@BitIconName.ChromeClose" />
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitPhoneInput Id="phi-templates" DefaultCountry="BitCountries.Portugal">
+        <DropdownTemplate Context="country">
+            <span class="dropdown-template">@(country?.Iso2 ?? "??")</span>
+        </DropdownTemplate>
+        <ItemTemplate Context="country">
+            <span class="item-template">@country.Name / @country.Iso3</span>
+        </ItemTemplate>
+        <NoResultsTemplate>
+            <span class="no-results-template">nothing here</span>
+        </NoResultsTemplate>
+    </BitPhoneInput>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitPhoneInput Id="phi-events" DefaultCountry="BitCountries.UnitedStates"
+                   OnCountryChange="c => { _evCountry = c?.Iso2; _evCountryCount++; }"
+                   OnChange="v => { _evValue = v; _evChangeCount++; }"
+                   OnSearch="s => _evSearch = s"
+                   OnOpen="() => _evOpen++"
+                   OnClose="() => _evClose++"
+                   OnEnter="() => _evEnter++"
+                   OnEscape="() => _evEscape++"
+                   OnKeyDown="e => { _evKeyDown++; _evLastKey = e.Key; }"
+                   OnClick="() => _evClick++"
+                   OnFocus="() => _evFocus++"
+                   OnBlur="() => _evBlur++"
+                   OnFocusIn="() => _evFocusIn++"
+                   OnFocusOut="() => _evFocusOut++" />
+    <span id="ev-country">@(_evCountry ?? "null")</span>
+    <span id="ev-country-count">@_evCountryCount</span>
+    <span id="ev-value">@(_evValue ?? "null")</span>
+    <span id="ev-change-count">@_evChangeCount</span>
+    <span id="ev-search">@(_evSearch ?? "null")</span>
+    <span id="ev-open">@_evOpen</span>
+    <span id="ev-close">@_evClose</span>
+    <span id="ev-enter">@_evEnter</span>
+    <span id="ev-escape">@_evEscape</span>
+    <span id="ev-keydown">@_evKeyDown</span>
+    <span id="ev-lastkey">@(_evLastKey ?? "null")</span>
+    <span id="ev-click">@_evClick</span>
+    <span id="ev-focus">@_evFocus</span>
+    <span id="ev-blur">@_evBlur</span>
+    <span id="ev-focusin">@_evFocusIn</span>
+    <span id="ev-focusout">@_evFocusOut</span>
+</E2ESection>
+
+<E2ESection Id="programmatic" Title="Programmatic control">
+    <BitPhoneInput @ref="_controlled" Id="phi-controlled" @bind-IsOpen="_isOpen" @bind-Value="_controlledValue"
+                   DefaultCountry="BitCountries.Australia" />
+    <BitPhoneInput Id="phi-nofocus" NoFocusOnSelect DefaultCountry="BitCountries.Australia" />
+    <button id="btn-toggle-open" @onclick="() => _isOpen = !_isOpen">Toggle IsOpen</button>
+    <button id="btn-open" @onclick="() => _controlled.OpenAsync()">OpenAsync</button>
+    <button id="btn-close" @onclick="() => _controlled.CloseAsync()">CloseAsync</button>
+    <button id="btn-select-japan" @onclick="() => _controlled.SelectCountryAsync(BitCountries.Japan)">SelectCountryAsync</button>
+    <button id="btn-set-number-async" @onclick="@(() => _controlled.SetNumberAsync("+81 3 1234 5678"))">SetNumberAsync</button>
+    <button id="btn-clear-async" @onclick="() => _controlled.ClearAsync()">ClearAsync</button>
+    <button id="btn-focus" @onclick="async () => await _controlled.FocusAsync()">FocusAsync</button>
+    <button id="btn-read-full" @onclick="() => _fullNumber = _controlled.FullNumber">Read FullNumber</button>
+    <span id="is-open">@_isOpen</span>
+    <span id="controlled-value">@(_controlledValue ?? "null")</span>
+    <span id="full-number">@(_fullNumber ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="form" Title="Form submission">
+    <form id="plain-form">
+        <BitPhoneInput Id="phi-named" Name="phone" CountryName="phoneCountry" Immediate DefaultCountry="BitCountries.Canada" />
+    </form>
+</E2ESection>
+
+<E2ESection Id="autofill" Title="Keyboard & autofill">
+    <BitPhoneInput Id="phi-autofill" AutoComplete="tel-national" EnterKeyHint="send" InputMode="BitInputMode.Tel" DefaultCountry="BitCountries.Ireland" />
+</E2ESection>
+
+<E2ESection Id="localization" Title="Localization">
+    <BitPhoneInput Id="phi-german" Countries="_germanCountries" DefaultCountry="_germanCountries[0]" Placeholder="Nummer eingeben"
+                   DropdownAriaLabel="Land" SearchBoxPlaceholder="Suchen" SearchBoxAriaLabel="Land suchen" NoResultsMessage="Kein Land gefunden"
+                   SearchResultsAnnouncement="@(count => count == 1 ? "1 Land gefunden" : $"{count} Länder gefunden")"
+                   ShowClearButton ClearButtonAriaLabel="Nummer löschen" Value="+4930123456" />
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="_params">
+        <BitPhoneInput Id="phi-params" />
+        <BitPhoneInput Id="phi-params-own" DefaultCountry="BitCountries.Brazil" NoBorder="false" />
+    </BitParams>
+    <BitPhoneInput Id="phi-params-outside" />
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    @foreach (var (color, name) in Colors)
+    {
+        <BitPhoneInput Id="@($"phi-color-{name}")" Color="color" DefaultCountry="BitCountries.UnitedStates" />
+    }
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitPhoneInput Id="phi-size-small" Size="BitSize.Small" DefaultCountry="BitCountries.UnitedStates" />
+    <BitPhoneInput Id="phi-size-medium" Size="BitSize.Medium" DefaultCountry="BitCountries.UnitedStates" />
+    <BitPhoneInput Id="phi-size-large" Size="BitSize.Large" DefaultCountry="BitCountries.UnitedStates" />
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <BitPhoneInput Id="phi-vars" DefaultCountry="BitCountries.Netherlands"
+                   Style="--bit-PhoneInput-radius: 12px; --bit-PhoneInput-border-color: rgb(255, 0, 0); --bit-PhoneInput-background: rgb(255, 255, 0); --bit-PhoneInput-item-selected-background: rgb(237, 231, 246); --bit-PhoneInput-callout-radius: 9px; --bit-PhoneInput-separator-color: rgb(0, 0, 255);" />
+    <div id="vars-scope" style="--bit-PhoneInput-color: rgb(0, 128, 0); --bit-PhoneInput-dropdown-color: rgb(128, 0, 0); --bit-PhoneInput-callout-background: rgb(240, 248, 255); --bit-PhoneInput-item-code-color: rgb(0, 0, 128);">
+        <BitPhoneInput Id="phi-vars-scope" DefaultCountry="BitCountries.Netherlands" Value="+31612345678" />
+    </div>
+    <BitPhoneInput Id="phi-vars-wins" Color="BitColor.Error" Size="BitSize.Large"
+                   Style="--bit-PhoneInput-border-color: rgb(0, 0, 255); --bit-PhoneInput-min-height: 80px;" />
+    <BitPhoneInput Id="phi-styled" DefaultCountry="BitCountries.Netherlands" Style="width: 300px;" Class="custom-class"
+                   Styles="@(new() { FieldGroup = "border-color: rgb(138, 43, 226);", ItemCode = "color: rgb(138, 43, 226);", Input = "letter-spacing: 3px;" })"
+                   Classes="@(new() { Input = "custom-input", Dropdown = "custom-dropdown", Callout = "custom-callout", Item = "custom-item", FieldGroup = "custom-fgp" })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div dir="rtl">
+        <BitPhoneInput Id="phi-rtl" Dir="BitDir.Rtl" DefaultCountry="BitCountries.Iran" Placeholder="شماره" Value="+989121234567" />
+        <BitPhoneInput Id="phi-rtl-inherited" DefaultCountry="BitCountries.Iran" Value="+989121234567" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="dialog" Title="Inside a dialog">
+    <button id="btn-open-dialog" @onclick="() => _dialogOpen = true">Open dialog</button>
+    <BitDialog Id="phi-dialog" @bind-IsOpen="_dialogOpen" Title="Dialog">
+        <Body>
+            <BitPhoneInput Id="phi-in-dialog" DefaultCountry="BitCountries.France" />
+        </Body>
+    </BitDialog>
+    <span id="dialog-open">@_dialogOpen</span>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitPhoneInput Id="phi-unmount" DefaultCountry="BitCountries.France" />
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class PhoneModel
+    {
+        [Required(ErrorMessage = "Enter a phone number.")]
+        [RegularExpression(@"^\+[0-9]{8,15}$", ErrorMessage = "Enter a valid international phone number.")]
+        public string? Phone { get; set; }
+    }
+
+    private static readonly (BitColor Color, string Name)[] Colors =
+    [
+        (BitColor.Primary, "primary"), (BitColor.Secondary, "secondary"), (BitColor.Tertiary, "tertiary"),
+        (BitColor.Info, "info"), (BitColor.Success, "success"), (BitColor.Warning, "warning"),
+        (BitColor.SevereWarning, "severewarning"), (BitColor.Error, "error"),
+        (BitColor.PrimaryBackground, "primarybackground"), (BitColor.SecondaryBackground, "secondarybackground"),
+        (BitColor.TertiaryBackground, "tertiarybackground"), (BitColor.PrimaryForeground, "primaryforeground"),
+        (BitColor.SecondaryForeground, "secondaryforeground"), (BitColor.TertiaryForeground, "tertiaryforeground"),
+        (BitColor.PrimaryBorder, "primaryborder"), (BitColor.SecondaryBorder, "secondaryborder"),
+        (BitColor.TertiaryBorder, "tertiaryborder")
+    ];
+
+    private static readonly BitCountry[] _customCountries =
+        [BitCountries.Canada, BitCountries.Germany, BitCountries.Japan, BitCountries.Brazil, BitCountries.Australia];
+
+    private static readonly BitCountry[] _excludedCountries = [BitCountries.Canada, BitCountries.Germany, BitCountries.Japan];
+
+    private static readonly BitCountry[] _preferredCountries = [BitCountries.Japan, BitCountries.Brazil];
+
+    private static readonly BitCountry[] _germanCountries =
+    [
+        new("Deutschland", "49", "DE", "DEU"),
+        new("Österreich", "43", "AT", "AUT"),
+        new("Schweiz", "41", "CH", "CHE"),
+        new("Frankreich", "33", "FR", "FRA")
+    ];
+
+    private readonly BitPhoneInputParams[] _params =
+    [
+        new()
+        {
+            DefaultCountry = BitCountries.Japan,
+            Countries = _customCountries,
+            Placeholder = "Cascaded placeholder",
+            NoBorder = true,
+            ShowClearButton = true,
+            Size = BitSize.Small
+        }
+    ];
+
+    private string? _value;
+    private string? _number;
+    private BitCountry? _country = BitCountries.UnitedStates;
+
+    private BitCountry? _searchCountry = BitCountries.France;
+    private BitCountry? _noSearchCountry = BitCountries.France;
+    private string? _noDropdownValue;
+    private int _clearCount;
+    private string? _clearValue = "+390612345678";
+    private string? _strictValue;
+
+    private string? _lazyValue;
+    private string? _immediateValue;
+    private string? _debounceValue;
+    private int _debounceChanges;
+    private string? _throttleValue;
+    private int _throttleChanges;
+
+    private string? _prefixValue;
+    private string? _keepPrefixValue;
+
+    private string? _maskValue;
+    private string? _maskNumber;
+    private string? _maskSelectorValue;
+
+    private readonly PhoneModel _model = new();
+    private readonly PhoneModel _model2 = new();
+    private bool _submitted;
+
+    private bool _disabled = true;
+    private int _pagePointerDowns;
+    private int _pageDblClicks;
+
+    private string? _evCountry;
+    private int _evCountryCount;
+    private string? _evValue;
+    private int _evChangeCount;
+    private string? _evSearch;
+    private int _evOpen;
+    private int _evClose;
+    private int _evEnter;
+    private int _evEscape;
+    private int _evKeyDown;
+    private string? _evLastKey;
+    private int _evClick;
+    private int _evFocus;
+    private int _evBlur;
+    private int _evFocusIn;
+    private int _evFocusOut;
+
+    private BitPhoneInput _controlled = default!;
+    private bool _isOpen;
+    private string? _controlledValue;
+    private string? _fullNumber;
+
+    private bool _dialogOpen;
+    private bool _mounted = true;
+
+    private static string? GetFlagUrl(BitCountry country) =>
+        country.Iso2 is "CA" or "DE" or "JP" ? $"samples/flags/{country.Iso2.ToLowerInvariant()}.svg" : null;
+
+    private static string? GetMask(BitCountry? country) => country?.Iso2 switch
+    {
+        "US" or "CA" => "(###) ###-####",
+        "FR" => "# ## ## ## ##",
+        "DE" => "### ########",
+        _ => null
+    };
+}

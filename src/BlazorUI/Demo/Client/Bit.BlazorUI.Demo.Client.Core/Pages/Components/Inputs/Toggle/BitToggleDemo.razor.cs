@@ -1,9 +1,16 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Toggle;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Toggle;
 
 public partial class BitToggleDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
+        new()
+        {
+            Name = "AllowDisabledFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps a disabled toggle focusable and discoverable by assistive technologies, conveying the disabled state through aria-disabled rather than the native disabled attribute. The toggle still refuses every change.",
+        },
         new()
         {
             Name = "AriaControls",
@@ -60,7 +67,7 @@ public partial class BitToggleDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the toggle, applied to the track of the checked state.",
+            Description = "The general color of the toggle, applied to the track of the checked state. An explicit value wins over the --bit-Toggle-* color variables of the checked state and the focus color; left unset, the toggle is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -80,6 +87,20 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A line under the toggle saying why its state was rejected, which marks it invalid in the same way Invalid does and is announced by a live region the moment it shows up.",
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom content of the error message, replacing the plain ErrorMessage text and marking the toggle invalid in the same way. Only the plain ErrorMessage is announced.",
+        },
+        new()
+        {
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
@@ -94,6 +115,13 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the state of the toggle as invalid, giving a state rejected by something other than the cascading EditContext the same look and the same aria-invalid attribute a failing data annotation gives it.",
+        },
+        new()
+        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -101,12 +129,12 @@ public partial class BitToggleDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the label in regards to the knob of the toggle. Takes precedence over Inline and Reversed when set.",
+            Description = "The position of the label in regards to the knob of the toggle. Takes precedence over Inline and Reversed when set. Only Top, Bottom, Start and End are honoured; any other value leaves the layout as it is with this unset.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -120,7 +148,7 @@ public partial class BitToggleDemo
             Name = "Loading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders a spinner in place of the knob's icon and suspends the toggle until the pending work behind the change is done.",
+            Description = "Renders a spinner in place of whatever the knob carries and suspends the toggle until the pending work behind the change is done.",
         },
         new()
         {
@@ -241,7 +269,7 @@ public partial class BitToggleDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the toggle.",
+            Description = "The size of the toggle. An explicit value wins over the --bit-Toggle-* size variables (track width and height, knob size, content padding, font sizes); left unset, the toggle is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -270,10 +298,17 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "ThumbTemplate",
+            Type = "RenderFragment<bool>?",
+            DefaultValue = "null",
+            Description = "Arbitrary content rendered inside the knob, receiving the current state of the toggle, in place of the glyph OnIconName and OffIconName would have drawn there. The knob takes the roomier geometry a glyph asks for, and the spinner still takes it back while the toggle is busy.",
+        },
+        new()
+        {
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The native tooltip of the knob of the toggle, shown on hover.",
+            Description = "The native tooltip of the toggle, rendered on its root so a hover anywhere on it - the label included - brings the tooltip up.",
         },
     ];
 
@@ -333,6 +368,20 @@ public partial class BitToggleDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the description of the BitToggle."
+                },
+                new()
+                {
+                    Name = "ErrorMessageContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the line carrying the error message of the BitToggle."
+                },
+                new()
+                {
+                    Name = "ErrorMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the error message of the BitToggle. Ignored when an ErrorMessageTemplate replaces the plain message."
                 },
                 new()
                 {
@@ -432,180 +481,282 @@ public partial class BitToggleDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="Primary general color.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
-                },
-                new()
-                {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
-                },
-                new()
-                {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
-                },
-                new()
-                {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
-                },
-                new()
-                {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
-                },
-                new()
-                {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
-                },
-                new()
-                {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
-                },
-                new()
-                {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
-                },
-                new()
-                {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
-                },
-                new()
-                {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "The position of the label in regards to the knob of the toggle.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label shows on the top of the toggle.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label shows on the end of the toggle.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label shows on the bottom of the toggle.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label shows on the start of the toggle.",
-                    Value="3",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Small",
-                    Description="The small size toggle.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The medium size toggle.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The large size toggle.",
-                    Value="2",
-                }
-            ]
-        }
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitPlacement(),
+        DemoSharedEnums.BitSize()
     ];
 
 
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Toggle-track-background",
+            DefaultValue = "$clr-bg-pri",
+            Description = "Track fill while the toggle is off.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-track-border-color",
+            DefaultValue = "$clr-brd-pri",
+            Description = "Track stroke while the toggle is off.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-thumb-color",
+            DefaultValue = "$clr-fg-sec",
+            Description = "The knob while the toggle is off.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-hover-track-background",
+            DefaultValue = "As the track fill at rest",
+            Description = "Track fill while hovered and off (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-hover-track-border-color",
+            DefaultValue = "$clr-brd-pri-hover",
+            Description = "Track stroke while hovered and off (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-hover-thumb-color",
+            DefaultValue = "$clr-fg-sec-hover",
+            Description = "The knob while hovered and off (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-checked-background",
+            DefaultValue = "$clr-pri",
+            Description = "Track fill while the toggle is on. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-checked-border-color",
+            DefaultValue = "transparent",
+            Description = "Track stroke while the toggle is on.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-checked-thumb-color",
+            DefaultValue = "$clr-pri-text",
+            Description = "The knob while the toggle is on, hover included. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-checked-hover-background",
+            DefaultValue = "$clr-pri-hover",
+            Description = "Track fill while hovered and on (pointer devices only). The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-icon-color",
+            DefaultValue = "The track fill behind the knob",
+            Description = "The glyph inside the knob, in both states - drawn in the color of the track, so it reads as cut out of the knob.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-spinner-color",
+            DefaultValue = "As the glyph it replaces",
+            Description = "The moving arc of the loading spinner; the ring it travels on is the same color at 30%.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-content-color",
+            DefaultValue = "$clr-fg-sec while off, $clr-pri-text while on",
+            Description = "The OnContent and OffContent carried inside the track. The Color parameter wins over it while on.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-label-color",
+            DefaultValue = "$clr-fg-pri",
+            Description = "The label beside the knob.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-text-color",
+            DefaultValue = "inherit",
+            Description = "The state text beside the knob.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-description-color",
+            DefaultValue = "$clr-fg-sec",
+            Description = "The description line under the toggle.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-disabled-color",
+            DefaultValue = "$clr-bg-dis / $clr-brd-dis / $clr-fg-dis",
+            Description = "Track fill, track stroke and knob when disabled.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-disabled-text-color",
+            DefaultValue = "$clr-fg-dis",
+            Description = "Label, state text, description and track content when disabled, and the focus ring of a disabled toggle that AllowDisabledFocus keeps in the tab order.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-error-color",
+            DefaultValue = "$clr-err",
+            Description = "Track stroke, checked fill, state text, error message and focus ring while the state is invalid.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-required-color",
+            DefaultValue = "$clr-req",
+            Description = "The asterisk of a required toggle.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-focus-color",
+            DefaultValue = "$clr-pri-focus",
+            Description = "Focus ring color. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-track-width",
+            DefaultValue = "$siz-switch-w-md",
+            Description = "Smallest width of the track; a track carrying content still grows to fit it. Stepped up to the roomier icon geometry when the knob holds a glyph, unless this variable names a width of its own. Set it on the root, not on the track. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-track-height",
+            DefaultValue = "$siz-switch-h-md",
+            Description = "Height of the track. Stepped up when the knob holds a glyph, unless set. Set it on the root, not on the track. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-track-radius",
+            DefaultValue = "Half the track height",
+            Description = "Corner radius of the track and of its focus ring; the default draws a pill.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-border-width",
+            DefaultValue = "$shp-border-width",
+            Description = "Thickness of the track stroke.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-thumb-size",
+            DefaultValue = "$siz-switch-thumb-md",
+            Description = "Diameter of the knob. Stepped up when it holds a glyph, unless set. Set it on the root, not on the track. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-thumb-radius",
+            DefaultValue = "50%",
+            Description = "Corner radius of the knob; the default draws a circle.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-thumb-inset",
+            DefaultValue = "Derived from the track height and the knob",
+            Description = "Room between the knob and the stroke, on every side of it. A negative value lets the knob overhang the track.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-thumb-shadow",
+            DefaultValue = "none",
+            Description = "Elevation of the knob.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-thumb-active-scale",
+            DefaultValue = "0.9",
+            Description = "How far the knob dips while pressed. Set it to 1 to drop the dip.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-icon-size",
+            DefaultValue = "3/5 of the knob it sits in",
+            Description = "The glyph inside the knob.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-spinner-size",
+            DefaultValue = "4/5 of the knob it lands in",
+            Description = "Diameter of the loading spinner.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-spinner-width",
+            DefaultValue = "$siz-spinner-stroke",
+            Description = "Thickness of the ring the spinner is drawn on.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-gap",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the parts of the toggle: the track and the label, the track and the state text, and the toggle and the lines under it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-content-padding",
+            DefaultValue = "spacing(0.375)",
+            Description = "Inset of the track content from the ends of the track. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-label-font-size",
+            DefaultValue = "$tg-fs-sm",
+            Description = "The label. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-label-font-weight",
+            DefaultValue = "$tg-field-label-font-weight",
+            Description = "The label.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-text-font-size",
+            DefaultValue = "inherit",
+            Description = "The state text. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-description-font-size",
+            DefaultValue = "$tg-fs-xs",
+            Description = "The description line. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-error-font-size",
+            DefaultValue = "$tg-fs-xs",
+            Description = "The error message line. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-content-font-size",
+            DefaultValue = "$tg-fs-xs",
+            Description = "The content carried inside the track. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-transition-duration",
+            DefaultValue = "$mot-duration-short",
+            Description = "How long the knob takes to cross the track, and every color with it. Reduced motion collapses it - the default and a value set here alike - unless ForceAnimation is set.",
+        },
+    ];
+
+
+
+    private readonly BitToggleParams[] toggleParams =
+    [
+        new BitToggleParams
+        {
+            Inline = true,
+            FullWidth = true,
+            OnText = "On",
+            OffText = "Off",
+            LabelPlacement = BitPlacement.Start
+        }
+    ];
 
     private bool isSaving;
     private bool savedValue;
@@ -630,6 +781,7 @@ public partial class BitToggleDemo
     private BitToggle toggleRef = default!;
 
     private string successMessage = string.Empty;
+    private bool twoFactorEnabled;
     private BitToggleValidationModel validationModel = new();
 
 

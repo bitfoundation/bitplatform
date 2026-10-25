@@ -1,4 +1,4 @@
-interface EmbedContextRange {
+﻿interface EmbedContextRange {
     startNode: Node | Text;
     startOffset: number;
     endNode?: Node | Text;

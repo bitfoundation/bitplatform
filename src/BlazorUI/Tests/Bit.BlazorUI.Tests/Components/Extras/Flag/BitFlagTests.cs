@@ -30,11 +30,11 @@ public class BitFlagTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitFlagShouldRespectIsEnabled(bool isEnabled)
+    public void BitFlagShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitFlag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-flg");
@@ -188,10 +188,64 @@ public class BitFlagTests : BunitTestContext
     {
         var component = RenderComponent<BitFlag>(parameters =>
         {
-            parameters.Add(p => p.Country, new BitCountry("Kosovo", "383", "XK", "XKX"));
+            parameters.Add(p => p.Country, new BitCountry("Holland", "31", "NL", "NLD"));
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/XK-flat-16.webp");
+        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/NL-flat-16.webp");
+    }
+
+    [TestMethod]
+    public void BitFlagShouldNotAskForAPackagedImageOfACodeThePackageDoesNotShip()
+    {
+        // No packaged image is named "XK": asking for one would only ever end in a failed request and an OnError.
+        var kosovo = new BitCountry("Kosovo", "383", "XK", "XKX");
+
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Country, kosovo);
+            parameters.Add(p => p.FallbackTemplate, (RenderFragment)(builder => builder.AddContent(0, "XK")));
+        });
+
+        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.AreEqual("XK", component.Find(".bit-flg-fbk").TextContent.Trim());
+
+        // A source of the page's own is what covers it, and its failure goes straight on to the fallback.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Country, kosovo);
+            parameters.Add(p => p.SrcPattern, "/flags/{iso2}.svg");
+        });
+
+        Assert.AreEqual("/flags/xk.svg", component.Find("img").GetAttribute("src"));
+
+        component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
+
+        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-flg-fbk").Count);
+    }
+
+    [TestMethod]
+    public void BitFlagShouldNotWriteAnAlpha3CodeTheCountryDoesNotCarryIntoTheSrcPattern()
+    {
+        // The European Union has an exceptionally reserved alpha-2 code and no alpha-3 one: a pattern naming the
+        // alpha-3 code has no url to write for it, while one naming the alpha-2 code does.
+        var europeanUnion = new BitCountry("European Union", string.Empty, "EU", string.Empty);
+
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Country, europeanUnion);
+            parameters.Add(p => p.SrcPattern, "/flags/{iso3}.svg");
+        });
+
+        Assert.AreEqual(0, component.FindAll("img").Count);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Country, europeanUnion);
+            parameters.Add(p => p.SrcPattern, "/flags/{ISO2}.svg");
+        });
+
+        Assert.AreEqual("/flags/EU.svg", component.Find("img").GetAttribute("src"));
     }
 
     [TestMethod,
@@ -483,9 +537,10 @@ public class BitFlagTests : BunitTestContext
         DataRow("Large", "24", "0.8x 1.2x 1.6x 2.4x 3.2x"),
         DataRow("Height:3rem", "48", "0.33x 0.5x 0.67x 1x 1.33x"),
         DataRow("Width:20px", "24", "0.8x 1.2x 1.6x 2.4x 3.2x"),
-        DataRow("Width:40px;Height:20px", "48", "0.4x 0.6x 0.8x 1.2x 1.6x"),
-        DataRow("Height:2rem;AspectRatio:3/2", "48", "0.33x 0.5x 0.67x 1x 1.33x"),
-        DataRow("Width:24px;AspectRatio:1/2", "48", "0.33x 0.5x 0.67x 1x 1.33x")]
+        // A frame of proportions of its own is cut to the flag unless a Fit places the image, as Contain does.
+        DataRow("Width:40px;Height:20px;Fit:Contain", "48", "0.4x 0.6x 0.8x 1.2x 1.6x"),
+        DataRow("Height:2rem;AspectRatio:3/2;Fit:Contain", "48", "0.33x 0.5x 0.67x 1x 1.33x"),
+        DataRow("Width:24px;AspectRatio:1/2;Fit:Contain", "48", "0.33x 0.5x 0.67x 1x 1.33x")]
     public void BitFlagShouldDescribeTheImageSetBySizeOfTheFlag(string sizing, string expectedSrcSize, string expectedDensities)
     {
         var component = RenderComponent<BitFlag>(parameters =>
@@ -503,6 +558,7 @@ public class BitFlagTests : BunitTestContext
                     case "Large": parameters.Add(p => p.Size, BitSize.Large); break;
                     case "Height": parameters.Add(p => p.Height, pair[1]); break;
                     case "Width": parameters.Add(p => p.Width, pair[1]); break;
+                    case "Fit": parameters.Add(p => p.Fit, Enum.Parse<BitImageFit>(pair[1])); break;
                     default: parameters.Add(p => p.AspectRatio, pair[1]); break;
                 }
             }
@@ -701,18 +757,15 @@ public class BitFlagTests : BunitTestContext
     [TestMethod]
     public void BitFlagShouldNotAskTheImageSetForACountryItDoesNotCover()
     {
-        // Asked of the sets, a code they do not cover would only cost a failed request before the packaged
-        // image stood in for it.
+        // Asked of the sets, a code they do not cover would only cost a failed request - and the packaged image,
+        // which does not cover it either, a second one.
         var component = RenderComponent<BitFlag>(parameters =>
         {
             parameters.Add(p => p.Country, new BitCountry("Kosovo", "383", "XK", "XKX"));
             parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
         });
 
-        var image = component.Find("img");
-
-        Assert.AreEqual("_content/Bit.BlazorUI.Extras/flags/XK-flat-16.webp", image.GetAttribute("src"));
-        Assert.IsFalse(image.HasAttribute("srcset"));
+        Assert.AreEqual(0, component.FindAll("img").Count);
     }
 
     [TestMethod]
@@ -846,10 +899,10 @@ public class BitFlagTests : BunitTestContext
     public void BitFlagShouldOnlyPointAtImagesTheAssetsPackageShips()
     {
         // The images of the sets ship in the Bit.BlazorUI.Assets package, and nothing but their names ties
-        // the flag to them. The test project writes the names of the files the package holds beside the
-        // tests, and every image any flag offers the browser has to be one of them - with none left over.
-        var shipped = File.ReadAllLines(Path.Combine(AppContext.BaseDirectory, "assets-flags.txt"))
-                          .Where(line => line.HasValue())
+        // the flag to them, so every image any flag offers the browser has to be one the package holds - with
+        // none left over.
+        var shipped = Directory.EnumerateFiles(SourceFiles.GetDirectory("Bit.BlazorUI.Assets", "wwwroot", "flags"), "*.webp")
+                          .Select(file => Path.GetFileName(file))
                           .ToHashSet(StringComparer.Ordinal);
 
         var offered = new HashSet<string>(StringComparer.Ordinal);
@@ -1375,7 +1428,7 @@ public class BitFlagTests : BunitTestContext
 
         var component = RenderComponent<BitFlag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Country, BitCountries.Netherlands);
             parameters.Add(p => p.OnClick, () => clicked++);
         });
@@ -1460,7 +1513,7 @@ public class BitFlagTests : BunitTestContext
 
         var component = RenderComponent<BitFlag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Country, BitCountries.Netherlands);
             parameters.Add(p => p.OnClick, () => clicked++);
         });
@@ -1472,6 +1525,161 @@ public class BitFlagTests : BunitTestContext
         await root.KeyUpAsync(new KeyboardEventArgs { Key = " " });
 
         Assert.AreEqual(0, clicked);
+    }
+
+    [TestMethod]
+    public async Task BitFlagShouldHandTheKeyboardActivationOnAsAClickWithoutAPointer()
+    {
+        MouseEventArgs? args = null;
+
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Country, BitCountries.Netherlands);
+            parameters.Add(p => p.OnClick, (MouseEventArgs e) => args = e);
+        });
+
+        await component.Find(".bit-flg").KeyDownAsync(new KeyboardEventArgs { Key = "Enter", ShiftKey = true, CtrlKey = true });
+
+        // A click that came from a key carries no pointer - a detail of 0 is how the platform marks one - and the
+        // modifiers are the only thing the keystroke has to pass on.
+        Assert.IsNotNull(args);
+        Assert.AreEqual(0L, args.Detail);
+        Assert.IsTrue(args.ShiftKey);
+        Assert.IsTrue(args.CtrlKey);
+        Assert.IsFalse(args.AltKey);
+    }
+
+    [TestMethod]
+    public void BitFlagShouldKeepSpaceFromScrollingThePageOnlyWhileItAnswersIt()
+    {
+        // A decorative flag answers no key, so it installs no listener at all.
+        RenderComponent<BitFlag>(parameters => parameters.Add(p => p.Iso2, "nl"));
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.registerPreventKeys");
+
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        var registered = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"];
+
+        Assert.AreEqual(1, registered.Count);
+        CollectionAssert.AreEqual(new[] { " ", "Spacebar" }, (string[])registered[0].Arguments[1]!);
+
+        // A render that changes nothing about it registers nothing again.
+        component.Render(parameters => parameters.Add(p => p.Title, "Netherlands"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"].Count);
+
+        // A disabled flag activates on nothing, so Space scrolls the page the way it does anywhere else.
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"];
+
+        Assert.AreEqual(2, invocations.Count);
+        Assert.AreEqual(0, ((string[])invocations.Last().Arguments[1]!).Length);
+    }
+
+    [TestMethod]
+    public async Task BitFlagShouldFocusItsRoot()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        await component.InvokeAsync(() => component.Instance.FocusAsync().AsTask());
+
+        Context.JSInterop.VerifyFocusAsyncInvoke();
+    }
+
+    // The root splats DisabledAwareHtmlAttributes: while disabled it drops the page's handlers of the events an
+    // element is activated through and keeps the ones that only follow the pointer.
+    [TestMethod]
+    public void BitFlagShouldDropThePageActivationHandlersWhileDisabled()
+    {
+        var clicks = 0;
+        var hovers = 0;
+
+        RenderFragment FlagWithPageHandlers(bool disabled) => builder =>
+        {
+            builder.OpenComponent<BitFlag>(0);
+            builder.AddAttribute(1, nameof(BitFlag.Iso2), "nl");
+            builder.AddAttribute(2, nameof(BitFlag.Disabled), disabled);
+            builder.AddAttribute(3, "ondblclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
+            builder.AddAttribute(4, "onmouseover", EventCallback.Factory.Create<MouseEventArgs>(this, () => hovers++));
+            builder.CloseComponent();
+        };
+
+        var enabled = Context.Render(FlagWithPageHandlers(false));
+
+        // A double click rather than a click, the one handler the flag never writes itself (its click is pinned by
+        // BitFlagShouldKeepThePageHandlersOfAFlagWithNoClickOfItsOwn).
+        enabled.Find(".bit-flg").DoubleClick();
+        enabled.Find(".bit-flg").MouseOver();
+
+        Assert.AreEqual(1, clicks);
+        Assert.AreEqual(1, hovers);
+
+        var disabled = Context.Render(FlagWithPageHandlers(true));
+
+        // Nothing listens for a double click on the disabled root any more: the page's handler is gone and the flag has none.
+        try { disabled.Find(".bit-flg").DoubleClick(); }
+        catch (MissingEventHandlerException) { }
+
+        disabled.Find(".bit-flg").MouseOver();
+
+        Assert.AreEqual(1, clicks);
+        Assert.AreEqual(2, hovers);
+    }
+
+    // A flag with no OnClick listens to nothing of its own, and writing an empty handler after the splat would take the
+    // page's off the root - so a page's onclick and onkeydown on a plain flag still run, and a disabled flag still drops
+    // them (the disabled-aware splat), while a clickable one answers with its own.
+    [TestMethod]
+    public void BitFlagShouldKeepThePageHandlersOfAFlagWithNoClickOfItsOwn()
+    {
+        var pageClicks = 0;
+        var pageKeys = 0;
+        var pageBlurs = 0;
+        var ownClicks = 0;
+
+        RenderFragment Flag(bool disabled, bool clickable) => builder =>
+        {
+            builder.OpenComponent<BitFlag>(0);
+            builder.AddAttribute(1, nameof(BitFlag.Iso2), "nl");
+            builder.AddAttribute(2, nameof(BitFlag.Disabled), disabled);
+            if (clickable) builder.AddAttribute(3, nameof(BitFlag.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => ownClicks++));
+            builder.AddAttribute(4, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => pageClicks++));
+            builder.AddAttribute(5, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, () => pageKeys++));
+            builder.AddAttribute(6, "onblur", EventCallback.Factory.Create<FocusEventArgs>(this, () => pageBlurs++));
+            builder.CloseComponent();
+        };
+
+        var plain = Context.Render(Flag(disabled: false, clickable: false));
+        plain.Find(".bit-flg").Click();
+        plain.Find(".bit-flg").KeyDown(new KeyboardEventArgs { Key = "a" });
+        plain.Find(".bit-flg").Blur();
+
+        Assert.AreEqual(1, pageClicks);
+        Assert.AreEqual(1, pageKeys);
+        Assert.AreEqual(1, pageBlurs);
+
+        var disabled = Context.Render(Flag(disabled: true, clickable: false));
+        try { disabled.Find(".bit-flg").Click(); }
+        catch (MissingEventHandlerException) { }
+        try { disabled.Find(".bit-flg").KeyDown(new KeyboardEventArgs { Key = "a" }); }
+        catch (MissingEventHandlerException) { }
+
+        Assert.AreEqual(1, pageClicks);
+        Assert.AreEqual(1, pageKeys);
+
+        var clickable = Context.Render(Flag(disabled: false, clickable: true));
+        clickable.Find(".bit-flg").Click();
+
+        Assert.AreEqual(1, ownClicks);
+        Assert.AreEqual(1, pageClicks);
     }
 
     [TestMethod]
@@ -1800,14 +2008,14 @@ public class BitFlagTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow("AspectRatio"),
-        DataRow("WidthAndHeight"),
         DataRow("Src"),
-        DataRow("Emoji")]
+        DataRow("Emoji"),
+        DataRow("FitContain"),
+        DataRow("UnreadableRatio")]
     public void BitFlagShouldNotCutAFrameWhoseShapeIsNotTheFlags(string reason)
     {
-        // A ratio or both lengths are a shape the page asked for, a Src of the page's own is drawn exactly
-        // as given, and the emoji flag is no image at all.
+        // A Src of the page's own is drawn exactly as given, the emoji flag is no image at all, a Fit that
+        // is not Cover places the image the way it asks, and a ratio that cannot be read cannot be cut to.
         var component = RenderComponent<BitFlag>(parameters =>
         {
             parameters.Add(p => p.Iso2, "jp");
@@ -1815,17 +2023,118 @@ public class BitFlagTests : BunitTestContext
 
             switch (reason)
             {
-                case "AspectRatio": parameters.Add(p => p.AspectRatio, "3/2"); break;
-                case "WidthAndHeight":
-                    parameters.Add(p => p.Width, "4rem");
-                    parameters.Add(p => p.Height, "2rem");
-                    break;
                 case "Src": parameters.Add(p => p.Src, "/flags/jp.svg"); break;
-                default: parameters.Add(p => p.Emoji, true); break;
+                case "Emoji": parameters.Add(p => p.Emoji, true); break;
+                case "FitContain":
+                    parameters.Add(p => p.AspectRatio, "3/2");
+                    parameters.Add(p => p.Fit, BitImageFit.Contain);
+                    break;
+                default:
+                    parameters.Add(p => p.Width, "3rem");
+                    parameters.Add(p => p.Height, "50%");
+                    break;
             }
         });
 
         Assert.IsFalse(component.Find(".bit-flg").ClassList.Contains("bit-flg-crp"));
+    }
+
+    [TestMethod,
+        DataRow("AspectRatio:1", "--bit-flg-crp-x:2.5;--bit-flg-crp-y:2;--bit-flg-crp-w:11;--bit-flg-crp-h:11"),
+        DataRow("AspectRatio:3/2", "--bit-flg-crp-x:1;--bit-flg-crp-y:2.83;--bit-flg-crp-w:14;--bit-flg-crp-h:9.33"),
+        DataRow("AspectRatio:3/2;Fit:Cover", "--bit-flg-crp-x:1;--bit-flg-crp-y:2.83;--bit-flg-crp-w:14;--bit-flg-crp-h:9.33"),
+        DataRow("Width:4rem;Height:2rem", "--bit-flg-crp-x:1;--bit-flg-crp-y:4;--bit-flg-crp-w:14;--bit-flg-crp-h:7"),
+        DataRow("Width:48px;Height:2rem", "--bit-flg-crp-x:1;--bit-flg-crp-y:2.83;--bit-flg-crp-w:14;--bit-flg-crp-h:9.33"),
+        DataRow("Width:3em;Height:2em", "--bit-flg-crp-x:1;--bit-flg-crp-y:2.83;--bit-flg-crp-w:14;--bit-flg-crp-h:9.33"),
+        DataRow("Width:2rem;Height:2rem;Rounded", "--bit-flg-crp-x:2.5;--bit-flg-crp-y:2;--bit-flg-crp-w:11;--bit-flg-crp-h:11"),
+        // Both lengths win over a ratio, which the browser ignores once both are set.
+        DataRow("Width:4rem;Height:2rem;AspectRatio:1", "--bit-flg-crp-x:1;--bit-flg-crp-y:4;--bit-flg-crp-w:14;--bit-flg-crp-h:7")]
+    public void BitFlagShouldCoverAFrameOfItsOwnProportionsWithTheFlag(string sizing, string expected)
+    {
+        // The square image would cover such a frame with the empty space around the flag as well, so the
+        // frame is cut to the middle of the flag in its own proportions instead.
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+
+            foreach (var part in sizing.Split(';'))
+            {
+                var pair = part.Split(':');
+
+                switch (pair[0])
+                {
+                    case "Rounded": parameters.Add(p => p.Rounded, true); break;
+                    case "Height": parameters.Add(p => p.Height, pair[1]); break;
+                    case "Width": parameters.Add(p => p.Width, pair[1]); break;
+                    case "Fit": parameters.Add(p => p.Fit, Enum.Parse<BitImageFit>(pair[1])); break;
+                    default: parameters.Add(p => p.AspectRatio, pair[1]); break;
+                }
+            }
+        });
+
+        var root = component.Find(".bit-flg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
+        StringAssert.Contains(root.GetAttribute("style"), expected);
+    }
+
+    [TestMethod]
+    public void BitFlagShouldLeaveAnUnshapedSquareOfItsOwnLengthsUncut()
+    {
+        // Two equal lengths are the square the frame has without them, which shows the whole flag.
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Width, "2rem");
+            parameters.Add(p => p.Height, "2rem");
+        });
+
+        Assert.IsFalse(component.Find(".bit-flg").ClassList.Contains("bit-flg-crp"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldCutAFrameOfItsOwnProportionsToOneImageOfTheSet()
+    {
+        // The box differs from one size of the image to the next, so the browser is offered one image rather
+        // than a choice - the smallest whose cut covers the frame twice over, else the largest.
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Height, "2rem");
+            parameters.Add(p => p.AspectRatio, "1");
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+        });
+
+        var image = component.Find("img");
+
+        Assert.AreEqual($"{AssetsFlags}JP-flat-64.webp", image.GetAttribute("src"));
+        Assert.IsFalse(image.HasAttribute("srcset"));
+        StringAssert.Contains(component.Find(".bit-flg").GetAttribute("style"),
+                              "--bit-flg-crp-x:12;--bit-flg-crp-y:12;--bit-flg-crp-w:40;--bit-flg-crp-h:40;--bit-flg-crp-s:64");
+    }
+
+    [TestMethod]
+    public void BitFlagShouldFollowTheFitChangingTheCutAfterRender()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.AspectRatio, "1");
+        });
+
+        Assert.IsTrue(component.Find(".bit-flg").ClassList.Contains("bit-flg-crp"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.AspectRatio, "1");
+            parameters.Add(p => p.Fit, BitImageFit.Contain);
+        });
+
+        var root = component.Find(".bit-flg");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-flg-crp"));
+        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("--bit-flg-crp"));
     }
 
     [TestMethod]
@@ -2045,5 +2354,60 @@ public class BitFlagTests : BunitTestContext
 
         Assert.AreEqual("The Netherlands", component.Find("img").GetAttribute("alt"));
         Assert.AreEqual("The Netherlands", component.Find(".bit-flg").GetAttribute("aria-label"));
+    }
+
+    /// <summary>
+    /// A flag in a picker is a toggle, and its state has to reach a screen reader as well as the eye: the button the
+    /// flag becomes keeps an aria-pressed the page writes on it.
+    /// </summary>
+    [TestMethod,
+        DataRow("true"),
+        DataRow("false")]
+    public void BitFlagShouldKeepASplattedAriaPressedOnTheButton(string pressed)
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitFlag>(0);
+            builder.AddAttribute(1, nameof(BitFlag.Iso2), "nl");
+            builder.AddAttribute(2, nameof(BitFlag.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            builder.AddAttribute(3, "aria-pressed", pressed);
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-flg");
+
+        Assert.AreEqual("button", root.GetAttribute("role"));
+        Assert.AreEqual(pressed, root.GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldFindTheSplattedAriaHiddenAndAriaLabelledByWhateverTheyAreCased()
+    {
+        // Attribute names are case insensitive, so a differently cased aria-hidden or aria-labelledby is still the
+        // page's own: the flag neither hides a flag the page kept visible nor leaves a named one unnamed.
+        var visible = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitFlag>(0);
+            builder.AddAttribute(1, nameof(BitFlag.Emoji), true);
+            builder.AddAttribute(2, nameof(BitFlag.Country), BitCountries.Netherlands);
+            builder.AddAttribute(3, "Aria-Hidden", "false");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("false", visible.Find(".bit-flg").GetAttribute("aria-hidden"));
+
+        var named = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitFlag>(0);
+            builder.AddAttribute(1, nameof(BitFlag.Emoji), true);
+            builder.AddAttribute(2, nameof(BitFlag.Country), BitCountries.Netherlands);
+            builder.AddAttribute(3, "Aria-Labelledby", "flag-caption");
+            builder.CloseComponent();
+        });
+
+        var root = named.Find(".bit-flg");
+
+        Assert.AreEqual("img", root.GetAttribute("role"));
+        Assert.IsFalse(root.HasAttribute("aria-hidden"));
     }
 }

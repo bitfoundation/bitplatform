@@ -1,0 +1,144 @@
+﻿@page "/e2e/date-range-picker/text"
+@using System.Globalization
+@using System.Reflection
+
+@* BitDateRangePicker's text: DateFormat, ValueFormat and NoDateText, a typed range (AllowTextInput) with its messages,
+   the fa-IR (Persian calendar, right to left) and de-DE cultures and a TimeZone of its own. "Today" is June 12, 2024. *@
+
+<PageTitle>BitDateRangePicker text E2E</PageTitle>
+
+<h1>BitDateRangePicker - formats, typed ranges, cultures and time zones</h1>
+
+<E2ESection Id="x-formats" Title="DateFormat, ValueFormat and NoDateText">
+    <BitDateRangePicker Id="drp-fmt" DateFormat="dd=MM(yy)" Culture="_en" Today="_today" Value="_range" />
+    <BitDateRangePicker Id="drp-valuefmt" ValueFormat="Dep: {0}, Arr: {1}" Culture="_en" Today="_today" Value="_range" />
+    <BitDateRangePicker Id="drp-nodate" NoDateText="open ended" ValueFormat="{0} - {1}" Culture="_en" Today="_today" Value="_halfRange" />
+    <BitDateRangePicker Id="drp-timefmt" ShowTimePicker Culture="_en" Today="_today" Value="_timedRange" />
+</E2ESection>
+
+<E2ESection Id="x-input" Title="AllowTextInput">
+    <BitDateRangePicker Id="drp-text"
+                        AllowTextInput
+                        DateFormat="dd/MM/yyyy"
+                        ValueFormat="{0} - {1}"
+                        Placeholder="dd/MM/yyyy - dd/MM/yyyy"
+                        Culture="_en"
+                        Today="_today"
+                        @bind-Value="_textValue" />
+    <div>Value: <span id="text-value">@Fmt(_textValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="x-messages" Title="Custom error messages">
+    <EditForm Model="_messagesModel">
+        <DataAnnotationsValidator />
+        <BitDateRangePicker Id="drp-text-msg"
+                            AllowTextInput
+                            DateFormat="dd/MM/yyyy"
+                            ValueFormat="{0} - {1}"
+                            MaxRange="TimeSpan.FromDays(7)"
+                            DisabledDaysOfWeek="_weekend"
+                            InvalidErrorMessage="Write the range as dd/MM/yyyy - dd/MM/yyyy."
+                            DisabledDateErrorMessage="Weekends are not bookable."
+                            OutOfRangeErrorMessage="A booking cannot be longer than a week."
+                            Culture="_en"
+                            Today="_today"
+                            @bind-Value="_messagesModel.Range" />
+        <div id="msg-message"><ValidationMessage For="() => _messagesModel.Range" /></div>
+    </EditForm>
+    <div>Value: <span id="msg-value">@Fmt(_messagesModel.Range)</span></div>
+</E2ESection>
+
+<E2ESection Id="x-defaults" Title="Default error messages">
+    <EditForm Model="_defaultsModel">
+        <DataAnnotationsValidator />
+        <BitDateRangePicker Id="drp-text-default"
+                            AllowTextInput
+                            DisplayName="Stay"
+                            DateFormat="dd/MM/yyyy"
+                            ValueFormat="{0} - {1}"
+                            MinDate="Local(2024, 6, 1)"
+                            DisabledDates="_disabledDates"
+                            Culture="_en"
+                            Today="_today"
+                            @bind-Value="_defaultsModel.Range" />
+        <div id="default-message"><ValidationMessage For="() => _defaultsModel.Range" /></div>
+    </EditForm>
+</E2ESection>
+
+<E2ESection Id="x-novalidate" Title="NoValidate">
+    <EditForm Model="_noValidateModel">
+        <DataAnnotationsValidator />
+        <BitDateRangePicker Id="drp-novalidate"
+                            AllowTextInput
+                            NoValidate
+                            DateFormat="dd/MM/yyyy"
+                            ValueFormat="{0} - {1}"
+                            Culture="_en"
+                            Today="_today"
+                            @bind-Value="_noValidateModel.Range" />
+        <div id="novalidate-message"><ValidationMessage For="() => _noValidateModel.Range" /></div>
+    </EditForm>
+    <div>Value: <span id="novalidate-value">@Fmt(_noValidateModel.Range)</span></div>
+</E2ESection>
+
+<E2ESection Id="x-de" Title="de-DE">
+    <BitDateRangePicker Id="drp-de" AllowTextInput ValueFormat="{0} - {1}" Culture="_de" Today="_today" @bind-Value="_deValue" />
+    <div>Value: <span id="de-value">@Fmt(_deValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="x-fa" Title="fa-IR with the Persian calendar">
+    <BitDateRangePicker Id="drp-fa" ValueFormat="شروع: {0}, پایان: {1}" GoToTodayTitle="برو به امروز" Culture="_fa" Today="_today" @bind-Value="_faValue" />
+    <div>Value: <span id="fa-value">@Fmt(_faValue)</span></div>
+    <button id="btn-fa-set" type="button" @onclick="() => _faValue = _range">Set June 10 - 14, 2024</button>
+</E2ESection>
+
+<E2ESection Id="x-tz" Title="TimeZone">
+    <BitDateRangePicker Id="drp-tz" TimeZone="_plusNine" Culture="_en" Today="_today" @bind-Value="_tzValue" />
+    <div>Value: <span id="tz-value">@(_tzValue is null ? "null" : $"{_tzValue.StartDate?.ToString("yyyy-MM-dd HH:mm zzz", CultureInfo.InvariantCulture)} / {_tzValue.EndDate?.ToString("yyyy-MM-dd HH:mm zzz", CultureInfo.InvariantCulture)}")</span></div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+    private static readonly CultureInfo _de = CultureInfo.GetCultureInfo("de-DE");
+    private static readonly CultureInfo _fa = CreatePersianCulture();
+
+    private static readonly TimeZoneInfo _plusNine = TimeZoneInfo.CreateCustomTimeZone("E2E+09", TimeSpan.FromHours(9), "E2E+09", "E2E+09");
+
+    private static CultureInfo CreatePersianCulture()
+    {
+        var culture = CultureInfo.CreateSpecificCulture("fa-IR");
+        culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(culture, new PersianCalendar());
+        culture.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
+        return culture;
+    }
+
+    private static DateTimeOffset Local(int year, int month, int day, int hour = 0, int minute = 0)
+    {
+        var dateTime = new DateTime(year, month, day, hour, minute, 0);
+        return new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
+    }
+
+    private static string Fmt(DateTimeOffset? value) => value?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "-";
+
+    private static string Fmt(BitDateRangePickerValue? value) => value is null ? "null" : $"{Fmt(value.StartDate)} / {Fmt(value.EndDate)}";
+
+    private readonly DateTimeOffset _today = Local(2024, 6, 12, 10, 30);
+    private readonly DayOfWeek[] _weekend = [DayOfWeek.Saturday, DayOfWeek.Sunday];
+    private readonly DateTimeOffset[] _disabledDates = [Local(2024, 6, 14)];
+
+    private readonly BitDateRangePickerValue _range = new() { StartDate = Local(2024, 6, 10), EndDate = Local(2024, 6, 14, 23, 59) };
+    private readonly BitDateRangePickerValue _halfRange = new() { StartDate = Local(2024, 6, 10) };
+    private readonly BitDateRangePickerValue _timedRange = new() { StartDate = Local(2024, 6, 10, 8, 30), EndDate = Local(2024, 6, 14, 17, 45) };
+
+    private BitDateRangePickerValue? _textValue, _deValue, _faValue, _tzValue;
+    private readonly RangeModel _messagesModel = new();
+    private readonly RangeModel _defaultsModel = new();
+    private readonly RangeModel _noValidateModel = new();
+
+    public class RangeModel
+    {
+        public BitDateRangePickerValue? Range { get; set; }
+    }
+}

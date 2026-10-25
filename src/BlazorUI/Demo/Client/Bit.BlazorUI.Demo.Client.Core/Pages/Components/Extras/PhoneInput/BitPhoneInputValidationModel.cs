@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.PhoneInput;
 

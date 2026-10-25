@@ -91,11 +91,11 @@ public partial class Routes : ComponentBase, IDisposable
 
 /// <summary>
 /// This class is only a workaround for limitations we faced in razor files inside .NET project templates.
-/// You could simply delete it in your own project and use the base class directly in Routes.razor file.
+/// You could simply delete it in your own project and use the base class directly in AppRoutes.razor file.
 /// </summary>
 public class AppRouter :
     //#if (brouter == true)
-    Brouter
+    global::Bit.Brouter.Brouter
 { }
 //#else
 //#if (IsInsideProjectTemplate == true)

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitFcMiniCalendar
 {
@@ -11,6 +11,7 @@ public partial class BitFcMiniCalendar
     private Type? _lastSyncedCalendarType;
 
     private readonly string _gridId = "bit-bfc-mini-cal-" + Guid.NewGuid().ToString("N");
+    private string _titleId => $"{_gridId}-title";
 
     // Roving tabindex: the mini calendar is a single tab stop the arrow keys walk, rather than one
     // stop per rendered day sitting between the day view and whatever follows it.
@@ -19,7 +20,7 @@ public partial class BitFcMiniCalendar
     private DateTime? _focusedDate;
     private bool _pendingFocus;
 
-    private string DayButtonId(DateTime date) => $"{_gridId}-{date:yyyyMMdd}";
+    private string DayButtonId(DateTime date) => FormattableString.Invariant($"{_gridId}-{date:yyyyMMdd}");
 
     /// <summary>
     /// The day that owns the tab stop: the one the arrow keys landed on, else the selected date when
@@ -37,7 +38,7 @@ public partial class BitFcMiniCalendar
 
             var firstSelectable = _cells.FirstOrDefault(c => c.CurrentMonth && IsSelectable(c))
                                   ?? _cells.FirstOrDefault(IsSelectable);
-            return (firstSelectable ?? _cells.FirstOrDefault())?.Date.Date ?? DateTime.Today;
+            return (firstSelectable ?? _cells.FirstOrDefault())?.Date.Date ?? State.Today;
         }
     }
 
@@ -49,6 +50,30 @@ public partial class BitFcMiniCalendar
 
     private void OnDayKeyDown(DateTime date, KeyboardEventArgs args)
     {
+        // PageUp and PageDown turn the shown month (Shift: the year) and keep the day, the way every date grid pages.
+        if (args.Key is "PageUp" or "PageDown")
+        {
+            var sign = args.Key == "PageDown" ? 1 : -1;
+            DateTime paged;
+            try
+            {
+                paged = args.ShiftKey ? State.Culture.DateTimeFormat.Calendar.AddYears(date, sign) : State.Culture.DateTimeFormat.Calendar.AddMonths(date, sign);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return;
+            }
+
+            if (State.IsDateInAllowedRange(paged) is false)
+                return;
+
+            _displayMonth = StartOfDisplayMonth(paged);
+            _focusedDate = paged.Date;
+            _pendingFocus = true;
+            StateHasChanged();
+            return;
+        }
+
         // Enter and Space are the button's own activation keys, so they are left alone.
         var delta = args.Key switch
         {
@@ -108,7 +133,7 @@ public partial class BitFcMiniCalendar
     {
         _lastSyncedSelectedDate = State.SelectedDate;
         _lastSyncedCultureName = State.Culture.Name;
-        _lastSyncedCalendarType = State.Culture.Calendar.GetType();
+        _lastSyncedCalendarType = State.Culture.DateTimeFormat.Calendar.GetType();
         _displayMonth = StartOfDisplayMonth(State.SelectedDate);
     }
 
@@ -121,25 +146,25 @@ public partial class BitFcMiniCalendar
         // culture name because two cultures can share a name while using different calendars.
         if (_lastSyncedSelectedDate != State.SelectedDate
             || !string.Equals(_lastSyncedCultureName, State.Culture.Name, StringComparison.Ordinal)
-            || _lastSyncedCalendarType != State.Culture.Calendar.GetType())
+            || _lastSyncedCalendarType != State.Culture.DateTimeFormat.Calendar.GetType())
         {
             _lastSyncedSelectedDate = State.SelectedDate;
             _lastSyncedCultureName = State.Culture.Name;
-            _lastSyncedCalendarType = State.Culture.Calendar.GetType();
+            _lastSyncedCalendarType = State.Culture.DateTimeFormat.Calendar.GetType();
             _displayMonth = StartOfDisplayMonth(State.SelectedDate);
         }
     }
 
     private DateTime StartOfDisplayMonth(DateTime date)
     {
-        var cal = State.Culture.Calendar;
+        var cal = State.Culture.DateTimeFormat.Calendar;
         // Preserve the source era so era-based calendars (e.g. Japanese) rebuild the month in the
         // same era; the era-less ToDateTime overload can otherwise select the wrong era or throw.
         return cal.ToDateTime(cal.GetYear(date), cal.GetMonth(date), 1, 0, 0, 0, 0, cal.GetEra(date));
     }
 
-    private void PrevMonth() => _displayMonth = State.Culture.Calendar.AddMonths(_displayMonth, -1);
-    private void NextMonth() => _displayMonth = State.Culture.Calendar.AddMonths(_displayMonth, 1);
+    private void PrevMonth() => _displayMonth = State.Culture.DateTimeFormat.Calendar.AddMonths(_displayMonth, -1);
+    private void NextMonth() => _displayMonth = State.Culture.DateTimeFormat.Calendar.AddMonths(_displayMonth, 1);
 
     private void SelectDate(DateTime date)
     {

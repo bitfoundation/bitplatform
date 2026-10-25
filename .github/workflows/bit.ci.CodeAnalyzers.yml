@@ -2,9 +2,10 @@ name: bit platform CI - CodeAnalyzers
 
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     paths:
-    - 'src/CodeAnalyzers/**'
+    - 'src/Toolings/CodeAnalyzers/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -31,4 +32,7 @@ jobs:
         global-json-file: src/global.json
 
     - name: dotnet build
-      run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers.slnx
+      run: dotnet build src/Toolings/CodeAnalyzers/Bit.CodeAnalyzers.slnx
+
+    - name: dotnet test
+      run: cd src/Toolings/CodeAnalyzers/Tests/Bit.CodeAnalyzers.Tests && dotnet test --no-build

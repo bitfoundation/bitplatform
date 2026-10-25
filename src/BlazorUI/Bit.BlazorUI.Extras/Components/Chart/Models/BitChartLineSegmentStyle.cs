@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Per-segment line styling, mirroring Chart.js dataset <c>segment</c>. Each callback receives the

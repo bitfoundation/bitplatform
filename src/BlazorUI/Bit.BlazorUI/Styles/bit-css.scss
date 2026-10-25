@@ -1,4 +1,4 @@
-@import "functions.scss";
+﻿@import "functions.scss";
 
 //accent roles (pri, sec, ter, inf, suc, wrn, swr, err) - 10 classes per role.
 @each $role, $tokens in $bit-semantic-color-roles {
@@ -270,6 +270,7 @@ $bit-radius-scale: (
     surface: $shp-radius-surface,
     popup: $shp-radius-popup,
     dialog: $shp-radius-dialog,
+    sheet: $shp-radius-sheet,
     button: $shp-radius-button,
     chip: $shp-radius-chip,
     selection: $shp-radius-selection,

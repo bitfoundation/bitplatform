@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Per-parse limits that keep parsing of untrusted Markdown bounded and safe from

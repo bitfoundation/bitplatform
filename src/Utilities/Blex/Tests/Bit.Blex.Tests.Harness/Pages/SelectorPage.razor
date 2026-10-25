@@ -1,0 +1,17 @@
+﻿@page "/selector"
+@inherits BlexComponentBase
+@inject ProfileStore Profile
+
+<section id="page-selector">
+    <h1>Selector subscriptions</h1>
+
+    <p>Visits: <span id="visits" data-visits="@Profile.Visits">@Profile.Visits</span></p>
+    <button id="visit" @onclick="Profile.Visit">visit</button>
+    <button id="rename" @onclick="@(() => Profile.Rename(Profile.DisplayName + "!"))">rename</button>
+
+    <NameWatcher />
+</section>
+
+@code {
+    protected override void OnInitialized() => Subscribe(Profile);
+}

@@ -1,4 +1,4 @@
-using ModelContextProtocol.Protocol;
+﻿using ModelContextProtocol.Protocol;
 
 namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 

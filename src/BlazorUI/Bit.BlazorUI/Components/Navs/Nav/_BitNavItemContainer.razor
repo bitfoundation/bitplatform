@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 
 @if (RenderLink)
 {
@@ -15,9 +15,14 @@
        tabindex="@TabIndex"
        aria-label="@AriaLabel"
        aria-current="@AriaCurrent"
+       aria-describedby="@AriaDescribedBy"
        aria-expanded="@AriaExpanded"
        aria-disabled="@(Disabled ? "true" : null)">
         @ChildContent
+        @if (NewTabHint.HasValue())
+        {
+            <span class="bit-nav-vhd">@NewTabHint</span>
+        }
     </a>
 }
 else
@@ -34,6 +39,7 @@ else
             tabindex="@TabIndex"
             aria-label="@AriaLabel"
             aria-current="@AriaCurrent"
+            aria-describedby="@AriaDescribedBy"
             aria-expanded="@AriaExpanded"
             aria-disabled="@(Disabled ? "true" : null)">
         @ChildContent

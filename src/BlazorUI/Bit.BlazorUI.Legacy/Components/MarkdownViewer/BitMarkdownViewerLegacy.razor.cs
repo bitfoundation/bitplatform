@@ -65,6 +65,14 @@ public partial class BitMarkdownViewerLegacy : BitComponentBase
 
     protected override string RootElementClass => "bit-mdv";
 
+    // The native BitMarkdownViewer of Bit.BlazorUI.Extras shares the bit-mdv root class, so the reset this
+    // component's stylesheet applies is keyed to a class of its own: an app loading both bundles would
+    // otherwise have it wipe out the native viewer's styles.
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => "bit-mdv-lgc");
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await ParseAndRender();

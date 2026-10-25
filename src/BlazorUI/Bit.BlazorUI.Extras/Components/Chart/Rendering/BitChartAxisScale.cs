@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -282,6 +282,15 @@ public sealed class BitChartAxisScale
             Ticks.Add(new BitChartAxisTick(Max, FormatValue(Max, 0), PixelFor(Max)));
         }
     }
+
+    /// <summary>
+    /// A single value - a mark placed on the axis rather than one of its ticks - spelled the way a reader of the axis
+    /// knows it: a date on a time axis, the plain number in the chart's culture otherwise.
+    /// </summary>
+    internal string FormatPoint(double value)
+        => Type == BitChartScaleType.Time
+            ? BitChartTimeAxis.Format(value, Min, Max, Options.TimeUnit, Options.TimeFormat, Culture)
+            : value.ToString(Culture);
 
     public string FormatValue(double value, int decimals)
     {

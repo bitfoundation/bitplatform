@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A run of mathematics, written <c>$inline$</c> or <c>$$display$$</c>. The component does not

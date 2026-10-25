@@ -23,15 +23,6 @@ public partial class ComponentSearchBox
     private static readonly Dictionary<string, ComponentCatalogItem> _byName =
         ComponentCatalog.Items.ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>
-    /// Ties the keyboard shortcut to this instance's input. Unique per instance because the header,
-    /// the hero and the gallery can each have one on screen; the first one registered claims the
-    /// shortcut, and keeps it for as long as its element is in the DOM.
-    /// </summary>
-    private readonly string _rootId = $"cmp-search-{Guid.NewGuid():N}";
-
-    private bool _shortcutRegistered;
-
 
     [Parameter] public string? Class { get; set; }
 
@@ -45,23 +36,12 @@ public partial class ComponentSearchBox
     [Parameter] public BitSize? Size { get; set; }
 
     /// <summary>
-    /// Whether Ctrl/Cmd+K (and a bare "/") should put the caret in this box. The header's copy asks
-    /// for it on every page that has one, and the home page's hero asks for it there, where the
-    /// header hides its own copy.
+    /// Whether Ctrl/Cmd+K (and a bare "/") should put the caret in this box, which it asks the search
+    /// box itself for through its <c>FocusShortcut</c>. The header's copy asks for it on every page
+    /// that has one, and the home page's hero asks for it there, where the header renders none - so
+    /// only ever one of the two is in the DOM to claim it.
     /// </summary>
     [Parameter] public bool RegisterShortcut { get; set; }
-
-
-    protected override async Task OnAfterFirstRenderAsync()
-    {
-        await base.OnAfterFirstRenderAsync();
-
-        if (RegisterShortcut is false || _shortcutRegistered) return;
-
-        _shortcutRegistered = true;
-
-        await JSRuntime.RegisterSearchShortcut(_rootId);
-    }
 
 
     /// <summary>

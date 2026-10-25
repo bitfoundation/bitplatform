@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Header;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Header;
 
 public partial class BitHeaderDemo
 {
@@ -48,7 +48,7 @@ public partial class BitHeaderDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the BitHeader. It is applied through the Variant: as the background color in the Fill variant, and as the text and border color in the Outline and Text variants.",
+            Description = "The general color of the BitHeader. It is applied through the Variant: as the background color in the Fill variant, and as the text and border color in the Outline and Text variants. An explicit value wins over the --bit-Header-* color variables; left unset, the header keeps the primary background and foreground colors of the theme unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -75,6 +75,13 @@ public partial class BitHeaderDemo
         },
         new()
         {
+            Name = "ExtensionContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Gets or sets the content of a second row rendered under the main row of the BitHeader, such as a row of tabs, a search box or a breadcrumb. It shares the surface and the scroll behaviors of the header, takes the same inline gutter and MaxWidth as the main row, and has no block padding of its own.",
+        },
+        new()
+        {
             Name = "Fixed",
             Type = "bool",
             DefaultValue = "false",
@@ -92,7 +99,7 @@ public partial class BitHeaderDemo
             Name = "Height",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Gets or sets the height of the BitHeader (in pixels). The height includes the paddings and the border of the header, and a header that really sits at the top of the screen (Fixed, or Sticky without an Absolute outranking it) adds the top safe area inset of the device on top of it.",
+            Description = "Gets or sets the height of the BitHeader (in pixels). The height includes the paddings and the border of the header. It is the exact height of a header with no ExtensionContent, and a minimum height of one with an ExtensionContent row, so the two rows together can grow the header past it rather than being clipped. A header that really sits at the top of the screen (Fixed, or Sticky without an Absolute outranking it) adds the top safe area inset of the device on top of it.",
         },
         new()
         {
@@ -134,7 +141,7 @@ public partial class BitHeaderDemo
             Name = "Reveal",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Slides the header out of the view while the page is scrolled down and brings it back while the page is scrolled up. It only has an effect on a Fixed or Sticky header, since the others have nothing to slide over.",
+            Description = "Slides the header out of the view while the page is scrolled down and brings it back while the page is scrolled up. It comes back when anything inside it takes the focus, and stays while it holds the keyboard focus. It only has an effect on a Fixed or Sticky header, since the others have nothing to slide over.",
         },
         new()
         {
@@ -162,7 +169,7 @@ public partial class BitHeaderDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the BitHeader, which determines the paddings around its content.",
+            Description = "The size of the BitHeader, which determines the paddings around its content. An explicit value wins over the --bit-Header-padding-* variables; left unset, the header is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -272,6 +279,13 @@ public partial class BitHeaderDemo
                 },
                 new()
                 {
+                    Name = "Extension",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the second row of the BitHeader, which is only rendered when an ExtensionContent is provided."
+                },
+                new()
+                {
                     Name = "SkipLink",
                     Type = "string?",
                     DefaultValue = "null",
@@ -300,59 +314,233 @@ public partial class BitHeaderDemo
                 new() { Name = "Stretch", Description = "Stretches the content to the full height of the header (the cross axis).", Value = "7" },
             ]
         },
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitSize(description: "Determines the paddings around the content of the header."),
+        DemoSharedEnums.BitVariant(),
+    ];
+
+
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
         new()
         {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
-                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
-                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
-                new() { Name = "Info", Description = "Info general color.", Value = "3" },
-                new() { Name = "Success", Description = "Success general color.", Value = "4" },
-                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
-                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
-                new() { Name = "Error", Description = "Error general color.", Value = "7" },
-                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
-                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
-                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
-                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
-                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
-                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
-                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
-                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
-                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" },
-            ]
+            Name = "--bit-Header-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Fill of the Fill variant. The Color parameter wins over it. The Fill variant, the only one reading it, reads --bit-Header-fill-background ahead of it.",
         },
         new()
         {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Determines the paddings around the content of the header.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" },
-            ]
+            Name = "--bit-Header-fill-background",
+            DefaultValue = "--bit-Header-background",
+            Description = "Fill of a Fill header alone, read ahead of --bit-Header-background, like every variable a variant reads. The Color parameter wins over it.",
         },
         new()
         {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new() { Name = "Fill", Description = "Fill styled variant.", Value = "0" },
-                new() { Name = "Outline", Description = "Outline styled variant.", Value = "1" },
-                new() { Name = "Text", Description = "Text styled variant.", Value = "2" },
-            ]
+            Name = "--bit-Header-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the content. The Color parameter wins over it. Shared by the three variants: --bit-Header-fill-color, --bit-Header-outline-color and --bit-Header-text-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-color",
+            DefaultValue = "--bit-Header-color",
+            Description = "Color of the content of a Fill header alone, read ahead of --bit-Header-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-outline-color",
+            DefaultValue = "--bit-Header-color",
+            Description = "Color of the content of an Outline header alone, read ahead of --bit-Header-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-text-color",
+            DefaultValue = "--bit-Header-color",
+            Description = "Color of the content of a Text header alone, read ahead of --bit-Header-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-border-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Border of the Outline variant, and the divider of a Bordered header. The Color parameter wins over it. Shared by the three variants: --bit-Header-fill-border-color, --bit-Header-outline-border-color and --bit-Header-text-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-border-color",
+            DefaultValue = "--bit-Header-border-color",
+            Description = "Divider of a Bordered Fill header alone, read ahead of --bit-Header-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-outline-border-color",
+            DefaultValue = "--bit-Header-border-color",
+            Description = "Border of an Outline header alone, read ahead of --bit-Header-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-text-border-color",
+            DefaultValue = "--bit-Header-border-color",
+            Description = "Divider of a Bordered Text header alone, read ahead of --bit-Header-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Thickness of that border and divider. Shared by the three variants: --bit-Header-fill-border-width, --bit-Header-outline-border-width and --bit-Header-text-border-width are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-border-width",
+            DefaultValue = "--bit-Header-border-width",
+            Description = "Thickness of the divider of a Bordered Fill header alone, read ahead of --bit-Header-border-width so a theme can set this variant apart from the other two.",
+        },
+        new()
+        {
+            Name = "--bit-Header-outline-border-width",
+            DefaultValue = "--bit-Header-border-width",
+            Description = "Thickness of the border of an Outline header alone, read ahead of --bit-Header-border-width so a theme can set this variant apart from the other two.",
+        },
+        new()
+        {
+            Name = "--bit-Header-text-border-width",
+            DefaultValue = "--bit-Header-border-width",
+            Description = "Thickness of the divider of a Bordered Text header alone, read ahead of --bit-Header-border-width so a theme can set this variant apart from the other two.",
+        },
+        new()
+        {
+            Name = "--bit-Header-border-radius",
+            DefaultValue = "0",
+            Description = "Corners of the surface, for a floating header inset from the edges of its page or card.",
+        },
+        new()
+        {
+            Name = "--bit-Header-padding-block",
+            DefaultValue = "spacing(1)",
+            Description = "Room above and below the main row. The Size parameter wins over it, and NoGutter over both.",
+        },
+        new()
+        {
+            Name = "--bit-Header-padding-inline",
+            DefaultValue = "spacing(3)",
+            Description = "Room on the two sides of both rows. The Size parameter wins over it, and NoGutter over both.",
+        },
+        new()
+        {
+            Name = "--bit-Header-min-height",
+            DefaultValue = "0",
+            Description = "Minimum height of the main row (for example the 64px of a Material top app bar).",
+        },
+        new()
+        {
+            Name = "--bit-Header-gap",
+            DefaultValue = "0",
+            Description = "Space between the children of the main row. The Gap parameter outranks it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-max-width",
+            DefaultValue = "none",
+            Description = "Maximum width of the content of both rows. The MaxWidth parameter outranks it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-shadow",
+            DefaultValue = "--bit-shd-appbar-top",
+            Description = "Shadow of an Elevated header, or of an ElevateOnScroll one once scrolled.",
+        },
+        new()
+        {
+            Name = "--bit-Header-z-index",
+            DefaultValue = "--bit-zin-base",
+            Description = "Stacking order of a Fixed, Sticky or Absolute header.",
+        },
+        new()
+        {
+            Name = "--bit-Header-backdrop-blur",
+            DefaultValue = "12px",
+            Description = "Blur of what passes behind a Translucent header. The Fill variant, the only one reading it, reads --bit-Header-fill-backdrop-blur ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-backdrop-blur",
+            DefaultValue = "--bit-Header-backdrop-blur",
+            Description = "Blur of what passes behind a Translucent Fill header alone, read ahead of --bit-Header-backdrop-blur, like every variable a variant reads.",
+        },
+        new()
+        {
+            Name = "--bit-Header-translucent-opacity",
+            DefaultValue = "72%",
+            Description = "How much of its fill a Translucent header keeps. The Fill variant, the only one reading it, reads --bit-Header-fill-translucent-opacity ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-translucent-opacity",
+            DefaultValue = "--bit-Header-translucent-opacity",
+            Description = "Share of its fill a Translucent Fill header alone keeps, read ahead of --bit-Header-translucent-opacity, like every variable a variant reads.",
+        },
+        new()
+        {
+            Name = "--bit-Header-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Content color of a disabled header, and the border of a disabled Outline one. The Color parameter wins over it. Shared by the three variants: --bit-Header-fill-disabled-color, --bit-Header-outline-disabled-color and --bit-Header-text-disabled-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-disabled-color",
+            DefaultValue = "--bit-Header-disabled-color",
+            Description = "Content color of a disabled Fill header alone, read ahead of --bit-Header-disabled-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-outline-disabled-color",
+            DefaultValue = "--bit-Header-disabled-color",
+            Description = "Content and border color of a disabled Outline header alone, read ahead of --bit-Header-disabled-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-text-disabled-color",
+            DefaultValue = "--bit-Header-disabled-color",
+            Description = "Content color of a disabled Text header alone, read ahead of --bit-Header-disabled-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-disabled-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Fill of a disabled Fill header. The Color parameter wins over it. The Fill variant, the only one reading it, reads --bit-Header-fill-disabled-background ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-disabled-background",
+            DefaultValue = "--bit-Header-disabled-background",
+            Description = "Fill of a disabled Fill header alone, read ahead of --bit-Header-disabled-background, like every variable a variant reads. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-skip-link-color",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text color of the focused skip link.",
+        },
+        new()
+        {
+            Name = "--bit-Header-skip-link-background",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Fill of the focused skip link.",
         },
     ];
 
 
+
+    private readonly BitHeaderParams[] headerParams =
+    [
+        new()
+        {
+            Bordered = true,
+            Size = BitSize.Small,
+            Color = BitColor.Info,
+            Variant = BitVariant.Outline,
+        }
+    ];
 
     private bool isHeaderRevealed = true;
     private bool isHeaderScrolled;

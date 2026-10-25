@@ -1,0 +1,146 @@
+﻿@page "/problems"
+
+<PageTitle>Problems to diagnose · BevTools</PageTitle>
+
+<div class="bb-intro">
+    <p class="bb-overline">Start here</p>
+    <h1>Problems to diagnose</h1>
+    <p class="bb-subtitle">
+        Each problem is real, deliberately left in this app's code, and discoverable with BevTools. Follow the steps;
+        the point is to reach the cause faster than with logs and breakpoints. Open the panel with
+        <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>D</kbd> or the ⚙ BevTools badge in the bottom corner.
+    </p>
+</div>
+
+<ProblemCard Id="problem-1" Title="1. The whole dashboard re-renders twice a second" Symptom="Dashboard feels busy; Profiler shows StatsCard, UserProfile and RecentOrders rendering constantly." Href="/dashboard">
+    <li>On the dashboard, tick "clock re-renders whole dashboard". In the Components tab, tick <em>flash renders</em>: every card flashes twice a second.</li>
+    <li>BevTools → Profiler: sort by renders. <code>Dashboard</code> and every child climb together.</li>
+    <li>Select the Revenue <code>StatsCard</code>: "Why did it render?" says <em>Parent Dashboard re-rendered (parameters re-applied)</em>. Keep it selected for a few ticks: the render list marks each one <em>forced</em> because no observable parameter value changed (compare with the Visitors card, whose <code>Value</code> does change), and <em>Forced re-renders</em> counts them.</li>
+    <li>Select <code>Dashboard</code>: cause is <em>StateHasChanged outside an event</em>; the Timeline shows it right after each <code>LiveClock</code> render.</li>
+    <li>Diagnostics reports <em>Renders driven only by the parent</em> for the StatsCards, all three in one finding: every one of their renders was caused by Dashboard, never by their own state. Fix: do not call StateHasChanged on the parent from the clock tick (or override ShouldRender in the cards).</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-2" Title="2. Typing in the product search renders 120 rows per keystroke" Symptom="Input feels laggy on Server; Profiler shows ProductRow × 120 per keystroke." Href="/products">
+    <li>Type a few characters. Diagnostics: a render cascade - a keystroke's batch renders the list and every row in it, 121 components while nothing is filtered out - and the <code>ProductRow</code>s re-rendered only because <code>ProductList</code> did. Drag the max price slider: every step notifies, and <code>ProductList</code> renders in a storm.</li>
+    <li>Timeline: each <em>oninput → FilterBar (@@bind)</em> event is followed by a <code>FilterState</code> change and one batch with 121 renders.</li>
+    <li>Profiler → <em>Recent render batches</em> → select a keystroke's batch: its cost tree is <code>ProductList</code> with <code>ProductRow ×120 instances</code> under it.</li>
+    <li>Fix candidates: debounce <code>FilterState</code>, override <code>ShouldRender</code> in <code>ProductRow</code>, use <code>@@key</code> and immutable rows. Problem 21 measures one.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-3" Title="3. One HTTP request per keystroke, none cancelled" Symptom="Network panel fills with GET /api/search?q=… requests; results arrive out of order." Href="/products">
+    <li>Enable "search the API on every keystroke", type quickly.</li>
+    <li>Network: a request per keystroke, each triggered by an <em>oninput</em> event (see the Trigger column). Diagnostics: <em>burst of requests to one endpoint</em> - <em>GET …/api/search?q: 6 requests in 2 s</em>, the event that sent them, and - when they overlap - how many started before the previous one completed.</li>
+    <li>Fix: debounce and pass a <code>CancellationToken</code> that is cancelled by the next keystroke.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-4" Title="4. Slow and failing endpoints" Symptom="Orders take seconds; the flaky endpoint fails intermittently; a 404 goes unnoticed." Href="/orders">
+    <li>Use the buttons on the Orders page.</li>
+    <li>Network: durations and statuses; Errors: HTTP failures with the preceding UI event; Diagnostics: slow HTTP, repeated failures, duplicate requests (the burst of 8).</li>
+    <li>Start the 4 s load and press <em>Cancel loading</em>: Network marks the request <em>cancelled</em> - not failed - and Errors stays as it was.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-5" Title="5. Chatty and slow JS interop" Symptom="On Server every interop call is a round trip; 120 calls in a loop take a while." Href="/interop">
+    <li>Click "Chatty loop" and "Slow call". JS Interop panel: per-identifier counts, max duration, originating component.</li>
+    <li>Diagnostics: excessive interop, slow interop. Fix: batch into one JS function; move loops to JS.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-6" Title="6. Where did that exception come from?" Symptom="An error surfaces; which component and which click caused it?" Href="/errors">
+    <li>Trigger any error. Errors panel: source, component, source location (from the stack), the UI event that preceded it and the last ten timeline entries.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-7" Title="7. Sensitive data must not leak into a debugging tool" Symptom="Tokens and keys exist in state, headers and storage." Href="/dashboard">
+    <li>Components → UserProfile → Injected services → <code>Session</code>: <code>AccessToken</code> and <code>Nickname</code> are redacted, and <code>SupportNotes</code> (<code>[BevToolsIgnore]</code>) is not listed at all; State → AppState: <code>ApiKey</code> is redacted; Network → headers show a redacted Authorization; Browser → storage redacts <code>demo:auth_token</code> (written by the JS Interop page).</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-8" Title="8. A singleton captures a scoped service; two services depend on each other" Symptom="Works on the developer machine, leaks user state in production; the cycle throws only when resolved." Href="/dashboard">
+    <li>BevTools → Services: search <code>LeakyCache</code> (captive dependency) and <code>ReportService</code> (cycle). Diagnostics lists both with the evidence.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-9" Title="9. The circuit freezes and eventually dies (Server only)" Symptom="UI stops responding for a moment; later the circuit ends and Blazor's error bar appears." Href="/circuit">
+    <li>Block the circuit; Timeline shows <em>Slow inbound message</em>; Circuit panel shows max inbound processing time. Block it three times within a minute: Diagnostics reports <em>3 inbound messages blocked the circuit</em>.</li>
+    <li>Open the companion window (⧉), then kill the circuit: the panel stops with the circuit it renders over, while the companion's Network → WebSockets shows the circuit's last message (<code>JS.Error</code>) and its socket closing, and its status line says the runtime is disconnected.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-10" Title="10. What changed in the cart, and which click did it?" Symptom="State mutated somewhere; find the action and the before/after values." Href="/checkout">
+    <li>Add and remove items. State → CartState: change history with named actions, diffs and a link to the triggering UI event.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-11" Title="11. The product list is loaded twice" Symptom="GET /api/products runs on every visit to Products, and once more right after the page appears." Href="/products">
+    <li>Open Products with a full page load (reload the tab). The page is prerendered on the server, then becomes interactive; <code>CategorySummary</code> loads the products in <code>OnInitializedAsync</code>, which runs for both.</li>
+    <li>Diagnostics: <em>GET /api/products ran while prerendering and again when the page became interactive</em>. The prerendering session ended with the response; BevTools handed its summary over through persistent component state.</li>
+    <li>Runtime → Prerendering: what the server rendered, how long it took and which requests it made. Fix: <code>[PersistentState]</code> on the loaded list (.NET 10), or <code>PersistentComponentState</code>.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-12" Title="12. Which route is this, and what does this input run?" Symptom="A page shows up under a URL; which component, which template, which handler?" Href="/products">
+    <li>Routing: the current page, its <code>@@page</code> template, the route values and the query string (sensitive values redacted), the navigation history and the route table with each page's authorization and render mode. The Routing &amp; sign-in page has route values and a query to try.</li>
+    <li>Press <em>⌖ Pick</em> and click the search box: the inspector opens on <code>FilterBar</code>. <em>Event handlers &amp; callbacks</em> lists the <code>&lt;input&gt;</code>'s <code>oninput</code> and the method it runs, read from its latest render tree, with a link to its line. Select <code>ProductList</code> to see the callbacks it passes to each row.</li>
+    <li>The tree marks where a render mode starts a subtree: ⚡ on <code>Routes</code>, <em>Server</em> or <em>WASM</em> - the runtime this visit of an Auto page got. Runtime → <em>Prerendering</em> names the mode as declared, <em>InteractiveAuto</em>.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-13" Title="13. Who is signed in, and what does the app know about them?" Symptom="Authorization behaves unexpectedly; which user, which roles, which claims, since when?" Href="/routing">
+    <li><DemoSignIn /></li>
+    <li>State → Authentication: the user, roles and claims, with a change history (anonymous → authenticated) and its timeline entry. The <code>access_token</code> claim is redacted; the others are shown.</li>
+    <li>Routing → Authentication: the same at a glance, above the route table, whose <em>Authorization</em> column lists each page's <code>[Authorize]</code> requirements (no page of this demo has any).</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-14" Title="14. How much does the circuit carry? (Server only)" Symptom="Typing feels slow on a slow network; how big is each update?" Href="/products">
+    <li>On a Server circuit, type in the product search. Network → WebSockets: every <code>JS.RenderBatch</code> the circuit sent, its size, and how long the browser took to apply it; BevTools' own reports are counted apart.</li>
+    <li>The panel renders over the same circuit while it is open; batches that changed only the panel are counted as BevTools' own, and the companion window (⧉ in the panel header) avoids them altogether. Diagnostics flags render batches of 128 KB or more.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-15" Title="15. Share a profile, not a screenshot" Symptom="A colleague needs to see what the page did, in detail, without your machine." Href="/share">
+    <li>About → <em>Export performance trace</em>, then open the file in <a href="https://ui.perfetto.dev" target="_blank" rel="noopener">ui.perfetto.dev</a> or the Chrome DevTools Performance panel: render batches with every component render nested inside, UI events, requests and interop on their own tracks, arrows from each click to what it caused.</li>
+    <li>About → <em>Export session (JSON)</em>; the companion window (⧉) opens such a file offline with <em>Open file</em>. <em>Copy report (Markdown)</em> is the summary for an issue.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-16" Title="16. Hiding the price alert does not free it" Symptom="Memory grows every time the alert is shown and hidden; nothing errors, nothing looks wrong." Href="/products">
+    <li>On the products page, tick and untick <em>price alert</em> a few times: each <code>PriceAlert</code> is disposed by the renderer.</li>
+    <li>BevTools → Runtime → <em>Disposed components still alive</em> → <em>Collect garbage and check</em>: <code>PriceAlert</code> survives, held by <em>FilterState (injected) → Changed: lambda in PriceAlert.OnInitialized, which captures the component</em>. Diagnostics reports it too after the runtime's own full collections, without forcing one. The <em>Store</em> tab (the demo's extension) counts one more subscriber per alert.</li>
+    <li>Fix: keep the handler in a field, implement <code>IDisposable</code> and unsubscribe in <code>Dispose</code>. A component that only its parent's previous render tree still holds is not reported: Blazor keeps that tree for diffing until the parent renders again.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-17" Title="17. The newsletter form accepts an empty address" Symptom="Subscribe succeeds with an empty field, although the model says the address is required." Href="/checkout">
+    <li>On the checkout page, press <em>Subscribe</em> with the newsletter field empty: it subscribes "".</li>
+    <li>BevTools → Forms: the newsletter form's <em>Validated by</em> is <em>nothing</em>, next to the model's rules (<em>Email: Required, EmailAddress</em>); the shipping form above is validated by <em>DataAnnotationsValidator</em> and shows its messages through <em>ValidationSummary</em>. The Timeline records each validation: <em>Form validated: NewsletterModel is valid</em>, "nothing validates it".</li>
+    <li>Diagnostics: <em>NewsletterSignup: NewsletterModel's validation attributes are never checked</em>. Fix: add <code>&lt;DataAnnotationsValidator /&gt;</code> inside the EditForm.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-18" Title="18. The account page flickers before it shows" Symptom="Opening the account page shows the login page and back, several times." Href="/loop/account" PageName="the account page">
+    <li>Open the account page: it redirects to the login page, which redirects back, a few times. <em>Run the loop again</em> on that page repeats it.</li>
+    <li>BevTools → Diagnostics: <em>Navigation loop: Navigate to /loop/account ↔ Navigate to /loop/login</em>, every navigation programmatic (made from code, not by a click); Routing → <em>Navigation history</em> lists each hop and what it rendered.</li>
+    <li>Fix: make the two redirect conditions agree (the login page must not send someone back whom the account page sends to it).</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-19" Title="19. The orders table makes 25 requests" Symptom="Loading the orders is quick, then the details column fills in row by row while the server is busy." Href="/orders">
+    <li>On the orders page, tick <em>each row loads its own details</em> and press <em>Load orders</em>.</li>
+    <li>BevTools → Network → <em>Endpoints</em>: <code>GET /api/orders/{id}</code>, 25 requests, 25 different URLs, with their p50 and p95; select it for the requests themselves. Each one's <em>Sent from</em> is <em>OrderRow.OnInitializedAsync via ProductApi.GetOrderDetailsAsync</em>.</li>
+    <li>Diagnostics: <em>GET http://…/api/orders/{id}: one request per item (25 ids)</em>, during <em>onclick → Orders.Load (lambda)</em>. Fix: return the details with the list (or from one endpoint that takes the ids), or load a row's details when it is opened.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-20" Title="20. The same error, a new message every time" Symptom="The error list grows by one line per click, each about another order." Href="/errors">
+    <li>On the errors page, press <em>Open a missing order</em> a few times (on Server, <em>Recover</em> in between).</li>
+    <li>BevTools → Errors lists each as its own error: <em>Unhandled exception rendering component: Order 4711 was not found.</em>, <em>… Order 1302 was not found.</em>… → <em>Groups</em> shows them as one: <em>KeyNotFoundException: Unhandled exception rendering component: Order {n} was not found.</em> (the message the framework logs), with how many messages and occurrences, the components and the source location; select it for the errors themselves.</li>
+    <li>Diagnostics: <em>KeyNotFoundException: … Order {n} was not found. occurred 3 times with 3 different messages</em>. Fix: handle the missing order where it is looked up (a not-found state instead of an exception).</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-21" Title="21. Did the fix make typing cheaper?" Symptom="A change should stop the rows re-rendering; prove it, and keep it from coming back." Href="/products">
+    <li>On the products page, Profiler → <em>Reset</em>, type <em>lamp</em>, then About → <em>Export session (JSON)</em>.</li>
+    <li>Tick <em>the fix: rows skip renders that would change nothing</em> (<code>ProductRow.ShouldRender</code> compares the row's values), <em>Reset</em>, type <em>lamp</em> again.</li>
+    <li>Profiler → <em>Compare…</em> with the file: <code>ProductRow</code> <em>improved</em>, its renders before and after. In CI: <code>bevtools compare before.json after.json</code> fails the build when a component renders more often than in the baseline.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-22" Title="22. A screen-reader user cannot apply a coupon" Symptom="The coupon box looks fine, but a screen reader announces an unlabelled field and a button with no name." Href="/checkout">
+    <li>On the checkout page, put something in the cart, then BevTools → Browser → <em>Check the page</em>.</li>
+    <li>Two findings, each naming <code>Checkout</code> as the component that rendered the element, with its WCAG criterion and <em>Show</em> to outline it: a form field with no label (its placeholder is not one) and a button with no accessible name (its ✓ is hidden from screen readers). Diagnostics repeats them.</li>
+    <li>Fix: a <code>&lt;label&gt;</code> for the field, an <code>aria-label="Apply coupon"</code> (or visible text) on the button.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-23" Title="23. Something asks before every navigation" Symptom="Clicking any link opens a confirmation; which component asks, and what does it run?" Href="/routing">
+    <li>On the routing page, tick <em>ask before leaving this page</em>, then click a link: a confirmation appears.</li>
+    <li>BevTools → Routing → <em>Navigation guards</em>: a <code>NavigationLock</code> in <code>Routing</code>, which also asks before the browser leaves the site, and the callback it runs before internal navigation, <code>Routing.ConfirmLeaving</code>.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-24" Title="24. A picture that never loads, a frame that stays blank" Symptom="Nothing throws in .NET, yet part of the page is missing." Href="/errors">
+    <li>On the errors page, press <em>Load a missing image</em> and <em>Embed a frame the CSP forbids</em>.</li>
+    <li>BevTools → Errors: <em>Failed to load &lt;img&gt;</em> with its address, source <em>resource</em>; <em>Content Security Policy blocked …</em> with the directive (<code>frame-src</code>), source <em>csp</em>. The browser bridge reports both; .NET never saw them.</li>
+</ProblemCard>

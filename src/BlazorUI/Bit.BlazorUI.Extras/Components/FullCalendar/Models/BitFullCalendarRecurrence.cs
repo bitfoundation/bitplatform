@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The repeat rule of a recurring event, assigned to <see cref="BitFullCalendarEvent.Recurrence"/>.

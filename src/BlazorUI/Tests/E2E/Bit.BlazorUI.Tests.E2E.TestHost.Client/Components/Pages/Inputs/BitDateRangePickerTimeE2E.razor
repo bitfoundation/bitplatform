@@ -1,0 +1,96 @@
+﻿@page "/e2e/date-range-picker/time"
+@using System.Globalization
+
+@* The time picker of BitDateRangePicker: the start and the end time by spin buttons, held spin buttons, typed fields
+   and PageUp/PageDown, the 12-hour clock, HourStep/MinuteStep, the overlay, StartingValue, the titles, and the
+   disabled and read-only time pickers. Every picker is pinned to en-US and to a "today" of June 12, 2024, 10:30. *@
+
+<PageTitle>BitDateRangePicker time E2E</PageTitle>
+
+<h1>BitDateRangePicker - time picker</h1>
+
+<E2ESection Id="t-basic" Title="ShowTimePicker">
+    <BitDateRangePicker Id="drp-time" ContinuousSpinDelay="3000" ShowTimePicker Culture="_en" Today="_today" @bind-Value="_timeValue" />
+    <div>Value: <span id="time-value">@Fmt(_timeValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="t-12h" Title="TimeFormat TwelveHours">
+    <BitDateRangePicker Id="drp-12h" ContinuousSpinDelay="3000" ShowTimePicker TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" Today="_today" @bind-Value="_twelveValue" />
+    <div>Value: <span id="twelve-value">@Fmt(_twelveValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="t-steps" Title="HourStep and MinuteStep with a faster press-and-hold">
+    <BitDateRangePicker Id="drp-hourstep" ContinuousSpinDelay="3000" ShowTimePicker HourStep="2" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-minstep"
+                        ShowTimePicker
+                        MinuteStep="15"
+                        ContinuousSpinDelay="250"
+                        ContinuousSpinInterval="40"
+                        Culture="_en"
+                        Today="_today" />
+</E2ESection>
+
+<E2ESection Id="t-overlay" Title="ShowTimePickerAsOverlay">
+    <BitDateRangePicker Id="drp-time-overlay"
+                        ShowTimePicker
+                        ShowTimePickerAsOverlay
+                        ShowTimePickerTitle="Pick the times"
+                        HideTimePickerTitle="Back to the days"
+                        Culture="_en"
+                        Today="_today" />
+</E2ESection>
+
+<E2ESection Id="t-starting" Title="StartingValue">
+    <BitDateRangePicker Id="drp-starting" ContinuousSpinDelay="3000" ShowTimePicker StartingValue="_startingValue" Culture="_en" Today="_today" @bind-Value="_startingPicked" />
+    <div>Value: <span id="starting-value">@Fmt(_startingPicked)</span></div>
+</E2ESection>
+
+<E2ESection Id="t-titles" Title="Titles and accessible names of the time picker">
+    <BitDateRangePicker Id="drp-time-titles"
+                        ShowTimePicker
+                        Culture="_en"
+                        Today="_today"
+                        StartTimeIncreaseHourTitle="Check-in hour up"
+                        StartTimeDecreaseHourTitle="Check-in hour down"
+                        StartTimeIncreaseMinuteTitle="Check-in minute up"
+                        StartTimeDecreaseMinuteTitle="Check-in minute down"
+                        EndTimeIncreaseHourTitle="Check-out hour up"
+                        EndTimeDecreaseHourTitle="Check-out hour down"
+                        EndTimeIncreaseMinuteTitle="Check-out minute up"
+                        EndTimeDecreaseMinuteTitle="Check-out minute down"
+                        StartTimeHourInputAriaLabel="Check-in hour"
+                        StartTimeMinuteInputAriaLabel="Check-in minute"
+                        EndTimeHourInputAriaLabel="Check-out hour"
+                        EndTimeMinuteInputAriaLabel="Check-out minute" />
+</E2ESection>
+
+<E2ESection Id="t-states" Title="Disabled and ReadOnly time pickers">
+    <BitDateRangePicker Id="drp-time-dis" Standalone Disabled ShowTimePicker Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-time-ro" ContinuousSpinDelay="3000" Standalone ReadOnly ShowTimePicker Culture="_en" Today="_today" @bind-Value="_readOnlyValue" />
+    <div>Value: <span id="ro-value">@Fmt(_readOnlyValue)</span></div>
+</E2ESection>
+
+@* The pickers whose spin buttons are clicked once carry a ContinuousSpinDelay longer than any click: the delay runs on
+   the server from the pointerdown to the pointerup, which a busy machine can stretch past the default 400ms and turn
+   a click into the start of a press-and-hold spin. The press-and-hold itself is driven on a picker of its own. *@
+<E2EStatus />
+
+@code {
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+
+    private static DateTimeOffset Local(int year, int month, int day, int hour = 0, int minute = 0)
+    {
+        var dateTime = new DateTime(year, month, day, hour, minute, 0);
+        return new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
+    }
+
+    private static string Fmt(DateTimeOffset? value) => value?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "-";
+
+    private static string Fmt(BitDateRangePickerValue? value) => value is null ? "null" : $"{Fmt(value.StartDate)} / {Fmt(value.EndDate)}";
+
+    private readonly DateTimeOffset _today = Local(2024, 6, 12, 10, 30);
+    private readonly BitDateRangePickerValue _startingValue = new() { StartDate = Local(2020, 12, 1, 10, 12), EndDate = Local(2020, 12, 1, 16, 59) };
+
+    private BitDateRangePickerValue? _timeValue, _twelveValue, _startingPicked;
+    private BitDateRangePickerValue? _readOnlyValue = new() { StartDate = Local(2024, 6, 10, 8, 30), EndDate = Local(2024, 6, 14, 17, 45) };
+}

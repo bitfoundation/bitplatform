@@ -32,8 +32,8 @@ public class BitCountry(string name, string code, string iso2, string iso3, int 
     /// <remarks>
     /// The E.164 country calling code, written without its leading plus sign. It is not unique: the
     /// North American Numbering Plan gives Canada and the United States the same "1", and Kazakhstan
-    /// and Russia share "7", so a country resolved from a dialing code alone is the first of the ones
-    /// that carry it.
+    /// and Russia share "7", so a country resolved from a dialing code alone is the one of them that
+    /// owns it in practice - the one carrying the highest <see cref="Priority"/>.
     /// </remarks>
     public string Code { get; set; } = code;
 

@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <section>
-    <BitCard FullSize Border="BitColorKind.Transparent" Class="card">
+    <BitCard FullSize MinHeight="333px" Border="BitColorKind.Transparent">
         <BitStack Alignment="BitAlignment.Center" Gap="2rem">
             <BitStack Gap="0">
                 <BitText Typography="BitTypography.H6">@Localizer[nameof(AppStrings.ProductsCountPerCategoryChart)]</BitText>
@@ -16,7 +16,9 @@
             }
             else
             {
-                <BitChart Config="config" />
+                <BitChart Config="config"
+                          AriaLabel="@Localizer[nameof(AppStrings.ProductsCountPerCategoryChart)]"
+                          Description="@Localizer[nameof(AppStrings.ProductsCountPerCategoryChartText)]" />
             }
         </BitStack>
     </BitCard>

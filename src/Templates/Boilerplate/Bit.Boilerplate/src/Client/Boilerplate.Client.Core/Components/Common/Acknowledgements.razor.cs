@@ -107,7 +107,6 @@ public partial class Acknowledgements
         //#endif
         //#if (aspire == true && filesStorage == "S3")
         new("RustFS", "https://rustfs.com", "https://github.com/rustfs/rustfs", "Apache-2.0"),
-        new("AspireIntegration.Hosting.RustFs", "https://github.com/konnta0/Aspire.Extensions", "https://github.com/konnta0/Aspire.Extensions", "MIT"),
         //#endif
         //#if (aspire == true && cloudflare == true)
         new("Shirubasoft.Aspire.CloudflareTunnels", "https://github.com/Shirubasoft/aspire-extensions", "https://github.com/Shirubasoft/aspire-extensions", "MIT"),
@@ -116,6 +115,7 @@ public partial class Acknowledgements
         //#if (signalR == true)
         new("Azure SignalR Service", "https://azure.microsoft.com/products/signalr-service", "https://github.com/Azure/azure-signalr", "MIT"),
         //#endif
+        new("Vazirmatn", "https://rastikerdar.github.io/vazirmatn", "https://github.com/rastikerdar/vazirmatn", "OFL-1.1"),
         // Third-party scripts that run in the visitor's own browser, so they belong here rather than in Deployment.
         //#if (captcha == "reCaptcha")
         new("Google reCAPTCHA", "https://developers.google.com/recaptcha", null, "Proprietary"),
@@ -150,8 +150,6 @@ public partial class Acknowledgements
     /// </summary>
     private static readonly Dependency[] IdeExtensions =
     [
-        new("GitHub Copilot", "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot", null, "Proprietary"),
-        new("GitHub Copilot Chat", "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat", "https://github.com/microsoft/vscode-copilot-chat", "MIT"),
         new("C# (ms-dotnettools.csharp)", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp", "https://github.com/dotnet/vscode-csharp", "MIT"),
         new("C# Dev Kit", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit", null, "Proprietary"),
         new(".NET MAUI (VS Code)", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui", null, "Proprietary"),

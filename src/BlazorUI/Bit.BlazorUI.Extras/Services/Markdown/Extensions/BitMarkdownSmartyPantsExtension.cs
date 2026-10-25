@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Enables typographic replacement (SmartyPants): <c>"quotes"</c> and <c>'quotes'</c> curl,

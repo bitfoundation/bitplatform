@@ -1,4 +1,4 @@
-﻿[
+[
     {
         "outputFile": "Components/CodeBox.razor.css",
         "inputFile": "Components/CodeBox.razor.scss",
@@ -78,6 +78,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/CountryPicker/BitCountryPickerDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/CountryPicker/BitCountryPickerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Extras/DataGrid/BitDataGridDemo.razor.css",
         "inputFile": "Pages/Components/Extras/DataGrid/BitDataGridDemo.razor.scss",
         "minify": { "enabled": false },
@@ -128,6 +134,12 @@
     {
         "outputFile": "Pages/Components/Extras/RichTextEditor/BitRichTextEditorDemo.razor.css",
         "inputFile": "Pages/Components/Extras/RichTextEditor/BitRichTextEditorDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Extras/TimeZonePicker/BitTimeZonePickerDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/TimeZonePicker/BitTimeZonePickerDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -438,18 +450,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Utilities/CascadingValueProvider/BitCascadingValueProviderDemo.razor.css",
-        "inputFile": "Pages/Components/Utilities/CascadingValueProvider/BitCascadingValueProviderDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Components/Utilities/Params/BitParamsDemo.razor.css",
-        "inputFile": "Pages/Components/Utilities/Params/BitParamsDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/Components/Utilities/Element/BitElementDemo.razor.css",
         "inputFile": "Pages/Components/Utilities/Element/BitElementDemo.razor.scss",
         "minify": { "enabled": false },
@@ -572,6 +572,12 @@
     {
         "outputFile": "Pages/OverviewPage.razor.css",
         "inputFile": "Pages/OverviewPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TrimmingPage.razor.css",
+        "inputFile": "Pages/TrimmingPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

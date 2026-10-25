@@ -1,0 +1,27 @@
+﻿@* Items that never leave: Pull="BortablePull.None" lets them sort and takes items in, but lets none out. *@
+
+<div class="demo-columns">
+    <div class="demo-col">
+        <div class="demo-col-title">Pinned (Pull = None)</div>
+        <Bortable @bind-Items="_pinned" TItem="string" Group="ds-pull" Id="pull-none-pinned" AriaLabel="Pinned"
+                  Pull="BortablePull.None"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">Others</div>
+        <Bortable @bind-Items="_others" TItem="string" Group="ds-pull" Id="pull-none-others" AriaLabel="Others"
+                  Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+</div>
+
+<p class="demo-order"><strong>Pinned:</strong> <span id="pull-none-pinned-order">@string.Join(", ", _pinned)</span></p>
+<p class="demo-order"><strong>Others:</strong> <span id="pull-none-others-order">@string.Join(", ", _others)</span></p>
+
+@code {
+    private IList<string> _pinned = new List<string> { "Rent", "Groceries" };
+    private IList<string> _others = new List<string> { "Gym", "Books", "Concert" };
+}

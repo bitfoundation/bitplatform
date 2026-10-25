@@ -1,0 +1,265 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+@using System.Collections
+
+@* A list of short values, shown as chips. The same data an Array of strings holds, with the
+   affordance a word deserves: a repeater gives every tag its own row with add, remove, duplicate and
+   reorder buttons, which is the right shape for an invoice line and the wrong one for "urgent". *@
+@* The id sits on the group, not on the entry box: the box comes and goes with the list's capacity and
+   the form's read-only flag, and the error summary's link to this field has to survive that. *@
+<div @attributes="ExtraAttributes"
+     id="@Context.ElementId"
+     class="@(Context.HasError && Context.ShowMessages ? "bit-borm-tags bit-borm-tags--invalid" : "bit-borm-tags")"
+     @ref="Element"
+     tabindex="-1"
+     role="group"
+     aria-labelledby="@(Field.ShowLabel ? Context.LabelId : null)"
+     aria-label="@AriaLabel"
+     aria-invalid="@AriaInvalid"
+     aria-describedby="@GroupDescribedBy">
+    @{ var tags = Tags; var keys = KeysFor(tags); }
+    @for (var index = 0; index < tags.Count; index++)
+    {
+        var i = index;
+        var value = tags[i];
+        <span class="bit-borm-tag" @key="keys[i]">
+            @if (Context.InputName is { } posted)
+            {
+                @* Posted with the form, one indexed entry per tag, as model binding reads a list. *@
+                <input type="hidden" name="@($"{posted}[{i}]")" value="@value" />
+            }
+            <span class="bit-borm-tag__label">@value</span>
+            @if (!DisabledOrReadOnly)
+            {
+                @* The visible × is decorative; the accessible name says which tag it removes, because
+                   a screen-reader user hearing "remove button" five times learns nothing. *@
+                <button type="button" class="bit-borm-tag__remove"
+                        title="@RemoveLabel(value)" aria-label="@RemoveLabel(value)"
+                        @onclick="@(() => RemoveChipAsync(i, value))">×</button>
+            }
+        </span>
+    }
+
+    @if (!DisabledOrReadOnly && CanAdd)
+    {
+        @* form="…_none" points at no element, so this box has no form owner and pressing Enter in it
+           cannot trigger the form's implicit submission. Enter is how a tag input is used — every one
+           of them works this way — and without this the first tag a user types would post the form.
+           Blazor reads the value through events, never through a native submit, so belonging to no
+           form costs the control nothing. *@
+        <input class="bit-borm-tags__entry" @ref="_entry"
+               id="@(Context.ElementId)_entry"
+               form="@(Context.ElementId)_none"
+               type="text"
+               @bind:get="_draft"
+               @bind:set="OnDraftChanged"
+               @bind:event="oninput"
+               placeholder="@EntryPlaceholder"
+               maxlength="@Field.MaxLength"
+               aria-label="@EntryLabel"
+               @onkeydown="OnKeyDown"
+               @onblur="OnEntryBlur" />
+    }
+
+    @* Announces the count after every add and remove; the chips themselves are silent. *@
+    <p class="bit-borm-sr-only" aria-live="polite">@Announcement</p>
+</div>
+@if (Context.IsRequired)
+{
+    @* A group cannot carry aria-required; GroupDescribedBy points here instead. *@
+    <span id="@RequiredHintId" class="bit-borm-sr-only">@Context.Text(BormMessageKeys.RequiredHint)</span>
+}
+
+@code {
+    private string _draft = "";
+
+    /// <summary>
+    /// The tags currently held. Written back as a <c>List&lt;string&gt;</c>; the data accessor converts
+    /// each element to whatever the model's collection actually holds.
+    /// </summary>
+    private List<string> Tags
+    {
+        get
+        {
+            var list = new List<string>();
+            if (Context.Value is IEnumerable items and not string)
+            {
+                foreach (var item in items)
+                    if (item is not null) list.Add(BormValueConverter.ToInvariantString(item));
+            }
+            else if (Context.Value is string single && single.Length > 0)
+            {
+                list.Add(single);
+            }
+            return list;
+        }
+    }
+
+    /// <summary>Whether another tag may be added, given <see cref="BormFieldDefinition.MaxItems"/>.</summary>
+    private bool CanAdd => Field.MaxItems is not { } max || Tags.Count < max;
+
+    /// <summary>
+    /// Characters that end a tag as well as Enter does. Pasting "a, b, c" into a tag box and getting
+    /// one tag called "a, b, c" is the classic disappointment; <c>Attr("tagSeparators", ";")</c>
+    /// changes the set, and an empty string leaves Enter as the only way.
+    /// </summary>
+    private string Separators => Attr("tagSeparators", ",")!;
+
+    // Bound rather than value="@_draft" with an oninput handler, so the draft each render carries is not put back
+    // over keys typed since (see BormInputBase.OnTyped). What the server does change - the remainder after a
+    // separator, the empty box after Enter - differs from what the browser sent, and is written.
+    private async Task OnDraftChanged(string? value)
+    {
+        var raw = value ?? "";
+
+        // A separator commits everything before it, so typing and pasting behave the same way.
+        if (Separators.Length > 0 && raw.IndexOfAny(Separators.ToCharArray()) >= 0)
+        {
+            var parts = raw.Split(Separators.ToCharArray());
+            var rest = parts[^1];
+            if (rest == _draft)
+            {
+                // What the box was last drawn with is what it is about to be drawn with again - "" before "p, q,"
+                // was pasted into it - so Blazor, comparing the two, never wrote to the box, and the pasted text
+                // stayed there beside the tags made from it. Drawn once as it stands, it is then emptied for real.
+                _draft = raw;
+                StateHasChanged();
+                await Task.Yield();
+            }
+            _draft = rest;
+            for (var i = 0; i < parts.Length - 1; i++) await CommitAsync(parts[i]);
+            return;
+        }
+
+        _draft = raw;
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "Enter":
+                var pending = _draft;
+                // Cleared before the write, so the re-render the write triggers empties the box.
+                _draft = "";
+                await CommitAsync(pending);
+                break;
+            // Backspace on an empty box removes the last tag — how every tag input behaves, and the
+            // only way to undo a tag without reaching for the mouse.
+            case "Backspace" when _draft.Length == 0:
+                var tags = Tags;
+                if (tags.Count > 0) await RemoveAtAsync(tags.Count - 1, tags[^1]);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Commits whatever is half-typed when focus leaves. Discarding it would lose a tag the user
+    /// believes they entered — the same reason a debounced text field flushes on blur.
+    /// </summary>
+    private async Task OnEntryBlur()
+    {
+        var pending = _draft;
+        _draft = "";
+        await CommitAsync(pending);
+        await Context.BlurAsync();
+    }
+
+    private Task CommitAsync(string raw)
+    {
+        var tag = raw.Trim();
+        if (tag.Length == 0) return Task.CompletedTask;
+
+        var tags = Tags;
+        if (Field.MaxItems is { } max && tags.Count >= max) return Task.CompletedTask;
+        // Case-insensitive, because "Urgent" and "urgent" are the same label to everyone but the
+        // computer, and a list that holds both is a bug report waiting to happen.
+        if (tags.Any(t => string.Equals(t, tag, StringComparison.OrdinalIgnoreCase))) return Task.CompletedTask;
+
+        tags.Add(tag);
+        // The last one there is room for takes the entry box away, and the focus in it with it.
+        if (Field.MaxItems is { } limit && tags.Count >= limit) RequestFocusAfterRender();
+        return Context.SetValueAsync(tags);
+    }
+
+    private ElementReference _entry;
+
+    /// <summary>
+    /// Focuses the entry box, where tags are typed - what an error summary's link to the field leads to - or, with
+    /// no room left for another tag, the group.
+    /// </summary>
+    public override async ValueTask<bool> FocusAsync()
+    {
+        if (!DisabledOrReadOnly && CanAdd)
+        {
+            try
+            {
+                await _entry.FocusAsync();
+                return true;
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException or JSException)
+            {
+                // Not rendered yet: the group below.
+            }
+        }
+        return await base.FocusAsync();
+    }
+
+    /// <summary>Removes a chip by its × button, which goes with it: the focus goes to the entry box rather than the page body.</summary>
+    private async Task RemoveChipAsync(int index, string tag)
+    {
+        await RemoveAtAsync(index, tag);
+        RequestFocusAfterRender();
+    }
+
+    /// <summary>
+    /// Removes the one chip that was pressed. By position, not by value: a list loaded from storage
+    /// can hold the same tag twice, and removing every copy of it took away a chip the user never
+    /// touched. The value is checked against the position, so a list that changed between the render
+    /// and the click still loses the tag the user was looking at.
+    /// </summary>
+    private Task RemoveAtAsync(int index, string tag)
+    {
+        var tags = Tags;
+        if (index < 0 || index >= tags.Count || !string.Equals(tags[index], tag, StringComparison.Ordinal))
+            index = tags.FindIndex(t => string.Equals(t, tag, StringComparison.Ordinal));
+        if (index < 0) return Task.CompletedTask;
+
+        tags.RemoveAt(index);
+        return Context.SetValueAsync(tags);
+    }
+
+    /// <summary>
+    /// The render key of every chip. The tag itself where it is unique, so removing one moves the DOM
+    /// with the data; a repeat gets its value and occurrence instead. Typing refuses duplicates, but a
+    /// list loaded from storage can still hold one, and a repeated <c>@key</c> is not a rendering quirk —
+    /// it is an exception that takes the whole form down on the next render.
+    /// </summary>
+    private static object[] KeysFor(List<string> tags)
+    {
+        var keys = new object[tags.Count];
+        var seen = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (var i = 0; i < tags.Count; i++)
+        {
+            var tag = tags[i];
+            seen[tag] = seen.TryGetValue(tag, out var n) ? n + 1 : 0;
+            keys[i] = seen[tag] == 0 ? tag : (tag, seen[tag]);
+        }
+        return keys;
+    }
+
+    private string RemoveLabel(string tag) => Context.Text(BormMessageKeys.TagRemove, tag);
+
+    private string EntryLabel => Context.Text(BormMessageKeys.TagEntry, Context.Label);
+
+    private string? EntryPlaceholder => Context.Placeholder ?? Context.Text(BormMessageKeys.TagPlaceholder);
+
+    private string Announcement
+    {
+        get
+        {
+            var count = Tags.Count;
+            return count == 0 ? "" : Context.Text(BormMessageKeys.TagCount, count);
+        }
+    }
+}

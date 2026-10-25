@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// Give the group an accessible name through <see cref="BitComponentBase.AriaLabel"/>, since assistive technologies
 /// do not announce an unlabeled group or toolbar.
 /// </remarks>
-public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : class
+public partial class BitButtonGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     private int _optionKeySeed;
     private bool _autoFocusDone;
@@ -27,6 +27,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     private IEnumerable<TItem> _oldItems = default!;
     private IEnumerable<string>? _internalToggleKeys;
     private readonly Dictionary<TItem, ElementReference> _itemElements = [];
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
 
 
     /// <summary>
@@ -68,11 +73,15 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// Custom CSS classes for different parts of the ButtonGroup.
     /// </summary>
-    [Parameter] public BitButtonGroupClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitButtonGroupClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Defines the general colors available in the bit BlazorUI.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ButtonGroup-*</c> color variables (the toggled, disabled and focus colors
+    /// included); left unset, the group is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -178,7 +187,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// keeping the first items of the group, so the cap is an invariant rather than something only new toggles
     /// are held to.
     /// <br />
-    /// Capping a group at one item is <see cref="BitButtonGroupSelectionMode.Single"/> with an extra step - the user
+    /// Capping a group at one item is <see cref="BitSelectionMode.Single"/> with an extra step - the user
     /// has to un-toggle before choosing again - and capping it at one while <see cref="FixedToggle"/> also forbids
     /// un-toggling the last item freezes the selection for good.
     /// </remarks>
@@ -207,8 +216,13 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// The callback that called when toggled item change.
+    /// The callback that is called when the user toggles or un-toggles an item, with that item.
     /// </summary>
+    /// <remarks>
+    /// Only a change the user makes raises it, in both selection modes: the toggled items the group starts with
+    /// (<see cref="DefaultToggleKey"/>, <see cref="DefaultToggleKeys"/>, a bound key) and the keys the page writes
+    /// itself are applied without raising it, or writing the bound key back.
+    /// </remarks>
     [Parameter] public EventCallback<TItem> OnToggleChange { get; set; }
 
     /// <summary>
@@ -225,6 +239,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// Renders the ButtonGroup with fully rounded (pill shaped) corners.
     /// </summary>
+    /// <remarks>
+    /// It wins over <c>--bit-ButtonGroup-radius</c>, set on the group or on an ancestor: the variable restyles the
+    /// default corner, not a rounded one. A vertical group is not rounded as a whole, though the buttons of a
+    /// <see cref="Detached"/> one still are.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Rounded { get; set; }
 
@@ -251,7 +270,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// Determines how many items can be toggled at the same time.
     /// When not set, it falls back to Single if the Toggle parameter is enabled, otherwise None.
     /// </summary>
-    [Parameter] public BitButtonGroupSelectionMode? SelectionMode { get; set; }
+    [Parameter] public BitSelectionMode? SelectionMode { get; set; }
 
     /// <summary>
     /// Renders a check mark at the start of the toggled buttons.
@@ -261,13 +280,17 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// The size of ButtonGroup, Possible values: Small | Medium | Large
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ButtonGroup-*</c> size variables (min-height, padding, font size, icon
+    /// size, badge font size); left unset, the group is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the ButtonGroup.
     /// </summary>
-    [Parameter] public BitButtonGroupClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitButtonGroupClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Display ButtonGroup with toggle mode enabled for each button.
@@ -313,13 +336,13 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// The effective selection mode, which falls back to the legacy Toggle parameter when SelectionMode is not set.
     /// </summary>
-    internal BitButtonGroupSelectionMode _Mode => SelectionMode ?? (Toggle ? BitButtonGroupSelectionMode.Single : BitButtonGroupSelectionMode.None);
+    internal BitSelectionMode _Mode => SelectionMode ?? (Toggle ? BitSelectionMode.Single : BitSelectionMode.None);
 
     /// <summary>
     /// Whether the keyboard navigation also toggles the item it lands on, which follows the selection mode
     /// unless <see cref="SelectOnFocus"/> says otherwise.
     /// </summary>
-    internal bool _SelectOnFocus => SelectOnFocus ?? _Mode is BitButtonGroupSelectionMode.Single;
+    internal bool _SelectOnFocus => SelectOnFocus ?? _Mode is BitSelectionMode.Single;
 
 
 
@@ -342,7 +365,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         _items.Add(item);
 
-        if (_Mode is BitButtonGroupSelectionMode.Single)
+        if (_Mode is BitSelectionMode.Single)
         {
             var toggleKey = string.Empty;
 
@@ -357,10 +380,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
             if (toggleKey.HasValue() && option.Key == toggleKey)
             {
-                _ = UpdateItemToggle(item, allowUntoggle: false);
+                ApplyToggleKey(item);
             }
         }
-        else if (_Mode is BitButtonGroupSelectionMode.Multiple)
+        else if (_Mode is BitSelectionMode.Multiple)
         {
             var toggleKeys = ToggleKeysHasBeenSet ? ToggleKeys : DefaultToggleKeys;
 
@@ -383,6 +406,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal void UnregisterOption(BitButtonGroupOption option)
     {
+        // The options unregister while they are being disposed, which also happens when the group goes away with
+        // them: clearing the toggle state they held would raise ToggleKeyChanged for a choice nobody made.
+        if (IsDisposing) return;
+
         var item = (option as TItem)!;
 
         // When the removed option is the currently toggled one, clear the toggle state and the bound
@@ -468,6 +495,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             await element.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
 
@@ -486,35 +514,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             _ => "bit-btg-fil"
         });
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-btg-pri",
-            BitColor.Secondary => "bit-btg-sec",
-            BitColor.Tertiary => "bit-btg-ter",
-            BitColor.Info => "bit-btg-inf",
-            BitColor.Success => "bit-btg-suc",
-            BitColor.Warning => "bit-btg-wrn",
-            BitColor.SevereWarning => "bit-btg-swr",
-            BitColor.Error => "bit-btg-err",
-            BitColor.PrimaryBackground => "bit-btg-pbg",
-            BitColor.SecondaryBackground => "bit-btg-sbg",
-            BitColor.TertiaryBackground => "bit-btg-tbg",
-            BitColor.PrimaryForeground => "bit-btg-pfg",
-            BitColor.SecondaryForeground => "bit-btg-sfg",
-            BitColor.TertiaryForeground => "bit-btg-tfg",
-            BitColor.PrimaryBorder => "bit-btg-pbr",
-            BitColor.SecondaryBorder => "bit-btg-sbr",
-            BitColor.TertiaryBorder => "bit-btg-tbr",
-            _ => "bit-btg-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-ButtonGroup-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-btg"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-btg-sm",
-            BitSize.Medium => "bit-btg-md",
-            BitSize.Large => "bit-btg-lg",
-            _ => "bit-btg-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-btg"));
 
         ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : string.Empty);
 
@@ -563,7 +567,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         if (Items is not null && Items.Any())
         {
-            if (_Mode is BitButtonGroupSelectionMode.Single)
+            if (_Mode is BitSelectionMode.Single)
             {
                 var toggleKey = string.Empty;
 
@@ -579,11 +583,14 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
                 if (toggleKey.HasValue())
                 {
-                    var item = Items.FirstOrDefault(i => GetItemKey(i) == toggleKey);
-                    await UpdateItemToggle(item, allowUntoggle: false);
+                    var item = _items.FirstOrDefault(i => GetItemKey(i) == toggleKey);
+                    if (item is not null)
+                    {
+                        ApplyToggleKey(item);
+                    }
                 }
             }
-            else if (_Mode is BitButtonGroupSelectionMode.Multiple)
+            else if (_Mode is BitSelectionMode.Multiple)
             {
                 IEnumerable<string>? toggleKeys = null;
 
@@ -608,7 +615,6 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitButtonGroupParams))]
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);
@@ -630,7 +636,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             }
         }
 
-        if (_internalToggleKey != ToggleKey)
+        // ToggleKey is the Single selection mode's alone; the Multiple mode follows ToggleKeys below.
+        if (_Mode is BitSelectionMode.Single && _internalToggleKey != ToggleKey)
         {
             _internalToggleKey = ToggleKey;
 
@@ -638,20 +645,14 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                         ? _items.FirstOrDefault(i => GetItemKey(i) == _internalToggleKey)
                         : null;
 
-            if (item is not null)
-            {
-                await UpdateItemToggle(item, allowUntoggle: false);
-            }
-            else if (_Mode is BitButtonGroupSelectionMode.Single)
-            {
-                // The bound key now names no item at all - it was cleared, or it was pointed at something this
-                // group does not hold. Left alone, the item toggled before it would stay toggled and the group
-                // would be reporting a selection the key it is bound to says is gone.
-                ClearToggle();
-            }
+            // The page wrote the key itself, so the group follows it without raising anything, the way the
+            // Multiple mode follows ToggleKeys. A key naming no item at all - cleared, or pointed at something this
+            // group does not hold - takes the selection back: left alone, the item toggled before it would stay
+            // toggled and the group would be reporting a selection the key it is bound to says is gone.
+            ApplyToggleKey(item);
         }
 
-        if (_Mode is BitButtonGroupSelectionMode.Multiple &&
+        if (_Mode is BitSelectionMode.Multiple &&
             (_internalToggleKeys is null
                 ? ToggleKeys is not null
                 : ToggleKeys is null || _internalToggleKeys.SequenceEqual(ToggleKeys) is false))
@@ -666,7 +667,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         // dropped a tier, a limit read off something the page has just loaded. Left alone, the group would be
         // showing more toggled items than anything it does from here on would let the user reach, so it is cut
         // to the cap the same way a set of keys past it is, keeping the first items of the group.
-        if (_Mode is BitButtonGroupSelectionMode.Multiple && MaxToggles is int max && max > 0 && _toggledItems.Count > max)
+        if (_Mode is BitSelectionMode.Multiple && MaxToggles is int max && max > 0 && _toggledItems.Count > max)
         {
             ApplyToggleKeys(GetToggledKeys());
             await SyncToggleKeysBack();
@@ -686,6 +687,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     // could keep. The Items API knows its list before it renders and is corrected as its parameters are set.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The script that moves the focus between the buttons on the arrow keys is called by nothing: with the lazy scripts
+        // on (BitBlazorUIScripts), the group is what loads it.
+        if (firstRender) await _js.EnsureScriptAsync("Bit.BlazorUI", "BitButtonGroup");
+
         if ((Options ?? ChildContent) is not null)
         {
             await SyncToggleKeysBack();
@@ -787,7 +792,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         // button it lands on everywhere - a click on macOS does not.
         HandleOnItemFocus(item);
 
-        if (GetIsEnabled(item) is false) return;
+        // The group's own Disabled counts as much as the item's: DisabledInteractive keeps a disabled group's
+        // buttons out of the disabled attribute, and a link item has none to begin with, so a key press, a
+        // screen reader or a script still delivers a click here.
+        if (Disabled || GetIsDisabled(item)) return;
         if (GetIsLoading(item)) return;
         // An item the Multiple mode's cap has taken out of reach reports itself as aria-disabled, so it does
         // nothing at all while it does - a click that runs the item's action but cannot toggle it would be
@@ -863,8 +871,17 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     internal async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (Navigable is false) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (e.CtrlKey || e.AltKey || e.MetaKey) return;
+
+        // The direction the group is laid out in, a page's or a content's included, read only for the keys that
+        // act on it since one Dir does not name costs a round trip. It is read before the active item is, so
+        // that a press handled while that round trip is out (a held arrow key) has already moved the focus and
+        // this one steps on from where it landed rather than from where the focus stood before.
+        var horizontalArrow = e.Key is "ArrowRight" or "ArrowLeft";
+        if (horizontalArrow && Vertical) return;
+
+        var isRtl = horizontalArrow && await IsRtlArrowAsync(_js, e.Key);
 
         var focusables = _items.Where(IsItemFocusable).ToList();
         if (focusables.Count == 0) return;
@@ -879,7 +896,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         // that is not standing in for a radio keeps the two keys a link has always had.
         // (The page scroll is cancelled by the capture-phase guard in BitButtonGroup.ts, on those links alone.)
         if (e.Key is " " or "Spacebar" &&
-            _Mode is BitButtonGroupSelectionMode.Single &&
+            _Mode is BitSelectionMode.Single &&
             current is not null && GetHref(current).HasValue())
         {
             await HandleOnItemClick(current);
@@ -887,17 +904,14 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         }
 
         var index = current is null ? -1 : focusables.IndexOf(current);
-        var isRtl = (Dir ?? CascadingDir) == BitDir.Rtl;
 
         int next;
         switch (e.Key)
         {
             case "ArrowRight":
-                if (Vertical) return;
                 next = isRtl ? index - 1 : index + 1;
                 break;
             case "ArrowLeft":
-                if (Vertical) return;
                 next = isRtl ? index + 1 : index - 1;
                 break;
             case "ArrowDown":
@@ -932,7 +946,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             await FocusElement(element);
         }
 
-        if (_SelectOnFocus && GetIsEnabled(item) && GetIsLoading(item) is false)
+        if (_SelectOnFocus && GetIsDisabled(item) is false && GetIsLoading(item) is false)
         {
             // Selecting only: Home on the first item, End on the last one and an arrow key wrapping around a
             // group of one all land on the item that is already toggled, and un-toggling it there would leave a
@@ -965,7 +979,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// </summary>
     internal string? GetItemRole()
     {
-        return _Mode is BitButtonGroupSelectionMode.Single ? "radio" : null;
+        return _Mode is BitSelectionMode.Single ? "radio" : null;
     }
 
     /// <summary>
@@ -974,7 +988,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// </summary>
     internal string? GetItemAriaPressed(TItem item)
     {
-        if (_Mode is not BitButtonGroupSelectionMode.Multiple) return null;
+        if (_Mode is not BitSelectionMode.Multiple) return null;
 
         return IsItemToggled(item) ? "true" : "false";
     }
@@ -992,7 +1006,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// </remarks>
     internal string? GetItemAriaCurrent(TItem item)
     {
-        if (_Mode is BitButtonGroupSelectionMode.None) return null;
+        if (_Mode is BitSelectionMode.None) return null;
         if (GetItemRole() is not null) return null;
 
         return IsItemToggled(item) ? "true" : null;
@@ -1010,7 +1024,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// </remarks>
     internal bool GetIsToggleCapped(TItem item)
     {
-        if (_Mode is not BitButtonGroupSelectionMode.Multiple) return false;
+        if (_Mode is not BitSelectionMode.Multiple) return false;
         if (MaxToggles is not int max || max <= 0) return false;
         if (_toggledItems.Count < max) return false;
 
@@ -1019,7 +1033,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal string? GetItemAriaChecked(TItem item)
     {
-        if (_Mode is not BitButtonGroupSelectionMode.Single) return null;
+        if (_Mode is not BitSelectionMode.Single) return null;
 
         return IsItemToggled(item) ? "true" : "false";
     }
@@ -1029,8 +1043,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// </summary>
     internal string _RootRole => _Mode switch
     {
-        BitButtonGroupSelectionMode.Single => "radiogroup",
-        BitButtonGroupSelectionMode.Multiple => Navigable ? "toolbar" : "group",
+        BitSelectionMode.Single => "radiogroup",
+        BitSelectionMode.Multiple => Navigable ? "toolbar" : "group",
         _ => Navigable ? "toolbar" : "group"
     };
 
@@ -1075,15 +1089,16 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     }
 
     // Disabled items stay focusable in the DisabledInteractive mode, which the WAI-ARIA toolbar
-    // pattern recommends so that they remain discoverable by assistive technologies.
+    // pattern recommends so that they remain discoverable by assistive technologies. Otherwise an item
+    // of a disabled group is out of the tab order like a disabled item is, a link item included.
     private bool IsItemFocusable(TItem item)
     {
-        return DisabledInteractive || GetIsEnabled(item);
+        return DisabledInteractive || (Disabled is false && GetIsDisabled(item) is false);
     }
 
     internal string? GetItemClass(TItem item)
     {
-        List<string> classes = ["bit-btg-itm"];
+        List<string> classes = ["bit-btg-itm", GetItemVariantClass()];
 
         // The first/last buttons are marked explicitly instead of relying on :first-child/:last-child,
         // which break as soon as a button is wrapped by another element.
@@ -1130,6 +1145,17 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         return string.Join(' ', classes);
     }
+
+    // The group's variant again, on each button: the stylesheet reads a button's colors on the button, so a variable
+    // set on its Style reaches it, and a class of the button's own is what finds it there whatever element an app
+    // wraps an option in, while weighing no more than the button's own class.
+    private string GetItemVariantClass() => Variant switch
+    {
+        BitVariant.Fill => "bit-btg-ifl",
+        BitVariant.Outline => "bit-btg-iol",
+        BitVariant.Text => "bit-btg-itx",
+        _ => "bit-btg-ifl"
+    };
 
     internal string? GetItemStyle(TItem item)
     {
@@ -1187,7 +1213,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     // The text of an item, following the toggle state through OnText/OffText, before IconOnly has a say.
     private string? GetStatefulText(TItem item)
     {
-        if (_Mode is not BitButtonGroupSelectionMode.None)
+        if (_Mode is not BitSelectionMode.None)
         {
             if (IsItemToggled(item))
             {
@@ -1212,7 +1238,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal string? GetItemTitle(TItem item)
     {
-        if (_Mode is not BitButtonGroupSelectionMode.None)
+        if (_Mode is not BitSelectionMode.None)
         {
             if (IsItemToggled(item))
             {
@@ -1237,7 +1263,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal BitIconInfo? GetItemIcon(TItem item)
     {
-        if (_Mode is not BitButtonGroupSelectionMode.None)
+        if (_Mode is not BitSelectionMode.None)
         {
             if (IsItemToggled(item))
             {
@@ -1245,7 +1271,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 if (onIcon is not null) return onIcon;
 
                 var onIconName = GetOnIconName(item);
-                if (onIconName.HasValue()) return new BitIconInfo(onIconName!);
+                if (onIconName.HasValue()) return BitIconInfo.Bit(onIconName!);
             }
             else
             {
@@ -1253,7 +1279,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 if (offIcon is not null) return offIcon;
 
                 var offIconName = GetOffIconName(item);
-                if (offIconName.HasValue()) return new BitIconInfo(offIconName!);
+                if (offIconName.HasValue()) return BitIconInfo.Bit(offIconName!);
             }
         }
 
@@ -1268,13 +1294,13 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         if (item is null) return;
         if (_items is null || _items.Count == 0) return;
 
-        if (_Mode is BitButtonGroupSelectionMode.Multiple)
+        if (_Mode is BitSelectionMode.Multiple)
         {
             await UpdateItemToggleMultiple(item, allowUntoggle);
             return;
         }
 
-        if (_Mode is not BitButtonGroupSelectionMode.Single) return;
+        if (_Mode is not BitSelectionMode.Single) return;
         if (ToggleKeyHasBeenSet && ToggleKeyChanged.HasDelegate is false) return;
 
         string? toggleKey = GetItemKey(_toggleItem);
@@ -1364,20 +1390,27 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         }
     }
 
-    // Takes the Single mode's selection back without raising the change callbacks, which is what a bound
-    // ToggleKey cleared by the page needs: the page has already written the new value, so there is nothing to
-    // hand back to it, and nothing the user did for an OnToggleChange to report.
-    private void ClearToggle()
+    // Toggles the given item of the Single selection mode - or none, which takes the selection back - without
+    // raising the change callbacks, the Single twin of ApplyToggleKeys. It is what the initial toggle key and a
+    // ToggleKey written by the page need: the page has already written the value, so there is nothing to hand back
+    // to it, and nothing the user did for an OnToggleChange to report.
+    private void ApplyToggleKey(TItem? item)
     {
         var toggled = _items.Where(IsItemToggled).ToArray();
-        if (toggled.Length == 0 && _toggleItem is null) return;
+        if (toggled.Length == 0 && _toggleItem is null && item is null) return;
+        if (item is not null && _toggleItem == item && toggled.Length == 1 && toggled[0] == item) return;
 
-        foreach (var item in toggled)
+        foreach (var old in toggled)
         {
-            SetIsToggled(item, false);
+            SetIsToggled(old, false);
         }
 
-        _toggleItem = null;
+        _toggleItem = item;
+
+        if (item is not null)
+        {
+            SetIsToggled(item, true);
+        }
 
         RefreshOptions();
         StateHasChanged();
@@ -1418,7 +1451,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     private bool IsItemToggled(TItem item)
     {
-        return _Mode is BitButtonGroupSelectionMode.Multiple
+        return _Mode is BitSelectionMode.Multiple
                 ? _toggledItems.Contains(item)
                 : _toggleItem == item;
     }
@@ -1728,16 +1761,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// </summary>
     internal string? GetItemRel(TItem item)
     {
-        var rels = GetRel(item);
-        var rel = rels.HasValue ? BitLinkRelUtils.GetRels(rels.Value) : null;
-
-        if (GetTarget(item) is "_blank" &&
-            (rel is null || (rel.Contains("noopener") is false && rel.Contains("noreferrer") is false && rel.Contains("opener") is false)))
-        {
-            rel = rel.HasValue() ? $"{rel} noopener" : "noopener";
-        }
-
-        return rel.HasValue() ? rel : null;
+        return BitNewTabUtils.AddNoOpener(GetRel(item), GetTarget(item));
     }
 
     private BitLinkRels? GetRel(TItem? item)
@@ -1812,28 +1836,28 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return item.GetValueFromProperty(NameSelectors.IsLoading.Name, false);
     }
 
-    internal bool GetIsEnabled(TItem? item)
+    internal bool GetIsDisabled(TItem? item)
     {
-        if (item is null) return false;
+        if (item is null) return true;
 
         if (item is BitButtonGroupItem buttonGroupItem)
         {
-            return buttonGroupItem.IsEnabled;
+            return buttonGroupItem.IsDisabled;
         }
 
         if (item is BitButtonGroupOption buttonGroupOption)
         {
-            return buttonGroupOption.IsEnabled;
+            return buttonGroupOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     private string? GetStyle(TItem? item)

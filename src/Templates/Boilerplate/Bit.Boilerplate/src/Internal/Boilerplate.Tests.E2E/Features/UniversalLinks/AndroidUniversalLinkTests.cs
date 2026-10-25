@@ -5,8 +5,7 @@ namespace Boilerplate.Tests.E2E.Features.UniversalLinks;
 /// <summary>
 /// What the installed Android app does with a link the OS hands it: closed or already running, the url naming a
 /// culture or not. A link that names one has to outrank the culture in storage in every one of those states. Each test
-/// runs on Todo, which routes with Blazor's Router, and AdminPanel, which routes with bit Brouter. Not parallelized:
-/// one connected device.
+/// runs on Todo and AdminPanel. Not parallelized: one connected device.
 /// </summary>
 [TestClass, TestCategory(TestCategories.Android), Retry(2), DoNotParallelize]
 public class AndroidUniversalLinkTests : AppTestBase
@@ -25,8 +24,8 @@ public class AndroidUniversalLinkTests : AppTestBase
         => new Uri(new Uri(DeployedApps.AddressOf(app)), culture is null ? path : $"/{culture}{path}").ToString();
 
     [TestMethod]
-    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
+    [DataRow(App.Todo, DisplayName = "Todo")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
     public async Task ClosedApp_Should_OpenTheLinksCulture_WhenItDisagreesWithTheRememberedOne(App app)
     {
         await RememberCulture(app, rememberedCulture);
@@ -38,8 +37,8 @@ public class AndroidUniversalLinkTests : AppTestBase
     }
 
     [TestMethod]
-    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
+    [DataRow(App.Todo, DisplayName = "Todo")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
     public async Task RunningApp_Should_OpenTheLinksCulture_WhenItDisagreesWithTheRememberedOne(App app)
     {
         var page = await OpenRunningApp(app);
@@ -51,8 +50,8 @@ public class AndroidUniversalLinkTests : AppTestBase
     }
 
     [TestMethod]
-    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
+    [DataRow(App.Todo, DisplayName = "Todo")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
     public async Task ClosedApp_Should_KeepTheRememberedCulture_WhenTheLinkNamesNone(App app)
     {
         await RememberCulture(app, rememberedCulture);
@@ -64,8 +63,8 @@ public class AndroidUniversalLinkTests : AppTestBase
     }
 
     [TestMethod]
-    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
+    [DataRow(App.Todo, DisplayName = "Todo")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
     public async Task RunningApp_Should_KeepTheRememberedCulture_WhenTheLinkNamesNone(App app)
     {
         var page = await OpenRunningApp(app);

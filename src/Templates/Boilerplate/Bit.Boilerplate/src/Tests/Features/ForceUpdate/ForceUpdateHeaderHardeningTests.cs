@@ -47,7 +47,7 @@ public class ForceUpdateHeaderHardeningTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         using var response = await SendAttachmentRequest(server, appVersion, appPlatform);
 
@@ -67,8 +67,7 @@ public class ForceUpdateHeaderHardeningTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices(),
-            configureTestConfigurations: configuration => configuration["SupportedAppVersions:MinimumSupportedWebAppVersion"] = "9.9.9")
+        await server.Build(configureTestConfiguration: configuration => configuration["SupportedAppVersions:MinimumSupportedWebAppVersion"] = "9.9.9")
             .Start(TestContext.CancellationToken);
 
         using var response = await SendAttachmentRequest(server, appVersion: "1.0.0", appPlatform: nameof(AppPlatformType.Web));
@@ -82,7 +81,7 @@ public class ForceUpdateHeaderHardeningTests
 
     private async Task<HttpResponseMessage> SendAttachmentRequest(AppTestServer server, string appVersion, string? appPlatform)
     {
-        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var httpClient = server.CreateRawHttpClient();
 
         using var request = new HttpRequestMessage(HttpMethod.Get, $"api/v1/Attachment/GetAttachment/{Guid.NewGuid()}/UserProfileImageSmall");
 

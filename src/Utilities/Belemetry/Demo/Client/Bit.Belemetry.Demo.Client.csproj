@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+        <!-- The host owns the launch profile: this project is never started on its own. -->
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <!-- Publishes this project's static web assets at the app root (not under _content/), the
+             way a Blazor Web App's client project is expected to contribute them. -->
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <!-- The WebAssembly SDK turns HttpClient's own tracing off by default. On, HttpClient records a
+             System.Net.Http span inside the current activity's trace and sends traceparent - which the
+             .NET instrumentation page's checkout trace and the processors page's DemoNoiseFilter show.
+             It sends traceparent to every origin it calls, so it is safe here only because this app
+             calls nothing but its own origin. -->
+        <HttpActivityPropagationSupport>true</HttpActivityPropagationSupport>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+        <PackageReference Include="Bit.Minifier" Version="10.7.0" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Belemetry\Bit.Belemetry.csproj" />
+    </ItemGroup>
+
+    <!-- Only because the demo references Bit.Belemetry as a project: the package imports this on its own. It turns
+         System.Diagnostics.Metrics back on, which the WebAssembly SDK turns off by default - without it, the .NET
+         instrumentation page's counter, histogram and up-down counter would never reach the Live telemetry page. -->
+    <Import Project="..\..\Bit.Belemetry\buildTransitive\Bit.Belemetry.props" />
+
+</Project>

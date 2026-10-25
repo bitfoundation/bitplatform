@@ -22,24 +22,45 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private string? _labelId;
     private string? _inputId;
     private string? _clockId;
+    private string? _clockLabelId;
     private bool _pointerPicked;
     private bool _isPointerDown;
     private ElementReference _clockRef;
-    private ElementReference _calloutRef;
     private string? _abortControllerId;
     private bool _internalIsOpenChange;
+    private bool _cascadeApplied;
+    private long _typeAheadAt;
+    private string _typeAhead = string.Empty;
+    private BitCircularTimePickerView _typeAheadView;
+    private CancellationTokenSource? _autoCloseCts;
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
     private string _calloutId = string.Empty;
     private string _overlayId = string.Empty;
     private string _circularTimePickerId = string.Empty;
+    private readonly BitPublicCssVariables _standaloneCssVariables = new("--bit-CircularTimePicker-");
     private BitCircularTimePickerView _view = BitCircularTimePickerView.Hour;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
+    private Dictionary<string, object>? _calloutHtmlAttributes;
 
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the circular time picker component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple circular time picker
+    /// components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitCircularTimePickerParams.ParamName)]
+    public BitCircularTimePickerParams? CascadingParameters { get; set; }
 
 
 
@@ -105,6 +126,17 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public bool AutoClose { get; set; }
 
     /// <summary>
+    /// How long, in milliseconds, an <see cref="AutoClose"/> picker waits before it closes.
+    /// </summary>
+    /// <remarks>
+    /// The pick that completes the selection is also the one the clock is taken away on, so at zero - the
+    /// default - the hand lands and the picker is gone in the same frame, and on a touch screen the finger
+    /// that made the pick is still covering it. A short wait is what lets the selection be seen being made.
+    /// A further pick inside the wait supersedes it and starts it over.
+    /// </remarks>
+    [Parameter] public int AutoCloseDelay { get; set; }
+
+    /// <summary>
     /// If true, the input of the TimePicker automatically receives focus when the page renders.
     /// </summary>
     [Parameter] public bool AutoFocus { get; set; }
@@ -130,10 +162,15 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// </summary>
     [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = [];
 
+    // The callout attributes the BitCircularTimePickerParams of this pass cascades, which those of
+    // CalloutHtmlAttributes win over. Held apart from that dictionary, which is the app's own and never written into,
+    // and dropped on every pass so a params object that stops supplying one leaves nothing of it behind.
+    internal Dictionary<string, object>? CascadedCalloutHtmlAttributes { get; set; }
+
     /// <summary>
     /// Custom CSS classes for different parts of the TimePicker component.
     /// </summary>
-    [Parameter] public BitCircularTimePickerClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitCircularTimePickerClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The text of the button that clears the value of the TimePicker.
@@ -166,6 +203,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// The general color of the TimePicker, applied to the toolbar, the dial pointer and the selected numbers.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-CircularTimePicker-*</c> accent, text and focus color variables and
+    /// over every color variable that defaults to them (toolbar, selected number and meridiem, pointer, actions);
+    /// left unset, the picker is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -175,6 +217,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter, ResetClassBuilder]
     [CallOnSet(nameof(OnSetCulture))]
     public CultureInfo? Culture { get; set; }
+
+    /// <summary>
+    /// The custom validation error message for a time entered as text that
+    /// <see cref="AllowedHours"/>, <see cref="AllowedMinutes"/> or <see cref="AllowedSeconds"/> rejects.
+    /// </summary>
+    [Parameter] public string? DisallowedTimeErrorMessage { get; set; }
 
     /// <summary>
     /// Disables every time of day after the current time, exactly as a <see cref="MaxTime"/> of now would.
@@ -201,6 +249,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Choose the edition mode. By default, you can edit every part the picker shows.
     /// </summary>
+    /// <remarks>
+    /// A mode pinned to one part leaves every other part exactly as it was, the AM/PM pair included: it is
+    /// still shown, so the read-out can be placed in the day, but it is only offered where the hour is a
+    /// part the picker edits - pressing it moves the hour by the twelve between one half and the other.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     [CallOnSet(nameof(OnSetEditMode))]
     public BitCircularTimePickerEditMode EditMode { get; set; } = BitCircularTimePickerEditMode.Normal;
@@ -227,10 +280,15 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public string HourButtonTitle { get; set; } = "Select hour";
 
     /// <summary>
-    /// TimePicker icon location
+    /// Determines the side of the input the CircularTimePicker's icon is rendered on (default is the end side).
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here; every
+    /// other placement leaves the icon on the end side. The side follows the reading direction: Start is the
+    /// left of an LTR input and the right of an RTL one.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconLocation IconLocation { get; set; } = BitIconLocation.Right;
+    public BitPlacement IconPlacement { get; set; } = BitPlacement.End;
 
     /// <summary>
     /// The icon to display using custom CSS classes for external icon libraries.
@@ -311,6 +369,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// pointer and the keyboard. When the text input is allowed, a time typed past it fails validation the
     /// same way an unparsable one does. A value outside of a day is a time of day all the same, so it is
     /// clamped into one before anything is compared against it.
+    /// <br />
+    /// The pair is a range inside one day and does not wrap past midnight: a <see cref="MinTime"/> later than
+    /// the <see cref="MaxTime"/> leaves nothing selectable. A window that does wrap - a night shift, a quiet
+    /// period - is expressed with <see cref="AllowedHours"/> instead.
     /// </remarks>
     [Parameter] public TimeSpan? MaxTime { get; set; }
 
@@ -461,6 +523,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// The size of the TimePicker.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-CircularTimePicker-*</c> size variables (label, field, read-out,
+    /// meridiem and number text sizes, field height, clock, number and thumb sizes); left unset, the picker is
+    /// medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -487,7 +554,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Custom CSS styles for different parts of the TimePicker component.
     /// </summary>
-    [Parameter] public BitCircularTimePickerClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitCircularTimePickerClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Whether the TimePicker is rendered standalone or with the input component and callout.
@@ -529,13 +596,18 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
+
+        // Any close settles the question an AutoClose wait was still holding open - see CloseCallout.
+        CancelAutoClose();
+
         if (IsOpen is false) return;
 
         if (await AssignIsOpenInternal(false) is false) return;
 
-        // The focus is on its way to whatever callout is being opened in this one's place, so this is the one
-        // close that must not pull it back onto the field.
+        // The callout has already been dismissed on the JS side - another callout opening in its place, the page
+        // moving under it, the focus moving on from both the field and it - so the focus is on its way somewhere
+        // else, and this is the one close that must not pull it back onto the field.
         await OnClose.InvokeAsync();
 
         StateHasChanged();
@@ -554,19 +626,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     public async Task _OnClose()
     {
         await CloseCallout();
-        await InvokeAsync(StateHasChanged);
-    }
-
-    /// <summary>
-    /// Called from JavaScript when the focus leaves the callout for something outside of it.
-    /// </summary>
-    [JSInvokable(nameof(_HandleCalloutFocusOut))]
-    public async Task _HandleCalloutFocusOut()
-    {
-        // The focus is already on whatever it was moved to, so this is the one close that must not pull it
-        // back onto the field: doing so would make it impossible to tab past an open picker at all.
-        await CloseCallout(restoreFocus: false);
-
         await InvokeAsync(StateHasChanged);
     }
 
@@ -632,7 +691,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// </summary>
     public async Task OpenCallout()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (Standalone) return;
 
         // Assigning the same state over again counts as a change, so an open that is already open would
@@ -640,6 +699,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         // on to by starting the picker over. Every path into here has to be able to fire without checking
         // first: a second ArrowDown on an editable field, a click that lands on the picker again.
         if (IsOpen) return;
+
+        // An open settles the question an AutoClose wait was still holding open the same way a close does -
+        // a picker closed through the IsOpen parameter and opened again inside the wait would otherwise be
+        // shut by the timer of the selection before it.
+        CancelAutoClose();
 
         if (await AssignIsOpenInternal(true) is false) return;
 
@@ -691,11 +755,13 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from
+        // a choice: the public --bit-CircularTimePicker-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => ColorClass);
 
         ClassBuilder.Register(() => SizeClass);
 
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-ctp-lic" : string.Empty);
+        ClassBuilder.Register(() => IconPlacement is BitPlacement.Start ? "bit-ctp-lic" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-ctp-und" : string.Empty);
 
@@ -705,9 +771,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         ClassBuilder.Register(() => HasFocus ? $"bit-ctp-foc {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-ctp-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required ? "bit-ctp-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && ReadOnly ? "bit-ctp-rdl" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && ReadOnly ? "bit-ctp-rdl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -723,6 +789,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         _labelId = $"{_circularTimePickerId}-label";
         _inputId = $"{_circularTimePickerId}-input";
         _clockId = $"{_circularTimePickerId}-clock";
+        _clockLabelId = $"{_circularTimePickerId}-clock-label";
         _headerId = $"{_circularTimePickerId}-header";
         _footerId = $"{_circularTimePickerId}-footer";
         _calloutId = $"{_circularTimePickerId}-callout";
@@ -730,15 +797,43 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         SetDefaultValue();
 
-        _hour = CurrentValue?.Hours;
-        _minute = CurrentValue?.Minutes;
-        _second = CurrentValue?.Seconds;
+        ReadPartsFromValue();
 
         _view = GetInitialView();
 
         OnValueChanged += HandleOnValueChanged;
 
         base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        CascadedCalloutHtmlAttributes = null;
+
+        CascadingParameters?.UpdateParameters(this);
+
+        _calloutHtmlAttributes = MergeAttributes(CalloutHtmlAttributes, CascadedCalloutHtmlAttributes);
+
+        base.OnParametersSet();
+    }
+
+    // The first pass is where the cascaded values reach the picker at all: the view was worked out in
+    // OnInitialized, which runs before OnParametersSet and so before any of them had arrived. It is worked out
+    // again here, once the edit mode, the start view and the seconds it is read from are all in place - the start
+    // view included, which has no hook of its own. Every later pass is an actual change, which the [CallOnSet]
+    // hooks TakeFromCascade runs take care of exactly as they do for the markup: the edit mode moves the dial back
+    // to where a picker begins, the seconds only move it off a ring the picker has stopped carrying, and the start
+    // view leaves the view the person is on exactly where it is.
+    internal void ApplyCascadedView(bool viewSourceChanged)
+    {
+        if (_cascadeApplied) return;
+
+        _cascadeApplied = true;
+
+        if (viewSourceChanged)
+        {
+            _view = GetInitialView();
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -755,7 +850,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             // so a picker that never becomes a sheet does not get a gesture that would close it out of nowhere.
             if (Responsive && Standalone is false)
             {
-                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
+                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPlacement.Top, ExplicitRtl, BitSwipeOrientation.Vertical, _dotnetObj);
 
                 // The setup is a round trip, so the picker can be gone by the time it comes back - at a point
                 // where DisposeAsync had nothing to tear down yet. The gesture it registered would outlive the
@@ -769,12 +864,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
             if (IsDisposed) return;
 
-            _abortControllerId = await _js.BitCircularTimePickerSetup(_dotnetObj, _clockRef, InputElement, _calloutRef,
-                                                                     Standalone is false,
+            _abortControllerId = await _js.BitCircularTimePickerSetup(_dotnetObj, _clockRef, InputElement,
                                                                      nameof(_HandlePointerDown),
                                                                      nameof(_HandlePointerMove),
-                                                                     nameof(_HandlePointerUp),
-                                                                     nameof(_HandleCalloutFocusOut));
+                                                                     nameof(_HandlePointerUp));
 
             // The setup is a round trip, so the picker can be gone by the time the controller id comes back -
             // at a point where DisposeAsync had nothing to abort yet. The listeners it registered would
@@ -785,20 +878,22 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
                 return;
             }
 
+            // The autofocus attribute is only honored by the browser for an element that is part of the
+            // initial document, which the input of an interactively rendered picker is not. A standalone
+            // picker carries the value in a hidden input nobody is meant to land on, so the dial - the part
+            // that is actually on the screen - takes the focus in its place.
+            // It is placed ahead of an initial IsOpen: a focus() brings the field into view, and a field it scrolls
+            // the page to would otherwise be moved out from under the callout just placed against it.
+            if (AutoFocus && Disabled is false)
+            {
+                await (Standalone ? _clockRef : InputElement).FocusSafelyAsync();
+            }
+
             // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no
             // callout element to toggle yet, so the open state is applied here instead.
             if (IsOpen && Standalone is false)
             {
                 await ToggleCallout();
-            }
-
-            // The autofocus attribute is only honored by the browser for an element that is part of the
-            // initial document, which the input of an interactively rendered picker is not. A standalone
-            // picker carries the value in a hidden input nobody is meant to land on, so the dial - the part
-            // that is actually on the screen - takes the focus in its place.
-            if (AutoFocus && IsEnabled)
-            {
-                await (Standalone ? _clockRef.FocusAsync() : InputElement.FocusAsync());
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -808,7 +903,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnFocusIn()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         ClassBuilder.Reset();
@@ -818,7 +913,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnFocusOut()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = false;
         ClassBuilder.Reset();
@@ -828,7 +923,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnFocus()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         ClassBuilder.Reset();
@@ -845,10 +940,14 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private async Task CloseCallout(bool restoreFocus)
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
-        // See OpenCallout: a close that has nothing to close must stay silent, since the keys that dismiss the
-        // picker - Escape, Tab - reach here whether or not it was open at the time.
+        // Any close settles the question an AutoClose wait was still holding open, so the one it had queued
+        // is dropped - a picker dismissed and opened again during the wait would otherwise be shut by it.
+        CancelAutoClose();
+
+        // See OpenCallout: a close that has nothing to close must stay silent, since Escape, the key that
+        // dismisses the picker, reaches here whether or not it was open at the time.
         if (IsOpen is false) return;
 
         if (await AssignIsOpenInternal(false) is false) return;
@@ -863,9 +962,50 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         }
     }
 
+    // The close an AutoClose picker makes once the selection is complete. The wait is what lets the pick be
+    // seen being made before the clock it was made on is taken away - see AutoCloseDelay. A pick that lands
+    // inside the wait cancels the close the one before it queued, so the picker never shuts on a selection
+    // that has already moved on, and never twice over.
+    private async Task AutoCloseCallout()
+    {
+        CancelAutoClose();
+
+        if (AutoCloseDelay <= 0)
+        {
+            await CloseCallout();
+            return;
+        }
+
+        var cts = _autoCloseCts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(AutoCloseDelay, cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (IsDisposed) return;
+
+        await CloseCallout();
+
+        // The render of the event that started the wait is long over, so the close has to ask for one of
+        // its own.
+        StateHasChanged();
+    }
+
+    private void CancelAutoClose()
+    {
+        _autoCloseCts?.Cancel();
+        _autoCloseCts?.Dispose();
+        _autoCloseCts = null;
+    }
+
     private async Task HandleOnChange(ChangeEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        if (Disabled || ReadOnly || InvalidValueBinding()) return;
         if (AllowTextInput is false) return;
 
         CurrentValueAsString = e.Value?.ToString();
@@ -876,11 +1016,21 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     // through OpenCallout is not a click on it, so it does not raise one.
     private async Task HandleOnClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OpenCallout();
 
         await OnClick.InvokeAsync();
+    }
+
+    // The label of a standalone picker is attached to nothing, since the only input it has is the hidden one
+    // carrying the value, so the click that a label would normally hand to its control is handed to the dial.
+    private async Task HandleOnLabelClick()
+    {
+        if (Standalone is false) return;
+        if (Disabled) return;
+
+        await FocusDial();
     }
 
     private void OnSetCulture()
@@ -917,6 +1067,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         // actually shows and hides the callout. Before the first render there is no element to toggle (and
         // during prerendering not even a JS runtime to call); an initial IsOpen is applied by OnAfterRenderAsync.
         if (_internalIsOpenChange || IsRendered is false || Standalone) return;
+
+        // The internal flows drop a queued AutoClose close in OpenCallout and CloseCallout; a change pushed
+        // in through the parameter goes through neither of them, so it is dropped here instead. Without it a
+        // picker closed and reopened inside the wait is shut by the timer the selection before it queued.
+        CancelAutoClose();
 
         _ = InvokeAsync(async () =>
         {
@@ -1238,6 +1393,14 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             : "--";
     }
 
+    // The name of a toolbar button: what pressing it does, and the value it is showing. A part that has not
+    // been set yet is shown as a pair of dashes, which is a placeholder rather than a value - so the name
+    // stops at the title instead of trailing off into it.
+    private static string GetPartButtonLabel(string title, int? part, string text)
+    {
+        return part.HasValue ? $"{title} {text}" : title;
+    }
+
     // The whole time as the toolbar of a single-part edit mode reads it out, where there are no buttons to
     // split it across.
     private string GetTimeString()
@@ -1255,9 +1418,14 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task ChangeView(BitCircularTimePickerView view)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (_view == view) return;
         if (IsViewEditable(view) is false) return;
+
+        // Moving the dial on to another part means the selection the wait was queued against is being
+        // carried on with, so the close it had queued is dropped rather than left to take the clock away
+        // mid-edit. CommitView never does both, so the wait a completed selection starts is not touched.
+        CancelAutoClose();
 
         _view = view;
 
@@ -1272,7 +1440,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task SetMeridiem(bool isAm)
     {
-        if (IsInteractive is false) return;
+        if (IsMeridiemEnabled is false) return;
 
         SeedFromStartingValue();
 
@@ -1338,7 +1506,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         _minute = minute;
 
-        var second = HasSeconds ? FindNearestAllowedSecond(now.Seconds) : 0;
+        // A picker without the seconds sets them to zero, unless the range starts later inside the very minute
+        // it has landed on - a minimum of 10:30:30 - where they go up to the first second it allows rather than
+        // leaving the value half a minute outside of the range the dial itself keeps to.
+        var second = HasSeconds ? FindNearestAllowedSecond(now.Seconds) : FindNearestAllowedSecond(0, 1);
 
         if (second.HasValue is false)
         {
@@ -1355,7 +1526,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         // picker is done rather than moved on to a part that has just been filled in anyway.
         if (AutoClose && Standalone is false)
         {
-            await CloseCallout();
+            await AutoCloseCallout();
         }
     }
 
@@ -1372,6 +1543,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         await ChangeView(GetInitialView());
 
         await OnClear.InvokeAsync();
+
+        // The button disables itself on the empty value it has just made, and a focused button that becomes
+        // disabled drops the focus onto the document - out of the dialog and back to the top of the tab order.
+        // The dial is where the picker starts over from, so the focus is handed to it instead.
+        await FocusDial();
     }
 
     // Where an empty picker begins: the parts of the starting value, so the first change made to it lands
@@ -1409,9 +1585,19 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
-        _hour = CurrentValue?.Hours;
-        _minute = CurrentValue?.Minutes;
-        _second = CurrentValue?.Seconds;
+        ReadPartsFromValue();
+    }
+
+    // The value is a TimeSpan, so it can run past the end of a day or before its start. The field writes the
+    // time of day it lands on, so the dial is set from that same time of day rather than from the raw parts -
+    // which would hand a negative span to the hand as a negative angle and to the toolbar as "-01".
+    private void ReadPartsFromValue()
+    {
+        var time = BitTimeSteps.ToTimeOfDay(CurrentValue);
+
+        _hour = time?.Hours;
+        _minute = time?.Minutes;
+        _second = time?.Seconds;
     }
 
     private bool IsAm()
@@ -1466,7 +1652,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private async Task ToggleCallout()
     {
         if (Standalone) return;
-        if (IsEnabled is false || IsDisposed) return;
+        if (Disabled || IsDisposed) return;
 
         await _js.BitCalloutToggleCallout(
             dotnetObj: _dotnetObj,
@@ -1478,14 +1664,23 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             isCalloutOpen: IsOpen,
             responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
             dropDirection: DropDirection,
-            isRtl: Dir is BitDir.Rtl,
+            isRtl: ExplicitRtl,
             scrollContainerId: "",
             scrollOffset: 0,
             headerId: CalloutHeaderTemplate is not null ? _headerId : "",
             footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: false,
             fixedCalloutWidth: false,
-            maxWindowWidth: 0);
+            maxWindowWidth: 0,
+            // A floating callout is a modal dialog: the tab order is held inside it, and the focus moving on from
+            // both the field and the callout - a Tab or Shift+Tab from a field that keeps the focus while it is
+            // open - dismisses it rather than leaving it open behind its overlay.
+            trapFocus: true,
+            dismissOnFocusLeave: true,
+            // The callout is anchored to the input wrapper, but the root is the element whose public variables
+            // (of Style and Styles.Root) and classes the dial has to go on inheriting once the callout is
+            // relocated to the body, so it is named apart.
+            rootId: _Id);
     }
 
     // Maps a position on the dial - an angle clockwise from 12 o'clock and a distance as a fraction of the
@@ -1550,7 +1745,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         if (AutoClose && Standalone is false)
         {
-            await CloseCallout();
+            await AutoCloseCallout();
         }
     }
 
@@ -1569,7 +1764,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnInputKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (Standalone) return;
 
         switch (e.Key)
@@ -1581,14 +1776,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             case "ArrowDown":
             case "ArrowUp":
                 await OpenCallout();
-                break;
-
-            case "Tab":
-                // An open callout is relocated to the end of the document, so it is not what the tab order
-                // runs into from the field: tabbing on would leave the popup open behind an overlay that
-                // swallows every click that could dismiss it. The focus is on its way to the next control,
-                // so it is left there rather than pulled back onto the field.
-                await CloseCallout(restoreFocus: false);
                 break;
 
             case "Enter":
@@ -1607,7 +1794,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnClockKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         switch (e.Key)
         {
@@ -1644,10 +1831,115 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
                 if (IsInteractive && CurrentPart.HasValue) await CommitView();
                 break;
 
-            case "Escape":
-                await CloseCallout();
+            default:
+                if (e.CtrlKey || e.AltKey || e.MetaKey || e.Key.Length != 1) break;
+
+                if (char.IsAsciiDigit(e.Key[0]))
+                {
+                    await TypeAhead(e.Key[0]);
+                }
+                else if (TryReadMeridiemKey(e.Key, out var isAm))
+                {
+                    await SetMeridiem(isAm);
+                }
                 break;
         }
+    }
+
+    // The type-ahead of the listbox: the digits typed within a second of each other are read as one number,
+    // so "4" "5" lands on 45 in a single move instead of nine presses of PageUp. A digit that would take the
+    // number past what the view holds - the "3" after a "1" on the 12-hour dial - starts a number of its own,
+    // which is what lets a person who typed the wrong first digit simply type the right one.
+    private async Task TypeAhead(char digit)
+    {
+        if (IsInteractive is false) return;
+
+        var now = Environment.TickCount64;
+
+        // A number belongs to the ring it was typed on, so the digits typed before the dial moved on - the "4"
+        // an Enter then settled as the hour - never join the first one typed on the next ring.
+        _typeAhead = (now - _typeAheadAt > TypeAheadTimeout || _typeAhead.Length >= 2 || _typeAheadView != _view)
+            ? digit.ToString()
+            : _typeAhead + digit;
+
+        _typeAheadAt = now;
+        _typeAheadView = _view;
+
+        // Seeded before the number is read, as for a keyboard step: the half of the day a typed hour lands in
+        // is the half the starting value is in.
+        SeedFromStartingValue();
+
+        var value = ReadTypedPart(_typeAhead);
+
+        if (value.HasValue is false && _typeAhead.Length > 1)
+        {
+            _typeAhead = digit.ToString();
+            value = ReadTypedPart(_typeAhead);
+        }
+
+        if (value.HasValue is false)
+        {
+            UndoSeed();
+            return;
+        }
+
+        await (_view switch
+        {
+            BitCircularTimePickerView.Hour => SetHour(value.Value),
+            BitCircularTimePickerView.Minute => SetMinute(value.Value),
+            _ => SetSecond(value.Value)
+        });
+    }
+
+    // A typed number as a value of the current view, or nothing when the view has no such number: the 12-hour
+    // dial reads 1-12 in the half it is showing, the 24-hour one 0-23, and the minutes and the seconds 0-59.
+    // Whether the value is one the constraints allow is left to the setter, the same as for every other path.
+    private int? ReadTypedPart(string typed)
+    {
+        var number = int.Parse(typed, CultureInfo.InvariantCulture);
+
+        if (IsHourView is false) return number <= 59 ? number : null;
+
+        if (TimeFormat == BitTimeFormat.TwentyFourHours) return number <= 23 ? number : null;
+
+        if (number is < 1 or > 12) return null;
+
+        return IsAm() ? number % 12 : (number % 12) + 12;
+    }
+
+    // "a" and "p" pick the half of the day on a 12-hour dial, the way a native time field takes them, and so
+    // does the first letter of the designator of the culture where the two designators do not share one.
+    private bool TryReadMeridiemKey(string key, out bool isAm)
+    {
+        isAm = false;
+
+        if (TimeFormat != BitTimeFormat.TwelveHours) return false;
+
+        var am = _culture.DateTimeFormat.AMDesignator;
+        var pm = _culture.DateTimeFormat.PMDesignator;
+
+        bool IsSameLetter(string a, string b) => string.Compare(a, b, _culture, CompareOptions.IgnoreCase) == 0;
+
+        var isDistinct = am.HasValue() && pm.HasValue() && IsSameLetter(am[..1], pm[..1]) is false;
+
+        if ((isDistinct && IsSameLetter(key, am[..1])) || IsSameLetter(key, "a"))
+        {
+            isAm = true;
+            return true;
+        }
+
+        return (isDistinct && IsSameLetter(key, pm[..1])) || IsSameLetter(key, "p");
+    }
+
+    // Escape dismisses the picker from anywhere inside the callout. It is handled on the callout rather than
+    // on the dial so it reaches the key wherever the focus is - the toolbar, an action button, a template -
+    // which is what a dialog has to answer with however it was entered. A standalone picker has no callout to
+    // close, and CloseCallout leaves it alone.
+    private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return;
+
+        await CloseCallout();
     }
 
     private async Task HandleOnClockWheel(WheelEventArgs e)
@@ -1656,9 +1948,16 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         // The wheel only moves the dial the user is actually on. Reacting to a merely hovered one - or to a
         // scroll that carries no modifier - would silently change the time while the page is being scrolled.
-        if (e.ShiftKey is false || _clockHasFocus is false || e.DeltaY == 0) return;
+        if (e.ShiftKey is false || _clockHasFocus is false) return;
 
-        await MoveByStep((e.DeltaY < 0) != InvertMouseWheel ? 1 : -1);
+        // Holding Shift is how a browser is asked to scroll sideways, and some of them (Gecko) answer it by
+        // reporting the turn of the wheel on the horizontal axis instead of the vertical one - so the dial
+        // reads whichever of the two carries it rather than going still on half the browsers it runs on.
+        var delta = e.DeltaY != 0 ? e.DeltaY : e.DeltaX;
+
+        if (delta == 0) return;
+
+        await MoveByStep((delta < 0) != InvertMouseWheel ? 1 : -1);
     }
 
     private async Task MoveByStep(int steps)
@@ -1754,24 +2053,23 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (Standalone || IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await InputElement.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await InputElement.FocusSafelyAsync();
     }
 
     // The dial is the part of an opened picker the keyboard acts on, so it takes the focus - unless the input
     // is editable, where the text the person came to type has to keep it.
     private async Task FocusClock()
     {
-        if (AllowTextInput || IsRendered is false || IsDisposed) return;
+        if (AllowTextInput) return;
 
-        try
-        {
-            await _clockRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await FocusDial();
+    }
+
+    private async Task FocusDial()
+    {
+        if (IsRendered is false || IsDisposed) return;
+
+        await _clockRef.FocusSafelyAsync();
     }
 
     private string? GetHourButtonStyle()
@@ -1840,19 +2138,40 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         return style.HasValue() ? style : null;
     }
 
+    // Visibility is registered on the style builder of the root, and the callout is a sibling of the root
+    // rather than a child of it - so a standalone picker, whose whole visible self is that callout, would
+    // answer Visibility with nothing at all. The two states it has are put on the callout as well.
+    // A picker with a field does not need it: the callout of a hidden field is a closed one, and the script
+    // that opens a callout writes the display of the element itself - which is the one declaration an inline
+    // style would be overwritten by.
+    //
+    // A standalone dial is never opened as a callout, so it is never relocated either, and the chain Callouts.ts
+    // carries the root's declarations through is never built for it: it stays where it is rendered, a sibling of
+    // the root. What an ancestor declares still reaches it, as it shares the root's ancestors, but what the Style of
+    // the instance and Styles.Root declare does not, so their public --bit-CircularTimePicker-* declarations are
+    // copied onto the dial by hand - ahead of its own style, which therefore still wins.
+    private string? GetCalloutStyle()
+    {
+        if (Standalone is false) return Styles?.Callout;
+
+        var visibility = Visibility switch
+        {
+            BitVisibility.Hidden => "visibility:hidden",
+            BitVisibility.Collapsed => "display:none",
+            _ => null
+        };
+
+        var style = visibility is null ? Styles?.Callout : JoinStyles(Styles?.Callout, visibility);
+
+        return _standaloneCssVariables.Prepend(Style, Styles?.Root, style);
+    }
+
     private string GetCalloutCssClasses()
     {
         List<string> classes = ["bit-ctp-cal"];
 
-        if (ColorClass.HasValue())
-        {
-            classes.Add(ColorClass);
-        }
-
-        if (SizeClass.HasValue())
-        {
-            classes.Add(SizeClass);
-        }
+        classes.AddIfHasValue(ColorClass);
+        classes.AddIfHasValue(SizeClass);
 
         if (Classes?.Callout is not null)
         {
@@ -1862,6 +2181,25 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (Landscape)
         {
             classes.Add("bit-ctp-lnd");
+        }
+
+        // The callout is a sibling of the root, so the class that opts a subtree out of the reduced-motion
+        // collapse only reaches it while it is relocated, through the copy of the root Callouts.ts moves it
+        // into, and never where it is rendered - standalone, or on its way out - while the slide the callout
+        // opens with, along with the sheet the responsive mode turns it into, are exactly the motion
+        // ForceAnimation is asked for. Rendered onto the callout itself for the same reason BitCallout,
+        // BitDropMenu and BitMenuButton do it.
+        if (ForceAnimation)
+        {
+            classes.Add("bit-fam");
+        }
+
+        // The close button is laid over the top corner of the callout, which - unless a header template has
+        // been put above it - is the toolbar. The stylesheet repaints it for the accent it sits on there and
+        // keeps the read-out from running under it.
+        if (ShowCloseButton && Standalone is false && CalloutHeaderTemplate is null)
+        {
+            classes.Add("bit-ctp-wcb");
         }
 
         if (Standalone)
@@ -1877,14 +2215,22 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             classes.Add("bit-ctp-res");
         }
 
-        if (IsEnabled is false)
+        if (Disabled)
         {
             classes.Add("bit-dis");
         }
 
-        if (IsEnabled && ReadOnly)
+        if (Disabled is false && ReadOnly)
         {
             classes.Add("bit-ctp-rdl");
+        }
+
+        // A picker with a field shows a rejected value on that field, which is the part of it the error
+        // message sits under. A standalone one has no field, so the state has to reach the only thing it
+        // puts on the page - the dial.
+        if (Standalone && ValueInvalid is true)
+        {
+            classes.Add("bit-inv");
         }
 
         return string.Join(' ', classes).Trim();
@@ -1919,6 +2265,28 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         _ => "s"
     };
 
+    // The name of the dial. A picker with a field is named by that field, so the dial only says which part of
+    // the time it is on. A standalone one has no field the user can reach - the value rides in a hidden input
+    // and the label is not attached to anything - so the dial carries the name of the picker as well, ahead of
+    // the part, which is what keeps a page of standalone pickers from reading out as three identical listboxes.
+    private string ClockAriaLabel
+    {
+        get
+        {
+            if (Standalone is false) return ViewTitle;
+
+            var name = AriaLabel.HasValue() ? AriaLabel : Label;
+
+            return name.HasValue() ? $"{name} {ViewTitle}" : ViewTitle;
+        }
+    }
+
+    // A label written as a template is markup rather than a string, so there is no text to read out of it and
+    // build a name with. The dial is pointed at the label element itself instead, alongside a hidden copy of
+    // the part it is on - the two together read exactly as the string the other standalone paths produce.
+    // An AriaLabel is still a string and still wins, and a picker with a field is named by that field.
+    private bool IsClockNamedByLabelTemplate => Standalone && LabelTemplate is not null && AriaLabel.HasValue() is false;
+
     private string ViewTitle => _view switch
     {
         BitCircularTimePickerView.Hour => HourButtonTitle,
@@ -1936,7 +2304,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     // Whether the dial currently accepts a change, which is what every pointer, keyboard and button path is
     // gated on so none of them has to repeat the three states that close the picker to the user.
-    private bool IsInteractive => IsEnabled && ReadOnly is false && InvalidValueBinding() is false;
+    private bool IsInteractive => Disabled is false && ReadOnly is false && InvalidValueBinding() is false;
+
+    // The meridiem moves the hour, by the twelve hours between one half of the day and the other, so it is
+    // only offered where the hour is a part this picker edits - a mode pinned to the minutes or the seconds
+    // shows the half the read-out is to be understood against without letting it be moved.
+    private bool IsMeridiemEnabled => IsInteractive && IsViewEditable(BitCircularTimePickerView.Hour);
 
     // Rendered onto the dial as a data attribute rather than pushed over interop, so the script that has to
     // cancel the browser's own Shift+wheel scrolling reads the current state straight off the element it is
@@ -1949,18 +2322,17 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private string ColorClass => BitCssClasses.Color(Color, "bit-ctp");
 
-    private string SizeClass => Size switch
-    {
-        BitSize.Small => "bit-ctp-sm",
-        BitSize.Large => "bit-ctp-lg",
-        _ => "bit-ctp-md"
-    };
+    private string SizeClass => BitCssClasses.Size(Size, "bit-ctp");
 
     // Where the 24-hour dial stops reading the pointer as the outer ring and starts reading it as the inner
     // one: halfway between the two radii the numbers are laid out on, as a fraction of the radius of the dial.
     // The stylesheet keeps both radii in the same proportion to the dial at every size (the midpoint works out
     // between 0.69 and 0.71 of the radius across the three of them), so the one boundary holds for all of them.
     private const double InnerRingThreshold = 0.70;
+
+    // How long, in milliseconds, a typed digit waits for the next one to join it (see TypeAhead) - the pause
+    // the APG listbox pattern suggests for its type-ahead.
+    private const int TypeAheadTimeout = 1000;
 
     private BitCircularTimePickerView GetInitialView()
     {
@@ -2174,6 +2546,18 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             return false;
         }
 
+        // A third mistake of its own: inside the range, but on a time the allowed-value predicates rule out -
+        // which is a rule the application stated rather than a boundary, so it is worth saying which of the
+        // two was broken.
+        if (IsTimeAllowed(parsedValue.TimeOfDay) is false)
+        {
+            result = default;
+            validationErrorMessage = DisallowedTimeErrorMessage.HasValue()
+                ? DisallowedTimeErrorMessage!
+                : $"The {DisplayName ?? FieldIdentifier.FieldName} field is not an allowed time.";
+            return false;
+        }
+
         result = parsedValue.TimeOfDay;
         _hour = result.Value.Hours;
         _minute = result.Value.Minutes;
@@ -2186,13 +2570,24 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (value.HasValue is false) return null;
 
-        DateTime time = DateTime.Today.Add(value.Value);
+        DateTime time = DateTime.Today.Add(BitTimeSteps.ToTimeOfDay(value)!.Value);
 
         return time.ToString(GetValueFormat(), _culture);
     }
 
-    // Only the bounds are enforced on typed text, not the steps or the predicates: a step is the granularity
-    // the dial moves in, and a typed time that is inside the range is a time the person meant.
+    // Whether a whole time is one the allowed-value predicates accept. The parts are asked about each other
+    // rather than about the ones the dial is holding, since the time being judged is not the one it is on -
+    // and the seconds are asked about even on a picker that does not show them, since a typed value can still
+    // carry them.
+    private bool IsTimeAllowed(TimeSpan time)
+    {
+        return AllowedHours?.Invoke(time.Hours) is not false
+            && AllowedMinutes?.Invoke(time.Minutes) is not false
+            && AllowedSeconds?.Invoke(time.Seconds) is not false;
+    }
+
+    // The steps are the one constraint typed text is not held to: a step is the granularity the dial moves
+    // in rather than a rule about which times exist, so a time written out in full is taken as meant.
     private bool IsWithinBounds(TimeSpan time)
     {
         var min = MinBound;
@@ -2214,6 +2609,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         await base.DisposeAsync(disposing);
 
         OnValueChanged -= HandleOnValueChanged;
+
+        // A picker taken off the page while an AutoClose wait is still running has a close queued against a
+        // callout that is on its way out with it.
+        CancelAutoClose();
 
         try
         {

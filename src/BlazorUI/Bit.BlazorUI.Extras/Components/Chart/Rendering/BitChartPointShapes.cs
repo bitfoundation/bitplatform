@@ -1,4 +1,4 @@
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>Builds SVG marker shapes for the Chart.js point styles.</summary>

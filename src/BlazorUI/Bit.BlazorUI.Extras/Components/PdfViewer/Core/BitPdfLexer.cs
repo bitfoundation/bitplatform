@@ -313,6 +313,17 @@ public sealed class BitPdfLexer
                     break;
                 }
             }
+            else if (ch == 0x0D)
+            {
+                // PDF 32000-1 §7.3.4.2: an end-of-line marker inside a literal string
+                // with no backslash before it - CR, LF or CR LF - is read as one LF.
+                // (An escaped \r, handled above, stays a CR.)
+                if (PeekChar() == 0x0A)
+                {
+                    NextChar();
+                }
+                ch = 0x0A;
+            }
 
             bytes.Add((byte)ch);
             ch = NextChar();

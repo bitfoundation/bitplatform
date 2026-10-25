@@ -1,0 +1,396 @@
+﻿@page "/e2e/header"
+
+<PageTitle>BitHeader E2E</PageTitle>
+
+@* The containers are 600px wide and the children fixed in size, so where a header puts them is a number. *@
+<style>
+    .hdr-host { width: 600px; position: relative; }
+    .hdr-chip { width: 60px; height: 20px; background: #ccc; flex-shrink: 0; font-size: 12px; }
+    .hdr-tall { width: 60px; height: 50px; background: #aaa; flex-shrink: 0; }
+    .hdr-scroll { width: 600px; height: 200px; overflow: auto; position: relative; border: 1px solid #999; }
+    .hdr-row { height: 60px; border-bottom: 1px solid #eee; }
+    .hdr-abs-host { width: 600px; height: 120px; position: relative; background: #f4f4f4; }
+    .hdr-custom { background-color: rgb(1, 2, 3) !important; }
+    .hdr-root-class { outline: 3px solid rgb(4, 5, 6); }
+    .hdr-container-class { letter-spacing: 3px; }
+    .hdr-extension-class { letter-spacing: 4px; }
+    .hdr-skip-class { letter-spacing: 5px; }
+</style>
+
+@* The one header outside every section: a header not scoped to sectioning content is the page's banner landmark. *@
+<BitHeader Id="banner" Height="40">Banner of the page</BitHeader>
+
+<E2ESection Id="basic" Title="Basic, Height and Disabled">
+    <div class="hdr-host"><BitHeader Id="basic-header"><div class="hdr-chip" id="basic-child">I'm a Header</div></BitHeader></div>
+    <div class="hdr-host"><BitHeader Id="height-header" Height="@_height">fixed height</BitHeader></div>
+    <button id="btn-height" @onclick="() => _height = 100">Height 100</button>
+    <div class="hdr-host"><BitHeader Id="disabled-header" Disabled="_disabled" HtmlAttributes="@_disabledHeaderAttributes"><button id="disabled-inner" @onclick="() => _innerClicks++">inner</button></BitHeader></div>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="root-clicks">@_rootClicks</span>
+    <span id="inner-clicks">@_innerClicks</span>
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant">
+    <div class="hdr-host"><BitHeader Id="variant-fill" Variant="BitVariant.Fill">Fill</BitHeader></div>
+    <div class="hdr-host"><BitHeader Id="variant-outline" Variant="BitVariant.Outline">Outline</BitHeader></div>
+    <div class="hdr-host"><BitHeader Id="variant-text" Variant="BitVariant.Text">Text</BitHeader></div>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color: every color with every variant">
+    @foreach (var color in Enum.GetValues<BitColor>())
+    {
+        <div class="hdr-host"><BitHeader Id="@($"color-fill-{color}")" Color="color" Variant="BitVariant.Fill">@color fill</BitHeader></div>
+        <div class="hdr-host"><BitHeader Id="@($"color-outline-{color}")" Color="color" Variant="BitVariant.Outline">@color outline</BitHeader></div>
+        <div class="hdr-host"><BitHeader Id="@($"color-text-{color}")" Color="color" Variant="BitVariant.Text">@color text</BitHeader></div>
+        <div class="hdr-host"><BitHeader Id="@($"color-dis-{color}")" Color="color" Disabled>@color disabled</BitHeader></div>
+    }
+</E2ESection>
+
+<E2ESection Id="border-elevation" Title="Bordered and Elevated">
+    <div class="hdr-host"><BitHeader Id="bordered" Bordered>Bordered</BitHeader></div>
+    <div class="hdr-host"><BitHeader Id="bordered-text" Bordered Variant="BitVariant.Text">Bordered text</BitHeader></div>
+    <div class="hdr-host"><BitHeader Id="elevated" Elevated>Elevated</BitHeader></div>
+    <div class="hdr-host"><BitHeader Id="plain">Plain</BitHeader></div>
+</E2ESection>
+
+<E2ESection Id="alignment" Title="Alignment and VerticalAlign">
+    <select id="sel-al" @onchange="e => _al = ParseAlignment(e.Value)">
+        <option value="">(none)</option>
+        @foreach (var a in Enum.GetNames<BitAlignment>())
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+    <select id="sel-va" @onchange="e => _va = ParseAlignment(e.Value)">
+        <option value="">(none)</option>
+        @foreach (var a in Enum.GetNames<BitAlignment>())
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+    <span id="al-state">@($"al={_al};va={_va};")</span>
+    <div class="hdr-host">
+        <BitHeader Id="al-header" NoGutter Height="80" Alignment="_al" VerticalAlign="_va">
+            <div class="hdr-chip" id="al-1">1</div>
+            <div class="hdr-chip" id="al-2">2</div>
+            <div class="hdr-tall" id="al-3">3</div>
+        </BitHeader>
+    </div>
+</E2ESection>
+
+<E2ESection Id="layout" Title="Gap, Wrap, NoGutter, MaxWidth">
+    <div class="hdr-host"><BitHeader Id="gap-header" Gap="0.5rem" NoGutter><div class="hdr-chip" id="gap-1">A</div><div class="hdr-chip" id="gap-2">B</div></BitHeader></div>
+    <div class="hdr-host" style="width: 200px">
+        <BitHeader Id="wrap-header" Wrap Gap="4px 10px" NoGutter>
+            @for (var i = 1; i <= 6; i++)
+            {
+                <div class="hdr-chip" id="@($"wrap-{i}")">@i</div>
+            }
+        </BitHeader>
+    </div>
+    <div class="hdr-host" style="width: 200px">
+        <BitHeader Id="nowrap-header" Gap="10px" NoGutter>
+            @for (var i = 1; i <= 6; i++)
+            {
+                <div class="hdr-chip" id="@($"nowrap-{i}")">@i</div>
+            }
+        </BitHeader>
+    </div>
+    <div class="hdr-host"><BitHeader Id="nogutter-header" NoGutter><div class="hdr-chip" id="nogutter-child">no gutter</div></BitHeader></div>
+    <div class="hdr-host">
+        <BitHeader Id="maxwidth-header" MaxWidth="300px" Alignment="BitAlignment.SpaceBetween" NoGutter>
+            <ChildContent><div class="hdr-chip" id="mw-1">capped</div><div class="hdr-chip" id="mw-2">centered</div></ChildContent>
+            <ExtensionContent><div class="hdr-chip" id="mw-ext">ext</div></ExtensionContent>
+        </BitHeader>
+    </div>
+</E2ESection>
+
+<E2ESection Id="extension" Title="ExtensionContent: a second row">
+    <div class="hdr-host">
+        <BitHeader Id="ext-header" Height="60" Classes="@(new() { Extension = "hdr-extension-class" })" Styles="@(new() { Extension = "min-height: 30px" })">
+            <ChildContent><div class="hdr-chip" id="ext-main">main</div></ChildContent>
+            <ExtensionContent><div class="hdr-chip" id="ext-child">second row</div></ExtensionContent>
+        </BitHeader>
+    </div>
+</E2ESection>
+
+<E2ESection Id="position" Title="Sticky, Fixed, Absolute">
+    <div class="hdr-scroll" id="sticky-box">
+        <BitHeader Id="sticky-header" Sticky Bordered>Sticky</BitHeader>
+        @for (var i = 1; i <= 12; i++)
+        {
+            <div class="hdr-row">Row @i</div>
+        }
+    </div>
+    <div class="hdr-abs-host" id="abs-host">
+        <BitHeader Id="absolute-header" Absolute Bordered>Absolute</BitHeader>
+        <div style="padding-top: 60px">The absolute header covers the top of its container.</div>
+    </div>
+    <div class="hdr-abs-host" id="fixed-host" style="transform: translateZ(0)">
+        <BitHeader Id="fixed-header" Fixed>Fixed, scoped by a transformed ancestor</BitHeader>
+    </div>
+    <div class="hdr-abs-host" style="transform: translateZ(0)">
+        <BitHeader Id="all-positions" Fixed Absolute Sticky>Fixed wins</BitHeader>
+        <BitHeader Id="abs-sticky" Absolute Sticky Style="top: 60px">Absolute wins over Sticky</BitHeader>
+    </div>
+    <div class="hdr-scroll">
+        <BitHeader Id="sticky-height" Sticky Height="50">Sticky with Height</BitHeader>
+    </div>
+</E2ESection>
+
+<E2ESection Id="reveal" Title="Reveal, RevealOffset, OnRevealChanged, IsRevealed">
+    <button id="btn-before-reveal">before</button>
+    <span id="reveal-state">@_revealed</span>
+    <span id="reveal-count">@_revealCount</span>
+    <span id="is-revealed">@_isRevealed</span>
+    <button id="btn-read-revealed" @onclick="() => _isRevealed = _revealHeader?.IsRevealed">Read IsRevealed</button>
+    <div class="hdr-scroll" id="reveal-box">
+        <BitHeader @ref="_revealHeader" Id="reveal-header" Sticky Reveal Elevated OnRevealChanged="v => { _revealed = v; _revealCount++; }">
+            <button id="reveal-inner">inside</button>
+        </BitHeader>
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="hdr-row">Row @i</div>
+        }
+    </div>
+    <span id="reveal-offset-state">@_revealedOffset</span>
+    <div class="hdr-scroll" id="reveal-offset-box">
+        <BitHeader Id="reveal-offset-header" Sticky Reveal RevealOffset="150" OnRevealChanged="v => _revealedOffset = v">offset 150</BitHeader>
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="hdr-row">Row @i</div>
+        }
+    </div>
+    <div class="hdr-scroll" id="reveal-unpinned-box">
+        <BitHeader Id="reveal-unpinned-header" Reveal>Not pinned: never hides</BitHeader>
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="hdr-row">Row @i</div>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="elevate" Title="ElevateOnScroll, ElevateOffset, OnScrolledChanged, IsScrolled">
+    <span id="scrolled-state">@_scrolled</span>
+    <span id="scrolled-count">@_scrolledCount</span>
+    <span id="is-scrolled">@_isScrolled</span>
+    <button id="btn-read-scrolled" @onclick="() => _isScrolled = _elevateHeader?.IsScrolled">Read IsScrolled</button>
+    <div class="hdr-scroll" id="elevate-box">
+        <BitHeader @ref="_elevateHeader" Id="elevate-header" Sticky ElevateOnScroll Height="@(_scrolled ? 40 : 70)" OnScrolledChanged="v => { _scrolled = v; _scrolledCount++; }">
+            @(_scrolled ? "Short" : "Tall")
+        </BitHeader>
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="hdr-row">Row @i</div>
+        }
+    </div>
+    <span id="elevate-offset-state">@_scrolledOffset</span>
+    <div class="hdr-scroll" id="elevate-offset-box">
+        <BitHeader Id="elevate-offset-header" Sticky ElevateOnScroll ElevateOffset="100" OnScrolledChanged="v => _scrolledOffset = v">offset 100</BitHeader>
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="hdr-row">Row @i</div>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="scroll-target" Title="ScrollTarget">
+    <span id="target-state">@_targetScrolled</span>
+    <div style="width: 600px">
+        <BitHeader Id="target-header" Sticky ElevateOnScroll ScrollTarget="#hdr-scroll-pane" OnScrolledChanged="v => _targetScrolled = v">I react to the pane below me</BitHeader>
+        <div id="hdr-scroll-pane" class="hdr-scroll">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div class="hdr-row">Row @i</div>
+            }
+        </div>
+    </div>
+    <span id="target-miss-state">@_targetMissScrolled</span>
+    <div class="hdr-scroll" id="target-miss-box">
+        <BitHeader Id="target-miss-header" Sticky ElevateOnScroll ScrollTarget="#no-such-pane" OnScrolledChanged="v => _targetMissScrolled = v">A selector matching nothing falls back to the walk</BitHeader>
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="hdr-row">Row @i</div>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="hidden" Title="Hidden">
+    <button id="btn-toggle-hidden" @onclick="() => _hidden = !_hidden">Toggle Hidden</button>
+    <span id="hidden-state">@_hidden</span>
+    <div class="hdr-abs-host" style="overflow: hidden">
+        <BitHeader Id="hidden-header" Sticky Hidden="_hidden" AriaLabel="Reader actions">
+            <button id="hidden-inner">Contents</button>
+        </BitHeader>
+    </div>
+    <div class="hdr-host"><BitHeader Id="inert-header" HtmlAttributes="@_inertAttributes">An inert the page wrote by hand is kept</BitHeader></div>
+</E2ESection>
+
+<E2ESection Id="translucent" Title="Translucent">
+    <div class="hdr-host"><BitHeader Id="translucent-header" Translucent>Translucent</BitHeader></div>
+    <div class="hdr-host"><BitHeader Id="translucent-outline" Translucent Variant="BitVariant.Outline">Translucent outline: no blur</BitHeader></div>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="AriaLabel, SkipLinkHref, SkipLinkText, ScrollPadding">
+    <div class="hdr-host"><BitHeader Id="labelled-header" AriaLabel="Editor actions">Editor</BitHeader></div>
+    <div class="hdr-host"><BitHeader Id="labelled-attr-header" HtmlAttributes="@_ariaAttributes">From attributes</BitHeader></div>
+    <button id="btn-before-skip">before</button>
+    <div class="hdr-host">
+        <BitHeader Id="skip-header" SkipLinkHref="#hdr-skip-target" Gap="8px">
+            <button id="skip-next">menu</button>
+        </BitHeader>
+    </div>
+    <div class="hdr-host">
+        <BitHeader Id="skip-text-header" SkipLinkHref="#hdr-skip-target" SkipLinkText="Jump to the content"
+                   Classes="@(new() { SkipLink = "hdr-skip-class" })" Styles="@(new() { SkipLink = "font-style: italic" })">x</BitHeader>
+    </div>
+    <div id="hdr-skip-target" tabindex="-1">The skip link lands here.</div>
+    <div class="hdr-scroll" id="padding-box">
+        <BitHeader Id="padding-header" Sticky ScrollPadding Height="50">With ScrollPadding</BitHeader>
+        @for (var i = 1; i <= 12; i++)
+        {
+            <div class="hdr-row"><button id="@($"pad-btn-{i}")">Button @i</button></div>
+        }
+    </div>
+    <div class="hdr-scroll" id="no-padding-box">
+        <BitHeader Id="no-padding-header" Sticky Height="50">Without</BitHeader>
+        @for (var i = 1; i <= 3; i++)
+        {
+            <div class="hdr-row">Row @i</div>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_headerParams">
+        <div class="hdr-host"><BitHeader Id="casc-header">cascaded</BitHeader></div>
+        <div class="hdr-host"><BitHeader Id="casc-own" Color="BitColor.Tertiary">own color</BitHeader></div>
+    </BitParams>
+    <div class="hdr-host"><BitHeader Id="casc-out">outside</BitHeader></div>
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <div class="hdr-host"><BitHeader Id="size-sm" Size="BitSize.Small">Small</BitHeader></div>
+    <div class="hdr-host"><BitHeader Id="size-md" Size="BitSize.Medium">Medium</BitHeader></div>
+    <div class="hdr-host"><BitHeader Id="size-lg" Size="BitSize.Large">Large</BitHeader></div>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="The --bit-Header-* variables on an ancestor">
+    <div class="hdr-host" style="--bit-Header-background: rgb(10, 20, 30); --bit-Header-color: rgb(200, 210, 220); --bit-Header-border-color: rgb(0, 255, 0); --bit-Header-border-width: 3px; --bit-Header-border-radius: 12px; --bit-Header-padding-block: 5px; --bit-Header-padding-inline: 7px; --bit-Header-min-height: 64px; --bit-Header-gap: 9px; --bit-Header-max-width: 400px; --bit-Header-shadow: rgb(255, 0, 0) 0px 2px 4px 0px; --bit-Header-z-index: 7">
+        <BitHeader Id="var-header" Bordered Elevated Sticky><div class="hdr-chip" id="var-1">a</div><div class="hdr-chip" id="var-2">b</div></BitHeader>
+        <BitHeader Id="var-color" Color="BitColor.Error">An explicit Color wins</BitHeader>
+        <BitHeader Id="var-size" Size="BitSize.Large">An explicit Size wins</BitHeader>
+        <BitHeader Id="var-gap" Gap="2px"><div class="hdr-chip" id="vg-1">a</div><div class="hdr-chip" id="vg-2">b</div></BitHeader>
+        <BitHeader Id="var-outline" Variant="BitVariant.Outline">outline</BitHeader>
+    </div>
+    <div class="hdr-host" style="--bit-Header-background: rgb(10, 20, 30); --bit-Header-fill-background: rgb(40, 50, 60); --bit-Header-outline-border-color: rgb(70, 80, 90); --bit-Header-outline-color: rgb(1, 1, 1); --bit-Header-text-color: rgb(2, 2, 2); --bit-Header-fill-color: rgb(3, 3, 3); --bit-Header-outline-border-width: 4px; --bit-Header-text-border-color: rgb(5, 5, 5); --bit-Header-text-border-width: 6px">
+        <BitHeader Id="tier-fill">fill</BitHeader>
+        <BitHeader Id="tier-outline" Variant="BitVariant.Outline">outline</BitHeader>
+        <BitHeader Id="tier-text" Variant="BitVariant.Text" Bordered>text</BitHeader>
+    </div>
+    <div class="hdr-host" style="--bit-Header-disabled-color: rgb(11, 12, 13); --bit-Header-disabled-background: rgb(14, 15, 16); --bit-Header-backdrop-blur: 3px; --bit-Header-translucent-opacity: 50%; --bit-Header-skip-link-color: rgb(21, 22, 23); --bit-Header-skip-link-background: rgb(24, 25, 26)">
+        <BitHeader Id="var-disabled" Disabled>disabled</BitHeader>
+        <BitHeader Id="var-translucent" Translucent>translucent</BitHeader>
+        <BitHeader Id="var-skip" SkipLinkHref="#hdr-skip-target">skip</BitHeader>
+    </div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes">
+    <div class="hdr-host"><BitHeader Id="styled-header" Style="background: rgb(126, 87, 194); color: white">Styled</BitHeader></div>
+    <div class="hdr-host"><BitHeader Id="classed-header" Class="hdr-custom">Classed</BitHeader></div>
+    <div class="hdr-host">
+        <BitHeader Id="styles-header" Styles="@(new() { Root = "border-block-end: 2px dashed rgb(255, 99, 71)", Container = "justify-content: center; color: rgb(255, 99, 71)" })">
+            <div class="hdr-chip" id="styles-child">Styles</div>
+        </BitHeader>
+    </div>
+    <div class="hdr-host"><BitHeader Id="classes-header" Classes="@(new() { Root = "hdr-root-class", Container = "hdr-container-class" })">Classes</BitHeader></div>
+    <div class="hdr-host"><BitHeader Id="vis-header" Visibility="_visibility">Visibility</BitHeader></div>
+    <button id="btn-hidden-vis" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-collapsed-vis" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="hdr-host"><BitHeader Id="rtl-header" Dir="BitDir.Rtl" Alignment="BitAlignment.Start"><div class="hdr-chip" id="rtl-1">1</div><div class="hdr-chip" id="rtl-2">2</div></BitHeader></div>
+    <div class="hdr-host" dir="rtl"><BitHeader Id="rtl-inherited" Alignment="BitAlignment.Start"><div class="hdr-chip" id="rtli-1">1</div></BitHeader></div>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <div class="hdr-scroll">
+            <BitHeader Id="mount-header" Sticky Reveal ElevateOnScroll ScrollPadding>mounted</BitHeader>
+            @for (var i = 1; i <= 10; i++)
+            {
+                <div class="hdr-row">Row @i</div>
+            }
+        </div>
+    }
+    <button id="btn-unmount" @onclick="() => _mounted = false">Unmount</button>
+    <button id="btn-mount" @onclick="() => _mounted = true">Mount</button>
+    <span id="mounted">@_mounted</span>
+    <button id="btn-runtime" @onclick="() => _runtimeReveal = !_runtimeReveal">Toggle Reveal</button>
+    <div class="hdr-scroll" id="runtime-box">
+        <BitHeader Id="runtime-header" Sticky Reveal="_runtimeReveal" OnRevealChanged="v => _runtimeRevealed = v">runtime</BitHeader>
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="hdr-row">Row @i</div>
+        }
+    </div>
+    <span id="runtime-state">@($"reveal={_runtimeReveal};revealed={_runtimeRevealed}")</span>
+</E2ESection>
+
+@* A round trip through the circuit: a test that clicks it and waits for the count knows every message the scripts
+   sent before the click has been handled and rendered. *@
+<button id="btn-sync" style="position: fixed; right: 0; bottom: 0; z-index: 100" @onclick="() => _sync++">sync</button>
+<span id="sync">@_sync</span>
+
+<E2EStatus />
+
+@code {
+    private int _sync;
+    private int _height = 80;
+    private bool _disabled = true;
+    private int _rootClicks;
+    private int _innerClicks;
+    private BitAlignment? _al;
+    private BitAlignment? _va;
+    private bool _revealed = true;
+    private int _revealCount;
+    private bool? _isRevealed;
+    private bool _revealedOffset = true;
+    private bool _scrolled;
+    private int _scrolledCount;
+    private bool? _isScrolled;
+    private bool _scrolledOffset;
+    private bool _targetScrolled;
+    private bool _targetMissScrolled;
+    private bool _hidden;
+    private bool _mounted = true;
+    private bool _runtimeReveal;
+    private bool _runtimeRevealed = true;
+    private BitVisibility _visibility = BitVisibility.Visible;
+    private BitHeader? _revealHeader;
+    private BitHeader? _elevateHeader;
+
+    private Dictionary<string, object> _disabledHeaderAttributes = default!;
+    private readonly Dictionary<string, object> _inertAttributes = new() { ["inert"] = true };
+    private readonly Dictionary<string, object> _ariaAttributes = new() { ["aria-label"] = "Toolbar from attributes" };
+
+    private readonly BitHeaderParams[] _headerParams =
+    [
+        new() { Color = BitColor.Error, Variant = BitVariant.Outline, Size = BitSize.Small, Bordered = true }
+    ];
+
+    protected override void OnInitialized()
+    {
+        _disabledHeaderAttributes = new()
+        {
+            ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _rootClicks++)
+        };
+    }
+
+    private static BitAlignment? ParseAlignment(object? value)
+    {
+        return value is string s && s.Length > 0 ? Enum.Parse<BitAlignment>(s) : null;
+    }
+}

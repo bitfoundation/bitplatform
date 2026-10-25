@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Separator;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Separator;
 
 public partial class BitSeparatorDemo
 {
@@ -7,11 +7,11 @@ public partial class BitSeparatorDemo
         new()
         {
             Name = "AlignContent",
-            Type = "BitSeparatorAlignContent?",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Where the content should be aligned in the separator. Defaults to the center of the line.",
+            Description = "Where the content should be aligned along the line of the separator. Only Start, Center and End are honoured; any other value, or none, centers the content.",
             LinkType = LinkType.Link,
-            Href = "#separator-align-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -25,7 +25,7 @@ public partial class BitSeparatorDemo
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the background of the patch the content of the separator sits on. Defaults to transparent.",
+            Description = "The color kind of the background behind the content of the separator. Defaults to transparent.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -75,23 +75,30 @@ public partial class BitSeparatorDemo
             Name = "Decorative",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the separator from the accessibility tree, for a separator that is purely visual and should not be announced."
+            Description = "Removes the separator from the accessibility tree, for a separator that is purely visual and should not be announced. Its content, if any, is then read as plain text."
+        },
+        new()
+        {
+            Name = "Element",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom html element used for the root node, such as \"li\" between the items of a list or a menu. A tag that cannot hold content falls back to the default \"div\"."
         },
         new()
         {
             Name = "Inset",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Holds the separator off both ends of its container by this length, as any CSS length."
+            Description = "Holds the separator off the ends of its container: one CSS length for both ends, or two for the start and the end."
         },
         new()
         {
             Name = "LineStyle",
-            Type = "BitSeparatorLineStyle?",
+            Type = "BitLineStyle?",
             DefaultValue = "null",
             Description = "The style the line of the separator is drawn in: solid, dashed, dotted or double.",
             LinkType = LinkType.Link,
-            Href = "#separator-line-style-enum",
+            Href = "#line-style-enum",
         },
         new()
         {
@@ -123,8 +130,78 @@ public partial class BitSeparatorDemo
             Name = "Vertical",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the element is a vertical separator. A vertical separator stretches to the height of the flex row it stands in, and takes it from its container anywhere else."
+            Description = "Whether the element is a vertical separator. It stretches to the height of the flex row it stands in and takes it from its container anywhere else, but is never shorter than a line of text."
         }
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Separator-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Color of the line. The Color and Border parameters win over it.",
+        },
+        new()
+        {
+            Name = "--bit-Separator-thickness",
+            DefaultValue = "--bit-siz-divider",
+            Description = "Weight of the line. The Size and Thickness parameters win over it.",
+        },
+        new()
+        {
+            Name = "--bit-Separator-line-style",
+            DefaultValue = "solid",
+            Description = "Style of the line, as any CSS border style. The LineStyle parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Separator-spacing",
+            DefaultValue = "spacing(0.5)",
+            Description = "Room on either side of the line, across it: above and below a horizontal separator, beside a vertical one.",
+        },
+        new()
+        {
+            Name = "--bit-Separator-inset",
+            DefaultValue = "0",
+            Description = "Room held off both ends of the line, or off the start and the end given two lengths. The Inset parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Separator-content-gap",
+            DefaultValue = "spacing(1.5)",
+            Description = "Room between the content and the line on either side of it.",
+        },
+        new()
+        {
+            Name = "--bit-Separator-content-offset",
+            DefaultValue = "0",
+            Description = "Length of the segment before a start- or end-aligned content. The ContentOffset parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Separator-content-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of the content.",
+        },
+        new()
+        {
+            Name = "--bit-Separator-content-background",
+            DefaultValue = "transparent",
+            Description = "Background of the content. The Background parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Separator-content-font-size",
+            DefaultValue = "inherit",
+            Description = "Text size of the content.",
+        },
+        new()
+        {
+            Name = "--bit-Separator-content-font-weight",
+            DefaultValue = "inherit",
+            Description = "Text weight of the content.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -156,236 +233,22 @@ public partial class BitSeparatorDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        DemoSharedEnums.BitPlacement(),
+        DemoSharedEnums.BitLineStyle(),
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitColorKind(),
+    ];
+
+
+
+    private readonly BitSeparatorParams[] separatorParams =
+    [
         new()
         {
-            Id = "separator-align-enum",
-            Name = "BitSeparatorAlignContent",
-            Description = "Where the content of the separator sits along its line.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Description = "The content sits at the start of the line - the top of a vertical separator.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Center",
-                    Description = "The content sits at the middle of the line, which is the default.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "The content sits at the end of the line - the bottom of a vertical separator.",
-                    Value = "2",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "separator-line-style-enum",
-            Name = "BitSeparatorLineStyle",
-            Description = "The style the line of the separator is drawn in.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Solid",
-                    Description = "A continuous line, which is the default.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Dashed",
-                    Description = "A line of short dashes.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Dotted",
-                    Description = "A line of dots.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Double",
-                    Description = "Two parallel lines with a gap between them, which needs a line of at least three pixels to have room to be drawn.",
-                    Value = "3",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Small",
-                    Description = "The small size.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Medium",
-                    Description = "The medium size.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Large",
-                    Description = "The large size.",
-                    Value = "2",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Primary",
-                    Description = "Primary general color.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Secondary",
-                    Description = "Secondary general color.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Tertiary",
-                    Description = "Tertiary general color.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Info",
-                    Description = "Info general color.",
-                    Value = "3",
-                },
-                new()
-                {
-                    Name = "Success",
-                    Description = "Success general color.",
-                    Value = "4",
-                },
-                new()
-                {
-                    Name = "Warning",
-                    Description = "Warning general color.",
-                    Value = "5",
-                },
-                new()
-                {
-                    Name = "SevereWarning",
-                    Description = "SevereWarning general color.",
-                    Value = "6",
-                },
-                new()
-                {
-                    Name = "Error",
-                    Description = "Error general color.",
-                    Value = "7",
-                },
-                new()
-                {
-                    Name = "PrimaryBackground",
-                    Description = "Primary background color.",
-                    Value = "8",
-                },
-                new()
-                {
-                    Name = "SecondaryBackground",
-                    Description = "Secondary background color.",
-                    Value = "9",
-                },
-                new()
-                {
-                    Name = "TertiaryBackground",
-                    Description = "Tertiary background color.",
-                    Value = "10",
-                },
-                new()
-                {
-                    Name = "PrimaryForeground",
-                    Description = "Primary foreground color.",
-                    Value = "11",
-                },
-                new()
-                {
-                    Name = "SecondaryForeground",
-                    Description = "Secondary foreground color.",
-                    Value = "12",
-                },
-                new()
-                {
-                    Name = "TertiaryForeground",
-                    Description = "Tertiary foreground color.",
-                    Value = "13",
-                },
-                new()
-                {
-                    Name = "PrimaryBorder",
-                    Description = "Primary border color.",
-                    Value = "14",
-                },
-                new()
-                {
-                    Name = "SecondaryBorder",
-                    Description = "Secondary border color.",
-                    Value = "15",
-                },
-                new()
-                {
-                    Name = "TertiaryBorder",
-                    Description = "Tertiary border color.",
-                    Value = "16",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "color-kind-enum",
-            Name = "BitColorKind",
-            Description = "Defines the color kinds available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Primary",
-                    Description = "The primary color kind.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Secondary",
-                    Description = "The secondary color kind.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Tertiary",
-                    Description = "The tertiary color kind.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Transparent",
-                    Description = "The transparent color kind.",
-                    Value = "3",
-                },
-            ]
-        },
+            Thickness = "2px",
+            LineStyle = BitLineStyle.Dashed,
+            AlignContent = BitPlacement.Start,
+        }
     ];
 }

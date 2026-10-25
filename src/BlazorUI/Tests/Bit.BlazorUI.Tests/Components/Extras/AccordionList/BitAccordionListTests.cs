@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -343,5 +343,198 @@ public class BitAccordionListTests : BunitTestContext
         public string? Id { get; set; }
         public string? Name { get; set; }
         public bool Open { get; set; }
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitAccordionList<BitAccordionListItem>>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-acl");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+        // A label on a plain container is dropped by a screen reader, so a splatted one makes the list a group too.
+        Assert.AreEqual("group", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldLeaveItsExpandedKeysAloneWhileItIsDisposedTogetherWithItsOptions()
+    {
+        // The script answers later, the way it does in a browser: the renderer disposes the options while the lists
+        // are still awaiting their own teardown, before the base class has marked them disposed.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.Extras.disposePreventKeys", _ => true);
+
+        var component = RenderComponent<BitAccordionListTeardownTest>();
+
+        component.Render(parameters => parameters.Add(p => p.Show, false));
+
+        Assert.AreEqual(2, dispose.Invocations.Count);
+        Assert.AreEqual(0, component.Instance.ExpandedKeyChanges.Count);
+        Assert.AreEqual(0, component.Instance.ExpandedKeysChanges.Count);
+        Assert.AreEqual("first", component.Instance.ExpandedKey);
+        CollectionAssert.AreEqual(new[] { "first" }, component.Instance.ExpandedKeys!.ToArray());
+
+        dispose.SetVoidResult();
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldStillCollapseTheExpandedKeysWhenTheExpandedOptionIsRemovedFromAListThatStays()
+    {
+        var component = RenderComponent<BitAccordionListTeardownTest>();
+
+        component.Render(parameters => parameters.Add(p => p.ShowFirst, false));
+
+        component.WaitForAssertion(() =>
+        {
+            CollectionAssert.AreEqual(new string?[] { null }, component.Instance.ExpandedKeyChanges);
+            Assert.AreEqual(1, component.Instance.ExpandedKeysChanges.Count);
+            Assert.AreEqual(0, component.Instance.ExpandedKeysChanges[0]!.Count());
+        });
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldDisableEveryItemWhileItIsDisabled()
+    {
+        var clicked = 0;
+
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.OnItemClick, (BitAccordionListItem _) => clicked++);
+        });
+
+        Assert.IsTrue(component.Find(".bit-acl").ClassList.Contains("bit-dis"));
+
+        // The list's Disabled reaches every header the way an item's own IsDisabled does.
+        var headers = component.FindAll(".bit-acd-hdr");
+        Assert.AreEqual(3, headers.Count);
+        Assert.IsTrue(headers.All(h => h.GetAttribute("aria-disabled") == "true"));
+        Assert.AreEqual(3, component.FindAll(".bit-acd.bit-dis").Count);
+
+        // A click still delivered to a header (a script, an assistive technology) does nothing: no toggle, no report.
+        headers[0].Click();
+
+        Assert.AreEqual(0, clicked);
+        Assert.AreEqual(0, component.FindAll(".bit-acd-exp").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
+
+        Assert.IsFalse(component.Find(".bit-acl").ClassList.Contains("bit-dis"));
+        Assert.AreEqual(0, component.FindAll(".bit-acd.bit-dis").Count);
+
+        component.FindAll(".bit-acd-hdr")[0].Click();
+
+        Assert.AreEqual(1, clicked);
+        Assert.AreEqual(1, component.FindAll(".bit-acd-exp").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldRenderTheDescriptionClassAndStyleOfAnItem()
+    {
+        var items = GetItems();
+        items[1].Description = "What B is about";
+        items[1].Class = "item-b";
+        items[1].Style = "color:red";
+
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var accordions = component.FindAll(".bit-acd");
+
+        Assert.AreEqual(1, component.FindAll(".bit-acd-des").Count);
+        Assert.AreEqual("What B is about", accordions[1].QuerySelector(".bit-acd-des")!.TextContent.Trim());
+        Assert.IsTrue(accordions[1].ClassList.Contains("item-b"));
+        StringAssert.Contains(accordions[1].GetAttribute("style"), "color:red");
+
+        Assert.IsFalse(accordions[0].ClassList.Contains("item-b"));
+        Assert.IsNull(accordions[0].QuerySelector(".bit-acd-des"));
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldRaiseTheOnClickOfTheItemAlongWithTheListsOne()
+    {
+        var items = GetItems();
+        BitAccordionListItem? ownClick = null;
+        items[1].OnClick = item => ownClick = item;
+
+        BitAccordionListItem? listClick = null;
+
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.OnItemClick, (BitAccordionListItem item) => listClick = item);
+        });
+
+        component.FindAll(".bit-acd-hdr")[1].Click();
+
+        Assert.AreSame(items[1], ownClick);
+        Assert.AreSame(items[1], listClick);
+
+        component.FindAll(".bit-acd-hdr")[0].Click();
+
+        // The item's own handler is the item's alone.
+        Assert.AreSame(items[1], ownClick);
+        Assert.AreSame(items[0], listClick);
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldRenderTheBaseParameters()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Id, "faq");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Style, "margin:1px");
+            parameters.Add(p => p.Class, "faq-list");
+            parameters.Add(p => p.Visibility, BitVisibility.Hidden);
+        });
+
+        var root = component.Find(".bit-acl");
+
+        Assert.AreEqual("faq", root.Id);
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.IsTrue(root.ClassList.Contains("faq-list"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+
+        // The direction is handed to every item, which lays out its header and expander by it.
+        Assert.AreEqual(3, component.FindAll(".bit-acd[dir=\"rtl\"]").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Visibility, BitVisibility.Collapsed));
+
+        StringAssert.Contains(component.Find(".bit-acl").GetAttribute("style"), "display:none");
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldReportTheExpandedStateThroughIsExpanded()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.DefaultExpandedKey, "b");
+        });
+
+        var list = component.Instance;
+
+        Assert.IsTrue(list.IsExpanded("b"));
+        Assert.IsFalse(list.IsExpanded("a"));
+        Assert.IsFalse(list.IsExpanded(null));
+        Assert.IsFalse(list.IsExpanded(string.Empty));
+        Assert.IsFalse(list.IsExpanded("unknown"));
+
+        component.FindAll(".bit-acd-hdr")[0].Click();
+
+        Assert.IsTrue(list.IsExpanded("a"));
+        Assert.IsFalse(list.IsExpanded("b"), "Single-expand mode closes the one that was open.");
     }
 }

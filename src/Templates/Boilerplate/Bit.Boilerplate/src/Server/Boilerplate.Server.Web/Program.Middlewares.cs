@@ -42,6 +42,8 @@ public static partial class Program
             app.UseLocalization();
 
             //#if (api == "Integrated")
+            app.UseRequestIdHeader();
+
             app.UseExceptionHandler();
             //#endif
 
@@ -92,6 +94,8 @@ public static partial class Program
 
                 await next.Invoke();
             });
+
+            app.UsePrecompressedStaticFiles();
 
             app.UseStaticFiles();
 

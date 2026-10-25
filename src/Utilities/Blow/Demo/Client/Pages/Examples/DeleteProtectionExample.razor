@@ -1,0 +1,172 @@
+﻿@page "/examples/delete-protection"
+
+<PageTitle>Delete Protection · Blow</PageTitle>
+
+<ExampleScaffold Title="Delete Protection"
+                 Summary="Three layers of protection against deleting the wrong thing: Deletable and Selectable flags on each node and edge, a veto over a whole deletion with OnBeforeDelete, and the events that report what went - OnNodesDelete, OnEdgesDelete and OnDelete. Edges attached to a deleted node always go with it.">
+    <Toolbar>
+        <button class="btn btn-primary" @onclick="Reset">Reset</button>
+        <button class="btn btn-secondary" @onclick="SelectAll">Select all</button>
+        <button class="btn btn-secondary" @onclick="DeleteSelected">Delete selected</button>
+        <label><input type="checkbox" checked="@_selectAllKey" @onchange="@(e => _selectAllKey = (bool)e.Value!)" /> Ctrl+A selects all</label>
+        <label><input type="checkbox" checked="@_vetoCascade" @onchange="@(e => _vetoCascade = (bool)e.Value!)" /> Veto deleting connected nodes</label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    SelectAllKeyEnabled="_selectAllKey"
+                    OnBeforeDelete="CanDelete"
+                    OnNodesDelete="OnNodesDelete"
+                    OnEdgesDelete="OnEdgesDelete"
+                    OnDelete="OnDelete">
+            <NodeTemplate Context="node">
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                <div class="prot-node">
+                    <strong>@node.Label</strong>
+                    <div class="prot-flags">
+                        @(node.Deletable ? "deletable" : "locked") ·
+                        @(node.Selectable ? "selectable" : "read-only")
+                    </div>
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <Footer>
+        @* Under the canvas: as a panel in its corner it sat on the Locked node. *@
+        <strong>Deletion events</strong>, newest first
+        @if (_deletions.Count == 0)
+        {
+            <div class="prot-empty">Nothing deleted yet - select something and press Delete.</div>
+        }
+        @foreach (var deletion in _deletions)
+        {
+            <div class="prot-entry">
+                @foreach (var line in deletion)
+                {
+                    <div class="prot-line">@line</div>
+                }
+            </div>
+        }
+    </Footer>
+    <TryIt>
+        <li><strong>Click</strong> the canvas and press <strong>Ctrl+A</strong> (<strong>Cmd+A</strong> on a Mac), or click <strong>Select all</strong>: everything is selected except Read-only, which cannot be selected at all.</li>
+        <li>Press <strong>Delete</strong> or <strong>Backspace</strong>, or click <strong>Delete selected</strong>: Free and Child go and Locked stays. Edges e1 and e2 go, and so does the pinned edge e3 - it is not deletable itself, but it hung off Child. The footer lists each event that was raised.</li>
+        <li>After a <strong>Reset</strong>, select only the pinned edge e3 and press <strong>Delete</strong>: nothing happens, and no event is raised.</li>
+        <li><strong>Reset</strong> puts the graph back. <strong>Escape</strong> clears the selection.</li>
+        <li>Tick <strong>Veto deleting connected nodes</strong>, select Free and press <strong>Delete</strong>: the veto refuses, because edge e1 would go with it, and nothing is deleted. Selecting just the edge e1 still deletes it.</li>
+        <li>Untick <strong>Ctrl+A selects all</strong>: the shortcut stops working, while the <strong>Select all</strong> button, which calls the API, still does.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>Deletable</code> (<code>true</code>) on a <code>BlowNode</code> or <code>BlowEdge</code> keeps it out of a deletion when <code>false</code> - but an edge always goes with a node it is attached to, and a child node with its parent.</li>
+        <li><code>Selectable</code> (<code>true</code>) set to <code>false</code> means the element can never be selected, so the delete keys never reach it.</li>
+        <li><code>DeleteKeys</code> (Delete and Backspace) remove the selection while <code>DeleteKeyEnabled</code> is on; when nothing selected is deletable, nothing happens.</li>
+        <li><code>SelectAllKeyEnabled</code> (<code>true</code>) binds Ctrl/Cmd+A to <code>SelectAllAsync()</code>, which selects every selectable, visible node and edge - the method the button calls.</li>
+        <li><code>OnBeforeDelete</code> is a synchronous <code>Func&lt;IReadOnlyList&lt;BlowNode&gt;, IReadOnlyList&lt;BlowEdge&gt;, bool&gt;</code> called with everything about to go, the cascaded edges included; returning <code>false</code> cancels the whole deletion. Not being an <code>EventCallback</code>, it does not re-render the page, so the page calls <code>StateHasChanged</code> to show its verdict.</li>
+        <li>After a deletion <code>OnNodesDelete</code> and <code>OnEdgesDelete</code> report each kind as an <code>IReadOnlyList</code> (each only when it has something), then <code>OnDelete</code> reports both as a <code>BlowSelectionChange</code>.</li>
+        <li><code>DeleteElementsAsync(nodes, edges)</code> deletes from code with the same rules, veto and events - the <strong>Delete selected</strong> button passes it the selected nodes and edges.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .prot-node { padding: 4px 2px; }
+    .prot-flags { margin-top: 4px; font-size: 10px; color: var(--bit-blow-text-muted); }
+    .prot-empty { color: var(--bb-text-soft); }
+    .prot-entry { padding: 3px 0; border-top: 1px solid var(--bb-border); }
+    .prot-entry:first-of-type { border-top: 0; }
+    .prot-line { font-family: var(--bb-mono, monospace); }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    // One entry per attempted deletion, newest first, each listing its events in the order they were raised.
+    private readonly List<List<string>> _deletions = [];
+    private bool _selectAllKey = true;
+    private bool _vetoCascade;
+
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "free",   Label = "Free",      Position = new(40, 20) },
+            new BlowNode { Id = "locked", Label = "Locked",    Position = new(240, 20), Deletable = false },
+            new BlowNode { Id = "ro",     Label = "Read-only", Position = new(40, 180), Selectable = false },
+            new BlowNode { Id = "child",  Label = "Child",     Position = new(240, 180) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1", Source = "free", Target = "child", Label = "e1" },
+            new BlowEdge { Id = "e2", Source = "locked", Target = "child", Label = "e2" },
+            // A pinned edge: selecting and pressing Delete leaves it alone.
+            new BlowEdge { Id = "e3", Source = "ro", Target = "child", Label = "e3 pinned", Deletable = false },
+        ];
+
+        _deletions.Clear();
+        _flow?.Refresh(remeasure: true);
+    }
+
+    private async Task SelectAll()
+    {
+        if (_flow is null) return;
+        await _flow.SelectAllAsync();
+    }
+
+    private async Task DeleteSelected()
+    {
+        if (_flow is null) return;
+        await _flow.DeleteElementsAsync(_nodes.Where(n => n.Selected).ToList(), _edges.Where(e => e.Selected).ToList());
+    }
+
+    // Sees the whole effect of the deletion: the edges that would go with a deleted node are in the list as well.
+    private bool CanDelete(IReadOnlyList<BlowNode> nodes, IReadOnlyList<BlowEdge> edges)
+    {
+        var cascaded = edges.Where(e => nodes.Any(n => n.Id == e.Source || n.Id == e.Target)).ToList();
+        var allowed = !_vetoCascade || cascaded.Count == 0;
+
+        // Every deletion asks first, so this is where its entry starts.
+        _deletions.Insert(0, []);
+        if (_deletions.Count > 6) _deletions.RemoveAt(_deletions.Count - 1);
+        Log(allowed
+            ? $"OnBeforeDelete: allowed - nodes {Ids(nodes)}, edges {Ids(edges)}"
+            : $"OnBeforeDelete: vetoed - deleting {Ids(nodes)} would also remove {Ids(cascaded)}");
+
+        // A plain Func rather than an EventCallback, so nothing re-renders the page after it on its own: a veto would
+        // otherwise only show once something else did.
+        StateHasChanged();
+        return allowed;
+    }
+
+    private void OnNodesDelete(IReadOnlyList<BlowNode> nodes) => Log($"OnNodesDelete: {Ids(nodes)}");
+
+    private void OnEdgesDelete(IReadOnlyList<BlowEdge> edges) => Log($"OnEdgesDelete: {Ids(edges)}");
+
+    private void OnDelete(BlowSelectionChange removed)
+        => Log($"OnDelete: {removed.Nodes.Count} node(s), {removed.Edges.Count} edge(s)");
+
+    private static string Ids(IEnumerable<BlowNode> nodes) => Join(nodes.Select(n => n.Id));
+
+    private static string Ids(IEnumerable<BlowEdge> edges) => Join(edges.Select(e => e.Id));
+
+    private static string Join(IEnumerable<string> ids)
+    {
+        var list = string.Join(", ", ids);
+        return list.Length == 0 ? "none" : list;
+    }
+
+    private void Log(string message)
+    {
+        if (_deletions.Count == 0) _deletions.Add([]);
+        _deletions[0].Add(message);
+    }
+}

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Utils.Params;
@@ -52,6 +52,20 @@ public class BitCascadingValueListLookupTests
         source = 5;
 
         Assert.AreEqual(5, list[0].Value);
+    }
+
+    [TestMethod]
+    public void ShouldAddADisabledComputedValue()
+    {
+        var calls = 0;
+        var list = new BitCascadingValueList();
+
+        list.AddComputed(() => ++calls, "Count", enabled: false);
+        list.AddComputed(() => (object?)++calls, typeof(int), "Count", enabled: false);
+
+        Assert.IsFalse(list[0].Enabled);
+        Assert.IsFalse(list[1].Enabled);
+        Assert.AreEqual(0, calls);
     }
 
     [TestMethod]

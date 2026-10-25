@@ -41,7 +41,6 @@ section {
     }
 
     .session-card {
-        box-shadow: none;
         position: relative;
         margin-bottom: 1rem;
     }
@@ -83,14 +82,5 @@ section {
         padding-bottom: 0.5rem;
         margin-bottom: 0.5rem;
         border-bottom: 1px solid $bit-color-border-secondary;
-    }
-
-    // Client ids are long, so keep them to a single row.
-    .oauth-client-id {
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        direction: ltr;
-        font-family: monospace;
     }
 }

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>An image to be persisted by the host's <c>OnImageUpload</c> delegate.</summary>
 public sealed class BitRichTextEditorImageUpload

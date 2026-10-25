@@ -20,7 +20,7 @@ namespace Boilerplate.Tests.E2E.Features.Attachments;
 [TestClass, TestCategory(TestCategories.Api), Retry(2)]
 public class AttachmentMetadataStrippingTests
 {
-    private const string password = "123456";
+    private const string password = "12345678";
 
     private readonly List<Func<Task>> cleanups = [];
 
@@ -70,11 +70,11 @@ public class AttachmentMetadataStrippingTests
                 $"{api} serves {kind} with the uploaded bytes' EXIF text still in it, whatever the profile says.");
         }
 
-        // Stripping means re-encoding, so the one thing the original must keep is the format it arrived in - nothing
-        // records what that was, and GetAttachment serves it as application/octet-stream.
+        // Stripping means re-encoding, and the original is re-encoded as a full quality WebP whatever format it arrived in,
+        // the way GetAttachment serves it (See AttachmentController).
         using var original = new MagickImage(await FetchAnonymously(api, userId, AttachmentKind.UserProfileImageOriginal));
 
-        Assert.AreEqual(MagickFormat.Jpeg, original.Format, $"{api} converted the original kind to another format while stripping it.");
+        Assert.AreEqual(MagickFormat.WebP, original.Format, $"{api} stored the original kind in another format than the WebP it serves it as.");
     }
 
     /// <summary>

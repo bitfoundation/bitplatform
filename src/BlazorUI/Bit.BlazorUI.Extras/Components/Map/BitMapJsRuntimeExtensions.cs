@@ -5,6 +5,11 @@
 /// All calls go through <c>BitBlazorUI.&lt;JsObjectName&gt;.&lt;method&gt;</c> so each
 /// provider exposes its own implementation under the same shape.
 /// </summary>
+/// <remarks>
+/// The only identifiers of the packages put together at run time rather than written out: the publish-time trimming,
+/// which keeps a script for the identifiers an app's code can reach, cannot read these, so each provider's script names
+/// its provider type instead (<c>// bit-trim: owners BitLeafletMapProvider</c>), and is kept wherever that type is.
+/// </remarks>
 internal static class BitMapJsRuntimeExtensions
 {
     public static ValueTask BitMapInit<TProvider>(this IJSRuntime jsRuntime,
@@ -66,14 +71,15 @@ internal static class BitMapJsRuntimeExtensions
                                             double swLat, double swLng,
                                             double neLat, double neLng,
                                             int paddingPixels,
-                                            double maxZoom)
+                                            double maxZoom,
+                                            bool animate)
     {
-        return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.fitBounds", id, swLat, swLng, neLat, neLng, paddingPixels, maxZoom);
+        return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.fitBounds", id, swLat, swLng, neLat, neLng, paddingPixels, maxZoom, animate);
     }
 
-    public static ValueTask BitMapFitBoundsToMarkers(this IJSRuntime jsRuntime, string jsObjectName, string id, int paddingPixels, double maxZoom)
+    public static ValueTask BitMapFitBoundsToMarkers(this IJSRuntime jsRuntime, string jsObjectName, string id, int paddingPixels, double maxZoom, bool animate)
     {
-        return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.fitBoundsToMarkers", id, paddingPixels, maxZoom);
+        return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.fitBoundsToMarkers", id, paddingPixels, maxZoom, animate);
     }
 
     public static ValueTask<System.Text.Json.JsonElement> BitMapProject(this IJSRuntime jsRuntime, string jsObjectName, string id, double lat, double lng)
@@ -110,6 +116,11 @@ internal static class BitMapJsRuntimeExtensions
     public static ValueTask BitMapOpenMarkerPopup(this IJSRuntime jsRuntime, string jsObjectName, string id, string markerId)
     {
         return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.openMarkerPopup", id, markerId);
+    }
+
+    public static ValueTask<bool> BitMapCloseMarkerPopup(this IJSRuntime jsRuntime, string jsObjectName, string id)
+    {
+        return jsRuntime.Invoke<bool>($"BitBlazorUI.{jsObjectName}.closeMarkerPopup", id);
     }
 
     public static ValueTask BitMapAddPolyline(this IJSRuntime jsRuntime, string jsObjectName, string id,
@@ -209,9 +220,9 @@ internal static class BitMapJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.BitMapChrome.cancelWaitForVisible", canvasId);
     }
 
-    public static ValueTask BitMapChromeTrackAnchor(this IJSRuntime jsRuntime, string id, string elementId, double lat, double lng)
+    public static ValueTask BitMapChromeTrackAnchor(this IJSRuntime jsRuntime, string id, string elementId, double lat, double lng, bool autoPan = false, bool animate = false)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.BitMapChrome.trackAnchor", id, elementId, lat, lng);
+        return jsRuntime.InvokeVoid("BitBlazorUI.BitMapChrome.trackAnchor", id, elementId, lat, lng, autoPan, animate);
     }
 
     public static ValueTask BitMapChromeUntrackAnchor(this IJSRuntime jsRuntime, string id)
@@ -254,9 +265,9 @@ internal static class BitMapJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.BitMapCluster.render", id);
     }
 
-    public static ValueTask<int> BitMapClusterExpand(this IJSRuntime jsRuntime, string id, string clusterId, int paddingPixels, bool zoom)
+    public static ValueTask<int> BitMapClusterExpand(this IJSRuntime jsRuntime, string id, string clusterId, int paddingPixels, bool zoom, bool animate)
     {
-        return jsRuntime.Invoke<int>("BitBlazorUI.BitMapCluster.expand", id, clusterId, paddingPixels, zoom);
+        return jsRuntime.Invoke<int>("BitBlazorUI.BitMapCluster.expand", id, clusterId, paddingPixels, zoom, animate);
     }
 
     public static ValueTask<System.Text.Json.JsonElement> BitMapChromeLocate(this IJSRuntime jsRuntime,

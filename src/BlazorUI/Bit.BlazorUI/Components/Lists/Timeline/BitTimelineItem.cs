@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitTimelineItem
 {
@@ -15,6 +15,11 @@ public class BitTimelineItem
     /// <summary>
     /// The general color of the timeline item, overriding the color of the timeline.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the Color of the timeline and over the <c>--bit-Timeline-*</c> dot color variables
+    /// (dot background, dot border color, icon color), on this item alone; left unset, the item takes the Color of
+    /// the timeline, or - when that is unset too - is primary unless those variables say otherwise.
+    /// </remarks>
     public BitColor? Color { get; set; }
 
     /// <summary>
@@ -48,9 +53,9 @@ public class BitTimelineItem
     public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the timeline item is enabled.
+    /// Whether or not the timeline item is disabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// A unique value to use as a key of the timeline item.
@@ -60,7 +65,7 @@ public class BitTimelineItem
     /// <summary>
     /// The way the connecting line of the timeline item is painted, overriding the line variant of the timeline.
     /// </summary>
-    public BitTimelineLineVariant? LineVariant { get; set; }
+    public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
     /// Click event handler of the timeline item.
@@ -95,6 +100,11 @@ public class BitTimelineItem
     /// <summary>
     /// The size of the timeline item, overriding the size of the timeline.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the Size of the timeline and over <c>--bit-Timeline-font-size</c> and
+    /// <c>--bit-Timeline-dot-size</c>, on this item alone; left unset, the item takes the Size of the timeline, or -
+    /// when that is unset too - is medium unless those variables say otherwise.
+    /// </remarks>
     public BitSize? Size { get; set; }
 
     /// <summary>

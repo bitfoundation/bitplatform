@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The outcome of a find (or find &amp; replace) round trip in the <see cref="BitMarkdownEditor"/>.

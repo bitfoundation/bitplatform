@@ -205,7 +205,7 @@ public class TemplateConfigurationTests
     /// <para>
     /// That has happened: <c>AiChatPanelDictationUITests.cs</c> shipped in no exclude list while its base class
     /// <c>AiChatPanelTestBase.cs</c> and the <c>TestChatClient</c> it uses were both removed at
-    /// <c>advancedTests != true || signalR != true</c>, so <c>dotnet new bit-bp</c> with no arguments produced a test
+    /// <c>advancedTests != true || signalR != true</c>, so generating the template with no arguments produced a test
     /// project with two CS0246s. Nothing caught it: inside the template every conditional is a comment so the local
     /// build is green, and CI never generates the one combination that breaks - its build-only job passes
     /// <c>--signalR false</c> without <c>--advancedTests</c>, and both of its test jobs pass <c>--advancedTests</c>.
@@ -792,56 +792,34 @@ public class TemplateConfigurationTests
     }
 
     /// <summary>
-    /// <c>README.md</c> is <c>primaryOutputs[0]</c> and the file the IDE post-action opens after
-    /// <c>dotnet new</c>. Its opening code fence exists for exactly one purpose - to record the arguments the
-    /// project was generated with, so that the configuration can be reproduced later - and it does that with one
-    /// conditional per parameter.
-    /// <para>
-    /// Nothing connects the two. A parameter added to <c>template.json</c> without a matching branch in
-    /// <c>README.md</c> is simply absent from the record, and because the block renders as a shorter but
-    /// perfectly well-formed command, the reader has no signal that anything is missing. Six of the twenty-two
-    /// parameters had drifted out this way.
-    /// </para>
+    /// <c>bit.json</c> records the options a project was created with, and <c>bit diff</c> reads it to create the
+    /// same project at another template version. A parameter added to <c>template.json</c> without an entry there is
+    /// silently left out of that record.
     /// </summary>
     [TestMethod]
-    public void EveryTemplateParameter_Should_BeRecordedInTheGeneratedReadme()
+    public void EveryTemplateParameter_Should_BeRecordedInBitJson()
     {
         var (templateRoot, template) = LoadTemplateJson();
 
         using (template)
         {
-            var readme = File.ReadAllText(Path.Combine(templateRoot, "README.md"));
+            using var bitJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(templateRoot, "bit.json")));
+            var recorded = bitJson.RootElement.GetProperty("options").EnumerateObject().Select(option => option.Name).ToHashSet();
 
             var missing = template.RootElement.GetProperty("symbols")
                 .EnumerateObject()
                 .Where(symbol => symbol.Value.TryGetProperty("type", out var type) && type.GetString() is "parameter")
                 .Select(symbol => symbol.Name)
-                .Where(name => parametersNotWorthRecording.Contains(name) is false)
-                // A whole-token match: `--api` must not be satisfied by `--apiServerUrl`.
-                .Where(name => Regex.IsMatch(readme, $@"--{Regex.Escape(name)}(?![A-Za-z0-9])") is false)
+                .Where(name => parametersNotWorthRecording.Contains(name) is false && recorded.Contains(name) is false)
                 .ToArray();
 
-            Assert.IsEmpty(missing,
-                $"""
-                 These template.json parameters are never named in README.md, so choosing a non-default value for
-                 any of them leaves no trace in the one artifact whose job is to record the generating command.
-                 Add a branch to the fence at the top of README.md in the existing style:
-                 {string.Join(Environment.NewLine, missing)}
-                 """);
+            Assert.IsEmpty(missing, $"These template.json parameters are missing from the options of bit.json: {string.Join(", ", missing)}");
         }
     }
 
     /// <summary>
-    /// The parameters this check deliberately does not ask <c>README.md</c> to record.
-    /// <list type="bullet">
-    /// <item><c>helpUrl</c> is a link to the online parameter documentation shown while the template is being
-    /// configured. It is not part of the generated project's configuration and there is nothing to reproduce.</item>
-    /// <item><c>apiServerUrl</c> and <c>webAppUrl</c> are free-text values, not choices. Unlike every other
-    /// parameter they are also <c>replaces</c> tokens, so whatever was passed is already written throughout the
-    /// generated tree - the configuration is not lost when the command block omits them, and printing two long
-    /// urls in the first code block a user ever sees costs more than it records. Both are
-    /// <c>"isVisible": false</c> in <c>ide.host.json</c> for the same reason.</item>
-    /// </list>
+    /// <c>helpUrl</c> is not part of the project. <c>apiServerUrl</c> and <c>webAppUrl</c> are free text that their
+    /// <c>replaces</c> already write throughout the project.
     /// </summary>
     private static readonly string[] parametersNotWorthRecording = ["helpUrl", "apiServerUrl", "webAppUrl"];
 
@@ -856,7 +834,7 @@ public class TemplateConfigurationTests
     /// The template engine scans every line for the text <c>#if</c> with no idea that it might be inside a C# string
     /// literal, an XML doc comment or a markdown fence. When it finds one with no parenthesized condition after it,
     /// the expression parser indexes past the end of its token list and <b>aborts the entire generation</b> - so one
-    /// such line anywhere in the tree means <c>dotnet new bit-bp</c> produces no project at all, and the local build
+    /// such line anywhere in the tree means generating the template produces no project at all, and the local build
     /// and the local test run both stay green because inside the template every directive is just a comment.
     /// <para>
     /// This has now happened twice: once in a doc comment that quoted a directive (the file shipped truncated at that

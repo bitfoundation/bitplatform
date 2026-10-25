@@ -16,7 +16,7 @@ public partial class ErrorPageStatusCodeTests
     public TestContext TestContext { get; set; } = default!;
 
     [TestMethod]
-    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
+    [DataRow(App.Todo, DisplayName = "Todo")]
     [DataRow(App.Sales, DisplayName = "Sales (integrated API)")]
     public async Task UnknownRoute_Should_Answer404_WithTheNotFoundPage(App app)
     {
@@ -35,7 +35,7 @@ public partial class ErrorPageStatusCodeTests
     /// merely lacks a feature is only known once a token refresh has been tried in the browser.
     /// </summary>
     [TestMethod]
-    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
+    [DataRow(App.Todo, DisplayName = "Todo")]
     [DataRow(App.Sales, DisplayName = "Sales (integrated API)")]
     public async Task SignedInOnlyPage_Should_Answer401_OnTheNotAuthorizedPage_ForAnAnonymousRequest(App app)
     {

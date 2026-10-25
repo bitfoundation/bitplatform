@@ -1,0 +1,299 @@
+﻿@page "/e2e/collapse"
+
+<PageTitle>BitCollapse E2E</PageTitle>
+
+@* The classes the Class / Classes sections hand the parts, styled here so a test can read their effect back. *@
+<style>
+    .e2e-col-class { outline: 3px dashed rgb(1, 2, 3); }
+    .e2e-col-root { letter-spacing: 1px; }
+    .e2e-col-expanded { border-top: 2px solid rgb(10, 20, 30); }
+    .e2e-col-collapsed { border-top: 2px solid rgb(40, 50, 60); }
+    .e2e-col-content { word-spacing: 4px; }
+    .e2e-col-wrapper { font-style: italic; }
+    .e2e-col-glow { margin: 0 12px; box-shadow: 0 0 0 10px rgb(255, 0, 0); }
+</style>
+
+<h1>BitCollapse</h1>
+
+<E2ESection Id="basic" Title="Expanded">
+    <button id="btn-basic" type="button" aria-expanded="@(_basic ? "true" : "false")" aria-controls="col-basic-content" @onclick="() => _basic = !_basic">Toggle</button>
+    <BitCollapse Id="col-basic" Expanded="_basic">
+        @for (var i = 1; i <= 6; i++)
+        {
+            <p class="e2e-col-line">In the beginning, there is silence, line @i.</p>
+        }
+        <button id="col-basic-inner" type="button">Inside</button>
+    </BitCollapse>
+    <button id="col-basic-after" type="button">After</button>
+</E2ESection>
+
+<E2ESection Id="binding" Title="@@bind-Expanded, DefaultExpanded, methods, OnChange, Disabled">
+    <button id="btn-bound" type="button" @onclick="() => _bound = !_bound">Toggle bound</button>
+    <span id="bound-value">@_bound</span>
+    <BitCollapse Id="col-bound" @bind-Expanded="_bound" OnChange="(bool v) => _boundChanges++">Bound content.</BitCollapse>
+    <span id="bound-changes">@_boundChanges</span>
+
+    <button id="btn-expand" type="button" @onclick="() => _ref.ExpandAsync()">Expand</button>
+    <button id="btn-collapse" type="button" @onclick="() => _ref.CollapseAsync()">Collapse</button>
+    <button id="btn-toggle" type="button" @onclick="() => _ref.ToggleAsync()">Toggle</button>
+    <button id="btn-disable" type="button" @onclick="() => _refDisabled = !_refDisabled">Disable</button>
+    <BitCollapse @ref="_ref" Id="col-ref" DefaultExpanded Disabled="_refDisabled" OnChange="(bool v) => { _refChanges++; _refLast = v.ToString(); }">
+        <span id="col-ref-text">Starts open through DefaultExpanded.</span>
+    </BitCollapse>
+    <span id="ref-changes">@_refChanges</span>
+    <span id="ref-last">@_refLast</span>
+</E2ESection>
+
+<E2ESection Id="surface" Title="Background and NoPadding">
+    <div style="padding: 8px; background: rgb(128, 128, 128);">
+        <BitCollapse Id="col-bg-unset" Expanded>Unset.</BitCollapse>
+        <BitCollapse Id="col-bg-primary" Expanded Background="BitColorKind.Primary">Primary.</BitCollapse>
+        <BitCollapse Id="col-bg-secondary" Expanded Background="BitColorKind.Secondary">Secondary.</BitCollapse>
+        <BitCollapse Id="col-bg-tertiary" Expanded Background="BitColorKind.Tertiary">Tertiary.</BitCollapse>
+        <BitCollapse Id="col-bg-transparent" Expanded Background="BitColorKind.Transparent" NoPadding><span id="col-nopad-text">Transparent, no padding.</span></BitCollapse>
+    </div>
+</E2ESection>
+
+<E2ESection Id="horizontal" Title="Horizontal">
+    <button id="btn-hor" type="button" @onclick="() => _hor = !_hor">Toggle horizontal</button>
+    <div id="hor-box" style="display: flex; width: 600px;">
+        <BitCollapse Id="col-hor" Horizontal Expanded="_hor" Background="BitColorKind.Secondary" Duration="400">
+            <div id="col-hor-text" style="white-space: nowrap;">This panel opens sideways.</div>
+        </BitCollapse>
+    </div>
+    <div id="hor-rtl-box" dir="rtl" style="display: flex; width: 600px;">
+        <BitCollapse Id="col-hor-rtl" Horizontal Expanded="_hor" Dir="BitDir.Rtl" Background="BitColorKind.Secondary" Duration="400">
+            <div style="white-space: nowrap;">این بخش از سمت راست باز می شود.</div>
+        </BitCollapse>
+    </div>
+</E2ESection>
+
+<E2ESection Id="peek" Title="CollapsedSize">
+    <button id="btn-peek" type="button" @onclick="() => _peek = !_peek">Show more</button>
+    <BitCollapse Id="col-peek" Expanded="_peek" CollapsedSize="4.5rem">
+        @for (var i = 1; i <= 10; i++)
+        {
+            <p>Peek line @i of a long section.</p>
+        }
+        <a id="col-peek-link" href="e2e/collapse#peek">A link in the peek</a>
+    </BitCollapse>
+    <BitCollapse Id="col-peek-fade" CollapsedSize="3rem" Style="--bit-Collapse-peek-fade: 2rem;">
+        @for (var i = 1; i <= 6; i++)
+        {
+            <p>Faded line @i.</p>
+        }
+    </BitCollapse>
+    <div style="display: flex;">
+        <BitCollapse Id="col-peek-hor" Horizontal CollapsedSize="80px">
+            <div style="white-space: nowrap;">A sideways peek of a long line.</div>
+        </BitCollapse>
+    </div>
+</E2ESection>
+
+<E2ESection Id="transition" Title="Duration, Delay, Easing, ExpandDuration, CollapseDuration, NoFade, NoAnimation">
+    <button id="btn-trans" type="button" @onclick="() => _trans = !_trans">Toggle transitions</button>
+    <BitCollapse Id="col-slow" Expanded="_trans" Duration="1000" Delay="200" Easing="cubic-bezier(0.68, -0.55, 0.27, 1.55)">
+        @for (var i = 1; i <= 4; i++)
+        {
+            <p>Slow line @i.</p>
+        }
+    </BitCollapse>
+    <BitCollapse Id="col-dirs" Expanded="_trans" ExpandDuration="900" CollapseDuration="200">Opens slowly, closes quickly.</BitCollapse>
+    <BitCollapse Id="col-nofade" Expanded="_trans" NoFade Duration="800">Never fades.</BitCollapse>
+    <BitCollapse Id="col-noanim" Expanded="_trans" NoAnimation>
+        @for (var i = 1; i <= 4; i++)
+        {
+            <p>Instant line @i.</p>
+        }
+    </BitCollapse>
+    <BitCollapse Id="col-theme" Expanded="_trans">The theme's pace.</BitCollapse>
+    <BitCollapse Id="col-force" Expanded="_trans" ForceAnimation>Animated under reduced motion too.</BitCollapse>
+</E2ESection>
+
+<E2ESection Id="events" Title="OnExpanding, OnExpanded, OnCollapsing, OnCollapsed">
+    <button id="btn-events" type="button" @onclick="() => _eventsRef.ToggleAsync()">Toggle events</button>
+    <BitCollapse @ref="_eventsRef"
+                 Id="col-events"
+                 @bind-Expanded="_eventsExpanded"
+                 Duration="600"
+                 OnChange="@((bool v) => Log($"Change:{v}"))"
+                 OnExpanding="@(() => Log("Expanding"))"
+                 OnCollapsing="@(() => Log("Collapsing"))"
+                 OnExpanded="@(() => Log("Expanded"))"
+                 OnCollapsed="@(() => Log("Collapsed"))">
+        The -ing callback lands at once; the -ed one six hundred milliseconds later.
+    </BitCollapse>
+    <div id="ev-log">@string.Join("|", _log)</div>
+    <div id="ev-var-box" style="--bit-Collapse-duration: 700ms;">
+        <BitCollapse Id="col-ev-var" @bind-Expanded="_varExpanded" OnExpanded="() => _varExpandedAt = DateTime.UtcNow" OnExpanding="() => _varExpandingAt = DateTime.UtcNow">
+            Paced by the public variable.
+        </BitCollapse>
+    </div>
+    <button id="btn-ev-var" type="button" @onclick="() => _varExpanded = !_varExpanded">Toggle variable pace</button>
+    <span id="ev-var-gap">@(_varExpandedAt is { } done && _varExpandingAt is { } start ? ((int)(done - start).TotalMilliseconds).ToString() : "")</span>
+</E2ESection>
+
+<E2ESection Id="overflow" Title="NoClip">
+    <button id="btn-clip" type="button" @onclick="() => _clip = !_clip">Toggle clip</button>
+    <BitCollapse Id="col-clip" Expanded="_clip" NoPadding Duration="300"><div class="e2e-col-glow">Clipped glow.</div></BitCollapse>
+    <BitCollapse Id="col-noclip" Expanded="_clip" NoPadding NoClip Duration="300" OnExpanded="() => _noClipExpanded++"><div class="e2e-col-glow">Unclipped glow.</div></BitCollapse>
+    <span id="noclip-expanded">@_noClipExpanded</span>
+</E2ESection>
+
+<E2ESection Id="rendering" Title="LazyRender, UnmountOnCollapse, ExpandOnPrint">
+    <button id="btn-render" type="button" @onclick="() => _render = !_render">Toggle rendering</button>
+    <BitCollapse Id="col-lazy" LazyRender Expanded="_render" Duration="200"><input id="col-lazy-input" /></BitCollapse>
+    <BitCollapse Id="col-unmount" UnmountOnCollapse Expanded="_render" Duration="200"><input id="col-unmount-input" /></BitCollapse>
+    <BitCollapse Id="col-print" ExpandOnPrint>
+        <span id="col-print-text">On paper this section is always open.</span>
+    </BitCollapse>
+    <BitCollapse Id="col-print-lazy" ExpandOnPrint LazyRender>
+        <span id="col-print-lazy-text">Kept in the DOM for the printer.</span>
+    </BitCollapse>
+</E2ESection>
+
+<E2ESection Id="find" Title="HiddenUntilFound">
+    @* target="_top" hands the jump to the browser: Blazor scrolls a same-page fragment link it intercepts with
+       scrollIntoView, which is not a fragment navigation and so reveals no hidden="until-found" content. *@
+    <a id="link-col-find" href="e2e/collapse#col-find-target" target="_top">Jump to the passphrase</a>
+    <button id="btn-find" type="button" @onclick="() => _find = !_find">Toggle find</button>
+    <span id="find-value">@_find</span>
+    <BitCollapse Id="col-find" HiddenUntilFound @bind-Expanded="_find" OnChange="(bool v) => _findChanges++" Duration="200">
+        The passphrase is <b id="col-find-target">marmalade skies</b>.
+    </BitCollapse>
+    <span id="find-changes">@_findChanges</span>
+    <BitCollapse Id="col-find-oneway" HiddenUntilFound Expanded="false">
+        A one-way section refuses the <b id="col-find-oneway-target">pomegranate</b> reveal.
+    </BitCollapse>
+    <BitCollapse Id="col-find-disabled" HiddenUntilFound Disabled>Not offered to find-in-page.</BitCollapse>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <button id="a11y-trigger" type="button" aria-expanded="@(_a11y ? "true" : "false")" aria-controls="col-a11y-content" @onclick="() => _a11y = !_a11y">Shipping details</button>
+    <BitCollapse Id="col-a11y" Expanded="_a11y" LabelledBy="a11y-trigger">
+        Orders ship the same day. <a id="col-a11y-link" href="e2e/collapse#a11y">Read the policy</a>.
+    </BitCollapse>
+    <button id="a11y-after" type="button">After the section</button>
+    <button id="btn-focus" type="button" @onclick="() => _focusRef.ExpandAsync()">Open and focus</button>
+    <BitCollapse @ref="_focusRef" Id="col-focus" @bind-Expanded="_focusExpanded" AriaLabel="Focused section" OnExpanded="() => _focusRef.FocusAsync()">
+        FocusAsync put the focus here.
+    </BitCollapse>
+    <BitCollapse Id="col-role-empty" Expanded Role="" AriaLabel="Never named">No role.</BitCollapse>
+    <BitCollapse Id="col-role-none" Expanded Role="none" AriaLabel="Never named either">Role none.</BitCollapse>
+    <BitCollapse Id="col-role-group" Expanded Role="group" AriaLabel="A named group">Role group.</BitCollapse>
+    <BitCollapse Id="col-tabindex" Expanded TabIndex="-1">Out of the tab order.</BitCollapse>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <BitParams Parameters="@_params">
+        <BitCollapse Id="col-par-1" Expanded>From the cascade.</BitCollapse>
+        <BitCollapse Id="col-par-own" Expanded NoPadding="false">Keeps its own padding.</BitCollapse>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style, Class, Styles, Classes, CSS variables">
+    <button id="btn-style" type="button" @onclick="() => _style = !_style">Toggle styles</button>
+    <BitCollapse Id="col-style" Expanded Style="border-inline-start: 4px solid rgb(0, 101, 239);">Styled root.</BitCollapse>
+    <BitCollapse Id="col-class" Expanded Class="e2e-col-class">Classed root.</BitCollapse>
+    <BitCollapse Id="col-styles" Expanded="_style"
+                 Styles="@(new() { Root = "margin-top: 6px;", Expanded = "border-top: 1px solid rgb(0, 128, 0);", Collapsed = "border-top: 1px solid rgb(128, 0, 0);", Content = "word-spacing: 2px;", Wrapper = "font-weight: 700;" })">
+        Styles for every part.
+    </BitCollapse>
+    <BitCollapse Id="col-classes" Expanded="_style"
+                 Classes="@(new() { Root = "e2e-col-root", Expanded = "e2e-col-expanded", Collapsed = "e2e-col-collapsed", Content = "e2e-col-content", Wrapper = "e2e-col-wrapper" })">
+        Classes for every part.
+    </BitCollapse>
+    <div id="col-vars" style="--bit-Collapse-color: rgb(1, 2, 3); --bit-Collapse-background: rgb(250, 240, 230); --bit-Collapse-padding: 21px; --bit-Collapse-font-size: 19px; --bit-Collapse-duration: 750ms; --bit-Collapse-easing: linear;">
+        <BitCollapse Id="col-var" Expanded>Restyled by an ancestor.</BitCollapse>
+        <BitCollapse Id="col-var-wins" Expanded Background="BitColorKind.Tertiary" NoPadding Duration="100" Easing="ease-in">Parameters win.</BitCollapse>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitCollapse Id="col-rtl" Expanded Dir="BitDir.Rtl">لورم ایپسوم متن ساختگی.</BitCollapse>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitCollapse Id="col-dis" Expanded Disabled>Disabled colors.</BitCollapse>
+</E2ESection>
+
+<E2ESection Id="base" Title="Visibility, HtmlAttributes, re-render, unmount">
+    <BitCollapse Id="col-vis-hidden" Expanded Visibility="BitVisibility.Hidden">Hidden.</BitCollapse>
+    <BitCollapse Id="col-vis-collapsed" Expanded Visibility="BitVisibility.Collapsed">Collapsed.</BitCollapse>
+    <BitCollapse Id="col-attrs" Expanded data-e2e="custom" HtmlAttributes="@_attrs">Attributes.</BitCollapse>
+    <BitCollapse Id="col-rr" Expanded="_rrExpanded" Background="_rrBackground" NoPadding="_rrNoPadding"><span id="col-rr-text">@_rrText</span></BitCollapse>
+    <button id="btn-rr" type="button" @onclick="Rerender">Change parameters</button>
+    @if (_showUnmount)
+    {
+        <BitCollapse Id="col-um" Expanded="_umExpanded" UnmountOnCollapse HiddenUntilFound="false" Duration="600" OnCollapsed="() => { }">Unmounted mid-transition.</BitCollapse>
+    }
+    <button id="btn-um-toggle" type="button" @onclick="() => _umExpanded = !_umExpanded">Toggle unmounted</button>
+    <button id="btn-unmount" type="button" @onclick="() => _showUnmount = !_showUnmount">Unmount</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private bool _basic;
+
+    private bool _bound;
+    private int _boundChanges;
+    private BitCollapse _ref = default!;
+    private bool _refDisabled;
+    private int _refChanges;
+    private string _refLast = "";
+
+    private bool _hor;
+    private bool _peek;
+    private bool _trans;
+
+    private BitCollapse _eventsRef = default!;
+    private bool _eventsExpanded;
+    private readonly List<string> _log = [];
+    private bool _varExpanded;
+    private DateTime? _varExpandingAt;
+    private DateTime? _varExpandedAt;
+
+    private bool _clip;
+    private int _noClipExpanded;
+
+    private bool _render;
+
+    private bool _find;
+    private int _findChanges;
+
+    private bool _a11y;
+    private BitCollapse _focusRef = default!;
+    private bool _focusExpanded;
+
+    private readonly BitCollapseParams[] _params =
+    [
+        new()
+        {
+            Background = BitColorKind.Secondary,
+            NoPadding = true,
+            Duration = 800,
+        }
+    ];
+
+    private bool _style = true;
+
+    private readonly Dictionary<string, object> _attrs = new() { ["data-extra"] = "from-dictionary" };
+
+    private bool _rrExpanded;
+    private BitColorKind? _rrBackground;
+    private bool _rrNoPadding;
+    private string _rrText = "Before";
+    private bool _showUnmount = true;
+    private bool _umExpanded = true;
+
+    private void Log(string entry) => _log.Add(entry);
+
+    private void Rerender()
+    {
+        _rrExpanded = true;
+        _rrBackground = BitColorKind.Tertiary;
+        _rrNoPadding = true;
+        _rrText = "After";
+    }
+}

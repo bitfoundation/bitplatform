@@ -1,0 +1,415 @@
+﻿@page "/e2e/date-picker"
+@using System.Globalization
+
+@* The core of BitDatePicker: opening and closing the callout, picking by pointer and by keyboard, the day, month
+   and year grids, the rules that disable and highlight days, the calendar layout, the modes, standalone, templates,
+   validation, the programmatic API and the base behaviours. Every picker is pinned to the en-US culture and to a
+   "today" of Wednesday, June 12, 2024, 10:30 (local time), so the grids the tests read are the same on every day
+   the suite runs. *@
+
+<PageTitle>BitDatePicker E2E</PageTitle>
+
+<h1>BitDatePicker</h1>
+
+<E2ESection Id="basic" Title="Basic: bind, pick, open and close, events">
+    <button id="before-basic" type="button">Before</button>
+    <BitDatePicker Id="dp-basic"
+                   Label="Basic"
+                   Placeholder="Select a date"
+                   Culture="_en"
+                   Today="_today"
+                   @bind-Value="_basicValue"
+                   OnSelectDate="v => { _selectCount++; _lastSelect = Fmt(v); }"
+                   OnChange="v => { _changeCount++; _lastChange = Fmt(v); }"
+                   OnMonthChange="v => { _monthChangeCount++; _lastMonth = v.ToString(DayFormat, CultureInfo.InvariantCulture); }"
+                   OnClick="() => _clickCount++"
+                   OnFocus="() => _focusCount++"
+                   OnFocusIn="() => _focusInCount++"
+                   OnFocusOut="() => _focusOutCount++"
+                   OnOpen="() => _openCount++"
+                   OnClose="() => _closeCount++" />
+    <button id="after-basic" type="button">After</button>
+    <div>Value: <span id="basic-value">@Fmt(_basicValue)</span></div>
+    <div>
+        select <span id="basic-select-count">@_selectCount</span> (<span id="basic-last-select">@_lastSelect</span>),
+        change <span id="basic-change-count">@_changeCount</span> (<span id="basic-last-change">@_lastChange</span>),
+        month <span id="basic-month-count">@_monthChangeCount</span> (<span id="basic-last-month">@_lastMonth</span>),
+        click <span id="basic-click-count">@_clickCount</span>,
+        focus <span id="basic-focus-count">@_focusCount</span>,
+        focusin <span id="basic-focusin-count">@_focusInCount</span>,
+        focusout <span id="basic-focusout-count">@_focusOutCount</span>,
+        open <span id="basic-open-count">@_openCount</span>,
+        close <span id="basic-close-count">@_closeCount</span>
+    </div>
+    <button id="btn-basic-set" type="button" @onclick="() => _basicValue = Local(2024, 7, 4)">Set July 4</button>
+    <button id="btn-basic-null" type="button" @onclick="() => _basicValue = null">Set null</button>
+</E2ESection>
+
+<E2ESection Id="default-value" Title="DefaultValue and OnChange (uncontrolled)">
+    <BitDatePicker Id="dp-default"
+                   DefaultValue="Local(2024, 6, 3)"
+                   Culture="_en"
+                   Today="_today"
+                   OnChange="v => _defaultChanged = Fmt(v)" />
+    <div>Changed: <span id="default-changed">@_defaultChanged</span></div>
+</E2ESection>
+
+<E2ESection Id="month-year" Title="Month and year pickers beside the day picker">
+    <BitDatePicker Id="dp-my"
+                   Culture="_en"
+                   Today="_today"
+                   HighlightCurrentMonth
+                   HighlightSelectedMonth
+                   OnMonthChange="v => _myLastMonth = v.ToString(DayFormat, CultureInfo.InvariantCulture)" />
+    <div>Month: <span id="my-last-month">@_myLastMonth</span></div>
+</E2ESection>
+
+<E2ESection Id="month-hidden" Title="IsMonthPickerVisible = false">
+    <BitDatePicker Id="dp-nomonth" Culture="_en" Today="_today" IsMonthPickerVisible="false" />
+</E2ESection>
+
+<E2ESection Id="month-overlay" Title="ShowMonthPickerAsOverlay">
+    <BitDatePicker Id="dp-overlay" Culture="_en" Today="_today" ShowMonthPickerAsOverlay />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitDatePicker Id="dp-disabled"
+                   Label="Disabled"
+                   Disabled
+                   Culture="_en"
+                   Today="_today"
+                   HtmlAttributes="_disabledRootAttributes"
+                   OnClick="() => _disabledOnClick++" />
+    <div>root clicks <span id="disabled-root-clicks">@_disabledRootClicks</span>, OnClick <span id="disabled-onclick">@_disabledOnClick</span></div>
+    <BitDatePicker Id="dp-toggle-dis"
+                   Label="Toggled"
+                   Disabled="_toggleDisabled"
+                   Culture="_en"
+                   Today="_today"
+                   @onclick="() => _toggleRootClicks++" />
+    <div>root clicks <span id="toggle-root-clicks">@_toggleRootClicks</span></div>
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _toggleDisabled = !_toggleDisabled">Toggle disabled</button>
+</E2ESection>
+
+<E2ESection Id="required" Title="Required">
+    <BitDatePicker Id="dp-required" Label="Required" Required Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="readonly" Title="ReadOnly">
+    <BitDatePicker Id="dp-readonly"
+                   Label="Read only"
+                   ReadOnly
+                   AllowTextInput
+                   ShowClearButton
+                   Culture="_en"
+                   Today="_today"
+                   @bind-Value="_readOnlyValue" />
+    <div>Value: <span id="readonly-value">@Fmt(_readOnlyValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="clear-close" Title="ShowClearButton and ShowCloseButton">
+    <BitDatePicker Id="dp-clear"
+                   ShowClearButton
+                   ClearButtonTitle="Clear it"
+                   Culture="_en"
+                   Today="_today"
+                   @bind-Value="_clearValue"
+                   OnClear="() => _clearCount++" />
+    <div>Value: <span id="clear-value">@Fmt(_clearValue)</span>, cleared <span id="clear-count">@_clearCount</span></div>
+    <BitDatePicker Id="dp-close"
+                   ShowCloseButton
+                   CloseButtonTitle="Close it"
+                   Culture="_en"
+                   Today="_today"
+                   OnClose="() => _closeButtonCloses++" />
+    <div>closed <span id="close-count">@_closeButtonCloses</span></div>
+</E2ESection>
+
+<E2ESection Id="autoclose" Title="AutoClose and AllowDeselect">
+    <BitDatePicker Id="dp-noautoclose" AutoClose="false" Culture="_en" Today="_today" @bind-Value="_noAutoCloseValue" />
+    <div>Value: <span id="noautoclose-value">@Fmt(_noAutoCloseValue)</span></div>
+    <BitDatePicker Id="dp-deselect"
+                   AllowDeselect
+                   AutoClose="false"
+                   Culture="_en"
+                   Today="_today"
+                   @bind-Value="_deselectValue"
+                   OnSelectDate="v => _deselectLast = Fmt(v)" />
+    <div>Value: <span id="deselect-value">@Fmt(_deselectValue)</span>, last select <span id="deselect-last">@_deselectLast</span></div>
+</E2ESection>
+
+<E2ESection Id="starting" Title="StartingValue">
+    <BitDatePicker Id="dp-starting" ShowTimePicker StartingValue="Local(2020, 12, 1, 20, 45)" Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="minmax" Title="MinDate, MaxDate, DisablePast and DisableFuture">
+    <BitDatePicker Id="dp-minmax" MinDate="Local(2024, 6, 7)" MaxDate="Local(2024, 6, 17)" Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-past" DisablePast Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-future" DisableFuture Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="disabled-dates" Title="DisabledDaysOfWeek, DisabledDates and IsDateDisabled">
+    <BitDatePicker Id="dp-blocked"
+                   DisabledDaysOfWeek="_weekend"
+                   DisabledDates="_disabledDates"
+                   Culture="_en"
+                   Today="_today"
+                   @bind-Value="_blockedValue" />
+    <div>Value: <span id="blocked-value">@Fmt(_blockedValue)</span></div>
+    <BitDatePicker Id="dp-odd" IsDateDisabled="d => d.Day % 2 == 1" Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="highlighted" Title="HighlightedDates, GetDayClass and HighlightToday">
+    <BitDatePicker Id="dp-hl" HighlightedDates="_highlightedDates" Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-dayclass" GetDayClass="@(d => d.DayOfWeek == DayOfWeek.Sunday ? "e2e-sunday" : null)" Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-notoday" HighlightToday="false" Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="layout" Title="Calendar layout">
+    <BitDatePicker Id="dp-monday" FirstDayOfWeek="DayOfWeek.Monday" Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-weeks" ShowWeekNumbers Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-iso" ShowWeekNumbers FirstDayOfWeek="DayOfWeek.Monday" WeekNumberRule="CalendarWeekRule.FirstFourDayWeek" Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-noout" ShowOutsideDays="false" Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-fixed" FixedWeeks Culture="_en" Today="_february" />
+    <BitDatePicker Id="dp-notfixed" Culture="_en" Today="_february" />
+    <BitDatePicker Id="dp-two" MonthCount="2" IsMonthPickerVisible="false" Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-three"
+                   MonthCount="3"
+                   PagedNavigation
+                   ShowMonthPickerAsOverlay
+                   MonthPickerToggleTitle="Choose another month than {0}"
+                   Culture="_en"
+                   Today="_today" />
+</E2ESection>
+
+<E2ESection Id="mode" Title="Mode: MonthPicker and YearPicker">
+    <BitDatePicker Id="dp-monthmode" Mode="BitDatePickerMode.MonthPicker" Culture="_en" Today="_today" @bind-Value="_monthModeValue" />
+    <div>Value: <span id="monthmode-value">@Fmt(_monthModeValue)</span></div>
+    <BitDatePicker Id="dp-yearmode" Mode="BitDatePickerMode.YearPicker" DisableFuture Culture="_en" Today="_today" @bind-Value="_yearModeValue" />
+    <div>Value: <span id="yearmode-value">@Fmt(_yearModeValue)</span></div>
+    <BitDatePicker Id="dp-monthmode-sa" Standalone Mode="BitDatePickerMode.MonthPicker" Culture="_en" Today="_today" @bind-Value="_monthModeSaValue" />
+    <div>Value: <span id="monthmode-sa-value">@Fmt(_monthModeSaValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="standalone" Title="Standalone">
+    <BitDatePicker Id="dp-sa" Label="Standalone" Standalone Culture="_en" Today="_today" @bind-Value="_standaloneValue" />
+    <div>Value: <span id="sa-value">@Fmt(_standaloneValue)</span></div>
+    <BitDatePicker Id="dp-sa-dis" Label="Standalone disabled" Standalone Disabled Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitDatePicker @ref="_templatePicker" Id="dp-tpl" Culture="_en" Today="_today" @bind-Value="_templateValue">
+        <LabelTemplate><span id="tpl-label">Custom label</span></LabelTemplate>
+        <IconTemplate><span id="tpl-icon" class="e2e-icon-tpl">@("#")</span></IconTemplate>
+        <DayCellTemplate><span class="e2e-day-cell" data-day="@context.Day">d@(context.Day)</span></DayCellTemplate>
+        <MonthCellTemplate><span class="e2e-month-cell">m@(context.Month)</span></MonthCellTemplate>
+        <YearCellTemplate><span class="e2e-year-cell">y@(context)</span></YearCellTemplate>
+        <CalloutHeaderTemplate><div id="tpl-header">Pick your appointment</div></CalloutHeaderTemplate>
+        <CalloutFooterTemplate>
+            <div id="tpl-footer">
+                <button id="tpl-tomorrow" type="button" @onclick="SelectTomorrow">Tomorrow</button>
+            </div>
+        </CalloutFooterTemplate>
+    </BitDatePicker>
+    <div>Value: <span id="tpl-value">@Fmt(_templateValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="validation" Title="Validation and messages">
+    <EditForm Model="_model" OnValidSubmit="() => _submitResult = Fmt(_model.Date)" OnInvalidSubmit="() => _submitResult = Invalid">
+        <DataAnnotationsValidator />
+        <BitDatePicker Id="dp-valid" Label="Required date" Culture="_en" Today="_today" @bind-Value="_model.Date" />
+        <div id="valid-message"><ValidationMessage For="() => _model.Date" /></div>
+        <button id="valid-submit" type="submit">Submit</button>
+    </EditForm>
+    <div>Submit: <span id="valid-result">@_submitResult</span></div>
+
+    <BitDatePicker Id="dp-errmsg" Label="App error" ErrorMessage="@_appError" Culture="_en" Today="_today" />
+    <button id="btn-set-error" type="button" @onclick="() => _appError = ErrorText">Set error</button>
+    <button id="btn-clear-error" type="button" @onclick="() => _appError = null">Clear error</button>
+
+    <BitDatePicker Id="dp-invalid"
+                   Label="Invalid"
+                   Invalid
+                   Description="Marked invalid by the app."
+                   AriaDescription="Dates are stored in UTC."
+                   Culture="_en"
+                   Today="_today" />
+
+    <BitDatePicker Id="dp-msg-tpl" Label="Templates" Culture="_en" Today="_today">
+        <DescriptionTemplate><b id="desc-tpl">Described by a template</b></DescriptionTemplate>
+        <ErrorMessageTemplate><i id="error-tpl">Rejected by a template</i></ErrorMessageTemplate>
+    </BitDatePicker>
+</E2ESection>
+
+<E2ESection Id="programmatic" Title="IsOpen, OpenCallout and CloseCalloutAndFocus">
+    <BitDatePicker @ref="_programmaticPicker"
+                   Id="dp-prog"
+                   Culture="_en"
+                   Today="_today"
+                   @bind-IsOpen="_isOpen"
+                   OnOpen="() => _progOpens++"
+                   OnClose="() => _progCloses++" />
+    <div>IsOpen <span id="prog-isopen">@_isOpen</span>, opens <span id="prog-opens">@_progOpens</span>, closes <span id="prog-closes">@_progCloses</span></div>
+    <button id="btn-open-method" type="button" @onclick="() => _programmaticPicker!.OpenCallout()">OpenCallout()</button>
+    <button id="btn-close-method" type="button" @onclick="() => _programmaticPicker!.CloseCalloutAndFocus()">CloseCalloutAndFocus()</button>
+    <button id="btn-open-param" type="button" @onclick="() => _isOpen = true">IsOpen = true</button>
+
+    <BitDatePicker Id="dp-oneway" Culture="_en" Today="_today" IsOpen="_oneWayOpen" @bind-Value="_oneWayValue" />
+    <div>Value: <span id="oneway-value">@Fmt(_oneWayValue)</span></div>
+    <button id="btn-oneway-open" type="button" @onclick="() => _oneWayOpen = true">Open one-way</button>
+    <button id="btn-oneway-close" type="button" @onclick="() => _oneWayOpen = false">Close one-way</button>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessible names and titles">
+    <BitDatePicker Id="dp-a11y"
+                   AriaLabel="Stay date"
+                   ShowWeekNumbers
+                   ShowCloseButton
+                   HighlightedDates="_highlightedDates"
+                   Culture="_en"
+                   Today="_today"
+                   CalloutAriaLabel="Stay calendar"
+                   SelectedDateAriaAtomic="Picked {0}"
+                   GoToPrevMonthTitle="Earlier month"
+                   GoToNextMonthTitle="Later month"
+                   GoToTodayTitle="Back to today"
+                   GoToPrevYearTitle="Year {0} back"
+                   GoToNextYearTitle="Year {0} ahead"
+                   GoToPrevYearRangeTitle="Years {0} to {1} back"
+                   GoToNextYearRangeTitle="Years {0} to {1} ahead"
+                   YearPickerToggleTitle="{0}, pick a year"
+                   YearRangePickerToggleTitle="{0} to {1}, pick a month"
+                   WeekNumbersHeaderTitle="Wk"
+                   WeekNumberTitle="Wk {0}"
+                   CloseButtonTitle="Done"
+                   HighlightedDateAriaLabel="{0} (booked)" />
+</E2ESection>
+
+<E2ESection Id="base" Title="Base parameters">
+    <BitDatePicker Id="dp-base"
+                   Class="e2e-root-class"
+                   Style="margin-top: 7px;"
+                   AriaLabel="Base date"
+                   Name="base-date"
+                   TabIndex="0"
+                   Visibility="_visibility"
+                   Culture="_en"
+                   Today="_today"
+                   HtmlAttributes="_rootAttributes"
+                   InputHtmlAttributes="_inputAttributes"
+                   CalloutHtmlAttributes="_calloutAttributes" />
+    <button id="btn-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle: re-render, mount, unmount">
+    <button id="btn-toggle-weeks" type="button" @onclick="() => _lifeWeeks = !_lifeWeeks">Toggle week numbers</button>
+    <button id="btn-unmount" type="button" @onclick="() => _lifeMounted = !_lifeMounted">Toggle mounted</button>
+    <button id="btn-mount-autofocus" type="button" @onclick="() => _autoFocusMounted = true">Mount AutoFocus</button>
+    <button id="btn-mount-open" type="button" @onclick="() => _initOpenMounted = true">Mount open</button>
+    @if (_lifeMounted)
+    {
+        <BitDatePicker Id="dp-life" ShowWeekNumbers="_lifeWeeks" Culture="_en" Today="_today" />
+    }
+    @if (_autoFocusMounted)
+    {
+        <BitDatePicker Id="dp-autofocus" AutoFocus Culture="_en" Today="_today" />
+    }
+    @if (_initOpenMounted)
+    {
+        <BitDatePicker Id="dp-initopen" Culture="_en" Today="_today" @bind-IsOpen="_initOpen" OnOpen="() => _initOpens++" />
+        <div>IsOpen <span id="initopen-isopen">@_initOpen</span>, opens <span id="initopen-opens">@_initOpens</span></div>
+    }
+    <div>mounted <span id="life-mounted">@_lifeMounted</span></div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string DayFormat = "yyyy-MM-dd";
+    private const string Invalid = "invalid";
+    private const string ErrorText = "This day is taken.";
+
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+
+    // The local wall clock, with the offset of the zone the server runs in on that day - the zone the pickers
+    // read and write their values in while their TimeZone is unset.
+    private static DateTimeOffset Local(int year, int month, int day, int hour = 0, int minute = 0)
+    {
+        var dateTime = new DateTime(year, month, day, hour, minute, 0);
+        return new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
+    }
+
+    private static string Fmt(DateTimeOffset? value) => value?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "null";
+
+    private readonly DateTimeOffset _today = Local(2024, 6, 12, 10, 30);
+    private readonly DateTimeOffset _february = Local(2024, 2, 14);
+    private readonly DayOfWeek[] _weekend = [DayOfWeek.Saturday, DayOfWeek.Sunday];
+    private readonly DateTimeOffset[] _disabledDates = [Local(2024, 6, 14)];
+    private readonly DateTimeOffset[] _highlightedDates = [Local(2024, 6, 5), Local(2024, 6, 25)];
+
+    private DateTimeOffset? _basicValue;
+    private int _selectCount, _changeCount, _monthChangeCount, _clickCount, _focusCount, _focusInCount, _focusOutCount, _openCount, _closeCount;
+    private string _lastSelect = "-", _lastChange = "-", _lastMonth = "-";
+
+    private string _myLastMonth = "-";
+    private string _defaultChanged = "-";
+
+    private int _disabledRootClicks, _disabledOnClick, _toggleRootClicks;
+    private Dictionary<string, object> _disabledRootAttributes = [];
+    private bool _toggleDisabled = true;
+
+    private DateTimeOffset? _readOnlyValue = Local(2024, 6, 12);
+
+    private DateTimeOffset? _clearValue = Local(2024, 6, 20);
+    private int _clearCount, _closeButtonCloses;
+
+    private DateTimeOffset? _noAutoCloseValue;
+    private DateTimeOffset? _deselectValue;
+    private string _deselectLast = "-";
+
+    private DateTimeOffset? _blockedValue;
+
+    private DateTimeOffset? _monthModeValue, _yearModeValue, _monthModeSaValue;
+    private DateTimeOffset? _standaloneValue;
+
+    private BitDatePicker? _templatePicker;
+    private DateTimeOffset? _templateValue;
+
+    private readonly DateModel _model = new();
+    private string _submitResult = "-";
+    private string? _appError;
+
+    private BitDatePicker? _programmaticPicker;
+    private bool _isOpen;
+    private int _progOpens, _progCloses;
+    private bool _oneWayOpen;
+    private DateTimeOffset? _oneWayValue;
+
+    private BitVisibility _visibility;
+    private readonly Dictionary<string, object> _rootAttributes = new() { ["data-e2e"] = "root-attr", ["title"] = "Root title" };
+    private readonly Dictionary<string, object> _inputAttributes = new() { ["data-e2e-input"] = "input-attr" };
+    private readonly Dictionary<string, object> _calloutAttributes = new() { ["data-e2e-callout"] = "callout-attr" };
+
+    private bool _lifeMounted = true, _lifeWeeks, _autoFocusMounted, _initOpenMounted, _initOpen = true;
+    private int _initOpens;
+
+    protected override void OnInitialized()
+    {
+        // The page's own handler on the root, splatted through HtmlAttributes: a disabled picker must drop it.
+        _disabledRootAttributes = new() { ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledRootClicks++) };
+    }
+
+    private async Task SelectTomorrow()
+    {
+        _templateValue = Local(2024, 6, 13);
+        await _templatePicker!.CloseCalloutAndFocus();
+    }
+
+    public class DateModel
+    {
+        [Required]
+        public DateTimeOffset? Date { get; set; }
+    }
+}

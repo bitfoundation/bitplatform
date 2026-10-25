@@ -1,15 +1,32 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Collections.Frozen;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 {
     private BitDir? _dir;
     private readonly string _uniqueId = BitShortId.NewId();
     private readonly HashSet<string> _assignedParameters = [];
+    private readonly Dictionary<string, object> _htmlAttributes = [];
+
+    // The dictionary last passed as the HtmlAttributes parameter, which every pass reads and none changes.
+    private IEnumerable<KeyValuePair<string, object>>? _htmlAttributesParameter;
 
 
 
     protected bool IsRendered;
     protected bool IsDisposed;
+
+    // Set the moment the disposal starts, ahead of whatever an override awaits before the base class sets IsDisposed.
+    // The renderer starts disposing a component before the ones it rendered, and runs their disposal while the
+    // component is still awaiting its own (a JS call), so this is what a child unregistering from it reads to tell
+    // a component that is going away with it from one that stays, and leave its state and its callbacks alone.
+    // A [JSInvokable] callback reads it too: its DotNetObjectReference stays alive until the override has awaited
+    // its JS teardown, so a call the script sent in that window would otherwise run on a half-disposed component.
+    // IsDisposed stays what the DisposeAsync(bool) overrides guard their own entry with. Only the public
+    // DisposeAsync() sets this one, since it is the only caller of DisposeAsync(bool).
+    protected bool IsDisposing;
 
 
 
@@ -85,6 +102,11 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the component is disabled and cannot respond to user interaction.
+    /// </summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the component's animations play at their full duration
     /// even when reduced motion is requested.
     /// <br />
@@ -103,20 +125,41 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters.
-    /// <br />
-    /// <strong>This parameter should not be assigned directly.</strong>
     /// </summary>
     /// <remarks>
     /// Each entry in the dictionary represents an attribute name and its corresponding value. This
     /// allows customization of the rendered element with other HTML attributes such as alt, title, data-* attributes, and
     /// more.
     /// <br />
+    /// Every HTML attribute written on the component lands here. A dictionary passed to this parameter adds its entries
+    /// to those, and an attribute written on the component wins over an entry of the same name, however either of them
+    /// cases it. The dictionary passed is only read, never changed: its entries are copied in on every render, and so
+    /// are those of one assigned to this property from code.
+    /// <br />
     /// This dictionary will be used as the value of the <strong>"@attributes"</strong> blazor directive when rendering the root element of the component.
     /// <br />
     /// If an attribute in the dictionary matches a property already set by the component, the value in the
     /// dictionary may override the default.
     /// </remarks>
-    [Parameter] public Dictionary<string, object> HtmlAttributes { get; set; } = [];
+    [Parameter]
+    public Dictionary<string, object> HtmlAttributes
+    {
+        get => _htmlAttributes;
+        set
+        {
+            // The component's own dictionary is cleared on every pass, so one handed to it is copied, never taken as it.
+            if (ReferenceEquals(value, _htmlAttributes)) return;
+
+            _htmlAttributes.Clear();
+
+            if (value is null) return;
+
+            foreach (var attribute in value)
+            {
+                _htmlAttributes[attribute.Key] = attribute.Value;
+            }
+        }
+    }
 
     /// <summary>
     /// Gets or sets the unique identifier for the component's root element.
@@ -128,13 +171,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// If the value is null, the <see cref="BitComponentBase.UniqueId"/> will be used as the HTML id attribute of the root element of the component.
     /// </remarks>
     [Parameter] public string? Id { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the component is enabled and can respond to user interaction.
-    /// <br />
-    /// The default value is <strong>true</strong>.
-    /// </summary>
-    [Parameter] public bool IsEnabled { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the CSS style string to apply to the rendered element.
@@ -169,13 +205,47 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
 
 
+    /// <summary>
+    /// The parameters of the current pass that the classes above have not taken, handed down to the next base through
+    /// <see cref="TakeParametersDictionary"/>. A class sets it right before it calls the base, never while anything
+    /// of its own pass can still await, so a pass that overlaps another one never reads the other one's leftovers.
+    /// </summary>
     protected internal Dictionary<string, object?>? ParametersCache { get; set; }
+
+    /// <summary>
+    /// Takes the parameters of the current pass: the ones a derived class handed down through
+    /// <see cref="ParametersCache"/>, or else a dictionary of the given view's own. The cache is cleared as it is
+    /// taken, so a pass that throws before reaching this class leaves nothing behind for the next one to apply.
+    /// </summary>
+    private protected Dictionary<string, object?> TakeParametersDictionary(ParameterView parameters)
+    {
+        var parametersDictionary = ParametersCache;
+        ParametersCache = null;
+
+        if (parametersDictionary is not null) return parametersDictionary;
+
+        // Filled from the view itself rather than cast from ToDictionary, whose concrete type is no part of its contract.
+        parametersDictionary = [];
+        foreach (var parameter in parameters)
+        {
+            parametersDictionary[parameter.Name] = parameter.Value;
+        }
+
+        return parametersDictionary;
+    }
+
+    // The arguments of the events Bit.BlazorUI.Events registers are filled in by System.Text.Json, through setters
+    // nothing else calls, so a trimmed app would otherwise lose them and hand every handler empty fields. They are
+    // kept from here since every app that uses the library renders at least one of its components.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BitAnimationEventArgs))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BitTransitionEventArgs))]
     public override Task SetParametersAsync(ParameterView parameters)
     {
         _assignedParameters.Clear();
-        HtmlAttributes.Clear();
-        var parametersDictionary = ParametersCache ?? new Dictionary<string, object?>(parameters.ToDictionary());
-        foreach (var parameter in parametersDictionary!)
+        _htmlAttributes.Clear();
+        // The dictionary is this pass's own, and removing an entry does not invalidate the enumerator of a dictionary.
+        var parametersDictionary = TakeParametersDictionary(parameters);
+        foreach (var parameter in parametersDictionary)
         {
             switch (parameter.Key)
             {
@@ -209,6 +279,14 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
+                case nameof(Disabled):
+                    _assignedParameters.Add(nameof(Disabled));
+                    var disabled = (bool)parameter.Value;
+                    if (Disabled != disabled) ClassBuilder.Reset();
+                    Disabled = disabled;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(ForceAnimation):
                     _assignedParameters.Add(nameof(ForceAnimation));
                     var forceAnimation = (bool)parameter.Value;
@@ -217,17 +295,17 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
-                case nameof(Id):
-                    _assignedParameters.Add(nameof(Id));
-                    Id = (string?)parameter.Value;
+                // Merged into the splatted attributes once every other one is in, never taken as the dictionary
+                // itself: HtmlAttributes is cleared on every pass, which would empty the caller's own dictionary. Any
+                // other value under that name - a wrapper splatting one it captured - is an attribute like the rest.
+                case nameof(HtmlAttributes) when parameter.Value is null or IEnumerable<KeyValuePair<string, object>>:
+                    _htmlAttributesParameter = (IEnumerable<KeyValuePair<string, object>>?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
-                case nameof(IsEnabled):
-                    _assignedParameters.Add(nameof(IsEnabled));
-                    var isEnabled = (bool)parameter.Value;
-                    if (IsEnabled != isEnabled) ClassBuilder.Reset();
-                    IsEnabled = isEnabled;
+                case nameof(Id):
+                    _assignedParameters.Add(nameof(Id));
+                    Id = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -260,9 +338,84 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
             }
         }
 
-        ParametersCache = null;
+        // A pass that leaves the parameter out keeps the dictionary passed before, as it keeps every other parameter.
+        AddMissingHtmlAttributes(_htmlAttributesParameter);
 
-        return base.SetParametersAsync(ParameterView.Empty);
+        var restore = RestoreDroppedCascadeParameters();
+
+        return restore.IsCompletedSuccessfully ? base.SetParametersAsync(ParameterView.Empty) : SetParametersAfterAsync(restore);
+    }
+
+    private async Task SetParametersAfterAsync(Task restore)
+    {
+        await restore;
+
+        await base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    /// <summary>
+    /// Adds every attribute of the given set the component does not hold yet - the HtmlAttributes parameter, the set a
+    /// params object cascades - to its splatted attributes, which win over an entry of the same name however either of
+    /// them cases it: the render tree treats differently cased names as one attribute, so both would otherwise reach it
+    /// and the last one would win.
+    /// </summary>
+    internal void AddMissingHtmlAttributes(IEnumerable<KeyValuePair<string, object>>? attributes)
+    {
+        if (attributes is null) return;
+
+        foreach (var attribute in attributes)
+        {
+            if (TryFindAttribute(_htmlAttributes, attribute.Key, out _)) continue;
+
+            _htmlAttributes[attribute.Key] = attribute.Value;
+        }
+    }
+
+    /// <summary>
+    /// The attributes a component splats on one of its parts: its own, plus every cascaded one it holds under no casing
+    /// of the name. The own dictionary is handed back as it is when nothing is added and copied otherwise, so neither
+    /// of the two is ever changed.
+    /// </summary>
+    private protected static Dictionary<string, object>? MergeAttributes(Dictionary<string, object>? own,
+                                                                        IEnumerable<KeyValuePair<string, object>>? cascaded)
+    {
+        if (cascaded is null) return own;
+
+        Dictionary<string, object>? merged = null;
+
+        foreach (var attribute in cascaded)
+        {
+            if (TryFindAttribute(own, attribute.Key, out _)) continue;
+
+            merged ??= own is null ? [] : new(own);
+            merged[attribute.Key] = attribute.Value;
+        }
+
+        return merged ?? own;
+    }
+
+    /// <summary>
+    /// Looks an attribute up by its name the way the render tree matches names, case insensitively, taking the last of
+    /// several differently cased spellings as the render tree does - an exact match included. The one definition of
+    /// what makes two attribute names the same name, for every set of attributes a component splats.
+    /// </summary>
+    private protected static bool TryFindAttribute(IEnumerable<KeyValuePair<string, object>>? attributes, string name, out object? value)
+    {
+        value = null;
+
+        if (attributes is null) return false;
+
+        var found = false;
+
+        foreach (var attribute in attributes)
+        {
+            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase) is false) continue;
+
+            value = attribute.Value;
+            found = true;
+        }
+
+        return found;
     }
 
 
@@ -284,7 +437,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
         ClassBuilder
               .Register(() => RootElementClass)
-              .Register(() => IsEnabled ? string.Empty : "bit-dis")
+              .Register(() => Disabled ? "bit-dis" : string.Empty)
               .Register(() => Dir == BitDir.Rtl ? "bit-rtl" : string.Empty)
               .Register(() => ForceAnimation ? "bit-fam" : string.Empty);
 
@@ -350,18 +503,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     protected virtual void RegisterCssClasses() { }
 
     /// <summary>
-    /// Called when the visibility state changes.
-    /// </summary>
-    /// <remarks>
-    /// Override this method in a derived class to respond to changes in visibility.
-    /// This method is invoked whenever the visibility state is updated.
-    /// </remarks>
-    /// <param name="visibility">
-    /// The new visibility state that triggered the change event.
-    /// </param>
-    protected virtual void OnVisibilityChanged(BitVisibility visibility) { }
-
-    /// <summary>
     /// Splices two style parts into the single declaration list a style attribute holds.
     /// </summary>
     /// <remarks>
@@ -376,6 +517,23 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
         if (extraStyle.HasNoValue()) return style;
 
         return style!.TrimEnd().EndsWith(';') ? $"{style} {extraStyle}" : $"{style};{extraStyle}";
+    }
+
+    /// <summary>
+    /// The style the root has without the style of a passing state of it (Styles.Focused, Styles.Toggled) while
+    /// that state is applied, and null otherwise: the steady part of the root's style, followed by Style.
+    /// </summary>
+    /// <remarks>
+    /// A component with a popup renders it as the data-bit-popup-style of its root, which Callouts.ts copies onto
+    /// the chain the popup is relocated into in place of the style attribute, so the popup never takes on a look
+    /// that comes and goes as the focus moves between the field and the popup itself. An empty string, rather than
+    /// null, is what says the root has no steady style to hand the popup at all.
+    /// </remarks>
+    private protected string? GetPopupStyle(bool inPassingState, string? passingStyle, string? steadyStyle)
+    {
+        if (inPassingState is false || passingStyle.HasNoValue()) return null;
+
+        return JoinStyles(steadyStyle, Style) ?? string.Empty;
     }
 
     /// <summary>
@@ -394,6 +552,17 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
+    /// Splices two space-separated lists of tokens - the ids of an aria-owns, the keys of an aria-keyshortcuts - into
+    /// the single list the attribute holds, and null where neither has anything in it.
+    /// </summary>
+    private protected static string? JoinTokenLists(string? list, string? extraList)
+    {
+        var joined = JoinClasses(list, extraList);
+
+        return joined.HasValue() ? joined : null;
+    }
+
+    /// <summary>
     /// The value of an attribute the page wrote as a plain HTML attribute rather than as a parameter of the component.
     /// </summary>
     /// <remarks>
@@ -403,24 +572,214 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// written over a splatted attribute does not leave that attribute alone, it removes it.
     /// </remarks>
     private protected string? GetSplattedAttribute(string name)
+        => TryGetSplattedAttribute(name, out var value) ? value : null;
+
+    /// <summary>
+    /// Determines whether the page wrote an attribute as a plain HTML attribute, however it cased its name and whatever
+    /// value it gave it - a null or a false included, which is how a page takes an attribute off the element.
+    /// </summary>
+    private protected bool HasSplattedAttribute(string name) => TryGetSplattedAttribute(name, out _);
+
+    /// <summary>
+    /// Looks up an attribute the page wrote as a plain HTML attribute, matching its name case insensitively the way the
+    /// render tree does. True whenever the attribute was written, even with a null or a false value, which the value
+    /// comes out as null for.
+    /// </summary>
+    private protected bool TryGetSplattedAttribute(string name, out string? value)
     {
-        if (HtmlAttributes.Count == 0) return null;
+        value = null;
 
-        if (HtmlAttributes.TryGetValue(name, out var value)) return StringifyAttributeValue(value);
+        if (TryFindAttribute(_htmlAttributes, name, out var selected) is false) return false;
 
-        foreach (var attribute in HtmlAttributes)
+        value = StringifyAttributeValue(selected);
+        return true;
+    }
+
+    /// <summary>
+    /// The aria-label the root is named with: the AriaLabel parameter, or else the aria-label the page splatted on.
+    /// </summary>
+    /// <remarks>
+    /// The root's aria-label is written after the splatted attributes, and a null written over a splatted attribute
+    /// removes it, so the parameter is resolved against what the page wrote by hand rather than written over it.
+    /// </remarks>
+    private protected string? ResolveAriaLabel() => AriaLabel ?? GetSplattedAttribute("aria-label");
+
+    /// <summary>
+    /// The direction the component knows it is laid out in: true for <see cref="BitDir.Rtl"/>, false for
+    /// <see cref="BitDir.Ltr"/>, and null when <see cref="Dir"/> leaves the direction to the page (unset) or to the
+    /// content (<see cref="BitDir.Auto"/>), which only the browser knows. A component that knows more than Dir says
+    /// (a culture that writes right to left) overrides it, through <see cref="BitCssClasses.ExplicitRtl"/>.
+    /// </summary>
+    /// <remarks>
+    /// The stylesheets follow the direction the component is actually laid out in (<c>:dir(rtl)</c>), so anything
+    /// computed from the direction has to as well: a null is never read as left to right. It is handed to a script as
+    /// it is, which resolves it off the element when it needs it, or resolved in .NET through
+    /// <see cref="IsRtlAsync(IJSRuntime, ElementReference?)"/>.
+    /// </remarks>
+    internal virtual bool? ExplicitRtl => Dir switch
+    {
+        BitDir.Rtl => true,
+        BitDir.Ltr => false,
+        _ => null
+    };
+
+    /// <summary>
+    /// Whether the component is laid out right to left, read at the moment it matters: the direction
+    /// <see cref="ExplicitRtl"/> knows, or else the one the browser resolved for the element (the root unless another
+    /// is given), so a page or content that changed direction since the last render is never answered with a stale
+    /// value.
+    /// </summary>
+    /// <remarks>
+    /// It costs a round trip whenever the direction is not known, so it is asked only on the path that acts on the
+    /// direction (a pointer on a mirrored axis, a measurement), never on every key - a key handler asks through
+    /// <see cref="IsRtlArrowAsync"/>. Before the element is rendered, or without a browser, it answers left to right.
+    /// </remarks>
+    internal async ValueTask<bool> IsRtlAsync(IJSRuntime js, ElementReference? element = null)
+    {
+        if (ExplicitRtl is { } rtl) return rtl;
+
+        var target = element ?? RootElement;
+        if (target.Id is null) return false;
+
+        try
         {
-            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase)) return StringifyAttributeValue(attribute.Value);
+            return await js.BitUtilsIsRtl(target);
+        }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+        catch (TaskCanceledException) { }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Whether the key is a left or right arrow pressed in a right-to-left layout, so that it moves the other way
+    /// along the inline axis: false for every other key, without asking, since only those two act on the direction
+    /// and <see cref="IsRtlAsync"/> costs a round trip when the direction is not known.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A key handler acts on the answer, and moving the focus is most of what it does with it. While the round trip is
+    /// out the user can take the focus elsewhere - a Tab pressed right after the arrow, a click - which the browser
+    /// does at once, and the handler would then steal the focus back to the item the arrow was going to: Left at the
+    /// first item of a toolbar followed by Tab would land back on the toolbar. So the script answers a horizontal
+    /// arrow it has seen overtaken that way (a Tab or a pointer press since it, with the focus no longer where it was
+    /// pressed) with a refusal instead of a direction, and this throws an <see cref="OperationCanceledException"/>
+    /// for it: the handler stops where it awaited, and Blazor drops an event handler that ends canceled without
+    /// reporting it, the way it drops any other cancellation. A handler that has more to do after the key than act on
+    /// it - raise a consumer's callback - catches it around the part the key drives.
+    /// </para>
+    /// <para>
+    /// A direction <see cref="ExplicitRtl"/> knows takes no round trip and so is never overtaken; the key is acted on
+    /// as it arrives.
+    /// </para>
+    /// </remarks>
+    internal async ValueTask<bool> IsRtlArrowAsync(IJSRuntime js, string? key, ElementReference? element = null)
+    {
+        if (key is not ("ArrowLeft" or "ArrowRight")) return false;
+
+        if (ExplicitRtl is { } rtl) return rtl;
+
+        var target = element ?? RootElement;
+        if (target.Id is null) return false;
+
+        try
+        {
+            return await js.BitUtilsIsRtlArrow(target);
+        }
+        catch (JSException ex) when (ex.Message.Contains(UtilsJsRuntimeExtensions.ArrowKeyOvertaken, StringComparison.Ordinal))
+        {
+            throw new OperationCanceledException("The arrow key was overtaken by the focus moving elsewhere before its direction was known.");
+        }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+        catch (TaskCanceledException) { }
+
+        return false;
+    }
+
+    /// <summary>
+    /// The events an element is activated through: by the pointer, by touch, by the keyboard, and by the click an
+    /// assistive technology dispatches. The ones that only follow the pointer or the focus around (a hover, a focus)
+    /// are not among them.
+    /// </summary>
+    /// <remarks>
+    /// Matched without regard to case, the way the renderer matches an attribute name, and frozen so the list every
+    /// disabled component filters by cannot be changed under it.
+    /// </remarks>
+    private protected static readonly FrozenSet<string> ActivationEvents = new[]
+    {
+        "onclick", "ondblclick", "onauxclick", "oncontextmenu",
+        "onmousedown", "onmouseup", "onpointerdown", "onpointerup",
+        "ontouchstart", "ontouchend",
+        "onkeydown", "onkeyup", "onkeypress"
+    }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The attributes the page splatted on the component, less the handlers of the <see cref="ActivationEvents"/>
+    /// while the component is <see cref="Disabled"/>. A component whose disabled state makes it unavailable splats its
+    /// root with this rather than with <see cref="HtmlAttributes"/>. One whose disabled state also follows another
+    /// component's (a tab of a disabled pivot) says so through <see cref="IsActivationDisabled"/>.
+    /// </summary>
+    /// <remarks>
+    /// The pointer-events a disabled class turns off are only one of the ways an event reaches an element: a screen
+    /// reader activates what it announces by dispatching a click on it, and an event of an enabled control inside a
+    /// disabled container - a click, a key, a press - bubbles up to it. A form element the browser disables is out of
+    /// reach of the pointer and the keyboard both, so a disabled component drops the page's handlers of the events
+    /// that activate an element rather than run them for a state it announces as unavailable. A component whose
+    /// disabled state only switches one of its behaviours off while the content it hosts stays live (a badge on a
+    /// button, a tooltip on its anchor, a pane) keeps splatting <see cref="HtmlAttributes"/>, since what bubbles up
+    /// to it there is an enabled control's own event.
+    /// </remarks>
+    private protected Dictionary<string, object> DisabledAwareHtmlAttributes
+    {
+        get
+        {
+            if (IsActivationDisabled is false || HtmlAttributes.Count == 0) return HtmlAttributes;
+
+            // Read again on every render rather than cached: a component may replace a value of its own HtmlAttributes
+            // in place between two renders (BitSlider's aria-label, a BitParams ancestor's attributes), which leaves
+            // the dictionary and its count unchanged, and a copy kept from before would render the stale value.
+            return LeaveActivationHandlersOut(HtmlAttributes);
+        }
+    }
+
+    /// <summary>
+    /// Whether the component is unavailable to the page's activation handlers (see <see cref="DisabledAwareHtmlAttributes"/>).
+    /// It is <see cref="Disabled"/> unless the component's disabled state also follows another one's.
+    /// </summary>
+    private protected virtual bool IsActivationDisabled => Disabled;
+
+    // The dictionary itself while it holds no handler of an activation event, so the common case allocates nothing.
+    private static Dictionary<string, object> LeaveActivationHandlersOut(Dictionary<string, object> htmlAttributes)
+    {
+        var hasActivationEvent = false;
+        foreach (var name in htmlAttributes.Keys)
+        {
+            if (ActivationEvents.Contains(name) is false) continue;
+
+            hasActivationEvent = true;
+            break;
         }
 
-        return null;
+        if (hasActivationEvent is false) return htmlAttributes;
+
+        Dictionary<string, object> attributes = new(htmlAttributes.Count);
+        foreach (var attribute in htmlAttributes)
+        {
+            if (ActivationEvents.Contains(attribute.Key)) continue;
+
+            attributes.Add(attribute.Key, attribute.Value);
+        }
+
+        return attributes;
     }
 
     // A boolean is the one attribute value the renderer does not write as its text: an attribute is written with no
     // value at all while it is true and left out altogether while it is false, which is what an attribute splatted
     // onto a plain element does. So the two are resolved into the same thing here rather than into the "True" and
     // "False" that ToString would give an attribute the component writes itself.
-    private static string? StringifyAttributeValue(object? value)
+    private protected static string? StringifyAttributeValue(object? value)
     {
         if (value is bool boolean) return boolean ? string.Empty : null;
 
@@ -477,6 +836,20 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
         return _VoidElements.Contains(element);
     }
 
+    /// <summary>
+    /// Resolves the tag a page names for the root of a component that writes content into it.
+    /// </summary>
+    /// <remarks>
+    /// The name is used as written, less its surrounding whitespace, while it is a name a tag can have and one that can
+    /// hold content; anything else - a void element included - falls back to the given default.
+    /// </remarks>
+    private protected static string ResolveContentElement(string? element, string fallback)
+    {
+        element = element?.Trim();
+
+        return element.HasValue() && IsValidElement(element!) && IsVoidElement(element!) is false ? element! : fallback;
+    }
+
     // The obsolete four (basefont, bgsound, frame and keygen) are in the list the HTML parser itself treats as void,
     // so a browser drops their content just the same and they belong here with the rest.
     private static readonly HashSet<string> _VoidElements = new(StringComparer.OrdinalIgnoreCase)
@@ -488,17 +861,23 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
 
     /// <summary>
-    /// Determines whether the specified parameter has not been assigned a value.
+    /// Determines whether the specified parameter has not been assigned a value by the markup on this render.
     /// </summary>
+    /// <remarks>
+    /// The answer covers every parameter of the component, whichever class in its hierarchy declares it: the shared
+    /// parameters of <see cref="BitComponentBase"/>, those of an intermediate base such as
+    /// <see cref="BitInputBase{TValue}"/>, and the ones the component declares itself. So it is the same whatever
+    /// the static type of the reference it is called through.
+    /// </remarks>
     /// <param name="name">
     /// The name of the parameter to check. Cannot be null.
     /// </param>
     /// <returns>
     /// true if the parameter has not been set; otherwise, false.
     /// </returns>
-    public bool HasNotBeenSet(string name)
+    public virtual bool HasNotBeenSet(string name)
     {
-        return _assignedParameters.Contains(name) is false;
+        return IsSetByMarkup(name) is false;
     }
 
 
@@ -515,6 +894,8 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// </returns>
     public async ValueTask DisposeAsync()
     {
+        IsDisposing = true;
+
         try
         {
             await DisposeAsync(true);

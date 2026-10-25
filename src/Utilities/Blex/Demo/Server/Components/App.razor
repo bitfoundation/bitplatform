@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <base href="/" />
+    @* No static <title> here: every page supplies its own through <PageTitle>, and with
+       prerendering the HeadOutlet emits a real <title> element into this head. A second,
+       earlier one would win in the served HTML (browsers and crawlers take the first). *@
+    <meta name="description" content="Bit.Blex is lightweight, source-generator-powered reactive state management for Blazor and .NET MAUI, with Redux DevTools time-travel, effects, persistence and undo/redo built in." />
+
+    @* What a link to the site looks like when it is shared. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.Blex" />
+    <meta property="og:title" content="Blex - reactive state management for Blazor" />
+    <meta property="og:description" content="One [BlexState] field, one [BlexAction] method. No reducers, no boilerplate - and Redux DevTools time-travel out of the box." />
+    <meta name="twitter:card" content="summary" />
+
+    <ResourcePreloader />
+    @* The site kit (app.css, theme.js, site.js - shared by every Utilities demo), then this demo's
+       own sample styles. *@
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["demo.css"]" />
+    @* Scoped-CSS bundle: includes the client project's *.razor.css files as well. *@
+    <link rel="stylesheet" href="@Assets["Bit.Blex.Demo.Server.styles.css"]" />
+    @* Synchronous on purpose: applies the light/dark theme before first paint. *@
+    <script src="@Assets["theme.js"]"></script>
+    <ImportMap />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+@* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
+   page load rather than an enhanced one. Enhanced navigation fetches and merges the next page while
+   the runtime is still starting, and the router the runtime then attaches can render the address
+   it read before the merge - the URL says /introduction and the page is the landing page. Once the
+   app is interactive its router handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
+    @* Prerendered on the server, then hydrated by the WebAssembly runtime. Stores render their
+       initial state in the served HTML; <BlexProvider> hands that state to the interactive render
+       and then rehydrates the persisted stores from localStorage. Bit.Blex has no stylesheet, and
+       its two script modules are imported on demand by the persistence and DevTools bridges. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">&#128473;</span>
+    </div>
+
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["site.js"]"></script>
+    @* The one helper a page needs beyond the kit: the persistence page reads the raw payload Blex
+       wrote to localStorage. *@
+    <script src="@Assets["demo.js"]"></script>
+</body>
+
+</html>

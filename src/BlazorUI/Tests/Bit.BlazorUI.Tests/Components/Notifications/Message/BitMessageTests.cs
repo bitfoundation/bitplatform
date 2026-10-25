@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Notifications.Message;
@@ -21,7 +23,8 @@ public class BitMessageTests : BunitTestContext
     private static readonly PointerEventArgs _touchPointer = new() { PointerType = "touch" };
 
     // The auto-dismiss callback fires off the render loop, so there is no render for WaitForAssertion to
-    // hang its re-check on. The condition is polled from the test thread instead.
+    // hang its re-check on. The condition is polled from the test thread instead - which is only safe for a
+    // flag the test owns: a FindAll polled from here can race bUnit rebuilding the markup and cache a stale DOM.
     private static void WaitUntil(Func<bool> condition, int timeoutMilliseconds = 5000)
     {
         var stopwatch = Stopwatch.StartNew();
@@ -47,10 +50,11 @@ public class BitMessageTests : BunitTestContext
         var root = component.Find(".bit-msg");
 
         Assert.AreEqual("DIV", root.TagName);
-        // The defaults: the Fill variant, the Info color and the Medium size.
+        // The defaults: the Fill variant, and no Color or Size class - the stylesheet draws the Info color and the
+        // Medium size an unset one stands for, after the public variables.
         Assert.IsTrue(root.ClassList.Contains("bit-msg-fil"));
-        Assert.IsTrue(root.ClassList.Contains("bit-msg-inf"));
-        Assert.IsTrue(root.ClassList.Contains("bit-msg-md"));
+        Assert.IsFalse(root.ClassList.Contains("bit-msg-inf"));
+        Assert.IsFalse(root.ClassList.Contains("bit-msg-md"));
 
         Assert.HasCount(1, component.FindAll(".bit-msg-rct"));
         Assert.HasCount(1, component.FindAll(".bit-msg-con"));
@@ -127,7 +131,65 @@ public class BitMessageTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(null, "bit-msg-md"),
+        DataRow(BitVariant.Outline, true, true),
+        DataRow(BitVariant.Text, true, true),
+        DataRow(BitVariant.Fill, true, false),
+        DataRow(null, true, false),
+        DataRow(BitVariant.Outline, false, false),
+        DataRow(BitVariant.Text, false, false)
+    ]
+    public void BitMessageShouldOnlyTintTheUnfilledVariants(BitVariant? variant, bool tinted, bool expectedTint)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Variant, variant);
+            parameters.Add(p => p.Tinted, tinted);
+        });
+
+        Assert.AreEqual(expectedTint, component.Find(".bit-msg").ClassList.Contains("bit-msg-tnt"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldFollowTinted()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Variant, BitVariant.Outline);
+        });
+
+        Assert.IsFalse(component.Find(".bit-msg").ClassList.Contains("bit-msg-tnt"));
+
+        component.Render(parameters => parameters.Add(p => p.Tinted, true));
+
+        Assert.IsTrue(component.Find(".bit-msg").ClassList.Contains("bit-msg-tnt"));
+
+        component.Render(parameters => parameters.Add(p => p.Variant, BitVariant.Fill));
+
+        Assert.IsFalse(component.Find(".bit-msg").ClassList.Contains("bit-msg-tnt"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitMessage>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Message-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-msg");
+        var published = new[]
+        {
+            "bit-msg-pri", "bit-msg-sec", "bit-msg-ter", "bit-msg-inf", "bit-msg-suc", "bit-msg-wrn", "bit-msg-swr", "bit-msg-err",
+            "bit-msg-pbg", "bit-msg-sbg", "bit-msg-tbg", "bit-msg-pfg", "bit-msg-sfg", "bit-msg-tfg", "bit-msg-pbr", "bit-msg-sbr", "bit-msg-tbr",
+            "bit-msg-sm", "bit-msg-md", "bit-msg-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
+    [TestMethod,
         DataRow(BitSize.Small, "bit-msg-sm"),
         DataRow(BitSize.Medium, "bit-msg-md"),
         DataRow(BitSize.Large, "bit-msg-lg")
@@ -163,8 +225,8 @@ public class BitMessageTests : BunitTestContext
         DataRow(BitAlignment.SpaceBetween, "space-between"),
         DataRow(BitAlignment.SpaceAround, "space-around"),
         DataRow(BitAlignment.SpaceEvenly, "space-evenly"),
-        DataRow(BitAlignment.Baseline, "baseline"),
-        DataRow(BitAlignment.Stretch, "stretch"),
+        DataRow(BitAlignment.Baseline, "flex-start"),
+        DataRow(BitAlignment.Stretch, "flex-start"),
         DataRow(null, "flex-start")
     ]
     public void BitMessageShouldRespectAlignment(BitAlignment? alignment, string expectedValue)
@@ -177,6 +239,33 @@ public class BitMessageTests : BunitTestContext
         var style = component.Find(".bit-msg").GetAttribute("style");
 
         StringAssert.Contains(style, $"--bit-msg-justifycontent:{expectedValue}");
+    }
+
+    [TestMethod,
+        DataRow(BitAlignment.Baseline, "baseline"),
+        DataRow(BitAlignment.Stretch, "stretch"),
+        DataRow(BitAlignment.Center, null),
+        DataRow(null, null)
+    ]
+    public void BitMessageShouldAlignTheContentAcrossTheRowForBaselineAndStretch(BitAlignment? alignment, string? expectedValue)
+    {
+        // justify-content has no baseline, and lays a stretch out as flex-start, so those two align the icon and the
+        // text across the row instead; the distributions publish nothing there.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, alignment);
+        });
+
+        var style = component.Find(".bit-msg").GetAttribute("style") ?? string.Empty;
+
+        if (expectedValue is null)
+        {
+            Assert.DoesNotContain("--bit-msg-alignitems", style);
+        }
+        else
+        {
+            StringAssert.Contains(style, $"--bit-msg-alignitems:{expectedValue}");
+        }
     }
 
     [TestMethod,
@@ -1364,9 +1453,9 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(100));
         });
 
-        WaitUntil(() => component.FindAll(".bit-msg").Count == 0);
-
-        Assert.IsEmpty(component.FindAll(".bit-msg"));
+        // Not WaitUntil: a FindAll polled from the test thread can land while bUnit rebuilds the markup, parse the
+        // old one and keep it cached for good. The dismissal renders the message, which is what this re-checks on.
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-msg")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -1378,7 +1467,7 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(50));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
@@ -1395,12 +1484,12 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(100));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
         WaitUntil(() => dismissCount == 1);
 
@@ -1457,11 +1546,16 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(600));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
         component.Find(".bit-msg").PointerEnter(_mousePointer);
+
+        // The hold is taken on a long countdown, which a slow agent cannot see run out before the test thread gets
+        // there, and only then is the countdown wound down to one that runs out while the test watches: re-armed
+        // under the hold, it waits on it from its very first step.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(600)));
 
         // Well past the countdown, but the pointer is holding it.
         Thread.Sleep(1500);
@@ -1501,11 +1595,15 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
         component.Find(".bit-msg").PointerEnter(_mousePointer);
+
+        // Held first and only then wound down to a short countdown, which waits on the hold from its first step: a
+        // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300)));
 
         // The touch was never allowed to take the hold, so it is not allowed to give it back either.
         component.Find(".bit-msg").PointerLeave(_touchPointer);
@@ -1528,7 +1626,8 @@ public class BitMessageTests : BunitTestContext
 
         RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            // Long enough that the disposal below lands well inside the countdown on a slow agent.
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(1000));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
@@ -1536,7 +1635,7 @@ public class BitMessageTests : BunitTestContext
         // the page has nothing left to dismiss.
         await Context.DisposeComponentsAsync();
 
-        Thread.Sleep(900);
+        Thread.Sleep(1600);
 
         Assert.AreEqual(0, dismissCount);
     }
@@ -1597,7 +1696,9 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(200));
+            // Long enough that the press below lands well inside the countdown on a slow agent: one that ran out
+            // first would be a dismissal of its own, and the press a second one.
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(1000));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
@@ -1606,7 +1707,7 @@ public class BitMessageTests : BunitTestContext
         // A parameter set after the dismiss must not start the countdown over.
         component.Render(parameters => parameters.Add(p => p.Color, BitColor.Warning));
 
-        Thread.Sleep(700);
+        Thread.Sleep(1600);
 
         Assert.AreEqual(1, dismissCount);
     }
@@ -1619,7 +1720,7 @@ public class BitMessageTests : BunitTestContext
         var component = RenderComponent<BitMessage>(parameters =>
         {
             // Long enough that all three parameter sets below land inside the countdown on a slow agent.
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(1200));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(2000));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
@@ -1627,13 +1728,16 @@ public class BitMessageTests : BunitTestContext
         // pushing the callback out of reach of the wait below.
         for (var i = 0; i < 3; i++)
         {
-            Thread.Sleep(300);
+            Thread.Sleep(500);
             component.Render(parameters => parameters.Add(p => p.Class, $"round-{i}"));
         }
 
-        WaitUntil(() => dismissCount == 1, 1500);
+        // The wait has to give up before a countdown restarted by the last parameter set could run out - a whole
+        // countdown after it - or that one would be found as well and nothing would be told apart. It still leaves
+        // the countdown armed by the first render well over a second to be late in.
+        WaitUntil(() => dismissCount == 1, 1800);
 
-        Assert.AreEqual(1, dismissCount);
+        Assert.AreEqual(1, dismissCount, "the countdown was expected to run out on the time it was first armed with");
     }
 
     [TestMethod]
@@ -1713,7 +1817,9 @@ public class BitMessageTests : BunitTestContext
         var component = RenderComponent<BitMessage>(parameters =>
         {
             parameters.Add(p => p.Dismissible, true);
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(400));
+            // Long enough that the press below, and the check right after it, land well inside the countdown on a
+            // slow agent.
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(1000));
             parameters.Add(p => p.OnDismiss, () => dismissed = true);
             parameters.Add<BitMessageDismissArgs>(p => p.OnDismissing, args =>
             {
@@ -1803,17 +1909,260 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
         component.Instance.PauseAutoDismiss();
+
+        // Held first and only then wound down to a short countdown, which waits on the hold from its first step: a
+        // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
 
         Thread.Sleep(400);
 
         Assert.AreEqual(0, dismissCount);
 
         component.Instance.ResumeAutoDismiss();
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldHoldTheCountdownWhileThePageIsHidden()
+    {
+        var visibility = new BitPageVisibility(new TestJsRuntime());
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.ShowAutoDismissProgress, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        await visibility._VisibilityChanged(true);
+
+        // Held first and only then wound down to a short countdown, which waits on the hold from its first step: a
+        // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
+
+        Thread.Sleep(400);
+
+        // A message in a background tab keeps its countdown for when it is looked at, and its bar holds with it.
+        Assert.AreEqual(0, dismissCount);
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-msg-prb").ClassList.Contains("bit-msg-pau")));
+
+        await visibility._VisibilityChanged(false);
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldHoldTheCountdownWhileTheWindowIsBlurred()
+    {
+        var visibility = new BitPageVisibility(new TestJsRuntime());
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnWindowBlur, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        await visibility._WindowFocusChanged(true);
+
+        // Held first and only then wound down to a short countdown, which waits on the hold from its first step: a
+        // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
+
+        Thread.Sleep(400);
+
+        Assert.AreEqual(0, dismissCount);
+
+        await visibility._WindowFocusChanged(false);
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldNotHoldTheCountdownForAHiddenPageWithoutBeingAsked()
+    {
+        var visibility = new BitPageVisibility(new TestJsRuntime());
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        await visibility._VisibilityChanged(true);
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldLetGoOfThePageHoldOnceItIsTurnedOff()
+    {
+        var visibility = new BitPageVisibility(new TestJsRuntime());
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        await visibility._VisibilityChanged(true);
+
+        // Held first and only then wound down to a short countdown, which waits on the hold from its first step: a
+        // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
+
+        Thread.Sleep(400);
+
+        Assert.AreEqual(0, dismissCount);
+
+        // No visibility change is coming to let go of it, so turning the parameter off has to.
+        component.Render(parameters => parameters.Add(p => p.PauseOnPageHidden, false));
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldStartHeldInAPageThatIsAlreadyHidden()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime("""{"hidden":true,"blurred":false}"""));
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        Thread.Sleep(400);
+
+        // No visibilitychange is coming for a tab that was already in the background when the message was shown.
+        Assert.AreEqual(0, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldHoldTheCountdownUntilThePageHasAnswered()
+    {
+        var js = new PageStateJsRuntime("""{"hidden":false,"blurred":false}""")
+        {
+            Gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)
+        };
+        Context.Services.AddSingleton(new BitPageVisibility(js));
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        Thread.Sleep(400);
+
+        // The page could already be hidden, so the countdown does not run behind a reader who may not be there.
+        Assert.AreEqual(0, dismissCount);
+
+        js.Gate.SetResult();
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldBeHeldByARetriedPageVisibilityInitWithoutRenderingAgain()
+    {
+        var js = new PageStateJsRuntime("""{"hidden":true,"blurred":false}""")
+        {
+            Failure = new JSException("BitBlazorUI.PageVisibility is not defined")
+        };
+        Context.Services.AddSingleton(new BitPageVisibility(js));
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(2500));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        // The script has loaded by the time the utility asks again on its own; the message is never rendered again,
+        // and still hears of the hidden page it then reads.
+        js.Failure = null;
+
+        Thread.Sleep(3500);
+
+        Assert.AreEqual(0, dismissCount);
+        Assert.AreEqual(2, js.InitCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldCountDownAsUsualWhenThePageVisibilityScriptFails()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime(new JSException("BitBlazorUI.PageVisibility is not defined")));
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldCountDownAsUsualWithoutThePageVisibilityService()
+    {
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.PauseOnWindowBlur, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
 
         WaitUntil(() => dismissCount == 1);
 
@@ -1947,6 +2296,72 @@ public class BitMessageTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMessageShouldClaimTheEscapeThatDismissesIt()
+    {
+        // The root carries data-bit-esc (Utils.claimEscape), so a dialog the message sits in does not close on the
+        // press that dismisses the message.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
+
+        Assert.AreEqual("claim", component.Find(".bit-msg").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotDismissOnAModifiedEscape()
+    {
+        var dismissCount = 0;
+
+        // Utils.claimEscape never claims an Escape with a modifier, so the dialog the message sits in closes on it -
+        // and the message must not be dismissed on the same press.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape", CtrlKey = true });
+
+        Assert.AreEqual(0, dismissCount);
+
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotClaimAnEscapeItDoesNotDismissOn()
+    {
+        var off = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
+        Assert.IsFalse(off.Find(".bit-msg").HasAttribute("data-bit-esc"));
+
+        var disabled = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
+        Assert.IsFalse(disabled.Find(".bit-msg").HasAttribute("data-bit-esc"));
+
+        // A keydown handler written on the component replaces the message's own, so nothing is dismissed.
+        var replaced = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitMessage>(0);
+            builder.AddAttribute(1, nameof(BitMessage.DismissOnEscape), true);
+            builder.AddAttribute(2, nameof(BitMessage.OnDismiss), EventCallback.Factory.Create(this, () => { }));
+            builder.AddAttribute(3, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, () => { }));
+            builder.CloseComponent();
+        });
+        Assert.IsFalse(replaced.Find(".bit-msg").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
     public void BitMessageShouldNotListenForKeysWithoutADismissHandler()
     {
         var component = RenderComponent<BitMessage>(parameters =>
@@ -1994,13 +2409,13 @@ public class BitMessageTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitMessageShouldRespectIsEnabled(bool isEnabled)
+    public void BitMessageShouldRespectDisabled(bool isEnabled)
     {
         var dismissCount = 0;
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Truncate, true);
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
             parameters.AddChildContent(LongText);
@@ -2018,7 +2433,7 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Truncate, true);
             parameters.Add(p => p.DismissOnEscape, true);
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
@@ -2397,6 +2812,27 @@ public class BitMessageTests : BunitTestContext
         Assert.AreEqual("Hello", component.Find(".bit-msg-cnt").TextContent.Trim());
     }
 
+    [TestMethod]
+    public void BitMessageShouldHoldTheDelayedTextBackUntilThePageHasBeenPainted()
+    {
+        // On WebAssembly the render right after the first one lands in the same browser task, so the region would reach
+        // the accessibility tree with its text already in it: the text waits for the browser to paint the empty region.
+        var paint = Context.JSInterop.SetupVoid("BitBlazorUI.Message.afterPaint");
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.DelayedAnnouncement, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        Assert.HasCount(1, component.FindAll(".bit-msg-cnc"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-cnt"));
+
+        paint.SetVoidResult();
+
+        component.WaitForAssertion(() => Assert.AreEqual("Hello", component.Find(".bit-msg-cnt").TextContent.Trim()));
+    }
+
 
 
     [TestMethod]
@@ -2508,7 +2944,7 @@ public class BitMessageTests : BunitTestContext
         var component = RenderComponent<BitMessage>(parameters =>
         {
             parameters.Add(p => p.Truncate, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.AddChildContent(LongText);
         });
 
@@ -2570,13 +3006,17 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
             parameters.AddChildContent("Hello");
         });
 
         component.Find(".bit-msg").PointerEnter(_mousePointer);
         component.Find(".bit-msg").FocusIn();
+
+        // Held first and only then wound down to a short countdown, which waits on the hold from its first step: a
+        // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
 
         // Letting go of one of the reasons to hold the countdown is not letting go of the others.
         component.Find(".bit-msg").PointerLeave(_mousePointer);
@@ -2675,7 +3115,9 @@ public class BitMessageTests : BunitTestContext
         var component = RenderComponent<BitMessage>(parameters =>
         {
             parameters.Add(p => p.Dismissible, true);
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            // Long enough that the hold and the press below land inside it on a slow agent: a countdown that ran out
+            // first would take the message away before either.
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
             parameters.AddChildContent("Hello");
         });
@@ -2687,7 +3129,12 @@ public class BitMessageTests : BunitTestContext
 
         Assert.IsEmpty(component.FindAll(".bit-msg"));
 
-        component.Render(parameters => parameters.Add(p => p.Dismissed, false));
+        // Shown again with a countdown short enough to run out while the test watches.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Dismissed, false);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+        });
 
         WaitUntil(() => dismissCount == 2);
 
@@ -2700,7 +3147,7 @@ public class BitMessageTests : BunitTestContext
         var component = RenderComponent<BitMessage>(parameters =>
         {
             parameters.Add(p => p.Dismissible, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.ShowAutoDismissProgress, true);
             parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(10));
             parameters.AddChildContent("Hello");
@@ -2710,4 +3157,385 @@ public class BitMessageTests : BunitTestContext
         Assert.IsEmpty(component.FindAll(".bit-msg-prg"));
     }
 
+    [TestMethod]
+    public void BitMessageShouldWatchTheOverflowOnlyWhileItCanFold()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+
+        // A multiline message without a cap has nothing folded away, so there is nothing to watch.
+        component.Render(parameters => parameters.Add(p => p.Multiline, true));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotWatchTheOverflowWithoutTruncate()
+    {
+        RenderComponent<BitMessage>(parameters => parameters.AddChildContent(LongText));
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldOfferTheExpanderOnlyWhileSomethingIsClipped()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent("Short");
+        });
+
+        // Until the browser has measured, the expander is rendered as it always was.
+        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(false));
+
+        Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(true));
+
+        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldKeepTheExpanderWhileItIsExpanded()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.Expanded, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        // An unfolded text is unclipped on purpose; the button that folds it back has to stay.
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(false));
+
+        var expander = component.Find(".bit-msg-exb");
+
+        Assert.AreEqual("true", expander.GetAttribute("aria-expanded"));
+        Assert.IsTrue(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWatchTheOverflowAfreshWhenItComesBack()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.Dismissed, false);
+            parameters.Add(p => p.DismissedChanged, _ => { });
+            parameters.AddChildContent(LongText);
+        });
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(false));
+
+        component.Render(parameters => parameters.Add(p => p.Dismissed, true));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+
+        component.Render(parameters => parameters.Add(p => p.Dismissed, false));
+
+        // The message is a new element, measured from scratch: the expander is back until it is.
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWatchTheOverflowUnderItsOwnUniqueId()
+    {
+        var first = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Id, "notice");
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+        var second = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Id, "notice");
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        // Two messages sharing an Id would otherwise stop each other's observer.
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"];
+
+        Assert.HasCount(2, invocations);
+        Assert.AreEqual(first.Instance.UniqueId, invocations[0].Arguments[0]);
+        Assert.AreEqual(second.Instance.UniqueId, invocations[1].Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldKeepWatchingTheOverflowWhenItsIdChanges()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Id, "first");
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Id, "second"));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldSurviveAnOverflowObserverThatCannotBeStopped()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Message.dispose").SetException(new JSException("BitBlazorUI.Message is not defined"));
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Truncate, false));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+        Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWatchAnAutoMultilineMessageForItsReflow()
+    {
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"].Single();
+
+        Assert.AreEqual(true, invocation.Arguments[3]);
+    }
+
+    [TestMethod,
+        DataRow(true, false),
+        DataRow(false, true)
+    ]
+    public void BitMessageShouldNotReflowWhatAlreadyWrapsOrFolds(bool multiline, bool truncate)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.Truncate, truncate);
+            parameters.AddChildContent(LongText);
+        });
+
+        // Truncate is the other answer to a line that does not fit, and wins; a multiline message wraps already.
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"];
+
+        Assert.IsTrue(invocations.All(i => (bool)i.Arguments[3]! is false));
+        Assert.HasCount(truncate ? 1 : 0, invocations);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldTakeOnTheMultilineLayoutWhileItsLineDoesNotFit()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.Add(p => p.Title, "Heads up");
+            parameters.Add(p => p.Actions, "<button>Retry</button>");
+            parameters.AddChildContent(LongText);
+        });
+
+        // Until the browser has measured, the message keeps its single line.
+        Assert.IsFalse(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-mcn"));
+        Assert.IsTrue(component.Find(".bit-msg-cnw").ClassList.Contains("bit-msg-cwi"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-mac"));
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(true));
+
+        Assert.IsTrue(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-mcn"));
+        Assert.IsFalse(component.Find(".bit-msg-cnw").ClassList.Contains("bit-msg-cwi"));
+        Assert.HasCount(1, component.FindAll(".bit-msg-mac"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
+
+        // Given the room again, it goes back to one line.
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(false));
+
+        Assert.IsFalse(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-mcn"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-mac"));
+        Assert.HasCount(1, component.FindAll(".bit-msg-act"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotCapAReflowedMessage()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.Add(p => p.MaxLines, 1);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(true));
+
+        // A reflowed message wraps so that nothing is cut off, which a cap without an expander would undo.
+        Assert.IsFalse(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-clp"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWatchAgainWhenItGoesFromFoldingToReflowing()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Truncate, false));
+
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"];
+
+        Assert.HasCount(2, invocations);
+        Assert.AreEqual(false, invocations[0].Arguments[3]);
+        Assert.AreEqual(true, invocations[1].Arguments[3]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldKeepASplattedAriaLabelWhateverItIsCased()
+    {
+        // Attribute names are case insensitive, so a differently cased aria-label is the same attribute.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitMessage>(0);
+            builder.AddAttribute(1, "Aria-Label", "Saved");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-msg");
+
+        Assert.AreEqual("Saved", root.GetAttribute("aria-label"));
+        Assert.AreEqual("group", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldLetANullSplattedAttributeTakeItsOwnOffTheRoot()
+    {
+        // A null or false splatted attribute is how a page opts out of one the message would write itself.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitMessage>(0);
+            builder.AddAttribute(1, nameof(BitMessage.Title), "Saved");
+            builder.AddAttribute(2, nameof(BitMessage.AutoFocus), true);
+            builder.AddAttribute(3, "aria-labelledby", (object?)null);
+            builder.AddAttribute(4, "aria-describedby", false);
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-msg");
+
+        Assert.IsFalse(root.HasAttribute("aria-labelledby"));
+        Assert.IsFalse(root.HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWatchTheEscapeClaimOnlyWhileItDismissesOnEscape()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        // The key handler hears every Escape pressed inside the message, so the browser is asked to tell it which
+        // are its own for as long as it claims the key at all.
+        var watches = Context.JSInterop.Invocations["BitBlazorUI.Utils.watchEscapeClaim"];
+        Assert.HasCount(1, watches);
+        Assert.AreEqual(component.Instance.UniqueId, watches[0].Arguments[0]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscapeClaim"]);
+
+        component.Render(parameters => parameters.Add(p => p.DismissOnEscape, false));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscapeClaim"]);
+        Assert.IsFalse(component.Find(".bit-msg").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotWatchTheEscapeClaimWithoutDismissOnEscape()
+    {
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.watchEscapeClaim"]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldLeaveAnEscapeSomethingInsideItTookFirst()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+            parameters.AddChildContent("Hello");
+        });
+
+        // The browser says the press belongs to a component inside the message - a field clearing on it, a surface
+        // rendered there - ahead of the keydown Blazor dispatches, so the message leaves that press alone...
+        component.InvokeAsync(() => component.Instance._OnEscapeVerdict(true));
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, dismissCount);
+        Assert.HasCount(1, component.FindAll(".bit-msg"));
+
+        // ...and the verdict is spent with it: the next press, which the browser says is the message's own, dismisses.
+        component.InvokeAsync(() => component.Instance._OnEscapeVerdict(false));
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, dismissCount);
+        Assert.IsEmpty(component.FindAll(".bit-msg"));
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldStopWatchingTheEscapeClaimWhenItIsDisposed()
+    {
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        await Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscapeClaim"]);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldSurviveAnEscapeWatchThatCannotBeStopped()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Utils.unwatchEscapeClaim").SetException(new JSException("BitBlazorUI.Utils is not defined"));
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        // A script that is gone by the time the message leaves is not a reason for the disposal to throw.
+        component.Render(parameters => parameters.Add(p => p.DismissOnEscape, false));
+
+        await Context.DisposeComponentsAsync();
+    }
 }

@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- The host owns the launch profile: this project is never started on its own. -->
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <!-- Publishes this project's static web assets at the app root (not under _content/), the
+         way a Blazor Web App's client project is expected to contribute them. -->
+    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <!-- The runtime's own exception messages are part of what this site teaches: the errors page prints
+         each one it provokes. WebAssembly trims them to resource keys by default ("Arg_ParamName_Name",
+         "ObjectDisposed_Generic"), which reads as a bug rather than an error. -->
+    <UseSystemResourceKeys>false</UseSystemResourceKeys>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+    <!-- No Bit.Minifier, unlike the other demos: this client runs EF Core, and the minifier strips the parameter
+         names of EF Core's internal methods, which EntityFrameworkQueryableExtensions' static constructor finds
+         its methods by - so the first AsNoTracking or Include throws a TypeInitializationException, in the
+         published site only. The Boilerplate leaves the minifier out with its client-side EF Core (offlineDb)
+         for the same reason. -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The engine, browser backends included. -->
+    <ProjectReference Include="..\..\Bit.BlazeDb\Bit.BlazeDb.csproj" />
+    <ProjectReference Include="..\..\Bit.BlazeDb.EntityFrameworkCore\Bit.BlazeDb.EntityFrameworkCore.csproj" />
+    <!-- The generator as an analyzer, which is what the Bit.BlazeDb package adds to a consumer: a project reference
+         to Bit.BlazeDb does not bring it, since the package carries it only as packed analyzer output. -->
+    <ProjectReference Include="..\..\Bit.BlazeDb.Generators\Bit.BlazeDb.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

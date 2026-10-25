@@ -12,13 +12,6 @@ namespace Bit.BlazorUI;
 public partial class BitMap<TMapProvider> : BitComponentBase
     where TMapProvider : class, IBitMapProvider, new()
 {
-    /// <summary>
-    /// Clears the process-wide script/stylesheet load cache. Intended for unit tests only -
-    /// production code should not need to invalidate the cache because the browser already
-    /// dedupes the underlying network requests.
-    /// </summary>
-    public static void ResetAssetLoadCacheForTesting() => BitMapAssetCache.Reset();
-
     private bool _initialized;
     private string _canvasId = string.Empty;
     private string _helpId = string.Empty;
@@ -44,7 +37,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     // Snapshot of the options the chrome was last attached with, so a re-render that changed
     // none of them doesn't pay an interop round-trip.
-    private (string?, bool, bool, string, string, bool)? _chromeSignature;
+    private (string?, bool, bool, string, string, bool, bool, bool, bool?)? _chromeSignature;
 
     // Last viewport the map reported. Two-way camera binding is diffed against it, which is what
     // stops the parameter -> map -> callback -> parameter round trip from looping forever.
@@ -119,9 +112,34 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the map component.
+    /// </summary>
+    /// <remarks>
+    /// The intended use is to allow shared configuration or settings to be applied to multiple maps - whatever their
+    /// provider is - through the <see cref="BitParams"/> component. A parameter the map's own markup sets always wins.
+    /// </remarks>
+    [CascadingParameter(Name = BitMapParams.ParamName)]
+    public BitMapParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// Optional content rendered above the map canvas (overlays, custom controls, etc.).
+    /// Each direct child is sized to its content from the top-start corner, unless positioned
+    /// absolutely, and only the children take the pointer, so the map stays draggable around them.
+    /// Keep them clear of the corners the provider's controls and attribution occupy.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the map.
+    /// </summary>
+    [Parameter, ResetClassBuilder] public BitMapClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the map.
+    /// </summary>
+    [Parameter, ResetStyleBuilder] public BitMapClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The provider configuration (basemap, tokens, options). When null on first render, a
@@ -245,6 +263,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// Move focus out of the map canvas when Escape is pressed. A focused map consumes the arrow
     /// keys, so leaving it has to be possible without tabbing past every marker
     /// (WCAG 2.1.2, No Keyboard Trap).
+    /// <para>
+    /// While a provider's marker popup is open, Escape closes it first, on every provider and
+    /// whatever this is set to; the next press leaves the map.
+    /// </para>
     /// </summary>
     [Parameter] public bool EscapeToExit { get; set; } = true;
 
@@ -254,6 +276,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </summary>
     [Parameter] public string KeyboardInstructions { get; set; } =
         "Use the arrow keys to pan the map, plus and minus to zoom, and Escape to leave the map.";
+
+    /// <summary>
+    /// What a screen reader calls the map canvas in place of "region", through <c>aria-roledescription</c>.
+    /// Translate it with the rest of the texts; the canvas is named by <see cref="BitComponentBase.AriaLabel"/>.
+    /// </summary>
+    [Parameter] public string RoleDescription { get; set; } = "interactive map";
 
     /// <summary>
     /// Announce the new centre and zoom through a polite live region after the user pans or
@@ -273,11 +301,13 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [Parameter] public TimeSpan ViewAnnouncementThrottle { get; set; } = TimeSpan.FromSeconds(2);
 
     /// <summary>
-    /// Honour the operating system's reduced-motion preference: <see cref="FlyTo"/> and an
-    /// animated <see cref="SetView"/> jump straight to the destination instead of animating.
+    /// Honour the operating system's reduced-motion preference: <see cref="FlyTo"/>, an animated
+    /// <see cref="SetView"/>, <see cref="FitBounds"/>, the zoom into a cluster bubble and the keyboard's
+    /// pan and zoom jump straight to the destination instead of animating.
     /// <para>
-    /// Both methods take an <c>essential</c> argument to opt a specific move back into animating
-    /// (a "locate me" recentre, say, where the motion carries the meaning).
+    /// The camera methods take an <c>essential</c> argument to opt a specific move back into animating
+    /// (a "locate me" recentre, say, where the motion carries the meaning), and
+    /// <see cref="BitComponentBase.ForceAnimation"/> opts every move of the map back in.
     /// </para>
     /// </summary>
     [Parameter] public bool RespectReducedMotion { get; set; } = true;
@@ -299,6 +329,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </para>
     /// </summary>
     [Parameter] public RenderFragment<BitMapMarker>? MarkerPopupTemplate { get; set; }
+
+    /// <summary>
+    /// Pans the map as a <see cref="MarkerPopupTemplate"/> popup opens, just enough to bring the whole popup inside the
+    /// map - a marker near an edge would otherwise open a popup the map's own bounds cut off.
+    /// </summary>
+    [Parameter] public bool PopupAutoPan { get; set; } = true;
 
     /// <summary>Accessible name of the popup when its marker has neither an <c>Alt</c> nor a <c>Title</c>.</summary>
     [Parameter] public string PopupLabel { get; set; } = "Marker details";
@@ -371,6 +407,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     /// <summary>
     /// Fired once after the map is ready and imperative methods can be called safely.
+    /// A method called before then does nothing (and returns null or false where it returns a value) rather than
+    /// throwing, since the map loads on its own schedule and a click or a lifecycle method of the page can always
+    /// run ahead of it; only <see cref="GetView"/>, which has no viewport to read, throws. Build the imperative state
+    /// of the map here.
     /// Also fires again if the active provider is swapped to one with a different JS backend
     /// (which destructively re-initializes the map); consumers can use this to rebuild any
     /// imperatively-added markers/layers/overlays on the new provider.
@@ -456,7 +496,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
 
 
-    /// <summary>True after the underlying map instance has been created and is ready for interop calls.</summary>
+    /// <summary>
+    /// True after the underlying map instance has been created and is ready for interop calls. Until then the
+    /// imperative methods do nothing (see <see cref="OnReady"/>).
+    /// </summary>
     public bool IsReady => _initialized;
 
     /// <summary>Where the map is in its lifecycle. See <see cref="BitMapLoadState"/>.</summary>
@@ -464,6 +507,14 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     /// <summary>The exception behind <see cref="BitMapLoadState.Failed"/>, when one was captured.</summary>
     public Exception? LoadError => _loadError;
+
+    // Whether the loading indicator is up and the canvas busy. Idle counts: it is what a prerendered or static page
+    // renders, where the map has not been created yet and is about to be, and showing the loader there - rather than
+    // an empty box - is what lets the interactive render carry straight on into Loading with nothing on screen
+    // changing. A lazy map is left out: it stays Idle for as long as it waits to scroll into view, possibly for good,
+    // and a status region announced (and a canvas kept busy) for all that time would tell assistive technology about
+    // a load that is not happening; it shows the loader once it actually starts loading.
+    private bool IsLoading => _loadState is BitMapLoadState.Loading || (_loadState is BitMapLoadState.Idle && LazyLoad is false);
 
     /// <summary>
     /// Ids of the markers currently on the map. Read from the component's own snapshot, so it
@@ -535,6 +586,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     /// <summary>Returns a snapshot of the current viewport.</summary>
     /// <remarks>Throws <see cref="JSException"/> if the underlying provider's getView fails.</remarks>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown before the map is ready (see <see cref="IsReady"/>): there is no viewport to read yet. It is the one
+    /// method that does - every other one does nothing until then.
+    /// </exception>
     public async ValueTask<BitMapViewState> GetView()
     {
         EnsureReady();
@@ -552,8 +607,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </param>
     public async ValueTask SetView(BitMapLatLng center, double? zoom = null, bool animate = true, bool essential = false)
     {
-        EnsureReady();
         BitMapValidation.ValidateOptionalZoom(zoom, nameof(zoom));
+        if (_initialized is false) return;
+
         await SafeInvokeAsync(_js.BitMapSetView(JsObject, _Id, center.Latitude, center.Longitude, zoom, ShouldAnimate(animate, essential)), nameof(SetView));
     }
 
@@ -566,8 +622,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </param>
     public async ValueTask FlyTo(BitMapLatLng center, double? zoom = null, bool essential = false)
     {
-        EnsureReady();
         BitMapValidation.ValidateOptionalZoom(zoom, nameof(zoom));
+        if (_initialized is false) return;
 
         if (ShouldAnimate(true, essential) is false)
         {
@@ -582,8 +638,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Set an absolute zoom level, keeping the current centre.</summary>
     public async ValueTask SetZoom(double zoom, bool animate = true, bool essential = false)
     {
-        EnsureReady();
         BitMapValidation.ValidateZoom(zoom, nameof(zoom));
+        if (_initialized is false) return;
 
         // The centre comes from the last reported viewport when there is one. Reading it back over
         // interop would double the cost of what is meant to be a single camera command.
@@ -611,8 +667,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Change the zoom by a relative number of levels. Negative values zoom out.</summary>
     public async ValueTask ZoomBy(double delta, bool animate = true, bool essential = false)
     {
-        EnsureReady();
         BitMapValidation.ValidateFinite(delta, nameof(delta));
+        if (_initialized is false) return;
+
         await SafeInvokeAsync(_js.BitMapZoomBy(JsObject, _Id, delta, ShouldAnimate(animate, essential)), nameof(ZoomBy));
     }
 
@@ -626,9 +683,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </summary>
     public async ValueTask PanBy(double offsetX, double offsetY, bool animate = true, bool essential = false)
     {
-        EnsureReady();
         BitMapValidation.ValidateFinite(offsetX, nameof(offsetX));
         BitMapValidation.ValidateFinite(offsetY, nameof(offsetY));
+        if (_initialized is false) return;
+
         await SafeInvokeAsync(_js.BitMapPanBy(JsObject, _Id, offsetX, offsetY, ShouldAnimate(animate, essential)), nameof(PanBy));
     }
 
@@ -675,32 +733,38 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <para><b>Provider support:</b> Leaflet, MapLibre, Mapbox, OpenLayers and Azure Maps.
     /// ArcGIS and Cesium have no equivalent and ignore it.</para>
     /// </param>
-    public async ValueTask FitBounds(BitMapLatLngBounds bounds, int paddingPixels = 48, double maxZoom = 18)
+    /// <param name="animate">Animate the move. Ignored when the user prefers reduced motion, unless <paramref name="essential"/> is true.</param>
+    /// <param name="essential">Marks the move as essential, so it animates even under a reduced-motion preference.</param>
+    public async ValueTask FitBounds(BitMapLatLngBounds bounds, int paddingPixels = 48, double maxZoom = 18, bool animate = true, bool essential = false)
     {
-        EnsureReady();
         BitMapValidation.ValidatePadding(paddingPixels, nameof(paddingPixels));
         BitMapValidation.ValidateZoom(maxZoom, nameof(maxZoom));
+        if (_initialized is false) return;
+
         await SafeInvokeAsync(_js.BitMapFitBounds(JsObject, _Id,
             bounds.SouthWest.Latitude, bounds.SouthWest.Longitude,
             bounds.NorthEast.Latitude, bounds.NorthEast.Longitude,
-            paddingPixels, maxZoom), nameof(FitBounds));
+            paddingPixels, maxZoom, ShouldAnimate(animate, essential)), nameof(FitBounds));
     }
 
     /// <summary>Fit the view to include all currently rendered markers.</summary>
     /// <param name="paddingPixels">Breathing room, in screen pixels, left on every side.</param>
     /// <param name="maxZoom">Ceiling on how far the fit may zoom in. See <see cref="FitBounds"/>.</param>
+    /// <param name="animate">Animate the move. Ignored when the user prefers reduced motion, unless <paramref name="essential"/> is true.</param>
+    /// <param name="essential">Marks the move as essential, so it animates even under a reduced-motion preference.</param>
     /// <remarks>
     /// While <see cref="Clustering"/> is on this fits what is drawn - the cluster bubbles - rather
     /// than every source marker, so a marker culled as offscreen is not accounted for. Fit the box
     /// from <see cref="BitMapLatLngBounds.FromMarkers"/> over <see cref="OrderedMarkers"/> when you
     /// need every source marker framed regardless.
     /// </remarks>
-    public async ValueTask FitBoundsToMarkers(int paddingPixels = 48, double maxZoom = 18)
+    public async ValueTask FitBoundsToMarkers(int paddingPixels = 48, double maxZoom = 18, bool animate = true, bool essential = false)
     {
-        EnsureReady();
         BitMapValidation.ValidatePadding(paddingPixels, nameof(paddingPixels));
         BitMapValidation.ValidateZoom(maxZoom, nameof(maxZoom));
-        await SafeInvokeAsync(_js.BitMapFitBoundsToMarkers(JsObject, _Id, paddingPixels, maxZoom), nameof(FitBoundsToMarkers));
+        if (_initialized is false) return;
+
+        await SafeInvokeAsync(_js.BitMapFitBoundsToMarkers(JsObject, _Id, paddingPixels, maxZoom, ShouldAnimate(animate, essential)), nameof(FitBoundsToMarkers));
     }
 
     /// <summary>
@@ -714,7 +778,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </remarks>
     public async ValueTask<BitMapGeolocationResult?> Locate(BitMapGeolocationOptions? options = null)
     {
-        EnsureReady();
+        if (_initialized is false) return null;
+
         var opts = options ?? new BitMapGeolocationOptions();
 
         JsonElement payload;
@@ -756,9 +821,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Add a marker to the map.</summary>
     public async ValueTask AddMarker(BitMapMarker marker)
     {
-        EnsureReady();
         ArgumentNullException.ThrowIfNull(marker);
         BitMapValidation.ValidateId(marker.Id, $"{nameof(BitMapMarker)}.{nameof(BitMapMarker.Id)}");
+        if (_initialized is false) return;
 
         if (IsClustering)
         {
@@ -784,8 +849,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Remove a single marker by its id.</summary>
     public async ValueTask RemoveMarker(string markerId)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(markerId);
+        if (_initialized is false) return;
 
         if (IsClustering)
         {
@@ -812,7 +877,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Remove all markers from the map.</summary>
     public async ValueTask ClearMarkers()
     {
-        EnsureReady();
+        if (_initialized is false) return;
 
         if (IsClustering)
         {
@@ -835,8 +900,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Move an existing marker to a new position.</summary>
     public async ValueTask SetMarkerPosition(string markerId, BitMapLatLng position)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(markerId);
+        if (_initialized is false) return;
 
         if (IsClustering)
         {
@@ -868,8 +933,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </summary>
     public async ValueTask OpenPopup(string markerId)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(markerId);
+        if (_initialized is false) return;
 
         if (MarkerPopupTemplate is null) return;
         if (_markerState.TryGetValue(markerId, out var marker) is false) return;
@@ -877,9 +942,11 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         _openPopupMarker = marker;
         await InvokeAsync(StateHasChanged);
 
-        // The element only exists after the render above, so the anchor is attached afterwards.
+        // The element only exists after the render above, so the anchor is attached afterwards. The pan
+        // that brings the popup into view is not essential motion, so reduced motion makes it a jump.
         await SafeInvokeAsync(
-            _js.BitMapChromeTrackAnchor(_Id, _popupAnchorId, marker.Position.Latitude, marker.Position.Longitude),
+            _js.BitMapChromeTrackAnchor(_Id, _popupAnchorId, marker.Position.Latitude, marker.Position.Longitude,
+                                        PopupAutoPan, ShouldAnimate(true, false)),
             nameof(OpenPopup));
 
         // A dialog nobody is standing in is a dialog whose Escape handler never fires and whose
@@ -931,9 +998,22 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </remarks>
     public async ValueTask OpenMarkerPopup(string markerId)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(markerId);
+        if (_initialized is false) return;
+
         await SafeInvokeAsync(_js.BitMapOpenMarkerPopup(JsObject, _Id, markerId), nameof(OpenMarkerPopup));
+    }
+
+    /// <summary>
+    /// Closes the provider's own marker popup - the counterpart of <see cref="OpenMarkerPopup"/>. Use
+    /// <see cref="ClosePopup"/> for the <see cref="MarkerPopupTemplate"/> one.
+    /// </summary>
+    /// <returns><c>true</c> when a popup was open and has been closed.</returns>
+    public async ValueTask<bool> CloseMarkerPopup()
+    {
+        if (_initialized is false) return false;
+
+        return await SafeInvokeAsync(_js.BitMapCloseMarkerPopup(JsObject, _Id), nameof(CloseMarkerPopup)) ?? false;
     }
 
     /// <summary>Replace all markers in a single batch operation.</summary>
@@ -944,8 +1024,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </remarks>
     public async ValueTask SyncMarkers(IEnumerable<BitMapMarker> markers)
     {
-        EnsureReady();
         ArgumentNullException.ThrowIfNull(markers);
+        if (_initialized is false) return;
 
         var list = markers as ICollection<BitMapMarker> ?? [.. markers];
 
@@ -1002,10 +1082,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Add a polyline vector layer.</summary>
     public async ValueTask AddPolyline(string layerId, IReadOnlyList<BitMapLatLng> path, BitMapVectorPathStyle? style = null)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
         ArgumentNullException.ThrowIfNull(path);
         BitMapValidation.ValidatePointCount(path.Count, 2, nameof(path), "polyline");
+        if (_initialized is false) return;
 
         var snapshot = new PolylineSnapshot(layerId, [.. path], style);
         if (await SafeInvokeAsync(_js.BitMapAddPolyline(JsObject, _Id, layerId, ToLatLngArray(path), ToStylePayload(style)), nameof(AddPolyline)))
@@ -1020,10 +1100,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Add a polygon vector layer.</summary>
     public async ValueTask AddPolygon(string layerId, IReadOnlyList<BitMapLatLng> ring, BitMapVectorPathStyle? style = null)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
         ArgumentNullException.ThrowIfNull(ring);
         BitMapValidation.ValidatePointCount(ring.Count, 3, nameof(ring), "polygon");
+        if (_initialized is false) return;
 
         var snapshot = new PolygonSnapshot(layerId, [.. ring], style);
         if (await SafeInvokeAsync(_js.BitMapAddPolygon(JsObject, _Id, layerId, ToLatLngArray(ring), ToStylePayload(style)), nameof(AddPolygon)))
@@ -1036,9 +1116,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Add a circle vector layer (radius in meters).</summary>
     public async ValueTask AddCircle(string layerId, BitMapLatLng center, double radiusMeters, BitMapVectorPathStyle? style = null)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
         BitMapValidation.ValidateRadius(radiusMeters, nameof(radiusMeters));
+        if (_initialized is false) return;
 
         if (await SafeInvokeAsync(_js.BitMapAddCircle(JsObject, _Id, layerId, center.Latitude, center.Longitude, radiusMeters, ToStylePayload(style)), nameof(AddCircle)))
         {
@@ -1050,8 +1130,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Add a rectangle vector layer.</summary>
     public async ValueTask AddRectangle(string layerId, BitMapLatLngBounds bounds, BitMapVectorPathStyle? style = null)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
+        if (_initialized is false) return;
 
         if (await SafeInvokeAsync(_js.BitMapAddRectangle(JsObject, _Id, layerId,
             bounds.SouthWest.Latitude, bounds.SouthWest.Longitude,
@@ -1070,9 +1150,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </remarks>
     public async ValueTask AddGeoJson(string layerId, string geoJson, BitMapVectorPathStyle? style = null)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
         ArgumentException.ThrowIfNullOrEmpty(geoJson);
+        if (_initialized is false) return;
 
         if (await SafeInvokeAsync(_js.BitMapAddGeoJson(JsObject, _Id, layerId, geoJson, ToStylePayload(style)), nameof(AddGeoJson)))
         {
@@ -1092,8 +1172,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <exception cref="InvalidOperationException">Thrown when no layer with that id has been added.</exception>
     public async ValueTask SetLayerVisible(string layerId, bool visible)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
+        if (_initialized is false) return;
 
         if (_vectorState.TryGetValue(layerId, out var snapshot) is false)
         {
@@ -1126,8 +1206,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <exception cref="InvalidOperationException">Thrown when no layer with that id has been added.</exception>
     public async ValueTask SetLayerStyle(string layerId, BitMapVectorPathStyle? style)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
+        if (_initialized is false) return;
 
         if (_vectorState.TryGetValue(layerId, out var snapshot) is false)
         {
@@ -1144,8 +1224,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Remove a vector layer by id.</summary>
     public async ValueTask RemoveLayer(string layerId)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
+        if (_initialized is false) return;
 
         if (await SafeInvokeAsync(_js.BitMapRemoveLayer(JsObject, _Id, layerId), nameof(RemoveLayer)))
         {
@@ -1157,7 +1237,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Remove all vector layers.</summary>
     public async ValueTask ClearVectorLayers()
     {
-        EnsureReady();
+        if (_initialized is false) return;
+
         if (await SafeInvokeAsync(_js.BitMapClearVectorLayers(JsObject, _Id), nameof(ClearVectorLayers)))
         {
             _vectorState.Clear();
@@ -1168,10 +1249,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Add a tile overlay (raster XYZ layer) above the base map.</summary>
     public async ValueTask AddTileOverlay(BitMapTileOverlay overlay)
     {
-        EnsureReady();
         ArgumentNullException.ThrowIfNull(overlay);
-
         overlay.Validate();
+        if (_initialized is false) return;
+
         if (await SafeInvokeAsync(_js.BitMapAddTileOverlay(JsObject, _Id, ToTileOverlayPayload(overlay)), nameof(AddTileOverlay)))
         {
             _tileOverlayState[overlay.Id] = overlay;
@@ -1186,8 +1267,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <exception cref="InvalidOperationException">Thrown when no overlay with that id has been added.</exception>
     public async ValueTask SetTileOverlayVisible(string overlayId, bool visible)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(overlayId);
+        if (_initialized is false) return;
 
         if (_tileOverlayState.TryGetValue(overlayId, out var overlay) is false)
         {
@@ -1217,8 +1298,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <exception cref="InvalidOperationException">Thrown when no overlay with that id has been added.</exception>
     public async ValueTask SetTileOverlayOpacity(string overlayId, double opacity)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(overlayId);
+        if (_initialized is false) return;
 
         if (_tileOverlayState.TryGetValue(overlayId, out var overlay) is false)
         {
@@ -1237,8 +1318,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>Remove a tile overlay by id.</summary>
     public async ValueTask RemoveTileOverlay(string overlayId)
     {
-        EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(overlayId);
+        if (_initialized is false) return;
 
         if (await SafeInvokeAsync(_js.BitMapRemoveTileOverlay(JsObject, _Id, overlayId), nameof(RemoveTileOverlay)))
         {
@@ -1253,7 +1334,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </summary>
     public async ValueTask ClearTileOverlays()
     {
-        EnsureReady();
+        if (_initialized is false) return;
 
         // Removed one at a time rather than through a bulk call: the overlays are keyed on the JS
         // side too, and a per-id remove is the one operation every backend already implements.
@@ -1383,8 +1464,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             // expand() reports how many markers the bubble stood for either way, and only zooms
             // when asked to - so the count costs no second round-trip, and a consumer who handles
             // the click themselves still learns how big the bubble was.
+            // The zoom into a bubble is a camera move like any other, so it honours reduced motion too.
             count = await _js.BitMapClusterExpand(_Id, clusterId,
-                Clustering!.ExpandPaddingPixels, Clustering!.ZoomOnClick);
+                Clustering!.ExpandPaddingPixels, Clustering!.ZoomOnClick, ShouldAnimate(true, false));
         }
         catch (Exception ex) { await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, nameof(OnClusterClick)); }
 
@@ -1496,9 +1578,67 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
     }
 
+    /// <summary>
+    /// The theme or the color scheme changed the colors the map paints its own images and shapes in. The
+    /// providers resolve a color once, as a pin or a shape is added, so each one that follows the theme -
+    /// its color left to the theme, or written as a variable of it - is drawn again.
+    /// </summary>
+    [JSInvokable("OnThemeChanged")]
+    public async Task _OnThemeChanged()
+    {
+        try { await _lifecycleGate.WaitAsync(); }
+        catch (ObjectDisposedException) { return; /* disposed mid-flight */ }
+
+        try
+        {
+            if (Gone || _initialized is false || _activeProvider is null) return;
+
+            if (IsClustering)
+            {
+                // A new set always re-renders, and the bubbles and the pins alike are drawn afresh from it.
+                await PushClusteredMarkersAsync(nameof(_OnThemeChanged));
+            }
+            else
+            {
+                foreach (var (id, marker) in _markerState)
+                {
+                    if (marker.IconUrl is not null || FollowsTheme(marker.Color) is false) continue;
+                    await SafeInvokeAsync(_js.BitMapAddMarker(JsObject, _Id, id, ToMarkerPayload(marker)), nameof(_OnThemeChanged));
+                }
+            }
+
+            foreach (var snap in _vectorState.Values)
+            {
+                if (_hiddenLayers.Contains(snap.LayerId)) continue;
+                if (snap.Style is { } style && FollowsTheme(style.Color) is false && (style.FillColor is null || FollowsTheme(style.FillColor) is false)) continue;
+                await AddVectorLayerAsync(snap, nameof(_OnThemeChanged));
+            }
+        }
+        finally
+        {
+            try { _lifecycleGate.Release(); } catch (ObjectDisposedException) { }
+        }
+
+        // Unset, or written in terms of something a theme or a scheme decides.
+        static bool FollowsTheme(string? color) => color is null
+            || color.Contains("var(", StringComparison.OrdinalIgnoreCase)
+            || color.Contains("light-dark(", StringComparison.OrdinalIgnoreCase)
+            || color.Contains("currentcolor", StringComparison.OrdinalIgnoreCase);
+    }
+
 
 
     protected override string RootElementClass => "bit-map";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
     protected override void OnInitialized()
     {
@@ -1635,6 +1775,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         await base.OnParametersSetAsync();
 
         if (_cameraParametersDirty)
@@ -1857,8 +1999,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
         _openPopupMarker = current;
         await InvokeAsync(StateHasChanged);
+        // No auto-pan: it is spent as the popup opens, and re-arming it on every update of a marker that
+        // moves would pan the map back to the popup each time, fighting a user who has dragged elsewhere.
+        // A pan still pending from the open is carried over by the script.
         await SafeInvokeAsync(
-            _js.BitMapChromeTrackAnchor(_Id, _popupAnchorId, current.Position.Latitude, current.Position.Longitude),
+            _js.BitMapChromeTrackAnchor(_Id, _popupAnchorId, current.Position.Latitude, current.Position.Longitude,
+                                        false, ShouldAnimate(true, false)),
             nameof(OpenPopup));
     }
 
@@ -2030,22 +2176,24 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     }
 
     /// <summary>
-    /// Loads the provider's stylesheets and scripts, deduped process-wide.
+    /// Loads the provider's stylesheets and scripts.
     /// Returns false when the scripts could not be loaded, which means the map cannot be built.
     /// </summary>
     private async ValueTask<bool> LoadAssetsAsync(TMapProvider provider)
     {
-        // Process-wide dedup so mounting/unmounting multiple BitMaps over the same provider
-        // doesn't pay an interop round-trip per mount. The browser dedupes by URL too, but
-        // skipping the round-trip avoids serialising the URL list and waiting for a JS
-        // promise that does nothing useful.
-        var pendingStylesheets = BitMapAssetCache.FilterUnloadedStylesheets(provider.Stylesheets);
-        if (pendingStylesheets.Count > 0)
+        // Every mount asks, and the dedup lives on the JS side on purpose: it caches per
+        // document - by the in-flight promise and by scanning what the document already
+        // holds - which is the only scope that is right in every render mode. A .NET-side
+        // cache would have to be per document too, and on Blazor Server a process serves
+        // many of them: the first document to mount a map would mark the URLs loaded and
+        // every later one would be told there is nothing to inject and fail on a provider
+        // global that was never defined. What the round-trip costs is serialising the URL
+        // list and awaiting a promise that resolves at once.
+        if (provider.Stylesheets.Count > 0)
         {
             try
             {
-                await _js.BitExtrasInitStylesheets(pendingStylesheets);
-                BitMapAssetCache.MarkStylesheetsLoaded(pendingStylesheets);
+                await _js.BitExtrasInitStylesheets(provider.Stylesheets);
             }
             catch (Exception ex)
             {
@@ -2058,13 +2206,11 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
         if (Gone) return false;
 
-        var pendingScripts = BitMapAssetCache.FilterUnloadedScripts(provider.Scripts);
-        if (pendingScripts.Count > 0)
+        if (provider.Scripts.Count > 0)
         {
             try
             {
-                await _js.BitExtrasInitScripts(pendingScripts, provider.ScriptsAreModules);
-                BitMapAssetCache.MarkScriptsLoaded(pendingScripts);
+                await _js.BitExtrasInitScripts(provider.Scripts, provider.ScriptsAreModules);
             }
             catch (Exception ex)
             {
@@ -2131,7 +2277,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     /// <summary>
     /// Installs (or re-installs) the provider-agnostic chrome: container resize observation,
-    /// cooperative gestures, keyboard escape, and WebGL context-loss reporting. Kept out of the
+    /// cooperative gestures, keyboard pan/zoom and escape, and WebGL context-loss reporting. Kept out of the
     /// provider implementations so all seven backends behave identically.
     /// </summary>
     private async ValueTask AttachChromeAsync()
@@ -2152,6 +2298,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
                 ["wheelHint"] = CooperativeGesturesWheelHint,
                 ["touchHint"] = CooperativeGesturesTouchHint,
                 ["escapeToExit"] = EscapeToExit,
+                ["keyboardNavigation"] = ProviderKeyboardNavigation,
+                ["respectReducedMotion"] = RespectReducedMotion && ForceAnimation is false,
+                ["explicitRtl"] = ExplicitRtl,
             });
         }
         catch (Exception ex)
@@ -2165,13 +2314,22 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// Everything the chrome is configured from, as one comparable value. Used to skip a
     /// re-attach when a re-render did not actually change any of it.
     /// </summary>
-    private (string?, bool, bool, string, string, bool) BuildChromeSignature() => (
+    private (string?, bool, bool, string, string, bool, bool, bool, bool?) BuildChromeSignature() => (
         _activeProvider?.JsObjectName,
         AutoResize,
         CooperativeGestures,
         CooperativeGesturesWheelHint,
         CooperativeGesturesTouchHint,
-        EscapeToExit);
+        EscapeToExit,
+        ProviderKeyboardNavigation,
+        RespectReducedMotion && ForceAnimation is false,
+        ExplicitRtl);
+
+    /// <summary>
+    /// Whether the active provider lets the keyboard pan and zoom. A provider that is not built on
+    /// <see cref="BitMapProviderBase"/> has no such switch, so it gets the keyboard.
+    /// </summary>
+    private bool ProviderKeyboardNavigation => _activeProvider is not BitMapProviderBase provider || provider.KeyboardNavigation;
 
     private async ValueTask<bool> HasWebGlSupport(BitMapWebGlRequirement requirement)
     {
@@ -2183,19 +2341,21 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     private async ValueTask<bool> ReadReducedMotionPreference()
     {
-        if (RespectReducedMotion is false) return false;
+        // Read whatever RespectReducedMotion is now: it is consulted on every camera move, so a map
+        // that turns it on after the first render has to know the answer already.
         try { return await _js.BitMapChromePrefersReducedMotion(); }
         catch { return false; }
     }
 
     /// <summary>
     /// Decides whether a camera move animates. Reduced motion wins over the caller's
-    /// <paramref name="animate"/>, except for a move the caller marked essential.
+    /// <paramref name="animate"/>, except for a move the caller marked essential or a map whose
+    /// <see cref="BitComponentBase.ForceAnimation"/> opts it out of the reduction altogether.
     /// </summary>
     private bool ShouldAnimate(bool animate, bool essential)
     {
         if (animate is false) return false;
-        if (essential) return true;
+        if (essential || ForceAnimation) return true;
         return (RespectReducedMotion && _prefersReducedMotion) is false;
     }
 
@@ -2276,7 +2436,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         var due = ViewAnnouncementThrottle - (DateTimeOffset.UtcNow - _lastAnnouncementAt);
         if (due < TimeSpan.Zero) due = TimeSpan.Zero;
 
-        _ = Task.Run(async () =>
+        // Run on the renderer's dispatcher rather than the thread pool: the wait ends in fields the renderer reads,
+        // the consumer's ViewAnnouncementFormatter and its OnInteropError handler, which may render.
+        _ = InvokeAsync(async () =>
         {
             try
             {
@@ -2298,7 +2460,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
                 // unobserved exception on the finalizer thread rather than at the consumer.
                 await RaiseInteropError(BitMapInteropErrorSource.Callback, ex, nameof(AnnounceViewChanges));
             }
-        }, cts.Token);
+        });
     }
 
     private async ValueTask SetLoadState(BitMapLoadState state, Exception? error = null)
@@ -2329,7 +2491,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </summary>
     private async Task HandlePopupKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key != "Escape") return;
+        // Only the plain key, the one the popup claims: an Escape with a modifier is the surrounding surface's.
+        if (e.IsPlainEscape() is false) return;
         await ClosePopup(restoreFocus: true);
     }
 
@@ -2354,7 +2517,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </summary>
     private async Task ShowMarker(string markerId)
     {
-        if (_initialized is false) return;
+        if (_initialized is false || Disabled) return;
         if (_markerState.TryGetValue(markerId, out var marker) is false) return;
 
         // Essential motion: the movement is what tells the user where they were taken.
@@ -2383,9 +2546,19 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         ["tooltipHtml"] = m.TooltipHtml?.Value,
         ["tooltipText"] = m.TooltipText,
         ["tooltipPermanent"] = m.TooltipPermanent,
-        ["tooltipDirection"] = m.TooltipDirection.ToString().ToLowerInvariant(),
+        // The providers' own direction names; anything BitPlacement can say that they cannot leaves it to auto.
+        ["tooltipDirection"] = m.TooltipPlacement switch
+        {
+            BitPlacement.Top => "top",
+            BitPlacement.Bottom => "bottom",
+            BitPlacement.Left => "left",
+            BitPlacement.Right => "right",
+            BitPlacement.Center => "center",
+            _ => "auto"
+        },
         ["focusable"] = m.Focusable,
         ["draggable"] = m.Draggable,
+        ["color"] = m.Color,
         ["iconUrl"] = m.IconUrl,
         ["iconWidth"] = m.IconWidth,
         ["iconHeight"] = m.IconHeight,

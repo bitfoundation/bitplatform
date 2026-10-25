@@ -5,10 +5,20 @@ env:
 
 on:
   workflow_dispatch:
+    inputs:
+      prerelease_packages:
+        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org
+        type: boolean
+        default: false
   workflow_call:
+    inputs:
+      prerelease_packages:
+        type: boolean
+        default: false
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
 
@@ -28,19 +38,22 @@ jobs:
       with:
         global-json-file: src/global.json
         
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: .
+
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
       
-    - name: Generate CSS/JS files
-      run: dotnet build src/Websites/Platform/src/Bit.Websites.Platform.Client/Bit.Websites.Platform.Client.csproj -t:BeforeBuildTasks -c Release -p:Version="${{ vars.APP_VERSION}}"
-
     - name: Publish
-      run: dotnet publish src/Websites/Platform/src/Bit.Websites.Platform.Server/Bit.Websites.Platform.Server.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+      run: dotnet publish src/Websites/Platform/src/Bit.Websites.Platform.Server/Bit.Websites.Platform.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o server -p:Version="${{ vars.APP_VERSION}}" -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
 
     # Every publish renames afresh, so this map reads the stack traces of this release and of no other. It lives in
     # obj, which this checkout throws away - kept here, and never next to the client, which would serve it.
     - name: Upload minifier map artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: PlatformWebsite-minifier-map
         path: bit-minifier.map
@@ -53,7 +66,7 @@ jobs:
           ForEach-Object { Write-Host "Removing $($_.FullName)"; Remove-Item $_.FullName -Force }
 
     - name: Upload server artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: PlatformWebsite
         path: server

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Enables <c>:shortcode:</c> emoji replacement.</summary>
 public sealed class BitMarkdownEmojiExtension : IBitMarkdownExtension

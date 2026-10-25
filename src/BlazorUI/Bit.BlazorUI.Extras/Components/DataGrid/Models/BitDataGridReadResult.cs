@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Result returned from a grid's <c>OnRead</c> (server mode) or <c>OnLoadMore</c>

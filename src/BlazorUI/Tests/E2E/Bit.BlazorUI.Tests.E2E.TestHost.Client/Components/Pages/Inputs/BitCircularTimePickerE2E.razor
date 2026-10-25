@@ -1,0 +1,752 @@
+﻿@page "/e2e/circular-time-picker"
+@using System.Globalization
+
+<PageTitle>BitCircularTimePicker E2E</PageTitle>
+
+<h1>BitCircularTimePicker</h1>
+
+@* ---------------------------------------------------------------- Basic *@
+
+<E2ESection Id="basic" Title="Basic">
+    <BitCircularTimePicker Id="ctp-basic" Label="Basic CircularTimePicker" Culture="_en" @bind-Value="_basic" />
+    <span id="basic-value">@Show(_basic)</span>
+</E2ESection>
+
+<E2ESection Id="placeholder" Title="Placeholder and icon">
+    <BitCircularTimePicker Label="PlaceHolder" Placeholder="Select a time" IconName="@BitIconName.Airplane" Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="required" Title="Required">
+    <BitCircularTimePicker Label="Required" Required Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitCircularTimePicker Label="Disabled" Disabled="_disabled" Culture="_en" @bind-Value="_disabledValue"
+                           @onclick="() => _disabledClicks++" @onkeydown="() => _disabledKeys++" />
+    <span id="disabled-value">@Show(_disabledValue)</span>
+    <span id="disabled-click-count">@_disabledClicks</span>
+    <span id="disabled-key-count">@_disabledKeys</span>
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+</E2ESection>
+
+<E2ESection Id="disabled-standalone" Title="Disabled standalone">
+    <BitCircularTimePicker Label="Disabled standalone" Disabled Standalone ShowNowButton ShowClearButton TimeFormat="BitTimeFormat.TwelveHours"
+                           Culture="_en" DefaultValue="new(10, 10, 0)" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Standalone *@
+
+<E2ESection Id="standalone" Title="Standalone">
+    <BitCircularTimePicker Label="Standalone picker" Standalone Name="standalone-time" Culture="_en" @bind-Value="_standalone" />
+    <span id="standalone-value">@Show(_standalone)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Time format *@
+
+<E2ESection Id="format-24" Title="24-hour">
+    <BitCircularTimePicker Label="24-hour (default)" Standalone Culture="_en" @bind-Value="_format24" />
+    <span id="format-24-value">@Show(_format24)</span>
+</E2ESection>
+
+<E2ESection Id="format-12" Title="12-hour">
+    <BitCircularTimePicker Label="12-hour" Standalone TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_format12" />
+    <span id="format-12-value">@Show(_format12)</span>
+</E2ESection>
+
+<E2ESection Id="format-12-clock" Title="12-hour, AM/PM under the clock">
+    <BitCircularTimePicker Label="AM/PM under the clock" Standalone AmPmInClock TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_format12Clock" />
+    <span id="format-12-clock-value">@Show(_format12Clock)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Seconds *@
+
+<E2ESection Id="seconds" Title="Seconds">
+    <BitCircularTimePicker Label="Hours, minutes & seconds" Standalone ShowSeconds Culture="_en" @bind-Value="_seconds" />
+    <span id="seconds-value">@Show(_seconds)</span>
+</E2ESection>
+
+<E2ESection Id="seconds-step" Title="SecondStep = 10">
+    <BitCircularTimePicker Label="SecondStep = 10" Standalone ShowSeconds SecondStep="10" StartView="BitCircularTimePickerView.Second" Culture="_en" @bind-Value="_secondsStep" />
+    <span id="seconds-step-value">@Show(_secondsStep)</span>
+</E2ESection>
+
+<E2ESection Id="seconds-field" Title="Seconds with the field">
+    <BitCircularTimePicker Label="With the field" ShowSeconds Culture="_en" @bind-Value="_secondsField" />
+    <span id="seconds-field-value">@Show(_secondsField)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Edit mode & views *@
+
+<E2ESection Id="only-hours" Title="OnlyHours">
+    <BitCircularTimePicker Label="OnlyHours" Standalone EditMode="BitCircularTimePickerEditMode.OnlyHours" Culture="_en" @bind-Value="_onlyHours" />
+    <span id="only-hours-value">@Show(_onlyHours)</span>
+</E2ESection>
+
+<E2ESection Id="only-minutes" Title="OnlyMinutes">
+    <BitCircularTimePicker Label="OnlyMinutes" Standalone EditMode="BitCircularTimePickerEditMode.OnlyMinutes" TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_onlyMinutes" />
+    <span id="only-minutes-value">@Show(_onlyMinutes)</span>
+</E2ESection>
+
+<E2ESection Id="only-seconds" Title="OnlySeconds">
+    <BitCircularTimePicker Label="OnlySeconds" Standalone EditMode="BitCircularTimePickerEditMode.OnlySeconds" Culture="_en" @bind-Value="_onlySeconds" />
+    <span id="only-seconds-value">@Show(_onlySeconds)</span>
+</E2ESection>
+
+<E2ESection Id="start-view" Title="StartView">
+    <BitCircularTimePicker Label="StartView: Minute" Standalone StartView="BitCircularTimePickerView.Minute" Culture="_en"
+                           OnViewChange="v => { _views.Add(v.ToString()); }" @bind-Value="_startView" />
+    <span id="start-view-value">@Show(_startView)</span>
+    <span id="start-view-views">@string.Join(",", _views)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Steps *@
+
+<E2ESection Id="minute-step-5" Title="MinuteStep = 5">
+    <BitCircularTimePicker Label="MinuteStep = 5" Standalone MinuteStep="5" StartView="BitCircularTimePickerView.Minute" Culture="_en" @bind-Value="_minuteStep5" />
+    <span id="minute-step-5-value">@Show(_minuteStep5)</span>
+</E2ESection>
+
+<E2ESection Id="minute-step-15" Title="MinuteStep = 15">
+    <BitCircularTimePicker Label="MinuteStep = 15" Standalone MinuteStep="15" StartView="BitCircularTimePickerView.Minute" Culture="_en" @bind-Value="_minuteStep15" />
+    <span id="minute-step-15-value">@Show(_minuteStep15)</span>
+</E2ESection>
+
+<E2ESection Id="hour-step-3" Title="HourStep = 3">
+    <BitCircularTimePicker Label="HourStep = 3" Standalone HourStep="3" Culture="_en" @bind-Value="_hourStep3" />
+    <span id="hour-step-3-value">@Show(_hourStep3)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Selectable range *@
+
+<E2ESection Id="range" Title="Between 08:30 and 17:15">
+    <BitCircularTimePicker Label="Between 08:30 and 17:15" Standalone MinTime="new(8, 30, 0)" MaxTime="new(17, 15, 0)" Culture="_en" @bind-Value="_range" />
+    <span id="range-value">@Show(_range)</span>
+</E2ESection>
+
+<E2ESection Id="range-allowed" Title="Working hours on the half hour">
+    <BitCircularTimePicker Label="Working hours, half hours" Standalone AllowedHours="@(h => h is >= 9 and <= 17)" AllowedMinutes="@(m => m is 0 or 30)"
+                           Culture="_en" @bind-Value="_rangeAllowed" />
+    <span id="range-allowed-value">@Show(_rangeAllowed)</span>
+</E2ESection>
+
+<E2ESection Id="range-night" Title="Night shift across midnight">
+    <BitCircularTimePicker Label="Night shift" Standalone AllowedHours="@(h => h is >= 22 or <= 6)" AllowedSeconds="@(s => s % 20 == 0)" ShowSeconds
+                           Culture="_en" @bind-Value="_rangeNight" />
+    <span id="range-night-value">@Show(_rangeNight)</span>
+</E2ESection>
+
+<E2ESection Id="range-past" Title="DisablePast">
+    <BitCircularTimePicker Label="Later today only" Standalone DisablePast Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="range-future" Title="DisableFuture">
+    <BitCircularTimePicker Label="Earlier today only" Standalone DisableFuture Culture="_en" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Actions *@
+
+<E2ESection Id="actions" Title="Now & Clear">
+    <BitCircularTimePicker Label="Now & Clear" ShowNowButton ShowClearButton NowButtonText="Right now" ClearButtonText="Reset" Culture="_en"
+                           @bind-Value="_actions" OnClear="() => _actionsClears++" />
+    <span id="actions-value">@Show(_actions)</span>
+    <span id="actions-clear-count">@_actionsClears</span>
+</E2ESection>
+
+<E2ESection Id="close-button" Title="Close button">
+    <BitCircularTimePicker Label="Close button" ShowCloseButton CloseButtonTitle="Dismiss the dial" Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="autoclose" Title="AutoClose">
+    <BitCircularTimePicker Label="AutoClose" AutoClose Culture="_en" @bind-Value="_autoClose" OnClose="() => _autoCloseCloses++" />
+    <span id="autoclose-value">@Show(_autoClose)</span>
+    <span id="autoclose-closes">@_autoCloseCloses</span>
+</E2ESection>
+
+<E2ESection Id="autoclose-delay" Title="AutoClose after 400ms">
+    <BitCircularTimePicker Label="AutoClose after 400ms" AutoClose AutoCloseDelay="400" Culture="_en" @bind-Value="_autoCloseDelay" />
+    <span id="autoclose-delay-value">@Show(_autoCloseDelay)</span>
+</E2ESection>
+
+<E2ESection Id="autoclose-now" Title="AutoClose with Now">
+    <BitCircularTimePicker Label="AutoClose now" AutoClose ShowNowButton Culture="_en" @bind-Value="_autoCloseNow" />
+    <span id="autoclose-now-value">@Show(_autoCloseNow)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Open state *@
+
+<E2ESection Id="programmatic" Title="Controlled callout">
+    <BitCircularTimePicker @ref="_programmatic" Label="Controlled callout" Culture="_en" @bind-IsOpen="_isOpen"
+                           OnOpen="() => _progOpens++" OnClose="() => _progCloses++" />
+    <span id="is-open">@_isOpen</span>
+    <span id="prog-opens">@_progOpens</span>
+    <span id="prog-closes">@_progCloses</span>
+    <button id="btn-open" type="button" @onclick="() => _programmatic!.OpenCallout()">OpenCallout()</button>
+    <button id="btn-dismiss" type="button" @onclick="() => _programmatic!.DismissCallout()">DismissCallout()</button>
+    <button id="btn-set-open" type="button" @onclick="() => _isOpen = true">IsOpen = true</button>
+    <button id="btn-set-closed" type="button" @onclick="() => _isOpen = false">IsOpen = false</button>
+    <button id="btn-focus" type="button" @onclick="() => _programmatic!.FocusAsync()">FocusAsync()</button>
+    <button id="btn-read" type="button" @onclick="StateHasChanged">Read</button>
+    <span id="input-id">@_programmatic?.InputId</span>
+</E2ESection>
+
+<E2ESection Id="programmatic-standalone" Title="SwitchView and View">
+    <BitCircularTimePicker @ref="_programmaticStandalone" Standalone ShowSeconds Culture="_en" OnViewChange="v => _switchedTo = v.ToString()" />
+    <button id="btn-switch-minute" type="button" @onclick="() => _programmaticStandalone!.SwitchView(BitCircularTimePickerView.Minute)">Minute</button>
+    <button id="btn-switch-second" type="button" @onclick="() => _programmaticStandalone!.SwitchView(BitCircularTimePickerView.Second)">Second</button>
+    <button id="btn-switch-hour" type="button" @onclick="() => _programmaticStandalone!.SwitchView(BitCircularTimePickerView.Hour)">Hour</button>
+    <button id="btn-focus-standalone" type="button" @onclick="() => _programmaticStandalone!.FocusAsync()">FocusAsync()</button>
+    <button id="btn-read-view" type="button" @onclick="StateHasChanged">Read</button>
+    <span id="view">@_programmaticStandalone?.View</span>
+    <span id="switched-to">@_switchedTo</span>
+</E2ESection>
+
+<E2ESection Id="drop-all" Title="DropDirection All">
+    <BitCircularTimePicker Label="Any direction" DropDirection="BitDropDirection.All" Culture="_en" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Text input & value format *@
+
+<E2ESection Id="value-format" Title="ValueFormat">
+    <BitCircularTimePicker Label="Formatted time" ValueFormat="hh-mm tt" TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" DefaultValue="new(14, 5, 0)" />
+</E2ESection>
+
+<E2ESection Id="text-input" Title="Text input">
+    <BitCircularTimePicker Label="Text input allowed" AllowTextInput ValueFormat="HH:mm" Culture="_en" @bind-Value="_text" />
+    <span id="text-input-value">@Show(_text)</span>
+</E2ESection>
+
+<E2ESection Id="text-input-culture" Title="Text input in the culture">
+    <BitCircularTimePicker Label="Typed" AllowTextInput Culture="_en" @bind-Value="_textCulture" OnOpen="() => _textOpens++" OnClose="() => _textCloses++" />
+    <span id="text-input-culture-value">@Show(_textCulture)</span>
+    <span id="text-opens">@_textOpens</span>
+    <span id="text-closes">@_textCloses</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Binding *@
+
+<E2ESection Id="binding" Title="Two-way bound">
+    <BitCircularTimePicker Label="Two-way bound" Culture="_en" @bind-Value="_bound" />
+    <span id="binding-value">@Show(_bound)</span>
+    <button id="btn-set-bound" type="button" @onclick="() => _bound = new TimeSpan(7, 45, 0)">Set 07:45</button>
+    <button id="btn-clear-bound" type="button" @onclick="() => _bound = null">Clear</button>
+</E2ESection>
+
+<E2ESection Id="uncontrolled" Title="Uncontrolled">
+    <BitCircularTimePicker Label="Uncontrolled" Standalone DefaultValue="new(7, 30, 0)" OnChange="v => _changed = v" Culture="_en" />
+    <span id="uncontrolled-value">@Show(_changed)</span>
+</E2ESection>
+
+<E2ESection Id="starting-value" Title="StartingValue">
+    <BitCircularTimePicker Label="Starting from 09:30" Standalone ShowClearButton StartingValue="new(9, 30, 0)" Culture="_en" @bind-Value="_starting" />
+    <span id="starting-value-value">@Show(_starting)</span>
+</E2ESection>
+
+<E2ESection Id="one-way" Title="One-way Value">
+    <BitCircularTimePicker Label="One-way" Standalone Value="new(10, 10, 0)" Culture="_en" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Culture *@
+
+<E2ESection Id="culture-fa" Title="fa-IR culture">
+    <BitCircularTimePicker Label="fa-IR culture" Standalone TimeFormat="BitTimeFormat.TwelveHours" Culture="_fa" @bind-Value="_faValue" />
+    <span id="culture-fa-value">@Show(_faValue)</span>
+    <span id="fa-am">@_fa_am</span>
+    <span id="fa-pm">@_fa_pm</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- ReadOnly *@
+
+<E2ESection Id="readonly" Title="ReadOnly">
+    <BitCircularTimePicker Label="ReadOnly" ReadOnly ShowNowButton ShowClearButton TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_readOnly" />
+    <span id="readonly-value">@Show(_readOnly)</span>
+</E2ESection>
+
+<E2ESection Id="readonly-text" Title="ReadOnly with text input">
+    <BitCircularTimePicker Label="ReadOnly text" ReadOnly AllowTextInput Culture="_en" @bind-Value="_readOnly" />
+</E2ESection>
+
+<E2ESection Id="readonly-standalone" Title="ReadOnly standalone">
+    <BitCircularTimePicker Label="ReadOnly standalone" Standalone ReadOnly TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_readOnly" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Appearance *@
+
+<E2ESection Id="underlined" Title="Underlined">
+    <BitCircularTimePicker Label="Underlined" Underlined Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="no-border" Title="No border">
+    <BitCircularTimePicker Label="No border" HasBorder="false" Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="icon-start" Title="Icon on the left">
+    <BitCircularTimePicker Label="Icon on the left" IconPlacement="BitPlacement.Start" Culture="_en" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Templates *@
+
+<E2ESection Id="templates-label" Title="LabelTemplate">
+    <BitCircularTimePicker Culture="_en">
+        <LabelTemplate><span id="custom-label">Custom label</span></LabelTemplate>
+    </BitCircularTimePicker>
+</E2ESection>
+
+<E2ESection Id="templates-label-standalone" Title="LabelTemplate standalone">
+    <BitCircularTimePicker Standalone Culture="_en">
+        <LabelTemplate><span id="custom-standalone-label">Wake up</span></LabelTemplate>
+    </BitCircularTimePicker>
+</E2ESection>
+
+<E2ESection Id="templates-icon" Title="IconTemplate">
+    <BitCircularTimePicker Label="Custom icon" IconPlacement="BitPlacement.Start" Culture="_en">
+        <IconTemplate><span id="custom-icon">ICON</span></IconTemplate>
+    </BitCircularTimePicker>
+</E2ESection>
+
+<E2ESection Id="templates-callout" Title="Callout header & footer">
+    <BitCircularTimePicker Label="Header & footer" ShowCloseButton Culture="_en" @bind-Value="_template">
+        <CalloutHeaderTemplate><div id="callout-header">Pick a time</div></CalloutHeaderTemplate>
+        <CalloutFooterTemplate>
+            <div id="callout-footer">
+                <button id="preset-0815" type="button" @onclick="() => _template = new TimeSpan(8, 15, 0)">08:15</button>
+            </div>
+        </CalloutFooterTemplate>
+    </BitCircularTimePicker>
+    <span id="templates-callout-value">@Show(_template)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Layout *@
+
+<E2ESection Id="landscape" Title="Landscape">
+    <BitCircularTimePicker Label="Landscape" Standalone Landscape DefaultValue="new(9, 30, 0)" Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="landscape-12" Title="Landscape 12-hour with seconds">
+    <BitCircularTimePicker Label="Landscape 12" Standalone Landscape ShowSeconds TimeFormat="BitTimeFormat.TwelveHours" DefaultValue="new(21, 45, 30)" Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="portrait" Title="Portrait">
+    <BitCircularTimePicker Label="Portrait" Standalone DefaultValue="new(9, 30, 0)" Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="landscape-callout" Title="Landscape in the callout">
+    <BitCircularTimePicker Label="Landscape in the callout" Landscape Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="responsive" Title="Responsive">
+    <BitCircularTimePicker Label="Responsive" Responsive ShowCloseButton Culture="_en" @bind-Value="_responsive" OnClose="() => _responsiveCloses++" />
+    <span id="responsive-value">@Show(_responsive)</span>
+    <span id="responsive-close-count">@_responsiveCloses</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Keyboard & accessibility *@
+
+<E2ESection Id="keyboard" Title="Keyboard">
+    <BitCircularTimePicker Label="Try it with the keyboard" AriaLabel="Meeting field" CalloutAriaLabel="Pick a meeting time" HourButtonTitle="Meeting hour"
+                           MinuteButtonTitle="Meeting minute" SecondButtonTitle="Meeting second" ShowSeconds TimeFormat="BitTimeFormat.TwelveHours" Culture="_en"
+                           ShowNowButton @bind-Value="_keyboard" />
+    <span id="keyboard-value">@Show(_keyboard)</span>
+</E2ESection>
+
+<E2ESection Id="keyboard-24" Title="Keyboard 24-hour">
+    <BitCircularTimePicker Label="Keyboard 24" Standalone Culture="_en" @bind-Value="_keyboard24" />
+    <span id="keyboard-24-value">@Show(_keyboard24)</span>
+</E2ESection>
+
+<E2ESection Id="keyboard-text" Title="Keyboard on an editable field">
+    <BitCircularTimePicker Label="Editable" AllowTextInput Culture="_en" />
+    <button id="keyboard-text-after" type="button">After</button>
+</E2ESection>
+
+<E2ESection Id="wheel" Title="Mouse wheel">
+    <BitCircularTimePicker Label="Wheel" Standalone Culture="_en" @bind-Value="_wheel" />
+    <span id="wheel-value">@Show(_wheel)</span>
+</E2ESection>
+
+<E2ESection Id="wheel-off" Title="NoMouseWheel">
+    <BitCircularTimePicker Label="No wheel" Standalone NoMouseWheel Culture="_en" @bind-Value="_wheelOff" />
+    <span id="wheel-off-value">@Show(_wheelOff)</span>
+</E2ESection>
+
+<E2ESection Id="wheel-invert" Title="InvertMouseWheel">
+    <BitCircularTimePicker Label="Inverted wheel" Standalone InvertMouseWheel Culture="_en" @bind-Value="_wheelInvert" />
+    <span id="wheel-invert-value">@Show(_wheelInvert)</span>
+</E2ESection>
+
+<E2ESection Id="drag" Title="Dragging the dial">
+    <BitCircularTimePicker Label="Drag 24" Standalone Culture="_en" @bind-Value="_drag" />
+    <span id="drag-value">@Show(_drag)</span>
+</E2ESection>
+
+<E2ESection Id="drag-12" Title="Dragging the 12-hour dial">
+    <BitCircularTimePicker Label="Drag 12" Standalone TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_drag12" />
+    <span id="drag-12-value">@Show(_drag12)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Validation *@
+
+<E2ESection Id="form" Title="EditForm">
+    <EditForm Model="_formModel" OnValidSubmit="() => _formStatus = Saved()" OnInvalidSubmit="() => _formStatus = Rejected()">
+        <DataAnnotationsValidator />
+        <BitCircularTimePicker @bind-Value="_formModel.Time" AllowTextInput Label="Time required" Culture="_en"
+                               MinTime="new(8, 0, 0)" MaxTime="new(18, 0, 0)" AllowedMinutes="@(m => m is 0 or 15 or 30 or 45)"
+                               InvalidErrorMessage="That is not a time - write it as HH:mm."
+                               OutOfRangeErrorMessage="Please enter a time between 08:00 and 18:00."
+                               DisallowedTimeErrorMessage="Appointments start on the quarter hour." />
+        <div id="form-message"><ValidationMessage For="@(() => _formModel.Time)" /></div>
+        <button id="form-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="form-status">@_formStatus</span>
+</E2ESection>
+
+<E2ESection Id="form-default" Title="EditForm default messages">
+    <EditForm Model="_formModel2">
+        <DataAnnotationsValidator />
+        <BitCircularTimePicker @bind-Value="_formModel2.Time" AllowTextInput DisplayName="Arrival" Culture="_en"
+                               MinTime="new(8, 0, 0)" MaxTime="new(18, 0, 0)" AllowedHours="@(h => h != 12)" />
+        <div id="form2-message"><ValidationMessage For="@(() => _formModel2.Time)" /></div>
+    </EditForm>
+</E2ESection>
+
+<E2ESection Id="form-standalone" Title="Standalone & required">
+    <EditForm Model="_formModel3" OnValidSubmit="() => _form3Status = Saved()" OnInvalidSubmit="() => _form3Status = Rejected()">
+        <DataAnnotationsValidator />
+        <BitCircularTimePicker @bind-Value="_formModel3.Time" Standalone Required ShowClearButton Label="Standalone & required" Culture="_en" />
+        <div id="form3-message"><ValidationMessage For="@(() => _formModel3.Time)" /></div>
+        <button id="form3-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="form3-status">@_form3Status</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Events *@
+
+<E2ESection Id="events" Title="Events">
+    <BitCircularTimePicker Label="Watch the log" ShowClearButton Culture="_en" @bind-Value="_events"
+                           OnOpen="() => _opens++" OnClose="() => _closes++" OnClick="() => _clicks++" OnClear="() => _clears++"
+                           OnFocus="() => _focuses++" OnFocusIn="() => _focusIns++" OnFocusOut="() => _focusOuts++"
+                           OnViewChange="v => { _viewChanges++; _lastView = v.ToString(); }"
+                           OnSelectTime="t => { _selects++; _lastSelect = t; }"
+                           OnChange="t => { _changes++; _lastChange = t; }" />
+    <span id="events-value">@Show(_events)</span>
+    <span id="ev-open">@_opens</span>
+    <span id="ev-close">@_closes</span>
+    <span id="ev-click">@_clicks</span>
+    <span id="ev-clear">@_clears</span>
+    <span id="ev-focus">@_focuses</span>
+    <span id="ev-focusin">@_focusIns</span>
+    <span id="ev-focusout">@_focusOuts</span>
+    <span id="ev-view">@_viewChanges</span>
+    <span id="ev-view-arg">@_lastView</span>
+    <span id="ev-select">@_selects</span>
+    <span id="ev-select-arg">@Show(_lastSelect)</span>
+    <span id="ev-change">@_changes</span>
+    <span id="ev-change-arg">@Show(_lastChange)</span>
+    <button id="events-outside" type="button">Outside</button>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Cascading parameters *@
+
+<E2ESection Id="cascade" Title="Cascading parameters">
+    <BitParams Parameters="_cascade">
+        <div id="cascade-1"><BitCircularTimePicker Label="Check-in" @bind-Value="_cascade1" /></div>
+        <div id="cascade-2"><BitCircularTimePicker Label="Check-out" /></div>
+        <div id="cascade-3"><BitCircularTimePicker Label="Wake-up call" MinuteStep="1" Color="BitColor.Secondary" @bind-Value="_cascade3" /></div>
+    </BitParams>
+    <span id="cascade-1-value">@Show(_cascade1)</span>
+    <span id="cascade-3-value">@Show(_cascade3)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Color *@
+
+<E2ESection Id="colors" Title="Color">
+    @foreach (var color in _colors)
+    {
+        <div id="color-@color.ToString().ToLowerInvariant()">
+            <BitCircularTimePicker Label="@color.ToString()" Color="color" Standalone ShowNowButton DefaultValue="new(10, 10, 0)" Culture="_en" />
+        </div>
+    }
+    <div id="color-none">
+        <BitCircularTimePicker Label="Unset" Standalone ShowNowButton DefaultValue="new(10, 10, 0)" Culture="_en" />
+    </div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- External icons *@
+
+<E2ESection Id="external-icons" Title="External icons">
+    <div id="ext-string"><BitCircularTimePicker Icon="@("fa-solid fa-clock")" Culture="_en" /></div>
+    <div id="ext-css"><BitCircularTimePicker Icon="@BitIconInfo.Css("bi bi-heart-fill")" Culture="_en" /></div>
+    <div id="ext-fa"><BitCircularTimePicker Icon="@BitIconInfo.Fa("solid clock")" ShowCloseButton CloseButtonIcon="@BitIconInfo.Fa("solid xmark")" Culture="_en" /></div>
+    <div id="ext-bi"><BitCircularTimePicker Icon="@BitIconInfo.Bi("clock-fill")" ShowCloseButton CloseButtonIcon="@BitIconInfo.Bi("x-lg")" Culture="_en" /></div>
+    <div id="ext-close-name"><BitCircularTimePicker ShowCloseButton CloseButtonIconName="@BitIconName.ChromeClose" Culture="_en" /></div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Size *@
+
+<E2ESection Id="sizes" Title="Size">
+    <div id="size-small"><BitCircularTimePicker Size="BitSize.Small" Label="Small" Culture="_en" /></div>
+    <div id="size-medium"><BitCircularTimePicker Size="BitSize.Medium" Label="Medium" Culture="_en" /></div>
+    <div id="size-large"><BitCircularTimePicker Size="BitSize.Large" Label="Large" Culture="_en" /></div>
+    <div id="size-small-standalone"><BitCircularTimePicker Size="BitSize.Small" Standalone DefaultValue="new(10, 10, 0)" Culture="_en" /></div>
+    <div id="size-medium-standalone"><BitCircularTimePicker Size="BitSize.Medium" Standalone DefaultValue="new(10, 10, 0)" Culture="_en" /></div>
+    <div id="size-large-standalone"><BitCircularTimePicker Size="BitSize.Large" Standalone DefaultValue="new(10, 10, 0)" Culture="_en" /></div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Style & Class *@
+
+<E2ESection Id="style-class" Title="Style & Class">
+    <div id="sc-style"><BitCircularTimePicker Style="margin: 7px; box-shadow: rgb(30, 144, 255) 0px 0px 16px 0px;" Culture="_en" /></div>
+    <div id="sc-class"><BitCircularTimePicker Class="custom-class" Culture="_en" /></div>
+    <div id="sc-styles">
+        <BitCircularTimePicker Label="Styles" ShowNowButton ShowClearButton ShowCloseButton ShowSeconds TimeFormat="BitTimeFormat.TwelveHours" Culture="_en"
+                               DefaultValue="new(9, 7, 0)"
+                               Styles="@(new() { Root = "margin-inline: 11px;", Focused = "outline: 3px solid rgb(255, 0, 0);", Label = "color: rgb(1, 1, 1);",
+                                                 InputWrapper = "padding-top: 3px;", InputContainer = "background: rgb(2, 2, 2);", Input = "padding: 9px;",
+                                                 Icon = "color: rgb(3, 3, 3);", Overlay = "background-color: rgba(0, 0, 0, 0.1);", Callout = "min-width: 333px;",
+                                                 CalloutContainer = "padding-top: 6px;", Toolbar = "padding-bottom: 13px;", Body = "padding-top: 4px;",
+                                                 HourMinuteContainer = "padding-top: 2px;", HourButton = "color: rgb(4, 4, 4);", MinuteButton = "color: rgb(5, 5, 5);",
+                                                 SecondButton = "color: rgb(6, 6, 6);", HourMinuteSeparator = "color: rgb(7, 7, 7);", AmPmContainer = "padding-top: 5px;",
+                                                 AmButton = "color: rgb(8, 8, 8);", PmButton = "color: rgb(9, 9, 9);", SelectedButtons = "text-decoration: underline;",
+                                                 ClockContainer = "background-color: rgb(10, 10, 10);", ClockFace = "padding-top: 1px;", ClockPin = "background-color: rgb(11, 11, 11);",
+                                                 ClockNumber = "color: rgb(12, 12, 12);", ClockSelectedNumber = "background-color: rgb(13, 13, 13);",
+                                                 ClockDisabledNumber = "opacity: 0.5;", ClockPointer = "background-color: rgb(14, 14, 14);",
+                                                 ClockPointerThumb = "border-color: rgb(15, 15, 15);", ClockPointerThumbMinute = "color: rgb(16, 16, 16);",
+                                                 CloseButton = "color: rgb(17, 17, 17);", CloseButtonIcon = "color: rgb(18, 18, 18);", Actions = "padding-top: 7px;",
+                                                 NowButton = "color: rgb(19, 19, 19);", ClearButton = "color: rgb(20, 20, 20);" })" />
+    </div>
+    <div id="sc-hm-text">
+        <BitCircularTimePicker Standalone EditMode="BitCircularTimePickerEditMode.OnlyHours" Culture="_en" Styles="@(new() { HourMinuteText = "color: rgb(21, 21, 21);" })"
+                               Classes="@(new() { HourMinuteText = "c-hm-text" })" />
+    </div>
+    <div id="sc-header-footer">
+        <BitCircularTimePicker Standalone Culture="_en" Styles="@(new() { CalloutHeader = "color: rgb(22, 22, 22);", CalloutFooter = "color: rgb(23, 23, 23);" })"
+                               Classes="@(new() { CalloutHeader = "c-header", CalloutFooter = "c-footer" })">
+            <CalloutHeaderTemplate>Header</CalloutHeaderTemplate>
+            <CalloutFooterTemplate>Footer</CalloutFooterTemplate>
+        </BitCircularTimePicker>
+    </div>
+    <div id="sc-classes">
+        <BitCircularTimePicker Label="Classes" ShowNowButton ShowClearButton ShowCloseButton ShowSeconds TimeFormat="BitTimeFormat.TwelveHours" Culture="_en"
+                               MinTime="new(9, 10, 0)" DefaultValue="new(9, 10, 0)"
+                               Classes="@(new() { Root = "c-root", Focused = "c-focused", Label = "c-label", InputWrapper = "c-input-wrapper", InputContainer = "c-input-container",
+                                                  Input = "c-input", Icon = "c-icon", Overlay = "c-overlay", Callout = "c-callout", CalloutContainer = "c-callout-container",
+                                                  Toolbar = "c-toolbar", Body = "c-body", HourMinuteContainer = "c-hm", HourButton = "c-hour", MinuteButton = "c-minute",
+                                                  SecondButton = "c-second", HourMinuteSeparator = "c-sep", AmPmContainer = "c-ampm", AmButton = "c-am", PmButton = "c-pm",
+                                                  SelectedButtons = "c-selected", ClockContainer = "c-clock", ClockFace = "c-face", ClockPin = "c-pin", ClockNumber = "c-number",
+                                                  ClockSelectedNumber = "c-selected-number", ClockDisabledNumber = "c-disabled-number", ClockPointer = "c-pointer",
+                                                  ClockPointerThumb = "c-thumb", ClockPointerThumbMinute = "c-thumb-minute", CloseButton = "c-close",
+                                                  CloseButtonIcon = "c-close-icon", Actions = "c-actions", NowButton = "c-now", ClearButton = "c-clear" })" />
+    </div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- CSS variables *@
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div style="--bit-CircularTimePicker-color: rgb(0, 128, 128);
+                --bit-CircularTimePicker-border-radius: 20px;
+                --bit-CircularTimePicker-input-height: 50px;
+                --bit-CircularTimePicker-icon-color: rgb(1, 2, 3);
+                --bit-CircularTimePicker-label-color: rgb(4, 5, 6);
+                --bit-CircularTimePicker-clock-size: 300px;
+                --bit-CircularTimePicker-clock-background: rgb(7, 8, 9);
+                --bit-CircularTimePicker-number-color: rgb(10, 11, 12);
+                --bit-CircularTimePicker-callout-radius: 24px;">
+        <div id="css-vars-default"><BitCircularTimePicker Label="Teal" DefaultValue="new(10, 10, 0)" Culture="_en" /></div>
+        <div id="css-vars-explicit"><BitCircularTimePicker Label="Explicit" Color="BitColor.Error" Size="BitSize.Small" DefaultValue="new(10, 10, 0)" Culture="_en" /></div>
+        <div id="css-vars-standalone"><BitCircularTimePicker Label="Standalone" Standalone DefaultValue="new(10, 10, 0)" Culture="_en" /></div>
+    </div>
+    <div id="css-vars-instance">
+        <BitCircularTimePicker Label="Instance" Standalone DefaultValue="new(10, 10, 0)" Culture="_en"
+                               Style="--bit-CircularTimePicker-clock-size: 220px;"
+                               Styles="@(new() { Callout = "--bit-CircularTimePicker-color: rgb(46, 139, 87); --bit-CircularTimePicker-pointer-width: 5px;" })" />
+    </div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- RTL *@
+
+<E2ESection Id="rtl" Title="RTL">
+    <div id="rtl-field">
+        <BitCircularTimePicker Dir="BitDir.Rtl" Label="ساعت" TimeFormat="BitTimeFormat.TwelveHours" ShowCloseButton DefaultValue="new(9, 30, 0)" Culture="_en" />
+    </div>
+    <div id="rtl-standalone">
+        <BitCircularTimePicker Dir="BitDir.Rtl" Label="ساعت" Standalone TimeFormat="BitTimeFormat.TwelveHours" DefaultValue="new(9, 30, 0)" Culture="_en" />
+    </div>
+    <div id="ltr-standalone">
+        <BitCircularTimePicker Label="LTR" Standalone TimeFormat="BitTimeFormat.TwelveHours" DefaultValue="new(9, 30, 0)" Culture="_en" />
+    </div>
+    <div id="rtl-inherited" dir="rtl">
+        <BitCircularTimePicker Label="Inherited" TimeFormat="BitTimeFormat.TwelveHours" DefaultValue="new(9, 30, 0)" Culture="_en" />
+    </div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Base behaviours *@
+
+<E2ESection Id="visibility" Title="Visibility">
+    <BitCircularTimePicker Label="Visibility" Visibility="_visibility" Culture="_en" />
+    <div id="visibility-standalone"><BitCircularTimePicker Label="Visibility standalone" Standalone Visibility="_visibility" Culture="_en" /></div>
+    <span id="visibility-after">After</span>
+    <button id="btn-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+</E2ESection>
+
+<E2ESection Id="attributes" Title="Id, AriaLabel, HtmlAttributes, InputHtmlAttributes, Name, TabIndex">
+    <BitCircularTimePicker Id="ctp-attrs" AriaLabel="Arrival time" Name="arrival" TabIndex="3" Culture="_en"
+                           HtmlAttributes="@(new Dictionary<string, object> { ["data-root"] = "root-value", ["title"] = "Root title" })"
+                           InputHtmlAttributes="@(new Dictionary<string, object> { ["data-input"] = "input-value", ["aria-disabled"] = "false" })"
+                           CalloutHtmlAttributes="@(new Dictionary<string, object> { ["data-callout"] = "callout-value" })" />
+</E2ESection>
+
+<E2ESection Id="dialog" Title="Inside a modal">
+    <button id="btn-open-modal" type="button" @onclick="() => _modalOpen = true">Open modal</button>
+    <span id="modal-open">@_modalOpen</span>
+    <BitModal @bind-IsOpen="_modalOpen">
+        <div id="modal-content" style="padding: 16px;">
+            <BitCircularTimePicker Label="In a modal" Culture="_en" OnClose="() => _modalPickerCloses++" />
+            <span id="modal-picker-closes">@_modalPickerCloses</span>
+        </div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <BitCircularTimePicker Label="@_lifecycleLabel" TimeFormat="_lifecycleFormat" ShowSeconds="_lifecycleSeconds" Culture="_en" @bind-Value="_lifecycle" />
+    }
+    <span id="lifecycle-value">@Show(_lifecycle)</span>
+    <button id="btn-toggle-mounted" type="button" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    <button id="btn-relabel" type="button" @onclick="@(() => _lifecycleLabel = "Relabelled")">Relabel</button>
+    <button id="btn-twelve" type="button" @onclick="() => _lifecycleFormat = BitTimeFormat.TwelveHours">12 hours</button>
+    <button id="btn-seconds" type="button" @onclick="() => _lifecycleSeconds = !_lifecycleSeconds">Toggle seconds</button>
+</E2ESection>
+
+<E2ESection Id="reduced-motion" Title="Reduced motion">
+    <BitCircularTimePicker Label="Animated" Culture="_en" />
+    <div id="force-animation"><BitCircularTimePicker Label="ForceAnimation" ForceAnimation Culture="_en" /></div>
+</E2ESection>
+
+<E2ESection Id="form-novalidate" Title="NoValidate">
+    <EditForm Model="_formModel4">
+        <BitCircularTimePicker @bind-Value="_formModel4.Time" AllowTextInput NoValidate Culture="_en" />
+        <div id="form4-message"><ValidationMessage For="@(() => _formModel4.Time)" /></div>
+    </EditForm>
+    <span id="form4-value">@Show(_formModel4.Time)</span>
+</E2ESection>
+
+<E2EStatus Status="@_formStatus" />
+
+@code {
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+    private static readonly CultureInfo _fa = CultureInfo.GetCultureInfo("fa-IR");
+    private static readonly string _fa_am = _fa.DateTimeFormat.AMDesignator;
+    private static readonly string _fa_pm = _fa.DateTimeFormat.PMDesignator;
+
+    private static readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground, BitColor.TertiaryForeground,
+        BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly List<IBitComponentParams> _cascade =
+    [
+        new BitCircularTimePickerParams
+        {
+            TimeFormat = BitTimeFormat.TwelveHours,
+            MinuteStep = 15,
+            ShowNowButton = true,
+            ShowClearButton = true,
+            Culture = CultureInfo.GetCultureInfo("en-US"),
+            Placeholder = "Cascaded placeholder",
+            NowButtonText = "Cascaded now",
+            Color = BitColor.Success,
+            StartView = BitCircularTimePickerView.Minute
+        }
+    ];
+
+    private TimeSpan? _basic;
+    private bool _disabled = true;
+    private TimeSpan? _disabledValue = new(10, 10, 0);
+    private int _disabledClicks, _disabledKeys;
+    private TimeSpan? _standalone;
+    private TimeSpan? _format24 = new(21, 45, 0);
+    private TimeSpan? _format12 = new(21, 45, 0);
+    private TimeSpan? _format12Clock = new(21, 45, 0);
+    private TimeSpan? _seconds = new(9, 30, 15);
+    private TimeSpan? _secondsStep = new(9, 30, 20);
+    private TimeSpan? _secondsField;
+    private TimeSpan? _onlyHours = new(9, 30, 0);
+    private TimeSpan? _onlyMinutes = new(21, 30, 0);
+    private TimeSpan? _onlySeconds = new(9, 30, 15);
+    private TimeSpan? _startView = new(9, 30, 0);
+    private readonly List<string> _views = [];
+    private TimeSpan? _minuteStep5 = new(10, 15, 0);
+    private TimeSpan? _minuteStep15 = new(10, 15, 0);
+    private TimeSpan? _hourStep3 = new(9, 0, 0);
+    private TimeSpan? _range = new(8, 30, 0);
+    private TimeSpan? _rangeAllowed = new(9, 0, 0);
+    private TimeSpan? _rangeNight = new(23, 0, 0);
+    private TimeSpan? _actions;
+    private int _actionsClears;
+    private TimeSpan? _autoClose;
+    private int _autoCloseCloses;
+    private TimeSpan? _autoCloseDelay;
+    private TimeSpan? _autoCloseNow;
+    private BitCircularTimePicker? _programmatic;
+    private BitCircularTimePicker? _programmaticStandalone;
+    private string? _switchedTo;
+    private bool _isOpen;
+    private int _progOpens, _progCloses;
+    private TimeSpan? _text;
+    private TimeSpan? _textCulture;
+    private int _textOpens, _textCloses;
+    private TimeSpan? _bound;
+    private TimeSpan? _changed;
+    private TimeSpan? _starting;
+    private TimeSpan? _faValue = new(14, 30, 0);
+    private TimeSpan? _readOnly = new(10, 10, 0);
+    private TimeSpan? _template;
+    private TimeSpan? _responsive;
+    private int _responsiveCloses;
+    private TimeSpan? _keyboard;
+    private TimeSpan? _keyboard24;
+    private TimeSpan? _wheel = new(10, 30, 0);
+    private TimeSpan? _wheelOff = new(10, 30, 0);
+    private TimeSpan? _wheelInvert = new(10, 30, 0);
+    private TimeSpan? _drag;
+    private TimeSpan? _drag12 = new(15, 0, 0);
+    private TimeSpan? _events;
+    private int _opens, _closes, _clicks, _clears, _focuses, _focusIns, _focusOuts, _viewChanges, _selects, _changes;
+    private string? _lastView;
+    private TimeSpan? _lastSelect, _lastChange;
+    private TimeSpan? _cascade1;
+    private TimeSpan? _cascade3;
+    private BitVisibility _visibility;
+    private bool _modalOpen;
+    private int _modalPickerCloses;
+    private bool _mounted = true;
+    private string _lifecycleLabel = "Lifecycle";
+    private BitTimeFormat _lifecycleFormat = BitTimeFormat.TwentyFourHours;
+    private bool _lifecycleSeconds;
+    private TimeSpan? _lifecycle = new(15, 20, 10);
+
+    private readonly FormModel _formModel = new();
+    private readonly FormModel _formModel2 = new();
+    private readonly FormModel _formModel3 = new();
+    private readonly FormModel _formModel4 = new();
+    private string? _formStatus;
+    private string? _form3Status;
+    private int _submits;
+
+    private string Saved() => $"Saved {++_submits}";
+
+    private string Rejected() => $"Rejected {++_submits}";
+
+    private static string Show(TimeSpan? value) => value?.ToString(@"hh\:mm\:ss") ?? "null";
+
+    private sealed class FormModel
+    {
+        [Required(ErrorMessage = "The time is required.")]
+        public TimeSpan? Time { get; set; }
+    }
+}

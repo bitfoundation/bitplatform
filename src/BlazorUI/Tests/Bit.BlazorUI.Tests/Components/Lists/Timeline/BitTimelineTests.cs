@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +23,7 @@ public class BitTimelineTests : BunitTestContext
         public BitColor? DotColor { get; set; }
         public BitSize? DotSize { get; set; }
         public BitVariant? DotVariant { get; set; }
-        public BitTimelineLineVariant? LineStyle { get; set; }
+        public BitLineStyle? LineStyle { get; set; }
         public string? Label { get; set; }
         public string? Tooltip { get; set; }
         public Action<TimelineEvent>? Select { get; set; }
@@ -33,7 +33,7 @@ public class BitTimelineTests : BunitTestContext
     private class TimelineRecord
     {
         public string? PrimaryText { get; set; }
-        public BitTimelineLineVariant? LineVariant { get; set; }
+        public BitLineStyle? LineStyle { get; set; }
         public bool HideDot { get; set; }
     }
 
@@ -57,13 +57,13 @@ public class BitTimelineTests : BunitTestContext
         PrimaryText = { Selector = i => i.FirstText },
         SecondaryText = { Selector = i => i.SecondText },
         IconName = { Selector = i => i.IconClass },
-        IsEnabled = { Selector = i => i.Off is false },
+        IsDisabled = { Selector = i => i.Off },
         Reversed = { Selector = i => i.Flipped },
         HideDot = { Selector = i => i.NoDot },
         Color = { Selector = i => i.DotColor },
         Size = { Selector = i => i.DotSize },
         Variant = { Selector = i => i.DotVariant },
-        LineVariant = { Selector = i => i.LineStyle },
+        LineStyle = { Selector = i => i.LineStyle },
         AriaLabel = { Selector = i => i.Label },
         Title = { Selector = i => i.Tooltip },
         OnClick = { Selector = i => i.Select },
@@ -254,6 +254,8 @@ public class BitTimelineTests : BunitTestContext
 
         var root = component.Find(".bit-tln");
 
+        // An ordered list, which keeps its list role spelled out for WebKit (it hides the markers).
+        Assert.AreEqual("OL", root.TagName);
         Assert.AreEqual("list", root.GetAttribute("role"));
     }
 
@@ -272,11 +274,11 @@ public class BitTimelineTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitTimelineShouldRespectIsEnabled(bool isEnabled)
+    public void BitTimelineShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             TwoOptions()(parameters);
         });
 
@@ -285,12 +287,17 @@ public class BitTimelineTests : BunitTestContext
         if (isEnabled)
         {
             Assert.IsFalse(root.ClassList.Contains("bit-dis"));
-            Assert.IsNull(root.GetAttribute("aria-disabled"));
         }
         else
         {
             Assert.IsTrue(root.ClassList.Contains("bit-dis"));
-            Assert.AreEqual("true", root.GetAttribute("aria-disabled"));
+            // aria-disabled does not apply to a list: the items announce the state themselves.
+            Assert.IsNull(root.GetAttribute("aria-disabled"));
+        }
+
+        foreach (var item in component.FindAll(".bit-tln-itm"))
+        {
+            Assert.AreEqual(isEnabled ? null : "true", item.GetAttribute("aria-disabled"));
         }
     }
 
@@ -327,8 +334,15 @@ public class BitTimelineTests : BunitTestContext
 
         var root = component.Find(".bit-tln");
 
-        Assert.IsTrue(root.ClassList.Contains("bit-tln-pri"));
-        Assert.IsTrue(root.ClassList.Contains("bit-tln-md"));
+        // An unset Color or Size publishes no class, so the public --bit-Timeline-* variables restyle the primary,
+        // medium timeline they stand for while an explicit value - which does publish its class - wins over them.
+        foreach (var cssClass in new[] { "bit-tln-pri", "bit-tln-sec", "bit-tln-ter", "bit-tln-inf", "bit-tln-suc", "bit-tln-wrn", "bit-tln-swr", "bit-tln-err",
+                                         "bit-tln-pbg", "bit-tln-sbg", "bit-tln-tbg", "bit-tln-pfg", "bit-tln-sfg", "bit-tln-tfg", "bit-tln-pbr", "bit-tln-sbr", "bit-tln-tbr",
+                                         "bit-tln-sm", "bit-tln-md", "bit-tln-lg" })
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+
         Assert.IsTrue(root.ClassList.Contains("bit-tln-fil"));
         Assert.IsFalse(root.ClassList.Contains("bit-tln-hrz"));
         Assert.IsFalse(root.ClassList.Contains("bit-tln-rvs"));
@@ -371,14 +385,14 @@ public class BitTimelineTests : BunitTestContext
     [TestMethod,
         // A solid line is the default paint of the stylesheet, so it carries no class of its own.
         DataRow(null, null),
-        DataRow(BitTimelineLineVariant.Solid, null),
-        DataRow(BitTimelineLineVariant.Dashed, "bit-tln-ldd"),
-        DataRow(BitTimelineLineVariant.Dotted, "bit-tln-ldt")]
-    public void BitTimelineShouldApplyTheLineVariantClass(BitTimelineLineVariant? lineVariant, string? expectedClass)
+        DataRow(BitLineStyle.Solid, null),
+        DataRow(BitLineStyle.Dashed, "bit-tln-ldd"),
+        DataRow(BitLineStyle.Dotted, "bit-tln-ldt")]
+    public void BitTimelineShouldApplyTheLineVariantClass(BitLineStyle? lineVariant, string? expectedClass)
     {
         var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
         {
-            parameters.Add(p => p.LineVariant, lineVariant);
+            parameters.Add(p => p.LineStyle, lineVariant);
             TwoOptions()(parameters);
         });
 
@@ -388,6 +402,55 @@ public class BitTimelineTests : BunitTestContext
         {
             Assert.AreEqual(cls == expectedClass, root.ClassList.Contains(cls), cls);
         }
+    }
+
+    [TestMethod,
+        // A centered line is the default layout of the stylesheet, so it carries no class of its own.
+        DataRow(null, null),
+        DataRow(BitPlacement.Center, null),
+        DataRow(BitPlacement.Start, "bit-tln-lps"),
+        DataRow(BitPlacement.End, "bit-tln-lpe"),
+        // A value the line does not honour renders the default centered line, so it carries no class either.
+        DataRow(BitPlacement.Left, null),
+        DataRow(BitPlacement.TopAndBottom, null)]
+    public void BitTimelineShouldApplyTheLinePlacementClass(BitPlacement? linePlacement, string? expectedClass)
+    {
+        var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
+        {
+            parameters.Add(p => p.LinePlacement, linePlacement);
+            TwoOptions()(parameters);
+        });
+
+        var root = component.Find(".bit-tln");
+
+        foreach (var cls in new[] { "bit-tln-lps", "bit-tln-lpe" })
+        {
+            Assert.AreEqual(cls == expectedClass, root.ClassList.Contains(cls), cls);
+        }
+    }
+
+    [TestMethod,
+        DataRow(BitColor.Primary, "bit-tln-pri", "bit-tln-ipr"),
+        DataRow(BitColor.Error, "bit-tln-err", "bit-tln-ier"),
+        DataRow(BitColor.PrimaryBackground, "bit-tln-pbg", "bit-tln-ipbg"),
+        DataRow(BitColor.SecondaryBackground, "bit-tln-sbg", "bit-tln-isbg"),
+        DataRow(BitColor.TertiaryBackground, "bit-tln-tbg", "bit-tln-itbg"),
+        DataRow(BitColor.PrimaryForeground, "bit-tln-pfg", "bit-tln-ipfg"),
+        DataRow(BitColor.SecondaryForeground, "bit-tln-sfg", "bit-tln-isfg"),
+        DataRow(BitColor.TertiaryForeground, "bit-tln-tfg", "bit-tln-itfg"),
+        DataRow(BitColor.PrimaryBorder, "bit-tln-pbr", "bit-tln-ipbr"),
+        DataRow(BitColor.SecondaryBorder, "bit-tln-sbr", "bit-tln-isbr"),
+        DataRow(BitColor.TertiaryBorder, "bit-tln-tbr", "bit-tln-itbr")]
+    public void BitTimelineShouldApplyTheColorClassOfTheTimelineAndOfTheItem(BitColor color, string rootClass, string itemClass)
+    {
+        var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
+        {
+            parameters.Add(p => p.Color, color);
+            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One", Color = color }]);
+        });
+
+        Assert.IsTrue(component.Find(".bit-tln").ClassList.Contains(rootClass));
+        Assert.IsTrue(component.Find(".bit-tln-itm").ClassList.Contains(itemClass));
     }
 
     [TestMethod]
@@ -442,15 +505,15 @@ public class BitTimelineTests : BunitTestContext
         // Unlike the timeline-level solid line, an explicitly solid item needs a class of its own so that
         // it can win over a dashed or a dotted timeline.
         DataRow(null, null),
-        DataRow(BitTimelineLineVariant.Solid, "bit-tln-ils"),
-        DataRow(BitTimelineLineVariant.Dashed, "bit-tln-ild"),
-        DataRow(BitTimelineLineVariant.Dotted, "bit-tln-ilt")]
-    public void BitTimelineShouldApplyTheLineVariantClassOfTheItem(BitTimelineLineVariant? lineVariant, string? expectedClass)
+        DataRow(BitLineStyle.Solid, "bit-tln-ils"),
+        DataRow(BitLineStyle.Dashed, "bit-tln-ild"),
+        DataRow(BitLineStyle.Dotted, "bit-tln-ilt")]
+    public void BitTimelineShouldApplyTheLineVariantClassOfTheItem(BitLineStyle? lineVariant, string? expectedClass)
     {
         var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
         {
-            parameters.Add(p => p.LineVariant, BitTimelineLineVariant.Dashed);
-            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One", LineVariant = lineVariant }]);
+            parameters.Add(p => p.LineStyle, BitLineStyle.Dashed);
+            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One", LineStyle = lineVariant }]);
         });
 
         var item = component.Find(".bit-tln-itm");
@@ -473,7 +536,7 @@ public class BitTimelineTests : BunitTestContext
             {
                 builder.OpenComponent<BitTimelineOption>(0);
                 builder.AddAttribute(1, nameof(BitTimelineOption.PrimaryText), "First");
-                builder.AddAttribute(2, nameof(BitTimelineOption.LineVariant), BitTimelineLineVariant.Dotted);
+                builder.AddAttribute(2, nameof(BitTimelineOption.LineStyle), BitLineStyle.Dotted);
                 builder.CloseComponent();
             });
         });
@@ -578,6 +641,13 @@ public class BitTimelineTests : BunitTestContext
         Assert.AreEqual(1, placeholders.Count);
         Assert.AreEqual("true", placeholders[0].GetAttribute("aria-hidden"));
         Assert.IsTrue(component.FindAll(".bit-tln-itm")[2].QuerySelector(".bit-tln-hdd") is not null);
+
+        // The divider of the hidden dot is marked, so the two halves of its line meet across the placeholder.
+        var dividers = component.FindAll(".bit-tln-dvd");
+
+        Assert.IsFalse(dividers[0].ClassList.Contains("bit-tln-dvh"));
+        Assert.IsFalse(dividers[1].ClassList.Contains("bit-tln-dvh"));
+        Assert.IsTrue(dividers[2].ClassList.Contains("bit-tln-dvh"));
     }
 
     [TestMethod]
@@ -664,7 +734,7 @@ public class BitTimelineTests : BunitTestContext
 
         var item = component.Find(".bit-tln-itm");
 
-        Assert.AreEqual("listitem", item.GetAttribute("role"));
+        Assert.AreEqual("LI", item.TagName);
         Assert.IsNull(item.GetAttribute("tabindex"));
         Assert.IsFalse(item.ClassList.Contains("bit-tln-int"));
         // A presentational item hosts no button at all, so it stays out of the tab order entirely.
@@ -684,7 +754,7 @@ public class BitTimelineTests : BunitTestContext
         var button = component.Find(".bit-tln-btn");
 
         // The item keeps the list semantics and the nested element carries the button ones.
-        Assert.AreEqual("listitem", item.GetAttribute("role"));
+        Assert.AreEqual("LI", item.TagName);
         Assert.IsNull(item.GetAttribute("tabindex"));
         Assert.IsTrue(item.ClassList.Contains("bit-tln-int"));
 
@@ -708,8 +778,8 @@ public class BitTimelineTests : BunitTestContext
 
         var items = component.FindAll(".bit-tln-itm");
 
-        Assert.AreEqual("listitem", items[0].GetAttribute("role"));
-        Assert.AreEqual("listitem", items[1].GetAttribute("role"));
+        Assert.AreEqual("LI", items[0].TagName);
+        Assert.AreEqual("LI", items[1].TagName);
 
         // Only the item that answers to a click hosts a button.
         Assert.AreEqual(1, component.FindAll(".bit-tln-btn").Count);
@@ -723,7 +793,7 @@ public class BitTimelineTests : BunitTestContext
         var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
         {
             parameters.Add(p => p.OnItemClick, (BitTimelineItem _) => { });
-            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One", IsEnabled = false }]);
+            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One", IsDisabled = true }]);
         });
 
         var item = component.Find(".bit-tln-itm");
@@ -732,8 +802,28 @@ public class BitTimelineTests : BunitTestContext
         Assert.AreEqual("button", button.GetAttribute("role"));
         Assert.IsNull(button.GetAttribute("tabindex"));
         Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
-        Assert.AreEqual("true", item.GetAttribute("aria-disabled"));
+        // The button announces the state, so the item does not announce it a second time.
+        Assert.IsNull(item.GetAttribute("aria-disabled"));
         Assert.IsTrue(item.ClassList.Contains("bit-tln-ids"));
+    }
+
+    [TestMethod]
+    public void BitTimelineShouldAnnounceTheDisabledStateOfANonInteractiveItem()
+    {
+        var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items,
+            [
+                new BitTimelineItem { PrimaryText = "One", IsDisabled = true },
+                new BitTimelineItem { PrimaryText = "Two" }
+            ]);
+        });
+
+        var items = component.FindAll(".bit-tln-itm");
+
+        // With no button to carry it, the item itself is all there is to announce the state.
+        Assert.AreEqual("true", items[0].GetAttribute("aria-disabled"));
+        Assert.IsNull(items[1].GetAttribute("aria-disabled"));
     }
 
     [TestMethod]
@@ -782,7 +872,7 @@ public class BitTimelineTests : BunitTestContext
             parameters.AddChildContent(builder =>
             {
                 builder.OpenComponent<BitTimelineOption>(0);
-                builder.AddAttribute(1, nameof(BitTimelineOption.IsEnabled), false);
+                builder.AddAttribute(1, nameof(BitTimelineOption.IsDisabled), true);
                 builder.AddAttribute(2, nameof(BitTimelineOption.PrimaryText), "First");
                 builder.CloseComponent();
             });
@@ -803,7 +893,7 @@ public class BitTimelineTests : BunitTestContext
 
         var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnItemClick, (BitTimelineOption item) => clicked = item);
             TwoOptions()(parameters);
         });
@@ -813,44 +903,28 @@ public class BitTimelineTests : BunitTestContext
         Assert.IsNull(clicked);
     }
 
-    [TestMethod,
-        DataRow("Enter"),
-        DataRow(" "),
-        DataRow("Spacebar")]
-    public void BitTimelineShouldInvokeCallbackOnActivationKeys(string key)
+    [TestMethod]
+    public void BitTimelineShouldRegisterTheButtonKeysOfAClickableItemInTheBrowser()
     {
-        BitTimelineOption? clicked = null;
-
         var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
         {
-            parameters.Add(p => p.OnItemClick, (BitTimelineOption item) => clicked = item);
+            parameters.Add(p => p.OnItemClick, (BitTimelineOption _) => { });
             TwoOptions()(parameters);
         });
 
-        component.Find(".bit-tln-btn").KeyDown(key);
+        // The keys are wired up in the browser, where a key pressed on the item can be told apart from one typed
+        // into a control of a custom template; the item holds no keyboard handler of its own to fire twice.
+        Assert.IsTrue(component.FindAll(".bit-tln-btn").All(b => b.HasAttribute("blazor:onkeydown") is false));
+        Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.registerButtonKeys"));
 
-        Assert.IsNotNull(clicked);
-        Assert.AreEqual("First", clicked!.PrimaryText);
+        component.Render();
+
+        // A re-render keeps the same elements, so they are not registered again.
+        Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.registerButtonKeys"));
     }
 
     [TestMethod]
-    public void BitTimelineShouldIgnoreOtherKeys()
-    {
-        BitTimelineOption? clicked = null;
-
-        var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
-        {
-            parameters.Add(p => p.OnItemClick, (BitTimelineOption item) => clicked = item);
-            TwoOptions()(parameters);
-        });
-
-        component.Find(".bit-tln-btn").KeyDown("A");
-
-        Assert.IsNull(clicked);
-    }
-
-    [TestMethod]
-    public void BitTimelineShouldIgnoreKeysOnANonInteractiveItem()
+    public void BitTimelineShouldNotRegisterButtonKeysForANonInteractiveItem()
     {
         var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
         {
@@ -861,9 +935,9 @@ public class BitTimelineTests : BunitTestContext
 
         // A presentational item hosts no button, so there is nothing that answers to the keyboard and a
         // key press of the page is never swallowed by the timeline.
-        Assert.AreEqual("listitem", item.GetAttribute("role"));
+        Assert.AreEqual("LI", item.TagName);
         Assert.AreEqual(0, component.FindAll(".bit-tln-btn").Count);
-        Assert.ThrowsExactly<MissingEventHandlerException>(() => item.KeyDown("Enter"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.registerButtonKeys"));
     }
 
     #endregion
@@ -894,6 +968,28 @@ public class BitTimelineTests : BunitTestContext
         Assert.AreEqual("One", component.Find(".the-template").TextContent);
         Assert.AreEqual(0, component.FindAll(".bit-tln-dvd").Count);
         Assert.AreEqual(0, component.FindAll(".bit-tln-pcn").Count);
+        // The template brings its own layout, so the item is not marked as holding the parts.
+        Assert.AreEqual(0, component.FindAll(".bit-tln-prt").Count);
+    }
+
+    [TestMethod]
+    public void BitTimelineShouldMarkWhateverHoldsThePartsOfTheItem()
+    {
+        var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items,
+            [
+                new BitTimelineItem { PrimaryText = "One" },
+                new BitTimelineItem { PrimaryText = "Two", OnClick = _ => { } }
+            ]);
+        });
+
+        var items = component.FindAll(".bit-tln-itm");
+
+        // A presentational item holds its parts itself, a clickable one through its button.
+        Assert.IsTrue(items[0].ClassList.Contains("bit-tln-prt"));
+        Assert.IsFalse(items[1].ClassList.Contains("bit-tln-prt"));
+        Assert.IsTrue(component.Find(".bit-tln-btn").ClassList.Contains("bit-tln-prt"));
     }
 
     [TestMethod]
@@ -1109,7 +1205,7 @@ public class BitTimelineTests : BunitTestContext
                     DotColor = BitColor.Error,
                     DotSize = BitSize.Small,
                     DotVariant = BitVariant.Text,
-                    LineStyle = BitTimelineLineVariant.Dashed,
+                    LineStyle = BitLineStyle.Dashed,
                     Label = "The label",
                     Tooltip = "The tooltip"
                 }
@@ -1140,7 +1236,7 @@ public class BitTimelineTests : BunitTestContext
             parameters.Add(p => p.NameSelectors, new BitTimelineNameSelectors<TimelineRecord>());
             parameters.Add(p => p.Items,
             [
-                new TimelineRecord { PrimaryText = "One", LineVariant = BitTimelineLineVariant.Dotted },
+                new TimelineRecord { PrimaryText = "One", LineStyle = BitLineStyle.Dotted },
                 new TimelineRecord { PrimaryText = "Two", HideDot = true }
             ]);
         });
@@ -1185,7 +1281,7 @@ public class BitTimelineTests : BunitTestContext
         Assert.IsFalse(item.ClassList.Contains("bit-tln-irv"));
         Assert.IsFalse(item.ClassList.Contains("bit-tln-ids"));
         Assert.IsFalse(item.ClassList.Contains("bit-tln-ils"));
-        Assert.AreEqual("listitem", item.GetAttribute("role"));
+        Assert.AreEqual("LI", item.TagName);
     }
 
     [TestMethod]
@@ -1222,7 +1318,7 @@ public class BitTimelineTests : BunitTestContext
         var item = component.Find(".bit-tln-itm");
         var button = component.Find(".bit-tln-btn");
 
-        Assert.AreEqual("listitem", item.GetAttribute("role"));
+        Assert.AreEqual("LI", item.TagName);
         Assert.AreEqual("button", button.GetAttribute("role"));
 
         button.Click();
@@ -1231,4 +1327,120 @@ public class BitTimelineTests : BunitTestContext
     }
 
     #endregion
+
+    #region dot alignment and cascading parameters
+
+    [TestMethod,
+        DataRow(null, null),
+        DataRow(BitPlacement.Center, null),
+        DataRow(BitPlacement.Start, "bit-tln-das"),
+        DataRow(BitPlacement.End, "bit-tln-dae"),
+        // A value the dot does not honour renders the default centered dot, so it carries no class either.
+        DataRow(BitPlacement.Left, null),
+        DataRow(BitPlacement.TopAndBottom, null)]
+    public void BitTimelineShouldRespectDotAlignment(BitPlacement? alignment, string? expectedClass)
+    {
+        var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
+        {
+            parameters.Add(p => p.DotAlignment, alignment);
+            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One" }]);
+        });
+
+        var root = component.Find(".bit-tln");
+
+        // The centered dot is the default the stylesheet paints on its own, so it carries no class.
+        Assert.AreEqual(expectedClass == "bit-tln-das", root.ClassList.Contains("bit-tln-das"));
+        Assert.AreEqual(expectedClass == "bit-tln-dae", root.ClassList.Contains("bit-tln-dae"));
+    }
+
+    [TestMethod]
+    public void BitTimelineShouldHideTheDecorativeDotFromAssistiveTechnologies()
+    {
+        var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One", IconName = "Add" }]);
+        });
+
+        // The dot and its icon only decorate the item; its contents are what gets announced.
+        Assert.AreEqual("true", component.Find(".bit-tln-dot").GetAttribute("aria-hidden"));
+        Assert.IsNotNull(component.Find(".bit-tln-dot .bit-tln-ico"));
+    }
+
+    [TestMethod]
+    public void BitTimelineShouldRespectCascadingParams()
+    {
+        var component = RenderComponent<BitTimelineCascadingParamsTest>();
+
+        var timelines = component.FindAll(".bit-tln");
+
+        Assert.AreEqual(3, timelines.Count);
+
+        // The first timeline takes everything from the cascading parameters.
+        var first = timelines[0];
+        foreach (var cls in new[] { "bit-tln-suc", "bit-tln-otl", "bit-tln-lg", "bit-tln-hrz", "bit-tln-alt", "bit-tln-rvs",
+                                    "bit-tln-rvo", "bit-tln-das", "bit-tln-ldd", "bit-tln-lps", "bit-tln-tlb", "cascaded-root" })
+        {
+            Assert.IsTrue(first.ClassList.Contains(cls), cls);
+        }
+        StringAssert.Contains(first.GetAttribute("style")!, "margin: 1px;");
+        Assert.IsTrue(first.QuerySelector(".bit-tln-dot")!.ClassList.Contains("cascaded-dot"));
+
+        // The second one sets its own color and orientation, which the cascading parameters must not overwrite.
+        var second = timelines[1];
+        Assert.IsTrue(second.ClassList.Contains("bit-tln-err"));
+        Assert.IsFalse(second.ClassList.Contains("bit-tln-suc"));
+        Assert.IsFalse(second.ClassList.Contains("bit-tln-hrz"));
+        Assert.IsTrue(second.ClassList.Contains("bit-tln-otl"));
+
+        // One cascade reaches a timeline of another item type as well.
+        var third = timelines[2];
+        Assert.IsTrue(third.ClassList.Contains("bit-tln-suc"));
+        Assert.IsTrue(third.QuerySelector(".bit-tln-dot")!.ClassList.Contains("cascaded-dot"));
+    }
+
+    [TestMethod]
+    public void BitTimelineShouldRespectACascadedDisabled()
+    {
+        var clicked = false;
+
+        var component = RenderComponent<CascadingValue<BitTimelineParams>>(parameters =>
+        {
+            parameters.Add(p => p.Name, BitTimelineParams.ParamName);
+            parameters.Add(p => p.Value, new BitTimelineParams { Disabled = true });
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitTimeline<BitTimelineItem>>(0);
+                builder.AddComponentParameter(1, nameof(BitTimeline<BitTimelineItem>.Items),
+                    new[] { new BitTimelineItem { PrimaryText = "One", OnClick = _ => clicked = true } });
+                builder.CloseComponent();
+            }));
+        });
+
+        var button = component.Find(".bit-tln-btn");
+
+        Assert.IsTrue(component.Find(".bit-tln").ClassList.Contains("bit-dis"));
+        Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
+        Assert.IsNull(button.GetAttribute("tabindex"));
+
+        button.Click();
+
+        Assert.IsFalse(clicked);
+    }
+
+    #endregion
+
+    [TestMethod]
+    public void BitTimelineShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitTimeline<BitTimelineOption>>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-tln");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+    }
 }

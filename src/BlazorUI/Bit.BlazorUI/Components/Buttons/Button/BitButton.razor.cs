@@ -1,5 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
@@ -11,6 +10,7 @@ public partial class BitButton : BitComponentBase
 {
     private int _clickId;
     private string? _rel;
+    private bool _autoFocus;
     private bool _dragging;
     private bool _showLoading;
     private bool _draggableEnabled;
@@ -46,7 +46,7 @@ public partial class BitButton : BitComponentBase
 
     /// <summary>
     /// Keeps the disabled button focusable and discoverable by screen readers, rendering <c>aria-disabled</c> instead of the
-    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.IsEnabled"/> is false, preserving a consistent tab order.
+    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.Disabled"/> is true, preserving a consistent tab order.
     /// Set it to false to render the native <c>disabled</c> attribute and remove the button from the tab order.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; } = true;
@@ -90,11 +90,15 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the button.
     /// </summary>
-    [Parameter] public BitButtonClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the button.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Button-*</c> color variables (the disabled and focus colors included);
+    /// left unset, the button is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -214,8 +218,13 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Gets or sets the position of the icon relative to the component's content.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction: Start puts the icon before the content in an LTR component and after it
+    /// in an RTL one. Every other placement leaves the icon where Start would put it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// The url of the custom icon to render inside the button.
@@ -255,7 +264,11 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// The position of the loading Label in regards to the spinner icon.
     /// </summary>
-    [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.End;
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// fall back to the default.
+    /// </remarks>
+    [Parameter] public BitPlacement LoadingLabelPlacement { get; set; } = BitPlacement.End;
 
     /// <summary>
     /// The custom template used to replace the default spinner and loading label inside the button in the loading state.
@@ -308,8 +321,8 @@ public partial class BitButton : BitComponentBase
     /// Renders the button with fully rounded (pill shaped) corners, and an icon-only one as a circle.
     /// </summary>
     /// <remarks>
-    /// It changes the corner the button falls back to, so a <c>--bit-Button-radius</c> set on the button or on
-    /// an ancestor still has the last word.
+    /// It wins over <c>--bit-Button-radius</c>, set on the button or on an ancestor: the variable restyles the
+    /// default corner, not a rounded one.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Rounded { get; set; }
@@ -329,6 +342,10 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Sets the preset size for typography and padding of the button.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Button-*</c> size variables (padding, min-height, gap, font, icon and
+    /// spinner sizes); left unset, the button is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -340,11 +357,11 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Custom inline styles for different parts of the button.
     /// </summary>
-    [Parameter] public BitButtonClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitButtonClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter).
-    /// When set to <c>_blank</c> and no <see cref="Rel"/> is provided, <c>rel="noopener"</c> gets added automatically for security.
+    /// When set to <c>_blank</c> and no opener-related <see cref="Rel"/> is provided, <c>noopener</c> is added to the rel attribute automatically for security.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefRelAndTarget))]
@@ -425,37 +442,13 @@ public partial class BitButton : BitComponentBase
             _ => "bit-btn-fil"
         });
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-btn-pri",
-            BitColor.Secondary => "bit-btn-sec",
-            BitColor.Tertiary => "bit-btn-ter",
-            BitColor.Info => "bit-btn-inf",
-            BitColor.Success => "bit-btn-suc",
-            BitColor.Warning => "bit-btn-wrn",
-            BitColor.SevereWarning => "bit-btn-swr",
-            BitColor.Error => "bit-btn-err",
-            BitColor.PrimaryBackground => "bit-btn-pbg",
-            BitColor.SecondaryBackground => "bit-btn-sbg",
-            BitColor.TertiaryBackground => "bit-btn-tbg",
-            BitColor.PrimaryForeground => "bit-btn-pfg",
-            BitColor.SecondaryForeground => "bit-btn-sfg",
-            BitColor.TertiaryForeground => "bit-btn-tfg",
-            BitColor.PrimaryBorder => "bit-btn-pbr",
-            BitColor.SecondaryBorder => "bit-btn-sbr",
-            BitColor.TertiaryBorder => "bit-btn-tbr",
-            _ => "bit-btn-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Button-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-btn"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-btn-sm",
-            BitSize.Medium => "bit-btn-md",
-            BitSize.Large => "bit-btn-lg",
-            _ => "bit-btn-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-btn"));
 
-        ClassBuilder.Register(() => IconPosition is BitIconPosition.End ? "bit-btn-eni" : string.Empty);
+        ClassBuilder.Register(() => IconPlacement is BitPlacement.End ? "bit-btn-eni" : string.Empty);
 
         ClassBuilder.Register(() => Rounded ? "bit-btn-rnd" : string.Empty);
 
@@ -509,7 +502,6 @@ public partial class BitButton : BitComponentBase
         return double.TryParse(offset, NumberStyles.Float, CultureInfo.InvariantCulture, out _) ? $"{offset}px" : offset;
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitButtonParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
@@ -526,6 +518,15 @@ public partial class BitButton : BitComponentBase
         await base.OnAfterRenderAsync(firstRender);
 
         if (IsDisposed) return;
+
+        // The autofocus attribute is written on the button, but a browser honors it only while the document is
+        // still loading: an interactive render replaces the prerendered markup that took the focus, and a
+        // WebAssembly page or a button rendered later never gets that far. So the first render gives the focus
+        // itself, by the very rule the attribute is written by.
+        if (firstRender && _autoFocus)
+        {
+            await RootElement.FocusSafelyAsync();
+        }
 
         // Dragging only means anything for a button that is positioned, so the two parameters are read
         // together. The result is compared against what the script was last told, rather than re-sent on
@@ -572,52 +573,27 @@ public partial class BitButton : BitComponentBase
         _resetDragPosition = true;
     }
 
+    // Only the Rel parameter itself is kept here, never the noopener a new tab adds to it: a null left for a link
+    // that has no Rel is what lets GetRel fall back to a rel written by hand.
     internal void OnSetHrefRelAndTarget()
     {
-        if (Href.HasNoValue() || Href!.StartsWith('#'))
-        {
-            _rel = null;
-            return;
-        }
-
-        var rel = Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null;
-
-        // protects against reverse-tabnabbing when opening the link in a new browsing context, unless the
-        // author already asked for one of the two rels that close that hole.
-        if (Target is "_blank" && (rel is null || (rel.Contains("noopener") is false && rel.Contains("noreferrer") is false)))
-        {
-            rel = rel.HasValue() ? $"{rel} noopener" : "noopener";
-        }
-
-        _rel = rel;
+        _rel = BitNewTabUtils.IsInPageHref(Href) || Rel.HasValue is false ? null : BitLinkRelUtils.GetRels(Rel.Value);
     }
 
 
 
-    // The Target parameter's rel is resolved the moment the parameter is set. Neither a target nor a rel written by
-    // hand is a parameter, so neither reaches that path: the rel the anchor renders is resolved against the splatted
-    // one instead of overwriting it with the Rel parameter's null, and the reverse-tabnabbing guard is re-applied
-    // here against the target the anchor actually renders; it is idempotent, so a rel that already carries one of the
-    // two closing rels passes through untouched.
+    // Neither a target nor a rel written by hand is a parameter, so the rel the anchor renders is resolved against the
+    // splatted one instead of overwriting it with the Rel parameter's null, and the reverse-tabnabbing guard is applied
+    // once, here, against the target the anchor actually renders - unless the author already said what the opener
+    // relationship should be.
     private string? GetRel(string? target)
     {
         var rel = _rel ?? GetSplattedAttribute("rel");
 
-        if (target is not "_blank") return rel;
+        if (BitNewTabUtils.IsInPageHref(Href)) return rel;
 
-        if (Href.HasNoValue() || Href!.StartsWith('#')) return rel;
-
-        if (HasRelToken(rel, "noopener") || HasRelToken(rel, "noreferrer")) return rel;
-
-        return rel.HasValue() ? $"{rel} noopener" : "noopener";
+        return BitNewTabUtils.AddNoOpener(rel, target);
     }
-
-    // rel is a space separated set of case insensitive tokens, so the guard asks whether one of them IS the token
-    // rather than whether the string contains it - a rel of "noopener-policy" closes nothing.
-    private static bool HasRelToken(string? rel, string token)
-        => rel is not null &&
-           rel.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
-              .Any(t => string.Equals(t, token, StringComparison.OrdinalIgnoreCase));
 
     private string? GetTabIndex(bool ariaHidden)
     {
@@ -629,7 +605,7 @@ public partial class BitButton : BitComponentBase
         // splattable by its own name - and the attribute written here would otherwise overwrite that with null.
         var tabIndex = TabIndex ?? GetSplattedAttribute("tabindex");
 
-        if (IsEnabled is false)
+        if (Disabled)
         {
             if (AllowDisabledFocus is false) return "-1";
 
@@ -645,18 +621,18 @@ public partial class BitButton : BitComponentBase
     }
 
     private string GetLabelPositionClass()
-        => LoadingLabelPosition switch
+        => LoadingLabelPlacement switch
         {
-            BitLabelPosition.Top => "bit-btn-top",
-            BitLabelPosition.Start => "bit-btn-srt",
-            BitLabelPosition.End => "bit-btn-end",
-            BitLabelPosition.Bottom => "bit-btn-btm",
+            BitPlacement.Top => "bit-btn-top",
+            BitPlacement.Start => "bit-btn-srt",
+            BitPlacement.End => "bit-btn-end",
+            BitPlacement.Bottom => "bit-btn-btm",
             _ => "bit-btn-end"
         };
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsLoading && Reclickable is false) return;
 
         // The click that ends a drag is the drag's own, not a press of the button, so it is swallowed

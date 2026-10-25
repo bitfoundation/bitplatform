@@ -1,0 +1,12 @@
+﻿@* Covers a grid rendered as a list element: its items become list items unless they name an element of their own. *@
+
+<BitGrid Element="@Element" Columns="4" @attributes="@(Role is null ? new Dictionary<string, object>() : new Dictionary<string, object> { ["role"] = Role })">
+    <BitGridItem Class="inferred">One</BitGridItem>
+    <BitGridItem Class="own" Element="section">Two</BitGridItem>
+</BitGrid>
+
+@code {
+    [Parameter] public string? Element { get; set; }
+
+    [Parameter] public string? Role { get; set; }
+}

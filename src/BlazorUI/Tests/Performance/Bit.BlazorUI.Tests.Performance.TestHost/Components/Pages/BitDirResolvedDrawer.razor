@@ -1,0 +1,37 @@
+﻿@page "/regression/dir-resolved-drawer"
+
+<PageTitle>Dir Resolved Drawer Regression</PageTitle>
+
+@* A BitNavPanel drawer with no Dir, in a box that reads the way the query string says (#13567): the edge it is docked
+   to, and so the swipe that closes it, follow the direction the box reads, which only the browser knows. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>Dir Resolved Drawer Regression</h3>
+    <p>Status: <span id="status">@_status</span></p>
+    <p>Open: <span id="open">@(_open ? "true" : "false")</span></p>
+</div>
+
+<div dir="@Dir">
+    <BitNavPanel TItem="BitNavItem" @bind-IsOpen="_open" Items="_items" DrawerBreakpoint="BitNavPanelBreakpoint.Always" NoSearchBox />
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public string? Dir { get; set; }
+
+    private bool _open = true;
+
+    private readonly List<BitNavItem> _items =
+    [
+        new() { Text = "Home", Key = "home" },
+        new() { Text = "Settings", Key = "settings" },
+    ];
+
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

@@ -91,7 +91,7 @@
                 <CodeBox Language="json">@_initializeSample</CodeBox>
 
                 <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Center">
-                    <BitButton IconName="@BitIconName.PlugConnected" IsEnabled="@(_busy is false && _live)" OnClick="Handshake">
+                    <BitButton IconName="@BitIconName.PlugConnected" Disabled="@(_busy || _live is false)" OnClick="Handshake">
                         Send initialize
                     </BitButton>
                     @if (_serverName is not null)
@@ -139,7 +139,7 @@
                 </BitText>
 
                 <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Center">
-                    <BitButton Variant="BitVariant.Outline" IsEnabled="@(_busy is false && _live)" OnClick="ListTools">
+                    <BitButton Variant="BitVariant.Outline" Disabled="@(_busy || _live is false)" OnClick="ListTools">
                         Send tools/list
                     </BitButton>
                     @if (_tools.Count > 0)
@@ -179,7 +179,7 @@
                                 <td class="td-cell">@Summarize(tool.Description, 190)</td>
                                 <td class="td-cell">
                                     <BitButton Variant="BitVariant.Text" Size="BitSize.Small"
-                                               IsEnabled="@(_busy is false)" OnClick="@(() => TryTool(tool.Name))">
+                                               Disabled="_busy" OnClick="@(() => TryTool(tool.Name))">
                                         Try it
                                     </BitButton>
                                 </td>
@@ -211,10 +211,10 @@
                                  Items="_toolItems"
                                  @bind-Value="_selectedTool"
                                  @bind-Value:after="OnToolChanged"
-                                 IsEnabled="@(_toolItems.Count > 0)"
+                                 Disabled="@(_toolItems.Count is 0)"
                                  Class="mcp-tool-picker" />
-                    <BitButton IconName="@BitIconName.Send" IsEnabled="@(_busy is false && _live)" OnClick="CallTool">Send tools/call</BitButton>
-                    <BitButton Variant="BitVariant.Text" IsEnabled="@(_busy is false)" OnClick="ResetArguments">Reset arguments</BitButton>
+                    <BitButton IconName="@BitIconName.Send" Disabled="@(_busy || _live is false)" OnClick="CallTool">Send tools/call</BitButton>
+                    <BitButton Variant="BitVariant.Text" Disabled="_busy" OnClick="ResetArguments">Reset arguments</BitButton>
                 </BitStack>
 
                 @if (string.IsNullOrEmpty(_selectedDescription) is false)
@@ -245,30 +245,30 @@
                 </BitText>
 
                 <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Center">
-                    <BitButton Variant="BitVariant.Outline" IsEnabled="@(_busy is false && _live)" OnClick="ListPrompts">prompts/list</BitButton>
-                    <BitButton Variant="BitVariant.Outline" IsEnabled="@(_busy is false && _live)" OnClick="ListResources">resources/list</BitButton>
-                    <BitButton Variant="BitVariant.Outline" IsEnabled="@(_busy is false && _live)" OnClick="ListResourceTemplates">resources/templates/list</BitButton>
+                    <BitButton Variant="BitVariant.Outline" Disabled="@(_busy || _live is false)" OnClick="ListPrompts">prompts/list</BitButton>
+                    <BitButton Variant="BitVariant.Outline" Disabled="@(_busy || _live is false)" OnClick="ListResources">resources/list</BitButton>
+                    <BitButton Variant="BitVariant.Outline" Disabled="@(_busy || _live is false)" OnClick="ListResourceTemplates">resources/templates/list</BitButton>
                 </BitStack>
 
                 <BitStack Horizontal Wrap Gap="1rem" VerticalAlign="BitAlignment.End">
                     <BitDropdown Label="Prompt"
                                  Items="_promptItems"
                                  @bind-Value="_selectedPrompt"
-                                 IsEnabled="@(_promptItems.Count > 0)"
+                                 Disabled="@(_promptItems.Count is 0)"
                                  Class="mcp-tool-picker" />
-                    <BitButton IsEnabled="@(_busy is false && _live)" OnClick="GetPrompt">prompts/get</BitButton>
+                    <BitButton Disabled="@(_busy || _live is false)" OnClick="GetPrompt">prompts/get</BitButton>
                 </BitStack>
 
                 <BitStack Horizontal Wrap Gap="1rem" VerticalAlign="BitAlignment.End">
                     <BitTextField Label="Resource URI" @bind-Value="_resourceUri" Class="mcp-uri" />
-                    <BitButton IsEnabled="@(_busy is false && _live)" OnClick="ReadResource">resources/read</BitButton>
+                    <BitButton Disabled="@(_busy || _live is false)" OnClick="ReadResource">resources/read</BitButton>
                 </BitStack>
 
                 <BitStack Horizontal Wrap AutoHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
                     @foreach (var uri in _resourceExamples)
                     {
                         <BitButton Variant="BitVariant.Text" Size="BitSize.Small"
-                                   IsEnabled="@(_busy is false && _live)" OnClick="@(() => ReadResource(uri))">
+                                   Disabled="@(_busy || _live is false)" OnClick="@(() => ReadResource(uri))">
                             @uri
                         </BitButton>
                     }
@@ -332,10 +332,10 @@
                                  Items="_toolItems"
                                  @bind-Value="_httpTool"
                                  @bind-Value:after="OnHttpToolChanged"
-                                 IsEnabled="@(_toolItems.Count > 0)"
+                                 Disabled="@(_toolItems.Count is 0)"
                                  Class="mcp-tool-picker" />
                     <BitTextField Label="Query string" @bind-Value="_httpQuery" Class="mcp-uri" />
-                    <BitButton IconName="@BitIconName.Send" IsEnabled="@(_busy is false && _live)" OnClick="CallHttp">Send GET</BitButton>
+                    <BitButton IconName="@BitIconName.Send" Disabled="@(_busy || _live is false)" OnClick="CallHttp">Send GET</BitButton>
                 </BitStack>
 
                 <McpExchange Call="_http" Placeholder="Nothing sent yet." />

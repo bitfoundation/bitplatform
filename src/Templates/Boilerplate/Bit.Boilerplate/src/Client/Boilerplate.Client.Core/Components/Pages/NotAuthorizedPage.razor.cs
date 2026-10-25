@@ -1,8 +1,12 @@
+//+:cnd:noEmit
 namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class NotAuthorizedPage
 {
     private bool lacksValidPrivilege;
+    //#if (multitenant == true)
+    private bool lacksSelectedTenant;
+    //#endif
     private bool isUpdatingAuthState = true;
 
 
@@ -11,6 +15,8 @@ public partial class NotAuthorizedPage
 
     [SupplyParameterFromQuery(Name = "try_refreshing_token"), Parameter]
     public bool? TryRefreshingToken { get; set; }
+
+    [Parameter] public Type? PageType { get; set; }
 
     private string GetSafeReturnUrl() => Uri.IsAppRelativeUrl(ReturnUrl, requireLeadingSlash: false) ? ReturnUrl : PageUrls.Home;
 
@@ -42,7 +48,12 @@ public partial class NotAuthorizedPage
 
             var user = (await AuthenticationStateTask).User;
 
-            lacksValidPrivilege = (await AuthorizationService.IsAuthorized(user, AuthPolicies.PRIVILEGED_ACCESS)) is false;
+            var failedPolicies = await GetFailedPolicies(user);
+
+            lacksValidPrivilege = failedPolicies.Contains(AuthPolicies.PRIVILEGED_ACCESS);
+            //#if (multitenant == true)
+            lacksSelectedTenant = failedPolicies.Contains(AuthPolicies.TENANT_SELECTED);
+            //#endif
         }
         finally
         {
@@ -51,11 +62,37 @@ public partial class NotAuthorizedPage
         }
     }
 
+    private async Task<List<string>> GetFailedPolicies(ClaimsPrincipal user)
+    {
+        List<string> failedPolicies = [];
+
+        if (PageType is null) return failedPolicies;
+
+        var policies = PageType.GetCustomAttributes(inherit: true)
+            .OfType<IAuthorizeData>()
+            .Select(authorizeData => authorizeData.Policy)
+            .OfType<string>()
+            .Distinct();
+
+        foreach (var policy in policies)
+        {
+            if (await AuthorizationService.IsAuthorized(user, policy) is false)
+            {
+                failedPolicies.Add(policy);
+            }
+        }
+
+        return failedPolicies;
+    }
+
     private async Task SignIn()
     {
-        await AuthManager.SignOut(CurrentCancellationToken);
         var returnUrl = ReturnUrl is null ? NavigationManager.GetRelativePath() : GetSafeReturnUrl();
-        await signInModalService.SignIn(returnUrl);
+
+        if (await signInModalService.SignIn(returnUrl) && ReturnUrl is not null)
+        {
+            NavigationManager.NavigateTo(returnUrl, replace: true);
+        }
 
         // Alternatively, you can redirect the user to the sign-in page.
         // NavigationManager.NavigateTo($"{PageUrls.SignIn}?return-url={Uri.EscapeDataString(returnUrl)}");

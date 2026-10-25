@@ -1,10 +1,10 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Data label plugin options (renders the values on the chart itself).</summary>
 public sealed class BitChartDataLabelOptions
 {
     public bool Display { get; set; }
-    public string Color { get; set; } = "var(--bit-clr-fg-pri, #1A1A1A)";
+    public string Color { get; set; } = "var(--bit-Chart-data-label-color, var(--bit-clr-fg-pri))";
     public BitChartFont Font { get; set; } = new();
     /// <summary>Simple value formatter.</summary>
     public Func<double, string>? Formatter { get; set; }
@@ -13,16 +13,16 @@ public sealed class BitChartDataLabelOptions
     /// <summary>Per-element display predicate (value, datasetIndex, dataIndex) => show.</summary>
     public Func<double, int, int, bool>? DisplayFn { get; set; }
     /// <summary>
-    /// Where the label sits relative to the element: <see cref="BitChartAlign.Start"/> at the baseline
-    /// end, <see cref="BitChartAlign.Center"/> in the middle, <see cref="BitChartAlign.End"/> at the tip.
+    /// Where the label sits relative to the element: <see cref="BitPlacement.Start"/> at the baseline
+    /// end, <see cref="BitPlacement.Center"/> in the middle, <see cref="BitPlacement.End"/> at the tip.
     /// </summary>
-    public BitChartAlign Anchor { get; set; } = BitChartAlign.End;
+    public BitPlacement Anchor { get; set; } = BitPlacement.End;
     /// <summary>
-    /// Which side of the anchor the label is drawn on: <see cref="BitChartAlign.Start"/> pulls it inside
-    /// the element, <see cref="BitChartAlign.End"/> pushes it outside, <see cref="BitChartAlign.Center"/>
+    /// Which side of the anchor the label is drawn on: <see cref="BitPlacement.Start"/> pulls it inside
+    /// the element, <see cref="BitPlacement.End"/> pushes it outside, <see cref="BitPlacement.Center"/>
     /// centers it on the anchor.
     /// </summary>
-    public BitChartAlign Align { get; set; } = BitChartAlign.End;
+    public BitPlacement Align { get; set; } = BitPlacement.End;
     /// <summary>Extra distance (px) between the anchor and the label.</summary>
     public double Offset { get; set; } = 4;
     /// <summary>Also draw labels on line/scatter/radar point markers (bars and arcs always get them).</summary>

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>The built-in chart types, mirroring Chart.js.</summary>
 public enum BitChartType

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Delimiter processor for <c>~</c>: a run of two is GFM strikethrough, and - when

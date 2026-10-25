@@ -1,0 +1,209 @@
+@page "/conditions"
+@implements IDisposable
+
+<PageTitle>Every kind of condition · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Every kind of condition</h1>
+    <p class="bb-subtitle">
+        A field can be shown, required, disabled or locked by the answers around it - and each of those can be written four
+        ways: a comparison, a group of comparisons, an expression, or C#. This registration uses all of them, and
+        <code>ClearOnHide()</code> empties what the user abandoned, so it never reaches the model.
+    </p>
+</div>
+
+<div class="bb-note">
+    Choose <em>Speaker</em>: a company and a talk title appear, and the talk title is required. Choose <em>Sponsor</em>: the
+    company stays, the talk title goes - and its value with it, as the model on the right shows. Pick Japan or the
+    United States and a visa letter is offered. Tick the hotel, and the nights unlock; ask for three or more and late
+    checkout appears. Tick <em>Payment received</em> and the ticket locks: still readable and in the tab order, but no
+    longer editable.
+</div>
+
+<div class="bb-split bb-page-wide">
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+        <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Register" ShowErrorSummary="true" />
+    </div>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">What the model holds</span></div>
+        <div class="demo-readout">
+            <pre>@Dump</pre>
+        </div>
+        @if (_submitted)
+        {
+            <p class="bb-note bb-note-success demo-result"><strong>Registered ✓</strong></p>
+        }
+    </div>
+</div>
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What a condition can do</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Method</th><th>While it holds, the field is…</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>VisibleWhen</code></td><td>shown. Hidden, it is not rendered, not validated and never stops a submit; with <code>ClearOnHide()</code> its value is emptied too.</td></tr>
+                <tr><td class="bb-table-key"><code>RequiredWhen</code></td><td>required, and marked so.</td></tr>
+                <tr><td class="bb-table-key"><code>DisabledWhen</code></td><td>disabled - out of the tab order and not read out. For an answer that does not apply <em>yet</em>.</td></tr>
+                <tr><td class="bb-table-key"><code>ReadOnlyWhen</code></td><td>read-only - still focusable, readable and copyable. For an answer that is <em>settled</em>; on a group or repeater it locks everything inside, rows' buttons included.</td></tr>
+                <tr><td class="bb-table-key"><code>When(condition, w =&gt; …)</code></td><td>judged by the rules configured inside - FluentValidation's <code>.When(…)</code>.</td></tr>
+                <tr><td class="bb-table-key">A step's <code>VisibleWhen</code></td><td>(a wizard step) shown, with everything on it - see <a href="wizard">the wizard</a>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Four ways to write one</h3>
+    <ul class="bb-detail-list">
+        <li><strong>A comparison</strong> - <code>VisibleWhen("Role", BormConditionOperator.Equals, "speaker")</code>. Exported to JSON Schema as <code>{"field": "Role", "op": "Equals", "value": "speaker"}</code>.</li>
+        <li><strong>A group</strong> - <code>BormConditionGroup.Any(…)</code> or <code>All(…)</code> of comparisons, nested as deep as needed. Exported as <code>{"any": […]}</code>.</li>
+        <li><strong>An expression</strong> - <code>VisibleWhen("{NeedsHotel} and {Nights} &gt;= 3")</code>. Exported as the text it was written as; see <a href="expressions">expressions</a>.</li>
+        <li><strong>C#</strong> - <code>VisibleWhen(data =&gt; …, "Country")</code>, a predicate over the answers, naming the fields it reads so it is evaluated again when they change. Code has no JSON form, so it is left out of an export.</li>
+    </ul>
+    <p class="bb-card-desc">
+        A path is resolved against the object that owns the field before the root, so inside a repeater a condition means
+        <a href="per-row-conditions">that row</a>. A condition naming a field that does not exist is reported by
+        <code>definition.Validate()</code>. The operators:
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <tbody>
+                <tr><td class="bb-table-key">Equality</td><td><code>Equals</code>, <code>NotEquals</code> - numbers by value, text without regard to case</td></tr>
+                <tr><td class="bb-table-key">Order</td><td><code>GreaterThan</code>, <code>GreaterThanOrEqual</code>, <code>LessThan</code>, <code>LessThanOrEqual</code> - numbers and dates</td></tr>
+                <tr><td class="bb-table-key">Sets</td><td><code>In</code>, <code>NotIn</code> (the value is a list), <code>Contains</code>, <code>NotContains</code> (text, a multi-select's list, or a <code>[Flags]</code> enum)</td></tr>
+                <tr><td class="bb-table-key">Text</td><td><code>StartsWith</code>, <code>EndsWith</code>, <code>Matches</code> (a regular expression)</td></tr>
+                <tr><td class="bb-table-key">State</td><td><code>IsEmpty</code>, <code>IsNotEmpty</code>, <code>IsTrue</code>, <code>IsFalse</code> - no value needed</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private const string Source =
+"""
+private static readonly string[] Schengen = ["fr", "de", "nl"];
+
+var schema = BormBuilder.For<ConferenceRegistration>()
+    .Title("Conference registration")
+    .Field(x => x.Name, f => f.Required())
+    .Field(x => x.Role, f => f.AsRadio()
+        .Options(("attendee", "Attendee"), ("speaker", "Speaker"), ("sponsor", "Sponsor")))
+
+    // A group: shown for speakers OR sponsors.
+    .Field(x => x.Company, f => f
+        .VisibleWhen(BormConditionGroup.Any(
+            new BormFieldCondition("Role", BormConditionOperator.Equals, "speaker"),
+            new BormFieldCondition("Role", BormConditionOperator.Equals, "sponsor")))
+        .ClearOnHide()
+        // Rules that apply only while a condition holds: a sponsor is a company, so say which.
+        .When("Role", BormConditionOperator.Equals, "sponsor", w => w
+            .Required("Sponsors are companies - which one?")
+            .MinLength(3)))
+
+    // A comparison: shown, and required, for speakers only - and emptied when it goes.
+    .Field(x => x.TalkTitle, f => f
+        .VisibleWhen("Role", BormConditionOperator.Equals, "speaker")
+        .RequiredWhen("Role", BormConditionOperator.Equals, "speaker")
+        .ClearOnHide())
+
+    .Field(x => x.Country, f => f.Options(("fr", "France"), ("de", "Germany"), ("nl", "Netherlands"),
+                                          ("jp", "Japan"), ("us", "United States")))
+
+    // C#: a predicate over the answers, naming the field it reads.
+    .Field(x => x.VisaLetter, f => f
+        .VisibleWhen(data => data.GetValue("Country") is string c && !Schengen.Contains(c), "Country")
+        .ClearOnHide())
+
+    // Locked once it is settled - readable and focusable, unlike a disabled field.
+    .Field(x => x.TicketType, f => f.AsRadio()
+        .Options(("standard", "Standard"), ("vip", "VIP"))
+        .ReadOnlyWhen(nameof(ConferenceRegistration.Paid), BormConditionOperator.IsTrue))
+
+    .Field(x => x.NeedsHotel, f => f.AsSwitch())
+    // Disabled while it does not apply yet; required once it does.
+    .Field(x => x.Nights, f => f
+        .Range(1, 14)
+        .DisabledWhen(nameof(ConferenceRegistration.NeedsHotel), BormConditionOperator.IsFalse)
+        .RequiredWhen(nameof(ConferenceRegistration.NeedsHotel), BormConditionOperator.IsTrue))
+
+    // An expression: the fields it reads are its dependencies.
+    .Field(x => x.LateCheckout, f => f
+        .VisibleWhen("{NeedsHotel} and {Nights} >= 3")
+        .ClearOnHide())
+
+    .Field(x => x.Paid, f => f.AsSwitch())
+    .Build();
+""";
+
+    private static readonly string[] Schengen = ["fr", "de", "nl"];
+
+    private readonly ConferenceRegistration _model = new();
+    private BormState _state = default!;
+    private bool _submitted;
+
+    private string Dump => System.Text.Json.JsonSerializer.Serialize(_model,
+        new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<ConferenceRegistration>()
+            .Title("Conference registration")
+            .Field(x => x.Name, f => f.Required())
+            .Field(x => x.Role, f => f.AsRadio()
+                .Options(("attendee", "Attendee"), ("speaker", "Speaker"), ("sponsor", "Sponsor")))
+            .Field(x => x.Company, f => f
+                .VisibleWhen(BormConditionGroup.Any(
+                    new BormFieldCondition("Role", BormConditionOperator.Equals, "speaker"),
+                    new BormFieldCondition("Role", BormConditionOperator.Equals, "sponsor")))
+                .ClearOnHide()
+                .When("Role", BormConditionOperator.Equals, "sponsor", w => w
+                    .Required("Sponsors are companies - which one?")
+                    .MinLength(3))
+                .Help("Shown for speakers and sponsors; required for sponsors."))
+            .Field(x => x.TalkTitle, f => f
+                .VisibleWhen("Role", BormConditionOperator.Equals, "speaker")
+                .RequiredWhen("Role", BormConditionOperator.Equals, "speaker")
+                .ClearOnHide())
+            .Field(x => x.Country, f => f.Options(("fr", "France"), ("de", "Germany"), ("nl", "Netherlands"),
+                                                  ("jp", "Japan"), ("us", "United States")))
+            .Field(x => x.VisaLetter, f => f
+                .VisibleWhen(data => data.GetValue("Country") is string c && !Schengen.Contains(c), "Country")
+                .ClearOnHide())
+            .Field(x => x.TicketType, f => f.AsRadio()
+                .Options(("standard", "Standard"), ("vip", "VIP"))
+                .ReadOnlyWhen(nameof(ConferenceRegistration.Paid), BormConditionOperator.IsTrue)
+                .Help("Locked once the payment is received."))
+            .Field(x => x.NeedsHotel, f => f.AsSwitch())
+            .Field(x => x.Nights, f => f
+                .Range(1, 14)
+                .DisabledWhen(nameof(ConferenceRegistration.NeedsHotel), BormConditionOperator.IsFalse)
+                .RequiredWhen(nameof(ConferenceRegistration.NeedsHotel), BormConditionOperator.IsTrue))
+            .Field(x => x.LateCheckout, f => f
+                .VisibleWhen("{NeedsHotel} and {Nights} >= 3")
+                .ClearOnHide())
+            .Field(x => x.Paid, f => f.AsSwitch())
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        // The readout beside the form reads the model, so it follows every change to it.
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private void HandleSubmit(BormState state) => _submitted = true;
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        _state.Dispose();
+    }
+}

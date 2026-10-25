@@ -47,57 +47,120 @@ internal static class BitThemeMapper
     }
 
     /// <summary>
-    /// The family alias tier's default targets, mirroring <c>Styles/family-tokens.scss</c> (pinned
-    /// to it by a contract test). ORDERED so that a chained alias resolves in a single pass: an
-    /// entry may only point at a primitive or at an alias declared ABOVE it (the control radius is
-    /// re-declared before the button/chip/selection radii that fall back to it).
+    /// The tokens the global focus ring is composed of, as <c>Styles/Fluent/shapes.fluent.scss</c> declares it (pinned to
+    /// it by a contract test): the page background of its separator ring, the primary focus color of its outer ring, and
+    /// the ring's width and offset. The default value itself is <see cref="FocusRingDefault"/>.
     /// </summary>
-    /// <remarks>
-    /// The app-bar shadows and the snackbar elevation are deliberately absent: they are not plain
-    /// <c>var()</c> aliases of a primitive (a tinted expression and a literal <c>none</c>), so there
-    /// is nothing to re-substitute for them.
-    /// </remarks>
-    internal static readonly IReadOnlyList<KeyValuePair<string, string>> FamilyAliasTargets =
+    internal static readonly IReadOnlyList<string> FocusRingInputs =
     [
-        new(BitCss.Var.Shape.Radius.Control, BitCss.Var.Shape.BorderRadius),
-        new(BitCss.Var.Shape.Radius.Surface, BitCss.Var.Shape.BorderRadius),
-        new(BitCss.Var.Shape.Radius.Popup, BitCss.Var.Shape.BorderRadius),
-        new(BitCss.Var.Shape.Radius.Dialog, BitCss.Var.Shape.BorderRadius),
-        new(BitCss.Var.Shape.Radius.Button, BitCss.Var.Shape.Radius.Control),
-        new(BitCss.Var.Shape.Radius.Chip, BitCss.Var.Shape.Radius.Control),
-        new(BitCss.Var.Shape.Radius.Selection, BitCss.Var.Shape.Radius.Control),
-        new(BitCss.Var.Shadow.Card, BitCss.Var.Shadow.Callout),
-        new(BitCss.Var.Shadow.Popup, BitCss.Var.Shadow.Callout),
-        new(BitCss.Var.Shadow.Dialog, BitCss.Var.Shadow.Callout),
-        new(BitCss.Var.Shadow.Sheet, BitCss.Var.Shadow.Callout),
-        new(BitCss.Var.Shadow.Tooltip, BitCss.Var.Shadow.Callout),
+        BitCss.Var.Color.Background.Primary.Main,
+        BitCss.Var.Color.Primary.Focus,
+        BitCss.Var.Shape.FocusRingWidth,
+        BitCss.Var.Shape.FocusRingOffset,
     ];
 
     /// <summary>
-    /// Re-declares a family alias (as its default <c>var()</c> reference) next to any token the
-    /// mapped theme overrides it from, so the components - which read the family tier - track an
-    /// inline override for the styled subtree.
+    /// The default of <c>--bit-shd-focus-ring</c> as <c>Styles/Fluent/shapes.fluent.scss</c> declares it.
+    /// </summary>
+    internal static readonly string FocusRingDefault =
+        $"0 0 0 var(--bit-focus-ring-offset, var({BitCss.Var.Shape.FocusRingOffset})) var({BitCss.Var.Color.Background.Primary.Main}), " +
+        $"0 0 0 calc(var(--bit-focus-ring-offset, var({BitCss.Var.Shape.FocusRingOffset})) + var({BitCss.Var.Shape.FocusRingWidth})) var(--bit-focus-ring-color, var({BitCss.Var.Color.Primary.Focus}))";
+
+    /// <summary>
+    /// Re-declares the global focus ring (as its default composite) next to any of its inputs the mapped theme overrides,
+    /// so the focus ring of every control that has not been given a focus color of its own tracks the override.
     /// </summary>
     /// <remarks>
-    /// The same substitution rule as <see cref="AugmentWithSemanticAliasReSubstitution"/>, one tier
-    /// lower: <c>family-tokens.scss</c> declares the family aliases on <c>:root</c>, so a theme
-    /// applied further down the tree (a <see cref="BitThemeProvider"/> wrapper, or
-    /// <see cref="BitThemeManager.ApplyBitThemeAsync"/> on an element) that re-values
-    /// <c>--bit-shp-brd-radius</c> or <c>--bit-shd-cal</c> would otherwise leave every component
-    /// reading the document's already-substituted family value. The table is walked in order, so an
-    /// alias re-declared here becomes a touched target for the aliases that fall back to IT - which
-    /// is what carries a <c>Radius.Control</c> override through to buttons, chips and checkboxes.
-    /// An alias the theme sets explicitly always wins.
+    /// The same substitution rule as <see cref="AugmentWithSemanticAliasReSubstitution"/>: <c>--bit-shd-focus-ring</c> is
+    /// composed on <c>:root</c>, so a theme that re-values the page background, the primary focus color or the ring's
+    /// width or offset further down the tree would otherwise leave those rings in the document's values. It runs before
+    /// the semantic augmentation, whose <c>--bit-sem-focus-ring</c> falls back to this token and so is re-declared along
+    /// with it. A focus ring the theme sets explicitly always wins.
     /// </remarks>
-    internal static void AugmentWithFamilyAliasReSubstitution(Dictionary<string, string> cssVariables)
+    internal static void AugmentWithFocusRingReSubstitution(Dictionary<string, string> cssVariables)
     {
-        foreach (var (alias, target) in FamilyAliasTargets)
-        {
-            if (cssVariables.ContainsKey(alias)) continue; // explicit alias value wins
-            if (cssVariables.ContainsKey(target) is false) continue; // target untouched; keep the inherited alias
+        if (cssVariables.ContainsKey(BitCss.Var.Shadow.FocusRing)) return; // explicit ring wins
+        if (FocusRingInputs.Any(cssVariables.ContainsKey) is false) return; // inputs untouched; keep the inherited ring
 
-            cssVariables[alias] = $"var({target})";
+        cssVariables[BitCss.Var.Shadow.FocusRing] = FocusRingDefault;
+    }
+
+    /// <summary>
+    /// The groups of the family alias tier an inline theme overlay re-declares, each with the tokens it
+    /// is built from: the value of the <see cref="BitThemeAttributeNames.ThemeOverlay"/> attribute is the
+    /// space-separated names of the groups whose inputs the overlay re-values (<see cref="GetFamilyAliasOverlay"/>).
+    /// Mirrors <c>Styles/theme-overlay.scss</c>, and the groups are what every theme stylesheet keys its
+    /// overlay rules on, and the inputs what those rules read (pinned by contract tests). The client script's
+    /// <c>applyTheme</c> derives the same value from the same table (<c>FAMILY_ALIAS_OVERLAY_GROUPS</c> in
+    /// <c>Utils/Theme/BitTheme.ts</c>, pinned to this one by a contract test).
+    /// </summary>
+    /// <remarks>
+    /// The inputs are every token a packaged theme builds a family alias from - a Material button is the full
+    /// radius rather than the control one, a Fluent 2 tooltip the primary background rather than the
+    /// secondary, a Fluent dark elevation rings its surface in the tertiary border at the border width, the
+    /// core app-bar shadows are tinted with the primary foreground - so the list names what any of them reads,
+    /// and a theme that does not read one simply re-declares its own value for it. The type aliases are the
+    /// exception that names more than the packaged themes read: a design system picks the step of the size and
+    /// weight ramps it titles a dialog and captions a field in, and an app's own preset may pick any of them,
+    /// so the group takes every step of both ramps.
+    /// </remarks>
+    internal static readonly IReadOnlyList<KeyValuePair<string, string[]>> FamilyAliasOverlayGroups =
+    [
+        new("radius", [BitCss.Var.Shape.BorderRadius]),
+        new("radius-control", [BitCss.Var.Shape.Radius.Control, BitCss.Var.Shape.Radius.Full]),
+        new("shadow", [BitCss.Var.Shadow.Callout, BitCss.Var.Color.Border.Tertiary.Main, BitCss.Var.Shape.BorderWidth, BitCss.Var.Color.Foreground.Primary.Main]),
+        new("tooltip", [BitCss.Var.Color.Background.Primary.Main, BitCss.Var.Color.Background.Secondary.Main, BitCss.Var.Color.Foreground.Primary.Main]),
+        new("foreground", [BitCss.Var.Color.Foreground.Primary.Main]),
+        new("pri", [BitCss.Var.Color.Primary.Main]),
+        new("sec", [BitCss.Var.Color.Secondary.Main]),
+        new("ter", [BitCss.Var.Color.Tertiary.Main]),
+        new("inf", [BitCss.Var.Color.Info.Main]),
+        new("suc", [BitCss.Var.Color.Success.Main]),
+        new("wrn", [BitCss.Var.Color.Warning.Main]),
+        new("swr", [BitCss.Var.Color.SevereWarning.Main]),
+        new("err", [BitCss.Var.Color.Error.Main]),
+        new("typography", [BitCss.Var.Typography.FontSize.Xxs, BitCss.Var.Typography.FontSize.Xs, BitCss.Var.Typography.FontSize.Sm,
+                           BitCss.Var.Typography.FontSize.Md, BitCss.Var.Typography.FontSize.Lg, BitCss.Var.Typography.FontSize.Xl,
+                           BitCss.Var.Typography.FontSize.Xxl, BitCss.Var.Typography.FontSize.Xxxl, BitCss.Var.Typography.FontSize.Xxxxl,
+                           BitCss.Var.Typography.FontWeights.Light, BitCss.Var.Typography.FontWeights.Regular,
+                           BitCss.Var.Typography.FontWeights.Medium, BitCss.Var.Typography.FontWeights.SemiBold,
+                           BitCss.Var.Typography.FontWeights.Bold]),
+        new("motion", [BitCss.Var.Motion.DurationFull, BitCss.Var.Motion.DurationShortFull, BitCss.Var.Motion.DurationLongFull,
+                       BitCss.Var.Motion.DurationFactorFull,
+                       BitCss.Var.Motion.DurationSpinnerFull, BitCss.Var.Motion.EasingSpinnerFull, BitCss.Var.Motion.LoopFactorFull]),
+    ];
+
+    /// <summary>
+    /// The <see cref="BitThemeAttributeNames.ThemeOverlay"/> value for an element carrying
+    /// <paramref name="cssVariables"/> inline: the family alias groups whose inputs they re-value, or
+    /// <see langword="null"/> when they re-value none.
+    /// </summary>
+    /// <remarks>
+    /// The family tier is declared on <c>:root</c> (and on scoped-preset elements), and a custom property's
+    /// <c>var()</c> references are substituted at the element that declares it, so a theme applied further
+    /// down the tree (a <see cref="BitThemeProvider"/> wrapper, or <see cref="BitThemeManager.ApplyBitThemeAsync"/>
+    /// on an element) that re-values <c>--bit-shp-brd-radius</c> or a palette color would otherwise leave
+    /// every component reading the document's already-substituted family value. Unlike the semantic tier
+    /// (<see cref="AugmentWithSemanticAliasReSubstitution"/>), the family tier is not re-declared here as
+    /// inline <c>var()</c>s: what each alias is built from is the ACTIVE theme's decision - Material casts no
+    /// shadow under a tooltip and paints it in the inverse surface, Fluent lifts a card by its own depth
+    /// rather than by the callout shadow - which C# cannot know, at prerender least of all, and which can
+    /// change under the element while it is shown. So the element only names the groups it re-values, and
+    /// every theme stylesheet re-declares its own aliases for each named group on it. An alias the theme sets
+    /// explicitly is inline and wins over any of those rules.
+    /// </remarks>
+    internal static string? GetFamilyAliasOverlay(IReadOnlyDictionary<string, string> cssVariables)
+    {
+        List<string>? groups = null;
+
+        foreach (var (group, inputs) in FamilyAliasOverlayGroups)
+        {
+            if (inputs.Any(cssVariables.ContainsKey) is false) continue;
+
+            (groups ??= []).Add(group);
         }
+
+        return groups is null ? null : string.Join(' ', groups);
     }
 
     internal static Dictionary<string, string> MapToCssVariables(BitTheme bitTheme)
@@ -125,6 +188,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Primary.Disabled, bitTheme.Color.Primary.Disabled);
         addCssVar(BitCss.Var.Color.Primary.DisabledText, bitTheme.Color.Primary.DisabledText);
         addCssVar(BitCss.Var.Color.Primary.Focus, bitTheme.Color.Primary.Focus);
+        addCssVar(BitCss.Var.Color.Primary.Foreground, bitTheme.Color.Primary.Foreground);
+        addCssVar(BitCss.Var.Color.Primary.Tint, bitTheme.Color.Primary.Tint);
 
         addCssVar(BitCss.Var.Color.Secondary.Main, bitTheme.Color.Secondary.Main);
         addCssVar(BitCss.Var.Color.Secondary.Hover.Main, bitTheme.Color.Secondary.MainHover);
@@ -139,6 +204,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Secondary.Disabled, bitTheme.Color.Secondary.Disabled);
         addCssVar(BitCss.Var.Color.Secondary.DisabledText, bitTheme.Color.Secondary.DisabledText);
         addCssVar(BitCss.Var.Color.Secondary.Focus, bitTheme.Color.Secondary.Focus);
+        addCssVar(BitCss.Var.Color.Secondary.Foreground, bitTheme.Color.Secondary.Foreground);
+        addCssVar(BitCss.Var.Color.Secondary.Tint, bitTheme.Color.Secondary.Tint);
 
         addCssVar(BitCss.Var.Color.Tertiary.Main, bitTheme.Color.Tertiary.Main);
         addCssVar(BitCss.Var.Color.Tertiary.Hover.Main, bitTheme.Color.Tertiary.MainHover);
@@ -153,6 +220,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Tertiary.Disabled, bitTheme.Color.Tertiary.Disabled);
         addCssVar(BitCss.Var.Color.Tertiary.DisabledText, bitTheme.Color.Tertiary.DisabledText);
         addCssVar(BitCss.Var.Color.Tertiary.Focus, bitTheme.Color.Tertiary.Focus);
+        addCssVar(BitCss.Var.Color.Tertiary.Foreground, bitTheme.Color.Tertiary.Foreground);
+        addCssVar(BitCss.Var.Color.Tertiary.Tint, bitTheme.Color.Tertiary.Tint);
 
         addCssVar(BitCss.Var.Color.Info.Main, bitTheme.Color.Info.Main);
         addCssVar(BitCss.Var.Color.Info.Hover.Main, bitTheme.Color.Info.MainHover);
@@ -167,6 +236,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Info.Disabled, bitTheme.Color.Info.Disabled);
         addCssVar(BitCss.Var.Color.Info.DisabledText, bitTheme.Color.Info.DisabledText);
         addCssVar(BitCss.Var.Color.Info.Focus, bitTheme.Color.Info.Focus);
+        addCssVar(BitCss.Var.Color.Info.Foreground, bitTheme.Color.Info.Foreground);
+        addCssVar(BitCss.Var.Color.Info.Tint, bitTheme.Color.Info.Tint);
 
         addCssVar(BitCss.Var.Color.Success.Main, bitTheme.Color.Success.Main);
         addCssVar(BitCss.Var.Color.Success.Hover.Main, bitTheme.Color.Success.MainHover);
@@ -181,6 +252,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Success.Disabled, bitTheme.Color.Success.Disabled);
         addCssVar(BitCss.Var.Color.Success.DisabledText, bitTheme.Color.Success.DisabledText);
         addCssVar(BitCss.Var.Color.Success.Focus, bitTheme.Color.Success.Focus);
+        addCssVar(BitCss.Var.Color.Success.Foreground, bitTheme.Color.Success.Foreground);
+        addCssVar(BitCss.Var.Color.Success.Tint, bitTheme.Color.Success.Tint);
 
         addCssVar(BitCss.Var.Color.Warning.Main, bitTheme.Color.Warning.Main);
         addCssVar(BitCss.Var.Color.Warning.Hover.Main, bitTheme.Color.Warning.MainHover);
@@ -195,6 +268,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Warning.Disabled, bitTheme.Color.Warning.Disabled);
         addCssVar(BitCss.Var.Color.Warning.DisabledText, bitTheme.Color.Warning.DisabledText);
         addCssVar(BitCss.Var.Color.Warning.Focus, bitTheme.Color.Warning.Focus);
+        addCssVar(BitCss.Var.Color.Warning.Foreground, bitTheme.Color.Warning.Foreground);
+        addCssVar(BitCss.Var.Color.Warning.Tint, bitTheme.Color.Warning.Tint);
 
         addCssVar(BitCss.Var.Color.SevereWarning.Main, bitTheme.Color.SevereWarning.Main);
         addCssVar(BitCss.Var.Color.SevereWarning.Hover.Main, bitTheme.Color.SevereWarning.MainHover);
@@ -209,6 +284,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.SevereWarning.Disabled, bitTheme.Color.SevereWarning.Disabled);
         addCssVar(BitCss.Var.Color.SevereWarning.DisabledText, bitTheme.Color.SevereWarning.DisabledText);
         addCssVar(BitCss.Var.Color.SevereWarning.Focus, bitTheme.Color.SevereWarning.Focus);
+        addCssVar(BitCss.Var.Color.SevereWarning.Foreground, bitTheme.Color.SevereWarning.Foreground);
+        addCssVar(BitCss.Var.Color.SevereWarning.Tint, bitTheme.Color.SevereWarning.Tint);
 
         addCssVar(BitCss.Var.Color.Error.Main, bitTheme.Color.Error.Main);
         addCssVar(BitCss.Var.Color.Error.Hover.Main, bitTheme.Color.Error.MainHover);
@@ -223,6 +300,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Color.Error.Disabled, bitTheme.Color.Error.Disabled);
         addCssVar(BitCss.Var.Color.Error.DisabledText, bitTheme.Color.Error.DisabledText);
         addCssVar(BitCss.Var.Color.Error.Focus, bitTheme.Color.Error.Focus);
+        addCssVar(BitCss.Var.Color.Error.Foreground, bitTheme.Color.Error.Foreground);
+        addCssVar(BitCss.Var.Color.Error.Tint, bitTheme.Color.Error.Tint);
 
         addCssVar(BitCss.Var.Color.Foreground.Primary.Main, bitTheme.Color.Foreground.Primary);
         addCssVar(BitCss.Var.Color.Foreground.Primary.Hover.Main, bitTheme.Color.Foreground.PrimaryHover);
@@ -341,6 +420,9 @@ internal static class BitThemeMapper
 
         addCssVar(BitCss.Var.Color.Required, bitTheme.Color.Required);
 
+        addCssVar(BitCss.Var.Color.Tooltip.Background, bitTheme.Color.TooltipBackground);
+        addCssVar(BitCss.Var.Color.Tooltip.Foreground, bitTheme.Color.TooltipForeground);
+
         addCssVar(BitCss.Var.Color.Neutral.White, bitTheme.Color.Neutral.White);
         addCssVar(BitCss.Var.Color.Neutral.Black, bitTheme.Color.Neutral.Black);
         addCssVar(BitCss.Var.Color.Neutral.Gray10, bitTheme.Color.Neutral.Gray10);
@@ -411,6 +493,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Shadow.S24, bitTheme.BoxShadow.S24);
         addCssVar(BitCss.Var.Shadow.FocusRing, bitTheme.BoxShadow.FocusRing);
         addCssVar(BitCss.Var.Shadow.Card, bitTheme.BoxShadow.Card);
+        addCssVar(BitCss.Var.Shadow.CardHover, bitTheme.BoxShadow.CardHover);
         addCssVar(BitCss.Var.Shadow.Popup, bitTheme.BoxShadow.Popup);
         addCssVar(BitCss.Var.Shadow.Dialog, bitTheme.BoxShadow.Dialog);
         addCssVar(BitCss.Var.Shadow.Sheet, bitTheme.BoxShadow.Sheet);
@@ -421,6 +504,13 @@ internal static class BitThemeMapper
 
         addCssVar(BitCss.Var.Spacing.ScalingFactor, bitTheme.Spacing.ScalingFactor);
         addCssVar(BitCss.Var.Spacing.Dialog, bitTheme.Spacing.Dialog);
+        addCssVar(BitCss.Var.Spacing.Card.Sm, bitTheme.Spacing.Card.Sm);
+        addCssVar(BitCss.Var.Spacing.Card.Md, bitTheme.Spacing.Card.Md);
+        addCssVar(BitCss.Var.Spacing.Card.Lg, bitTheme.Spacing.Card.Lg);
+        addCssVar(BitCss.Var.Spacing.Steps.Dialog, bitTheme.Spacing.Steps.Dialog);
+        addCssVar(BitCss.Var.Spacing.Steps.Card.Sm, bitTheme.Spacing.Steps.Card.Sm);
+        addCssVar(BitCss.Var.Spacing.Steps.Card.Md, bitTheme.Spacing.Steps.Card.Md);
+        addCssVar(BitCss.Var.Spacing.Steps.Card.Lg, bitTheme.Spacing.Steps.Card.Lg);
 
         addCssVar(BitCss.Var.ZIndex.Snackbar, bitTheme.ZIndex.Snackbar);
         addCssVar(BitCss.Var.ZIndex.Modal, bitTheme.ZIndex.Modal);
@@ -446,9 +536,13 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Shape.Radius.Button, bitTheme.Shape.Radius.Button);
         addCssVar(BitCss.Var.Shape.Radius.Chip, bitTheme.Shape.Radius.Chip);
         addCssVar(BitCss.Var.Shape.Radius.Selection, bitTheme.Shape.Radius.Selection);
+        addCssVar(BitCss.Var.Shape.Radius.TabIndicator, bitTheme.Shape.Radius.TabIndicator);
+        addCssVar(BitCss.Var.Shape.Radius.TabIndicatorBase, bitTheme.Shape.Radius.TabIndicatorBase);
+        addCssVar(BitCss.Var.Shape.Radius.Progress, bitTheme.Shape.Radius.Progress);
         addCssVar(BitCss.Var.Shape.Radius.Surface, bitTheme.Shape.Radius.Surface);
         addCssVar(BitCss.Var.Shape.Radius.Popup, bitTheme.Shape.Radius.Popup);
         addCssVar(BitCss.Var.Shape.Radius.Dialog, bitTheme.Shape.Radius.Dialog);
+        addCssVar(BitCss.Var.Shape.Radius.Sheet, bitTheme.Shape.Radius.Sheet);
 
         addCssVar(BitCss.Var.Typography.FontFamily, bitTheme.Typography.FontFamily);
         addCssVar(BitCss.Var.Typography.MonoFontFamily, bitTheme.Typography.MonoFontFamily);
@@ -474,6 +568,9 @@ internal static class BitThemeMapper
 
         addCssVar(BitCss.Var.Typography.Control.LetterSpacing, bitTheme.Typography.Control.LetterSpacing);
         addCssVar(BitCss.Var.Typography.Control.TextTransform, bitTheme.Typography.Control.TextTransform);
+        addCssVar(BitCss.Var.Typography.Dialog.TitleFontSize, bitTheme.Typography.Dialog.TitleFontSize);
+        addCssVar(BitCss.Var.Typography.Dialog.TitleFontWeight, bitTheme.Typography.Dialog.TitleFontWeight);
+        addCssVar(BitCss.Var.Typography.FieldLabel.FontWeight, bitTheme.Typography.FieldLabel.FontWeight);
 
         addCssVar(BitCss.Var.Typography.Body1.Margin, bitTheme.Typography.Body1.Margin);
         addCssVar(BitCss.Var.Typography.Body1.FontWeight, bitTheme.Typography.Body1.FontWeight);
@@ -572,20 +669,27 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Typography.Subtitle2.LineHeight, bitTheme.Typography.Subtitle2.LineHeight);
         addCssVar(BitCss.Var.Typography.Subtitle2.LetterSpacing, bitTheme.Typography.Subtitle2.LetterSpacing);
 
-        addCssVar(BitCss.Var.Motion.Duration, bitTheme.Motion.Duration);
-        addCssVar(BitCss.Var.Motion.DurationShort, bitTheme.Motion.DurationShort);
-        addCssVar(BitCss.Var.Motion.DurationLong, bitTheme.Motion.DurationLong);
+        // The durations and their factor, the spinner pair and the loop factor go to their unreduced -full tokens, as a
+        // preset's do: the plain ones alias them and are what the reduced-motion query collapses and ForceAnimation
+        // restores, so a plain one written inline would outrank the user's preference and be restored to the default
+        // theme's value inside a ForceAnimation subtree (the motion group of FamilyAliasOverlayGroups re-substitutes the
+        // aliases on the overlay's element).
+        addCssVar(BitCss.Var.Motion.DurationFull, bitTheme.Motion.Duration);
+        addCssVar(BitCss.Var.Motion.DurationShortFull, bitTheme.Motion.DurationShort);
+        addCssVar(BitCss.Var.Motion.DurationLongFull, bitTheme.Motion.DurationLong);
+        addCssVar(BitCss.Var.Motion.DurationFactorFull, bitTheme.Motion.DurationFactor);
         addCssVar(BitCss.Var.Motion.Easing, bitTheme.Motion.EasingStandard);
         addCssVar(BitCss.Var.Motion.EasingDecelerate, bitTheme.Motion.EasingDecelerate);
         addCssVar(BitCss.Var.Motion.EasingAccelerate, bitTheme.Motion.EasingAccelerate);
-        addCssVar(BitCss.Var.Motion.DurationSpinner, bitTheme.Motion.DurationSpinner);
-        addCssVar(BitCss.Var.Motion.EasingSpinner, bitTheme.Motion.EasingSpinner);
-        addCssVar(BitCss.Var.Motion.LoopFactor, bitTheme.Motion.LoopFactor);
+        addCssVar(BitCss.Var.Motion.DurationSpinnerFull, bitTheme.Motion.DurationSpinner);
+        addCssVar(BitCss.Var.Motion.EasingSpinnerFull, bitTheme.Motion.EasingSpinner);
+        addCssVar(BitCss.Var.Motion.LoopFactorFull, bitTheme.Motion.LoopFactor);
 
         addCssVar(BitCss.Var.Layout.DensityScale, bitTheme.Layout.DensityScale);
         addCssVar(BitCss.Var.Layout.DialogActionsDirection, bitTheme.Layout.DialogActionsDirection);
         addCssVar(BitCss.Var.Layout.DialogActionsJustify, bitTheme.Layout.DialogActionsJustify);
         addCssVar(BitCss.Var.Layout.DialogActionsAlign, bitTheme.Layout.DialogActionsAlign);
+        addCssVar(BitCss.Var.Layout.DialogTextAlign, bitTheme.Layout.DialogTextAlign);
 
         addCssVar(BitCss.Var.Layout.Breakpoints.Xs, bitTheme.Layout.Breakpoints.Xs);
         addCssVar(BitCss.Var.Layout.Breakpoints.Sm, bitTheme.Layout.Breakpoints.Sm);
@@ -615,6 +719,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Size.Item.Lg, bitTheme.Size.Item.Lg);
         addCssVar(BitCss.Var.Size.Tab, bitTheme.Size.Tab);
         addCssVar(BitCss.Var.Size.TabIndicator, bitTheme.Size.TabIndicator);
+        addCssVar(BitCss.Var.Size.TabDivider, bitTheme.Size.TabDivider);
         addCssVar(BitCss.Var.Size.Divider, bitTheme.Size.Divider);
         addCssVar(BitCss.Var.Size.Track.Sm, bitTheme.Size.Track.Sm);
         addCssVar(BitCss.Var.Size.Track.Md, bitTheme.Size.Track.Md);
@@ -631,9 +736,58 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Size.SliderThumb.Sm, bitTheme.Size.SliderThumb.Sm);
         addCssVar(BitCss.Var.Size.SliderThumb.Md, bitTheme.Size.SliderThumb.Md);
         addCssVar(BitCss.Var.Size.SliderThumb.Lg, bitTheme.Size.SliderThumb.Lg);
+        addCssVar(BitCss.Var.Size.Badge.Sm, bitTheme.Size.Badge.Sm);
+        addCssVar(BitCss.Var.Size.Badge.Md, bitTheme.Size.Badge.Md);
+        addCssVar(BitCss.Var.Size.Badge.Lg, bitTheme.Size.Badge.Lg);
+        addCssVar(BitCss.Var.Size.BadgeDot.Sm, bitTheme.Size.BadgeDot.Sm);
+        addCssVar(BitCss.Var.Size.BadgeDot.Md, bitTheme.Size.BadgeDot.Md);
+        addCssVar(BitCss.Var.Size.BadgeDot.Lg, bitTheme.Size.BadgeDot.Lg);
+        addCssVar(BitCss.Var.Size.Chip.Sm, bitTheme.Size.Chip.Sm);
+        addCssVar(BitCss.Var.Size.Chip.Md, bitTheme.Size.Chip.Md);
+        addCssVar(BitCss.Var.Size.Chip.Lg, bitTheme.Size.Chip.Lg);
         addCssVar(BitCss.Var.Size.SpinnerStroke, bitTheme.Size.SpinnerStroke);
         addCssVar(BitCss.Var.Size.PopupMaxHeight, bitTheme.Size.PopupMaxHeight);
         addCssVar(BitCss.Var.Size.DialogMaxWidth, bitTheme.Size.DialogMaxWidth);
+        addCssVar(BitCss.Var.Size.Steps.Control.Sm, bitTheme.Size.Steps.Control.Sm);
+        addCssVar(BitCss.Var.Size.Steps.Control.Md, bitTheme.Size.Steps.Control.Md);
+        addCssVar(BitCss.Var.Size.Steps.Control.Lg, bitTheme.Size.Steps.Control.Lg);
+        addCssVar(BitCss.Var.Size.Steps.ControlPaddingX.Sm, bitTheme.Size.Steps.ControlPaddingX.Sm);
+        addCssVar(BitCss.Var.Size.Steps.ControlPaddingX.Md, bitTheme.Size.Steps.ControlPaddingX.Md);
+        addCssVar(BitCss.Var.Size.Steps.ControlPaddingX.Lg, bitTheme.Size.Steps.ControlPaddingX.Lg);
+        addCssVar(BitCss.Var.Size.Steps.ControlPaddingY.Sm, bitTheme.Size.Steps.ControlPaddingY.Sm);
+        addCssVar(BitCss.Var.Size.Steps.ControlPaddingY.Md, bitTheme.Size.Steps.ControlPaddingY.Md);
+        addCssVar(BitCss.Var.Size.Steps.ControlPaddingY.Lg, bitTheme.Size.Steps.ControlPaddingY.Lg);
+        addCssVar(BitCss.Var.Size.Steps.ControlMinWidth, bitTheme.Size.Steps.ControlMinWidth);
+        addCssVar(BitCss.Var.Size.Steps.Selection.Sm, bitTheme.Size.Steps.Selection.Sm);
+        addCssVar(BitCss.Var.Size.Steps.Selection.Md, bitTheme.Size.Steps.Selection.Md);
+        addCssVar(BitCss.Var.Size.Steps.Selection.Lg, bitTheme.Size.Steps.Selection.Lg);
+        addCssVar(BitCss.Var.Size.Steps.Item.Sm, bitTheme.Size.Steps.Item.Sm);
+        addCssVar(BitCss.Var.Size.Steps.Item.Md, bitTheme.Size.Steps.Item.Md);
+        addCssVar(BitCss.Var.Size.Steps.Item.Lg, bitTheme.Size.Steps.Item.Lg);
+        addCssVar(BitCss.Var.Size.Steps.Tab, bitTheme.Size.Steps.Tab);
+        addCssVar(BitCss.Var.Size.Steps.SwitchWidth.Sm, bitTheme.Size.Steps.Switch.Width.Sm);
+        addCssVar(BitCss.Var.Size.Steps.SwitchWidth.Md, bitTheme.Size.Steps.Switch.Width.Md);
+        addCssVar(BitCss.Var.Size.Steps.SwitchWidth.Lg, bitTheme.Size.Steps.Switch.Width.Lg);
+        addCssVar(BitCss.Var.Size.Steps.SwitchHeight.Sm, bitTheme.Size.Steps.Switch.Height.Sm);
+        addCssVar(BitCss.Var.Size.Steps.SwitchHeight.Md, bitTheme.Size.Steps.Switch.Height.Md);
+        addCssVar(BitCss.Var.Size.Steps.SwitchHeight.Lg, bitTheme.Size.Steps.Switch.Height.Lg);
+        addCssVar(BitCss.Var.Size.Steps.SwitchThumb.Sm, bitTheme.Size.Steps.Switch.Thumb.Sm);
+        addCssVar(BitCss.Var.Size.Steps.SwitchThumb.Md, bitTheme.Size.Steps.Switch.Thumb.Md);
+        addCssVar(BitCss.Var.Size.Steps.SwitchThumb.Lg, bitTheme.Size.Steps.Switch.Thumb.Lg);
+        addCssVar(BitCss.Var.Size.Steps.SliderThumb.Sm, bitTheme.Size.Steps.SliderThumb.Sm);
+        addCssVar(BitCss.Var.Size.Steps.SliderThumb.Md, bitTheme.Size.Steps.SliderThumb.Md);
+        addCssVar(BitCss.Var.Size.Steps.SliderThumb.Lg, bitTheme.Size.Steps.SliderThumb.Lg);
+        addCssVar(BitCss.Var.Size.Steps.Badge.Sm, bitTheme.Size.Steps.Badge.Sm);
+        addCssVar(BitCss.Var.Size.Steps.Badge.Md, bitTheme.Size.Steps.Badge.Md);
+        addCssVar(BitCss.Var.Size.Steps.Badge.Lg, bitTheme.Size.Steps.Badge.Lg);
+        addCssVar(BitCss.Var.Size.Steps.BadgeDot.Sm, bitTheme.Size.Steps.BadgeDot.Sm);
+        addCssVar(BitCss.Var.Size.Steps.BadgeDot.Md, bitTheme.Size.Steps.BadgeDot.Md);
+        addCssVar(BitCss.Var.Size.Steps.BadgeDot.Lg, bitTheme.Size.Steps.BadgeDot.Lg);
+        addCssVar(BitCss.Var.Size.Steps.Chip.Sm, bitTheme.Size.Steps.Chip.Sm);
+        addCssVar(BitCss.Var.Size.Steps.Chip.Md, bitTheme.Size.Steps.Chip.Md);
+        addCssVar(BitCss.Var.Size.Steps.Chip.Lg, bitTheme.Size.Steps.Chip.Lg);
+        addCssVar(BitCss.Var.Size.Steps.PopupMaxHeight, bitTheme.Size.Steps.PopupMaxHeight);
+        addCssVar(BitCss.Var.Size.Steps.DialogMaxWidth, bitTheme.Size.Steps.DialogMaxWidth);
 
         addCssVar(BitCss.Var.Opacity.Disabled, bitTheme.Opacity.Disabled);
 
@@ -738,7 +892,7 @@ internal static class BitThemeMapper
         {
             Color = NormalizeColors(src.Color),
             BoxShadow = src.BoxShadow ?? new(),
-            Spacing = src.Spacing ?? new(),
+            Spacing = NormalizeSpacing(src.Spacing),
             ZIndex = src.ZIndex ?? new(),
             Shape = NormalizeShape(src.Shape),
             Typography = NormalizeTypography(src.Typography),
@@ -769,6 +923,8 @@ internal static class BitThemeMapper
             Neutral = src.Neutral ?? new(),
             Semantic = src.Semantic ?? new(),
             Required = src.Required,
+            TooltipBackground = src.TooltipBackground,
+            TooltipForeground = src.TooltipForeground,
         };
     }
 
@@ -786,6 +942,8 @@ internal static class BitThemeMapper
             FontSize = src.FontSize ?? new(),
             FontWeights = src.FontWeights ?? new(),
             Control = src.Control ?? new(),
+            Dialog = src.Dialog ?? new(),
+            FieldLabel = src.FieldLabel ?? new(),
             H1 = src.H1 ?? new(),
             H2 = src.H2 ?? new(),
             H3 = src.H3 ?? new(),
@@ -820,6 +978,30 @@ internal static class BitThemeMapper
         };
     }
 
+    private static BitThemeSpacings NormalizeSpacing(BitThemeSpacings? src)
+    {
+        src ??= new BitThemeSpacings();
+
+        return new BitThemeSpacings
+        {
+            ScalingFactor = src.ScalingFactor,
+            Dialog = src.Dialog,
+            Card = src.Card ?? new(),
+            Steps = NormalizeSpacingSteps(src.Steps),
+        };
+    }
+
+    private static BitThemeSpacingSteps NormalizeSpacingSteps(BitThemeSpacingSteps? src)
+    {
+        src ??= new BitThemeSpacingSteps();
+
+        return new BitThemeSpacingSteps
+        {
+            Dialog = src.Dialog,
+            Card = src.Card ?? new(),
+        };
+    }
+
     private static BitThemeSizes NormalizeSize(BitThemeSizes? src)
     {
         src ??= new BitThemeSizes();
@@ -835,11 +1017,39 @@ internal static class BitThemeMapper
             Item = src.Item ?? new(),
             Tab = src.Tab,
             TabIndicator = src.TabIndicator,
+            TabDivider = src.TabDivider,
             Divider = src.Divider,
             Track = src.Track ?? new(),
             Switch = NormalizeSwitchSize(src.Switch),
             SliderThumb = src.SliderThumb ?? new(),
+            Badge = src.Badge ?? new(),
+            BadgeDot = src.BadgeDot ?? new(),
+            Chip = src.Chip ?? new(),
             SpinnerStroke = src.SpinnerStroke,
+            PopupMaxHeight = src.PopupMaxHeight,
+            DialogMaxWidth = src.DialogMaxWidth,
+            Steps = NormalizeSizeSteps(src.Steps),
+        };
+    }
+
+    private static BitThemeSizeSteps NormalizeSizeSteps(BitThemeSizeSteps? src)
+    {
+        src ??= new BitThemeSizeSteps();
+
+        return new BitThemeSizeSteps
+        {
+            Control = src.Control ?? new(),
+            ControlPaddingX = src.ControlPaddingX ?? new(),
+            ControlPaddingY = src.ControlPaddingY ?? new(),
+            ControlMinWidth = src.ControlMinWidth,
+            Selection = src.Selection ?? new(),
+            Item = src.Item ?? new(),
+            Tab = src.Tab,
+            Switch = NormalizeSwitchSize(src.Switch),
+            SliderThumb = src.SliderThumb ?? new(),
+            Badge = src.Badge ?? new(),
+            BadgeDot = src.BadgeDot ?? new(),
+            Chip = src.Chip ?? new(),
             PopupMaxHeight = src.PopupMaxHeight,
             DialogMaxWidth = src.DialogMaxWidth,
         };
@@ -867,6 +1077,7 @@ internal static class BitThemeMapper
             DialogActionsDirection = src.DialogActionsDirection,
             DialogActionsJustify = src.DialogActionsJustify,
             DialogActionsAlign = src.DialogActionsAlign,
+            DialogTextAlign = src.DialogTextAlign,
             Breakpoints = src.Breakpoints ?? new(),
         };
     }
@@ -895,6 +1106,8 @@ internal static class BitThemeMapper
         result.Color.Primary.Disabled = bitTheme.Color.Primary.Disabled ?? other.Color.Primary.Disabled;
         result.Color.Primary.DisabledText = bitTheme.Color.Primary.DisabledText ?? other.Color.Primary.DisabledText;
         result.Color.Primary.Focus = bitTheme.Color.Primary.Focus ?? other.Color.Primary.Focus;
+        result.Color.Primary.Foreground = bitTheme.Color.Primary.Foreground ?? other.Color.Primary.Foreground;
+        result.Color.Primary.Tint = bitTheme.Color.Primary.Tint ?? other.Color.Primary.Tint;
 
         result.Color.Secondary.Main = bitTheme.Color.Secondary.Main ?? other.Color.Secondary.Main;
         result.Color.Secondary.MainHover = bitTheme.Color.Secondary.MainHover ?? other.Color.Secondary.MainHover;
@@ -909,6 +1122,8 @@ internal static class BitThemeMapper
         result.Color.Secondary.Disabled = bitTheme.Color.Secondary.Disabled ?? other.Color.Secondary.Disabled;
         result.Color.Secondary.DisabledText = bitTheme.Color.Secondary.DisabledText ?? other.Color.Secondary.DisabledText;
         result.Color.Secondary.Focus = bitTheme.Color.Secondary.Focus ?? other.Color.Secondary.Focus;
+        result.Color.Secondary.Foreground = bitTheme.Color.Secondary.Foreground ?? other.Color.Secondary.Foreground;
+        result.Color.Secondary.Tint = bitTheme.Color.Secondary.Tint ?? other.Color.Secondary.Tint;
 
         result.Color.Tertiary.Main = bitTheme.Color.Tertiary.Main ?? other.Color.Tertiary.Main;
         result.Color.Tertiary.MainHover = bitTheme.Color.Tertiary.MainHover ?? other.Color.Tertiary.MainHover;
@@ -923,6 +1138,8 @@ internal static class BitThemeMapper
         result.Color.Tertiary.Disabled = bitTheme.Color.Tertiary.Disabled ?? other.Color.Tertiary.Disabled;
         result.Color.Tertiary.DisabledText = bitTheme.Color.Tertiary.DisabledText ?? other.Color.Tertiary.DisabledText;
         result.Color.Tertiary.Focus = bitTheme.Color.Tertiary.Focus ?? other.Color.Tertiary.Focus;
+        result.Color.Tertiary.Foreground = bitTheme.Color.Tertiary.Foreground ?? other.Color.Tertiary.Foreground;
+        result.Color.Tertiary.Tint = bitTheme.Color.Tertiary.Tint ?? other.Color.Tertiary.Tint;
 
         result.Color.Info.Main = bitTheme.Color.Info.Main ?? other.Color.Info.Main;
         result.Color.Info.MainHover = bitTheme.Color.Info.MainHover ?? other.Color.Info.MainHover;
@@ -937,6 +1154,8 @@ internal static class BitThemeMapper
         result.Color.Info.Disabled = bitTheme.Color.Info.Disabled ?? other.Color.Info.Disabled;
         result.Color.Info.DisabledText = bitTheme.Color.Info.DisabledText ?? other.Color.Info.DisabledText;
         result.Color.Info.Focus = bitTheme.Color.Info.Focus ?? other.Color.Info.Focus;
+        result.Color.Info.Foreground = bitTheme.Color.Info.Foreground ?? other.Color.Info.Foreground;
+        result.Color.Info.Tint = bitTheme.Color.Info.Tint ?? other.Color.Info.Tint;
 
         result.Color.Success.Main = bitTheme.Color.Success.Main ?? other.Color.Success.Main;
         result.Color.Success.MainHover = bitTheme.Color.Success.MainHover ?? other.Color.Success.MainHover;
@@ -951,6 +1170,8 @@ internal static class BitThemeMapper
         result.Color.Success.Disabled = bitTheme.Color.Success.Disabled ?? other.Color.Success.Disabled;
         result.Color.Success.DisabledText = bitTheme.Color.Success.DisabledText ?? other.Color.Success.DisabledText;
         result.Color.Success.Focus = bitTheme.Color.Success.Focus ?? other.Color.Success.Focus;
+        result.Color.Success.Foreground = bitTheme.Color.Success.Foreground ?? other.Color.Success.Foreground;
+        result.Color.Success.Tint = bitTheme.Color.Success.Tint ?? other.Color.Success.Tint;
 
         result.Color.Warning.Main = bitTheme.Color.Warning.Main ?? other.Color.Warning.Main;
         result.Color.Warning.MainHover = bitTheme.Color.Warning.MainHover ?? other.Color.Warning.MainHover;
@@ -965,6 +1186,8 @@ internal static class BitThemeMapper
         result.Color.Warning.Disabled = bitTheme.Color.Warning.Disabled ?? other.Color.Warning.Disabled;
         result.Color.Warning.DisabledText = bitTheme.Color.Warning.DisabledText ?? other.Color.Warning.DisabledText;
         result.Color.Warning.Focus = bitTheme.Color.Warning.Focus ?? other.Color.Warning.Focus;
+        result.Color.Warning.Foreground = bitTheme.Color.Warning.Foreground ?? other.Color.Warning.Foreground;
+        result.Color.Warning.Tint = bitTheme.Color.Warning.Tint ?? other.Color.Warning.Tint;
 
         result.Color.SevereWarning.Main = bitTheme.Color.SevereWarning.Main ?? other.Color.SevereWarning.Main;
         result.Color.SevereWarning.MainHover = bitTheme.Color.SevereWarning.MainHover ?? other.Color.SevereWarning.MainHover;
@@ -979,6 +1202,8 @@ internal static class BitThemeMapper
         result.Color.SevereWarning.Disabled = bitTheme.Color.SevereWarning.Disabled ?? other.Color.SevereWarning.Disabled;
         result.Color.SevereWarning.DisabledText = bitTheme.Color.SevereWarning.DisabledText ?? other.Color.SevereWarning.DisabledText;
         result.Color.SevereWarning.Focus = bitTheme.Color.SevereWarning.Focus ?? other.Color.SevereWarning.Focus;
+        result.Color.SevereWarning.Foreground = bitTheme.Color.SevereWarning.Foreground ?? other.Color.SevereWarning.Foreground;
+        result.Color.SevereWarning.Tint = bitTheme.Color.SevereWarning.Tint ?? other.Color.SevereWarning.Tint;
 
         result.Color.Error.Main = bitTheme.Color.Error.Main ?? other.Color.Error.Main;
         result.Color.Error.MainHover = bitTheme.Color.Error.MainHover ?? other.Color.Error.MainHover;
@@ -993,6 +1218,8 @@ internal static class BitThemeMapper
         result.Color.Error.Disabled = bitTheme.Color.Error.Disabled ?? other.Color.Error.Disabled;
         result.Color.Error.DisabledText = bitTheme.Color.Error.DisabledText ?? other.Color.Error.DisabledText;
         result.Color.Error.Focus = bitTheme.Color.Error.Focus ?? other.Color.Error.Focus;
+        result.Color.Error.Foreground = bitTheme.Color.Error.Foreground ?? other.Color.Error.Foreground;
+        result.Color.Error.Tint = bitTheme.Color.Error.Tint ?? other.Color.Error.Tint;
 
         result.Color.Foreground.Primary = bitTheme.Color.Foreground.Primary ?? other.Color.Foreground.Primary;
         result.Color.Foreground.PrimaryHover = bitTheme.Color.Foreground.PrimaryHover ?? other.Color.Foreground.PrimaryHover;
@@ -1110,6 +1337,8 @@ internal static class BitThemeMapper
         result.Color.Border.Disabled = bitTheme.Color.Border.Disabled ?? other.Color.Border.Disabled;
 
         result.Color.Required = bitTheme.Color.Required ?? other.Color.Required;
+        result.Color.TooltipBackground = bitTheme.Color.TooltipBackground ?? other.Color.TooltipBackground;
+        result.Color.TooltipForeground = bitTheme.Color.TooltipForeground ?? other.Color.TooltipForeground;
 
         result.Color.Neutral.White = bitTheme.Color.Neutral.White ?? other.Color.Neutral.White;
         result.Color.Neutral.Black = bitTheme.Color.Neutral.Black ?? other.Color.Neutral.Black;
@@ -1181,6 +1410,7 @@ internal static class BitThemeMapper
         result.BoxShadow.S24 = bitTheme.BoxShadow.S24 ?? other.BoxShadow.S24;
         result.BoxShadow.FocusRing = bitTheme.BoxShadow.FocusRing ?? other.BoxShadow.FocusRing;
         result.BoxShadow.Card = bitTheme.BoxShadow.Card ?? other.BoxShadow.Card;
+        result.BoxShadow.CardHover = bitTheme.BoxShadow.CardHover ?? other.BoxShadow.CardHover;
         result.BoxShadow.Popup = bitTheme.BoxShadow.Popup ?? other.BoxShadow.Popup;
         result.BoxShadow.Dialog = bitTheme.BoxShadow.Dialog ?? other.BoxShadow.Dialog;
         result.BoxShadow.Sheet = bitTheme.BoxShadow.Sheet ?? other.BoxShadow.Sheet;
@@ -1191,6 +1421,13 @@ internal static class BitThemeMapper
 
         result.Spacing.ScalingFactor = bitTheme.Spacing.ScalingFactor ?? other.Spacing.ScalingFactor;
         result.Spacing.Dialog = bitTheme.Spacing.Dialog ?? other.Spacing.Dialog;
+        result.Spacing.Card.Sm = bitTheme.Spacing.Card.Sm ?? other.Spacing.Card.Sm;
+        result.Spacing.Card.Md = bitTheme.Spacing.Card.Md ?? other.Spacing.Card.Md;
+        result.Spacing.Card.Lg = bitTheme.Spacing.Card.Lg ?? other.Spacing.Card.Lg;
+        result.Spacing.Steps.Dialog = bitTheme.Spacing.Steps.Dialog ?? other.Spacing.Steps.Dialog;
+        result.Spacing.Steps.Card.Sm = bitTheme.Spacing.Steps.Card.Sm ?? other.Spacing.Steps.Card.Sm;
+        result.Spacing.Steps.Card.Md = bitTheme.Spacing.Steps.Card.Md ?? other.Spacing.Steps.Card.Md;
+        result.Spacing.Steps.Card.Lg = bitTheme.Spacing.Steps.Card.Lg ?? other.Spacing.Steps.Card.Lg;
 
         result.ZIndex.Snackbar = bitTheme.ZIndex.Snackbar ?? other.ZIndex.Snackbar;
         result.ZIndex.Modal = bitTheme.ZIndex.Modal ?? other.ZIndex.Modal;
@@ -1216,9 +1453,13 @@ internal static class BitThemeMapper
         result.Shape.Radius.Button = bitTheme.Shape.Radius.Button ?? other.Shape.Radius.Button;
         result.Shape.Radius.Chip = bitTheme.Shape.Radius.Chip ?? other.Shape.Radius.Chip;
         result.Shape.Radius.Selection = bitTheme.Shape.Radius.Selection ?? other.Shape.Radius.Selection;
+        result.Shape.Radius.TabIndicator = bitTheme.Shape.Radius.TabIndicator ?? other.Shape.Radius.TabIndicator;
+        result.Shape.Radius.TabIndicatorBase = bitTheme.Shape.Radius.TabIndicatorBase ?? other.Shape.Radius.TabIndicatorBase;
+        result.Shape.Radius.Progress = bitTheme.Shape.Radius.Progress ?? other.Shape.Radius.Progress;
         result.Shape.Radius.Surface = bitTheme.Shape.Radius.Surface ?? other.Shape.Radius.Surface;
         result.Shape.Radius.Popup = bitTheme.Shape.Radius.Popup ?? other.Shape.Radius.Popup;
         result.Shape.Radius.Dialog = bitTheme.Shape.Radius.Dialog ?? other.Shape.Radius.Dialog;
+        result.Shape.Radius.Sheet = bitTheme.Shape.Radius.Sheet ?? other.Shape.Radius.Sheet;
 
         result.Typography.FontFamily = bitTheme.Typography.FontFamily ?? other.Typography.FontFamily;
         result.Typography.MonoFontFamily = bitTheme.Typography.MonoFontFamily ?? other.Typography.MonoFontFamily;
@@ -1244,6 +1485,9 @@ internal static class BitThemeMapper
 
         result.Typography.Control.LetterSpacing = bitTheme.Typography.Control.LetterSpacing ?? other.Typography.Control.LetterSpacing;
         result.Typography.Control.TextTransform = bitTheme.Typography.Control.TextTransform ?? other.Typography.Control.TextTransform;
+        result.Typography.Dialog.TitleFontSize = bitTheme.Typography.Dialog.TitleFontSize ?? other.Typography.Dialog.TitleFontSize;
+        result.Typography.Dialog.TitleFontWeight = bitTheme.Typography.Dialog.TitleFontWeight ?? other.Typography.Dialog.TitleFontWeight;
+        result.Typography.FieldLabel.FontWeight = bitTheme.Typography.FieldLabel.FontWeight ?? other.Typography.FieldLabel.FontWeight;
 
         result.Typography.Body1.Margin = bitTheme.Typography.Body1.Margin ?? other.Typography.Body1.Margin;
         result.Typography.Body1.FontWeight = bitTheme.Typography.Body1.FontWeight ?? other.Typography.Body1.FontWeight;
@@ -1345,6 +1589,7 @@ internal static class BitThemeMapper
         result.Motion.Duration = bitTheme.Motion.Duration ?? other.Motion.Duration;
         result.Motion.DurationShort = bitTheme.Motion.DurationShort ?? other.Motion.DurationShort;
         result.Motion.DurationLong = bitTheme.Motion.DurationLong ?? other.Motion.DurationLong;
+        result.Motion.DurationFactor = bitTheme.Motion.DurationFactor ?? other.Motion.DurationFactor;
         result.Motion.EasingStandard = bitTheme.Motion.EasingStandard ?? other.Motion.EasingStandard;
         result.Motion.EasingDecelerate = bitTheme.Motion.EasingDecelerate ?? other.Motion.EasingDecelerate;
         result.Motion.EasingAccelerate = bitTheme.Motion.EasingAccelerate ?? other.Motion.EasingAccelerate;
@@ -1356,6 +1601,7 @@ internal static class BitThemeMapper
         result.Layout.DialogActionsDirection = bitTheme.Layout.DialogActionsDirection ?? other.Layout.DialogActionsDirection;
         result.Layout.DialogActionsJustify = bitTheme.Layout.DialogActionsJustify ?? other.Layout.DialogActionsJustify;
         result.Layout.DialogActionsAlign = bitTheme.Layout.DialogActionsAlign ?? other.Layout.DialogActionsAlign;
+        result.Layout.DialogTextAlign = bitTheme.Layout.DialogTextAlign ?? other.Layout.DialogTextAlign;
         result.Layout.Breakpoints.Xs = bitTheme.Layout.Breakpoints.Xs ?? other.Layout.Breakpoints.Xs;
         result.Layout.Breakpoints.Sm = bitTheme.Layout.Breakpoints.Sm ?? other.Layout.Breakpoints.Sm;
         result.Layout.Breakpoints.Md = bitTheme.Layout.Breakpoints.Md ?? other.Layout.Breakpoints.Md;
@@ -1384,6 +1630,7 @@ internal static class BitThemeMapper
         result.Size.Item.Lg = bitTheme.Size.Item.Lg ?? other.Size.Item.Lg;
         result.Size.Tab = bitTheme.Size.Tab ?? other.Size.Tab;
         result.Size.TabIndicator = bitTheme.Size.TabIndicator ?? other.Size.TabIndicator;
+        result.Size.TabDivider = bitTheme.Size.TabDivider ?? other.Size.TabDivider;
         result.Size.Divider = bitTheme.Size.Divider ?? other.Size.Divider;
         result.Size.Track.Sm = bitTheme.Size.Track.Sm ?? other.Size.Track.Sm;
         result.Size.Track.Md = bitTheme.Size.Track.Md ?? other.Size.Track.Md;
@@ -1400,9 +1647,58 @@ internal static class BitThemeMapper
         result.Size.SliderThumb.Sm = bitTheme.Size.SliderThumb.Sm ?? other.Size.SliderThumb.Sm;
         result.Size.SliderThumb.Md = bitTheme.Size.SliderThumb.Md ?? other.Size.SliderThumb.Md;
         result.Size.SliderThumb.Lg = bitTheme.Size.SliderThumb.Lg ?? other.Size.SliderThumb.Lg;
+        result.Size.Badge.Sm = bitTheme.Size.Badge.Sm ?? other.Size.Badge.Sm;
+        result.Size.Badge.Md = bitTheme.Size.Badge.Md ?? other.Size.Badge.Md;
+        result.Size.Badge.Lg = bitTheme.Size.Badge.Lg ?? other.Size.Badge.Lg;
+        result.Size.BadgeDot.Sm = bitTheme.Size.BadgeDot.Sm ?? other.Size.BadgeDot.Sm;
+        result.Size.BadgeDot.Md = bitTheme.Size.BadgeDot.Md ?? other.Size.BadgeDot.Md;
+        result.Size.BadgeDot.Lg = bitTheme.Size.BadgeDot.Lg ?? other.Size.BadgeDot.Lg;
+        result.Size.Chip.Sm = bitTheme.Size.Chip.Sm ?? other.Size.Chip.Sm;
+        result.Size.Chip.Md = bitTheme.Size.Chip.Md ?? other.Size.Chip.Md;
+        result.Size.Chip.Lg = bitTheme.Size.Chip.Lg ?? other.Size.Chip.Lg;
         result.Size.SpinnerStroke = bitTheme.Size.SpinnerStroke ?? other.Size.SpinnerStroke;
         result.Size.PopupMaxHeight = bitTheme.Size.PopupMaxHeight ?? other.Size.PopupMaxHeight;
         result.Size.DialogMaxWidth = bitTheme.Size.DialogMaxWidth ?? other.Size.DialogMaxWidth;
+        result.Size.Steps.Control.Sm = bitTheme.Size.Steps.Control.Sm ?? other.Size.Steps.Control.Sm;
+        result.Size.Steps.Control.Md = bitTheme.Size.Steps.Control.Md ?? other.Size.Steps.Control.Md;
+        result.Size.Steps.Control.Lg = bitTheme.Size.Steps.Control.Lg ?? other.Size.Steps.Control.Lg;
+        result.Size.Steps.ControlPaddingX.Sm = bitTheme.Size.Steps.ControlPaddingX.Sm ?? other.Size.Steps.ControlPaddingX.Sm;
+        result.Size.Steps.ControlPaddingX.Md = bitTheme.Size.Steps.ControlPaddingX.Md ?? other.Size.Steps.ControlPaddingX.Md;
+        result.Size.Steps.ControlPaddingX.Lg = bitTheme.Size.Steps.ControlPaddingX.Lg ?? other.Size.Steps.ControlPaddingX.Lg;
+        result.Size.Steps.ControlPaddingY.Sm = bitTheme.Size.Steps.ControlPaddingY.Sm ?? other.Size.Steps.ControlPaddingY.Sm;
+        result.Size.Steps.ControlPaddingY.Md = bitTheme.Size.Steps.ControlPaddingY.Md ?? other.Size.Steps.ControlPaddingY.Md;
+        result.Size.Steps.ControlPaddingY.Lg = bitTheme.Size.Steps.ControlPaddingY.Lg ?? other.Size.Steps.ControlPaddingY.Lg;
+        result.Size.Steps.ControlMinWidth = bitTheme.Size.Steps.ControlMinWidth ?? other.Size.Steps.ControlMinWidth;
+        result.Size.Steps.Selection.Sm = bitTheme.Size.Steps.Selection.Sm ?? other.Size.Steps.Selection.Sm;
+        result.Size.Steps.Selection.Md = bitTheme.Size.Steps.Selection.Md ?? other.Size.Steps.Selection.Md;
+        result.Size.Steps.Selection.Lg = bitTheme.Size.Steps.Selection.Lg ?? other.Size.Steps.Selection.Lg;
+        result.Size.Steps.Item.Sm = bitTheme.Size.Steps.Item.Sm ?? other.Size.Steps.Item.Sm;
+        result.Size.Steps.Item.Md = bitTheme.Size.Steps.Item.Md ?? other.Size.Steps.Item.Md;
+        result.Size.Steps.Item.Lg = bitTheme.Size.Steps.Item.Lg ?? other.Size.Steps.Item.Lg;
+        result.Size.Steps.Tab = bitTheme.Size.Steps.Tab ?? other.Size.Steps.Tab;
+        result.Size.Steps.Switch.Width.Sm = bitTheme.Size.Steps.Switch.Width.Sm ?? other.Size.Steps.Switch.Width.Sm;
+        result.Size.Steps.Switch.Width.Md = bitTheme.Size.Steps.Switch.Width.Md ?? other.Size.Steps.Switch.Width.Md;
+        result.Size.Steps.Switch.Width.Lg = bitTheme.Size.Steps.Switch.Width.Lg ?? other.Size.Steps.Switch.Width.Lg;
+        result.Size.Steps.Switch.Height.Sm = bitTheme.Size.Steps.Switch.Height.Sm ?? other.Size.Steps.Switch.Height.Sm;
+        result.Size.Steps.Switch.Height.Md = bitTheme.Size.Steps.Switch.Height.Md ?? other.Size.Steps.Switch.Height.Md;
+        result.Size.Steps.Switch.Height.Lg = bitTheme.Size.Steps.Switch.Height.Lg ?? other.Size.Steps.Switch.Height.Lg;
+        result.Size.Steps.Switch.Thumb.Sm = bitTheme.Size.Steps.Switch.Thumb.Sm ?? other.Size.Steps.Switch.Thumb.Sm;
+        result.Size.Steps.Switch.Thumb.Md = bitTheme.Size.Steps.Switch.Thumb.Md ?? other.Size.Steps.Switch.Thumb.Md;
+        result.Size.Steps.Switch.Thumb.Lg = bitTheme.Size.Steps.Switch.Thumb.Lg ?? other.Size.Steps.Switch.Thumb.Lg;
+        result.Size.Steps.SliderThumb.Sm = bitTheme.Size.Steps.SliderThumb.Sm ?? other.Size.Steps.SliderThumb.Sm;
+        result.Size.Steps.SliderThumb.Md = bitTheme.Size.Steps.SliderThumb.Md ?? other.Size.Steps.SliderThumb.Md;
+        result.Size.Steps.SliderThumb.Lg = bitTheme.Size.Steps.SliderThumb.Lg ?? other.Size.Steps.SliderThumb.Lg;
+        result.Size.Steps.Badge.Sm = bitTheme.Size.Steps.Badge.Sm ?? other.Size.Steps.Badge.Sm;
+        result.Size.Steps.Badge.Md = bitTheme.Size.Steps.Badge.Md ?? other.Size.Steps.Badge.Md;
+        result.Size.Steps.Badge.Lg = bitTheme.Size.Steps.Badge.Lg ?? other.Size.Steps.Badge.Lg;
+        result.Size.Steps.BadgeDot.Sm = bitTheme.Size.Steps.BadgeDot.Sm ?? other.Size.Steps.BadgeDot.Sm;
+        result.Size.Steps.BadgeDot.Md = bitTheme.Size.Steps.BadgeDot.Md ?? other.Size.Steps.BadgeDot.Md;
+        result.Size.Steps.BadgeDot.Lg = bitTheme.Size.Steps.BadgeDot.Lg ?? other.Size.Steps.BadgeDot.Lg;
+        result.Size.Steps.Chip.Sm = bitTheme.Size.Steps.Chip.Sm ?? other.Size.Steps.Chip.Sm;
+        result.Size.Steps.Chip.Md = bitTheme.Size.Steps.Chip.Md ?? other.Size.Steps.Chip.Md;
+        result.Size.Steps.Chip.Lg = bitTheme.Size.Steps.Chip.Lg ?? other.Size.Steps.Chip.Lg;
+        result.Size.Steps.PopupMaxHeight = bitTheme.Size.Steps.PopupMaxHeight ?? other.Size.Steps.PopupMaxHeight;
+        result.Size.Steps.DialogMaxWidth = bitTheme.Size.Steps.DialogMaxWidth ?? other.Size.Steps.DialogMaxWidth;
 
         result.Opacity.Disabled = bitTheme.Opacity.Disabled ?? other.Opacity.Disabled;
 

@@ -1,0 +1,78 @@
+﻿@namespace Bit.Borm
+
+@foreach (var run in Runs)
+{
+    @if (run.Group is null)
+    {
+        @foreach (var (field, path) in run.Items)
+        {
+            <BormFieldView State="State" Field="field" Path="@path" />
+        }
+    }
+    else
+    {
+        @* A named group is a real <fieldset>, not a styled div: that is what makes a screen reader
+           announce "Contact details" when the user arrives at the first control inside it, which is the
+           whole point of grouping fields in the first place. It spans the full width of a grid layout,
+           because a group that occupied one cell of a two-column form would read as a column. *@
+        <fieldset class="bit-borm-fieldgroup" style="grid-column: 1 / -1;">
+            <legend class="bit-borm-fieldgroup__legend">@run.Group</legend>
+            <div class="bit-borm-fieldgroup__body">
+                @foreach (var (field, path) in run.Items)
+                {
+                    <BormFieldView State="State" Field="field" Path="@path" />
+                }
+            </div>
+        </fieldset>
+    }
+}
+
+@code {
+    /// <summary>The form these fields belong to.</summary>
+    [Parameter, EditorRequired] public BormState State { get; set; } = default!;
+
+    /// <summary>
+    /// The fields to render, each paired with the absolute data path it binds to. Paths are supplied
+    /// rather than derived because a wizard step names its fields by path and a nested field's name is
+    /// only its last segment.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public IEnumerable<(BormFieldDefinition Field, string Path)> Items { get; set; } = [];
+
+    private IReadOnlyList<FieldRun> _runs = [];
+    private object? _runsFrom;
+    private int _runsCount;
+
+    private IReadOnlyList<FieldRun> Runs => _runs;
+
+    // The same list handed back again — the view keeps one per schema — is the same runs; only a new
+    // list, or one whose length changed under it, is grouped again.
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_runsFrom, Items) && Items is IReadOnlyCollection<(BormFieldDefinition, string)> same && same.Count == _runsCount)
+            return;
+        _runs = BuildRuns();
+        _runsFrom = Items;
+        _runsCount = _runs.Sum(r => r.Items.Count);
+    }
+
+    /// <summary>
+    /// Splits the fields into consecutive runs sharing a <see cref="BormFieldDefinition.Group"/>.
+    /// Runs rather than a global grouping, so the declared order is never rearranged behind the
+    /// author's back: two separated blocks that happen to reuse a group name stay two blocks.
+    /// </summary>
+    private IReadOnlyList<FieldRun> BuildRuns()
+    {
+        var runs = new List<FieldRun>();
+        foreach (var item in Items)
+        {
+            var group = string.IsNullOrWhiteSpace(item.Field.Group) ? null : item.Field.Group;
+            if (runs.Count == 0 || !string.Equals(runs[^1].Group, group, StringComparison.Ordinal))
+                runs.Add(new FieldRun(group, []));
+            runs[^1].Items.Add(item);
+        }
+        return runs;
+    }
+
+    private sealed record FieldRun(string? Group, List<(BormFieldDefinition Field, string Path)> Items);
+}

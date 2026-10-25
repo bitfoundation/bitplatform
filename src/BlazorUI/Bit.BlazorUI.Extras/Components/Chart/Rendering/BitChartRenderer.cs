@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -24,7 +24,8 @@ public sealed partial class BitChartRenderer
     /// </summary>
     private readonly Dictionary<string, BitChartScaleOptions> _scales = new();
 
-    public BitChartRenderer(BitChartConfig config, BitChartRenderState state, double width, double height, string? uid = null)
+    public BitChartRenderer(BitChartConfig config, BitChartRenderState state, double width, double height, string? uid = null,
+        BitChartTexts? texts = null)
     {
         _config = config;
         _data = config.Data;
@@ -33,7 +34,10 @@ public sealed partial class BitChartRenderer
         _w = width;
         _h = height;
         _uid = uid ?? "bc";
+        _texts = texts ?? BitChartTexts.Default;
     }
+
+    private readonly BitChartTexts _texts;
 
     public BitChartScene Render()
     {
@@ -138,7 +142,7 @@ public sealed partial class BitChartRenderer
             return list[((dataIndex % list.Count) + list.Count) % list.Count];
         if (!string.IsNullOrEmpty(ds.BackgroundColor))
             return ds.BackgroundColor!;
-        return perIndexPalette ? BitChartColorUtil.Palette(dataIndex) : BitChartColorUtil.Palette(dsIndex);
+        return perIndexPalette ? BitChartColorUtil.SeriesColor(dataIndex) : BitChartColorUtil.SeriesColor(dsIndex);
     }
 
     /// <summary>
@@ -156,7 +160,7 @@ public sealed partial class BitChartRenderer
             return ds.BorderColor!;
         if (fallbackToBackground)
             return ResolveBackground(ds, dsIndex, dataIndex, perIndexPalette, value, active);
-        return perIndexPalette ? BitChartColorUtil.Palette(dataIndex) : BitChartColorUtil.Palette(dsIndex);
+        return perIndexPalette ? BitChartColorUtil.SeriesColor(dataIndex) : BitChartColorUtil.SeriesColor(dsIndex);
     }
 
     /// <summary>True when the dataset asks for a border color in any form.</summary>
@@ -249,7 +253,7 @@ public sealed partial class BitChartRenderer
     private bool PointLabelsVisible(BitChartScaleOptions o) => o.PointLabels.Display && !_options.Sparkline;
 
     /// <summary>Effective position of a scale, without writing the default back onto the caller's object.</summary>
-    private static BitChartPosition PositionOf(BitChartScaleOptions o, BitChartPosition fallback) => o.Position ?? fallback;
+    private static BitPlacement PlacementOf(BitChartScaleOptions o, BitPlacement fallback) => o.Placement ?? fallback;
 
     /// <summary>Returns the caller's scale for an id, or a fresh default one - added to the local map only.</summary>
     private BitChartScaleOptions GetOrAddScale(string id, BitChartScaleType type)
@@ -306,13 +310,16 @@ public sealed partial class BitChartRenderer
 
         var legend = new BitChartLegendModel
         {
-            // The legend only has four sides to live on; anything else would silently render nowhere.
-            Position = lo.Position is BitChartPosition.Bottom or BitChartPosition.Left or BitChartPosition.Right
-                ? lo.Position : BitChartPosition.Top,
+            // The legend lives on one of the four sides, two of them named either physically or by the reading
+            // direction; anything else would silently render nowhere.
+            Placement = lo.Placement is BitPlacement.Bottom or BitPlacement.Left or BitPlacement.Right
+                                        or BitPlacement.Start or BitPlacement.End
+                ? lo.Placement : BitPlacement.Top,
             Align = lo.Align,
             Labels = lo.Labels,
             Title = lo.Title,
             OnClickToggle = lo.OnClickToggle,
+            HighlightOnHover = lo.HighlightOnHover,
             MaxHeight = lo.MaxHeight
         };
 
@@ -326,7 +333,7 @@ public sealed partial class BitChartRenderer
                 legend.Items.Add(new BitChartLegendItemModel
                 {
                     Text = _data.Labels[i],
-                    Color = ds is null ? BitChartColorUtil.Palette(i) : ResolveBackground(ds, 0, i, true),
+                    Color = ds is null ? BitChartColorUtil.SeriesColor(i) : ResolveBackground(ds, 0, i, true),
                     Hidden = _state.IsIndexHidden(i),
                     Index = i,
                     IsDataIndex = true,
@@ -342,9 +349,10 @@ public sealed partial class BitChartRenderer
                 var ds = _data.Datasets[i];
                 legend.Items.Add(new BitChartLegendItemModel
                 {
-                    Text = ds.Label ?? $"Dataset {i + 1}",
+                    Text = ds.Label ?? _texts.DatasetLabel(i, _options.Culture),
                     Color = ResolveBackground(ds, i, 0, false),
-                    StrokeColor = ResolveBorder(ds, i, 0, false),
+                    // Outlined the way the dataset's own elements are: a bar with no border color takes its fill.
+                    StrokeColor = ResolveBorder(ds, i, 0, false, fallbackToBackground: EffectiveType(ds) == BitChartType.Bar),
                     Hidden = _state.IsDatasetHidden(i) || ds.Hidden,
                     Index = i,
                     UsePointStyle = lo.Labels.UsePointStyle,
@@ -366,7 +374,7 @@ public sealed partial class BitChartRenderer
         {
             Text = o.Text,
             Color = o.Color,
-            Position = o.Position,
+            Placement = o.Placement,
             Align = o.Align,
             Font = o.Font,
             Padding = o.Padding

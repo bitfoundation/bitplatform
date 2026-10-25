@@ -35,6 +35,13 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
                 serverCommunicationSuccess = true;
 
+                // The caller reads these responses itself, e.g. /healthz's report that comes with a 503.
+                if (request.Options.TryGetValue(new HttpRequestOptionsKey<HttpStatusCode[]>(RequestOptionNames.AllowedStatusCodes), out var allowedStatusCodes)
+                    && allowedStatusCodes.Contains(response.StatusCode))
+                {
+                    return response;
+                }
+
                 if (isInternalRequest && /* The following exception handling mechanism applies exclusively to responses from our own server. */
                     response.IsSuccessStatusCode is false &&
                     string.IsNullOrWhiteSpace(requestIdValue) is false &&
@@ -43,6 +50,15 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                     var problemDetails = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<AppProblemDetails>(), cancellationToken))!;
 
                     throw problemDetails;
+                }
+
+                if (isInternalRequest &&
+                    response.IsSuccessStatusCode is false &&
+                    string.IsNullOrWhiteSpace(requestIdValue) is false && /* Written by our own server (See UseRequestIdHeader), not by IIS, a reverse proxy or a CDN in front of it. */
+                    response.Content.Headers.ContentType?.MediaType is "text/plain")
+                {
+                    // A plain localized message, such as AttachmentController's image validation errors
+                    throw new BadRequestException(await response.Content.ReadAsStringAsync(cancellationToken));
                 }
 
                 if (response.StatusCode is HttpStatusCode.Unauthorized)

@@ -95,6 +95,7 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
         var knownException = exception as KnownException;
 
         statusCode = (int)(exception is RestException restExp ? restExp.StatusCode :
+            exception is BadHttpRequestException badHttpRequestExp ? (HttpStatusCode)badHttpRequestExp.StatusCode :
             exception is BrokenCircuitException ? HttpStatusCode.ServiceUnavailable :
             HttpStatusCode.InternalServerError);
 
@@ -125,7 +126,7 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
             {
                 logger.LogError(exception, exceptionMessageToLog);
             }
-            else if (IsTransientException(exception))
+            else if (IsTransientException(exception) || exception is BadHttpRequestException)
             {
                 logger.LogWarning(exception, exceptionMessageToLog);
             }

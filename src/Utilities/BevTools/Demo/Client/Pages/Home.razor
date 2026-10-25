@@ -1,0 +1,394 @@
+﻿@page "/"
+@layout MainLayout
+
+<PageTitle>BevTools - in-app developer tools for Blazor</PageTitle>
+
+@* The landing page: hero → proof strip → capability grid → code walkthrough → comparison with the
+   browser's own dev tools → persona tiles → FAQ → final call to action. Everything else on the
+   site is a documentation page under DocsLayout. The hero's live sample is BevTools itself: the
+   panel is running on this page, and the button gives it one event to show. *@
+
+<div class="bb-landing">
+
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net8.0 / net9.0 / net10.0
+            </span>
+            <h1>Dev tools for Blazor,<br /><span class="bb-hero-accent">inside your app.</span></h1>
+            <p class="bb-hero-sub">
+                A live component tree, a profiler that says <em>why</em> each component rendered, a timeline that links
+                every click to what it caused, and inspectors for state, HTTP, JS interop, errors, DI and circuits -
+                added with one line in <code>Program.cs</code> and no change to your components.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.BevTools</pre>
+            <div class="bb-hero-actions">
+                <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <a href="problems" class="btn btn-secondary bb-btn-lg">Problems to diagnose</a>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </div>
+        </div>
+
+        @* The setup, framed as a window, and underneath it the tool running on this very page. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">Program.cs · MainLayout.razor</span>
+                </div>
+                <pre class="bb-code"><span class="c">// Program.cs</span>
+builder.Services.AddBitBevToolsServerServices();
+
+<span class="c">@@* MainLayout.razor *@@</span>
+&lt;<span class="k">BevToolsPanel</span> /&gt;</pre>
+                <div class="home-hero-live">
+                    <p>
+                        <strong>It is running here.</strong> Press <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>D</kbd> or the
+                        ⚙ BevTools badge, open the <strong>Timeline</strong>, then click:
+                    </p>
+                    <div class="bb-toolbar">
+                        <button type="button" class="btn btn-primary" id="hero-click" @onclick="Click">Clicked @_clicks @(_clicks == 1 ? "time" : "times")</button>
+                        <span class="bb-muted">one <em>onclick → Home.Click</em> event, one render of <code>Home</code></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Proof strip ============================== *@
+
+    <section class="bb-proof">
+        <div><strong>No source changes</strong><span>public hooks: the component activator, HTTP handlers, loggers</span></div>
+        <div><strong>Never fakes data</strong><span>what it cannot observe, it says it cannot</span></div>
+        <div><strong>Every render mode</strong><span>WebAssembly, Server, Auto and static SSR</span></div>
+        <div><strong>Dormant in production</strong><span>on in Development only; off, it registers nothing</span></div>
+    </section>
+
+    @* ============================== Capability grid ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Capabilities</p>
+        <h2>The questions it answers</h2>
+        <p class="bb-section-sub">
+            Each panel answers a question that logs and breakpoints answer slowly. Every page of this site is a small
+            app built to ask one of them - open the panel on it and look.
+        </p>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Why did it render?</h3>
+                <p class="bb-card-desc">
+                    The component tree with parameters, cascading values, state and services - and for every render its
+                    cause: an event, a parent re-render, a navigation or <code>StateHasChanged</code>. Pick a component
+                    in the page, or watch them flash as they render.
+                </p>
+                <a href="dashboard" class="btn btn-outline">Dashboard →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What did this keystroke cost?</h3>
+                <p class="bb-card-desc">
+                    A profiler per instance and per type, each render batch as a cost tree, the rules that spot render
+                    storms, cascades and renders forced by a parent - and a comparison with the recording before your fix.
+                </p>
+                <a href="products" class="btn btn-outline">Products →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What happened when I clicked?</h3>
+                <p class="bb-card-desc">
+                    One timeline for renders, batches, events, navigation, state, HTTP, JS, errors and circuits, with
+                    each entry linked to what caused it and to what it caused.
+                </p>
+                <a href="counter" class="btn btn-outline">Counter →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Which request failed, and who sent it?</h3>
+                <p class="bb-card-desc">
+                    Every <code>IHttpClientFactory</code> request with status, duration, headers (redacted), the UI event
+                    and the component that sent it, and per endpoint the p95 - including the requests a Blazor Server app
+                    makes on the server.
+                </p>
+                <a href="orders" class="btn btn-outline">Orders →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What changed in my state?</h3>
+                <p class="bb-card-desc">
+                    State containers that implement <code>IBevStateProvider</code> get a history of named actions with
+                    before/after diffs and the click behind each one.
+                </p>
+                <a href="checkout" class="btn btn-outline">Checkout →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Which route is this, and who is signed in?</h3>
+                <p class="bb-card-desc">
+                    The page, template, route values and query, the route table, each navigation and what it rendered,
+                    the guards that can stop one, redirect loops - and the user's roles and claims.
+                </p>
+                <a href="routing" class="btn btn-outline">Routing &amp; sign-in →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Which JS call is slow?</h3>
+                <p class="bb-card-desc">
+                    Interop calls per identifier with durations, failures and the component that made them, plus the
+                    JS → .NET callbacks and the browser's storage, redacted.
+                </p>
+                <a href="interop" class="btn btn-outline">JS interop →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Where did that exception come from?</h3>
+                <p class="bb-card-desc">
+                    Errors from rendering, handlers, HTTP, interop and the browser, each with its component, its source
+                    location and the ten timeline entries before it.
+                </p>
+                <a href="errors" class="btn btn-outline">Errors →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Is my circuit blocked?</h3>
+                <p class="bb-card-desc">
+                    On Blazor Server: the circuit's lifecycle, connection state, time spent on each inbound message and
+                    the reconnect attempts the browser reports.
+                </p>
+                <a href="circuit" class="btn btn-outline">Circuit →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Does my form check what it should?</h3>
+                <p class="bb-card-desc">
+                    Every <code>EditForm</code> with what validates it, what shows its messages and each validation's
+                    outcome - and a check of the page for fields and buttons a screen reader cannot name.
+                </p>
+                <a href="problems#problem-17" class="btn btn-outline">Problem 17 →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> What keeps a disposed component alive?</h3>
+                <p class="bb-card-desc">
+                    Components the renderer let go that the garbage collector cannot free, with what holds each one: an
+                    event handler on a service, a lambda, a timer, a <code>DotNetObjectReference</code>.
+                </p>
+                <a href="problems#problem-16" class="btn btn-outline">Problem 16 →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Is my DI set up right?</h3>
+                <p class="bb-card-desc">
+                    Every registration with its lifetime and dependencies, and the mistakes that only fail later: a
+                    singleton capturing a scoped service, a circular dependency.
+                </p>
+                <a href="problems#problem-8" class="btn btn-outline">Problem 8 →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>Three steps, and two of them are optional</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>Register it</h3>
+                    <p>
+                        One call in the server project, one in the <code>.Client</code> project of an Interactive Auto app.
+                        It switches itself on in Development only.
+                    </p>
+                    <a href="getting-started">Getting started →</a>
+                </div>
+                <pre class="bb-code"><span class="c">// Server project</span>
+builder.Services.AddBitBevToolsServerServices();
+
+<span class="c">// .Client project</span>
+builder.Services.AddBitBevToolsServices(o =&gt;
+    o.Enabled = builder.HostEnvironment.IsDevelopment());</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>Expose your state</h3>
+                    <p>
+                        A state container that implements <code>IBevStateProvider</code> gets a history of named
+                        changes with diffs. Register it once and the State panel shows it.
+                    </p>
+                    <a href="checkout">Checkout →</a>
+                </div>
+                <pre class="bb-code"><span class="k">public sealed class</span> CartState : IBevStateProvider
+{
+    <span class="k">public string</span> Name =&gt; <span class="s">"CartState"</span>;
+    <span class="k">public event</span> Action&lt;BevStateChangeInfo&gt;? Changed;
+    <span class="k">public object</span>? GetSnapshot() =&gt; <span class="k">this</span>;
+    <span class="c">// … Changed?.Invoke(new BevStateChangeInfo("Add", product.Name));</span>
+}
+
+builder.Services.AddBevToolsStateProvider&lt;CartState&gt;();</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>Keep secrets out of it</h3>
+                    <p>
+                        Members, headers, query values and storage keys that look sensitive are redacted at capture time.
+                        Mark the rest yourself, or hide a member or a component entirely.
+                    </p>
+                    <a href="problems#problem-7">Problem 7 →</a>
+                </div>
+                <pre class="bb-code"><span class="k">public sealed class</span> UserSession
+{
+    <span class="c">// Redacted by its name.</span>
+    <span class="k">public string</span> AccessToken { <span class="k">get</span>; <span class="k">set</span>; } = <span class="s">"…"</span>;
+
+    [BevToolsSensitive]
+    <span class="k">public string</span> Nickname { <span class="k">get</span>; <span class="k">set</span>; } = <span class="s">"…"</span>;
+}</pre>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Why not the browser's dev tools?</h2>
+        <p class="bb-section-sub">
+            The browser sees the DOM, the requests the browser makes and JavaScript. A Blazor app's questions are about
+            components, .NET state, the server and the renderer - and on Blazor Server most of it never reaches the
+            browser at all.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="The browser's dev tools compared with BevTools">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Question</th><th>Browser dev tools</th><th>BevTools</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Which components exist, with what parameters?</td><td>DOM elements only</td><td>The component tree, parameters, cascading values, state and services</td></tr>
+                    <tr><td>Which component rendered this element?</td><td>The element, not its component</td><td>⌖ Pick it in the page, or select it in the Elements panel with the browser extension</td></tr>
+                    <tr><td>Why did this component render?</td><td>Not visible</td><td>A cause per render: event, parent, navigation, <code>StateHasChanged</code></td></tr>
+                    <tr><td>HTTP calls of a Blazor Server app</td><td>Not visible - they are made by the server</td><td>Every <code>IHttpClientFactory</code> request with the UI event that sent it</td></tr>
+                    <tr><td>JS interop on Blazor Server</td><td>SignalR frames</td><td>Calls per identifier, with duration, result and component</td></tr>
+                    <tr><td>What is registered in DI?</td><td>Not visible</td><td>Lifetimes, dependencies, captive dependencies and cycles</td></tr>
+                    <tr><td>Is the circuit healthy?</td><td>A WebSocket</td><td>Lifecycle, connection state, inbound message time, reconnects</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to BevTools?</h3>
+                <p class="bb-card-desc">Install, register, place the panel - and see your own app from the inside.</p>
+                <a href="getting-started" class="btn btn-primary">Getting started →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Want to practise first?</h3>
+                <p class="bb-card-desc">Twenty-four real problems are planted in this app, each with the steps from the symptom to its cause.</p>
+                <a href="problems" class="btn btn-outline">Problems to diagnose →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Writing a library?</h3>
+                <p class="bb-card-desc">Contribute panels, state providers, diagnostic rules, commands and timeline events through <code>IBevToolsExtension</code> - this site registers one.</p>
+                <a href="extending" class="btn btn-outline">Extending →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Does it end up in production?</summary>
+                <p>
+                    Only if you ask it to. It is enabled when the host environment is <code>Development</code> unless
+                    <code>options.Enabled</code> says otherwise, renders nothing during prerendering, and when disabled
+                    registers no activator, handler or logger - a referenced but disabled BevTools measured at about 2 %
+                    in the benchmark, inside its noise. This site turns it on explicitly so that you can try it. To have
+                    it in production without anyone downloading it until they ask, <code>Bit.BevTools.Loader</code> opens
+                    it on demand - on Blazor Server only for the people an <code>Authorize</code> callback lets in.
+                </p>
+            </details>
+            <details>
+                <summary>Do I have to look at it inside the app?</summary>
+                <p>
+                    No. The companion window (⧉ in the panel header) shows every BevTools runtime of the page in a window
+                    of its own, and opens exported sessions offline; the browser extension adds a <em>Blazor</em> panel to
+                    Chromium and Firefox DevTools. Both read the same data through the same redaction as the panel.
+                </p>
+            </details>
+            <details>
+                <summary>Can CI use what it finds?</summary>
+                <p>
+                    Yes. Export the session after a test run and <code>bevtools check session.json</code> fails the build
+                    on the rules' findings; <code>bevtools compare before.json after.json</code> fails it when a component
+                    renders more often, or clearly longer, than before. The same checks run in a test through
+                    <code>BevSessionCheck</code> and <code>BevProfileComparison</code>.
+                </p>
+            </details>
+            <details>
+                <summary>Which .NET versions and render modes?</summary>
+                <p>
+                    .NET 8, 9 and 10, in WebAssembly, Server, Interactive Auto and static SSR. The render causes that
+                    come from UI events and the framework's own timings need .NET 10; on .NET 8 and 9 those rows say
+                    <em>Requires .NET 10</em> instead of showing nothing.
+                </p>
+            </details>
+            <details>
+                <summary>How does it see inside the app without changing it?</summary>
+                <p>
+                    Through public hooks - the component activator, an HTTP message handler filter, a logger provider, a
+                    circuit handler - plus the framework's own activities and meters, and optional reflection over Blazor
+                    internals that reports a capability as unavailable rather than failing when a member is missing.
+                </p>
+            </details>
+            <details>
+                <summary>What about passwords and tokens?</summary>
+                <p>
+                    Redacted when they are captured: by name (<code>password</code>, <code>token</code>,
+                    <code>authorization</code>, …), by <code>[BevToolsSensitive]</code>, and in the browser before storage
+                    values reach .NET. Request and response bodies are never read, nothing is sent anywhere, and an export
+                    contains exactly what the panels show.
+                </p>
+            </details>
+            <details>
+                <summary>What does it cost?</summary>
+                <p>
+                    Roughly 0.4 µs and 0.4 KB per component render while recording, measured by a benchmark in the
+                    repository, with every buffer bounded. The About panel reports what BevTools itself is costing the
+                    running app.
+                </p>
+            </details>
+            <details>
+                <summary>Why does this site's header show up in the component tree?</summary>
+                <p>
+                    Because it is part of the app. The header, the docs layout and the footer of this site are ordinary
+                    components, so BevTools lists them, profiles them and attributes their JS calls like any other - only
+                    BevTools' own UI is left out.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Find the cause, not just the symptom</h2>
+        <p class="bb-section-sub">One package, one line in Program.cs, one tag in your layout.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.BevTools</pre>
+        <div class="bb-hero-actions">
+            <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="problems" class="btn btn-secondary bb-btn-lg">Problems to diagnose</a>
+        </div>
+    </section>
+</div>
+
+@code {
+    private int _clicks;
+
+    // A named method rather than a lambda, so the Timeline's entry for the click reads "Home.Click".
+    private void Click() => _clicks++;
+}

@@ -1,0 +1,170 @@
+﻿@page "/e2e/dropdown/options"
+
+@* The Options API of BitDropdown: BitDropdownOption children (ChildContent and the Options alias) with every option
+   parameter, options added, removed and changed at runtime, search, ComboBox with Dynamic, virtualization, chips and
+   the loading state over options. *@
+
+<PageTitle>BitDropdown options E2E</PageTitle>
+
+<h1>BitDropdown options</h1>
+
+<E2ESection Id="opt-single" Title="Single select options">
+    <BitDropdown Id="dd-opt"
+                 TItem="BitDropdownOption<string>" TValue="string"
+                 Label="Options"
+                 Placeholder="Select an option"
+                 @bind-Value="_optValue"
+                 OnSelectItem="(BitDropdownOption<string> o) => _optSelected = o.Text">
+        <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
+        <BitDropdownOption Text="Apple" Value="@("f-app")" />
+        <BitDropdownOption Text="Banana" Value="@("f-ban")" />
+        <BitDropdownOption Text="Orange" Value="@("f-ora")" IsDisabled />
+        <BitDropdownOption ItemType="BitDropdownItemType.Divider" Value="@string.Empty" />
+        <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
+        <BitDropdownOption Text="Broccoli" Value="@("v-bro")" />
+        <BitDropdownOption Text="Carrot" Value="@("v-car")" />
+    </BitDropdown>
+    <p>Value: <span id="opt-value">@_optValue</span> | OnSelectItem: <span id="opt-selected">@_optSelected</span></p>
+</E2ESection>
+
+<E2ESection Id="opt-multi" Title="Multi select through the Options alias">
+    <BitDropdown Id="dd-opt-multi"
+                 TItem="BitDropdownOption<string>" TValue="string"
+                 Label="Options alias"
+                 MultiSelect
+                 Chips
+                 @bind-Values="_optMultiValues">
+        <Options>
+            @foreach (var (text, value) in _fruits)
+            {
+                <BitDropdownOption Text="@text" Value="@value" />
+            }
+        </Options>
+    </BitDropdown>
+    <p>Values: <span id="opt-multi-values">@string.Join(',', _optMultiValues ?? [])</span></p>
+</E2ESection>
+
+<E2ESection Id="opt-runtime" Title="Options changed at runtime">
+    <BitDropdown Id="dd-opt-runtime"
+                 TItem="BitDropdownOption<string>" TValue="string"
+                 Label="Runtime"
+                 @bind-Value="_runtimeValue">
+        <BitDropdownOption Text="@_firstText" Value="@("one")" IsDisabled="_firstDisabled" />
+        @if (_showKiwi)
+        {
+            <BitDropdownOption Text="Kiwi" Value="@("kiwi")" />
+        }
+        <BitDropdownOption Text="Last" Value="@("last")" />
+    </BitDropdown>
+    <p>Value: <span id="runtime-value">@_runtimeValue</span></p>
+    <button id="btn-add-kiwi" @onclick="() => _showKiwi = true">Add Kiwi</button>
+    <button id="btn-remove-kiwi" @onclick="() => _showKiwi = false">Remove Kiwi</button>
+    <button id="btn-rename-first" @onclick="@(() => _firstText = "First renamed")">Rename the first</button>
+    <button id="btn-disable-first" @onclick="() => _firstDisabled = !_firstDisabled">Toggle the first disabled</button>
+</E2ESection>
+
+<E2ESection Id="opt-props" Title="Option properties">
+    <BitDropdown Id="dd-opt-props"
+                 TItem="BitDropdownOption<string>" TValue="string"
+                 Label="Option properties"
+                 @bind-Value="_propsValue"
+                 OnSelectItem="(BitDropdownOption<string> o) => _propsData = o.Data?.ToString()">
+        <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Group" Id="opt-group-header" Value="@string.Empty" />
+        <BitDropdownOption Text="Styled" Value="@("s")" Id="opt-styled" Class="opt-cls" Style="color: rgb(0, 128, 0)"
+                           Title="Styled title" AriaLabel="Styled aria" Data="@("styled-data")" />
+        <BitDropdownOption Text="Hidden" Value="@("h")" IsHidden />
+        <BitDropdownOption Text="With icon" Value="@("i")" IconName="Heart" />
+        <BitDropdownOption Text="External icon" Value="@("e")" Icon="@BitIconInfo.Css("ext-opt-icon")" />
+    </BitDropdown>
+    <p>Value: <span id="props-value">@_propsValue</span> | Data: <span id="props-data">@_propsData</span></p>
+</E2ESection>
+
+<E2ESection Id="opt-search" Title="Search, ComboBox and Dynamic over options">
+    <BitDropdown Id="dd-opt-search"
+                 TItem="BitDropdownOption<string>" TValue="string"
+                 Label="Search options"
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 HighlightSearch
+                 DefaultValue="@string.Empty">
+        <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
+        @foreach (var (text, value) in _fruits)
+        {
+            <BitDropdownOption Text="@text" Value="@value" />
+        }
+        <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
+        <BitDropdownOption Text="Carrot" Value="@("v-car")" />
+    </BitDropdown>
+    <BitDropdown Id="dd-opt-combo"
+                 TItem="BitDropdownOption<string>" TValue="string"
+                 Label="Dynamic combo options"
+                 Combo
+                 Dynamic
+                 DynamicValueGenerator="GenerateValue"
+                 @bind-Value="_comboValue"
+                 OnDynamicAdd="(BitDropdownOption<string> o) => _comboAdded = o.Text">
+        @foreach (var (text, value) in _fruits)
+        {
+            <BitDropdownOption Text="@text" Value="@value" />
+        }
+    </BitDropdown>
+    <p>Value: <span id="opt-combo-value">@_comboValue</span> | Added: <span id="opt-combo-added">@_comboAdded</span></p>
+</E2ESection>
+
+<E2ESection Id="opt-virtualize" Title="Virtualize and IsLoading over options">
+    <BitDropdown Id="dd-opt-virt"
+                 TItem="BitDropdownOption<string>" TValue="string"
+                 Label="Virtualized options"
+                 Virtualize
+                 @bind-Value="_virtValue">
+        @for (var i = 1; i <= 300; i++)
+        {
+            var index = i;
+            <BitDropdownOption Text="@($"Option {index:000}")" Value="@($"o{index}")" />
+        }
+    </BitDropdown>
+    <p>Value: <span id="opt-virt-value">@_virtValue</span></p>
+    <BitDropdown Id="dd-opt-loading"
+                 TItem="BitDropdownOption<string>" TValue="string"
+                 Label="Loading options"
+                 IsLoading="_optLoading"
+                 DefaultValue="@string.Empty">
+        @foreach (var (text, value) in _fruits)
+        {
+            <BitDropdownOption Text="@text" Value="@value" />
+        }
+    </BitDropdown>
+    <button id="btn-stop-loading" @onclick="() => _optLoading = false">Stop loading</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly (string Text, string Value)[] _fruits =
+    [
+        ("Apple", "f-app"),
+        ("Banana", "f-ban"),
+        ("Grape", "f-gra"),
+    ];
+
+    private string? _optValue;
+    private string? _optSelected;
+    private IEnumerable<string?>? _optMultiValues = ["f-ban"];
+
+    private string? _runtimeValue = "one";
+    private string _firstText = "First";
+    private bool _firstDisabled;
+    private bool _showKiwi;
+
+    private string? _propsValue;
+    private string? _propsData;
+
+    private string? _comboValue;
+    private string? _comboAdded;
+
+    private static string GenerateValue(BitDropdownOption<string>? option) => $"dyn-{option?.Text?.ToLowerInvariant()}";
+
+    private string? _virtValue;
+    private bool _optLoading = true;
+}

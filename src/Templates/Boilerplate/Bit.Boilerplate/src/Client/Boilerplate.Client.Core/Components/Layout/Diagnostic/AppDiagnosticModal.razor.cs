@@ -96,7 +96,7 @@ public partial class AppDiagnosticModal
 
     private async Task GoTop()
     {
-        await logStackRef.RootElement.Scroll(0, 0);
+        await logStackRef.ScrollToStartAsync();
     }
 
     private static BitColor GetColor(LogLevel? level)
@@ -220,7 +220,8 @@ public partial class AppDiagnosticModal
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(disposing);
         unsubscribers.ForEach(unsubscriber => unsubscriber());
+
+        await base.DisposeAsync(disposing);
     }
 }

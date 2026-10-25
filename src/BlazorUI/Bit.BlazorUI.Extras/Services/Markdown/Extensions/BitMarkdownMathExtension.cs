@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Enables mathematics: <c>$inline$</c> and <c>$$display$$</c> are kept verbatim - safe from

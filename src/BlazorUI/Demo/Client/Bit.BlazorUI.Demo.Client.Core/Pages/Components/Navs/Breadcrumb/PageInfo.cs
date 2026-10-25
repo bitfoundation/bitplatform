@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
 
 public class PageInfo
 {
@@ -16,11 +16,13 @@ public class PageInfo
 
     public string? Tooltip { get; set; }
 
+    public string? Label { get; set; }
+
     public string? OpenIn { get; set; }
 
     public bool IsCurrent { get; set; }
 
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     public RenderFragment<PageInfo>? Fragment { get; set; }
 

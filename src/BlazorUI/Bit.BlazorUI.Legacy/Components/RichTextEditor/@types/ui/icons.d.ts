@@ -1,4 +1,4 @@
-declare const _default: {
+﻿declare const _default: {
     align: {
         '': string;
         center: string;

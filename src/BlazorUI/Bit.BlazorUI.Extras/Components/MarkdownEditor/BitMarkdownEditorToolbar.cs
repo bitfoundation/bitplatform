@@ -42,6 +42,7 @@ public static class BitMarkdownEditorToolbar
         BitMarkdownEditorToolbarItem.Separator,
         Cmd("link", "Link", BitMarkdownEditorCommand.Link, Icons.Link, "Ctrl+K"),
         Cmd("image", "Image", BitMarkdownEditorCommand.Image, Icons.Image),
+        new() { Name = "upload", Title = "Upload image", Type = BitMarkdownEditorToolbarItemType.ImageUpload, Icon = Icons.ImageUpload },
         Cmd("code", "Inline code", BitMarkdownEditorCommand.InlineCode, Icons.Code),
         Cmd("codeblock", "Code block", BitMarkdownEditorCommand.CodeBlock, Icons.CodeBlock),
         Cmd("table", "Table", BitMarkdownEditorCommand.Table, Icons.Table),
@@ -69,7 +70,7 @@ public static class BitMarkdownEditorToolbar
         new() { Name = "find", Title = "Find & replace", Type = BitMarkdownEditorToolbarItemType.Find, Icon = Icons.Find, Shortcut = "Ctrl+F" },
         new() { Name = "preview", Title = "Toggle preview mode", Type = BitMarkdownEditorToolbarItemType.TogglePreview, Icon = Icons.Preview },
         new() { Name = "fullscreen", Title = "Toggle full-screen", Type = BitMarkdownEditorToolbarItemType.ToggleFullScreen, Icon = Icons.FullScreen },
-        new() { Name = "help", Title = "Keyboard shortcuts", Type = BitMarkdownEditorToolbarItemType.Help, Icon = Icons.Help },
+        new() { Name = "help", Title = "Keyboard shortcuts", Type = BitMarkdownEditorToolbarItemType.Help, Icon = Icons.Help, Shortcut = "Ctrl+/" },
     ];
 
     private static BitMarkdownEditorToolbarItem Cmd(string name, string title, BitMarkdownEditorCommand command, string icon, string? shortcut = null) =>
@@ -112,6 +113,7 @@ public static class BitMarkdownEditorToolbar
         public static readonly string TaskList = S("<path d=\"M3 6l1.5 1.5L7 5\"/><path d=\"M3 13l1.5 1.5L7 12\"/><line x1=\"11\" y1=\"6\" x2=\"21\" y2=\"6\"/><line x1=\"11\" y1=\"13\" x2=\"21\" y2=\"13\"/><line x1=\"11\" y1=\"19\" x2=\"21\" y2=\"19\"/>");
         public static readonly string Link = S("<path d=\"M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1\"/><path d=\"M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1\"/>");
         public static readonly string Image = S("<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><circle cx=\"8.5\" cy=\"8.5\" r=\"1.5\"/><path d=\"M21 15l-5-5L5 21\"/>");
+        public static readonly string ImageUpload = S("<path d=\"M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7\"/><path d=\"M21 17l-5-5L5 21\"/><circle cx=\"8.5\" cy=\"8.5\" r=\"1.5\"/><path d=\"M18 9V2M15 5l3-3 3 3\"/>");
         public static readonly string Code = S("<polyline points=\"16 18 22 12 16 6\"/><polyline points=\"8 6 2 12 8 18\"/>");
         public static readonly string CodeBlock = S("<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2\"/><polyline points=\"9 9 7 12 9 15\"/><polyline points=\"15 9 17 12 15 15\"/>");
         public static readonly string Table = S("<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"1\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/><line x1=\"3\" y1=\"15\" x2=\"21\" y2=\"15\"/><line x1=\"12\" y1=\"4\" x2=\"12\" y2=\"20\"/>");

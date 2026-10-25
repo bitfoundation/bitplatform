@@ -104,18 +104,19 @@ public sealed class BitPdfPage
     /// </summary>
     public byte[] GetContentBytes()
     {
+        (_xref as BitPdfXRef)?.ThrowIfSourceDisposed();
         object? contents = Dict.Get("Contents");
         using var output = new MemoryStream();
 
         switch (contents)
         {
-            case BitPdfStream stream:
+            case BitPdfBaseStream stream:
                 Append(output, stream);
                 break;
             case List<object?> array:
                 foreach (var item in array)
                 {
-                    if (_xref.FetchIfRef(item) is BitPdfStream s)
+                    if (_xref.FetchIfRef(item) is BitPdfBaseStream s)
                     {
                         Append(output, s);
                         output.WriteByte((byte)'\n');
@@ -127,7 +128,7 @@ public sealed class BitPdfPage
         return output.ToArray();
     }
 
-    private static void Append(MemoryStream output, BitPdfStream stream)
+    private static void Append(MemoryStream output, BitPdfBaseStream stream)
     {
         byte[] decoded = BitPdfStreamDecoder.Decode(stream);
         output.Write(decoded, 0, decoded.Length);
@@ -137,5 +138,9 @@ public sealed class BitPdfPage
     /// Extracts the page's visible text (for search or copy) without producing
     /// HTML. Positioning is approximated, so this is not a layout-faithful dump.
     /// </summary>
-    public string ExtractText() => BitPdfTextExtractor.Extract(this, _xref);
+    public string ExtractText()
+    {
+        (_xref as BitPdfXRef)?.ThrowIfSourceDisposed();
+        return BitPdfTextExtractor.Extract(this, _xref);
+    }
 }

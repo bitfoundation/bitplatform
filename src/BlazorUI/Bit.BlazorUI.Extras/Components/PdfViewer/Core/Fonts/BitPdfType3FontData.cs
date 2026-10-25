@@ -38,6 +38,18 @@ public sealed class BitPdfType3FontData
     /// </summary>
     public BitPdfStream? GetGlyphProcedure(int code)
     {
+        var stream = GetGlyphProcedureStream(code);
+        if (stream is null || stream is BitPdfStream)
+        {
+            return stream as BitPdfStream;
+        }
+        // Preserve the public return type, copying only this glyph's stream.
+        byte[] bytes = stream.GetByteRange(stream.Start, stream.End);
+        return new BitPdfStream(bytes, dict: stream.Dict);
+    }
+
+    internal BitPdfBaseStream? GetGlyphProcedureStream(int code)
+    {
         if (_charProcs is null || _encoding is null || code is < 0 or > 255)
         {
             return null;
@@ -47,6 +59,6 @@ public sealed class BitPdfType3FontData
         {
             return null;
         }
-        return _xref.FetchIfRef(_charProcs.Get(name)) as BitPdfStream;
+        return _xref.FetchIfRef(_charProcs.Get(name)) as BitPdfBaseStream;
     }
 }

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
@@ -13,6 +13,7 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
     /// <summary>The question being asked, such as "Delete recurring event".</summary>
     [Parameter] public string Title { get; set; } = string.Empty;
@@ -32,12 +33,14 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
     {
         // A modal of its own on top of the details dialog, so it takes focus and traps Tab the same way.
         if (firstRender)
-            await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
+            await BitFcDialogInterop.SetupAsync(JS, _dialogRef, _titleId);
     }
 
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key is "Escape" or "Esc")
+        // Only the plain key, the one the dialog claims: an Escape with a modifier is left to the surface the
+        // calendar sits in.
+        if (e.IsPlainEscape())
             await OnCancel.InvokeAsync();
     }
 
@@ -45,6 +48,6 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
+        await BitFcDialogInterop.TeardownAsync(JS, _titleId);
     }
 }

@@ -1,4 +1,5 @@
 using System.Runtime.Versioning;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Boilerplate.Shared.Infrastructure.Services;
 
@@ -37,6 +38,9 @@ public static partial class AppPlatform
 
     [SupportedOSPlatformGuard("ios")]
     public static bool IsIosOnMacOS { get; set; }
+
+    [FeatureSwitchDefinition("Boilerplate.IsAot")]
+    public static bool IsAot => AppContext.TryGetSwitch("Boilerplate.IsAot", out var isAot) && isAot;
 
     public static AppPlatformType Type =>
         IsAndroid ? AppPlatformType.Android :

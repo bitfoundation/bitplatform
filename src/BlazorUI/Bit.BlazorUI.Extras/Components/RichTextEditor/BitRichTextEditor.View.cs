@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // Full-screen mode, text direction, and localization.
 public partial class BitRichTextEditor
@@ -56,6 +56,6 @@ public partial class BitRichTextEditor
         await _js.BitRichTextEditorSetBlockDirection(_editorRef, dir);
     }
 
-    private string Label(string key, string fallback)
+    private string Loc(string key, string fallback)
         => Localizer is null ? fallback : (Localizer[key] ?? fallback);
 }

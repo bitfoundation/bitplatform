@@ -13,7 +13,7 @@ namespace Boilerplate.Tests.E2E.Features.Todo;
 [TestClass, TestCategory(TestCategories.Web), Retry(2)]
 public partial class WebOfflineTodoSyncTests : AppTestBase
 {
-    private const string password = "123456";
+    private const string password = "12345678";
 
     protected override IAppOpener AppOpener => new WebAppOpener();
 

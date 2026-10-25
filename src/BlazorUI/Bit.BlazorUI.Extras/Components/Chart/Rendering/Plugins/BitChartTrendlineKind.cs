@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>The curve a <see cref="BitChartTrendline"/> fits through its dataset.</summary>
 public enum BitChartTrendlineKind

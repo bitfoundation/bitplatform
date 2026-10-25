@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Contract every <see cref="BitMap{TMapProvider}"/> backend implements.

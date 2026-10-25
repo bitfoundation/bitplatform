@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -20,11 +22,11 @@ public class BitStickyTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitStickyShouldRespectIsEnabled(bool isEnabled)
+    public void BitStickyShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitSticky>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var cssClass = isEnabled ? null : " bit-dis";
@@ -33,7 +35,7 @@ public class BitStickyTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitStickyShouldRespectIsEnabledChangingAfterRender()
+    public void BitStickyShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitSticky>();
 
@@ -41,7 +43,7 @@ public class BitStickyTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top bit-dis"" id:ignore></div>");
@@ -227,7 +229,7 @@ public class BitStickyTests : BunitTestContext
 
         if (ariaLabel.HasValue())
         {
-            component.MarkupMatches(@$"<div aria-label=""{ariaLabel}"" class=""bit-stk bit-stk-top"" id:ignore></div>");
+            component.MarkupMatches(@$"<div role=""group"" aria-label=""{ariaLabel}"" class=""bit-stk bit-stk-top"" id:ignore></div>");
         }
         else
         {
@@ -258,7 +260,7 @@ public class BitStickyTests : BunitTestContext
         // The two attributes the component only writes while the parameter carries a value have to
         // leave the splatted ones of the same name alone: writing them as null would take them away
         // rather than skip them.
-        component.MarkupMatches(@"<div data-val-test=""bit"" aria-label=""splatted label"" dir=""rtl"" class=""bit-stk bit-stk-top"" id:ignore>I'm a sticky</div>");
+        component.MarkupMatches(@"<div role=""group"" data-val-test=""bit"" aria-label=""splatted label"" dir=""rtl"" class=""bit-stk bit-stk-top"" id:ignore>I'm a sticky</div>");
     }
 
     [TestMethod,
@@ -473,28 +475,28 @@ public class BitStickyTests : BunitTestContext
 
     [TestMethod,
        DataRow(null),
-       DataRow(BitStickyPosition.Top),
-       DataRow(BitStickyPosition.Bottom),
-       DataRow(BitStickyPosition.TopAndBottom),
-       DataRow(BitStickyPosition.Start),
-       DataRow(BitStickyPosition.End),
-       DataRow(BitStickyPosition.StartAndEnd)
+       DataRow(BitPlacement.Top),
+       DataRow(BitPlacement.Bottom),
+       DataRow(BitPlacement.TopAndBottom),
+       DataRow(BitPlacement.Start),
+       DataRow(BitPlacement.End),
+       DataRow(BitPlacement.StartAndEnd)
     ]
-    public void BitStickyShouldRespectPosition(BitStickyPosition? position)
+    public void BitStickyShouldRespectPosition(BitPlacement? position)
     {
         var component = RenderComponent<BitSticky>(parameters =>
         {
-            parameters.Add(p => p.Position, position);
+            parameters.Add(p => p.Placement, position);
         });
 
         var cssClass = position switch
         {
-            BitStickyPosition.Top => " bit-stk-top",
-            BitStickyPosition.Bottom => " bit-stk-btm",
-            BitStickyPosition.TopAndBottom => " bit-stk-tab",
-            BitStickyPosition.Start => " bit-stk-srt",
-            BitStickyPosition.End => " bit-stk-end",
-            BitStickyPosition.StartAndEnd => " bit-stk-sae",
+            BitPlacement.Top => " bit-stk-top",
+            BitPlacement.Bottom => " bit-stk-btm",
+            BitPlacement.TopAndBottom => " bit-stk-tab",
+            BitPlacement.Start => " bit-stk-srt",
+            BitPlacement.End => " bit-stk-end",
+            BitPlacement.StartAndEnd => " bit-stk-sae",
             _ => " bit-stk-top"
         };
 
@@ -510,7 +512,7 @@ public class BitStickyTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.Position, BitStickyPosition.Start);
+            parameters.Add(p => p.Placement, BitPlacement.Start);
         });
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-srt"" id:ignore></div>");
@@ -521,7 +523,7 @@ public class BitStickyTests : BunitTestContext
     {
         var component = RenderComponent<BitSticky>(parameters =>
         {
-            parameters.Add(p => p.Position, BitStickyPosition.Top);
+            parameters.Add(p => p.Placement, BitPlacement.Top);
             parameters.Add(p => p.Top, "10px");
         });
 
@@ -543,7 +545,9 @@ public class BitStickyTests : BunitTestContext
 
         if (zIndex.HasValue)
         {
-            component.MarkupMatches(@$"<div style=""z-index: {zIndex};"" class=""bit-stk bit-stk-top"" id:ignore></div>");
+            // The CSS value is culture-free, so the expected one is too: a culture such as fa-IR or ar-SA writes a
+            // negative number with a bidi mark in front of its sign.
+            component.MarkupMatches(@$"<div style=""z-index: {zIndex.Value.ToString(CultureInfo.InvariantCulture)};"" class=""bit-stk bit-stk-top"" id:ignore></div>");
         }
         else
         {
@@ -609,7 +613,7 @@ public class BitStickyTests : BunitTestContext
         var component = RenderComponent<BitSticky>(parameters =>
         {
             parameters.Add(p => p.Element, "  header  ");
-            parameters.Add(p => p.Position, BitStickyPosition.Bottom);
+            parameters.Add(p => p.Placement, BitPlacement.Bottom);
             parameters.Add(p => p.ZIndex, 2);
             parameters.Add(p => p.AriaLabel, "pinned bar");
             parameters.Add(p => p.Dir, BitDir.Rtl);
@@ -839,7 +843,7 @@ public class BitStickyTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.OnStuckEdgesChanged, (BitStickyEdges e) => edges.Add(e));
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         // Detaching the detection reports the state it leaves behind, the same way a flip would.
@@ -852,7 +856,7 @@ public class BitStickyTests : BunitTestContext
     {
         var component = RenderComponent<BitSticky>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.StuckClass, "my-stuck");
         });
 
@@ -879,7 +883,7 @@ public class BitStickyTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.StuckClass, "my-stuck");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsFalse(component.Instance.IsStuck);
@@ -905,7 +909,7 @@ public class BitStickyTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.OnStuckChanged, (bool stuck) => stuckStates.Add(stuck));
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsFalse(component.Instance.IsStuck);
@@ -947,6 +951,15 @@ public class BitStickyTests : BunitTestContext
         // What it did not set is still filled in from them.
         Assert.IsTrue(stickies[1].ClassList.Contains("cascaded"));
         StringAssert.Contains(stickies[1].GetAttribute("style"), "top: 1rem");
+
+        // The two booleans cascade as well, and an own false is a value the cascade must not overwrite.
+        Assert.IsTrue(stickies[0].ClassList.Contains("bit-stk-elv"));
+        Assert.IsFalse(stickies[1].ClassList.Contains("bit-stk-elv"));
+
+        var sticky = component.FindComponents<BitSticky>();
+
+        Assert.IsTrue(sticky[0].Instance.ScrollPadding);
+        Assert.IsFalse(sticky[1].Instance.ScrollPadding);
     }
 
     [TestMethod]
@@ -963,5 +976,351 @@ public class BitStickyTests : BunitTestContext
         Assert.IsTrue(classList.Contains("bit-stk-stc"));
         Assert.IsTrue(classList.Contains("bit-stk-stc-btm"));
         Assert.IsTrue(classList.Contains("cascaded-stuck"));
+    }
+
+    [TestMethod]
+    public void BitStickyShouldStayPureCssWithoutAnythingThatNeedsTheScript()
+    {
+        RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.Top, "10px");
+            parameters.Add(p => p.ZIndex, 3);
+        });
+
+        Assert.IsEmpty(Setups());
+    }
+
+    [TestMethod]
+    public void BitStickyShouldRespectElevateOnStuck()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnStuck, true);
+        });
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top bit-stk-elv"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnStuck, false);
+        });
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldElevateOnlyWhileStuck()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnStuck, true);
+            parameters.Add(p => p.Placement, BitPlacement.TopAndBottom);
+        });
+
+        // ElevateOnStuck alone is what attaches the detection: the shadow follows the stuck classes.
+        var setup = Setups().Single();
+
+        Assert.IsTrue((bool)setup.Arguments[2]!);
+        Assert.IsFalse((bool)setup.Arguments[3]!);
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Bottom));
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-tab bit-stk-elv bit-stk-stc bit-stk-stc-btm"" id:ignore></div>");
+        Assert.IsTrue(component.Instance.IsStuck);
+    }
+
+    [TestMethod]
+    public void BitStickyShouldAttachTheScrollPaddingWithoutTheStuckDetection()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+        });
+
+        var setup = Setups().Single();
+
+        Assert.AreEqual(component.Instance.Id ?? component.Find("div").Id, setup.Arguments[0]);
+        Assert.IsFalse((bool)setup.Arguments[2]!, "The scroll padding alone attaches a scroll listener.");
+        Assert.IsTrue((bool)setup.Arguments[3]!);
+    }
+
+    [TestMethod]
+    public void BitStickyShouldAttachBothHalvesTogether()
+    {
+        RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.StuckClass, "my-stuck");
+        });
+
+        var setup = Setups().Single();
+
+        Assert.IsTrue((bool)setup.Arguments[2]!);
+        Assert.IsTrue((bool)setup.Arguments[3]!);
+    }
+
+    [TestMethod]
+    public void BitStickyShouldReleaseTheScrollPaddingWhileDisabled()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        Assert.IsEmpty(Setups());
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Disabled, false);
+        });
+
+        Assert.HasCount(1, Setups());
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        Assert.HasCount(1, Setups());
+        Assert.HasCount(1, Disposals());
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldResetTheStuckStateWhenOnlyTheScrollPaddingStaysAttached()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.StuckClass, "my-stuck");
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
+
+        Assert.IsTrue(component.Instance.IsStuck);
+
+        // The script stays for the scroll padding, but nothing derives the state anymore, so it must not
+        // stay latched on stuck.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.StuckClass, null);
+        });
+
+        Assert.IsFalse(component.Instance.IsStuck);
+        Assert.AreEqual(BitStickyEdges.None, component.Instance.StuckEdges);
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
+
+        var last = Setups().Last();
+
+        Assert.IsFalse((bool)last.Arguments[2]!);
+        Assert.IsTrue((bool)last.Arguments[3]!);
+    }
+
+    [TestMethod]
+    public void BitStickyShouldLeaveAnOffsetChangeToTheScript()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Top, "10px");
+        });
+
+        // A new offset is written on the element, whose attributes the script watches, so the claim is made
+        // again from there - not by attaching a new registration, nor by an interop call on every render.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Top, "20px");
+        });
+
+        Assert.HasCount(1, Setups());
+        Assert.IsEmpty(Refreshes());
+    }
+
+    [TestMethod]
+    public void BitStickyShouldNotReattachTheDetectionWhenOnlyAnOffsetChanges()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+            parameters.Add(p => p.Top, "10px");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+            parameters.Add(p => p.Top, "20px");
+        });
+
+        Assert.HasCount(1, Setups());
+    }
+
+    [TestMethod]
+    public void BitStickyShouldLeaveWhatPinsItToTheScript()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnStuck, true);
+            parameters.Add(p => p.Placement, BitPlacement.Top);
+        });
+
+        // A Position, a Dir and a Style all move what pins the element without resizing anything, and all of
+        // them land on its class, dir and style attributes, which is what the script watches - so none of
+        // them costs a call of its own, nor a new registration.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnStuck, true);
+            parameters.Add(p => p.Placement, BitPlacement.Bottom);
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Style, "bottom: 2rem");
+        });
+
+        Assert.HasCount(1, Setups());
+        Assert.IsEmpty(Refreshes());
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldNotReadTheStateAgainForItsOwnStuckFlips()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.None));
+
+        Assert.IsEmpty(Refreshes());
+    }
+
+    [TestMethod]
+    public void BitStickyShouldNotRefreshWhatIsNotAttached()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.Placement, BitPlacement.Top);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Placement, BitPlacement.Bottom);
+        });
+
+        Assert.IsEmpty(Setups());
+        Assert.IsEmpty(Refreshes());
+    }
+
+    [TestMethod]
+    public void BitStickyShouldNameItsRoleOnlyWhereARoleIsMissing()
+    {
+        var component = RenderComponent<BitStickyRoleTest>();
+
+        var stickies = component.FindAll(".bit-stk");
+
+        // A role the page writes wins over the group.
+        Assert.AreEqual("toolbar", stickies[0].GetAttribute("role"));
+        Assert.AreEqual("Filters", stickies[0].GetAttribute("aria-label"));
+
+        // aria-labelledby names a div as well as aria-label does.
+        Assert.AreEqual("group", stickies[1].GetAttribute("role"));
+
+        // A tag with a role of its own keeps it.
+        Assert.IsNull(stickies[2].GetAttribute("role"));
+        Assert.AreEqual("NAV", stickies[2].TagName);
+
+        // A span is just as generic as a div.
+        Assert.AreEqual("group", stickies[3].GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitStickyShouldNotNameAnUnnamedDiv()
+    {
+        var component = RenderComponent<BitSticky>();
+
+        Assert.IsNull(component.Find("div").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitStickyShouldWriteNoContentIntoAVoidElement()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.Element, "hr");
+            parameters.AddChildContent("content");
+        });
+
+        component.MarkupMatches(@"<hr class=""bit-stk bit-stk-top"" id:ignore>");
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldReadTheStateAgainOnRefreshWhileTheDetectionIsAttached()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+        });
+
+        var id = component.Find("div").Id;
+
+        await component.Instance.RefreshAsync();
+
+        // A layout change none of the observers can see is answered by asking the script to read the state again,
+        // for the registration it was attached under.
+        var refresh = Refreshes().Single();
+
+        Assert.AreEqual(id, refresh.Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldDisposeTheScriptWithTheComponent()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+        });
+
+        var id = component.Find("div").Id;
+
+        Assert.HasCount(1, Setups());
+
+        await component.Instance.DisposeAsync();
+
+        // The registration holds the element and its listeners, so a sticky taken off the page takes it with it -
+        // under the id it was attached with - and a second disposal has nothing left to take.
+        var disposal = Disposals().Single();
+
+        Assert.AreEqual(id, disposal.Arguments[0]);
+
+        await component.Instance.DisposeAsync();
+
+        Assert.HasCount(1, Disposals());
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldNotDisposeAScriptItNeverAttached()
+    {
+        var component = RenderComponent<BitSticky>();
+
+        await component.Instance.DisposeAsync();
+
+        Assert.IsEmpty(Disposals());
+    }
+
+    private List<Bunit.JSRuntimeInvocation> Setups()
+    {
+        return Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Stickies.setup").ToList();
+    }
+
+    private List<Bunit.JSRuntimeInvocation> Refreshes()
+    {
+        return Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Stickies.refresh").ToList();
+    }
+
+    private List<Bunit.JSRuntimeInvocation> Disposals()
+    {
+        return Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Stickies.dispose").ToList();
     }
 }

@@ -16,7 +16,7 @@ public partial class BitMessageDemo
             Name = "Alignment",
             Type = "BitAlignment?",
             DefaultValue = "null",
-            Description = "Determines the alignment of the content section of the message.",
+            Description = "Determines the alignment of the content section of the message: Start, End, Center and the three Space values place the icon and the text along the width; Baseline lines the icon up with the first line of the text and Stretch draws each the full height of the row, both keeping them at the start.",
             LinkType = LinkType.Link,
             Href = "#alignment-enum",
         },
@@ -25,7 +25,14 @@ public partial class BitMessageDemo
             Name = "AutoDismissTime",
             Type = "TimeSpan?",
             DefaultValue = "null",
-            Description = "Enables the auto-dismiss feature and sets the time to automatically dismiss the message. It runs wherever dismissing would do something - an OnDismiss handler, Dismissible, or a Dismissed binding - and is held while the pointer is over the message, the focus is inside it, or PauseAutoDismiss was called.",
+            Description = "Enables the auto-dismiss feature and sets the time to automatically dismiss the message. It runs wherever dismissing would do something - an OnDismiss handler, Dismissible, or a Dismissed binding - and is held while the pointer is over the message, the focus is inside it, or PauseAutoDismiss was called (and, with PauseOnPageHidden / PauseOnWindowBlur, while the page is not being looked at).",
+        },
+        new()
+        {
+            Name = "AutoMultiline",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Switches a single-line message to the Multiline layout (wrapped text, actions on their own row) for as long as its content does not fit on one line, instead of cutting it off. Truncate wins where both are set, and MaxLines only caps an explicitly Multiline message.",
         },
         new()
         {
@@ -80,7 +87,7 @@ public partial class BitMessageDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the message.",
+            Description = "The general color of the message. An explicit value wins over the --bit-Message-* color variables; left unset, the message is Info unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -149,7 +156,7 @@ public partial class BitMessageDemo
             Name = "DismissOnEscape",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Dismisses the message when the Escape key is pressed while the focus is inside it. Only wired up while dismissing would do something - that is, while OnDismiss has a handler, Dismissible is set, or Dismissed is bound.",
+            Description = "Dismisses the message when the Escape key is pressed while the focus is inside it. Only wired up while dismissing would do something - that is, while OnDismiss has a handler, Dismissible is set, or Dismissed is bound. The press that dismisses the message is its alone, so a Dialog, a Modal, a Panel or an Overlay the message sits in closes on the next one.",
         },
         new()
         {
@@ -248,7 +255,7 @@ public partial class BitMessageDemo
             Name = "Multiline",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines if the message is multi-lined. If false, and the text overflows over buttons or to another line, it is clipped.",
+            Description = "Determines if the message is multi-lined. If false, and the text overflows over buttons or to another line, it is clipped - unless Truncate or AutoMultiline says otherwise.",
         },
         new()
         {
@@ -263,6 +270,20 @@ public partial class BitMessageDemo
             Description = "Callback invoked before the message is dismissed, letting the dismissal be cancelled. Set Cancel on the provided args to keep the message where it is, and read its Reason to tell the dismiss button, the Escape key, the countdown and a DismissAsync call apart. Refusing a countdown gives the message its AutoDismissTime over again.",
             LinkType = LinkType.Link,
             Href = "#message-dismiss-args",
+        },
+        new()
+        {
+            Name = "PauseOnPageHidden",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Holds the AutoDismissTime countdown while the page is hidden (a background tab, a minimized window). Needs the bit BlazorUI services (AddBitBlazorUIServices).",
+        },
+        new()
+        {
+            Name = "PauseOnWindowBlur",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Holds the AutoDismissTime countdown while the window does not have the focus. Needs the bit BlazorUI services (AddBitBlazorUIServices).",
         },
         new()
         {
@@ -292,7 +313,7 @@ public partial class BitMessageDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of Message, Possible values: Small | Medium | Large.",
+            Description = "The size of the message: it scales the type, the icon, the insets, the buttons and the countdown track together. An explicit value wins over the --bit-Message-* size variables; left unset, the message is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -311,6 +332,13 @@ public partial class BitMessageDemo
             Description = "Custom CSS styles for different parts of the BitMessage.",
             LinkType = LinkType.Link,
             Href = "#message-class-styles",
+        },
+        new()
+        {
+            Name = "Tinted",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Washes the surface an Outline or a Text message leaves to the page with a faint tint of its color (the theme's --bit-clr-<role>-tint token); a Fill message ignores it.",
         },
         new()
         {
@@ -338,14 +366,14 @@ public partial class BitMessageDemo
             Name = "Truncate",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines if the message text is truncated. If true, the content is clipped to a single line and a button renders to unfold it, for a message that has to fit in a tight space. On a Multiline message it unfolds the content past the MaxLines cap instead, and does nothing without one.",
+            Description = "Determines if the message text is truncated. If true, the content is clipped to a single line and a button unfolds it, rendered only while something is actually clipped. On a Multiline message it unfolds the content past the MaxLines cap instead, and does nothing without one.",
         },
         new()
         {
             Name = "Variant",
             Type = "BitVariant?",
             DefaultValue = "null",
-            Description = "The variant of the message.",
+            Description = "The variant of the message. Outline and Text shade the role color toward the foreground for the text, so it keeps a 4.5:1 contrast on the page; Tinted washes their surface with the role.",
             LinkType = LinkType.Link,
             Href = "#variant-enum",
         },
@@ -399,220 +427,10 @@ public partial class BitMessageDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Primary",
-                    Description = "Primary general color.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Secondary",
-                    Description = "Secondary general color.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Tertiary",
-                    Description = "Tertiary general color.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Info",
-                    Description = "Info general color.",
-                    Value = "3",
-                },
-                new()
-                {
-                    Name = "Success",
-                    Description = "Success general color.",
-                    Value = "4",
-                },
-                new()
-                {
-                    Name = "Warning",
-                    Description = "Warning general color.",
-                    Value = "5",
-                },
-                new()
-                {
-                    Name = "SevereWarning",
-                    Description = "SevereWarning general color.",
-                    Value = "6",
-                },
-                new()
-                {
-                    Name = "Error",
-                    Description = "Error general color.",
-                    Value = "7",
-                },
-                new()
-                {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
-                },
-                new()
-                {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
-                },
-                new()
-                {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
-                },
-                new()
-                {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
-                },
-                new()
-                {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
-                },
-                new()
-                {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
-                },
-                new()
-                {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
-                },
-                new()
-                {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
-                },
-                new()
-                {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new()
-                {
-                    Name = "Fill",
-                    Description = "Fill styled variant.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Outline",
-                    Description = "Outline styled variant.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Text",
-                    Description = "Text styled variant.",
-                    Value = "2",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "alignment-enum",
-            Name = "BitAlignment",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "SpaceBetween",
-                    Value = "3",
-                },
-                new()
-                {
-                    Name = "SpaceAround",
-                    Value = "4",
-                },
-                new()
-                {
-                    Name = "SpaceEvenly",
-                    Value = "5",
-                },
-                new()
-                {
-                    Name = "Baseline",
-                    Value = "6",
-                },
-                new()
-                {
-                    Name = "Stretch",
-                    Value = "7",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "politeness-enum",
-            Name = "BitPoliteness",
-            Description = "How urgently a live region interrupts a screen reader, which is what the aria-live attribute carries.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Off",
-                    Description = "The region is not a live region: nothing in it is announced as it changes (aria-live=\"off\").",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Polite",
-                    Description = "The change waits its turn and is announced once the screen reader has finished what it was saying (aria-live=\"polite\").",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Assertive",
-                    Description = "The change interrupts the screen reader and is announced right away (aria-live=\"assertive\").",
-                    Value = "2",
-                },
-            ]
-        },
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitVariant(),
+        DemoSharedEnums.BitAlignment(),
+        DemoSharedEnums.BitPoliteness(),
         new()
         {
             Id = "message-dismiss-reason-enum",
@@ -646,32 +464,154 @@ public partial class BitMessageDemo
                 },
             ]
         },
+        DemoSharedEnums.BitSize(),
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
         new()
         {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Small",
-                    Description="The small size message.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The medium size message.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The large size message.",
-                    Value="2",
-                }
-            ]
+            Name = "--bit-Message-color",
+            DefaultValue = "--bit-clr-inf-text (Fill); --bit-clr-inf-fg (Outline, Text)",
+            Description = "Color of the text, the icon and the buttons. The Color parameter wins over it. Shared by the three variants: --bit-Message-fill-color, --bit-Message-outline-color and --bit-Message-text-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-background",
+            DefaultValue = "--bit-clr-inf (Fill), --bit-clr-inf-tint (Outline and Text with Tinted), transparent (Outline, Text)",
+            Description = "Background of the surface. The Color parameter wins over it in Fill and Tinted; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-Message-fill-background, --bit-Message-outline-background and --bit-Message-text-background are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-border-color",
+            DefaultValue = "--bit-clr-inf (Fill, Outline), transparent (Text)",
+            Description = "Color of the border. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Message-fill-border-color, --bit-Message-outline-border-color and --bit-Message-text-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-fill-color",
+            DefaultValue = "--bit-Message-color",
+            Description = "Color of the text, the icon and the buttons of a Fill message alone, read ahead of --bit-Message-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-fill-background",
+            DefaultValue = "--bit-Message-background",
+            Description = "Background of the surface of a Fill message alone, read ahead of --bit-Message-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-fill-border-color",
+            DefaultValue = "--bit-Message-border-color",
+            Description = "Color of the border of a Fill message alone, read ahead of --bit-Message-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-outline-color",
+            DefaultValue = "--bit-Message-color",
+            Description = "Color of the text, the icon and the buttons of an Outline message alone, read ahead of --bit-Message-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-outline-background",
+            DefaultValue = "--bit-Message-background",
+            Description = "Background of the surface of an Outline message alone, read ahead of --bit-Message-background so a theme can set this variant apart from the other two. It restyles the Tinted wash as well. The Color parameter wins over it only under Tinted.",
+        },
+        new()
+        {
+            Name = "--bit-Message-outline-border-color",
+            DefaultValue = "--bit-Message-border-color",
+            Description = "Color of the border of an Outline message alone, read ahead of --bit-Message-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-text-color",
+            DefaultValue = "--bit-Message-color",
+            Description = "Color of the text, the icon and the buttons of a Text message alone, read ahead of --bit-Message-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-text-background",
+            DefaultValue = "--bit-Message-background",
+            Description = "Background of the surface of a Text message alone, read ahead of --bit-Message-background so a theme can set this variant apart from the other two. It restyles the Tinted wash as well. The Color parameter wins over it only under Tinted.",
+        },
+        new()
+        {
+            Name = "--bit-Message-text-border-color",
+            DefaultValue = "--bit-Message-border-color",
+            Description = "Color of the border of a Text message alone, read ahead of --bit-Message-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Message-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Thickness of the border; four values draw a single side, e.g. an accent bar.",
+        },
+        new()
+        {
+            Name = "--bit-Message-radius",
+            DefaultValue = "--bit-shp-radius-surface",
+            Description = "Corner radius of the surface and of the countdown track. Square wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-shadow",
+            DefaultValue = "none",
+            Description = "Shadow of the surface. The Elevation parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-focus-color",
+            DefaultValue = "--bit-clr-inf-focus",
+            Description = "Focus ring of the message itself and of its buttons. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-font-size",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Size of the title and the content. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-line-height",
+            DefaultValue = "normal",
+            Description = "Line height of the title and the content, e.g. a roomier 1.5 for multiline text.",
+        },
+        new()
+        {
+            Name = "--bit-Message-title-color",
+            DefaultValue = "The message's own color",
+            Description = "Color of the title.",
+        },
+        new()
+        {
+            Name = "--bit-Message-title-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the title.",
+        },
+        new()
+        {
+            Name = "--bit-Message-icon-color",
+            DefaultValue = "The message's own color",
+            Description = "Color of the severity icon, or of what IconTemplate renders.",
+        },
+        new()
+        {
+            Name = "--bit-Message-icon-size",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the severity icon. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-progress-color",
+            DefaultValue = "The message's own color",
+            Description = "Color of the auto-dismiss countdown bar.",
+        },
+        new()
+        {
+            Name = "--bit-Message-progress-height",
+            DefaultValue = "--bit-siz-track-md",
+            Description = "Thickness of the auto-dismiss countdown track. The Size parameter wins over it.",
         },
     ];
 
@@ -867,7 +807,6 @@ public partial class BitMessageDemo
     private bool isProgressDismissed;
     private bool isPausedDismissed;
     private BitMessage? pausableMessage;
-    private bool isEscapeDismissed;
     private bool isMethodDismissed;
     private BitMessage? dismissableMessage;
     private bool isDelayedDismissed = true;
@@ -898,10 +837,23 @@ public partial class BitMessageDemo
     private BitMessage? focusableMessage;
     private bool isAutoFocusDismissed = true;
 
-    private bool isMessageEnabled = true;
+    private bool isMessageDisabled;
     private bool isDisabledSampleDismissed;
 
     private double elevation = 7;
-    private bool isErrorDismissed;
-    private bool isWarningDismissed;
+
+    private double autoMultilineWidth = 50;
+
+    private BitVariant colorVariant = BitVariant.Fill;
+    private bool colorTinted;
+
+    private readonly BitMessageParams[] messageParams =
+    [
+        new()
+        {
+            Variant = BitVariant.Outline,
+            Square = true,
+            Truncate = true,
+        }
+    ];
 }

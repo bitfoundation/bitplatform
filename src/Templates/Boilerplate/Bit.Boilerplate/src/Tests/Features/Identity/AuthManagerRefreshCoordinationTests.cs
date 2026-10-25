@@ -58,17 +58,16 @@ public partial class AuthManagerRefreshCoordinationTests
         await using var server = new AppTestServer();
         await server.Build(configureTestServices: services =>
         {
-            services.AddIntegrationApiOnlyTestsServices();
             services.RemoveAll<IIdentityController>();
             services.AddScoped(_ => identityController);
         }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
         // RefreshToken bails out before calling the controller when there is no stored refresh token.
-        await scope.ServiceProvider.GetRequiredService<IStorageService>().SetItem("refresh_token", "a-refresh-token");
+        await client.Services.GetRequiredService<IStorageService>().SetItem("refresh_token", "a-refresh-token");
 
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         var plainRefresh = authManager.RefreshToken(requestedBy: nameof(ATenantSwitch_DuringAnInFlightRefresh_Should_StillReachTheServer));
         var tenantSwitch = authManager.SwitchTenant(requestedTenantId, TestContext.CancellationToken);
@@ -106,15 +105,14 @@ public partial class AuthManagerRefreshCoordinationTests
         await using var server = new AppTestServer();
         await server.Build(configureTestServices: services =>
         {
-            services.AddIntegrationApiOnlyTestsServices();
             services.RemoveAll<IIdentityController>();
             services.AddScoped(_ => identityController);
         }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await scope.ServiceProvider.GetRequiredService<IStorageService>().SetItem("refresh_token", "a-refresh-token");
+        await using var client = server.CreateAppClient();
+        await client.Services.GetRequiredService<IStorageService>().SetItem("refresh_token", "a-refresh-token");
 
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         var first = authManager.RefreshToken(requestedBy: "first");
         var second = authManager.RefreshToken(requestedBy: "second");
@@ -143,14 +141,13 @@ public partial class AuthManagerRefreshCoordinationTests
         await using var server = new AppTestServer();
         await server.Build(configureTestServices: services =>
         {
-            services.AddIntegrationApiOnlyTestsServices();
             services.RemoveAll<IStorageService>();
             services.AddScoped<IStorageService, ThrowsWhenTheRefreshTokenIsRead>();
         }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         // Two callers, because the second joins the first's shared source rather than starting its own - so a source
         // that is never completed strands both, which is the shape the defect takes in the app.
@@ -166,6 +163,147 @@ public partial class AuthManagerRefreshCoordinationTests
         // The manager has to be usable afterwards: the finally still clears the shared field and releases the
         // semaphore, so a later refresh is not blocked by the failed one.
         Assert.IsNull(await authManager.RefreshToken(requestedBy: "after").WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));
+    }
+
+    [TestMethod]
+    public async Task ARefreshThatCompletesAfterASignOut_Should_NotBringTheTokensBack()
+    {
+        var refreshStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseTheRefresh = new TaskCompletionSource();
+
+        var identityController = A.Fake<IIdentityController>();
+        A.CallTo(() => identityController.Refresh(A<RefreshTokenRequestDto>._, A<CancellationToken>._))
+            .ReturnsLazily(async (RefreshTokenRequestDto request, CancellationToken _) =>
+            {
+                refreshStarted.SetResult();
+                await releaseTheRefresh.Task;
+                return new TokenResponseDto { AccessToken = "the-refreshed-access-token", RefreshToken = "the-refreshed-refresh-token" };
+            });
+
+        await using var server = new AppTestServer();
+        await server.Build(configureTestServices: services =>
+        {
+            services.RemoveAll<IIdentityController>();
+            services.AddScoped(_ => identityController);
+        }).Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+
+        var storageService = client.Services.GetRequiredService<IStorageService>();
+        await storageService.SetItem("refresh_token", "a-refresh-token");
+
+        var refresh = client.AuthManager.RefreshToken(requestedBy: nameof(ARefreshThatCompletesAfterASignOut_Should_NotBringTheTokensBack));
+
+        await refreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+
+        await storageService.RemoveItem("refresh_token");
+        await storageService.RemoveItem("access_token");
+
+        releaseTheRefresh.SetResult();
+
+        Assert.IsNull(await refresh.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));
+        Assert.IsNull(await storageService.GetItem("refresh_token"), "A refresh answered after the sign out must not sign the user back in.");
+        Assert.IsNull(await storageService.GetItem("access_token"));
+    }
+
+    [TestMethod]
+    public async Task AnElevationThatAnotherTabAlsoRefreshed_Should_StillStoreItsOwnAnswer()
+    {
+        var refreshStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseTheRefresh = new TaskCompletionSource();
+
+        var sessionId = Guid.NewGuid();
+        var thisTabsAccessToken = FakeAccessToken(sessionId, "this-tab");
+
+        var identityController = A.Fake<IIdentityController>();
+        A.CallTo(() => identityController.Refresh(A<RefreshTokenRequestDto>._, A<CancellationToken>._))
+            .ReturnsLazily(async (RefreshTokenRequestDto request, CancellationToken _) =>
+            {
+                refreshStarted.SetResult();
+                await releaseTheRefresh.Task;
+                return new TokenResponseDto { AccessToken = thisTabsAccessToken, RefreshToken = "this-tabs-refresh-token" };
+            });
+
+        await using var server = new AppTestServer();
+        await server.Build(configureTestServices: services =>
+        {
+            services.RemoveAll<IIdentityController>();
+            services.AddScoped(_ => identityController);
+        }).Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+
+        var storageService = client.Services.GetRequiredService<IStorageService>();
+        await storageService.SetItem("refresh_token", "a-refresh-token");
+        await storageService.SetItem("access_token", FakeAccessToken(sessionId, "before"));
+
+        var refresh = client.AuthManager.RefreshToken(requestedBy: nameof(AnElevationThatAnotherTabAlsoRefreshed_Should_StillStoreItsOwnAnswer), elevatedAccessToken: "an-elevation-code");
+
+        await refreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+
+        await storageService.SetItem("refresh_token", "the-other-tabs-refresh-token");
+        await storageService.SetItem("access_token", FakeAccessToken(sessionId, "other-tab"));
+
+        releaseTheRefresh.SetResult();
+
+        Assert.AreEqual(thisTabsAccessToken, await refresh.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken),
+            "Both answers are for the same session, and only this one carries the elevation this refresh asked for, so it has to be kept.");
+        Assert.AreEqual("this-tabs-refresh-token", await storageService.GetItem("refresh_token"));
+    }
+
+    [TestMethod]
+    public async Task ARefreshThatCompletesAfterAnotherSignIn_Should_NotHandOutTheOtherSessionsToken()
+    {
+        var refreshStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseTheRefresh = new TaskCompletionSource();
+
+        var sessionId = Guid.NewGuid();
+        var theOtherSessionsAccessToken = FakeAccessToken(Guid.NewGuid(), "other-tab");
+
+        var identityController = A.Fake<IIdentityController>();
+        A.CallTo(() => identityController.Refresh(A<RefreshTokenRequestDto>._, A<CancellationToken>._))
+            .ReturnsLazily(async (RefreshTokenRequestDto request, CancellationToken _) =>
+            {
+                refreshStarted.SetResult();
+                await releaseTheRefresh.Task;
+                return new TokenResponseDto { AccessToken = FakeAccessToken(sessionId, "this-tab"), RefreshToken = "this-tabs-refresh-token" };
+            });
+
+        await using var server = new AppTestServer();
+        await server.Build(configureTestServices: services =>
+        {
+            services.RemoveAll<IIdentityController>();
+            services.AddScoped(_ => identityController);
+        }).Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+
+        var storageService = client.Services.GetRequiredService<IStorageService>();
+        await storageService.SetItem("refresh_token", "a-refresh-token");
+        await storageService.SetItem("access_token", FakeAccessToken(sessionId, "before"));
+
+        var refresh = client.AuthManager.RefreshToken(requestedBy: nameof(ARefreshThatCompletesAfterAnotherSignIn_Should_NotHandOutTheOtherSessionsToken));
+
+        await refreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+
+        await storageService.SetItem("refresh_token", "the-other-sessions-refresh-token");
+        await storageService.SetItem("access_token", theOtherSessionsAccessToken);
+
+        releaseTheRefresh.SetResult();
+
+        Assert.IsNull(await refresh.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken),
+            "The request was made for a session that is no longer the current one, and sending it with the other session's token would act as somebody else.");
+        Assert.AreEqual("the-other-sessions-refresh-token", await storageService.GetItem("refresh_token"));
+        Assert.AreEqual(theOtherSessionsAccessToken, await storageService.GetItem("access_token"));
+    }
+
+    private static string FakeAccessToken(Guid sessionId, string issuedTo)
+    {
+        static string Encode(string json) => Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+        var payload = $$"""{"{{AppClaimTypes.SESSION_ID}}":"{{sessionId}}","issued-to":"{{issuedTo}}"}""";
+
+        return $"{Encode("{}")}.{Encode(payload)}.signature";
     }
 
     /// <summary>

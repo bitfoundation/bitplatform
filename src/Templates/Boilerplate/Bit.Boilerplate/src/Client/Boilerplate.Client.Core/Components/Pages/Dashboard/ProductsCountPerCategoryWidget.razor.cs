@@ -14,6 +14,8 @@ public partial class ProductsCountPerCategoryWidget
         Type = BitChartType.Bar,
         Options = new BitChartOptions
         {
+            AspectRatio = 1.4,
+            Culture = CultureInfo.CurrentCulture,
             Plugins = new BitChartPluginOptions
             {
                 Legend = new BitChartLegendOptions { Display = false }
@@ -74,9 +76,9 @@ public partial class ProductsCountPerCategoryWidget
     //#if (signalR == true)
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(disposing);
-
         unsubscribe?.Invoke();
+
+        await base.DisposeAsync(disposing);
     }
     //#endif
 }

@@ -33,6 +33,11 @@ public class BitNavPanelClassStyles
     public string? HeaderIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the header text (title) of the BitNavPanel.
+    /// </summary>
+    public string? HeaderText { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the toggle button of the BitNavPanel.
     /// </summary>
     public string? ToggleButton { get; set; }

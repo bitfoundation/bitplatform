@@ -48,11 +48,6 @@
     background-repeat: no-repeat;
 }
 
-.footer-pitch {
-    max-width: rem2(360px);
-    margin-block: $doc-space-sm;
-}
-
 :root[bit-theme$='dark'] .footer-logo {
     background-image: url('images/bit-logo-dark.svg');
 }
@@ -110,9 +105,15 @@
     border-top: rem2(1px) solid $bit-color-border-secondary;
 }
 
-// The link columns and the social row are BitStacks and BitLinks; their leftovers live in ::deep
-// because those components' root elements do not carry this file's scope attribute.
+// The pitch is a BitText, and the link columns and the social row are BitStacks and BitLinks; their
+// leftovers live in ::deep because those components' root elements do not carry this file's scope
+// attribute.
 ::deep {
+    .footer-pitch {
+        max-width: rem2(360px);
+        margin-block: $doc-space-sm;
+    }
+
     .social-link-group {
         gap: $doc-space-2xs;
     }

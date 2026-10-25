@@ -18,7 +18,7 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
 
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         // The home page is public, so opening it needs no sign-in.
         await Page.GotoAsync(new Uri(serverAddress, PageUrls.Home).ToString(),

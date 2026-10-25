@@ -22,7 +22,7 @@
 @*  The frame. Everything else is positioned against it, so it is the element that carries the size,
     the aspect ratio, the shape and the clipping - which is what lets a cover fit and a rounded corner
     crop the image without the image itself knowing about either. *@
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
@@ -30,7 +30,12 @@
 
     @*  The low quality placeholder, which stands in the frame while the real image is still on its
         way. It is decorative by definition - the image it stands for carries the meaning - so it is
-        hidden from assistive technologies rather than given an alt of its own. *@
+        hidden from assistive technologies rather than given an alt of its own. Under a FadeIn it outlives
+        the load by the length of the fade, fading out as the image fades in, and is removed once that fade
+        has ended - which only the browser knows, the duration being the theme's and the reduced-motion
+        preference's as much as the component's, and the animation itself a restyle's to replace
+        (Bit.BlazorUI.Events registers the directives). A canceled fade lets it go as well: it has nothing
+        left to show over the image. *@
     @if (_placeholderSrc.HasValue())
     {
         <img alt=""
@@ -38,7 +43,10 @@
              src="@_placeholderSrc"
              draggable="false"
              style="@GetPlaceholderStyles()"
-             class="bit-img-plc@(Classes?.Placeholder.HasValue() is true ? $" {Classes!.Placeholder}" : null)" />
+             class="@GetPlaceholderClasses()"
+             @onanimationstart="HandleOnPlaceholderAnimationStart"
+             @onanimationend="HandleOnPlaceholderAnimationEnd"
+             @onanimationcancel="HandleOnPlaceholderAnimationEnd" />
     }
 
     @if (_hasSources)
@@ -66,14 +74,21 @@
         @image
     }
 
-    @if (_loadingState is BitImageState.Loading && StartVisible is false && LoadingTemplate is not null)
+    @*  The text alternative of an image that is not on screen, which leaves the accessibility tree
+        with the image it belongs to - see the .bit-img-alt rule. *@
+    @if (_hiddenImageName is not null)
+    {
+        <span role="img" aria-label="@_hiddenImageName" class="bit-img-alt"></span>
+    }
+
+    @if (_isLoadingTemplateShown)
     {
         <div style="@Styles?.LoadingTemplate"
              class="bit-img-tpl@(Classes?.LoadingTemplate.HasValue() is true ? $" {Classes!.LoadingTemplate}" : null)">
             @LoadingTemplate
         </div>
     }
-    else if (_loadingState is BitImageState.Error && ErrorTemplate is not null)
+    else if (_isErrorTemplateShown)
     {
         <div style="@Styles?.ErrorTemplate"
              class="bit-img-tpl@(Classes?.ErrorTemplate.HasValue() is true ? $" {Classes!.ErrorTemplate}" : null)">

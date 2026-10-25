@@ -1,8 +1,8 @@
-using System.Text.RegularExpressions;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class _BitNavBarItem<TItem> : IDisposable where TItem : class
+public partial class _BitNavBarItem<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : IDisposable where TItem : class
 {
     private bool _disposed;
     private bool _replaced;
@@ -86,15 +86,6 @@ public partial class _BitNavBarItem<TItem> : IDisposable where TItem : class
     {
         return NavBar is null ? Task.CompletedTask : NavBar.HandleOnKeyDown(Item, e);
     }
-
-
-
-    // rel="noopener noreferrer" only protects against a cross-origin target, so it is only added to the
-    // links that actually leave the app: the ones carrying a scheme (https://, mailto:, ...) or a
-    // protocol-relative host (//host/path).
-    private static readonly Regex _AbsoluteUrlRegex = new("^(?:[a-zA-Z][a-zA-Z0-9+.-]*:|//)", RegexOptions.Compiled);
-
-    private static bool IsRelativeUrl(string? url) => url.HasNoValue() || _AbsoluteUrlRegex.IsMatch(url!) is false;
 
 
 

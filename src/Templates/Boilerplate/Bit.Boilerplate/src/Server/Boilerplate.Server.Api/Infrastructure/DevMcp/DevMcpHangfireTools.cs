@@ -83,7 +83,7 @@ public partial class DevMcpHangfireTools
                 rows = [.. DevMcpHangfireReader.StatesOf(state)
                     .SelectMany(one => DevMcpHangfireReader.ReadJobs(monitoring, one, queue, 0, DevMcpLimits.HangfireFilterScanCap))
                     .Where(job => DevMcpHangfireReader.Matches(job, argumentContains, fromUtc, toUtc))
-                    .OrderByDescending(job => job.At ?? DateTime.MinValue)
+                    .OrderByDescending(job => job.At ?? DateTimeOffset.MinValue)
                     // A job caught mid-transition is in two of the six snapshots; the newest wins.
                     .DistinctBy(job => job.Id)
                     .Skip(from)

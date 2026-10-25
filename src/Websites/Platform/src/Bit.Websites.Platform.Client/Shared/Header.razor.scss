@@ -300,6 +300,29 @@
     border: 1px solid $bit-color-border-secondary;
     background-color: $bit-color-background-secondary;
     animation: header-fade-slide-in 200ms $MotionEase 0ms;
+
+    // The single-line descriptions of the desktop popup overflow a narrow phone, worst under the
+    // indented utilities list, so they wrap here.
+    .item-desc {
+        white-space: normal;
+    }
+}
+
+.header-nav-sub-trigger .ps-chevron {
+    margin-left: auto;
+
+    &.open {
+        transform: rotate(180deg);
+    }
+}
+
+.header-nav-sub-list {
+    display: flex;
+    flex-flow: column nowrap;
+    margin-left: rem2(16px);
+    padding-left: rem2(8px);
+    border-left: 1px solid $bit-color-border-secondary;
+    animation: header-fade-slide-in 200ms $MotionEase 0ms;
 }
 
 ::deep {
@@ -417,6 +440,104 @@
     }
 }
 
+// The Utilities entry closes the main list in both the desktop popup and the mobile nav.
+.menu-sub,
+.header-nav-sub {
+    margin-top: rem2(4px);
+    padding-top: rem2(4px);
+    border-top: 1px solid $bit-color-border-secondary;
+}
+
+.menu-sub + .menu-sub,
+.header-nav-sub + .header-nav-sub {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.menu-sub-trigger,
+.header-nav-sub-trigger {
+    margin: 0;
+    width: 100%;
+    border: none;
+    font: inherit;
+    gap: rem2(16px);
+    color: inherit;
+    text-align: left;
+    background: none;
+    line-height: inherit;
+}
+
+.menu-sub-chevron {
+    flex-shrink: 0;
+    margin-left: auto;
+    color: $bit-color-foreground-secondary;
+    transition: color 150ms $MotionEase 0ms,
+        transform 150ms $MotionEase 0ms;
+}
+
+// The Utilities flyout: a twin of the popup, opened against its right edge. Its containing block is
+// the popup (.menu-sub stays unpositioned), so the -1px offsets and the +2px width line its border
+// box up with the popup's on every side and it takes the exact same size; the list scrolls inside.
+// Overlapping the popup's border is on purpose too: any gap would drop the products menu's :hover
+// on the way across.
+.menu-sub-popup {
+    top: -1px;
+    left: 100%;
+    bottom: -1px;
+    opacity: 0;
+    z-index: 1;
+    display: flex;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: absolute;
+    visibility: hidden;
+    padding: rem2(16px);
+    box-sizing: border-box;
+    flex-flow: column nowrap;
+    border-radius: rem2(4px);
+    width: calc(100% + 2px);
+    scrollbar-width: thin;
+    overscroll-behavior: contain;
+    // A themed thumb: the popup's black webkit one vanishes on the dark theme, hiding that the
+    // list scrolls.
+    scrollbar-color: $bit-color-border-primary transparent;
+    transform: translateX(rem2(-8px));
+    border: 1px solid $bit-color-border-secondary;
+    background-color: $bit-color-background-secondary;
+    box-shadow: 0 rem2(8px) rem2(24px) rgba(0, 0, 0, 0.12);
+    // Hiding waits a beat (hover intent), so a diagonal pass over the neighboring items on the way to
+    // the flyout does not close it; visibility flips at the end of the fade-out.
+    transition: opacity 150ms $MotionEase 200ms,
+        transform 150ms $MotionEase 200ms,
+        visibility 0s linear 350ms;
+
+    .item-desc {
+        white-space: normal;
+    }
+}
+
+@mixin menu-sub-open {
+    .menu-sub-trigger {
+        background-color: $bit-color-background-secondary-hover;
+    }
+
+    .menu-sub-chevron {
+        color: $bit-color-primary;
+        transform: translateX(rem2(2px));
+    }
+
+    .menu-sub-popup {
+        z-index: 2;
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(0);
+        transition: opacity 150ms $MotionEase 0ms,
+            transform 150ms $MotionEase 0ms,
+            visibility 0s linear 0s;
+    }
+}
+
 .header-ps-trigger {
     margin: 0;
     padding: 0;
@@ -458,6 +579,23 @@
 
         .ps-chevron {
             transform: rotate(180deg);
+        }
+
+        // Scoped under the open popup so a lingering .open never shows the flyout on its own.
+        // Hover opens it only on hover-capable pointers: a sticky :hover after a tap would pin it
+        // open, so touch devices go through the .open toggle alone.
+        .menu-sub.open {
+            @include menu-sub-open;
+        }
+
+        @media (hover: hover) {
+            .menu-sub:hover {
+                @include menu-sub-open;
+
+                .menu-sub-popup {
+                    z-index: 3;
+                }
+            }
         }
     }
 }

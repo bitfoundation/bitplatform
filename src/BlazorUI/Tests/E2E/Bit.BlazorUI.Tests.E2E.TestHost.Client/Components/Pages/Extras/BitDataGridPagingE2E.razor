@@ -1,0 +1,79 @@
+﻿@page "/e2e/data-grid/paging"
+
+@* BitDataGrid's paging: the pager and its buttons, the page-size picker and PageSizeOptions, every PagerPlacement,
+   OnPageChange, the paging API (GoToPageAsync, SetPageSizeAsync, CurrentPage, TotalPages, TotalCount) and a
+   PageSize changed by the page at runtime. *@
+
+<PageTitle>BitDataGrid paging E2E</PageTitle>
+
+<h1>BitDataGrid paging</h1>
+
+<E2ESection Id="pager" Title="Pager at the bottom">
+    <button id="btn-go-page-3" type="button" @onclick="() => _pagerGrid.GoToPageAsync(3)">GoToPageAsync(3)</button>
+    <button id="btn-go-page-99" type="button" @onclick="() => _pagerGrid.GoToPageAsync(99)">GoToPageAsync(99)</button>
+    <button id="btn-page-size-20" type="button" @onclick="() => _pagerGrid.SetPageSizeAsync(20)">SetPageSizeAsync(20)</button>
+    <button id="btn-param-page-size-5" type="button" @onclick="() => _pageSize = 5">PageSize = 5</button>
+    <button id="btn-read-state" type="button" @onclick="ReadState">Read state</button>
+    <span id="pager-state">@_pagerState</span>
+    <BitDataGrid @ref="_pagerGrid" TItem="Item" Id="grid-pager" Items="@_items45" Pageable="true" PageSize="_pageSize"
+                 OnPageChange="p => { _pageChanges++; _lastPage = p; }">
+        <BitDataGridColumn Property="i => i.Id" />
+        <BitDataGridColumn Property="i => i.Name" />
+    </BitDataGrid>
+    <p>page changes <span id="page-change-count">@_pageChanges</span> | last <span id="page-change-last">@_lastPage</span></p>
+</E2ESection>
+
+<E2ESection Id="pager-top" Title="Pager at the top">
+    <BitDataGrid TItem="Item" Id="grid-pager-top" Items="@_items25" Pageable="true" PageSize="10" PagerPlacement="BitPlacement.Top">
+        <BitDataGridColumn Property="i => i.Id" />
+        <BitDataGridColumn Property="i => i.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="pager-both" Title="Pager at the top and the bottom">
+    <BitDataGrid TItem="Item" Id="grid-pager-both" Items="@_items25" Pageable="true" PageSize="10" PagerPlacement="BitPlacement.TopAndBottom">
+        <BitDataGridColumn Property="i => i.Id" />
+        <BitDataGridColumn Property="i => i.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="pager-start" Title="Another placement falls back to the bottom">
+    <BitDataGrid TItem="Item" Id="grid-pager-start" Items="@_items25" Pageable="true" PageSize="10" PagerPlacement="BitPlacement.Start">
+        <BitDataGridColumn Property="i => i.Id" />
+        <BitDataGridColumn Property="i => i.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="page-size-options" Title="PageSizeOptions">
+    <BitDataGrid TItem="Item" Id="grid-page-options" Items="@_items25" Pageable="true" PageSize="5" PageSizeOptions="@(new[] { 5, 15 })">
+        <BitDataGridColumn Property="i => i.Id" />
+        <BitDataGridColumn Property="i => i.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="not-pageable" Title="Pageable off">
+    <BitDataGrid TItem="Item" Id="grid-not-pageable" Items="@_items25" PageSize="5">
+        <BitDataGridColumn Property="i => i.Id" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Item
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+    }
+
+    private readonly List<Item> _items45 = Enumerable.Range(1, 45).Select(i => new Item { Id = i, Name = $"Item {i:00}" }).ToList();
+    private readonly List<Item> _items25 = Enumerable.Range(1, 25).Select(i => new Item { Id = i, Name = $"Item {i:00}" }).ToList();
+
+    private BitDataGrid<Item> _pagerGrid = default!;
+    private int _pageSize = 10;
+    private int _pageChanges;
+    private int _lastPage;
+    private string _pagerState = "";
+
+    private void ReadState() => _pagerState = $"page {_pagerGrid.CurrentPage} of {_pagerGrid.TotalPages}, total {_pagerGrid.TotalCount}";
+}

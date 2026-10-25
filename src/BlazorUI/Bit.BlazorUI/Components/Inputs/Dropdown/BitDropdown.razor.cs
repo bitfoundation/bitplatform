@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// A dropdown is a list in which the selected item is always visible while other items are 
 /// visible on demand by clicking a dropdown button. Dropdowns are typically used for forms.
 /// </summary>
-public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
+public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
     private int? _providerTotalItems;
     private Dictionary<TItem, int>? _providerPositions;
@@ -48,13 +48,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private int _selectAllStateSelectionVersion = -1;
     private (bool HasCandidates, bool AllSelected, bool AnySelected)? _selectAllState;
     private bool _isResponsiveMode;
-    private int _calloutScrollOffset = -1;
+    private (bool SearchBox, bool SelectAll)? _calloutChrome;
     private bool _internalIsOpenChange;
     private bool _suppressOpenOnFocus;
     private bool _openedOnFocus;
     private bool _inputSearchHasFocus;
     private bool _inputComboHasFocus;
     private bool _pendingSearchBoxFocus;
+    private int? _pendingSearchBoxCaret;
     private List<TItem> _selectedItems = [];
     private List<TItem> _lastShownItems = [];
     private ICollection<TItem>? _lastItemsReference;
@@ -68,6 +69,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private readonly BitInputRateLimiter<ChangeEventArgs> _rateLimiter = new();
 
     private string _labelId = string.Empty;
+    private string _errorId = string.Empty;
+    private string _ariaDescriptionId = string.Empty;
     private string _descriptionId = string.Empty;
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
@@ -87,6 +90,30 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the dropdown component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple dropdown components through the <see cref="BitParams"/> component.
+    /// <br />
+    /// Only a <see cref="BitDropdownParams{TItem, TValue}"/> closed over this dropdown's own type arguments
+    /// is matched, so one <see cref="BitParams"/> can carry one object per pair of type arguments.
+    /// </remarks>
+    [CascadingParameter(Name = BitDropdownParams<TItem, TValue>.ParamName)]
+    public BitDropdownParams<TItem, TValue>? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
+    /// Detailed description of the dropdown for the benefit of screen readers. It is rendered into a
+    /// visually hidden element that the dropdown references through its aria-describedby attribute,
+    /// which is what lets a field carry an instruction too long to show next to it. It is read after
+    /// <see cref="Description"/>, so the two can be used together.
+    /// </summary>
+    [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
     /// Clears the typed search text after each selection in the multi select ComboBox mode, so the next
@@ -206,7 +233,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// Custom CSS classes for different parts of the BitDropdown.
     /// </summary>
-    [Parameter] public BitDropdownClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitDropdownClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Determines whether picking an item in the callout closes it. It defaults to the behavior each
@@ -220,6 +247,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// The general color of the dropdown.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Dropdown-*</c> accent, focus and header color variables, in the
+    /// field and in the callout alike; left unset, the dropdown is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -342,6 +373,29 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>
+    /// The message shown under the dropdown when the selection was rejected, which is what turns a red
+    /// frame into something the user can act on. Setting it marks the dropdown invalid on its own - the
+    /// same look and the same aria-invalid attribute <see cref="Invalid"/> gives it - and the message is
+    /// referenced by the dropdown through its aria-describedby attribute and announced by its live
+    /// region, so it reaches a screen reader the moment it shows up rather than only on the next focus.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for a rejection the app itself knows about (a server response, a rule spanning two
+    /// fields). A dropdown inside an <c>EditForm</c> already gets its messages from the cascading
+    /// EditContext through the <c>ValidationMessage</c> component.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// The custom content of the error message, which replaces the plain <see cref="ErrorMessage"/> text
+    /// and marks the dropdown invalid in the same way. Only the plain text is announced by the live
+    /// region, since a template is free to render anything at all.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Decides whether the text committed in the ComboBox mode already stands for one of the selected
     /// items, in place of the default comparison of that text with the item texts, ignoring case. It
     /// receives the selected items and the committed text, and returning true stops the commit, so the
@@ -380,6 +434,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// only decides whether <see cref="DebounceTime"/> and <see cref="ThrottleTime"/> apply.
     /// </summary>
     [Parameter] public bool Immediate { get; set; }
+
+    /// <summary>
+    /// Marks the dropdown as invalid without an <c>EditContext</c> having said so, which is what a
+    /// rejection the app decided on its own (a server response, a rule spanning two fields) needs. It
+    /// gives the dropdown the same look and the same aria-invalid attribute an invalid bound value does.
+    /// Setting <see cref="ErrorMessage"/> implies it.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
 
     /// <summary>
     /// Shows a loading indicator in the callout (and in place of the caret down element) while the items are being fetched.
@@ -803,6 +866,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// The size of the dropdown.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Dropdown-*</c> size variables (min height, font size, label font
+    /// size, icon size, item height and item font size), in the field and in the callout alike; left unset, the
+    /// dropdown is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -816,7 +884,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// Custom CSS styles for different parts of the BitDropdown.
     /// </summary>
-    [Parameter] public BitDropdownClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitDropdownClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Suffix displayed after the BitDropdown contents. This is not included in the value. 
@@ -830,7 +898,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
-    /// The custom template for the text of the dropdown.
+    /// The custom template for the text of the dropdown, which replaces the selection it shows once
+    /// something is selected. It has no effect with <see cref="Chips"/> enabled, where the selection is
+    /// drawn as one chip per item and <see cref="ChipTemplate"/> is what renders each of them.
     /// </summary>
     [Parameter] public RenderFragment<BitDropdown<TItem, TValue>>? TextTemplate { get; set; }
 
@@ -856,6 +926,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// Removes the default background color from the root element.
     /// </summary>
+    /// <remarks>
+    /// When true, it wins over <c>--bit-Dropdown-background</c>, which only restyles the background of a
+    /// dropdown that is not transparent.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Transparent { get; set; }
 
@@ -930,6 +1004,23 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// </summary>
     public ValueTask FocusComboInputAsync() => Combo ? FocusTrigger() : ValueTask.CompletedTask;
 
+    /// <inheritdoc/>
+    /// <remarks>
+    /// In the ComboBox mode the element that takes the focus is the editable input inside the field,
+    /// which is where the keyboard lands and what carries the combobox role; the field around it is
+    /// out of the tab order there, so focusing it would leave the caret nowhere.
+    /// </remarks>
+    public override ValueTask FocusAsync() => Combo ? FocusTrigger() : base.FocusAsync();
+
+    /// <inheritdoc cref="FocusAsync()"/>
+    /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
+    public override ValueTask FocusAsync(bool preventScroll)
+    {
+        if (Combo is false) return base.FocusAsync(preventScroll);
+
+        return (IsOpen && _isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef).FocusAsync(preventScroll);
+    }
+
     /// <summary>
     /// The ElementReference to the search input element, which is null while the search box is not
     /// rendered - it needs <see cref="ShowSearchBox"/> and an open callout to live in, and it is
@@ -956,7 +1047,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [JSInvokable("CloseCallout")]
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The JS side has already hidden this callout to make room for the other one, so the change
         // is marked internal to keep the OnSetIsOpen hook from toggling it again.
@@ -996,6 +1087,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         await HandleOnItemClick(item);
     }
+
+    /// <summary>
+    /// Clears the whole selection exactly as the clear button does, so the same events fire: it reports
+    /// itself through <see cref="OnClear"/> and empties the typed text of the ComboBox mode along with
+    /// the selection. It is refused in the same places that button is - a read-only dropdown, a one-way
+    /// binding - which is what unselecting the items one by one cannot express.
+    /// </summary>
+    public Task ClearAsync() => HandleOnClearClick();
 
     /// <summary>
     /// Unselects the given item exactly as picking an already selected one in the callout would (or, in
@@ -1071,9 +1170,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     // Called by an option when its own parameters change, so the cached search results (which hold
     // the option instances themselves) cannot be reused after the data they were computed from changed.
-    internal void NotifyOptionParametersChanged()
+    // The field shows the text of the selected options, and the render that handed an option its new
+    // parameters drew the field before they arrived, so a selected option renders the dropdown again.
+    internal void NotifyOptionParametersChanged(BitDropdownOption<TValue> option)
     {
         _optionsVersion++;
+
+        if (IsDisposing) return;
+
+        if (option is TItem item && _selectedItems.Contains(item))
+        {
+            StateHasChanged();
+        }
     }
 
     // Everything derived from the current set of items: the search result and the set it is looked up
@@ -1105,7 +1213,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     internal void UnregisterOption(BitDropdownOption<TValue> option)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         var item = (option as TItem)!;
         Items!.Remove(item);
@@ -1128,7 +1236,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (ReadOnly) return;
         if (GetItemType(item) != BitDropdownItemType.Normal) return;
-        if (IsEnabled is false || GetIsEnabled(item) is false) return;
+        if (Disabled || GetIsDisabled(item)) return;
 
         var wasOpen = IsOpen;
 
@@ -1185,7 +1293,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // disabled like any other disabled item instead of only being styled as such.
     internal bool GetIsItemDisabled(TItem item)
     {
-        if (GetIsEnabled(item) is false) return true;
+        if (GetIsDisabled(item)) return true;
 
         return IsMaxSelectedItemsReached && GetIsSelected(item) is false;
     }
@@ -1466,26 +1574,26 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return item.GetValueFromProperty<object?>(NameSelectors.Data.Name);
     }
 
-    internal bool GetIsEnabled(TItem item)
+    internal bool GetIsDisabled(TItem item)
     {
         if (item is BitDropdownItem<TValue> dropdownItem)
         {
-            return dropdownItem.IsEnabled;
+            return dropdownItem.IsDisabled;
         }
 
         if (item is BitDropdownOption<TValue> dropdownOption)
         {
-            return dropdownOption.IsEnabled;
+            return dropdownOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     internal bool GetIsHidden(TItem item)
@@ -1669,6 +1777,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Dropdown-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => GetColorClass());
 
         ClassBuilder.Register(() => GetSizeClass());
@@ -1697,6 +1807,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     protected override async Task OnInitializedAsync()
     {
+        // The cascade is applied here as well as in OnParametersSet, because this method already reads the
+        // parameters it would otherwise only get after the first render: MultiSelect decides which of the
+        // two initialization branches runs, and ItemsProvider and Items decide whether an empty item
+        // collection is created for the dropdown.
+        CascadingParameters?.UpdateParameters(this);
+
         _dropdownId = $"Dropdown-{UniqueId}";
         _calloutId = $"{_dropdownId}-callout";
         _overlayId = $"{_dropdownId}-overlay";
@@ -1705,6 +1821,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _footerId = $"{_dropdownId}-footer";
 
         _labelId = $"{_dropdownId}-label";
+        _errorId = $"{_dropdownId}-error";
+        _ariaDescriptionId = $"{_dropdownId}-aria-description";
         _descriptionId = $"{_dropdownId}-description";
         _dropdownTextContainerId = $"{_dropdownId}-text-container";
 
@@ -1757,6 +1875,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         // Options render their items themselves and Blazor skips re-rendering them when only the
         // dropdown's own parameters (Styles, ItemTemplate, ...) change, so push a re-render to each one.
         RefreshOptions();
@@ -1811,6 +1931,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 await FocusOnSearchBox();
             }
 
+            // A character typed on the closed trigger went into the search box, which only holds it as
+            // of this render (see TypeIntoSearchBox).
+            if (_pendingSearchBoxCaret is int caret)
+            {
+                _pendingSearchBoxCaret = null;
+
+                await FocusSearchBoxCaret(caret);
+            }
+
             return;
         }
 
@@ -1824,7 +1953,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
             if (Responsive)
             {
-                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, BitSwipeOrientation.Horizontal, _dotnetObj);
+                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPlacement.End, ExplicitRtl, BitSwipeOrientation.Horizontal, _dotnetObj);
             }
 
             // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no
@@ -1836,7 +1965,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
             // The autofocus attribute is only honored by the browser for an element that is part of the
             // initial document, which the trigger of an interactively rendered dropdown is not.
-            if (AutoFocus && IsEnabled)
+            if (AutoFocus && Disabled is false)
             {
                 await FocusTrigger();
             }
@@ -1871,7 +2000,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task<bool> AddOrRemoveSelectedItem(TItem? item, bool addDynamic = false)
     {
         if (ReadOnly) return false;
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
 
         if (item is null) return false;
 
@@ -2100,7 +2229,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         // A single pass over Values (which may be long after a select all) instead of a lookup per
         // selected item, so ordering the selection stays linear in the size of the selection.
+        // A null value never goes in (it has nullIndex of its own), so the notnull key of the dictionary holds.
+#pragma warning disable CS8714
         var indexes = new Dictionary<TValue, int>(Comparer);
+#pragma warning restore CS8714
         var nullIndex = -1;
         var index = 0;
         foreach (var value in Values)
@@ -2150,7 +2282,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task CloseCallout()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsOpen is false) return;
 
         _rateLimiter.Reset();
@@ -2176,6 +2308,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // letting OpenOnFocus read that move as the user coming in. The flag is consumed by the focusin the
     // move produces; a move that never happens (a disconnected circuit, an element that is no longer on
     // the page) clears it here instead, so it cannot go on to swallow the next focus the user gives.
+    // Failing to move the focus is not fatal, so it is not thrown out of the dismissal that asked for it.
     private async Task RestoreFocusToTrigger()
     {
         _suppressOpenOnFocus = true;
@@ -2187,8 +2320,31 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         catch
         {
             _suppressOpenOnFocus = false;
+        }
+    }
 
-            throw;
+    // The focus a close stranded in the hidden callout (or dropped to the body) goes back to the trigger, and a focus
+    // anywhere else stays where it is - which only the browser knows, so it is the script that decides. Like
+    // RestoreFocusToTrigger, the move must not reopen the list through OpenOnFocus, so the note is left first and
+    // taken back when nothing moved: no focusin is on its way to consume it then.
+    private async Task ReclaimFocusFromTheCallout()
+    {
+        if (IsRendered is false || IsDisposed) return;
+
+        _suppressOpenOnFocus = true;
+
+        try
+        {
+            var moved = await _js.BitDropdownsReclaimFocus(_calloutId, Combo ? _comboBoxInputRef : InputElement);
+
+            if (moved is false)
+            {
+                _suppressOpenOnFocus = false;
+            }
+        }
+        catch
+        {
+            _suppressOpenOnFocus = false;
         }
     }
 
@@ -2210,7 +2366,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The callback reports the click itself, so it fires before (and independently of) the opening:
         // a one-way bound IsOpen refuses the change, and the click still happened.
@@ -2245,7 +2401,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // there have to be kept in sync.
     private async Task HandleOnTriggerKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key is "Escape")
         {
@@ -2258,10 +2414,17 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             if (IsOpen)
             {
                 await CloseCallout();
+
+                // The press was taken on the field, but the focus the opening hands to the list may have landed on
+                // an option since, and the close has just hidden it.
+                if (IsOpen is false)
+                {
+                    await ReclaimFocusFromTheCallout();
+                }
             }
             else
             {
-                await ClearOnEscapeKey();
+                await ClearOnEscapeKey(e);
             }
 
             return;
@@ -2345,14 +2508,57 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         else if (IsPrintableKey(e))
         {
             await OpenCallout();
-            await FocusItem(BitDropdownFocusMode.Char, GetTypeAheadBuffer(e.Key!));
+
+            // A dropdown that filters through a search box has no type-ahead: HandleOnCalloutKeyDown leaves
+            // every printable key to that box, and Dropdowns.ts hands one typed on an option back to it. The
+            // character that opened the list is therefore typed INTO it rather than spent on a focus move,
+            // which would have dropped it and left the next character to start the term on its own.
+            if (HasSearchBox)
+            {
+                await TypeIntoSearchBox(e.Key!);
+            }
+            else
+            {
+                await FocusItem(BitDropdownFocusMode.Char, GetTypeAheadBuffer(e.Key!));
+            }
         }
+    }
+
+    // The first character of a search typed on a closed dropdown, which the search box never saw: the key
+    // was handled by the trigger the focus was still on. It is put into the box, and the box takes the
+    // focus, so the characters that follow simply continue the term natively.
+    private async Task TypeIntoSearchBox(string key)
+    {
+        var text = (_searchInputText ?? string.Empty) + key;
+
+        // Through the input handler, so the term follows the same Immediate / debounce / throttle path a
+        // typed character takes instead of applying itself on rules of its own.
+        await HandleOnSearchBoxInput(new ChangeEventArgs { Value = text });
+
+        // The input only holds the new text as of the render this handler is followed by, so the focus -
+        // and the caret that has to end up behind the character - is left to OnAfterRenderAsync rather
+        // than moved onto a value that is still the one the box had.
+        _pendingSearchBoxCaret = text.Length;
+    }
+
+    // Focuses the search box and puts the caret at the given offset, whatever AutoFocusSearchBox says: this
+    // is not the focus an opening hands to the box, it is the box being typed into.
+    private async Task FocusSearchBoxCaret(int caret)
+    {
+        if (Disabled || HasSearchBox is false) return;
+        if (IsOpen is false || IsRendered is false || IsDisposed) return;
+
+        try
+        {
+            await _js.BitDropdownsFocusSearchBox(_calloutId, caret);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     // See the note on HandleOnTriggerKeyDown about keeping these keys in sync with Dropdowns.ts.
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         switch (e.Key)
         {
@@ -2403,9 +2609,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 {
                     await HandleOnSelectAllClick();
                 }
-                // In Combo mode the combo input is the type-ahead, and printable keys
-                // typed into the search box must keep filtering instead of moving focus.
-                else if (Combo is false && _inputSearchHasFocus is false && IsPrintableKey(e))
+                // In Combo mode the combo input is the type-ahead, and so is the search box of a dropdown
+                // that has one: the keydown listener of Dropdowns.ts hands a printable key typed on an
+                // option back to whichever of the two is there, and a type-ahead on top of it would move
+                // the focus away from the field the character is about to be typed into.
+                else if (Combo is false && HasSearchBox is false && IsPrintableKey(e))
                 {
                     await FocusItem(BitDropdownFocusMode.Char, GetTypeAheadBuffer(e.Key!));
                 }
@@ -2452,8 +2660,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (mode != BitDropdownFocusMode.Selected) return -1;
         if (Virtualize is false || ItemsProvider is not null) return -1;
 
+        // With nothing selected the first row is the one to reach, and it is index 0: on the first opening of the list
+        // that row is only rendered by the reveal this call follows, which Dropdowns.focusItem waits for when it is
+        // handed an index - handed none, it finds no rows yet and leaves the focus on the field.
         var selected = _selectedItems.FirstOrDefault();
-        if (selected is null) return -1;
+        if (selected is null) return 0;
 
         var index = 0;
         foreach (var item in GetDisplayItems())
@@ -2475,7 +2686,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // single element: focusin/focusout bubble, so the inner combo input is covered by them as well.
     private async Task HandleOnFocusIn(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The focus this component moves back to the trigger itself (after a dismissal, or a pick that
         // closed the callout) must not reopen what was just closed, so only a focus that was not
@@ -2507,14 +2718,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private Task HandleOnFocusOut(FocusEventArgs e)
     {
-        if (IsEnabled is false) return Task.CompletedTask;
+        if (Disabled) return Task.CompletedTask;
 
         return OnFocusOut.InvokeAsync(e);
     }
 
     private Task HandleOnLabelClick()
     {
-        if (IsEnabled is false) return Task.CompletedTask;
+        if (Disabled) return Task.CompletedTask;
 
         return FocusTrigger().AsTask();
     }
@@ -2543,7 +2754,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async ValueTask SelectComboInputText()
     {
         if (SelectTextOnFocus is false) return;
-        if (Combo is false || IsEnabled is false || ReadOnly) return;
+        if (Combo is false || Disabled || ReadOnly) return;
         if (_comboInputText.HasNoValue()) return;
         if (IsRendered is false || IsDisposed) return;
 
@@ -2555,7 +2766,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             await _js.BitUtilsSelectText(element.Value);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // an input that is not on the page has no text to select
+        catch (InvalidOperationException) { } // the input has not been rendered yet, so there is no text to select
+        catch (JSException) { } // the input is no longer in the document, failing to select its text is not fatal
     }
 
     private void HandleComboInputFocusOut()
@@ -2569,12 +2781,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         // The clear button only renders while there is a text, so activating it removes it from under
         // the focus; the focus moves to the input it emptied instead of dropping to the document body.
-        await _searchInputRef.FocusAsync();
+        await _searchInputRef.FocusSafelyAsync();
     }
 
     private async Task HandleOnSearchBoxInput(ChangeEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (HasSearchBox is false) return;
 
         // What the input actually holds, which is what the dropdown renders back into it and what the
@@ -2591,7 +2803,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task HandleOnSearchBoxChange(ChangeEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (HasSearchBox is false) return;
 
         _searchInputText = e.Value?.ToString();
@@ -2613,7 +2825,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task ClearSearchBox()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         // Not ShowSearchBox: in the ComboBox mode the search text belongs to the combo input, and
         // clearing it from here would leave ClearComboBoxInput with nothing to do and the input
         // holding the term it was supposed to empty.
@@ -2705,7 +2917,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async ValueTask FocusOnSearchBox()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (HasSearchBox is false) return;
         if (AutoFocusSearchBox is false) return;
         if (IsOpen is false) return;
@@ -2714,19 +2926,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // that went away in between has to end here rather than throw out of a discarded task.
         if (IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await _searchInputRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // an input that is not on the page cannot take the focus
+        await _searchInputRef.FocusSafelyAsync();
     }
 
     private async Task ClearComboBoxInput()
     {
         if (ReadOnly) return;
         if (Combo is false) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         // Both are checked: a term the rate limiter has not applied yet is still in the input, and the
         // input is exactly what this has to leave empty.
         if (_searchText.HasNoValue() && _comboInputText.HasNoValue()) return;
@@ -2768,17 +2975,19 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // an input that is not on the page has no value to clear
+        catch (InvalidOperationException) { } // the input has not been rendered yet, so there is no value to clear
+        catch (JSException) { } // the input is no longer in the document, failing to clear it is not fatal
     }
 
     private async ValueTask FocusOnComboBoxInput()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsOpen is false) return;
         if (Combo is false) return;
         if (_isResponsiveMode) return;
 
-        await _comboBoxInputRef.FocusAsync();
+        // The input is part of the field that was just clicked, so it is not scrolled to.
+        await _comboBoxInputRef.FocusClickedSafelyAsync();
     }
 
     // The term the items are actually filtered by. It is null until the typed text is long enough for
@@ -3063,6 +3272,30 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // The same, for the description element carrying _descriptionId.
     private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
+    // The same, for the error element carrying _errorId.
+    private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
+
+    // A rejection the app decided on its own, which the EditContext knows nothing about. A message is
+    // one: a field that says what is wrong with its value is a field saying the value is wrong.
+    protected override bool HasError => Invalid || HasErrorMessage;
+
+    // Every piece of text that describes the field rather than names it, in reading order: what is wrong
+    // with the value first, then the visible helper text, then the one written for a screen reader alone.
+    private string? DescribedBy
+    {
+        get
+        {
+            var ids = string.Join(' ', new[]
+            {
+                HasErrorMessage ? _errorId : null,
+                HasDescription ? _descriptionId : null,
+                AriaDescription.HasValue() ? _ariaDescriptionId : null
+            }.Where(id => id.HasValue()));
+
+            return ids.HasValue() ? ids : null;
+        }
+    }
+
     private string GetDropdownAriaLabelledby()
     {
         return HasLabel ? $"{_labelId} {_dropdownTextContainerId}" : _dropdownTextContainerId;
@@ -3076,15 +3309,21 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await _virtualizeElement.RefreshDataAsync();
     }
 
+    // Whether the selection can be taken back at all, the one rule the clear button, ClearAsync and the Escape key
+    // (ClearsOnEscape) all go by: never in a read-only or a disabled dropdown, nor where the selection is bound one
+    // way - a Values without a ValuesChanged, or a Value with neither a ValueChanged nor an OnChange - which refuses
+    // the empty one.
+    private bool CanClear => ReadOnly is false
+                             && Disabled is false
+                             && (MultiSelect ? ValuesHasBeenSet is false || ValuesChanged.HasDelegate
+                                             : InvalidValueBinding() is false);
+
     private async Task HandleOnClearClick()
     {
-        if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (CanClear is false) return;
 
         if (MultiSelect)
         {
-            if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
-
             await AssignValues([]);
 
             // A copy, like every other call site: handing over the live Values collection (which a
@@ -3093,8 +3332,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
         else
         {
-            if (InvalidValueBinding()) return;
-
             CurrentValue = default;
 
             _selectedItems.Clear();
@@ -3218,7 +3455,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private bool IsSelectAllCandidate(TItem item)
     {
-        return GetItemType(item) == BitDropdownItemType.Normal && GetIsHidden(item) is false && GetIsEnabled(item);
+        return GetItemType(item) == BitDropdownItemType.Normal && GetIsHidden(item) is false && GetIsDisabled(item) is false;
     }
 
     private List<TItem> GetSelectAllCandidateItems()
@@ -3229,7 +3466,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnSelectAllClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (MultiSelect is false) return;
         if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
 
@@ -3285,7 +3522,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnAddItemComboClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
 
         await AddDynamicItem();
 
@@ -3293,7 +3530,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         if (_isResponsiveMode && MultiSelect)
         {
-            await _comboBoxInputResponsiveRef.FocusAsync();
+            await _comboBoxInputResponsiveRef.FocusSafelyAsync();
 
             return;
         }
@@ -3304,55 +3541,45 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     }
 
     // The height available to the scrollable item list is the callout's height minus the parts that sit
-    // above it, so every one of those parts has to be reported here or the callout overflows the
-    // viewport. The values mirror the --bit-drp-h (search box) and --bit-drp-itm-h plus its bottom
-    // border (select all row) of each size in the stylesheet.
-    private int GetCalloutScrollOffset()
-    {
-        var offset = 0;
+    // above it - the search box and the select all row - and those are sized with --bit-Dropdown-min-height
+    // and --bit-Dropdown-item-height, which an author is free to override. So the heights are not repeated
+    // here at all: the callout is asked to measure its own chrome (see Callouts.position), which a number
+    // hard-coded against the defaults of those variables could only ever guess at.
+    private const int MEASURED_CALLOUT_SCROLL_OFFSET = -1;
 
-        if (HasSearchBox)
-        {
-            offset += Size switch { BitSize.Small => 26, BitSize.Large => 40, _ => 32 };
-        }
-
-        if (HasSelectAllItem)
-        {
-            offset += Size switch { BitSize.Small => 31, BitSize.Large => 45, _ => 37 };
-        }
-
-        return offset;
-    }
+    // Only WHETHER those parts are there, which is what can change while the callout stays open and is
+    // therefore what decides when it has to be measured again.
+    private (bool SearchBox, bool SelectAll) GetCalloutChrome() => (HasSearchBox, HasSelectAllItem);
 
     // The height available to the item list is only computed when the callout is laid out, which happens
     // when it is toggled. The parts above that list can come and go while it stays open - a search that
-    // matches nothing takes the select all row with it - so a change to the offset is pushed to the
-    // already positioned callout instead of waiting for the next open.
+    // matches nothing takes the select all row with it - so a re-measure is pushed to the already
+    // positioned callout instead of waiting for the next open.
     private async Task RefreshCalloutScrollOffset()
     {
-        if (IsOpen is false || IsDisposed || IsEnabled is false) return;
+        if (IsOpen is false || IsDisposed || Disabled) return;
 
-        var scrollOffset = GetCalloutScrollOffset();
-        if (scrollOffset == _calloutScrollOffset) return;
+        var chrome = GetCalloutChrome();
+        if (chrome == _calloutChrome) return;
 
-        _calloutScrollOffset = scrollOffset;
+        _calloutChrome = chrome;
 
         try
         {
-            await _js.BitCalloutUpdateScrollOffset(_calloutId, scrollOffset);
+            await _js.BitCalloutUpdateScrollOffset(_calloutId, MEASURED_CALLOUT_SCROLL_OFFSET);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private async Task ToggleCallout()
     {
-        if (IsEnabled is false || IsDisposed) return;
+        if (Disabled || IsDisposed) return;
 
         // Every open and close of the callout goes through here, which is where the note the focus
         // handler left for the click it may be paired with stops being about the current state.
         _openedOnFocus = false;
 
-        _calloutScrollOffset = GetCalloutScrollOffset();
+        _calloutChrome = GetCalloutChrome();
 
         _isResponsiveMode = await _js.BitCalloutToggleCallout(
             dotnetObj: _dotnetObj,
@@ -3364,15 +3591,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             isCalloutOpen: IsOpen,
             responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
             dropDirection: DropDirection,
-            isRtl: Dir is BitDir.Rtl,
+            isRtl: ExplicitRtl,
             scrollContainerId: _scrollContainerId,
-            scrollOffset: _calloutScrollOffset,
+            scrollOffset: MEASURED_CALLOUT_SCROLL_OFFSET,
             headerId: CalloutHeaderTemplate is not null ? _headerId : "",
             footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: PreserveCalloutWidth is false,
             fixedCalloutWidth: false,
             maxWindowWidth: 0,
-            maxHeight: MaxHeight is > 0 ? MaxHeight.Value : 0);
+            maxHeight: MaxHeight is > 0 ? MaxHeight.Value : 0,
+            rootId: _Id);
     }
 
     private async ValueTask<ItemsProviderResult<TItem>> InternalItemsProvider(ItemsProviderRequest request)
@@ -3426,10 +3654,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
     {
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
 
         if (eventArgs.Key == "Escape")
         {
+            // An Escape with a modifier is never claimed from the surface around the dropdown (see
+            // Utils.claimEscape), so with the callout closed it is that surface's and drops nothing here. An open
+            // callout is closed by any Escape, the surfaces leaving the key to it whatever is held.
+            if (IsOpen is false && eventArgs.IsPlainEscape() is false) return;
+
             // What this press has to take back before it can reach the selection: a callout on the
             // screen, and a term the user typed into the input. Both are read before they are dropped.
             var hadSomethingToDismiss = IsOpen || _comboInputText.HasValue();
@@ -3442,7 +3675,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
             if (hadSomethingToDismiss is false)
             {
-                await ClearOnEscapeKey();
+                await ClearOnEscapeKey(eventArgs);
             }
         }
         else if (eventArgs.Key == "Enter")
@@ -3483,10 +3716,27 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // Escape with nothing left to dismiss takes back the selection, which is what a keyboard user
     // otherwise has to reach the clear button for. It goes through the very same clear, so it reports
     // itself through OnClear and is refused wherever that button would be.
-    private Task ClearOnEscapeKey()
+    // When a plain Escape reaches the selection rather than nothing at all, the one rule ClearOnEscapeKey and the
+    // two claims below go by: there is a selection, and the clear it runs would not refuse it (CanClear). The
+    // claims are written onto the elements whose handlers act on the key, for Utils.claimEscape - the field closes
+    // an open list or clears, and the ComboBox input, which the field leaves the key to while it has the focus,
+    // also drops the term typed into it while there is one (the term HandleOnKeyDown reads, not the input's DOM
+    // value, which ClearComboBoxInput leaves alone in a read-only dropdown).
+    private bool ClearsOnEscape => ClearOnEscape && _selectedItems.Count > 0 && CanClear;
+
+    private string? TriggerEscapeClaim => Disabled is false && (IsOpen || ClearsOnEscape) ? "claim" : null;
+
+    private string? ComboEscapeClaim => Disabled || InvalidValueBinding() ? null
+                                      : IsOpen || ClearsOnEscape || HasComboTermToDrop ? "claim"
+                                      : null;
+
+    private bool HasComboTermToDrop => ReadOnly is false && (_comboInputText.HasValue() || _searchText.HasValue());
+
+    // Only a plain Escape clears: one with a modifier is never claimed from the surface around the dropdown (see
+    // Utils.claimEscape), which closes on it instead.
+    private Task ClearOnEscapeKey(KeyboardEventArgs e)
     {
-        if (ClearOnEscape is false) return Task.CompletedTask;
-        if (_selectedItems.Count == 0) return Task.CompletedTask;
+        if (e.IsPlainEscape() is false || ClearsOnEscape is false) return Task.CompletedTask;
 
         return HandleOnClearClick();
     }
@@ -3507,7 +3757,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnComboInput(ChangeEventArgs e)
     {
         if (ReadOnly) return;
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
 
         // What the input actually holds, which is what the dropdown has to render back into it and what
         // the Enter and Backspace keys act on. It is kept apart from the search term because a debounced
@@ -3565,7 +3815,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnComboChange(ChangeEventArgs e)
     {
         if (ReadOnly) return;
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
+
+        // The input event has already searched for everything that was typed, so the change event - the
+        // commit the browser raises when the input loses the focus (Tab, a click elsewhere) or on Enter -
+        // only ever restates a term. Those are the moments the dropdown closes the callout for, and closing
+        // discards the term (see OnSetIsOpen), so a change arriving with the callout closed is the stale
+        // commit of a term that is already gone: taking it would put the term back into the input and
+        // filter the next opening by it.
+        if (IsOpen is false) return;
 
         _comboInputText = e.Value?.ToString();
 
@@ -3577,9 +3835,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // reports.
         if (string.Equals(_searchText ?? string.Empty, _comboInputText ?? string.Empty, StringComparison.Ordinal)) return;
 
-        // The change event of an input is the commit of what was typed, which the browser raises when the
-        // input loses the focus (and when Enter is pressed). Both of those are moments the dropdown has
-        // just dismissed the callout for, so the search here must not reveal it again behind the user.
+        // A commit that reaches an open list before its close is the term the list is showing; it is
+        // applied without opening anything, since the close it precedes is on its way.
         await SearchComboItems(e, openCallout: false);
     }
 
@@ -3602,7 +3859,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task OpenCallout()
     {
         if (IsOpen) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (await AssignIsOpenInternal(true) is false) return;
 
@@ -3612,7 +3869,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task RemoveLastSelectedItem()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (_selectedItems.Any() is false) return;
 
@@ -3630,7 +3887,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task AddDynamicItem()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The text of the input, not the (possibly debounced) search term: this acts on what the user
         // typed and is looking at.
@@ -3655,8 +3912,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             {
                 Text = text,
                 Title = text,
-                Value = default,
-                IsEnabled = true
+                Value = default
             };
 
             if (DynamicValueGenerator is not null)
@@ -3677,8 +3933,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             {
                 Text = text,
                 Title = text,
-                Value = default,
-                IsEnabled = true
+                Value = default
             };
 
             if (DynamicValueGenerator is not null)
@@ -3773,7 +4028,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // the list shows (and reports through aria-activedescendant) cannot point at such an item either.
     private bool IsCommitCandidate(TItem item)
     {
-        return GetItemType(item) == BitDropdownItemType.Normal && GetIsHidden(item) is false && GetIsEnabled(item);
+        return GetItemType(item) == BitDropdownItemType.Normal && GetIsHidden(item) is false && GetIsDisabled(item) is false;
     }
 
     // The id the commit target is referenced by from the ComboBox input, for the items that carry no id
@@ -3816,7 +4071,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private string? GetDynamicItemText()
     {
         if (Combo is false || Dynamic is false) return null;
-        if (ReadOnly || IsEnabled is false) return null;
+        if (ReadOnly || Disabled) return null;
         if (_comboInputText.HasNoValue()) return null;
         if (IsMaxSelectedItemsReached) return null;
         if (IsTextAlreadySelected(_comboInputText!)) return null;
@@ -3835,7 +4090,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnDynamicItemClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
 
         var wasOpen = IsOpen;
 
@@ -3860,7 +4115,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private TItem? GetCommitTarget()
     {
-        if (Combo is false || ReadOnly || IsEnabled is false) return null;
+        if (Combo is false || ReadOnly || Disabled) return null;
         if (_comboInputText.HasNoValue()) return null;
 
         if (_commitTargetCacheKey != _comboInputText ||
@@ -3901,10 +4156,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return string.Join(MultiSelectDelimiter, _selectedItems.Skip(GetDisplayedItemsCount()).Select(GetText));
     }
 
-    // The whole selection as one piece of text, which is what the chips and the overflow indicator show
-    // between them, so the combobox can be named after it instead of after the display that also holds
-    // the remove button of every chip.
-    private string GetChipsAriaText()
+    // The whole selection as one piece of text: what the chips and the overflow indicator show between
+    // them, so the combobox can be named after it instead of after the display that also holds the
+    // remove button of every chip - and what the text display stands for once it has collapsed into a
+    // count of the selection.
+    private string GetSelectedItemsText()
     {
         return string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText));
     }
@@ -3938,7 +4194,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         UpdateSelectedItemsFromValues();
 
-        EditContext?.NotifyFieldChanged(FieldIdentifier);
+        NotifyFieldChanged();
     }
 
     private void SetIsSelected(TItem item, bool value)
@@ -3978,6 +4234,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
     }
 
+    // The display is written here rather than in the stylesheet because it is what the component toggles the
+    // layer with; Styles.Overlay is appended after it, so a value written for the overlay still wins.
+    private string GetOverlayStyles()
+    {
+        return $"display:{(IsOpen ? "block" : "none")};{Styles?.Overlay}";
+    }
+
     private string GetCalloutCssClasses()
     {
         List<string> classes = ["bit-drp-cal"];
@@ -4009,11 +4272,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             classes.Add("bit-drp-rtl");
         }
 
-        classes.Add(GetColorClass());
-
-        // The callout renders outside the root element, so the size class has to be repeated on it for
-        // the items to follow the size of the dropdown they belong to.
-        classes.Add(GetSizeClass());
+        // The callout renders outside the root element, so the color and the size classes have to be repeated
+        // on it for the items to follow the dropdown they belong to. Each is empty while its parameter is unset,
+        // and is left out rather than joined in as an empty entry.
+        classes.AddIfHasValue(GetColorClass());
+        classes.AddIfHasValue(GetSizeClass());
 
         return string.Join(' ', classes).Trim();
     }

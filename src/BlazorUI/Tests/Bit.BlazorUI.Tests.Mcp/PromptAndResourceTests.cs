@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModelContextProtocol.Protocol;
 using Bit.BlazorUI.Tests.Mcp.Infrastructure;
 
@@ -61,8 +61,9 @@ public class PromptAndResourceTests : McpTestBase
                 $"The '{name}' prompt names none of this server's tools, so it cannot be telling an agent what order to call them in.");
 
             // The standing rules live in the server's instructions, which the client has had in
-            // context since initialize. A prompt that repeated them would be paying twice.
-            Assert.DoesNotContain("Six things hold", text);
+            // context since initialize. A prompt that repeated them would be paying twice. The sentence that
+            // opens them is matched without its count, which changes whenever a rule is added.
+            Assert.DoesNotContain("things hold across the whole library", text);
         }
     }
 
@@ -112,7 +113,7 @@ public class PromptAndResourceTests : McpTestBase
         StringAssert.Contains(text, "AllowDisabledFocus");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("bitblazorui://components/{name}", "name", "Dat", "BitDatePicker")]
     [DataRow("bitblazorui://types/{typeName}", "typeName", "BitCol", "BitColor")]
     [DataRow("bitblazorui://setup/{hostingModel}", "hostingModel", "", "web-app")]

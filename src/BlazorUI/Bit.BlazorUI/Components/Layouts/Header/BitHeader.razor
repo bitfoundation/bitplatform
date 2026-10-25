@@ -1,13 +1,19 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @* Only the explicit Hidden takes the content of the header out of reach (inert). A header that the
    scroll rolled up is still meant to be reachable: it brings itself back as soon as anything inside
    it takes the focus, and an inert header can never receive that focus in the first place. *@
+@{
+    // A null written over a splatted attribute removes it, so an inert the page wrote by hand is kept while Hidden is off
+    // (see BitComponentBase.GetSplattedAttribute).
+    var ariaLabel = ResolveAriaLabel();
+    var inert = Hidden || GetSplattedAttribute("inert") is not null;
+}
 <header @ref=RootElement @attributes="HtmlAttributes"
         id="@_Id"
-        inert="@Hidden"
-        aria-label="@AriaLabel"
+        inert="@inert"
+        aria-label="@ariaLabel"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
         dir="@Dir?.ToString().ToLower()">
@@ -16,10 +22,23 @@
            a positioned box for it to anchor to. Positioning the root instead would pair its z-index with
            a position and turn the header into a stacking context, which would clamp anything inside it
            that has to paint over the rest of the page. *@
+        @* A bare "#id" would be resolved against the base href of the app, which the router then reads as a
+           navigation to another page, so the href names this very page (see _SkipLinkHref) and the click handler
+           moves the focus along with the scroll, which a plain fragment navigation handled by the router does not. *@
         @if (SkipLinkHref.HasValue())
         {
-            <a href="@SkipLinkHref" style="@Styles?.SkipLink" class="bit-hdr-skp @Classes?.SkipLink">@(SkipLinkText ?? "Skip to main content")</a>
+            <a href="@_SkipLinkHref"
+               @onclick="HandleSkipLinkClick"
+               @onclick:preventDefault="_IsFragmentSkipLink"
+               style="@Styles?.SkipLink"
+               class="bit-hdr-skp @Classes?.SkipLink">@(SkipLinkText ?? "Skip to main content")</a>
         }
         @ChildContent
     </div>
+    @if (ExtensionContent is not null)
+    {
+        <div style="@Styles?.Extension" class="bit-hdr-ext @Classes?.Extension">
+            @ExtensionContent
+        </div>
+    }
 </header>

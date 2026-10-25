@@ -1,0 +1,33 @@
+﻿@page "/e2e/markdown-editor/autofocus"
+
+<PageTitle>BitMarkdownEditor AutoFocus E2E</PageTitle>
+
+<h1>BitMarkdownEditor - AutoFocus and base parameters</h1>
+
+<E2ESection Id="autofocus" Title="AutoFocus">
+    <input id="before-editor" />
+    <BitMarkdownEditor Id="mde-autofocus" AutoFocus DefaultValue="focused on load" Height="6rem" Mode="BitMarkdownEditorMode.Edit" />
+</E2ESection>
+
+<E2ESection Id="base" Title="Visibility and HtmlAttributes">
+    <button id="btn-visibility" @onclick="CycleVisibility">Cycle visibility</button>
+    <span id="visibility">@_visibility</span>
+    <BitMarkdownEditor Id="mde-visibility" Visibility="_visibility" HtmlAttributes="_attributes" Height="6rem" Mode="BitMarkdownEditorMode.Edit" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private BitVisibility _visibility = BitVisibility.Visible;
+    private readonly Dictionary<string, object> _attributes = new() { ["data-test"] = "mde-data", ["title"] = "Editor title" };
+
+    private void CycleVisibility()
+    {
+        _visibility = _visibility switch
+        {
+            BitVisibility.Visible => BitVisibility.Hidden,
+            BitVisibility.Hidden => BitVisibility.Collapsed,
+            _ => BitVisibility.Visible
+        };
+    }
+}

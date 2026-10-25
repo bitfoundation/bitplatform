@@ -8,15 +8,12 @@
     max-width: max-content;
 }
 
-.position-btn {
-    gap: rem2(16px);
+// The switches an example is set up with before its panel is opened.
+.controls {
+    gap: rem2(16px) rem2(32px);
     display: flex;
-    flex-flow: column nowrap;
-
-    div {
-        display: flex;
-        justify-content: space-between;
-    }
+    flex-wrap: wrap;
+    align-items: flex-end;
 }
 
 // The box a panel with AbsolutePosition is laid out inside of. It needs a position of its own for the
@@ -31,7 +28,6 @@
     min-height: rem2(200px);
     flex-flow: column nowrap;
     align-items: flex-start;
-    border-radius: rem2(4px);
     border: 1px solid $bit-color-border-secondary;
 }
 
@@ -47,21 +43,15 @@
         align-items: flex-start;
     }
 
-    .custom-class {
-        .item {
-            width: 3rem;
-            height: 3rem;
-            margin: 0.5rem;
-            border-radius: 0.5rem;
-            background-color: brown;
-        }
+    .no-swipe-strip {
+        padding: rem2(16px);
+        border: 1px dashed $bit-color-border-primary;
     }
 
     .custom-container {
-        padding: 1rem;
-        border: 0.25rem solid #0054C6;
         border-end-start-radius: 1rem;
         border-start-start-radius: 1rem;
+        border: 0.25rem solid #0054C6;
     }
 
     .custom-overlay {
@@ -73,10 +63,6 @@
         background-color: tomato;
     }
 
-    .custom-header {
-        font-size: 2rem;
-    }
-
     .custom-body {
         color: black;
         background-color: lightseagreen;
@@ -85,7 +71,6 @@
     .custom-footer {
         color: brown;
         padding: 1.5rem;
-        font-size: 1.5rem;
         background-color: tomato;
     }
 }

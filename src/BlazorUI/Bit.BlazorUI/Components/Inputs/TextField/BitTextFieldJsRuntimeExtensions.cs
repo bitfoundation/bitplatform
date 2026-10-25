@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 internal static class BitTextFieldJsRuntimeExtensions
 {
@@ -20,6 +20,11 @@ internal static class BitTextFieldJsRuntimeExtensions
     internal static ValueTask BitTextFieldSetupSelectOnFocus(this IJSRuntime jsRuntime, string id, ElementReference input)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setupSelectOnFocus", id, input);
+    }
+
+    internal static ValueTask BitTextFieldSetupChromeFocus(this IJSRuntime jsRuntime, string id, ElementReference root)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setupChromeFocus", id, root);
     }
 
     internal static ValueTask BitTextFieldSetupGhostText(this IJSRuntime jsRuntime, string id, ElementReference input, DotNetObjectReference<BitTextField> dotnetObj)

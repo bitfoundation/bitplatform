@@ -439,6 +439,13 @@ public partial class DemoPage
         },
         new()
         {
+            Name = "Disabled",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Gets or sets a value indicating whether the component is disabled and cannot respond to user interaction.",
+        },
+        new()
+        {
             Name = "ForceAnimation",
             Type = "bool",
             DefaultValue = "false",
@@ -449,7 +456,7 @@ public partial class DemoPage
             Name = "HtmlAttributes",
             Type = "Dictionary<string, object>",
             DefaultValue = "new Dictionary<string, object>()",
-            Description = "Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters.",
+            Description = "Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters. An attribute written on the component wins over an entry of the same name.",
         },
         new()
         {
@@ -457,13 +464,6 @@ public partial class DemoPage
             Type = "string?",
             DefaultValue = "null",
             Description = "Gets or sets the unique identifier for the component's root element.",
-        },
-        new()
-        {
-            Name = "IsEnabled",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Gets or sets a value indicating whether the component is enabled and can respond to user interaction.",
         },
         new()
         {
@@ -507,69 +507,78 @@ public partial class DemoPage
         },
     ];
 
-    private readonly List<ComponentSubEnum> _componentBaseSubEnums =
-    [
-        new()
-        {
-            Id = "component-visibility",
-            Name = "BitVisibility",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Visible",
-                    Value="0",
-                    Description="The content of the component is visible.",
-                },
-                new()
-                {
-                    Name= "Hidden",
-                    Value="1",
-                    Description="The content of the component is hidden, but the space it takes on the page remains (visibility:hidden).",
-                },
-                new()
-                {
-                    Name= "Collapsed",
-                    Value="2",
-                    Description="The component is hidden (display:none).",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "component-dir",
-            Name = "BitDir",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Ltr",
-                    Value="0",
-                    Description="Ltr (left to right) is to be used for languages that are written from the left to the right (like English).",
-                },
-                new()
-                {
-                    Name= "Rtl",
-                    Value="1",
-                    Description="Rtl (right to left) is to be used for languages that are written from the right to the left (like Arabic).",
-                },
-                new()
-                {
-                    Name= "Auto",
-                    Value="2",
-                    Description="Auto lets the user agent decide. It uses a basic algorithm as it parses the characters inside the element until it finds a character with a strong directionality, then applies that directionality to the whole element.",
-                }
-            ]
-        }
-    ];
+    private readonly List<ComponentSubEnum> _componentBaseSubEnums = [ComponentVisibilityEnum(), ComponentDirEnum()];
+
+    /// <summary>
+    /// The BitVisibility table every page of a component inheriting BitComponentBase shows, anchored under
+    /// #component-visibility. A page of a component that does not inherit it, but documents a parameter of this
+    /// type all the same (BitParams), adds it to its own SubEnums - one table, never a copy of it.
+    /// </summary>
+    public static ComponentSubEnum ComponentVisibilityEnum() => new()
+    {
+        Id = "component-visibility",
+        Name = "BitVisibility",
+        Description = "",
+        Items =
+        [
+            new()
+            {
+                Name= "Visible",
+                Value="0",
+                Description="The content of the component is visible.",
+            },
+            new()
+            {
+                Name= "Hidden",
+                Value="1",
+                Description="The content of the component is hidden, but the space it takes on the page remains (visibility:hidden).",
+            },
+            new()
+            {
+                Name= "Collapsed",
+                Value="2",
+                Description="The component is hidden (display:none).",
+            }
+        ]
+    };
+
+    /// <summary>
+    /// The BitDir table every page of a component inheriting BitComponentBase shows, anchored under #component-dir;
+    /// added to its own SubEnums by a page that documents a parameter of this type without inheriting it (BitParams).
+    /// </summary>
+    public static ComponentSubEnum ComponentDirEnum() => new()
+    {
+        Id = "component-dir",
+        Name = "BitDir",
+        Description = "",
+        Items =
+        [
+            new()
+            {
+                Name= "Ltr",
+                Value="0",
+                Description="Ltr (left to right) is to be used for languages that are written from the left to the right (like English).",
+            },
+            new()
+            {
+                Name= "Rtl",
+                Value="1",
+                Description="Rtl (right to left) is to be used for languages that are written from the right to the left (like Arabic).",
+            },
+            new()
+            {
+                Name= "Auto",
+                Value="2",
+                Description="Auto lets the user agent decide. It uses a basic algorithm as it parses the characters inside the element until it finds a character with a strong directionality, then applies that directionality to the whole element.",
+            }
+        ]
+    };
 
 
 
     private readonly List<string> _inputComponents = [
-        "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumberField", "OtpInput", "Rating",
-        "SearchBox", "TextField", "TimePicker", "CircularTimePicker", "Toggle", "TagsInput"
+        "Calendar", "Checkbox", "ChoiceGroup", "ColorPicker", "DatePicker", "DateRangePicker", "Dropdown", "FileInput", "FileUpload", "NumberField", "OtpInput", "Rating",
+        "SearchBox", "TextField", "TimePicker", "CircularTimePicker", "Toggle", "TagsInput", "MarkdownEditor", "CountryPicker", "TimeZonePicker"
     ];
 
     private readonly List<ComponentParameter> _inputBaseParameters =
@@ -709,6 +718,6 @@ public partial class DemoPage
 
 
     private readonly List<string> _notInheritedComponents = [
-        "CascadingValueProvider", "Chart", "ChartLegacy", "DataGrid", "DataGridLegacy", "ModalService", "Params"
+        "CascadingValueProvider", "ChartLegacy", "DataGridLegacy", "ModalService", "Params"
     ];
 }

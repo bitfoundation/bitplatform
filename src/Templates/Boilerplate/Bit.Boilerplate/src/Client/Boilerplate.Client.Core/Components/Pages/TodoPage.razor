@@ -13,14 +13,14 @@
             <BitTextField @ref="newTodoInput"
                           Style="flex-grow:1"
                           @bind-Value="newTodoTitle"
-                          Immediate DebounceTime="300"
+                          Immediate
                           Placeholder="@Localizer[nameof(AppStrings.TodoAddPlaceholder)]"
                           OnEnter="WrapHandled(async (KeyboardEventArgs args) => await AddTodoItem())" />
 
             <BitButton AutoLoading
                        OnClick="WrapHandled(AddTodoItem)"
                        Title="@Localizer[nameof(AppStrings.Add)]"
-                       IsEnabled="(string.IsNullOrWhiteSpace(newTodoTitle) is false)">
+                       Disabled="string.IsNullOrWhiteSpace(newTodoTitle)">
                 @Localizer[nameof(AppStrings.Add)]
             </BitButton>
         </BitStack>
@@ -46,7 +46,7 @@
                                  DefaultValue="nameof(AppStrings.Alphabetical)"
                                  TItem="BitDropdownOption<string>" TValue="string"
                                  OnSelectItem="(BitDropdownOption<string> item) => SortTodoItems(item.Value)"
-                                 Styles="@(new() { Container=$"height:32px;background-color:var({BitCss.Var.Color.Background.Secondary.Main})" })">
+                                 Styles="@(new() { Container=$"background-color:var({BitCss.Var.Color.Background.Secondary.Main})" })">
                         <Options>
                             <BitDropdownOption Text="@Localizer[nameof(AppStrings.Alphabetical)]" Value="nameof(AppStrings.Alphabetical)" />
                             <BitDropdownOption Text="@Localizer[nameof(AppStrings.Date)]" Value="nameof(AppStrings.Date)" />
@@ -55,7 +55,7 @@
                             <BitIcon IconName="@BitIconName.Breadcrumb" />
                         </CaretDownTemplate>
                     </BitDropdown>
-                    <BitButton IconOnly Color="BitColor.SecondaryBackground" Style="height:32px;"
+                    <BitButton IconOnly Color="BitColor.SecondaryBackground"
                                Title="@(isDescendingSort ? Localizer[nameof(AppStrings.SortAscending)] : Localizer[nameof(AppStrings.SortDescending)])"
                                AriaLabel="@(isDescendingSort ? Localizer[nameof(AppStrings.SortAscending)] : Localizer[nameof(AppStrings.SortDescending)])"
                                OnClick="WrapHandled(() => { isDescendingSort = !isDescendingSort; FilterViewTodoItems(); })"
@@ -71,21 +71,22 @@
             }
             else
             {
-                <BitPullToRefresh OnRefresh="WrapHandled(async () => await LoadTodoItems(false))" ScrollerSelector=".todo-list" Style="width:100%">
-                    <BitBasicList Items="viewTodoItems" Virtualize ItemSize="90" Class="todo-list">
+                <BitPullToRefresh OnRefresh="WrapHandled(async () => await LoadTodoItems(false))" ScrollerSelector=".todo-list" FullWidth>
+                    <BitBasicList Items="viewTodoItems" Virtualize ItemSize="90" FullWidth Class="todo-list">
                         <EmptyContent>
-                            <BitStack Alignment="BitAlignment.Center" Style="padding:1rem;">
+                            <BitStack Alignment="BitAlignment.Center" Padding="1rem">
                                 <BitImage Src="/_content/Boilerplate.Client.Core/images/backgrounds/empty-todo-list-bg.svg" />
-                                <BitLabel>@Localizer[nameof(AppStrings.NoTodos)]</BitLabel>
+                                <BitLabel Element="div">@Localizer[nameof(AppStrings.NoTodos)]</BitLabel>
                             </BitStack>
                         </EmptyContent>
                         <RowTemplate Context="todo">
-                            <BitStack Alignment="BitAlignment.Center" Style="padding:1rem 1rem 0" AutoHeight>
+                            <BitStack role="listitem" Alignment="BitAlignment.Center" Padding="1rem 1rem 0" AutoHeight>
                                 <BitStack Horizontal @key=@todo.Id VerticalAlign="BitAlignment.Center">
                                     @if (todo.IsInEditMode is false)
                                     {
                                         <BitStack Grows Gap="0">
-                                            <BitCheckbox Label="@todo.Title"
+                                            <BitCheckbox AutoLoading
+                                                         Label="@todo.Title"
                                                          Styles="@(new() { Label = todo.IsDone ? "text-decoration:line-through" : "" })"
                                                          @bind-Value="todo.IsDone"
                                                          OnChange="WrapHandled(async () => await UpdateTodoItem(todo))" />
@@ -97,30 +98,38 @@
                                                        IconName="@BitIconName.Edit"
                                                        Color="BitColor.SecondaryForeground"
                                                        Title="@Localizer[nameof(AppStrings.Edit)]"
+                                                       AriaLabel="@Localizer[nameof(AppStrings.Edit)]"
                                                        OnClick="WrapHandled(() => EnterEditMode(todo))" />
 
                                             <BitButton Color="BitColor.Error"
                                                        Variant="BitVariant.Text"
                                                        IconName="@BitIconName.Delete"
                                                        Title="@Localizer[nameof(AppStrings.Remove)]"
+                                                       AriaLabel="@Localizer[nameof(AppStrings.Remove)]"
                                                        OnClick="WrapHandled(() => { isDeleteDialogOpen = true; deletingTodoItem = todo; })" />
                                         </BitStack>
                                     }
                                     else
                                     {
-                                        <BitTextField Style="flex-grow:1" @bind-Value="underEditTodoItemTitle" />
+                                        <BitTextField Immediate
+                                                      AutoFocus
+                                                      Style="flex-grow:1"
+                                                      @bind-Value="underEditTodoItemTitle"
+                                                      AriaLabel="@Localizer[nameof(AppStrings.Title)]"
+                                                      OnEnter="WrapHandled(() => SaveTodoItem(todo))"
+                                                      OnEscape="WrapHandled(() => ExitEditMode(todo))" />
 
                                         <BitButton Color="BitColor.TertiaryBackground"
                                                    Title="@Localizer[nameof(AppStrings.Cancel)]"
                                                    OnClick="WrapHandled(() => ExitEditMode(todo))">
                                             @Localizer[nameof(AppStrings.Cancel)]
                                         </BitButton>
-                                        <BitButton Title="@Localizer[nameof(AppStrings.Edit)]" OnClick="WrapHandled(() => SaveTodoItem(todo))">
+                                        <BitButton Title="@Localizer[nameof(AppStrings.Save)]" OnClick="WrapHandled(() => SaveTodoItem(todo))">
                                             @Localizer[nameof(AppStrings.Save)]
                                         </BitButton>
                                     }
                                 </BitStack>
-                                <BitSeparator Border="BitColorKind.Tertiary" />
+                                <BitSeparator Decorative Border="BitColorKind.Tertiary" />
                             </BitStack>
                         </RowTemplate>
                     </BitBasicList>
@@ -132,7 +141,5 @@
 
 <BitDialog OnOk="WrapHandled(DeleteTodoItem)"
            @bind-IsOpen="isDeleteDialogOpen"
-           OkText="@Localizer[nameof(AppStrings.Yes)]"
-           CancelText="@Localizer[nameof(AppStrings.No)]"
            Title="@Localizer[nameof(AppStrings.DeleteTodoItem)]"
            Message="@Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), deletingTodoItem?.Title ?? "")" />

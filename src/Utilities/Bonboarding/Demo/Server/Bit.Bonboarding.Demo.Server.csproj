@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+    <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Bit.Bonboarding\Bit.Bonboarding.csproj" />
+    <ProjectReference Include="..\Client\Bit.Bonboarding.Demo.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Bit.Bonboarding" />
+    <Using Include="Microsoft.AspNetCore.Mvc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The MCP tests boot this very app: WebApplicationFactory needs its entry point type, which
+         top-level statements declare as internal. -->
+    <InternalsVisibleTo Include="Bit.Bonboarding.Tests.Mcp" />
+  </ItemGroup>
+
+  <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
+       working from a published deployment, where none of these files exist next to the app.
+       LogicalName is set explicitly because the resource name IS the path an MCP client asks for. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\README.md" LogicalName="BonboardingDocs/README.md" />
+
+    <!-- The stylesheet as written, comments included: the theme tool reads its variables and the
+         groups they are filed under out of it. -->
+    <EmbeddedResource Include="..\..\Bit.Bonboarding\Styles\bit-bonboarding.css" LogicalName="BonboardingDocs/bit-bonboarding.css" />
+
+    <!-- Every demo page - each one is a working tour - plus the fake product UI they point at and the
+         client half of the hosting, Routes.razor with the one BonboardingRoot among it. The MCP page
+         describes this server rather than the library, and the not-found page teaches nothing about
+         tours. Nor does the site chrome: Layout\ (the header, docs shell, search, footer and the
+         template's reconnect modal) and the DocsCatalog.cs that drives it are what every Utilities
+         demo shares. -->
+    <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
+                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\DocsCatalog.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
+      <LogicalName>BonboardingSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
+    <EmbeddedResource Include="Program.cs" LogicalName="BonboardingSource/Demo/Server/Program.cs" />
+
+    <!-- The Components\ prefix is written out: %(RecursiveDir) only captures what the '**' matched.
+         Error.razor is the template's own error page and says nothing about tours. -->
+    <EmbeddedResource Include="Components\**\*.razor" Exclude="Components\Pages\Error.razor">
+      <LogicalName>BonboardingSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

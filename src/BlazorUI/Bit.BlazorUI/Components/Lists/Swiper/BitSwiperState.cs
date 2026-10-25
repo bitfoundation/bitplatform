@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Where a <see cref="BitSwiper"/> stands, as reported from the browser whenever it actually changes.

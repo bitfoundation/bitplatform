@@ -1,4 +1,4 @@
-declare class AppOptions {
+﻿declare class AppOptions {
     static eventBus: any;
     static "__#65@#opts": Map<any, any>;
     static get(name: any): any;

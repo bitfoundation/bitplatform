@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Built-in hatch/pattern styles for fills.</summary>
 public enum BitChartPatternStyle

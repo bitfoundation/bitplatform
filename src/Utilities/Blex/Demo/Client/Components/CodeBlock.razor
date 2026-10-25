@@ -1,0 +1,38 @@
+﻿@*
+    A code sample: CodeHighlighter's tokens inside the site kit's pre.bb-code, which is what gives it
+    the site's code surface - and the copy button site.js adds to every pre.bb-code. A title or a
+    file name, when given, is the caption above it. The token colors are in demo.css.
+*@
+@if (!string.IsNullOrEmpty(Title) || !string.IsNullOrEmpty(FileName))
+{
+    <div class="demo-code-label">
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <span>@Title</span>
+        }
+        @if (!string.IsNullOrEmpty(FileName))
+        {
+            <span class="bb-mono">@FileName</span>
+        }
+    </div>
+}
+<pre class="bb-code"><code class="language-@Language">@CodeHighlighter.Highlight(Normalized, Language)</code></pre>
+
+@code {
+    /// <summary>The snippet to render. Trailing whitespace is trimmed.</summary>
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+
+    /// <summary>Language token understood by <see cref="CodeHighlighter"/>.</summary>
+    [Parameter] public string Language { get; set; } = "csharp";
+
+    /// <summary>Optional caption shown above the code.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Optional file name shown in the caption.</summary>
+    [Parameter] public string? FileName { get; set; }
+
+    // The samples are raw string literals, so they carry the source file's line endings. A CR left
+    // inside a token's span (a // comment runs to the LF) is a line break of its own in a <pre>, which
+    // double-spaced every commented line - so the snippet is reduced to LF before it is scanned.
+    private string Normalized => Code.ReplaceLineEndings("\n").TrimEnd();
+}

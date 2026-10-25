@@ -1,0 +1,474 @@
+﻿@page "/e2e/modal-service"
+@page "/e2e/modal-service/{Section}"
+@implements IDisposable
+@inject BitModalService ModalService
+@inject NavigationManager Navigation
+
+<PageTitle>BitModalService E2E</PageTitle>
+
+<h1>BitModalService</h1>
+
+@* The second route is the same page under another path, so the page and its container stay mounted while the app
+   navigates between the two - which is what a modal closing on navigation is measured against. Every modal is shown
+   with a data-modal attribute on its root, the one the tests find it by. *@
+
+<span id="svc-section">@(Section ?? "-")</span>
+<span id="svc-log">@string.Join(",", _log)</span>
+
+<E2ESection Id="basic" Title="Show&lt;T&gt;, the cascaded reference, Close, Dismiss, CloseWith, Result, IsDismissed">
+    <button id="btn-svc-basic" @onclick="ShowBasic">Show</button>
+    <button id="btn-svc-chrome" @onclick="ShowChrome">With header and footer</button>
+    <button id="btn-svc-type" @onclick="ShowByType">Show(Type)</button>
+    <span id="svc-basic-result">@_basicResult</span>
+    <span id="svc-basic-dismissed">@_basicDismissed</span>
+    <span id="svc-basic-id">@_basicId</span>
+</E2ESection>
+
+<E2ESection Id="markup" Title="Markup as content">
+    <button id="btn-svc-markup" @onclick="ShowMarkup">Show markup</button>
+    <button id="btn-svc-markup-ref" @onclick="ShowMarkupWithReference">Markup that closes itself</button>
+    <span id="svc-markup-content">@_markupContent</span>
+</E2ESection>
+
+<E2ESection Id="result" Title="Awaiting a result: GetResult&lt;T&gt;, BitModalContentParameters&lt;T&gt;">
+    <button id="btn-svc-confirm" @onclick="ShowConfirm">Ask</button>
+    <span id="svc-confirm">@_confirm</span>
+</E2ESection>
+
+<E2ESection Id="content" Title="Reaching the content: GetContentAsync, Rendered, the parameters factory">
+    <button id="btn-svc-content" @onclick="ShowContent">Show and reach</button>
+    <button id="btn-svc-factory" @onclick="ShowFactory">Parameters factory</button>
+    <button id="btn-svc-read-content" @onclick="ReadContent">Read the content</button>
+    <span id="svc-rendered">@_rendered</span>
+    <span id="svc-content-type">@_contentType</span>
+    <span id="svc-content-clicks">@_contentClicks</span>
+    <span id="svc-factory-id">@_factoryId</span>
+</E2ESection>
+
+<E2ESection Id="guard" Title="Guarding the close: CanClose, TryClose">
+    <button id="btn-svc-guard" @onclick="ShowGuarded">Show guarded</button>
+    <span id="svc-guard-result">@_guardResult</span>
+</E2ESection>
+
+<E2ESection Id="update" Title="Updating an open modal: Update, Refresh">
+    <button id="btn-svc-update" @onclick="ShowUpdatable">Show updatable</button>
+    <button id="btn-svc-update-all" @onclick="ReplaceParameters">Update(parameters)</button>
+    <button id="btn-svc-mutate" @onclick="MutateAndRefresh">Mutate and Refresh(reference)</button>
+    <button id="btn-svc-mutate-all" @onclick="MutateAndRefreshAll">Mutate and Refresh()</button>
+</E2ESection>
+
+<E2ESection Id="persistent" Title="Persistent modals across a container remount">
+    <button id="btn-svc-persistent" @onclick="ShowPersistent">Show persistent</button>
+    <button id="btn-svc-ordinary" @onclick="ShowOrdinary">Show ordinary</button>
+    <button id="btn-svc-toggle-container" @onclick="() => _persistContainerMounted = !_persistContainerMounted">Toggle container</button>
+    <span id="svc-persist-mounted">@_persistContainerMounted</span>
+    <span id="svc-persistent-closed">@(_persistentRef?.IsClosed.ToString() ?? "-")</span>
+    <span id="svc-ordinary-closed">@(_ordinaryRef?.IsClosed.ToString() ?? "-")</span>
+    <span id="svc-ordinary-result">@_ordinaryResult</span>
+    <button id="btn-svc-persist-refresh" @onclick="() => { }">Refresh</button>
+    @if (_persistContainerMounted)
+    {
+        <BitModalContainer Service="_persistService" />
+    }
+</E2ESection>
+
+<E2ESection Id="navigation" Title="Closing on navigation: CloseOnNavigation">
+    <button id="btn-svc-nav" @onclick="ShowNavigation">Show a modal</button>
+    <button id="btn-svc-linger" @onclick="ShowLingering">Show one that stays</button>
+    <button id="btn-svc-query" @onclick="@(() => Navigation.NavigateTo("/e2e/modal-service?q=1"))">Change the query</button>
+    <button id="btn-svc-other" @onclick="@(() => Navigation.NavigateTo("/e2e/modal-service/other"))">Go to another path</button>
+    <button id="btn-svc-nav-refresh" @onclick="() => { }">Refresh</button>
+    <span id="svc-nav-closed">@(_navRef?.IsClosed.ToString() ?? "-")</span>
+    <span id="svc-linger-closed">@(_lingerRef?.IsClosed.ToString() ?? "-")</span>
+</E2ESection>
+
+<E2ESection Id="tracking" Title="Tracking open modals: OpenModals, GetModal, CloseAll, OnAddModal, OnCloseModal, IsContainerAvailable">
+    <button id="btn-svc-stack" @onclick="ShowStacked">Show one more</button>
+    <button id="btn-svc-closeall" @onclick="() => ModalService.CloseAll()">Close all</button>
+    <button id="btn-svc-getmodal" @onclick="FindLast">GetModal</button>
+    <button id="btn-svc-home" @onclick="@(() => Navigation.NavigateTo("/"))">Leave the page</button>
+    <span id="svc-open-count">@ModalService.OpenModals.Count</span>
+    <span id="svc-added">@_added</span>
+    <span id="svc-closed">@_closed</span>
+    <span id="svc-available">@ModalService.IsContainerAvailable</span>
+    <span id="svc-getmodal">@_getModal</span>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters and the container's ModalParameters">
+    <button id="btn-svc-cascaded" @onclick="ShowCascaded">Takes the cascade</button>
+    <button id="btn-svc-cascaded-own" @onclick="ShowCascadedOwn">Its own position</button>
+    <button id="btn-svc-house" @onclick="ShowHouse">House defaults</button>
+    <button id="btn-svc-house-own" @onclick="ShowHouseOwn">Own header over the house one</button>
+    <BitParams Parameters="_modalParams">
+        <BitModalContainer Service="_paramsService" />
+    </BitParams>
+    <BitModalContainer Service="_houseService" ModalParameters="_houseParameters" />
+</E2ESection>
+
+<E2ESection Id="custom-container" Title="A custom container">
+    <button id="btn-svc-custom" @onclick="ShowInCustomContainer">Show in the custom container</button>
+    <BitModalServiceE2EContainer Service="_customService" />
+</E2ESection>
+
+<E2ESection Id="no-container" Title="A service with no container">
+    <button id="btn-svc-orphan" @onclick="ShowOrphan">Show without a container</button>
+    <span id="svc-orphan-available">@_orphanService.IsContainerAvailable</span>
+    <span id="svc-orphan-rendered">@_orphanRendered</span>
+</E2ESection>
+
+<E2ESection Id="look" Title="Close icon, Style, Class, Styles, Classes, CSS variables, RTL">
+    <button id="btn-svc-icon" @onclick="ShowIcon">External close icon</button>
+    <button id="btn-svc-styled" @onclick="ShowStyled">Styled</button>
+    <button id="btn-svc-rtl" @onclick="ShowRtl">RTL</button>
+</E2ESection>
+
+<BitModalContainer />
+
+<E2EStatus />
+
+@code {
+    [Parameter] public string? Section { get; set; }
+
+    private readonly List<string> _log = [];
+
+    private string _basicResult = "-";
+    private string _basicDismissed = "-";
+    private string _basicId = "-";
+    private string _markupContent = "-";
+    private string _confirm = "-";
+    private string _rendered = "-";
+    private string _contentType = "-";
+    private string _contentClicks = "-";
+    private string _factoryId = "-";
+    private BitModalReference? _contentRef;
+    private string _guardResult = "-";
+    private bool _allow;
+
+    private BitModalReference? _updRef;
+    private BitModalParameters? _updParams;
+
+    private readonly BitModalService _persistService = new();
+    private bool _persistContainerMounted = true;
+    private BitModalReference? _persistentRef;
+    private BitModalReference? _ordinaryRef;
+    private string _ordinaryResult = "-";
+
+    private BitModalReference? _navRef;
+    private BitModalReference? _lingerRef;
+
+    private int _added;
+    private int _closed;
+    private int _stacked;
+    private string? _lastId;
+    private string _getModal = "-";
+
+    private readonly BitModalService _paramsService = new();
+    private readonly BitModalParams[] _modalParams =
+    [
+        new() { Position = BitPosition.BottomCenter, ModeFull = true, ShowCloseButton = true }
+    ];
+    private readonly BitModalService _houseService = new();
+    private readonly BitModalParameters _houseParameters = new() { ShowCloseButton = true, HeaderText = "House header", MaxWidth = "22rem" };
+
+    private readonly BitModalService _customService = new();
+
+    private readonly BitModalService _orphanService = new();
+    private string _orphanRendered = "-";
+
+    protected override void OnInitialized()
+    {
+        ModalService.OnAddModal += HandleAdd;
+        ModalService.OnCloseModal += HandleClose;
+    }
+
+    private async Task HandleAdd(BitModalReference modal)
+    {
+        _added++;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleClose(BitModalReference modal)
+    {
+        _closed++;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void Report(string entry)
+    {
+        _log.Add(entry);
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private Dictionary<string, object> ContentParameters(string text) => new()
+    {
+        [nameof(BitModalServiceE2EContent.Text)] = text,
+        [nameof(BitModalServiceE2EContent.Report)] = (Action<string>)Report,
+        [nameof(BitModalServiceE2EContent.Allow)] = (Action)(() => _allow = true),
+    };
+
+    private static Dictionary<string, object> Marker(string name) => new() { ["data-modal"] = name };
+
+    private async Task ShowBasic()
+    {
+        var modal = await ModalService.Show<BitModalServiceE2EContent>(ContentParameters("Hello from the service"),
+            new BitModalParameters { AriaLabel = "From the service", HtmlAttributes = Marker("basic") });
+        _basicId = modal.Id;
+        StateHasChanged();
+
+        var result = await modal.Result;
+        _basicResult = result?.ToString() ?? "null";
+        _basicDismissed = modal.IsDismissed.ToString();
+    }
+
+    private Task ShowChrome()
+    {
+        return ModalService.Show<BitModalServiceE2EContent>(ContentParameters("Chrome"), new BitModalParameters
+        {
+            HeaderText = "Service header",
+            FooterText = "Service footer",
+            ShowCloseButton = true,
+            HtmlAttributes = Marker("chrome"),
+        });
+    }
+
+    private Task ShowByType()
+    {
+        return ModalService.Show(typeof(BitModalServiceE2EContent), ContentParameters("Shown by type"),
+            new BitModalParameters { AriaLabel = "By type", HtmlAttributes = Marker("type") });
+    }
+
+    private async Task ShowMarkup()
+    {
+        var modal = await ModalService.Show(builder => builder.AddMarkupContent(0, "<p class=\"svc-markup\" style=\"padding: 24px\">Markup content</p>"),
+            new BitModalParameters { AriaLabel = "Markup", HtmlAttributes = Marker("markup") });
+        await modal.Rendered;
+        _markupContent = modal.Content is null ? "null" : modal.Content.GetType().Name;
+    }
+
+    private Task ShowMarkupWithReference()
+    {
+        return ModalService.Show(modal => @<div style="padding: 24px;">
+            <span class="svc-markup-id">@modal.Id</span>
+            <button class="svc-markup-close" @onclick="modal.Close">Got it</button>
+        </div>, new BitModalParameters { AriaLabel = "Markup that closes itself", HtmlAttributes = Marker("markup-ref") });
+    }
+
+    private async Task ShowConfirm()
+    {
+        var modal = await ModalService.Show<BitModalServiceE2EContent>(new BitModalContentParameters<BitModalServiceE2EContent>
+        {
+            { c => c.Text, "Delete the project?" },
+            { c => c.Answer, true },
+        }, new BitModalParameters { IsAlert = true, AriaLabel = "Delete the project", HtmlAttributes = Marker("confirm") });
+
+        var confirmed = await modal.GetResult<bool>();
+        _confirm = modal.IsDismissed ? $"dismissed:{confirmed}" : confirmed.ToString();
+    }
+
+    private async Task ShowContent()
+    {
+        _contentRef = await ModalService.Show<BitModalServiceE2EContent>(ContentParameters("Reach me"),
+            new BitModalParameters { AriaLabel = "Content", HtmlAttributes = Marker("content") });
+        _rendered = (await _contentRef.Rendered).ToString();
+        var content = await _contentRef.GetContentAsync<BitModalServiceE2EContent>();
+        _contentType = content?.GetType().Name ?? "null";
+    }
+
+    private async Task ReadContent()
+    {
+        if (_contentRef is null) return;
+        var content = await _contentRef.GetContentAsync<BitModalServiceE2EContent>();
+        _contentClicks = content?.Clicks.ToString() ?? "null";
+    }
+
+    private async Task ShowFactory()
+    {
+        var modal = await ModalService.Show<BitModalServiceE2EContent>(reference => new()
+        {
+            [nameof(BitModalServiceE2EContent.Text)] = "factory:" + reference.Id,
+        }, new BitModalParameters { AriaLabel = "Factory", HtmlAttributes = Marker("factory") });
+        _factoryId = modal.Id;
+    }
+
+    private async Task ShowGuarded()
+    {
+        _allow = false;
+        var modal = await ModalService.Show<BitModalServiceE2EContent>(ContentParameters("Guarded"), new BitModalParameters
+        {
+            HeaderText = "Rename the project",
+            ShowCloseButton = true,
+            HtmlAttributes = Marker("guard"),
+            CanClose = async () =>
+            {
+                await Task.Yield();
+                Report("CanClose:" + _allow);
+                return _allow;
+            },
+        });
+
+        var result = await modal.Result;
+        _guardResult = (result?.ToString() ?? "null") + ":" + modal.IsDismissed;
+    }
+
+    private async Task ShowUpdatable()
+    {
+        _updParams = new BitModalParameters { HeaderText = "Step 1", Modeless = true, Position = BitPosition.BottomRight, HtmlAttributes = Marker("update") };
+        _updRef = await ModalService.Show<BitModalServiceE2EContent>(ContentParameters("Updatable"), _updParams);
+    }
+
+    private Task ReplaceParameters()
+    {
+        return _updRef?.Update(new BitModalParameters
+        {
+            HeaderText = "Replaced",
+            ShowCloseButton = true,
+            Modeless = true,
+            Position = BitPosition.BottomLeft,
+            HtmlAttributes = Marker("update"),
+        }) ?? Task.CompletedTask;
+    }
+
+    private Task MutateAndRefresh()
+    {
+        if (_updRef?.Parameters is null) return Task.CompletedTask;
+        _updRef.Parameters.HeaderText = "Mutated";
+        return ModalService.Refresh(_updRef);
+    }
+
+    private Task MutateAndRefreshAll()
+    {
+        if (_updRef?.Parameters is null) return Task.CompletedTask;
+        _updRef.Parameters.HeaderText = "Mutated all";
+        return ModalService.Refresh();
+    }
+
+    private async Task ShowPersistent()
+    {
+        _persistentRef = await _persistService.Show<BitModalServiceE2EContent>(ContentParameters("Persistent"),
+            new BitModalParameters { HeaderText = "Persistent", Modeless = true, Position = BitPosition.TopLeft, HtmlAttributes = Marker("persistent") },
+            persistent: true);
+    }
+
+    private async Task ShowOrdinary()
+    {
+        _ordinaryRef = await _persistService.Show<BitModalServiceE2EContent>(ContentParameters("Ordinary"),
+            new BitModalParameters { HeaderText = "Ordinary", Modeless = true, Position = BitPosition.TopRight, HtmlAttributes = Marker("ordinary") });
+        StateHasChanged();
+
+        var result = await _ordinaryRef.Result;
+        _ordinaryResult = result?.ToString() ?? "null";
+    }
+
+    private async Task ShowNavigation()
+    {
+        _navRef = await ModalService.Show<BitModalServiceE2EContent>(ContentParameters("Closes on navigation"),
+            new BitModalParameters { HeaderText = "Navigation", Modeless = true, Position = BitPosition.TopLeft, HtmlAttributes = Marker("nav") });
+    }
+
+    private async Task ShowLingering()
+    {
+        _lingerRef = await ModalService.Show<BitModalServiceE2EContent>(ContentParameters("Stays"),
+            new BitModalParameters { HeaderText = "Lingering", Modeless = true, Position = BitPosition.TopRight, CloseOnNavigation = false, HtmlAttributes = Marker("linger") });
+    }
+
+    private async Task ShowStacked()
+    {
+        _stacked++;
+        var modal = await ModalService.Show<BitModalServiceE2EContent>(ContentParameters("Stacked " + _stacked), new BitModalParameters
+        {
+            HeaderText = "Stacked " + _stacked,
+            Modeless = true,
+            Position = BitPosition.BottomRight,
+            HtmlAttributes = Marker("stack-" + _stacked),
+        });
+        _lastId = modal.Id;
+    }
+
+    private void FindLast()
+    {
+        var modal = ModalService.GetModal(_lastId);
+        _getModal = modal is null ? "null" : (modal.Id == _lastId ? "found" : "other");
+    }
+
+    private Task ShowCascaded()
+    {
+        return _paramsService.Show<BitModalServiceE2EContent>(ContentParameters("Cascaded"),
+            new BitModalParameters { HeaderText = "Cascaded", HtmlAttributes = Marker("cascaded") });
+    }
+
+    private Task ShowCascadedOwn()
+    {
+        return _paramsService.Show<BitModalServiceE2EContent>(ContentParameters("Own position"),
+            new BitModalParameters { HeaderText = "Own position", Position = BitPosition.TopCenter, HtmlAttributes = Marker("cascaded-own") });
+    }
+
+    private Task ShowHouse()
+    {
+        return _houseService.Show<BitModalServiceE2EContent>(ContentParameters("House"),
+            new BitModalParameters { HtmlAttributes = Marker("house") });
+    }
+
+    private Task ShowHouseOwn()
+    {
+        return _houseService.Show<BitModalServiceE2EContent>(ContentParameters("Own header"),
+            new BitModalParameters { HeaderText = "Own header", HtmlAttributes = Marker("house-own") });
+    }
+
+    private Task ShowInCustomContainer()
+    {
+        return _customService.Show<BitModalServiceE2EContent>(ContentParameters("Custom container"),
+            new BitModalParameters { AriaLabel = "Custom container", HtmlAttributes = Marker("custom") });
+    }
+
+    private async Task ShowOrphan()
+    {
+        var modal = await _orphanService.Show<BitModalServiceE2EContent>(ContentParameters("Nowhere"), new BitModalParameters { AriaLabel = "Nowhere" });
+        _orphanRendered = (await modal.Rendered).ToString();
+    }
+
+    private Task ShowIcon()
+    {
+        return ModalService.Show<BitModalServiceE2EContent>(ContentParameters("Icon"), new BitModalParameters
+        {
+            HeaderText = "External close icon",
+            ShowCloseButton = true,
+            CloseIcon = BitIconInfo.Fa("solid xmark"),
+            CloseButtonTitle = "Dismiss",
+            HtmlAttributes = Marker("icon"),
+        });
+    }
+
+    private Task ShowStyled()
+    {
+        return ModalService.Show<BitModalServiceE2EContent>(ContentParameters("Styled"), new BitModalParameters
+        {
+            HeaderText = "Styled",
+            ShowCloseButton = true,
+            FooterText = "Footer",
+            Class = "svc-class",
+            Style = "--bit-Modal-background: rgb(30, 27, 75); --bit-Modal-color: rgb(224, 231, 255);",
+            Styles = new() { Header = "letter-spacing: 3px;", Content = "outline: 2px solid rgb(1, 2, 3);" },
+            Classes = new() { Body = "svc-body", Footer = "svc-footer" },
+            HtmlAttributes = Marker("styled"),
+        });
+    }
+
+    private Task ShowRtl()
+    {
+        return ModalService.Show<BitModalServiceE2EContent>(ContentParameters("راست به چپ"), new BitModalParameters
+        {
+            Dir = BitDir.Rtl,
+            Position = BitPosition.TopStart,
+            MaxWidth = "20rem",
+            HeaderText = "لورم ایپسوم",
+            ShowCloseButton = true,
+            HtmlAttributes = Marker("rtl"),
+        });
+    }
+
+    public void Dispose()
+    {
+        ModalService.OnAddModal -= HandleAdd;
+        ModalService.OnCloseModal -= HandleClose;
+    }
+}

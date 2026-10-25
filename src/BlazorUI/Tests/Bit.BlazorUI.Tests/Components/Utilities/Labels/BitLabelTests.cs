@@ -19,11 +19,11 @@ public class BitLabelTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitLabelShouldRespectIsEnabled(bool isEnabled)
+    public void BitLabelShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitLabel>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var cssClass = isEnabled ? "bit-lbl" : "bit-lbl bit-dis";
@@ -32,7 +32,7 @@ public class BitLabelTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitLabelShouldRespectIsEnabledChangingAfterRender()
+    public void BitLabelShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitLabel>();
 
@@ -40,7 +40,7 @@ public class BitLabelTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@"<label class=""bit-lbl bit-dis"" id:ignore></label>");
@@ -238,6 +238,38 @@ public class BitLabelTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitLabelShouldKeepForOnALabelElementHoweverItIsCased()
+    {
+        var component = RenderComponent<BitLabel>(parameters =>
+        {
+            parameters.Add(p => p.Element, "LABEL");
+            parameters.Add(p => p.For, "test-for");
+        });
+
+        // The tag name is used as written, and a label is a label whatever its case.
+        component.MarkupMatches(@"<LABEL for=""test-for"" class=""bit-lbl"" id:ignore></LABEL>");
+    }
+
+    [TestMethod]
+    public void BitLabelShouldDropForWhenTheElementStopsBeingALabelAfterRender()
+    {
+        var component = RenderComponent<BitLabel>(parameters =>
+        {
+            parameters.Add(p => p.For, "test-for");
+        });
+
+        Assert.AreEqual("test-for", component.Find(".bit-lbl").GetAttribute("for"));
+
+        component.Render(parameters => parameters.Add(p => p.Element, "div"));
+
+        Assert.IsFalse(component.Find(".bit-lbl").HasAttribute("for"));
+
+        component.Render(parameters => parameters.Add(p => p.Element, "label"));
+
+        Assert.AreEqual("test-for", component.Find(".bit-lbl").GetAttribute("for"));
+    }
+
+    [TestMethod]
     public void BitLabelShouldNotRenderForOnANonLabelElement()
     {
         var component = RenderComponent<BitLabel>(parameters =>
@@ -260,9 +292,34 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.NoWrap, noWrap);
         });
 
-        var cssClass = noWrap ? "bit-lbl bit-lbl-nwr" : "bit-lbl";
+        var markup = noWrap
+            ? @"<label class=""bit-lbl bit-lbl-nwr"" id:ignore><span class=""bit-lbl-row""><span class=""bit-lbl-txt""></span></span></label>"
+            : @"<label class=""bit-lbl"" id:ignore></label>";
 
-        component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore></label>");
+        component.MarkupMatches(markup);
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitLabelShouldKeepTheIndicatorOutOfTheTruncatedContent(bool required)
+    {
+        var component = RenderComponent<BitLabel>(parameters =>
+        {
+            parameters.Add(p => p.NoWrap, true);
+            parameters.Add(p => p.Required, required);
+            parameters.Add(p => p.Optional, required is false);
+            parameters.AddChildContent("A long caption");
+        });
+
+        // The content alone takes the ellipsis: the indicator is its sibling in the row, so the overflow never cuts it off.
+        var indicator = required
+            ? @"<span class=""bit-lbl-rqi"" aria-hidden=""true"">*</span>"
+            : @"<span class=""bit-lbl-opi"">(optional)</span>";
+        var cssClass = required ? "bit-lbl bit-lbl-req bit-lbl-nwr" : "bit-lbl bit-lbl-opt bit-lbl-nwr";
+
+        component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore><span class=""bit-lbl-row""><span class=""bit-lbl-txt"">A long caption</span>{indicator}</span></label>");
     }
 
     [TestMethod,
@@ -723,5 +780,20 @@ public class BitLabelTests : BunitTestContext
         Assert.IsTrue(labels[1].ClassList.Contains("bit-lbl-sm"));
         Assert.IsFalse(labels[1].ClassList.Contains("bit-lbl-lg"));
         Assert.IsTrue(labels[1].ClassList.Contains("bit-lbl-err"));
+    }
+
+    [TestMethod]
+    public void BitLabelShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitLabel>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-lbl");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
     }
 }

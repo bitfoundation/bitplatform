@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Routing;
+﻿using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Bit.BlazorUI;
@@ -13,10 +14,32 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     where TParameters : class, new()
 {
     private bool _disposed;
-    protected readonly List<TReference> _modalRefs = [];
+    private readonly List<TReference> _modalRefs = [];
+
+    // The service this container attached to when it initialized, which is the one it detaches from on dispose
+    // whatever ModalService answers by then.
+    private BitModalServiceBase<TReference, TParameters>? _service;
 
     private TParameters? _lastModalParameters;
     private readonly Dictionary<TReference, TParameters?> _mergedParametersCache = [];
+
+    // How many times the modals were refreshed - all of them, and each one on its own. A modal renders only when
+    // something of its own changed (BitModalContainerEntry), and a refresh is a change even where the merge hands
+    // back the very object it had before: the parameters of a modal shown with no container-level ones, changed in
+    // place.
+    private int _refreshes;
+    private readonly Dictionary<TReference, int> _modalRefreshes = [];
+
+    // What each rendered modal is handed to report its exit animation played, and the modals the service has
+    // closed that are still in the page for that animation to play.
+    private readonly Dictionary<TReference, BitModalExit> _exits = [];
+    private readonly HashSet<TReference> _leaving = [];
+
+    // How long a closed modal is kept in the page at most, should it never start closing - a modal whose content
+    // threw, or one that is not going to render again. A modal that has started (BitModalExit.Closing) is the one
+    // that says when it is out of the way instead: its close sequence makes several round trips to the browser
+    // before the animation even starts, which a deadline counted from here would cut short on a slow circuit.
+    private static readonly TimeSpan _exitTimeout = TimeSpan.FromSeconds(1.5);
 
     // The path the app was on when this container last looked. A modal belongs to the page it was opened from,
     // so a change of this - and only of this, not of a query string or a fragment - closes the modals that
@@ -38,6 +61,10 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
 
 
 
+    /// <summary>
+    /// The defaults of every modal this container renders - the house style: a maximum width, a close button, a
+    /// position. The parameters of one showing win over them.
+    /// </summary>
     [Parameter] public TParameters ModalParameters { get; set; } = new();
 
 
@@ -60,6 +87,12 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     /// </summary>
     protected virtual bool? GetCloseOnNavigation(TReference modalRef) => null;
 
+    /// <summary>
+    /// The modals this container renders, in the order they were opened - a closed one still playing its exit
+    /// animation included, which is the only time a container holds a closed one.
+    /// </summary>
+    protected IReadOnlyList<TReference> ModalReferences => _modalRefs;
+
 
 
     /// <summary>
@@ -74,6 +107,7 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
         {
             _lastModalParameters = ModalParameters;
             _mergedParametersCache.Clear();
+            _refreshes++;
         }
 
         if (_mergedParametersCache.TryGetValue(modalRef, out var merged)) return merged;
@@ -95,6 +129,7 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
         return InvokeAsync(() =>
         {
             _mergedParametersCache.Clear();
+            _refreshes++;
             StateHasChanged();
         });
     }
@@ -110,6 +145,14 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
         return InvokeAsync(() =>
         {
             _mergedParametersCache.Remove(modalRef);
+
+            // Only for a modal this container holds: a count kept for any other would outlive it until the
+            // container goes.
+            if (_modalRefs.Contains(modalRef))
+            {
+                _modalRefreshes[modalRef] = _modalRefreshes.GetValueOrDefault(modalRef) + 1;
+            }
+
             StateHasChanged();
         });
     }
@@ -121,7 +164,96 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     /// </summary>
     internal IReadOnlyList<TReference> GetOpenModals()
     {
-        return _modalRefs;
+        // A closed modal still playing its exit animation is in the page, but it is not open.
+        return _leaving.Count == 0 ? _modalRefs : _modalRefs.Where(m => _leaving.Contains(m) is false).ToList();
+    }
+
+    /// <summary>
+    /// What the modal rendered for the given reference reports its exit animation played through; see
+    /// <see cref="BitModalExit"/>.
+    /// </summary>
+    private BitModalExit GetExit(TReference modalRef)
+    {
+        if (_exits.TryGetValue(modalRef, out var exit)) return exit;
+
+        exit = new BitModalExit(() => _ = InvokeAsync(() =>
+        {
+            if (_leaving.Contains(modalRef)) Remove(modalRef);
+        }));
+
+        _exits[modalRef] = exit;
+
+        return exit;
+    }
+
+    /// <summary>
+    /// Renders every modal this container holds, in the order they were opened, each with everything it expects from
+    /// its container: the reference, the merged parameters, and the hold on its exit that lets it play its exit
+    /// animation before the container takes it out of the page.
+    /// </summary>
+    /// <remarks>
+    /// Each modal is keyed by its id, so a modal keeps its state while the ones around it come and go, and renders
+    /// only when something of its own changed - its parameters, a refresh, its closing - rather than with every
+    /// render of the container.
+    /// <br/>
+    /// A container that cascades the reference and the parameters by hand instead still renders its modals, but it
+    /// has no way of hearing one out: a modal it renders is taken out of the page the moment it is closed, with no
+    /// exit animation.
+    /// </remarks>
+    protected RenderFragment RenderModals() => builder =>
+    {
+        foreach (var modalRef in _modalRefs)
+        {
+            BuildModal(builder, modalRef, key: true);
+        }
+    };
+
+    /// <summary>
+    /// Renders every modal this container holds the way <see cref="RenderModals()"/> does, each inside markup of the
+    /// container's own: the template is rendered once per modal, and renders the modal itself through
+    /// <see cref="BitModalContainerItem{TReference}.Modal"/>.
+    /// <code>
+    /// @(RenderModals(item =&gt; @&lt;div class="modal-frame"&gt;@item.Modal&lt;/div&gt;))
+    /// </code>
+    /// </summary>
+    /// <remarks>
+    /// The markup of each modal is keyed by the modal's id here, so the template needs no key of its own. It renders
+    /// with every render of the container, while the modal inside it renders only when something of its own changed.
+    /// </remarks>
+    protected RenderFragment RenderModals(RenderFragment<BitModalContainerItem<TReference>> template)
+    {
+        ArgumentNullException.ThrowIfNull(template);
+
+        return builder =>
+        {
+            foreach (var modalRef in _modalRefs)
+            {
+                var item = new BitModalContainerItem<TReference>(modalRef, modalBuilder => BuildModal(modalBuilder, modalRef, key: false));
+
+                builder.OpenComponent<BitModalContainerSlot>(0);
+                builder.SetKey(modalRef.Id);
+                builder.AddComponentParameter(1, BitModalContainerSlot.ChildContentName, template(item));
+                builder.CloseComponent();
+            }
+        };
+    }
+
+    private void BuildModal(RenderTreeBuilder builder, TReference modalRef, bool key)
+    {
+        // A fragment kept from an earlier render can still render a modal the container has let go of since, and the
+        // exit and the parameters looked up for it here would then be kept until the container goes.
+        if (_modalRefs.Contains(modalRef) is false) return;
+
+        builder.OpenComponent<BitModalContainerEntry<TReference, TParameters>>(0);
+        if (key)
+        {
+            builder.SetKey(modalRef.Id);
+        }
+        builder.AddComponentParameter(1, BitModalContainerEntry<TReference, TParameters>.ReferenceName, modalRef);
+        builder.AddComponentParameter(2, BitModalContainerEntry<TReference, TParameters>.ParametersName, GetMergedParameters(modalRef));
+        builder.AddComponentParameter(3, BitModalContainerEntry<TReference, TParameters>.ExitName, GetExit(modalRef));
+        builder.AddComponentParameter(4, BitModalContainerEntry<TReference, TParameters>.VersionName, _refreshes + _modalRefreshes.GetValueOrDefault(modalRef));
+        builder.CloseComponent();
     }
 
     /// <summary>
@@ -152,10 +284,12 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     {
         base.OnInitialized();
 
-        ModalService.InitContainer(this);
+        _service = ModalService;
 
-        ModalService.OnAddModal += OnModalAdd;
-        ModalService.OnCloseModal += OnCloseModal;
+        _service.InitContainer(this);
+
+        _service.OnAddModal += OnModalAdd;
+        _service.OnCloseModal += OnCloseModal;
 
         _logger = (_serviceProvider?.GetService(typeof(ILoggerFactory)) as ILoggerFactory)?.CreateLogger(GetType());
 
@@ -165,6 +299,20 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
         {
             _currentPath = GetPath(_navigationManager.Uri);
             _navigationManager.LocationChanged += OnLocationChanged;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        // The modals rendered here belong to the service they were shown through, and moving them to another one
+        // halfway through their lives is not something either service could make sense of.
+        if (_service is not null && ReferenceEquals(_service, ModalService) is false)
+        {
+            throw new InvalidOperationException(
+                "The modal service of a modal container cannot change after the container has initialized. " +
+                "Give the container a @key of the service to mount a new one for it instead.");
         }
     }
 
@@ -187,7 +335,7 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     {
         // Only the container the service is currently rendering through takes new modals. Mounting more than
         // one container is not supported, and without this every one of them would render the same modal.
-        if (_disposed || ModalService.IsActiveContainer(this) is false) return Task.CompletedTask;
+        if (_disposed || _service?.IsActiveContainer(this) is not true) return Task.CompletedTask;
 
         return InvokeAsync(() =>
         {
@@ -204,9 +352,54 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
 
         return InvokeAsync(() =>
         {
-            _modalRefs.Remove(modalRef);
-            _mergedParametersCache.Remove(modalRef);
-            StateHasChanged();
+            // A modal that is on the screen leaves it the way it came in: it is kept in the page, closed, until it
+            // reports that its exit animation played. The service is done with it either way - its result is in and
+            // it is no longer one of the open modals. A modal that never made it onto the screen, or one that has
+            // already played its way out (the user dismissed it, and it took itself off before the service heard of
+            // it), has nothing left to play and goes at once - and so does one rendered by a container that never
+            // handed it a BitModalExit (one that cascades by hand rather than through RenderModals), which has no
+            // way of hearing that it played its way out.
+            if (_modalRefs.Contains(modalRef) &&
+                modalRef.Rendered.IsCompletedSuccessfully && modalRef.Rendered.Result &&
+                _exits.TryGetValue(modalRef, out var exit) && exit.HasLeft is false)
+            {
+                if (_leaving.Add(modalRef) is false) return;
+
+                StateHasChanged();
+
+                _ = RemoveAfterTimeout(modalRef);
+
+                return;
+            }
+
+            Remove(modalRef);
+        });
+    }
+
+    private void Remove(TReference modalRef)
+    {
+        _modalRefs.Remove(modalRef);
+        _mergedParametersCache.Remove(modalRef);
+        _modalRefreshes.Remove(modalRef);
+        _exits.Remove(modalRef);
+        _leaving.Remove(modalRef);
+
+        StateHasChanged();
+    }
+
+    private async Task RemoveAfterTimeout(TReference modalRef)
+    {
+        await Task.Delay(_exitTimeout);
+
+        if (_disposed) return;
+
+        await InvokeAsync(() =>
+        {
+            if (_leaving.Contains(modalRef) is false) return;
+
+            if (_exits.TryGetValue(modalRef, out var exit) && exit.IsClosing) return;
+
+            Remove(modalRef);
         });
     }
 
@@ -249,7 +442,7 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     {
         try
         {
-            await ModalService.Close(modalRef);
+            await _service!.Close(modalRef);
         }
         catch (ObjectDisposedException) { } // the scope went away with the modal; nothing left to close
         catch (Exception ex)
@@ -280,9 +473,12 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
 
         _disposed = true;
 
-        ModalService.OnAddModal -= OnModalAdd;
-        ModalService.OnCloseModal -= OnCloseModal;
-        ModalService.RemoveContainer(this);
+        if (_service is not null)
+        {
+            _service.OnAddModal -= OnModalAdd;
+            _service.OnCloseModal -= OnCloseModal;
+            _service.RemoveContainer(this);
+        }
 
         if (_navigationManager is not null)
         {
@@ -303,5 +499,8 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
 
         _modalRefs.Clear();
         _mergedParametersCache.Clear();
+        _modalRefreshes.Clear();
+        _exits.Clear();
+        _leaving.Clear();
     }
 }

@@ -1,0 +1,75 @@
+name: bit platform CI - Bcrdt E2E
+
+# The browser suite: the demo (prerendered, then running on WebAssembly) driven with Playwright in each of the three
+# engines - Chromium, Firefox and WebKit, one job apiece - the side-by-side replicas of every demo page merging in one
+# tab, and two browser contexts meeting on the live page through the demo server's SignalR hub and WebSocket endpoint.
+# It takes far longer than the build-and-unit pipeline (bit.ci.Bcrdt.yml), so it runs only when started by hand. See
+# src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/README.md for what it proves and how to run it locally.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  e2e:
+    name: Bcrdt E2E (${{ matrix.browser }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    strategy:
+      # Each engine has its own text input, focus and IndexedDB behavior: a failure in one says nothing about the others.
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    # Bit.Bcrdt compiles its TypeScript (bit-bcrdt.ts) with npm-installed tsc and esbuild as part of its build.
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: dotnet workload restore
+      run: cd src/Utilities/Bcrdt && dotnet workload restore
+
+    - name: Build the demo and the E2E suite
+      run: |
+        dotnet build src/Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release
+        dotnet build src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright ${{ matrix.browser }}
+      run: pwsh src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
+
+    - name: Run E2E tests
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      env:
+        BCRDT_E2E_BROWSER: ${{ matrix.browser }}
+      run: >
+        cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --report-trx --report-trx-filename bcrdt-e2e-${{ matrix.browser }}.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bcrdt-e2e-${{ matrix.browser }}
+        path: '**/bcrdt-e2e-${{ matrix.browser }}.trx'
+        if-no-files-found: ignore

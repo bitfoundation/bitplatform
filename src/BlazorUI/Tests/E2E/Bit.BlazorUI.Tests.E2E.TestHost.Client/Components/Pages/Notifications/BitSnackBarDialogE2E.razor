@@ -1,0 +1,31 @@
+﻿@page "/e2e/snack-bar/dialog"
+
+<PageTitle>BitSnackBar in a dialog E2E</PageTitle>
+
+@* A snack bar host inside a dialog: Escape on a focused item dismisses the item (it claims the key), and the dialog
+   waits for the next press. *@
+<E2ESection Id="dialog" Title="Inside a dialog">
+    <button id="btn-open-dialog" @onclick="() => _open = true">Open dialog</button>
+    <span id="dialog-open">@_open</span>
+    <span id="dismissed-log">@_dismissedLog</span>
+    <BitDialog @bind-IsOpen="_open" Title="Dialog" ShowOkButton="false" ShowCancelButton="false" AutoFocus="false">
+        <Body>
+            <BitSnackBar @ref="_host" Id="dlg-snb" OnDismiss="HandleDismiss" />
+            <button id="btn-dialog-show" @onclick='() => _host.Info("In dialog", "Body")'>Show</button>
+            <button id="dlg-inner-btn">Inner</button>
+        </Body>
+    </BitDialog>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private BitSnackBar _host = default!;
+    private bool _open;
+    private string _dismissedLog = "";
+
+    private void HandleDismiss(BitSnackBarItem item)
+    {
+        _dismissedLog += $"{item.Title}:{item.DismissReason};";
+    }
+}

@@ -1,26 +1,30 @@
 ﻿::deep {
+    // Side by side while both fit, one under the other where they do not. A timeline is as wide as its container
+    // (width: 100%), so an unwrapping row has always shared itself out in two equal halves; growing both from a
+    // basis of nothing gives exactly those halves, where a 100% basis would put each timeline on a line of its own
+    // the moment the row may wrap. A line breaks only where the narrowest each of them can be no longer fits.
     .example-content {
         gap: 0.5rem;
         display: flex;
+        flex-wrap: wrap;
+
+        > * {
+            flex: 1 1 0;
+        }
     }
 
-    // A dot template stands in for the dot of the timeline, so it takes the size of one from the
-    // timeline itself instead of shrinking to whatever it wraps: an icon then reads as a dot rather
-    // than as a blob around a glyph, and a loading indicator keeps the size it had as a dot.
+    // A dot template stands in for the dot of the timeline, so it takes the size of a medium dot
+    // instead of shrinking to whatever it wraps: an icon then reads as a dot rather than as a blob
+    // around a glyph, and a loading indicator keeps the size it had as a dot.
     .dot-template {
-        z-index: 1;
         color: white;
         display: flex;
+        width: 1.875rem;
+        height: 1.875rem;
         border-radius: 50%;
         align-items: center;
         justify-content: center;
         background-color: tomato;
-        width: var(--bit-tln-dot-size);
-        height: var(--bit-tln-dot-size);
-
-        div {
-            display: block;
-        }
     }
 
     .template-content {
@@ -61,8 +65,8 @@
         color: blueviolet;
     }
 
-    .custom-divider::before {
-        background: blueviolet;
+    .custom-divider {
+        --bit-Timeline-line-color: blueviolet;
     }
 
     .custom-item-text {

@@ -1,0 +1,14 @@
+﻿<BitMediaQuery ScreenQuery="BitScreenQuery.Md" Visibility="BitVisibility.Hidden" @attributes="attributes">
+    <span>content</span>
+</BitMediaQuery>
+
+@code {
+    // Lower-cased names bind no parameter, so they are what reaches the component as splatted attributes.
+    private readonly Dictionary<string, object> attributes = new()
+    {
+        ["id"] = "splatted-id",
+        ["style"] = "margin: 0",
+        ["class"] = "splatted-class",
+        ["dir"] = "rtl",
+    };
+}

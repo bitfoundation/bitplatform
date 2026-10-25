@@ -1,0 +1,49 @@
+﻿@page "/e2e/nav-panel/drawer"
+@page "/e2e/nav-panel/drawer/{Section}"
+
+<PageTitle>BitNavPanel drawer E2E</PageTitle>
+
+@* The panel as an app lays it out: a column beside the content on a wide screen, an off-canvas drawer opened from a
+   menu button on a phone. The tests of this page run at both viewports. *@
+<div style="display:flex">
+    <BitNavPanel @ref="_panelRef" Id="npd-panel" Items="_items" @bind-IsOpen="_isOpen" @bind-IsToggled="_isToggled" ShowCloseButton
+                 ExpandOnHover="_expandOnHover" SearchDebounceTime="0" AriaLabel="Main menu" OnItemClick="@((BitNavItem i) => _clicks.Add(i.Text))" />
+    <main style="flex-grow:1; padding:8px">
+        <button id="btn-menu" @onclick="() => _isOpen = true">Menu</button>
+        <button id="btn-after">After</button>
+        <button id="btn-hover" @onclick="() => _expandOnHover = !_expandOnHover">Toggle ExpandOnHover</button>
+        <p>Section: <span id="npd-section">@(Section ?? "-")</span></p>
+        <p>Open: <span id="npd-open">@_isOpen</span> Toggled: <span id="npd-toggled">@_isToggled</span> Clicks: <span id="npd-clicks">@string.Join(",", _clicks)</span></p>
+        <div style="height:2000px">Tall content</div>
+        <E2EStatus />
+    </main>
+</div>
+<BitNavPanel Id="npd-noauto" Items="_otherItems" @bind-IsOpen="_noAutoOpen" NoAutoClose NoSwipe NoFocusTrap NoScrollLock NoRestoreFocus />
+<button id="btn-open-noauto" style="position:fixed; bottom:4px; right:4px" @onclick="() => _noAutoOpen = true">Open the relaxed drawer</button>
+
+@code {
+    [Parameter] public string? Section { get; set; }
+
+    private bool _isOpen;
+    private bool _isToggled;
+    private bool _noAutoOpen;
+    private bool _expandOnHover;
+    private BitNavPanel<BitNavItem>? _panelRef;
+    private readonly List<string?> _clicks = [];
+
+    private readonly List<BitNavItem> _items =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home, Url = "/e2e/nav-panel/drawer/home" },
+        new()
+        {
+            Text = "Products", IconName = BitIconName.Product,
+            ChildItems = [new() { Text = "Phones", IconName = BitIconName.CellPhone, Url = "/e2e/nav-panel/drawer/phones" }]
+        },
+        new() { Text = "Settings", IconName = BitIconName.Settings, Url = "/e2e/nav-panel/drawer/settings" },
+    ];
+
+    private readonly List<BitNavItem> _otherItems =
+    [
+        new() { Text = "Relaxed home", IconName = BitIconName.Home, Url = "/e2e/nav-panel/drawer/relaxed" },
+    ];
+}

@@ -1,0 +1,280 @@
+﻿@page "/e2e/dropdown/combo"
+
+@* The ComboBox mode of BitDropdown: the editable input and its accessibility, filtering as it is typed, the commit of
+   Enter with and without AutoSelectFirstMatch, the commit target cue, Escape and Backspace, the Dynamic mode with its
+   value generator, event, text format and template, TokenSeparators, FindItemFunction / ExistsSelectedItemFunction,
+   AutoClearSearch, SelectTextOnFocus, the read-only and disabled states and the combo input methods. *@
+
+<PageTitle>BitDropdown combo E2E</PageTitle>
+
+<h1>BitDropdown combo</h1>
+
+<E2ESection Id="combo-single" Title="Single select combo box">
+    <BitDropdown Id="dd-combo"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Combo"
+                 Combo
+                 HighlightSearch
+                 Placeholder="Type to filter"
+                 Description="Type a few letters."
+                 Items="@L("combo")"
+                 @bind-Value="_comboValue"
+                 OnSearch="OnComboSearch" />
+    <p>
+        Value: <span id="combo-value">@_comboValue</span> |
+        OnSearch: <span id="combo-search-count">@_comboSearchCount</span> / <span id="combo-search-last">@_comboSearchLast</span>
+    </p>
+    <button id="outside">Outside</button>
+</E2ESection>
+
+<E2ESection Id="combo-multi" Title="Multi select combo box with chips">
+    <BitDropdown Id="dd-combo-multi"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Combo multi"
+                 Combo
+                 Chips
+                 MultiSelect
+                 Items="@L("combo-multi")"
+                 @bind-Values="_comboMultiValues" />
+    <p>Values: <span id="combo-multi-values">@string.Join(',', _comboMultiValues ?? [])</span></p>
+</E2ESection>
+
+<E2ESection Id="combo-auto" Title="AutoSelectFirstMatch">
+    <BitDropdown Id="dd-combo-auto"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Auto select"
+                 Combo
+                 AutoSelectFirstMatch
+                 Items="@L("combo-auto")"
+                 @bind-Value="_autoValue" />
+    <p>Value: <span id="combo-auto-value">@_autoValue</span></p>
+</E2ESection>
+
+<E2ESection Id="combo-selecttext" Title="SelectTextOnFocus">
+    <BitDropdown Id="dd-combo-selecttext"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Select text on focus"
+                 Combo
+                 SelectTextOnFocus
+                 Items="@L("combo-selecttext")"
+                 @bind-Value="_selectTextValue" />
+    <button id="outside-selecttext">Outside</button>
+</E2ESection>
+
+<E2ESection Id="combo-dynamic" Title="Dynamic">
+    <BitDropdown Id="dd-combo-dyn"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Dynamic"
+                 Combo
+                 Dynamic
+                 DynamicValueGenerator="GenerateValue"
+                 Items="@L("combo-dyn")"
+                 @bind-Value="_dynValue"
+                 OnDynamicAdd="(BitDropdownItem<string> i) => { _dynAddCount++; _dynAddLast = i.Text; }" />
+    <p>
+        Value: <span id="dyn-value">@_dynValue</span> |
+        OnDynamicAdd: <span id="dyn-add-count">@_dynAddCount</span> / <span id="dyn-add-last">@_dynAddLast</span>
+    </p>
+    <BitDropdown Id="dd-combo-dyn-multi"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Dynamic multi"
+                 Combo
+                 Chips
+                 Dynamic
+                 MultiSelect
+                 DynamicItemTextFormat="Create '{0}'"
+                 DynamicValueGenerator="GenerateValue"
+                 Items="@L("combo-dyn-multi")"
+                 @bind-Values="_dynMultiValues"
+                 OnDynamicAdd="() => _dynMultiAddCount++" />
+    <p>
+        Values: <span id="dyn-multi-values">@string.Join(',', _dynMultiValues ?? [])</span> |
+        OnDynamicAdd: <span id="dyn-multi-add-count">@_dynMultiAddCount</span>
+    </p>
+    <BitDropdown Id="dd-combo-dyn-tpl"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Dynamic template"
+                 Combo
+                 Dynamic
+                 DynamicValueGenerator="GenerateValue"
+                 Items="@L("combo-dyn-tpl")"
+                 @bind-Value="_dynTplValue">
+        <DynamicItemTemplate Context="text">
+            <span id="dyn-tpl-content">+ New: @text</span>
+        </DynamicItemTemplate>
+    </BitDropdown>
+    <p>Value: <span id="dyn-tpl-value">@_dynTplValue</span></p>
+</E2ESection>
+
+<E2ESection Id="combo-tokens" Title="TokenSeparators">
+    <BitDropdown Id="dd-combo-tokens"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Tokens"
+                 Combo
+                 Chips
+                 Dynamic
+                 MultiSelect
+                 TokenSeparators="_separators"
+                 DynamicValueGenerator="GenerateValue"
+                 Items="@L("combo-tokens")"
+                 @bind-Values="_tokenValues" />
+    <p>Values: <span id="tokens-values">@string.Join(',', _tokenValues ?? [])</span></p>
+</E2ESection>
+
+<E2ESection Id="combo-find" Title="FindItemFunction and ExistsSelectedItemFunction">
+    <BitDropdown Id="dd-combo-find"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Find by value"
+                 Combo
+                 Chips
+                 Dynamic
+                 MultiSelect
+                 DynamicValueGenerator="GenerateValue"
+                 FindItemFunction="(items, text) => items.FirstOrDefault(i => i.Value == text)"
+                 ExistsSelectedItemFunction="(selected, text) => selected.Any(i => i.Value == text)"
+                 Items="@L("combo-find")"
+                 @bind-Values="_findValues"
+                 OnDynamicAdd="() => _findAddCount++" />
+    <p>
+        Values: <span id="find-values">@string.Join(',', _findValues ?? [])</span> |
+        OnDynamicAdd: <span id="find-add-count">@_findAddCount</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="combo-autoclear" Title="AutoClearSearch">
+    <BitDropdown Id="dd-combo-autoclear"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Auto clear"
+                 Combo
+                 Chips
+                 MultiSelect
+                 AutoClearSearch
+                 Items="@L("combo-autoclear")"
+                 @bind-Values="_autoClearValues" />
+    <p>Values: <span id="autoclear-values">@string.Join(',', _autoClearValues ?? [])</span></p>
+</E2ESection>
+
+<E2ESection Id="combo-escape" Title="Escape, clear and states">
+    <BitDropdown Id="dd-combo-esc"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Clear on escape"
+                 Combo
+                 ClearOnEscape
+                 ShowClearButton
+                 Items="@L("combo-esc")"
+                 @bind-Value="_escValue"
+                 OnClear="() => _escClearCount++" />
+    <p>Value: <span id="esc-value">@_escValue</span> | OnClear: <span id="esc-clear-count">@_escClearCount</span></p>
+    <BitDropdown Id="dd-combo-ro"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Read only combo"
+                 Combo
+                 ReadOnly
+                 Items="@L("combo-ro")"
+                 @bind-Value="_roValue" />
+    <p>Value: <span id="ro-value">@_roValue</span></p>
+    <BitDropdown Id="dd-combo-dis"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Disabled combo"
+                 Combo
+                 Disabled
+                 Items="@L("combo-dis")"
+                 DefaultValue="@("f-app")" />
+</E2ESection>
+
+<E2ESection Id="combo-methods" Title="Combo input methods and Immediate">
+    <BitDropdown @ref="_comboRef"
+                 Id="dd-combo-ref"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Methods"
+                 Combo
+                 Immediate
+                 DebounceTime="300"
+                 Items="@L("combo-ref")"
+                 OnSearch="(string? s) => { _refSearchCount++; _refSearchLast = s; }"
+                 DefaultValue="@string.Empty" />
+    <p>
+        ComboInputElement: <span id="ref-element">@_refElement</span> |
+        OnSearch: <span id="ref-search-count">@_refSearchCount</span> / <span id="ref-search-last">@_refSearchLast</span>
+    </p>
+    <button id="btn-focus-combo" @onclick="FocusCombo">FocusComboInputAsync()</button>
+    <button id="btn-focus" @onclick="Focus">FocusAsync()</button>
+    <button id="btn-read-element" @onclick="ReadElement">Read ComboInputElement</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly Dictionary<string, List<BitDropdownItem<string>>> _lists = [];
+
+    private List<BitDropdownItem<string>> L(string key)
+    {
+        if (_lists.TryGetValue(key, out var list) is false)
+        {
+            _lists[key] = list = Basic();
+        }
+
+        return list;
+    }
+
+    private static List<BitDropdownItem<string>> Basic() =>
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { Text = "Orange", Value = "f-ora", IsDisabled = true },
+        new() { Text = "Grape", Value = "f-gra" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro" },
+        new() { Text = "Carrot", Value = "v-car" },
+        new() { Text = "Lettuce", Value = "v-let" }
+    ];
+
+    private static string GenerateValue(BitDropdownItem<string>? item) => $"dyn-{item?.Text?.ToLowerInvariant()}";
+
+    private readonly char[] _separators = [',', ';'];
+
+    private string? _comboValue;
+    private int _comboSearchCount;
+    private string? _comboSearchLast;
+
+    private void OnComboSearch(string? s)
+    {
+        _comboSearchCount++;
+        _comboSearchLast = s ?? "(null)";
+    }
+
+    private IEnumerable<string?>? _comboMultiValues = ["f-app", "v-car"];
+    private string? _autoValue;
+    private string? _selectTextValue;
+
+    private string? _dynValue;
+    private int _dynAddCount;
+    private string? _dynAddLast;
+    private IEnumerable<string?>? _dynMultiValues = [];
+    private int _dynMultiAddCount;
+    private string? _dynTplValue;
+
+    private IEnumerable<string?>? _tokenValues = [];
+
+    private IEnumerable<string?>? _findValues = [];
+    private int _findAddCount;
+
+    private IEnumerable<string?>? _autoClearValues = [];
+
+    private string? _escValue = "f-app";
+    private int _escClearCount;
+    private string? _roValue = "f-app";
+
+    private BitDropdown<BitDropdownItem<string>, string> _comboRef = default!;
+    private string? _refElement;
+    private int _refSearchCount;
+    private string? _refSearchLast;
+
+    private async Task FocusCombo() => await _comboRef.FocusComboInputAsync();
+
+    private async Task Focus() => await _comboRef.FocusAsync();
+
+    private void ReadElement() => _refElement = _comboRef.ComboInputElement.HasValue ? "present" : "absent";
+}

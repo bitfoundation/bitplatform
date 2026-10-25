@@ -1,0 +1,17 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+
+<div class="demo-tile demo-stat @(Settings?.Dense == true ? "dense" : "")" style="border-top-color: @(Settings?.Accent ?? DashboardSettings.DefaultAccent)">
+    <h4 class="demo-tile-title">@Title</h4>
+    <div class="demo-big">@Value</div>
+    <div class="bb-muted">@Trend · settings v@(Settings?.Version ?? 0)</div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+
+    [Parameter] public string Value { get; set; } = "";
+
+    [Parameter] public string? Trend { get; set; }
+
+    [CascadingParameter] public DashboardSettings? Settings { get; set; }
+}

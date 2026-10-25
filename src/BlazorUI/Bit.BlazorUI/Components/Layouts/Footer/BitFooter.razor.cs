@@ -1,5 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -9,15 +8,18 @@ namespace Bit.BlazorUI;
 /// It renders a semantic <c>footer</c> element and lays its content out in a horizontal line whose color, variant,
 /// size, alignment, wrapping and gutters are all parameters. It can stay in the flow of the page or be pinned to the
 /// bottom of the viewport - <see cref="Fixed"/>, <see cref="Sticky"/>, revealing itself only while the page is scrolled
-/// up (<see cref="Reveal"/>), or slid out of the way on demand (<see cref="Hidden"/>).
+/// up (<see cref="Reveal"/>), shadowed only while content passes underneath it (<see cref="ElevateOnScroll"/>), or slid out of the way on demand (<see cref="Hidden"/>) - and a pinned footer can reserve
+/// its own height at the bottom of the scrolling area so nothing scrolled to lands underneath it (<see cref="ScrollPadding"/>).
 /// </remarks>
 public partial class BitFooter : BitComponentBase
 {
     private bool _hidden;
     private bool _slidable;
-    private bool _revealAttached;
+    private bool _overlapping;
+    private bool _settingUp;
+    private bool _setupPending;
     private string? _attachedId;
-    private int _attachedRevealOffset = -1;
+    private string? _attachedSignature;
     private DotNetObjectReference<BitFooter>? _dotnetObj;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -92,9 +94,28 @@ public partial class BitFooter : BitComponentBase
     /// and as the text and border color in the Outline and Text variants.
     /// <br />
     /// When not set, the footer keeps the primary background and foreground colors of the current theme.
+    /// <br />
+    /// An explicit value wins over the <c>--bit-Footer-*</c> color variables; left unset, the footer keeps those theme
+    /// colors unless the variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// Keeps the BitFooter flat while the scrolling area sits at its end and lets it cast its shadow only while
+    /// there is content left underneath it.
+    /// </summary>
+    /// <remarks>
+    /// This is the footer counterpart of the elevate on scroll of a header: a pinned footer that is always shadowed
+    /// looks detached from a page that has already been read to the end, and one with no shadow at all gives no hint
+    /// that more content is passing behind it. The shadow fades out as the scroll reaches the end.
+    /// <br />
+    /// It only has an effect on a <see cref="Fixed"/> or <see cref="Sticky"/> footer, since a footer in the normal
+    /// flow covers nothing. <see cref="Elevated"/> takes precedence over the shadow it adds, but
+    /// <see cref="OnOverlapChanged"/> and <see cref="IsOverlapping"/> keep reporting the state either way.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ElevateOnScroll { get; set; }
 
     /// <summary>
     /// Renders the BitFooter with a shadow cast upwards, to lift it above the content it overlaps.
@@ -154,6 +175,9 @@ public partial class BitFooter : BitComponentBase
     /// while it is out of the view. Unlike <see cref="BitComponentBase.Visibility"/>, which switches the footer off at
     /// once, this slides it in and out and keeps the room it occupies in the layout.
     /// <br />
+    /// A control inside the footer that has the focus when it is hidden loses it to the body of the page, so an
+    /// application hiding the footer from one of its own buttons moves the focus somewhere meaningful first.
+    /// <br />
     /// It only slides over a <see cref="Fixed"/> or <see cref="Sticky"/> footer; a footer in the normal flow is
     /// translated over whatever follows it in the page.
     /// </remarks>
@@ -161,10 +185,32 @@ public partial class BitFooter : BitComponentBase
     public bool Hidden { get; set; }
 
     /// <summary>
+    /// Gets or sets the maximum width of the content of the BitFooter, which is then centered in the footer.
+    /// </summary>
+    /// <remarks>
+    /// Takes any CSS length (for example <c>1200px</c> or <c>75rem</c>). The footer itself keeps spanning the
+    /// full width - its background, its border and its shadow still run edge to edge - while its content lines
+    /// up with the rest of a page whose body is centered in a column of the same width.
+    /// <br />
+    /// When not set, the content spans the whole width of the footer.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? MaxWidth { get; set; }
+
+    /// <summary>
     /// Removes the default paddings around the content of the BitFooter, so it can span the full width of the footer.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool NoGutter { get; set; }
+
+    /// <summary>
+    /// Callback for when the overlap state of the footer changes. The provided value is true while there is content
+    /// left underneath the footer (the scrolling area is not at its end).
+    /// </summary>
+    /// <remarks>
+    /// Only invoked while <see cref="ElevateOnScroll"/> is enabled.
+    /// </remarks>
+    [Parameter] public EventCallback<bool> OnOverlapChanged { get; set; }
 
     /// <summary>
     /// Callback for when the reveal state of the footer changes. The provided value is true when the footer is revealed.
@@ -181,6 +227,9 @@ public partial class BitFooter : BitComponentBase
     /// This only has an effect on a <see cref="Fixed"/> or <see cref="Sticky"/> footer, since a footer in the normal
     /// flow has nothing to slide over, and an <see cref="Absolute"/> one scrolls away with its container anyway.
     /// The footer is always revealed at the very top and at the very end of the page.
+    /// <br />
+    /// Unlike <see cref="Hidden"/>, a footer slid away by the scroll stays reachable: it comes back as soon as
+    /// anything inside it takes the focus, so a keyboard user is never stranded on a control they cannot see.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Reveal { get; set; }
@@ -198,8 +247,42 @@ public partial class BitFooter : BitComponentBase
     [Parameter] public int? RevealOffset { get; set; }
 
     /// <summary>
+    /// Reserves the height of the BitFooter at the bottom of the scrolling area, so nothing scrolled to ever
+    /// lands underneath a pinned footer.
+    /// </summary>
+    /// <remarks>
+    /// A footer pinned over the content covers the bottom of it, and a browser that scrolls something into the
+    /// view - tabbing to the next control, following an anchor, honouring a call to scrollIntoView - stops with
+    /// that thing hidden behind the footer (WCAG 2.4.11, Focus Not Obscured). This sets the bottom scroll padding
+    /// of the scrolling area to the height of the footer, which is what makes those scrolls stop short of it, and
+    /// keeps it in step while the footer changes size.
+    /// <br />
+    /// It only has an effect on a <see cref="Fixed"/> or <see cref="Sticky"/> footer, since a footer in the
+    /// normal flow covers nothing. The scrolling area is the one the footer reacts to, so
+    /// <see cref="ScrollTarget"/> applies here as well.
+    /// </remarks>
+    [Parameter] public bool ScrollPadding { get; set; }
+
+    /// <summary>
+    /// Gets or sets the CSS selector of the element whose scrolling drives the BitFooter.
+    /// </summary>
+    /// <remarks>
+    /// By default the footer finds its own scrolling area by walking up from itself, which covers the page
+    /// and any pane the footer sits inside. A footer that does not sit inside the box it has to react to -
+    /// an app shell whose bar and scrolling content are siblings - names that box here instead.
+    /// <br />
+    /// A selector that matches nothing falls back to the walk, so a target rendered later never leaves the
+    /// footer without a scrolling area at all.
+    /// </remarks>
+    [Parameter] public string? ScrollTarget { get; set; }
+
+    /// <summary>
     /// The size of the BitFooter, which determines the paddings around its content.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Footer-padding</c>; left unset, the footer is medium unless that variable
+    /// says otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -280,6 +363,12 @@ public partial class BitFooter : BitComponentBase
     /// </remarks>
     public bool IsRevealed => _hidden is false;
 
+    /// <summary>
+    /// Gets a value indicating whether there is content left underneath the footer (its scrolling area is not at its end).
+    /// It is always false unless <see cref="ElevateOnScroll"/> is enabled.
+    /// </summary>
+    public bool IsOverlapping => _overlapping;
+
 
 
     /// <summary>
@@ -292,7 +381,7 @@ public partial class BitFooter : BitComponentBase
     {
         // The script is disposed asynchronously, so a scroll of the very last frame can still land here
         // after the component is gone, where there is nothing left to re-render.
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         if (_hidden == hidden) return;
 
@@ -305,6 +394,34 @@ public partial class BitFooter : BitComponentBase
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Called by the scroll script of the footer when the scrolling area reaches or leaves its end.
+    /// <br />
+    /// <strong>This method is not intended to be called from application code.</strong>
+    /// </summary>
+    [JSInvokable("OnOverlapChange")]
+    public async Task _OnOverlapChange(bool overlapping)
+    {
+        if (IsDisposing) return;
+
+        if (_overlapping == overlapping) return;
+
+        _overlapping = overlapping;
+
+        ClassBuilder.Reset();
+
+        await OnOverlapChanged.InvokeAsync(overlapping);
+
+        StateHasChanged();
+    }
+
+
+
+    // The footer really sits at the bottom of the screen only when it is fixed, or sticky without an Absolute
+    // that outranks it - which is what the safe area inset, the scroll listener and the scroll padding all
+    // key off, since an absolute footer is pinned to its container and scrolls away with it.
+    private bool IsPinned => Fixed || (Sticky && Absolute is false);
+
 
 
     protected override string RootElementClass => "bit-ftr";
@@ -313,27 +430,9 @@ public partial class BitFooter : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-ftr-pri",
-            BitColor.Secondary => "bit-ftr-sec",
-            BitColor.Tertiary => "bit-ftr-ter",
-            BitColor.Info => "bit-ftr-inf",
-            BitColor.Success => "bit-ftr-suc",
-            BitColor.Warning => "bit-ftr-wrn",
-            BitColor.SevereWarning => "bit-ftr-swr",
-            BitColor.Error => "bit-ftr-err",
-            BitColor.PrimaryBackground => "bit-ftr-pbg",
-            BitColor.SecondaryBackground => "bit-ftr-sbg",
-            BitColor.TertiaryBackground => "bit-ftr-tbg",
-            BitColor.PrimaryForeground => "bit-ftr-pfg",
-            BitColor.SecondaryForeground => "bit-ftr-sfg",
-            BitColor.TertiaryForeground => "bit-ftr-tfg",
-            BitColor.PrimaryBorder => "bit-ftr-pbr",
-            BitColor.SecondaryBorder => "bit-ftr-sbr",
-            BitColor.TertiaryBorder => "bit-ftr-tbr",
-            _ => string.Empty
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-Footer-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-ftr"));
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -343,13 +442,7 @@ public partial class BitFooter : BitComponentBase
             _ => "bit-ftr-fil"
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-ftr-sm",
-            BitSize.Medium => "bit-ftr-md",
-            BitSize.Large => "bit-ftr-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-ftr"));
 
         ClassBuilder.Register(() => Alignment switch
         {
@@ -387,7 +480,11 @@ public partial class BitFooter : BitComponentBase
 
         ClassBuilder.Register(() => Bordered ? "bit-ftr-brd" : string.Empty);
 
-        ClassBuilder.Register(() => Elevated ? "bit-ftr-elv" : string.Empty);
+        // The transition is only wanted where the shadow comes and goes with the scroll, so a plain Elevated
+        // footer does not animate the shadow a theme switch or a class change hands it.
+        ClassBuilder.Register(() => (ElevateOnScroll && Elevated is false) ? "bit-ftr-esc" : string.Empty);
+
+        ClassBuilder.Register(() => (Elevated || (ElevateOnScroll && _overlapping)) ? "bit-ftr-elv" : string.Empty);
 
         ClassBuilder.Register(() => NoGutter ? "bit-ftr-ngt" : string.Empty);
 
@@ -409,17 +506,18 @@ public partial class BitFooter : BitComponentBase
         // height is the footer, the inset is the room the device asks for underneath it. env() resolves to
         // the 0px fallback wherever there is no inset, which leaves the plain height untouched.
         StyleBuilder.Register(() => Height.HasValue
-                                    ? ((Fixed || Sticky)
-                                        ? $"height:calc({Height}px + env(safe-area-inset-bottom, 0px))"
-                                        : $"height:{Height}px")
+                                    ? (IsPinned
+                                        ? FormattableString.Invariant($"height:calc({Height}px + env(safe-area-inset-bottom, 0px))")
+                                        : FormattableString.Invariant($"height:{Height}px"))
                                     : string.Empty);
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-ftr-gap:{Gap}" : string.Empty);
+
+        StyleBuilder.Register(() => MaxWidth.HasValue() ? $"--bit-ftr-max-width:{MaxWidth}" : string.Empty);
     }
 
 
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFooterParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
@@ -444,63 +542,103 @@ public partial class BitFooter : BitComponentBase
 
         if (IsDisposed) return;
 
-        // Only a positioned footer has anything to slide over, so the scroll listener is attached for
-        // those alone. Toggling any of these parameters at runtime attaches or detaches it accordingly.
-        // The attached flag keeps every other render (including the ones the reveal itself causes) from
-        // tearing the listener down and setting it up again.
-        // Absolute is skipped: it scrolls away with its container, and the position classes give it
-        // precedence over Sticky, so a footer rendered as bit-ftr-abs has nothing to reveal itself over.
-        var shouldAttach = Reveal && (Fixed || (Sticky && Absolute is false));
-
-        // The offset is read by the script when it is set up, so a change of it has to set the listener
-        // up again. -1 is not a reachable offset (it is clamped at 0), which keeps the detached state
-        // from ever comparing equal to an attached one.
-        var revealOffset = shouldAttach ? Math.Max(0, RevealOffset.GetValueOrDefault()) : -1;
-
-        // The script looks the footer up by id and keeps its listeners keyed by it, so an Id changed at
-        // runtime would leave them behind on the element that id no longer names. That stale registration
-        // is taken down first, and only then is the listener set up again under the new id.
-        var attachedToAnotherId = _revealAttached && _attachedId != _Id;
-
-        if (shouldAttach == _revealAttached && revealOffset == _attachedRevealOffset && attachedToAnotherId is false) return;
-
-        if (attachedToAnotherId)
+        // Setting the listener up is a disposal and a setup with the bookkeeping of the attached id and signature
+        // in between, so a render arriving while one of those awaits is in flight would interleave with it and
+        // could leave the flags naming a registration that is not the one on the element anymore. A render that
+        // finds the sequence running only leaves a mark, and the call in flight runs it again afterwards, reading
+        // the parameters and the id as they are by then.
+        if (_settingUp)
         {
-            await _js.BitFootersDispose(_attachedId!);
+            _setupPending = true;
+            return;
+        }
+
+        _settingUp = true;
+
+        try
+        {
+            do
+            {
+                _setupPending = false;
+
+                await SetupScrollListener();
+            }
+            while (_setupPending && IsDisposed is false);
+        }
+        finally
+        {
+            // Released even when the interop threw, so the flag cannot keep every later render out of the setup.
+            _settingUp = false;
+        }
+    }
+
+    private async Task SetupScrollListener()
+    {
+        // Only a pinned footer has anything to slide over or to cover at the bottom of the scrolling area, so the
+        // scroll listener is attached for those alone. Toggling any of these parameters at runtime attaches or
+        // detaches it accordingly.
+        var shouldAttach = (Reveal || ElevateOnScroll || ScrollPadding) && IsPinned;
+
+        // Everything the script is handed at setup time is part of the signature, so a change of any of it sets
+        // the listener up again - including the id, which is what the script keys its registration by, and which
+        // would otherwise leave the listeners behind on the element that id no longer names.
+        var revealOffset = Math.Max(0, RevealOffset.GetValueOrDefault());
+        var signature = shouldAttach ? $"{_Id}|{revealOffset}|{Reveal}|{ElevateOnScroll}|{ScrollTarget}|{ScrollPadding}" : null;
+
+        if (signature == _attachedSignature) return;
+
+        if (_attachedId is not null)
+        {
+            await _js.BitFootersDispose(_attachedId);
+
+            // The component can go away while that call is in flight, and its own disposal has released
+            // the reference and taken the listeners off the element by the time this resumes. Going on
+            // from here would hand the script a disposed reference and leave behind a registration that
+            // nothing is left to dispose.
+            if (IsDisposed) return;
 
             _attachedId = null;
-            _revealAttached = false;
+            _attachedSignature = null;
+        }
+
+        // The registration is changing, and a new one starts from a revealed footer with nothing underneath it and
+        // only reports the states that differ from that. The scroll driven states are cleared first, so a footer
+        // that is detached (or re-attached with different settings) never stays stuck in a state the old
+        // registration left it in - and anything the new one reports while being set up is kept.
+        if (_hidden || _overlapping)
+        {
+            _hidden = false;
+            _overlapping = false;
+
+            ClassBuilder.Reset();
+
+            StateHasChanged();
         }
 
         if (shouldAttach)
         {
             _dotnetObj ??= DotNetObjectReference.Create(this);
 
-            await _js.BitFootersSetup(_Id, _dotnetObj, revealOffset);
+            await _js.BitFootersSetup(_Id, _dotnetObj, revealOffset, Reveal, ElevateOnScroll, ScrollTarget, ScrollPadding);
+
+            if (IsDisposed)
+            {
+                try
+                {
+                    // The disposal of the component may have run its own cleanup before the setup above
+                    // came back, in which case the registration just made is the one it could not see.
+                    // Disposing an id that is not registered anymore is a no-op, so this is safe either way.
+                    await _js.BitFootersDispose(_Id);
+                }
+                catch (JSDisconnectedException) { } // we can ignore this exception here
+
+                return;
+            }
 
             // The flags are only moved once the interop call has gone through, so a call that failed
             // leaves them as they were and the next render tries to set the listener up again.
-            _revealAttached = true;
             _attachedId = _Id;
-            _attachedRevealOffset = revealOffset;
-        }
-        else
-        {
-            await _js.BitFootersDispose(_Id);
-
-            _revealAttached = false;
-            _attachedId = null;
-            _attachedRevealOffset = revealOffset;
-
-            // The footer is no longer driven by the script, so it must not stay stuck in the hidden state.
-            if (_hidden)
-            {
-                _hidden = false;
-
-                ClassBuilder.Reset();
-
-                StateHasChanged();
-            }
+            _attachedSignature = signature;
         }
     }
 

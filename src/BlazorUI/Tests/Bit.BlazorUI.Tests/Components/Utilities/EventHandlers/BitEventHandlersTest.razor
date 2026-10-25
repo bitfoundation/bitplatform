@@ -1,0 +1,33 @@
+﻿@using Bit.BlazorUI
+@using Bit.BlazorUI.Events
+
+@* Written the way a consuming app writes them: the directives come from importing the Bit.BlazorUI.Events namespace. *@
+<div id="outer"
+     @onanimationend="@(e => Log(e, onElement: "outer", ofEvent: "end"))"
+     @ontransitionend="@(e => Log(e, onElement: "outer", ofEvent: "end"))">
+    <div id="animated"
+         @onanimationstart="@(e => Log(e, onElement: "animated", ofEvent: "start"))"
+         @onanimationend="@(e => Log(e, onElement: "animated", ofEvent: "end"))"
+         @onanimationend:stopPropagation="StopPropagation"
+         @onanimationiteration="@(e => Log(e, onElement: "animated", ofEvent: "iteration"))"
+         @onanimationcancel="@(e => Log(e, onElement: "animated", ofEvent: "cancel"))" />
+
+    <div id="transitioned"
+         @ontransitionrun="@(e => Log(e, onElement: "transitioned", ofEvent: "run"))"
+         @ontransitionstart="@(e => Log(e, onElement: "transitioned", ofEvent: "start"))"
+         @ontransitionend="@(e => Log(e, onElement: "transitioned", ofEvent: "end"))"
+         @ontransitionend:stopPropagation="StopPropagation"
+         @ontransitioncancel="@(e => Log(e, onElement: "transitioned", ofEvent: "cancel"))" />
+</div>
+
+@code {
+    [Parameter] public bool StopPropagation { get; set; }
+
+    public List<string> Received { get; } = [];
+
+    private void Log(BitAnimationEventArgs e, string onElement, string ofEvent)
+        => Received.Add($"{onElement} animation{ofEvent} {e.AnimationName} from {e.TargetId}");
+
+    private void Log(BitTransitionEventArgs e, string onElement, string ofEvent)
+        => Received.Add($"{onElement} transition{ofEvent} {e.PropertyName} from {e.TargetId}");
+}

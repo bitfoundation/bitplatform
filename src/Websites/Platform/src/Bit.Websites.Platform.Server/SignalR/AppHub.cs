@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using Bit.Websites.Platform.Client.Services.Contracts;
 using Bit.Websites.Platform.Server.Services;
@@ -16,6 +17,8 @@ namespace Bit.Websites.Platform.Server.SignalR;
 [AllowAnonymous]
 public partial class AppHub : Hub
 {
+    private const int maxToolsCount = 128;
+
     [AutoInject] private IServiceProvider serviceProvider = default!;
     [AutoInject] private IConfiguration configuration = default!;
 
@@ -46,18 +49,20 @@ public partial class AppHub : Hub
         var httpRequest = Context.GetHttpContext()!.Request;
         // Named rather than left to the endpoint's default, so the release this chatbot answers from is in
         // the log next to its answers. Empty on a host that prepares no version, which leaves that default.
-        var version = mcpVersions.Latest is { } latest ? $"?v={latest.Name}" : "";
+        var version = mcpVersions.Latest is { } latest ? $"&v={latest.Name}" : "";
         Uri mcpEndpoint = webHostEnvironment.IsDevelopment()
-            ? new($"{httpRequest.Scheme}://{httpRequest.Host}/mcp{version}")
-            : new($"https://bitplatform.dev/mcp{version}");
+            ? new($"{httpRequest.Scheme}://{httpRequest.Host}/mcp?libraries=all{version}")
+            : new($"https://bitplatform.dev/mcp?libraries=all{version}");
 
         await using var bitplatformMcp = await McpClient.CreateAsync(new HttpClientTransport(new()
         {
             Name = "bitplatform",
             Endpoint = mcpEndpoint,
             TransportMode = HttpTransportMode.StreamableHttp
-        }), new() { }, loggerFactory, cancellationToken); // provides the per product tools (bit BlazorUI, Bmotion, Brouter, Butil, Bswup, ...), the bitplatform source code tools and the general AskGitHubRepository tool
-        var bitplatformMcpTools = await bitplatformMcp.ListToolsAsync(cancellationToken: cancellationToken);
+        }), new() { }, loggerFactory, cancellationToken); // provides the per product tools (bit BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil, Bswup, Belemetry, ...), the bitplatform source code tools and the general AskGitHubRepository tool
+        var bitplatformMcpTools = (await bitplatformMcp.ListToolsAsync(cancellationToken: cancellationToken))
+            .OrderBy(tool => GetChatbotPriority(tool.Name))
+            .ToArray();
 
 
         async Task ReadIncomingMessages()
@@ -91,38 +96,40 @@ public partial class AppHub : Hub
                 {
                     chatMessages.Add(new(ChatRole.User, incomingMessage));
 
+                    AITool[] chatbotTools = [
+                        AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
+                        {
+                            if (messageSpecificCancellationToken.IsCancellationRequested)
+                                return;
+
+                            await using var scope = serviceProvider.CreateAsyncScope();
+
+                            await scope.ServiceProvider.GetRequiredService<TelegramBotService>()
+                                .SendContactUsMessage(emailAddress, conversationHistory, messageSpecificCancellationToken);
+
+                        }, name: "AskForSupport", description: "Saves the user's email address and the conversation history for future support. Parameters: emailAddress (string), conversationHistory (string)"),
+                        AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
+                        {
+                            if (messageSpecificCancellationToken.IsCancellationRequested)
+                                return;
+
+                            await using var scope = serviceProvider.CreateAsyncScope();
+
+                            await scope.ServiceProvider.GetRequiredService<TelegramBotService>()
+                                .SendBuyPackageMessage("Default", emailAddress, conversationHistory, messageSpecificCancellationToken);
+
+                        }, name: "AskForSales", description: "Saves the user's email address and the conversation history for future susales. Parameters: emailAddress (string), conversationHistory (string)")
+                    ];
+
                     ChatOptions chatOptions = new()
                     {
-                        Tools = [..bitplatformMcpTools,
-                                AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
-                                {
-                                    if (messageSpecificCancellationToken.IsCancellationRequested)
-                                        return;
-
-                                    await using var scope = serviceProvider.CreateAsyncScope();
-
-                                    await scope.ServiceProvider.GetRequiredService<TelegramBotService>()
-                                        .SendContactUsMessage(emailAddress, conversationHistory, messageSpecificCancellationToken);
-
-                                }, name: "AskForSupport", description: "Saves the user's email address and the conversation history for future support. Parameters: emailAddress (string), conversationHistory (string)"),
-                                AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
-                                {
-                                    if (messageSpecificCancellationToken.IsCancellationRequested)
-                                        return;
-
-                                    await using var scope = serviceProvider.CreateAsyncScope();
-
-                                    await scope.ServiceProvider.GetRequiredService<TelegramBotService>()
-                                        .SendBuyPackageMessage("Default", emailAddress, conversationHistory, messageSpecificCancellationToken);
-
-                                }, name: "AskForSales", description: "Saves the user's email address and the conversation history for future susales. Parameters: emailAddress (string), conversationHistory (string)")
-                        ]
+                        Tools = [.. bitplatformMcpTools.Take(maxToolsCount - chatbotTools.Length), .. chatbotTools]
                     };
 
                     configuration.GetRequiredSection("AppSettings:ChatOptions").Bind(chatOptions);
 
                     const string supportSystemPrompt = """
-                        You are the AI assistant of bitplatform (https://bitplatform.dev). You answer questions about every product the bit platform team ships - bit BlazorUI, Bmotion, Brouter, Butil, Bswup, Besql, the bit Boilerplate project template and the rest - and you route support and sales requests to a human.
+                        You are the AI assistant of bitplatform (https://bitplatform.dev). You answer questions about every product the bit platform team ships - bit BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil, Bswup, Belemetry, Besql, the bit Boilerplate project template and the rest - and you route support and sales requests to a human.
 
                         **RELEVANCE:**
                         - A query is relevant only if it concerns bitplatform's products, their features, setup or usage, support topics, or product recommendations tied to bitplatform. .NET, Blazor, MAUI and ASP.NET Core topics are relevant only while they serve a bitplatform answer.
@@ -138,6 +145,12 @@ public partial class AppHub : Hub
                         - Use the AskGitHubRepository tool only for the third-party libraries its description names. For now, do not return links returned by that tool.
                         - Use the Microsoft documentation tools only for .NET/Blazor/ASP.NET Core/MAUI behavior that bitplatform builds upon, never as a replacement for the bit tools.
                         - If the tools do not cover the question, say so honestly instead of guessing.
+
+                        **CHOOSING THE OPTIONS OF A NEW bit Boilerplate PROJECT:**
+                        - People picking the options of a new bit Boilerplate project, on https://bitplatform.dev/templates/create-project or with `bit new`, ask about the database, file storage, Redis, the AI chatbot, the offline database, push notifications, reCAPTCHA, ads, Sentry, Application Insights, CI/CD, multitenancy, the Admin and Sales modules, the theme and the apps to set up. Many of them are not .NET developers.
+                        - Answer from the template's own source and its .docs folder (src/Templates/Boilerplate), read with the source code tools.
+                        - Explain the trade-off in plain words: what the option adds to the generated project, what it costs (download size, start time, a service to run or pay for), whether it can be changed later, and the matching `bit new` option, such as `--database PostgreSQL` or `--offlineDb`.
+                        - Be clear that the template sets up infrastructure and the sample features an option names. It never builds the user's own business features.
 
                         **RESPONSE FORMAT:**
                         - Always format your responses using Markdown: headers (##, ###) to organize longer answers, bullet or numbered lists, **bold** for important points, and [Link Text](URL) for URLs.
@@ -203,6 +216,16 @@ public partial class AppHub : Hub
             yield return str;
         }
     }
+
+    private static int GetChatbotPriority(string toolName) => toolName switch
+    {
+        McpFeedbackTool.ToolName => 0,
+        _ when Regex.IsMatch(toolName, "^(Inspect|Simulate|Analyze|Run|Review|Check|Plan|Compare|Generate)") => 4,
+        _ when Regex.IsMatch(toolName, "^Search|Overview$|BitPlatform|BlazorUI") => 0,
+        _ when Regex.IsMatch(toolName, "Guide|Docs?Page$|Document$|Api") => 1,
+        _ when Regex.IsMatch(toolName, "SourceFile$|Recipes?$|^AskGitHubRepository$|^microsoft_docs_") => 2,
+        _ => 3
+    };
 
     private async Task HandleException(Exception exp)
     {

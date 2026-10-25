@@ -1,0 +1,38 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../../.gitignore" />
+    <File Path="../../.editorconfig" />
+    <File Path="../../Bit.Build.props" />
+    <File Path="../../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Client/Bit.Bmage.Demo.Client.csproj" />
+    <Project Path="Demo/Server/Bit.Bmage.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="Samples/Core/Bit.Bmage.Samples.Core.csproj" />
+    <Project Path="Samples/MAUI/Bit.Bmage.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Samples/Auto/">
+    <Project Path="Samples/Auto/Bit.Bmage.Samples.Auto.Client/Bit.Bmage.Samples.Auto.Client.csproj" />
+    <Project Path="Samples/Auto/Bit.Bmage.Samples.Auto/Bit.Bmage.Samples.Auto.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Server/">
+    <Project Path="Samples/Server/Bit.Bmage.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Wasm/">
+    <Project Path="Samples/Wasm/Bit.Bmage.Samples.Wasm.Client/Bit.Bmage.Samples.Wasm.Client.csproj" />
+    <Project Path="Samples/Wasm/Bit.Bmage.Samples.Wasm/Bit.Bmage.Samples.Wasm.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Bmage.Benchmarks/Bit.Bmage.Benchmarks.csproj" />
+    <Project Path="Tests/Bit.Bmage.Tests/Bit.Bmage.Tests.csproj" />
+    <Project Path="Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj" />
+    <Project Path="Tests/Bit.Bmage.Tests.Hosting/Bit.Bmage.Tests.Hosting.csproj" />
+    <Project Path="Tests/Bit.Bmage.Tests.Mcp/Bit.Bmage.Tests.Mcp.csproj" />
+  </Folder>
+  <Project Path="Bit.Bmage/Bit.Bmage.csproj" />
+</Solution>

@@ -1,4 +1,4 @@
-declare class TableCell extends Block {
+﻿declare class TableCell extends Block {
     static blotName: string;
     static tagName: string;
     static create(value: string): HTMLElement;

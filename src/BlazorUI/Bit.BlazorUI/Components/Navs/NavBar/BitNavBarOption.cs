@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitNavBarOption : ComponentBase, IDisposable
 {
@@ -87,12 +87,12 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the navbar option is enabled.
+    /// Whether or not the navbar option is disabled.
     /// </summary>
-    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool IsDisabled { get; set; }
 
     /// <summary>
-    /// A unique value to use as a key or id of the navbar option.
+    /// A unique value to use as a key or id of the navbar option, and what the DefaultSelectedKey of the navbar matches.
     /// </summary>
     [Parameter] public string? Key { get; set; }
 
@@ -122,6 +122,17 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
     /// selected one. For external icon libraries, use <see cref="SelectedIcon"/> instead.
     /// </summary>
     [Parameter] public string? SelectedIconName { get; set; }
+
+    /// <summary>
+    /// The relationship of the link of the navbar option to the current document, rendered as the rel attribute of its anchor.
+    /// </summary>
+    /// <remarks>
+    /// A link opening a new tab (<see cref="Target"/> of <c>_blank</c>) gets <c>noopener</c> added to whatever this
+    /// says, unless it already says what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>). Nothing adds <c>noreferrer</c> on its
+    /// own: ask for it here where the page the link leads to must not learn which page it was followed from.
+    /// </remarks>
+    [Parameter] public BitLinkRels? Rel { get; set; }
 
     /// <summary>
     /// Custom CSS style for the navbar option.
@@ -178,7 +189,10 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        NavBar?.RegisterOption(this);
+        if (NavBar is not null)
+        {
+            await NavBar.RegisterOption(this);
+        }
 
         await base.OnInitializedAsync();
     }

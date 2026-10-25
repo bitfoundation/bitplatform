@@ -1,0 +1,300 @@
+﻿@page "/e2e/carousel"
+
+<PageTitle>BitCarousel E2E</PageTitle>
+
+@* Every carousel is 400px wide and its slides say which they are, so the slide on screen is read off the slide whose
+   box sits inside the carousel, and the state the page writes out says the rest. *@
+<style>
+    .csl-host { width: 400px; }
+    .csl-slide { height: 100%; display: flex; align-items: center; justify-content: center; background: #ddd; font-size: 20px; }
+    .csl-root-class { outline: 2px solid rgb(1, 1, 1); }
+    .csl-cnt-class { letter-spacing: 1px; }
+    .csl-item-class { letter-spacing: 2px; }
+    .csl-cur-class { letter-spacing: 3px; }
+    .csl-btns-class { letter-spacing: 4px; }
+    .csl-btn-icons-class { letter-spacing: 5px; }
+    .csl-left-class { word-spacing: 6px; }
+    .csl-left-icon-class { word-spacing: 7px; }
+    .csl-right-class { word-spacing: 8px; }
+    .csl-right-icon-class { word-spacing: 9px; }
+    .csl-dcn-class { letter-spacing: 10px; }
+    .csl-dots-class { outline: 1px solid rgb(2, 2, 2); }
+    .csl-cud-class { outline-color: rgb(3, 3, 3); }
+    .csl-ppb-class { letter-spacing: 11px; }
+    .csl-ppb-icon-class { letter-spacing: 12px; }
+</style>
+
+<E2ESection Id="sec-basic" Title="Basic: buttons, dots, keyboard, OnChange">
+    <div class="csl-host">
+        <BitCarousel Id="basic" AnimationDuration="0.15" OnChange="i => _changes.Add(i)" AriaLabel="Basic carousel">
+            @Slides(4)
+        </BitCarousel>
+    </div>
+    <span id="changes">@string.Join(",", _changes)</span>
+</E2ESection>
+
+<E2ESection Id="sec-infinite" Title="InfiniteScrolling, HideDots, HideNextPrev">
+    <div class="csl-host"><BitCarousel Id="infinite" InfiniteScrolling AnimationDuration="0.15">@Slides(4)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="hide-dots" HideDots AnimationDuration="0.15">@Slides(3)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="hide-buttons" HideNextPrev AnimationDuration="0.15">@Slides(3)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="single">@Slides(1)</BitCarousel></div>
+</E2ESection>
+
+<E2ESection Id="sec-multiple" Title="VisibleItemsCount, ScrollItemsCount, Gap">
+    <div class="csl-host"><BitCarousel Id="multiple" VisibleItemsCount="3" AnimationDuration="0.15">@Slides(6)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="multiple-scroll" VisibleItemsCount="3" ScrollItemsCount="3" AnimationDuration="0.15">@Slides(6)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="gap" VisibleItemsCount="2" Gap="20px">@Slides(4)</BitCarousel></div>
+</E2ESection>
+
+<E2ESection Id="sec-responsive" Title="VisibleItemsCountXs..Xxl and ResponsiveOptions, measured off the carousel">
+    <button id="btn-responsive-width" @onclick="() => _responsiveWidth = _responsiveWidth == 500 ? 1000 : 500">Toggle width</button>
+    <div style="width: @(_responsiveWidth)px" id="responsive-host">
+        <BitCarousel Id="responsive" VisibleItemsCountXs="1" VisibleItemsCountSm="2" VisibleItemsCountMd="3" VisibleItemsCountLg="4" VisibleItemsCountXl="5" VisibleItemsCountXxl="6">@Slides(8)</BitCarousel>
+    </div>
+    @foreach (var width in new[] { 500, 700, 1000, 1300, 2000, 2600 })
+    {
+        <div style="width: @(width)px"><BitCarousel Id="@($"responsive-{width}")" VisibleItemsCountXs="1" VisibleItemsCountSm="2" VisibleItemsCountMd="3" VisibleItemsCountLg="4" VisibleItemsCountXl="5" VisibleItemsCountXxl="6">@Slides(8)</BitCarousel></div>
+    }
+    <div style="width: 1300px"><BitCarousel Id="responsive-carry" VisibleItemsCount="1" VisibleItemsCountSm="2">@Slides(8)</BitCarousel></div>
+    <div style="width: 500px"><BitCarousel Id="options-500" VisibleItemsCount="3" ResponsiveOptions="_responsiveOptions">@Slides(8)</BitCarousel></div>
+    <div style="width: 800px"><BitCarousel Id="options-800" VisibleItemsCount="3" ResponsiveOptions="_responsiveOptions">@Slides(8)</BitCarousel></div>
+    <div style="width: 1000px"><BitCarousel Id="options-1000" VisibleItemsCount="3" ResponsiveOptions="_responsiveOptions">@Slides(8)</BitCarousel></div>
+</E2ESection>
+
+<E2ESection Id="sec-vertical" Title="Vertical and DotsPlacement">
+    <div class="csl-host"><BitCarousel Id="vertical" Vertical AnimationDuration="0.15">@Slides(3)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="dots-top" DotsPlacement="BitPlacement.Top">@Slides(3)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="dots-bottom" DotsPlacement="BitPlacement.Bottom">@Slides(3)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="dots-start" DotsPlacement="BitPlacement.Start">@Slides(3)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="dots-end" DotsPlacement="BitPlacement.End">@Slides(3)</BitCarousel></div>
+</E2ESection>
+
+<E2ESection Id="sec-fade" Title="Fade and AnimationDuration">
+    <div class="csl-host"><BitCarousel Id="fade" Fade AnimationDuration="0.2" VisibleItemsCount="3">@Slides(3)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="duration" AnimationDuration="0.3">@Slides(3)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="duration-zero" AnimationDuration="0">@Slides(3)</BitCarousel></div>
+</E2ESection>
+
+<E2ESection Id="sec-autoplay" Title="AutoPlay, ShowPlayPause, PauseOnHover, PauseOnFocus, StopOnInteraction, AutoPlayReverse, StopOnLastSlide">
+    <button id="btn-read-autoplay" @onclick="ReadAutoPlay">Read the autoplay state</button>
+    <span id="autoplay-state">@_autoPlayState</span>
+    <div class="csl-host">
+        <BitCarousel @ref="_autoPlay" Id="autoplay" AutoPlay AutoPlayInterval="400" InfiniteScrolling ShowPlayPause AnimationDuration="0.1">@Slides(4)</BitCarousel>
+    </div>
+    <div class="csl-host">
+        <BitCarousel @ref="_noPause" Id="no-pause" AutoPlay AutoPlayInterval="400" InfiniteScrolling PauseOnHover="false" PauseOnFocus="false" AnimationDuration="0.1">@Slides(4)</BitCarousel>
+    </div>
+    <div class="csl-host">
+        <BitCarousel @ref="_stopOnInteraction" Id="stop-on-interaction" AutoPlay AutoPlayInterval="400" InfiniteScrolling StopOnInteraction AnimationDuration="0.1">@Slides(4)</BitCarousel>
+    </div>
+    <div class="csl-host">
+        <BitCarousel Id="reverse" AutoPlay AutoPlayReverse AutoPlayInterval="400" InfiniteScrolling AnimationDuration="0.1">@Slides(4)</BitCarousel>
+    </div>
+    <div class="csl-host">
+        <BitCarousel @ref="_stopOnLast" Id="stop-on-last" AutoPlay StopOnLastSlide AutoPlayInterval="300" AnimationDuration="0.1">@Slides(3)</BitCarousel>
+    </div>
+    <div class="csl-host">
+        <BitCarousel @ref="_forced" Id="forced" AutoPlay ForceAnimation AutoPlayInterval="400" InfiniteScrolling ShowPlayPause AnimationDuration="0.1">@Slides(3)</BitCarousel>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-interaction" Title="Wheel, NoDrag, DragThreshold, NoKeyboard, Disabled">
+    <div class="csl-host"><BitCarousel Id="wheel" Wheel NoDrag AnimationDuration="0.1">@Slides(4)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="drag" AnimationDuration="0.1">@Slides(4)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="threshold" DragThreshold="80" AnimationDuration="0.1">@Slides(4)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="no-keyboard" NoKeyboard AnimationDuration="0.1">@Slides(3)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="disabled" Disabled="_disabled" AnimationDuration="0.1" HtmlAttributes="@_disabledAttributes" ShowPlayPause AutoPlay AutoPlayInterval="100000">@Slides(3)</BitCarousel></div>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="root-clicks">@_rootClicks</span>
+</E2ESection>
+
+<E2ESection Id="sec-binding" Title="SelectedPage binding, DefaultPage and the public API">
+    <span id="selected-page">@_selectedPage</span>
+    <button id="btn-select-3" @onclick="() => _selectedPage = 3">Select page 3</button>
+    <div class="csl-host"><BitCarousel @ref="_bound" Id="bound" @bind-SelectedPage="_selectedPage" HideNextPrev AnimationDuration="0.1">@Slides(4)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="default-page" DefaultPage="2">@Slides(4)</BitCarousel></div>
+    <button id="api-next" @onclick="() => _bound!.GoNext()">GoNext</button>
+    <button id="api-prev" @onclick="() => _bound!.GoPrev()">GoPrev</button>
+    <button id="api-goto" @onclick="() => _bound!.GoTo(4)">GoTo 4</button>
+    <button id="api-refresh" @onclick="() => _bound!.Refresh()">Refresh</button>
+    <button id="api-read" @onclick="ReadApi">Read</button>
+    <span id="api-state">@_apiState</span>
+    <button id="api-pause" @onclick="() => _apiPlay!.Pause()">Pause</button>
+    <button id="api-resume" @onclick="() => _apiPlay!.Resume()">Resume</button>
+    <button id="api-toggle" @onclick="() => _apiPlay!.TogglePlay()">TogglePlay</button>
+    <button id="api-read-play" @onclick="ReadApiPlay">Read play</button>
+    <span id="api-play-state">@_apiPlayState</span>
+    <div class="csl-host"><BitCarousel @ref="_apiPlay" Id="api-play" AutoPlay AutoPlayInterval="100000" InfiniteScrolling>@Slides(3)</BitCarousel></div>
+</E2ESection>
+
+<E2ESection Id="sec-dots" Title="DotTemplate, DotAriaLabel, DotsAriaLabel">
+    <div class="csl-host">
+        <BitCarousel Id="dot-template" DotAriaLabel="Picture" DotsAriaLabel="Pick a picture" AnimationDuration="0.1">
+            <DotTemplate Context="index"><span class="csl-dot-text">@(index + 1)</span></DotTemplate>
+            <ChildContent>@Slides(3)</ChildContent>
+        </BitCarousel>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-a11y" Title="Accessibility">
+    <div class="csl-host">
+        <BitCarousel Id="a11y" ItemAriaLabelFormat="Slide {0} of {1}" GoLeftAriaLabel="Forwards" GoRightAriaLabel="Backwards"
+                     AutoPlay ShowPlayPause AutoPlayInterval="100000" PlayButtonAriaLabel="Play it" PauseButtonAriaLabel="Pause it">
+            @Slides(3)
+            <BitCarouselItem AriaLabel="The named slide"><div class="csl-slide">Named</div></BitCarouselItem>
+        </BitCarousel>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_carouselParams">
+        <div class="csl-host"><BitCarousel Id="casc">@Slides(3)</BitCarousel></div>
+        <div class="csl-host"><BitCarousel Id="casc-own" HideDots="false">@Slides(3)</BitCarousel></div>
+    </BitParams>
+    <div class="csl-host"><BitCarousel Id="casc-out">@Slides(3)</BitCarousel></div>
+</E2ESection>
+
+<E2ESection Id="sec-color" Title="Color, Accent, Size">
+    @foreach (var color in Enum.GetValues<BitColor>())
+    {
+        <div class="csl-host"><BitCarousel Id="@($"color-{color}")" Color="color">@Slides(2)</BitCarousel></div>
+    }
+    @foreach (var accent in Enum.GetValues<BitColorKind>())
+    {
+        <div class="csl-host"><BitCarousel Id="@($"accent-{accent}")" Accent="accent">@Slides(2)</BitCarousel></div>
+    }
+    <div class="csl-host"><BitCarousel Id="size-sm" Size="BitSize.Small">@Slides(2)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="size-md" Size="BitSize.Medium">@Slides(2)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="size-lg" Size="BitSize.Large">@Slides(2)</BitCarousel></div>
+</E2ESection>
+
+<E2ESection Id="sec-icons" Title="External icons and icon names">
+    <div class="csl-host">
+        <BitCarousel Id="icons" InfiniteScrolling AutoPlay ShowPlayPause AutoPlayInterval="100000"
+                     GoLeftIcon="@BitIconInfo.Css("csl-ext-left")" GoRightIcon="@BitIconInfo.Css("csl-ext-right")"
+                     PauseIcon="@BitIconInfo.Css("csl-ext-pause")" PlayIcon="@BitIconInfo.Css("csl-ext-play")">@Slides(3)</BitCarousel>
+    </div>
+    <div class="csl-host">
+        <BitCarousel Id="icon-names" InfiniteScrolling AutoPlay ShowPlayPause AutoPlayInterval="100000"
+                     GoLeftIconName="Forward" GoRightIconName="Back" PauseIconName="CirclePause" PlayIconName="PlaySolid">@Slides(3)</BitCarousel>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-style" Title="Style, Class, Styles, Classes">
+    <div class="csl-host">
+        <BitCarousel Id="styled" InfiniteScrolling AutoPlay ShowPlayPause AutoPlayInterval="100000" Class="csl-root-class" Style="height: 150px"
+                     Styles="@(new() { Root = "padding: 1px", Container = "margin-top: 2px", Item = "padding-top: 3px", CurrentItem = "padding-bottom: 4px", Buttons = "padding-left: 5px", ButtonIcons = "padding-left: 6px", GoLeftButton = "padding-right: 7px", GoLeftButtonIcon = "padding-right: 8px", GoRightButton = "padding-right: 9px", GoRightButtonIcon = "padding-right: 10px", DotsContainer = "padding-top: 11px", Dots = "margin-top: 12px", CurrentDot = "margin-bottom: 13px", PlayPauseButton = "margin-left: 14px", PlayPauseButtonIcon = "margin-left: 15px" })"
+                     Classes="@(new() { Root = "csl-extra-root", Container = "csl-cnt-class", Item = "csl-item-class", CurrentItem = "csl-cur-class", Buttons = "csl-btns-class", ButtonIcons = "csl-btn-icons-class", GoLeftButton = "csl-left-class", GoLeftButtonIcon = "csl-left-icon-class", GoRightButton = "csl-right-class", GoRightButtonIcon = "csl-right-icon-class", DotsContainer = "csl-dcn-class", Dots = "csl-dots-class", CurrentDot = "csl-cud-class", PlayPauseButton = "csl-ppb-class", PlayPauseButtonIcon = "csl-ppb-icon-class" })">
+            @Slides(3)
+        </BitCarousel>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-styled-buttons" Title="Styles on the buttons of a carousel that hides them at its ends">
+    <div class="csl-host"><BitCarousel Id="styled-buttons" AnimationDuration="0.1" Styles="@(new() { Buttons = "color: rgb(1, 2, 3);" })">@Slides(2)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="styled-dots" Styles="@(new() { Dots = "outline: 1px solid rgb(4, 5, 6);", CurrentDot = "background-color: rgb(7, 8, 9);" })">@Slides(2)</BitCarousel></div>
+</E2ESection>
+
+<E2ESection Id="sec-css-vars" Title="The --bit-Carousel-* variables">
+    <div class="csl-host" style="--bit-Carousel-height: 150px; --bit-Carousel-gap: 10px; --bit-Carousel-easing: linear; --bit-Carousel-focus-color: rgb(9, 9, 9); --bit-Carousel-button-color: rgb(1, 2, 3); --bit-Carousel-button-hover-color: rgb(4, 5, 6); --bit-Carousel-button-background: rgb(7, 8, 9); --bit-Carousel-button-hover-background: rgb(10, 11, 12); --bit-Carousel-button-opacity: 0.3; --bit-Carousel-button-hover-opacity: 0.7; --bit-Carousel-button-size: 33px; --bit-Carousel-button-width: 50px; --bit-Carousel-dot-color: rgb(13, 14, 15); --bit-Carousel-dot-hover-color: rgb(16, 17, 18); --bit-Carousel-dot-current-color: rgb(19, 20, 21); --bit-Carousel-dot-current-hover-color: rgb(22, 23, 24); --bit-Carousel-dot-size: 12px; --bit-Carousel-dot-current-length: 40px; --bit-Carousel-dot-radius: 2px; --bit-Carousel-dots-gap: 7px; --bit-Carousel-dots-margin: 9px">
+        <BitCarousel Id="vars" InfiniteScrolling VisibleItemsCount="2" AnimationDuration="0.1">@Slides(4)</BitCarousel>
+        <BitCarousel Id="vars-color" InfiniteScrolling Color="BitColor.Error">@Slides(2)</BitCarousel>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-rtl" Title="RTL">
+    <div class="csl-host"><BitCarousel Id="rtl" Dir="BitDir.Rtl" AnimationDuration="0.1">@Slides(3)</BitCarousel></div>
+    <div class="csl-host" dir="rtl"><BitCarousel Id="rtl-inherited" AnimationDuration="0.1">@Slides(3)</BitCarousel></div>
+</E2ESection>
+
+<E2ESection Id="sec-lifecycle" Title="Lifecycle">
+    <button id="btn-add-slide" @onclick="() => _dynamicCount++">Add a slide</button>
+    <button id="btn-remove-slide" @onclick="() => _dynamicCount--">Remove a slide</button>
+    <div class="csl-host"><BitCarousel Id="dynamic" AnimationDuration="0.1">@Slides(_dynamicCount)</BitCarousel></div>
+    @if (_mounted)
+    {
+        <div class="csl-host"><BitCarousel Id="mount-carousel" AutoPlay AutoPlayInterval="400" InfiniteScrolling>@Slides(3)</BitCarousel></div>
+    }
+    <button id="btn-unmount" @onclick="() => _mounted = false">Unmount</button>
+    <button id="btn-mount" @onclick="() => _mounted = true">Mount</button>
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly List<int> _changes = [];
+    private int _responsiveWidth = 500;
+    private int _selectedPage = 1;
+    private bool _disabled = true;
+    private bool _mounted = true;
+    private int _dynamicCount = 2;
+    private int _rootClicks;
+    private string _autoPlayState = "";
+    private string _apiState = "";
+    private string _apiPlayState = "";
+
+    private BitCarousel? _autoPlay;
+    private BitCarousel? _noPause;
+    private BitCarousel? _stopOnInteraction;
+    private BitCarousel? _stopOnLast;
+    private BitCarousel? _forced;
+    private BitCarousel? _bound;
+    private BitCarousel? _apiPlay;
+
+    private Dictionary<string, object> _disabledAttributes = default!;
+
+    private readonly BitCarouselResponsiveOption[] _responsiveOptions =
+    [
+        new() { Breakpoint = 600, VisibleItemsCount = 1, ScrollItemsCount = 1 },
+        new() { Breakpoint = 900, VisibleItemsCount = 2, ScrollItemsCount = 2 },
+    ];
+
+    private readonly BitCarouselParams[] _carouselParams = [new() { InfiniteScrolling = true, HideDots = true, Size = BitSize.Large }];
+
+    protected override void OnInitialized()
+    {
+        _disabledAttributes = new()
+        {
+            ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _rootClicks++)
+        };
+    }
+
+    private static RenderFragment Slides(int count) => builder =>
+    {
+        for (var i = 1; i <= count; i++)
+        {
+            var index = i;
+            builder.OpenComponent<BitCarouselItem>(0);
+            builder.SetKey(index);
+            builder.AddComponentParameter(1, "ChildContent", (RenderFragment)(b =>
+            {
+                b.OpenElement(0, "div");
+                b.AddAttribute(1, "class", "csl-slide");
+                b.AddContent(2, $"S{index}");
+                b.CloseElement();
+            }));
+            builder.CloseComponent();
+        }
+    };
+
+    private static string State(BitCarousel? carousel)
+    {
+        return carousel is null ? "" : $"page={carousel.CurrentPage};playing={carousel.IsPlaying};paused={carousel.IsPaused}";
+    }
+
+    private void ReadAutoPlay()
+    {
+        _autoPlayState = $"autoplay[{State(_autoPlay)}] no-pause[{State(_noPause)}] stop[{State(_stopOnInteraction)}] last[{State(_stopOnLast)}] forced[{State(_forced)}]";
+    }
+
+    private void ReadApi()
+    {
+        _apiState = $"current={_bound!.CurrentPage};pages={_bound.PagesCount};items={_bound.ItemsCount}";
+    }
+
+    private void ReadApiPlay()
+    {
+        _apiPlayState = $"playing={_apiPlay!.IsPlaying};paused={_apiPlay.IsPaused}";
+    }
+}

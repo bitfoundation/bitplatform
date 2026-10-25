@@ -25,7 +25,9 @@
         }
 
         <pre @ref="preElementRef"
-             class="code-box-content"
+             @onclick="CopyContentOnClick"
+             title="@(CopyOnClick ? "Click to copy" : null)"
+             class="code-box-content @(CopyOnClick ? "copy-on-click" : null)"
              style="@(string.IsNullOrWhiteSpace(MaxHeight) ? null : $"max-height:{MaxHeight}")">@ChildContent</pre>
     </div>
 }

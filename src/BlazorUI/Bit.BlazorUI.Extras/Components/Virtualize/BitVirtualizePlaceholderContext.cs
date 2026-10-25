@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The context passed to the placeholder template of the BitVirtualize component while real items are being loaded.

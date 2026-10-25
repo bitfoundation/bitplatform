@@ -12,6 +12,8 @@ public partial class UserClaimConfiguration : IEntityTypeConfiguration<UserClaim
         builder.HasUniqueIndexOnNullable(userClaim => new { userClaim.UserId, userClaim.ClaimType, userClaim.ClaimValue, userClaim.TenantId },
                                          userClaim => userClaim.TenantId);
 
+        builder.HasIndex(userClaim => new { userClaim.UserId, userClaim.TenantId });
+
         //#if (database != "MySql")
         //#if (IsInsideProjectTemplate == true)
         // MySQL has no filtered indexes - the filter is silently dropped, which would turn this into an unconditional

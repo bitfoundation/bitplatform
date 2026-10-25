@@ -15,7 +15,7 @@ internal static class BitScrollablePaneJsRuntimeExtensions
     // the constraint is `class` rather than the component base type.
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitScrollablePaneOptions))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitScrollOffset))]
-    internal static ValueTask BitScrollablePaneSetup<T>(this IJSRuntime jsRuntime,
+    internal static ValueTask BitScrollablePaneSetup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IJSRuntime jsRuntime,
                                                         string id,
                                                         ElementReference element,
                                                         DotNetObjectReference<T> dotnetObj,
@@ -70,6 +70,11 @@ internal static class BitScrollablePaneJsRuntimeExtensions
     internal static ValueTask BitScrollablePaneScrollToElement(this IJSRuntime jsRuntime, ElementReference element, string elementId, double offset, bool smooth, string alignment)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.ScrollablePane.scrollToElement", element, elementId, offset, smooth, alignment);
+    }
+
+    internal static ValueTask BitScrollablePaneScrollToTarget(this IJSRuntime jsRuntime, ElementReference element, ElementReference target, double offset, bool smooth, string alignment)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.ScrollablePane.scrollToTarget", element, target, offset, smooth, alignment);
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitScrollOffset))]

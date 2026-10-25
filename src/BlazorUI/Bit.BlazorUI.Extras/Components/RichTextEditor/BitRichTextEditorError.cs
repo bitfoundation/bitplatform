@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>An error surfaced by the editor (e.g. invalid URL, failed upload, invalid HTML).</summary>
 /// <param name="Code">Stable error code, e.g. "invalid-url".</param>

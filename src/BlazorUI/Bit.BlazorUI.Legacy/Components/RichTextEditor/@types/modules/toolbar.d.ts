@@ -1,4 +1,4 @@
-type Handler = (this: Toolbar, value: any) => void;
+﻿type Handler = (this: Toolbar, value: any) => void;
 
 type ToolbarConfig = Array<string[] | Array<string | Record<string, unknown>>>;
 

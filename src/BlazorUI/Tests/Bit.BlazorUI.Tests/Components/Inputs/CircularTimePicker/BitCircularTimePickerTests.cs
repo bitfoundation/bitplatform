@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using System.Diagnostics;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.CircularTimePicker;
 
@@ -37,6 +40,29 @@ public class BitCircularTimePickerTests : BunitTestContext
         return com.InvokeAsync(() => com.Find(".bit-ctp-clf").KeyDown(new KeyboardEventArgs { Key = key }));
     }
 
+    private CultureInfo _culture = default!;
+    private CultureInfo _uiCulture = default!;
+
+    // A picker left without a Culture reads and writes its time in the culture of the machine, so a test typing
+    // "21:00" would be refused on a machine whose culture writes the time with another separator (fi-FI writes
+    // "21.00"): the thread is pinned to the invariant culture for every test, and put back afterwards.
+    [TestInitialize]
+    public void PinCulture()
+    {
+        _culture = CultureInfo.CurrentCulture;
+        _uiCulture = CultureInfo.CurrentUICulture;
+
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+    }
+
+    [TestCleanup]
+    public void RestoreCulture()
+    {
+        CultureInfo.CurrentCulture = _culture;
+        CultureInfo.CurrentUICulture = _uiCulture;
+    }
+
 
 
     [TestMethod,
@@ -47,7 +73,7 @@ public class BitCircularTimePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitCircularTimePicker = component.Find(".bit-ctp");
@@ -104,7 +130,7 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => clickedValue++);
         });
 
@@ -1271,6 +1297,195 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitCircularTimePickerShiftWheelShouldMoveTheDialOnTheHorizontalAxisTheBrowserReportsIt()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 0, 0));
+        });
+
+        var clock = component.Find(".bit-ctp-clf");
+
+        await component.InvokeAsync(() => clock.Focus());
+
+        // holding Shift is how a browser is asked to scroll sideways, and some of them answer it by
+        // reporting the turn of the wheel as deltaX with no deltaY at all
+        await component.InvokeAsync(() => clock.Wheel(new WheelEventArgs { DeltaX = -1, ShiftKey = true }));
+        Assert.AreEqual(10, component.Instance.Value!.Value.Hours);
+
+        await component.InvokeAsync(() => clock.Wheel(new WheelEventArgs { DeltaX = 1, ShiftKey = true }));
+        Assert.AreEqual(9, component.Instance.Value!.Value.Hours);
+
+        // a wheel that carries neither axis is not a turn of it
+        await component.InvokeAsync(() => clock.Wheel(new WheelEventArgs { ShiftKey = true }));
+        Assert.AreEqual(9, component.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerDigitsShouldTypeTheMinute()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.StartView, BitCircularTimePickerView.Minute);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 0, 0));
+        });
+
+        await KeyDown(component, "4");
+        Assert.AreEqual(new TimeSpan(9, 4, 0), component.Instance.Value);
+
+        // the second digit joins the first one
+        await KeyDown(component, "5");
+        Assert.AreEqual(new TimeSpan(9, 45, 0), component.Instance.Value);
+
+        // a number is at most two digits, so a third one starts over
+        await KeyDown(component, "7");
+        Assert.AreEqual(new TimeSpan(9, 7, 0), component.Instance.Value);
+
+        // a digit that takes the number past the sixty minutes of the ring starts a number of its own
+        await KeyDown(component, "8");
+        Assert.AreEqual(new TimeSpan(9, 8, 0), component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerDigitsShouldTypeTheHourOfTheDialFormat()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 0, 0));
+        });
+
+        await KeyDown(component, "2");
+        await KeyDown(component, "1");
+        Assert.AreEqual(21, component.Instance.Value!.Value.Hours);
+
+        var twelveHour = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(15, 0, 0));
+        });
+
+        // the 12-hour dial reads the number in the half of the day it is showing
+        await KeyDown(twelveHour, "1");
+        await KeyDown(twelveHour, "1");
+        Assert.AreEqual(23, twelveHour.Instance.Value!.Value.Hours);
+
+        // "13" is no hour of that dial, so the "3" is read as a number of its own
+        await KeyDown(twelveHour, "1");
+        await KeyDown(twelveHour, "3");
+        Assert.AreEqual(15, twelveHour.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerDigitsShouldStartANewNumberOnTheNextView()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 0, 0));
+        });
+
+        await KeyDown(component, "4");
+        await KeyDown(component, "Enter");
+        await KeyDown(component, "5");
+
+        // the "4" was the hour, so the "5" is a minute of its own rather than the second digit of 45
+        Assert.AreEqual(new TimeSpan(4, 5, 0), component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerDigitsShouldNotTypeARefusedValue()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.AllowedHours, h => h != 7);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 0, 0));
+        });
+
+        await KeyDown(component, "7");
+
+        Assert.AreEqual(9, component.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerDigitsShouldNotTypeIntoAReadOnlyPicker()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 0, 0));
+        });
+
+        await KeyDown(component, "5");
+
+        Assert.AreEqual(9, component.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerAAndPShouldPickTheHalfOfTheDay()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(15, 0, 0));
+        });
+
+        await KeyDown(component, "a");
+        Assert.AreEqual(3, component.Instance.Value!.Value.Hours);
+
+        await KeyDown(component, "P");
+        Assert.AreEqual(15, component.Instance.Value!.Value.Hours);
+
+        // a key held with a modifier is a shortcut, not a letter typed at the dial
+        await component.InvokeAsync(() => component.Find(".bit-ctp-clf")
+            .KeyDown(new KeyboardEventArgs { Key = "a", CtrlKey = true }));
+        Assert.AreEqual(15, component.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerMeridiemKeysShouldFollowTheDesignatorsOfTheCulture()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.DateTimeFormat.AMDesignator = "vm";
+        culture.DateTimeFormat.PMDesignator = "nm";
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(15, 0, 0));
+        });
+
+        await KeyDown(component, "v");
+        Assert.AreEqual(3, component.Instance.Value!.Value.Hours);
+
+        await KeyDown(component, "n");
+        Assert.AreEqual(15, component.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerMeridiemKeysShouldDoNothingOnTheTwentyFourHourDial()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(15, 0, 0));
+        });
+
+        await KeyDown(component, "a");
+
+        Assert.AreEqual(15, component.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
     public async Task BitCircularTimePickerWheelShouldLeaveAnUnfocusedOrUnshiftedDialAlone()
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
@@ -1442,6 +1657,106 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCircularTimePickerShouldReportATypedTimeThePredicatesRuleOutAsItsOwnMistake()
+    {
+        var component = RenderComponent<BitCircularTimePickerValidationTest>(parameters =>
+        {
+            parameters.Add(p => p.MinTime, new TimeSpan(9, 0, 0));
+            parameters.Add(p => p.MaxTime, new TimeSpan(17, 0, 0));
+            parameters.Add(p => p.AllowedMinutes, m => m is 0 or 30);
+            parameters.Add(p => p.OutOfRangeErrorMessage, "outside the range");
+            parameters.Add(p => p.DisallowedTimeErrorMessage, "not an allowed time");
+        });
+
+        // inside the range, but on a minute the application itself ruled out - a different mistake from
+        // falling outside of the bounds, and one the dial would never have produced
+        component.Find(".bit-ctp-inp").Input("10:10");
+        component.Find("form").Submit();
+        Assert.AreEqual("not an allowed time", component.Find(".validation-message").TextContent);
+
+        // the bounds are still reported as the bounds
+        component.Find(".bit-ctp-inp").Input("19:00");
+        component.Find("form").Submit();
+        Assert.AreEqual("outside the range", component.Find(".validation-message").TextContent);
+
+        component.Find(".bit-ctp-inp").Input("10:30");
+        component.Find("form").Submit();
+        Assert.AreEqual(new TimeSpan(10, 30, 0), component.Instance.TestModel.Time);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldFallBackToADefaultMessageForADisallowedTypedTime()
+    {
+        var component = RenderComponent<BitCircularTimePickerValidationTest>(parameters =>
+        {
+            parameters.Add(p => p.AllowedMinutes, m => m is 0 or 30);
+        });
+
+        component.Find(".bit-ctp-inp").Input("10:10");
+        component.Find("form").Submit();
+
+        Assert.Contains("not an allowed time", component.Find(".validation-message").TextContent);
+    }
+
+    [TestMethod,
+        DataRow(BitCircularTimePickerEditMode.Normal, true),
+        DataRow(BitCircularTimePickerEditMode.OnlyHours, true),
+        DataRow(BitCircularTimePickerEditMode.OnlyMinutes, false),
+        DataRow(BitCircularTimePickerEditMode.OnlySeconds, false)
+    ]
+    public async Task BitCircularTimePickerShouldOnlyOfferTheMeridiemWhereTheHourIsEditable(
+        BitCircularTimePickerEditMode editMode, bool enabled)
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.EditMode, editMode);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 30, 0));
+        });
+
+        var pm = component.FindAll(".bit-ctp-apb")[1];
+
+        // the pair moves the hour by twelve, so a mode that edits only the minutes or the seconds shows the
+        // half the read-out is read against without letting it be moved
+        Assert.AreEqual(enabled is false, pm.HasAttribute("disabled"));
+
+        await component.InvokeAsync(() => pm.Click());
+
+        Assert.AreEqual(enabled ? 21 : 9, component.Instance.Value!.Value.Hours);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldNameAToolbarButtonWithoutTheDashesOfAnUnsetPart()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.ShowSeconds, true);
+        });
+
+        // the dashes are a placeholder rather than a value, and "select hour dash dash" is not a name
+        var buttons = component.FindAll(".bit-ctp-tlb button.bit-ctp-txt");
+
+        Assert.AreEqual("Select hour", buttons[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Select minute", buttons[1].GetAttribute("aria-label"));
+        Assert.AreEqual("Select second", buttons[2].GetAttribute("aria-label"));
+
+        var set = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.ShowSeconds, true);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(7, 5, 9));
+        });
+
+        buttons = set.FindAll(".bit-ctp-tlb button.bit-ctp-txt");
+
+        Assert.AreEqual("Select hour 07", buttons[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Select minute 05", buttons[1].GetAttribute("aria-label"));
+        Assert.AreEqual("Select second 09", buttons[2].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public async Task BitCircularTimePickerShouldStartAnEmptyPickerFromTheStartingValue()
     {
         TimeSpan? value = null;
@@ -1485,6 +1800,49 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.AreEqual(1, cleared);
     }
 
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public async Task BitCircularTimePickerClearShouldHandTheFocusToTheDial(bool standalone)
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, standalone);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(10, 30, 0));
+        });
+
+        var focusCalls = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        await component.InvokeAsync(() => component.Find(".bit-ctp-abn").Click());
+
+        // the button disables itself on the empty value, which would drop the focus onto the document
+        Assert.IsTrue(component.Find(".bit-ctp-abn").HasAttribute("disabled"));
+
+        var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        Assert.AreEqual(focusCalls + 1, invocations.Count);
+        Assert.AreNotEqual(component.Instance.InputElement.Id, ((ElementReference)invocations.Last().Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerNowShouldKeepTheHiddenSecondsInsideTheConstraints()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.ShowNowButton, true);
+            parameters.Add(p => p.AllowedSeconds, s => s >= 30);
+        });
+
+        await component.InvokeAsync(() => component.Find(".bit-ctp-abn").Click());
+
+        // the seconds are not shown, so they go to the first one the constraints allow rather than to a zero
+        // they rule out
+        Assert.AreEqual(30, component.Instance.Value!.Value.Seconds);
+    }
+
     [TestMethod]
     public void BitCircularTimePickerCalloutShouldBeAModalDialogOnlyWhenItFloats()
     {
@@ -1515,6 +1873,35 @@ public class BitCircularTimePickerTests : BunitTestContext
         var setup = Context.JSInterop.Invocations["BitBlazorUI.CircularTimePicker.setup"].Single();
 
         Assert.AreEqual(component.Instance.InputElement.Id, ((ElementReference)setup.Arguments[2]!).Id);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldHandItsCalloutTheTabOrderAndTheFocusLeavingIt()
+    {
+        var component = RenderComponent<BitCircularTimePicker>();
+
+        component.Find(".bit-ctp-wrp").Click();
+
+        // The callout is relocated to the end of the document while it is open, so the tab order of the page
+        // does not run through it: the JS side holds the tab order inside it and dismisses it once the focus has
+        // moved on from both the field and it - which only works if the toggle is asked to.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(true, toggle.Arguments[28]); // trapFocus
+        Assert.AreEqual(true, toggle.Arguments[29]); // dismissOnFocusLeave
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldNotTrapTheFocusInAStandaloneCallout()
+    {
+        RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+        });
+
+        // Standalone there is no dialog and no overlay, so the focus is free to leave the way it leaves any
+        // other part of the page: the callout is never toggled, and nothing is trapped.
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle"));
     }
 
     [TestMethod]
@@ -1623,6 +2010,102 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         await Press(component, MinuteAngle(30), OuterRing);
         Assert.IsFalse(isOpen);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerAutoCloseDelayShouldHoldTheClockOpenForTheLengthOfIt()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoClose, true);
+            parameters.Add(p => p.AutoCloseDelay, 150);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        // the hour only moves the dial on to the minutes, so nothing is waited for yet: the press is over by the
+        // time its handlers return. It is checked in one turn of the renderer's dispatcher, which is where a wait
+        // would resume, rather than against a clock that a slow machine can run past without any wait at all.
+        await component.InvokeAsync(() =>
+        {
+            var down = component.Instance._HandlePointerDown(HourAngle(3), OuterRing);
+            var up = component.Instance._HandlePointerUp();
+
+            Assert.IsTrue(down.IsCompleted && up.IsCompleted, "The press that only moves the dial on waited for something.");
+        });
+
+        Assert.IsTrue(isOpen);
+
+        // the pick that completes the selection is also the one the clock would be taken away on, so the
+        // wait is what lets it be seen being made
+        var elapsed = Stopwatch.StartNew();
+        await Press(component, MinuteAngle(30), OuterRing);
+        elapsed.Stop();
+
+        Assert.IsFalse(isOpen);
+        Assert.IsGreaterThanOrEqualTo(100, elapsed.ElapsedMilliseconds);
+
+        // the outer ring of the 24-hour dial carries 13 to 00, so a press at three o'clock is 15:00
+        Assert.AreEqual(new TimeSpan(15, 30, 0), component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerAutoCloseShouldNotWaitWithoutADelay()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoClose, true);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        await Press(component, HourAngle(3), OuterRing);
+
+        // Without a delay the close is made by the very press that completes the selection, so the press is over -
+        // and the picker closed - by the time its handlers return. It is checked in one turn of the renderer's
+        // dispatcher, which is where a wait would resume, rather than against a clock that a slow machine can run
+        // past without any wait at all.
+        await component.InvokeAsync(() =>
+        {
+            var down = component.Instance._HandlePointerDown(MinuteAngle(30), OuterRing);
+            var up = component.Instance._HandlePointerUp();
+
+            Assert.IsTrue(down.IsCompleted && up.IsCompleted, "The press that completes the selection waited before closing.");
+            Assert.IsFalse(isOpen);
+        });
+
+        Assert.IsFalse(isOpen);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerNowShouldHonorTheAutoCloseDelayAsWell()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoClose, true);
+            parameters.Add(p => p.AutoCloseDelay, 150);
+            parameters.Add(p => p.ShowNowButton, true);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        // the button sets every part at once, so the selection is complete - and the wait it is closed
+        // after is the same one a pick on the dial gets. The picker is checked to be open in the same turn of the
+        // renderer's dispatcher as the click, where the wait resumes: read afterwards from the test, a slow machine
+        // could let the 150 ms run out first.
+        await component.InvokeAsync(() =>
+        {
+            component.Find(".bit-ctp-abn").Click();
+
+            Assert.IsTrue(isOpen);
+        });
+
+        component.WaitForState(() => isOpen is false, TimeSpan.FromSeconds(5));
+
+        Assert.IsNotNull(component.Instance.Value);
     }
 
     [TestMethod]
@@ -1850,7 +2333,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.AreEqual("3", component.Find(".bit-ctp-clf").GetAttribute("tabindex"));
 
         // a picker that is switched off is out of the tab order whatever the tab index says
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         Assert.AreEqual("-1", component.Find(".bit-ctp-clf").GetAttribute("tabindex"));
     }
@@ -1870,6 +2353,63 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.AreEqual("0", component.Find(".bit-ctp-clf").GetAttribute("tabindex"));
     }
 
+    [TestMethod]
+    public void BitCircularTimePickerShouldAttachTheLabelToTheInputOfAPickerThatHasOne()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Meeting time");
+        });
+
+        Assert.AreEqual(component.Find(".bit-ctp-inp").Id, component.Find(".bit-ctp-lbl").GetAttribute("for"));
+
+        // the field carries the name, so the dial only says which part of the time it is on
+        Assert.AreEqual("Select hour", component.Find(".bit-ctp-clf").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldNameTheDialOfAStandalonePickerAfterItsLabel()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Label, "Meeting time");
+        });
+
+        // the label of a standalone picker is attached to nothing: the only input it has is the hidden one
+        // carrying the value, and sending the focus there would take it off the screen
+        Assert.IsNull(component.Find(".bit-ctp-lbl").GetAttribute("for"));
+        Assert.AreEqual("Meeting time Select hour", component.Find(".bit-ctp-clf").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldPreferTheAriaLabelOverTheLabelOnTheDialOfAStandalonePicker()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Label, "Meeting time");
+            parameters.Add(p => p.AriaLabel, "Start of the meeting");
+            parameters.Add(p => p.StartView, BitCircularTimePickerView.Minute);
+        });
+
+        Assert.AreEqual("Start of the meeting Select minute", component.Find(".bit-ctp-clf").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldKeepTheHiddenInputOfAStandalonePickerOutOfTheAccessibilityTree()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+        });
+
+        var input = component.Find(".bit-input-hidden");
+
+        Assert.AreEqual("true", input.GetAttribute("aria-hidden"));
+        Assert.AreEqual("-1", input.GetAttribute("tabindex"));
+    }
+
     #endregion
 
 
@@ -1879,10 +2419,9 @@ public class BitCircularTimePickerTests : BunitTestContext
     [TestMethod,
         DataRow(BitColor.Primary, "bit-ctp-pri"),
         DataRow(BitColor.Success, "bit-ctp-suc"),
-        DataRow(BitColor.Error, "bit-ctp-err"),
-        DataRow(null, "bit-ctp-pri")
+        DataRow(BitColor.Error, "bit-ctp-err")
     ]
-    public void BitCircularTimePickerShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitCircularTimePickerShouldRespectColor(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
@@ -1898,10 +2437,9 @@ public class BitCircularTimePickerTests : BunitTestContext
     [TestMethod,
         DataRow(BitSize.Small, "bit-ctp-sm"),
         DataRow(BitSize.Medium, "bit-ctp-md"),
-        DataRow(BitSize.Large, "bit-ctp-lg"),
-        DataRow(null, "bit-ctp-md")
+        DataRow(BitSize.Large, "bit-ctp-lg")
     ]
-    public void BitCircularTimePickerShouldRespectSize(BitSize? size, string expectedClass)
+    public void BitCircularTimePickerShouldRespectSize(BitSize size, string expectedClass)
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
@@ -1910,6 +2448,30 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-ctp").ClassList.Contains(expectedClass));
         Assert.IsTrue(component.Find(".bit-ctp-cal").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitCircularTimePicker>();
+
+        // An unset Color or Size publishes nothing - on the root or on the callout rendered beside it - so the public
+        // --bit-CircularTimePicker-* variables restyle the default while an explicit value, which does publish its
+        // class, wins over them.
+        var published = new[]
+        {
+            "bit-ctp-pri", "bit-ctp-sec", "bit-ctp-ter", "bit-ctp-inf", "bit-ctp-suc", "bit-ctp-wrn", "bit-ctp-swr", "bit-ctp-err",
+            "bit-ctp-pbg", "bit-ctp-sbg", "bit-ctp-tbg", "bit-ctp-pfg", "bit-ctp-sfg", "bit-ctp-tfg", "bit-ctp-pbr", "bit-ctp-sbr", "bit-ctp-tbr",
+            "bit-ctp-sm", "bit-ctp-md", "bit-ctp-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-ctp"), component.Find(".bit-ctp-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
     }
 
     [TestMethod,
@@ -1941,11 +2503,11 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCircularTimePickerShouldRespectIconLocation()
+    public void BitCircularTimePickerShouldRespectIconPlacement()
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
-            parameters.Add(p => p.IconLocation, BitIconLocation.Left);
+            parameters.Add(p => p.IconPlacement, BitPlacement.Start);
         });
 
         Assert.IsTrue(component.Find(".bit-ctp").ClassList.Contains("bit-ctp-lic"));
@@ -2102,11 +2664,112 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-ctp").ClassList.Contains("bit-ctp-lnd"));
     }
 
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCircularTimePickerShouldCarryForceAnimationToTheCallout(bool forceAnimation)
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ForceAnimation, forceAnimation);
+        });
+
+        // the class that opts a subtree out of the reduced-motion collapse never reaches the callout from
+        // the root, since the callout is a sibling of it - and the slide it opens with is exactly the
+        // motion ForceAnimation is asked for
+        Assert.AreEqual(forceAnimation, component.Find(".bit-ctp").ClassList.Contains("bit-fam"));
+        Assert.AreEqual(forceAnimation, component.Find(".bit-ctp-cal").ClassList.Contains("bit-fam"));
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, ""),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitCircularTimePickerShouldCarryVisibilityToTheCalloutOfAStandalonePicker(BitVisibility visibility, string expected)
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        // the whole visible self of a standalone picker is the callout, which is a sibling of the root the
+        // visibility style is registered on
+        var style = component.Find(".bit-ctp-cal").GetAttribute("style") ?? string.Empty;
+
+        Assert.AreEqual(expected, style);
+        Assert.Contains(expected, component.Find(".bit-ctp").GetAttribute("style") ?? string.Empty);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldLeaveTheCalloutOfAPickerWithAFieldAlone()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
+            parameters.Add(p => p.Styles, new BitCircularTimePickerClassStyles { Callout = "color:red" });
+        });
+
+        // the callout of a hidden field is a closed one, and the script that opens a callout writes the
+        // display of the element itself - so an inline display here would only be the thing it overwrites
+        Assert.AreEqual("color:red", component.Find(".bit-ctp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldMarkTheCalloutWhereTheCloseButtonSitsOnTheToolbar()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowCloseButton, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ctp-cal").ClassList.Contains("bit-ctp-wcb"));
+
+        // a header template takes the corner the button is laid over, so the button is no longer on the
+        // accent of the toolbar and must not be painted for it
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.CalloutHeaderTemplate, (RenderFragment)(builder => builder.AddContent(0, "header")));
+        });
+
+        Assert.IsFalse(component.Find(".bit-ctp-cal").ClassList.Contains("bit-ctp-wcb"));
+
+        // and a standalone picker renders no close button at all
+        var standalone = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+        });
+
+        Assert.IsFalse(standalone.Find(".bit-ctp-cal").ClassList.Contains("bit-ctp-wcb"));
+    }
+
     #endregion
 
 
 
     #region value
+
+    [TestMethod]
+    [DataRow(-60, "23:00")]     // an hour before midnight, written the way the field writes it
+    [DataRow(25 * 60, "01:00")] // an hour past the end of the day
+    public void BitCircularTimePickerShouldReadADialFromTheTimeOfDayAValueOutsideOfADayLandsOn(int minutes, string expected)
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.DefaultValue, TimeSpan.FromMinutes(minutes));
+        });
+
+        // the toolbar and the field agree about the same value, and neither of them spells it with a minus
+        var toolbar = component.FindAll(".bit-ctp-tlb .bit-ctp-txt");
+
+        Assert.AreEqual(expected, $"{toolbar[0].TextContent.Trim()}:{toolbar[2].TextContent.Trim()}");
+        Assert.AreEqual(expected, component.Find(".bit-input-hidden").GetAttribute("value"));
+    }
 
     [TestMethod]
     public void BitCircularTimePickerShouldFormatTheValueWithTheValueFormat()
@@ -2348,6 +3011,26 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(".bit-ctp-clf")]
+    [DataRow(".bit-ctp-abn")]
+    [DataRow(".bit-ctp-txt")]
+    public async Task BitCircularTimePickerShouldCloseTheCalloutOnEscapeFromAnywhereInsideIt(string selector)
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowNowButton, true);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        await component.InvokeAsync(() =>
+            component.Find(selector).KeyDown(new KeyboardEventArgs { Key = "Escape" }));
+
+        Assert.IsFalse(isOpen);
+    }
+
+    [TestMethod]
     public async Task BitCircularTimePickerShouldReportNothingWhenTheOpenStateDoesNotChange()
     {
         var opened = 0;
@@ -2362,11 +3045,9 @@ public class BitCircularTimePickerTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
-        // the keys that dismiss the picker reach it whether or not it was open at the time
+        // the key that dismisses the picker reaches it whether or not it was open at the time
         await component.InvokeAsync(() =>
             component.Find(".bit-ctp-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" }));
-        await component.InvokeAsync(() =>
-            component.Find(".bit-ctp-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" }));
 
         Assert.AreEqual(0, closed);
 
@@ -2402,7 +3083,28 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitCircularTimePickerShouldCloseWhenTheFocusLeavesTheCallout()
+    public void BitCircularTimePickerTabOnTheInputShouldLeaveTheCalloutToWhereTheFocusLands()
+    {
+        var closed = 0;
+        var isOpen = true;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.OnClose, () => closed++);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        // Whether a Tab dismisses the callout depends on where the focus lands - the clear button beside the
+        // field keeps it open, a control elsewhere on the page does not - which only the JS side knows.
+        component.Find(".bit-ctp-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" });
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(0, closed);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerShouldCloseWithoutTakingTheFocusBackWhenTheJsSideDismissesIt()
     {
         var closed = 0;
         var isOpen = true;
@@ -2415,35 +3117,14 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         var before = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
 
-        // an open callout is relocated to the end of the document, so tabbing out of it would otherwise leave
-        // it open behind an overlay that swallows every click which could still dismiss it
-        await component.InvokeAsync(() => component.Instance._HandleCalloutFocusOut());
+        // The JS side dismisses the callout once the focus has moved on from both the field and it, which
+        // reaches the picker as the CloseCallout callback.
+        await component.InvokeAsync(() => component.Instance._CloseCalloutBeforeAnotherCalloutIsOpened());
 
+        Assert.IsFalse(isOpen);
         Assert.AreEqual(1, closed);
-        Assert.IsFalse(isOpen);
 
-        // the focus is already on whatever it was moved to, so pulling it back onto the field would make it
-        // impossible to tab past an open picker at all
-        Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
-    }
-
-    [TestMethod]
-    public async Task BitCircularTimePickerTabShouldCloseTheCalloutFromTheField()
-    {
-        var isOpen = true;
-
-        var component = RenderComponent<BitCircularTimePicker>(parameters =>
-        {
-            parameters.Add(p => p.AllowTextInput, true);
-            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-        });
-
-        var before = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
-
-        await component.InvokeAsync(() =>
-            component.Find(".bit-ctp-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" }));
-
-        Assert.IsFalse(isOpen);
+        // The focus is already on whatever it was moved to, so it is not pulled back onto the field.
         Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
@@ -2537,6 +3218,70 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         Assert.AreEqual(0, opened);
         Assert.IsFalse(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerShouldNameItsRootToTheCallout()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "--bit-CircularTimePicker-color: red;");
+        });
+
+        await component.InvokeAsync(() => component.Instance.OpenCallout());
+
+        // The callout is anchored to the input wrapper, but what the dial goes on inheriting once it is
+        // relocated to the body is the root, which is the last argument of Callouts.toggle.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(component.Find(".bit-ctp").Id, toggle.Arguments[^2]);
+        Assert.AreNotEqual(component.Find(".bit-ctp-wrp").Id, toggle.Arguments[^1]);
+        Assert.IsFalse((component.Find(".bit-ctp-cal").GetAttribute("style") ?? "").Contains("--bit-CircularTimePicker-"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerStandaloneShouldCarryThePublicCssVariablesOfTheStyleOntoTheDial()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Style, "margin:1rem;--bit-CircularTimePicker-color:red");
+            parameters.Add(p => p.Styles, new BitCircularTimePickerClassStyles { Root = "--bit-CircularTimePicker-text-color:blue", Callout = "padding:2px" });
+        });
+
+        // A standalone dial is never relocated, so the chain Callouts.ts carries the root's declarations through is
+        // never built for it: the public variables of Style and Styles.Root are copied onto it, ahead of its own
+        // style - and nothing else of the Style travels.
+        Assert.AreEqual("--bit-CircularTimePicker-color:red;--bit-CircularTimePicker-text-color:blue;padding:2px",
+                        component.Find(".bit-ctp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerStandaloneShouldKeepASemicolonInsideAValueWhenItCopiesTheVariables()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Style, "--bit-CircularTimePicker-color:url(data:image/png;base64,AAA);color:blue;--bit-CircularTimePicker-text-color:'a;b'");
+            parameters.Add(p => p.Styles, new BitCircularTimePickerClassStyles { Callout = "padding:2px" });
+        });
+
+        // A semicolon inside brackets or quotes is part of the value: cut there, the copy would leave an unclosed url(
+        // or quote that swallows everything written after it on the dial, its own style included.
+        Assert.AreEqual("--bit-CircularTimePicker-color:url(data:image/png;base64,AAA);--bit-CircularTimePicker-text-color:'a;b';padding:2px",
+                        component.Find(".bit-ctp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldCopyNothingOntoTheDialUnlessItIsStandalone()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "--bit-CircularTimePicker-color:red");
+            parameters.Add(p => p.Styles, new BitCircularTimePickerClassStyles { Callout = "padding:2px" });
+        });
+
+        Assert.AreEqual("padding:2px", component.Find(".bit-ctp-cal").GetAttribute("style"));
     }
 
     private static string GetOverlayDisplay(IRenderedComponent<BitCircularTimePicker> component)
@@ -2815,6 +3560,371 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         Assert.AreEqual(new TimeSpan(9, 0, 0), component.Instance.TestModel.Time);
         Assert.IsFalse(component.Find(".bit-ctp").ClassList.Contains("bit-inv"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldReportTheStateOfAStandaloneValueOnItsDial()
+    {
+        var component = RenderComponent<BitCircularTimePickerValidationTest>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Required, true);
+        });
+
+        var clock = component.Find(".bit-ctp-clf");
+
+        // the input a standalone picker posts through is hidden from assistive technology, so the dial is
+        // where both the requirement and the rejection have to be announced
+        Assert.AreEqual("true", clock.GetAttribute("aria-required"));
+        Assert.IsNull(clock.GetAttribute("aria-invalid"));
+        Assert.IsFalse(component.Find(".bit-ctp-cal").ClassList.Contains("bit-inv"));
+
+        component.Find("form").Submit();
+
+        Assert.AreEqual("true", component.Find(".bit-ctp-clf").GetAttribute("aria-invalid"));
+        Assert.IsTrue(component.Find(".bit-ctp-cal").ClassList.Contains("bit-inv"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldLeaveTheStateOfTheValueOnTheFieldOfAPickerThatHasOne()
+    {
+        var component = RenderComponent<BitCircularTimePickerValidationTest>(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+        });
+
+        component.Find("form").Submit();
+
+        // the field carries aria-invalid and the root turns red, so the dial is left alone
+        Assert.AreEqual("true", component.Find(".bit-ctp-inp").GetAttribute("aria-invalid"));
+        Assert.IsTrue(component.Find(".bit-ctp").ClassList.Contains("bit-inv"));
+        Assert.IsNull(component.Find(".bit-ctp-clf").GetAttribute("aria-invalid"));
+        Assert.IsNull(component.Find(".bit-ctp-clf").GetAttribute("aria-required"));
+    }
+
+    #endregion
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldFocusTheInputBeforeAnInitialIsOpenPlacesTheCallout()
+    {
+        RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoFocus, true);
+        });
+
+        var identifiers = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
+        var focus = identifiers.IndexOf("Blazor._internal.domWrapper.focus");
+        var toggle = identifiers.IndexOf("BitBlazorUI.Callouts.toggle");
+
+        // A focus() brings the field into view, and a field it scrolled the page to after the callout was placed
+        // against it would be moved out from under the callout - which the scroll then dismisses.
+        Assert.IsTrue(focus >= 0);
+        Assert.IsTrue(toggle >= 0);
+        Assert.IsTrue(focus < toggle);
+    }
+
+
+    #region base contract
+
+    /// <summary>
+    /// A disabled picker says so the same way everywhere: the root and the callout beside it carry bit-dis, and the
+    /// field carries both the disabled attribute and aria-disabled="true".
+    /// </summary>
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCircularTimePickerDisabledShouldPairTheNativeAndTheAriaAttributes(bool disabled)
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, disabled);
+        });
+
+        var input = component.Find(".bit-ctp-inp");
+
+        Assert.AreEqual(disabled, input.HasAttribute("disabled"));
+        Assert.AreEqual(disabled ? "true" : null, input.GetAttribute("aria-disabled"));
+        Assert.AreEqual(disabled, component.Find(".bit-ctp").ClassList.Contains("bit-dis"));
+        Assert.AreEqual(disabled, component.Find(".bit-ctp-cal").ClassList.Contains("bit-dis"));
+        Assert.AreEqual(disabled ? "true" : null, component.Find(".bit-ctp-clf").GetAttribute("aria-disabled"));
+
+        // The hidden field of a standalone picker carries the same pair.
+        var standalone = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Disabled, disabled);
+        });
+
+        Assert.AreEqual(disabled, standalone.Find(".bit-input-hidden").HasAttribute("disabled"));
+        Assert.AreEqual(disabled ? "true" : null, standalone.Find(".bit-input-hidden").GetAttribute("aria-disabled"));
+    }
+
+    /// <summary>
+    /// A disabled picker runs none of the page's activation handlers: the ones splatted onto it for a click are left
+    /// off its root while it is disabled, and put back once it is enabled; a hover handler stays either way.
+    /// </summary>
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCircularTimePickerShouldDropTheSplattedActivationHandlersWhileDisabled(bool disabled)
+    {
+        var clicks = 0;
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitCircularTimePicker>(0);
+            builder.AddAttribute(1, nameof(BitCircularTimePicker.Disabled), disabled);
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
+            builder.AddAttribute(3, "onmouseover", EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-ctp");
+
+        Assert.AreEqual(disabled is false, root.HasAttribute("blazor:onclick"));
+        Assert.IsTrue(root.HasAttribute("blazor:onmouseover"));
+
+        if (disabled) return;
+
+        root.Click();
+
+        Assert.AreEqual(1, clicks);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldRenderTheBaseParameters()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Id, "the-id");
+            parameters.Add(p => p.Class, "the-class");
+            parameters.Add(p => p.Style, "margin: 1px;");
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { ["data-test"] = "root" });
+        });
+
+        var root = component.Find(".bit-ctp");
+
+        Assert.AreEqual("the-id", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("the-class"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("margin: 1px;"));
+        Assert.AreEqual("root", root.GetAttribute("data-test"));
+
+        // The field keeps an id of its own, which the label and the callout point at.
+        Assert.AreNotEqual("the-id", component.Find(".bit-ctp-inp").Id);
+        Assert.AreEqual(component.Instance.InputId, component.Find(".bit-ctp-inp").Id);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldSplatTheInputHtmlAttributesAndNameTheField()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Name, "meeting");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { ["data-test"] = "field", ["autocomplete"] = "off" });
+        });
+
+        var input = component.Find(".bit-ctp-inp");
+
+        Assert.AreEqual("meeting", input.GetAttribute("name"));
+        Assert.AreEqual("field", input.GetAttribute("data-test"));
+        Assert.AreEqual("off", input.GetAttribute("autocomplete"));
+        Assert.IsTrue(input.HasAttribute("required"));
+        Assert.IsTrue(component.Find(".bit-ctp").ClassList.Contains("bit-ctp-req"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldRenderTheLabelAndAttachItToTheField()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Meeting time");
+            parameters.Add(p => p.Classes, new BitCircularTimePickerClassStyles { Label = "custom-label", Input = "custom-input", Icon = "custom-icon" });
+            parameters.Add(p => p.Styles, new BitCircularTimePickerClassStyles { Label = "color: red;", Input = "padding: 1px;", Icon = "opacity: 0.5;" });
+        });
+
+        var label = component.Find(".bit-ctp-lbl");
+        var input = component.Find(".bit-ctp-inp");
+
+        Assert.AreEqual("Meeting time", label.TextContent.Trim());
+        Assert.AreEqual(label.Id, input.GetAttribute("aria-labelledby"));
+        Assert.IsTrue(label.ClassList.Contains("custom-label"));
+        Assert.AreEqual("color: red;", label.GetAttribute("style"));
+        Assert.IsTrue(input.ClassList.Contains("custom-input"));
+        Assert.AreEqual("padding: 1px;", input.GetAttribute("style"));
+        Assert.IsTrue(component.Find(".bit-ctp-ico").ClassList.Contains("custom-icon"));
+        Assert.AreEqual("opacity: 0.5;", component.Find(".bit-ctp-ico").GetAttribute("style"));
+
+        // Without a label there is nothing for the field to be labelled by.
+        var unlabeled = RenderComponent<BitCircularTimePicker>();
+
+        Assert.AreEqual(0, unlabeled.FindAll(".bit-ctp-lbl").Count);
+        Assert.IsFalse(unlabeled.Find(".bit-ctp-inp").HasAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerIconShouldWinOverTheIconName()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "HourGlass");
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("solid clock"));
+        });
+
+        var icon = component.Find(".bit-ctp-ico");
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-clock"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--HourGlass"));
+        Assert.AreEqual("true", icon.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCircularTimePickerReadOnlyShouldMarkTheRootAndTheField(bool readOnly)
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.ReadOnly, readOnly);
+        });
+
+        var input = component.Find(".bit-ctp-inp");
+
+        // An editable field is only read-only while the picker is; a field that takes no text is read-only regardless.
+        Assert.AreEqual(readOnly, input.HasAttribute("readonly"));
+        Assert.AreEqual(readOnly ? "true" : null, input.GetAttribute("aria-readonly"));
+        Assert.IsTrue(input.ClassList.Contains("bit-ctp-ein"));
+        Assert.AreEqual(readOnly, component.Find(".bit-ctp").ClassList.Contains("bit-ctp-rdl"));
+        Assert.AreEqual(readOnly, component.Find(".bit-ctp-cal").ClassList.Contains("bit-ctp-rdl"));
+
+        var noText = RenderComponent<BitCircularTimePicker>();
+
+        Assert.IsTrue(noText.Find(".bit-ctp-inp").HasAttribute("readonly"));
+        Assert.IsFalse(noText.Find(".bit-ctp-inp").ClassList.Contains("bit-ctp-ein"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldReportTheFocusOfItsField()
+    {
+        var focus = 0;
+        var focusIn = 0;
+        var focusOut = 0;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.OnFocus, () => focus++);
+            parameters.Add(p => p.OnFocusIn, () => focusIn++);
+            parameters.Add(p => p.OnFocusOut, () => focusOut++);
+        });
+
+        var input = component.Find(".bit-ctp-inp");
+
+        input.Focus();
+        input.FocusIn();
+
+        Assert.AreEqual(1, focus);
+        Assert.AreEqual(1, focusIn);
+        Assert.IsTrue(component.Find(".bit-ctp").ClassList.Contains("bit-ctp-foc"));
+
+        input.FocusOut();
+
+        Assert.AreEqual(1, focusOut);
+        Assert.IsFalse(component.Find(".bit-ctp").ClassList.Contains("bit-ctp-foc"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldNotReportTheFocusOfADisabledField()
+    {
+        var focus = 0;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.OnFocus, () => focus++);
+            parameters.Add(p => p.OnFocusIn, () => focus++);
+            parameters.Add(p => p.OnFocusOut, () => focus++);
+        });
+
+        var input = component.Find(".bit-ctp-inp");
+
+        input.Focus();
+        input.FocusIn();
+        input.FocusOut();
+
+        Assert.AreEqual(0, focus);
+        Assert.IsFalse(component.Find(".bit-ctp").ClassList.Contains("bit-ctp-foc"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldReportATypedTimeThroughOnChangeAndOnSelectTime()
+    {
+        TimeSpan? changed = null;
+        TimeSpan? selected = null;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.OnChange, (TimeSpan? v) => changed = v);
+            parameters.Add(p => p.OnSelectTime, (TimeSpan? v) => selected = v);
+        });
+
+        component.Find(".bit-ctp-inp").Input("07:45");
+
+        Assert.AreEqual(new TimeSpan(7, 45, 0), changed);
+        Assert.AreEqual(new TimeSpan(7, 45, 0), selected);
+
+        // Clearing the text clears the value, and says so.
+        component.Find(".bit-ctp-inp").Input(string.Empty);
+
+        Assert.IsNull(component.Instance.Value);
+        Assert.IsNull(changed);
+        Assert.IsNull(selected);
+    }
+
+    /// <summary>
+    /// The listeners of the dial are set up once the element exists and torn down with the picker, so a picker taken
+    /// off the page leaves no listener behind.
+    /// </summary>
+    [TestMethod]
+    public async Task BitCircularTimePickerShouldSetUpAndDisposeItsScript()
+    {
+        var component = RenderComponent<BitCircularTimePicker>();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.CircularTimePicker.setup"));
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.CircularTimePicker.dispose"));
+
+        await component.Instance.DisposeAsync();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.CircularTimePicker.dispose"));
+    }
+
+    /// <summary>
+    /// The script is set up from the after-render pass, which a prerender never reaches, so the markup alone has to
+    /// carry the field and the dial a visitor sees before the page is interactive.
+    /// </summary>
+    [TestMethod]
+    public async Task BitCircularTimePickerShouldPrerenderWithoutJavaScript()
+    {
+        var html = await Prerenderer.RenderAsync<BitCircularTimePicker>(new Dictionary<string, object?>
+        {
+            [nameof(BitCircularTimePicker.Label)] = "Prerendered",
+            [nameof(BitCircularTimePicker.Culture)] = CultureInfo.InvariantCulture,
+            [nameof(BitCircularTimePicker.DefaultValue)] = new TimeSpan(10, 30, 0),
+        });
+
+        StringAssert.Contains(html, "bit-ctp");
+        StringAssert.Contains(html, "Prerendered");
+        StringAssert.Contains(html, "role=\"combobox\"");
+        StringAssert.Contains(html, "value=\"10:30\"");
+        StringAssert.Contains(html, "role=\"dialog\"");
+        StringAssert.Contains(html, "role=\"listbox\"");
     }
 
     #endregion

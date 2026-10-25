@@ -17,9 +17,9 @@ public partial class BitButtonDemo
 <BitButton Variant=""BitVariant.Text"" SecondaryText=""this is the secondary text"">Text</BitButton>
 
 
-<BitButton Variant=""BitVariant.Fill"" IsEnabled=""false"">Fill</BitButton>
-<BitButton Variant=""BitVariant.Outline"" IsEnabled=""false"">Outline</BitButton>
-<BitButton Variant=""BitVariant.Text"" IsEnabled=""false"">Text</BitButton>
+<BitButton Variant=""BitVariant.Fill"" Disabled>Fill</BitButton>
+<BitButton Variant=""BitVariant.Outline"" Disabled>Outline</BitButton>
+<BitButton Variant=""BitVariant.Text"" Disabled>Text</BitButton>
 
 
 <BitButton Rounded Variant=""BitVariant.Fill"">Fill</BitButton>
@@ -29,11 +29,11 @@ public partial class BitButtonDemo
     private readonly string example3RazorCode = @"
 <BitButton IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Fill"">Start</BitButton>
 <BitButton IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Outline"" SecondaryText=""this is the secondary text"">Start</BitButton>
-<BitButton IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"" IconPosition=""BitIconPosition.End"">End</BitButton>
+<BitButton IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"" IconPlacement=""BitPlacement.End"">End</BitButton>
 
 <BitButton IconUrl=""/images/bit-logo.svg"" Variant=""BitVariant.Fill"">Start</BitButton>
 <BitButton IconUrl=""/images/bit-logo.svg"" Variant=""BitVariant.Outline"" SecondaryText=""IconUrl"">Start</BitButton>
-<BitButton IconUrl=""/images/bit-logo.svg"" Variant=""BitVariant.Text"" IconPosition=""BitIconPosition.End"">End</BitButton>
+<BitButton IconUrl=""/images/bit-logo.svg"" Variant=""BitVariant.Text"" IconPlacement=""BitPlacement.End"">End</BitButton>
 
 
 <BitButton IconOnly IconName=""@BitIconName.Add"" Variant=""BitVariant.Fill"">Add</BitButton>
@@ -58,10 +58,10 @@ public partial class BitButtonDemo
 </BitButton>
 
 
-<BitButton IsLoading LoadingLabel=""End..."" Variant=""BitVariant.Outline"" LoadingLabelPosition=""BitLabelPosition.End"">End</BitButton>
-<BitButton IsLoading LoadingLabel=""Start..."" Variant=""BitVariant.Outline"" LoadingLabelPosition=""BitLabelPosition.Start"">Start</BitButton>
-<BitButton IsLoading LoadingLabel=""Top..."" Variant=""BitVariant.Outline"" LoadingLabelPosition=""BitLabelPosition.Top"">Top</BitButton>
-<BitButton IsLoading LoadingLabel=""Bottom..."" Variant=""BitVariant.Outline"" LoadingLabelPosition=""BitLabelPosition.Bottom"">Bottom</BitButton>
+<BitButton IsLoading LoadingLabel=""End..."" Variant=""BitVariant.Outline"" LoadingLabelPlacement=""BitPlacement.End"">End</BitButton>
+<BitButton IsLoading LoadingLabel=""Start..."" Variant=""BitVariant.Outline"" LoadingLabelPlacement=""BitPlacement.Start"">Start</BitButton>
+<BitButton IsLoading LoadingLabel=""Top..."" Variant=""BitVariant.Outline"" LoadingLabelPlacement=""BitPlacement.Top"">Top</BitButton>
+<BitButton IsLoading LoadingLabel=""Bottom..."" Variant=""BitVariant.Outline"" LoadingLabelPlacement=""BitPlacement.Bottom"">Bottom</BitButton>
 
 
 <BitButton OnClick=""AutoLoadingClick"" AutoLoading>Click me</BitButton>
@@ -446,11 +446,11 @@ private readonly List<BitDropdownItem<BitPosition>> floatPositionList = Enum.Get
 </BitButton>
 
 
-<BitButton IsEnabled=""false"" IconName=""@BitIconName.Blocked"" Title=""Pick a plan first"">
+<BitButton Disabled IconName=""@BitIconName.Blocked"" Title=""Pick a plan first"">
     Disabled (still focusable)
 </BitButton>
 
-<BitButton IsEnabled=""false"" AllowDisabledFocus=""false"" IconName=""@BitIconName.Blocked"">
+<BitButton Disabled AllowDisabledFocus=""false"" IconName=""@BitIconName.Blocked"">
     Disabled (skipped by Tab)
 </BitButton>
 
@@ -727,7 +727,7 @@ private async Task LoadingClassesClick()
 <BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Outline"" SecondaryText=""این متن ثانویه است"">
     دکمه با آیکن
 </BitButton>
-<BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Text"" IconPosition=""BitIconPosition.End"">
+<BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Text"" IconPlacement=""BitPlacement.End"">
     دکمه با آیکن
 </BitButton>
 

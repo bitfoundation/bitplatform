@@ -1,0 +1,175 @@
+﻿@page "/examples/connection-rules"
+
+<PageTitle>Connection Rules · Blow</PageTitle>
+
+<ExampleScaffold Title="Connection Rules"
+                 Summary="The canvas refuses a connection that would touch a node that takes none, duplicate an edge, join a node to itself or - when asked to - close a cycle, and every refusal has a reason. The same rules answer from code: CheckConnection on the canvas while a connection is dragged, and BlowConnectionRules.Check with no canvas at all.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_preventDuplicates" @onchange="@(e => _preventDuplicates = (bool)e.Value!)" /> Prevent duplicate edges</label>
+        <label><input type="checkbox" checked="@_allowSelf" @onchange="@(e => _allowSelf = (bool)e.Value!)" /> Allow self-connections</label>
+        <label><input type="checkbox" checked="@_preventCycles" @onchange="@(e => _preventCycles = (bool)e.Value!)" /> Prevent cycles</label>
+        <button class="btn btn-primary" @onclick="Reset">Reset edges</button>
+    </Toolbar>
+    <ChildContent>
+        @* EdgesChanged re-renders the page after every edit, so the counts and the table below follow the graph. *@
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    PreventDuplicateEdges="_preventDuplicates"
+                    AllowSelfConnections="_allowSelf"
+                    PreventCycles="_preventCycles"
+                    ConnectionRadius="30"
+                    OnConnectionChange="@(c => _line = c)"
+                    EdgesChanged="@(_ => { })">
+            <NodeTemplate Context="node">
+                <BlowHandle Type="BlowHandleType.Target" Id="in" Position="BlowPosition.Left" />
+                <div class="rule-node">
+                    <strong>@node.Label</strong>
+                    @if (_flow is { } flow)
+                    {
+                        @if (!flow.CanStartConnection(node.Id, "out", BlowHandleType.Source))
+                        {
+                            <div class="rule-flag">takes no connections</div>
+                        }
+                        else
+                        {
+                            <div class="rule-count">
+                                @flow.CountConnections(node.Id, BlowHandleType.Target, "in") in ·
+                                @flow.CountConnections(node.Id, BlowHandleType.Source, "out") out
+                            </div>
+                        }
+                    }
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Id="out" Position="BlowPosition.Right" />
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <Footer>
+        @* Under the canvas: as a panel in its corner the list grew over node C and its output handle. *@
+        <div class="rule-footer">
+            <div>
+                <div class="rule-title">Every output into every input - BlowConnectionRules.Check</div>
+                <table class="rule-table">
+                    <thead>
+                        <tr>
+                            <th>out \ in</th>
+                            @foreach (var to in _nodes)
+                            {
+                                <th>@to.Label</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var from in _nodes)
+                        {
+                            <tr>
+                                <th>@from.Label</th>
+                                @foreach (var to in _nodes)
+                                {
+                                    var check = BlowConnectionRules.Check(_nodes, _edges, new BlowConnection(from.Id, to.Id, "out", "in"), Policy);
+                                    <td class="@(check.IsValid ? "rule-ok" : null)">@(check.IsValid ? "ok" : check.Rejection.ToString())</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <div class="rule-title">While you drag - CheckConnection</div>
+                @if (_line is not { } line || _flow is null)
+                {
+                    <div class="rule-muted">Drag from a handle: the canvas's verdict on every handle it could end on appears here.</div>
+                }
+                else
+                {
+                    // A drag from an output can only end on an input, and the other way round.
+                    var type = line.FromHandleType == BlowHandleType.Source ? BlowHandleType.Target : BlowHandleType.Source;
+                    var handle = type == BlowHandleType.Target ? "in" : "out";
+                    foreach (var node in _nodes)
+                    {
+                        var connection = _flow.DescribeConnection(node.Id, handle, type);
+                        var check = _flow.CheckConnection(node.Id, handle, type);
+                        <div>
+                            @Name(connection.Source) → @Name(connection.Target):
+                            <span class="@(check.IsValid ? "rule-ok" : null)">@(check.IsValid ? "ok" : check.Rejection.ToString())</span>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </Footer>
+    <TryIt>
+        <li><strong>Drag</strong> from A's output (right): B's input is red because A already feeds B, A's own input is red because a node may not connect to itself, Locked's is red because it takes no connections, and C's is green. The list under the canvas names each reason.</li>
+        <li>Untick <strong>Prevent duplicate edges</strong> and drag A to B again: a second, parallel edge is made.</li>
+        <li>Tick <strong>Allow self-connections</strong>: A's own input turns green, and a release there draws a loop.</li>
+        <li>Tick <strong>Prevent cycles</strong> and drag from C's output to A's input: refused, because A already leads to C through B. A self-connection is a cycle too, so this also overrides <strong>Allow self-connections</strong>.</li>
+        <li>Try to drag from Locked's handles: nothing starts. The table under the canvas checks every output against every input with the same rules, without a drag, and changes as you tick the boxes, connect, or delete an edge (select it, then <strong>Delete</strong>). <strong>Reset edges</strong> starts over.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>The rules run in a fixed order and the first that fails is the <code>BlowConnectionRejection</code>: <code>NotConnectable</code> (a node with <code>Connectable = false</code>, or hidden), <code>SameHandleType</code> (in strict mode), <code>SelfConnection</code>, <code>Duplicate</code>, the ports' data types and limits, <code>Cycle</code>, and last your own rules (<code>RejectedByRule</code>).</li>
+        <li><code>PreventDuplicateEdges</code> is on by default; <code>AllowSelfConnections</code> is off, and even on it needs two different handles; <code>PreventCycles</code> is off. <code>ConnectionRadius="30"</code> snaps a release within 30 screen pixels to the nearest handle that accepts it.</li>
+        <li><code>CheckConnection(nodeId, handleId, type)</code> is the canvas's verdict on one handle for the connection being dragged - every rule, the handles' own included - and <code>DescribeConnection</code> the <code>BlowConnection</code> completing there would make. Outside a drag, <code>CheckConnection</code> answers <code>NotConnectable</code>; this page asks it on each <code>OnConnectionChange</code>.</li>
+        <li><code>CanStartConnection(nodeId, handleId, type)</code> is false for Locked, which is why its handles ignore presses; <code>CountConnections(nodeId, type, handleId)</code> gives the counts under each node.</li>
+        <li><code>BlowConnectionRules.Check(nodes, edges, connection, policy)</code> is the same decision as a pure function, for a server, a test or an import; here the <code>BlowConnectionPolicy</code> (<code>PreventDuplicates</code>, <code>AllowSelfConnections</code>, <code>PreventCycles</code>, <code>Mode</code>, <code>TypeCompatibility</code>, <code>IsValidConnection</code>) mirrors the checkboxes. It knows nothing of rules written on a <code>BlowHandle</code>, and <code>BlowConnectionRules.Begin</code> binds it to one starting handle to check many candidates cheaply.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .rule-node { padding: 4px 2px; }
+    .rule-count { margin-top: 4px; font-size: 10px; color: var(--bit-blow-text-muted); }
+    .rule-flag { margin-top: 4px; font-size: 10px; color: var(--bit-blow-handle-invalid); }
+    .rule-footer { display: flex; flex-wrap: wrap; gap: 4px 32px; }
+    .rule-title { font-weight: 600; margin-bottom: 2px; }
+    .rule-muted { color: var(--bb-text-soft); }
+    .rule-table { border-collapse: collapse; font-size: 11px; }
+    .rule-table th, .rule-table td { padding: 0 8px 0 0; text-align: left; font-weight: normal; }
+    .rule-table th { color: var(--bb-text-soft); }
+    .rule-ok { color: var(--bb-success); font-weight: 600; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private bool _preventDuplicates = true;
+    private bool _allowSelf;
+    private bool _preventCycles;
+    private BlowConnectionLineContext? _line;
+
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    // The checkboxes as the policy the pure rules take - the same one the canvas builds from its own parameters.
+    private BlowConnectionPolicy Policy => new()
+    {
+        PreventDuplicates = _preventDuplicates,
+        AllowSelfConnections = _allowSelf,
+        PreventCycles = _preventCycles,
+    };
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "a", Label = "A", Position = new(0, 0) },
+            new BlowNode { Id = "b", Label = "B", Position = new(240, 0) },
+            new BlowNode { Id = "c", Label = "C", Position = new(480, 0) },
+            new BlowNode { Id = "locked", Label = "Locked", Position = new(240, 150), Connectable = false },
+        ];
+
+        Reset();
+    }
+
+    private void Reset()
+    {
+        _edges.Clear();
+        _edges.Add(new BlowEdge { Id = "a-b", Source = "a", Target = "b", SourceHandle = "out", TargetHandle = "in" });
+        _edges.Add(new BlowEdge { Id = "b-c", Source = "b", Target = "c", SourceHandle = "out", TargetHandle = "in" });
+        _flow?.Refresh(remeasure: false);
+    }
+
+    private string Name(string? nodeId) => _nodes.FirstOrDefault(n => n.Id == nodeId)?.Label ?? nodeId ?? "?";
+}

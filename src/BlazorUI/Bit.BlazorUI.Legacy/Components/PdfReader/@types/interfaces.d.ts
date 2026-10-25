@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Interface that represents PDF data transport. If possible, it allows
  * progressively load entire or fragment of the PDF binary data.
  *

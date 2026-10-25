@@ -1,4 +1,4 @@
-declare class Metadata {
+﻿declare class Metadata {
     constructor({ parsedData, rawData }: {
         parsedData: any;
         rawData: any;

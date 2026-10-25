@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using Microsoft.Extensions.Options;
 
 namespace Boilerplate.Shared;
 
@@ -12,13 +13,11 @@ public partial class SharedSettings : IValidatableObject
     {
         var validationResults = new List<ValidationResult>();
 
-        //#if (appInsights == true)
-        if (ApplicationInsights is not null)
-        {
-            Validator.TryValidateObject(ApplicationInsights, new ValidationContext(ApplicationInsights), validationResults, true);
-        }
-        //#endif
-
         return validationResults;
     }
+}
+
+[OptionsValidator]
+public partial class SharedSettingsValidator : IValidateOptions<SharedSettings>
+{
 }

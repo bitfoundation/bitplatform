@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography.X509Certificates;
@@ -36,12 +35,12 @@ public class OpenIdConfigurationIntegrationTests
     public async Task AnotherBackendService_Should_AcceptOurAccessToken_UsingOnlyTheDiscoveryDocument()
     {
         await using var server = new AppTestServer();
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        await SignIn(client);
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+        var accessToken = await client.Services.GetRequiredService<IStorageService>().GetItem("access_token");
         Assert.IsNotNull(accessToken, "Signing in should have stored an access token.");
 
         await using var resourceServer = await StartResourceServer(server);
@@ -65,12 +64,12 @@ public class OpenIdConfigurationIntegrationTests
     public async Task AnotherBackendService_Should_RejectAnAnonymousCallAndAForgedToken()
     {
         await using var server = new AppTestServer();
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        await SignIn(client);
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+        var accessToken = await client.Services.GetRequiredService<IStorageService>().GetItem("access_token");
 
         await using var resourceServer = await StartResourceServer(server);
 
@@ -94,7 +93,7 @@ public class OpenIdConfigurationIntegrationTests
     public async Task AnotherBackendService_Should_AcceptATokenSignedByARetiredCertificate()
     {
         await using var server = new AppTestServer();
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var activeThumbprint = AppCertificateService.GetActiveAppCertificate(server.WebApp.Configuration).Thumbprint;
         var retired = AppCertificateService.GetAllAppCertificates(server.WebApp.Configuration)
@@ -102,10 +101,10 @@ public class OpenIdConfigurationIntegrationTests
 
         Assert.IsNotNull(retired, "No retired certificate was staged, so this test would prove nothing.");
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        await SignIn(client);
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+        var accessToken = await client.Services.GetRequiredService<IStorageService>().GetItem("access_token");
 
         var signedByRetired = ReSign(new JwtSecurityToken(accessToken!),
             new RsaSecurityKey(retired.GetRSAPrivateKey()!) { KeyId = retired.Thumbprint });
@@ -131,15 +130,15 @@ public class OpenIdConfigurationIntegrationTests
     public async Task TheDiscoveryDocument_Should_PublishTheSameIssuerTheTokensCarry()
     {
         await using var server = new AppTestServer();
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        await SignIn(client);
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+        var accessToken = await client.Services.GetRequiredService<IStorageService>().GetItem("access_token");
         var mintedIssuer = new JwtSecurityToken(accessToken).Issuer;
 
-        using var anonymousHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var anonymousHttpClient = server.CreateRawHttpClient();
         using var document = JsonDocument.Parse(
             await anonymousHttpClient.GetStringAsync(".well-known/openid-configuration", TestContext.CancellationToken));
 
@@ -152,7 +151,7 @@ public class OpenIdConfigurationIntegrationTests
         Assert.IsTrue(Uri.TryCreate(mintedIssuer, UriKind.Absolute, out var issuerUri),
             $"The issuer must be an absolute url (RFC 8414), not a name. Got '{mintedIssuer}'.");
 
-        Assert.AreEqual(server.WebAppServerAddress.GetLeftPart(UriPartial.Authority), issuerUri!.GetLeftPart(UriPartial.Authority),
+        Assert.AreEqual(server.ApiAppAddress.GetLeftPart(UriPartial.Authority), issuerUri!.GetLeftPart(UriPartial.Authority),
             "And it must be the origin the caller actually reached, or discovery sends them somewhere this server is not.");
     }
 
@@ -177,11 +176,11 @@ public class OpenIdConfigurationIntegrationTests
 
         var builder = WebApplication.CreateSlimBuilder();
 
-        builder.WebHost.UseUrls(GenerateServerUrl());
+        builder.WebHost.UseUrls(AppTestServer.GenerateServerUrl("127.0.0.1"));
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
-            options.Authority = server.WebAppServerAddress.ToString();
+            options.Authority = server.ApiAppAddress.ToString();
             options.RequireHttpsMetadata = false;
             options.TokenValidationParameters = new()
             {
@@ -251,24 +250,15 @@ public class OpenIdConfigurationIntegrationTests
         {
             Issuer = source.Issuer,
             Audience = source.Audiences.Single(),
-            Expires = DateTime.UtcNow.AddMinutes(5),
+            Expires = DateTimeOffset.UtcNow.AddMinutes(5).UtcDateTime,
             Subject = new ClaimsIdentity(source.Claims.Where(claim => registeredClaims.Contains(claim.Type) is false)),
             SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256Signature)
         });
     }
 
-    private static string GenerateServerUrl()
+    private Task SignIn(AppClient client)
     {
-        using var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
-        listener.Stop();
-        return $"http://127.0.0.1:{port}/";
-    }
-
-    private Task SignIn(AsyncServiceScope scope)
-    {
-        return scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        return client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword

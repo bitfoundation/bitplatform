@@ -1,0 +1,236 @@
+﻿@page "/e2e/full-calendar"
+
+<PageTitle>BitFullCalendar E2E</PageTitle>
+
+@* The main calendar every view, navigation, dialog, drag, resize, keyboard and binding test drives. "Today" is pinned
+   through the TimeProvider to Wednesday 2025-07-16 10:30, so every test reads the same weeks and months whatever day
+   it runs on. Everything a test reads back - the bound View/Mode/Date, every callback with its arguments and the
+   store the page keeps its events in - is written out below the calendar. *@
+<E2ESection Id="main" Title="Main calendar">
+    <div class="e2e-buttons">
+        <button id="btn-view-day" @onclick="() => _view = BitFullCalendarView.Day">View: Day</button>
+        <button id="btn-view-week" @onclick="() => _view = BitFullCalendarView.Week">View: Week</button>
+        <button id="btn-view-month" @onclick="() => _view = BitFullCalendarView.Month">View: Month</button>
+        <button id="btn-view-year" @onclick="() => _view = BitFullCalendarView.Year">View: Year</button>
+        <button id="btn-view-agenda" @onclick="() => _view = BitFullCalendarView.Agenda">View: Agenda</button>
+        <button id="btn-mode-event" @onclick="() => _mode = BitFullCalendarMode.Event">Mode: Event</button>
+        <button id="btn-mode-timeline" @onclick="() => _mode = BitFullCalendarMode.Timeline">Mode: Timeline</button>
+        <button id="btn-date-next" @onclick="() => _date = _date.AddDays(1)">Date + 1</button>
+        <button id="btn-date-set" @onclick="() => _date = new DateTime(2025, 8, 5)">Date = 2025-08-05</button>
+        <button id="btn-readonly" @onclick="() => _readOnly = !_readOnly">Toggle ReadOnly</button>
+        <button id="btn-disabled" @onclick="() => _disabled = !_disabled">Toggle Disabled</button>
+        <button id="btn-allow-add" @onclick="() => _settings.AllowAdd = !_settings.AllowAdd">Toggle AllowAdd</button>
+        <button id="btn-allow-edit" @onclick="() => _settings.AllowEdit = !_settings.AllowEdit">Toggle AllowEdit</button>
+        <button id="btn-allow-delete" @onclick="() => _settings.AllowDelete = !_settings.AllowDelete">Toggle AllowDelete</button>
+        <button id="btn-allow-drag" @onclick="() => _settings.AllowDrag = !_settings.AllowDrag">Toggle AllowDrag</button>
+        <button id="btn-allow-resize" @onclick="() => _settings.AllowResize = !_settings.AllowResize">Toggle AllowResize</button>
+        <button id="btn-24h" @onclick="() => _settings.Use24HourFormat = !_settings.Use24HourFormat">Toggle 24h</button>
+        <button id="btn-refuse-changing" @onclick="() => _refuseChanging = !_refuseChanging">Toggle refusing OnChanging</button>
+        <button id="btn-add-event" @onclick="AddEventFromPage">Add an event from the page</button>
+        <button id="btn-goto-date" @onclick="() => _calendar!.GoToDate(new DateTime(2025, 12, 25))">GoToDate(2025-12-25)</button>
+        <button id="btn-goto-today" @onclick="() => _calendar!.GoToToday()">GoToToday()</button>
+        <button id="btn-nav-next" @onclick="() => _calendar!.NavigateNext()">NavigateNext()</button>
+        <button id="btn-nav-prev" @onclick="() => _calendar!.NavigatePrevious()">NavigatePrevious()</button>
+        <button id="btn-change-view-day" @onclick="() => _calendar!.ChangeView(BitFullCalendarView.Day)">ChangeView(Day)</button>
+        <button id="btn-change-mode-timeline" @onclick="() => _calendar!.ChangeMode(BitFullCalendarMode.Timeline)">ChangeMode(Timeline)</button>
+        <button id="btn-scroll-14" @onclick="ScrollTo14">ScrollToTimeAsync(14:00)</button>
+        <button id="btn-visible-range" @onclick="ReadVisibleRange">GetVisibleRange()</button>
+        <button id="btn-read-state" @onclick="ReadState">Read State</button>
+    </div>
+
+    <BitFullCalendar @ref="_calendar"
+                     Id="cal"
+                     AriaLabel="Team schedule"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_events"
+                     Resources="_resources"
+                     Settings="_settings"
+                     ReadOnly="_readOnly"
+                     Disabled="_disabled"
+                     @bind-View="_view"
+                     @bind-Mode="_mode"
+                     @bind-Date="_date"
+                     OnChange="HandleChange"
+                     OnChanging="HandleChanging"
+                     OnDateChange="HandleDateChange"
+                     OnViewChange="HandleViewChange"
+                     OnModeChange="HandleModeChange"
+                     OnRefused="HandleRefused"
+                     OnSettingsChange="HandleSettingsChange" />
+
+    <dl class="e2e-readouts">
+        <dt>View</dt><dd id="view">@_view</dd>
+        <dt>Mode</dt><dd id="mode">@_mode</dd>
+        <dt>Date</dt><dd id="date">@_date.ToString("yyyy-MM-dd")</dd>
+        <dt>OnChange</dt><dd><span id="change-count">@_changeCount</span> | <span id="last-change">@_lastChange</span> | old: <span id="last-change-old">@_lastChangeOld</span></dd>
+        <dt>OnChanging</dt><dd><span id="changing-count">@_changingCount</span> | <span id="last-changing">@_lastChanging</span></dd>
+        <dt>OnDateChange</dt><dd><span id="date-change-count">@_dateChangeCount</span> | <span id="last-range">@_lastRange</span></dd>
+        <dt>OnViewChange</dt><dd><span id="view-change-count">@_viewChangeCount</span> | <span id="last-view-change">@_lastViewChange</span></dd>
+        <dt>OnModeChange</dt><dd><span id="mode-change-count">@_modeChangeCount</span> | <span id="last-mode-change">@_lastModeChange</span></dd>
+        <dt>OnRefused</dt><dd><span id="refused-count">@_refusedCount</span> | <span id="last-refusal">@_lastRefusal</span></dd>
+        <dt>OnSettingsChange</dt><dd><span id="settings-change-count">@_settingsChangeCount</span> | <span id="settings">@SettingsText</span></dd>
+        <dt>Visible range</dt><dd id="visible-range">@_visibleRange</dd>
+        <dt>Scroll result</dt><dd id="scroll-result">@_scrollResult</dd>
+        <dt>State</dt><dd id="state">@_stateText</dd>
+        <dt>Store</dt>
+        <dd>
+            <span id="store-count">@_events.Count</span>
+            <ul id="store">
+                @foreach (var ev in _events)
+                {
+                    <li data-id="@ev.Id">@Describe(ev)</li>
+                }
+            </ul>
+        </dd>
+    </dl>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    // Wednesday 2025-07-16 10:30, read in a zone with no offset so the local "now" is exactly this instant.
+    private static readonly TimeProvider Clock = new PinnedClock(new DateTimeOffset(2025, 7, 16, 10, 30, 0, TimeSpan.Zero));
+
+    private static readonly DateTime Today = new(2025, 7, 16);
+
+    private BitFullCalendar? _calendar;
+
+    private BitFullCalendarView _view = BitFullCalendarView.Month;
+    private BitFullCalendarMode _mode = BitFullCalendarMode.Event;
+    private DateTime _date = Today;
+    private bool _readOnly;
+    private bool _disabled;
+    private bool _refuseChanging;
+
+    private readonly BitFullCalendarSettings _settings = new();
+
+    private readonly List<BitFullCalendarResource> _resources =
+    [
+        new() { Id = "room-a", Title = "Room A", Subtitle = "First floor" },
+        new() { Id = "room-b", Title = "Room B", Subtitle = "Second floor" },
+    ];
+
+    private readonly List<BitFullCalendarEvent> _events =
+    [
+        new() { Id = "e1", Title = "Team Standup", Description = "Daily sync.", StartDate = Today.AddHours(9), EndDate = Today.AddHours(9).AddMinutes(45), Color = "blue", Resource = "room-a",
+                Attendees = [new() { FirstName = "Alice", LastName = "Smith" }, new() { FirstName = "Bob", LastName = "Jones" }] },
+        new() { Id = "e2", Title = "Focus Time", Description = "Deep work.", StartDate = Today.AddHours(10), EndDate = Today.AddHours(11), Color = "green" },
+        new() { Id = "e3", Title = "Design Review", Description = "Mockups v2.", StartDate = Today.AddHours(14), EndDate = Today.AddHours(15), Color = "purple", Resource = "room-b" },
+        new() { Id = "e4", Title = "Tech Conference", Description = "Keynotes.", StartDate = Today.AddDays(1).AddHours(9), EndDate = Today.AddDays(3).AddHours(17), Color = "orange" },
+        new() { Id = "e5", Title = "Company Holiday", Description = "Offices closed.", StartDate = Today.AddDays(5), EndDate = Today.AddDays(6), Color = "red", IsAllDay = true },
+        new() { Id = "e6", Title = "Quarterly Review", Description = "QBR.", StartDate = Today.AddDays(-2).AddHours(10), EndDate = Today.AddDays(-2).AddHours(12), Color = "red", Resource = "room-a" },
+        new() { Id = "e7", Title = "Client Call", Description = "Renewal.", StartDate = Today.AddDays(7).AddHours(16), EndDate = Today.AddDays(7).AddHours(17), Color = "yellow",
+                Attendees = [new() { FirstName = "Carol", LastName = "White" }] },
+    ];
+
+    private int _changeCount;
+    private string? _lastChange;
+    private string? _lastChangeOld;
+    private int _changingCount;
+    private string? _lastChanging;
+    private int _dateChangeCount;
+    private string? _lastRange;
+    private int _viewChangeCount;
+    private string? _lastViewChange;
+    private int _modeChangeCount;
+    private string? _lastModeChange;
+    private int _refusedCount;
+    private string? _lastRefusal;
+    private int _settingsChangeCount;
+    private string? _visibleRange;
+    private string? _scrollResult;
+    private string? _stateText;
+
+    private string SettingsText => $"24h={_settings.Use24HourFormat};badge={_settings.BadgeVariant};start={_settings.StartOfDayHour};slot={_settings.SlotDurationMinutes};group={_settings.AgendaModeGroupBy};layout={_settings.EventLayout};mini={_settings.ShowDayViewCalendar};weeknum={_settings.ShowWeekNumbers};now={_settings.ShowCurrentTimeIndicator};business={_settings.HighlightBusinessHours}";
+
+    private static string Describe(BitFullCalendarEvent ev)
+        => $"{ev.Title}|{ev.StartDate:yyyy-MM-dd HH:mm}|{ev.EndDate:yyyy-MM-dd HH:mm}|{ev.Resource ?? "-"}|{ev.Color}|{(ev.IsAllDay ? "allday" : "timed")}|{ev.Description}|{string.Join(",", ev.Attendees.Select(a => a.FullName))}";
+
+    private void HandleChange(BitFullCalendarChangeEventArgs args)
+    {
+        _changeCount++;
+        _lastChange = $"{args.Kind}|{args.Source}|{Describe(args.Event)}";
+        _lastChangeOld = args.OldEvent is null ? "null" : Describe(args.OldEvent);
+
+        // The calendar copies Events into its own store, so the page keeps its list in step the way an app keeps its
+        // backing store: a later render would otherwise re-sync the stale list.
+        switch (args.Kind)
+        {
+            case BitFullCalendarChangeKind.Add:
+                _events.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Edit:
+                var index = _events.FindIndex(e => e.Id == args.Event.Id);
+                if (index >= 0) _events[index] = args.Event;
+                else _events.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Delete:
+                _events.RemoveAll(e => e.Id == args.Event.Id);
+                break;
+        }
+    }
+
+    private void HandleChanging(BitFullCalendarChangingEventArgs args)
+    {
+        _changingCount++;
+        _lastChanging = $"{args.Kind}|{args.Source}|{args.Event.Title}|{args.Event.StartDate:yyyy-MM-dd HH:mm}|{args.OldEvent?.StartDate.ToString("yyyy-MM-dd HH:mm") ?? "null"}";
+        if (_refuseChanging) args.Cancel = true;
+    }
+
+    private void HandleDateChange(BitFullCalendarDateChangeEventArgs args)
+    {
+        _dateChangeCount++;
+        _lastRange = $"{args.Start:yyyy-MM-dd}|{args.End:yyyy-MM-dd}|{args.View}";
+    }
+
+    private void HandleViewChange(BitFullCalendarView view)
+    {
+        _viewChangeCount++;
+        _lastViewChange = view.ToString();
+    }
+
+    private void HandleModeChange(BitFullCalendarMode mode)
+    {
+        _modeChangeCount++;
+        _lastModeChange = mode.ToString();
+    }
+
+    private void HandleRefused(BitFullCalendarChangeRefusal refusal)
+    {
+        _refusedCount++;
+        _lastRefusal = refusal.ToString();
+    }
+
+    private void HandleSettingsChange(BitFullCalendarSettings settings) => _settingsChangeCount++;
+
+    private void AddEventFromPage()
+    {
+        _events.Add(new() { Id = "page-1", Title = "Added From Page", StartDate = Today.AddHours(16), EndDate = Today.AddHours(17), Color = "blue" });
+    }
+
+    private async Task ScrollTo14()
+    {
+        var scrolled = await _calendar!.ScrollToTimeAsync(TimeSpan.FromHours(14));
+        _scrollResult = scrolled.ToString();
+    }
+
+    private void ReadVisibleRange()
+    {
+        var (start, end) = _calendar!.GetVisibleRange();
+        _visibleRange = $"{start:yyyy-MM-dd}|{end:yyyy-MM-dd}";
+    }
+
+    private void ReadState()
+    {
+        var state = _calendar!.State;
+        _stateText = $"{state.View}|{state.Mode}|{state.SelectedDate:yyyy-MM-dd}|{state.Today:yyyy-MM-dd}|{state.Events.Count}";
+    }
+
+    private sealed class PinnedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+}

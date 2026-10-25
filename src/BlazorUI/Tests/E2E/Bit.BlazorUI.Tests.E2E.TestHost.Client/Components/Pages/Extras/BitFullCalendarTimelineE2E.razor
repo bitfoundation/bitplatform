@@ -1,0 +1,95 @@
+﻿@page "/e2e/full-calendar/timeline"
+
+<PageTitle>BitFullCalendar E2E - resource timeline</PageTitle>
+
+@* The resource timeline: rows are resources (with a ResourceTemplate), columns are time, events join a row through
+   their Resource (TimelineEventTemplate draws their content), unmatched ones fall into "Unassigned", and dragging a
+   block between rows reassigns it. "Today" is pinned to Wednesday 2025-07-16 10:30. *@
+<E2ESection Id="timeline" Title="Resource timeline">
+    <button id="btn-tl-scroll-14" @onclick="ScrollTo14">ScrollToTimeAsync(14:00)</button>
+    <BitFullCalendar @ref="_calendar"
+                     Id="tl"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_events"
+                     Resources="_resources"
+                     ResourceTemplate="ResourceHeader"
+                     TimelineEventTemplate="TimelineCard"
+                     DefaultMode="BitFullCalendarMode.Timeline"
+                     DefaultView="BitFullCalendarView.Day"
+                     OnChange="HandleChange" />
+    <span id="tl-change-count">@_changeCount</span>
+    <span id="tl-change">@_change</span>
+    <span id="tl-scroll">@_scroll</span>
+</E2ESection>
+
+<E2ESection Id="no-timeline" Title="Resources but no timeline-capable view">
+    <BitFullCalendar Id="no-tl"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Resources="_resources"
+                     Views="[BitFullCalendarView.Year, BitFullCalendarView.Agenda]"
+                     DefaultMode="BitFullCalendarMode.Timeline" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly TimeProvider Clock = new PinnedClock(new DateTimeOffset(2025, 7, 16, 10, 30, 0, TimeSpan.Zero));
+
+    private static readonly DateTime Today = new(2025, 7, 16);
+
+    private BitFullCalendar? _calendar;
+
+    private readonly List<BitFullCalendarResource> _resources =
+    [
+        new() { Id = "room-bay", Title = "HQ - Bay Wing", Subtitle = "Headquarters" },
+        new() { Id = "room-garden", Title = "The Garden", Subtitle = "Headquarters" },
+        new() { Id = "room-war", Title = "War Room (B1)", Subtitle = "Basement" },
+    ];
+
+    private readonly List<BitFullCalendarEvent> _events =
+    [
+        new() { Id = "t1", Title = "Design Review", StartDate = Today.AddHours(10), EndDate = Today.AddHours(11), Resource = "room-bay", Color = "purple" },
+        new() { Id = "t2", Title = "Standup", StartDate = Today.AddHours(9), EndDate = Today.AddHours(9).AddMinutes(30), Resource = "room-garden", Color = "blue" },
+        new() { Id = "t3", Title = "Incident Bridge", StartDate = Today.AddHours(13), EndDate = Today.AddHours(15), Resource = "room-war", Color = "red" },
+        new() { Id = "t4", Title = "Workshop", StartDate = Today.AddHours(14), EndDate = Today.AddHours(16), Resource = "room-bay", Color = "orange" },
+        new() { Id = "t5", Title = "Loose Task", StartDate = Today.AddHours(11), EndDate = Today.AddHours(12), Color = "green" },
+    ];
+
+    private int _changeCount;
+    private string? _change;
+    private string? _scroll;
+
+    private void HandleChange(BitFullCalendarChangeEventArgs args)
+    {
+        _changeCount++;
+        _change = $"{args.Kind}|{args.Source}|{args.Event.Title}|{args.Event.StartDate:yyyy-MM-dd HH:mm}|{args.Event.EndDate:yyyy-MM-dd HH:mm}|{args.Event.Resource ?? "-"}";
+        var index = _events.FindIndex(e => e.Id == args.Event.Id);
+        if (args.Kind is BitFullCalendarChangeKind.Delete) { if (index >= 0) _events.RemoveAt(index); }
+        else if (index >= 0) _events[index] = args.Event;
+        else _events.Add(args.Event);
+    }
+
+    private async Task ScrollTo14()
+    {
+        _scroll = (await _calendar!.ScrollToTimeAsync(TimeSpan.FromHours(14))).ToString();
+    }
+
+    private RenderFragment<BitFullCalendarResource> ResourceHeader => resource =>
+        @<div class="resource-header">
+            <span class="resource-avatar" aria-hidden="true">@resource.Title[..1]</span>
+            <strong class="resource-name">@resource.Title</strong>
+            <small class="resource-sub">@resource.Subtitle</small>
+        </div>;
+
+    private RenderFragment<BitFullCalendarEvent> TimelineCard => ev =>
+        @<div class="tl-card"><strong>@ev.Title</strong> <em>@ev.Resource</em></div>;
+
+    private sealed class PinnedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+}

@@ -1,0 +1,157 @@
+﻿@page "/combobox-tags"
+@implements IDisposable
+@using Bit.Borm.Demo.Client.Forms
+
+<PageTitle>Combobox, tags &amp; change handlers · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Combobox, tags &amp; change handlers</h1>
+    <p class="bb-subtitle">
+        Three things a generated form needs once it stops being a demo. A dropdown with two hundred
+        countries in it should be typed into, not scrolled. A list of labels should be chips, not a
+        repeater with reorder buttons on every word. And "when the country changes, clear the city" is
+        neither a computed value nor a cascading lookup — it writes something the user is still free to
+        change afterwards.
+    </p>
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save profile" ShowErrorSummary="true" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Saved ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+var schema = BormBuilder.For<TalentProfile>()
+    .Title("Talent profile")
+    .Field(x => x.FullName, f => f.Required())
+
+    // --- Combobox -----------------------------------------------------------------------------
+    // Built on the browser's own <input list> + <datalist>, so filtering, keyboard navigation,
+    // touch behaviour and screen-reader support are the platform's rather than a thousand lines of
+    // hand-rolled ARIA. What the library adds is the one thing a bare datalist cannot do: map the
+    // label the user reads onto the value the model stores.
+    .Field(x => x.Country, f => f
+        .Options(("fr", "France"), ("gb", "United Kingdom"), /* … 200 more … */)
+        .AsCombobox()                 // closed: an answer on no list is reported
+        .Clearable()                  // a × inside the box once it holds something
+        .Required()
+        // --- Change handler: "when A changes, write B" ---------------------------------------
+        // The old city belongs to the old country, so a new country empties it. The city stays
+        // the user's to fill in again - which is what tells a handler from a computed value.
+        .OnChange(ctx => ctx.ClearSibling("City")))
+
+    // A combobox that is a shortcut rather than a constraint. The list proposes; anything is accepted.
+    .Field(x => x.City, f => f
+        .AsCombobox(allowCustom: true)
+        .OptionsFrom<string>(         // and it cascades, exactly as a <select> does
+            load: async ctx => await directory.GetCitiesAsync(ctx.Value("Country") as string, ctx.CancellationToken),
+            value: c => c, label: c => c,
+            dependsOn: nameof(TalentProfile.Country)))
+
+    // Neither Computed (which owns its field's value outright) nor a cascading dependency (which
+    // reloads choices) can express "write something the user may then edit". TanStack Form calls
+    // these listeners; Formly calls them hooks. Paths resolve relative to the owning object, so the
+    // same handler on a repeater row means that row.
+    .Field(x => x.Plan, f => f
+        .AsRadio()
+        .Default("solo")
+        .Options(("solo", "Solo"), ("team", "Team"), ("enterprise", "Enterprise"))
+        .OnChange(ctx => ctx.SetSibling(nameof(TalentProfile.Seats), ctx.Value switch
+        {
+            "solo" => 1,
+            "team" => 5,
+            _      => 25
+        })))
+    .Field(x => x.Seats, f => f.Range(1, 500))   // filled in by the plan, and still editable
+
+    // --- Tags ---------------------------------------------------------------------------------
+    // The same List<string> an ArrayOf(..., Text) holds. The difference is the affordance: a
+    // repeater gives every entry a row with add, remove, duplicate and reorder buttons, which is
+    // right for an invoice line and wrong for the word "urgent". Enter or a comma commits;
+    // backspace on an empty box takes the last one back; a duplicate is refused whatever its case.
+    // .Attr("tagSeparators", ";") would make a semicolon commit instead of a comma.
+    .Field(x => x.Skills, f => f
+        .AsTags(max: 8)
+        .Help("Enter or a comma adds one. Backspace on an empty box removes the last."))
+    .Build();
+
+var state = new BormState(schema, new BormModelDataAccessor(model));
+""";
+
+    private readonly TalentProfile _model = new();
+    private readonly DemoDirectory _directory = new();
+    private BormState _state = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<TalentProfile>()
+            .Title("Talent profile")
+            .Field(x => x.FullName, f => f.Required())
+            .Field(x => x.Country, f => f
+                .Options([.. DemoDirectory.Countries])
+                .AsCombobox()
+                .Clearable()
+                .Required()
+                .Help("Type to filter. An answer that is not on the list is reported.")
+                // Changing country invalidates the city, and the cascading provider below reloads it.
+                .OnChange(ctx => ctx.ClearSibling("City")))
+            .Field(x => x.City, f => f
+                .AsCombobox(allowCustom: true)
+                .OptionsFrom<string>(
+                    load: async ctx => await _directory.GetCitiesAsync(ctx.Value("Country") as string, ctx.CancellationToken),
+                    value: c => c,
+                    label: c => c,
+                    dependsOn: nameof(TalentProfile.Country))
+                .Help("Loaded for the chosen country — and this one accepts anywhere, on the list or not."))
+            .Field(x => x.Plan, f => f
+                .AsRadio()
+                .Default("solo")
+                .Options(("solo", "Solo"), ("team", "Team"), ("enterprise", "Enterprise"))
+                .Help("Choosing a plan fills in the seats below — which you can then change.")
+                .OnChange(ctx => ctx.SetSibling(nameof(TalentProfile.Seats), ctx.Value switch
+                {
+                    "solo" => 1,
+                    "team" => 5,
+                    _ => 25
+                })))
+            .Field(x => x.Seats, f => f.Range(1, 500))
+            .Field(x => x.Skills, f => f
+                .AsTags(max: 8)
+                .Help("Enter or a comma adds one. Backspace on an empty box removes the last."))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // The page created the state, so the page disposes it: an options load or async rule still in
+        // flight is cancelled instead of finishing against a form nobody is looking at.
+        _state.Dispose();
+    }
+}

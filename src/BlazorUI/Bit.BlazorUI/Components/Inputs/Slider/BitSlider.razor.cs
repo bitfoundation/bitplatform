@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Linq.Expressions;
 using System.Diagnostics.CodeAnalysis;
 
@@ -58,6 +58,14 @@ public partial class BitSlider : BitInputBase<double>
     // that came after it would then be snapped to the marks as if it were a keystroke.
     private EventCallback<PointerEventArgs> _onPointerDown;
 
+    // The draggable band is a range input like the others, so pressing it focuses it - and it is the one input
+    // of the three that is deliberately outside the accessibility tree. Focus left standing there would go on
+    // moving the whole range on every arrow key with nothing to announce it, so the press is remembered here
+    // and the focus handed back to a thumb as soon as it ends.
+    private bool _bandPressed;
+    private EventCallback<PointerEventArgs> _onTrackPointerDown;
+    private EventCallback<PointerEventArgs> _onTrackPointerEnd;
+
     // The marks themselves, and the values they sit at - sorted and deduplicated. Both are looked up several
     // times a render and again on every step of a drag, and building a series of up to two hundred of them
     // that many times a second is work nothing asked for. The marks are drawn from the parameters alone, so
@@ -66,10 +74,41 @@ public partial class BitSlider : BitInputBase<double>
     private List<BitSliderMark>? _marks;
     private List<double>? _markValues;
 
+    // The width the value labels hold open, counted in characters of the longest text the scale reads. A
+    // label that grows with the number it carries - 9 to 10, 99 to 100 - resizes the track it stands beside,
+    // which moves the rail out from under the very thumb being dragged and shifts a vertical slider sideways
+    // as it is used. Holding the widest text open is what keeps the geometry still.
+    private int? _valueChars;
+
     private ElementReference _lowerInputRef;
     private ElementReference _upperInputRef;
 
 
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the slider component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple slider components
+    /// through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitSliderParams.ParamName)]
+    public BitSliderParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
+    /// A description of the Slider for the benefit of screen readers, beyond the name its label already gives it.
+    /// </summary>
+    /// <remarks>
+    /// It is rendered into a visually hidden element of its own that every thumb references through its
+    /// <c>aria-describedby</c> attribute, so it is announced after the name and the value rather than becoming
+    /// part of the name. Use it for what a label has no room to say: the unit a bare number is in, the rule the
+    /// value has to satisfy, or what the thing the slider controls actually does.
+    /// </remarks>
+    [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
     ///  A text description of the Slider number value for the benefit of screen readers.
@@ -90,7 +129,7 @@ public partial class BitSlider : BitInputBase<double>
     /// <summary>
     /// Custom CSS classes for different parts of the BitSlider.
     /// </summary>
-    [Parameter] public BitSliderClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitSliderClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Lets the filled band between the two thumbs of a ranged Slider be dragged bodily, so the whole range
@@ -124,6 +163,11 @@ public partial class BitSlider : BitInputBase<double>
     /// The general color of the slider, applied to the filled part of the track and to the thumbs.
     /// The unfilled part of the track stays neutral whichever color is picked.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Slider-*</c> accent variables (the color and its hover, active and
+    /// focus colors, the active mark color and the thumb label colors); left unset, the slider is primary unless
+    /// those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -142,6 +186,11 @@ public partial class BitSlider : BitInputBase<double>
     /// beyond the value rather than what lies before it. A ranged slider inverts into the two outer
     /// segments, leaving the span between the thumbs unfilled.
     /// </summary>
+    /// <remarks>
+    /// Inverting is moving the origin of the fill to the far end of the scale, so an <see cref="Origin"/> named
+    /// outright - or attached to zero by <see cref="IsOriginFromZero"/> - is the one that stands, and inverting
+    /// a single-value slider on top of it has nothing left to move.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Inverted { get; set; }
 
@@ -163,8 +212,8 @@ public partial class BitSlider : BitInputBase<double>
     /// </summary>
     /// <remarks>
     /// A vertical slider has no length of its own to inherit, so it is given one through the
-    /// <c>--bit-sld-length</c> CSS variable, which defaults to 12rem and can be changed per instance
-    /// (<c>Style="--bit-sld-length: 20rem"</c>) or globally.
+    /// <c>--bit-Slider-length</c> CSS variable, which defaults to 12rem and can be changed per instance
+    /// (<c>Style="--bit-Slider-length: 20rem"</c>) or globally.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool IsVertical { get; set; }
@@ -213,10 +262,28 @@ public partial class BitSlider : BitInputBase<double>
     [Parameter] public IEnumerable<BitSliderMark>? Marks { get; set; }
 
     /// <summary>
-    /// The interval between the marks generated by <see cref="ShowMarks"/>. It defaults to the
-    /// <see cref="Step"/>, which is the right choice for a coarse slider but far too dense for a fine one:
-    /// a 0..1000 slider stepping by 1 wants its marks every 100, not every 1.
+    /// Replaces the text under every mark with content of your own, built from the mark it belongs to.
     /// </summary>
+    /// <remarks>
+    /// It is what a scale whose stops are not words wants - a row of faces for a satisfaction scale, an icon
+    /// per tier, a value set over a caption. The mark itself is the context, so the template can read both the
+    /// value and whatever label that mark was given. Setting it is enough to ask for the marks, it labels every
+    /// one of them rather than only the ones carrying a label of their own, and it takes precedence over both
+    /// those labels and the numbers <see cref="ShowMarkLabels"/> writes.
+    /// </remarks>
+    [Parameter] public RenderFragment<BitSliderMark>? MarkLabelTemplate { get; set; }
+
+    /// <summary>
+    /// The interval between the generated marks. It defaults to the <see cref="Step"/>, which is the right
+    /// choice for a coarse slider but far too dense for a fine one: a 0..1000 slider stepping by 1 wants its
+    /// marks every 100, not every 1.
+    /// </summary>
+    /// <remarks>
+    /// It only spaces the marks something else asks for - <see cref="ShowMarks"/>, <see cref="ShowMarkLabels"/>
+    /// or <see cref="MarkLabelTemplate"/> - rather than asking for them itself. Marks are also what
+    /// <see cref="RestrictToMarks"/> snaps to, so an interval set ahead of time would otherwise quietly turn a
+    /// slider stepping freely into one that only stops at the marks.
+    /// </remarks>
     [Parameter] public double? MarkStep { get; set; }
 
     /// <summary>
@@ -309,13 +376,15 @@ public partial class BitSlider : BitInputBase<double>
 
     /// <summary>
     /// Draws a mark at every <see cref="MarkStep"/> (or every <see cref="Step"/> when that is not set) along
-    /// the track. Setting <see cref="Marks"/> explicitly takes precedence over this.
+    /// the track. Setting <see cref="Marks"/> explicitly takes precedence over this, and either of
+    /// <see cref="ShowMarkLabels"/> and <see cref="MarkLabelTemplate"/> asks for the same series without it.
     /// </summary>
     [Parameter] public bool ShowMarks { get; set; }
 
     /// <summary>
-    /// Labels the generated marks of <see cref="ShowMarks"/> with their own values, formatted the same way
-    /// the value of the slider is. Marks provided through <see cref="Marks"/> carry their own labels instead.
+    /// Writes each mark's own value underneath it, formatted the same way the value of the slider is.
+    /// Setting it is enough to ask for the marks as well, and a mark handed to <see cref="Marks"/> with a
+    /// label of its own keeps that label rather than its number.
     /// </summary>
     [Parameter] public bool ShowMarkLabels { get; set; }
 
@@ -339,6 +408,10 @@ public partial class BitSlider : BitInputBase<double>
     /// <summary>
     /// Size of the Slider, which scales its track, thumbs and labels together.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Slider-*</c> size variables (thumb size, rail size, length and the
+    /// font sizes); left unset, the slider is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -355,7 +428,7 @@ public partial class BitSlider : BitInputBase<double>
     /// <summary>
     /// Custom CSS styles for different parts of the BitSlider.
     /// </summary>
-    [Parameter] public BitSliderClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitSliderClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Decides when the floating label that rides along with the thumb is shown: never (the default),
@@ -449,6 +522,8 @@ public partial class BitSlider : BitInputBase<double>
 
         ClassBuilder.Register(() => ReadOnly ? "bit-sld-rdl" : string.Empty);
 
+        ClassBuilder.Register(() => Disabled is false && Required ? "bit-sld-req" : string.Empty);
+
         ClassBuilder.Register(() => Inverted ? "bit-sld-ivt" : string.Empty);
 
         ClassBuilder.Register(() => IsRanged ? "bit-sld-rgd" : string.Empty);
@@ -466,35 +541,11 @@ public partial class BitSlider : BitInputBase<double>
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-sld-pri",
-            BitColor.Secondary => "bit-sld-sec",
-            BitColor.Tertiary => "bit-sld-ter",
-            BitColor.Info => "bit-sld-inf",
-            BitColor.Success => "bit-sld-suc",
-            BitColor.Warning => "bit-sld-wrn",
-            BitColor.SevereWarning => "bit-sld-swr",
-            BitColor.Error => "bit-sld-err",
-            BitColor.PrimaryBackground => "bit-sld-pbg",
-            BitColor.SecondaryBackground => "bit-sld-sbg",
-            BitColor.TertiaryBackground => "bit-sld-tbg",
-            BitColor.PrimaryForeground => "bit-sld-pfg",
-            BitColor.SecondaryForeground => "bit-sld-sfg",
-            BitColor.TertiaryForeground => "bit-sld-tfg",
-            BitColor.PrimaryBorder => "bit-sld-pbr",
-            BitColor.SecondaryBorder => "bit-sld-sbr",
-            BitColor.TertiaryBorder => "bit-sld-tbr",
-            _ => "bit-sld-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Slider-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-sld"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-sld-sm",
-            BitSize.Medium => "bit-sld-md",
-            BitSize.Large => "bit-sld-lg",
-            _ => "bit-sld-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-sld"));
     }
 
     protected override void RegisterCssStyles()
@@ -504,8 +555,15 @@ public partial class BitSlider : BitInputBase<double>
 
     protected override void OnInitialized()
     {
+        // The cascade is applied here as well as in OnParametersSet, because the defaults of an unbound slider
+        // are picked exactly once - right below - and which ones those are depends on IsRanged, which a cascade
+        // is as free to set as the markup is.
+        CascadingParameters?.UpdateParameters(this);
+
         _onKeyDown = EventCallback.Factory.Create<KeyboardEventArgs>(new object(), HandleOnKeyDown);
         _onPointerDown = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnPointerDown);
+        _onTrackPointerDown = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnTrackPointerDown);
+        _onTrackPointerEnd = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnTrackPointerEndAsync);
 
         // The default of an unbound ranged slider is applied here rather than in OnParametersSet, so that a
         // later re-render with the same parameters cannot undo what the user has done since.
@@ -536,8 +594,14 @@ public partial class BitSlider : BitInputBase<double>
 
     protected override void OnParametersSet()
     {
+        // Before anything is read off the parameters, since the cascade fills in the ones the markup left unset -
+        // the scale, the step and the marks among them, all of which the caches below and the normalization
+        // after it are built from.
+        CascadingParameters?.UpdateParameters(this);
+
         _marks = null;
         _markValues = null;
+        _valueChars = null;
 
         if (IsRanged)
         {
@@ -585,9 +649,40 @@ public partial class BitSlider : BitInputBase<double>
                 _thumbA = lower;
                 _thumbB = upper;
             }
+
+            ApplyGroupAttributes();
         }
 
         base.OnParametersSet();
+    }
+
+    /// <summary>
+    /// Wraps the two ends of a ranged slider in a named group, which is what the WAI-ARIA multi-thumb pattern
+    /// asks for: without one a screen reader user meets two sliders with no word for what the pair selects
+    /// together. A single-value slider is one control and needs no group around it.
+    /// </summary>
+    /// <remarks>
+    /// The attributes are merged into <see cref="BitComponentBase.HtmlAttributes"/> rather than written onto the
+    /// root element, so that an explicit role or name passed to the slider still wins. An attribute written after
+    /// a splat overrides it even when its value is null, which would silently drop the one the caller supplied.
+    /// The dictionary is emptied and refilled on every parameter set, so nothing outlives the pass that added it.
+    /// </remarks>
+    private void ApplyGroupAttributes()
+    {
+        HtmlAttributes.TryAdd("role", "group");
+
+        // Either one names the group, so a caller who supplied one is not given a second name beside it.
+        if (HtmlAttributes.ContainsKey("aria-label") || HtmlAttributes.ContainsKey("aria-labelledby")) return;
+
+        if (AriaLabel.HasValue())
+        {
+            HtmlAttributes["aria-label"] = AriaLabel!;
+        }
+        else if (Label.HasValue() || LabelTemplate is not null)
+        {
+            // The caption a sighted reader is given, which is also what the thumbs borrow their names from.
+            HtmlAttributes["aria-labelledby"] = $"{_Id}-label";
+        }
     }
 
     protected override async Task OnParametersSetAsync()
@@ -609,7 +704,7 @@ public partial class BitSlider : BitInputBase<double>
             if (clamped != incoming)
             {
                 // A one-way bound value has nobody to notify, so it is corrected locally instead. Assigning
-                // CurrentValue is avoided here as well, since its setter drops the write while IsEnabled is false.
+                // CurrentValue is avoided here as well, since its setter drops the write while Disabled is true.
                 if (InvalidValueBinding())
                 {
                     Value = clamped;
@@ -643,6 +738,19 @@ public partial class BitSlider : BitInputBase<double>
         InputElement = _lowerInputRef;
 
         base.OnAfterRender(firstRender);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        // The autofocus attribute is only honoured while the browser is parsing the document, which is never
+        // when the markup arrives from an interactive render - so the attribute alone covers the statically
+        // rendered page and nothing else. The focus is moved here for the rest.
+        if (firstRender && AutoFocus && Disabled is false)
+        {
+            await _lowerInputRef.FocusSafelyAsync();
+        }
     }
 
     /// <summary>
@@ -813,9 +921,28 @@ public partial class BitSlider : BitInputBase<double>
 
     private List<BitSliderMark> BuildMarks()
     {
-        if (Marks is not null) return Marks.Where(m => m is not null && m.Value >= _Min && m.Value <= _Max).ToList();
+        if (Marks is not null)
+        {
+            var given = Marks.Where(m => m is not null && m.Value >= _Min && m.Value <= _Max);
 
-        if (ShowMarks is false) return [];
+            // A mark asked to be labelled and given no label of its own is labelled with its value, the same
+            // way a generated one is - otherwise ShowMarkLabels would be a parameter that quietly does
+            // nothing as soon as the marks are written out by hand. A copy is labelled rather than the mark
+            // itself, since the list belongs to the caller and may well be a static one shared by several
+            // sliders formatting their values differently.
+            if (ShowMarkLabels is false) return given.ToList();
+
+            return given.Select(m => m.Label.HasValue()
+                                     ? m
+                                     : new BitSliderMark(m.Value, GetDisplayValue(m.Value)) { Class = m.Class, Style = m.Style })
+                        .ToList();
+        }
+
+        // Asking for the marks is not the only way of asking for them: a request to label them and a template to
+        // label them with have no other purpose, and a parameter whose only effect is nothing at all is a
+        // parameter that reads as broken. An interval is not one of them - it only spaces the marks, and a
+        // MarkStep set beside RestrictToMarks before it drew anything has to keep the slider stepping freely.
+        if (ShowMarks is false && ShowMarkLabels is false && MarkLabelTemplate is null) return [];
 
         return GenerateMarks();
     }
@@ -948,6 +1075,79 @@ public partial class BitSlider : BitInputBase<double>
             : value.ToString(CultureInfo.CurrentCulture);
     }
 
+    /// <summary>
+    /// The number of values a label is measured over before the scale is taken to be too fine to walk.
+    /// </summary>
+    private const int MaxMeasuredValues = 100;
+
+    /// <summary>
+    /// The room the value labels hold open, in characters. Reserving the width of the longest text the scale
+    /// reads keeps the track from resizing as the value moves - the `ch` unit and the tabular figures the
+    /// labels are set in agree on what a digit is wide. It is a floor and not a width: a label that does turn
+    /// out longer still grows past it.
+    /// </summary>
+    /// <remarks>
+    /// The ends alone do not measure it: a fractional step reads 0.25 between the 0 and the 1 at its ends, and
+    /// <see cref="GetValueText"/> promises nothing about where its longest text is - a scale reading Low,
+    /// Medium, High is widest in the middle. So every value the slider can read is measured, as long as there
+    /// are few enough of them to be worth walking. A scale finer than that is measured at its ends and at the
+    /// values one step in from each, which is where a numeric label carries both its most digits and the
+    /// decimals of the step; text of the caller's own on such a scale may still outgrow it.
+    /// </remarks>
+    private int _ValueChars => _valueChars ??= MeasureValueChars();
+
+    private int MeasureValueChars()
+    {
+        var chars = Math.Max(CountChars(GetDisplayValue(_Min)), CountChars(GetDisplayValue(_Max)));
+
+        var range = _Range;
+
+        if (double.IsFinite(range) is false || range <= 0) return chars;
+
+        var step = _Step;
+        var count = Math.Floor(range / step);
+
+        if (double.IsFinite(count) is false || count < 1) return chars;
+
+        // The last value a step reaches, which falls short of Max whenever the range is not a whole number of
+        // steps - and which a user can still pick, so it is measured like any other.
+        var last = Denoise(_Min + count * step);
+
+        if (count > MaxMeasuredValues)
+        {
+            chars = Math.Max(chars, CountChars(GetDisplayValue(Denoise(_Min + step))));
+            chars = Math.Max(chars, CountChars(GetDisplayValue(last)));
+            return Math.Max(chars, CountChars(GetDisplayValue(Denoise(last - step))));
+        }
+
+        for (var i = 1; i <= (int)count; i++)
+        {
+            chars = Math.Max(chars, CountChars(GetDisplayValue(Denoise(_Min + i * step))));
+        }
+
+        return chars;
+    }
+
+    // The characters a label takes room for: the directional mark a culture writes before a minus sign (fa-IR, ar-SA)
+    // is invisible, so counting it would reserve a ch the label never fills.
+    private static int CountChars(string text)
+    {
+        var count = 0;
+
+        foreach (var c in text)
+        {
+            if (char.GetUnicodeCategory(c) is not UnicodeCategory.Format) count++;
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// The style of a value label: the room it holds open, followed by whatever the caller has styled it
+    /// with - which comes last so that a width of the caller's own wins over the reserved one.
+    /// </summary>
+    private string GetValueLabelStyle(string? style) => FormattableString.Invariant($"--bit-sld-vlb-min:{_ValueChars}ch;{style}");
+
     private string GetAriaValueText(double value) => AriaValueText is not null ? AriaValueText(value) : GetDisplayValue(value);
 
     private static string ToInvariant(double value) => value.ToString(CultureInfo.InvariantCulture);
@@ -1051,6 +1251,32 @@ public partial class BitSlider : BitInputBase<double>
     private string? GetThumbAriaLabel(string? specific) => specific.HasValue() ? specific : (AriaLabel.HasValue() ? AriaLabel : Label);
 
     /// <summary>
+    /// The id of the element holding the <see cref="AriaDescription"/>, which is what the thumbs point at.
+    /// </summary>
+    private string DescriptionId => $"{_Id}-description";
+
+    /// <summary>
+    /// Everything the thumbs are described by: the description this slider renders, and whatever the caller has
+    /// already pointed the inputs at through <see cref="BitInputBase{TValue}.InputHtmlAttributes"/>.
+    /// </summary>
+    /// <remarks>
+    /// The two are joined rather than one winning, because the attribute the component writes lands after the
+    /// splatted ones and would otherwise replace them - and a validation message, a hint or a unit the caller has
+    /// associated with the field by hand is exactly the kind of thing that must not be silently dropped.
+    /// aria-describedby takes a list of ids, so both simply appear in it.
+    /// </remarks>
+    private string? GetDescribedBy()
+    {
+        var supplied = InputHtmlAttributes is not null && InputHtmlAttributes.TryGetValue("aria-describedby", out var value)
+            ? value?.ToString()
+            : null;
+
+        if (AriaDescription.HasValue() is false) return supplied;
+
+        return supplied.HasValue() ? $"{supplied} {DescriptionId}" : DescriptionId;
+    }
+
+    /// <summary>
     /// The element a thumb borrows its name from when there is no text to name it with directly.
     /// </summary>
     /// <remarks>
@@ -1074,7 +1300,7 @@ public partial class BitSlider : BitInputBase<double>
     /// change itself instead of the component having to undo it afterwards. The true bounds are still
     /// announced, through the explicit aria-valuemin and aria-valuemax the inputs always carry.
     /// </remarks>
-    private bool _IsInteractive => IsEnabled && ReadOnly is false;
+    private bool _IsInteractive => Disabled is false && ReadOnly is false;
 
 
 
@@ -1372,6 +1598,53 @@ public partial class BitSlider : BitInputBase<double>
         await OnRangeChangeEnd.InvokeAsync(new BitSliderRangeValue(LowerValue, UpperValue));
 
         await ResyncInputAsync(e.Value?.ToString(), LowerValue, v => _rawBar = v);
+
+        await ReleaseBandFocusAsync();
+    }
+
+    /// <summary>
+    /// Notes that the band is being pressed, and clears what a key left behind the way every other press does.
+    /// </summary>
+    private void HandleOnTrackPointerDown(PointerEventArgs e)
+    {
+        HandleOnPointerDown(e);
+
+        _bandPressed = true;
+    }
+
+    /// <summary>
+    /// The end of a band drag. The change event is the other end of the same gesture, so whichever of the two
+    /// arrives first hands the focus back and the other finds nothing left to do; a press that moved the band
+    /// nowhere fires no change at all, which is why the pointer is listened to as well.
+    /// </summary>
+    /// <remarks>
+    /// A pointercancel ends the gesture too, and with neither a pointerup nor a change behind it: a touch on the
+    /// band that turns into a scroll of the page is taken over by the browser part way through. Without it the
+    /// focus would be left resting on the hidden band, and the press flag set for a press long since over.
+    /// </remarks>
+    private Task HandleOnTrackPointerEndAsync(PointerEventArgs e) => ReleaseBandFocusAsync();
+
+    /// <summary>
+    /// Hands the focus a band press took back to the lower thumb.
+    /// </summary>
+    /// <remarks>
+    /// The band is not a tab stop and is outside the accessibility tree, since it selects nothing the two
+    /// thumbs do not already carry. That makes it the wrong place for the focus to come to rest: every arrow
+    /// key would move the whole range with nothing announcing it, and a screen reader would find itself on an
+    /// element it cannot see. The lower thumb is where a keyboard picks the range up instead - the first of
+    /// its two tab stops, and the end the band's own value stands for.
+    /// </remarks>
+    private async Task ReleaseBandFocusAsync()
+    {
+        if (_bandPressed is false) return;
+
+        _bandPressed = false;
+
+        if (IsDisposed) return;
+
+        // The thumb is already on the screen - the pointer was just on it - so there is nothing to scroll to,
+        // and scrolling to it would move the page out from under the gesture that has only now finished.
+        await _lowerInputRef.FocusSafelyAsync(true);
     }
 
     /// <summary>
@@ -1410,14 +1683,14 @@ public partial class BitSlider : BitInputBase<double>
 
     private async Task HandleOnFocusIn(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnFocusIn.InvokeAsync(e);
     }
 
     private async Task HandleOnFocusOut(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnFocusOut.InvokeAsync(e);
     }
@@ -1465,20 +1738,6 @@ public partial class BitSlider : BitInputBase<double>
         NotifyFieldChanged();
 
         await OnRangeChange.InvokeAsync(range);
-    }
-
-    /// <summary>
-    /// Tells the EditContext that the range has moved, which is what a single-value slider already gets out
-    /// of SetCurrentValueAsync and what makes the validation of a ranged one run as the thumbs are dragged
-    /// rather than only when the form is submitted.
-    /// </summary>
-    private void NotifyFieldChanged()
-    {
-        // Without an expression to build it from there is no field to report, and the identifier of one that
-        // was never created cannot even be hashed.
-        if (EditContext is null || NoValidate || FieldIdentifier.Model is null) return;
-
-        EditContext.NotifyFieldChanged(FieldIdentifier);
     }
 
     /// <summary>

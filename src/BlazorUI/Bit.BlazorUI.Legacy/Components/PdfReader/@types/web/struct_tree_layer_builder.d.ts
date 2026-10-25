@@ -1,4 +1,4 @@
-declare class StructTreeLayerBuilder {
+﻿declare class StructTreeLayerBuilder {
     constructor(pdfPage: any, rawDims: any);
     render(): Promise<any>;
     getAriaAttributes(annotationId: any): Promise<any>;

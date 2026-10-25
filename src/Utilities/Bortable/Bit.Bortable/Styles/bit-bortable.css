@@ -1,0 +1,150 @@
+﻿/*!
+ * Bit.Bortable default styles.
+ *
+ * Link it from the host page; it is not injected for you:
+ *
+ *   <link rel="stylesheet" href="_content/Bit.Bortable/bit-bortable.css" />
+ *
+ * The rules only cover the drag states. The look of the list and its items is left to the app, through the
+ * Class, ItemClass and ItemClassSelector parameters. The colours are custom properties, so they can be
+ * overridden on :root, on one list, or inline through the Style parameter:
+ *
+ *   :root { --bit-bortable-accent-rgb: 109, 40, 217; }
+ *
+ * GhostClass, ChosenClass, SwapClass and SelectedClass replace the class names below, for a list that wants
+ * its own drag states instead of these.
+ */
+
+/* Only the inputs live on :root. The colours derived from the accent are written as fallbacks in the rules
+   below instead of as properties here: a custom property that refers to another one is resolved where it is
+   declared, so declaring them on :root would freeze them to the :root accent, and an accent set on one list
+   would never reach its items. As fallbacks they are resolved on the item itself, with whatever accent it
+   inherits - and each of them can still be set outright. */
+:root {
+    /* The accent every drag state is tinted with, as an "r, g, b" triplet so each state picks its own alpha. */
+    --bit-bortable-accent-rgb: 13, 110, 253;
+    --bit-bortable-ghost-opacity: 0.4;
+    --bit-bortable-filtered-opacity: 0.7;
+}
+
+/* The list container. */
+.bit-bortable {
+    position: relative;
+}
+
+.bit-bortable-item {
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    /* A long press drags on a touch screen: no callout menu for it. */
+    -webkit-touch-callout: none;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.bit-bortable-item:active {
+    cursor: grabbing;
+}
+
+/* With a Handle, only the handle drags: the rest of the item behaves normally. */
+:where(.bit-bortable-has-handle) > .bit-bortable-item,
+:where(.bit-bortable-has-handle) > .bit-bortable-item:active {
+    cursor: auto;
+    user-select: auto;
+}
+
+/* The item being dragged, and the drop placeholder previewed in another list (GhostClass). */
+.bit-bortable-ghost {
+    opacity: var(--bit-bortable-ghost-opacity);
+}
+
+/* The chosen item (ChosenClass). */
+.bit-bortable-chosen {
+    background-color: var(--bit-bortable-chosen-bg, rgba(var(--bit-bortable-accent-rgb), 0.12));
+}
+
+/* The preview of the item that follows a finger, a pen, or the mouse with ForceFallback (DragClass). It is a copy of
+   the item placed above the page, which keeps the item's own look. */
+.bit-bortable-drag {
+    opacity: var(--bit-bortable-drag-opacity, 0.92);
+    box-shadow: var(--bit-bortable-drag-shadow, 0 10px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12));
+    cursor: grabbing;
+}
+
+/* The original item is hidden in its source list while it is previewed as the placeholder in a target list
+   (the same approach as SortableJS). A clone keeps its original visible. */
+.bit-bortable-hidden {
+    display: none !important;
+}
+
+/* Items excluded by the Filter predicate. */
+.bit-bortable-filtered {
+    cursor: not-allowed;
+    opacity: var(--bit-bortable-filtered-opacity);
+}
+
+/* The item highlighted as the swap target while dragging in swap mode (SwapClass). */
+.bit-bortable-swap-highlight {
+    background-color: var(--bit-bortable-swap-bg, rgba(var(--bit-bortable-accent-rgb), 0.18));
+    outline: var(--bit-bortable-swap-outline, 2px dashed rgba(var(--bit-bortable-accent-rgb), 0.6));
+    outline-offset: -2px;
+}
+
+/* Items selected for multi-drag (SelectedClass). */
+.bit-bortable-selected {
+    background-color: var(--bit-bortable-selected-bg, rgba(var(--bit-bortable-accent-rgb), 0.25));
+    box-shadow: var(--bit-bortable-selected-ring, inset 0 0 0 2px rgba(var(--bit-bortable-accent-rgb), 0.8));
+}
+
+.bit-bortable-disabled > .bit-bortable-item {
+    cursor: default;
+}
+
+/* While a drag runs, the browser layer marks the lists: those that take the drag (data-bortable-accepts), the one
+   under the pointer (data-bortable-over) and, when it refused the position, data-bortable-refused. Nothing is drawn
+   unless the custom properties below are set - an outline for valid and invalid targets on a kanban board, say. */
+.bit-bortable[data-bortable-accepts] {
+    outline: var(--bit-bortable-accepts-outline, none);
+    outline-offset: var(--bit-bortable-target-offset, 2px);
+}
+
+.bit-bortable[data-bortable-over] {
+    outline: var(--bit-bortable-over-outline, none);
+}
+
+.bit-bortable[data-bortable-refused] {
+    outline: var(--bit-bortable-refused-outline, none);
+}
+
+/* The keyboard: the focused item, and the one picked up from the keyboard (chosen, and focused). */
+.bit-bortable-item:focus-visible {
+    outline: var(--bit-bortable-focus-outline, 2px solid rgba(var(--bit-bortable-accent-rgb), 0.9));
+    outline-offset: var(--bit-bortable-focus-offset, 2px);
+}
+
+.bit-bortable-chosen:focus-visible {
+    outline-style: var(--bit-bortable-lifted-outline-style, dashed);
+}
+
+/* The keyboard instructions every item refers to (aria-describedby): read, never shown. */
+.bit-bortable-instructions {
+    display: none !important;
+}
+
+/* Windows high contrast and other forced colours: the states are drawn with system colours instead of tints. */
+@media (forced-colors: active) {
+    .bit-bortable-chosen,
+    .bit-bortable-selected,
+    .bit-bortable-swap-highlight {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+    }
+
+    .bit-bortable-ghost {
+        outline: 2px dashed GrayText;
+        outline-offset: -2px;
+    }
+
+    .bit-bortable-item:focus-visible {
+        outline: 2px solid Highlight;
+    }
+}

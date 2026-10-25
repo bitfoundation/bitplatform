@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 namespace Microsoft.Playwright;
 
 public static class PlaywrightPageExtensions
@@ -56,8 +57,8 @@ public static class PlaywrightPageExtensions
                 await page.WaitForFunctionAsync(
                     "() => [...document.querySelectorAll('*')].some(e => e.getAttributeNames().some(n => n.startsWith('_bl_')))",
                     null,
-                    // As long as the cold WebAssembly boot GoToInApp allows for: a shorter wait would expire on a
-                    // loaded runner exactly when it is needed most.
+                    // Long enough for a cold WebAssembly boot: a shorter wait would expire on a loaded runner exactly
+                    // when it is needed most.
                     new() { Timeout = (float)TimeSpan.FromMinutes(2).TotalMilliseconds });
             }
             catch (Exception exception) when (exception is TimeoutException or PlaywrightException)

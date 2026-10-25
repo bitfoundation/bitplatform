@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public sealed partial class BitChartRenderer
 {
@@ -13,6 +13,10 @@ public sealed partial class BitChartRenderer
 
         var indexScaleOpts = Scale("x");
         bool indexIsCategory = indexScaleOpts.Type == BitChartScaleType.Category;
+        // Beside bars a category sits in the middle of its band rather than on its edge. It is decided once, here, for
+        // everything that places an index - its tick, its bars' group, its points and the plugins' marks - so that none
+        // of them can drift from the others.
+        bool centered = HasBars();
 
         // Value (y) axes used by datasets.
         var leftAxes = new List<BitChartAxisScale>();
@@ -45,10 +49,10 @@ public sealed partial class BitChartRenderer
             if (so.Reverse) scene.ReversedAxes.Add(id);
             if (so.Type != BitChartScaleType.Category) scene.ZoomableAxes.Add(id);
             if (!ScaleVisible(so)) continue;
-            switch (PositionOf(so, IsVertical ? BitChartPosition.Left : BitChartPosition.Bottom))
+            switch (PlacementOf(so, IsVertical ? BitPlacement.Left : BitPlacement.Bottom))
             {
-                case BitChartPosition.Right or BitChartPosition.Top: rightAxes.Add(scale); break;
-                case BitChartPosition.Center: centerAxes.Add(scale); break;
+                case BitPlacement.Right or BitPlacement.Top: rightAxes.Add(scale); break;
+                case BitPlacement.Center: centerAxes.Add(scale); break;
                 default: leftAxes.Add(scale); break;
             }
         }
@@ -94,7 +98,7 @@ public sealed partial class BitChartRenderer
             if (id == "x") indexScale = xs;
             if (ScaleVisible(so))
             {
-                if (PositionOf(so, BitChartPosition.Bottom) == BitChartPosition.Top) topXAxes.Add(xs);
+                if (PlacementOf(so, BitPlacement.Bottom) == BitPlacement.Top) topXAxes.Add(xs);
                 else bottomXAxes.Add(xs);
             }
         }
@@ -149,7 +153,7 @@ public sealed partial class BitChartRenderer
         foreach (var (id, s) in valueScales) RecordDataRange(id, s);
 
         // ---- Grid + axes ----
-        DrawGrid(scene, plot, indexScale, leftAxes, rightAxes, centerAxes);
+        DrawGrid(scene, plot, indexScale, centered, leftAxes, rightAxes, centerAxes);
 
         // Secondary x axes (display only; stacked outside the plot, no chart-area grid).
         if (IsVertical)
@@ -196,8 +200,9 @@ public sealed partial class BitChartRenderer
             ValueScales = valueScales,
             HiddenDatasets = _state.HiddenDatasets,
             IndexIsCategory = indexIsCategory,
-            IndexCentered = HasBars()
+            IndexCentered = centered
         };
+        scene.PluginContext = ctx;
         foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(ctx);
 
         // A zoomed axis is pinned to its zoom range, so its full range is read off a scratch scale
@@ -228,8 +233,7 @@ public sealed partial class BitChartRenderer
 
         // Bars first (so lines/points draw on top), grouped/stacked layout.
         var barItems = ordered.Where(t => EffectiveType(t.d) == BitChartType.Bar && !IsHidden(t.i, t.d)).ToList();
-        DrawBars(scene, plot, indexScale, valueScales, barItems, indexIsCategory);
-        bool centered = barItems.Count > 0;
+        DrawBars(scene, plot, indexScale, valueScales, barItems, centered);
         scene.HasBars = barItems.Count > 0;
         scene.HorizontalBars = !IsVertical;
 
@@ -252,7 +256,7 @@ public sealed partial class BitChartRenderer
             switch (type)
             {
                 case BitChartType.Line when !stackedSet.Contains(i):
-                    DrawLine(scene, plot, xScale, vScale, ds, i, indexIsCategory, centered);
+                    DrawLine(scene, plot, xScale, vScale, ds, i, indexIsCategory, centered, ctx);
                     break;
                 case BitChartType.Scatter:
                     DrawScatter(scene, plot, xScale, vScale, ds, i, bubble: false);
@@ -263,7 +267,7 @@ public sealed partial class BitChartRenderer
             }
         }
 
-        BuildHitBands(scene, plot, indexScale, indexIsCategory, centered);
+        BuildHitBands(scene, plot);
 
         foreach (var plugin in _options.Plugins.Custom) plugin.AfterDatasetsDraw(ctx);
     }
@@ -272,8 +276,7 @@ public sealed partial class BitChartRenderer
     /// Builds the invisible per-index hit areas that make hovering work anywhere inside the plot.
     /// Skipped when the interaction is configured to require an intersection with a real element.
     /// </summary>
-    private void BuildHitBands(BitChartScene scene, BitChartArea plot, BitChartAxisScale indexScale,
-        bool indexIsCategory, bool centered)
+    private void BuildHitBands(BitChartScene scene, BitChartArea plot)
     {
         if (EffectiveIntersect() || scene.Elements.Count == 0) return;
 
@@ -285,13 +288,15 @@ public sealed partial class BitChartRenderer
             .All(d => EffectiveType(d) is BitChartType.Bar or BitChartType.Line);
         if (!indexAligned) return;
 
-        // One band per distinct index, ordered by where that index actually sits along the axis.
-        // Summed and counted rather than averaged pair by pair, which would weight the last element of
-        // an index far more heavily than the first.
+        // One band per distinct index, centered on the place every element of that index shares along the axis
+        // (BitChartDataElement.IndexPosition) rather than on where each is drawn, which a bar's slot beside its index -
+        // or the fuller of two stacks - would pull off the tick the crosshair marks. The places are summed and counted
+        // rather than averaged pair by pair, which would weight the last element of an index far more heavily than the
+        // first wherever they differ: between points placed by their own x.
         var sums = new Dictionary<int, (double Sum, int Count)>();
         foreach (var el in scene.Elements)
         {
-            double c = IsVertical ? el.CenterX : el.CenterY;
+            double c = el.IndexPosition;
             var (sum, n) = sums.GetValueOrDefault(el.DataIndex);
             sums[el.DataIndex] = (sum + c, n + 1);
         }

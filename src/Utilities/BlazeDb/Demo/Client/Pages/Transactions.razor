@@ -1,0 +1,1011 @@
+﻿@page "/transactions"
+@implements IAsyncDisposable
+
+<PageTitle>Transactions · BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Transactions" Title="One writer, one ambient batch"
+            Lead="A transaction makes a group of writes atomic in the log. Writes still land in memory immediately, so reads inside the batch see them - but nothing is durable until commit, and a rollback reverts every change through an undo log.">
+    <span class="bb-badge bd-badge-neutral">Single writer</span>
+    <span class="bb-badge bd-badge-neutral">Ambient enrolment</span>
+    <span class="bb-badge bd-badge-neutral">Savepoints, no nested BeginTransaction</span>
+</PageHeader>
+
+<Section Title="Run a scenario"
+         Lead="Each run starts a fresh private database seeded with three rows, so results are always reproducible.">
+    <div class="bd-main-side">
+        <div class="bb-flex">
+            <Panel Title="Scenarios" IconName="list">
+                <div class="bd-actions">
+                    @foreach (var scenario in Scenarios)
+                    {
+                        var key = scenario.Key;
+                        <button type="button" class="btn @(_selected == key ? "btn-primary" : "btn-secondary")"
+                                disabled="@_running"
+                                @onclick="() => RunAsync(key)">
+                            <Icon Name="@scenario.Icon" />
+                            @scenario.Title
+                        </button>
+                    }
+                </div>
+            </Panel>
+
+            @if (Current is { } current)
+            {
+                <CodeBlock Title="@($"Scenario: {current.Title}")" Code="@current.Code" />
+                <Callout Tone="@current.Tone" Title="@current.Takeaway"></Callout>
+            }
+        </div>
+
+        <div class="bb-flex">
+            <Panel Title="Trace" IconName="history" Flush="true">
+                <Actions>
+                    @if (_running)
+                    {
+                        <span class="bb-spinner"></span>
+                    }
+                </Actions>
+                <ChildContent>
+                    <ScenarioSteps Steps="_log.Steps" EmptyText="Pick a scenario to run it." />
+                </ChildContent>
+            </Panel>
+
+            @if (_table is not null)
+            {
+                <Panel Title="Resulting table" IconName="database" Flush="true">
+                    <Actions>
+                        <span class="bd-panel-sub">Count = @_table.Count</span>
+                    </Actions>
+                    <ChildContent>
+                        @if (_table.Count == 0)
+                        {
+                            <div class="bb-empty">Empty.</div>
+                        }
+                        else
+                        {
+                            <div class="bd-rows">
+                                @foreach (var row in _table.OrderBy(TodoEntry.Indexes.Effort))
+                                {
+                                    <div class="bd-row @(row.Done ? "bd-done" : null)">
+                                        <div class="bd-row-main">
+                                            <div class="bd-row-title">@row.Title</div>
+                                            <div class="bd-row-meta">
+                                                <span class="bb-mono">effort @row.Effort</span>
+                                                <span class="bb-mono">@(row.Done ? "done" : "open")</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        @if (_storage is not null)
+                        {
+                            <div class="bd-panel-pad bd-panel-foot">
+                                <div class="bd-foot bb-mono">
+                                    storage:
+                                    @(_storage.FileNames.Count == 0
+                                        ? "nothing written yet - commits are buffered until a flush"
+                                        : string.Join(" · ", _storage.FileNames.OrderBy(f => f)))
+                                </div>
+                            </div>
+                        }
+                    </ChildContent>
+                </Panel>
+            }
+        </div>
+    </div>
+</Section>
+
+<Section Title="Batching is also the fast path"
+         Lead="Outside a transaction every write is its own log record. Inside one, they share a single commit.">
+    <div class="bb-flex">
+        <Panel Title="Measure it" IconName="bolt">
+            <div class="bb-fields">
+                <div class="bb-field">
+                    <label for="batch-rows">Rows per run</label>
+                    <select id="batch-rows" @bind="_batchRows">
+                        <option value="500">500</option>
+                        <option value="2000">2,000</option>
+                        <option value="10000">10,000</option>
+                    </select>
+                </div>
+                <button type="button" class="btn btn-primary" disabled="@_benchRunning" @onclick="RunBatchBenchAsync">
+                    <Icon Name="play" /> Run
+                </button>
+            </div>
+
+            @if (_batchResult is not null)
+            {
+                <div class="bb-scroll">
+                    <table class="bb-table">
+                        <thead>
+                            <tr><th>Mode</th><th class="bd-num">Total</th><th class="bd-num">Per row</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="bb-mono">autocommit - one record each</td>
+                                <td class="bd-num">@_autoTotal</td>
+                                <td class="bd-num">@_autoPer</td>
+                            </tr>
+                            <tr>
+                                <td class="bb-mono">one transaction</td>
+                                <td class="bd-num bd-ok">@_txnTotal</td>
+                                <td class="bd-num bd-ok">@_txnPer</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="bb-muted">@_batchResult</p>
+            }
+        </Panel>
+
+        <div class="bb-flex">
+            <CodeBlock Title="Bulk loading" Code="@BatchSnippet" />
+            <Callout Tone="info" Title="Both paths are durable.">
+                Autocommit is not “unsafe” - each write still becomes a log record. A transaction
+                simply amortises the record framing and gives you all-or-nothing recovery.
+            </Callout>
+        </div>
+    </div>
+</Section>
+
+<Section Title="What a transaction guarantees across a crash"
+         Lead="A committed batch is replayed in full. An uncommitted one leaves no trace, even if its writes were already visible in memory.">
+    <div class="bb-split">
+        <Panel Title="Committed batch" IconName="check">
+            <p>
+                Three rows inserted in a transaction, committed, flushed, then the database instance is
+                abandoned without disposing it - the same thing a closed tab does.
+            </p>
+            <button type="button" class="btn btn-secondary" disabled="@_crashRunning" @onclick="() => RunCrashAsync(true)">
+                <Icon Name="play" /> Commit, crash, reopen
+            </button>
+            @if (_commitCrashResult is not null)
+            {
+                <div class="bb-log bd-out">@_commitCrashResult</div>
+            }
+        </Panel>
+
+        <Panel Title="Abandoned batch" IconName="close">
+            <p>
+                The same three inserts, but the transaction is disposed without committing. Memory saw
+                them; the log never did.
+            </p>
+            <button type="button" class="btn btn-secondary" disabled="@_crashRunning" @onclick="() => RunCrashAsync(false)">
+                <Icon Name="play" /> Roll back, crash, reopen
+            </button>
+            @if (_rollbackCrashResult is not null)
+            {
+                <div class="bb-log bd-out">@_rollbackCrashResult</div>
+            }
+        </Panel>
+    </div>
+</Section>
+
+<Section Title="The rules">
+    <div class="bb-flex">
+        <Panel Title="Ambient by design" IconName="layers">
+            <p>
+                <code>BeginTransaction</code> does not hand you a scoped writer. While a transaction is
+                active, <em>every</em> write against <em>any</em> table on that database is enrolled -
+                including writes made deep inside code that never saw the transaction object.
+            </p>
+            <CodeBlock Code="@AmbientSnippet" />
+        </Panel>
+
+        <Panel Title="Composing atomic units" IconName="txn">
+            <p>
+                <code>RunInTransaction</code> runs a block as one atomic unit: alone it commits as one transaction,
+                inside an open one it joins it behind a savepoint, so a failure takes back only that block's writes -
+                even after the unit rolled the transaction back past its own start. Savepoints are also there to take
+                by hand; bulk writes (<code>InsertMany</code> and friends) are units too.
+            </p>
+            <CodeBlock Code="@ComposeSnippet" />
+        </Panel>
+
+        <Panel Title="Deliberate omissions" IconName="close">
+            <ul class="bb-detail-list">
+                <li><strong>No nested <code>BeginTransaction</code>.</strong> A second one throws; compose with <code>RunInTransaction</code> or a savepoint instead.</li>
+                <li><strong>No asynchronous transaction body.</strong> An <code>await</code> inside a transaction lets other code run, and its writes would join the transaction.</li>
+                <li><strong>No isolation levels.</strong> There is one writer, so there is nothing to isolate from - and reads during an open transaction see its writes.</li>
+                <li><strong>No long-running readers.</strong> Reads see live objects, not a snapshot; materialise with <code>ToList()</code> before mutating.</li>
+                <li><strong>No checkpoint while open.</strong> <code>CheckpointAsync</code> throws inside a transaction, and so does <code>ExportAsync</code>.</li>
+            </ul>
+        </Panel>
+    </div>
+
+    <Panel Title="What the engine guarantees, and what it does not" IconName="shield">
+        <dl class="bb-params bd-params-prose">
+            <dt>Atomic</dt>
+            <dd>A transaction commits whole or not at all - in memory, in the log, and after a crash. A commit the log cannot record (a row that will not serialize) is undone and throws.</dd>
+            <dt>Consistent</dt>
+            <dd>Duplicate keys and unique-index violations are refused before anything changes, and index maintenance either completes or is unwound - even when a hand-written index definition throws. If a rollback itself cannot undo a write (only such an index can make it fail), a database with storage refuses further writes, checkpoints and exports until it is reopened; one without storage carries on, and <code>VerifyIntegrity()</code> reports the write it could not take back. A transaction part of which could not be rolled back refuses to commit.</dd>
+            <dt>Not isolated</dt>
+            <dd>There is one writer, and its writes are visible to every reader as soon as they are made, before the commit. There is nothing else to isolate from.</dd>
+            <dt>Durable when flushed</dt>
+            <dd>Commits reach storage within <code>FlushInterval</code>, or at once with <code>FlushAsync</code> - see <a href="durability">durability</a>. Disposing the database rolls back a transaction left open.</dd>
+        </dl>
+    </Panel>
+</Section>
+
+@code {
+    private const string ComposeSnippet = """
+        // One atomic unit: commits as one log record, or - if it throws - leaves nothing behind.
+        db.RunInTransaction(() =>
+        {
+            todos.Insert(order);
+            stock.Update(lowered);
+        });
+
+        // Inside a transaction, a savepoint undoes part of it and keeps the rest.
+        using var txn = db.BeginTransaction();
+        todos.Insert(first);
+        var savepoint = txn.CreateSavepoint();
+        todos.Insert(second);
+        txn.RollbackTo(savepoint);    // second is gone, first stays
+        txn.Commit();
+        """;
+
+    private sealed record Scenario(
+        string Key,
+        string Title,
+        string Icon,
+        string Code,
+        string Takeaway,
+        string Tone,
+        Func<Transactions, Task> Run);
+
+    private BlazeDbDatabase? _db;
+    private BlazeDbInMemoryStorage? _storage;
+    private BlazeDbTable<Guid, TodoEntry>? _table;
+    private readonly ScenarioLog _log = new();
+    private string _selected = "";
+    private bool _running;
+
+    private int _batchRows = 2000;
+    private bool _benchRunning;
+    private string? _batchResult;
+    private string _autoTotal = "";
+    private string _autoPer = "";
+    private string _txnTotal = "";
+    private string _txnPer = "";
+
+    private bool _crashRunning;
+    private string? _commitCrashResult;
+    private string? _rollbackCrashResult;
+
+    private Scenario? Current => Scenarios.FirstOrDefault(s => s.Key == _selected);
+
+    private static readonly Scenario[] Scenarios =
+    [
+        new("commit", "Commit - all or nothing", "check",
+            """
+            using (var txn = db.BeginTransaction())
+            {
+                todos.Insert(a);
+                todos.Insert(b);
+                todos.Insert(c);
+                txn.Commit();
+            }
+            // Count == 6
+            """,
+            "Commit makes the whole batch one atomic log entry.",
+            "ok",
+            static page => page.ScenarioCommit()),
+
+        new("rollback", "Rollback - revert insert, update and delete", "refresh",
+            """
+            using (var txn = db.BeginTransaction())
+            {
+                todos.Insert(newRow);
+                todos.Update(changedRow);
+                todos.Delete(firstKey);
+                txn.Rollback();
+            }
+            // Back to the original three rows
+            """,
+            "Rollback replays an undo log, so mixed operations revert together.",
+            "info",
+            static page => page.ScenarioRollback()),
+
+        new("dispose", "Dispose without commit is a rollback", "close",
+            """
+            using (db.BeginTransaction())
+            {
+                todos.Insert(row);
+            }   // Dispose() rolls back
+            """,
+            "Forgetting to commit cannot half-apply a batch.",
+            "info",
+            static page => page.ScenarioDispose()),
+
+        new("savepoint", "A savepoint undoes part of a batch", "history",
+            """
+            using var txn = db.BeginTransaction();
+            todos.Insert(first);
+            var savepoint = txn.CreateSavepoint();
+            todos.Insert(second);
+            todos.Insert(third);
+
+            txn.RollbackTo(savepoint);   // second and third are gone, first stays
+            txn.Commit();                // commits first alone
+            """,
+            "A savepoint marks a point inside the transaction; rolling back to it keeps everything before.",
+            "ok",
+            static page => page.ScenarioSavepoint()),
+
+        new("savepoint-past", "Rolling back past a savepoint discards it", "layers",
+            """
+            using var txn = db.BeginTransaction();
+            var outer = txn.CreateSavepoint();
+            todos.Insert(a);
+            var inner = txn.CreateSavepoint();
+            todos.Insert(b);
+
+            txn.RollbackTo(outer);   // a and b are gone - and so is inner
+            txn.RollbackTo(inner);   // InvalidOperationException
+            txn.RollbackTo(outer);   // fine: a savepoint can be rolled back to again
+            """,
+            "Savepoints nest: rolling back to one discards those taken after it, but keeps itself.",
+            "warn",
+            static page => page.ScenarioSavepointPast()),
+
+        new("unit", "RunInTransaction - a unit of work", "txn",
+            """
+            db.RunInTransaction(() =>        // commits as one transaction
+            {
+                todos.Insert(order);
+                todos.Update(lowered);
+            });
+
+            db.RunInTransaction(() =>        // throws - and leaves nothing behind
+            {
+                todos.Insert(row);
+                throw new InvalidOperationException("out of stock");
+            });
+
+            var count = db.RunInTransaction(() => todos.DeleteWhere(t => t.Done));   // with a result
+            """,
+            "The unit as a block: it commits whole, or - when it throws - is rolled back and the exception propagates.",
+            "ok",
+            static page => page.ScenarioUnit()),
+
+        new("unit-nested", "RunInTransaction inside a transaction", "layers",
+            """
+            using var txn = db.BeginTransaction();
+            todos.Insert(kept);
+
+            try
+            {
+                db.RunInTransaction(() =>    // joins txn behind a savepoint
+                {
+                    todos.Insert(lost);
+                    throw new InvalidOperationException("this unit fails");
+                });
+            }
+            catch (InvalidOperationException) { }
+
+            txn.Commit();                    // kept is committed; lost never was
+            """,
+            "Units compose: a failed one takes back only its own writes, and the outer transaction carries on.",
+            "accent",
+            static page => page.ScenarioUnitNested()),
+
+        new("visible", "Reads inside the batch see uncommitted writes", "search",
+            """
+            using var txn = db.BeginTransaction();
+            todos.Insert(row);
+
+            todos.Contains(row.Id);   // true - already in memory
+            todos.Count;              // includes the new row
+
+            txn.Rollback();
+            todos.Contains(row.Id);   // false again
+            """,
+            "Writes apply to memory immediately; the transaction controls durability and reversibility, not visibility.",
+            "accent",
+            static page => page.ScenarioVisibility()),
+
+        new("nested", "Nesting is rejected", "alert",
+            """
+            using var txn = db.BeginTransaction();
+            db.BeginTransaction();   // InvalidOperationException
+            """,
+            "There is exactly one ambient transaction per database.",
+            "err",
+            static page => page.ScenarioNested()),
+
+        new("failure", "A failed write inside a batch", "alert",
+            """
+            using (var txn = db.BeginTransaction())
+            {
+                todos.Insert(good);
+                todos.Insert(duplicate);   // BlazeDbDuplicateKeyException
+                txn.Rollback();            // 'good' is reverted too
+            }
+            """,
+            "A throwing operation does not auto-rollback - you decide whether to continue or revert.",
+            "warn",
+            static page => page.ScenarioFailure()),
+
+        new("reuse", "A completed transaction cannot be reused", "lock",
+            """
+            var txn = db.BeginTransaction();
+            txn.Commit();
+            txn.Commit();     // InvalidOperationException
+            txn.Rollback();   // InvalidOperationException
+            """,
+            "Commit and rollback are terminal.",
+            "err",
+            static page => page.ScenarioReuse()),
+
+        new("checkpoint", "Checkpoint is blocked while a batch is open", "layers",
+            """
+            using var txn = db.BeginTransaction();
+            todos.Insert(row);
+            await db.CheckpointAsync();   // InvalidOperationException
+            """,
+            "A snapshot must never capture half a transaction.",
+            "err",
+            static page => page.ScenarioCheckpoint()),
+    ];
+
+    // --------------------------------------------------------------- runner
+
+    private async Task RunAsync(string key)
+    {
+        var scenario = Scenarios.FirstOrDefault(s => s.Key == key);
+        if (scenario is null || _running)
+        {
+            return;
+        }
+
+        _running = true;
+        _selected = key;
+        _log.Clear();
+
+        try
+        {
+            await ResetAsync();
+            await scenario.Run(this);
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Unexpected exception", ex.GetType().Name, ex.Message);
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+
+    private async Task ResetAsync()
+    {
+        if (_db is not null)
+        {
+            await _db.DisposeAsync();
+        }
+
+        // Real storage, but no background flushing: durability stays explicit.
+        _storage = new BlazeDbInMemoryStorage();
+        _db = await DemoSandbox.OpenAsync(_storage, TimeSpan.FromHours(1), long.MaxValue);
+        _table = _db.GetTable(TodoEntry.Table);
+
+        for (var i = 1; i <= 3; i++)
+        {
+            _table.Insert(Row($"seed row {i}", i * 10));
+        }
+
+        _log.Add("Fresh database seeded", "3 × todos.Insert(row)", "Count = 3");
+    }
+
+    private static TodoEntry Row(string title, int effort, Guid? id = null) => new()
+    {
+        Id = id ?? Guid.NewGuid(),
+        Title = title,
+        Effort = effort,
+        Category = "engine",
+        Priority = Priority.Normal,
+        CreatedAt = DateTime.UtcNow,
+    };
+
+    // ------------------------------------------------------------ scenarios
+
+    private Task ScenarioCommit()
+    {
+        var table = _table!;
+
+        using (var txn = _db!.BeginTransaction())
+        {
+            _log.Run("BeginTransaction()", "db.BeginTransaction()", "This database now has an ambient transaction.");
+            for (var i = 1; i <= 3; i++)
+            {
+                table.Insert(Row($"batched row {i}", 100 + i));
+            }
+            _log.Add("Three inserts recorded", "todos.Insert(row) × 3", $"Count is already {table.Count} - memory is updated first.");
+            txn.Commit();
+            _log.Ok("Commit()", "txn.Commit()", "One atomic log entry covering all three writes.");
+        }
+
+        _log.Ok("Batch is permanent", $"todos.Count → {table.Count}");
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioRollback()
+    {
+        var table = _table!;
+        var rows = table.Scan().OrderBy(r => r.Effort).ToList();
+        var first = rows[0];
+        var second = rows[1];
+
+        using (var txn = _db!.BeginTransaction())
+        {
+            _log.Run("BeginTransaction()", "db.BeginTransaction()");
+
+            table.Insert(Row("inserted inside the batch", 999));
+            _log.Add("Insert", "todos.Insert(row)", $"Count = {table.Count}");
+
+            var changed = second.Clone();
+            changed.Title = "renamed inside the batch";
+            changed.Done = true;
+            table.Update(changed);
+            _log.Add("Update", "todos.Update(row)", "Title and Done changed; the Done index moved bucket.");
+
+            table.Delete(first.Id);
+            _log.Add("Delete", $"todos.Delete(key) → true", $"Count = {table.Count}");
+
+            txn.Rollback();
+            _log.Ok("Rollback()", "txn.Rollback()", "Every operation above was reverted through the undo log.");
+        }
+
+        var restored = table.Get(second.Id)!;
+        _log.Ok(
+            "Original state restored",
+            $"todos.Count → {table.Count}",
+            $"The renamed row is \"{restored.Title}\" again, Done = {restored.Done}, and the deleted row is back: {table.Contains(first.Id)}.");
+
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioDispose()
+    {
+        var table = _table!;
+        var before = table.Count;
+
+        using (_db!.BeginTransaction())
+        {
+            table.Insert(Row("written without committing", 500));
+            _log.Add("Insert inside a using block", "todos.Insert(row)", $"Count = {table.Count}");
+            _log.Run("Leaving the block without Commit()", "txn.Dispose()");
+        }
+
+        _log.Ok(
+            "Dispose rolled the batch back",
+            $"todos.Count → {table.Count}",
+            before == table.Count
+                ? "Identical to the state before the block."
+                : "Unexpected: the count changed.");
+
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioVisibility()
+    {
+        var table = _table!;
+        var row = Row("visible before commit", 321);
+
+        using (var txn = _db!.BeginTransaction())
+        {
+            table.Insert(row);
+            _log.Add(
+                "Inside the batch",
+                $"todos.Contains(key) → {table.Contains(row.Id)}   todos.Count → {table.Count}",
+                "The row is a live object in the store, so every read sees it.");
+
+            var found = table.Get(row.Id);
+            _log.Add("Get returns the same instance", $"ReferenceEquals(get, inserted) → {ReferenceEquals(found, row)}",
+                "Reads hand back the actual object, not a copy or a snapshot.");
+
+            txn.Rollback();
+        }
+
+        _log.Ok(
+            "After rollback",
+            $"todos.Contains(key) → {table.Contains(row.Id)}   todos.Count → {table.Count}",
+            "Visibility and durability are separate concerns here.");
+
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioSavepoint()
+    {
+        var table = _table!;
+
+        using (var txn = _db!.BeginTransaction())
+        {
+            table.Insert(Row("first, before the savepoint", 101));
+            _log.Run("Insert first", "todos.Insert(first)", $"Count = {table.Count}");
+
+            var savepoint = txn.CreateSavepoint();
+            _log.Add("CreateSavepoint()", $"var savepoint = txn.CreateSavepoint();   // position {savepoint.Position}");
+
+            table.Insert(Row("second, after the savepoint", 102));
+            table.Insert(Row("third, after the savepoint", 103));
+            _log.Add("Insert second and third", "todos.Insert(second); todos.Insert(third)", $"Count = {table.Count}");
+
+            txn.RollbackTo(savepoint);
+            _log.Ok("RollbackTo(savepoint)", "txn.RollbackTo(savepoint)", $"Count = {table.Count}: the two writes after the savepoint were undone; the transaction is still open.");
+
+            txn.Commit();
+        }
+
+        _log.Ok("Commit()", $"todos.Count → {table.Count}", "Only first was committed - one log record, without the writes rolled back to.");
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioSavepointPast()
+    {
+        var table = _table!;
+
+        using var txn = _db!.BeginTransaction();
+        var outer = txn.CreateSavepoint();
+        table.Insert(Row("a", 201));
+        var inner = txn.CreateSavepoint();
+        table.Insert(Row("b", 202));
+        _log.Run("Two savepoints, a write after each", "outer · insert a · inner · insert b", $"Count = {table.Count}");
+
+        txn.RollbackTo(outer);
+        _log.Add("RollbackTo(outer)", "txn.RollbackTo(outer)", $"Count = {table.Count}: a and b are both gone.");
+
+        try
+        {
+            txn.RollbackTo(inner);
+            _log.Error("No exception", "unexpected");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("RollbackTo(inner)", "InvalidOperationException", ex.Message);
+        }
+
+        table.Insert(Row("c", 203));
+        txn.RollbackTo(outer);
+        _log.Ok("RollbackTo(outer) again", "todos.Insert(c); txn.RollbackTo(outer)", $"Count = {table.Count}: the savepoint itself survives its own rollback.");
+
+        txn.Commit();
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioUnit()
+    {
+        var table = _table!;
+        var db = _db!;
+
+        db.RunInTransaction(() =>
+        {
+            table.Insert(Row("unit row 1", 301));
+            table.Insert(Row("unit row 2", 302));
+        });
+        _log.Ok("A unit that completes", "db.RunInTransaction(() => { Insert; Insert; })", $"Count = {table.Count}: committed as one transaction.");
+
+        var before = table.Count;
+        try
+        {
+            db.RunInTransaction(() =>
+            {
+                table.Insert(Row("never kept", 303));
+                throw new InvalidOperationException("out of stock");
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("A unit that throws", $"InvalidOperationException: {ex.Message}",
+                $"Count = {table.Count} (was {before}): its insert was rolled back, and the exception reached the caller.");
+        }
+
+        var effortAbove = db.RunInTransaction(() => table.DeleteWhere(t => t.Effort > 300));
+        _log.Ok("A unit with a result", $"db.RunInTransaction(() => todos.DeleteWhere(t => t.Effort > 300)) → {effortAbove}",
+            $"Count = {table.Count}. The result is returned once the writes have committed.");
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioUnitNested()
+    {
+        var table = _table!;
+        var db = _db!;
+
+        using (var txn = db.BeginTransaction())
+        {
+            table.Insert(Row("kept - written by the outer transaction", 401));
+            _log.Run("The outer transaction writes", "todos.Insert(kept)", $"Count = {table.Count}");
+
+            try
+            {
+                db.RunInTransaction(() =>
+                {
+                    table.Insert(Row("lost - written by the failing unit", 402));
+                    _log.Add("Inside the unit", "todos.Insert(lost)", $"Count = {table.Count}");
+                    throw new InvalidOperationException("this unit fails");
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _log.Error("The unit threw", $"InvalidOperationException: {ex.Message}",
+                    $"Count = {table.Count}: only the unit's own write was taken back.");
+            }
+
+            txn.Commit();
+        }
+
+        _log.Ok("The outer transaction commits", $"todos.Count → {table.Count}",
+            "kept is durable; lost never reached the log. A second BeginTransaction would have thrown - composing is what units and savepoints are for.");
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioNested()
+    {
+        using var txn = _db!.BeginTransaction();
+        _log.Run("First transaction is active", "db.BeginTransaction()");
+
+        try
+        {
+            _db.BeginTransaction();
+            _log.Error("No exception", "unexpected");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("Second BeginTransaction threw", "InvalidOperationException", ex.Message);
+        }
+
+        txn.Commit();
+        _log.Ok("First transaction still usable", "txn.Commit()", "The rejected call left the active transaction untouched.");
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioFailure()
+    {
+        var table = _table!;
+        var existing = table.Scan().First();
+        var before = table.Count;
+
+        using (var txn = _db!.BeginTransaction())
+        {
+            table.Insert(Row("good row", 777));
+            _log.Add("First insert succeeds", "todos.Insert(good)", $"Count = {table.Count}");
+
+            try
+            {
+                table.Insert(Row("duplicate", 778, existing.Id));
+                _log.Error("No exception", "unexpected");
+            }
+            catch (BlazeDbDuplicateKeyException ex)
+            {
+                _log.Error(
+                    "Second insert throws",
+                    $"BlazeDbDuplicateKeyException(table: \"{ex.TableName}\", key: {ex.Key})",
+                    "The transaction is still open and still valid - nothing was auto-rolled-back.");
+            }
+
+            _log.Add("The good row is still visible", $"todos.Count → {table.Count}");
+            txn.Rollback();
+        }
+
+        _log.Ok(
+            "Rollback reverted the successful write too",
+            $"todos.Count → {table.Count}",
+            before == table.Count ? "Back to the seeded three rows." : "Unexpected count.");
+
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioReuse()
+    {
+        var txn = _db!.BeginTransaction();
+        _table!.Insert(Row("committed row", 42));
+        txn.Commit();
+        _log.Ok("Committed", "txn.Commit()", $"Count = {_table.Count}");
+
+        try
+        {
+            txn.Commit();
+            _log.Error("No exception", "unexpected");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("Second Commit threw", "InvalidOperationException", ex.Message);
+        }
+
+        try
+        {
+            txn.Rollback();
+            _log.Error("No exception", "unexpected");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("Rollback after commit threw", "InvalidOperationException", ex.Message);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task ScenarioCheckpoint()
+    {
+        using var txn = _db!.BeginTransaction();
+        _table!.Insert(Row("inside the batch", 55));
+        _log.Run("BlazeDbTransaction open with one write", "todos.Insert(row)");
+
+        try
+        {
+            await _db.CheckpointAsync();
+            _log.Add("Checkpoint completed", "await db.CheckpointAsync()", "Unexpected - a snapshot was taken mid-batch.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("CheckpointAsync threw", "InvalidOperationException", ex.Message);
+        }
+
+        txn.Commit();
+        _log.Ok("Commit, then checkpoint is allowed again", "txn.Commit()");
+    }
+
+    // --------------------------------------------------------- batch timing
+
+    private async Task RunBatchBenchAsync()
+    {
+        _benchRunning = true;
+        _batchResult = null;
+        StateHasChanged();
+        await Task.Yield();
+
+        try
+        {
+            var rows = _batchRows;
+
+            // Autocommit: every write becomes its own log record.
+            var storageA = new BlazeDbInMemoryStorage();
+            await using var dbA = await DemoSandbox.OpenAsync(storageA, TimeSpan.FromHours(1), long.MaxValue);
+            var tableA = dbA.GetTable(TodoEntry.Table);
+
+            var sw = Stopwatch.StartNew();
+            for (var i = 0; i < rows; i++)
+            {
+                tableA.Insert(Row($"auto {i}", i % 200));
+            }
+            var autoMs = sw.Elapsed.TotalMilliseconds;
+
+            // One transaction for the whole load.
+            var storageB = new BlazeDbInMemoryStorage();
+            await using var dbB = await DemoSandbox.OpenAsync(storageB, TimeSpan.FromHours(1), long.MaxValue);
+            var tableB = dbB.GetTable(TodoEntry.Table);
+
+            sw.Restart();
+            using (var txn = dbB.BeginTransaction())
+            {
+                for (var i = 0; i < rows; i++)
+                {
+                    tableB.Insert(Row($"batched {i}", i % 200));
+                }
+                txn.Commit();
+            }
+            var txnMs = sw.Elapsed.TotalMilliseconds;
+
+            await dbA.FlushAsync();
+            await dbB.FlushAsync();
+
+            _autoTotal = DemoSandbox.Duration(autoMs);
+            _autoPer = DemoSandbox.Duration(autoMs / rows);
+            _txnTotal = DemoSandbox.Duration(txnMs);
+            _txnPer = DemoSandbox.Duration(txnMs / rows);
+
+            var walA = storageA.FileNames.Where(f => f.StartsWith("wal-")).Sum(f => storageA.GetFile(f)?.Length ?? 0);
+            var walB = storageB.FileNames.Where(f => f.StartsWith("wal-")).Sum(f => storageB.GetFile(f)?.Length ?? 0);
+
+            _batchResult =
+                $"{rows:N0} rows each. Write-ahead log: {DemoSandbox.Bytes(walA)} autocommit versus " +
+                $"{DemoSandbox.Bytes(walB)} batched - the batch amortises record framing as well as commit work.";
+        }
+        finally
+        {
+            _benchRunning = false;
+        }
+    }
+
+    // --------------------------------------------------------- crash proofs
+
+    private async Task RunCrashAsync(bool commit)
+    {
+        _crashRunning = true;
+        StateHasChanged();
+
+        try
+        {
+            var storage = new BlazeDbInMemoryStorage();
+
+            // No background flushing, so durability is entirely explicit.
+            var db = await DemoSandbox.OpenAsync(storage, TimeSpan.FromHours(1), long.MaxValue);
+            var table = db.GetTable(TodoEntry.Table);
+
+            using (var txn = db.BeginTransaction())
+            {
+                for (var i = 1; i <= 3; i++)
+                {
+                    table.Insert(Row($"crash row {i}", i));
+                }
+
+                if (commit)
+                {
+                    txn.Commit();
+                }
+                else
+                {
+                    txn.Rollback();
+                }
+            }
+
+            var inMemory = table.Count;
+            await db.FlushAsync();
+
+            // Simulate the crash: the bytes that made it to storage are copied out, and the running
+            // instance is torn down against the original - so nothing it does from here on (its
+            // shutdown flush, its background loop) can reach what the reopen reads.
+            var survivor = storage.Clone();
+            await db.DisposeAsync();
+            storage = survivor;
+
+            await using var reopened = await DemoSandbox.OpenAsync(storage, TimeSpan.FromHours(1), long.MaxValue);
+            var recovered = reopened.GetTable(TodoEntry.Table).Count;
+
+            var text =
+                $"before crash: {inMemory} rows in memory\n" +
+                $"await db.FlushAsync()\n" +
+                $"reopen over the same storage → {recovered} rows recovered\n" +
+                $"files: {string.Join(", ", storage.FileNames.OrderBy(f => f))}";
+
+            if (commit)
+            {
+                _commitCrashResult = text;
+            }
+            else
+            {
+                _rollbackCrashResult = text;
+            }
+        }
+        finally
+        {
+            _crashRunning = false;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_db is not null)
+        {
+            await _db.DisposeAsync();
+            _db = null;
+        }
+    }
+
+    private const string BatchSnippet = """
+        using (var txn = db.BeginTransaction())
+        {
+            foreach (var row in tenThousandRows)
+            {
+                todos.Insert(row);
+            }
+
+            txn.Commit();   // one log record framing for the batch
+        }
+
+        await db.FlushAsync();   // durable now, not in 100 ms
+        """;
+
+    private const string AmbientSnippet = """
+        using (var txn = db.BeginTransaction())
+        {
+            ImportOrders();     // these writes join the transaction
+            ImportCustomers();  // so do these, without being told about it
+            txn.Commit();
+        }
+
+        void ImportOrders() => orders.Upsert(row);   // no txn parameter needed
+        """;
+}

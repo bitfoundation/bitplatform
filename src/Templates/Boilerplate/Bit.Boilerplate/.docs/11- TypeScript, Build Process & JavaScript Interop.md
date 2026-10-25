@@ -79,25 +79,30 @@ SCSS is compiled to CSS during the same build pipeline. You'll also learn how to
 The `.csproj` file defines custom MSBuild targets that run automatically during the build process:
 
 ```xml
-<Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+<Target Name="BeforeBuildTasks" BeforeTargets="ResolveProjectStaticWebAssets;ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
     <CallTarget Targets="InstallNodejsDependencies" />
     <CallTarget Targets="BuildJavaScript" />
     <CallTarget Targets="BuildCssFiles" />
+    <ItemGroup>
+        <Content Include="**\*.razor.css;wwwroot\scripts\app.js;wwwroot\styles\app.css" Exclude="@(Content);@(None);node_modules\**;bin\**;obj\**" />
+    </ItemGroup>
 </Target>
 ```
+
+`BeforeBuildTasks` runs before the build gathers the static web assets (`app.js`, `app.css`) and the scoped CSS (`.razor.css`), so even the first build of a fresh clone ships them. MSBuild lists the project's files before any of them is generated, which is why the target adds them to `Content` itself. The IDE's design-time builds skip it.
 
 ### Build Process Flow
 
 ```
-1. CoreCompile (C# compilation)
+1. BeforeBuildTasks
     ↓
-2. BeforeBuildTasks
+2. InstallNodejsDependencies
     ↓
-3. InstallNodejsDependencies
+3. BuildJavaScript (TypeScript type-check → esbuild bundles .ts → app.js)
     ↓
-4. BuildJavaScript (TypeScript type-check → esbuild bundles .ts → app.js)
+4. BuildCssFiles (SCSS → CSS)
     ↓
-5. BuildCssFiles (SCSS → CSS)
+5. Static web assets and scoped CSS are gathered, then CoreCompile (C# compilation)
 ```
 
 ### Step 1: InstallNodejsDependencies
@@ -116,26 +121,22 @@ The `.csproj` file defines custom MSBuild targets that run automatically during 
 ### Step 2: BuildJavaScript
 
 ```xml
-<Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;package.json" Outputs="wwwroot\scripts\app.js">
+<Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;package.json;package-lock.json" Outputs="wwwroot\scripts\app.js">
     <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-    <Exec Condition=" '$(Environment)' == 'Development' " 
-          Command="node_modules/.bin/esbuild Scripts/index.ts --bundle --target=safari15,firefox100,chrome95 --outfile=wwwroot/scripts/app.js" 
-          StandardOutputImportance="high" StandardErrorImportance="high" />
-    <Exec Condition=" '$(Environment)' != 'Development' " 
-          Command="node_modules/.bin/esbuild Scripts/index.ts --bundle --target=safari15,firefox100,chrome95 --outfile=wwwroot/scripts/app.js --minify" 
+    <Exec Command="node_modules/.bin/esbuild Scripts/index.ts --bundle --target=safari15,firefox100,chrome95 --outfile=wwwroot/scripts/app.js --minify --sourcemap"
           StandardOutputImportance="high" StandardErrorImportance="high" />
 </Target>
 ```
 
 **What it does:**
 1. **TypeScript Type-Checking**: Runs `tsc` to validate types only (`noEmit: true` in `tsconfig.json` means no `.js` files are generated)
-2. **Bundling (Development)**: Uses `esbuild` to compile and bundle all TypeScript modules **directly from `.ts` source files** into a single `wwwroot/scripts/app.js` file, targeting Safari 15, Firefox 100, and Chrome 95
-3. **Bundling + Minification (Production/Staging)**: Same as above, but with `--minify` flag for smaller file size
+2. **Bundling + Minification**: Uses `esbuild` to compile and bundle all TypeScript modules **directly from `.ts` source files** into a single minified `wwwroot/scripts/app.js` file, targeting Safari 15, Firefox 100, and Chrome 95
+3. **Source map**: `--sourcemap` writes `app.js.map` next to it, so the browser's developer tools show and debug the original `.ts` files. Every Environment gets the same `app.js`, so a Release publish after a Debug build never ships stale JavaScript
 
 > **Note:** The `--target` flag tells esbuild which browser versions to support, ensuring the output JavaScript is compatible with those environments.
 
 **Incremental Build Optimization:**
-- Only rebuilds when TypeScript files, `tsconfig.json`, or `package.json` change
+- Only rebuilds when TypeScript files, `tsconfig.json`, `package.json` or `package-lock.json` change
 - Skips compilation if `app.js` is up-to-date
 
 ### Step 3: BuildCssFiles

@@ -1,0 +1,664 @@
+﻿@page "/backups"
+@inject DemoDbService Db
+
+<PageTitle>Backups &amp; migrations · BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Backups & migrations" Title="Back it up, move it, bring it forward"
+            Lead="ExportAsync writes a whole database to one checksummed file and ImportAsync turns that file into a database on any backend. A UserVersion stored with the data, and the migrations registered on the options, bring a database forward when it opens - one transaction per step, so a step either lands whole or is retried.">
+    <span class="bb-badge bd-badge-neutral">One checksummed file</span>
+    <span class="bb-badge bd-badge-neutral">Any backend to any backend</span>
+    <span class="bb-badge bd-badge-neutral">One transaction per migration</span>
+</PageHeader>
+
+<Section Title="Export and import"
+         Lead="Each scenario starts from a private database on in-memory storage holding three tables and a UserVersion of 3. The file it exports is a snapshot in the engine's own format, so importing it is a checkpoint written straight to the destination.">
+    <CodeBlock Title="Back up, restore" Code="@ExportSnippet" />
+
+    <div class="bd-main-side">
+        <div class="bb-flex">
+            <Panel Title="Scenarios" IconName="list">
+                <div class="bd-actions">
+                    @foreach (var scenario in Scenarios)
+                    {
+                        var key = scenario.Key;
+                        <button type="button" class="btn @(_selected == key ? "btn-primary" : "btn-secondary")"
+                                disabled="@_running" @onclick="() => RunAsync(key)">
+                            <Icon Name="@scenario.Icon" />
+                            @scenario.Title
+                        </button>
+                    }
+                </div>
+            </Panel>
+
+            @if (Current is { } current)
+            {
+                <CodeBlock Title="@($"Scenario: {current.Title}")" Code="@current.Code" />
+                <Callout Tone="@current.Tone" Title="@current.Takeaway"></Callout>
+            }
+        </div>
+
+        <div class="bb-flex">
+            <Panel Title="Trace" IconName="history" Flush="true">
+                <Actions>
+                    @if (_running)
+                    {
+                        <span class="bb-spinner"></span>
+                    }
+                </Actions>
+                <ChildContent>
+                    <ScenarioSteps Steps="_log.Steps" EmptyText="Pick a scenario to run it." />
+                </ChildContent>
+            </Panel>
+
+            @if (_fileHead.Count > 0)
+            {
+                <Panel Title="The exported file" IconName="binary" Flush="true">
+                    <Actions>
+                        <span class="bd-panel-sub">@DemoSandbox.Bytes(_fileLength) · first @(_fileHead.Count * 16) bytes</span>
+                    </Actions>
+                    <ChildContent>
+                        <HexView Lines="_fileHead" />
+                    </ChildContent>
+                </Panel>
+            }
+        </div>
+    </div>
+
+    <div class="bb-split">
+        <Panel Title="Download this tab's database" IconName="download">
+            <p>
+                The database every other page of this site uses, exported for real. The file opens anywhere
+                <code>ImportAsync</code> runs - a test, a console tool, a support desk.
+            </p>
+            <button type="button" class="btn btn-secondary" disabled="@_exporting" @onclick="ExportLiveAsync">
+                <Icon Name="download" /> await db.ExportAsync(stream)
+            </button>
+            @if (_liveNote is not null)
+            {
+                <div class="bb-log bd-out">@_liveNote</div>
+            }
+            @if (_liveDownload is not null)
+            {
+                <a class="btn btn-primary" href="@_liveDownload" download="@($"{DemoDbService.DatabaseName}.blazedb")">
+                    <Icon Name="download" /> Save @(DemoDbService.DatabaseName).blazedb
+                </a>
+            }
+        </Panel>
+        <Panel Title="What an export is, and is not" IconName="info">
+            <ul class="bb-detail-list">
+                <li><strong>One consistent state.</strong> The rows are captured at once, under the write lock; writing the file out happens afterwards, holding nothing.</li>
+                <li><strong>Everything.</strong> Every table - unregistered ones included - and the <code>UserVersion</code>.</li>
+                <li><strong>Verified before it is used.</strong> An import checks the checksum before it writes anything, and refuses a file that was truncated or altered.</li>
+                <li><strong>Never an overwrite.</strong> An import refuses a destination that already holds a database; <code>BlazeDbDatabase.DeleteAsync(storage)</code> clears one first.</li>
+                <li><strong>Not encrypted.</strong> Wrap the stream, or keep the file where the data may live. Export refuses while a transaction is open, and after a rollback that could not undo a write.</li>
+            </ul>
+        </Panel>
+    </div>
+</Section>
+
+<Section Title="Versions and migrations"
+         Lead="Ship the same app four times over one storage and watch each release bring the data forward. Each button opens the database the way that release would - with the migrations it registers - reads what is there, and closes it again, so the storage below outlives every release.">
+    <div class="bd-main-side">
+        <div class="bb-flex">
+            <Panel Title="Releases" IconName="rocket">
+                <div class="bd-actions">
+                    <button type="button" class="btn btn-secondary" disabled="@_migrating" @onclick="() => ShipAsync(0, brokenThree: false)">
+                        <Icon Name="play" /> Ship version 0 - no migrations, writes the first rows
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@_migrating" @onclick="() => ShipAsync(1, brokenThree: false)">
+                        <Icon Name="play" /> Ship version 1 - lower-case every email
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@_migrating" @onclick="() => ShipAsync(2, brokenThree: false)">
+                        <Icon Name="play" /> Ship version 2 - every person needs a role
+                    </button>
+                    <button type="button" class="btn bd-btn-danger" disabled="@_migrating" @onclick="() => ShipAsync(3, brokenThree: true)">
+                        <Icon Name="alert" /> Ship version 3 with a bug in its migration
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@_migrating" @onclick="() => ShipAsync(3, brokenThree: false)">
+                        <Icon Name="check" /> Ship version 3, fixed
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@_migrating" @onclick="ResetMigrationsAsync">
+                        <Icon Name="refresh" /> Start over with empty storage
+                    </button>
+                </div>
+            </Panel>
+            <CodeBlock Title="Registered on the options" Code="@MigrationSnippet" />
+        </div>
+
+        <div class="bb-flex">
+            <Panel Title="What the open did" IconName="history" Flush="true">
+                <ScenarioSteps Steps="_migrationLog.Steps" EmptyText="Ship version 0 first: it writes the rows the later versions fix up." />
+            </Panel>
+
+            <Panel Title="people, as the last release left them" IconName="database" Flush="true">
+                <Actions>
+                    <span class="bd-panel-sub">UserVersion = @_storedVersion</span>
+                </Actions>
+                <ChildContent>
+                    @if (_appRows.Count == 0)
+                    {
+                        <div class="bb-empty">No release has written anything yet.</div>
+                    }
+                    else
+                    {
+                        <div class="bb-scroll">
+                            <table class="bb-table bb-compare">
+                                <thead><tr><th class="bd-num">Id</th><th>Name</th><th>Email</th><th>Role</th></tr></thead>
+                                <tbody>
+                                    @foreach (var person in _appRows)
+                                    {
+                                        <tr>
+                                            <td class="bd-num">@person.Id</td>
+                                            <td class="bd-strong">@person.Name</td>
+                                            <td class="bb-mono bd-small">@(person.Email ?? "null")</td>
+                                            <td>@(person.Role.Length == 0 ? "(blank)" : person.Role)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </ChildContent>
+            </Panel>
+        </div>
+    </div>
+
+    <div class="bb-grid">
+        <div class="bb-card">
+            <h4 class="bb-card-title">Lowest first, once each</h4>
+            <p class="bb-card-desc">Every migration whose version is above the database's <code>UserVersion</code> runs, in version order, when the database opens. One that has run is never run again.</p>
+        </div>
+        <div class="bb-card">
+            <h4 class="bb-card-title">One transaction per step</h4>
+            <p class="bb-card-desc">A migration runs inside a transaction that also moves <code>UserVersion</code> to its version. If it throws, the open fails and the database is left at the version before it, to be retried by the next open.</p>
+        </div>
+        <div class="bb-card">
+            <h4 class="bb-card-title">For the data, not the fields</h4>
+            <p class="bb-card-desc">Adding or removing a property needs no migration - unknown fields are skipped and missing ones read as defaults (<a href="serialization">wire format</a>). A migration is for changing the data itself.</p>
+        </div>
+        <div class="bb-card">
+            <h4 class="bb-card-title">A number you own</h4>
+            <p class="bb-card-desc"><code>db.UserVersion</code> is 0 until something sets it, like SQLite's <code>user_version</code>. <code>db.SetUserVersion(n)</code> is an ordinary write, and an export carries it. A read-only replica never runs migrations.</p>
+        </div>
+    </div>
+</Section>
+
+@code {
+    private sealed record Scenario(
+        string Key,
+        string Title,
+        string Icon,
+        string Code,
+        string Takeaway,
+        string Tone,
+        Func<Backups, Task> Run);
+
+    private readonly ScenarioLog _log = new();
+    private string _selected = "";
+    private bool _running;
+    private List<HexView.Line> _fileHead = [];
+    private long _fileLength;
+
+    private bool _exporting;
+    private string? _liveNote;
+    private string? _liveDownload;
+
+    private Scenario? Current => Scenarios.FirstOrDefault(s => s.Key == _selected);
+
+    private static readonly Scenario[] Scenarios =
+    [
+        new("roundtrip", "Export, then import into new storage", "download",
+            """
+            var file = new MemoryStream();
+            await db.ExportAsync(file);
+
+            var restored = new BlazeDbInMemoryStorage();
+            await BlazeDbDatabase.ImportAsync(new MemoryStream(file.ToArray()), restored);
+
+            await using var copy = await BlazeDbDatabase.OpenAsync(options with restored storage);
+            """,
+            "The file carries every table and the UserVersion; the import is a database ready to open.",
+            "ok",
+            static page => page.RoundTripAsync()),
+
+        new("altered", "A file with one altered byte is refused", "binary",
+            """
+            bytes[bytes.Length / 2] ^= 0xFF;
+            await BlazeDbDatabase.ImportAsync(new MemoryStream(bytes), destination);
+            // BlazeDbCorruptDatabaseException - and nothing was written
+            """,
+            "The checksum is verified before the first byte reaches the destination.",
+            "err",
+            static page => page.AlteredAsync()),
+
+        new("truncated", "A truncated file is refused", "close",
+            """
+            await BlazeDbDatabase.ImportAsync(new MemoryStream(bytes[..^16]), destination);
+            // BlazeDbCorruptDatabaseException
+            """,
+            "A download cut short is not half a database - it is no database.",
+            "err",
+            static page => page.TruncatedAsync()),
+
+        new("overwrite", "An import never overwrites", "lock",
+            """
+            await BlazeDbDatabase.ImportAsync(file, destination);   // fine
+            await BlazeDbDatabase.ImportAsync(file, destination);   // InvalidOperationException
+
+            await BlazeDbDatabase.DeleteAsync(destination);         // every file removed
+            await BlazeDbDatabase.ImportAsync(file, destination);   // fine again
+            """,
+            "Replacing a database is two deliberate steps, DeleteAsync and then ImportAsync - never an accident.",
+            "warn",
+            static page => page.OverwriteAsync()),
+
+        new("transaction", "Export refuses an open transaction", "txn",
+            """
+            using var txn = db.BeginTransaction();
+            people.Insert(row);
+            await db.ExportAsync(file);   // InvalidOperationException
+            txn.Commit();
+            await db.ExportAsync(file);   // fine - the row is committed
+            """,
+            "A backup only ever holds committed states.",
+            "err",
+            static page => page.TransactionAsync()),
+
+        new("partial", "Tables the importer does not know travel too", "layers",
+            """
+            await BlazeDbDatabase.ImportAsync(file, destination);
+
+            // Open with only one of the file's tables registered:
+            var narrow = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = destination }
+                .AddTable(TodoEntry.Table));
+            narrow.UnregisteredTables;     // the others, carried as raw bytes
+            await narrow.CheckpointAsync();   // written back out - nothing is lost
+            """,
+            "A database may hold tables the current options do not register; they are opened, kept and written back by every checkpoint.",
+            "accent",
+            static page => page.PartialAsync()),
+    ];
+
+    // --------------------------------------------------------------- export and import
+
+    private async Task RunAsync(string key)
+    {
+        var scenario = Scenarios.FirstOrDefault(s => s.Key == key);
+        if (scenario is null || _running)
+        {
+            return;
+        }
+
+        _running = true;
+        _selected = key;
+        _log.Clear();
+        StateHasChanged();
+
+        try
+        {
+            await scenario.Run(this);
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Unexpected exception", ex.GetType().Name, ex.Message);
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+
+    private static BlazeDbDatabaseOptions Options(IBlazeDbStorage storage) =>
+        DemoSandbox.BuildOptions(storage, flushInterval: TimeSpan.FromHours(1)).AddTable(Person.Table);
+
+    /// <summary>A private database with rows in three tables and a UserVersion, exported to a byte array.</summary>
+    private async Task<(BlazeDbDatabase Db, byte[] File)> SourceAsync()
+    {
+        var db = await BlazeDbDatabase.OpenAsync(Options(new BlazeDbInMemoryStorage()));
+        DemoData.Seed(db, db.GetTable(TodoEntry.Table), count: 8);
+        db.GetTable(Person.Table).InsertMany(DemoData.People());
+        db.GetTable(Setting.Table).Insert(new Setting { Name = "theme", Value = "dark", UpdatedAt = DateTime.UtcNow });
+        db.SetUserVersion(3);
+
+        using var file = new MemoryStream();
+        await db.ExportAsync(file);
+        var bytes = file.ToArray();
+
+        _fileLength = bytes.Length;
+        _fileHead = HexView.Dump(bytes, 64);
+        _log.Add("A database with three tables, exported",
+            $"await db.ExportAsync(file) → {DemoSandbox.Bytes(bytes.Length)}",
+            $"todos {db.GetTable(TodoEntry.Table).Count} · people {db.GetTable(Person.Table).Count} · settings {db.GetTable(Setting.Table).Count} · UserVersion {db.UserVersion}");
+        return (db, bytes);
+    }
+
+    private async Task RoundTripAsync()
+    {
+        var (source, bytes) = await SourceAsync();
+        await using var _ = source;
+
+        var restored = new BlazeDbInMemoryStorage();
+        await BlazeDbDatabase.ImportAsync(new MemoryStream(bytes), restored);
+        _log.Run("Imported into empty storage", "await BlazeDbDatabase.ImportAsync(file, restored)",
+            $"Files on the destination: {string.Join(", ", restored.FileNames.OrderBy(f => f, StringComparer.Ordinal))}");
+
+        await using var copy = await BlazeDbDatabase.OpenAsync(Options(restored));
+        _log.Ok("Opened like any other database",
+            $"todos {copy.GetTable(TodoEntry.Table).Count} · people {copy.GetTable(Person.Table).Count} · settings {copy.GetTable(Setting.Table).Count} · UserVersion {copy.UserVersion}",
+            "The same rows, the same version - on a backend the source never touched.");
+    }
+
+    private async Task AlteredAsync()
+    {
+        var (source, bytes) = await SourceAsync();
+        await using var _ = source;
+
+        bytes[bytes.Length / 2] ^= 0xFF;
+        _log.Run("Flipped one byte in the middle", $"bytes[{bytes.Length / 2}] ^= 0xFF");
+
+        var destination = new BlazeDbInMemoryStorage();
+        try
+        {
+            await BlazeDbDatabase.ImportAsync(new MemoryStream(bytes), destination);
+            _log.Error("Imported", "unexpected - the damage went unnoticed");
+        }
+        catch (BlazeDbCorruptDatabaseException ex)
+        {
+            _log.Error("ImportAsync refused the file", "BlazeDbCorruptDatabaseException", ex.Message);
+        }
+
+        _log.Ok("Nothing reached the destination", $"destination files → {destination.FileNames.Count}");
+    }
+
+    private async Task TruncatedAsync()
+    {
+        var (source, bytes) = await SourceAsync();
+        await using var _ = source;
+
+        var cut = bytes[..^16];
+        _log.Run("Dropped the last 16 bytes", $"{DemoSandbox.Bytes(bytes.Length)} → {DemoSandbox.Bytes(cut.Length)}");
+
+        var destination = new BlazeDbInMemoryStorage();
+        try
+        {
+            await BlazeDbDatabase.ImportAsync(new MemoryStream(cut), destination);
+            _log.Error("Imported", "unexpected");
+        }
+        catch (BlazeDbCorruptDatabaseException ex)
+        {
+            _log.Error("ImportAsync refused the file", "BlazeDbCorruptDatabaseException", ex.Message);
+        }
+
+        _log.Ok("Nothing reached the destination", $"destination files → {destination.FileNames.Count}");
+    }
+
+    private async Task OverwriteAsync()
+    {
+        var (source, bytes) = await SourceAsync();
+        await using var _ = source;
+
+        var destination = new BlazeDbInMemoryStorage();
+        await BlazeDbDatabase.ImportAsync(new MemoryStream(bytes), destination);
+        _log.Ok("First import", "await BlazeDbDatabase.ImportAsync(file, destination)", $"{destination.FileNames.Count} files");
+
+        try
+        {
+            await BlazeDbDatabase.ImportAsync(new MemoryStream(bytes), destination);
+            _log.Error("Imported over it", "unexpected");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("A second import into the same storage", "InvalidOperationException", ex.Message);
+        }
+
+        await BlazeDbDatabase.DeleteAsync(destination);
+        _log.Add("Removed the database", "await BlazeDbDatabase.DeleteAsync(destination)", $"destination files → {destination.FileNames.Count}");
+
+        await BlazeDbDatabase.ImportAsync(new MemoryStream(bytes), destination);
+        _log.Ok("Imported again", "await BlazeDbDatabase.ImportAsync(file, destination)", $"{destination.FileNames.Count} files");
+    }
+
+    private async Task TransactionAsync()
+    {
+        var (source, _) = await SourceAsync();
+        await using var db = source;
+        var people = db.GetTable(Person.Table);
+
+        using (var txn = db.BeginTransaction())
+        {
+            people.Insert(new Person { Id = 7, Name = "Barbara Liskov", Email = "barbara@mit.edu", City = "Boston", Role = "researcher", Joined = new(2025, 9, 1) });
+            _log.Run("A transaction is open with one write", "people.Insert(row)");
+
+            try
+            {
+                await db.ExportAsync(new MemoryStream());
+                _log.Error("Exported", "unexpected - the file would hold an uncommitted write");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _log.Error("ExportAsync refused", "InvalidOperationException", ex.Message);
+            }
+
+            txn.Commit();
+        }
+
+        using var file = new MemoryStream();
+        await db.ExportAsync(file);
+        _log.Ok("After the commit", $"await db.ExportAsync(file) → {DemoSandbox.Bytes(file.Length)}", $"people {people.Count}, the new row included.");
+    }
+
+    private async Task PartialAsync()
+    {
+        var (source, bytes) = await SourceAsync();
+        await using var _ = source;
+
+        var destination = new BlazeDbInMemoryStorage();
+        await BlazeDbDatabase.ImportAsync(new MemoryStream(bytes), destination);
+
+        await using (var narrow = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = destination }.AddTable(TodoEntry.Table)))
+        {
+            _log.Run("Opened with only TodoEntry registered",
+                $"narrow.UnregisteredTables → [{string.Join(", ", narrow.UnregisteredTables)}]",
+                $"todos {narrow.GetTable(TodoEntry.Table).Count} rows are queryable; the rest are carried as raw bytes.");
+
+            await narrow.CheckpointAsync();
+            _log.Add("Checkpointed by the narrower schema", "await narrow.CheckpointAsync()",
+                "The new snapshot is written by a database that cannot read people or settings - and still contains them.");
+        }
+
+        await using var full = await BlazeDbDatabase.OpenAsync(Options(destination));
+        _log.Ok("Reopened with every table registered",
+            $"people {full.GetTable(Person.Table).Count} · settings {full.GetTable(Setting.Table).Count} · UnregisteredTables [{string.Join(", ", full.UnregisteredTables)}]",
+            "Registering a descriptor again brings the rows back. The EF Core provider does this on its own when a context that knows the table shares the engine.");
+    }
+
+    private async Task ExportLiveAsync()
+    {
+        _exporting = true;
+        _liveDownload = null;
+        try
+        {
+            var db = await Db.GetDatabaseAsync();
+            using var file = new MemoryStream();
+            var sw = Stopwatch.StartNew();
+            await db.ExportAsync(file);
+            var elapsed = sw.Elapsed.TotalMilliseconds;
+
+            _liveNote =
+                $"await db.ExportAsync(stream) → {DemoSandbox.Bytes(file.Length)} in {DemoSandbox.Duration(elapsed)}\n" +
+                $"todos {Db.Todos.Count} · settings {Db.Settings.Count} · UserVersion {db.UserVersion}";
+
+            // A data: URL needs no script to download - and the demo's database is small enough for one.
+            _liveDownload = file.Length <= 8 * 1024 * 1024
+                ? "data:application/octet-stream;base64," + Convert.ToBase64String(file.GetBuffer(), 0, (int)file.Length)
+                : null;
+        }
+        catch (Exception ex)
+        {
+            _liveNote = $"{ex.GetType().Name}: {ex.Message}";
+        }
+        finally
+        {
+            _exporting = false;
+        }
+    }
+
+    // --------------------------------------------------------------- migrations
+
+    private BlazeDbInMemoryStorage _appStorage = new();
+    private readonly ScenarioLog _migrationLog = new();
+    private List<Person> _appRows = [];
+    private long _storedVersion;
+    private bool _migrating;
+    private readonly List<string> _ran = [];
+
+    private BlazeDbDatabaseOptions ReleaseOptions(int version, bool brokenThree)
+    {
+        var options = new BlazeDbDatabaseOptions { Storage = _appStorage }.AddTable(Person.Table);
+
+        if (version >= 1)
+        {
+            options.AddMigration(1, db =>
+            {
+                _ran.Add("1");
+                var people = db.GetTable(Person.Table);
+                people.UpsertMany(people.Scan()
+                    .Where(p => p.Email is { } email && email != email.ToLowerInvariant())
+                    .Select(p => p.With(x => x.Email = x.Email!.ToLowerInvariant())));
+            });
+        }
+
+        if (version >= 2)
+        {
+            options.AddMigration(2, db =>
+            {
+                _ran.Add("2");
+                var people = db.GetTable(Person.Table);
+                people.UpsertMany(people.Scan().Where(p => p.Role.Length == 0).Select(p => p.With(x => x.Role = "member")));
+            });
+        }
+
+        if (version >= 3)
+        {
+            options.AddMigration(3, db =>
+            {
+                _ran.Add("3");
+                var people = db.GetTable(Person.Table);
+                foreach (var person in people.Scan().Where(p => p.Email is null).ToList())
+                {
+                    people.Update(person.With(x => x.Email = $"{x.Id}@example.invalid"));
+                    if (brokenThree)
+                    {
+                        throw new InvalidOperationException("Migration 3 has a bug: it threw after writing its first row.");
+                    }
+                }
+            });
+        }
+
+        return options;
+    }
+
+    private async Task ShipAsync(int version, bool brokenThree)
+    {
+        _migrating = true;
+        _migrationLog.Clear();
+        _ran.Clear();
+
+        try
+        {
+            var before = _storedVersion;
+            BlazeDbDatabase db;
+            try
+            {
+                db = await BlazeDbDatabase.OpenAsync(ReleaseOptions(version, brokenThree));
+            }
+            catch (InvalidOperationException ex)
+            {
+                _migrationLog.Error($"Version {version} failed to open",
+                    $"migrations run: {(_ran.Count == 0 ? "none" : string.Join(", ", _ran))}",
+                    ex.Message);
+                await ReadBackAsync();
+                _migrationLog.Ok("The failed step left nothing behind",
+                    $"UserVersion → {_storedVersion}",
+                    "Migration 3's own write was rolled back with it; the steps before it stay committed. The next open tries 3 again.");
+                return;
+            }
+
+            await using (db)
+            {
+                var people = db.GetTable(Person.Table);
+                if (version == 0 && people.Count == 0)
+                {
+                    // The first release knew no better: mixed-case addresses and blank roles.
+                    people.InsertMany(DemoData.People().Select(p => p.With(x =>
+                    {
+                        x.Email = x.Email is { } email && x.Id % 2 == 1 ? char.ToUpperInvariant(email[0]) + email[1..] : x.Email;
+                        x.Role = x.Id % 3 == 0 ? "" : x.Role;
+                    })));
+                    _migrationLog.Add("Version 0 wrote the first rows", "people.InsertMany(...)",
+                        "Some addresses start with a capital, some roles are blank - the data later versions will fix.");
+                }
+
+                _migrationLog.Run($"Opened as version {version}",
+                    $"migrations registered: {(version == 0 ? "none" : string.Join(", ", Enumerable.Range(1, version)))}",
+                    $"UserVersion was {before} on storage.");
+
+                _migrationLog.Ok(_ran.Count == 0 ? "No migration had to run" : $"Ran migration {string.Join(", then ", _ran)}",
+                    $"db.UserVersion → {db.UserVersion}",
+                    _ran.Count == 0 && version > 0 ? "Every registered migration is at or below the stored version, so none ran again." : null);
+            }
+
+            await ReadBackAsync();
+        }
+        finally
+        {
+            _migrating = false;
+        }
+    }
+
+    /// <summary>Reads the storage the releases share without any migration, the way a support tool would.</summary>
+    private async Task ReadBackAsync()
+    {
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = _appStorage }.AddTable(Person.Table));
+        _storedVersion = db.UserVersion;
+        _appRows = db.GetTable(Person.Table).Scan().OrderBy(p => p.Id).ToList();
+    }
+
+    private Task ResetMigrationsAsync()
+    {
+        _appStorage = new BlazeDbInMemoryStorage();
+        _appRows = [];
+        _storedVersion = 0;
+        _migrationLog.Clear();
+        _migrationLog.Add("Empty storage", "new BlazeDbInMemoryStorage()", "Ship version 0 to write the first rows.");
+        return Task.CompletedTask;
+    }
+
+    private const string ExportSnippet = """
+        // Back up: the whole database, every table and the UserVersion, as one checksummed file.
+        await using var file = File.Create("backup.blazedb");
+        await db.ExportAsync(file);
+
+        // Restore: onto any backend, then open it as usual.
+        await using var source = File.OpenRead("backup.blazedb");
+        using var restored = new BlazeDbFileStorage(restoreDirectory);
+        await BlazeDbDatabase.ImportAsync(source, restored);
+        """;
+
+    private const string MigrationSnippet = """
+        var options = new BlazeDbDatabaseOptions { Storage = storage }
+            .AddTable(Person.Table)
+            .AddMigration(1, db =>
+            {
+                // Version 1 stores every address in lower case.
+                var people = db.GetTable(Person.Table);
+                people.UpsertMany(people.Scan()
+                    .Where(p => p.Email is { } e && e != e.ToLowerInvariant())
+                    .Select(p => p.With(x => x.Email = x.Email!.ToLowerInvariant())));
+            })
+            .AddMigration(2, db => { /* blank roles become "member" */ })
+            .AddMigration(3, db => { /* missing addresses get a placeholder */ });
+
+        var db = await BlazeDbDatabase.OpenAsync(options);   // runs what is above UserVersion
+        """;
+}

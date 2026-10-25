@@ -1,0 +1,367 @@
+﻿@page "/e2e/tag"
+
+<PageTitle>BitTag E2E</PageTitle>
+
+<style>
+    .tag-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+    .tag-ext::before { content: "*"; }
+</style>
+
+<E2ESection Id="basic" Title="Basic">
+    <div class="tag-row">
+        <BitTag Id="basic-tag" Text="Basic tag" />
+        <BitTag Id="basic-info" Text="Design" Color="BitColor.Info" />
+        <BitTag Id="basic-runtime" Text="@_runtimeText" Color="_runtimeColor" />
+    </div>
+    <button id="btn-runtime" @onclick='() => { _runtimeText = "Changed"; _runtimeColor = BitColor.Error; }'>Change</button>
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant and Shape">
+    <div class="tag-row">
+        <BitTag Id="var-fill" Text="Fill" Variant="BitVariant.Fill" />
+        <BitTag Id="var-outline" Text="Outline" Variant="BitVariant.Outline" />
+        <BitTag Id="var-text" Text="Text" Variant="BitVariant.Text" />
+        <BitTag Id="var-default" Text="Default" />
+        <BitTag Id="shape-default" Text="Default shape" Variant="BitVariant.Outline" />
+        <BitTag Id="shape-rounded" Text="Rounded" Shape="BitShape.Rounded" Variant="BitVariant.Outline" />
+        <BitTag Id="shape-pill" Text="Pill" Shape="BitShape.Pill" Variant="BitVariant.Outline" />
+        <BitTag Id="shape-circle" Text="Circle" Shape="BitShape.Circle" Variant="BitVariant.Outline" />
+        <BitTag Id="shape-square" Text="Square" Shape="BitShape.Square" Variant="BitVariant.Outline" />
+        <BitTag Id="dis-fill" Text="Fill" Variant="BitVariant.Fill" Disabled />
+        <BitTag Id="dis-outline" Text="Outline" Variant="BitVariant.Outline" Shape="BitShape.Pill" Disabled />
+        <BitTag Id="dis-text" Text="Text" Variant="BitVariant.Text" Disabled />
+        <BitTag Id="dis-error" Text="Error" Color="BitColor.Error" Disabled />
+    </div>
+</E2ESection>
+
+<E2ESection Id="icon" Title="Icon">
+    <div class="tag-row">
+        <BitTag Id="icon-leading" Text="Calendar" IconName="@BitIconName.Calendar" />
+        <BitTag Id="icon-trailing" Text="Status" SecondaryIconName="@BitIconName.ChevronDown" Variant="BitVariant.Outline" />
+        <BitTag Id="icon-both" Text="Both ends" IconName="@BitIconName.Tag" SecondaryIconName="@BitIconName.ChevronDown" />
+        <BitTag Id="icon-reversed" Text="Reversed" IconName="@BitIconName.Tag" SecondaryIconName="@BitIconName.ChevronDown" Reversed OnDismiss="() => { }" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="image" Title="Image and Secondary text">
+    <div class="tag-row">
+        <BitTag Id="img-plain" Text="Annie Lindqvist" IconUrl="@Img" Variant="BitVariant.Outline" />
+        <BitTag Id="img-secondary" Text="Annie Lindqvist" SecondaryText="Software engineer" IconUrl="@Img" />
+        <BitTag Id="img-alt" Text="Awaiting review" IconUrl="@Img" IconAlt="Assigned to Annie" Color="BitColor.Warning" />
+        <BitTag Id="secondary-only" Text="Storage" SecondaryText="12.4 GB used" IconName="@BitIconName.Cloud" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="dismiss" Title="Dismiss">
+    <div class="tag-row">
+        @foreach (var tag in _dismissible)
+        {
+            <BitTag @key="tag" @ref="_dismissRefs[tag]" Id="@($"dm-{tag}")" Text="@tag" IconName="@BitIconName.Tag" Variant="BitVariant.Outline" OnDismiss="() => DismissTag(tag)" />
+        }
+        <button id="btn-dm-reset" @onclick="ResetDismissible">Reset</button>
+    </div>
+    <div class="tag-row">
+        <BitTag Id="dm-custom" Text="Custom glyph" Color="BitColor.Error" DismissIconName="@BitIconName.ChromeClose" DismissLabel="Clear the custom glyph tag" OnDismiss="() => _otherDismissals++" />
+        <BitTag Id="dm-format" Text="Formatted label" Color="BitColor.Info" DismissLabelFormat="Take {0} off the list" OnDismiss="() => _otherDismissals++" />
+        <BitTag Id="dm-bad-format" Text="Bad format" DismissLabelFormat="Remove {1}" OnDismiss="() => _otherDismissals++" />
+        <BitTag Id="dm-no-name" IconName="@BitIconName.Tag" OnDismiss="() => _otherDismissals++" />
+        <BitTag Id="dm-disabled" Text="Disabled" Disabled OnDismiss="() => _otherDismissals++" />
+    </div>
+    <span id="dismissed">@string.Join(",", _dismissedTags)</span>
+    <span id="other-dismissals">@_otherDismissals</span>
+</E2ESection>
+
+<E2ESection Id="click" Title="Click">
+    <div class="tag-row">
+        <BitTag Id="click-tag" Text="Add to filters" IconName="@BitIconName.Add" OnClick="HandleClick" />
+        <BitTag Id="click-dismiss" Text="Click or dismiss" Variant="BitVariant.Outline" OnClick="HandleClick" OnDismiss="() => _clickDismissals++" />
+        <BitTag Id="click-disabled" Text="Disabled" Disabled="_clickDisabled" OnClick="HandleClick" />
+    </div>
+    <div id="card" class="tag-row" style="padding: 8px; border: 1px dashed #999;" @onclick="() => _cardClicks++">
+        <BitTag Id="click-bubbles" Text="Bubbles" Variant="BitVariant.Outline" OnClick="HandleClick" />
+        <BitTag Id="click-stops" Text="Stops" Variant="BitVariant.Outline" StopPropagation OnClick="HandleClick" />
+        <BitTag Id="click-static" Text="Static" />
+    </div>
+    <span id="clicks">@_clicks</span>
+    <span id="last-button">@_lastButton</span>
+    <span id="click-dismissals">@_clickDismissals</span>
+    <span id="card-clicks">@_cardClicks</span>
+    <button id="btn-toggle-click-disabled" @onclick="() => _clickDisabled = !_clickDisabled">Toggle disabled</button>
+</E2ESection>
+
+<E2ESection Id="selection" Title="Selection">
+    <div class="tag-row">
+        <BitTag Id="sel-bound" Text="Only mine" Variant="BitVariant.Outline" @bind-Selected="_selected" OnChange="v => _changes.Add(v)" />
+        <BitTag Id="sel-no-check" Text="No checkmark" @bind-Selected="_pinned" HideSelectedIcon />
+        <BitTag Id="sel-star" Text="Starred" IconName="@BitIconName.FavoriteStar" SelectedIconName="@BitIconName.FavoriteStarFill" Variant="BitVariant.Text" @bind-Selected="_starred" />
+        <BitTag Id="sel-default" Text="Own state" DefaultSelected="false" Variant="BitVariant.Outline" />
+        <BitTag Id="sel-default-true" Text="Own state on" DefaultSelected="true" Variant="BitVariant.Outline" />
+        <BitTag Id="sel-asks" Text="Asks first" DefaultSelected="false" OnChanging="HandleChanging" OnChange="v => _askChanges.Add(v)" />
+        <BitTag Id="sel-static" Text="Static selection" Selected Color="BitColor.Success" />
+    </div>
+    <span id="selected">@_selected</span>
+    <span id="changes">@string.Join(",", _changes)</span>
+    <span id="ask-changes">@string.Join(",", _askChanges)</span>
+    <span id="changing-values">@string.Join(",", _changingValues)</span>
+    <button id="btn-set-selected" @onclick="() => _selected = !_selected">Toggle from page</button>
+    <button id="btn-allow" @onclick="() => _allowChange = !_allowChange">Allow change</button>
+    <span id="allow">@_allowChange</span>
+</E2ESection>
+
+<E2ESection Id="link" Title="Link">
+    <div class="tag-row">
+        <BitTag Id="link-self" Text="Target" IconName="@BitIconName.Ribbon" Href="/e2e/tag#link-target" Variant="BitVariant.Outline" />
+        <BitTag Id="link-blank" Text="Docs" Href="https://example.invalid/docs" Target="_blank" SecondaryIconName="@BitIconName.OpenInNewWindow" />
+        <BitTag Id="link-rel" Text="Source" Href="https://example.invalid/src" Target="_blank" Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" NewTabHint="(opens GitHub in a new tab)" />
+        <BitTag Id="link-nofollow" Text="Ext" Href="https://example.invalid/ext" Target="_blank" Rel="BitLinkRels.NoFollow" NoNewTabHint />
+        <BitTag Id="link-labelled" Text="Labelled" AriaLabel="Open the docs" Href="https://example.invalid/docs" Target="_blank" />
+        <BitTag Id="link-download" Text="Logo" Href="samples/persona-sample.png" Download="logo.png" />
+        <BitTag Id="link-disabled" Text="Disabled" Href="https://example.invalid" Target="_blank" Disabled />
+        <BitTag Id="link-current" Text="This page" Href="/e2e/tag#link" Selected AriaCurrent="BitNavAriaCurrent.Page" />
+        <BitTag Id="link-current-default" Text="Current" Href="/e2e/tag#link" Selected />
+    </div>
+    <span id="link-target">target</span>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <div class="tag-row">
+        <BitTag Id="tpl-child" IconName="@BitIconName.Contact" SecondaryIconName="@BitIconName.ChevronDown"><b id="tpl-child-bold">Alex</b> (owner)</BitTag>
+        <BitTag Id="tpl-prefix" Text="Alex Parker" IconName="@BitIconName.Contact" SecondaryIconName="@BitIconName.ChevronDown" OnClick="HandleClick">
+            <PrefixTemplate><span id="tpl-prefix-mark">AP</span></PrefixTemplate>
+            <SuffixTemplate><span id="tpl-suffix-mark">24</span></SuffixTemplate>
+        </BitTag>
+    </div>
+</E2ESection>
+
+<E2ESection Id="wrap" Title="NoWrap and FullWidth">
+    <div style="max-width: 240px; display: flex; flex-direction: column; gap: 8px;" id="wrap-box">
+        <BitTag Id="wrap-default" Text="A tag with a label long enough to wrap onto a second line" Variant="BitVariant.Outline" />
+        <BitTag Id="wrap-nowrap" NoWrap Text="A tag with a label long enough to wrap onto a second line" Title="A tag with a label long enough to wrap onto a second line" Variant="BitVariant.Outline" />
+        <BitTag Id="wrap-full" FullWidth Text="Full width" IconName="@BitIconName.Tag" OnDismiss="() => { }" />
+        <BitTag Id="wrap-full-trailing" FullWidth Text="Trailing" IconName="@BitIconName.Tag" SecondaryIconName="@BitIconName.ChevronRight" OnClick="HandleClick" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <div class="tag-row">
+        <BitTag Id="a11y-icon-button" IconName="@BitIconName.Filter" AriaLabel="Show the filters" OnClick="HandleClick" />
+        <BitTag Id="a11y-static-label" Text="3" AriaLabel="3 unread messages" IconUrl="@Img" />
+        <BitTag Id="a11y-described" Text="Only mine" @bind-Selected="_onlyMine" AriaDescription="Shows only the items you own" />
+        <BitTag Id="a11y-dismiss-described" Text="Offline" AriaDescription="Dismissing hides the notice" OnDismiss="() => { }" />
+        <BitTag Id="a11y-static-described" Text="Static" AriaDescription="A plain description" />
+        <BitTag Id="a11y-splatted" Text="Splatted" HtmlAttributes="@(new() { ["aria-describedby"] = "a11y-extra", ["title"] = "Splatted title" })" AriaDescription="Own description" OnClick="HandleClick" />
+        <span id="a11y-extra">extra</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="focus" Title="Focus">
+    <div class="tag-row">
+        <BitTag Id="focus-plain" @ref="_plainFocusTag" Text="Plain with TabIndex" TabIndex="0" Variant="BitVariant.Outline" />
+        <BitTag Id="focus-button" @ref="_buttonFocusTag" Text="Button" OnClick="HandleClick" />
+        <BitTag Id="focus-dismiss" @ref="_dismissFocusTag" Text="Dismissible" OnDismiss="() => { }" />
+        <BitTag Id="focus-disabled" Text="Shared with me" DefaultSelected="false" Disabled AllowDisabledFocus AriaDescription="Unavailable while offline" OnChange="v => _disabledChanges++" />
+        <BitTag Id="focus-disabled-link" Text="Disabled link" Href="#focus" Disabled AllowDisabledFocus />
+    </div>
+    <button id="btn-focus-plain" @onclick="() => _plainFocusTag!.FocusAsync()">Focus plain</button>
+    <button id="btn-focus-button" @onclick="() => _buttonFocusTag!.FocusAsync()">Focus button</button>
+    <button id="btn-focus-dismiss" @onclick="() => _dismissFocusTag!.FocusAsync()">Focus dismiss</button>
+    <span id="disabled-changes">@_disabledChanges</span>
+</E2ESection>
+
+<E2ESection Id="disabled-contract" Title="Disabled drops the page's activation handlers">
+    <BitTag Id="dc-tag" Text="Contract" Disabled="_contractDisabled" @onclick="() => _rootClicks++" @onkeydown="() => _rootKeys++" @onmouseover="() => _rootHovers++" />
+    <span id="root-clicks">@_rootClicks</span>
+    <span id="root-keys">@_rootKeys</span>
+    <span id="root-hovers">@_rootHovers</span>
+    <button id="btn-contract" @onclick="() => _contractDisabled = !_contractDisabled">Toggle</button>
+</E2ESection>
+
+<E2ESection Id="cascade" Title="Cascading parameters">
+    <BitParams Parameters="@_tagParams">
+        <div class="tag-row">
+            <BitTag Id="cas-1" Text="Design" OnDismiss="() => { }" />
+            <BitTag Id="cas-2" Text="Urgent" Color="BitColor.Error" OnDismiss="() => { }" />
+        </div>
+    </BitParams>
+    <BitTag Id="cas-outside" Text="Outside" OnDismiss="() => { }" />
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <div class="tag-row">
+        @foreach (var color in _colors)
+        {
+            <BitTag Id="@($"clr-{color}")" Text="@color.ToString()" Color="color" />
+            <BitTag Id="@($"clr-otl-{color}")" Text="@color.ToString()" Color="color" Variant="BitVariant.Outline" />
+            <BitTag Id="@($"clr-txt-{color}")" Text="@color.ToString()" Color="color" Variant="BitVariant.Text" />
+            <BitTag Id="@($"clr-sel-{color}")" Text="@color.ToString()" Color="color" Selected />
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External Icons">
+    <div class="tag-row">
+        <BitTag Id="ext-string" Text="House" Icon="@("fa-solid fa-house")" />
+        <BitTag Id="ext-css" Text="Heart" Icon="@BitIconInfo.Css("tag-ext custom-glyph")" />
+        <BitTag Id="ext-fa" Text="GitHub" Icon="@BitIconInfo.Fa("fa-brands fa-github")" />
+        <BitTag Id="ext-dismiss" Text="Dismiss" Icon="@BitIconInfo.Bi("tag-fill")" DismissIcon="@BitIconInfo.Bi("x-lg")" OnDismiss="() => { }" />
+        <BitTag Id="ext-selected" Text="Selected" SelectedIcon="@BitIconInfo.Fa("solid check")" Selected />
+        <BitTag Id="ext-trailing" Text="Trailing" SecondaryIcon="@BitIconInfo.Bi("chevron-down")" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <div class="tag-row">
+        @foreach (var size in _sizes)
+        {
+            <BitTag Id="@($"size-{size}")" Text="@size.ToString()" Size="size" SecondaryText="second" IconUrl="@Img" OnDismiss="() => { }" />
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <div class="tag-row">
+        <BitTag Id="sc-style" Text="Styled" Style="font-style: italic; margin-left: 6px;" />
+        <BitTag Id="sc-class" Text="Classed" Class="custom-class" />
+        <BitTag Id="sc-styles" Text="Styles" SecondaryText="second" IconName="@BitIconName.People" SecondaryIconName="@BitIconName.ChevronDown" Selected OnDismiss="() => { }"
+                Styles="@(new() { Root = "margin-top: 3px;", Content = "padding-top: 7px;", Label = "padding-left: 2px;", Text = "font-style: italic;", SecondaryText = "text-decoration-line: underline;", Icon = "color: rgb(255, 0, 0);", Image = "opacity: 0.5;", SecondaryIcon = "color: rgb(0, 128, 0);", Selected = "outline: 1px solid rgb(0, 0, 255);", SelectedIcon = "color: rgb(1, 2, 3);", DismissButton = "opacity: 0.8;", DismissIcon = "color: rgb(4, 5, 6);" })" />
+        <BitTag Id="sc-classes" Text="Classes" SecondaryText="second" IconName="@BitIconName.People" SecondaryIconName="@BitIconName.ChevronDown" Selected OnDismiss="() => { }"
+                Classes="@(new() { Root = "c-root", Content = "c-cnt", Label = "c-lbl", Text = "c-tex", SecondaryText = "c-stx", Icon = "c-icn", Image = "c-img", SecondaryIcon = "c-sci", Selected = "c-sel", SelectedIcon = "c-sic", DismissButton = "c-cls", DismissIcon = "c-dsi" })" />
+        <BitTag Id="sc-image-only" Text="Image" Styles="@(new() { Image = "opacity: 0.4;" })" Classes="@(new() { Image = "c-img2" })" IconUrl="@Img" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="tag-row">
+        <BitTag Id="rtl-tag" Dir="BitDir.Rtl" Text="برچسب" IconName="@BitIconName.Calendar" OnDismiss="() => { }" />
+        <BitTag Id="rtl-reversed" Dir="BitDir.Rtl" Text="معکوس" IconName="@BitIconName.Calendar" Reversed OnDismiss="() => { }" />
+        <div dir="rtl">
+            <BitTag Id="rtl-inherited" Text="برچسب" IconName="@BitIconName.Calendar" OnDismiss="() => { }" />
+        </div>
+        <BitTag Id="ltr-tag" Text="Label" IconName="@BitIconName.Calendar" OnDismiss="() => { }" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div class="tag-row" style="--bit-Tag-color: rgb(91, 33, 182); --bit-Tag-background: rgb(237, 233, 254); --bit-Tag-border-color: rgb(196, 181, 253); --bit-Tag-icon-color: rgb(219, 39, 119); --bit-Tag-hover-background: rgb(221, 214, 254); --bit-Tag-active-background: rgb(200, 190, 250); --bit-Tag-radius: 11px; --bit-Tag-font-weight: 700; --bit-Tag-padding-x: 17px; --bit-Tag-padding-y: 5px; --bit-Tag-shadow: rgb(0, 0, 0) 0px 0px 3px 0px; --bit-Tag-border-width: 2px; --bit-Tag-gap: 9px; --bit-Tag-font-size: 15px; --bit-Tag-min-height: 34px; --bit-Tag-max-width: 150px; --bit-Tag-focus-color: rgb(255, 0, 255); --bit-Tag-secondary-font-size: 9px; --bit-Tag-icon-size: 21px; --bit-Tag-image-size: 22px;">
+        <BitTag Id="cv-parts" Text="Parts" SecondaryText="second" IconName="@BitIconName.Tag" OnDismiss="() => { }" />
+        <BitTag Id="cv-image" Text="Image" IconUrl="@Img" />
+        <BitTag Id="cv-tag" Text="Custom palette" IconName="@BitIconName.Tag" OnClick="HandleClick" />
+        <BitTag Id="cv-long" Text="A long label cut by the max width of the variable" NoWrap />
+        <BitTag Id="cv-explicit" Text="Explicit" Color="BitColor.Error" Size="BitSize.Small" Shape="BitShape.Square" />
+    </div>
+    <div class="tag-row" style="--bit-Tag-selected-background: rgb(0, 128, 0); --bit-Tag-selected-border-color: rgb(0, 100, 0); --bit-Tag-selected-color: rgb(255, 255, 255); --bit-Tag-disabled-color: rgb(120, 120, 120); --bit-Tag-disabled-background: rgb(230, 230, 230); --bit-Tag-disabled-border-color: rgb(210, 210, 210); --bit-Tag-outline-border-color: rgb(255, 0, 0);">
+        <BitTag Id="cv-selected" Text="Open" DefaultSelected="true" />
+        <BitTag Id="cv-disabled" Text="Disabled" Disabled />
+        <BitTag Id="cv-twin-outline" Text="Outline" Variant="BitVariant.Outline" />
+        <BitTag Id="cv-twin-fill" Text="Fill" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="base" Title="Base parameters">
+    <div class="tag-row">
+        <BitTag Id="vis-hidden" Text="Hidden" Visibility="BitVisibility.Hidden" />
+        <BitTag Id="vis-collapsed" Text="Collapsed" Visibility="BitVisibility.Collapsed" />
+        <BitTag Id="html-attrs" Text="Attrs" Title="Own title" HtmlAttributes="@(new() { ["data-test"] = "tag-attr" })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="unmount" Title="Unmount">
+    @if (_showUnmount)
+    {
+        <div id="unmount-host" class="tag-row">
+            <BitTag Text="One" OnClick="HandleClick" OnDismiss="() => { }" />
+            <BitTag Text="Two" Href="#unmount" Selected />
+            <BitTag Text="Three" DefaultSelected="true" />
+        </div>
+    }
+    <button id="btn-unmount" @onclick="() => _showUnmount = !_showUnmount">Toggle</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string Img = "samples/persona-sample.png";
+
+    private string _runtimeText = "Runtime";
+    private BitColor? _runtimeColor;
+
+    private List<string> _dismissible = ["Design", "Research", "Urgent"];
+    private readonly Dictionary<string, BitTag> _dismissRefs = [];
+    private readonly List<string> _dismissedTags = [];
+    private int _otherDismissals;
+
+    private int _clicks;
+    private long _lastButton = -1;
+    private int _clickDismissals;
+    private int _cardClicks;
+    private bool _clickDisabled = true;
+
+    private bool _selected;
+    private bool _pinned;
+    private bool _starred;
+    private bool _onlyMine;
+    private bool _allowChange;
+    private readonly List<bool> _changes = [];
+    private readonly List<bool> _askChanges = [];
+    private readonly List<bool> _changingValues = [];
+
+    private BitTag? _plainFocusTag;
+    private BitTag? _buttonFocusTag;
+    private BitTag? _dismissFocusTag;
+    private int _disabledChanges;
+
+    private bool _contractDisabled = true;
+    private int _rootClicks;
+    private int _rootKeys;
+    private int _rootHovers;
+    private bool _showUnmount = true;
+
+    private readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly BitSize[] _sizes = [BitSize.Small, BitSize.Medium, BitSize.Large];
+
+    private readonly BitTagParams[] _tagParams =
+    [
+        new() { Color = BitColor.Info, Variant = BitVariant.Outline, Shape = BitShape.Pill, IconName = BitIconName.Filter, DismissLabelFormat = "Remove the {0} filter" }
+    ];
+
+    private void HandleClick(MouseEventArgs e)
+    {
+        _clicks++;
+        _lastButton = e.Button;
+    }
+
+    private async Task DismissTag(string tag)
+    {
+        var index = _dismissible.IndexOf(tag);
+        _dismissible.Remove(tag);
+        _dismissRefs.Remove(tag);
+        _dismissedTags.Add(tag);
+
+        StateHasChanged();
+        await Task.Yield();
+
+        if (_dismissible.Count == 0) return;
+
+        var neighbour = _dismissible[Math.Min(index, _dismissible.Count - 1)];
+        if (_dismissRefs.TryGetValue(neighbour, out var next)) await next.FocusAsync();
+    }
+
+    private void ResetDismissible()
+    {
+        _dismissible = ["Design", "Research", "Urgent"];
+        _dismissedTags.Clear();
+    }
+
+    private void HandleChanging(BitTagChangeArgs args)
+    {
+        _changingValues.Add(args.Value);
+        args.Cancel = _allowChange is false;
+    }
+}

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The custom CSS classes or styles of the parts of the <see cref="BitSplitter"/> component.
@@ -11,14 +11,14 @@ public class BitSplitterClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// The custom CSS class/style for the control on the gutter that folds the first panel of the BitSplitter
-    /// away and brings it back.
+    /// The custom CSS class/style for the control on the gutter that folds the collapsible panel of the
+    /// BitSplitter away and brings it back.
     /// </summary>
     public string? CollapseButton { get; set; }
 
     /// <summary>
-    /// The custom CSS class/style for the icon of the control on the gutter that folds the first panel of the
-    /// BitSplitter away and brings it back.
+    /// The custom CSS class/style for the icon of the control on the gutter that folds the collapsible panel
+    /// of the BitSplitter away and brings it back.
     /// </summary>
     public string? CollapseButtonIcon { get; set; }
 

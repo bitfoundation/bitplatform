@@ -1,0 +1,128 @@
+﻿@page "/e2e/full-calendar/culture"
+
+<PageTitle>BitFullCalendar E2E - cultures and directions</PageTitle>
+
+@* Cultures and directions: Persian (fa-IR, the Persian calendar, right to left, with Texts translating the UI), Arabic
+   (ar-SA, the Hijri calendar, right to left), an explicit Dir="BitDir.Rtl" on an English calendar, an English calendar
+   inside a right-to-left page and a Persian one inside a left-to-right page (the culture decides when Dir is unset),
+   and Dir="BitDir.Auto". "Today" is pinned to Wednesday 2025-07-16 10:30 (25 Tir 1404, 21 Muharram 1447). *@
+<E2ESection Id="fa" Title="Persian">
+    <BitFullCalendar Id="fa-cal"
+                     CultureName="fa-IR"
+                     TimeProvider="Clock"
+                     Texts="_persianTexts"
+                     Events="_faEvents"
+                     Resources="_resources"
+                     OnDateChange="args => _faRange = args.Start.ToString(DateFormat) + '|' + args.End.ToString(DateFormat)" />
+    <span id="fa-range">@_faRange</span>
+</E2ESection>
+
+<E2ESection Id="ar" Title="Arabic">
+    <BitFullCalendar Id="ar-cal"
+                     CultureName="ar-SA"
+                     TimeProvider="Clock"
+                     Events="_arEvents" />
+</E2ESection>
+
+<E2ESection Id="culture-param" Title="Culture, and CultureName taking precedence over it">
+    <BitFullCalendar Id="de-cal" Culture="_german" TimeProvider="Clock" HideFilters HideSettings />
+    <BitFullCalendar Id="both-cal" Culture="_german" CultureName="fr-FR" TimeProvider="Clock" HideFilters HideSettings />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="Dir = Rtl">
+    <BitFullCalendar Id="rtl-cal"
+                     CultureName="en-US"
+                     Dir="BitDir.Rtl"
+                     TimeProvider="Clock"
+                     Events="_rtlEvents"
+                     Resources="_resources" />
+</E2ESection>
+
+<E2ESection Id="inherited" Title="Inside a right-to-left page">
+    <div dir="rtl" id="rtl-page">
+        <BitFullCalendar Id="inherited-en-cal"
+                         CultureName="en-US"
+                         TimeProvider="Clock" />
+    </div>
+    <div dir="ltr" id="ltr-page">
+        <BitFullCalendar Id="inherited-fa-cal"
+                         CultureName="fa-IR"
+                         TimeProvider="Clock" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="auto" Title="Dir = Auto">
+    <div dir="rtl">
+        <BitFullCalendar Id="auto-cal"
+                         CultureName="fa-IR"
+                         Dir="BitDir.Auto"
+                         TimeProvider="Clock"
+                         Texts="_persianTexts" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string DateFormat = "yyyy-MM-dd";
+
+    private static readonly TimeProvider Clock = new PinnedClock(new DateTimeOffset(2025, 7, 16, 10, 30, 0, TimeSpan.Zero));
+
+    private static readonly DateTime Today = new(2025, 7, 16);
+
+    private string? _faRange;
+
+    private readonly System.Globalization.CultureInfo _german = new("de-DE");
+
+    private readonly List<BitFullCalendarResource> _resources =
+    [
+        new() { Id = "a", Title = "Room A" },
+        new() { Id = "b", Title = "Room B" },
+    ];
+
+    private readonly List<BitFullCalendarEvent> _faEvents =
+    [
+        new() { Id = "f1", Title = "جلسه تیم", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "blue", Resource = "a" },
+        new() { Id = "f2", Title = "ناهار", StartDate = Today.AddDays(1).AddHours(12), EndDate = Today.AddDays(1).AddHours(13), Color = "green", Resource = "b" },
+    ];
+
+    private readonly List<BitFullCalendarEvent> _arEvents =
+    [
+        new() { Id = "s1", Title = "اجتماع", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "blue" },
+    ];
+
+    private readonly List<BitFullCalendarEvent> _rtlEvents =
+    [
+        new() { Id = "r1", Title = "Review", StartDate = Today.AddHours(10), EndDate = Today.AddHours(11), Color = "purple", Resource = "a" },
+    ];
+
+    private readonly BitFullCalendarTexts _persianTexts = new()
+    {
+        ViewDay = "روز",
+        ViewWeek = "هفته",
+        ViewMonth = "ماه",
+        ViewYear = "سال",
+        ViewAgenda = "برنامه",
+        ModeEvent = "رویدادها",
+        ModeTimeline = "خط زمانی",
+        TodayButton = "امروز",
+        AddEventButton = "افزودن رویداد",
+        AddEventHoverHint = "افزودن رویداد",
+        PreviousButtonTitle = "قبلی",
+        NextButtonTitle = "بعدی",
+        SettingsButtonTitle = "تنظیمات",
+        AddEventDialogTitle = "افزودن رویداد جدید",
+        CreateEventButton = "ایجاد رویداد",
+        CancelButton = "انصراف",
+        EventTitlePlaceholder = "عنوان رویداد",
+        CloseButton = "بستن",
+        CloseAriaLabel = "بستن",
+    };
+
+    private sealed class PinnedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+}

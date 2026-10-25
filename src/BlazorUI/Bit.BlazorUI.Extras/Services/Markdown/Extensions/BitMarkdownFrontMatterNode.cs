@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The metadata block a document may open with: a run of lines fenced by <c>---</c> (YAML) or

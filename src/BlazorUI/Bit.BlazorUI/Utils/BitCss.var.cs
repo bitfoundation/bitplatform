@@ -15,6 +15,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-pri-dis";
                 public const string DisabledText = "--bit-clr-pri-dis-text";
                 public const string Focus = "--bit-clr-pri-focus";
+                public const string Foreground = "--bit-clr-pri-fg";
+                public const string Tint = "--bit-clr-pri-tint";
 
                 public static class Hover
                 {
@@ -40,6 +42,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-sec-dis";
                 public const string DisabledText = "--bit-clr-sec-dis-text";
                 public const string Focus = "--bit-clr-sec-focus";
+                public const string Foreground = "--bit-clr-sec-fg";
+                public const string Tint = "--bit-clr-sec-tint";
 
                 public static class Hover
                 {
@@ -65,6 +69,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-ter-dis";
                 public const string DisabledText = "--bit-clr-ter-dis-text";
                 public const string Focus = "--bit-clr-ter-focus";
+                public const string Foreground = "--bit-clr-ter-fg";
+                public const string Tint = "--bit-clr-ter-tint";
 
                 public static class Hover
                 {
@@ -90,6 +96,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-inf-dis";
                 public const string DisabledText = "--bit-clr-inf-dis-text";
                 public const string Focus = "--bit-clr-inf-focus";
+                public const string Foreground = "--bit-clr-inf-fg";
+                public const string Tint = "--bit-clr-inf-tint";
 
                 public static class Hover
                 {
@@ -115,6 +123,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-suc-dis";
                 public const string DisabledText = "--bit-clr-suc-dis-text";
                 public const string Focus = "--bit-clr-suc-focus";
+                public const string Foreground = "--bit-clr-suc-fg";
+                public const string Tint = "--bit-clr-suc-tint";
 
                 public static class Hover
                 {
@@ -140,6 +150,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-wrn-dis";
                 public const string DisabledText = "--bit-clr-wrn-dis-text";
                 public const string Focus = "--bit-clr-wrn-focus";
+                public const string Foreground = "--bit-clr-wrn-fg";
+                public const string Tint = "--bit-clr-wrn-tint";
 
                 public static class Hover
                 {
@@ -165,6 +177,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-swr-dis";
                 public const string DisabledText = "--bit-clr-swr-dis-text";
                 public const string Focus = "--bit-clr-swr-focus";
+                public const string Foreground = "--bit-clr-swr-fg";
+                public const string Tint = "--bit-clr-swr-tint";
 
                 public static class Hover
                 {
@@ -190,6 +204,8 @@ public static partial class BitCss
                 public const string Disabled = "--bit-clr-err-dis";
                 public const string DisabledText = "--bit-clr-err-dis-text";
                 public const string Focus = "--bit-clr-err-focus";
+                public const string Foreground = "--bit-clr-err-fg";
+                public const string Tint = "--bit-clr-err-tint";
 
                 public static class Hover
                 {
@@ -440,6 +456,12 @@ public static partial class BitCss
 
             public const string Required = "--bit-clr-req";
 
+            public static class Tooltip
+            {
+                public const string Background = "--bit-clr-tooltip-bg";
+                public const string Foreground = "--bit-clr-tooltip-fg";
+            }
+
             public static class Neutral
             {
                 public const string White = "--bit-clr-ntr-white";
@@ -510,6 +532,7 @@ public static partial class BitCss
             public const string FocusRing = "--bit-shd-focus-ring";
 
             public const string Card = "--bit-shd-card";
+            public const string CardHover = "--bit-shd-card-hover";
             public const string Popup = "--bit-shd-popup";
             public const string Dialog = "--bit-shd-dialog";
             public const string Sheet = "--bit-shd-sheet";
@@ -551,9 +574,13 @@ public static partial class BitCss
                 public const string Surface = "--bit-shp-radius-surface";
                 public const string Popup = "--bit-shp-radius-popup";
                 public const string Dialog = "--bit-shp-radius-dialog";
+                public const string Sheet = "--bit-shp-radius-sheet";
                 public const string Button = "--bit-shp-radius-button";
                 public const string Chip = "--bit-shp-radius-chip";
                 public const string Selection = "--bit-shp-radius-selection";
+                public const string TabIndicator = "--bit-shp-radius-tab-indicator";
+                public const string TabIndicatorBase = "--bit-shp-radius-tab-indicator-base";
+                public const string Progress = "--bit-shp-radius-progress";
             }
         }
 
@@ -561,19 +588,57 @@ public static partial class BitCss
         {
             public const string ScalingFactor = "--bit-spa-scaling-factor";
             public const string Dialog = "--bit-spa-dialog";
+
+            public static class Card
+            {
+                public const string Sm = "--bit-spa-card-sm";
+                public const string Md = "--bit-spa-card-md";
+                public const string Lg = "--bit-spa-card-lg";
+            }
+
+            /// <summary>
+            /// The unitless multiples of the spacing unit the density-aware insets are computed from where they are
+            /// used (<c>--bit-spa-*-steps</c>); a value set for an inset itself wins over them.
+            /// </summary>
+            public static class Steps
+            {
+                public const string Dialog = "--bit-spa-dialog-steps";
+
+                public static class Card
+                {
+                    public const string Sm = "--bit-spa-card-sm-steps";
+                    public const string Md = "--bit-spa-card-md-steps";
+                    public const string Lg = "--bit-spa-card-lg-steps";
+                }
+            }
         }
 
+        /// <summary>
+        /// The motion tokens. The durations and their factor, the spinner pair and the loop factor come in two forms: the plain
+        /// one is what a style reads, and what <c>prefers-reduced-motion</c> collapses (or calms) and
+        /// <c>ForceAnimation</c> restores; the <c>...Full</c> one holds the unreduced value the plain one aliases,
+        /// and is the one to set - setting the plain one, on an element above all, would outrank the
+        /// reduced-motion query. <see cref="BitThemeMotion"/> writes the <c>...Full</c> ones.
+        /// </summary>
         public static class Motion
         {
             public const string Duration = "--bit-mot-duration";
             public const string DurationShort = "--bit-mot-duration-short";
             public const string DurationLong = "--bit-mot-duration-long";
+            public const string DurationFactor = "--bit-mot-duration-factor";
+            public const string DurationFull = "--bit-mot-duration-full";
+            public const string DurationShortFull = "--bit-mot-duration-short-full";
+            public const string DurationLongFull = "--bit-mot-duration-long-full";
+            public const string DurationFactorFull = "--bit-mot-duration-factor-full";
             public const string Easing = "--bit-mot-easing";
             public const string EasingDecelerate = "--bit-mot-easing-decelerate";
             public const string EasingAccelerate = "--bit-mot-easing-accelerate";
             public const string DurationSpinner = "--bit-mot-duration-spinner";
             public const string EasingSpinner = "--bit-mot-easing-spinner";
             public const string LoopFactor = "--bit-mot-loop-factor";
+            public const string DurationSpinnerFull = "--bit-mot-duration-spinner-full";
+            public const string EasingSpinnerFull = "--bit-mot-easing-spinner-full";
+            public const string LoopFactorFull = "--bit-mot-loop-factor-full";
         }
 
         public static class Layout
@@ -582,6 +647,7 @@ public static partial class BitCss
             public const string DialogActionsDirection = "--bit-layout-dialog-actions-direction";
             public const string DialogActionsJustify = "--bit-layout-dialog-actions-justify";
             public const string DialogActionsAlign = "--bit-layout-dialog-actions-align";
+            public const string DialogTextAlign = "--bit-layout-dialog-text-align";
 
             public static class Breakpoints
             {
@@ -628,6 +694,7 @@ public static partial class BitCss
 
             public const string Tab = "--bit-siz-tab";
             public const string TabIndicator = "--bit-siz-tab-indicator";
+            public const string TabDivider = "--bit-siz-tab-divider";
             public const string Divider = "--bit-siz-divider";
 
             public static class Track
@@ -679,9 +746,128 @@ public static partial class BitCss
                 public const string Lg = "--bit-siz-slider-thumb-lg";
             }
 
+            public static class Badge
+            {
+                public const string Sm = "--bit-siz-badge-sm";
+                public const string Md = "--bit-siz-badge-md";
+                public const string Lg = "--bit-siz-badge-lg";
+            }
+
+            public static class BadgeDot
+            {
+                public const string Sm = "--bit-siz-badge-dot-sm";
+                public const string Md = "--bit-siz-badge-dot-md";
+                public const string Lg = "--bit-siz-badge-dot-lg";
+            }
+
+            public static class Chip
+            {
+                public const string Sm = "--bit-siz-chip-sm";
+                public const string Md = "--bit-siz-chip-md";
+                public const string Lg = "--bit-siz-chip-lg";
+            }
+
             public const string SpinnerStroke = "--bit-siz-spinner-stroke";
             public const string PopupMaxHeight = "--bit-siz-popup-max-height";
             public const string DialogMaxWidth = "--bit-siz-dialog-max-width";
+
+            /// <summary>
+            /// The unitless multiples of the spacing unit the density-aware sizes are computed from where they are
+            /// used (<c>--bit-siz-*-steps</c>); a value set for a size itself wins over them.
+            /// </summary>
+            public static class Steps
+            {
+                public static class Control
+                {
+                    public const string Sm = "--bit-siz-ctrl-sm-steps";
+                    public const string Md = "--bit-siz-ctrl-md-steps";
+                    public const string Lg = "--bit-siz-ctrl-lg-steps";
+                }
+
+                public static class ControlPaddingX
+                {
+                    public const string Sm = "--bit-siz-ctrl-pad-x-sm-steps";
+                    public const string Md = "--bit-siz-ctrl-pad-x-md-steps";
+                    public const string Lg = "--bit-siz-ctrl-pad-x-lg-steps";
+                }
+
+                public static class ControlPaddingY
+                {
+                    public const string Sm = "--bit-siz-ctrl-pad-y-sm-steps";
+                    public const string Md = "--bit-siz-ctrl-pad-y-md-steps";
+                    public const string Lg = "--bit-siz-ctrl-pad-y-lg-steps";
+                }
+
+                public const string ControlMinWidth = "--bit-siz-ctrl-min-width-steps";
+
+                public static class Item
+                {
+                    public const string Sm = "--bit-siz-item-sm-steps";
+                    public const string Md = "--bit-siz-item-md-steps";
+                    public const string Lg = "--bit-siz-item-lg-steps";
+                }
+
+                public const string Tab = "--bit-siz-tab-steps";
+
+                public static class Selection
+                {
+                    public const string Sm = "--bit-siz-sel-sm-steps";
+                    public const string Md = "--bit-siz-sel-md-steps";
+                    public const string Lg = "--bit-siz-sel-lg-steps";
+                }
+
+                public static class SwitchWidth
+                {
+                    public const string Sm = "--bit-siz-switch-w-sm-steps";
+                    public const string Md = "--bit-siz-switch-w-md-steps";
+                    public const string Lg = "--bit-siz-switch-w-lg-steps";
+                }
+
+                public static class SwitchHeight
+                {
+                    public const string Sm = "--bit-siz-switch-h-sm-steps";
+                    public const string Md = "--bit-siz-switch-h-md-steps";
+                    public const string Lg = "--bit-siz-switch-h-lg-steps";
+                }
+
+                public static class SwitchThumb
+                {
+                    public const string Sm = "--bit-siz-switch-thumb-sm-steps";
+                    public const string Md = "--bit-siz-switch-thumb-md-steps";
+                    public const string Lg = "--bit-siz-switch-thumb-lg-steps";
+                }
+
+                public static class SliderThumb
+                {
+                    public const string Sm = "--bit-siz-slider-thumb-sm-steps";
+                    public const string Md = "--bit-siz-slider-thumb-md-steps";
+                    public const string Lg = "--bit-siz-slider-thumb-lg-steps";
+                }
+
+                public static class Badge
+                {
+                    public const string Sm = "--bit-siz-badge-sm-steps";
+                    public const string Md = "--bit-siz-badge-md-steps";
+                    public const string Lg = "--bit-siz-badge-lg-steps";
+                }
+
+                public static class BadgeDot
+                {
+                    public const string Sm = "--bit-siz-badge-dot-sm-steps";
+                    public const string Md = "--bit-siz-badge-dot-md-steps";
+                    public const string Lg = "--bit-siz-badge-dot-lg-steps";
+                }
+
+                public static class Chip
+                {
+                    public const string Sm = "--bit-siz-chip-sm-steps";
+                    public const string Md = "--bit-siz-chip-md-steps";
+                    public const string Lg = "--bit-siz-chip-lg-steps";
+                }
+
+                public const string PopupMaxHeight = "--bit-siz-popup-max-height-steps";
+                public const string DialogMaxWidth = "--bit-siz-dialog-max-width-steps";
+            }
         }
 
         public static class Opacity
@@ -736,6 +922,17 @@ public static partial class BitCss
             {
                 public const string LetterSpacing = "--bit-tpg-ctrl-letter-spacing";
                 public const string TextTransform = "--bit-tpg-ctrl-text-transform";
+            }
+
+            public static class Dialog
+            {
+                public const string TitleFontSize = "--bit-tpg-dialog-title-font-size";
+                public const string TitleFontWeight = "--bit-tpg-dialog-title-font-weight";
+            }
+
+            public static class FieldLabel
+            {
+                public const string FontWeight = "--bit-tpg-field-label-font-weight";
             }
 
             public static class H1

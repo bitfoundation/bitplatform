@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Routing;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
@@ -13,14 +14,20 @@ namespace Bit.BlazorUI;
 /// <br />
 /// Give the nav an accessible name through <see cref="BitComponentBase.AriaLabel"/> when a page holds more
 /// than one navigation landmark, since assistive technologies cannot tell two unlabeled ones apart.
+/// <br />
+/// The defaults of every nav of a page can be set at once through a <see cref="BitNavParams"/> handed to a
+/// <see cref="BitParams"/>.
 /// </remarks>
-public partial class BitNav<TItem> : BitComponentBase where TItem : class
+public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     private const int TYPE_AHEAD_RESET_MS = 1000;
 
     internal List<TItem> _items = [];
     private bool _selectionDirty;
+    // The item an option of the interactive first render was selected as, before the render that reports it.
+    private TItem? _unreportedSelection;
     private bool _expandSelectedPending;
+    private bool _optionsOrderDirty;
     private TItem? _focusedItem;
     private TItem? _pendingFocusItem;
     private string _typeAheadBuffer = string.Empty;
@@ -31,10 +38,30 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     // the same way the rendered items are keyed.
     private readonly Dictionary<TItem, string> _itemIdentities = [];
     private readonly Dictionary<TItem, ElementReference> _itemElements = [];
+    // The items the selected item is nested in, found once and read by every collapsed branch that renders
+    // rather than walked again below each of them; reset whenever the tree may have changed shape.
+    private TItem? _selectedAncestorsOf;
+    private List<TItem>? _selectedAncestors;
+    private BitNavCurrentUrlMatcher<TItem>? _currentUrlMatcher;
 
 
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the nav component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple nav components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitNavParams.ParamName)]
+    public BitNavParams? CascadingParameters { get; set; }
 
 
 
@@ -63,10 +90,14 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     }
 
     /// <summary>
-    /// Toggles an item.
+    /// Toggles an item. Does nothing while <see cref="NoCollapse"/> is set, since every branch is shown then.
     /// </summary>
     public async Task ToggleItem(TItem item)
     {
+        // A nav without expanders shows every branch whatever its state says, so a toggle would change
+        // nothing on screen while still reporting one through OnItemToggle.
+        if (NoCollapse) return;
+
         var isExpanded = GetItemExpanded(item) is false;
 
         if (SingleExpand && isExpanded)
@@ -94,19 +125,19 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     }
 
     /// <summary>
-    /// Expands an item, and does nothing when it is already expanded.
+    /// Expands an item, and does nothing when it is already expanded (which every item is while <see cref="NoCollapse"/> is set).
     /// </summary>
-    public Task ExpandItem(TItem item) => GetItemExpanded(item) ? Task.CompletedTask : ToggleItem(item);
+    public Task ExpandItem(TItem item) => IsItemOpen(item) ? Task.CompletedTask : ToggleItem(item);
 
     /// <summary>
-    /// Collapses an item, and does nothing when it is already collapsed.
+    /// Collapses an item, and does nothing when it is already collapsed or while <see cref="NoCollapse"/> is set.
     /// </summary>
-    public Task CollapseItem(TItem item) => GetItemExpanded(item) ? ToggleItem(item) : Task.CompletedTask;
+    public Task CollapseItem(TItem item) => NoCollapse is false && GetItemExpanded(item) ? ToggleItem(item) : Task.CompletedTask;
 
     /// <summary>
-    /// Whether an item is currently expanded.
+    /// Whether the children of an item are currently shown, which is always the case while <see cref="NoCollapse"/> is set.
     /// </summary>
-    public bool IsItemExpanded(TItem item) => GetItemExpanded(item);
+    public bool IsItemExpanded(TItem item) => IsItemOpen(item);
 
     /// <summary>
     /// Selects an item programmatically, exactly like a click on that item would in the manual mode.
@@ -124,6 +155,10 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         // collapsed item rendered (hidden) to keep their registrations alive, so an element exists long
         // before the item is reachable and focusing it would move the focus onto a display:none element.
         if (IsItemOnScreen(item) && _itemElements.ContainsKey(item)) return FocusItemElement(item);
+
+        // A static group header is a label rather than a control, so it has no element that could ever take
+        // the focus, and a request for it would be left pending forever.
+        if (IsStaticGroupHeader(item)) return ValueTask.CompletedTask;
 
         // The item is inside a collapsed branch, so there is no element to focus yet: the path down to it
         // is opened and the focus is moved once the render that brings it on screen has registered its
@@ -147,13 +182,82 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         var item = (option as TItem)!;
 
         _items.Add(item);
+        _optionsOrderDirty = true;
 
         StateHasChanged();
     }
 
+    // Flags that an option has registered below another one, where it lands at the end of its parent's list no
+    // matter where in the markup it sits. Only that parent re-renders for it, so a nav that keeps the markup
+    // order renders as well, for the after-render pass that reads the order back.
+    internal void MarkOptionsOrderDirty()
+    {
+        _optionsOrderDirty = true;
+
+        if (AutoReorderOptions && IsRendered)
+        {
+            StateHasChanged();
+        }
+    }
+
+    // Reorders the registered options, at every level of the tree, by the DOM order of the markers they
+    // rendered, since an option that is rendered conditionally (or moved) after the first render registers
+    // itself at the end of its list no matter where in the markup it sits. Those lists are what the arrow keys,
+    // Home, End and type-ahead walk, so a nav whose options change would otherwise be walked in an order other
+    // than the one it is read in. Opt-in via AutoReorderOptions.
+    internal void ReorderOptions(string[] orderedOptionIds)
+    {
+        if (orderedOptionIds.Length == 0) return;
+
+        Dictionary<string, int> positions = [];
+        for (var i = 0; i < orderedOptionIds.Length; i++)
+        {
+            positions.TryAdd(orderedOptionIds[i], i);
+        }
+
+        var changed = false;
+
+        var roots = OrderByMarkup(_items, positions);
+        if (roots.SequenceEqual(_items) is false)
+        {
+            _items = roots;
+            changed = true;
+        }
+
+        foreach (var option in Flatten(_items).OfType<BitNavOption>().ToList())
+        {
+            var children = OrderByMarkup(option.ChildItems, positions);
+            if (children.SequenceEqual(option.ChildItems)) continue;
+
+            option.ChildItems = children;
+            changed = true;
+        }
+
+        if (changed is false) return;
+
+        // The automatic mode selects the first item that matches the current URL, so the item that wins a tie
+        // between two matching options is the one that comes first in the new order.
+        MarkSelectionDirty();
+        InvalidateSelectedAncestors();
+
+        RefreshOptions();
+        StateHasChanged();
+    }
+
+    // Emits the marker attribute the DOM read-back recovers the markup order of the options from. Only
+    // rendered while AutoReorderOptions is enabled (to keep the attribute off every other nav) and only for
+    // options: the Items collection is already in the order it is rendered in.
+    internal Dictionary<string, object>? GetItemMarkerAttributes(TItem item)
+    {
+        if (AutoReorderOptions is false) return null;
+        if (item is not BitNavOption option) return null;
+
+        return new() { [BitNavOption._OPTION_ID_ATTRIBUTE] = option._OptionId };
+    }
+
     internal void UnregisterOption(BitNavOption option)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         var item = (option as TItem)!;
 
@@ -183,7 +287,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     // keeps the registration that child has just made.
     internal void UnregisterItemElement(TItem item, ElementReference element)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         if (_itemElements.TryGetValue(item, out var registered) && registered.Id != element.Id) return;
 
@@ -201,6 +305,34 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     /// </summary>
     internal bool IsSelected(TItem? item) => AreEqual(item, SelectedItem);
 
+    /// <summary>
+    /// Whether the selected item is nested somewhere below an item, at any depth.
+    /// </summary>
+    internal bool HasSelectedDescendant(TItem item)
+    {
+        if (SelectedItem is null) return false;
+
+        if (_selectedAncestors is null || AreEqual(_selectedAncestorsOf, SelectedItem) is false)
+        {
+            _selectedAncestors = [];
+            _selectedAncestorsOf = SelectedItem;
+
+            if (CollectAncestors(_items, SelectedItem, _selectedAncestors) is false)
+            {
+                _selectedAncestors.Clear();
+            }
+        }
+
+        return _selectedAncestors.Any(ancestor => AreEqual(ancestor, item));
+    }
+
+    // Drops the ancestors of the selected item found so far, for a tree that may have changed shape: the nav
+    // re-renders, or an option is added to or removed from any level of it.
+    internal void InvalidateSelectedAncestors()
+    {
+        _selectedAncestors = null;
+    }
+
 
 
     protected override string RootElementClass => "bit-nav";
@@ -214,13 +346,9 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         ClassBuilder.Register(() => IconOnly ? "bit-nav-ion" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-nav-sm",
-            BitSize.Medium => "bit-nav-md",
-            BitSize.Large => "bit-nav-lg",
-            _ => "bit-nav-md"
-        });
+        // Size, Accent and Color publish nothing while they are unset, which is what lets the stylesheet tell a
+        // default from a choice: the public --bit-Nav-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-nav"));
 
         ClassBuilder.Register(() => Accent switch
         {
@@ -241,7 +369,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
             BitColor.PrimaryBorder => "bit-nav-apbr",
             BitColor.SecondaryBorder => "bit-nav-asbr",
             BitColor.TertiaryBorder => "bit-nav-atbr",
-            _ => "bit-nav-apbg",
+            _ => string.Empty,
         });
 
         ClassBuilder.Register(() => Color switch
@@ -263,7 +391,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
             BitColor.PrimaryBorder => "bit-nav-pbr",
             BitColor.SecondaryBorder => "bit-nav-sbr",
             BitColor.TertiaryBorder => "bit-nav-tbr",
-            _ => "bit-nav-pri",
+            _ => string.Empty,
         });
     }
 
@@ -274,6 +402,10 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     protected override async Task OnInitializedAsync()
     {
+        // The cascade is applied before anything reads the parameters it may fill in: the initial expansion
+        // state reads AllExpanded, and the initial selection reads Mode, both right here.
+        CascadingParameters?.UpdateParameters(this);
+
         SyncItems();
 
         // The subscription is not tied to the mode: the mode is a parameter that can flip after the
@@ -283,7 +415,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         if (Mode == BitNavMode.Automatic)
         {
-            SetSelectedItemByCurrentUrl();
+            SetSelectedItemByCurrentUrl(isPrerender: _js.IsRuntimeInvalid());
         }
         else
         {
@@ -298,6 +430,8 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         // The Items collection is re-read here rather than only when the parameter is assigned a new
         // instance, so a collection that is mutated in place (an item appended to the same list) is
         // picked up as well.
@@ -308,6 +442,14 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         // Options render their items themselves and Blazor skips re-rendering them when only the
         // nav's own parameters (Styles, IconOnly, ItemTemplate, ...) change, so push a re-render to each one.
         RefreshOptions();
+
+        // A pure reorder of the options registers and unregisters nothing, so the read-back is flagged to run
+        // after this render to detect it. It only mutates the lists when the order actually changed, so a set
+        // of options that stayed put costs a single DOM read.
+        if (AutoReorderOptions && (Options ?? ChildContent) is not null)
+        {
+            _optionsOrderDirty = true;
+        }
 
         base.OnParametersSet();
     }
@@ -320,7 +462,18 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         if (_selectionDirty)
         {
             _selectionDirty = false;
+
+            var unreported = _unreportedSelection;
+            _unreportedSelection = null;
+
             SetSelectedItemByCurrentUrl();
+
+            // The selection the first render already showed is reported here, where a match of the whole batch
+            // would have reported it - unless that match moved it on, which reported the item it moved to.
+            if (unreported is not null && IsSelected(unreported))
+            {
+                _ = OnSelectItem.InvokeAsync(unreported);
+            }
         }
 
         base.OnAfterRender(firstRender);
@@ -328,6 +481,12 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The script that walks the tree on the arrow keys is called by nothing: with the lazy scripts on
+        // (BitBlazorUIScripts), the nav is what loads it.
+        if (firstRender) await _js.EnsureScriptAsync("Bit.BlazorUI", "BitNav");
+
+        await ReorderOptionsByDomOrder();
+
         // A focus request for an item of a collapsed branch had to wait for the render that opens the
         // branch, since only then is there an element to move the focus to. The item may already carry one
         // (the options API keeps the collapsed children rendered), and the focus moves right here in that
@@ -357,6 +516,39 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         }
 
         _itemExpandStates[item] = value;
+    }
+
+    // Whether the children of an item are shown: a nav without expanders has no way to open a branch, so
+    // every branch of it is open no matter what its expansion state says - otherwise a branch that happened
+    // to be collapsed would hide its children for good.
+    internal bool IsItemOpen(TItem item) => NoCollapse || GetItemExpanded(item);
+
+    // A root item of the Grouped render type that cannot be toggled - a group without children, or any group
+    // of a nav without expanders - is the label of its group rather than a control, so it renders as plain
+    // text that the keyboard does not stop on.
+    internal bool IsStaticGroupHeader(TItem item) => IsStaticGroupHeader(item, _items.Any(root => AreEqual(root, item)));
+
+    // The same, for a caller that already knows whether the item is a root, so no scan of the roots is needed.
+    private bool IsStaticGroupHeader(TItem item, bool isRoot)
+    {
+        if (isRoot is false || RenderType is not BitNavRenderType.Grouped || GetIsSeparator(item)) return false;
+
+        return NoCollapse || GetChildItems(item).Count == 0;
+    }
+
+    // The template that renders in place of the anchor (or the button) of an item, if one does: the template of the
+    // item in the Replace mode, or the nav's ItemTemplate in the Replace mode for an item without a template of its
+    // own. The template of an item wins over the nav's, so the mode that goes with it wins as well.
+    internal RenderFragment<TItem>? GetReplacingTemplate(TItem item)
+    {
+        var template = GetTemplate(item);
+
+        if (template is not null)
+        {
+            return GetTemplateRenderMode(item) is BitNavItemTemplateRenderMode.Replace ? template : null;
+        }
+
+        return ItemTemplate is not null && ItemTemplateRenderMode is BitNavItemTemplateRenderMode.Replace ? ItemTemplate : null;
     }
 
     internal bool GetItemExpanded(TItem item)
@@ -398,45 +590,115 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         _selectionDirty = true;
     }
 
-    internal void SetSelectedItemByCurrentUrl()
+    // Called by an option as it registers in the automatic mode. The match is only flagged, so a batch of options
+    // added together collapses into the single pass of OnAfterRender. A prerender (or a static SSR page) never
+    // gets to an after-render pass, though, so there an option of the first render pointing at the current URL is
+    // matched right away instead, and the HTML it sends already carries the selection. The interactive render that
+    // replaces a prerendered one does the same, so it shows the selection the prerender showed rather than taking
+    // it away for the round trip its after-render pass waits for; that pass then reports it. Only a matching
+    // option runs the match, which keeps the first render from scanning the whole tree once per option; and the
+    // match still runs over the whole tree rather than selecting the option itself, so an option that registers
+    // later and wins the match (a child of a parent that matches by its prefix) still takes the selection over.
+    internal void OnOptionRegistered(TItem item)
+    {
+        MarkSelectionDirty();
+
+        if (IsRendered || IsCurrentUrlItem(item) is false) return;
+
+        var previous = SelectedItem;
+
+        SetSelectedItemByCurrentUrl(isPrerender: true);
+
+        // A prerender is only drawing the page; the interactive render that replaces it is the one that reports,
+        // and only a selection that actually moved (a one-way bound SelectedItem holds it where it is).
+        if (_js.IsRuntimeInvalid() is false && AreEqual(previous, SelectedItem) is false)
+        {
+            _unreportedSelection = SelectedItem;
+        }
+    }
+
+    // Only a navigation can re-select the item that is already selected (a Reselectable nav reports the
+    // destination the reader went back to): every other match - the one of the first render, the ones after the
+    // items or the matching rules changed - is the nav re-checking where it already is, and reporting that as a
+    // selection would fire OnSelectItem for nothing the reader did. A prerender selects without the callback
+    // altogether: it is only drawing the page, and the interactive render that replaces it reports the selection
+    // after its own first render, where a handler is free to call JavaScript or navigate.
+    internal void SetSelectedItemByCurrentUrl(bool isNavigation = false, bool isPrerender = false)
     {
         if (IsDisposed) return;
         if (Mode is not BitNavMode.Automatic) return;
 
-        var (currentUrl, currentPath) = BitNavUrlMatcher.GetCurrentUrl(_navigationManager);
-        var baseUri = _navigationManager.BaseUri;
+        var currentItem = Flatten(_items).FirstOrDefault(IsCurrentUrlItem);
 
-        var currentItem = Flatten(_items).FirstOrDefault(item =>
-        {
-            var match = GetMatch(item) ?? Match ?? BitNavMatch.Exact;
+        if (isNavigation is false && IsSelected(currentItem)) return;
 
-            if (IsMatch(GetUrl(item), match)) return true;
+        _ = isPrerender ? AssignPrerenderedSelection(currentItem) : SetSelectedItem(currentItem);
+    }
 
-            return GetAdditionalUrls(item)?.Any(u => IsMatch(u, match)) is true;
-        });
+    private async Task AssignPrerenderedSelection(TItem? item)
+    {
+        if (await AssignSelectedItem(item) is false) return;
 
-        _ = SetSelectedItem(currentItem);
-
-        bool IsMatch(string? itemUrl, BitNavMatch match)
-        {
-            return BitNavUrlMatcher.IsMatch(itemUrl, match, currentUrl, currentPath, baseUri);
-        }
+        RefreshOptions();
+        StateHasChanged();
     }
 
 
 
     private static bool AreEqual(TItem? first, TItem? second) => EqualityComparer<TItem?>.Default.Equals(first, second);
 
+    // The items of one list in the order their markers were read back in. An option that has registered but has
+    // not rendered its marker yet keeps its place at the end rather than being dropped from the nav altogether.
+    private static List<T> OrderByMarkup<T>(IList<T> items, Dictionary<string, int> positions) where T : class
+    {
+        return items.Select((item, index) => (item, index, position: item is BitNavOption option && positions.TryGetValue(option._OptionId, out var p) ? p : int.MaxValue))
+                    .OrderBy(e => e.position)
+                    .ThenBy(e => e.index)
+                    .Select(e => e.item)
+                    .ToList();
+    }
+
+    private async Task ReorderOptionsByDomOrder()
+    {
+        if (AutoReorderOptions is false) return;
+        if ((Options ?? ChildContent) is null) return;
+        if (_optionsOrderDirty is false) return;
+
+        _optionsOrderDirty = false;
+
+        try
+        {
+            var orderedOptionIds = await _js.BitUtilsGetChildrenAttributes(_Id, BitNavOption._OPTION_ID_ATTRIBUTE);
+
+            if (IsDisposed) return;
+
+            if (orderedOptionIds is not null)
+            {
+                ReorderOptions(orderedOptionIds);
+            }
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone (the reader navigated away), nothing to reorder
+        catch (JSException) { } // a failure on the JS side is not fatal here, the current order is kept
+    }
+
     // Kept lazy (and in the original order: every descendant before the items of the level it belongs to)
     // so a URL match stops at the first hit instead of materializing the whole tree on every pass.
     private IEnumerable<TItem> Flatten(IList<TItem> items) => items.SelectMany(i => Flatten(GetChildItems(i))).Concat(items);
+
+    // Whether an item points at the page the app currently sits on (see BitNavCurrentUrlMatcher).
+    private bool IsCurrentUrlItem(TItem item)
+    {
+        _currentUrlMatcher ??= new(_navigationManager, GetUrl, GetAdditionalUrls, i => GetMatch(i) ?? Match ?? BitNavMatch.Exact);
+
+        return _currentUrlMatcher.IsCurrent(item);
+    }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         if (IsDisposed) return;
         if (Mode is not BitNavMode.Automatic) return;
 
-        SetSelectedItemByCurrentUrl();
+        SetSelectedItemByCurrentUrl(isNavigation: true);
 
         StateHasChanged();
     }
@@ -597,7 +859,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     // Both the mode and the matching behavior can change after the nav is rendered, and either one
     // changes which item the current URL points at, so the match is re-run once the change is in.
-    private void OnUrlMatchingChanged()
+    internal void OnUrlMatchingChanged()
     {
         if (Mode is not BitNavMode.Automatic) return;
 
@@ -629,7 +891,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     // swallowing the Tab that follows an arrow key.
     internal async Task HandleOnKeyDown(TItem source, KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (e.CtrlKey || e.AltKey || e.MetaKey) return;
 
         // The focus event of the item that received the key has already run, so the focused item is known;
@@ -641,7 +903,6 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         var index = _focusedItem is null ? -1 : visibleItems.FindIndex(i => AreEqual(i, _focusedItem));
         var current = index < 0 ? null : visibleItems[index];
-        var isRtl = (Dir ?? CascadingDir) == BitDir.Rtl;
 
         switch (e.Key)
         {
@@ -663,8 +924,10 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
             case "ArrowRight":
             case "ArrowLeft":
-                var isForward = (e.Key is "ArrowRight") != isRtl;
                 if (current is null) return;
+                // The direction the nav is laid out in, a page's or a content's included, read only for the
+                // keys that act on it since one Dir does not name costs a round trip.
+                var isForward = (e.Key is "ArrowRight") != await IsRtlArrowAsync(_js, e.Key);
                 if (isForward)
                 {
                     await StepIn(current);
@@ -682,7 +945,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
                 if (current is null || NoCollapse || SingleExpand) return;
                 foreach (var sibling in GetSiblingsOf(current).ToList())
                 {
-                    if (GetIsEnabled(sibling) && GetChildItems(sibling).Any() && GetItemExpanded(sibling) is false)
+                    if (GetIsDisabled(sibling) is false && GetChildItems(sibling).Any() && GetItemExpanded(sibling) is false)
                     {
                         await ToggleItem(sibling);
                     }
@@ -702,9 +965,9 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         var childItems = GetChildItems(item);
         if (childItems.Count == 0) return;
 
-        if (GetItemExpanded(item) is false)
+        if (IsItemOpen(item) is false)
         {
-            if (NoCollapse || GetIsEnabled(item) is false) return;
+            if (GetIsDisabled(item)) return;
 
             await ToggleItem(item);
             return;
@@ -722,7 +985,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     private async Task StepOut(TItem item, List<TItem> visibleItems)
     {
-        if (GetChildItems(item).Any() && GetItemExpanded(item) && NoCollapse is false && GetIsEnabled(item))
+        if (GetChildItems(item).Any() && GetItemExpanded(item) && NoCollapse is false && GetIsDisabled(item) is false)
         {
             await ToggleItem(item);
             return;
@@ -777,12 +1040,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         if (_itemElements.TryGetValue(item, out var element) is false) return;
 
-        try
-        {
-            await element.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // the element is no longer in the DOM
+        await element.FocusSafelyAsync();
     }
 
     // The items the keyboard can reach: the rendered ones, in the order they appear, which means the
@@ -793,17 +1051,19 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     {
         List<TItem> result = [];
 
-        Collect(_items);
+        Collect(_items, true);
 
         return result;
 
-        void Collect(IList<TItem> items)
+        void Collect(IList<TItem> items, bool areRoots)
         {
             foreach (var item in items)
             {
                 if (GetIsSeparator(item)) continue;
 
-                if (GetIsEnabled(item))
+                // A static group header is a label that takes no focus, and an item a template renders in place of its
+                // anchor (or button) has no element of the nav's to focus at all, but their children are walked all the same.
+                if (GetIsDisabled(item) is false && IsStaticGroupHeader(item, areRoots) is false && IsReplacedByTemplate(item, areRoots) is false)
                 {
                     result.Add(item);
                 }
@@ -811,9 +1071,9 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
                 // A disabled item is still walked through: it cannot be toggled itself, but an enabled
                 // child of a branch that is already open is reachable on its own.
                 var childItems = GetChildItems(item);
-                if (childItems.Count > 0 && GetItemExpanded(item))
+                if (childItems.Count > 0 && IsItemOpen(item))
                 {
-                    Collect(childItems);
+                    Collect(childItems, false);
                 }
             }
         }
@@ -828,10 +1088,10 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         {
             if (GetIsSeparator(item)) continue;
 
-            if (GetIsEnabled(item)) return item;
+            if (GetIsDisabled(item) is false && IsReplacedByTemplate(item, false) is false) return item;
 
             var childItems = GetChildItems(item);
-            if (childItems.Count > 0 && GetItemExpanded(item))
+            if (childItems.Count > 0 && IsItemOpen(item))
             {
                 var found = FindFirstReachableItem(childItems);
                 if (found is not null) return found;
@@ -839,6 +1099,19 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         }
 
         return null;
+    }
+
+    // Whether a template renders in place of the element of an item - its anchor (or button), or its header button
+    // in the Grouped render type - which leaves the template owning its focus and the keyboard nothing to stop on.
+    private bool IsReplacedByTemplate(TItem item, bool isRoot)
+    {
+        if (isRoot is false || RenderType is not BitNavRenderType.Grouped) return GetReplacingTemplate(item) is not null;
+
+        var template = GetTemplate(item);
+
+        return template is not null
+                ? GetTemplateRenderMode(item) is BitNavItemTemplateRenderMode.Replace
+                : HeaderTemplate is not null && HeaderTemplateRenderMode is BitNavItemTemplateRenderMode.Replace;
     }
 
     // An item is on screen when every branch it is nested in is expanded. Its own expansion state says
@@ -849,12 +1122,27 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         while (parent is not null)
         {
-            if (GetItemExpanded(parent) is false) return false;
+            if (IsItemOpen(parent) is false) return false;
 
             parent = FindParentOf(_items, parent);
         }
 
         return true;
+    }
+
+    // Fills the path with the items the target is nested in, outermost first, and tells whether it was found.
+    private bool CollectAncestors(IList<TItem> items, TItem target, List<TItem> path)
+    {
+        foreach (var candidate in items)
+        {
+            if (AreEqual(candidate, target)) return true;
+
+            path.Add(candidate);
+            if (CollectAncestors(GetChildItems(candidate), target, path)) return true;
+            path.RemoveAt(path.Count - 1);
+        }
+
+        return false;
     }
 
     private TItem? FindParentOf(IList<TItem> items, TItem item, TItem? parent = null)

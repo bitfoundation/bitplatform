@@ -29,7 +29,7 @@ public static class BitPdfTextExtractor
             {
                 ops = new BitPdfContentParser(content).Parse();
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 return;
             }
@@ -91,14 +91,14 @@ public static class BitPdfTextExtractor
                         // Recurse into a form XObject so its text is captured too.
                         if (op.Operands.Count > 0 && op.Operands[0] is BitPdfName xn
                             && resources?.Get("XObject") is BitPdfDict xobjs
-                            && xobjs.Get(xn.Value) is BitPdfStream xs && xs.Dict is not null
+                            && xobjs.Get(xn.Value) is BitPdfBaseStream xs && xs.Dict is not null
                             && (xs.Dict.Get("Subtype") as BitPdfName)?.Value == "Form")
                         {
                             try
                             {
                                 Run(BitPdfStreamDecoder.Decode(xs), xs.Dict.Get("Resources") as BitPdfDict ?? resources, depth + 1);
                             }
-                            catch
+                            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
                             {
                                 // ignore malformed form content
                             }
@@ -108,7 +108,21 @@ public static class BitPdfTextExtractor
             }
         }
 
-        Run(page.GetContentBytes(), page.Resources, 0);
+        // A content stream that fails to decode has no text, the way the renderer draws
+        // nothing for it (BitPdfHtmlRenderer.Render catches the same failure): one
+        // damaged page must not fail the viewer's search or text extraction for the
+        // whole document.
+        byte[] content;
+        try
+        {
+            content = page.GetContentBytes();
+        }
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
+        {
+            return string.Empty;
+        }
+
+        Run(content, page.Resources, 0);
         return sb.ToString();
     }
 

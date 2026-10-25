@@ -1,0 +1,473 @@
+﻿@page "/e2e/splitter"
+
+<PageTitle>BitSplitter E2E</PageTitle>
+
+@* Every splitter sits in a box of a known size, so a test can turn a drag in pixels into the share it ends at. The
+   classes the Class / Classes sections hand the parts are styled here so a test can read their effect back. *@
+<style>
+    .e2e-spl-box { width: 600px; height: 150px; margin-bottom: 8px; }
+    .e2e-spl-box > .bit-spl { height: 100%; }
+    .e2e-spl-tall { width: 300px; height: 300px; margin-bottom: 8px; }
+    .e2e-spl-tall > .bit-spl { height: 100%; }
+    .e2e-spl-class { outline: 3px dashed rgb(1, 2, 3); }
+    .e2e-spl-first { background-color: rgb(240, 248, 255); }
+    .e2e-spl-second { background-color: rgb(255, 250, 240); }
+    .e2e-spl-gutter { box-shadow: 0 0 0 1px rgb(4, 5, 6); }
+</style>
+
+<h1>BitSplitter</h1>
+
+<E2ESection Id="basic" Title="FirstPanel, SecondPanel, AriaLabel, drag, keyboard, events">
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-basic" AriaLabel="Resize the panels"
+                     OnResizeStart="(double p) => { _starts++; _startPercent = Fmt(p); }"
+                     OnResize="(double p) => { _resizes++; _resizePercent = Fmt(p); }"
+                     OnResizeEnd="(double p) => { _ends++; _endPercent = Fmt(p); }"
+                     OnResizeCancel="(double p) => { _cancels++; _cancelPercent = Fmt(p); }"
+                     OnGutterDoubleClick="() => _dblClicks++">
+            <FirstPanel><div id="spl-basic-first">First panel</div></FirstPanel>
+            <SecondPanel><div id="spl-basic-second">Second panel</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <span id="ev-starts">@_starts</span>
+    <span id="ev-start">@_startPercent</span>
+    <span id="ev-resizes">@_resizes</span>
+    <span id="ev-resize">@_resizePercent</span>
+    <span id="ev-ends">@_ends</span>
+    <span id="ev-end">@_endPercent</span>
+    <span id="ev-cancels">@_cancels</span>
+    <span id="ev-cancel">@_cancelPercent</span>
+    <span id="ev-dbl">@_dblClicks</span>
+</E2ESection>
+
+<E2ESection Id="vertical" Title="Vertical">
+    <div class="e2e-spl-tall">
+        <BitSplitter Id="spl-vert" Vertical AriaLabel="Resize the rows">
+            <FirstPanel><div>Top</div></FirstPanel>
+            <SecondPanel><div>Bottom</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="limits" Title="FirstPanelSize, SecondPanelSize, Min/Max sizes, CSS limits">
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-limits" FirstPanelSize="200" FirstPanelMinSize="120" FirstPanelMaxSize="320" SecondPanelMinSize="100" AriaLabel="Limited">
+            <FirstPanel><div>Bounded</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-second" SecondPanelSize="150" SecondPanelMaxSize="300" Styles="@(new() { FirstPanel = "min-width: 30%;" })" AriaLabel="Second sized">
+            <FirstPanel><div>At least 30%</div></FirstPanel>
+            <SecondPanel><div>150px</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="percent" Title="Percent, DefaultPercent">
+    <button id="btn-pct-25" type="button" @onclick="() => _percent = 25">25%</button>
+    <button id="btn-pct-75" type="button" @onclick="() => _percent = 75">75%</button>
+    <span id="pct-value">@Fmt(_percent)</span>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-percent" @bind-Percent="_percent" FirstPanelMinSize="60" SecondPanelMinSize="60" AriaLabel="Bound">
+            <FirstPanel><div>Bound</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-default" DefaultPercent="30" AriaLabel="Default">
+            <FirstPanel><div>30%</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-oneway" Percent="40" AriaLabel="One-way">
+            <FirstPanel><div>Held at 40%</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="dragging" Title="DragStep, LazyResize">
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-step" DragStep="50" FirstPanelSize="200" AriaLabel="Stepped">
+            <FirstPanel><div>Stepped</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-lazy" LazyResize AriaLabel="Lazy">
+            <FirstPanel><div>Lazy</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="gutter" Title="GutterSize, GutterHitSize, GutterIconName, GutterTemplate">
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-gsize" GutterSize="20" AriaLabel="Thick">
+            <FirstPanel><div>Thick gutter</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-hit" GutterSize="1" GutterHitSize="16" AriaLabel="Hairline">
+            <FirstPanel><div>Hairline gutter</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-icon" GutterSize="16" GutterIconName="GripperDotsVertical" AriaLabel="Icon">
+            <FirstPanel><div>Icon</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-tpl" GutterSize="14" AriaLabel="Template">
+            <FirstPanel><div>Template</div></FirstPanel>
+            <GutterTemplate><span id="spl-tpl-grip">::</span></GutterTemplate>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="collapsible" Title="Collapsible, Collapsed, CollapsedSize, SnapSize, CollapseSecondPanel">
+    <span id="col-value">@_collapsed</span>
+    <span id="col-changes">@_collapsedChanges</span>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-col" Collapsible CollapsedSize="8" @bind-Collapsed="_collapsed" FirstPanelSize="180" FirstPanelMinSize="120"
+                     OnCollapsedChange="(bool v) => _collapsedChanges++" AriaLabel="Collapsible">
+            <FirstPanel><div><button id="spl-col-inner" type="button">In the first panel</button></div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <button id="btn-col-page" type="button" @onclick="() => _collapsed = !_collapsed">Fold from the page</button>
+    @* A round trip to the circuit and back, which a test waits on so the calls the last render made into the
+       browser have landed before it presses anything. *@
+    <button id="btn-sync" type="button" @onclick="() => _syncs++">Sync</button>
+    <span id="syncs">@_syncs</span>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-col0" Collapsible FirstPanelSize="180" FirstPanelMinSize="120" AriaLabel="Folds to nothing">
+            <FirstPanel><div><button id="spl-col0-inner" type="button">Hidden when folded</button></div></FirstPanel>
+            <SecondPanel><div><button id="spl-col0-after" type="button">After</button></div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-snap" Collapsible CollapsedSize="8" SnapSize="40" FirstPanelSize="180" FirstPanelMinSize="20" AriaLabel="Snaps">
+            <FirstPanel><div>Snaps under 40px</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-col2" Collapsible CollapseSecondPanel CollapsedSize="8" SecondPanelSize="180" SecondPanelMinSize="120" AriaLabel="Second folds">
+            <FirstPanel><div>Stays</div></FirstPanel>
+            <SecondPanel><div>Folds</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="button" Title="ShowCollapseButton, CollapseIconName, ExpandIconName">
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-btn" Collapsible ShowCollapseButton CollapsedSize="8" FirstPanelSize="180" FirstPanelMinSize="120" AriaLabel="Button">
+            <FirstPanel><div>Folds by its button</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-btn-icons" Collapsible ShowCollapseButton CollapsedSize="8" FirstPanelSize="180" CollapseIconName="ChevronLeftSmall" ExpandIconName="ChevronRightSmall" AriaLabel="Icons">
+            <FirstPanel><div>Own icons</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-btn-ext" Collapsible ShowCollapseButton CollapsedSize="8" FirstPanelSize="180" CollapseIcon="@BitIconInfo.Css("e2e-collapse")" ExpandIcon="@BitIconInfo.Css("e2e-expand")" AriaLabel="External">
+            <FirstPanel><div>External icons</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="cancel" Title="OnCollapsing">
+    <button id="btn-lock" type="button" @onclick="() => _lock = !_lock">Lock</button>
+    <span id="lock">@_lock</span>
+    <span id="collapsing-log">@string.Join(",", _collapsingLog)</span>
+    <button id="btn-cancel-method" type="button" @onclick="() => _cancelRef.ToggleCollapse()">Toggle from code</button>
+    <div class="e2e-spl-box">
+        <BitSplitter @ref="_cancelRef" Id="spl-cancel" Collapsible ShowCollapseButton CollapsedSize="8" FirstPanelSize="180" FirstPanelMinSize="120" OnCollapsing="HandleCollapsing" AriaLabel="Cancel">
+            <FirstPanel><div>Refuses to fold while locked</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="reset" Title="NoResetOnDoubleClick">
+    <span id="even-value">@Fmt(_evenPercent)</span>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-noreset" NoResetOnDoubleClick FirstPanelSize="150" @bind-Percent="_evenPercent" OnGutterDoubleClick="() => _evenPercent = 50" AriaLabel="No reset">
+            <FirstPanel><div>Double-click evens it</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="methods" Title="SetPercent, GetPercent, ResetSize, Collapse, Expand, ToggleCollapse, FocusAsync">
+    <button id="btn-m-set" type="button" @onclick="() => _mRef.SetPercent(25)">SetPercent(25)</button>
+    <button id="btn-m-get" type="button" @onclick="ReadPercent">GetPercent</button>
+    <button id="btn-m-reset" type="button" @onclick="() => _mRef.ResetSize()">ResetSize</button>
+    <button id="btn-m-collapse" type="button" @onclick="() => _mRef.Collapse()">Collapse</button>
+    <button id="btn-m-expand" type="button" @onclick="() => _mRef.Expand()">Expand</button>
+    <button id="btn-m-toggle" type="button" @onclick="() => _mRef.ToggleCollapse()">ToggleCollapse</button>
+    <button id="btn-m-focus" type="button" @onclick="() => _mRef.FocusAsync()">FocusAsync</button>
+    <span id="m-percent">@_mPercent</span>
+    <div class="e2e-spl-box">
+        <BitSplitter @ref="_mRef" Id="spl-m" CollapsedSize="8" FirstPanelSize="180" AriaLabel="Methods">
+            <FirstPanel><div>Driven from code</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="persist" Title="PersistKey, PersistInSessionStorage">
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-persist" PersistKey="e2e-spl-local" Collapsible CollapsedSize="8" FirstPanelSize="150" OnCollapsing="(BitSplitterCollapseArgs a) => _persistReason = a.Reason.ToString()" AriaLabel="Persisted">
+            <FirstPanel><div>Remembered</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <span id="persist-reason">@_persistReason</span>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-session" PersistKey="e2e-spl-session" PersistInSessionStorage FirstPanelSize="150" AriaLabel="Session">
+            <FirstPanel><div>Remembered for the tab</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="locked" Title="ReadOnly, Disabled">
+    <button id="btn-ro-set" type="button" @onclick="() => _roRef.SetPercent(70)">SetPercent(70) on the read-only one</button>
+    <div class="e2e-spl-box">
+        <BitSplitter @ref="_roRef" Id="spl-ro" ReadOnly FirstPanelSize="150" AriaLabel="Read-only">
+            <FirstPanel><div>Locked</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-dis" Disabled FirstPanelSize="150" AriaLabel="Disabled">
+            <FirstPanel><div>Dimmed</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="KeyboardStep, nesting">
+    <span id="a11y-value">@Fmt(_a11yPercent)</span>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-a11y" KeyboardStep="50" FirstPanelMinSize="120" SecondPanelMinSize="80" @bind-Percent="_a11yPercent" AriaLabel="Keyboard step">
+            <FirstPanel><div>Fifty pixels a press</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box" style="height: 220px;">
+        <BitSplitter Id="spl-outer" FirstPanelSize="200" AriaLabel="Outer">
+            <FirstPanel><div>Sidebar</div></FirstPanel>
+            <SecondPanel>
+                <BitSplitter Id="spl-inner" Vertical SecondPanelSize="80" AriaLabel="Inner" Style="height: 100%;">
+                    <FirstPanel><div>Editor</div></FirstPanel>
+                    <SecondPanel><div>Terminal</div></SecondPanel>
+                </BitSplitter>
+            </SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <BitParams Parameters="@_params">
+        <div class="e2e-spl-box">
+            <BitSplitter Id="spl-par-1" AriaLabel="Cascaded">
+                <FirstPanel><div>Cascaded</div></FirstPanel>
+                <SecondPanel><div>Rest</div></SecondPanel>
+            </BitSplitter>
+        </div>
+        <div class="e2e-spl-box">
+            <BitSplitter Id="spl-par-own" ShowCollapseButton="false" GutterSize="6" AriaLabel="Own">
+                <FirstPanel><div>Own</div></FirstPanel>
+                <SecondPanel><div>Rest</div></SecondPanel>
+            </BitSplitter>
+        </div>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="icons" Title="External gutter icons">
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-ext" GutterSize="16" GutterIcon="@("fa-solid fa-arrows-left-right")" AriaLabel="External">
+            <FirstPanel><div>FontAwesome</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-ext-bi" GutterSize="16" GutterIcon="@BitIconInfo.Bi("grip-vertical")" GutterIconName="GripperDotsVertical" AriaLabel="Bootstrap">
+            <FirstPanel><div>Bootstrap wins over the name</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style, Class, Styles, Classes, CSS variables">
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-style" Style="border: 2px solid rgb(0, 101, 239);" AriaLabel="Styled">
+            <FirstPanel><div>Styled</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-class" Class="e2e-spl-class" AriaLabel="Classed">
+            <FirstPanel><div>Classed</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-styles" Collapsible ShowCollapseButton LazyResize AriaLabel="Styles"
+                     Styles="@(new() { Root = "outline: 1px solid rgb(9, 9, 9);", FirstPanel = "background-color: rgb(230, 230, 250);", SecondPanel = "background-color: rgb(255, 228, 225);", Gutter = "background-color: rgb(0, 128, 0);", GutterIndicator = "background-color: rgb(255, 0, 0);", CollapseButton = "background-color: rgb(255, 255, 0);", CollapseButtonIcon = "color: rgb(0, 0, 255);", Preview = "background-color: rgb(255, 0, 255);" })">
+            <FirstPanel><div>Styles</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-classes" AriaLabel="Classes" Classes="@(new() { Root = "e2e-spl-root", FirstPanel = "e2e-spl-first", SecondPanel = "e2e-spl-second", Gutter = "e2e-spl-gutter" })">
+            <FirstPanel><div>Classes</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div id="spl-vars" style="--bit-Splitter-gutter-size: 18px; --bit-Splitter-gutter-background: rgb(10, 20, 30); --bit-Splitter-gutter-hover-background: rgb(40, 50, 60); --bit-Splitter-gutter-indicator-color: rgb(200, 0, 0); --bit-Splitter-collapse-button-background: rgb(0, 200, 0); --bit-Splitter-collapse-button-radius: 2px;">
+        <div class="e2e-spl-box">
+            <BitSplitter Id="spl-var" Collapsible ShowCollapseButton AriaLabel="Variables">
+                <FirstPanel><div>Variables</div></FirstPanel>
+                <SecondPanel><div>Rest</div></SecondPanel>
+            </BitSplitter>
+        </div>
+        <div class="e2e-spl-box">
+            <BitSplitter Id="spl-var-wins" GutterSize="4" AriaLabel="GutterSize wins">
+                <FirstPanel><div>GutterSize wins</div></FirstPanel>
+                <SecondPanel><div>Rest</div></SecondPanel>
+            </BitSplitter>
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-rtl" Dir="BitDir.Rtl" FirstPanelSize="200" Collapsible ShowCollapseButton CollapsedSize="8" AriaLabel="RTL">
+            <FirstPanel><div>پنل اول</div></FirstPanel>
+            <SecondPanel><div>پنل دوم</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <div class="e2e-spl-box" dir="rtl">
+        <BitSplitter Id="spl-rtl-inh" FirstPanelSize="200" AriaLabel="Inherited RTL">
+            <FirstPanel><div>Inherited</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="base" Title="Visibility, HtmlAttributes, re-render, unmount">
+    <div class="e2e-spl-box" style="height: 40px;">
+        <BitSplitter Id="spl-vis-hidden" Visibility="BitVisibility.Hidden" AriaLabel="Hidden"><FirstPanel>A</FirstPanel><SecondPanel>B</SecondPanel></BitSplitter>
+    </div>
+    <div class="e2e-spl-box" style="height: 40px;">
+        <BitSplitter Id="spl-vis-collapsed" Visibility="BitVisibility.Collapsed" AriaLabel="Collapsed"><FirstPanel>A</FirstPanel><SecondPanel>B</SecondPanel></BitSplitter>
+    </div>
+    <div class="e2e-spl-box" style="height: 40px;">
+        <BitSplitter Id="spl-attrs" data-e2e="custom" HtmlAttributes="@_attrs" AriaLabel="Attributes"><FirstPanel>A</FirstPanel><SecondPanel>B</SecondPanel></BitSplitter>
+    </div>
+    <button id="btn-rr" type="button" @onclick="Rerender">Change parameters</button>
+    <div class="e2e-spl-box">
+        <BitSplitter Id="spl-rr" Vertical="_rrVertical" GutterSize="_rrGutter" FirstPanelSize="_rrFirst" AriaLabel="Re-rendered">
+            <FirstPanel><div>Re-rendered</div></FirstPanel>
+            <SecondPanel><div>Rest</div></SecondPanel>
+        </BitSplitter>
+    </div>
+    <button id="btn-unmount" type="button" @onclick="() => _showUnmount = !_showUnmount">Unmount</button>
+    @if (_showUnmount)
+    {
+        <div class="e2e-spl-box">
+            <BitSplitter Id="spl-um" LazyResize OnResize="(double p) => { }" AriaLabel="Unmounted">
+                <FirstPanel><div>Unmounted</div></FirstPanel>
+                <SecondPanel><div>Rest</div></SecondPanel>
+            </BitSplitter>
+        </div>
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _starts;
+    private string _startPercent = "";
+    private int _resizes;
+    private string _resizePercent = "";
+    private int _ends;
+    private string _endPercent = "";
+    private int _cancels;
+    private string _cancelPercent = "";
+    private int _dblClicks;
+
+    private double? _percent = 50;
+
+    private bool _collapsed;
+    private int _collapsedChanges;
+    private int _syncs;
+
+    private BitSplitter _cancelRef = default!;
+    private bool _lock;
+    private readonly List<string> _collapsingLog = [];
+
+    private double? _evenPercent;
+
+    private BitSplitter _mRef = default!;
+    private string _mPercent = "";
+
+    private string _persistReason = "";
+
+    private BitSplitter _roRef = default!;
+
+    private double? _a11yPercent = 50;
+
+    private readonly BitSplitterParams[] _params =
+    [
+        new()
+        {
+            GutterSize = 16,
+            Collapsible = true,
+            ShowCollapseButton = true,
+            CollapsedSize = 8,
+        }
+    ];
+
+    private readonly Dictionary<string, object> _attrs = new() { ["data-extra"] = "from-dictionary" };
+
+    private bool _rrVertical;
+    private int? _rrGutter = 10;
+    private int? _rrFirst = 150;
+    private bool _showUnmount = true;
+
+    private static string Fmt(double? value) => value?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) ?? "";
+
+    private void HandleCollapsing(BitSplitterCollapseArgs args)
+    {
+        _collapsingLog.Add($"{(args.IsCollapsing ? "collapse" : "expand")}:{args.Reason}{(_lock ? ":refused" : "")}");
+        if (_lock) args.Cancel = true;
+    }
+
+    private async Task ReadPercent()
+    {
+        var percent = await _mRef.GetPercent();
+        _mPercent = Fmt(percent);
+    }
+
+    private void Rerender()
+    {
+        _rrVertical = true;
+        _rrGutter = 24;
+        _rrFirst = 60;
+    }
+}

@@ -1,4 +1,4 @@
-declare class PDFNodeStream {
+﻿declare class PDFNodeStream {
     constructor(source: any);
     source: any;
     url: URL;

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
+﻿namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 
 /// <summary>
 /// The "did you mean" every tool answers a name it could not resolve with.

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
 /// Arguments passed to the <see cref="BitDataGridLegacy{T}.RowTemplate"/> render fragment.

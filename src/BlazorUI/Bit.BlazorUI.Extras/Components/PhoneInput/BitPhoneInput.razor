@@ -1,14 +1,16 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitTextInputBase<string?>
 
+@* aria-owns is a list of ids, so one the page splatted on is kept beside the popup's rather than replaced by it or
+   removed by the null written while the popup is closed (see BitComponentBase.GetSplattedAttribute). *@
 <div @ref="RootElement"
-     @attributes="HtmlAttributes"
+     @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      title="@Title"
      dir="@Dir?.ToString().ToLower()"
-     aria-owns="@(IsOpen ? _calloutId : null)">
+     aria-owns="@JoinTokenLists(GetSplattedAttribute("aria-owns"), IsCalloutShown ? _calloutId : null)">
 
     @if (LabelTemplate is not null)
     {
@@ -23,12 +25,21 @@
         </label>
     }
 
-    <div id="@_fieldGroupId" style="@Styles?.FieldGroup" class="bit-phi-fgp @Classes?.FieldGroup">
+    @* The selector and the number are two controls of one field, so the visible label names the pair as a
+       group as well: the country button is otherwise announced with nothing tying it to the field it is in. *@
+    <div id="@_fieldGroupId"
+         role="@(HasLabel ? "group" : null)"
+         aria-labelledby="@(HasLabel ? _labelId : null)"
+         style="@Styles?.FieldGroup"
+         class="bit-phi-fgp @Classes?.FieldGroup">
 
         @if (NoDropdown)
         {
-            <div style="@Styles?.Dropdown" class="bit-phi-drp @Classes?.Dropdown">
-                <span style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
+            @* A fixed country is no control, so nothing would ever read it out: the input points at this element
+               through aria-describedby, and the element says the country in words rather than as a flag. *@
+            <div id="@_dropdownId" title="@DropdownTitle" style="@Styles?.Dropdown" class="bit-phi-drp @Classes?.Dropdown">
+                <span class="bit-phi-vhd">@DropdownLabel</span>
+                <span aria-hidden="true" style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
                     @if (DropdownTemplate is not null)
                     {
                         @DropdownTemplate(Country)
@@ -37,7 +48,15 @@
                     {
                         @if (NoFlags is false)
                         {
-                            <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@GetFlagUrl(Country)" alt="" aria-hidden="true" loading="lazy" />
+                            var flagUrl1 = GetFlagUrl(Country);
+                            @if (flagUrl1 is not null)
+                            {
+                                <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@flagUrl1" alt="" aria-hidden="true" loading="lazy" />
+                            }
+                            else
+                            {
+                                <span style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" aria-hidden="true"></span>
+                            }
                         }
                         @if (NoDialCode is false)
                         {
@@ -62,13 +81,14 @@
                     id="@_dropdownId"
                     role="@(NoSearchBox ? "combobox" : null)"
                     aria-haspopup="listbox"
-                    aria-expanded="@(IsOpen ? "true" : "false")"
-                    aria-controls="@(IsOpen ? _listId : null)"
-                    aria-activedescendant="@(IsOpen && NoSearchBox && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
+                    aria-expanded="@(IsCalloutShown ? "true" : "false")"
+                    aria-controls="@(IsCalloutShown ? _listId : null)"
+                    aria-activedescendant="@(IsCalloutShown && NoSearchBox && _list.ActiveIndex >= 0 ? GetOptionId(_list.ActiveIndex) : null)"
                     aria-label="@DropdownLabel"
-                    title="@(DropdownAriaLabel ?? Country?.Name)"
-                    disabled="@(IsEnabled is false)"
-                    tabindex="@(IsEnabled && ReadOnly is false ? (TabIndex ?? "0") : "-1")"
+                    title="@DropdownTitle"
+                    disabled="@(Disabled)"
+                    aria-disabled="@(Disabled ? "true" : null)"
+                    tabindex="@(Disabled is false && ReadOnly is false ? (TabIndex ?? "0") : "-1")"
                     style="@Styles?.Dropdown"
                     class="bit-phi-drp @Classes?.Dropdown">
                 <span style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
@@ -80,7 +100,15 @@
                     {
                         @if (NoFlags is false)
                         {
-                            <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@GetFlagUrl(Country)" alt="" aria-hidden="true" loading="lazy" />
+                            var flagUrl2 = GetFlagUrl(Country);
+                            @if (flagUrl2 is not null)
+                            {
+                                <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@flagUrl2" alt="" aria-hidden="true" loading="lazy" />
+                            }
+                            else
+                            {
+                                <span style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" aria-hidden="true"></span>
+                            }
                         }
                         @if (NoDialCode is false)
                         {
@@ -115,7 +143,9 @@
                tabindex="@TabIndex"
                autocorrect="off"
                autocapitalize="off"
-               disabled="@(IsEnabled is false)"
+               disabled="@(Disabled)"
+               aria-disabled="@GetInputAriaDisabled(Disabled)"
+               title="@InputTitle"
                placeholder="@InputPlaceholder"
                inputmode="@InputModeValue"
                enterkeyhint="@EnterKeyHint"
@@ -131,6 +161,7 @@
 
         @if (ShowClear)
         {
+            var clearDisabled = Disabled || ReadOnly;
             <button @onclick="HandleOnClearButtonClick"
                     @onfocusin="HandleOnFocusIn"
                     @onfocusout="HandleOnFocusOut"
@@ -139,7 +170,8 @@
                     style="@Styles?.ClearButton"
                     class="bit-phi-cbt @Classes?.ClearButton"
                     aria-label="@(ClearButtonAriaLabel ?? "Clear number")"
-                    disabled="@(IsEnabled is false || ReadOnly)">
+                    disabled="@clearDisabled"
+                    aria-disabled="@(clearDisabled ? "true" : null)">
                 @if (ClearButtonTemplate is not null)
                 {
                     @ClearButtonTemplate
@@ -213,14 +245,14 @@
 
 @if (NoDropdown is false)
 {
-    <div @onclick="CloseCallout"
+    <div @onclick="CloseCalloutAndRestoreFocus"
          id="@_overlayId"
-         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+         style="@GetOverlayStyles()"
          class="bit-phi-ovl @Classes?.Overlay"></div>
 
     <div id="@_calloutId"
          style="@Styles?.Callout"
-         class="bit-phi-cal @SizeClass @(Responsive ? "bit-phi-res" : null) @(Dir is BitDir.Rtl ? "bit-phi-rtl" : null) @Classes?.Callout">
+         class="bit-phi-cal @SizeClass @ColorClass @(Responsive ? "bit-phi-res" : null) @(Dir is BitDir.Rtl ? "bit-rtl" : null) @Classes?.Callout">
 
         @if (Responsive)
         {
@@ -233,20 +265,6 @@
                 {
                     <label style="@Styles?.ResponsiveLabel" class="bit-phi-rlb @Classes?.ResponsiveLabel">@Label</label>
                 }
-
-                <button @onclick="CloseCallout"
-                        type="button"
-                        title="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
-                        aria-label="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
-                        style="@Styles?.ResponsiveCloseButton"
-                        class="bit-phi-cls @Classes?.ResponsiveCloseButton">
-                    @{
-                        var responsiveCloseIcon = BitIconInfo.From(ResponsiveCloseIcon, ResponsiveCloseIconName ?? "Cancel");
-                    }
-                    <i aria-hidden="true"
-                       style="@Styles?.ResponsiveCloseIcon"
-                       class="@responsiveCloseIcon?.GetCssClasses() @Classes?.ResponsiveCloseIcon" />
-                </button>
             </div>
         }
 
@@ -260,16 +278,39 @@
                        role="combobox"
                        id="@_searchId"
                        autocomplete="off"
-                       value="@_searchText"
+                       spellcheck="false"
+                       autocorrect="off"
+                       autocapitalize="off"
+                       value="@_list.SearchText"
                        aria-autocomplete="list"
                        aria-haspopup="listbox"
-                       aria-expanded="@(IsOpen ? "true" : "false")"
-                       aria-controls="@(IsOpen ? _listId : null)"
-                       aria-activedescendant="@(IsOpen && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
+                       aria-expanded="@(IsCalloutShown ? "true" : "false")"
+                       aria-controls="@(IsCalloutShown ? _listId : null)"
+                       aria-activedescendant="@(IsCalloutShown && _list.ActiveIndex >= 0 ? GetOptionId(_list.ActiveIndex) : null)"
                        aria-label="@(SearchBoxAriaLabel ?? SearchBoxPlaceholder ?? "Search countries")"
                        class="bit-phi-srch"
                        placeholder="@(SearchBoxPlaceholder ?? "Search")" />
             </div>
+        }
+
+        @if (Responsive)
+        {
+            @* After the search box in the document, though it is drawn in the header above it: the list is driven
+               from its search box, which is what a Tab from the country button goes into and Shift+Tab goes back
+               from, so the close button is the next stop of the tab order rather than the one ahead of it. *@
+            <button @onclick="CloseCalloutAndRestoreFocus"
+                    type="button"
+                    title="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
+                    aria-label="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
+                    style="@Styles?.ResponsiveCloseButton"
+                    class="bit-phi-cls @Classes?.ResponsiveCloseButton">
+                @{
+                    var responsiveCloseIcon = BitIconInfo.From(ResponsiveCloseIcon, ResponsiveCloseIconName ?? "Cancel");
+                }
+                <i aria-hidden="true"
+                   style="@Styles?.ResponsiveCloseIcon"
+                   class="@responsiveCloseIcon?.GetCssClasses() @Classes?.ResponsiveCloseIcon" />
+            </button>
         }
 
         <div id="@_scrollContainerId" style="@Styles?.ScrollContainer" class="bit-phi-scn @Classes?.ScrollContainer">
@@ -280,15 +321,15 @@
                  aria-label="@(DropdownAriaLabel ?? "Countries")">
                 @if (RenderList)
                 {
-                    var items = GetFilteredCountries();
+                    var items = _list.View;
 
                     @for (var i = 0; i < items.Count; i++)
                     {
                         var index = i;
                         var country = items[index];
                         var isSelected = country.Iso2 == Country?.Iso2;
-                        var isActive = index == _activeIndex;
-                        var itemClass = $"bit-phi-itm{(isSelected ? " bit-phi-sel" : "")}{(isActive ? " bit-phi-act" : "")}";
+                        var isActive = index == _list.ActiveIndex;
+                        var itemClass = $"bit-phi-itm{(isSelected ? " bit-phi-sel" : "")}{(isActive ? " bit-phi-act" : "")}{(_list.IsLastPreferred(index) ? " bit-phi-ilp" : "")}";
                         <button @key="country.Iso2"
                                 id="@GetOptionId(index)"
                                 @onclick="() => HandleOnCountrySelect(country)"
@@ -307,7 +348,15 @@
                             {
                                 @if (NoFlags is false)
                                 {
-                                    <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@GetFlagUrl(country)" alt="" aria-hidden="true" loading="lazy" />
+                                    var flagUrl = GetFlagUrl(country);
+                                    @if (flagUrl is not null)
+                                    {
+                                        <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@flagUrl" alt="" aria-hidden="true" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <span style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" aria-hidden="true"></span>
+                                    }
                                 }
                                 <span style="@Styles?.ItemName" class="bit-phi-inm @Classes?.ItemName">@country.Name</span>
                                 <span style="@Styles?.ItemCode" class="bit-phi-icd @Classes?.ItemCode">+@country.Code</span>

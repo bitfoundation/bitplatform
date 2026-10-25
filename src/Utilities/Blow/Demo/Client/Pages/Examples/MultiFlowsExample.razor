@@ -1,0 +1,100 @@
+﻿@page "/examples/multi-flows"
+
+<PageTitle>Multi Flows · Blow</PageTitle>
+
+<ExampleScaffold Title="Multi Flows"
+                 Summary="Two BlowCanvas instances on one page, each with its own nodes, edges, viewport, selection, clipboard and add-ons - nothing is shared unless the page shares it. Copying a selection from one into the other is a single call on each canvas.">
+    <Toolbar>
+        <button class="btn btn-secondary" @onclick="@(() => CopyAcross(_flowA, _a, _flowB, "A", "B"))">Copy A's selection to B</button>
+        <button class="btn btn-secondary" @onclick="@(() => CopyAcross(_flowB, _b, _flowA, "B", "A"))">Copy B's selection to A</button>
+        <span class="mf-status" role="status">@_status</span>
+    </Toolbar>
+    <ChildContent>
+        <div class="multi">
+            <div class="multi__pane">
+                <BlowCanvas @ref="_flowA" Nodes="_a" Edges="_ea" FitViewOnInit="true" ClipboardShortcutsEnabled="true" AriaLabel="Flow A">
+                    <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" Color="rgba(99, 102, 241, 0.5)" />
+                    <BlowControls />
+                    <BlowPanel Position="top-left"><strong>Flow A</strong></BlowPanel>
+                </BlowCanvas>
+            </div>
+            <div class="multi__pane">
+                <BlowCanvas @ref="_flowB" Nodes="_b" Edges="_eb" FitViewOnInit="true" ClipboardShortcutsEnabled="true" AriaLabel="Flow B">
+                    <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="20" Color="rgba(34, 197, 94, 0.3)" />
+                    <BlowControls />
+                    <BlowPanel Position="top-left"><strong>Flow B</strong></BlowPanel>
+                </BlowCanvas>
+            </div>
+        </div>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag the background</strong> or <strong>scroll</strong> in one flow, or use its control bar: only that flow pans and zooms.</li>
+        <li><strong>Click</strong> a node in Flow A, then one in Flow B: each flow keeps its own selection. <strong>Drag</strong> or <strong>Delete</strong> in one and the other is untouched.</li>
+        <li>Select nodes in Flow A (<strong>Shift+drag</strong> the background for several) and press <strong>Copy A's selection to B</strong>: copies land in Flow B, with the edges between them, and Flow B fits them in view. The other button copies the other way.</li>
+        <li>Select a node in Flow A, press <strong>Ctrl/Cmd+C</strong>, click into Flow B and press <strong>Ctrl/Cmd+V</strong>: nothing is pasted, because each canvas has a clipboard of its own. <strong>Ctrl/Cmd+V</strong> back in Flow A pastes the copy there.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>Each <code>BlowCanvas</code> is a self-contained instance: its own <code>Nodes</code> and <code>Edges</code> lists, viewport, selection, measuring and keyboard handling. The <code>BlowBackground</code>, <code>BlowControls</code> and <code>BlowPanel</code> inside a canvas belong to that canvas alone, so the two control bars steer different flows.</li>
+        <li><code>AriaLabel</code> gives each flow a name of its own ("Flow A", "Flow B") for screen readers, instead of two regions both called "Flow diagram".</li>
+        <li><code>ClipboardShortcutsEnabled</code> binds <strong>Ctrl/Cmd+C</strong>, <strong>X</strong>, <strong>V</strong> and <strong>D</strong> on each canvas. The clipboard lives in the canvas, in memory, so a copy made in one flow is not in the other.</li>
+        <li>The toolbar crosses that boundary on purpose: <code>source.Copy()</code> returns the selection as a <code>BlowFragment</code> - the selected nodes and every edge between two of them - and <code>target.PasteAsync(fragment)</code> adds fresh copies with new ids (<code>a1-copy</code>, ...), offset by the target's <code>PasteOffset</code> and selected. <code>FitViewAsync(300)</code> then brings them into view.</li>
+        <li><code>Copy()</code> with nothing selected hands back whatever that canvas copied last, so the page checks for a selection first.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .multi { display:flex; height:100%; }
+    .multi__pane { flex:1; position:relative; min-width:0; border-right:1px solid var(--bb-border); }
+    .multi__pane:last-child { border-right:0; }
+    .mf-status { font-size: 12px; color: var(--bb-text-soft); }
+
+    /* On a phone two flows side by side are each a sliver: stack them instead. */
+    @@media (max-width: 640px) {
+        .multi { flex-direction:column; }
+        .multi__pane { border-right:0; border-bottom:1px solid var(--bb-border); }
+        .multi__pane:last-child { border-bottom:0; }
+    }
+</style>
+
+@code {
+    private BlowCanvas? _flowA, _flowB;
+    private List<BlowNode> _a = [], _b = [];
+    private List<BlowEdge> _ea = [], _eb = [];
+    private string _status = "";
+
+    protected override void OnInitialized()
+    {
+        _a =
+        [
+            new BlowNode { Id = "a1", Type = "input", Label = "A · 1", Position = new(80, 40) },
+            new BlowNode { Id = "a2", Type = "output", Label = "A · 2", Position = new(80, 180) },
+        ];
+        _ea = [ new BlowEdge { Id = "ea", Source = "a1", Target = "a2", Animated = true } ];
+
+        _b =
+        [
+            new BlowNode { Id = "b1", Type = "input", Label = "B · 1", Position = new(80, 40) },
+            new BlowNode { Id = "b2", Label = "B · 2", Position = new(60, 160) },
+            new BlowNode { Id = "b3", Type = "output", Label = "B · 3", Position = new(200, 160) },
+        ];
+        _eb =
+        [
+            new BlowEdge { Id = "eb1", Source = "b1", Target = "b2" },
+            new BlowEdge { Id = "eb2", Source = "b1", Target = "b3" },
+        ];
+    }
+
+    private async Task CopyAcross(BlowCanvas? source, List<BlowNode> sourceNodes, BlowCanvas? target, string from, string to)
+    {
+        if (source is null || target is null) return;
+        if (!sourceNodes.Any(n => n.Selected))
+        {
+            _status = $"Select nodes in Flow {from} first.";
+            return;
+        }
+
+        var pasted = await target.PasteAsync(source.Copy());
+        await target.FitViewAsync(300);
+        _status = $"Copied {pasted.Nodes.Count} node(s) and {pasted.Edges.Count} edge(s) from Flow {from} to Flow {to}.";
+    }
+}

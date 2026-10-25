@@ -1,0 +1,179 @@
+﻿@page "/field-polish"
+@implements IDisposable
+
+<PageTitle>Affixes, counters &amp; live updates · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Affixes, counters &amp; live updates</h1>
+    <p class="bb-subtitle">
+        The details that separate a generated form from a designed one. A price field wearing a currency
+        symbol; a summary that counts down to its limit as you type; a section heading that belongs to
+        the schema rather than to the page around it. The preview on the right is driven by
+        <code>UpdateOnInput()</code> — the model is written on every keystroke, so nothing here is wired
+        up by hand.
+    </p>
+</div>
+
+<div class="bb-note">
+    Type a title and watch the preview and its <code>CharacterCount()</code> follow; paste in more than 60 characters and
+    the count turns red rather than the text being cut off - a counted field drops the <code>maxlength</code> attribute, and
+    the rule reports the excess. The price wears <code>Prefix</code> and <code>Suffix</code> inside its border. The city
+    offers <code>Suggest(...)</code> values but takes anything, and its <code>Clearable()</code> × empties it and leaves the
+    caret in the box. <code>Revealable()</code> puts a show/hide button on the passcode, and <code>AsSwitch()</code> draws the
+    published box as a switch. A text box normally writes its value when the user leaves it;
+    <code>UpdateOnInput()</code> writes on every keystroke, and <code>UpdateOnInput(150)</code> once per pause - leaving the
+    box or pressing Enter writes at once either way.
+</div>
+
+<div class="bb-split bb-page-wide">
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+        <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Publish listing" />
+    </div>
+
+    <div class="bb-demo demo-preview">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live preview</span></div>
+        <p class="bb-card-desc">Updates as you type, straight from the model.</p>
+        <div class="demo-listing">
+            <strong>@(string.IsNullOrWhiteSpace(_model.Title) ? "Untitled listing" : _model.Title)</strong>
+            <p>@(string.IsNullOrWhiteSpace(_model.Summary) ? "No summary yet." : _model.Summary)</p>
+            <div class="demo-listing__meta">
+                @* The euro the price field's prefix shows: the app runs with invariant globalization, whose
+                   currency symbol is the generic ¤. *@
+                €@_model.Price.ToString("N0") / month · @_model.FloorArea m² · @(_model.City is "" ? "—" : _model.City)
+            </div>
+            <div class="demo-listing__state @(_model.Published ? "demo-listing__state--published" : null)">
+                @(_model.Published ? "● Published" : "○ Draft")
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Published ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+var schema = BormBuilder.For<ListingDraft>()
+    .Title("New listing")
+
+    // A section heading that lives in the schema, so the page does not have to interleave its own
+    // markup with the generated fields.
+    .Static("basics", "The basics", "What someone sees first in the search results.")
+
+    .Field(x => x.Title, f => f
+        .Required()
+        .MaxLength(60)
+        .CharacterCount()          // "12 / 60", counting as you type
+        .UpdateOnInput())          // write on every keystroke, not on blur
+
+    .Field(x => x.Summary, f => f
+        .AsTextArea(3)
+        .MaxLength(180)
+        .CharacterCount()
+        .UpdateOnInput(debounceMilliseconds: 150))   // one write per pause, not per character
+
+    .Static("details", "Details", configure: f => f.Attr("divider", true))
+
+    .Field(x => x.Price, f => f
+        .Prefix("€").Suffix("/ month")               // decoration inside the field's border
+        .Range(0, 100_000).Step(50)
+        .UpdateOnInput())
+
+    .Field(x => x.FloorArea, f => f
+        .Suffix("m²")
+        .Range(1, 5_000)
+        .UpdateOnInput())
+
+    // Suggests without restricting: the field still accepts anything typed into it.
+    .Field(x => x.City, f => f
+        .Required()
+        .Suggest("Amsterdam", "Berlin", "Lisbon", "Paris", "Warsaw")
+        .Clearable()                                 // one-click "empty this", shown only when non-empty
+        .UpdateOnInput()
+        .InputAttr("data-testid", "city"))           // arbitrary HTML attributes, splatted onto the input
+
+    .Field(x => x.Passcode, f => f
+        .AsPassword()
+        .Revealable()                                // opt-in "show the characters" toggle
+        .MinLength(6))
+
+    .Field(x => x.Published, f => f.AsSwitch())      // a checkbox that announces itself as a switch
+    .Build();
+""";
+
+    private readonly ListingDraft _model = new() { Price = 1200, FloorArea = 65 };
+    private BormState _state = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<ListingDraft>()
+            .Title("New listing")
+            .Static("basics", "The basics", "What someone sees first in the search results.")
+            .Field(x => x.Title, f => f
+                .Required()
+                .MaxLength(60)
+                .CharacterCount()
+                .Placeholder("Sunny two-bed near the park")
+                .UpdateOnInput())
+            .Field(x => x.Summary, f => f
+                .AsTextArea(3)
+                .MaxLength(180)
+                .CharacterCount()
+                .Help("A sentence or two. Shown under the title in search results.")
+                .UpdateOnInput(debounceMilliseconds: 150))
+            .Static("details", "Details", configure: f => f.Attr("divider", true))
+            .Field(x => x.Price, f => f
+                .Prefix("€").Suffix("/ month")
+                .Range(0, 100_000).Step(50)
+                .UpdateOnInput())
+            .Field(x => x.FloorArea, f => f
+                .Suffix("m²")
+                .Range(1, 5_000)
+                .UpdateOnInput())
+            .Field(x => x.City, f => f
+                .Required()
+                .Suggest("Amsterdam", "Berlin", "Lisbon", "Paris", "Warsaw")
+                .Help("Start typing — the suggestions are hints, not a closed list.")
+                .Clearable()
+                .UpdateOnInput()
+                .InputAttr("data-testid", "city"))
+            .Field(x => x.Passcode, f => f
+                .AsPassword()
+                .Revealable()
+                .MinLength(6)
+                .Help("Anyone with this code can edit the listing."))
+            .Field(x => x.Published, f => f.AsSwitch())
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // The page created the state, so the page disposes it: an options load or async rule still in
+        // flight is cancelled instead of finishing against a form nobody is looking at.
+        _state.Dispose();
+    }
+}

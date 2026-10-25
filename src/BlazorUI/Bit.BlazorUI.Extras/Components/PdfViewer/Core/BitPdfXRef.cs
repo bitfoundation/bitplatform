@@ -21,7 +21,8 @@ public sealed class BitPdfXRef : IBitPdfXRef
         public int Field3 { get; init; } // generation, or index within ObjStm
     }
 
-    private readonly byte[] _buffer;
+    private readonly IBitPdfByteSource _source;
+    private readonly BitPdfByteSourceReader _reader;
     private readonly Dictionary<int, Entry> _entries = new();
     // Keyed by (object number, generation): a generation-0 object must not mask a
     // fetch for the same number at a different generation (2.3).
@@ -50,9 +51,15 @@ public sealed class BitPdfXRef : IBitPdfXRef
     public List<string> Warnings { get; } = new();
 
     public BitPdfXRef(byte[] buffer)
+        : this(new BitPdfMemoryByteSource(buffer ?? throw new ArgumentNullException(nameof(buffer))))
     {
-        _buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
-        _startOffset = FindHeaderOffset(_buffer);
+    }
+
+    internal BitPdfXRef(IBitPdfByteSource source)
+    {
+        _source = source ?? throw new ArgumentNullException(nameof(source));
+        _reader = new BitPdfByteSourceReader(source);
+        _startOffset = FindHeaderOffset(source);
     }
 
     /// <summary>
@@ -60,10 +67,12 @@ public sealed class BitPdfXRef : IBitPdfXRef
     /// prepended) every stored xref/object offset is relative to it, so this is
     /// added to each offset before seeking (2.5, matching pdf.js's stream reset).
     /// </summary>
-    private static int FindHeaderOffset(byte[] buffer)
+    private static int FindHeaderOffset(IBitPdfByteSource source)
     {
         var marker = "%PDF-"u8;
-        int limit = Math.Min(buffer.Length - marker.Length, 1024);
+        using var window = source.GetMemory(0, Math.Min(source.Length, 1024 + marker.Length));
+        ReadOnlySpan<byte> buffer = window.Span;
+        int limit = buffer.Length - marker.Length;
         for (int i = 0; i <= limit; i++)
         {
             bool match = true;
@@ -89,6 +98,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
     /// <summary>Parses the cross-reference data starting from the file's <c>startxref</c>.</summary>
     public void Parse()
     {
+        ThrowIfSourceDisposed();
         try
         {
             ReadXRefChain();
@@ -97,7 +107,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
         {
             throw;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex))
         {
             Warnings.Add($"Cross-reference parsing failed ({ex.Message}); rebuilding by scanning objects.");
         }
@@ -126,25 +136,30 @@ public sealed class BitPdfXRef : IBitPdfXRef
             return; // fall through to recovery
         }
 
-        var queue = new Queue<int>();
+        // A section a hybrid file's /XRefStm names is queued with the free entries its own
+        // classic table wrote: those, and only those, the stream may fill in (see ReadXRefStream).
+        // A free entry a NEWER section wrote is a deletion, so an older section's stream, reached
+        // through /Prev, is handed the free entries of its own table and never the newer ones.
+        var queue = new Queue<(int Offset, HashSet<int>? TableFree)>();
         var visited = new HashSet<int>();
-        queue.Enqueue(start);
+        queue.Enqueue((start, null));
         bool firstSection = true;
 
         while (queue.Count > 0)
         {
-            int offset = queue.Dequeue();
-            if (offset < 0 || offset + _startOffset >= _buffer.Length || !visited.Add(offset))
+            (int offset, HashSet<int>? tableFree) = queue.Dequeue();
+            if (offset < 0 || offset >= _source.Length - _startOffset || !visited.Add(offset))
             {
                 continue;
             }
 
             BitPdfDict? sectionTrailer;
+            HashSet<int>? ownFree;
             try
             {
-                sectionTrailer = ReadSection(offset);
+                (sectionTrailer, ownFree) = ReadSection(offset, tableFree);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex))
             {
                 // Tolerate a broken /Prev or /XRefStm section: keep the entries
                 // already parsed. Only the very first section failing forces
@@ -170,11 +185,11 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
             if (sectionTrailer.GetRaw("XRefStm") is double xrefStm)
             {
-                queue.Enqueue((int)xrefStm);
+                queue.Enqueue(((int)xrefStm, ownFree));
             }
             if (sectionTrailer.GetRaw("Prev") is double prev)
             {
-                queue.Enqueue((int)prev);
+                queue.Enqueue(((int)prev, null));
             }
         }
     }
@@ -216,23 +231,26 @@ public sealed class BitPdfXRef : IBitPdfXRef
         }
     }
 
-    private BitPdfDict? ReadSection(int offset)
+    // Returns the section's trailer and, for a classic table, the object numbers it wrote as free
+    // (null for a stream), which its own /XRefStm is then allowed to fill in.
+    private (BitPdfDict? Trailer, HashSet<int>? TableFree) ReadSection(int offset, HashSet<int>? tableFree)
     {
         // Stored offsets are relative to the %PDF header; probe.Pos is already an
         // absolute buffer index once the substream starts there.
-        var probe = new BitPdfLexer(new BitPdfStream(_buffer, offset + _startOffset));
+        var probe = new BitPdfLexer(_source.CreateStream(offset + _startOffset));
         object first = probe.GetObj();
 
         if (first is BitPdfCmd { Value: "xref" })
         {
-            return ReadXRefTable(new BitPdfLexer(new BitPdfStream(_buffer, probe.Pos - 1)));
+            var ownFree = new HashSet<int>();
+            return (ReadXRefTable(new BitPdfLexer(_source.CreateStream(probe.Pos - 1)), ownFree), ownFree);
         }
 
         // Otherwise it must be an indirect xref stream object: "n g obj << >> stream".
-        return ReadXRefStream(offset);
+        return (ReadXRefStream(offset, tableFree), null);
     }
 
-    private BitPdfDict ReadXRefTable(BitPdfLexer lexer)
+    private BitPdfDict ReadXRefTable(BitPdfLexer lexer, HashSet<int> ownFree)
     {
         while (true)
         {
@@ -271,7 +289,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
                 int num = subStart + i;
                 bool free = typeTok is BitPdfCmd { Value: "f" };
-                _entries.TryAdd(num, new Entry
+                bool added = _entries.TryAdd(num, new Entry
                     {
                         Type = free ? EntryType.Free : EntryType.Uncompressed,
                         // Normalize a real object offset to an absolute buffer index
@@ -280,19 +298,25 @@ public sealed class BitPdfXRef : IBitPdfXRef
                         Field2 = free ? (int)off : (int)off + _startOffset,
                         Field3 = (int)gen,
                     });
+                // Only an entry this table wrote is its own to leave free: one a newer section
+                // already holds was decided there.
+                if (added && free)
+                {
+                    ownFree.Add(num);
+                }
             }
         }
 
         // After the "trailer" keyword the dictionary follows.
-        var parser = new BitPdfParser(lexer, this, allowStreams: false);
+        var parser = new BitPdfParser(lexer, this, _reader, allowStreams: false);
         return parser.GetObj() as BitPdfDict
             ?? throw new BitPdfFormatException("Trailer is not a dictionary.");
     }
 
-    private BitPdfDict ReadXRefStream(int offset)
+    private BitPdfDict ReadXRefStream(int offset, HashSet<int>? tableFree)
     {
-        var parser = new BitPdfParser(new BitPdfLexer(new BitPdfStream(_buffer, offset + _startOffset)), this);
-        if (parser.GetObj() is not BitPdfStream stream || stream.Dict is null)
+        var parser = new BitPdfParser(new BitPdfLexer(_source.CreateStream(offset + _startOffset)), this, _reader);
+        if (parser.GetObj() is not BitPdfBaseStream stream || stream.Dict is null)
         {
             throw new BitPdfFormatException("Expected an xref stream object.");
         }
@@ -349,9 +373,14 @@ public sealed class BitPdfXRef : IBitPdfXRef
                 int num = objStart + i;
                 // In a hybrid-reference file the classic section marks compressed
                 // objects as free; the parallel /XRefStm carries their real
-                // entries. Let a cross-reference stream override an existing *free*
-                // entry (but never a real one, preserving newer-section priority).
-                if (_entries.TryGetValue(num, out var existing) && existing.Type != EntryType.Free)
+                // entries. Let THAT stream fill in the free entries ITS table wrote
+                // (never a real one, preserving newer-section priority, and never a
+                // free entry a newer section wrote, which is a deletion and must
+                // stand even when an older section's stream knows the object). Any
+                // other stream is an older section reached through /Prev and adds
+                // only what no section has decided yet.
+                if (_entries.TryGetValue(num, out var existing)
+                    && (existing.Type != EntryType.Free || tableFree is null || !tableFree.Contains(num)))
                 {
                     continue;
                 }
@@ -387,13 +416,21 @@ public sealed class BitPdfXRef : IBitPdfXRef
         }
     }
 
+    internal void ThrowIfSourceDisposed() => (_source as IBitPdfByteSourceLifetime)?.ThrowIfDisposed();
+
+    internal void ReleaseByteWindows() => _reader.Dispose();
+
     /// <inheritdoc/>
     public object? FetchIfRef(object? value, bool suppressEncryption = false)
-        => value is BitPdfRef r ? Fetch(r, suppressEncryption) : value;
+    {
+        ThrowIfSourceDisposed();
+        return value is BitPdfRef r ? Fetch(r, suppressEncryption) : value;
+    }
 
     /// <inheritdoc/>
     public object? Fetch(BitPdfRef reference, bool suppressEncryption = false)
     {
+        ThrowIfSourceDisposed();
         if (_cache.TryGetValue((reference.Num, reference.Gen), out var cached))
         {
             return cached;
@@ -423,7 +460,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
     private object? FetchUncompressed(BitPdfRef reference, Entry entry)
     {
-        if (entry.Field2 < 0 || entry.Field2 >= _buffer.Length)
+        if (entry.Field2 < 0 || entry.Field2 >= _source.Length)
         {
             return null;
         }
@@ -432,18 +469,35 @@ public sealed class BitPdfXRef : IBitPdfXRef
         // generation). A mismatch means the xref offset is wrong (off-by-N,
         // damaged table); rebuild by scanning once and retry from the corrected
         // offset rather than silently returning the wrong object.
-        if (!HeaderMatches(entry.Field2, reference.Num, reference.Gen) && !_scanned)
+        if (!HeaderMatches(entry.Field2, reference.Num, reference.Gen))
         {
-            _scanned = true;
-            RebuildByScanning();
-            if (_entries.TryGetValue(reference.Num, out var corrected)
-                && corrected.Type == EntryType.Uncompressed)
+            if (!_scanned)
             {
-                entry = corrected;
+                _scanned = true;
+                RebuildByScanning();
+                if (_entries.TryGetValue(reference.Num, out var corrected))
+                {
+                    if (corrected.Type == EntryType.Compressed)
+                    {
+                        return FetchCompressed(corrected);
+                    }
+                    if (corrected.Type == EntryType.Uncompressed)
+                    {
+                        entry = corrected;
+                    }
+                }
+            }
+
+            // Still another object (or none) at the offset - the stale one, or the scan
+            // found no such object: the requested object is not in the file. Parsing
+            // there would hand back a different object under this reference.
+            if (!HeaderMatches(entry.Field2, reference.Num, reference.Gen))
+            {
+                return null;
             }
         }
 
-        var parser = new BitPdfParser(new BitPdfLexer(new BitPdfStream(_buffer, entry.Field2)), this);
+        var parser = new BitPdfParser(new BitPdfLexer(_source.CreateStream(entry.Field2)), this, _reader);
         object? obj = parser.GetObj();
 
         if (_security is not null && reference.Num != _encryptRefNum)
@@ -471,7 +525,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
                 DecryptDictStrings(dict, num, gen);
                 return dict;
 
-            case BitPdfStream stream when stream.Dict is not null:
+            case BitPdfBaseStream stream when stream.Dict is not null:
                 DecryptDictStrings(stream.Dict, num, gen);
                 // Cross-reference streams are never encrypted.
                 if (BitPdfPrimitives.IsName(stream.Dict.Get("Type"), "XRef"))
@@ -487,6 +541,12 @@ public sealed class BitPdfXRef : IBitPdfXRef
                 stream.Reset();
                 byte[] raw = stream.GetBytes();
                 byte[] decrypted = _security!.DecryptStream(raw, num, gen);
+                if (_source is IBitPdfByteSourceLifetime lifetime)
+                {
+                    var guarded = new BitPdfGuardedMemoryByteSource(decrypted, lifetime).CreateStream();
+                    guarded.Dict = stream.Dict;
+                    return guarded;
+                }
                 return new BitPdfStream(decrypted, 0, decrypted.Length, stream.Dict);
 
             default:
@@ -577,7 +637,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
         var result = new List<object?>();
         _objStmCache[streamNum] = result; // guard re-entrancy
 
-        if (Fetch(new BitPdfRef(streamNum, 0)) is not BitPdfStream stream || stream.Dict is null)
+        if (Fetch(new BitPdfRef(streamNum, 0)) is not BitPdfBaseStream stream || stream.Dict is null)
         {
             return result;
         }
@@ -623,7 +683,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
     {
         try
         {
-            var lexer = new BitPdfLexer(new BitPdfStream(_buffer, offset));
+            var lexer = new BitPdfLexer(_source.CreateStream(offset));
             if (lexer.GetObj() is not double dn || (int)dn != num)
             {
                 return false;
@@ -631,7 +691,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             // The generation should match too; tolerate a header that omits it.
             return lexer.GetObj() is not double dg || (int)dg == gen;
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             return false;
         }
@@ -652,13 +712,13 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
     private void ScanForObjects()
     {
-        int n = _buffer.Length;
+        int n = _reader.Length;
         var objKw = "obj"u8.ToArray();
         int i = 0;
         while (i < n)
         {
             // A header is "<num> <gen> obj" at a token boundary.
-            if (!IsDigit(_buffer[i]) || (i > 0 && !IsWhiteOrDelimiter(_buffer[i - 1])))
+            if (!IsDigit(_reader.ReadByte(i)) || (i > 0 && !IsWhiteOrDelimiter(_reader.ReadByte(i - 1))))
             {
                 i++;
                 continue;
@@ -668,7 +728,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             int num = ReadInt(ref i, n);
             int p = i;
             SkipWhite(ref p, n);
-            if (p == i || p >= n || !IsDigit(_buffer[p]))
+            if (p == i || p >= n || !IsDigit(_reader.ReadByte(p)))
             {
                 i = startNum + 1;
                 continue;
@@ -702,11 +762,11 @@ public sealed class BitPdfXRef : IBitPdfXRef
             {
                 obj = FetchUncompressed(new BitPdfRef(streamNum, entry.Field3), entry);
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 continue;
             }
-            if (obj is not BitPdfStream s || s.Dict is null || !BitPdfPrimitives.IsName(s.Dict.Get("Type"), "ObjStm"))
+            if (obj is not BitPdfBaseStream s || s.Dict is null || !BitPdfPrimitives.IsName(s.Dict.Get("Type"), "ObjStm"))
             {
                 continue;
             }
@@ -716,7 +776,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             {
                 data = BitPdfStreamDecoder.Decode(s);
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 continue;
             }
@@ -765,7 +825,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             {
                 obj = Fetch(new BitPdfRef(num, entry.Field3));
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 continue;
             }
@@ -783,21 +843,24 @@ public sealed class BitPdfXRef : IBitPdfXRef
     {
         var kw = "trailer"u8.ToArray();
         BitPdfDict? result = null;
-        for (int i = 0; i + kw.Length <= _buffer.Length; i++)
+        int start = 0;
+        while (start <= _reader.Length - kw.Length)
         {
-            if (!MatchesAt(i, kw))
+            int i = _reader.IndexOf(kw, start);
+            if (i < 0)
             {
-                continue;
+                break;
             }
+            start = i + 1;
             try
             {
-                var parser = new BitPdfParser(new BitPdfLexer(new BitPdfStream(_buffer, i + kw.Length)), this, allowStreams: false);
+                var parser = new BitPdfParser(new BitPdfLexer(_source.CreateStream(i + kw.Length)), this, _reader, allowStreams: false);
                 if (parser.GetObj() is BitPdfDict d)
                 {
                     result = d; // keep the last (most recent) trailer
                 }
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 // Ignore an unparseable trailer candidate.
             }
@@ -808,9 +871,9 @@ public sealed class BitPdfXRef : IBitPdfXRef
     private int ReadInt(ref int i, int n)
     {
         int value = 0;
-        while (i < n && IsDigit(_buffer[i]))
+        while (i < n && IsDigit(_reader.ReadByte(i)))
         {
-            value = value * 10 + (_buffer[i] - '0');
+            value = value * 10 + (_reader.ReadByte(i) - '0');
             i++;
         }
         return value;
@@ -818,42 +881,42 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
     private void SkipWhite(ref int i, int n)
     {
-        while (i < n && IsWhite(_buffer[i]))
+        while (i < n && IsWhite(_reader.ReadByte(i)))
         {
             i++;
         }
     }
 
-    private static bool IsDigit(byte b) => b is >= (byte)'0' and <= (byte)'9';
-    private static bool IsWhite(byte b) => b is 0x20 or 0x09 or 0x0A or 0x0C or 0x0D or 0x00;
-    private static bool IsWhiteOrDelimiter(byte b)
+    private static bool IsDigit(int b) => b is >= '0' and <= '9';
+    private static bool IsWhite(int b) => b is 0x20 or 0x09 or 0x0A or 0x0C or 0x0D or 0x00;
+    private static bool IsWhiteOrDelimiter(int b)
         => IsWhite(b) || b is (byte)'<' or (byte)'>' or (byte)'[' or (byte)']'
             or (byte)'(' or (byte)')' or (byte)'/' or (byte)'{' or (byte)'}';
 
     private int FindStartXRef()
     {
         var keyword = "startxref"u8.ToArray();
-        int searchStart = Math.Max(0, _buffer.Length - 2048);
-        for (int i = _buffer.Length - keyword.Length; i >= searchStart; i--)
+        int searchStart = Math.Max(0, _reader.Length - 2048);
+        using var window = _source.GetMemory(searchStart, _reader.Length - searchStart);
+        var tail = window.Span;
+        int index = tail.LastIndexOf(keyword);
+        if (index >= 0)
         {
-            if (MatchesAt(i, keyword))
-            {
-                var lexer = new BitPdfLexer(new BitPdfStream(_buffer, i + keyword.Length));
-                return lexer.GetObj() is double d ? (int)d : -1;
-            }
+            var lexer = new BitPdfLexer(_source.CreateStream(searchStart + index + keyword.Length));
+            return lexer.GetObj() is double d ? (int)d : -1;
         }
         return -1;
     }
 
     private bool MatchesAt(int at, byte[] keyword)
     {
-        if (at < 0 || at + keyword.Length > _buffer.Length)
+        if (at < 0 || at > _reader.Length || keyword.Length > _reader.Length - at)
         {
             return false;
         }
         for (int k = 0; k < keyword.Length; k++)
         {
-            if (_buffer[at + k] != keyword[k])
+            if (_reader.ReadByte(at + k) != keyword[k])
             {
                 return false;
             }

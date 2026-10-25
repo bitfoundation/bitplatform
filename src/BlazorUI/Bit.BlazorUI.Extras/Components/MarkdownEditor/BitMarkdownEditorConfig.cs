@@ -5,6 +5,9 @@
 /// This is a named type (not an anonymous one) so that its properties are
 /// serialized by name and it stays trim/AOT-safe: anonymous types lose their
 /// constructor parameter names when trimmed, which breaks System.Text.Json.
+/// System.Text.Json reads its getters by reflection, which the trimmer cannot see,
+/// so the interop calls that send it preserve them with a
+/// <see cref="System.Diagnostics.CodeAnalysis.DynamicDependencyAttribute"/>.
 /// </summary>
 internal sealed class BitMarkdownEditorConfig
 {
@@ -60,10 +63,23 @@ internal sealed class BitMarkdownEditorConfig
     public bool Submit { get; set; }
 
     /// <summary>
+    /// Whether the panes grow with their content instead of scrolling it.
+    /// </summary>
+    public bool AutoHeight { get; set; }
+
+    /// <summary>
+    /// The shortcuts bound by the toolbar items, keyed by the keys as the script spells a keydown
+    /// (<c>ctrl+alt+shift+k</c>): <c>cmd:&lt;command&gt;</c> runs a command in the script, <c>item:&lt;name&gt;</c>
+    /// calls back for a custom item. Null when no item binds one.
+    /// </summary>
+    public Dictionary<string, string>? Shortcuts { get; set; }
+
+    /// <summary>
     /// A signature of every value above, used to detect a config change across renders
     /// without comparing the properties one by one.
     /// </summary>
     public override string ToString() =>
         $"{ImageUpload}|{SyncScroll}|{AutoPair}|{AutoSaveKey}|{ChangeDebounceMs}|{MaxLength}|{AutoFocus}|" +
-        $"{ReportSelection}|{TabIndents}|{MaxImageSize}|{ImageAccept}|{UploadingText}|{AutoClose}|{Submit}";
+        $"{ReportSelection}|{TabIndents}|{MaxImageSize}|{ImageAccept}|{UploadingText}|{AutoClose}|{Submit}|{AutoHeight}|" +
+        (Shortcuts is null ? string.Empty : string.Join(",", Shortcuts.Select(s => $"{s.Key}={s.Value}")));
 }

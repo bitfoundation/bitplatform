@@ -1,0 +1,84 @@
+﻿@page "/examples/cancel-connection"
+
+<PageTitle>Cancel Connection · Blow</PageTitle>
+
+<ExampleScaffold Title="Cancel Connection"
+                 Summary="A connection in progress can always be abandoned - Escape while dragging, or a click on empty canvas when connecting by clicks - and OnConnectEnd tells every way a gesture can end apart: connected, refused by a handle and why, dropped on empty space, or cancelled.">
+    <Toolbar>
+        <label><input type="checkbox" @bind="_connectOnClick" /> Click to connect</label>
+        <button class="btn btn-secondary" @onclick="ClearLog">Clear log</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectOnClick="_connectOnClick"
+                    OnConnectStart="OnStart" OnConnectEnd="OnEnd">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <Footer>
+        @* Under the canvas: as a status panel over it, the lifecycle had room for one line only. *@
+        <div class="cc-title">Connection lifecycle</div>
+        @if (_log.Count == 0)
+        {
+            <div class="cc-empty">Start dragging from a handle, then press Escape before you let go.</div>
+        }
+        @foreach (var entry in _log)
+        {
+            <div class="cc-row">@entry</div>
+        }
+    </Footer>
+    <TryIt>
+        <li><strong>Drag</strong> from the handle under the top node and, before letting go, press <strong>Escape</strong>: the line disappears and the log says the gesture was cancelled.</li>
+        <li>Drag again and <strong>release on empty canvas</strong>: dropped, nothing connected. Release on the top handle of "Target" to connect.</li>
+        <li>Release on Target's <strong>bottom</strong> handle, or drag the same connection a second time: a handle refuses it, and the log shows the reason the canvas announces to screen readers.</li>
+        <li>Tick <strong>Click to connect</strong>, <strong>click</strong> a handle and move the pointer: the line follows it. <strong>Click</strong> another handle to connect, or <strong>click empty canvas</strong> or press <strong>Escape</strong> to cancel. <strong>Clear log</strong> empties the list.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>OnConnectStart</code> raises a <code>BlowConnectionStartInfo</code> - <code>NodeId</code>, <code>HandleId</code>, <code>HandleType</code> - when a connection starts.</li>
+        <li><code>OnConnectEnd</code> is raised exactly once for every start, however the gesture ends, with a <code>BlowConnectEndInfo</code>. This page sorts the endings by its flags: <code>IsValid</code> (it connected), then <code>Rejection</code> (a handle refused it, and why), then <code>IsDropped</code> (released after a real drag on empty space); what is left was cancelled.</li>
+        <li><strong>Escape</strong> cancels whatever gesture is running before it would clear the selection, so a connection being dragged ends with <code>IsDropped</code> false and nothing connected.</li>
+        <li><code>ConnectOnClick</code> (off by default) makes connections by clicking one handle and then another; a click on empty canvas or <strong>Escape</strong> cancels the pending one.</li>
+        <li>The reason text comes from <code>BlowAriaLabels.Default.ConnectionRejected(rejection)</code>, the sentence the canvas announces to screen readers when a drop is refused; set the canvas's <code>AriaLabels</code> to reword or translate it.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .cc-title { font-weight: 600; margin-bottom: 4px; }
+    .cc-empty { color: var(--bb-text-soft); }
+    .cc-row { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 0; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private readonly List<string> _log = [];
+    private bool _connectOnClick;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Start dragging, then press Esc", Position = new(140, 40), Width = 240 },
+            new BlowNode { Id = "2", Label = "Target", Position = new(220, 220) },
+        ];
+    }
+
+    private void OnStart(BlowConnectionStartInfo info) =>
+        Log($"start: from node {info.NodeId}'s {info.HandleType.ToString().ToLowerInvariant()} handle");
+
+    // The flags are read in this order on purpose: a refused drop is also "not valid", and a drop near a handle that
+    // refused it is also "dropped".
+    private void OnEnd(BlowConnectEndInfo info) => Log(
+        info.IsValid ? "end: connected"
+        : info.Rejection != BlowConnectionRejection.None ? $"end: refused - {BlowAriaLabels.Default.ConnectionRejected(info.Rejection)} ({info.Rejection})"
+        : info.IsDropped ? "end: dropped on empty space, nothing connected"
+        : "end: cancelled - Escape, or a click on empty canvas while connecting by clicks");
+
+    private void Log(string message)
+    {
+        _log.Insert(0, message);
+        if (_log.Count > 12) _log.RemoveAt(_log.Count - 1);
+    }
+
+    private void ClearLog() => _log.Clear();
+}

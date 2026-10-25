@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.CascadingValueProvider;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.CascadingValueProvider;
 
 /// <summary>
 /// A mutable state holder, cascaded as a single instance that is updated in place, which is the case

@@ -4,7 +4,7 @@ using Microsoft.JSInterop.Infrastructure;
 
 namespace Bit.BlazorUI;
 
-[SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>", Scope = "member", Target = "~M:Bit.BlazorUI.IJSRuntimeFastExtensions.FastInvokeVoid(Microsoft.JSInterop.IJSRuntime,System.String,System.Threading.CancellationToken,System.Object[])~System.Threading.Tasks.ValueTask")]
+[SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>", Scope = "member", Target = "~M:Bit.BlazorUI.IJSRuntimeFastExtensions.InvokeVoidInProcess(Microsoft.JSInterop.IJSInProcessRuntime,System.String,System.Object[])")]
 public static class IJSRuntimeFastExtensions
 {
     public const DynamicallyAccessedMemberTypes JsonSerialized = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties;
@@ -48,20 +48,32 @@ public static class IJSRuntimeFastExtensions
     {
         if (jsRuntime is IJSInProcessRuntime jsInProcessRuntime)
         {
-            try
-            {
-                jsInProcessRuntime.Invoke<IJSVoidResult>(identifier, args);
-                return ValueTask.CompletedTask;
-            }
-            catch (JsonException ex)
-            {
-                System.Console.Error.WriteLine($"Error invoking '{identifier}' using {nameof(IJSInProcessRuntime)}. A JSON-related issue occurred: {ex.Message}.");
-                return ValueTask.CompletedTask;
-            }
+            // The call itself is synchronous, so a script the lazy scripts have not imported yet is imported first.
+            var loading = BitScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken);
+            if (loading.IsCompletedSuccessfully is false) return InvokeVoidAfter(loading, jsInProcessRuntime, identifier, args);
+            if (loading.Result) InvokeVoidInProcess(jsInProcessRuntime, identifier, args);
+            return ValueTask.CompletedTask;
         }
         else
         {
             return jsRuntime.InvokeVoid(identifier, cancellationToken, args);
+        }
+
+        static async ValueTask InvokeVoidAfter(ValueTask<bool> loading, IJSInProcessRuntime jsInProcessRuntime, string identifier, object?[]? args)
+        {
+            if (await loading) InvokeVoidInProcess(jsInProcessRuntime, identifier, args);
+        }
+    }
+
+    private static void InvokeVoidInProcess(IJSInProcessRuntime jsInProcessRuntime, string identifier, object?[]? args)
+    {
+        try
+        {
+            jsInProcessRuntime.Invoke<IJSVoidResult>(identifier, args);
+        }
+        catch (JsonException ex)
+        {
+            System.Console.Error.WriteLine($"Error invoking '{identifier}' using {nameof(IJSInProcessRuntime)}. A JSON-related issue occurred: {ex.Message}.");
         }
     }
 
@@ -113,19 +125,30 @@ public static class IJSRuntimeFastExtensions
     {
         if (jsRuntime is IJSInProcessRuntime jsInProcessRuntime)
         {
-            try
-            {
-                return ValueTask.FromResult(jsInProcessRuntime.Invoke<TValue>(identifier, args));
-            }
-            catch (JsonException ex)
-            {
-                System.Console.Error.WriteLine($"Error invoking '{identifier}' using {nameof(IJSInProcessRuntime)}. A JSON-related issue occurred: {ex.Message}.");
-                return ValueTask.FromResult(default(TValue)!);
-            }
+            // The call itself is synchronous, so a script the lazy scripts have not imported yet is imported first.
+            var loading = BitScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken);
+            if (loading.IsCompletedSuccessfully is false) return InvokeAfter(loading, jsInProcessRuntime, identifier, args);
+            return ValueTask.FromResult(loading.Result ? InvokeInProcess<TValue>(jsInProcessRuntime, identifier, args) : default!);
         }
         else
         {
             return jsRuntime.Invoke<TValue>(identifier, cancellationToken, args);
+        }
+
+        static async ValueTask<TValue> InvokeAfter(ValueTask<bool> loading, IJSInProcessRuntime jsInProcessRuntime, string identifier, object?[]? args)
+            => await loading ? InvokeInProcess<TValue>(jsInProcessRuntime, identifier, args) : default!;
+    }
+
+    private static TValue InvokeInProcess<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(IJSInProcessRuntime jsInProcessRuntime, string identifier, object?[]? args)
+    {
+        try
+        {
+            return jsInProcessRuntime.Invoke<TValue>(identifier, args);
+        }
+        catch (JsonException ex)
+        {
+            System.Console.Error.WriteLine($"Error invoking '{identifier}' using {nameof(IJSInProcessRuntime)}. A JSON-related issue occurred: {ex.Message}.");
+            return default!;
         }
     }
 }

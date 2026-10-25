@@ -1,0 +1,486 @@
+﻿@page "/scan"
+
+<PageTitle>Live playground · BbScanner</PageTitle>
+
+<div class="bb-intro">
+    <h1>Live playground</h1>
+    <p class="bb-subtitle">
+        The parameters of <code>&lt;BbScanner&gt;</code> in one place. Changes apply to the running
+        scanner without dropping the camera, except where a setting says otherwise. Camera selection,
+        <code>AcceptResult</code>, the texts and the overlays each have a page of their own:
+        <a href="camera">camera</a>, <a href="lifecycle">lifecycle</a> and <a href="customize">customisation</a>.
+    </p>
+</div>
+
+<div class="bb-demo bb-page-wide">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">Live</span>
+        <StatusBadge Status="_scanner?.Status" />
+        @if (_scanner?.Camera is { } camera)
+        {
+            <span class="bb-badge">@camera.Width×@camera.Height</span>
+        }
+    </div>
+
+    <div class="scan-sample">
+        <div class="scan-layout">
+            <div class="scan-view">
+                <div style="@(_fill ? "block-size:22rem;" : null)">
+                    <BbScanner @ref="_scanner"
+                               Formats="_formats"
+                               Region="_region"
+                               Options="_options"
+                               TargetFrameRate="_frameRate"
+                               RequestedWidth="_requestedWidth"
+                               RequestedHeight="_requestedHeight"
+                               MaxProcessingSize="_processingSize"
+                               DuplicateSuppressionWindow="TimeSpan.FromSeconds(_duplicateSeconds)"
+                               MaxSymbolsPerFrame="_symbolsPerFrame"
+                               AfterScan="_afterScan"
+                               Facing="_facing"
+                               Feedback="Feedback"
+                               ShowControls="_showControls"
+                               ShowStatusBar="_showStatus"
+                               ShowReticle="_showReticle"
+                               ShowMask="_showMask"
+                               HighlightResults="_highlight"
+                               EnableFileScanning="_fileScanning"
+                               AutoStart="true"
+                               Fill="_fill"
+                               OnScan="HandleScan"
+                               OnError="HandleError"
+                               OnStatusChanged="HandleStatus"
+                               OnDiagnostics="HandleDiagnostics">
+                        <ControlsContent>
+                            @* Appended to the built-in control bar. *@
+                            <button type="button" class="bit-bbscanner__button" @onclick="() => _results.Clear()">Clear log</button>
+                        </ControlsContent>
+                        <ChildContent>
+                            @* Arbitrary content on top of the viewfinder. *@
+                            @if (_lastFormat is not null)
+                            {
+                                <div class="scan-badge">@_lastFormat</div>
+                            }
+                        </ChildContent>
+                    </BbScanner>
+                </div>
+
+                <DiagnosticsPanel Diagnostics="_diagnostics"
+                                  FramesDecoded="_scanner?.FramesDecoded ?? 0"
+                                  FramesWithSymbol="_scanner?.FramesWithSymbol ?? 0" />
+            </div>
+
+            <div class="scan-panels">
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Formats</h3>
+                    <p class="bb-card-desc">
+                        Narrowing the set is the cheapest speed-up available: an unused symbology costs
+                        nothing because its decoder is never created, and it is the main guard against
+                        a misread between similar linear symbologies.
+                    </p>
+                    <div class="scan-checks scan-checks-grid">
+                        @foreach (var format in Formats)
+                        {
+                            <label class="bb-check">
+                                <input type="checkbox"
+                                       checked="@_formats.HasFlag(format)"
+                                       @onchange="e => ToggleFormat(format, (bool)(e.Value ?? false))" />
+                                <span>@Label(format)</span>
+                            </label>
+                        }
+                    </div>
+                    <div class="bb-segmented scan-presets" role="group" aria-label="Format presets">
+                        <button type="button" aria-pressed="@(_formats == BbBarcodeFormat.All ? "true" : "false")" @onclick="() => SetFormats(BbBarcodeFormat.All)">All</button>
+                        <button type="button" aria-pressed="@(_formats == BbBarcodeFormat.AllMatrix ? "true" : "false")" @onclick="() => SetFormats(BbBarcodeFormat.AllMatrix)">Matrix only</button>
+                        <button type="button" aria-pressed="@(_formats == BbBarcodeFormat.AllLinear ? "true" : "false")" @onclick="() => SetFormats(BbBarcodeFormat.AllLinear)">Linear only</button>
+                    </div>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Capture</h3>
+
+                    <label class="bb-field">
+                        <span class="scan-field-head"><span>Target frame rate</span><output>@_frameRate fps</output></span>
+                        <input id="fps" type="range" min="1" max="30" step="1"
+                               value="@_frameRate" @onchange="e => _frameRate = ToInt(e, 15)" />
+                        <small><code>TargetFrameRate</code>: how many frames a second are decoded. Above about twenty the extra frames rarely change how fast a symbol is found.</small>
+                    </label>
+
+                    <label class="bb-field">
+                        <span>Requested camera resolution</span>
+                        <select id="resolution" value="@_requestedWidth" @onchange="OnResolutionChanged">
+                            <option value="640">640 × 480</option>
+                            <option value="1280">1280 × 720 (default)</option>
+                            <option value="1920">1920 × 1080</option>
+                        </select>
+                        <small><code>RequestedWidth</code> and <code>RequestedHeight</code> are what the browser is asked for; it may negotiate something else (shown in the bar above the scanner). Applied the next time the camera starts - press Stop, then Start.</small>
+                    </label>
+
+                    <label class="bb-field">
+                        <span class="scan-field-head"><span>Processing size</span><output>@_processingSize px</output></span>
+                        <input id="size" type="range" min="240" max="1280" step="40"
+                               value="@_processingSize" @onchange="e => _processingSize = ToInt(e, 640)" />
+                        <small><code>MaxProcessingSize</code>: longest edge of the image the decoder sees. The browser scales the frame before it crosses into C#, so this is the biggest single performance control.</small>
+                    </label>
+
+                    <label class="bb-field">
+                        <span class="scan-field-head"><span>Scan region</span><output>@((_regionFraction * 100).ToString("0"))%</output></span>
+                        <input id="region" type="range" min="20" max="100" step="5"
+                               value="@(_regionFraction * 100)" @onchange="OnRegionChanged" />
+                        <small><code>Region</code>: a centred square of this fraction of the shorter edge, or the full frame at 100 %. Only the part inside it is searched. See <a href="region">scan region</a> for any rectangle.</small>
+                    </label>
+
+                    <label class="bb-field">
+                        <span class="scan-field-head"><span>Duplicate suppression</span><output>@_duplicateSeconds s</output></span>
+                        <input id="dupe" type="range" min="0" max="10" step="1"
+                               value="@_duplicateSeconds" @onchange="e => _duplicateSeconds = ToInt(e, 2)" />
+                        <small><code>DuplicateSuppressionWindow</code>: how long the same value is not reported again. Zero reports every frame that decodes, which is useful for measuring throughput; <a href="lifecycle">lifecycle</a> shows the once-per-session setting.</small>
+                    </label>
+
+                    <label class="bb-field">
+                        <span class="scan-field-head"><span>Symbols per frame</span><output>@_symbolsPerFrame</output></span>
+                        <input id="symbols" type="range" min="1" max="8" step="1"
+                               value="@_symbolsPerFrame" @onchange="e => _symbolsPerFrame = ToInt(e, 1)" />
+                        <small><code>MaxSymbolsPerFrame</code>: more than one reads every code in view - a sheet of labels, a shelf - each outlined and reported on its own. One is the cheapest.</small>
+                    </label>
+
+                    <label class="bb-field">
+                        <span>After a scan</span>
+                        <select id="after-scan" value="@_afterScan" @onchange="OnAfterScanChanged">
+                            <option value="@BbAfterScan.Continue">Keep scanning</option>
+                            <option value="@BbAfterScan.Pause">Pause</option>
+                            <option value="@BbAfterScan.Stop">Stop the camera</option>
+                        </select>
+                        <small><code>AfterScan</code>: what a reported scan does to the scanner. Pause keeps the camera open, so Resume is instant; Stop releases it.</small>
+                    </label>
+
+                    <label class="bb-field">
+                        <span>Preferred camera</span>
+                        <select id="facing" value="@_facing" @onchange="OnFacingChanged">
+                            <option value="@BbCameraFacing.Rear">Rear</option>
+                            <option value="@BbCameraFacing.Front">Front</option>
+                            <option value="@BbCameraFacing.Any">Any</option>
+                        </select>
+                        <small><code>Facing</code>: the camera to open when no specific one is chosen. Changing it reopens the running camera.</small>
+                    </label>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Advanced tuning</h3>
+                    <p class="bb-card-desc">
+                        Everything here is a property of <code>BbScannerOptions</code>, passed through the
+                        <code>Options</code> parameter. <code>Formats</code>, <code>Region</code> and an
+                        explicitly set <code>DuplicateSuppressionWindow</code> are still applied on top of it,
+                        so the common cases never need it.
+                    </p>
+
+                    <label class="bb-field">
+                        <span class="scan-field-head"><span>Scan lines per orientation</span><output>@_options.MaxScanLines</output></span>
+                        <input id="lines" type="range" min="1" max="60" step="1"
+                               value="@_options.MaxScanLines" @onchange="e => Tune(o => o.MaxScanLines = ToInt(e, 15))" />
+                        <small><code>MaxScanLines</code>: how many lines each orientation gets when looking for linear symbols. Lines spread out from the middle, so a low value still reads an aimed symbol and a high one finds it anywhere.</small>
+                    </label>
+
+                    <label class="bb-field">
+                        <span class="scan-field-head"><span>Downsample factor</span><output>@_options.DownsampleFactor</output></span>
+                        <input id="downsample" type="range" min="1" max="4" step="1"
+                               value="@_options.DownsampleFactor" @onchange="e => Tune(o => o.DownsampleFactor = ToInt(e, 1))" />
+                        <small><code>DownsampleFactor</code>: subsamples while converting to grayscale. Two quarters the pixels every later stage touches, at the cost of the smallest readable symbol.</small>
+                    </label>
+
+                    <div class="scan-checks">
+                        <label class="bb-check">
+                            <input type="checkbox" checked="@_options.TryHarder"
+                                   @onchange="e => Tune(o => o.TryHarder = (bool)(e.Value ?? false))" />
+                            Try harder (exhaustive detection and the full rotation sweep)
+                        </label>
+                        <label class="bb-check">
+                            <input type="checkbox" checked="@_options.AllowInverted"
+                                   @onchange="e => Tune(o => o.AllowInverted = (bool)(e.Value ?? false))" />
+                            Allow inverted (light on dark) symbols
+                        </label>
+                        <label class="bb-check">
+                            <input type="checkbox" checked="@_options.TryReversedRows"
+                                   @onchange="e => Tune(o => o.TryReversedRows = (bool)(e.Value ?? false))" />
+                            Read linear symbols right to left as well
+                        </label>
+                        <label class="bb-check">
+                            <input type="checkbox" checked="@_options.TryVerticalLines"
+                                   @onchange="e => Tune(o => o.TryVerticalLines = (bool)(e.Value ?? false))" />
+                            Scan columns and tilted lines, for rotated linear symbols
+                        </label>
+                        <label class="bb-check">
+                            <input type="checkbox" checked="@_options.Code39CheckDigit"
+                                   @onchange="e => Tune(o => o.Code39CheckDigit = (bool)(e.Value ?? false))" />
+                            Require the Code 39 modulo 43 check character
+                        </label>
+                        <label class="bb-check">
+                            <input type="checkbox" checked="@_options.Code39ExtendedMode"
+                                   @onchange="e => Tune(o => o.Code39ExtendedMode = (bool)(e.Value ?? false))" />
+                            Interpret Code 39 as full ASCII (<code>+A</code> reads as <code>a</code>)
+                        </label>
+                        <label class="bb-check">
+                            <input type="checkbox" checked="@_options.CodabarStartStop"
+                                   @onchange="e => Tune(o => o.CodabarStartStop = (bool)(e.Value ?? false))" />
+                            Keep Codabar's start and stop letters (A to D) in the text
+                        </label>
+                        <label class="bb-check">
+                            <input type="checkbox" checked="@_options.RequireEanExtension"
+                                   @onchange="e => Tune(o => o.RequireEanExtension = (bool)(e.Value ?? false))" />
+                            Report EAN and UPC only with their 2 or 5 digit add-on (magazines, books)
+                        </label>
+                    </div>
+                    <p class="bb-card-desc">
+                        Try harder and inverted symbols cost time on every frame, so they are off for live
+                        scanning and on for still images. Reading right to left is cheap and needed for a symbol
+                        held upside down; scanning columns, for one held sideways, costs about as much as the row
+                        pass. Both are on by default. An add-on is always read into <code>Metadata.Extension</code> when it is
+                        there; requiring it only holds back a symbol whose add-on has not been read yet.
+                    </p>
+
+                    <label class="bb-field scan-field-spaced">
+                        <span>Accepted ITF lengths</span>
+                        <select id="itf" value="@_itfLengths" @onchange="OnItfLengthsChanged">
+                            <option value="default">6 to 20, even (default)</option>
+                            <option value="14">14 only (ITF-14)</option>
+                            <option value="any">Any even length</option>
+                        </select>
+                        <small>ITF has no check character, so its accepted lengths are the main guard against a truncated read.</small>
+                    </label>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Chrome</h3>
+                    <p class="bb-card-desc">
+                        What the component draws over the video. Each is a <code>bool</code> parameter, and each
+                        can be turned off to build your own interface around the scanner.
+                    </p>
+                    <div class="scan-checks">
+                        <label class="bb-check"><input type="checkbox" checked="@_showControls" @onchange="e => _showControls = (bool)(e.Value ?? true)" /> Built-in controls (<code>ShowControls</code>)</label>
+                        <label class="bb-check"><input type="checkbox" checked="@_showStatus" @onchange="e => _showStatus = (bool)(e.Value ?? true)" /> Status bar (<code>ShowStatusBar</code>)</label>
+                        <label class="bb-check"><input type="checkbox" checked="@_showReticle" @onchange="e => _showReticle = (bool)(e.Value ?? true)" /> Reticle (<code>ShowReticle</code>)</label>
+                        <label class="bb-check"><input type="checkbox" checked="@_showMask" @onchange="e => _showMask = (bool)(e.Value ?? true)" /> Dim outside the region (<code>ShowMask</code>)</label>
+                        <label class="bb-check"><input type="checkbox" checked="@_highlight" @onchange="e => _highlight = (bool)(e.Value ?? true)" /> Outline decoded symbols (<code>HighlightResults</code>)</label>
+                        <label class="bb-check"><input type="checkbox" checked="@_fileScanning" @onchange="e => _fileScanning = (bool)(e.Value ?? true)" /> Scan image button and image drop (<code>EnableFileScanning</code>)</label>
+                        <label class="bb-check"><input type="checkbox" checked="@_fill" @onchange="e => _fill = (bool)(e.Value ?? false)" /> Fill the parent instead of keeping the camera's aspect ratio (<code>Fill</code>)</label>
+                    </div>
+                    <p class="bb-card-desc">
+                        The <em>Clear log</em> button in the control bar is this page's own, added through
+                        <code>ControlsContent</code>; the badge naming the last symbology over the video is
+                        <code>ChildContent</code>.
+                    </p>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Feedback</h3>
+                    <div class="scan-checks">
+                        <label class="bb-check"><input type="checkbox" checked="@_vibrate" @onchange="e => _vibrate = (bool)(e.Value ?? false)" /> Vibrate on a scan</label>
+                        <label class="bb-check"><input type="checkbox" checked="@_beep" @onchange="e => _beep = (bool)(e.Value ?? false)" /> Beep on a scan</label>
+                    </div>
+                    <p class="bb-card-desc">
+                        <code>Feedback</code> takes <code>BbScanFeedback.Vibrate</code>, <code>Beep</code> or both.
+                        Browsers only sound a tone after the user has interacted with the page, and Safari does not
+                        vibrate, so the outline and the screen reader announcement always come too.
+                    </p>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Programmatic control</h3>
+                    <p class="bb-card-desc">
+                        The same operations the built-in controls perform, driven from the page through a
+                        <code>@@ref</code> to the scanner, plus <code>ResetDuplicateFilter</code>, which forgets the
+                        values already reported so the one in view is reported again.
+                    </p>
+                    <div class="bb-toolbar">
+                        <button class="btn btn-secondary" type="button" @onclick="() => _scanner!.StartAsync()">Start</button>
+                        <button class="btn btn-secondary" type="button" @onclick="() => _scanner!.StopAsync()">Stop</button>
+                        <button class="btn btn-secondary" type="button" @onclick="() => _scanner!.Pause()">Pause</button>
+                        <button class="btn btn-secondary" type="button" @onclick="() => _scanner!.Resume()">Resume</button>
+                        <button class="btn btn-secondary" type="button" @onclick="OpenPicker">Scan an image</button>
+                        <button class="btn btn-secondary" type="button" @onclick="() => _scanner!.ResetDuplicateFilter()">Forget reported values</button>
+                    </div>
+                </section>
+
+                @if (_error is not null)
+                {
+                    <div class="bb-note bb-note-warn">
+                        <strong>@_error.Kind</strong> — @_error.Message
+                    </div>
+                }
+            </div>
+        </div>
+
+        <ResultLog Results="_results" OnClear="() => _results.Clear()" />
+    </div>
+</div>
+
+@code {
+    private BbScannerOptions _options = new();
+    private string _itfLengths = "default";
+    private bool _fill;
+    private string? _lastFormat;
+
+    /// <summary>
+    /// Options are cloned before every edit, so the running decoder is reconfigured by a new
+    /// instance rather than mutated underneath itself.
+    /// </summary>
+    private void Tune(Action<BbScannerOptions> edit)
+    {
+        var next = _options.Clone();
+        edit(next);
+        next.Validate();
+        _options = next;
+    }
+
+    private void OnItfLengthsChanged(ChangeEventArgs args)
+    {
+        _itfLengths = args.Value?.ToString() ?? "default";
+        IReadOnlyCollection<int> lengths = _itfLengths switch
+        {
+            "14" => [14],
+            "any" => [],
+            _ => [6, 8, 10, 12, 14, 16, 18, 20],
+        };
+
+        Tune(o => o.ItfLengths = lengths);
+    }
+
+    private static readonly BbBarcodeFormat[] Formats =
+    [
+        BbBarcodeFormat.QrCode, BbBarcodeFormat.DataMatrix, BbBarcodeFormat.Code128, BbBarcodeFormat.Code39,
+        BbBarcodeFormat.Ean13, BbBarcodeFormat.Ean8, BbBarcodeFormat.UpcA, BbBarcodeFormat.UpcE, BbBarcodeFormat.Itf,
+        BbBarcodeFormat.Pdf417, BbBarcodeFormat.Aztec, BbBarcodeFormat.Code93, BbBarcodeFormat.Codabar,
+        BbBarcodeFormat.DataBar, BbBarcodeFormat.DataBarLimited, BbBarcodeFormat.DataBarExpanded,
+        BbBarcodeFormat.MaxiCode, BbBarcodeFormat.MicroQrCode,
+    ];
+
+    private readonly List<BbBarcodeResult> _results = [];
+
+    private BbScanner? _scanner;
+    private BbBarcodeFormat _formats = BbBarcodeFormat.All;
+    private BbScanRegion _region = BbScanRegion.CenteredSquare(0.7);
+    private double _regionFraction = 0.7;
+    private BbCameraFacing _facing = BbCameraFacing.Rear;
+    private BbScanDiagnostics _diagnostics;
+    private BbScannerException? _error;
+
+    private int _frameRate = 15;
+    private int _requestedWidth = 1280;
+    private int _requestedHeight = 720;
+    private int _processingSize = 640;
+    private int _duplicateSeconds = 2;
+    private int _symbolsPerFrame = 1;
+    private BbAfterScan _afterScan = BbAfterScan.Continue;
+    private bool _showControls = true;
+    private bool _showStatus = true;
+    private bool _showReticle = true;
+    private bool _showMask = true;
+    private bool _highlight = true;
+    private bool _fileScanning = true;
+    private bool _vibrate;
+    private bool _beep;
+
+    private BbScanFeedback Feedback =>
+        (_vibrate ? BbScanFeedback.Vibrate : BbScanFeedback.None) | (_beep ? BbScanFeedback.Beep : BbScanFeedback.None);
+
+    private void OnResolutionChanged(ChangeEventArgs args)
+    {
+        (_requestedWidth, _requestedHeight) = ToInt(args, 1280) switch
+        {
+            640 => (640, 480),
+            1920 => (1920, 1080),
+            _ => (1280, 720),
+        };
+    }
+
+    private void HandleScan(BbBarcodeResult result)
+    {
+        _lastFormat = result.Format.ToString();
+        _results.Insert(0, result);
+        if (_results.Count > 40)
+        {
+            _results.RemoveAt(_results.Count - 1);
+        }
+
+        StateHasChanged();
+    }
+
+    private void HandleError(BbScannerException error)
+    {
+        _error = error;
+        StateHasChanged();
+    }
+
+    private void HandleStatus(BbScannerStatus status)
+    {
+        if (status != BbScannerStatus.Faulted)
+        {
+            _error = null;
+        }
+
+        StateHasChanged();
+    }
+
+    private void HandleDiagnostics(BbScanDiagnostics diagnostics)
+    {
+        _diagnostics = diagnostics;
+
+        StateHasChanged();
+    }
+
+    private void ToggleFormat(BbBarcodeFormat format, bool enabled)
+    {
+        _formats = enabled ? _formats | format : _formats & ~format;
+    }
+
+    private void SetFormats(BbBarcodeFormat formats) => _formats = formats;
+
+    private void OnRegionChanged(ChangeEventArgs args)
+    {
+        _regionFraction = Math.Clamp(ToInt(args, 70) / 100.0, 0.2, 1.0);
+        _region = _regionFraction >= 0.999 ? BbScanRegion.Full : BbScanRegion.CenteredSquare(_regionFraction);
+    }
+
+    private void OnFacingChanged(ChangeEventArgs args)
+    {
+        if (Enum.TryParse<BbCameraFacing>(args.Value?.ToString(), out var facing))
+        {
+            _facing = facing;
+        }
+    }
+
+    private void OnAfterScanChanged(ChangeEventArgs args)
+    {
+        if (Enum.TryParse<BbAfterScan>(args.Value?.ToString(), out var afterScan))
+        {
+            _afterScan = afterScan;
+        }
+    }
+
+    private Task OpenPicker() => _scanner is null ? Task.CompletedTask : _scanner.OpenFilePickerAsync();
+
+    private static int ToInt(ChangeEventArgs args, int fallback) =>
+        int.TryParse(args.Value?.ToString(), out var value) ? value : fallback;
+
+    private static string Label(BbBarcodeFormat format) => format switch
+    {
+        BbBarcodeFormat.QrCode => "QR Code",
+        BbBarcodeFormat.DataMatrix => "Data Matrix",
+        BbBarcodeFormat.Code128 => "Code 128",
+        BbBarcodeFormat.Code39 => "Code 39",
+        BbBarcodeFormat.Ean13 => "EAN-13",
+        BbBarcodeFormat.Ean8 => "EAN-8",
+        BbBarcodeFormat.UpcA => "UPC-A",
+        BbBarcodeFormat.UpcE => "UPC-E",
+        BbBarcodeFormat.Itf => "ITF",
+        BbBarcodeFormat.Pdf417 => "PDF417",
+        BbBarcodeFormat.Aztec => "Aztec",
+        BbBarcodeFormat.Code93 => "Code 93",
+        BbBarcodeFormat.DataBar => "GS1 DataBar",
+        BbBarcodeFormat.DataBarLimited => "DataBar Limited",
+        BbBarcodeFormat.DataBarExpanded => "DataBar Expanded",
+        BbBarcodeFormat.MaxiCode => "MaxiCode",
+        BbBarcodeFormat.MicroQrCode => "Micro QR",
+        _ => format.ToString(),
+    };
+}

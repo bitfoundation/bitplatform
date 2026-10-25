@@ -1,0 +1,102 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+@* The group is named by the field's own label element when there is one; when the schema suppressed
+   the visible label, pointing aria-labelledby at an element that was never rendered would leave the
+   group anonymous, so the name is inlined instead. *@
+@* tabindex="-1" so "take me to this field" has somewhere to land when no option can take the focus - a read-only
+   or disabled group. Otherwise the focus goes to an option (see FocusAsync). *@
+@* Splat first, exactly as every other renderer does: the schema's extra attributes land on the group
+   (there is no single control to put them on), and everything below overrides them so a stray
+   aria-labelledby cannot unhook the group's name. The field's id goes on the group for the same
+   reason the tag list's does: it is what an error-summary link points at, and with no element
+   carrying it the link led nowhere. *@
+<div @attributes="ExtraAttributes"
+     id="@Context.ElementId"
+     class="bit-borm-radio-group"
+     @ref="Element"
+     tabindex="-1"
+     role="radiogroup"
+     aria-labelledby="@(Field.ShowLabel ? Context.LabelId : null)"
+     aria-label="@AriaLabel"
+     aria-required="@AriaRequired"
+     aria-invalid="@AriaInvalid"
+     aria-describedby="@DescribedBy">
+    @for (var index = 0; index < Context.Options.Count; index++)
+    {
+        var opt = Context.Options[index];
+        // Its own copy: the reference is captured after the loop has run, when the loop's index is past the end.
+        var position = index;
+        var optionId = OptionId(index, opt.Value);
+        <label class="bit-borm-radio" for="@optionId">
+            <input type="radio"
+                   id="@optionId"
+                   @ref="_inputs[position]"
+                   name="@(Context.InputName ?? _groupName)"
+                   value="@opt.Value"
+                   checked="@(opt.Value == Context.StringValue)"
+                   disabled="@(DisabledOrReadOnly || opt.Disabled)"
+                   @onchange="@(() => Context.SetFromStringAsync(opt.Value))"
+                   @onblur="OnBlur" />
+            <span>@opt.Label</span>
+        </label>
+    }
+    @if (ReadOnlyPostedName is { } posted)
+    {
+        <input type="hidden" name="@posted" value="@Context.StringValue" />
+    }
+</div>
+
+@code {
+    private static int s_groups;
+
+    // What groups the options in the browser, unless the form is posted and they have to post under the field's
+    // path. Not the field's element id: that carries the row's index, and while a repeater's keyed rows trade
+    // places two rows briefly shared one name - two checked radios in one group, so the browser unchecked one,
+    // and nothing put it back, the render having changed nothing about it. This name moves with its row.
+    private readonly string _groupName = "borm_radio_" + Interlocked.Increment(ref s_groups);
+
+    private readonly Dictionary<int, ElementReference> _inputs = new();
+
+    protected override Task OnParametersSetAsync() => LoadOptionsAsync();
+
+    /// <summary>
+    /// Focuses the option a keyboard user would land on - the chosen one, else the first that can be chosen - so the
+    /// arrow keys move through the options from there, which is also where an error summary's link to a radio
+    /// question leads. Landing on the group, the arrow keys scrolled the page instead. A group no option of which
+    /// can take the focus - read-only, disabled - takes it itself.
+    /// </summary>
+    public override async ValueTask<bool> FocusAsync()
+    {
+        var target = -1;
+        if (!DisabledOrReadOnly)
+        {
+            for (var i = 0; i < Context.Options.Count; i++)
+            {
+                if (Context.Options[i].Disabled) continue;
+                if (Context.Options[i].Value == Context.StringValue) { target = i; break; }
+                if (target < 0) target = i;
+            }
+        }
+
+        if (target >= 0 && _inputs.TryGetValue(target, out var input))
+        {
+            try
+            {
+                await input.FocusAsync();
+                return true;
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException or JSException)
+            {
+                // Not rendered yet, or no longer: the group below.
+            }
+        }
+
+        return await base.FocusAsync();
+    }
+
+    // Option values become part of a DOM id, so anything that is not id-safe is folded to '_'. The
+    // index goes in too: folding makes "en-US" and "en_US" the same string, and two options sharing an
+    // id would leave one label pointing at the other's control.
+    private string OptionId(int index, string value) => BormFieldContext.OptionId(Context.ElementId, index, value);
+}

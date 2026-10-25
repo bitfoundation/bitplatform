@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Source of a <see cref="BitMap{TMapProvider}.OnInteropError"/> event.

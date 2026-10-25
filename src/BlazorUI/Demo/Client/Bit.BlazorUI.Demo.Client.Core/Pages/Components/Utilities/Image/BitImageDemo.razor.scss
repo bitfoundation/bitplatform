@@ -7,12 +7,48 @@
     align-items: flex-start;
 }
 
+// A row of labeled images, wrapping on a narrow screen.
+.image-row {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+// The column a Fluid image scales down to, outlined so the column's edge is visible.
+.narrow-column {
+    width: 12rem;
+    border: 1px dashed gray;
+}
+
+// The body of the preview modal, which a Fluid image scales down to on a narrow screen.
+.preview-body {
+    padding: 1rem;
+    max-width: min(48rem, 90vw);
+}
+
 // The parent a maximized frame fills, which has to have a size of its own for the frame to take it.
 .max-frame-host {
     width: 14rem;
     height: 9rem;
     border-radius: 0.25rem;
     border: 1px solid gray;
+}
+
+// The panel a failed image shows through the ErrorTemplate. The template fills the sized frame, so the
+// panel takes that whole room and centers its message in it.
+.image-error {
+    gap: 0.5rem;
+    height: 100%;
+    display: flex;
+    padding: 1rem;
+    text-align: center;
+    align-items: center;
+    flex-direction: column;
+    box-sizing: border-box;
+    justify-content: center;
+    color: var(--bit-clr-err);
+    background-color: var(--bit-clr-bg-ter);
 }
 
 // The caption laid over an image. It is written inside the BitImage in this page, so it carries this
@@ -29,12 +65,14 @@
     background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
 }
 
-::deep {
-    // A tint behind the image, so the empty part of a frame the image does not fill is visible.
-    .framed {
-        background-color: #00ffff17;
-    }
+// A tint behind the image, so the empty part of a frame the image does not fill is visible. It is a plain
+// element wrapped around the image, shrunk to the frame, since the Class parameter is only introduced later.
+.framed {
+    width: fit-content;
+    background-color: #00ffff17;
+}
 
+::deep {
     .custom-class {
         padding: 0.5rem;
         filter: hue-rotate(45deg);

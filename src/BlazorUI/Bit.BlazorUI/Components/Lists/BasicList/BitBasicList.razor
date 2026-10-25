@@ -1,13 +1,18 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+@* The role comes ahead of the splatted attributes, since the last of two attributes of the same name wins: a role
+   the page passes itself is kept, rather than replaced by this one or dropped along with its null. The label is
+   written after them and only replaces the page's own while the list itself is named by the AriaLabel; otherwise
+   the one the page splatted on is written back (see BitComponentBase.GetSplattedAttribute), since a null written
+   over it would remove it. A root named either way is a named group, since a generic div drops its name. *@
+<div @ref="RootElement"
+     role="@(_RootNamed ? "group" : null)"
+     @attributes="HtmlAttributes"
      id="@_Id"
-     role="@Role"
-     tabindex="@TabIndex"
-     aria-label="@AriaLabel"
-     aria-busy="@(_isLoadingMore || Loading ? "true" : null)"
+     aria-label="@(_LabelOnRoot ? AriaLabel : GetSplattedAttribute("aria-label"))"
+     tabindex="@(TabIndex ?? (_focusHandedToRoot ? "-1" : null))"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
@@ -19,58 +24,118 @@
         </div>
     }
 
-    @if (_ShowLoading)
+    @* Always present, since a live region only announces what is added to it after it was rendered: a status
+       inserted along with its text is skipped by several screen readers. The loading content is put inside it
+       rather than beside it, so what is announced is what is on screen, a LoadingTemplate's own text included,
+       and nothing is read out twice. A page loaded while the items stay on screen has nothing visible to
+       announce beyond the busy LoadMore element, so the LoadingLabel is announced for it instead. *@
+    <div role="status" class="bit-bsl-sts">
+        @if (_ShowLoading)
+        {
+            <div @key="_loadingKey"
+                 style="@Styles?.LoadingContent"
+                 class="bit-bsl-ldc @Classes?.LoadingContent">
+                @if (LoadingTemplate is not null)
+                {
+                    @LoadingTemplate
+                }
+                else
+                {
+                    <span class="bit-bsl-spn" aria-hidden="true"></span>
+                    <span class="bit-bsl-ldt">@LoadingLabel</span>
+                }
+            </div>
+        }
+        else if (_isLoadingMore)
+        {
+            <span class="bit-bsl-stt">@LoadingLabel</span>
+        }
+    </div>
+
+    @if (_ShowLoading is false)
     {
-        <div style="@Styles?.LoadingContent"
-             class="bit-bsl-ldc @Classes?.LoadingContent">
-            @if (LoadingTemplate is not null)
+        @* The rows live in an element of their own rather than straight under the root: a list may only own
+           list items, and the root also holds the header, the footer, the LoadMore button and the live
+           region, none of which is one. The root stays the scrolling region around all of them. *@
+        <div @ref="_itemsElement"
+             role="@_EffectiveRole"
+             aria-label="@(_LabelOnItems ? AriaLabel : null)"
+             aria-busy="@(_isLoadingMore ? "true" : null)"
+             style="@Styles?.Items"
+             class="bit-bsl-itm@(_VirtualizeWindowClass) @Classes?.Items">
+            @if (Virtualize)
             {
-                @LoadingTemplate
+                if (_VirtualizeProvider is false)
+                {
+                    <_BitBasicListVirtualize Items="_viewItems"
+                                             ItemSize="@ItemSize"
+                                             EmptyContent="EmptyContent"
+                                             OverscanCount="@OverscanCount">
+                        @VirtualizedRow(context)
+                    </_BitBasicListVirtualize>
+                }
+                else
+                {
+                    <_BitBasicListVirtualize @ref="_bitBasicListVirtualizeRef"
+                                             ItemSize="@ItemSize"
+                                             EmptyContent="EmptyContent"
+                                             OverscanCount="@OverscanCount"
+                                             Placeholder="VirtualizePlaceholder"
+                                             ItemsProvider="ProvideVirtualizedItems">
+                        @VirtualizedRow(context)
+                    </_BitBasicListVirtualize>
+                }
+
+                @* Virtualize renders no row before its JS has measured the list, which a prerender or a static
+                   render never gets to and an interactive render only gets to a round trip later, so until then
+                   the list renders the first window itself, after the two spacers Virtualize starts out with:
+                   the rows of the items it holds (the same markup Virtualize renders them with) followed by the
+                   height of the rest, or the placeholders of a provider it may not call yet. *@
+                var windowCount = _VirtualizeWindowCount;
+                if (windowCount > 0)
+                {
+                    if (_VirtualizeProvider is false)
+                    {
+                        foreach (var item in _viewItems.Take(windowCount))
+                        {
+                            @_EffectiveRowTemplate(item)
+                        }
+
+                        if (_viewItems.Count > windowCount)
+                        {
+                            <div aria-hidden="true" style="@GetVirtualizeSpacerStyle(_viewItems.Count - windowCount)"></div>
+                        }
+                    }
+                    else if (VirtualizePlaceholder is not null)
+                    {
+                        for (var index = 0; index < windowCount; index++)
+                        {
+                            @VirtualizePlaceholder(new PlaceholderContext(index, ItemSize))
+                        }
+                    }
+                    else
+                    {
+                        <div aria-hidden="true" style="@GetVirtualizeSpacerStyle(windowCount)"></div>
+                    }
+                }
+            }
+            else if (_viewItems.Count > 0)
+            {
+                foreach (var item in _viewItems)
+                {
+                    @_EffectiveRowTemplate(item)
+                }
             }
             else
             {
-                <span>...</span>
+                @EmptyContent
             }
         </div>
-    }
-    else if (Virtualize)
-    {
-        if (ItemsProvider is null || LoadMore)
-        {
-            <_BitBasicListVirtualize Items="_viewItems"
-                                     ItemSize="@ItemSize"
-                                     EmptyContent="EmptyContent"
-                                     OverscanCount="@OverscanCount">
-                @_EffectiveRowTemplate(context)
-            </_BitBasicListVirtualize>
-        }
-        else
-        {
-            <_BitBasicListVirtualize @ref="_bitBasicListVirtualizeRef"
-                                     ItemSize="@ItemSize"
-                                     EmptyContent="EmptyContent"
-                                     OverscanCount="@OverscanCount"
-                                     Placeholder="VirtualizePlaceholder"
-                                     ItemsProvider="ProvideVirtualizedItems">
-                @_EffectiveRowTemplate(context)
-            </_BitBasicListVirtualize>
-        }
-    }
-    else if (_viewItems.Count > 0)
-    {
-        foreach (var item in _viewItems)
-        {
-            @_EffectiveRowTemplate(item)
-        }
-    }
-    else
-    {
-        @EmptyContent
     }
 
     @if (_ShowSentinel)
     {
-        <div @ref="_sentinelElement" class="bit-bsl-snt" aria-hidden="true"></div>
+        <div @ref="_sentinelElement" style="@_SentinelStyle" class="bit-bsl-snt" aria-hidden="true"></div>
     }
 
     @if (LoadMore && _loadMoreFinished is false)
@@ -80,12 +145,13 @@
             @* A template is free to render a button (or any other control) of its own, and a button
                cannot be nested inside another one, so the clickable wrapper of a template is a plain
                element carrying the button role rather than a real button element. *@
-            <div role="button"
-                 tabindex="0"
-                 aria-disabled="@(_isLoadingMore || IsEnabled is false ? "true" : null)"
+            <div @ref="_loadMoreElement"
+                 id="@_LoadMoreId"
+                 role="button"
+                 tabindex="@(Disabled ? "-1" : "0")"
+                 aria-disabled="@(Disabled ? "true" : null)"
                  aria-busy="@(_isLoadingMore ? "true" : null)"
                  @onclick="() => LoadMoreItems(false)"
-                 @onkeydown="HandleLoadMoreKeyDown"
                  style="@Styles?.LoadMoreButton"
                  class="bit-bsl-lmb @Classes?.LoadMoreButton">
                 @LoadMoreTemplate(_isLoadingMore)
@@ -93,9 +159,16 @@
         }
         else
         {
-            <button type="button"
+            @* Loading a page only marks the button busy rather than disabling it: a disabled button drops the
+               keyboard focus it holds, which would send a keyboard user back to the start of the page.
+               The button keeps its own name while busy: the status region already says the page is loading,
+               and a button named after that as well would have it read out twice. *@
+            <button id="@_LoadMoreId"
+                    type="button"
+                    aria-label="@(_isLoadingMore ? LoadMoreText : null)"
                     aria-busy="@(_isLoadingMore ? "true" : null)"
-                    disabled="@(_isLoadingMore || IsEnabled is false)"
+                    disabled="@(Disabled)"
+                    aria-disabled="@(Disabled ? "true" : null)"
                     @onclick="() => LoadMoreItems(false)"
                     style="@Styles?.LoadMoreButton"
                     class="bit-bsl-lmb @Classes?.LoadMoreButton">
@@ -103,7 +176,8 @@
                      class="bit-bsl-lmt @Classes?.LoadMoreText">
                     @if (_isLoadingMore)
                     {
-                        <span>...</span>
+                        <span class="bit-bsl-spn" aria-hidden="true"></span>
+                        <span>@LoadingLabel</span>
                     }
                     else
                     {

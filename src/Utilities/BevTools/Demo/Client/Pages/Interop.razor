@@ -1,0 +1,183 @@
+﻿@page "/interop"
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<PageTitle>JS interop · BevTools</PageTitle>
+
+<div class="bb-intro">
+    <p class="bb-overline">Scenario · JS interop</p>
+    <h1>JS interop</h1>
+    <p class="bb-subtitle">
+        Every call below goes through the <code>IJSRuntime</code> injected into this component and the JS module it
+        imports, so BevTools → JS Interop attributes it to <code>Interop</code> with its duration and result. JS → .NET
+        callbacks are reported by the browser bridge. A service that calls JS itself opts in with
+        <code>jsRuntime.WithBevToolsTracking(session)</code>.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The calls</h3>
+    <p class="bb-card-desc">
+        The functions live in <code>wwwroot/js/interop.js</code>: one measures the box below, one busy-waits for
+        400 ms, one is called 120 times in a loop, a class is constructed and its property read and written, one
+        calls back into .NET every 200 ms, one throws, one leaves an error and a rejected promise unhandled, and one
+        writes to <code>localStorage</code> and <code>sessionStorage</code>.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span><RendererStatus /></div>
+
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="Measure">Measure element</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => Slow(400)">Slow call (400 ms busy JS)</button>
+            <button type="button" class="btn btn-secondary" @onclick="Chatty">Chatty loop (120 calls)</button>
+            <button type="button" class="btn btn-secondary" @onclick="ObjectMembers">Create, read and write a JS object (.NET 10)</button>
+            <button type="button" class="btn btn-secondary" @onclick="ToggleCallbacks">@(_callbacks ? "Stop" : "Start") JS → .NET callbacks (every 200 ms)</button>
+            <button type="button" class="btn btn-secondary" @onclick="ThrowInJs">JS function throws</button>
+            <button type="button" class="btn btn-secondary" @onclick="UnhandledJs">Unhandled JS error + rejection</button>
+            <button type="button" class="btn btn-secondary" @onclick="WriteStorage">Write localStorage/sessionStorage</button>
+        </div>
+
+        <div id="measure-target" class="demo-tile">
+            <h4 class="demo-tile-title">Measured element</h4>
+            <div class="bb-mono">@_result</div>
+            <div class="bb-muted">callbacks received: @_ticks</div>
+        </div>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> JS Interop: per call and per identifier</h3>
+    <p class="bb-card-desc">
+        The <strong>JS Interop</strong> panel counts the calls per identifier with their total, average and maximum
+        duration and how many failed, and lists the recent calls with the component that made each one and its
+        result. On the Server renderer every one of those calls is a round trip to the browser.
+    </p>
+    <ul class="bb-detail-list">
+        <li>→ marks a .NET → JS call, ← a call from JS into .NET. Start the callbacks and <code>OnTick</code> arrives five times a second as ←, reported by the browser bridge.</li>
+        <li>Calls on the imported module read <code>module.measure</code>, <code>module.ping</code>…: a module reference obtained through a tracked <code>IJSRuntime</code> is tracked too.</li>
+        <li><em>Create, read and write a JS object</em> uses the .NET 10 interop members: <code>new module.Tally</code>, <code>get module.count</code> and <code>set module.count</code>, each a row of its own (the object came from the module, so its calls are labelled with it).</li>
+        <li><em>JS function throws</em> is a failed call: its result is the <code>JSException</code>, and the identifier's <em>Failed</em> count goes up.</li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Diagnostics, Errors and Browser</h3>
+    <ul class="bb-detail-list">
+        <li><strong>Diagnostics</strong>: <em>Chatty loop</em> is excessive interop (more than 50 calls to one identifier in a second) and <em>Slow call</em> is slow interop (over 250 ms). The fix for both: batch the work into one JS function.</li>
+        <li><strong>Errors</strong>: the JS exception the page catches (source <em>js-interop</em>, with the component), and the unhandled error and rejection the browser bridge reports (source <em>javascript</em>).</li>
+        <li><strong>Browser</strong> → <em>Read localStorage / sessionStorage</em> after <em>Write localStorage/sessionStorage</em>: <code>demo:theme</code> and <code>demo:cart</code> are shown, <code>demo:auth_token</code> is redacted in the browser before it ever reaches .NET. The same tab shows whether the browser is online and visible, the JS heap, the page load time, and the JS errors and JS → .NET calls it counted.</li>
+    </ul>
+    <div class="bb-try">
+        <a href="problems#problem-5" class="btn btn-outline">Problem 5 →</a>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Calls that are not this page's</h3>
+    <p class="bb-card-desc">
+        The panel shows every tracked call in the app, so the site around this page shows up too: the search box in
+        the header registers its keyboard shortcut once (<code>bitDemoSite.registerPalette</code>, from
+        <code>CommandPalette</code>) and locks the page scroll while it is open (<code>bitDemoSite.lockScroll</code>),
+        and the theme button calls <code>bitDemoTheme.toggle</code> from <code>Header</code>. The framework's own
+        calls - <code>FocusOnNavigate</code> moving focus after each navigation - are listed as well.
+    </p>
+</div>
+
+@code {
+    private IJSObjectReference? _module;
+    private DotNetObjectReference<Interop>? _self;
+    private string _result = "–";
+    private int _ticks;
+    private bool _callbacks;
+
+    private async Task<IJSObjectReference> Module() => _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/interop.js");
+
+    private async Task Measure()
+    {
+        var m = await (await Module()).InvokeAsync<Dictionary<string, int>?>("measure", "#measure-target");
+        _result = m is null ? "not found" : string.Join(", ", m.Select(kv => kv.Key + "=" + kv.Value));
+    }
+
+    private async Task Slow(int ms) => _result = "slow call returned " + await (await Module()).InvokeAsync<int>("slowCall", ms);
+
+    private async Task Chatty()
+    {
+        var module = await Module();
+        double last = 0;
+        for (var i = 0; i < 120; i++)
+        {
+            last = await module.InvokeAsync<double>("ping");
+        }
+
+        _result = "chatty loop done, last ping " + last.ToString("0");
+    }
+
+    // .NET 10: a JS object created with `new` and its property read and written, without a JS function for each.
+    private async Task ObjectMembers()
+    {
+        await using var tally = await (await Module()).InvokeConstructorAsync("Tally", 41);
+        var before = await tally.GetValueAsync<int>("count");
+        await tally.SetValueAsync("count", before + 1);
+        _result = $"new Tally(41): count {before} → {await tally.GetValueAsync<int>("count")}";
+    }
+
+    private async Task ToggleCallbacks()
+    {
+        var module = await Module();
+        if (_callbacks)
+        {
+            await module.InvokeVoidAsync("stopCallbacks");
+            _callbacks = false;
+        }
+        else
+        {
+            _self ??= DotNetObjectReference.Create(this);
+            await module.InvokeVoidAsync("startCallbacks", _self, 200);
+            _callbacks = true;
+        }
+    }
+
+    [JSInvokable]
+    public void OnTick(long now)
+    {
+        _ticks++;
+        StateHasChanged();
+    }
+
+    private async Task ThrowInJs()
+    {
+        try
+        {
+            await (await Module()).InvokeVoidAsync("throwError");
+        }
+        catch (JSException ex)
+        {
+            _result = "caught: " + ex.Message.Split('\n')[0];
+        }
+    }
+
+    private async Task UnhandledJs() => await (await Module()).InvokeVoidAsync("triggerUnhandledError");
+
+    private async Task WriteStorage()
+    {
+        await (await Module()).InvokeVoidAsync("writeStorage");
+        _result = "storage written; open BevTools → Browser → Read storage";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _self?.Dispose();
+        if (_module is not null)
+        {
+            try
+            {
+                await _module.InvokeVoidAsync("stopCallbacks");
+                await _module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
+    }
+}

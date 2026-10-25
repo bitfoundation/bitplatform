@@ -1,0 +1,781 @@
+﻿@page "/e2e/text-field"
+@using System.Globalization
+
+<PageTitle>BitTextField E2E</PageTitle>
+
+<style>
+    .my-ext-icon::before { content: "E"; }
+    .my-ext-clear::before { content: "C"; }
+    .my-eye::before { content: "o"; }
+    .my-eye-off::before { content: "-"; }
+    .e2e-tf-box { width: 600px; }
+</style>
+
+<h1>BitTextField</h1>
+
+@* ---------- Basics ---------- *@
+
+<E2ESection Id="basic" Title="Basic">
+    <BitTextField Id="tf-basic" Label="Basic" @bind-Value="_basicValue" />
+    <span id="basic-value">[@_basicValue]</span>
+</E2ESection>
+
+<E2ESection Id="placeholder" Title="Placeholder">
+    <BitTextField Id="tf-placeholder" Label="Placeholder" Placeholder="Enter a text..." />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <button id="before-disabled" type="button">before</button>
+    <BitTextField Id="tf-disabled"
+                  Label="Disabled"
+                  Disabled="_disabled"
+                  DefaultValue="Locked"
+                  ShowClearButton
+                  OnClick="() => _disabledClicks++"
+                  OnFocus="() => _disabledFocuses++"
+                  HtmlAttributes="_disabledRootAttributes" />
+    <button id="after-disabled" type="button">after</button>
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">toggle disabled</button>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <span id="disabled-focuses">@_disabledFocuses</span>
+    <span id="disabled-root-clicks">@_disabledRootClicks</span>
+    <span id="disabled-root-keys">@_disabledRootKeys</span>
+    <span id="disabled-root-hovers">@_disabledRootHovers</span>
+</E2ESection>
+
+<E2ESection Id="readonly" Title="ReadOnly">
+    <BitTextField Id="tf-readonly"
+                  Label="ReadOnly"
+                  ReadOnly="_readOnly"
+                  DefaultValue="This is ReadOnly"
+                  OnChange="v => { _readOnlyChanges++; _readOnlyValue = v; }" />
+    <button id="btn-toggle-readonly" type="button" @onclick="() => _readOnly = !_readOnly">toggle readonly</button>
+    <span id="readonly-changes">@_readOnlyChanges</span>
+    <span id="readonly-value">[@_readOnlyValue]</span>
+</E2ESection>
+
+<E2ESection Id="description" Title="Description">
+    <BitTextField Id="tf-description" Label="Description" Description="This is Description" />
+</E2ESection>
+
+<E2ESection Id="required" Title="Required">
+    <BitTextField Id="tf-required" Label="Required" Required />
+    <BitTextField Id="tf-required-nolabel" Required />
+</E2ESection>
+
+<E2ESection Id="maxlength" Title="MaxLength and MinLength">
+    <BitTextField Id="tf-maxlength" Label="MaxLength: 5" MaxLength="5" @bind-Value="_maxLengthValue" />
+    <span id="maxlength-value">[@_maxLengthValue]</span>
+    <BitTextField Id="tf-minlength" Label="MinLength: 3" MinLength="3" />
+</E2ESection>
+
+<E2ESection Id="fullwidth" Title="FullWidth">
+    <div id="fullwidth-box" class="e2e-tf-box">
+        <BitTextField Id="tf-fullwidth" Label="FullWidth" FullWidth />
+        <BitTextField Id="tf-notfullwidth" Label="Not FullWidth" Style="display: inline-block;" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="base" Title="Id, Class, Style, HtmlAttributes, TabIndex, Visibility">
+    <BitTextField Id="tf-base"
+                  Label="Base"
+                  Class="my-root-class"
+                  Style="margin-top: 7px;"
+                  TabIndex="-1"
+                  HtmlAttributes="@(new() { ["data-test"] = "base-attr" })" />
+    <BitTextField Id="tf-visibility" Label="Visibility" Visibility="_visibility" />
+    <span id="after-visibility">after</span>
+    <button id="btn-vis-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">visible</button>
+    <button id="btn-vis-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">hidden</button>
+    <button id="btn-vis-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">collapsed</button>
+</E2ESection>
+
+<E2ESection Id="rerender" Title="Re-render on parameter change">
+    <BitTextField Id="tf-rerender" Label="@_dynLabel" Placeholder="@_dynPlaceholder" Description="@_dynDescription" />
+    <button id="btn-change-params" type="button" @onclick="ChangeParams">change params</button>
+</E2ESection>
+
+@* ---------- Variants ---------- *@
+
+<E2ESection Id="variants" Title="Variants">
+    <BitTextField Id="tf-default-variant" Label="Default" />
+    <BitTextField Id="tf-underlined" Label="Underlined" Underlined />
+    <BitTextField Id="tf-noborder" Label="NoBorder" NoBorder />
+    <BitTextField Id="tf-und-req" Label="Underlined + Required" Underlined Required />
+    <BitTextField Id="tf-und-dis" Label="Underlined + Disabled" Underlined Disabled DefaultValue="Not editable" />
+    <div style="width: 320px;">
+        <BitTextField Id="tf-und-long" Label="A rather long label that the underlined variant cuts short with an ellipsis" Underlined />
+    </div>
+</E2ESection>
+
+@* ---------- Multiline ---------- *@
+
+<E2ESection Id="multiline" Title="Multiline">
+    <div class="e2e-tf-box">
+        <BitTextField Id="tf-multiline" Label="Multiline" Multiline />
+        <BitTextField Id="tf-resizable" Label="Resizable" Multiline Resizable />
+        <BitTextField Id="tf-rows" Label="Rows = 10" Multiline Rows="10" />
+        <BitTextField Id="tf-autoheight" Label="AutoHeight" Multiline AutoHeight />
+        <BitTextField Id="tf-autoheight-rows" Label="AutoHeight Rows 4" Multiline AutoHeight Rows="4" />
+        <BitTextField Id="tf-maxrows" Label="AutoHeight MaxRows 3" Multiline AutoHeight MaxRows="3" />
+        <BitTextField Id="tf-prevententer" Label="PreventEnter" Multiline AutoHeight PreventEnter @bind-Value="_preventEnterValue" />
+        <span id="prevententer-value">[@_preventEnterValue]</span>
+        <BitTextField Id="tf-wrap" Label="Wrap off" Multiline Rows="3" Wrap="off"
+                      DefaultValue="A single very long line that is never wrapped, so the field scrolls sideways instead of breaking it apart into lines." />
+        <BitTextField Id="tf-multiline-password" Label="Multiline password" Multiline Type="BitInputType.Password" />
+        <BitTextField Id="tf-autoheight-code" Label="AutoHeight from code" Multiline AutoHeight Value="@_autoHeightCodeValue" ValueChanged="v => _autoHeightCodeValue = v" />
+        <button id="btn-set-autoheight" type="button" @onclick="@(() => _autoHeightCodeValue = "1\n2\n3\n4\n5\n6")">set lines</button>
+        <button id="btn-toggle-multiline" type="button" @onclick="() => _dynMultiline = !_dynMultiline">toggle multiline</button>
+        <BitTextField Id="tf-dyn-multiline" Label="Toggled multiline" Multiline="_dynMultiline" @bind-Value="_dynMultilineValue" />
+        <span id="dyn-multiline-value">[@_dynMultilineValue]</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="autoheight-resize" Title="AutoHeight measured again on a width change">
+    <div id="resize-box" style="width: @(_narrow ? "200px" : "600px");">
+        <BitTextField Id="tf-autoheight-resize" Label="Re-wrapped" Multiline AutoHeight
+                      DefaultValue="A long single line of text that wraps onto several lines once its field is narrowed down to a fraction of its width." />
+    </div>
+    <button id="btn-narrow" type="button" @onclick="() => _narrow = !_narrow">toggle narrow</button>
+</E2ESection>
+
+@* ---------- Input type ---------- *@
+
+<E2ESection Id="types" Title="Input type">
+    @foreach (var type in _types)
+    {
+        <BitTextField Id="@($"tf-type-{type.ToString().ToLowerInvariant()}")" Label="@type.ToString()" Type="type" />
+    }
+    <BitTextField Id="tf-inputmode" Label="InputMode Numeric" InputMode="BitInputMode.Numeric" />
+    <BitTextField Id="tf-enterkeyhint" Label="EnterKeyHint" EnterKeyHint="search" />
+    <BitTextField Id="tf-pattern" Label="Pattern" Pattern="[A-Za-z]{3}" />
+    <BitTextField Id="tf-nospell" Label="No spellcheck" SpellCheck="false" AutoCorrect="false" AutoCapitalize="none" />
+    <BitTextField Id="tf-spell" Label="Spellcheck" SpellCheck="true" AutoCorrect="true" AutoCapitalize="words" />
+    <BitTextField Id="tf-autocomplete" Label="AutoComplete" AutoComplete="email" Name="user-email" />
+</E2ESection>
+
+@* ---------- Icon and affixes ---------- *@
+
+<E2ESection Id="icons" Title="Icon and affixes">
+    <div class="e2e-tf-box">
+        <BitTextField Id="tf-icon-end" Label="Trailing icon" IconName="@BitIconName.EditMail" />
+        <BitTextField Id="tf-icon-start" Label="Leading icon" IconName="@BitIconName.Search" IconPlacement="BitPlacement.Start" />
+        <BitTextField Id="tf-prefix" Label="Prefix" Prefix="https://" @bind-Value="_prefixValue" />
+        <span id="prefix-value">[@_prefixValue]</span>
+        <BitTextField Id="tf-suffix" Label="Suffix" Suffix=".com" />
+        <BitTextField Id="tf-affixes-all" Label="All" Prefix="$" Suffix="USD" DefaultValue="1,250.00" IconName="@BitIconName.Calculator" IconPlacement="BitPlacement.Start" />
+        <BitTextField Id="tf-affix-disabled" Label="Disabled affixes" Prefix="https://" Suffix=".com" IconName="@BitIconName.Globe" Disabled />
+        <BitTextField Id="tf-icon-click" Label="Clickable icon" IconName="@BitIconName.Search" IconTitle="Search" IconAriaLabel="Search for what was typed" OnIconClick="() => _iconClicks++" />
+        <span id="icon-clicks">@_iconClicks</span>
+        <BitTextField Id="tf-icon-click-ro" Label="Clickable icon, read-only" ReadOnly IconName="@BitIconName.Copy" IconAriaLabel="Copy" OnIconClick="() => _iconClicksReadOnly++" />
+        <span id="icon-clicks-ro">@_iconClicksReadOnly</span>
+        <BitTextField Id="tf-icon-click-dis" Label="Clickable icon, disabled" Disabled IconName="@BitIconName.Copy" IconAriaLabel="Copy" OnIconClick="() => _iconClicksDisabled++" />
+        <span id="icon-clicks-dis">@_iconClicksDisabled</span>
+        <BitTextField Id="tf-icon-click-noname" Label="Icon button named by its icon" IconName="@BitIconName.Copy" OnIconClick="() => { }" />
+        <BitTextField Id="tf-icon-click-ext" Label="External icon button" Icon="@BitIconInfo.Css("my-ext-icon")" OnIconClick="() => { }" />
+        <BitTextField Id="tf-icon-click-title" Label="Icon button with a title" IconName="@BitIconName.Search" IconTitle="Find" OnIconClick="() => { }" />
+    </div>
+</E2ESection>
+
+@* ---------- Password ---------- *@
+
+<E2ESection Id="password" Title="Password">
+    <BitTextField Id="tf-password" Label="Password" Type="BitInputType.Password" />
+    <BitTextField Id="tf-reveal" Label="Reveal" Type="BitInputType.Password" CanRevealPassword @bind-Value="_revealValue" />
+    <span id="reveal-value">[@_revealValue]</span>
+    <BitTextField Id="tf-pw-autocomplete" Label="AutoComplete" Type="BitInputType.Password" CanRevealPassword AutoComplete="current-password" />
+    <BitTextField Id="tf-pw-custom" Label="Custom" Type="BitInputType.Password" CanRevealPassword
+                  RevealPasswordAriaLabel="Show the password"
+                  RevealPasswordIconName="@BitIconName.RedEye"
+                  HidePasswordIconName="@BitIconName.Hide" />
+    <BitTextField Id="tf-pw-ext" Label="External icons" Type="BitInputType.Password" CanRevealPassword
+                  RevealPasswordIcon="@BitIconInfo.Css("my-eye")"
+                  HidePasswordIcon="@BitIconInfo.Css("my-eye-off")" />
+    <BitTextField @ref="_passwordRef" Id="tf-pw-api" Label="From outside" Type="BitInputType.Password" CanRevealPassword DefaultValue="p@ssw0rd" />
+    <button id="btn-toggle-reveal" type="button" @onclick="() => _passwordRef?.ToggleRevealPassword()">ToggleRevealPassword</button>
+    <BitTextField Id="tf-pw-canreveal" Label="CanReveal toggled" Type="BitInputType.Password" CanRevealPassword="_canReveal" DefaultValue="secret" />
+    <button id="btn-toggle-canreveal" type="button" @onclick="() => _canReveal = !_canReveal">toggle CanRevealPassword</button>
+    <BitTextField @ref="_textRevealRef" Id="tf-pw-text" Label="Text, revealable" CanRevealPassword DefaultValue="plain" />
+    <button id="btn-toggle-reveal-text" type="button" @onclick="() => _textRevealRef?.ToggleRevealPassword()">ToggleRevealPassword on a text field</button>
+    <BitTextField Id="tf-pw-disabled" Label="Disabled" Type="BitInputType.Password" CanRevealPassword Disabled DefaultValue="secret" />
+</E2ESection>
+
+@* ---------- Binding ---------- *@
+
+<E2ESection Id="binding" Title="Binding">
+    <BitTextField Id="tf-oneway" Label="One-way" Value="@_oneWayValue" />
+    <span id="oneway-value">[@_oneWayValue]</span>
+    <button id="btn-set-oneway" type="button" @onclick="@(() => _oneWayValue = "set from page")">set one-way</button>
+
+    <BitTextField Id="tf-twoway" Label="Two-way" @bind-Value="_twoWayValue" />
+    <span id="twoway-value">[@_twoWayValue]</span>
+    <button id="btn-set-twoway" type="button" @onclick="@(() => _twoWayValue = "set from page")">set two-way</button>
+
+    <BitTextField Id="tf-onchange" Label="OnChange" OnChange="v => { _onChangeValue = v; _onChangeCount++; }" />
+    <span id="onchange-value">[@_onChangeValue]</span>
+    <span id="onchange-count">@_onChangeCount</span>
+
+    <BitTextField Id="tf-default" Label="DefaultValue" DefaultValue="Initial value" OnChange="v => _defaultChanged = v" />
+    <span id="default-value">[@_defaultChanged]</span>
+
+    <BitTextField Id="tf-immediate" Label="Immediate" Immediate @bind-Value="_immediateValue" @bind-Value:after="() => _immediateCount++" />
+    <span id="immediate-value">[@_immediateValue]</span>
+    <span id="immediate-count">@_immediateCount</span>
+
+    <BitTextField Id="tf-debounce" Label="Debounce" Immediate DebounceTime="700" @bind-Value="_debounceValue" @bind-Value:after="() => _debounceCount++" OnInput="() => _debounceInputs++" />
+    <span id="debounce-value">[@_debounceValue]</span>
+    <span id="debounce-count">@_debounceCount</span>
+    <span id="debounce-inputs">@_debounceInputs</span>
+
+    <BitTextField Id="tf-throttle" Label="Throttle" Immediate ThrottleTime="1500" @bind-Value="_throttleValue" @bind-Value:after="ThrottleCommitted" />
+    <span id="throttle-value">[@_throttleValue]</span>
+    <span id="throttle-count">@_throttleCount</span>
+    <span id="throttle-first">[@_throttleFirst]</span>
+
+    <BitTextField Id="tf-trim" Label="Trim" Trim @bind-Value="_trimValue" />
+    <span id="trim-value">[@_trimValue]</span>
+    <BitTextField Id="tf-notrim" Label="Not trimmed" @bind-Value="_noTrimValue" />
+    <span id="notrim-value">[@_noTrimValue]</span>
+    <BitTextField Id="tf-trim-immediate" Label="Trim Immediate" Trim Immediate @bind-Value="_trimImmediateValue" />
+    <span id="trim-immediate-value">[@_trimImmediateValue]</span>
+</E2ESection>
+
+@* ---------- Clear button ---------- *@
+
+<E2ESection Id="clear" Title="Clear button">
+    <BitTextField Id="tf-clear" Label="Email" ShowClearButton @bind-Value="_clearValue" OnClear="() => _clearCount++" />
+    <span id="clear-value">[@_clearValue]</span>
+    <span id="clear-count">@_clearCount</span>
+    <BitTextField Id="tf-clear-custom" Label="Custom" ShowClearButton DefaultValue="Clear me" ClearButtonAriaLabel="Empty this field" ClearButtonIconName="@BitIconName.ChromeClose" />
+    <BitTextField Id="tf-clear-ext" Label="External clear icon" ShowClearButton DefaultValue="Clear me" ClearButtonIcon="@BitIconInfo.Css("my-ext-clear")" />
+    <BitTextField Id="tf-clear-search" Label="Search" Type="BitInputType.Search" ShowClearButton DefaultValue="bit BlazorUI" />
+    <BitTextField Id="tf-search-noclear" Label="Search without clear button" Type="BitInputType.Search" DefaultValue="bit BlazorUI" />
+    <BitTextField Id="tf-clear-multiline" Label="Multiline" Multiline Rows="3" ShowClearButton @bind-Value="_clearMultilineValue" />
+    <span id="clear-multiline-value">[@_clearMultilineValue]</span>
+    <BitTextField Id="tf-clear-readonly" Label="ReadOnly" ReadOnly ShowClearButton DefaultValue="Read only value" />
+    <BitTextField Id="tf-clear-announce" Label="Announced" ShowClearButton DefaultValue="hello@example.com" ClearedAnnouncement="The email address was cleared." />
+    <BitTextField Id="tf-clear-silent" Label="Silent" ShowClearButton DefaultValue="quiet" ClearedAnnouncement="" />
+    <BitTextField Id="tf-clear-firstkey" Label="First key" ShowClearButton />
+    <BitTextField Id="tf-clear-escape" Label="Escape clears" ClearOnEscape @bind-Value="_escapeValue"
+                  OnClear="() => _escapeClears++"
+                  OnEscape="() => { _escapeCount++; _valueAtEscape = _escapeValue; }" />
+    <span id="escape-value">[@_escapeValue]</span>
+    <span id="escape-clears">@_escapeClears</span>
+    <span id="escape-count">@_escapeCount</span>
+    <span id="value-at-escape">[@_valueAtEscape]</span>
+    <button id="btn-set-escape" type="button" @onclick="@(() => _escapeValue = "Press Escape")">set escape value</button>
+    <BitTextField Id="tf-clear-escape-oneway" Label="Escape, one-way" ClearOnEscape Value="fixed" />
+    <BitTextField Id="tf-clear-escape-readonly" Label="Escape, read-only" ClearOnEscape ReadOnly DefaultValue="kept" />
+    <BitTextField @ref="_clearApiRef" Id="tf-clear-api" Label="ClearAsync" @bind-Value="_clearApiValue" OnClear="() => _clearApiCount++" />
+    <button id="btn-clear-api" type="button" @onclick="ClearFromCode">ClearAsync</button>
+    <span id="clear-api-value">[@_clearApiValue]</span>
+    <span id="clear-api-count">@_clearApiCount</span>
+
+    <button id="btn-open-dialog" type="button" @onclick="() => _dialogOpen = true">open dialog</button>
+    <span id="dialog-open">@_dialogOpen</span>
+    <BitDialog Id="tf-dialog-host" @bind-IsOpen="_dialogOpen" Title="Dialog" Message="A field in a dialog" AutoFocusSelector=".bit-tfl-inp">
+        <BitTextField Id="tf-dialog" Label="In a dialog" ClearOnEscape DefaultValue="Press Escape" />
+    </BitDialog>
+</E2ESection>
+
+@* ---------- Character count ---------- *@
+
+<E2ESection Id="count" Title="Character count">
+    <BitTextField Id="tf-count-limit" Label="With a limit" ShowCount MaxLength="30" />
+    <BitTextField Id="tf-count-nolimit" Label="Without a limit" ShowCount />
+    <BitTextField Id="tf-count-desc" Label="With a description" ShowCount MaxLength="30" Description="Shared footer" />
+    <BitTextField Id="tf-count-over" Label="Over the limit" ShowCount MaxLength="10" DefaultValue="A value longer than the limit of the field" />
+    <BitTextField Id="tf-count-multiline" Label="Multiline" Multiline Rows="4" ShowCount MaxLength="140" />
+    <BitTextField Id="tf-count-utf16" Label="UTF-16" ShowCount Immediate MaxLength="20" DefaultValue="👍🏽 hi" />
+    <BitTextField Id="tf-count-strategy" Label="Text elements" ShowCount Immediate MaxLength="20" DefaultValue="👍🏽 hi" CountStrategy="CountTextElements" />
+</E2ESection>
+
+@* ---------- Templates ---------- *@
+
+<E2ESection Id="templates" Title="Templates">
+    <BitTextField Id="tf-tpl-label">
+        <LabelTemplate><span class="tpl-label" style="color: coral;">Custom Label</span></LabelTemplate>
+    </BitTextField>
+    <BitTextField Id="tf-tpl-label-req" Required>
+        <LabelTemplate><span class="tpl-label">Custom Label of a required field</span></LabelTemplate>
+    </BitTextField>
+    <BitTextField Id="tf-tpl-desc" Label="Custom Description">
+        <DescriptionTemplate><span class="tpl-desc">Templated description</span></DescriptionTemplate>
+    </BitTextField>
+    <BitTextField Id="tf-tpl-prefix" Label="Custom Prefix">
+        <PrefixTemplate><span class="tpl-prefix">PRE</span></PrefixTemplate>
+    </BitTextField>
+    <BitTextField Id="tf-tpl-suffix" Label="Custom Suffix">
+        <SuffixTemplate><span class="tpl-suffix">SUF</span></SuffixTemplate>
+    </BitTextField>
+    <BitTextField Id="tf-tpl-clear" Label="Custom clear" ShowClearButton DefaultValue="Clear me">
+        <ClearButtonTemplate><span class="tpl-clear">✕</span></ClearButtonTemplate>
+    </BitTextField>
+    <BitTextField Id="tf-tpl-reveal" Label="Custom reveal" Type="BitInputType.Password" CanRevealPassword DefaultValue="p@ssw0rd">
+        <RevealPasswordTemplate Context="isRevealed"><span class="tpl-reveal">@(isRevealed ? "hide" : "show")</span></RevealPasswordTemplate>
+    </BitTextField>
+    <BitTextField Id="tf-tpl-count" Label="Custom counter" ShowCount MaxLength="20" Immediate>
+        <CountTemplate Context="count"><span class="tpl-count">@count of 20 characters</span></CountTemplate>
+    </BitTextField>
+    <BitTextField Id="tf-tpl-error" Label="Custom error" DefaultValue="admin">
+        <ErrorMessageTemplate><span class="tpl-error">✖ This name is reserved.</span></ErrorMessageTemplate>
+    </BitTextField>
+    <BitTextField Id="tf-tpl-loading" Label="Custom loading" Loading LoadingAriaLabel="Checking the availability">
+        <LoadingTemplate><span class="tpl-loading">working</span></LoadingTemplate>
+    </BitTextField>
+</E2ESection>
+
+@* ---------- GhostText ---------- *@
+
+<E2ESection Id="ghost" Title="GhostText">
+    <div class="e2e-tf-box">
+        <BitTextField Id="tf-ghost" Label="Ghost" Immediate @bind-Value="_ghostValue"
+                      GhostText="@_ghostSuggestion"
+                      OnChange="v => _ghostSuggestion = GetGhostSuggestion(v)"
+                      OnGhostTextAccepted="v => { _ghostAccepted = v; _ghostAcceptedCount++; _ghostSuggestion = null; }" />
+        <span id="ghost-value">[@_ghostValue]</span>
+        <span id="ghost-accepted">[@_ghostAccepted]</span>
+        <span id="ghost-accepted-count">@_ghostAcceptedCount</span>
+        <BitTextField Id="tf-ghost-plain" Label="Ghost, not immediate" @bind-Value="_ghostPlainValue" GhostText="@_ghostPlainSuggestion"
+                      OnGhostTextAccepted="v => { _ghostPlainAccepted = v; _ghostPlainSuggestion = null; }" />
+        <span id="ghost-plain-value">[@_ghostPlainValue]</span>
+        <span id="ghost-plain-accepted">[@_ghostPlainAccepted]</span>
+        <BitTextField Id="tf-ghost-max" Label="Ghost under MaxLength" MaxLength="6" @bind-Value="_ghostMaxValue" GhostText="123456789"
+                      OnGhostTextAccepted="v => _ghostMaxAccepted = v" />
+        <span id="ghost-max-value">[@_ghostMaxValue]</span>
+        <span id="ghost-max-accepted">[@_ghostMaxAccepted]</span>
+        <BitTextField Id="tf-ghost-escape" Label="Ghost with ClearOnEscape" ClearOnEscape @bind-Value="_ghostEscapeValue" GhostText=" suggestion"
+                      OnClear="() => _ghostEscapeClears++" OnEscape="() => _ghostEscapes++" OnKeyDown="() => _ghostEscapeKeys++" />
+        <span id="ghost-escape-value">[@_ghostEscapeValue]</span>
+        <span id="ghost-escape-clears">@_ghostEscapeClears</span>
+        <span id="ghost-escapes">@_ghostEscapes</span>
+        <span id="ghost-escape-keys">@_ghostEscapeKeys</span>
+        <BitTextField Id="tf-ghost-multiline" Label="Ghost multiline" Multiline Rows="3" PermanentGhost Immediate @bind-Value="_ghostMultilineValue" GhostText="@_ghostMultilineSuggestion"
+                      OnGhostTextAccepted="_ => _ghostMultilineSuggestion = null" />
+        <span id="ghost-multiline-value">[@_ghostMultilineValue]</span>
+        <BitTextField Id="tf-ghost-readonly" Label="Ghost read-only" ReadOnly DefaultValue="ro" GhostText=" never" OnGhostTextAccepted="_ => _ghostReadOnlyAccepted++" />
+        <span id="ghost-readonly-accepted">@_ghostReadOnlyAccepted</span>
+    </div>
+</E2ESection>
+
+@* ---------- Events ---------- *@
+
+<E2ESection Id="events" Title="Events">
+    <BitTextField Id="tf-events" Label="Events"
+                  OnEnter="() => _enterCount++"
+                  OnEscape="() => _escCount++"
+                  OnKeyDown="e => { _keyDownCount++; _lastKeyDown = e.Key; }"
+                  OnKeyUp="e => { _keyUpCount++; _lastKeyUp = e.Key; }"
+                  OnClick="() => _clickCount++"
+                  OnFocus="() => _focusCount++"
+                  OnBlur="() => _blurCount++"
+                  OnFocusIn="() => _focusInCount++"
+                  OnFocusOut="() => _focusOutCount++" />
+    <span id="ev-enter">@_enterCount</span>
+    <span id="ev-escape">@_escCount</span>
+    <span id="ev-keydown">@_keyDownCount</span>
+    <span id="ev-last-keydown">@_lastKeyDown</span>
+    <span id="ev-keyup">@_keyUpCount</span>
+    <span id="ev-last-keyup">@_lastKeyUp</span>
+    <span id="ev-click">@_clickCount</span>
+    <span id="ev-focus">@_focusCount</span>
+    <span id="ev-blur">@_blurCount</span>
+    <span id="ev-focusin">@_focusInCount</span>
+    <span id="ev-focusout">@_focusOutCount</span>
+    <BitTextField Id="tf-oninput" Label="OnInput" OnInput="e => { _onInputText = e.Value?.ToString(); _onInputCount++; }" @bind-Value="_onInputCommitted" />
+    <span id="oninput-text">[@_onInputText]</span>
+    <span id="oninput-count">@_onInputCount</span>
+    <span id="oninput-committed">[@_onInputCommitted]</span>
+</E2ESection>
+
+@* ---------- Selection ---------- *@
+
+<E2ESection Id="selection" Title="Selection">
+    <BitTextField Id="tf-select-focus" Label="SelectOnFocus" SelectOnFocus DefaultValue="Focus me and start typing" />
+    <BitTextField Id="tf-select-ro" Label="ReadOnly SelectOnFocus" SelectOnFocus ReadOnly DefaultValue="AB12-CD34-EF56" />
+    <BitTextField @ref="_selectionRef" Id="tf-select-api" Label="Driven from code" DefaultValue="bit BlazorUI components" />
+    <button id="btn-select-all" type="button" @onclick="SelectAll">SelectAsync</button>
+    <button id="btn-select-range" type="button" @onclick="() => SelectRange(4, 12)">SelectRangeAsync(4, 12)</button>
+    <button id="btn-select-caret" type="button" @onclick="() => SelectRange(0, 0)">Caret to the start</button>
+    <button id="btn-select-clamp" type="button" @onclick="() => SelectRange(10, 1000)">SelectRangeAsync(10, 1000)</button>
+    <button id="btn-select-null" type="button" @onclick="() => SelectRange(null, 3)">SelectRangeAsync(null, 3)</button>
+    <button id="btn-focus-api" type="button" @onclick="FocusFromCode">FocusAsync</button>
+</E2ESection>
+
+@* ---------- Label position ---------- *@
+
+<E2ESection Id="label-placement" Title="Label position">
+    <div class="e2e-tf-box">
+        <BitTextField Id="tf-lp-top" Label="Top" LabelPlacement="BitPlacement.Top" />
+        <BitTextField Id="tf-lp-bottom" Label="Bottom" LabelPlacement="BitPlacement.Bottom" />
+        <BitTextField Id="tf-lp-start" Label="Start" LabelPlacement="BitPlacement.Start" />
+        <BitTextField Id="tf-lp-end" Label="End" LabelPlacement="BitPlacement.End" />
+        <BitTextField Id="tf-lp-und-top" Label="Underlined Top" Underlined LabelPlacement="BitPlacement.Top" />
+    </div>
+</E2ESection>
+
+@* ---------- Loading ---------- *@
+
+<E2ESection Id="loading" Title="Loading">
+    <BitTextField Id="tf-loading" Label="Loading" Loading @bind-Value="_loadingValue" />
+    <span id="loading-value">[@_loadingValue]</span>
+    <BitTextField Id="tf-loading-aria" Label="Loading aria" Loading LoadingAriaLabel="Checking the availability" />
+    <BitTextField Id="tf-loading-toggle" Label="Loading toggled" Loading="_loading" />
+    <button id="btn-toggle-loading" type="button" @onclick="() => _loading = !_loading">toggle loading</button>
+</E2ESection>
+
+@* ---------- Accessibility ---------- *@
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitTextField Id="tf-aria-desc" Label="Hidden description" AriaDescription="Use the number on the back of your card." Description="Card number" />
+    <BitTextField Id="tf-title" Label="Tooltip" Title="The name your colleagues see." />
+    <BitTextField Id="tf-icon-aria" Label="Meaningful icon" IconName="@BitIconName.Lock" IconAriaLabel="This value is encrypted" />
+    <BitTextField Id="tf-arialabel" AriaLabel="Search the documentation" Type="BitInputType.Search" />
+    <BitTextField Id="tf-arialabel-label" Label="Card number" AriaLabel="Card number, sixteen digits" />
+    <BitTextField Id="tf-own-describedby" Label="Own describedby" Description="Card number" InputHtmlAttributes="@(new() { { "aria-describedby", "own-hint" } })" />
+    <div id="own-hint">The field also points at this element.</div>
+    <div id="own-heading"><b>Shipping address</b></div>
+    <BitTextField Id="tf-own-labelledby" Placeholder="Street" InputHtmlAttributes="@(new() { { "aria-labelledby", "own-heading" }, { "data-input-attr", "yes" } })" />
+</E2ESection>
+
+@* ---------- Validation ---------- *@
+
+<E2ESection Id="validation" Title="Validation">
+    <BitTextField Id="tf-invalid" Label="Invalid" Invalid DefaultValue="Not accepted" />
+    <BitTextField Id="tf-invalid-dyn" Label="Invalid without a space" Immediate @bind-Value="_invalidValue"
+                  Invalid="@(string.IsNullOrEmpty(_invalidValue) is false && _invalidValue.Contains(' ') is false)" />
+    <BitTextField Id="tf-errmsg" Label="ErrorMessage" ErrorMessage="That user name is already taken." DefaultValue="admin" />
+    <BitTextField Id="tf-errmsg-all" Label="Error, description and counter" ShowCount MaxLength="20" Description="Letters and digits only."
+                  ErrorMessage="A user name cannot contain a space." DefaultValue="john doe" />
+    <BitTextField Id="tf-errmsg-dyn" Label="Error from code" ErrorMessage="@_dynError" />
+    <button id="btn-set-error" type="button" @onclick="@(() => _dynError = _dynError is null ? "Rejected by the server." : null)">toggle error</button>
+
+    <EditForm Model="_model" OnValidSubmit="@(() => _formStatus = "Valid")" OnInvalidSubmit="@(() => _formStatus = "Invalid")" novalidate>
+        <DataAnnotationsValidator />
+        <BitTextField Id="tf-form-required" Label="Required" Required @bind-Value="_model.Text" />
+        <ValidationMessage For="() => _model.Text" />
+        <BitTextField Id="tf-form-numeric" Label="Numeric" @bind-Value="_model.NumericText" />
+        <ValidationMessage For="() => _model.NumericText" />
+        <BitTextField Id="tf-form-email" Label="Email" @bind-Value="_model.EmailText" />
+        <ValidationMessage For="() => _model.EmailText" />
+        <BitTextField Id="tf-form-range" Label="3 to 5" @bind-Value="_model.RangeText" />
+        <ValidationMessage For="() => _model.RangeText" />
+        <BitTextField Id="tf-form-novalidate" Label="NoValidate" NoValidate @bind-Value="_model.Ignored" />
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="form-status">@_formStatus</span>
+</E2ESection>
+
+@* ---------- Cascading parameters ---------- *@
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_textFieldParams">
+        <BitTextField Id="tf-casc-1" Label="Cascaded" DefaultValue="bit BlazorUI" />
+        <BitTextField Id="tf-casc-2" Label="Cascaded too" DefaultValue="  padded  " />
+        <BitTextField Id="tf-casc-own" Label="Own Underlined" Underlined="false" DefaultValue="Boxed again" />
+    </BitParams>
+    <BitTextField Id="tf-casc-outside" Label="Outside" DefaultValue="bit BlazorUI" />
+</E2ESection>
+
+@* ---------- Background, Border, Accent, Size ---------- *@
+
+<E2ESection Id="background" Title="Background">
+    @foreach (var kind in _kinds)
+    {
+        <BitTextField Id="@($"tf-bg-{kind.ToString().ToLowerInvariant()}")" Label="@kind.ToString()" Background="kind" />
+    }
+</E2ESection>
+
+<E2ESection Id="border" Title="Border">
+    @foreach (var kind in _kinds)
+    {
+        <BitTextField Id="@($"tf-brd-{kind.ToString().ToLowerInvariant()}")" Label="@kind.ToString()" Border="kind" />
+    }
+</E2ESection>
+
+<E2ESection Id="accent" Title="Accent">
+    @foreach (var color in _colors)
+    {
+        <BitTextField Id="@($"tf-acc-{color.ToString().ToLowerInvariant()}")" Label="@color.ToString()" Accent="color" IconName="@BitIconName.Calendar" Prefix="P" />
+    }
+    <BitTextField Id="tf-acc-none" Label="No accent" IconName="@BitIconName.Calendar" />
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    @foreach (var size in _sizes)
+    {
+        <BitTextField Id="@($"tf-size-{size.ToString().ToLowerInvariant()}")" Label="@size.ToString()" Size="size" IconName="@BitIconName.Calendar" />
+    }
+</E2ESection>
+
+@* ---------- External icons ---------- *@
+
+<E2ESection Id="external-icons" Title="External icons">
+    <BitTextField Id="tf-ext-css" Label="Css" Icon="@BitIconInfo.Css("my-ext-icon")" />
+    <BitTextField Id="tf-ext-string" Label="String" Icon="@("my-ext-icon")" />
+    <BitTextField Id="tf-ext-fa" Label="Fa" Icon="@BitIconInfo.Fa("solid rocket")" />
+    <BitTextField Id="tf-ext-bi" Label="Bi" Icon="@BitIconInfo.Bi("gear-fill")" />
+</E2ESection>
+
+@* ---------- Style and Class ---------- *@
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitTextField Id="tf-style" Style="box-shadow: rgb(0, 255, 255) 0px 0px 16px; margin-inline: 16px;" />
+    <BitTextField Id="tf-class" Class="custom-class" />
+    <BitTextField Id="tf-styles" Label="Styles"
+                  Styles="@(new() { Root = "margin-inline: 16px;",
+                                    Focused = "--focused-background: rgb(10, 20, 30);",
+                                    FieldGroup = "background: var(--focused-background, rgb(200, 200, 200));",
+                                    Label = "font-weight: 900;",
+                                    Input = "padding: 9px;" })" />
+    <BitTextField Id="tf-classes" Label="Classes"
+                  Classes="@(new() { Root = "custom-root",
+                                     FieldGroup = "custom-field",
+                                     Focused = "custom-focus",
+                                     Input = "custom-input",
+                                     Label = "custom-label" })" />
+    <div id="cssvar-scope" style="--bit-TextField-radius: 20px; --bit-TextField-background: rgb(1, 2, 3); --bit-TextField-label-color: rgb(4, 5, 6); --bit-TextField-min-height: 50px;">
+        <BitTextField Id="tf-cssvar-ancestor" Label="Re-skinned by an ancestor" />
+        <BitTextField Id="tf-cssvar-explicit" Label="Explicit Background wins" Background="BitColorKind.Secondary" Size="BitSize.Small" />
+    </div>
+    <BitTextField Id="tf-cssvar-style" Label="Variable on Style" Style="--bit-TextField-border-color: rgb(7, 8, 9); --bit-TextField-placeholder-color: rgb(11, 12, 13);" Placeholder="placeholder" />
+</E2ESection>
+
+@* ---------- RTL ---------- *@
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="e2e-tf-box">
+        <BitTextField Id="tf-ltr" Label="LTR" IconName="@BitIconName.EditMail" Prefix="P" />
+        <BitTextField Id="tf-rtl" Dir="BitDir.Rtl" Label="RTL" IconName="@BitIconName.EditMail" Prefix="P" Required ShowCount MaxLength="20" />
+        <div dir="rtl">
+            <BitTextField Id="tf-rtl-inherited" Label="Inherited RTL" IconName="@BitIconName.EditMail" Prefix="P" />
+        </div>
+        <BitTextField Id="tf-rtl-und" Dir="BitDir.Rtl" Underlined Label="تقویم" IconName="@BitIconName.Calendar" />
+    </div>
+</E2ESection>
+
+@* ---------- Reduced motion ---------- *@
+
+<E2ESection Id="motion" Title="Reduced motion">
+    <BitTextField Id="tf-motion" Label="Motion" />
+    <BitTextField Id="tf-motion-force" Label="ForceAnimation" ForceAnimation />
+</E2ESection>
+
+@* ---------- Unmount ---------- *@
+
+<E2ESection Id="unmount" Title="Unmount">
+    <button id="btn-toggle-mount" type="button" @onclick="() => _mounted = !_mounted">toggle mount</button>
+    <span id="mounted">@_mounted</span>
+    @if (_mounted)
+    {
+        <BitTextField Id="tf-mount" Label="Mounted" Multiline AutoHeight SelectOnFocus ClearOnEscape GhostText=" ghost" Immediate DebounceTime="200" ShowClearButton IconName="@BitIconName.Search" Prefix="P" DefaultValue="mounted" />
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitInputType[] _types = [BitInputType.Text, BitInputType.Number, BitInputType.Password, BitInputType.Email, BitInputType.Tel, BitInputType.Url, BitInputType.Search];
+    private static readonly BitColorKind[] _kinds = [BitColorKind.Primary, BitColorKind.Secondary, BitColorKind.Tertiary, BitColorKind.Transparent];
+    private static readonly BitSize[] _sizes = [BitSize.Small, BitSize.Medium, BitSize.Large];
+    private static readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground, BitColor.TertiaryForeground,
+        BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private string? _basicValue;
+
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private int _disabledFocuses;
+    private int _disabledRootClicks;
+    private int _disabledRootKeys;
+    private int _disabledRootHovers;
+    private Dictionary<string, object> _disabledRootAttributes = [];
+
+    private bool _readOnly = true;
+    private int _readOnlyChanges;
+    private string? _readOnlyValue;
+
+    private string? _maxLengthValue;
+
+    private BitVisibility _visibility;
+
+    private string _dynLabel = "First label";
+    private string _dynPlaceholder = "First placeholder";
+    private string? _dynDescription;
+
+    private string? _preventEnterValue;
+    private string? _autoHeightCodeValue;
+    private bool _dynMultiline;
+    private bool _narrow;
+    private string? _dynMultilineValue = "kept";
+
+    private string? _prefixValue;
+    private int _iconClicks;
+    private int _iconClicksReadOnly;
+    private int _iconClicksDisabled;
+
+    private string? _revealValue;
+    private BitTextField? _passwordRef;
+    private BitTextField? _textRevealRef;
+    private bool _canReveal = true;
+
+    private string? _oneWayValue = "one-way";
+    private string? _twoWayValue = "two-way";
+    private string? _onChangeValue;
+    private int _onChangeCount;
+    private string? _defaultChanged;
+    private string? _immediateValue;
+    private int _immediateCount;
+    private string? _debounceValue;
+    private int _debounceCount;
+    private int _debounceInputs;
+    private string? _throttleValue;
+    private int _throttleCount;
+    private string? _throttleFirst;
+    private string? _trimValue;
+    private string? _noTrimValue;
+    private string? _trimImmediateValue;
+
+    private string? _clearValue = "example@email.com";
+    private int _clearCount;
+    private string? _clearMultilineValue = "A multiline value\nthat can be cleared.";
+    private string? _escapeValue = "Press Escape";
+    private int _escapeClears;
+    private int _escapeCount;
+    private string? _valueAtEscape;
+    private BitTextField? _clearApiRef;
+    private string? _clearApiValue = "clear me from code";
+    private int _clearApiCount;
+    private bool _dialogOpen;
+
+    private string? _ghostValue;
+    private string? _ghostSuggestion;
+    private string? _ghostAccepted;
+    private int _ghostAcceptedCount;
+    private string? _ghostPlainValue = "hello";
+    private string? _ghostPlainSuggestion = " world";
+    private string? _ghostPlainAccepted;
+    private string? _ghostMaxValue = "abc";
+    private string? _ghostMaxAccepted;
+    private string? _ghostEscapeValue = "typed";
+    private int _ghostEscapeClears;
+    private int _ghostEscapes;
+    private int _ghostEscapeKeys;
+    private string? _ghostMultilineValue = "first line";
+    private string? _ghostMultilineSuggestion = " and more";
+    private int _ghostReadOnlyAccepted;
+
+    private int _enterCount;
+    private int _escCount;
+    private int _keyDownCount;
+    private string? _lastKeyDown;
+    private int _keyUpCount;
+    private string? _lastKeyUp;
+    private int _clickCount;
+    private int _focusCount;
+    private int _blurCount;
+    private int _focusInCount;
+    private int _focusOutCount;
+    private string? _onInputText;
+    private int _onInputCount;
+    private string? _onInputCommitted;
+
+    private BitTextField? _selectionRef;
+
+    private string? _loadingValue = "Checking...";
+    private bool _loading;
+
+    private string? _invalidValue;
+    private string? _dynError;
+    private readonly FormModel _model = new();
+    private string _formStatus = "None";
+
+    private readonly BitTextFieldParams[] _textFieldParams =
+    [
+        new() { Underlined = true, ShowClearButton = true, Trim = true, Placeholder = "cascaded placeholder" }
+    ];
+
+    private bool _mounted = true;
+
+    protected override void OnInitialized()
+    {
+        _disabledRootAttributes = new()
+        {
+            ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledRootClicks++),
+            ["onkeydown"] = EventCallback.Factory.Create<KeyboardEventArgs>(this, () => _disabledRootKeys++),
+            ["onmouseover"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledRootHovers++)
+        };
+    }
+
+    private void ChangeParams()
+    {
+        _dynLabel = "Second label";
+        _dynPlaceholder = "Second placeholder";
+        _dynDescription = "A description added at runtime";
+    }
+
+    private void ThrottleCommitted()
+    {
+        _throttleCount++;
+        _throttleFirst ??= _throttleValue;
+    }
+
+    private async Task ClearFromCode()
+    {
+        if (_clearApiRef is not null) await _clearApiRef.ClearAsync();
+    }
+
+    private async Task SelectAll()
+    {
+        if (_selectionRef is not null) await _selectionRef.SelectAsync();
+    }
+
+    private async Task SelectRange(int? start, int? end)
+    {
+        if (_selectionRef is not null) await _selectionRef.SelectRangeAsync(start, end);
+    }
+
+    private async Task FocusFromCode()
+    {
+        if (_selectionRef is not null) await _selectionRef.FocusAsync();
+    }
+
+    private static int CountTextElements(string? value) => new StringInfo(value ?? string.Empty).LengthInTextElements;
+
+    private static readonly string[] _ghostWords = ["apple", "banana", "carrot", "doghouse"];
+
+    private static string? GetGhostSuggestion(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return null;
+
+        var lastWord = value.Split(' ').LastOrDefault();
+        if (string.IsNullOrEmpty(lastWord)) return null;
+
+        var match = _ghostWords.FirstOrDefault(w => w.StartsWith(lastWord, StringComparison.OrdinalIgnoreCase) && w.Length > lastWord.Length);
+
+        return match?[lastWord.Length..];
+    }
+
+    private sealed class FormModel
+    {
+        [Required(ErrorMessage = "This field is required.")]
+        public string? Text { get; set; }
+
+        [RegularExpression("0*[1-9][0-9]*", ErrorMessage = "Only numeric values are allowed.")]
+        public string? NumericText { get; set; }
+
+        [EmailAddress(ErrorMessage = "Invalid e-mail address.")]
+        public string? EmailText { get; set; }
+
+        [StringLength(5, MinimumLength = 3, ErrorMessage = "The text length must be between 3 and 5 chars.")]
+        public string? RangeText { get; set; }
+
+        [Required(ErrorMessage = "Ignored is required.")]
+        public string? Ignored { get; set; }
+    }
+}

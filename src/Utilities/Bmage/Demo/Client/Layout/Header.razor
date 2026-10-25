@@ -1,0 +1,212 @@
+﻿@inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+@* The site header - part of the site kit every Utilities demo shares (see wwwroot/app.css): a
+   56px translucent bar - Fluent's own nav-bar height - carrying the bit mark, the library's name
+   and the top-level links at the start, and the search trigger, the GitHub mark and the theme
+   toggle at the end. What it links to comes from SiteInfo (DocsCatalog.cs).
+
+   Below the tablet breakpoint the links move into a drawer opened from the end of the bar, so the
+   bar itself stays one row tall at every width and --bb-header-height (which every sticky offset
+   and heading scroll-margin on the site is measured from) never has to change. *@
+
+<header class="bb-header">
+    <div class="bb-header-inner">
+        <div class="bb-header-brand">
+            <a href="" class="bb-logo" aria-label="Homepage"></a>
+            <a href="" class="bb-wordmark">@SiteInfo.Name</a>
+        </div>
+
+        <nav class="bb-nav" aria-label="Primary">
+            @foreach (var item in SiteInfo.Primary)
+            {
+                <a @key="item.Href" href="@item.Href" class="@(IsActive(item) ? "active" : null)"
+                   aria-current="@(IsActive(item) ? "page" : null)">@item.Label</a>
+            }
+        </nav>
+
+        <div class="bb-header-end">
+            <CommandPalette />
+
+            @* A mask rather than a picture, so the mark is painted with the theme's own foreground
+               color and re-tints with the theme - a colored asset could not. *@
+            <a class="bb-github-btn" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer"
+               title="GitHub repository" aria-label="GitHub repository"></a>
+
+            <button type="button" class="bb-theme-toggle" title="Toggle light/dark theme" aria-label="Toggle light/dark theme" @onclick="ToggleTheme">
+                <svg class="bb-icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+                <svg class="bb-icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+            </button>
+
+            @* aria-controls only while the drawer exists: it is rendered only when open, and a
+               reference to a missing id is a dangling one. *@
+            <button type="button" class="bb-menu-btn" @ref="_menuButton" aria-label="Site menu" aria-expanded="@(_menuOpen ? "true" : "false")"
+                    aria-controls="@(_menuOpen ? "bb-header-drawer" : null)" @onclick="ToggleMenu" @onkeydown="OnMenuKeyDown">
+                @if (_menuOpen)
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                }
+                else
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                }
+            </button>
+        </div>
+    </div>
+
+    @* The narrow-width menu. Rendered only while open, so its links are out of the tab order the
+       rest of the time - a drawer that is merely translated off-screen still holds focus. Opening it
+       moves focus onto it (tabindex="-1", so it takes focus without becoming a Tab stop), which is
+       also what lets Escape reach it: a browser that does not focus a clicked button would
+       otherwise leave the key with <body>. *@
+    @if (_menuOpen)
+    {
+        <div class="bb-header-scrim" @onclick="() => CloseMenu(restoreFocus: true)"></div>
+        <nav id="bb-header-drawer" class="bb-header-drawer" aria-label="Site" tabindex="-1" @ref="_drawer" @onkeydown="OnMenuKeyDown">
+            @foreach (var item in SiteInfo.Primary)
+            {
+                <a @key="item.Href" href="@item.Href" class="@(IsActive(item) ? "active" : null)"
+                   aria-current="@(IsActive(item) ? "page" : null)">@item.Label</a>
+            }
+            <a href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            <a href="@SiteInfo.NuGetUrl" target="_blank" rel="noopener noreferrer">NuGet ↗</a>
+            @* The drawer covers the page, which is still there and still focusable: Tab past its last link goes back to the
+               button that toggles it, rather than on into the page under the scrim. *@
+            <span class="bb-focus-sentinel" tabindex="0" @onfocus="() => _menuButton.FocusAsync()"></span>
+        </nav>
+    }
+</header>
+
+@code {
+    private bool _menuOpen;
+    private bool _focusDrawerPending;
+    private bool _restorePending;
+    private string _path = "";
+    private ElementReference _menuButton;
+    private ElementReference _drawer;
+
+    [CascadingParameter] private MainLayout.Drawers? Drawers { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _path = DocsCatalog.PathOf(Nav);
+        Nav.LocationChanged += OnLocationChanged;
+        if (Drawers is not null)
+            Drawers.Opened += OnDrawerOpened;
+    }
+
+    // The docs nav panel opened: this drawer gives the page up to it.
+    private void OnDrawerOpened(object owner)
+    {
+        if (ReferenceEquals(owner, this) || _menuOpen is false)
+            return;
+
+        _menuOpen = false;
+        _focusDrawerPending = false;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusDrawerPending)
+        {
+            _focusDrawerPending = false;
+            await _drawer.FocusAsync();
+        }
+
+        if (_restorePending)
+        {
+            _restorePending = false;
+            await _menuButton.FocusAsync();
+        }
+    }
+
+    /// <summary>
+    /// The current section. A plain link is active on its own address; the "Docs" entry is active on
+    /// every documentation page that no other entry claims, because the docs ARE the rest of the site.
+    /// A page outside the catalog - the not-found and error pages - is no section at all.
+    /// </summary>
+    private bool IsActive(SiteNavItem item)
+    {
+        if (item.MatchesDocs)
+            return DocsCatalog.FindByPath(_path) is not null
+                   && SiteInfo.Primary.Any(other => other.MatchesDocs is false && DocsCatalog.IsSamePath(other.Href, _path)) is false;
+
+        return DocsCatalog.IsSamePath(item.Href, _path);
+    }
+
+    private void ToggleMenu()
+    {
+        _menuOpen = !_menuOpen;
+        _focusDrawerPending = _menuOpen;
+        if (_menuOpen)
+            Drawers?.Open(this);
+        LockScroll(_menuOpen);
+    }
+
+    /// <summary>
+    /// Closes the drawer from inside it - Escape or the scrim - and, with <paramref name="restoreFocus"/>,
+    /// hands focus back to the button that opened it: the drawer is unmounted, and focus left inside
+    /// it would fall to &lt;body&gt;. A navigation closes it in <see cref="OnLocationChanged"/> instead,
+    /// and leaves focus to the new page.
+    /// </summary>
+    private void CloseMenu(bool restoreFocus)
+    {
+        _menuOpen = false;
+        LockScroll(false);
+        _focusDrawerPending = false;
+        _restorePending = restoreFocus;
+    }
+
+    /// <summary>
+    /// Escape closes the drawer, the way every other overlay on the site closes. Heard on the button
+    /// and on the drawer only - not on the whole header, which also holds the search palette and
+    /// would hear every key typed into it.
+    /// </summary>
+    private void OnMenuKeyDown(KeyboardEventArgs args)
+    {
+        if (_menuOpen && args.Key == "Escape")
+            CloseMenu(restoreFocus: true);
+    }
+
+    // A drawer that survives the navigation it started covers the page the reader just asked for.
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _path = DocsCatalog.PathOf(Nav);
+        if (_menuOpen) LockScroll(false);
+        _menuOpen = false;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+        if (Drawers is not null)
+            Drawers.Opened -= OnDrawerOpened;
+    }
+
+    /// <summary>
+    /// Holds the page still while the drawer covers it, as the search palette does: a wheel turned over the scrim
+    /// scrolled the page behind it. Not awaited, for the same reason as there.
+    /// </summary>
+    private void LockScroll(bool locked) => _ = JSRuntime.InvokeVoidAsync("bitDemoSite.lockScroll", locked);
+
+    private async Task ToggleTheme()
+    {
+        // theme.js flips the bit-theme attribute on <html>; the sun/moon icon swap is pure CSS.
+        await JSRuntime.InvokeVoidAsync("bitDemoTheme.toggle");
+    }
+}

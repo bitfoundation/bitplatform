@@ -10,6 +10,11 @@ namespace Bit.BlazorUI;
 /// </summary>
 public abstract class BitPdfBaseStream
 {
+    // Optional backing-byte access for standalone parsers, including decoded
+    // buffers. File parsers receive the document's reader explicitly.
+    // Kept internal so public stream contracts stay unchanged.
+    internal virtual IBitPdfByteSource? ByteSource => null;
+
     /// <summary>Inclusive lower bound of the readable window.</summary>
     public int Start { get; protected set; }
 

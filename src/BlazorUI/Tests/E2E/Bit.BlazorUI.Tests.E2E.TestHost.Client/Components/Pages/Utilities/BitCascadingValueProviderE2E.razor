@@ -1,0 +1,416 @@
+﻿@page "/e2e/cascading-value-provider"
+@using System.Collections.ObjectModel
+@using Microsoft.AspNetCore.Components.Rendering
+
+@* Every feature of BitCascadingValueProvider, one section each. The consumers are small components of this page that
+   read one cascading parameter each and write what they received into a span of their own (plus how many times they
+   have rendered), beside an input whose typed text survives a re-render but not a re-creation. *@
+
+<PageTitle>BitCascadingValueProvider E2E</PageTitle>
+
+<E2ESection Id="basic" Title="Values: a bare value by its type, a (value, name) tuple by its name">
+    <BitCascadingValueProvider Values="@([
+                                   ("Light", "Theme"),
+                                   (true, "IsAuthenticated"),
+                                   ((2) as int?, "NotificationCount"),
+                                   new(new User("Saleh Xafan", "CTO"), "NamedUser"),
+                                   new(new User("Yaser Moradi", "CEO"))
+                               ])">
+        @(Consumer<ThemeConsumer>("basic-theme"))
+        @(Consumer<AuthConsumer>("basic-auth"))
+        @(Consumer<CountConsumer>("basic-count"))
+        @(Consumer<NamedUserConsumer>("basic-named-user"))
+        @(Consumer<UserConsumer>("basic-user"))
+    </BitCascadingValueProvider>
+    @(Consumer<ThemeConsumer>("basic-outside"))
+</E2ESection>
+
+<E2ESection Id="live" Title="Values built from state: a page render pushes the changed ones down">
+    <button id="btn-live-theme" @onclick="@(() => _liveTheme = _liveTheme == "Light" ? "Dark" : "Light")">Switch theme</button>
+    <button id="btn-live-count" @onclick="() => _liveCount++">Add notification</button>
+    <button id="btn-live-rerender" @onclick="() => _liveRenders++">Re-render the page</button>
+    <span id="live-renders">@_liveRenders</span>
+    <BitCascadingValueProvider Values="@([(_liveTheme, "Theme"), ((_liveCount) as int?, "NotificationCount")])">
+        @(Consumer<ThemeConsumer>("live-theme"))
+        @(Consumer<CountConsumer>("live-count"))
+    </BitCascadingValueProvider>
+</E2ESection>
+
+<E2ESection Id="value-list" Title="ValueList (typed nulls, Set, Remove, Contains, Find), Values winning a conflict">
+    <button id="btn-list-set" @onclick="SetListCount">Set NotificationCount</button>
+    <button id="btn-list-toggle-user" @onclick="ToggleListUser">Toggle the typed user</button>
+    <span id="list-contains-user">@(_list.Contains<User>())</span>
+    <span id="list-find-theme">@(_list.Find<string>("Theme")?.Value)</span>
+    <BitCascadingValueProvider ValueList="_list" Values="@([("Override", "Theme")])">
+        @(Consumer<ThemeConsumer>("list-theme"))
+        @(Consumer<CountConsumer>("list-count"))
+        @(Consumer<NullableAuthConsumer>("list-auth"))
+        @(Consumer<UserConsumer>("list-user"))
+    </BitCascadingValueProvider>
+</E2ESection>
+
+<E2ESection Id="nesting" Title="An inner provider overrides only what it redefines">
+    <BitCascadingValueProvider Values="@([("Light", "Theme"), ((7) as int?, "NotificationCount"), new(new User("Ava Smith", "PM"))])">
+        @(Consumer<ThemeConsumer>("outer-theme"))
+        @(Consumer<CountConsumer>("outer-count"))
+        <BitCascadingValueProvider Values="@([("Dark", "Theme")])">
+            @(Consumer<ThemeConsumer>("inner-theme"))
+            @(Consumer<CountConsumer>("inner-count"))
+            @(Consumer<UserConsumer>("inner-user"))
+        </BitCascadingValueProvider>
+    </BitCascadingValueProvider>
+</E2ESection>
+
+<E2ESection Id="value-type" Title="ValueType: an interface, a nullable cleared by an inner null, From&lt;T&gt;">
+    <BitCascadingValueProvider Values="@([new(new Greeter("Hello"), typeof(IGreeter)), new(5, typeof(int?))])">
+        @(Consumer<GreeterConsumer>("type-greeter"))
+        @(Consumer<GreeterClassConsumer>("type-greeter-class"))
+        @(Consumer<TypedCountConsumer>("type-outer-count"))
+        <BitCascadingValueProvider Values="@([BitCascadingValue.From<int?>(null)])">
+            @(Consumer<TypedCountConsumer>("type-inner-count"))
+        </BitCascadingValueProvider>
+    </BitCascadingValueProvider>
+    <BitCascadingValueProvider Values="@([new(new Greeter("By runtime type"))])">
+        @(Consumer<GreeterConsumer>("type-runtime-greeter"))
+        @(Consumer<GreeterClassConsumer>("type-runtime-greeter-class"))
+    </BitCascadingValueProvider>
+</E2ESection>
+
+<E2ESection Id="flags" Title="IsFixed and Enabled">
+    <button id="btn-flag-theme" @onclick="() => _flagTheme.Enabled = !_flagTheme.Enabled">Toggle the Theme value</button>
+    <button id="btn-flag-fixed-change" @onclick="ChangeFixed">Change the fixed count</button>
+    <button id="btn-flag-isfixed" @onclick="() => _flagTheme.IsFixed = !_flagTheme.IsFixed">Toggle IsFixed of Theme</button>
+    <button id="btn-flag-theme-value" @onclick="@(() => _flagTheme.Value = "Changed")">Change Theme</button>
+    <span id="flag-theme-enabled">@_flagTheme.Enabled</span>
+    <BitCascadingValueProvider Values="@([("Outer", "Theme")])">
+        <BitCascadingValueProvider Values="_flagValues">
+            @(Consumer<ThemeConsumer>("flag-theme"))
+            @(Consumer<CountConsumer>("flag-count"))
+        </BitCascadingValueProvider>
+    </BitCascadingValueProvider>
+</E2ESection>
+
+<E2ESection Id="notify" Title="Change notifications from any thread, without a page render">
+    <button id="btn-notify-assign" @onclick="AssignInBackground">Assign Value in the background</button>
+    <button id="btn-notify-mutate" @onclick="MutateInBackground">Mutate in place + NotifyChanged</button>
+    <button id="btn-notify-async" @onclick="NotifyWithValueAsync">NotifyChangedAsync(newValue)</button>
+    <span id="notify-page-copy">@_notifyPageCopy</span>
+    <span id="notify-async-done">@_notifyAsyncDone</span>
+    <BitCascadingValueProvider Values="_notifyValues">
+        @(Consumer<ThemeConsumer>("notify-theme"))
+        @(Consumer<StatusConsumer>("notify-status"))
+        @(Consumer<CountConsumer>("notify-count"))
+    </BitCascadingValueProvider>
+</E2ESection>
+
+<E2ESection Id="auto-notify" Title="AutoNotify through Observed&lt;T&gt;: INotifyPropertyChanged and INotifyCollectionChanged">
+    <button id="btn-observed-property" @onclick="ChangeObservedInBackground">Change the property in the background</button>
+    <button id="btn-observed-collection" @onclick="AddObservedItemInBackground">Add an item in the background</button>
+    <BitCascadingValueProvider Values="_observedValues">
+        @(Consumer<ObservedStatusConsumer>("observed-status"))
+        @(Consumer<ItemsConsumer>("observed-items"))
+    </BitCascadingValueProvider>
+</E2ESection>
+
+<E2ESection Id="factories" Title="Lazy and Computed values">
+    <button id="btn-lazy-enable" @onclick="() => _lazyNamedUser.Enabled = !_lazyNamedUser.Enabled">Toggle the lazy named user</button>
+    <button id="btn-computed-click" @onclick="() => _computedClicks++">Click (@_computedClicks)</button>
+    <span id="lazy-calls">@_lazyCalls</span>
+    <span id="lazy-created">@_lazyNamedUser.IsValueCreated</span>
+    <span id="computed-flag">@_computedTheme.IsComputed</span>
+    <BitCascadingValueProvider Values="_factoryValues">
+        @(Consumer<NamedUserConsumer>("lazy-named-user"))
+        @(Consumer<ThemeConsumer>("computed-theme"))
+        @(Consumer<CountConsumer>("computed-count"))
+    </BitCascadingValueProvider>
+</E2ESection>
+
+<E2ESection Id="unmount" Title="A provider removed from the page lets go of its values">
+    <button id="btn-unmount" @onclick="() => _unmountShown = !_unmountShown">Toggle mounted</button>
+    <button id="btn-unmount-assign" @onclick="@(() => _unmountValue.Value = $"After {++_unmountAssigns}")">Assign the value</button>
+    <span id="unmount-shown">@_unmountShown</span>
+    @if (_unmountShown)
+    {
+        <BitCascadingValueProvider Values="@([_unmountValue])">
+            @(Consumer<ThemeConsumer>("unmount-theme"))
+        </BitCascadingValueProvider>
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private string _liveTheme = "Light";
+    private int _liveCount = 1;
+    private int _liveRenders;
+
+    private int _listCount;
+    private readonly BitCascadingValueList _list = new()
+    {
+        { "Light", "Theme" },
+        { (int?)null, "NotificationCount" },
+        { (bool?)null, "IsAuthenticated" },
+        { new User("Ava Smith", "PM") }
+    };
+
+    private readonly BitCascadingValue _flagTheme = new BitCascadingValue<string>("Inner", "Theme");
+    private readonly BitCascadingValue<int?> _flagCount = new(3, "NotificationCount", isFixed: true);
+    private readonly IEnumerable<BitCascadingValue> _flagValues;
+
+    private readonly BitCascadingValue<string> _notifyTheme = new("Idle", "Theme");
+    private readonly Status _status = new() { Text = "Not started" };
+    private readonly BitCascadingValue<Status> _notifyStatus;
+    private readonly BitCascadingValue<int?> _notifyCount = new(0, "NotificationCount");
+    private readonly IEnumerable<BitCascadingValue> _notifyValues;
+    private string _notifyPageCopy = "Idle";
+    private int _notifyAsyncDone;
+
+    private readonly ObservedStatus _observed = new() { Text = "Waiting" };
+    private readonly ObservableCollection<string> _items = ["first"];
+    private readonly IEnumerable<BitCascadingValue> _observedValues;
+
+    private int _lazyCalls;
+    private int _computedClicks;
+    private readonly BitCascadingValue _lazyNamedUser;
+    private readonly BitCascadingValue _computedTheme;
+    private readonly IEnumerable<BitCascadingValue> _factoryValues;
+
+    private bool _unmountShown = true;
+    private int _unmountAssigns;
+    private readonly BitCascadingValue<string> _unmountValue = new("Mounted", "Theme");
+
+    public BitCascadingValueProviderE2E()
+    {
+        _flagValues = [_flagTheme, _flagCount];
+        _notifyStatus = new(_status);
+        _notifyValues = [_notifyTheme, _notifyStatus, _notifyCount];
+        _observedValues = [BitCascadingValue.Observed(_observed), BitCascadingValue.Observed(_items)];
+
+        _lazyNamedUser = BitCascadingValue.Lazy(() => { _lazyCalls++; return new User("Lazy Larry", "Factory"); }, "NamedUser", enabled: false);
+        _computedTheme = BitCascadingValue.Computed(() => _computedClicks % 2 == 0 ? "Even" : "Odd", "Theme");
+        _factoryValues = [_lazyNamedUser, _computedTheme, BitCascadingValue.Computed<int?>(() => _computedClicks, "NotificationCount")];
+    }
+
+    private void SetListCount() => _list.Set<int?>(++_listCount, "NotificationCount");
+
+    private void ToggleListUser()
+    {
+        if (_list.Contains<User>())
+        {
+            _list.Remove<User>();
+        }
+        else
+        {
+            _list.Add(new User("Ava Smith", "PM"));
+        }
+    }
+
+    private void ChangeFixed()
+    {
+        _flagCount.Value = 99;
+    }
+
+    // Each of these runs on a thread pool thread after the click handler has returned (and the page has rendered for
+    // it), so nothing but the provider's own subscription can bring the change to the consumers.
+    private void AssignInBackground()
+    {
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(50);
+            _notifyTheme.Value = "Assigned";
+            _notifyPageCopy = "Assigned";
+        });
+    }
+
+    private void MutateInBackground()
+    {
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(50);
+            _status.Text = "Mutated";
+            _notifyStatus.NotifyChanged();
+        });
+    }
+
+    private async Task NotifyWithValueAsync()
+    {
+        await _notifyCount.NotifyChangedAsync(42);
+        _notifyAsyncDone++;
+    }
+
+    private void ChangeObservedInBackground()
+    {
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(50);
+            _observed.Text = "Changed by itself";
+        });
+    }
+
+    private void AddObservedItemInBackground()
+    {
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(50);
+            _items.Add($"item {_items.Count + 1}");
+        });
+    }
+
+    private static RenderFragment Consumer<TConsumer>(string id) where TConsumer : IComponent => builder =>
+    {
+        builder.OpenComponent<TConsumer>(0);
+        builder.AddComponentParameter(1, nameof(ConsumerBase.Id), id);
+        builder.CloseComponent();
+    };
+
+    public sealed record User(string Name, string Role)
+    {
+        public override string ToString() => $"{Name} ({Role})";
+    }
+
+    public interface IGreeter
+    {
+        string Greeting { get; }
+    }
+
+    public sealed class Greeter(string greeting) : IGreeter
+    {
+        public string Greeting { get; } = greeting;
+    }
+
+    public sealed class Status
+    {
+        public string Text { get; set; } = "";
+    }
+
+    public sealed class ObservedStatus : System.ComponentModel.INotifyPropertyChanged
+    {
+        private string _text = "";
+
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+        public string Text
+        {
+            get => _text;
+            set
+            {
+                _text = value;
+                PropertyChanged?.Invoke(this, new(nameof(Text)));
+            }
+        }
+    }
+
+    // A consumer writes the value it received and how many times it has rendered into a span named by its Id, and
+    // carries an input whose typed text only a re-creation of the consumer loses.
+    public abstract class ConsumerBase : ComponentBase
+    {
+        private int _renders;
+
+        [Parameter] public string Id { get; set; } = "";
+
+        protected abstract string Text { get; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            _renders++;
+
+            builder.OpenElement(0, "div");
+            builder.OpenElement(1, "span");
+            builder.AddAttribute(2, "id", Id);
+            builder.AddContent(3, Text);
+            builder.CloseElement();
+            builder.OpenElement(4, "span");
+            builder.AddAttribute(5, "id", $"{Id}-renders");
+            builder.AddContent(6, _renders);
+            builder.CloseElement();
+            builder.OpenElement(7, "input");
+            builder.AddAttribute(8, "id", $"{Id}-input");
+            builder.CloseElement();
+            builder.CloseElement();
+        }
+    }
+
+    public sealed class ThemeConsumer : ConsumerBase
+    {
+        [CascadingParameter(Name = "Theme")] public string? Theme { get; set; }
+
+        protected override string Text => Theme ?? "null";
+    }
+
+    public sealed class AuthConsumer : ConsumerBase
+    {
+        [CascadingParameter(Name = "IsAuthenticated")] public bool IsAuthenticated { get; set; }
+
+        protected override string Text => IsAuthenticated.ToString();
+    }
+
+    public sealed class NullableAuthConsumer : ConsumerBase
+    {
+        [CascadingParameter(Name = "IsAuthenticated")] public bool? IsAuthenticated { get; set; }
+
+        protected override string Text => IsAuthenticated?.ToString() ?? "null";
+    }
+
+    public sealed class CountConsumer : ConsumerBase
+    {
+        [CascadingParameter(Name = "NotificationCount")] public int? Count { get; set; }
+
+        protected override string Text => Count?.ToString() ?? "null";
+    }
+
+    public sealed class TypedCountConsumer : ConsumerBase
+    {
+        [CascadingParameter] public int? Count { get; set; }
+
+        protected override string Text => Count?.ToString() ?? "null";
+    }
+
+    public sealed class UserConsumer : ConsumerBase
+    {
+        [CascadingParameter] public User? User { get; set; }
+
+        protected override string Text => User?.ToString() ?? "null";
+    }
+
+    public sealed class NamedUserConsumer : ConsumerBase
+    {
+        [CascadingParameter(Name = "NamedUser")] public User? User { get; set; }
+
+        protected override string Text => User?.ToString() ?? "null";
+    }
+
+    public sealed class GreeterConsumer : ConsumerBase
+    {
+        [CascadingParameter] public IGreeter? Greeter { get; set; }
+
+        protected override string Text => Greeter?.Greeting ?? "null";
+    }
+
+    public sealed class GreeterClassConsumer : ConsumerBase
+    {
+        [CascadingParameter] public Greeter? Greeter { get; set; }
+
+        protected override string Text => Greeter?.Greeting ?? "null";
+    }
+
+    public sealed class StatusConsumer : ConsumerBase
+    {
+        [CascadingParameter] public Status? Status { get; set; }
+
+        protected override string Text => Status?.Text ?? "null";
+    }
+
+    public sealed class ObservedStatusConsumer : ConsumerBase
+    {
+        [CascadingParameter] public ObservedStatus? Status { get; set; }
+
+        protected override string Text => Status?.Text ?? "null";
+    }
+
+    public sealed class ItemsConsumer : ConsumerBase
+    {
+        [CascadingParameter] public ObservableCollection<string>? Items { get; set; }
+
+        protected override string Text => Items is null ? "null" : string.Join(",", Items);
+    }
+}

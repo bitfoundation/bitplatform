@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -18,9 +19,25 @@ public class BitFullCalendarTests : BunitTestContext
 {
     private const string AddButtonSelector = ".bit-bfc-header-right .bit-bfc-btn-primary";
 
-    private static List<BitFullCalendarEvent> Events()
+    // "Today" is read once per test, and every calendar the test renders reads the same day off a clock pinned to its
+    // noon. A test reading DateTime.Today and a calendar reading it again could otherwise fall on two sides of midnight,
+    // opening the calendar on another day than the one the test put its events on and asserts. A clock standing on a
+    // whole minute also keeps the now indicator's timer, which ticks on the next minute, from re-rendering mid-test.
+    private DateTime Today { get; } = DateTime.Today;
+
+    [TestInitialize]
+    public void PinTheClock()
     {
-        var today = DateTime.Today;
+        // Handed down the way an app hands its users' clock to every calendar, so no render below has to carry it.
+        Context.RenderTree.Add<CascadingValue<BitFullCalendarParams>>(parameters => parameters
+            .Add(p => p.Name, BitFullCalendarParams.ParamName)
+            .Add(p => p.IsFixed, true)
+            .Add(p => p.Value, new BitFullCalendarParams { TimeProvider = new FixedTimeProvider(Today.AddHours(12)) }));
+    }
+
+    private List<BitFullCalendarEvent> Events()
+    {
+        var today = Today;
         return
         [
             new() { Id = "1", Title = "Standup", Description = "Daily sync", StartDate = today.AddHours(9), EndDate = today.AddHours(10) }
@@ -549,6 +566,176 @@ public class BitFullCalendarTests : BunitTestContext
         Assert.AreEqual(BitFullCalendarView.Day, component.Instance.View);
     }
 
+    // Syncing the views, the resources or the read-only flag changes the state ahead of the bound
+    // values; the reconciliation that change raises must not write the state's defaults back over them.
+
+    [TestMethod]
+    public void BitFullCalendarShouldOpenOnABoundViewTheViewsAllow()
+    {
+        var view = BitFullCalendarView.Week;
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Views, [BitFullCalendarView.Day, BitFullCalendarView.Week, BitFullCalendarView.Month]);
+            parameters.Bind(p => p.View, view, v => view = v);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(BitFullCalendarView.Week, component.Instance.State.View);
+            Assert.AreEqual(BitFullCalendarView.Week, view, "the binding keeps its starting value");
+        });
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldOpenOnABoundTimelineMode()
+    {
+        var mode = BitFullCalendarMode.Timeline;
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.Resources, Resources());
+            parameters.Bind(p => p.Mode, mode, m => mode = m);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(BitFullCalendarMode.Timeline, component.Instance.State.Mode);
+            Assert.AreEqual(BitFullCalendarMode.Timeline, mode, "the binding keeps its starting value");
+        });
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldOpenOnABoundDateTheViewsAllow()
+    {
+        // Captured once, so a run crossing midnight still compares against the date it bound.
+        var expected = Today.AddDays(40);
+        var date = expected;
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Views, [BitFullCalendarView.Day, BitFullCalendarView.Week]);
+            parameters.Bind(p => p.Date, date, d => date = d);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(expected, component.Instance.State.SelectedDate);
+            Assert.AreEqual(expected, date, "the binding keeps its starting value");
+        });
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldOpenAReadOnlyCalendarOnItsBoundView()
+    {
+        var view = BitFullCalendarView.Week;
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Bind(p => p.View, view, v => view = v);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(BitFullCalendarView.Week, component.Instance.State.View);
+            Assert.AreEqual(BitFullCalendarView.Week, view, "the binding keeps its starting value");
+        });
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldApplyABoundViewThatChangesWithTheEvents()
+    {
+        var view = BitFullCalendarView.Month;
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Bind(p => p.View, view, v => view = v);
+        });
+
+        // A parent replacing its events and moving the bound view in the same render.
+        view = BitFullCalendarView.Week;
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Bind(p => p.View, view, v => view = v);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(BitFullCalendarView.Week, component.Instance.State.View);
+            Assert.AreEqual(BitFullCalendarView.Week, view, "the binding keeps the new value");
+        });
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldNotReportAChangeForABoundViewItOpensOn()
+    {
+        var view = BitFullCalendarView.Week;
+        var pushed = new List<BitFullCalendarView>();
+        var raised = 0;
+
+        RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Views, [BitFullCalendarView.Day, BitFullCalendarView.Week, BitFullCalendarView.Month]);
+            parameters.Bind(p => p.View, view, v =>
+            {
+                pushed.Add(v);
+                view = v;
+            });
+            parameters.Add(p => p.OnViewChange, (BitFullCalendarView _) => raised++);
+        });
+
+        // Not even for a moment: the views synced ahead of the bound view must not hand the binding
+        // the view the state started on.
+        CollectionAssert.AreEqual(new List<BitFullCalendarView>(), pushed, "the binding was handed a view it never asked for");
+        Assert.AreEqual(0, raised, "applying the bound value is not a change the user made");
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldAnnounceAParameterPassOnce()
+    {
+        var view = BitFullCalendarView.Month;
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Bind(p => p.View, view, v => view = v);
+        });
+
+        var announced = 0;
+        component.Instance.State.OnStateChanged += () => announced++;
+
+        // Events, resources, views, read-only and the view itself all change in one pass.
+        view = BitFullCalendarView.Week;
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.Resources, Resources());
+            parameters.Add(p => p.Views, [BitFullCalendarView.Day, BitFullCalendarView.Week]);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Bind(p => p.View, view, v => view = v);
+        });
+
+        Assert.AreEqual(1, announced, "a subscriber sees the intermediate states of one parameter pass");
+        Assert.AreEqual(BitFullCalendarView.Week, component.Instance.State.View);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldSurfaceAFailureOfTheBindingItReconcilesWith()
+    {
+        // A bound view the views exclude is corrected back into the binding by the reconciliation of
+        // the pass, so a handler that fails there fails the render instead of vanishing.
+        var failure = Assert.ThrowsExactly<InvalidOperationException>(() => RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Views, [BitFullCalendarView.Day, BitFullCalendarView.Week]);
+            parameters.Add(p => p.View, BitFullCalendarView.Month);
+            parameters.Add(p => p.ViewChanged, EventCallback.Factory.Create<BitFullCalendarView>(this, (BitFullCalendarView _) => throw new InvalidOperationException("binding")));
+        }));
+
+        Assert.AreEqual("binding", failure.Message);
+    }
+
     #endregion
 
     #region Settings round-trip
@@ -686,7 +873,7 @@ public class BitFullCalendarTests : BunitTestContext
         {
             parameters.Add(p => p.Events, Events());
             parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
-            parameters.Add(p => p.DefaultDate, DateTime.Today.AddDays(3));
+            parameters.Add(p => p.DefaultDate, Today.AddDays(3));
         });
 
         Assert.AreEqual(0, otherDay.FindAll(".bit-bfc-timeline").Count, "\"now\" only exists on today's column");
@@ -762,17 +949,22 @@ public class BitFullCalendarTests : BunitTestContext
             new BitFullCalendarSettings { ShowWeekNumbers = true },
             BitFullCalendarView.Week);
 
-        var expected = $"W{BitFullCalendarHelpers.GetWeekNumberForRow(DateTime.Today, component.Instance.State.Culture)}";
-        Assert.AreEqual(expected, component.Find(".bit-bfc-week-header-time .bit-bfc-weeknum-cell").TextContent.Trim());
+        var weekNumber = BitFullCalendarHelpers.GetWeekNumberForRow(Today, component.Instance.State.Culture);
+        var cell = component.Find(".bit-bfc-week-header-time .bit-bfc-weeknum-cell");
+
+        // The short form is what is seen; the spoken form travels as hidden text, since a role-less span's name is not read.
+        Assert.AreEqual($"W{weekNumber}", cell.QuerySelector("[aria-hidden='true']")!.TextContent.Trim());
+        Assert.AreEqual($"Week {weekNumber}", cell.QuerySelector(".bit-bfc-sr-only")!.TextContent.Trim());
+        Assert.IsNull(cell.GetAttribute("aria-label"));
     }
 
     #endregion
 
     #region All-day events
 
-    private static List<BitFullCalendarEvent> AllDayEvents()
+    private List<BitFullCalendarEvent> AllDayEvents()
     {
-        var today = DateTime.Today;
+        var today = Today;
         return
         [
             new() { Id = "timed", Title = "Standup", StartDate = today.AddHours(9), EndDate = today.AddHours(10) },
@@ -812,7 +1004,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldCarryTheEventCssClassOntoItsBadge()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -831,7 +1023,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldLockASingleEventWithoutLockingTheCalendar()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -853,7 +1045,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldRemoveTheResizeHandlesOfALockedEvent()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -877,30 +1069,36 @@ public class BitFullCalendarTests : BunitTestContext
         {
             parameters.Add(p => p.Events, Events());
             parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
-            parameters.Add(p => p.MinDate, DateTime.Today);
-            parameters.Add(p => p.MaxDate, DateTime.Today.AddDays(1));
+            parameters.Add(p => p.MinDate, Today);
+            parameters.Add(p => p.MaxDate, Today.AddDays(1));
         });
 
+        // aria-disabled rather than disabled, so the press that reaches the edge keeps the focus on the button.
         var navButtons = component.FindAll(".bit-bfc-btn-nav");
-        Assert.IsTrue(navButtons[0].HasAttribute("disabled"), "there is nothing before MinDate to navigate to");
-        Assert.IsFalse(navButtons[1].HasAttribute("disabled"));
+        Assert.AreEqual("true", navButtons[0].GetAttribute("aria-disabled"), "there is nothing before MinDate to navigate to");
+        Assert.IsFalse(navButtons[0].HasAttribute("disabled"));
+        Assert.IsFalse(navButtons[1].HasAttribute("aria-disabled"));
+
+        var before = component.Instance.State.SelectedDate;
+        navButtons[0].Click();
+        Assert.AreEqual(before, component.Instance.State.SelectedDate, "an aria-disabled step does nothing");
     }
 
     [TestMethod]
     public void BitFullCalendarShouldPullABoundDateIntoTheAllowedWindow()
     {
-        var bound = DateTime.Today.AddDays(40);
+        var bound = Today.AddDays(40);
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.MinDate, DateTime.Today);
-            parameters.Add(p => p.MaxDate, DateTime.Today.AddDays(5));
+            parameters.Add(p => p.MinDate, Today);
+            parameters.Add(p => p.MaxDate, Today.AddDays(5));
             parameters.Add(p => p.Date, bound);
             parameters.Add(p => p.DateChanged, EventCallback.Factory.Create<DateTime>(this, d => bound = d));
         });
 
-        Assert.AreEqual(DateTime.Today.AddDays(5), component.Instance.State.SelectedDate);
-        Assert.AreEqual(DateTime.Today.AddDays(5), bound, "the corrected value is pushed back into the binding");
+        Assert.AreEqual(Today.AddDays(5), component.Instance.State.SelectedDate);
+        Assert.AreEqual(Today.AddDays(5), bound, "the corrected value is pushed back into the binding");
     }
 
     [TestMethod]
@@ -909,8 +1107,8 @@ public class BitFullCalendarTests : BunitTestContext
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.MinDate, DateTime.Today);
-            parameters.Add(p => p.MaxDate, DateTime.Today.AddDays(2));
+            parameters.Add(p => p.MinDate, Today);
+            parameters.Add(p => p.MaxDate, Today.AddDays(2));
         });
 
         Assert.IsTrue(component.FindAll(".bit-bfc-month-cell.bit-bfc-out-of-range").Count > 0);
@@ -923,7 +1121,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldRenderTheConfiguredNumberOfMonthEventSlots()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var events = Enumerable.Range(0, 5)
             .Select(i => new BitFullCalendarEvent
             {
@@ -1013,12 +1211,41 @@ public class BitFullCalendarTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitFullCalendarShouldFollowACalendarSwitchedOnACultureOfTheSameName()
+    {
+        // DateTimeFormat.Calendar is the documented way of switching the calendar of a culture: the name stays, and so
+        // does CultureInfo.Calendar (the culture's default), so only the calendar the format reads tells the two apart.
+        var hijri = TestCultures.ArSaUmAlQura;
+        var gregorian = (CultureInfo)hijri.Clone();
+        gregorian.DateTimeFormat.Calendar = new GregorianCalendar();
+        var anchor = new DateTime(2026, 3, 18);
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.Culture, hijri);
+            parameters.Add(p => p.DefaultDate, anchor);
+        });
+
+        Assert.IsInstanceOfType<UmAlQuraCalendar>(component.Instance.State.Culture.DateTimeFormat.Calendar);
+        Assert.AreEqual(anchor.ToString("Y", hijri), component.Find(".bit-bfc-header-title").TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.Culture, gregorian));
+
+        // The state took the switched culture, and the month grid is laid out in its calendar: March 2026, 31 days.
+        Assert.IsInstanceOfType<GregorianCalendar>(component.Instance.State.Culture.DateTimeFormat.Calendar);
+        Assert.AreEqual(anchor.ToString("Y", gregorian), component.Find(".bit-bfc-header-title").TextContent.Trim());
+        Assert.AreNotEqual(anchor.ToString("Y", hijri), component.Find(".bit-bfc-header-title").TextContent.Trim());
+        Assert.AreEqual(31, component.FindAll(".bit-bfc-month-cell:not(.other-month)").Count);
+    }
+
+    [TestMethod]
     public void BitFullCalendarShouldTreatADisabledCalendarAsReadOnly()
     {
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Instance.State.ReadOnly);
@@ -1060,7 +1287,7 @@ public class BitFullCalendarTests : BunitTestContext
         Assert.AreEqual(start.AddDays(10), component.Instance.State.SelectedDate);
 
         component.InvokeAsync(() => component.Instance.GoToToday()).GetAwaiter().GetResult();
-        Assert.AreEqual(DateTime.Today, component.Instance.State.SelectedDate);
+        Assert.AreEqual(Today, component.Instance.State.SelectedDate);
     }
 
     [TestMethod]
@@ -1082,8 +1309,8 @@ public class BitFullCalendarTests : BunitTestContext
 
         var (start, end) = component.Instance.GetVisibleRange();
 
-        Assert.AreEqual(DateTime.Today, start);
-        Assert.AreEqual(DateTime.Today, end);
+        Assert.AreEqual(Today, start);
+        Assert.AreEqual(Today, end);
     }
 
     #endregion
@@ -1112,6 +1339,139 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.AreEqual(0, component.FindAll(".bit-bfc-field").Count);
+    }
+
+    // The dialogs claim the Escape they close on (data-bit-esc, read by Utils.claimEscape), so a surface the calendar
+    // sits in does not close on the same press - and go on claiming it while a save or a delete is in flight, when
+    // the press does nothing, so that surface does not take the dialog away mid-commit either.
+
+    [TestMethod]
+    public async Task BitFullCalendarAddDialogShouldKeepClaimingEscapeWhileASaveIsInFlight()
+    {
+        var gate = new TaskCompletionSource();
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.OnChanging, async (BitFullCalendarChangingEventArgs args) =>
+            {
+                await gate.Task;
+                args.Cancel = true;
+            });
+        });
+
+        component.Find(AddButtonSelector).Click();
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
+
+        component.Find("input[id^='bfc-title-']").Change("Pending");
+        var save = component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").ClickAsync(new MouseEventArgs());
+
+        // A save in flight keeps the dialog open on Escape, and the press stays claimed from the surface around it.
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").HasAttribute("disabled")));
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
+        component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
+
+        gate.SetResult();
+        await save;
+
+        component.WaitForAssertion(() => Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc")));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarDetailsDialogShouldLeaveEscapeToItsEditOverlay()
+    {
+        var component = RenderCalendar();
+        component.Find(".bit-bfc-event-badge").Click();
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
+
+        component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn")[0].Click();
+
+        var dialogs = component.FindAll(".bit-bfc-dialog");
+        Assert.AreEqual(2, dialogs.Count);
+        Assert.IsNull(dialogs[0].GetAttribute("data-bit-esc"), "the details dialog leaves the key to the edit overlay");
+        Assert.AreEqual("claim", dialogs[1].GetAttribute("data-bit-esc"), "the edit overlay claims the key it closes on");
+    }
+
+    [TestMethod]
+    public void BitFullCalendarDetailsDialogShouldLeaveEscapeToTheScopePrompt()
+    {
+        var component = RenderSeries();
+        component.FindAll(".bit-bfc-event-badge")[1].Click();
+        component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Click();
+
+        Assert.AreEqual("claim", component.Find(".bit-bfc-scope-dialog").GetAttribute("data-bit-esc"));
+        Assert.IsNull(component.Find(".bit-bfc-dialog:not(.bit-bfc-scope-dialog)").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-bfc-scope-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-scope-dialog").Count);
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public async Task BitFullCalendarDetailsDialogShouldKeepClaimingEscapeWhileADeleteIsInFlight()
+    {
+        var gate = new TaskCompletionSource();
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.OnChanging, async (BitFullCalendarChangingEventArgs args) =>
+            {
+                await gate.Task;
+                args.Cancel = true;
+            });
+        });
+
+        component.Find(".bit-bfc-event-badge").Click();
+        var delete = component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").ClickAsync(new MouseEventArgs());
+
+        // A delete in flight keeps the dialog open on Escape, and the press stays claimed from the surface around it.
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").HasAttribute("disabled")));
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
+        component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
+
+        gate.SetResult();
+        await delete;
+
+        component.WaitForAssertion(() => Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc")));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarEventListDialogShouldLeaveEscapeToItsDetailsOverlay()
+    {
+        var component = RenderCalendar(defaultView: BitFullCalendarView.Year);
+        component.FindAll(".bit-bfc-year-day.has-events")[0].Click();
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-bfc-dialog .bit-bfc-agenda-item").Click();
+
+        var dialogs = component.FindAll(".bit-bfc-dialog");
+        Assert.AreEqual(2, dialogs.Count);
+        Assert.IsNull(dialogs[0].GetAttribute("data-bit-esc"), "the event list leaves the key to the details overlay");
+        Assert.AreEqual("claim", dialogs[1].GetAttribute("data-bit-esc"), "the details overlay claims the key it closes on");
+    }
+
+    [TestMethod]
+    public void BitFullCalendarDateTimePickerShouldClaimEscapeOnlyWhileOpen()
+    {
+        var component = RenderCalendar();
+        component.Find(AddButtonSelector).Click();
+        Assert.IsTrue(component.FindAll(".bit-bfc-dtp").All(p => p.GetAttribute("data-bit-esc") is null));
+
+        component.FindAll(".bit-bfc-dtp-trigger")[0].Click();
+
+        // Both the picker and its panel: the panel is a dialog, where Utils.claimEscape stops looking.
+        var pickers = component.FindAll(".bit-bfc-dtp");
+        Assert.AreEqual("claim", pickers[0].GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dtp-panel").GetAttribute("data-bit-esc"));
+        Assert.IsNull(pickers[1].GetAttribute("data-bit-esc"), "a closed picker leaves the key to the dialog");
+
+        component.FindAll(".bit-bfc-dtp")[0].KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-dtp-panel").Count);
+        Assert.IsNull(component.FindAll(".bit-bfc-dtp")[0].GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"), "the dialog is still open and claims the next press");
     }
 
     [TestMethod]
@@ -1307,7 +1667,7 @@ public class BitFullCalendarTests : BunitTestContext
         BitFullCalendarView view = BitFullCalendarView.Day,
         BitFullCalendarSettings? settings = null)
     {
-        var today = DateTime.Today;
+        var today = owner.Today;
         return owner.RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1330,8 +1690,8 @@ public class BitFullCalendarTests : BunitTestContext
 
         Assert.AreEqual(1, changes.Count);
         Assert.AreEqual(BitFullCalendarChangeSource.Drag, changes[0].Source);
-        Assert.AreEqual(DateTime.Today.AddHours(9).AddMinutes(30), changes[0].Event.StartDate);
-        Assert.AreEqual(DateTime.Today.AddHours(10).AddMinutes(30), changes[0].Event.EndDate);
+        Assert.AreEqual(Today.AddHours(9).AddMinutes(30), changes[0].Event.StartDate);
+        Assert.AreEqual(Today.AddHours(10).AddMinutes(30), changes[0].Event.EndDate);
     }
 
     [TestMethod]
@@ -1344,15 +1704,15 @@ public class BitFullCalendarTests : BunitTestContext
 
         Assert.AreEqual(1, changes.Count);
         Assert.AreEqual(BitFullCalendarChangeSource.Resize, changes[0].Source);
-        Assert.AreEqual(DateTime.Today.AddHours(9), changes[0].Event.StartDate, "a resize leaves the start alone");
-        Assert.AreEqual(DateTime.Today.AddHours(10).AddMinutes(30), changes[0].Event.EndDate);
+        Assert.AreEqual(Today.AddHours(9), changes[0].Event.StartDate, "a resize leaves the start alone");
+        Assert.AreEqual(Today.AddHours(10).AddMinutes(30), changes[0].Event.EndDate);
     }
 
     [TestMethod]
     public void BitFullCalendarShiftArrowShouldNotShrinkAnEventBelowOneSlot()
     {
         var changes = new List<BitFullCalendarChangeEventArgs>();
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1373,7 +1733,7 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var changes = new List<BitFullCalendarChangeEventArgs>();
         var refusals = new List<BitFullCalendarChangeRefusal>();
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1395,11 +1755,95 @@ public class BitFullCalendarTests : BunitTestContext
         CollectionAssert.AreEqual(new[] { BitFullCalendarChangeRefusal.Overlap }, refusals.ToArray());
     }
 
+    // A save of the built-in dialog passes through the same rules a drop does, and is reported the same way: the
+    // reason is shown in the dialog, next to its actions, rather than as the calendar's notice behind it, and
+    // OnRefused is raised all the same.
+
+    private IRenderedComponent<BitFullCalendar> RenderTwoOverlappingEvents(List<BitFullCalendarChangeEventArgs> changes, List<BitFullCalendarChangeRefusal> refusals, bool allowOverlap)
+    {
+        var today = Today;
+        return RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events,
+            [
+                new BitFullCalendarEvent { Id = "1", Title = "Standup", StartDate = today.AddHours(9), EndDate = today.AddHours(10) },
+                new BitFullCalendarEvent { Id = "2", Title = "Retro", StartDate = today.AddHours(9).AddMinutes(30), EndDate = today.AddHours(11) }
+            ]);
+            parameters.Add(p => p.CultureName, "en-US");
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
+            parameters.Add(p => p.Settings, new BitFullCalendarSettings { AllowEventOverlap = allowOverlap });
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
+            parameters.Add(p => p.OnRefused, EventCallback.Factory.Create<BitFullCalendarChangeRefusal>(this, refusals.Add));
+        });
+    }
+
+    private static void SaveEventOneThroughTheDialog(IRenderedComponent<BitFullCalendar> component)
+    {
+        component.Find("[data-bit-bfc-event='1']").Click();
+        component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn").First(b => b.TextContent.Trim() == "Edit").Click();
+        SaveChangesButton(component).Click();
+    }
+
+    private static AngleSharp.Dom.IElement SaveChangesButton(IRenderedComponent<BitFullCalendar> component)
+        => component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Single(b => b.TextContent.Trim() == "Save Changes");
+
+    [TestMethod]
+    public void BitFullCalendarDialogSaveTheRulesRefuseShouldRaiseOnRefusedAndSayWhyInTheDialog()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var refusals = new List<BitFullCalendarChangeRefusal>();
+        var component = RenderTwoOverlappingEvents(changes, refusals, allowOverlap: false);
+
+        SaveEventOneThroughTheDialog(component);
+
+        Assert.AreEqual(0, changes.Count);
+        Assert.AreEqual("This time range is already taken on that resource.", component.Find(".bit-bfc-dialog-footer [role=alert]").TextContent.Trim());
+        CollectionAssert.AreEqual(new[] { BitFullCalendarChangeRefusal.Overlap }, refusals.ToArray());
+        // the reason is shown once, where the user is looking - not again as the calendar's notice behind the dialog
+        Assert.AreEqual(string.Empty, component.Find(".bit-bfc-toast-region").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitFullCalendarDialogSaveTheRulesAllowShouldRaiseNoRefusal()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var refusals = new List<BitFullCalendarChangeRefusal>();
+        var component = RenderTwoOverlappingEvents(changes, refusals, allowOverlap: true);
+
+        SaveEventOneThroughTheDialog(component);
+
+        Assert.AreEqual(1, changes.Count);
+        Assert.AreEqual(0, refusals.Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarDialogSaveOnChangingCancelsShouldRaiseNoRefusal()
+    {
+        var refusals = new List<BitFullCalendarChangeRefusal>();
+        var today = Today;
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events,
+            [
+                new BitFullCalendarEvent { Id = "1", Title = "Standup", StartDate = today.AddHours(9), EndDate = today.AddHours(10) }
+            ]);
+            parameters.Add(p => p.CultureName, "en-US");
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
+            parameters.Add(p => p.OnChanging, (BitFullCalendarChangingEventArgs args) => args.Cancel = true);
+            parameters.Add(p => p.OnRefused, EventCallback.Factory.Create<BitFullCalendarChangeRefusal>(this, refusals.Add));
+        });
+
+        SaveEventOneThroughTheDialog(component);
+
+        Assert.AreEqual(0, refusals.Count, "the app refused it itself, through OnChanging");
+        Assert.IsNotNull(SaveChangesButton(component), "the dialog stays open on what was typed");
+    }
+
     [TestMethod]
     public void BitFullCalendarKeyboardEditShouldDoNothingOnALockedEvent()
     {
         var changes = new List<BitFullCalendarChangeEventArgs>();
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1424,7 +1868,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find(".bit-bfc-event-badge").KeyDown(new KeyboardEventArgs { Key = "ArrowRight", AltKey = true });
 
         Assert.AreEqual(1, changes.Count);
-        Assert.AreEqual(DateTime.Today.AddDays(1).AddHours(9), changes[0].Event.StartDate);
+        Assert.AreEqual(Today.AddDays(1).AddHours(9), changes[0].Event.StartDate);
     }
 
     [TestMethod]
@@ -1488,8 +1932,8 @@ public class BitFullCalendarTests : BunitTestContext
         Slots(component)[3].MouseUp();
 
         Assert.AreEqual(1, drafts.Count);
-        Assert.AreEqual(DateTime.Today.AddHours(8), drafts[0]!.StartDate);
-        Assert.AreEqual(DateTime.Today.AddHours(10), drafts[0]!.EndDate);
+        Assert.AreEqual(Today.AddHours(8), drafts[0]!.StartDate);
+        Assert.AreEqual(Today.AddHours(10), drafts[0]!.EndDate);
     }
 
     [TestMethod]
@@ -1509,8 +1953,8 @@ public class BitFullCalendarTests : BunitTestContext
         Slots(component)[1].MouseUp();
 
         Assert.AreEqual(1, drafts.Count);
-        Assert.AreEqual(DateTime.Today.AddHours(8).AddMinutes(30), drafts[0]!.StartDate);
-        Assert.AreEqual(DateTime.Today.AddHours(10), drafts[0]!.EndDate);
+        Assert.AreEqual(Today.AddHours(8).AddMinutes(30), drafts[0]!.StartDate);
+        Assert.AreEqual(Today.AddHours(10), drafts[0]!.EndDate);
     }
 
     [TestMethod]
@@ -1533,7 +1977,7 @@ public class BitFullCalendarTests : BunitTestContext
         Slots(component)[0].Click();
 
         Assert.AreEqual(1, drafts.Count);
-        Assert.AreEqual(DateTime.Today.AddHours(8).AddMinutes(30), drafts[0]!.EndDate, "a click still covers one slot");
+        Assert.AreEqual(Today.AddHours(8).AddMinutes(30), drafts[0]!.EndDate, "a click still covers one slot");
     }
 
     [TestMethod]
@@ -1587,7 +2031,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarAgendaSearchShouldMatchAnAttendeeName()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1617,7 +2061,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarAgendaShouldLabelAnAllDayEvent()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1694,12 +2138,12 @@ public class BitFullCalendarTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitFullCalendarShouldKeepARecurringOccurrenceFromBeingDraggedButOfferItsActions()
+    public void BitFullCalendarShouldLetARecurringOccurrenceBeDraggedAndOfferItsActions()
     {
         var component = RenderSeries();
 
         var badge = component.Find(".bit-bfc-event-badge");
-        Assert.AreEqual("false", badge.GetAttribute("draggable"));
+        Assert.AreEqual("true", badge.GetAttribute("draggable"), "an occurrence moves on its own");
 
         badge.Click();
 
@@ -1712,10 +2156,85 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var component = RenderSeries(readOnlyMaster: true);
 
+        Assert.AreEqual("false", component.Find(".bit-bfc-event-badge").GetAttribute("draggable"));
         component.Find(".bit-bfc-event-badge").Click();
 
         Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog-footer button").Count);
     }
+
+    [TestMethod]
+    public void BitFullCalendarShouldDetachAnOccurrenceMovedByKeyboard()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderSeries(changes);
+
+        // Alt+Right moves the second occurrence (June 11) a day later, on its own.
+        component.FindAll(".bit-bfc-event-badge")[1].KeyDown(new KeyboardEventArgs { Key = "ArrowRight", AltKey = true });
+
+        var state = component.Instance.State;
+        var master = state.AllEvents.Single(e => e.Id == "series");
+        CollectionAssert.AreEqual(new[] { new DateTime(2024, 6, 11) }, master.Recurrence!.ExceptionDates!.ToArray());
+        var detached = state.AllEvents.Single(e => e.Id != "series");
+        Assert.AreEqual(new DateTime(2024, 6, 12, 9, 0, 0), detached.StartDate);
+        Assert.IsNull(detached.Recurrence);
+        Assert.IsNull(detached.SeriesId);
+
+        Assert.AreEqual(2, changes.Count, "the master's skipped date and the new one-off");
+        Assert.AreEqual(BitFullCalendarChangeKind.Edit, changes[0].Kind);
+        Assert.AreEqual(BitFullCalendarChangeKind.Add, changes[1].Kind);
+        Assert.IsTrue(changes.All(c => c.Source == BitFullCalendarChangeSource.Drag));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldDetachAnOccurrenceDroppedElsewhere()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderSeries(changes);
+        var state = component.Instance.State;
+
+        var occurrence = state.Events.Single(e => e.OccurrenceDate == new DateTime(2024, 6, 12));
+        state.StartDrag(occurrence);
+        component.InvokeAsync(() => Notifier(component).HandleDropAsync(new DateTime(2024, 6, 20))).Wait();
+
+        Assert.IsFalse(state.IsDragging);
+        Assert.AreEqual(3, state.Events.Count, "two occurrences left in the series and the one moved out of it");
+        Assert.IsTrue(state.Events.Any(e => e.StartDate == new DateTime(2024, 6, 20, 9, 0, 0) && e.IsOccurrence is false));
+        Assert.AreEqual(2, changes.Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldPutBothHalvesBackWhenOnChangingRefusesAnOccurrenceMove()
+    {
+        var start = new DateTime(2024, 6, 10);
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.DefaultDate, start);
+            parameters.Add(p => p.Events,
+            [
+                new BitFullCalendarEvent
+                {
+                    Id = "series",
+                    Title = "Standup",
+                    StartDate = start.AddHours(9),
+                    EndDate = start.AddHours(10),
+                    Recurrence = new BitFullCalendarRecurrence { Frequency = BitFullCalendarRecurrenceFrequency.Daily, Count = 3 }
+                }
+            ]);
+            parameters.Add(p => p.OnChanging, (BitFullCalendarChangingEventArgs args) => args.Cancel = args.Kind == BitFullCalendarChangeKind.Add);
+        });
+
+        component.FindAll(".bit-bfc-event-badge")[1].KeyDown(new KeyboardEventArgs { Key = "ArrowRight", AltKey = true });
+
+        var state = component.Instance.State;
+        Assert.AreEqual(1, state.AllEvents.Count);
+        Assert.IsNull(state.AllEvents[0].Recurrence!.ExceptionDates, "the skipped date is taken back");
+        Assert.IsFalse(component.Find(".bit-bfc-body").HasAttribute("data-bit-bfc-moved-from"), "a move that never happened hands no focus on");
+    }
+
+    private static BitFullCalendarChangeNotifier Notifier(IRenderedComponent<BitFullCalendar> component)
+        => (BitFullCalendarChangeNotifier)typeof(BitFullCalendar)
+            .GetField("_changeNotifier", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .GetValue(component.Instance)!;
 
     [TestMethod]
     public void BitFullCalendarShouldSkipTheDateWhenOnlyThisOccurrenceIsDeleted()
@@ -1891,7 +2410,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find("input[id^='bfc-title-']").Change("Countdown");
         component.Find("select[id^='bfc-repeat-']").Change("Weekly");
         component.Find("select[id^='bfc-ends-']").Change("AfterCount");
-        component.Find(".bit-bfc-repeat-row input[type=number]:not([id])").Change("0");
+        component.Find("input[id^='bfc-count-']").Change("0");
         component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
 
         Assert.AreEqual(0, changes.Count);
@@ -1937,7 +2456,7 @@ public class BitFullCalendarTests : BunitTestContext
     public void BitFullCalendarAddDialogShouldRefuseAnOverlappingSaveWhenOverlapsAreDisallowed()
     {
         var changes = new List<BitFullCalendarChangeEventArgs>();
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -2150,7 +2669,8 @@ public class BitFullCalendarTests : BunitTestContext
         var toggles = OpenSettingsMenu(component);
         var businessToggle = toggles.Single(t => t.TextContent.Contains("business hours", StringComparison.OrdinalIgnoreCase));
 
-        Assert.AreEqual("false", businessToggle.GetAttribute("aria-pressed"));
+        Assert.AreEqual("switch", businessToggle.GetAttribute("role"));
+        Assert.AreEqual("false", businessToggle.GetAttribute("aria-checked"));
 
         businessToggle.Click();
 
@@ -2324,7 +2844,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldNotPutAClockRangeOnAnAllDayTooltip()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -2342,7 +2862,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarAgendaShouldListADayInClockOrder()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             // Supplied out of order, and with an all-day event that heads the date it covers.
@@ -2365,7 +2885,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldPlaceAnEventBlockAgainstTheHourHeightVariable()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -2415,7 +2935,7 @@ public class BitFullCalendarTests : BunitTestContext
         {
             parameters.Add(p => p.Events, Events());
             parameters.Add(p => p.DefaultView, BitFullCalendarView.Week);
-            parameters.Add(p => p.DefaultDate, DateTime.Today.AddDays(30));
+            parameters.Add(p => p.DefaultDate, Today.AddDays(30));
         });
 
         Assert.AreEqual(0, anotherWeek.FindAll(".bit-bfc-today-col").Count);
@@ -2424,7 +2944,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarDetailsDialogShouldDescribeTheRepeatRuleOfAnOccurrence()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -2501,4 +3021,11 @@ public class BitFullCalendarTests : BunitTestContext
     }
 
     #endregion
+
+    private sealed class FixedTimeProvider(DateTime localNow) : TimeProvider
+    {
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+
+        public override DateTimeOffset GetUtcNow() => new(DateTime.SpecifyKind(localNow, DateTimeKind.Utc));
+    }
 }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -22,11 +22,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MSTest" Version="4.4.1" />
+        <PackageReference Include="MSTest" Version="4.5.1" />
         <!-- The client half of the same SDK the server is built on. The suite drives /mcp with a
              real protocol client rather than hand-rolled JSON-RPC, so what it exercises is what an
              editor, an agent host or a coding agent exercises - the handshake included. -->
-        <PackageReference Include="ModelContextProtocol.Core" Version="2.2.0" />
+        <PackageReference Include="ModelContextProtocol.Core" Version="2.3.0" />
     </ItemGroup>
 
     <!-- Deliberately NO ProjectReference to Bit.BlazorUI.Demo.Server. Everything here is asserted

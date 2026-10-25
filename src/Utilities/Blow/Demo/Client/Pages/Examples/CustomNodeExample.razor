@@ -1,0 +1,108 @@
+﻿@page "/examples/custom-node"
+
+<PageTitle>Custom Node · Blow</PageTitle>
+
+<ExampleScaffold Title="Custom Node"
+                 Summary="A 'text updater' node drawn by a NodeTemplate: its own markup, a text field bound to the node's Data, and handles placed by hand - one target and two named sources. Each output node shows what reaches it along the edges: the text from handle a, its length from handle b.">
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" EdgesChanged="@(_ => Sync())">
+            <NodeTemplate Context="node">
+                @if (node.Type == "textUpdater" && node.Data is TextData data)
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="text-updater">
+                        <label>Text:</label>
+                        @* nodrag hands presses back to the field, so clicking or selecting in it never drags the node. *@
+                        <input class="nodrag" value="@data.Text" aria-label="Text"
+                               @oninput="e => OnText(data, e.Value?.ToString())" />
+                    </div>
+                    @* Two handles of the same type, so each needs an Id for an edge to name it by. *@
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" Id="a" Style="left: 25%" />
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" Id="b" Style="left: 75%" />
+                }
+                else
+                {
+                    <BlowDefaultNode Node="node" />
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Type in the field</strong>: the output under handle a mirrors the text, and the one under handle b counts its characters. <strong>Backspace</strong> edits the text rather than deleting the node.</li>
+        <li><strong>Drag the node</strong> by anything but the field: pressing or selecting in the field never moves it.</li>
+        <li><strong>Click an edge</strong> to select it, then <strong>drag the dot at its lower end</strong> onto the other output - or press <strong>Delete</strong>: each output shows what now reaches it, or <em>(not connected)</em>.</li>
+        <li><strong>Drag from handle a or b</strong> to an output to wire it up again.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>NodeTemplate</code> renders the content of every node. It switches on <code>node.Type</code> and hands every other type back to the built-in renderer with <code>&lt;BlowDefaultNode Node="node" /&gt;</code>. With a template, the add-ons go in an explicit <code>&lt;ChildContent&gt;</code>.</li>
+        <li><code>Data</code> carries the node's payload, a <code>TextData</code> here: the field writes to it, and the page works the outputs' <code>Label</code> out again.</li>
+        <li>Each <code>BlowHandle</code> is placed by hand with its <code>Type</code> and <code>Position</code>. The two source handles need an <code>Id</code> each, which edges name through <code>SourceHandle</code>; <code>Style="left: 25%"</code> moves a handle along its side.</li>
+        <li>The field carries the <code>nodrag</code> class (the canvas's <code>NoDragClass</code>), so a press on it neither selects nor drags the node; graph keys such as Backspace are ignored while focus is in a text field.</li>
+        <li><code>EdgesChanged</code> is raised after the canvas changes the edge list - a connect, a reconnect or a delete - and the page reads the outputs off the edges again.</li>
+        <li>The template renders inside the node element, so it keeps the node's padding, border and background; <code>Width = 170</code> gives the field room.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .text-updater { padding: 4px 2px; font-size: 12px; text-align: left; }
+    .text-updater label { display:block; color:var(--bit-blow-text-muted); margin-bottom:3px; }
+    .text-updater input { width: 130px; padding: 3px 6px; color:var(--bit-blow-text); background:var(--bit-blow-surface); border:1px solid var(--bit-blow-border); border-radius:5px; }
+</style>
+
+@code {
+    public sealed class TextData { public string Text { get; set; } = ""; }
+
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    // Also held here, so the outputs can be worked out whatever has happened to the node.
+    private readonly TextData _text = new() { Text = "hello" };
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "node-1", Type = "textUpdater", Position = new(0, 0), Data = _text, Width = 170 },
+            new BlowNode { Id = "text", Type = "output", Position = new(-80, 170) },
+            new BlowNode { Id = "length", Type = "output", Position = new(110, 170) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e-a", Source = "node-1", SourceHandle = "a", Target = "text", Animated = true },
+            new BlowEdge { Id = "e-b", Source = "node-1", SourceHandle = "b", Target = "length", Animated = true },
+        ];
+        Sync();
+    }
+
+    private void OnText(TextData data, string? value)
+    {
+        data.Text = value ?? "";
+        Sync();
+    }
+
+    // Each output shows whatever reaches it from the text node: the text through handle "a", its length through
+    // handle "b" - both, when both are wired to it - or nothing when no edge from the text node ends on it.
+    private void Sync()
+    {
+        foreach (var output in _nodes.Where(n => n.Type == "output"))
+        {
+            var values = _edges
+                .Where(e => e.Source == "node-1" && e.Target == output.Id)
+                .Select(e => e.SourceHandle switch
+                {
+                    "a" => _text.Text.Length == 0 ? "(empty)" : _text.Text,
+                    "b" => $"{_text.Text.Length} characters",
+                    _ => null,
+                })
+                .OfType<string>()
+                .Distinct()
+                .ToList();
+
+            output.Label = values.Count == 0 ? "(not connected)" : string.Join(" · ", values);
+        }
+    }
+}

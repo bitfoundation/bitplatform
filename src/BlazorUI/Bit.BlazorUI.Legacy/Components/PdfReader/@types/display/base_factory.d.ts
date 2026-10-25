@@ -1,4 +1,4 @@
-declare class BaseCanvasFactory {
+﻿declare class BaseCanvasFactory {
     constructor({ enableHWA }: {
         enableHWA?: boolean | undefined;
     });

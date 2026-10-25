@@ -1,0 +1,417 @@
+﻿@page "/json-schema"
+
+<PageTitle>JSON Schema · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>JSON Schema</h1>
+    <p class="bb-subtitle">
+        Edit the JSON Schema on the left and apply it: the form regenerates on the right — no compiled model
+        required. Alongside the standard keywords (<code>$ref</code>, <code>allOf</code>,
+        <code>if</code>/<code>then</code>, <code>dependentRequired</code>, <code>enum</code>,
+        <code>format</code>…), Borm reads a small set of <code>x-</code> extensions for the UI
+        intent JSON Schema cannot express: widgets, layout, conditional visibility and wizard steps.
+        <strong>Export (round-trip)</strong> writes the whole thing back out, conditions and steps included.
+    </p>
+</div>
+
+<div class="bb-note">
+    Each example shows a different part of the format. <em>Conditional</em>: a <code>$ref</code> into <code>$defs</code>,
+    <code>dependentRequired</code> (a card number makes the billing reference required), fields shown, required and cleared
+    by <code>x-visibleWhen</code>/<code>x-requiredWhen</code>/<code>x-clearOnHide</code>, and a two-column grid.
+    <em>Wizard</em>: <code>x-steps</code>, a step shown only for business accounts, and <code>if</code>/<code>then</code>.
+    <em>Subforms</em>: a <code>oneOf</code> told apart by a <code>const</code> becomes a choice with each branch's own fields,
+    <code>dependentSchemas</code> asks for a VAT number once a company is given, and <code>allOf</code> merges a shared
+    contact shape. <em>Expressions</em>: totals, rules and conditions written as text, in tabs. Break the document and
+    <em>Apply</em> says why rather than throwing; <em>Export</em> shows what Borm makes of it.
+</div>
+
+<div class="bb-split bb-page-wide">
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Schema</span></div>
+        <textarea class="demo-json-editor" @bind="_json" @bind:event="oninput" spellcheck="false" aria-label="JSON Schema"></textarea>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="Rebuild">Apply schema</button>
+            <button type="button" class="btn btn-secondary" @onclick="ExportRoundTrip">Export (round-trip)</button>
+            <button type="button" class="btn btn-secondary" @onclick="LoadConditional">Load conditional example</button>
+            <button type="button" class="btn btn-secondary" @onclick="LoadWizard">Load wizard example</button>
+            <button type="button" class="btn btn-secondary" @onclick="LoadSubforms">Load subforms example</button>
+            <button type="button" class="btn btn-secondary" @onclick="LoadExpressions">Load expressions example</button>
+        </div>
+        @if (_error is not null)
+        {
+            <p class="bb-note bb-note-danger demo-json-error" role="alert">@_error</p>
+        }
+        @if (_schema is not null)
+        {
+            @* Validate() is a development aid, never run for you: a schema being edited has every right to be incomplete. *@
+            <div class="demo-readout">
+                <p class="bb-overline">definition.Validate() - the schema's own checks</p>
+                <pre>@(_diagnostics.Count == 0 ? "No problems found." : string.Join(Environment.NewLine, _diagnostics))</pre>
+            </div>
+        }
+    </div>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">The form it becomes</span></div>
+        @if (_schema is not null)
+        {
+            <BormView @key="_version" Definition="_schema" Data="_data"
+                      OnValidSubmit="HandleSubmit" SubmitText="Submit" ShowErrorSummary="true" />
+        }
+    </div>
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Submitted values ✓</strong><pre>@_resultJson</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What the importer reads</h3>
+    <p class="bb-card-desc">
+        Drafts 07 to 2020-12: <code>type</code> (nullable unions such as <code>["string","null"]</code> too),
+        <code>properties</code>, <code>required</code>, <code>enum</code>, <code>const</code>, <code>format</code>
+        (<code>date</code>, <code>time</code>, <code>date-time</code>, <code>color</code> and <code>password</code> choose the control;
+        <code>email</code>, <code>uri</code> and <code>uuid</code> add the matching rule too), <code>default</code>,
+        <code>examples</code> (suggestions), <code>readOnly</code>, <code>minimum</code>/<code>maximum</code>
+        and their exclusive forms, <code>multipleOf</code>, <code>minLength</code>/<code>maxLength</code>, <code>pattern</code>,
+        <code>items</code>, <code>minItems</code>/<code>maxItems</code>, <code>uniqueItems</code>, <code>$ref</code> into
+        <code>$defs</code>/<code>definitions</code> (recursion followed one level), <code>allOf</code> (merged, the stricter bound
+        winning), <code>if</code>/<code>then</code>/<code>else</code>, <code>dependentRequired</code>, <code>dependentSchemas</code>
+        and draft-07's <code>dependencies</code>, and <code>oneOf</code>/<code>anyOf</code> - a null union, a list of titled
+        <code>const</code> branches (a labelled select), or object branches told apart by a <code>const</code> or OpenAPI's
+        <code>discriminator</code> (subforms). An array of an <code>enum</code> with <code>uniqueItems</code> is a multi-select.
+    </p>
+    <p class="bb-card-desc">
+        <code>TryImport</code> is the call for a document a user typed: besides malformed JSON, it refuses one that is not a
+        schema, an expression that does not parse (naming the field), and one past the budgets no real form comes near -
+        10,000 fields, 32 levels of nesting - since a few hundred bytes of <code>$ref</code>s can describe millions of fields.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The <code>x-</code> extensions</h3>
+    <p class="bb-card-desc">
+        UI intent JSON Schema has no word for travels in <code>x-</code> keywords, and all of it survives an export and a
+        second import. What is written in C# - a <code>Must(predicate)</code>, an <code>OptionsFrom</code> provider, an
+        <code>OnChange</code> handler, an uploader - has no JSON form and is left out of the export rather than approximated;
+        what is written as an <a href="expressions">expression</a> is exported as the text it was written as.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Keyword</th><th>Means</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>x-widget</code></td><td>The control: <code>select</code>, <code>radio</code>, <code>textarea</code>, <code>combobox</code>, <code>multiselect</code>, <code>tags</code>, <code>range</code>, <code>switch</code>, <code>month</code>, <code>week</code>, <code>markdown</code>, <code>signature</code>, <code>static</code>, <code>hidden</code>, …</td></tr>
+                <tr><td class="bb-table-key"><code>enumNames</code>, <code>x-enumGroups</code>, <code>x-enumDisabled</code></td><td>Option labels, the <code>&lt;optgroup&gt;</code> each belongs to, and choices that cannot be picked.</td></tr>
+                <tr><td class="bb-table-key"><code>x-allowCustom</code>, <code>x-enum</code></td><td>A combobox that also takes answers on no list; its suggestions.</td></tr>
+                <tr><td class="bb-table-key"><code>x-visibleWhen</code>, <code>x-requiredWhen</code>, <code>x-disabledWhen</code>, <code>x-readOnlyWhen</code>, <code>x-clearOnHide</code></td><td>Conditions - an expression string, <code>{"field", "op", "value"}</code>, or <code>{"all": […]}</code> / <code>{"any": […]}</code> of either.</td></tr>
+                <tr><td class="bb-table-key"><code>x-computed</code>, <code>x-rules</code>, <code>x-revalidateOn</code></td><td>A value derived from others, rules written as expressions (with a <code>severity</code>), and the other half of a cross-field rule.</td></tr>
+                <tr><td class="bb-table-key"><code>x-steps</code>, <code>x-stepLayout</code></td><td>Steps (<code>id</code>, <code>title</code>, <code>fields</code>, <code>visibleWhen</code>) and how they show: <code>wizard</code>, <code>tabs</code>, <code>accordion</code>, <code>sections</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>x-columns</code>, <code>x-colSpan</code>, <code>x-order</code>, <code>x-group</code>, <code>x-pageSize</code></td><td>The grid, the order, a <code>&lt;fieldset&gt;</code> and a long list shown a page at a time.</td></tr>
+                <tr><td class="bb-table-key"><code>x-placeholder</code>, <code>x-prefix</code>, <code>x-suffix</code>, <code>x-showLabel</code>, <code>x-characterCount</code>, <code>x-autocomplete</code>, <code>x-inputMode</code>, <code>x-autofocus</code></td><td>Presentation and the browser's hints.</td></tr>
+                <tr><td class="bb-table-key"><code>x-updateOn</code>, <code>x-debounce</code>, <code>x-step</code></td><td>When the value is written back, and the control's granularity.</td></tr>
+                <tr><td class="bb-table-key"><code>x-mask</code>, <code>x-maskStoresRaw</code></td><td>A <a href="rich-fields">fixed shape</a> such as <code>(000) 000-0000</code>, and whether the model keeps only the slots.</td></tr>
+                <tr><td class="bb-table-key"><code>x-accept</code>, <code>x-multiple</code>, <code>x-maxFileSize</code></td><td>File upload limits.</td></tr>
+                <tr><td class="bb-table-key"><code>x-sensitive</code>, <code>x-version</code></td><td>Kept out of <a href="drafts">drafts</a>; the form's version, recorded in each draft.</td></tr>
+                <tr><td class="bb-table-key"><code>x-i18n</code>, <code>x-translations</code></td><td>A field's translation key, and the form's <a href="localization">texts per language</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>x-renderer</code>, <code>x-attributes</code>, <code>x-inputAttributes</code></td><td>A <a href="custom-renderer">custom renderer</a>'s key, renderer hints, and extra HTML attributes.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private const string Source =
+""""
+@page "/json-schema"
+
+<textarea @bind="_json" @bind:event="oninput"></textarea>
+<button @onclick="Rebuild">Apply schema</button>
+<button @onclick="ExportRoundTrip">Export (round-trip)</button>
+
+@if (_schema is not null)
+{
+    <BormView @key="_version" Definition="_schema" Data="_data"
+              OnValidSubmit="HandleSubmit" SubmitText="Submit" ShowErrorSummary="true" />
+}
+
+@code {
+    private BormDefinition? _schema;
+    private IReadOnlyList<BormSchemaDiagnostic> _diagnostics = [];
+    private Dictionary<string, object?> _data = new();
+    private int _version;
+    private string? _error;
+
+    private void Rebuild()
+    {
+        // TryImport reports a malformed document instead of throwing — the shape you want behind
+        // a "paste your schema here" editor.
+        if (BormJsonSchemaImporter.TryImport(_json, out var schema, out _error))
+        {
+            _schema = schema;
+            // The schema's own checks - duplicate names, conditions pointing nowhere, cycles - as a development aid.
+            _diagnostics = schema.Validate();
+            _data = new Dictionary<string, object?>();
+            _version++;
+        }
+    }
+
+    private void ExportRoundTrip()
+    {
+        if (_schema is null) return;
+        // Conditions, wizard steps, layout and widget choices all survive the round-trip.
+        _json = BormJsonSchemaExporter.Export(_schema);
+    }
+}
+"""";
+
+    private const string BasicSchema = """
+    {
+      "title": "Event registration",
+      "type": "object",
+      "required": ["name", "email", "ticket"],
+      "properties": {
+        "name":    { "type": "string", "title": "Full name", "minLength": 2, "x-autocomplete": "name" },
+        "email":   { "type": "string", "format": "email", "title": "Email" },
+        "ticket":  { "type": "string", "title": "Ticket", "enum": ["standard", "vip"], "enumNames": ["Standard", "VIP"] },
+        "guests":  { "type": "integer", "title": "Guests", "minimum": 0, "maximum": 5 },
+        "notes":   { "type": "string", "title": "Dietary notes", "x-widget": "textarea" },
+        "subscribe": { "type": "boolean", "title": "Email me about future events" }
+      }
+    }
+    """;
+
+    // Shows $defs/$ref, dependentRequired, the grid and the x-visibleWhen/x-requiredWhen/x-clearOnHide extensions side by side.
+    private const string ConditionalSchema = """
+    {
+      "title": "Order",
+      "type": "object",
+      "x-columns": 2,
+      "required": ["kind", "email"],
+      "properties": {
+        "kind": {
+          "type": "string", "title": "Customer type",
+          "enum": ["personal", "business"], "enumNames": ["Personal", "Business"],
+          "x-widget": "radio", "x-colSpan": 2
+        },
+        "email": { "type": "string", "format": "email", "title": "Email", "x-colSpan": 2 },
+        "companyName": {
+          "type": "string", "title": "Company name", "x-colSpan": 2,
+          "x-visibleWhen":  { "field": "kind", "op": "Equals", "value": "business" },
+          "x-requiredWhen": { "field": "kind", "op": "Equals", "value": "business" },
+          "x-clearOnHide": true
+        },
+        "vatNumber": {
+          "type": "string", "title": "VAT number", "pattern": "^[A-Z]{2}[0-9]{8,12}$",
+          "x-visibleWhen": { "field": "kind", "op": "Equals", "value": "business" },
+          "x-clearOnHide": true
+        },
+        "billing": { "$ref": "#/$defs/address" },
+        "creditCard": { "type": "string", "title": "Card number" },
+        "billingReference": { "type": "string", "title": "Billing reference" }
+      },
+      "dependentRequired": { "creditCard": ["billingReference"] },
+      "$defs": {
+        "address": {
+          "type": "object", "title": "Billing address",
+          "required": ["city"],
+          "properties": {
+            "street": { "type": "string", "title": "Street" },
+            "city":   { "type": "string", "title": "City" }
+          }
+        }
+      }
+    }
+    """;
+
+    private const string WizardSchema = """
+    {
+      "title": "Sign up",
+      "type": "object",
+      "required": ["email", "kind"],
+      "properties": {
+        "email":       { "type": "string", "format": "email", "title": "Email" },
+        "kind":        { "type": "string", "title": "Account type", "enum": ["personal", "business"], "x-widget": "radio" },
+        "companyName": { "type": "string", "title": "Company name" },
+        "accept":      { "type": "boolean", "title": "I accept the terms" }
+      },
+      "if":   { "properties": { "kind": { "const": "business" } } },
+      "then": { "required": ["companyName"] },
+      "x-steps": [
+        { "id": "contact", "title": "Contact", "fields": ["email"] },
+        { "id": "type",    "title": "Type",    "fields": ["kind"] },
+        { "id": "company", "title": "Company", "fields": ["companyName"],
+          "visibleWhen": { "field": "kind", "op": "Equals", "value": "business" } },
+        { "id": "confirm", "title": "Confirm", "fields": ["accept"] }
+      ]
+    }
+    """;
+
+    // A union of object shapes told apart by a const (subforms), dependentSchemas, and allOf merging a shared shape.
+    private const string SubformsSchema = """
+    {
+      "title": "Checkout",
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/contact" }],
+      "properties": {
+        "company": { "type": "string", "title": "Company (optional)" },
+        "payment": {
+          "title": "Payment",
+          "oneOf": [
+            {
+              "title": "Card",
+              "type": "object",
+              "properties": {
+                "kind":   { "const": "card" },
+                "number": { "type": "string", "title": "Card number", "minLength": 12 },
+                "holder": { "type": "string", "title": "Name on the account" }
+              },
+              "required": ["number"]
+            },
+            { "$ref": "#/$defs/bank" }
+          ]
+        }
+      },
+      "dependentSchemas": {
+        "company": {
+          "properties": { "vatNumber": { "type": "string", "title": "VAT number" } },
+          "required": ["vatNumber"]
+        }
+      },
+      "$defs": {
+        "contact": {
+          "type": "object",
+          "required": ["name", "email"],
+          "properties": {
+            "name":  { "type": "string", "title": "Full name" },
+            "email": { "type": "string", "format": "email", "title": "Email" }
+          }
+        },
+        "bank": {
+          "title": "Bank transfer",
+          "type": "object",
+          "properties": {
+            "kind":   { "const": "bank" },
+            "iban":   { "type": "string", "title": "IBAN", "x-mask": "AA00 0000 0000 0000 0000 00", "x-maskStoresRaw": true },
+            "holder": { "type": "string", "title": "Name on the account" }
+          },
+          "required": ["iban", "holder"]
+        }
+      }
+    }
+    """;
+
+    // Totals, conditions and rules written as expressions, laid out as tabs.
+    private const string ExpressionsSchema = """
+    {
+      "title": "Quote",
+      "type": "object",
+      "x-stepLayout": "tabs",
+      "required": ["customer"],
+      "properties": {
+        "customer": { "type": "string", "title": "Customer" },
+        "phone":    { "type": "string", "title": "Phone", "x-mask": "(000) 000-0000" },
+        "lines": {
+          "type": "array", "title": "Lines", "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["product"],
+            "properties": {
+              "product":   { "type": "string", "title": "Product" },
+              "quantity":  { "type": "integer", "title": "Quantity", "minimum": 1, "default": 1 },
+              "unitPrice": { "type": "number", "title": "Unit price", "minimum": 0, "x-prefix": "€" },
+              "lineTotal": { "type": "number", "title": "Line total", "x-prefix": "€", "x-computed": "{quantity} * {unitPrice}" }
+            }
+          }
+        },
+        "discount": {
+          "type": "number", "title": "Discount", "minimum": 0, "x-prefix": "€",
+          "x-rules": [{ "expression": "{discount} <= sum({lines[].lineTotal})", "message": "The discount cannot be more than the lines." }]
+        },
+        "total": { "type": "number", "title": "Total", "x-prefix": "€", "x-computed": "round(sum({lines[].lineTotal}) - coalesce({discount}, 0), 2)" },
+        "approver": { "type": "string", "title": "Approved by", "x-visibleWhen": "{total} >= 10000", "x-requiredWhen": "{total} >= 10000" },
+        "validUntil": {
+          "type": "string", "format": "date", "title": "Valid until",
+          "x-rules": [{ "expression": "dateDiff(today(), {validUntil}) <= 90", "message": "More than 90 days is unusual - check with finance.", "severity": "warning" }]
+        }
+      },
+      "x-steps": [
+        { "id": "customer", "title": "Customer", "fields": ["customer", "phone"] },
+        { "id": "lines",    "title": "Lines",    "fields": ["lines", "discount", "total"] },
+        { "id": "approval", "title": "Approval", "fields": ["approver", "validUntil"] }
+      ]
+    }
+    """;
+
+    private BormDefinition? _schema;
+    private IReadOnlyList<BormSchemaDiagnostic> _diagnostics = [];
+    private Dictionary<string, object?> _data = new();
+    private int _version;
+    private string? _error;
+    private bool _submitted;
+    private string _resultJson = "";
+    private string _json = BasicSchema;
+
+    protected override void OnInitialized() => Rebuild();
+
+    private void Rebuild()
+    {
+        if (BormJsonSchemaImporter.TryImport(_json, out var schema, out var error))
+        {
+            _schema = schema;
+            _diagnostics = schema.Validate();
+            _data = new Dictionary<string, object?>();
+            _version++;
+            _error = null;
+            _submitted = false;
+        }
+        else
+        {
+            _error = "Invalid JSON Schema: " + error;
+        }
+    }
+
+    private void ExportRoundTrip()
+    {
+        if (_schema is null) return;
+        _json = BormJsonSchemaExporter.Export(_schema);
+        // The box now holds the form's own schema, which is valid: a complaint about what it held before stayed under it.
+        _error = null;
+    }
+
+    private void LoadConditional()
+    {
+        _json = ConditionalSchema;
+        Rebuild();
+    }
+
+    private void LoadWizard()
+    {
+        _json = WizardSchema;
+        Rebuild();
+    }
+
+    private void LoadSubforms()
+    {
+        _json = SubformsSchema;
+        Rebuild();
+    }
+
+    private void LoadExpressions()
+    {
+        _json = ExpressionsSchema;
+        Rebuild();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _resultJson = System.Text.Json.JsonSerializer.Serialize(_data,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}

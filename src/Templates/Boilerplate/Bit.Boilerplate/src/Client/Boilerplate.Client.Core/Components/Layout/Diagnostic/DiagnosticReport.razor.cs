@@ -136,7 +136,7 @@ public partial class DiagnosticReport
         {
             runtime.AppendLine($"IsDynamicCodeCompiled: {RuntimeFeature.IsDynamicCodeCompiled}");
             runtime.AppendLine($"IsDynamicCodeSupported: {RuntimeFeature.IsDynamicCodeSupported}");
-            runtime.AppendLine($"Is Aot: {new StackTrace(false).GetFrame(0)?.GetMethod() is null}"); // No 100% Guaranteed way to detect AOT.
+            runtime.AppendLine($"Is Aot: {AppPlatform.IsAot}");
             runtime.AppendLine($"Env version: {Environment.Version}");
             runtime.AppendLine($"64 bit process: {Environment.Is64BitProcess}");
             runtime.AppendLine($"Privilaged process: {Environment.IsPrivilegedProcess}");

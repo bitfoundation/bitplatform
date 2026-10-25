@@ -52,8 +52,8 @@ public partial class SystemPromptContractTests
         // GetAIFunctions is the list the agent is given, and so the registry these prompts talk to. [McpServerTool] is
         // a smaller set - what is also safe at /mcp - and would fail for every tool the agent alone has.
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await server.Build().Start(TestContext.CancellationToken);
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
         var registeredTools = scope.ServiceProvider.GetRequiredService<AppChatbot>()
                                                    .GetAIFunctions()

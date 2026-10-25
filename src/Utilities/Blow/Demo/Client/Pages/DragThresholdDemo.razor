@@ -1,0 +1,94 @@
+﻿@page "/drag-threshold"
+
+<PageTitle>Node Drag Threshold · Blow</PageTitle>
+
+<div class="bb-intro">
+    <h1>Node Drag Threshold</h1>
+    <p class="bb-subtitle">
+        <code>NodeDragThreshold</code> is how far, in screen pixels, the pointer has to travel before a press on a node
+        starts moving it. A higher threshold keeps a shaky click from nudging nodes out of place; the line above the
+        canvas tells you what each gesture did.
+    </p>
+</div>
+
+<div class="bb-demo blow-demo bb-page-wide">
+    <div class="bb-demo-bar example-toolbar">
+        <label>
+            Threshold
+            <input type="range" min="0" max="80" step="1" value="@_threshold"
+                   @oninput="e => _threshold = double.Parse(e.Value!.ToString()!)" />
+            <strong>@_threshold px</strong>
+        </label>
+        <span class="bb-muted">last gesture: @_lastGesture</span>
+    </div>
+    <div class="demo-canvas">
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    NodeDragThreshold="_threshold"
+                    OnNodeDragStart="OnDragStart"
+                    OnNodeDragStop="OnDragStop"
+                    OnNodeClick="OnNodeClick">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </div>
+</div>
+
+<DemoCode />
+
+<DemoNotes>
+    <TryIt>
+        <li><strong>Click</strong> a node without moving the pointer: it is selected, stays put, and counts as a click.</li>
+        <li><strong>Press</strong> a node and move the pointer a little - less than the threshold - before letting go: the node is selected but does not move. Past a few pixels it no longer counts as a click either.</li>
+        <li><strong>Drag</strong> a node further than the threshold: it stays put until the pointer has travelled that far, then catches up with the pointer and follows it.</li>
+        <li>Move <strong>Threshold</strong> down to 0 or 1 and every small wobble moves the node; move it up to 80 and only a deliberate drag does.</li>
+        <li>Press <strong>Escape</strong> in the middle of a drag: the node goes back to where it started.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>NodeDragThreshold</code> (default 1) is measured from the point where the node was pressed, in screen pixels, so it feels the same at any zoom. Until the pointer has gone that far the node is not moved.</li>
+        <li><code>NodeClickDistance</code> (default 3) is how far the pointer may travel and still count as a click: beyond it <code>OnNodeClick</code> is not raised. A gesture between the two distances neither moves the node nor clicks it.</li>
+        <li><code>OnNodeDragStart</code> is raised when the node is pressed and <code>OnNodeDragStop</code> when it is let go, whether or not it moved; the page compares the node's <code>Position</code> at the two to tell a move from a press.</li>
+        <li><code>OnNodeClick</code> is raised after the release, for a press that stayed within <code>NodeClickDistance</code>.</li>
+        <li>The node is selected on the press itself, which is why it selects whatever the threshold.</li>
+    </HowItWorks>
+</DemoNotes>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private double _threshold = 40;
+    private BlowXYPosition _dragStart;
+    private bool _moved;
+    private string _lastGesture = "-";
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Drag me a little, then a lot", Position = new(200, 40), Width = 230 },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(160, 200) },
+            new BlowNode { Id = "3", Label = "Node 3", Position = new(360, 200) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+        ];
+    }
+
+    private void OnDragStart(BlowNode n) => _dragStart = n.Position;
+
+    private void OnDragStop(BlowNode n)
+    {
+        _moved = Math.Abs(n.Position.X - _dragStart.X) > 0.01 || Math.Abs(n.Position.Y - _dragStart.Y) > 0.01;
+        _lastGesture = _moved
+            ? $"moved node {n.Id} (past the {_threshold}px threshold)"
+            : $"node {n.Id} stayed put (under the {_threshold}px threshold), no click";
+    }
+
+    // The click comes after the release, so it corrects the line the release has just written. With a threshold
+    // under NodeClickDistance a gesture can do both.
+    private void OnNodeClick(BlowNode n) =>
+        _lastGesture = _moved
+            ? $"moved node {n.Id}, and still a click (within NodeClickDistance)"
+            : $"click on node {n.Id} - selected, not moved";
+}

@@ -1,4 +1,4 @@
-// The `:root [bit-theme=…]` descendant twins scope this palette to ANY element carrying the
+﻿// The `:root [bit-theme=…]` descendant twins scope this palette to ANY element carrying the
 // bit-theme attribute (an always-light card inside a dark page, a per-tenant region, …); custom
 // property inheritance re-themes that subtree. They share the (0,2,0) specificity of the
 // root-level selectors, so the root cascade is unchanged and app overrides keep winning the same

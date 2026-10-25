@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -23,7 +22,7 @@ public sealed class BitThemePaletteContrastTests
     // warning yellow was once 1.91:1, and the on-color over the dark tier once fell to 2.34:1).
     private const double UiContrastFloor = 4.5;
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Fluent", "colors.fluent-light.scss")]
     [DataRow("Fluent", "colors.fluent-dark.scss")]
     [DataRow("Fluent2", "colors.fluent2-light.scss")]
@@ -34,10 +33,7 @@ public sealed class BitThemePaletteContrastTests
     [DataRow("Cupertino", "colors.cupertino-dark.scss")]
     public void RoleOnColorsMeetTheUiContrastFloor(string paletteFolder, string paletteFile)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", paletteFolder, paletteFile);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure the library Styles folder is copied to output.");
-
-        var scss = File.ReadAllText(path);
+        var scss = SourceFiles.ReadThemeStylesheet(paletteFolder, paletteFile);
 
         string? token(string name)
         {

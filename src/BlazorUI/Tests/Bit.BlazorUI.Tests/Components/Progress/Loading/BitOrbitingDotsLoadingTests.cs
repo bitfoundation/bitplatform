@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Progress.Loading;
 
@@ -8,6 +8,4 @@ public class BitOrbitingDotsLoadingTests : BitLoadingTestsBase<BitOrbitingDotsLo
     protected override string RootClass => "bit-ldn-ord";
 
     protected override int ChildCount => 2;
-
-    protected override string[] ScaledVariables => ["--bit-ldn-ord-25"];
 }

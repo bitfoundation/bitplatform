@@ -1,0 +1,77 @@
+﻿@page "/thresholds"
+
+<PageTitle>Thresholds · Bortable</PageTitle>
+
+<div class="bb-intro">
+    <h1>Swap thresholds</h1>
+    <p class="bb-subtitle">
+        The swap zone is the part of an item that, when dragged over, makes the dragged item swap places with it.
+        <code>SwapThreshold</code> sets how much of the item (from the centre out) is an active swap zone - the
+        rest is a "dead zone" that does not trigger a swap. <code>InvertSwap</code> moves the active zones to the
+        item's edges instead, giving a "sort between items" feel, and <code>InvertedSwapThreshold</code> sets their
+        size. The shaded bands show the active zones as you move the sliders. This mirrors the
+        <a href="https://sortablejs.github.io/Sortable/#thresholds" target="_blank" rel="noopener">SortableJS thresholds demo</a>.
+    </p>
+</div>
+
+<div class="bb-demo">
+    <ThresholdZones />
+</div>
+
+<DemoCode For="typeof(ThresholdZones)" />
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>
+            Set <code>SwapThreshold</code> to <code>1</code>: the whole item is the zone, and the dragged item swaps as
+            soon as the pointer enters the next one. Set it to <code>0.2</code>: the pointer has to reach the thin band in
+            the middle, and the edges around it do nothing.
+        </li>
+        <li>
+            Tick <code>InvertSwap</code>: the zones move to the edges, and entering the top or bottom part of an item puts
+            the dragged one before or after it - a "drop between the items" feel. <code>InvertedSwapThreshold</code>
+            sizes the two edge bands together.
+        </li>
+        <li>
+            Swap an item past the next one and move the pointer back a little: the area the dragged item has just left -
+            its shadow - swaps it back. That rule, ported from SortableJS, is what keeps a short item and a tall one from
+            trading places back and forth while the pointer sits still.
+        </li>
+        <li>The grid is measured left to right (<code>Direction="Horizontal"</code>), so its zones run across each square.</li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Direction</h3>
+    <p class="bb-card-desc">
+        <code>Direction</code> is the axis the swap zones are measured along. <code>BortableDirection.Auto</code>, the
+        default, reads it from the layout of the first two items: side by side is horizontal, anything else vertical.
+        With a single item in view it reads the list instead: a flex row, or a grid of several columns, is horizontal, a
+        flex column vertical. Set it yourself when the layout says otherwise - in a grid, whose first two items sit side
+        by side although the list also runs down. The hit test itself is two-dimensional, so a grid sorts in every
+        direction whatever <code>Direction</code> says; <code>Direction</code> only decides which way the zones span.
+    </p>
+    <div class="bb-note">
+        An item that enters a list it is not in yet always uses the inverted zones, whatever <code>InvertSwap</code>
+        says, so it can be dropped before the first item as easily as after the last.
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Parameters on this page</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>Default</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>SwapThreshold</code></td><td><code>1</code></td><td>How much of an item, from 0 to 1 and measured from its centre, is the active zone.</td></tr>
+                <tr><td class="bb-table-key"><code>InvertSwap</code></td><td><code>false</code></td><td>Moves the active zones to the item's edges.</td></tr>
+                <tr><td class="bb-table-key"><code>InvertedSwapThreshold</code></td><td><code>0</code></td><td>The size of the inverted zones, from 0 to 1; <code>0</code> uses <code>SwapThreshold</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>Direction</code></td><td><code>Auto</code></td><td>The axis the zones are measured along: <code>Auto</code>, <code>Horizontal</code> or <code>Vertical</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>Style</code></td><td></td><td>The container's inline style - here, the two custom properties this page's stylesheet draws the zones with.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>

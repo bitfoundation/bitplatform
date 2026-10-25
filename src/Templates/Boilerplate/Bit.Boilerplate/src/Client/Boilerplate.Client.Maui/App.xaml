@@ -9,7 +9,7 @@
         <ResourceDictionary>
             <Style ApplyToDerivedTypes="True" TargetType="ContentPage">
                 <Setter Property="NavigationPage.HasNavigationBar" Value="False" />
-                <Setter Property="SafeAreaEdges" Value="Default" />
+                <Setter Property="SafeAreaEdges" Value="{OnPlatform Default=Default, Android=All}" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>

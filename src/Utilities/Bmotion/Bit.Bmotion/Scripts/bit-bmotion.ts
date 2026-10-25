@@ -1,0 +1,1429 @@
+/**
+ * bit-bmotion.ts - slim browser-API bridge
+ *
+ * All animation math (spring, tween, inertia, keyframes, easing, colour
+ * interpolation, gesture state, transform composition) now lives in the
+ * C# AnimationEngine / ElementAnimationState classes running as WebAssembly.
+ *
+ * This file only touches browser-native APIs:
+ *    requestAnimationFrame   drives the C# animation engine each tick
+ *    element.style           applies CSS updates returned by ComputeFrame
+ *    Pointer / Focus events  gesture input forwarded to the C# component
+ *    IntersectionObserver    viewport visibility forwarded to C#
+ *    Scroll events           scroll progress forwarded to C#
+ *    getBoundingClientRect   FLIP layout snapshot
+ *    Web Animations API      FLIP playback
+ *
+ * The exported surface is compiled to an ES module (wwwroot/bit-bmotion.js) that the C#
+ * interop loads via dynamic `import`; every exported function name is an interop entry point.
+ */
+
+// A rectangle with the fields this module reads off getBoundingClientRect (and the test rects).
+interface BmRect { left: number; top: number; right: number; bottom: number; width: number; height: number; }
+// Per-edge transform bounds; a null edge is unconstrained on that side.
+interface BmBounds { left: number | null; right: number | null; top: number | null; bottom: number | null; }
+// Per-edge elastic factors (0 = rigid, 1 = fully elastic).
+interface BmElastic { left: number; right: number; top: number; bottom: number; }
+interface BmXY { x: number; y: number; }
+// A CSS property/value map (also carries SVG geometry attrs like `d`/`points`).
+type BmStyleMap = { [prop: string]: string };
+
+//
+// Pure drag / scroll math - no DOM access, so it is unit-tested directly (Tests/bit-bmotion-js).
+// The exports are an internal testing surface; the C# interop only calls the named bridge functions.
+//
+
+/** Elastic give past a constraint edge: 0 = rigid, 1 = fully elastic. */
+export function applyElastic(overflow: number, edge: number): number {
+    return edge > 0 ? overflow * edge : 0;
+}
+
+/**
+ * Turns a container rect + element rect (and the element's current transform x/y) into the allowed
+ * transform bounds. An element larger than its container collapses to the centered offset so the
+ * drag pins in place instead of oscillating between contradictory bounds.
+ */
+export function resolveConstraintBounds(cRect: BmRect, eRect: BmRect, curX: number, curY: number): BmBounds {
+    const baseLeft = eRect.left - curX;
+    const baseTop  = eRect.top  - curY;
+    let left   = cRect.left   - baseLeft;
+    let right  = cRect.right  - (baseLeft + eRect.width);
+    let top    = cRect.top    - baseTop;
+    let bottom = cRect.bottom - (baseTop + eRect.height);
+    if (right < left) { const mid = (left + right) / 2; left = right = mid; }
+    if (bottom < top) { const mid = (top + bottom) / 2; top = bottom = mid; }
+    return { left, right, top, bottom };
+}
+
+/** Clamps a drag position to its constraints, applying per-edge elastic overflow. */
+export function clampToConstraints(x: number, y: number, c: BmBounds | null, elastic: BmElastic): BmXY {
+    if (!c) return { x, y };
+    if (c.left   != null && x < c.left)   x = c.left   - applyElastic(c.left   - x, elastic.left);
+    if (c.right  != null && x > c.right)  x = c.right  + applyElastic(x - c.right,  elastic.right);
+    if (c.top    != null && y < c.top)    y = c.top    - applyElastic(c.top    - y, elastic.top);
+    if (c.bottom != null && y > c.bottom) y = c.bottom + applyElastic(y - c.bottom, elastic.bottom);
+    return { x, y };
+}
+
+/** Normalised 0→1 scroll progress along one axis (0 when the content doesn't overflow). */
+export function scrollFraction(scroll: number, size: number, client: number): number {
+    return size > client ? scroll / (size - client) : 0;
+}
+
+/**
+ * A subject's 0→1 progress through a scrollport, the fallback for `ViewTimeline`'s default range:
+ * 0 the moment its leading edge enters at the far side, 1 the moment its trailing edge leaves at
+ * the near side. `near`/`far` are the scrollport's edges along the tracked axis and `start`/`size`
+ * the subject's position and extent in the same coordinate space.
+ *
+ * The travelled span is the scrollport plus the subject (the subject is off-screen at both ends),
+ * so a subject taller than the scrollport still maps its whole journey onto 0→1 instead of
+ * saturating. A zero span (both degenerate) yields 0 rather than a division by zero.
+ */
+export function viewFraction(start: number, size: number, near: number, far: number): number {
+    const span = (far - near) + size;
+    if (span <= 0) return 0;
+    const travelled = (far - start) / span;
+    return travelled < 0 ? 0 : travelled > 1 ? 1 : travelled;
+}
+
+/** The timeline-range keywords a CSS `animation-range` part can start with. */
+const _RANGE_NAMES = /^(normal|cover|contain|entry|exit|entry-crossing|exit-crossing)$/i;
+
+/**
+ * Splits a CSS `animation-range` shorthand into its start and end parts, because the Web Animations
+ * API takes them as two separate `rangeStart` / `rangeEnd` values rather than as one string.
+ *
+ * A part is either a keyword with an optional offset ("entry 0%") or a bare length/percentage
+ * ("40%"), so a token begins a new part unless it is an offset following a keyword that does not
+ * have one yet. "entry 0% cover 50%" → ["entry 0%", "cover 50%"]; "0% 100%" → ["0%", "100%"].
+ */
+export function splitAnimationRange(range: string): [string | undefined, string | undefined] {
+    const parts: string[] = [];
+    for (const token of (range ?? '').trim().split(/\s+/).filter(Boolean)) {
+        const attaches = parts.length > 0 && !_RANGE_NAMES.test(token) && _awaitsOffset(parts[parts.length - 1]);
+        if (attaches) parts[parts.length - 1] += ' ' + token;
+        else parts.push(token);
+    }
+    return [parts[0], parts[1]];
+}
+
+/** True when a part so far is a bare keyword, i.e. the next offset token belongs to it. */
+function _awaitsOffset(part: string): boolean {
+    return part.indexOf(' ') < 0 && _RANGE_NAMES.test(part);
+}
+
+/**
+ * Layout FLIP child counter-transform (plan item 1.2). The parent element FLIPs with the transform
+ * `translate(dx,dy) scale(sx,sy)` about its top-left (origin O). A direct child would ride along -
+ * stretched by the scale AND shifted by the translate. To keep the child crisp and in place, apply
+ * the exact inverse of the parent transform about the SAME physical point (the parent's top-left);
+ * in the child's own box coordinates that point is (-offsetX, -offsetY).
+ *
+ * Deriving the inverse: the parent maps x → sx·x + (dx + O(1-sx)). Its inverse, written as a CSS
+ * `translate(t) scale(k)` about O, is k = 1/sx and t = -dx/sx. Counter-scaling alone (t = 0) - the
+ * previous behaviour - left a residual translation of exactly (dx,dy) on the child, so it visibly
+ * jumped toward the FLIP corner at the start and slid back to centre. Including the -d/s translate
+ * cancels that: net is identity at both endpoints, so children stay put and undistorted.
+ */
+// FLIP scale factors come from width/height ratios, so they are non-negative; clamp them away
+// from zero so a collapsed (0-sized) start rect can't turn the inverse math into Infinity/NaN.
+const MIN_FLIP_SCALE = 1e-4;
+
+interface BmFlipChildCorrection {
+    originX: number; originY: number;
+    fromScaleX: number; fromScaleY: number;
+    fromTranslateX: number; fromTranslateY: number;
+}
+
+export function flipChildCorrection(
+    parentRect: BmRect, childRect: BmRect, sx: number, sy: number, dx = 0, dy = 0): BmFlipChildCorrection {
+    sx = Math.max(sx, MIN_FLIP_SCALE);
+    sy = Math.max(sy, MIN_FLIP_SCALE);
+    const offsetX = childRect.left - parentRect.left;
+    const offsetY = childRect.top - parentRect.top;
+    return {
+        originX: -offsetX, originY: -offsetY,
+        fromScaleX: 1 / sx, fromScaleY: 1 / sy,
+        fromTranslateX: -dx / sx, fromTranslateY: -dy / sy,
+    };
+}
+
+/**
+ * Border-radius that, once scaled by (sx,sy), renders as the target radius - so corners stay a
+ * constant visual size while the box scales (Motion's border-radius correction). Uses the CSS
+ * elliptical `h / v` form so non-uniform scale still yields round corners.
+ */
+export function correctedRadius(radius: number, sx: number, sy: number): { fromX: number; fromY: number } {
+    return {
+        fromX: radius / Math.max(sx, MIN_FLIP_SCALE),
+        fromY: radius / Math.max(sy, MIN_FLIP_SCALE),
+    };
+}
+
+//
+// rAF loop  C# ComputeFrame is called synchronously each tick (Blazor WASM)
+//
+
+let _rafId: number | null = null;
+// Set of engine DotNetObjectReferences. Using a set (rather than a single global) means
+// multiple Blazor roots / engine instances sharing this module each get ticked, instead of a
+// second startRafLoop silently hijacking the loop from the first.
+const _engines = new Set<DotNet.DotNetObject>();
+
+export function startRafLoop(dotnetRef: DotNet.DotNetObject): void {
+    _engines.add(dotnetRef);
+    if (_rafId === null) _rafId = requestAnimationFrame(_tick);
+}
+
+export function stopRafLoop(dotnetRef?: DotNet.DotNetObject): void {
+    // With an argument, stop only that engine; without one, stop everything (back-compat).
+    if (dotnetRef) _engines.delete(dotnetRef);
+    else _engines.clear();
+    if (_engines.size === 0 && _rafId !== null) {
+        cancelAnimationFrame(_rafId);
+        _rafId = null;
+    }
+}
+
+function _tick(timestamp: number): void {
+    if (_engines.size === 0) { _rafId = null; return; }
+    for (const ref of _engines) {
+        try {
+            // invokeMethod is synchronous in Blazor WASM  C# does all animation math here
+            const updates = ref.invokeMethod<{ [elementId: string]: BmStyleMap } | null>('ComputeFrame', timestamp);
+            if (updates) {
+                for (const elementId in updates) {
+                    const el = document.getElementById(elementId);
+                    if (!el) continue;
+                    _applyStyles(el, updates[elementId]);
+                }
+            }
+        } catch (e) {
+            // Never let a fault from one engine's synchronous tick stop the shared rAF loop.
+            console.error('bmotion: ComputeFrame tick failed', e);
+        }
+    }
+    _rafId = requestAnimationFrame(_tick);
+}
+
+//
+// Style helpers
+//
+
+// SVG geometry presentation attributes are set on the element, not via inline style: the CSS `d`
+// property needs a path() wrapper and isn't universally supported, so setAttribute is the reliable
+// path for shape morphing (`d`) and polygon/polyline morphing (`points`).
+const _svgGeomAttrs = new Set(['d', 'points']);
+
+function _applyStyles(el: HTMLElement, styles: BmStyleMap): void {
+    for (const prop in styles) {
+        if (prop.startsWith('--')) el.style.setProperty(prop, styles[prop]);
+        else if (_svgGeomAttrs.has(prop)) el.setAttribute(prop, styles[prop]);
+        else el.style[prop as any] = styles[prop];
+    }
+}
+
+/** Apply a styles object to an element by ID (used for instant set() calls). */
+export function applyStyles(elementId: string, styles: BmStyleMap): void {
+    const el = document.getElementById(elementId);
+    if (el) _applyStyles(el, styles);
+}
+
+//
+// Accessibility - prefers-reduced-motion
+//
+
+/** Returns true when the user has requested reduced motion at the OS/browser level. */
+export function prefersReducedMotion(): boolean {
+    return typeof matchMedia === 'function' &&
+        matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+// Live prefers-reduced-motion change notifications. Keyed by engine DotNetObjectReference so
+// each engine can subscribe/unsubscribe independently and we only keep one media-query listener.
+const _reducedMotionRefs = new Set<DotNet.DotNetObject>();
+let _reducedMotionMql: MediaQueryList | null = null;
+let _reducedMotionListener: ((e: MediaQueryListEvent) => void) | null = null;
+
+function _ensureReducedMotionListener(): void {
+    if (_reducedMotionMql || typeof matchMedia !== 'function') return;
+    _reducedMotionMql = matchMedia('(prefers-reduced-motion: reduce)');
+    _reducedMotionListener = (e: MediaQueryListEvent) => {
+        for (const ref of _reducedMotionRefs) {
+            try { ref.invokeMethodAsync('OnReducedMotionChanged', e.matches); }
+            catch { /* a disposed/faulted engine ref must not break the others */ }
+        }
+    };
+    // addEventListener is the modern API; addListener is the deprecated Safari fallback.
+    if (_reducedMotionMql.addEventListener) _reducedMotionMql.addEventListener('change', _reducedMotionListener);
+    else if (_reducedMotionMql.addListener) _reducedMotionMql.addListener(_reducedMotionListener);
+}
+
+export function watchReducedMotion(dotnetRef: DotNet.DotNetObject): void {
+    _reducedMotionRefs.add(dotnetRef);
+    _ensureReducedMotionListener();
+}
+
+export function unwatchReducedMotion(dotnetRef: DotNet.DotNetObject): void {
+    _reducedMotionRefs.delete(dotnetRef);
+    if (_reducedMotionRefs.size === 0 && _reducedMotionMql && _reducedMotionListener) {
+        if (_reducedMotionMql.removeEventListener) _reducedMotionMql.removeEventListener('change', _reducedMotionListener);
+        else if (_reducedMotionMql.removeListener) _reducedMotionMql.removeListener(_reducedMotionListener);
+        _reducedMotionMql = null;
+        _reducedMotionListener = null;
+    }
+}
+
+//
+// Element registration
+//
+
+const _eventCleanup = new Map<string, Array<(unregistering: boolean) => void>>(); // elementId  Array<cleanup>
+
+export function registerElement(elementId: string): boolean {
+    const el = document.getElementById(elementId);
+    if (el) el.setAttribute('data-bmid', elementId);
+    return !!el;
+}
+
+//
+// Programmatic animate() API - resolve elements by CSS selector or ElementReference
+// Assigns a stable id + data-bmid so the engine can address them via getElementById.
+//
+
+let _programmaticSeq = 0;
+
+function _ensureElementId(el: Element): string {
+    const existing = el.getAttribute('data-bmid');
+    if (existing) return existing;
+    let id = el.id;
+    if (!id) {
+        // Skip any generated id that already exists in the DOM so we never collide
+        // with an element that has the same id assigned elsewhere.
+        do {
+            id = 'bm-p' + (++_programmaticSeq);
+        } while (document.getElementById(id));
+    }
+    el.id = id;
+    el.setAttribute('data-bmid', id);
+    return id;
+}
+
+/** Resolve all elements matching a CSS selector and return their element IDs. */
+export function resolveOrRegisterBySelector(selector: string): string[] {
+    try {
+        return Array.from(document.querySelectorAll(selector)).map(el => _ensureElementId(el));
+    } catch {
+        return [];
+    }
+}
+
+/** Resolve the element for a Blazor ElementReference and return its element ID. */
+export function resolveOrRegisterByRef(element: Element): string {
+    return _ensureElementId(element);
+}
+
+export function unregisterElement(elementId: string): void {
+    const el = document.getElementById(elementId);
+    if (el) el.removeAttribute('data-bmid');
+    _runCleanup(elementId, true);
+    // Release scroll-scrub listeners before cancelling, so a fallback timeline can't keep firing
+    // against an animation that is about to go away.
+    _releaseScrubsForElement(elementId);
+    _cancelWaapiForElement(elementId, false);
+    // Detach from every viewport observer (drops membership and evicts empty observers).
+    _detachFromObservers(el, elementId);
+    _vpRefs.delete(elementId);
+    _popped.delete(elementId);
+    _flips.delete(elementId);
+}
+
+function _runCleanup(elementId: string, unregistering = false): void {
+    const fns = _eventCleanup.get(elementId);
+    if (fns) { fns.forEach(fn => fn(unregistering)); _eventCleanup.delete(elementId); }
+}
+
+//
+// Gesture event listeners (hover / tap / focus / drag)
+// C# handles all state-machine logic; JS only forwards raw browser events.
+//
+
+/**
+ * Attach event listeners to an element.
+ * @param {string} elementId
+ * @param {{ hover?: bool, tap?: bool, focus?: bool, drag?: bool,
+ *            dragAxis?: string, dragConstraints?: object,
+ *            dragElastic?: number }} events
+ * @param dotnetRef  DotNetObjectReference<Motion>
+ */
+export function attachEventListeners(elementId: string, events: any, dotnetRef: DotNet.DotNetObject): void {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    _runCleanup(elementId);
+    const cleanups: Array<(unregistering: boolean) => void> = [];
+    _eventCleanup.set(elementId, cleanups);
+
+    // gesturePropagation:false stops this element's bubbling pointer gestures from also reaching
+    // gesture-enabled ancestors - the tap/pan counterpart of dragPropagation. Only pointerdown
+    // needs stopping: it is the event that starts both tap and pan, and pointerenter/leave don't
+    // bubble at all. Default true (motion.dev's default for tap/hover, unlike drag).
+    const gesturePropagation = events.gesturePropagation !== false;
+    const stopIfIsolated = (e: PointerEvent) => { if (!gesturePropagation) e.stopPropagation(); };
+
+    //  Hover
+    if (events.hover) {
+        const onEnter = () => dotnetRef.invokeMethodAsync('OnPointerEnter');
+        const onLeave = () => dotnetRef.invokeMethodAsync('OnPointerLeave');
+        el.addEventListener('pointerenter', onEnter);
+        el.addEventListener('pointerleave', onLeave);
+        cleanups.push(() => { el.removeEventListener('pointerenter', onEnter); el.removeEventListener('pointerleave', onLeave); });
+    }
+
+    //  Tap
+    if (events.tap) {
+        let pressing = false;
+        const onDown = (e: PointerEvent) => {
+            if (e.button !== 0 && e.pointerType !== 'touch') return; // primary button / touch only
+            stopIfIsolated(e);
+            pressing = true; dotnetRef.invokeMethodAsync('OnPointerDown');
+        };
+        const onUp   = (e: PointerEvent) => {
+            if (e.button !== 0 && e.pointerType !== 'touch') return; // ignore non-primary releases
+            if (!pressing) return; pressing = false;
+            dotnetRef.invokeMethodAsync('OnPointerUp', el.contains(e.target as Node) || el === e.target);
+        };
+        const onCancel = () => { if (!pressing) return; pressing = false; dotnetRef.invokeMethodAsync('OnPointerCancel'); };
+
+        // Keyboard accessibility (matches motion.dev): when the element is focused, Enter and
+        // Space press and release it like a tap. Key state is tracked separately from pointer
+        // state so a keyboard press can't cancel an in-flight pointer tap (and vice versa).
+        let keyPressing = false;
+        const isTapKey = (e: KeyboardEvent) => e.key === 'Enter' || e.key === ' ';
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (!isTapKey(e)) return;
+            // Space's default action scrolls the page on non-button elements; suppress it for
+            // every tap-key keydown (including repeats) so a held press can't scroll either.
+            if (e.key === ' ') e.preventDefault();
+            if (e.repeat || keyPressing) return;
+            keyPressing = true;
+            dotnetRef.invokeMethodAsync('OnPointerDown');
+        };
+        const onKeyUp = (e: KeyboardEvent) => {
+            if (!isTapKey(e) || !keyPressing) return;
+            keyPressing = false;
+            dotnetRef.invokeMethodAsync('OnPointerUp', true);
+        };
+        const onBlur = () => {
+            if (!keyPressing) return; // focus lost mid-press ⇒ tap cancelled
+            keyPressing = false;
+            dotnetRef.invokeMethodAsync('OnPointerCancel');
+        };
+
+        el.addEventListener('pointerdown', onDown);
+        window.addEventListener('pointerup',     onUp);
+        window.addEventListener('pointercancel', onCancel);
+        el.addEventListener('keydown', onKeyDown);
+        el.addEventListener('keyup',   onKeyUp);
+        el.addEventListener('blur',    onBlur);
+        cleanups.push(() => {
+            el.removeEventListener('pointerdown', onDown);
+            window.removeEventListener('pointerup',     onUp);
+            window.removeEventListener('pointercancel', onCancel);
+            el.removeEventListener('keydown', onKeyDown);
+            el.removeEventListener('keyup',   onKeyUp);
+            el.removeEventListener('blur',    onBlur);
+        });
+    }
+
+    //  Focus
+    if (events.focus) {
+        const onIn  = () => dotnetRef.invokeMethodAsync('OnFocusIn');
+        const onOut = () => dotnetRef.invokeMethodAsync('OnFocusOut');
+        el.addEventListener('focusin',  onIn);
+        el.addEventListener('focusout', onOut);
+        cleanups.push(() => { el.removeEventListener('focusin', onIn); el.removeEventListener('focusout', onOut); });
+    }
+
+    //  Pan (detects movement ≥ 3px without moving the element)
+    if (events.pan) {
+        // When drag is also active it already calls setPointerCapture; let pan reuse that capture
+        // instead of grabbing the pointer a second time for the same element.
+        _attachPan(el, dotnetRef, cleanups, !!events.drag, stopIfIsolated);
+    }
+
+    //  Drag
+    if (events.drag) {
+        _attachDrag(elementId, el, events, dotnetRef, cleanups);
+    }
+}
+
+function _attachPan(
+    el: HTMLElement, dotnetRef: DotNet.DotNetObject, cleanups: Array<(unregistering: boolean) => void>, skipCapture: boolean,
+    stopIfIsolated: (e: PointerEvent) => void): void {
+    const PAN_THRESHOLD = 3; // pixels before pan is detected
+    let down = false;        // whether a pointer is currently pressed on this element
+    let panning = false;
+    let startX = 0, startY = 0, lastX = 0, lastY = 0, lastT = 0;
+    let velX = 0, velY = 0;
+
+    const onDown = (e: PointerEvent) => {
+        if (e.button !== 0 && e.pointerType !== 'touch') return;
+        stopIfIsolated(e);
+        down = true;
+        startX = lastX = e.clientX; startY = lastY = e.clientY;
+        lastT = performance.now(); velX = velY = 0; panning = false;
+        // Skip when drag already owns the pointer capture for this element.
+        if (!skipCapture) el.setPointerCapture(e.pointerId);
+    };
+
+    const onMove = (e: PointerEvent) => {
+        // Ignore moves when no pointer is pressed (e.g. plain hover) so stale start
+        // coordinates from a previous gesture can't trigger a phantom pan.
+        if (!down) return;
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        const now = performance.now(), dt = now - lastT;
+        const deltaX = e.clientX - lastX, deltaY = e.clientY - lastY;
+        if (dt > 0) {
+            velX = deltaX / dt * 1000;
+            velY = deltaY / dt * 1000;
+        }
+
+        if (!panning && Math.sqrt(dx * dx + dy * dy) >= PAN_THRESHOLD) {
+            panning = true;
+            dotnetRef.invokeMethodAsync('OnPanStart_');
+        }
+        if (panning) {
+            dotnetRef.invokeMethodAsync('OnPanMove',
+                e.clientX, e.clientY,
+                deltaX, deltaY,
+                dx, dy,
+                velX, velY);
+        }
+
+        lastX = e.clientX; lastY = e.clientY; lastT = now;
+    };
+
+    const onUp = () => { down = false; if (panning) { panning = false; dotnetRef.invokeMethodAsync('OnPanEnd_'); } };
+
+    el.addEventListener('pointerdown',   onDown);
+    el.addEventListener('pointermove',   onMove);
+    el.addEventListener('pointerup',     onUp);
+    el.addEventListener('pointercancel', onUp);
+    cleanups.push(() => {
+        el.removeEventListener('pointerdown',   onDown);
+        el.removeEventListener('pointermove',   onMove);
+        el.removeEventListener('pointerup',     onUp);
+        el.removeEventListener('pointercancel', onUp);
+    });
+}
+
+function _attachDrag(
+    elementId: string, el: HTMLElement, opts: any, dotnetRef: DotNet.DotNetObject, cleanups: Array<(unregistering: boolean) => void>): void {
+    // Velocity is sampled per pointer-move as px/ms and scaled to "px per frame" (~16ms) so the
+    // C# inertia driver receives a frame-relative figure consistent with its release-velocity math.
+    const FRAME_MS = 16;
+    const axis           = opts.dragAxis        ?? null;
+    const constraintsCfg = opts.dragConstraints ?? null;
+    const dirLock        = !!opts.dragDirectionLock;
+    const handleSel      = opts.dragHandle ?? null;
+    // Default false (motion.dev semantics): a nested drag stops propagation so it doesn't also
+    // start a draggable ancestor. Set dragPropagation to let both move together.
+    const propagate      = !!opts.dragPropagation;
+    // Without synchronous interop (Blazor Server) the start position is read off the element and
+    // moves are reported through async calls, at most one per animation frame - the circuit can't
+    // take a message per pointer move, and only the latest position matters anyway. The OnDragMove
+    // callback rides in the same frame, after the position, so a handler always reads the position
+    // it was raised for.
+    const asyncMode      = !!opts.dragAsync;
+    let pendingX = 0, pendingY = 0, reportFrame: number | null = null;
+    const sendPendingMove = () => {
+        dotnetRef.invokeMethodAsync('SetDragPosition', pendingX, pendingY);
+        dotnetRef.invokeMethodAsync('OnDragMove');
+    };
+    const reportMove = (x: number, y: number) => {
+        if (!asyncMode) {
+            // Synchronously, so ComputeFrame picks the position up this frame.
+            dotnetRef.invokeMethod('SetDragPosition', x, y);
+            dotnetRef.invokeMethodAsync('OnDragMove');
+            return;
+        }
+        pendingX = x; pendingY = y;
+        if (reportFrame !== null) return;
+        reportFrame = requestAnimationFrame(() => { reportFrame = null; sendPendingMove(); });
+    };
+    // Sends a move still waiting for its frame now, so the release is never processed before it.
+    const flushPosition = () => {
+        if (reportFrame === null) return;
+        cancelAnimationFrame(reportFrame);
+        reportFrame = null;
+        sendPendingMove();
+    };
+
+    // Elasticity is per-edge ({ left, right, top, bottom }); a plain number still means uniform.
+    const elasticCfg = opts.dragElastic;
+    const elastic: BmElastic = typeof elasticCfg === 'number'
+        ? { left: elasticCfg, right: elasticCfg, top: elasticCfg, bottom: elasticCfg }
+        : (elasticCfg ?? { left: 0.35, right: 0.35, top: 0.35, bottom: 0.35 });
+
+    // Static pixel bounds pass through unchanged; element-bounds configs (parent / selector) are
+    // measured fresh at each drag start so layout changes between drags are picked up.
+    let constraints: BmBounds | null = null;
+
+    let dragging = false;
+    let lockedAxis: 'x' | 'y' | null = null; // null = not yet locked, 'x' or 'y' once detected
+    let startPX = 0, startPY = 0, startElX = 0, startElY = 0;
+    let lastPX = 0, lastPY = 0, lastT = 0, velX = 0, velY = 0;
+
+    // Shared drag-start body: called by the element's own pointerdown listener and by the
+    // external startDrag entry point (BmDragControls).
+    const begin = (pointerId: number, clientX: number, clientY: number) => {
+        // A compositor (WAAPI) animation may own the transform; commit its current values inline
+        // and cancel it so the drag takes over seamlessly. C# resolves its own state from the
+        // mirrored plan inside GetCurrentXY below.
+        _cancelWaapiForElement(elementId, true);
+        // Retrieve starting transform position from C# state synchronously - or, without synchronous
+        // interop, from the element itself (just committed above, so it is what's on screen), letting
+        // C# fold the cancelled compositor animations back into its state in the background.
+        let pos: BmXY | null;
+        if (asyncMode) {
+            pos = _currentTranslation(el);
+            dotnetRef.invokeMethodAsync('GetCurrentXY');
+        } else {
+            pos = dotnetRef.invokeMethod<BmXY | null>('GetCurrentXY');
+        }
+        startElX = pos ? pos.x : 0;
+        startElY = pos ? pos.y : 0;
+        startPX = clientX; startPY = clientY;
+        lastPX = clientX; lastPY = clientY; lastT = performance.now();
+        velX = velY = 0;
+        dragging = true;
+        lockedAxis = null;
+        constraints = _resolveDragConstraints(constraintsCfg, el, startElX, startElY);
+        // Re-measure element-bounds constraints if the layout changes mid-drag (container resize
+        // or scroll). Static pixel bounds have nothing to re-measure, so skip the observers.
+        _observeConstraintChanges();
+        // Capture on the target element so move/up events route here even when the drag was
+        // started from another element. May throw for an already-released pointer.
+        try { el.setPointerCapture(pointerId); } catch { /* stale pointer - drag still tracks moves */ }
+        dotnetRef.invokeMethodAsync('OnPointerDown_Drag');
+    };
+
+    // Live constraint re-measurement (element-bounds only), active only while dragging.
+    let _resizeObserver: ResizeObserver | null = null;
+    // The rect measured now includes the translation the drag has applied so far, so back out that
+    // one - as rendered, read off the element - not the one the drag started from. (The
+    // ResizeObserver reports once as soon as it observes, so this runs on every element-bounds drag.)
+    const _remeasure = () => {
+        if (!dragging) return;
+        const cur = _currentTranslation(el);
+        constraints = _resolveDragConstraints(constraintsCfg, el, cur.x, cur.y);
+    };
+    const _needsRemeasure = () =>
+        !!constraintsCfg && (!!constraintsCfg.parent || typeof constraintsCfg.selector === 'string');
+    function _observeConstraintChanges(): void {
+        if (!_needsRemeasure() || typeof ResizeObserver !== 'function') return;
+        // A programmatic begin() can re-arm the observers mid-drag (no intervening onUp); tear the
+        // previous ones down first so repeated begins don't leak observers or duplicate listeners.
+        _stopObservingConstraintChanges();
+        _resizeObserver = new ResizeObserver(_remeasure);
+        _resizeObserver.observe(el);
+        // Observe the SAME container _resolveDragConstraints measures against - the parent element
+        // for { parent: true }, or the selector target (which may be a distant ancestor, not
+        // el.parentElement) for { selector }. Otherwise a mid-drag resize of a selector container
+        // wouldn't re-measure the bounds.
+        const container = constraintsCfg.parent ? el.parentElement : document.querySelector(constraintsCfg.selector);
+        if (container) _resizeObserver.observe(container);
+        window.addEventListener('scroll', _remeasure, true);
+        window.addEventListener('resize', _remeasure);
+    }
+    function _stopObservingConstraintChanges(): void {
+        if (_resizeObserver) { _resizeObserver.disconnect(); _resizeObserver = null; }
+        window.removeEventListener('scroll', _remeasure, true);
+        window.removeEventListener('resize', _remeasure);
+    }
+
+    const onDown = (e: PointerEvent) => {
+        if (e.button !== 0 && e.pointerType !== 'touch') return;
+        // Handle mode: only start when the press lands on (or inside) a matching descendant.
+        if (handleSel && !(e.target instanceof Element && e.target.closest(handleSel))) return;
+        // Isolate nested draggables unless propagation is opted in (motion.dev's dragPropagation).
+        if (!propagate) e.stopPropagation();
+        begin(e.pointerId, e.clientX, e.clientY);
+    };
+
+    const onMove = (e: PointerEvent) => {
+        if (!dragging) return;
+        const now = performance.now(), dt = now - lastT;
+        if (dt > 0) { velX = (e.clientX - lastPX) / dt * FRAME_MS; velY = (e.clientY - lastPY) / dt * FRAME_MS; }
+        lastPX = e.clientX; lastPY = e.clientY; lastT = now;
+
+        // Direction lock detection
+        let effectiveAxis = axis;
+        if (dirLock && !lockedAxis) {
+            const dx = Math.abs(e.clientX - startPX), dy = Math.abs(e.clientY - startPY);
+            if (dx > 3 || dy > 3) {
+                lockedAxis = dx >= dy ? 'x' : 'y';
+                // Report the decision once, the moment it is made (motion.dev's onDirectionLock),
+                // so the consumer can e.g. hand the other axis back to the page scroll.
+                dotnetRef.invokeMethodAsync('OnDirectionLocked', lockedAxis);
+            }
+        }
+        if (dirLock && lockedAxis) effectiveAxis = lockedAxis;
+
+        let x = startElX + (effectiveAxis === 'y' ? 0 : e.clientX - startPX);
+        let y = startElY + (effectiveAxis === 'x' ? 0 : e.clientY - startPY);
+
+        if (constraints) {
+            const clamped = clampToConstraints(x, y, constraints, elastic);
+            x = clamped.x; y = clamped.y;
+        }
+
+        reportMove(x, y);
+    };
+
+    const onUp = () => {
+        if (!dragging) return;
+        dragging = false;
+        flushPosition();
+        _stopObservingConstraintChanges();
+        // Report the constraints actually used for this drag so C#'s release logic (momentum
+        // clamping / snap-back) uses the same bounds - essential for element-bounds constraints,
+        // which only exist in resolved form here.
+        const c = constraints;
+        dotnetRef.invokeMethodAsync('OnPointerUp_Drag', velX, velY,
+            c?.left ?? null, c?.right ?? null, c?.top ?? null, c?.bottom ?? null);
+    };
+
+    // With a drag handle the grab cursor belongs on the handle (styled by the consumer), not
+    // the whole element; with the listener disabled the element isn't grabbable at all.
+    if (!handleSel && opts.dragListener !== false) el.style.cursor = 'grab';
+    el.style.userSelect = 'none';
+    el.style.touchAction = axis === 'x' ? 'pan-y' : axis === 'y' ? 'pan-x' : 'none';
+
+    if (opts.dragListener !== false) el.addEventListener('pointerdown', onDown);
+    el.addEventListener('pointermove',   onMove);
+    el.addEventListener('pointerup',     onUp);
+    el.addEventListener('pointercancel', onUp);
+    _dragStarters.set(elementId, begin);
+    cleanups.push(unregistering => {
+        // Listeners are re-attached whenever the gesture configuration changes, which can happen
+        // mid-drag: end that drag first, or C# would be left dragging (and WhileDrag applied) forever.
+        // On unregistration the component is going away, so there is no drag end to report.
+        if (unregistering) dragging = false;
+        else onUp();
+        el.removeEventListener('pointerdown',   onDown);
+        el.removeEventListener('pointermove',   onMove);
+        el.removeEventListener('pointerup',     onUp);
+        el.removeEventListener('pointercancel', onUp);
+        if (reportFrame !== null) { cancelAnimationFrame(reportFrame); reportFrame = null; }
+        _stopObservingConstraintChanges();
+        _dragStarters.delete(elementId);
+        el.style.cursor = el.style.userSelect = el.style.touchAction = '';
+    });
+}
+
+/** The translation an element shows right now, read off its computed transform. */
+function _currentTranslation(el: HTMLElement): BmXY {
+    const transform = getComputedStyle(el).transform;
+    if (!transform || transform === 'none') return { x: 0, y: 0 };
+    const m = new DOMMatrixReadOnly(transform);
+    return { x: m.m41, y: m.m42 };
+}
+
+const _dragStarters = new Map<string, (pointerId: number, clientX: number, clientY: number) => void>(); // elementId → begin(pointerId, clientX, clientY)
+
+/**
+ * Starts a drag on a drag-enabled element from an external pointer event
+ * (BmDragControls.StartAsync). No-op when the element has no drag attached.
+ */
+export function startDrag(elementId: string, pointerId: number, clientX: number, clientY: number): void {
+    const begin = _dragStarters.get(elementId);
+    if (begin) begin(pointerId, clientX, clientY);
+}
+
+/**
+ * Pops an element out of the layout flow for a popLayout exit: pins it with
+ * position:absolute at its current visual spot (relative to its offsetParent) so siblings
+ * reflow immediately while the exit animation plays. curX/curY are the element's current
+ * transform translation, backed out of the measured rect so the still-applied transform
+ * doesn't double-offset the pinned position.
+ */
+const _popped = new Map<string, BmStyleMap>(); // elementId → prior inline style values (for un-popping on revival)
+
+export function popLayout(elementId: string, curX: number, curY: number): void {
+    const el = document.getElementById(elementId);
+    if (!el || _popped.has(elementId)) return;
+    const rect = el.getBoundingClientRect();
+    const parent = el.offsetParent || document.body;
+    const pRect = parent.getBoundingClientRect();
+    // Save the prior inline values so a revival (item re-added mid-exit) can restore them.
+    const s = el.style;
+    _popped.set(elementId, {
+        position: s.position, left: s.left, top: s.top,
+        width: s.width, height: s.height, margin: s.margin, boxSizing: s.boxSizing,
+    });
+    s.width  = rect.width + 'px';
+    s.height = rect.height + 'px';
+    s.boxSizing = 'border-box';
+    s.margin = '0';
+    s.position = 'absolute';
+    // Absolute positioning is relative to the offsetParent's padding box (border edge + clientLeft/Top).
+    s.left = (rect.left - pRect.left - parent.clientLeft - curX) + 'px';
+    s.top  = (rect.top  - pRect.top  - parent.clientTop  - curY) + 'px';
+}
+
+/** Restores the inline styles replaced by popLayout (used when an exit is cancelled). */
+export function unpopLayout(elementId: string): void {
+    const el = document.getElementById(elementId);
+    const prev = _popped.get(elementId);
+    _popped.delete(elementId);
+    if (!el || !prev) return;
+    for (const [prop, value] of Object.entries(prev)) el.style[prop as any] = value;
+}
+
+/**
+ * Resolves a drag-constraints config into pixel bounds on the element's transform x/y.
+ * Static pixel configs pass through; element-bounds configs ({ parent: true } or
+ * { selector: "..." }) are measured now: the allowed transform range is the container rect
+ * minus the element's untransformed rect (its current rect with the active x/y backed out).
+ */
+function _resolveDragConstraints(cfg: any, el: HTMLElement, curX: number, curY: number): BmBounds | null {
+    if (!cfg) return null;
+    if (!cfg.parent && !cfg.selector) return cfg;
+
+    const container = cfg.parent ? el.parentElement : document.querySelector(cfg.selector);
+    if (!container) return null;
+
+    const cRect = container.getBoundingClientRect();
+    const eRect = el.getBoundingClientRect();
+    return resolveConstraintBounds(cRect, eRect, curX, curY);
+}
+
+//
+// WAAPI compositor offload
+// The C# engine pre-samples eligible curves (tweens, zero-velocity springs on transform/opacity)
+// and hands the browser a ready-made Web Animation, so playback runs off the main thread with
+// no per-frame interop. The engine keeps a mirror "plan" so it can compute current values for
+// interruption without reading the DOM.
+//
+
+const _waapiAnims = new Map<string, Map<string, Animation>>(); // elementId → Map<token, Animation>
+
+/** True when the browser supports the linear() easing function (needed for spring offload). */
+export function supportsLinearEasing(): boolean {
+    try {
+        return typeof CSS !== 'undefined' &&
+            CSS.supports?.('animation-timing-function', 'linear(0, 1)') === true;
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Plays a pre-sampled animation via element.animate(). Resolves true when the animation
+ * finishes naturally (styles committed inline), false when it is cancelled or fails to start.
+ * timing.iterations: -1 means Infinity.
+ */
+export function playWaapiAnimation(elementId: string, token: string, keyframes: any, timing: any): Promise<boolean> {
+    const el = document.getElementById(elementId);
+    if (!el || typeof el.animate !== 'function') return Promise.resolve(false);
+
+    let anim: Animation;
+    try {
+        anim = el.animate(keyframes, {
+            duration: timing.duration,
+            delay: timing.delay ?? 0,
+            easing: timing.easing || 'linear',
+            iterations: timing.iterations < 0 ? Infinity : (timing.iterations ?? 1),
+            direction: timing.direction || 'normal',
+            fill: 'both',
+        });
+    } catch (e) {
+        // Unsupported easing/keyframes on this browser - the C# engine falls back to its rAF path.
+        return Promise.resolve(false);
+    }
+    // Started on an element that is paused or re-timed (Blazor Server, where C# can't move it to
+    // its frame loop instead).
+    if (typeof timing.playbackRate === 'number') anim.playbackRate = timing.playbackRate;
+
+    let map = _waapiAnims.get(elementId);
+    if (!map) { map = new Map(); _waapiAnims.set(elementId, map); }
+    map.set(token, anim);
+
+    const cleanup = () => {
+        const m = _waapiAnims.get(elementId);
+        if (m) { m.delete(token); if (m.size === 0) _waapiAnims.delete(elementId); }
+    };
+
+    return anim.finished.then(
+        () => {
+            cleanup();
+            // Persist the final values inline before releasing the effect, so nothing flashes.
+            try { anim.commitStyles(); } catch { /* detached element */ }
+            anim.cancel();
+            return true;
+        },
+        () => { cleanup(); return false; } // cancelled (interrupted) - engine already reseeded state
+    );
+}
+
+/** Sets the playback rate of every offloaded animation on the element (1 = realtime, 0 = paused). */
+export function setWaapiPlaybackRate(elementId: string, rate: number): void {
+    const map = _waapiAnims.get(elementId);
+    if (!map) return;
+    for (const anim of map.values()) anim.playbackRate = rate;
+}
+
+/** Cancels one offloaded animation; commit=true snapshots current values inline first. */
+export function cancelWaapiAnimation(elementId: string, token: string, commit: boolean): void {
+    const anim = _waapiAnims.get(elementId)?.get(token);
+    if (!anim) return;
+    if (commit) { try { anim.commitStyles(); } catch { /* detached element */ } }
+    anim.cancel(); // rejects anim.finished → cleanup runs in playWaapiAnimation's handler
+}
+
+function _cancelWaapiForElement(elementId: string, commit: boolean): void {
+    const map = _waapiAnims.get(elementId);
+    if (!map) return;
+    for (const anim of [...map.values()]) {
+        if (commit) { try { anim.commitStyles(); } catch { } }
+        anim.cancel();
+    }
+}
+
+//
+// Scroll-driven animations (ScrollTimeline / ViewTimeline)
+//
+// Same pre-sampled keyframes as the compositor offload above, but progressed by scroll position
+// rather than by time. Where the browser has native scroll timelines this runs entirely off the
+// main thread - no scroll handler at all. Where it doesn't, we scrub the same Web Animation from
+// one passive scroll listener: still the browser interpolating the values, and still no .NET
+// interop per frame.
+//
+
+// Scrub cleanups for timeline animations that fell back, keyed the same way as _waapiAnims so
+// cancellation and element teardown release both together.
+const _timelineScrubs = new Map<string, Map<string, () => void>>(); // elementId → Map<token, cleanup>
+
+/** The scroll container a spec points at: an element by selector, or the document scroller. */
+function _timelineSource(spec: any): HTMLElement | null {
+    if (spec?.selector) return document.querySelector(spec.selector) as HTMLElement | null;
+    return document.scrollingElement as HTMLElement | null ?? document.documentElement;
+}
+
+/** The subject a view timeline tracks: an element by selector, or the animated element itself. */
+function _timelineSubject(spec: any, el: HTMLElement): HTMLElement | null {
+    if (spec?.selector) return document.querySelector(spec.selector) as HTMLElement | null;
+    return el;
+}
+
+/** Constructs the native timeline for a spec, or null when the browser has no native support. */
+function _nativeTimeline(spec: any, el: HTMLElement): any | null {
+    const axis = spec?.axis === 'inline' ? 'inline' : 'block';
+    try {
+        if (spec?.view) {
+            const ViewTl = (window as any).ViewTimeline;
+            if (typeof ViewTl !== 'function') return null;
+            const subject = _timelineSubject(spec, el);
+            return subject ? new ViewTl({ subject, axis }) : null;
+        }
+        const ScrollTl = (window as any).ScrollTimeline;
+        if (typeof ScrollTl !== 'function') return null;
+        const source = _timelineSource(spec);
+        return source ? new ScrollTl({ source, axis }) : null;
+    } catch {
+        // A constructor that exists but rejects the arguments (older prefixed builds) is treated
+        // exactly like no support at all, so the caller falls back to scrubbing.
+        return null;
+    }
+}
+
+/**
+ * Plays a pre-sampled animation driven by scroll position. Returns true when a native scroll
+ * timeline drove it, false when the scrub fallback did (and false is not a failure - the caller
+ * only uses it to report which path is live). Returns null when the element is gone or the
+ * browser has no Web Animations API at all.
+ */
+export function playScrollTimelineAnimation(
+    elementId: string, token: string, keyframes: any, spec: any): boolean | null {
+    const el = document.getElementById(elementId);
+    if (!el || typeof el.animate !== 'function') return null;
+
+    const timeline = _nativeTimeline(spec, el);
+    let anim: Animation;
+    try {
+        if (timeline) {
+            anim = (el as any).animate(keyframes, { timeline, fill: 'both' });
+            // The range is applied after the fact, and non-fatally: a browser that has scroll
+            // timelines but not ranges should narrow to the default full journey rather than lose
+            // the animation entirely. (The scrub fallback below always covers the full journey.)
+            if (spec?.range) {
+                const [rangeStart, rangeEnd] = splitAnimationRange(spec.range);
+                try {
+                    if (rangeStart) (anim as any).rangeStart = rangeStart;
+                    if (rangeEnd) (anim as any).rangeEnd = rangeEnd;
+                } catch { /* ranges unsupported - keep the default range */ }
+            }
+        } else {
+            // Fallback: a paused, time-based animation whose currentTime we drive from scroll.
+            // SCRUB_MS is arbitrary - it is only the unit the progress fraction is scaled into.
+            anim = el.animate(keyframes, { duration: SCRUB_MS, fill: 'both', easing: 'linear' });
+            anim.pause();
+        }
+    } catch {
+        return null;
+    }
+
+    let map = _waapiAnims.get(elementId);
+    if (!map) { map = new Map(); _waapiAnims.set(elementId, map); }
+    map.set(token, anim);
+
+    if (timeline) return true;
+
+    _attachScrub(elementId, token, el, anim, spec);
+    return false;
+}
+
+const SCRUB_MS = 1000;
+
+/** Drives a paused animation's currentTime from the scroll position described by `spec`. */
+function _attachScrub(
+    elementId: string, token: string, el: HTMLElement, anim: Animation, spec: any): void {
+    const inline = spec?.axis === 'inline';
+    const source = spec?.view ? null : _timelineSource(spec);
+    const subject = spec?.view ? _timelineSubject(spec, el) : null;
+    // The document scroller reports its scroll on window, not on the element itself.
+    const scrollHost: HTMLElement | Window =
+        source && source !== document.scrollingElement && source !== document.documentElement
+            ? source
+            : window;
+
+    const update = () => {
+        let progress = 0;
+        if (spec?.view) {
+            if (subject) {
+                const r = subject.getBoundingClientRect();
+                progress = inline
+                    ? viewFraction(r.left, r.width, 0, window.innerWidth)
+                    : viewFraction(r.top, r.height, 0, window.innerHeight);
+            }
+        } else if (scrollHost === window) {
+            const d = document.documentElement;
+            progress = inline
+                ? scrollFraction(window.scrollX, d.scrollWidth, window.innerWidth)
+                : scrollFraction(window.scrollY, d.scrollHeight, window.innerHeight);
+        } else {
+            const c = scrollHost as HTMLElement;
+            progress = inline
+                ? scrollFraction(c.scrollLeft, c.scrollWidth, c.clientWidth)
+                : scrollFraction(c.scrollTop, c.scrollHeight, c.clientHeight);
+        }
+        try { anim.currentTime = progress * SCRUB_MS; } catch { /* animation cancelled */ }
+    };
+
+    // A view timeline's progress changes with any scroll on the page, not only with the tracked
+    // container's, so it listens on window; resize changes the rects without any scroll at all.
+    const target: HTMLElement | Window = spec?.view ? window : scrollHost;
+    target.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
+
+    let scrubs = _timelineScrubs.get(elementId);
+    if (!scrubs) { scrubs = new Map(); _timelineScrubs.set(elementId, scrubs); }
+    scrubs.set(token, () => {
+        target.removeEventListener('scroll', update);
+        window.removeEventListener('resize', update);
+    });
+}
+
+/** Stops a scroll-driven animation and releases its scroll listener (when it fell back). */
+export function cancelScrollTimelineAnimation(elementId: string, token: string): void {
+    _releaseScrub(elementId, token);
+    const anim = _waapiAnims.get(elementId)?.get(token);
+    if (!anim) return;
+    try { anim.commitStyles(); } catch { /* detached element */ }
+    anim.cancel();
+    const map = _waapiAnims.get(elementId);
+    if (map) { map.delete(token); if (map.size === 0) _waapiAnims.delete(elementId); }
+}
+
+function _releaseScrub(elementId: string, token: string): void {
+    const scrubs = _timelineScrubs.get(elementId);
+    if (!scrubs) return;
+    scrubs.get(token)?.();
+    scrubs.delete(token);
+    if (scrubs.size === 0) _timelineScrubs.delete(elementId);
+}
+
+function _releaseScrubsForElement(elementId: string): void {
+    const scrubs = _timelineScrubs.get(elementId);
+    if (!scrubs) return;
+    for (const cleanup of [...scrubs.values()]) cleanup();
+    _timelineScrubs.delete(elementId);
+}
+
+//
+// Viewport observation (whileInView)
+//
+
+// Cache observers keyed by their options signature so we can re-use them. Each entry tracks the
+// element IDs it currently observes so the observer can be disconnected once it falls empty
+// (otherwise distinct margin/threshold combinations would accumulate observers forever).
+const _vpObservers = new Map<string, { observer: IntersectionObserver; members: Set<string> }>(); // sig → { observer, members: Set<elementId> }
+// inView: whether the last report forwarded for the element was "in view". IntersectionObserver
+// reports every element once as soon as it is observed, in view or not; a "not in view" is only
+// forwarded after an "in view", so an element that mounts off-screen is never told it left a
+// viewport it was never in. owesLeave: re-observed (options changed) while in view, so the new
+// observer's first "not in view" is a real leave.
+interface BmViewportRef { dotnetRef: DotNet.DotNetObject; once: boolean; inView: boolean; owesLeave: boolean; }
+const _vpRefs      = new Map<string, BmViewportRef>(); // elementId → BmViewportRef
+
+function _vpSig(margin: string, threshold: number, root: string | null): string {
+    return `${root ?? ''}|${margin}|${threshold}`;
+}
+
+function _getVpEntry(margin: string, threshold: number, root: string | null): { observer: IntersectionObserver; members: Set<string> } {
+    const sig = _vpSig(margin, threshold, root);
+    let entry = _vpObservers.get(sig);
+    if (entry) return entry;
+    // A root selector that matches nothing degrades to the browser viewport (the API's default)
+    // rather than silently never intersecting.
+    const rootEl = root ? document.querySelector(root) : null;
+    const observer = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+            const id  = entry.target.getAttribute('data-bmid');
+            const ref = id ? _vpRefs.get(id) : undefined;
+            if (!ref || !id) continue;
+            if (entry.isIntersecting) {
+                if (ref.inView) continue;
+                ref.inView = true;
+            } else {
+                if (!ref.inView && !ref.owesLeave) continue;
+                ref.inView = false;
+            }
+            ref.owesLeave = false;
+            ref.dotnetRef.invokeMethodAsync('OnIntersect', entry.isIntersecting);
+            if (ref.once && entry.isIntersecting) {
+                _detachFromObservers(entry.target, id);
+                _vpRefs.delete(id);
+            }
+        }
+    }, { root: rootEl, rootMargin: margin || '0px', threshold: threshold ?? 0 });
+    entry = { observer, members: new Set<string>() };
+    _vpObservers.set(sig, entry);
+    return entry;
+}
+
+// Unobserve an element from every observer that might track it, dropping membership and
+// disconnecting (and evicting) any observer left with no members.
+function _detachFromObservers(el: Element | null, elementId: string): void {
+    for (const [sig, entry] of _vpObservers) {
+        if (el) entry.observer.unobserve(el);
+        entry.members.delete(elementId);
+        if (entry.members.size === 0) {
+            entry.observer.disconnect();
+            _vpObservers.delete(sig);
+        }
+    }
+}
+
+export function observeViewport(elementId: string, dotnetRef: DotNet.DotNetObject, options: any): void {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const once      = options?.once      ?? false;
+    const margin    = options?.margin    ?? '0px';
+    const threshold = options?.threshold ?? 0;
+    const root      = options?.root      ?? null;
+    // Detach from any previously assigned observer first so re-observing with different options
+    // doesn't stack duplicate subscriptions (which would fire OnIntersect multiple times and
+    // break the "once" behaviour across option changes).
+    _detachFromObservers(el, elementId);
+    // A re-observe re-reports "in view" (C# re-observes to re-arm a WhileInView enabled late), and
+    // owes a "leave" when the element was in view before and the new options say it isn't.
+    const owesLeave = _vpRefs.get(elementId)?.inView ?? false;
+    _vpRefs.set(elementId, { dotnetRef, once, inView: false, owesLeave });
+    const entry = _getVpEntry(margin, threshold, root);
+    entry.members.add(elementId);
+    entry.observer.observe(el);
+}
+
+export function unobserveViewport(elementId: string): void {
+    const el = document.getElementById(elementId);
+    _detachFromObservers(el, elementId);
+    _vpRefs.delete(elementId);
+}
+
+//
+// FLIP layout animation support
+//
+
+/**
+ * Returns the element's rect in DOCUMENT-relative coordinates (viewport rect + page scroll)
+ * for C# to snapshot.
+ *
+ * FLIP deltas (snap - cur) and the shared-element (LayoutId) registry may capture a rect at
+ * one scroll position and consume it at another - e.g. the user scrolls the page before
+ * clicking a new tab. Raw getBoundingClientRect values are viewport-relative, so the recorded
+ * position goes stale by exactly the scroll amount and the animation starts from the wrong
+ * place. Document coordinates are scroll-invariant, which keeps the FLIP start position correct
+ * across an intervening page scroll. (Widths/heights are unaffected by scrolling.)
+ */
+// The nearest ancestor that actually scrolls, for layoutScroll measurements. Walks up on computed
+// overflow rather than scrollHeight, so a container that is currently short enough not to scroll is
+// still recognised as the scroller it will be once its content grows.
+function _scrollableAncestor(el: HTMLElement): HTMLElement | null {
+    for (let p = el.parentElement; p; p = p.parentElement) {
+        const style = getComputedStyle(p);
+        if (/(auto|scroll|overlay)/.test(style.overflowY + style.overflowX)) return p;
+    }
+    return null;
+}
+
+/**
+ * Measures an element for a FLIP comparison.
+ *
+ * Coordinates are document-relative by default (page scroll folded in), so scrolling the page
+ * between the snapshot and the measurement isn't mistaken for the element having moved.
+ * `options.fixedRoot` switches to viewport coordinates for a position:fixed element, which is the
+ * one case where the page scrolling really does leave it where it was; `options.trackScroll` folds
+ * in the nearest scrolling ancestor's offset for the same reason one level down.
+ */
+export function getBoundingRect(elementId: string, options?: { trackScroll?: boolean; fixedRoot?: boolean }):
+    { x: number; y: number; width: number; height: number; top: number; left: number } | null {
+    const el = document.getElementById(elementId);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    // A fixed element is positioned against the viewport, so its viewport rect is already the
+    // stable one - adding page scroll would invent a delta on every scroll.
+    let sx = options?.fixedRoot ? 0 : window.scrollX;
+    let sy = options?.fixedRoot ? 0 : window.scrollY;
+    if (options?.trackScroll) {
+        const container = _scrollableAncestor(el);
+        if (container) { sx += container.scrollLeft; sy += container.scrollTop; }
+    }
+    return {
+        x: r.x + sx, y: r.y + sy, width: r.width, height: r.height,
+        top: r.top + sy, left: r.left + sx,
+    };
+}
+
+// The FLIP animation playing on each element, so a newer one can supersede it: end() settles and
+// reports it at once - synchronously, before the newer one sets the element up, rather than from a
+// cancel event that would arrive after and undo the newer one's transform-origin.
+const _flips = new Map<string, { anim: Animation; end: () => void }>();
+
+/**
+ * Run a FLIP animation via the Web Animations API.
+ * The element is currently at its NEW layout position; this animates it
+ * from the OLD (inverted) position to identity.
+ */
+export function playWaapiFlip(
+    elementId: string, dx: number, dy: number, sx: number, sy: number,
+    durationMs: number, easingStr: string, finalTransform: string,
+    originX?: number, originY?: number, dotnetRef?: DotNet.DotNetObject): void {
+    const el = document.getElementById(elementId);
+    if (!el) {
+        // Nothing will animate, so the caller's completion callback would never arrive; settle it
+        // now rather than leaving an OnLayoutAnimationComplete permanently outstanding.
+        dotnetRef?.invokeMethodAsync('OnLayoutAnimationCompleted');
+        return;
+    }
+    // A newer layout change supersedes the FLIP still playing (ended - settled and reported - then
+    // cancelled), instead of both running and the older one's finish resetting the newer one's origin.
+    const superseded = _flips.get(elementId);
+    if (superseded) {
+        superseded.end();
+        superseded.anim.cancel();
+    }
+
+    // Measure children relative to the parent before any transform takes hold.
+    const scales = Math.abs(sx - 1) > 1e-4 || Math.abs(sy - 1) > 1e-4;
+    const pRect = scales ? el.getBoundingClientRect() : null;
+    const childRects = scales ? Array.from(el.children).map(c => c.getBoundingClientRect()) : [];
+
+    // The projection anchor (layoutAnchor): the point of the box that appears to stay still. The
+    // deltas C# computed are measured from this same point, so the two must agree.
+    const ax = (originX ?? 0) * 100, ay = (originY ?? 0) * 100;
+    el.style.transformOrigin = `${ax}% ${ay}%`;
+    // The element's own transform (its animated x, scale, ...) stays on: the deltas were measured
+    // between boxes that both carry it, and the FLIP only projects the layout change on top. It
+    // starts from the transform showing right now (a compositor animation in flight included - the
+    // rects were measured with it on) and ends on the one the element will be showing when the FLIP
+    // ends (finalTransform, which C# samples with such animations advanced by the FLIP's duration),
+    // so the animation underneath shows through at that same frame and nothing jumps. fill:'none' -
+    // an animation filling forwards would override every transform the engine writes afterwards.
+    const live = getComputedStyle(el).transform;
+    const from = live && live !== 'none' ? live : '';
+    const own = finalTransform || '';
+    // What the inline transform is now: if something writes a newer one while the FLIP plays (a
+    // compositor animation committing its end), settling must not put this older one back over it.
+    const inlineAtStart = el.style.transform;
+    const timing: KeyframeAnimationOptions = { duration: durationMs, easing: easingStr || 'ease', fill: 'none' };
+    const anim = el.animate(
+        [
+            { transform: `translate(${dx}px,${dy}px) scaleX(${sx}) scaleY(${sy}) ${from}`.trim() },
+            { transform: own || 'none' },
+        ],
+        timing
+    );
+
+    // Size-mode correction (plan item 1.2): while the box scales, counter-scale direct children and
+    // correct the border-radius so text/children don't stretch and corners stay round. Position-mode
+    // FLIP passes sx=sy=1, so this whole block is skipped and behaviour is unchanged there.
+    // These end at their natural values, so they use fill:'none' and leave no persistent override.
+    const cleanups: Array<() => void> = [];
+    if (scales && pRect) {
+        const correctTiming: KeyframeAnimationOptions = { duration: durationMs, easing: easingStr || 'ease', fill: 'none' };
+
+        const radius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
+        if (radius > 0) {
+            const r = correctedRadius(radius, sx, sy);
+            el.animate(
+                [
+                    { borderRadius: `${r.fromX}px / ${r.fromY}px` },
+                    { borderRadius: `${radius}px / ${radius}px` },
+                ],
+                correctTiming
+            );
+        }
+
+        const children = Array.from(el.children);
+        for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+            if (!(child instanceof HTMLElement)) continue;
+            const c = flipChildCorrection(pRect, childRects[i], sx, sy, dx, dy);
+            const prevOrigin = child.style.transformOrigin;
+            child.style.transformOrigin = `${c.originX}px ${c.originY}px`;
+            // translate first (outermost), then the inverse scale - the exact inverse of the
+            // parent's `translate(dx,dy) scale(sx,sy)`, so the child neither stretches nor jumps.
+            child.animate(
+                [
+                    { transform: `translate(${c.fromTranslateX}px,${c.fromTranslateY}px) scaleX(${c.fromScaleX}) scaleY(${c.fromScaleY})` },
+                    { transform: 'translate(0px,0px) scaleX(1) scaleY(1)' },
+                ],
+                correctTiming
+            );
+            cleanups.push(() => { child.style.transformOrigin = prevOrigin; });
+        }
+    }
+
+    // Run on finish AND cancel: a cancelled flip must not leave the '0 0' transform-origin (or
+    // the children's counter-transform origins) stuck on the elements.
+    const settle = () => {
+        if (el.style.transform === inlineAtStart) el.style.transform = finalTransform || '';
+        el.style.transformOrigin = '';
+        for (const done of cleanups) done();
+    };
+    // Report completion on both outcomes. A cancelled FLIP is one that a newer layout change
+    // superseded, and that newer animation reports its own completion - so firing here too keeps
+    // every started layout animation matched by exactly one completion, which is what a consumer
+    // re-enabling interaction on OnLayoutAnimationComplete depends on.
+    let ended = false;
+    const end = () => {
+        if (ended) return;
+        ended = true;
+        if (_flips.get(elementId)?.anim === anim) _flips.delete(elementId);
+        settle();
+        dotnetRef?.invokeMethodAsync('OnLayoutAnimationCompleted');
+    };
+    anim.onfinish = end;
+    anim.oncancel = end;
+    _flips.set(elementId, { anim, end });
+}
+
+//
+// Scroll tracking
+//
+
+let _scrollKeySeq = 0;
+const _scrollSubs = new Map<string, () => void>(); // key  cleanup fn
+
+export function observeScroll(containerId: string | null, dotnetRef: DotNet.DotNetObject, options: any): string | null {
+    const el: HTMLElement | Window | null = containerId ? document.getElementById(containerId) : window;
+    if (!el) return null;
+    const key = `scroll_${++_scrollKeySeq}`;
+    const targetId = options?.targetId ?? null;
+    const offsets = options?.offsets ?? null; // [[targetFrac, containerFrac], [targetFrac, containerFrac]]
+
+    const onScroll = () => {
+        let sX: number, sY: number, sW: number, sH: number, cW: number, cH: number;
+        if (el === window) {
+            sX = window.scrollX; sY = window.scrollY;
+            sW = document.documentElement.scrollWidth;
+            sH = document.documentElement.scrollHeight;
+            cW = window.innerWidth; cH = window.innerHeight;
+        } else {
+            const ce = el as HTMLElement;
+            sX = ce.scrollLeft; sY = ce.scrollTop;
+            sW = ce.scrollWidth; sH = ce.scrollHeight;
+            cW = ce.clientWidth; cH = ce.clientHeight;
+        }
+        const pX = scrollFraction(sX, sW, cW);
+        const pY = scrollFraction(sY, sH, cH);
+
+        // Target progress: 0 when the target sits at the first configured alignment, 1 at the
+        // second. Both alignment "distances" shift equally per scrolled pixel, so the current
+        // fraction is d0 / (d0 - d1), computed straight from viewport-relative rects.
+        let tp: number | null = null;
+        if (targetId && offsets) {
+            const target = document.getElementById(targetId);
+            if (target) {
+                const tr = target.getBoundingClientRect();
+                let cTop: number, cHeight: number;
+                if (el === window) { cTop = 0; cHeight = window.innerHeight; }
+                else { cTop = (el as HTMLElement).getBoundingClientRect().top; cHeight = (el as HTMLElement).clientHeight; }
+                const d0 = (tr.top + offsets[0][0] * tr.height) - (cTop + offsets[0][1] * cHeight);
+                const d1 = (tr.top + offsets[1][0] * tr.height) - (cTop + offsets[1][1] * cHeight);
+                const span = d0 - d1;
+                tp = span !== 0 ? Math.min(1, Math.max(0, d0 / span)) : 0;
+            }
+        }
+
+        dotnetRef.invokeMethodAsync('OnScroll', {
+            scrollX: sX, scrollY: sY,
+            progressX: pX, progressY: pY,
+            scrollWidth: sW, scrollHeight: sH,
+            clientWidth: cW, clientHeight: cH,
+            targetProgress: tp,
+        });
+    };
+
+    el.addEventListener('scroll', onScroll, { passive: true });
+    // Target rects also change on viewport resize without a scroll event.
+    if (targetId) window.addEventListener('resize', onScroll, { passive: true });
+    _scrollSubs.set(key, () => {
+        el.removeEventListener('scroll', onScroll);
+        if (targetId) window.removeEventListener('resize', onScroll);
+    });
+    onScroll(); // fire immediately with current position
+    return key;
+}
+
+export function unobserveScroll(key: string): void {
+    _scrollSubs.get(key)?.();
+    _scrollSubs.delete(key);
+}
+
+// ── View Transitions API ────────────────────────────────────────────────────
+
+// Wrap document.startViewTransition around a C# DOM-update callback. The callback (invoked by
+// name on the dotnet ref) performs the Blazor state change; the browser snapshots before/after and
+// cross-fades. Falls back to running the callback directly when the API is unsupported.
+export async function startViewTransition(dotnetRef: DotNet.DotNetObject, callbackName: string): Promise<boolean> {
+    const runUpdate = () => dotnetRef.invokeMethodAsync(callbackName);
+    const doc = document as any;
+    if (typeof doc.startViewTransition !== 'function') {
+        await runUpdate();
+        return false;
+    }
+    const transition = doc.startViewTransition(() => runUpdate());
+    try { await transition.finished; }
+    catch {
+        // `finished` also rejects when the C# update callback threw - that IS an error and must
+        // reach the caller. Re-awaiting updateCallbackDone rethrows the callback failure, while a
+        // merely skipped/aborted transition (callback succeeded) resolves and stays swallowed.
+        await transition.updateCallbackDone;
+    }
+    return true;
+}

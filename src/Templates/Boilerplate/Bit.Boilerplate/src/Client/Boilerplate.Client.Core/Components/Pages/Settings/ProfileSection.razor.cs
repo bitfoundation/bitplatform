@@ -9,6 +9,7 @@ public partial class ProfileSection
 
 
     [AutoInject] private IUserController userController = default!;
+    [AutoInject] private ImageEditorService imageEditorService = default!;
     [AutoInject] private IAttachmentController attachmentController = default!;
 
 
@@ -77,6 +78,40 @@ public partial class ProfileSection
         {
             isSaving = false;
         }
+    }
+
+    private async Task HandleOnFilesChange(BitFileInfo[] files)
+    {
+        if (files.All(file => file.Status is BitFileUploadStatus.Pending or BitFileUploadStatus.NotAllowed) is false) return;
+
+        if (files.FirstOrDefault(file => file.Status is BitFileUploadStatus.Pending) is not { PreviewUrl: not null } file) return;
+
+        var result = await imageEditorService.Edit(file.PreviewUrl, file.Name, cropAspectRatio: 1, minWidth: 256, minHeight: 256);
+
+        if (result.Outcome is ImageEditorOutcome.KeepOriginal)
+        {
+            await fileUploadRef.Upload();
+            return;
+        }
+
+        await fileUploadRef.Reset();
+
+        if (result.Outcome is not ImageEditorOutcome.Edited) return;
+
+        isUploading = true;
+        StateHasChanged();
+
+        try
+        {
+            await imageEditorService.Upload(result, "api/v1/Attachment/UploadUserProfilePicture", CurrentCancellationToken);
+        }
+        catch
+        {
+            isUploading = false;
+            throw;
+        }
+
+        await HandleOnUploadComplete();
     }
 
     private async Task HandleOnUploadComplete()

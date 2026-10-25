@@ -1,4 +1,4 @@
-declare class NodeCanvasFactory extends BaseCanvasFactory {
+﻿declare class NodeCanvasFactory extends BaseCanvasFactory {
     /**
      * @ignore
      */

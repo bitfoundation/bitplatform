@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitSticky"/> component.
@@ -23,6 +25,13 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
 
 
 
+    // What BitParams reads of a params object by reflection is kept by its constructor rather than by the component
+    // reading it, so the trimmer keeps it only for the params types an app creates.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitStickyParams))]
+    public BitStickyParams() { }
+
+
+
     public string Name => ParamName;
 
 
@@ -38,6 +47,11 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
     public string? Element { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the element takes a surface and a theme shadow while it is stuck.
+    /// </summary>
+    public bool? ElevateOnStuck { get; set; }
+
+    /// <summary>
     /// Gets or sets the horizontal offset the element pins at from the left edge.
     /// </summary>
     public string? Left { get; set; }
@@ -45,12 +59,17 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Gets or sets the edge of the scrolling container the element pins to.
     /// </summary>
-    public BitStickyPosition? Position { get; set; }
+    public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// Gets or sets the horizontal offset the element pins at from the right edge.
     /// </summary>
     public string? Right { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the element reserves the room it covers as the scroll padding of its scrolling container.
+    /// </summary>
+    public bool? ScrollPadding { get; set; }
 
     /// <summary>
     /// Gets or sets the CSS class applied to the root element only while the component is stuck.
@@ -87,67 +106,59 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSticky);
 
-        if (Bottom.HasValue() && bitSticky.HasNotBeenSet(nameof(Bottom)))
+        if (Bottom.HasValue())
         {
-            bitSticky.Bottom = Bottom;
-
-            bitSticky.ClassBuilder.Reset();
-            bitSticky.StyleBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(Bottom), Bottom, static s => s.Bottom, static (s, v) => s.Bottom = v);
         }
 
-        if (Element.HasValue() && bitSticky.HasNotBeenSet(nameof(Element)))
+        if (Element.HasValue())
         {
-            bitSticky.Element = Element;
+            bitSticky.TakeFromCascade(nameof(Element), Element, static s => s.Element, static (s, v) => s.Element = v);
         }
 
-        if (Left.HasValue() && bitSticky.HasNotBeenSet(nameof(Left)))
+        if (ElevateOnStuck.HasValue)
         {
-            bitSticky.Left = Left;
-
-            bitSticky.ClassBuilder.Reset();
-            bitSticky.StyleBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(ElevateOnStuck), ElevateOnStuck.Value, static s => s.ElevateOnStuck, static (s, v) => s.ElevateOnStuck = v);
         }
 
-        if (Position.HasValue && bitSticky.HasNotBeenSet(nameof(Position)))
+        if (Left.HasValue())
         {
-            bitSticky.Position = Position.Value;
-
-            bitSticky.ClassBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(Left), Left, static s => s.Left, static (s, v) => s.Left = v);
         }
 
-        if (Right.HasValue() && bitSticky.HasNotBeenSet(nameof(Right)))
+        if (Placement.HasValue)
         {
-            bitSticky.Right = Right;
-
-            bitSticky.ClassBuilder.Reset();
-            bitSticky.StyleBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(Placement), Placement.Value, static s => s.Placement, static (s, v) => s.Placement = v);
         }
 
-        if (StuckClass.HasValue() && bitSticky.HasNotBeenSet(nameof(StuckClass)))
+        if (Right.HasValue())
         {
-            bitSticky.StuckClass = StuckClass;
-
-            bitSticky.ClassBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(Right), Right, static s => s.Right, static (s, v) => s.Right = v);
         }
 
-        if (StuckStyle.HasValue() && bitSticky.HasNotBeenSet(nameof(StuckStyle)))
+        if (ScrollPadding.HasValue)
         {
-            bitSticky.StuckStyle = StuckStyle;
+            bitSticky.TakeFromCascade(nameof(ScrollPadding), ScrollPadding.Value, static s => s.ScrollPadding, static (s, v) => s.ScrollPadding = v);
         }
 
-        if (Top.HasValue() && bitSticky.HasNotBeenSet(nameof(Top)))
+        if (StuckClass.HasValue())
         {
-            bitSticky.Top = Top;
-
-            bitSticky.ClassBuilder.Reset();
-            bitSticky.StyleBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(StuckClass), StuckClass, static s => s.StuckClass, static (s, v) => s.StuckClass = v);
         }
 
-        if (ZIndex.HasValue && bitSticky.HasNotBeenSet(nameof(ZIndex)))
+        if (StuckStyle.HasValue())
         {
-            bitSticky.ZIndex = ZIndex.Value;
+            bitSticky.TakeFromCascade(nameof(StuckStyle), StuckStyle, static s => s.StuckStyle, static (s, v) => s.StuckStyle = v);
+        }
 
-            bitSticky.StyleBuilder.Reset();
+        if (Top.HasValue())
+        {
+            bitSticky.TakeFromCascade(nameof(Top), Top, static s => s.Top, static (s, v) => s.Top = v);
+        }
+
+        if (ZIndex.HasValue)
+        {
+            bitSticky.TakeFromCascade(nameof(ZIndex), ZIndex.Value, static s => s.ZIndex, static (s, v) => s.ZIndex = v);
         }
     }
 }

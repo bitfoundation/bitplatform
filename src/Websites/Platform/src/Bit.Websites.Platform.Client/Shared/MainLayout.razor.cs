@@ -11,22 +11,12 @@ public partial class MainLayout : IDisposable
 
 
 
-    private readonly List<BitNavItem> lcncNavItems =
-    [
-        new BitNavItem { Text = "Overview", Url = "/lowcode-nocode/overview" },
-        new BitNavItem { Text = "Benefits", Url = "/lowcode-nocode/benefits" },
-        new BitNavItem { Text = "Specs", Url = "/lowcode-nocode/specs" },
-        new BitNavItem { Text = "Customizations", Url = "/lowcode-nocode/customizations" },
-        new BitNavItem { Text = "Comparison", Url = "/lowcode-nocode/comparison" },
-        new BitNavItem { Text = "Stats", Url = "/lowcode-nocode/stats" },
-    ];
-
     private readonly List<BitNavItem> templatesNavItems =
     [
         new BitNavItem { Text = "Overview", Url = "/templates", AdditionalUrls = [ "/templates/overview", "/boilerplate", "/boilerplate/overview" ] },
         new BitNavItem { Text = "Getting started", Url = "/templates/getting-started", AdditionalUrls = [ "/templates/development-prerequisites", "/boilerplate/getting-started", "/boilerplate/development-prerequisites" ] },
-        new BitNavItem { Text = "Project structure", Url = "/templates/project-structure", AdditionalUrls = [ "/boilerplate/project-structure" ] },
         new BitNavItem { Text = "Create project", Url = "/templates/create-project", AdditionalUrls = [ "/boilerplate/create-project" ] },
+        new BitNavItem { Text = "Project structure", Url = "/templates/project-structure", AdditionalUrls = [ "/boilerplate/project-structure" ] },
         new BitNavItem { Text = "Run project", Url = "/templates/run-project", AdditionalUrls = [ "/boilerplate/run-project" ] },
         new BitNavItem 
         { 
@@ -69,6 +59,15 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Usage", Url = "/besql/usage" },
     ];
 
+    private readonly List<BitNavItem> toolingsNavItems =
+    [
+        new BitNavItem { Text = "bit CLI", Url = Urls.Cli },
+        new BitNavItem { Text = "Minifier", Url = Urls.Minifier },
+        new BitNavItem { Text = "BlazorES2019", Url = Urls.BlazorES2019 },
+        new BitNavItem { Text = "Code Analyzers", Url = Urls.CodeAnalyzers },
+        new BitNavItem { Text = "Source Generators", Url = Urls.SourceGenerators },
+    ];
+
     protected override Task OnInitializedAsync()
     {
         SetNavItems();
@@ -93,7 +92,7 @@ public partial class MainLayout : IDisposable
 
         navItems = navMenuService.IsTemplateDocRoute ? templatesNavItems
                  : navMenuService.IsBesqlDocRoute ? besqlNavItems
-                 //: navMenuService.IsLcncDocRoute ? lcncNavItems
+                 : navMenuService.IsToolingsDocRoute ? toolingsNavItems
                  : [];
     }
 

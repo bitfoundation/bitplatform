@@ -5,6 +5,13 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A SwipeTrap is a component that traps swipe actions and triggers corresponding events.
 /// </summary>
+/// <remarks>
+/// A swipe is a path-based gesture, which WCAG 2.2 asks to be paired with an alternative that needs no path
+/// (SC 2.5.1, 2.5.7) and with one the keyboard can operate (SC 2.1.1). <see cref="KeyboardTrigger"/> is the
+/// keyboard's: it makes the trap a tab stop whose arrow keys raise <see cref="OnTrigger"/> in their direction,
+/// and names those keys to assistive technologies. Escape cancels a swipe in progress, which reports it through
+/// <see cref="OnEnd"/> as canceled, the way a native drag-and-drop is put back.
+/// </remarks>
 public partial class BitSwipeTrap : BitComponentBase
 {
     private decimal _appliedTrigger;
@@ -14,6 +21,8 @@ public partial class BitSwipeTrap : BitComponentBase
     private BitSwipeOrientation _appliedOrientationLock;
     private bool _appliedTouchOnly;
     private string? _appliedSkipSelector;
+    private bool _appliedKeyboardTrigger;
+    private bool _setupFailed;
 
 
 
@@ -22,9 +31,37 @@ public partial class BitSwipeTrap : BitComponentBase
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the swipe trap component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple swipe trap components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitSwipeTrapParams.ParamName)]
+    public BitSwipeTrapParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// The content of the swipe trap.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Lets the arrow keys raise the OnTrigger event, in their own direction, while the swipe trap itself has the focus.
+    /// </summary>
+    /// <remarks>
+    /// This is the keyboard alternative to the swipe. The trap becomes a tab stop (unless a <see cref="BitComponentBase.TabIndex"/>
+    /// says otherwise), the keys it answers to are named in <c>aria-keyshortcuts</c>, and an <see cref="OrientationLock"/>
+    /// of Horizontal or Vertical limits them to the locked axis. A key press raises <see cref="OnTrigger"/> alone, with
+    /// zero distances and a <c>PointerType</c> of "keyboard"; a held key does not repeat it, a key combined with a modifier
+    /// is left to the browser, and a key pressed on a descendant (an input, a button) is that descendant's.
+    /// Give the trap an <see cref="BitComponentBase.AriaLabel"/> that says what the keys do.
+    /// The keys complement a control that needs no dragging (a button) rather than replace it: a screen reader in
+    /// browse mode keeps the arrow keys for itself, so that control is what its users reach.
+    /// </remarks>
+    [Parameter] public bool KeyboardTrigger { get; set; }
 
     /// <summary>
     /// The event callback for when the swipe action starts on the container of the swipe trap.
@@ -39,11 +76,20 @@ public partial class BitSwipeTrap : BitComponentBase
     /// <summary>
     /// The event callback for when the swipe action ends on the container of the swipe trap.
     /// </summary>
+    /// <remarks>
+    /// A swipe that is called off rather than released - the browser took it over, the pointer left the trap before the
+    /// swipe was trapped, or Escape was pressed - ends with <see cref="BitSwipeTrapEventArgs.IsCanceled"/> set, and
+    /// triggers nothing.
+    /// </remarks>
     [Parameter] public EventCallback<BitSwipeTrapEventArgs> OnEnd { get; set; }
 
     /// <summary>
     /// The event callback for when the swipe action triggers based on the Trigger or TriggerVelocity constraints.
     /// </summary>
+    /// <remarks>
+    /// Also raised for an arrow key when <see cref="KeyboardTrigger"/> is on, with zero distances and a
+    /// <see cref="BitSwipeTrapTriggerArgs.PointerType"/> of "keyboard".
+    /// </remarks>
     [Parameter] public EventCallback<BitSwipeTrapTriggerArgs> OnTrigger { get; set; }
 
     /// <summary>
@@ -70,6 +116,10 @@ public partial class BitSwipeTrap : BitComponentBase
     /// <summary>
     /// The throttle time in milliseconds to apply a delay between periodic calls to raise the OnMove event (default is 0, meaning no throttling).
     /// </summary>
+    /// <remarks>
+    /// The latest move of each window is still delivered when the window closes, so a pointer that comes to rest is
+    /// reported where it rests. A move still held when the gesture ends is dropped: OnEnd carries the final position.
+    /// </remarks>
     [Parameter] public int? Throttle { get; set; }
 
     /// <summary>
@@ -110,6 +160,29 @@ public partial class BitSwipeTrap : BitComponentBase
         await OnEnd.InvokeAsync(new(startX, startY, diffX, diffY, velocityX, velocityY, pointerType, isCanceled, duration));
     }
 
+    /// <remarks>
+    /// The script hands the direction over by name rather than as the ordinal of <see cref="BitPlacement"/>, so
+    /// the order of that library-wide enum is no contract with it. A name that is not one of the four physical
+    /// directions triggers nothing.
+    /// </remarks>
+    [JSInvokable("OnKeyTrigger")]
+    public async Task _OnKeyTrigger(string direction)
+    {
+        if (Disabled || KeyboardTrigger is false) return;
+
+        BitPlacement? placement = direction switch
+        {
+            "top" => BitPlacement.Top,
+            "bottom" => BitPlacement.Bottom,
+            "left" => BitPlacement.Left,
+            "right" => BitPlacement.Right,
+            _ => null
+        };
+        if (placement is null) return;
+
+        await OnTrigger.InvokeAsync(new(placement.Value, 0, 0, 0, 0, "keyboard", 0));
+    }
+
     [JSInvokable("OnTrigger")]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSwipeTrapTriggerArgs))]
     public async Task _OnTrigger(decimal diffX, decimal diffY, decimal velocityX, decimal velocityY, string? pointerType = null, decimal duration = 0)
@@ -117,8 +190,8 @@ public partial class BitSwipeTrap : BitComponentBase
         // A dead heat goes to the horizontal axis, the same way the JS side resolves the axis a gesture
         // moves along: a perfect diagonal must not be reported as one axis here and locked to the other there.
         var direction = Math.Abs(diffX) >= Math.Abs(diffY)
-            ? diffX > 0 ? BitSwipeDirection.Right : BitSwipeDirection.Left
-            : diffY > 0 ? BitSwipeDirection.Bottom : BitSwipeDirection.Top;
+            ? diffX > 0 ? BitPlacement.Right : BitPlacement.Left
+            : diffY > 0 ? BitPlacement.Bottom : BitPlacement.Top;
 
         await OnTrigger.InvokeAsync(new(direction, diffX, diffY, velocityX, velocityY, pointerType, duration));
     }
@@ -141,6 +214,13 @@ public partial class BitSwipeTrap : BitComponentBase
         });
     }
 
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         var trigger = Trigger ?? 0.25m;
@@ -150,16 +230,32 @@ public partial class BitSwipeTrap : BitComponentBase
         var orientationLock = OrientationLock ?? BitSwipeOrientation.None;
         var touchOnly = TouchOnly;
         var skipSelector = SkipSelector;
+        var keyboardTrigger = KeyboardTrigger;
 
         if (firstRender ||
+            _setupFailed ||
             _appliedTrigger != trigger ||
             _appliedTriggerVelocity != triggerVelocity ||
             _appliedThreshold != threshold ||
             _appliedThrottle != throttle ||
             _appliedOrientationLock != orientationLock ||
             _appliedTouchOnly != touchOnly ||
-            _appliedSkipSelector != skipSelector)
+            _appliedSkipSelector != skipSelector ||
+            _appliedKeyboardTrigger != keyboardTrigger)
         {
+            // What is remembered is what the trap is being set up with, before the calls below are awaited, so a
+            // render that lands while they are in flight does not set it up all over again. A setup that failed
+            // is marked instead, and the next render tries again.
+            _appliedTrigger = trigger;
+            _appliedTriggerVelocity = triggerVelocity;
+            _appliedThreshold = threshold;
+            _appliedThrottle = throttle;
+            _appliedOrientationLock = orientationLock;
+            _appliedTouchOnly = touchOnly;
+            _appliedSkipSelector = skipSelector;
+            _appliedKeyboardTrigger = keyboardTrigger;
+            _setupFailed = false;
+
             try
             {
                 if (firstRender is false)
@@ -183,6 +279,7 @@ public partial class BitSwipeTrap : BitComponentBase
                         orientationLock,
                         touchOnly,
                         skipSelector,
+                        keyboardTrigger,
                         dotnetObj);
                 }
                 catch
@@ -190,22 +287,54 @@ public partial class BitSwipeTrap : BitComponentBase
                     dotnetObj.Dispose();
                     throw;
                 }
-
-                // What is remembered is what the trap was actually set up with, so a setup that failed
-                // leaves the previous values in place and the next render tries again.
-                _appliedTrigger = trigger;
-                _appliedTriggerVelocity = triggerVelocity;
-                _appliedThreshold = threshold;
-                _appliedThrottle = throttle;
-                _appliedOrientationLock = orientationLock;
-                _appliedTouchOnly = touchOnly;
-                _appliedSkipSelector = skipSelector;
             }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSDisconnectedException) // we can ignore this exception here
+            {
+                _setupFailed = true;
+            }
+            catch
+            {
+                _setupFailed = true;
+                throw;
+            }
         }
 
         await base.OnAfterRenderAsync(firstRender);
     }
+
+
+
+    // ARIA prohibits naming an element with no role, so a named trap is a group - the generic container a name can
+    // be given to - unless the page gave it a role of its own. A trap the keyboard can reach is one too: a tab stop
+    // with no role is announced as nothing at all.
+    private string? _GetRole(string? ariaLabel)
+    {
+        var role = GetSplattedAttribute("role");
+        if (role is not null) return role;
+
+        return ariaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue() || _IsKeyboardReachable ? "group" : null;
+    }
+
+    // The trap is only put in the tab order for the keys it answers to, and only while it answers to them.
+    private string? _GetTabIndex()
+    {
+        return TabIndex ?? GetSplattedAttribute("tabindex") ?? (_IsKeyboardReachable ? "0" : null);
+    }
+
+    private string? _GetKeyShortcuts()
+    {
+        var keyShortcuts = GetSplattedAttribute("aria-keyshortcuts");
+        if (keyShortcuts is not null || _IsKeyboardReachable is false) return keyShortcuts;
+
+        return OrientationLock switch
+        {
+            BitSwipeOrientation.Horizontal => "ArrowLeft ArrowRight",
+            BitSwipeOrientation.Vertical => "ArrowUp ArrowDown",
+            _ => "ArrowLeft ArrowRight ArrowUp ArrowDown"
+        };
+    }
+
+    private bool _IsKeyboardReachable => KeyboardTrigger && Disabled is false;
 
 
 

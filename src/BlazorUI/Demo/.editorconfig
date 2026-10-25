@@ -1,4 +1,4 @@
-# To learn more about .editorconfig see https://aka.ms/editorconfigdocs
+﻿# To learn more about .editorconfig see https://aka.ms/editorconfigdocs
 ###############################
 # Core EditorConfig Options   #
 ###############################
@@ -6,10 +6,11 @@
 [*]
 indent_style = space
 indent_size = 4
+# The charset is not set here: every file takes utf-8-bom from src/.editorconfig, less the exemptions
+# src/BlazorUI/.editorconfig lists. A [*] charset here would override those exemptions for the demo.
 # Code files
 [*.{cs,csx,vb,vbx}]
 insert_final_newline = true
-charset = utf-8-bom
 ###############################
 # .NET Coding Conventions     #
 ###############################

@@ -158,10 +158,13 @@ From [`src/Server/Boilerplate.Server.Api/Features/Identity/IdentityController.Em
 
 ```csharp
 var user = await userManager.FindByEmailAsync(request.Email!)
-    ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Email", request.Email);
+    ?? throw new BadRequestException(nameof(AppStrings.ExpiredToken)).WithData("Email", request.Email);
 
-if (await userManager.IsEmailConfirmedAsync(user))
-    throw new BadRequestException(Localizer[nameof(AppStrings.EmailAlreadyConfirmed)]).WithData("UserId", user.Id);
+var expired = user.EmailTokenRequestedOn is null ||
+              (TimeProvider.GetUtcNow() - user.EmailTokenRequestedOn.Value) > AppSettings.Identity.EmailTokenLifetime;
+
+if (expired)
+    throw new BadRequestException(nameof(AppStrings.ExpiredToken)).WithData("UserId", user.Id);
 ```
 
 ### Benefits
@@ -364,14 +367,14 @@ From [`src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignIn/SignI
     
     <!-- Form fields -->
     
-    <BitButton ButtonType="BitButtonType.Submit" AutoLoading IsEnabled="isWaiting is false">
+    <BitButton ButtonType="BitButtonType.Submit" AutoLoading Disabled="isWaiting">
         @Localizer[nameof(AppStrings.SignIn)]
     </BitButton>
 </EditForm>
 
 <BitButton OnClick="WrapHandled(PasswordlessSignIn)" 
            IconName="@BitIconName.Fingerprint"
-           IsEnabled="isWaiting is false">
+           Disabled="isWaiting">
     Passwordless Sign-In
 </BitButton>
 ```

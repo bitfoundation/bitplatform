@@ -1,4 +1,4 @@
-declare function createHeaders(isHttp: any, httpHeaders: any): Headers;
+﻿declare function createHeaders(isHttp: any, httpHeaders: any): Headers;
 declare function createResponseStatusError(status: any, url: any): MissingPDFException | UnexpectedResponseException;
 declare function extractFilenameFromHeader(responseHeaders: any): string | null;
 declare function validateRangeRequestCapabilities({ responseHeaders, isHttp, rangeChunkSize, disableRange, }: {

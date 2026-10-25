@@ -1,0 +1,1017 @@
+﻿using System.Security.Cryptography.X509Certificates;
+using Bit.Cli.Infrastructure;
+using Bit.Cli.Projects;
+using Bit.Cli.Templates;
+using Bit.Cli.Tests.Infrastructure;
+
+namespace Bit.Cli.Tests;
+
+[TestClass]
+public class ProjectStepTests
+{
+    [TestMethod]
+    public void TheDevelopmentCertificate_Should_BeUniqueLoadableAndMarked()
+    {
+        using var host = new TestHost();
+        var first = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "a")).FullName;
+        var second = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "b")).FullName;
+
+        ProjectSteps.WriteDevelopmentCertificate(first);
+        ProjectSteps.WriteDevelopmentCertificate(second);
+
+        using var certificate = X509Certificate2.CreateFromPemFile(Path.Combine(first, "AppCertificate.crt"), Path.Combine(first, "AppCertificate.key"));
+        using var other = X509Certificate2.CreateFromPemFile(Path.Combine(second, "AppCertificate.crt"), Path.Combine(second, "AppCertificate.key"));
+
+        Assert.IsTrue(certificate.HasPrivateKey);
+        StringAssert.Contains(certificate.Subject, "OU=Development");
+        StringAssert.Contains(certificate.Subject, "CN=AppCertificate");
+        Assert.AreEqual(3072, certificate.GetRSAPublicKey()!.KeySize);
+        Assert.IsGreaterThan(DateTime.Now.AddYears(4), certificate.NotAfter);
+        Assert.AreNotEqual(certificate.Thumbprint, other.Thumbprint);
+        StringAssert.StartsWith(File.ReadAllText(Path.Combine(first, "AppCertificate.key")), "-----BEGIN PRIVATE KEY-----\n");
+    }
+
+    [TestMethod]
+    public void InstalledWorkloads_Should_BeReadFromTheTable()
+    {
+        var output = """
+
+            Installed Workload Id      Manifest Version       Installation Source
+            --------------------------------------------------------------------
+            wasm-tools                 10.0.12/10.0.100       SDK 10.0.400
+            maui-android               10.0.1/10.0.100        SDK 10.0.400
+
+            Use `dotnet workload search` to find additional workloads to install.
+            """;
+
+        CollectionAssert.AreEquivalent(new[] { "wasm-tools", "maui-android" }, ProjectSteps.ParseInstalledWorkloads(output).ToArray());
+        Assert.IsEmpty(ProjectSteps.ParseInstalledWorkloads("No workloads are installed."));
+    }
+
+    [TestMethod]
+    public async Task Git_Should_CreateDevelopAndMainWithTheFirstCommit()
+    {
+        if (await GitAvailableAsync() is false)
+            return;
+
+        using var host = new TestHost(variables: RealPath());
+        using var identity = new GitIdentity(host.Root);
+        var project = CreateFakeProject(host, "Contoso");
+        var steps = new ProjectSteps(new CliServices(host.Environment, host.Console, runner: new ProcessRunner(host.Environment, CliLog.None)), project);
+
+        var result = await steps.GitAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
+        Assert.IsTrue(project.GitReady);
+
+        var runner = new ProcessRunner(host.Environment, CliLog.None);
+        var branches = await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["branch", "--format=%(refname:short)"], WorkingDirectory = project.Directory });
+        var head = await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["rev-parse", "--abbrev-ref", "HEAD"], WorkingDirectory = project.Directory });
+        var log = await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["log", "--format=%s"], WorkingDirectory = project.Directory });
+
+        CollectionAssert.AreEquivalent(new[] { "develop", "main" }, branches.OutputLines.ToArray());
+        Assert.AreEqual("develop", head.Output.Trim());
+        Assert.AreEqual("Create Contoso with bit new", log.Output.Trim());
+    }
+
+    [TestMethod]
+    public async Task Git_Should_CommitAsTheUserWhenGitDoesntKnowThem()
+    {
+        using var host = new TestHost(HostOs.Windows, new Dictionary<string, string> { ["USERNAME"] = "Jane Doe" });
+        host.Runner.Executables["git"] = "git";
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        var commits = 0;
+        host.Runner.On("git", "commit", _ => ++commits == 1
+            ? new ProcessResult { ExitCode = 128, Output = "Author identity unknown\n*** Please tell me who you are." }
+            : new ProcessResult { ExitCode = 0 });
+        var project = CreateFakeProject(host, "Contoso");
+
+        var result = await new ProjectSteps(host.Services, project).GitAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        Assert.AreEqual("develop and main, committed as Jane Doe <Jane.Doe@git.com>", result.Detail);
+        Assert.IsTrue(project.GitReady);
+        var configs = host.Runner.Calls.Where(c => c.Arguments.FirstOrDefault() is "config" && c.Arguments[1] is not "--global").Select(c => string.Join(' ', c.Arguments)).ToArray();
+        CollectionAssert.AreEqual(new[] { "config user.name Jane Doe", "config user.email Jane.Doe@git.com" }, configs);
+    }
+
+    [TestMethod]
+    [DataRow(HostOs.Windows, "", true)]
+    [DataRow(HostOs.Windows, "true", false)]
+    [DataRow(HostOs.Linux, "", false)]
+    public async Task Git_Should_TurnOnLongPathsOnWindows(HostOs os, string current, bool turnedOn)
+    {
+        using var host = new TestHost(os);
+        host.Runner.Executables["git"] = "git";
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        host.Runner.On("git", "config --global --get core.longpaths", current.Length > 0 ? 0 : 1, current);
+        var project = CreateFakeProject(host, "Contoso");
+
+        await new ProjectSteps(host.Services, project).GitAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(turnedOn, host.Runner.Calls.Any(c => string.Join(' ', c.Arguments) == "config --global core.longpaths true"));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task Git_Should_LeaveNoAutomaticMaintenanceRunningInTheNewRepository(bool inheritsGitConfig)
+    {
+        var variables = inheritsGitConfig
+            ? new Dictionary<string, string> { ["GIT_CONFIG_COUNT"] = "1", ["GIT_CONFIG_KEY_0"] = "user.signingkey", ["GIT_CONFIG_VALUE_0"] = "ABC123" }
+            : [];
+        using var host = new TestHost(HostOs.Linux, variables);
+        host.Runner.Executables["git"] = "git";
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        var project = CreateFakeProject(host, "Contoso");
+
+        await new ProjectSteps(host.Services, project).GitAsync(_ => { }, CancellationToken.None);
+
+        var gitCalls = host.Runner.Calls.Where(c => c.FileName is "git" && c.Arguments.FirstOrDefault() is not "--version").ToArray();
+        Assert.IsTrue(gitCalls.Any(c => c.Arguments.FirstOrDefault() is "commit"), string.Join(Environment.NewLine, host.Runner.Calls.Select(c => c.CommandLine)));
+
+        foreach (var call in gitCalls)
+        {
+            var environment = variables.ToDictionary(variable => variable.Key, variable => (string?)variable.Value);
+
+            foreach (var (name, value) in call.Environment ?? new Dictionary<string, string?>())
+            {
+                environment[name] = value;
+            }
+
+            var settings = Enumerable.Range(0, int.Parse(environment.GetValueOrDefault("GIT_CONFIG_COUNT") ?? "0"))
+                .ToDictionary(i => environment[$"GIT_CONFIG_KEY_{i}"]!, i => environment[$"GIT_CONFIG_VALUE_{i}"]);
+
+            Assert.AreEqual("false", settings.GetValueOrDefault("maintenance.auto"), call.CommandLine);
+            Assert.AreEqual("0", settings.GetValueOrDefault("gc.auto"), call.CommandLine);
+            Assert.AreEqual(inheritsGitConfig ? "ABC123" : null, settings.GetValueOrDefault("user.signingkey"), call.CommandLine);
+        }
+    }
+
+    [TestMethod]
+    public async Task Git_Should_StayOutOfAnExistingRepository()
+    {
+        if (await GitAvailableAsync() is false)
+            return;
+
+        using var host = new TestHost(variables: RealPath());
+        using var identity = new GitIdentity(host.Root);
+        var runner = new ProcessRunner(host.Environment, CliLog.None);
+        await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["init"], WorkingDirectory = host.WorkingDirectory });
+        var project = CreateFakeProject(host, "Contoso");
+
+        var result = await new ProjectSteps(new CliServices(host.Environment, host.Console, runner: runner), project).GitAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Skipped, result.Status);
+        Assert.IsFalse(Directory.Exists(Path.Combine(project.Directory, ".git")));
+    }
+
+    [TestMethod]
+    public async Task TheMigration_Should_BeSkippedForOtherDatabasesAndExistingMigrations()
+    {
+        using var host = new TestHost();
+        var other = new TemplateSelection(TemplateManifest.Embedded);
+        other.Set("database", "Other");
+        var project = CreateFakeProject(host, "Contoso", other);
+
+        var skipped = await new ProjectSteps(host.Services, project).MigrationAsync(_ => { }, CancellationToken.None);
+        Assert.AreEqual(StepStatus.Skipped, skipped.Status);
+
+        var sqlite = CreateFakeProject(host, "Fabrikam", new TemplateSelection(TemplateManifest.Embedded));
+        var migrations = Directory.CreateDirectory(Path.Combine(sqlite.ServerApiDirectory, "Infrastructure", "Data", "Migrations")).FullName;
+        File.WriteAllText(Path.Combine(migrations, "20260101000000_Initial.cs"), "");
+
+        var existing = await new ProjectSteps(host.Services, sqlite).MigrationAsync(_ => { }, CancellationToken.None);
+        Assert.AreEqual(StepStatus.Skipped, existing.Status);
+        Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
+    public async Task TheMigration_Should_UseTheEfToolVersionOfTheProject()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso", new TemplateSelection(TemplateManifest.Embedded));
+
+        var result = await new ProjectSteps(host.Services, project).MigrationAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status);
+        var call = host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() == "dnx");
+        CollectionAssert.AreEqual(new[] { "dnx", "dotnet-ef@10.0.12", "--", "migrations", "add", "Initial", "--output-dir", "Infrastructure/Data/Migrations" }, call.Arguments.ToArray());
+        Assert.AreEqual(project.ServerApiDirectory, call.WorkingDirectory);
+    }
+
+    [TestMethod]
+    public async Task RazorErrorsFromAStaleCompilerServer_Should_BuildAgainWithAFreshOne()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        var builds = 0;
+        host.Runner.On("dotnet", "build ", _ => ++builds == 1
+            ? new ProcessResult { ExitCode = 1, Output = "HumanFollowUpCard.razor(5,10): error RZ1021: Markup in a code block must start with a tag." }
+            : new ProcessResult { ExitCode = 0 });
+
+        var result = await new ProjectSteps(host.Services, project).BuildAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status);
+        Assert.AreEqual("on a second try, after restarting the C# compiler server", result.Detail);
+        CollectionAssert.AreEqual(new[] { "build", "build-server", "build" }, host.Runner.Calls.Select(c => c.Arguments[0]).ToArray());
+        CollectionAssert.AreEqual(new[] { "build-server", "shutdown", "--vbcscompiler" }, host.Runner.Calls[1].Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task OtherBuildErrors_Should_FailWithoutRestartingTheCompilerServer()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.On("dotnet", "build ", 1, "Program.cs(3,1): error CS0246: The type or namespace name 'Foo' could not be found");
+
+        var result = await new ProjectSteps(host.Services, project).BuildAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Failed, result.Status);
+        Assert.AreEqual("CS0246", result.Detail);
+        Assert.AreEqual(1, host.Runner.Calls.Count);
+    }
+
+    [TestMethod]
+    public async Task AMissingSdk_Should_StopTheStepsThatNeedIt()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        File.WriteAllText(Path.Combine(project.Directory, "global.json"), """{ "sdk": { "version": "11.0.100-rc.1.26425.128", "rollForward": "disable" } }""");
+        host.Runner.On("dotnet", "--version", 145, "A compatible .NET SDK was not found.");
+        var steps = new StepRunner(host.Services);
+
+        var ready = await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), noWorkloads: false, noRestore: false, noBuild: false, noBrowsers: true, CancellationToken.None);
+
+        Assert.IsFalse(ready);
+        var sdk = steps.Reports.Single(r => r.Id == "sdk").Result;
+        Assert.AreEqual(StepStatus.Failed, sdk.Status);
+        Assert.AreEqual("global.json asks for exactly 11.0.100-rc.1.26425.128", sdk.Detail);
+        Assert.AreEqual(project.Directory, host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() == "--version").WorkingDirectory);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "workload" or "restore" or "build"));
+    }
+
+    [TestMethod]
+    public async Task TheSdkCheck_Should_ReportTheSdkDotnetPicks()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        var steps = new ProjectSteps(host.Services, project);
+
+        Assert.AreEqual(StepStatus.Skipped, (await steps.SdkAsync(_ => { }, CancellationToken.None)).Status);
+
+        File.WriteAllText(Path.Combine(project.Directory, "global.json"), """{ "sdk": { "version": "11.0.100", "rollForward": "latestFeature" } }""");
+        host.Runner.On("dotnet", "--version", 0, "11.0.104");
+        var ready = await steps.SdkAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, ready.Status);
+        Assert.AreEqual("11.0.104", ready.Detail);
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_WaitForEveryServerAndStopTheProject()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb", "serverapi");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        var aspire = host.Runner.Calls.Where(c => c.FileName is "aspire").Select(c => string.Join(' ', c.Arguments.Take(2))).ToArray();
+        CollectionAssert.AreEqual(new[] { "doctor --format", "start --apphost", "wait serverweb", "wait serverapi", "stop --apphost" }, aspire);
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_GiveTheAppHostTimeForItsFirstBuild()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        var start = host.Runner.Calls.Single(c => c.FileName is "aspire" && c.Arguments.FirstOrDefault() is "start");
+        Assert.AreEqual("1200", start.Environment?["ASPIRE_CLI_START_TIMEOUT"]);
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_KeepTheUsersOwnStartTimeout()
+    {
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["ASPIRE_CLI_START_TIMEOUT"] = "60" });
+        host.Runner.Executables["aspire"] = "aspire";
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        var start = host.Runner.Calls.Single(c => c.FileName is "aspire" && c.Arguments.FirstOrDefault() is "start");
+        Assert.IsNull(start.Environment);
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_StartNothingWhenAspireCantUseDocker()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("aspire", "doctor", 1, """{"checks":[{"category":"sdk","name":"dotnet-sdk","status":"pass"},{"category":"container","name":"docker","status":"fail","message":"Docker is running in Windows container mode","fix":"Switch Docker Desktop to Linux containers mode"}]}""");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+        NeedContainers(project);
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("Docker is running in Windows container mode", result.Detail);
+        Assert.AreEqual("Switch Docker Desktop to Linux containers mode", result.Hint);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "docker" || c.Arguments.FirstOrDefault() is "start"));
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_GiveUpWhenDockerCantRunTheContainers()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("aspire", "wait serverweb", 17, "Timed out waiting for resource 'serverweb' to become healthy.");
+        host.Runner.On("aspire", "describe", 0, """{"resources":[{"name":"postgres","displayName":"postgres","state":"RuntimeUnhealthy"},{"name":"serverweb","displayName":"serverweb","state":"Waiting"}]}""");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("Docker can't run postgres: Aspire reports its container runtime as unhealthy", result.Detail);
+        Assert.AreEqual(4, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "wait"));
+        Assert.AreEqual("stop", host.Runner.Calls.Last().Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_StopWaitingOnceAResourceFailsToStart()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("aspire", "wait serverweb", 17);
+        host.Runner.On("aspire", "describe", 0, """{"resources":[{"name":"keycloak","displayName":"keycloak","state":"FailedToStart"},{"name":"serverweb","displayName":"serverweb","state":"Waiting"}]}""");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual("keycloak failed to start", result.Detail);
+        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "wait"));
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_ShowWhatItIsWaitingFor()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        var waits = 0;
+        host.Runner.On("aspire", "wait serverweb", _ => new ProcessResult { ExitCode = ++waits < 3 ? 17 : 0 });
+        host.Runner.On("aspire", "describe", 0, """{"resources":[{"name":"postgres","displayName":"postgres","state":"Running","healthStatus":"Unhealthy"},{"name":"mailpit","displayName":"mailpit","state":"Running","healthStatus":"Healthy"},{"name":"serverweb","displayName":"serverweb","state":"Waiting"}]}""");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+        var progress = new List<string>();
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(progress.Add, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        CollectionAssert.Contains(progress, "Waiting for serverweb: postgres Running (Unhealthy), serverweb Waiting");
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_StartNothingWithoutDocker()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("docker", "info", 1, "Cannot connect to the Docker daemon");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+        NeedContainers(project);
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(keepRunning: true, _ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("Docker isn't running", result.Detail);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "aspire" && c.Arguments.FirstOrDefault() is "start"));
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_RunWithoutDockerWhenTheProjectDoesntWaitForContainers()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("docker", "info", 1, "Cannot connect to the Docker daemon");
+        host.Runner.On("aspire", "start", 0, """{ "appHostPath": "AppHost.csproj", "appHostPid": 1, "cliPid": 2, "dashboardUrl": "https://localhost:2030/login?t=abc", "logFile": "start.log" }""");
+        host.Runner.On("aspire", "describe serverweb", 0, """{"resources":[{"name":"serverweb","urls":[{"name":"http","url":"http://localhost:5030","isInternal":false}]}]}""");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+        var steps = new ProjectSteps(host.Services, project);
+
+        Assert.AreEqual(StepStatus.Skipped, (await steps.AspireStartAsync(_ => { }, CancellationToken.None)).Status, "Without containers, a first start has nothing to get ready.");
+
+        var result = await steps.AspireStartAsync(keepRunning: true, _ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        Assert.AreEqual("without its containers", result.Detail);
+        Assert.AreEqual("https://localhost:2030/login?t=abc", steps.Running!.DashboardUrl);
+        Assert.AreEqual("http://localhost:5030", steps.Running.AppUrl);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "stop"), "A project that keeps running isn't stopped.");
+
+        await steps.Running.StopAsync(true);
+        CollectionAssert.AreEqual(new[] { "stop", "--apphost", project.AppHostDirectory, "--non-interactive" }, host.Runner.Detached.Single().Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task DotnetRun_Should_StartServerWebAndWaitUntilItIsAlive()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.OnAsync("dotnet", "run", async (_, ct) =>
+        {
+            await Task.Delay(Timeout.Infinite, ct);
+            return new ProcessResult { ExitCode = 0 };
+        });
+        var project = CreateFakeProject(host, "Contoso");
+        WriteServerWeb(project, "http://localhost:5030;http://*:5030");
+        var probes = new List<Uri>();
+        var steps = new ProjectSteps(host.Services, project) { AliveProbe = (url, _) => { probes.Add(url); return Task.FromResult(true); } };
+
+        var result = await steps.DotnetRunAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        Assert.AreEqual("http://localhost:5030", steps.Running!.AppUrl);
+        Assert.AreEqual(new Uri("http://localhost:5030/alive"), probes.Single());
+        CollectionAssert.Contains(host.Runner.Calls.Single(c => c.FileName is "dotnet").Arguments.ToArray(), "--no-build");
+
+        await steps.Running.StopAsync(false);
+        Assert.IsTrue(steps.Running.Exited!.IsCompleted, "Stopping it ends dotnet run.");
+    }
+
+    [TestMethod]
+    public async Task DotnetRun_Should_ReportAServerThatExits()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.On("dotnet", "run", 1, "Unhandled exception. System.InvalidOperationException: No database");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteServerWeb(project, "http://localhost:5030");
+        var steps = new ProjectSteps(host.Services, project) { AliveProbe = (_, _) => Task.FromResult(false) };
+
+        var result = await steps.DotnetRunAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.IsNull(steps.Running);
+    }
+
+    [TestMethod]
+    public void TheProject_Should_KeepRunningOnlyForSomeoneAtTheTerminal()
+    {
+        using var redirected = new TestHost(HostOs.Linux);
+        Assert.AreEqual(ProjectRunMode.Once, ProjectRun.Mode(redirected.Services, aspire: true, noBuild: false, noRun: false));
+        Assert.AreEqual(ProjectRunMode.None, ProjectRun.Mode(redirected.Services, aspire: false, noBuild: false, noRun: false));
+
+        using var terminal = new TestHost(HostOs.Linux, prompter: new ScriptedPrompter());
+        Assert.AreEqual(ProjectRunMode.UntilClosed, ProjectRun.Mode(terminal.Services, aspire: true, noBuild: false, noRun: false));
+        Assert.AreEqual(ProjectRunMode.UntilClosed, ProjectRun.Mode(terminal.Services, aspire: false, noBuild: false, noRun: false));
+        Assert.AreEqual(ProjectRunMode.None, ProjectRun.Mode(terminal.Services, aspire: true, noBuild: false, noRun: true));
+        Assert.AreEqual(ProjectRunMode.None, ProjectRun.Mode(terminal.Services, aspire: true, noBuild: true, noRun: false));
+
+        using var agent = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["CLAUDECODE"] = "1" }, new ScriptedPrompter());
+        Assert.AreEqual(ProjectRunMode.Once, ProjectRun.Mode(agent.Services, aspire: true, noBuild: false, noRun: false), "A coding agent's shell would wait for ever.");
+
+        using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["CI"] = "true" }, new ScriptedPrompter());
+        Assert.AreEqual(ProjectRunMode.None, ProjectRun.Mode(ci.Services, aspire: true, noBuild: false, noRun: false));
+    }
+
+    [TestMethod]
+    public void TheAppHost_Should_TellWhetherTheProjectWaitsForContainers()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        Assert.IsFalse(ProjectContext.AppHostNeedsContainers(project.AppHostDirectory));
+
+        NeedContainers(project);
+        Assert.IsTrue(ProjectContext.AppHostNeedsContainers(project.AppHostDirectory));
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_StopAProjectThatDoesntGetHealthy()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("aspire", "wait serverweb", 1, "Timed out waiting for resource 'serverweb' to become healthy.");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("Aspire started, serverweb didn't get healthy", result.Title);
+        CollectionAssert.AreEqual(new[] { "stop", "--apphost", project.AppHostDirectory, "--non-interactive" }, host.Runner.Calls.Last().Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public void TheProjectContext_Should_ReadTheGeneratedProject()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+
+        Assert.AreEqual("Contoso", ProjectContext.FindProjectName(project.Directory));
+        Assert.AreEqual("net10.0", project.TargetFrameworkVersion);
+        Assert.AreEqual("10.0.12", project.PackageVersion("Microsoft.EntityFrameworkCore.Design"));
+        Assert.AreEqual("PostgreSQL", project.Database);
+        Assert.IsTrue(project.Exists);
+    }
+
+    [TestMethod]
+    public async Task StepsOfAProjectThatWasntCreated_Should_BeSkippedNotFailed()
+    {
+        using var host = new TestHost();
+        var project = new ProjectContext { Name = "Missing", Directory = Path.Combine(host.WorkingDirectory, "Missing"), Platforms = new HashSet<Platform> { Platform.Web } };
+        var steps = new StepRunner(host.Services);
+
+        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, false, CancellationToken.None);
+
+        Assert.IsTrue(steps.Reports.All(r => r.Result.Status is StepStatus.Skipped));
+        Assert.IsFalse(steps.AnyFailed);
+        Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
+    public async Task ANativeApp_Should_BuildTheWholeSolutionWithWhatItNeeds()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        var web = CreateFakeProject(host, "Contoso");
+        var project = new ProjectContext { Name = web.Name, Directory = web.Directory, Platforms = new HashSet<Platform> { Platform.Web, Platform.Windows } };
+        host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
+        var steps = new StepRunner(host.Services);
+
+        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, false, CancellationToken.None);
+
+        var commands = host.Runner.Calls.Where(c => c.FileName is "dotnet").Select(c => string.Join(' ', c.Arguments)).ToList();
+        CollectionAssert.Contains(commands, "workload install maui");
+        Assert.IsTrue(commands.Any(c => c.StartsWith("build src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj -t:InstallAndroidDependencies -f net10.0-android", StringComparison.Ordinal)), string.Join(Environment.NewLine, commands));
+        CollectionAssert.Contains(commands, "restore Contoso.slnx");
+        Assert.AreEqual(1, commands.Count(c => c.StartsWith("build ", StringComparison.Ordinal) && c.Contains("InstallAndroidDependencies", StringComparison.Ordinal) is false), string.Join(Environment.NewLine, commands));
+        CollectionAssert.Contains(commands, "build Contoso.slnx");
+        Assert.AreEqual("Built the solution", steps.Reports.Single(r => r.Id == "build").Result.Title);
+    }
+
+    [TestMethod]
+    [DataRow("Xcode 26.6\nBuild version 17E101", StepStatus.Succeeded)]
+    [DataRow("Xcode 26.6.1\nBuild version 17E120", StepStatus.Succeeded)]
+    [DataRow("Xcode 26.2\nBuild version 17C52", StepStatus.Warning)]
+    public async Task Xcode_Should_MatchTheOneDotnetForIosWants(string xcodeVersion, StepStatus expected)
+    {
+        using var host = new TestHost(HostOs.MacOS);
+        var project = CreateFakeProject(host, "Contoso");
+        var pack = Directory.CreateDirectory(Path.Combine(host.Root, "packs", "Microsoft.iOS.Sdk.net10.0_26.5", "26.5.10318")).FullName;
+        File.WriteAllText(Path.Combine(pack, "Versions.plist"), "<plist><dict>\n\t<key>RecommendedXcodeVersion</key>\n\t<string>26.6</string>\n</dict></plist>");
+        host.Runner.On("dotnet", "msbuild", 0, pack + Path.DirectorySeparatorChar + "\n");
+        host.Runner.On("xcodebuild", "-version", 0, xcodeVersion);
+
+        var result = await new ProjectSteps(host.Services, project).XcodeAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(expected, result.Status, result.Detail);
+        CollectionAssert.Contains(host.Runner.Calls.First().Arguments.ToList(), "-p:TargetFramework=net10.0-ios");
+
+        if (expected is StepStatus.Warning)
+        {
+            Assert.AreEqual("26.2 here, 26.6 wanted", result.Detail);
+            StringAssert.Contains(result.Hint, "Xcode 26.6");
+        }
+    }
+
+    [TestMethod]
+    public async Task AFailedStep_Should_NotStopTheNextOnes()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.On("dotnet", "restore", 1, "x.csproj : error NU1301: Unable to load the service index for source https://nuget.contoso.local/v3/index.json. [x.csproj]");
+        host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
+        var steps = new StepRunner(host.Services);
+
+        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, false, CancellationToken.None);
+
+        var byId = steps.Reports.ToDictionary(r => r.Id, r => r.Result);
+        Assert.AreEqual(StepStatus.Failed, byId["restore"].Status);
+        CollectionAssert.AreEqual(new[] { "NU1301" }, byId["restore"].Codes.ToArray());
+        StringAssert.StartsWith(byId["restore"].Hint, "error NU1301");
+        Assert.AreEqual(StepStatus.Succeeded, byId["build"].Status);
+        StringAssert.Contains(byId["restore"].FollowUp, "dotnet restore Contoso.Web.slnf");
+    }
+
+    [TestMethod]
+    public async Task AFailedStep_Should_ShowItsWholeFirstError()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        var error = $"error : The SupportedOSPlatformVersion value '15.0' in the project file is lower than the minimum value '17.0'. {string.Join(' ', Enumerable.Repeat("detail", 60))} end-of-error";
+        host.Runner.On("dotnet", "restore", 1, $"/x/Xamarin.Shared.Sdk.targets(1,1): {error} [/x/Contoso.Client.Maui.csproj]");
+        host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
+        var steps = new StepRunner(host.Services);
+
+        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, false, CancellationToken.None);
+
+        Assert.AreEqual(error, steps.Reports.Single(r => r.Id == "restore").Result.Hint);
+        StringAssert.Contains(host.Output, "end-of-error");
+    }
+
+    [TestMethod]
+    public void RecommendedExtensions_Should_BeReadDespiteCommentsAndRepeats()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        WriteRecommendations(project, "ms-dotnettools.csdevkit", "Anthropic.claude-code", "ms-dotnettools.csdevkit");
+
+        CollectionAssert.AreEqual(new[] { "ms-dotnettools.csdevkit", "Anthropic.claude-code" }, ProjectSteps.ReadRecommendedExtensions(project.Directory).ToArray());
+    }
+
+    [TestMethod]
+    public void CSharpDevKitAndMaui_Should_StayRecommendedButNotBeInstalled()
+    {
+        CollectionAssert.AreEqual(new[] { "ms-dotnettools.csharp", "Anthropic.claude-code" },
+            ProjectSteps.ExtensionsToInstall(["ms-dotnettools.csdevkit", "Anthropic.claude-code", "ms-dotnettools.dotnet-maui"]).ToArray());
+
+        CollectionAssert.AreEqual(new[] { "Anthropic.claude-code", "ms-dotnettools.csharp" },
+            ProjectSteps.ExtensionsToInstall(["Anthropic.claude-code", "ms-dotnettools.csharp", "ms-dotnettools.csdevkit"]).ToArray());
+
+        CollectionAssert.AreEqual(new[] { "Anthropic.claude-code" }, ProjectSteps.ExtensionsToInstall(["Anthropic.claude-code"]).ToArray());
+    }
+
+    [TestMethod]
+    public async Task ExtensionsVsCodeBuildsIn_Should_CountAsInstalled()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var (project, vsCode) = FakeVsCode(host, "ms-dotnettools.csdevkit");
+        WriteRecommendations(project, "Anthropic.claude-code", "vscode.git");
+        host.Runner.On(vsCode.Name, "--install-extension", spec =>
+        {
+            vsCode.Installed.Add("anthropic.claude-code");
+            return new ProcessResult { ExitCode = 1, Output = "Error while installing extension vscode.git: Extension 'vscode.git' is a built-in extension with version '1.112.0' and cannot be downgraded to version '1.0.0'.\nFailed Installing Extensions: vscode.git" };
+        });
+
+        var result = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
+        Assert.AreEqual("Installed 1 VS Code extension", result.Title);
+        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "--install-extension"));
+    }
+
+    [TestMethod]
+    public async Task AFailedExtensionInstall_Should_BeRetriedOnceAndNamed()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var (project, vsCode) = FakeVsCode(host);
+        WriteRecommendations(project, "Anthropic.claude-code", "EditorConfig.EditorConfig");
+        var attempts = 0;
+        host.Runner.On(vsCode.Name, "--install-extension", spec =>
+        {
+            vsCode.Installed.Add("editorconfig.editorconfig");
+            return new ProcessResult { ExitCode = 1, Output = ++attempts == 1 ? "error: the marketplace can't be reached" : "Failed Installing Extensions: anthropic.claude-code" };
+        });
+
+        var result = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status, "An extension that won't install is a note, not a failed run.");
+        Assert.AreEqual("Couldn't install 1 VS Code extension", result.Title);
+        Assert.AreEqual("claude-code", result.Detail);
+        Assert.AreEqual($"{ProcessSpec.Quote(vsCode.Path)} --install-extension Anthropic.claude-code", result.FollowUp);
+        Assert.AreEqual(2, attempts);
+        CollectionAssert.AreEqual(new[] { "--install-extension", "Anthropic.claude-code" }, host.Runner.Calls.Where(c => c.Arguments.FirstOrDefault() is "--install-extension").Last().Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task VsCode_Should_GetOnlyTheExtensionsItLacks()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var (project, vsCode) = FakeVsCode(host, "ms-dotnettools.csharp", "ms-dotnettools.csdevkit");
+        WriteRecommendations(project, "ms-dotnettools.csdevkit", "Anthropic.claude-code", "ms-dotnettools.csharp");
+        host.Runner.On(vsCode.Name, "--install-extension", spec =>
+        {
+            vsCode.Installed.UnionWith(spec.Arguments.Where(a => a.StartsWith('-') is false));
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        var result = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        Assert.AreEqual("Installed 1 VS Code extension", result.Title);
+        var install = host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "--install-extension");
+        CollectionAssert.AreEqual(new[] { "--install-extension", "Anthropic.claude-code" }, install.Arguments.ToArray());
+
+        var done = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual("Extensions already installed", done.Title);
+        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "--install-extension"));
+    }
+
+    private sealed record FakeVsCodeInstall(string Path, string Name, HashSet<string> Installed);
+
+    private static (ProjectContext Project, FakeVsCodeInstall VsCode) FakeVsCode(TestHost host, params string[] installed)
+    {
+        var code = typeof(ProjectStepTests).Assembly.Location;
+        var vsCode = new FakeVsCodeInstall(code, Path.GetFileNameWithoutExtension(code), new HashSet<string>(installed, StringComparer.OrdinalIgnoreCase));
+        host.Runner.Executables["code"] = code;
+        host.Runner.On(vsCode.Name, "--list-extensions", _ => new ProcessResult { ExitCode = 0, Output = string.Join('\n', vsCode.Installed) });
+        return (CreateFakeProject(host, "Contoso"), vsCode);
+    }
+
+    [TestMethod]
+    public async Task Playwright_Should_InstallChromiumWithTheTestsOwnDriver()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        var project = CreateFakeProject(host, "Contoso");
+        var playwright = Directory.CreateDirectory(Path.Combine(project.Directory, "src", "Tests", "bin", "Debug", "net10.0", ".playwright")).FullName;
+        Directory.CreateDirectory(Path.Combine(playwright, "package"));
+        File.WriteAllText(Path.Combine(playwright, "package", "cli.js"), "");
+        File.WriteAllText(Path.Combine(playwright, "package", "package.json"), "{ \"name\": \"playwright-core\", \"version\": \"1.57.0\" }");
+        var nodeDirectory = Directory.CreateDirectory(Path.Combine(playwright, "node", "win32_x64")).FullName;
+        File.WriteAllText(Path.Combine(nodeDirectory, "node.exe"), "");
+
+        var result = await new ProjectSteps(host.Services, project).PlaywrightAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        Assert.AreEqual("Playwright 1.57.0", result.Detail);
+        var call = host.Runner.Calls.Single();
+        Assert.AreEqual(Path.Combine(nodeDirectory, "node.exe"), call.FileName);
+        CollectionAssert.AreEqual(new[] { Path.Combine(playwright, "package", "cli.js"), "install", "chromium" }, call.Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task Playwright_Should_BeSkippedWithoutBuiltTests()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+
+        var notBuilt = await new ProjectSteps(host.Services, project).PlaywrightAsync(_ => { }, CancellationToken.None);
+        Assert.AreEqual(StepStatus.Skipped, notBuilt.Status);
+        StringAssert.Contains(notBuilt.Detail, "weren't built");
+        Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
+    public async Task Playwright_Should_InstallEveryBrowserWithItsLibrariesInCi()
+    {
+        using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
+        ci.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        var project = CreateFakeProject(ci, "Contoso");
+        var playwright = Directory.CreateDirectory(Path.Combine(project.Directory, "src", "Tests", "bin", "Debug", "net10.0", ".playwright")).FullName;
+        Directory.CreateDirectory(Path.Combine(playwright, "package"));
+        File.WriteAllText(Path.Combine(playwright, "package", "cli.js"), "");
+        var nodeDirectory = Directory.CreateDirectory(Path.Combine(playwright, "node", "linux-x64")).FullName;
+        File.WriteAllText(Path.Combine(nodeDirectory, "node"), "");
+        var cliScript = Path.Combine(playwright, "package", "cli.js");
+
+        var result = await new ProjectSteps(ci.Services, project).PlaywrightAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
+        Assert.AreEqual("Installed Playwright's browsers", result.Title);
+        CollectionAssert.AreEqual(new[] { cliScript, "install" }, ci.Runner.Calls.First().Arguments.ToArray());
+        CollectionAssert.AreEqual(new[] { "-n", Path.Combine(nodeDirectory, "node"), cliScript, "install-deps" }, ci.Runner.Calls.Last().Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task TheAndroidSdk_Should_BeCompletedByMauiInCiToo()
+    {
+        using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true", ["ANDROID_HOME"] = "/usr/local/lib/android/sdk", ["JAVA_HOME"] = "/usr/lib/jvm/temurin-17" });
+
+        var result = await new ProjectSteps(ci.Services, CreateFakeProject(ci, "Contoso")).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status);
+        StringAssert.Contains(ci.Runner.Calls.Single().CommandLine, "-t:InstallAndroidDependencies");
+    }
+
+    [TestMethod]
+    public async Task BuildProperties_Should_ReachTheRestoreAndTheBuildButNotTheBrowsers()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var web = CreateFakeProject(host, "Contoso");
+        var project = new ProjectContext { Name = web.Name, Directory = web.Directory, Platforms = web.Platforms, BuildProperties = ["EnforceCodeStyleInBuild=true", "Environment=Staging"] };
+        var steps = new StepRunner(host.Services);
+
+        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), true, false, false, true, CancellationToken.None);
+
+        var commands = host.Runner.Calls.Select(c => string.Join(' ', c.Arguments)).ToList();
+        CollectionAssert.Contains(commands, "restore Contoso.Web.slnf -p:EnforceCodeStyleInBuild=true -p:Environment=Staging");
+        CollectionAssert.Contains(commands, "build Contoso.Web.slnf -p:EnforceCodeStyleInBuild=true -p:Environment=Staging");
+        Assert.IsFalse(steps.Reports.Any(r => r.Id is "playwright"));
+    }
+
+    [TestMethod]
+    public async Task TheGitHubRepo_Should_BePrivateWithDevelopAndMain()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "repo view", 0, "https://github.com/contoso-dev/Contoso\n");
+
+        var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
+        Assert.AreEqual("github.com/contoso-dev/Contoso", result.Detail);
+
+        var calls = host.Runner.Calls.Select(c => c.CommandLine).ToList();
+        var create = calls.IndexOf("gh repo create Contoso --private --source . --remote origin");
+        var push = calls.IndexOf("git push -u origin develop main");
+        var defaultBranch = calls.IndexOf("gh repo edit --default-branch develop");
+
+        Assert.IsTrue(create >= 0 && create < push && push < defaultBranch, string.Join(Environment.NewLine, calls));
+        Assert.IsTrue(host.Runner.Calls.All(c => c.WorkingDirectory == project.Directory));
+    }
+
+    [TestMethod]
+    public async Task TheGitHubRepo_Should_WaitForTheGitHubCliAndASignIn()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        var steps = new ProjectSteps(host.Services, project);
+
+        var missing = await steps.GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+        Assert.AreEqual(StepStatus.Failed, missing.Status);
+
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "auth status", 1, "You are not logged into any GitHub hosts.");
+
+        var signedOut = await steps.GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+        Assert.AreEqual(StepStatus.Warning, signedOut.Status);
+        StringAssert.StartsWith(signedOut.FollowUp, "gh auth login --web && cd ");
+        StringAssert.Contains(signedOut.FollowUp, "gh repo create Contoso --private --source . --remote origin");
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["repo", "create", ..]));
+
+        project.GitReady = false;
+        Assert.AreEqual(StepStatus.Skipped, (await steps.GitHubRepositoryAsync(_ => { }, CancellationToken.None)).Status);
+    }
+
+    [TestMethod]
+    public async Task GitHubSignIn_Should_SetUpGitFirstSoGhAsksNothingButTheCode()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+
+        var result = await new ProjectSteps(host.Services, project).GitHubSignInAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status);
+        CollectionAssert.AreEqual(new[] { "auth setup-git --hostname github.com --force", "auth login --web --git-protocol https --hostname github.com" },
+            host.Runner.Calls.Where(c => c.FileName is "gh").Select(c => string.Join(' ', c.Arguments)).ToArray());
+    }
+
+    [TestMethod]
+    public async Task GitHubSignIn_Should_ShowTheCodeAndLetEscSkipIt()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        var stopped = false;
+        host.Runner.OnAsync("gh", "auth login", async (spec, ct) =>
+        {
+            spec.OnOutputLine?.Invoke("! One-time code (AB12-CD34) copied to clipboard");
+            spec.OnOutputLine?.Invoke("Open this URL to continue in your web browser: https://github.com/login/device");
+
+            try
+            {
+                await Task.Delay(Timeout.Infinite, ct);
+            }
+            finally
+            {
+                stopped = true;
+            }
+
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        var result = await new ProjectSteps(host.Services, project) { SkipRequested = _ => Task.CompletedTask }.GitHubSignInAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("Skipped signing in to GitHub", result.Title);
+        Assert.IsTrue(stopped, "Skipping stops gh's sign-in.");
+        StringAssert.Contains(host.FlatOutput, "Enter AB12-CD34");
+        StringAssert.Contains(host.FlatOutput, "Press Esc to skip");
+        CollectionAssert.AreEqual(new[] { "https://github.com/login/device" }, host.Runner.Detached.SelectMany(d => d.Arguments).Where(a => a.StartsWith("https", StringComparison.Ordinal)).ToArray());
+    }
+
+    [TestMethod]
+    public async Task GitHubSignIn_Should_NeedATerminalButNotPrompts()
+    {
+        using var host = new TestHost(prompter: new ScriptedPrompter());
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "auth status", 1);
+        host.Services.DisablePrompts();
+
+        Assert.IsTrue(await new ProjectSteps(host.Services, project).CanSignInToGitHubAsync(CancellationToken.None));
+
+        host.Runner.On("gh", "auth status", 0);
+        Assert.IsFalse(await new ProjectSteps(host.Services, project).CanSignInToGitHubAsync(CancellationToken.None));
+
+        using var noTerminal = new TestHost();
+        noTerminal.Runner.Executables["gh"] = "/usr/bin/gh";
+        noTerminal.Runner.On("gh", "auth status", 1);
+        Assert.IsFalse(await new ProjectSteps(noTerminal.Services, CreateFakeProject(noTerminal, "Contoso")).CanSignInToGitHubAsync(CancellationToken.None));
+    }
+
+    private static void WriteAppHost(ProjectContext project, params string[] resources)
+    {
+        var folder = Directory.CreateDirectory(project.AppHostDirectory).FullName;
+        File.WriteAllLines(Path.Combine(folder, "Program.cs"), resources.Select(r => $"builder.AddProject(\"{r}\", \"../{r}.csproj\");"));
+    }
+
+    private static void NeedContainers(ProjectContext project)
+    {
+        File.AppendAllText(Path.Combine(project.AppHostDirectory, "Program.cs"), "var postgres = builder.AddPostgres(\"postgres\");\n");
+    }
+
+    private static void WriteServerWeb(ProjectContext project, string urls)
+    {
+        var web = Directory.CreateDirectory(Path.Combine(project.Directory, "src", "Server", $"{project.Name}.Server.Web")).FullName;
+        var properties = Directory.CreateDirectory(Path.Combine(web, "Properties")).FullName;
+
+        File.WriteAllText(Path.Combine(web, $"{project.Name}.Server.Web.csproj"), $"<Project><ItemGroup><ProjectReference Include=\"..\\{project.Name}.Server.Api\\{project.Name}.Server.Api.csproj\" /></ItemGroup></Project>");
+        File.WriteAllText(Path.Combine(properties, "launchSettings.json"), $$"""
+            {
+                // the app's own
+                "profiles": {
+                    "IIS Express": { "commandName": "IISExpress" },
+                    "Web": { "commandName": "Project", "applicationUrl": "{{urls}}" },
+                }
+            }
+            """);
+    }
+
+    private static void WriteRecommendations(ProjectContext project, params string[] extensions)
+    {
+        var folder = Directory.CreateDirectory(Path.Combine(project.Directory, ".vscode")).FullName;
+        var list = string.Join(", ", extensions.Select(e => $"\"{e}\""));
+        File.WriteAllText(Path.Combine(folder, "extensions.json"), "{\n    // the project's picks\n    \"recommendations\": [ " + list + ", ],\n}\n");
+    }
+
+    private static ProjectContext CreateFakeProject(TestHost host, string name, TemplateSelection? template = null)
+    {
+        var directory = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, name)).FullName;
+        File.WriteAllText(Path.Combine(directory, $"{name}.slnx"), "<Solution />");
+        File.WriteAllText(Path.Combine(directory, $"{name}.Web.slnf"), "{}");
+
+        var core = Directory.CreateDirectory(Path.Combine(directory, "src", "Client", $"{name}.Client.Core")).FullName;
+        File.WriteAllText(Path.Combine(core, $"{name}.Client.Core.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
+
+        var api = Directory.CreateDirectory(Path.Combine(directory, "src", "Server", $"{name}.Server.Api")).FullName;
+        File.WriteAllText(Path.Combine(api, $"{name}.Server.Api.csproj"), "<Project><ItemGroup><PackageReference Include=\"Microsoft.EntityFrameworkCore.Sqlite\" /><PackageReference Include=\"Npgsql.EntityFrameworkCore.PostgreSQL\" /></ItemGroup></Project>");
+
+        File.WriteAllText(Path.Combine(directory, "src", "Directory.Packages.props"), """
+            <Project>
+              <ItemGroup>
+                <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        return new ProjectContext { Name = name, Directory = directory, Platforms = new HashSet<Platform> { Platform.Web }, Template = template };
+    }
+
+    private static Dictionary<string, string> RealPath() => new() { ["PATH"] = Environment.GetEnvironmentVariable("PATH") ?? "" };
+
+    private sealed class GitIdentity : IDisposable
+    {
+        private readonly Dictionary<string, string?> previous = [];
+
+        public GitIdentity(string root)
+        {
+            var emptyConfig = Path.Combine(root, "empty.gitconfig");
+            File.WriteAllText(emptyConfig, "");
+
+            Set("GIT_AUTHOR_NAME", "bit tests");
+            Set("GIT_AUTHOR_EMAIL", "tests@bitplatform.dev");
+            Set("GIT_COMMITTER_NAME", "bit tests");
+            Set("GIT_COMMITTER_EMAIL", "tests@bitplatform.dev");
+            Set("GIT_CONFIG_GLOBAL", emptyConfig);
+            Set("GIT_CONFIG_NOSYSTEM", "1");
+        }
+
+        public void Dispose()
+        {
+            foreach (var (key, value) in previous)
+            {
+                Environment.SetEnvironmentVariable(key, value);
+            }
+        }
+
+        private void Set(string key, string value)
+        {
+            previous[key] = Environment.GetEnvironmentVariable(key);
+            Environment.SetEnvironmentVariable(key, value);
+        }
+    }
+
+    private static async Task<bool> GitAvailableAsync()
+    {
+        using var host = new TestHost(variables: RealPath());
+        var result = await new ProcessRunner(host.Environment, CliLog.None).RunAsync(new ProcessSpec { FileName = "git", Arguments = ["--version"] });
+        return result.Succeeded;
+    }
+}

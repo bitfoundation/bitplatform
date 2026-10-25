@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
@@ -8,6 +8,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
@@ -31,11 +32,25 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     [Parameter] public string? Resource { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
+
+    private bool _pressStartedOnOverlay;
+
+    private async Task OnOverlayClick()
+    {
+        var close = _pressStartedOnOverlay;
+        _pressStartedOnOverlay = false;
+        if (close)
+            await OnClose.InvokeAsync();
+    }
     [Parameter] public EventCallback OnSaved { get; set; }
 
     // Per-instance unique ids so multiple open dialogs don't collide on element ids, which would
     // break label-to-control association and the dialog's aria-labelledby reference.
     private readonly string _dialogTitleId = $"bfc-dlg-title-{Guid.NewGuid():N}";
+    // Which Escapes something inside the dialog claimed first (see _OnEscapeVerdict), for OnDialogKeyDown. Made on
+    // first use, so a dialog disposed before it rendered never starts watching.
+    private BitEscapeClaimWatch<BitFcAddEditEventDialog>? _escapeWatch;
+    private BitEscapeClaimWatch<BitFcAddEditEventDialog> EscapeWatch => _escapeWatch ??= new(JS, this);
     private readonly string _titleInputId = $"bfc-title-{Guid.NewGuid():N}";
     private readonly string _colorSelectId = $"bfc-color-{Guid.NewGuid():N}";
     private readonly string _resourceSelectId = $"bfc-resource-{Guid.NewGuid():N}";
@@ -45,6 +60,39 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     private readonly string _positionSelectId = $"bfc-position-{Guid.NewGuid():N}";
     private readonly string _daysLabelId = $"bfc-days-{Guid.NewGuid():N}";
     private readonly string _endsSelectId = $"bfc-ends-{Guid.NewGuid():N}";
+    private readonly string _endTriggerId = $"bfc-end-{Guid.NewGuid():N}";
+    private readonly string _untilTriggerId = $"bfc-until-{Guid.NewGuid():N}";
+    private readonly string _countInputId = $"bfc-count-{Guid.NewGuid():N}";
+    private readonly string _attendeesLabelId = $"bfc-attendees-{Guid.NewGuid():N}";
+    private readonly string _firstNameInputId = $"bfc-first-name-{Guid.NewGuid():N}";
+
+    // A field's validation message is tied to it (aria-describedby) and the field is marked invalid, so
+    // the message is read with the field rather than only shown below it.
+    private string ErrorId(string key) => $"{_dialogTitleId}-error-{key}";
+    private string? Invalid(string key) => _errors.ContainsKey(key) ? "true" : null;
+    private string? DescribedBy(string key) => _errors.ContainsKey(key) ? ErrorId(key) : null;
+
+    // Where the focus goes when a save is refused: the first field, in reading order, whose value is wrong.
+    private string? _pendingFocusId;
+
+    private string? FirstInvalidFieldId()
+    {
+        foreach (var (key, id) in new (string, string)[]
+        {
+            ("title", _titleInputId),
+            ("endDate", _endTriggerId),
+            ("interval", _intervalInputId),
+            ("until", _untilTriggerId),
+            ("count", _countInputId),
+            ("description", _descriptionInputId),
+        })
+        {
+            if (_errors.ContainsKey(key))
+                return id;
+        }
+
+        return null;
+    }
 
     private ElementReference _dialogRef;
 
@@ -95,6 +143,12 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     protected override void OnInitialized() => State.OnStateChanged += HandleStateChanged;
 
+    // What the form may still save: an edit needs editing allowed, a new event adding allowed - either can be taken
+    // away (read-only, a permission turned off) while the form is open.
+    private BitFullCalendarEvent _draft = new();
+
+    private bool CanSubmit => _isEditing ? State.ReadOnly is false && State.AllowEdit : State.CanAdd;
+
     /// <summary>
     /// The calendar can be switched to read-only while this dialog is open - every entry point only
     /// checks read-only when it opens the dialog, so an already-open form would otherwise stay live.
@@ -102,7 +156,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     /// </summary>
     private void HandleStateChanged()
     {
-        if (State.ReadOnly is false)
+        if (CanSubmit)
             return;
 
         _ = InvokeAsync(OnClose.InvokeAsync);
@@ -150,6 +204,8 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
         _isEditing = ExistingEvent != null;
         _isOccurrenceEdit = ExistingEvent?.IsOccurrence is true;
+        // What an EventEditorTemplate edits: a copy, so only a save carries its Data into the calendar.
+        _draft = _isEditing ? BitFullCalendarChangeNotifier.CloneEvent(ExistingEvent!) : new BitFullCalendarEvent();
         var defaultColor = ColorScheme.Options.Count > 0
             ? ColorScheme.Options[0].Id
             : BitFullCalendarColorScheme.FallbackColorId;
@@ -160,7 +216,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
             _description = ExistingEvent.Description;
             _startDate = ExistingEvent.StartDate;
             _endDate = ExistingEvent.EndDate;
-            _color = string.IsNullOrWhiteSpace(ExistingEvent.Color) ? defaultColor : ExistingEvent.Color;
+            _color = string.IsNullOrWhiteSpace(ExistingEvent.Color) ? defaultColor : ColorScheme.GetCanonicalId(ExistingEvent.Color);
             _resource = ExistingEvent.Resource ?? string.Empty;
             _isAllDay = ExistingEvent.IsAllDay;
             _attendees = [.. ExistingEvent.Attendees];
@@ -380,7 +436,17 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         // DisposeAsync restores focus to the element that was focused before it opened. Mirrors
         // BitFcEventDetailsDialog so the add/edit dialog behaves like a true modal.
         if (firstRender)
-            await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
+        {
+            await BitFcDialogInterop.SetupAsync(JS, _dialogRef, _dialogTitleId);
+            await EscapeWatch.WatchAsync(_dialogRef);
+        }
+
+        // A refused save sends the focus to the field it has to be fixed in, once the message is rendered.
+        if (_pendingFocusId is { } id)
+        {
+            _pendingFocusId = null;
+            await BitFcFocusInterop.TryFocusAsync(JS, id);
+        }
     }
 
     private void AddAttendee()
@@ -390,6 +456,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         if (string.IsNullOrWhiteSpace(_newFirstName) && string.IsNullOrWhiteSpace(_newLastName))
         {
             _errors["attendee"] = Texts.ValidationAttendeeNameRequired;
+            _pendingFocusId = _firstNameInputId;
             return;
         }
 
@@ -407,11 +474,25 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     private void RemoveAttendee(BitFullCalendarAttendee attendee) => _attendees.Remove(attendee);
 
+    // Whether Escape closes the dialog: a save in flight is left alone so the dialog can't be dismissed out from
+    // under the change it is committing.
+    private bool _ClosesOnEscape => _isSubmitting is false;
+
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
     {
-        // Escape is the standard way out of a modal. A save in flight is left alone so the dialog
-        // can't be dismissed out from under the change it is committing.
-        if (e.Key is "Escape" or "Esc" && _isSubmitting is false)
+        if (e.Key is not "Escape") return;
+
+        // One Escape does one thing: a press something inside the dialog claimed first (a field of an
+        // EventEditorTemplate clearing itself) is that field's, which Blazor still bubbles up to here. The verdict is
+        // read once, so it never outlives the press it was given for.
+        if (EscapeWatch.TakeForeign()) return;
+
+        // Only the plain key, the one the dialog claims: an Escape with a modifier is left to the surface the
+        // calendar sits in.
+        if (e.IsPlainEscape() is false) return;
+
+        // Escape is the standard way out of a modal.
+        if (_ClosesOnEscape)
             await OnClose.InvokeAsync();
     }
 
@@ -439,8 +520,13 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     {
         // Last line of defense for every host of this dialog (add entry points and the details
         // dialog's edit overlay): read-only may have been switched on after the dialog opened, so
-        // refuse the save rather than mutating state the calendar no longer allows to change.
-        if (State.ReadOnly) return;
+        // refuse the save rather than mutating state the calendar no longer allows to change - and say so, the way
+        // a drop the read-only switch landed in is reported.
+        if (CanSubmit is false)
+        {
+            Notifier.ReportRefusal(BitFullCalendarChangeRefusal.ReadOnly);
+            return;
+        }
 
         // Guard against re-entrancy: a second click or Enter press while the first save is still
         // in flight would otherwise add/update the event twice before the dialog closes.
@@ -475,9 +561,12 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         // action instead of silently creating what the calendar would refuse from a drag: an event
         // outside the navigable window could never be reached again, one outside the business hours
         // breaks the constraint the consumer asked for, and one on a taken slot is a double booking.
+        // The refusal is reported like every other one (OnRefused), but the reason is shown here, next to the
+        // action, rather than as the calendar's notice behind the dialog.
         if (_errors.Count == 0)
         {
             var refusal = State.ValidateRange(editingId, _startDate, _endDate, resourceId);
+            Notifier.ReportRefusal(refusal, showNotice: false);
             switch (refusal)
             {
                 case BitFullCalendarChangeRefusal.OutOfRange:
@@ -489,18 +578,29 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
                 case BitFullCalendarChangeRefusal.Overlap:
                     _errors["overlap"] = Texts.EventOverlapMessage;
                     break;
+                case BitFullCalendarChangeRefusal.Blocked:
+                    _errors["overlap"] = Texts.BlockedMessage;
+                    break;
             }
         }
 
-        if (_errors.Count > 0) return;
+        if (_errors.Count > 0)
+        {
+            _pendingFocusId = FirstInvalidFieldId();
+            return;
+        }
 
         _isSubmitting = true;
         try
         {
-            if (_isOccurrenceEdit)
-                await SaveOccurrenceAsync(resourceId);
-            else
-                await SaveEventAsync(resourceId);
+            var committed = _isOccurrenceEdit
+                ? await SaveOccurrenceAsync(resourceId)
+                : await SaveEventAsync(resourceId);
+
+            // Refused by OnChanging: the state is already back where it was, and the dialog stays open with what
+            // the user typed so it can be corrected rather than retyped.
+            if (committed is false)
+                return;
 
             // Notification succeeded and the change is committed; post-notify callbacks run outside
             // the compensation scope so an OnSaved/OnClose exception does not roll back the change.
@@ -526,16 +626,19 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         EndDate = _endDate,
         Color = _color,
         Resource = resourceId,
-        Data = _isEditing ? ExistingEvent!.Data : null,
+        // The draft starts with the event's own Data, so without an editor template this is exactly what it was.
+        Data = _draft.Data,
         Attendees = [.. _attendees],
         IsAllDay = _isAllDay,
-        // An occurrence is read-only only so it cannot be dragged; the one-off it becomes is not.
+        // An occurrence carries its series' lock, which the one-off it becomes does not inherit.
         IsReadOnly = _isEditing && _isOccurrenceEdit is false && ExistingEvent!.IsReadOnly,
         CssClass = _isEditing ? ExistingEvent!.CssClass : null,
+        IsBackground = _isEditing && ExistingEvent!.IsBackground,
+        IsBlocking = _isEditing && ExistingEvent!.IsBlocking,
         Recurrence = BuildRecurrence()
     };
 
-    private async Task SaveEventAsync(string? resourceId)
+    private async Task<bool> SaveEventAsync(string? resourceId)
     {
         var oldSnapshot = _isEditing && ExistingEvent is not null
             ? BitFullCalendarChangeNotifier.CloneEvent(ExistingEvent)
@@ -550,7 +653,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
         try
         {
-            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+            return await Notifier.TryNotifyAsync(new BitFullCalendarChangeEventArgs
             {
                 Event = BitFullCalendarChangeNotifier.CloneEvent(ev),
                 OldEvent = oldSnapshot,
@@ -581,50 +684,43 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     /// <summary>
     /// Saves an occurrence edited on its own, leaving the rest of its series as it was: the series
     /// skips the occurrence's date (an Edit of the master) and a one-off event carrying the edited
-    /// fields takes its place (an Add). Both are rolled back if either notification throws.
+    /// fields takes its place (an Add). The two are approved together and reported the way a drag reports a
+    /// detached occurrence (<see cref="BitFullCalendarChangeNotifier.CommitDetachAsync"/>).
     /// </summary>
-    private async Task SaveOccurrenceAsync(string? resourceId)
+    private async Task<bool> SaveOccurrenceAsync(string? resourceId)
     {
         var occurrence = ExistingEvent!;
         var master = State.AllEvents.FirstOrDefault(e => string.Equals(e.Id, occurrence.SeriesId, StringComparison.Ordinal));
         // The series was removed while the dialog was open, so there is no occurrence left to change.
         if (master is null || occurrence.OccurrenceDate is not { } occurrenceDate)
-            return;
+            return true;
 
-        var masterSnapshot = BitFullCalendarChangeNotifier.CloneEvent(master);
         var updatedMaster = BitFullCalendarHelpers.SkipOccurrence(master, occurrenceDate);
         var detached = BuildEvent(Guid.NewGuid().ToString("N"), resourceId);
 
         State.UpdateEvent(updatedMaster);
         State.AddEvent(detached);
 
-        try
-        {
-            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
-            {
-                Event = BitFullCalendarChangeNotifier.CloneEvent(updatedMaster),
-                OldEvent = masterSnapshot,
-                Kind = BitFullCalendarChangeKind.Edit,
-                Source = BitFullCalendarChangeSource.Dialog
-            });
-            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
-            {
-                Event = BitFullCalendarChangeNotifier.CloneEvent(detached),
-                Kind = BitFullCalendarChangeKind.Add,
-                Source = BitFullCalendarChangeSource.Dialog
-            });
-        }
-        catch
-        {
-            State.RemoveEvent(detached.Id);
-            State.UpdateEvent(master);
-            throw;
-        }
+        return await Notifier.CommitDetachAsync(master, updatedMaster, detached, BitFullCalendarChangeSource.Dialog);
+    }
+
+    /// <summary>
+    /// Sent by the browser as each Escape goes down inside the dialog while it claims the key, ahead of the keydown
+    /// Blazor then dispatches, with whether something inside the dialog claimed it first - a field of an EventEditorTemplate
+    /// clearing itself - so the key handler that runs next leaves that press alone.
+    /// <br />
+    /// <strong>This method is intended for internal use and should not be called directly.</strong>
+    /// </summary>
+    [JSInvokable("OnEscapeVerdict")]
+    public void _OnEscapeVerdict(bool foreign)
+    {
+        EscapeWatch.SetVerdict(foreign);
     }
 
     public async ValueTask DisposeAsync()
     {
         State.OnStateChanged -= HandleStateChanged;
-        await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
+        await EscapeWatch.DisposeAsync();
+        await BitFcDialogInterop.TeardownAsync(JS, _dialogTitleId);
     }
 }

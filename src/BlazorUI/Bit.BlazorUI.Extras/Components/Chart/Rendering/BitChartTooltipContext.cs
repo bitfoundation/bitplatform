@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Context passed to a custom tooltip template (<c>TooltipTemplate</c>).</summary>
 public sealed class BitChartTooltipContext

@@ -1,0 +1,163 @@
+﻿@page "/e2e/full-calendar/grid"
+
+<PageTitle>BitFullCalendar E2E - time grid</PageTitle>
+
+@* The settings that shape the day and week time grids: the visible hours and the slot duration, the work week
+   (HiddenDays, FirstDayOfWeek, ShowWeekNumbers, WeekDayCount), the layout of overlapping events, the all-day row,
+   range selection turned off and the current-time line turned off. "Today" is pinned to Wednesday 2025-07-16 10:30. *@
+<E2ESection Id="hours" Title="Visible hours and slot duration">
+    <button id="btn-hours-full" @onclick="() => (_hoursSettings.VisibleStartHour, _hoursSettings.VisibleEndHour) = (0, 24)">Whole day</button>
+    <button id="btn-hours-office" @onclick="() => (_hoursSettings.VisibleStartHour, _hoursSettings.VisibleEndHour) = (8, 18)">08 - 18</button>
+    <button id="btn-slot-60" @onclick="() => _hoursSettings.SlotDurationMinutes = 60">Slot 60</button>
+    <button id="btn-slot-7" @onclick="() => _hoursSettings.SlotDurationMinutes = 7">Slot 7 (rounds)</button>
+    <BitFullCalendar Id="hours-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_hoursEvents"
+                     Settings="_hoursSettings"
+                     DefaultView="BitFullCalendarView.Week"
+                     OnChange="@(args => _hoursChange = Apply(_hoursEvents, args))" />
+    <span id="hours-change">@_hoursChange</span>
+</E2ESection>
+
+<E2ESection Id="workweek" Title="Work week">
+    <button id="btn-workweek-three" @onclick="() => _workWeekSettings.WeekDayCount = _workWeekSettings.WeekDayCount is 3 ? null : 3">Toggle three days</button>
+    <button id="btn-workweek-sun-thu" @onclick="SunToThu">Sun - Thu</button>
+    <button id="btn-workweek-full" @onclick="() => (_workWeekSettings.HiddenDays, _workWeekSettings.FirstDayOfWeek) = (null, null)">Full week</button>
+    <button id="btn-workweek-all-hidden" @onclick="() => _workWeekSettings.HiddenDays = Enum.GetValues<DayOfWeek>()">Hide every day</button>
+    <BitFullCalendar Id="workweek-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_workWeekEvents"
+                     Settings="_workWeekSettings"
+                     DefaultView="BitFullCalendarView.Week"
+                     OnDateChange="HandleWorkWeekRange" />
+    <span id="workweek-range">@_workWeekRange</span>
+</E2ESection>
+
+<E2ESection Id="layout" Title="Overlapping events">
+    <button id="btn-layout-stack" @onclick="() => _layoutSettings.EventLayout = BitFullCalendarEventLayout.Stack">Stack</button>
+    <button id="btn-layout-overlap" @onclick="() => _layoutSettings.EventLayout = BitFullCalendarEventLayout.Overlap">Overlap</button>
+    <BitFullCalendar Id="layout-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_layoutEvents"
+                     Settings="_layoutSettings"
+                     DefaultView="BitFullCalendarView.Day" />
+</E2ESection>
+
+<E2ESection Id="allday" Title="All-day events">
+    <BitFullCalendar Id="allday-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_allDayEvents"
+                     DefaultView="BitFullCalendarView.Week"
+                     OnChange="@(args => _allDayChange = Apply(_allDayEvents, args))" />
+    <span id="allday-change">@_allDayChange</span>
+</E2ESection>
+
+<E2ESection Id="norange" Title="Range selection off, current time off">
+    <BitFullCalendar Id="norange-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Settings="_noRangeSettings"
+                     DefaultView="BitFullCalendarView.Day" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly TimeProvider Clock = new PinnedClock(new DateTimeOffset(2025, 7, 16, 10, 30, 0, TimeSpan.Zero));
+
+    private static readonly DateTime Today = new(2025, 7, 16);
+
+    private readonly BitFullCalendarSettings _hoursSettings = new()
+    {
+        VisibleStartHour = 8,
+        VisibleEndHour = 18,
+        SlotDurationMinutes = 15,
+        StartOfDayHour = 9
+    };
+
+    private readonly List<BitFullCalendarEvent> _hoursEvents =
+    [
+        new() { Id = "h1", Title = "Inside", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "blue" },
+        new() { Id = "h2", Title = "Early", StartDate = Today.AddDays(1).AddHours(6), EndDate = Today.AddDays(1).AddHours(9), Color = "green" },
+        new() { Id = "h3", Title = "Late", StartDate = Today.AddDays(2).AddHours(17), EndDate = Today.AddDays(2).AddHours(20), Color = "red" },
+        new() { Id = "h4", Title = "Night", StartDate = Today.AddDays(-1).AddHours(2), EndDate = Today.AddDays(-1).AddHours(3), Color = "purple" },
+    ];
+
+    private string? _hoursChange;
+
+    private readonly BitFullCalendarSettings _workWeekSettings = new()
+    {
+        HiddenDays = [DayOfWeek.Saturday, DayOfWeek.Sunday],
+        FirstDayOfWeek = DayOfWeek.Monday,
+        ShowWeekNumbers = true,
+        VisibleStartHour = 8,
+        VisibleEndHour = 19
+    };
+
+    private readonly List<BitFullCalendarEvent> _workWeekEvents =
+    [
+        new() { Id = "w1", Title = "Weekday", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "blue" },
+        new() { Id = "w2", Title = "Saturday Hike", StartDate = Today.AddDays(3).AddHours(9), EndDate = Today.AddDays(3).AddHours(12), Color = "green" },
+    ];
+
+    private string? _workWeekRange;
+
+    private void HandleWorkWeekRange(BitFullCalendarDateChangeEventArgs args) => _workWeekRange = $"{args.Start:yyyy-MM-dd}|{args.End:yyyy-MM-dd}|{args.View}";
+
+    private void SunToThu()
+    {
+        _workWeekSettings.HiddenDays = [DayOfWeek.Friday, DayOfWeek.Saturday];
+        _workWeekSettings.FirstDayOfWeek = DayOfWeek.Sunday;
+    }
+
+    private readonly BitFullCalendarSettings _layoutSettings = new() { StartOfDayHour = 9 };
+
+    private readonly List<BitFullCalendarEvent> _layoutEvents =
+    [
+        new() { Id = "o1", Title = "First", StartDate = Today.AddHours(10), EndDate = Today.AddHours(12), Color = "blue" },
+        new() { Id = "o2", Title = "Second", StartDate = Today.AddHours(11), EndDate = Today.AddHours(13), Color = "red" },
+    ];
+
+    private readonly List<BitFullCalendarEvent> _allDayEvents =
+    [
+        new() { Id = "a1", Title = "Company Holiday", Description = "Offices closed.", StartDate = Today, EndDate = Today.AddDays(1), Color = "green", IsAllDay = true },
+        new() { Id = "a2", Title = "Release Freeze", StartDate = Today.AddDays(1), EndDate = Today.AddDays(4), Color = "red", IsAllDay = true },
+        new() { Id = "a3", Title = "Standup", StartDate = Today.AddHours(9), EndDate = Today.AddHours(9).AddMinutes(30), Color = "blue" },
+    ];
+
+    private string? _allDayChange;
+
+    private readonly BitFullCalendarSettings _noRangeSettings = new() { AllowRangeSelection = false, ShowCurrentTimeIndicator = false, StartOfDayHour = 9 };
+
+    /// <summary>
+    /// Applies a change to the page's own list, the way an app keeps its store in step (the calendar re-syncs the list
+    /// it is given on every render), and describes it for the readout.
+    /// </summary>
+    private static string Apply(List<BitFullCalendarEvent> events, BitFullCalendarChangeEventArgs args)
+    {
+        var index = events.FindIndex(e => e.Id == args.Event.Id);
+        switch (args.Kind)
+        {
+            case BitFullCalendarChangeKind.Delete:
+                if (index >= 0) events.RemoveAt(index);
+                break;
+            default:
+                if (index >= 0) events[index] = args.Event;
+                else events.Add(args.Event);
+                break;
+        }
+
+        return $"{args.Kind}|{args.Source}|{args.Event.Title}|{args.Event.StartDate:yyyy-MM-dd HH:mm}|{args.Event.EndDate:yyyy-MM-dd HH:mm}|{(args.Event.IsAllDay ? "allday" : "timed")}";
+    }
+
+    private sealed class PinnedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+}

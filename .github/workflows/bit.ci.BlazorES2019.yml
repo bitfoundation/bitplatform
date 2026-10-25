@@ -2,9 +2,10 @@ name: bit platform CI - BlazorES2019
 
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     paths:
-    - 'src/BlazorES2019/**'
+    - 'src/Toolings/BlazorES2019/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -40,7 +41,7 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: 24
 
@@ -57,8 +58,8 @@ jobs:
         npm install
         npm run-script build:production
         cd ../../../../
-        mkdir -p src/BlazorES2019/wwwroot.net9/
-        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net9/
+        mkdir -p src/Toolings/BlazorES2019/wwwroot.net9/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/Toolings/BlazorES2019/wwwroot.net9/
         rm -rf aspnetcore
 
     - name: Generate .NET 10.0 blazor.*.js files
@@ -74,12 +75,12 @@ jobs:
         npm install
         npm run-script build:production
         cd ../../../../
-        mkdir -p src/BlazorES2019/wwwroot.net10/
-        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net10/
+        mkdir -p src/Toolings/BlazorES2019/wwwroot.net10/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/Toolings/BlazorES2019/wwwroot.net10/
         rm -rf aspnetcore
 
     - name: dotnet workload restore
-      run:  cd src/BlazorES2019/Bit.BlazorES2019 && dotnet workload restore
+      run:  cd src/Toolings/BlazorES2019/Bit.BlazorES2019 && dotnet workload restore
 
     - name: dotnet build
-      run: dotnet build src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj
+      run: dotnet build src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj

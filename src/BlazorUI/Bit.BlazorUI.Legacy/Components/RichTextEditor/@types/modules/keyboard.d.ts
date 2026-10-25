@@ -1,4 +1,4 @@
-declare const SHORTKEY: string;
+﻿declare const SHORTKEY: string;
 
 interface Context {
     collapsed: boolean;

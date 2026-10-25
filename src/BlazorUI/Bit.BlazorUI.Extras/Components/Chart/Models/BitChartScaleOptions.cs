@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A scale/axis definition, mirroring Chart.js cartesian and radial scale options.
@@ -8,7 +8,17 @@ public sealed class BitChartScaleOptions
     public string Id { get; set; } = "";
     public BitChartScaleType Type { get; set; } = BitChartScaleType.Linear;
     public bool Display { get; set; } = true;
-    public BitChartPosition? Position { get; set; }
+    /// <summary>
+    /// Which edge of the chart the axis is drawn against. Unset leaves an x axis at the bottom and a y axis
+    /// at the left.
+    /// </summary>
+    /// <remarks>
+    /// A chart is laid out physically, so the sides meaningful here are Top, Bottom, Left and Right, plus Center:
+    /// a cartesian axis placed at the Center is drawn inside the plot where the other axis reads zero instead
+    /// of along an edge (a secondary x axis has no zero line to sit on and stays at the bottom). Any other value
+    /// is read as the default for the axis.
+    /// </remarks>
+    public BitPlacement? Placement { get; set; }
 
     public double? Min { get; set; }
     public double? Max { get; set; }
@@ -39,7 +49,7 @@ public sealed class BitChartScaleOptions
 
     /// <summary>Angle lines configuration (radial scales only).</summary>
     public bool AngleLines { get; set; } = true;
-    public string AngleLineColor { get; set; } = "var(--bit-clr-brd-sec, rgba(0,0,0,0.1))";
+    public string AngleLineColor { get; set; } = "var(--bit-Chart-grid-color, var(--bit-clr-brd-sec))";
     public double AngleLineWidth { get; set; } = 1;
     public List<double>? AngleLineDash { get; set; }
     /// <summary>Start angle in degrees for radial scales.</summary>
@@ -49,7 +59,7 @@ public sealed class BitChartScaleOptions
     /// <summary>Show a filled backdrop behind radial tick labels.</summary>
     public bool ShowLabelBackdrop { get; set; } = true;
     /// <summary>Backdrop color for radial tick labels.</summary>
-    public string BackdropColor { get; set; } = "var(--bit-clr-bg-pri, #fff)";
+    public string BackdropColor { get; set; } = "var(--bit-Chart-surface-color, var(--bit-clr-bg-pri))";
 
     // ---- Time scale ----
     /// <summary>The unit for a time axis. Auto picks a sensible unit from the data range.</summary>

@@ -1,0 +1,159 @@
+﻿@page "/e2e/accent-color-switcher"
+@implements IDisposable
+@inject BitAccentColorService AccentColorService
+@inject BitThemeManager ThemeManager
+
+<PageTitle>BitAccentColorSwitcher E2E</PageTitle>
+
+<h1>BitAccentColorSwitcher</h1>
+
+<p>Active accent: <span id="active-accent">@AccentColorService.ActiveAccent</span></p>
+<p>AccentChanged: <span id="accent-changed-count">@_accentChangedCount</span></p>
+
+@* A primary fill button and a plain surface: what a picked accent repaints, surfaces included. *@
+<div id="probe-surface" style="background-color: var(--bit-clr-bg-pri); padding: 4px;">
+    <BitButton Id="probe-button">Probe</BitButton>
+</div>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitAccentColorSwitcher Id="acs-basic" OnChange="HandleBasicChange" />
+    <div>OnChange count: <span id="basic-change-count">@_basicChangeCount</span></div>
+    <div>OnChange color: <span id="basic-last-color">@_basicLastColor</span></div>
+</E2ESection>
+
+<E2ESection Id="second" Title="A second switcher on the same service">
+    <BitAccentColorSwitcher Id="acs-second" />
+</E2ESection>
+
+<E2ESection Id="custom" Title="Custom accents">
+    <BitAccentColorSwitcher Id="acs-custom" Config="_customConfig" OnChange="c => _customLastColor = c" />
+    <div>OnChange color: <span id="custom-last-color">@_customLastColor</span></div>
+</E2ESection>
+
+<E2ESection Id="code" Title="Applied from code">
+    <button id="btn-apply-code" type="button" @onclick="ApplyFromCode">ApplyAsync(#0F9D58)</button>
+    <button id="btn-apply-invalid" type="button" @onclick="ApplyInvalid">ApplyAsync(not-a-color)</button>
+    <button id="btn-toggle-scheme" type="button" @onclick="ToggleScheme">ToggleDarkLightAsync</button>
+</E2ESection>
+
+<E2ESection Id="cupertino" Title="The neutral swatch under Cupertino">
+    <div bit-theme="cupertino-light">
+        <BitAccentColorSwitcher Id="acs-cupertino" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes">
+    <BitAccentColorSwitcher Id="acs-style" Class="custom-root-class" Style="padding: 7px; outline: 2px dashed rgb(255, 0, 0);" />
+    <BitAccentColorSwitcher Id="acs-styles" Styles="@(new() { Root = "gap: 21px", Swatch = "border-radius: 3px", ActiveSwatch = "outline-color: rgb(0, 128, 0)" })" />
+    <BitAccentColorSwitcher Id="acs-classes" Classes="@(new() { Root = "c-root", Swatch = "c-swatch", ActiveSwatch = "c-active" })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAccentColorSwitcher Id="acs-rtl" Dir="BitDir.Rtl" />
+    <div dir="rtl">
+        <BitAccentColorSwitcher Id="acs-rtl-inherited" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <BitAccentColorSwitcher Id="acs-disabled"
+                            Disabled="_disabled"
+                            OnChange="c => _disabledChangeCount++"
+                            @onclick="() => _disabledRootClicks++" />
+    <div>Root clicks: <span id="disabled-root-clicks">@_disabledRootClicks</span></div>
+    <div>OnChange count: <span id="disabled-change-count">@_disabledChangeCount</span></div>
+</E2ESection>
+
+<E2ESection Id="aria" Title="AriaLabel, HtmlAttributes, Visibility">
+    <BitAccentColorSwitcher Id="acs-aria" AriaLabel="Brand color" data-testid="accent-attrs" />
+    <BitAccentColorSwitcher Id="acs-hidden" Visibility="BitVisibility.Hidden" />
+    <BitAccentColorSwitcher Id="acs-collapsed" Visibility="BitVisibility.Collapsed" />
+    <BitAccentColorSwitcher Id="acs-forced" ForceAnimation />
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams">
+    <BitParams Parameters="@_params">
+        <BitAccentColorSwitcher Id="acs-params" />
+        <BitAccentColorSwitcher Id="acs-params-own" Dir="BitDir.Ltr" Classes="@(new() { Swatch = "own-swatch" })" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Mounted at runtime">
+    <button id="btn-runtime-mount" type="button" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitAccentColorSwitcher Id="acs-runtime" />
+    }
+    <div>Mounted: <span id="runtime-mounted">@_mounted</span></div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _accentChangedCount;
+    private int _basicChangeCount;
+    private string? _basicLastColor;
+    private string? _customLastColor;
+
+    private bool _disabled = true;
+    private int _disabledRootClicks;
+    private int _disabledChangeCount;
+
+    private bool _mounted = true;
+
+    private readonly BitAccentColorConfig _customConfig = new()
+    {
+        Accents =
+        [
+            new() { Name = "Crimson", Color = "#DC143C" },
+            new() { Name = "Indigo", Color = "8764B8", AriaLabel = "Use indigo" },
+            new() { Color = "#D2691E" },
+        ]
+    };
+
+    // The Config is the very instance the custom section hands its switcher: the configuration is app-wide, and a
+    // BitParams is how it is handed to every switcher alike.
+    private BitAccentColorSwitcherParams[] _params = [];
+
+    protected override void OnInitialized()
+    {
+        _params =
+        [
+            new()
+            {
+                Config = _customConfig,
+                Dir = BitDir.Rtl,
+                Classes = new() { Root = "cascaded-root", Swatch = "cascaded-swatch" },
+            },
+        ];
+
+        AccentColorService.AccentChanged += HandleAccentChanged;
+    }
+
+    private void HandleAccentChanged(object? sender, EventArgs e)
+    {
+        _ = InvokeAsync(() =>
+        {
+            _accentChangedCount++;
+            StateHasChanged();
+        });
+    }
+
+    private void HandleBasicChange(string color)
+    {
+        _basicChangeCount++;
+        _basicLastColor = color;
+    }
+
+    private async Task ApplyFromCode() => await AccentColorService.ApplyAsync("#0F9D58");
+
+    private async Task ApplyInvalid() => await AccentColorService.ApplyAsync("not-a-color");
+
+    private async Task ToggleScheme() => await ThemeManager.ToggleDarkLightAsync();
+
+    public void Dispose()
+    {
+        AccentColorService.AccentChanged -= HandleAccentChanged;
+    }
+}

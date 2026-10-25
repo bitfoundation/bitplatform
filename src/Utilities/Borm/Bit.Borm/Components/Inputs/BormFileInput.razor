@@ -1,0 +1,258 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+@using Microsoft.AspNetCore.Components.Forms
+
+@* tabindex="-1" so "take me to the first error" has somewhere to land, exactly as the radio and
+   multi-select groups do. <InputFile> is a component rather than an element, so there is no
+   ElementReference to bind to the control itself — and without one this was the single field type
+   the error summary's link and FocusFirstError silently walked past, on a form whose only problem
+   was a missing file. Focus lands on the wrapper, which carries the field's description. *@
+<div class="bit-borm-file" @ref="Element" tabindex="-1" aria-describedby="@DescribedBy">
+    @* Splat first so the renderer's own id and ARIA wiring below always wins. Keyed so that emptying
+       the field replaces the element: a file input's selection lives in the browser, where setting the
+       model to null cannot reach it, so a cleared field went on naming the old file — and choosing that
+       same file again raised no change at all, because as far as the browser knew nothing had. *@
+    <InputFile @key="_generation"
+               @attributes="ExtraAttributes"
+               id="@Context.ElementId"
+               class="@CssClass"
+               multiple="@Field.Multiple"
+               accept="@Field.Accept"
+               disabled="@DisabledOrReadOnly"
+               aria-required="@AriaRequired"
+               aria-invalid="@AriaInvalid"
+               aria-label="@AriaLabel"
+               aria-describedby="@DescribedBy"
+               OnChange="OnFilesSelected" />
+
+    @if (Field.Uploader is not null)
+    {
+        @* Uploading as they are chosen: each file with its progress, a way to stop it, and - once it has gone -
+           a way to take it back. The model holds what the uploader returned, never the file. Files sent before -
+           an edit form's - are listed first: a field taking one is replaced by the next, and one taking several
+           keeps them beside the new ones, each to be taken back on its own. *@
+        var earlier = Field.Multiple ? Context.State.StoredUploadsFor(Context.Path) : Uploads.Count > 0 ? [] : StoredResults;
+        @if (Uploads.Count > 0 || earlier.Count > 0)
+        {
+            <ul class="bit-borm-file__list">
+                @foreach (var stored in earlier)
+                {
+                    var result = stored;
+                    <li class="bit-borm-file__item">
+                        <span class="bit-borm-file__name">@result</span>
+                        @if (Field.Multiple && !DisabledOrReadOnly)
+                        {
+                            <button type="button" class="bit-borm-btn bit-borm-btn--danger bit-borm-btn--sm"
+                                    aria-label="@Context.Text(BormMessageKeys.UploadRemove, result)" @onclick="() => RemoveStored(result)">
+                                @Context.Text(BormMessageKeys.ArrayRemoveShort)
+                            </button>
+                        }
+                    </li>
+                }
+                @foreach (var upload in Uploads)
+                {
+                    var item = upload;
+                    <li class="bit-borm-file__item bit-borm-file__item--@(item.Status.ToString().ToLowerInvariant())">
+                        <span class="bit-borm-file__name">@item.Name</span>
+                        <span class="bit-borm-file__size">@BormFileRule.FormatSize(item.Size, roundUp: true)</span>
+                        @if (item.Status == BormUploadStatus.Uploading)
+                        {
+                            <progress class="bit-borm-file__progress" max="100" value="@item.Percent"
+                                      aria-label="@Context.Text(BormMessageKeys.UploadProgress, item.Name, item.Percent)"></progress>
+                            <button type="button" class="bit-borm-btn bit-borm-btn--ghost bit-borm-btn--sm"
+                                    aria-label="@Context.Text(BormMessageKeys.UploadCancel, item.Name)" @onclick="() => Remove(item)">
+                                @Context.Text(BormMessageKeys.UploadCancelShort)
+                            </button>
+                        }
+                        else if (item.Status == BormUploadStatus.Failed)
+                        {
+                            <span class="bit-borm-file__error">@item.Error</span>
+                            @if (!DisabledOrReadOnly)
+                            {
+                                <button type="button" class="bit-borm-btn bit-borm-btn--sm"
+                                        aria-label="@Context.Text(BormMessageKeys.UploadRetry, item.Name)" @onclick="() => RetryAsync(item)">
+                                    @Context.Text(BormMessageKeys.UploadRetryShort)
+                                </button>
+                            }
+                        }
+                        else
+                        {
+                            <span class="bit-borm-file__done" aria-hidden="true">✓</span>
+                        }
+                        @if (item.Status != BormUploadStatus.Uploading && !DisabledOrReadOnly)
+                        {
+                            <button type="button" class="bit-borm-btn bit-borm-btn--danger bit-borm-btn--sm"
+                                    aria-label="@Context.Text(BormMessageKeys.UploadRemove, item.Name)" @onclick="() => Remove(item)">
+                                @Context.Text(BormMessageKeys.ArrayRemoveShort)
+                            </button>
+                        }
+                    </li>
+                }
+            </ul>
+            @if (Uploads.Count == 0 && !DisabledOrReadOnly)
+            {
+                <button type="button" class="bit-borm-btn bit-borm-btn--danger bit-borm-btn--sm" @onclick="Clear">
+                    @Context.Text(BormMessageKeys.FileClear)
+                </button>
+            }
+        }
+        <p class="bit-borm-sr-only" aria-live="polite">@_announcement</p>
+    }
+    else if (SelectedFiles.Count > 0)
+    {
+        <ul class="bit-borm-file__list">
+            @foreach (var file in SelectedFiles)
+            {
+                <li class="bit-borm-file__item">
+                    <span class="bit-borm-file__name">@file.Name</span>
+                    <span class="bit-borm-file__size">@BormFileRule.FormatSize(file.Size, roundUp: true)</span>
+                </li>
+            }
+        </ul>
+        @if (!DisabledOrReadOnly)
+        {
+            <button type="button" class="bit-borm-btn bit-borm-btn--danger bit-borm-btn--sm" @onclick="Clear">
+                @Context.Text(BormMessageKeys.FileClear)
+            </button>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// The files currently held by the field. A single-file field stores one <see cref="IBrowserFile"/>
+    /// and a multiple-file field a list, so both shapes are normalised here for display.
+    /// </summary>
+    private IReadOnlyList<IBrowserFile> SelectedFiles => Context.Value switch
+    {
+        IBrowserFile single => [single],
+        IEnumerable<IBrowserFile> many => many.ToList(),
+        _ => Array.Empty<IBrowserFile>()
+    };
+
+    private async Task OnFilesSelected(InputFileChangeEventArgs e)
+    {
+        if (Field.Uploader is not null)
+        {
+            var chosen = Field.Multiple ? e.GetMultipleFiles(e.FileCount) : e.FileCount > 0 ? [e.File] : [];
+            var uploading = Context.State.UploadAsync(Field, Context.Path, chosen);
+            Watch();
+            await uploading;
+            // A fresh input for the next choice: the browser keeps the selection, and choosing the same file
+            // again would otherwise raise no change at all. Only once the files are read, and not while one that
+            // failed may be tried again: a file is read through the input it was chosen in. Replaced before then,
+            // the upload read from an element no longer on the page - so replacing a field's file, whose removal
+            // re-renders the field at once, failed every time, and Retry with it.
+            if (!Uploads.Any(u => u.Status == BormUploadStatus.Failed)) _generation++;
+            return;
+        }
+
+        // Browsers hand back the whole selection; the rules on the field decide what is acceptable, so
+        // no cap is imposed here beyond what the user actually picked.
+        object? value = Field.Multiple
+            ? e.GetMultipleFiles(e.FileCount).ToList()
+            : e.FileCount > 0 ? e.File : null;
+
+        await Context.SetValueAsync(value);
+        TrackEmptied();
+    }
+
+    // Bumped whenever the field goes from holding files to holding none — the clear button, a Reset(),
+    // a ResetField — so the next render puts a fresh, empty <input type="file"> in place of the old one.
+    private int _generation;
+    private bool _hadFiles;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        TrackEmptied();
+    }
+
+    private void TrackEmptied()
+    {
+        var hasFiles = SelectedFiles.Count > 0;
+        if (_hadFiles && !hasFiles) _generation++;
+        _hadFiles = hasFiles;
+    }
+
+    /// <summary>
+    /// Empties the field. Focus goes back to the field once the fresh input is in place: the button
+    /// that was pressed disappears with the files, and would otherwise leave focus on the page body.
+    /// </summary>
+    private async Task Clear()
+    {
+        Context.State.ForgetUploads(Context.Path);
+        await Context.SetValueAsync(null);
+        TrackEmptied();
+        RequestFocusAfterRender();
+    }
+
+    // ------------------------------------------------------------------ uploads
+
+    private IReadOnlyList<BormUpload> Uploads => Context.State.UploadsFor(Context.Path);
+
+    /// <summary>What the field holds when nothing has been uploaded here yet: the results of earlier uploads.</summary>
+    private IReadOnlyList<string> StoredResults => Context.Value switch
+    {
+        string { Length: > 0 } one => [one],
+        IEnumerable<string> many => many.Where(s => s.Length > 0).ToList(),
+        _ => Array.Empty<string>()
+    };
+
+    private readonly Dictionary<BormUpload, BormUploadStatus> _watched = new(ReferenceEqualityComparer.Instance);
+    private string? _announcement;
+
+    // The field around this control skips rendering until its value or messages change, and a byte count is
+    // neither: each upload tells this control directly, and it draws its own progress.
+    private void Watch()
+    {
+        foreach (var upload in Uploads)
+        {
+            if (_watched.ContainsKey(upload)) continue;
+            _watched[upload] = upload.Status;
+            upload.Changed += OnUploadChanged;
+        }
+    }
+
+    private void OnUploadChanged() => _ = InvokeAsync(() =>
+    {
+        foreach (var (upload, was) in _watched.ToList())
+        {
+            if (upload.Status == was) continue;
+            _watched[upload] = upload.Status;
+            // Said once, as each file arrives or fails - the bar itself is not read out per percent.
+            if (upload.Status == BormUploadStatus.Done) _announcement = Context.Text(BormMessageKeys.UploadDone, upload.Name);
+            else if (upload.Status == BormUploadStatus.Failed) _announcement = upload.Error;
+        }
+        StateHasChanged();
+    });
+
+    /// <summary>
+    /// Stops or takes back a file, with a fresh input so the same file can be chosen again. The button pressed goes
+    /// with its row, so the focus goes back to the field rather than falling to the page body.
+    /// </summary>
+    private void Remove(BormUpload upload)
+    {
+        Context.State.RemoveUpload(Field, Context.Path, upload);
+        _generation++;
+        RequestFocusAfterRender();
+    }
+
+    private void RemoveStored(string result) => Context.State.RemoveStoredUpload(Field, Context.Path, result);
+
+    private async Task RetryAsync(BormUpload upload)
+    {
+        var retrying = Context.State.RetryUploadAsync(Field, Context.Path, upload);
+        Watch();
+        await retrying;
+        // Read at last: the input it was chosen in can make way for a fresh one (see OnFilesSelected).
+        if (!Uploads.Any(u => u.Status == BormUploadStatus.Failed)) _generation++;
+    }
+
+    public override void Dispose()
+    {
+        foreach (var upload in _watched.Keys) upload.Changed -= OnUploadChanged;
+        _watched.Clear();
+        base.Dispose();
+    }
+}

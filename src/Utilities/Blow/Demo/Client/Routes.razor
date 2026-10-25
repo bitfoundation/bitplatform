@@ -1,0 +1,31 @@
+﻿@* Every page but the landing page renders inside the docs shell (Layout/DocsLayout.razor); the
+   landing page and the not-found page opt out with @layout MainLayout. After a navigation the
+   page's own H1 takes focus, so a screen reader starts reading at the new page. *@
+@inject NavigationManager Nav
+@implements IDisposable
+
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DocsLayout)" />
+        @* Not on arrival: <FocusOnNavigate> also fires on its first render, which here is the
+           moment the app turns interactive - seconds after the page appeared - and it would pull
+           focus away from wherever the reader had already tabbed to, the skip link included. It
+           joins the tree with the first navigation, and its first render then is that one. *@
+        @if (_navigated)
+        {
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        }
+    </Found>
+</Router>
+
+@code {
+    private bool _navigated;
+
+    // Subscribed ahead of the router (a parent initializes before the children it renders), so the
+    // flag is already set when the router renders the page the navigation asked for.
+    protected override void OnInitialized() => Nav.LocationChanged += OnLocationChanged;
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) => _navigated = true;
+
+    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+}

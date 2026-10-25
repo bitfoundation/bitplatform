@@ -1,0 +1,167 @@
+﻿@page "/getting-started"
+
+<PageTitle>Getting started · Bortable</PageTitle>
+
+<div class="bb-intro">
+    <h1>Getting started</h1>
+    <p class="bb-subtitle">
+        One package, one service registration and one stylesheet - then any <code>IList&lt;TItem&gt;</code>
+        on an interactively rendered page becomes a list people can put in order by hand.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
+    <p class="bb-card-desc">
+        In a Blazor Web App with an interactive client, the package belongs in the <code>.Client</code>
+        project, and the services are registered in both projects - the server prerenders the same
+        components the client runs.
+    </p>
+    <pre class="bb-code">dotnet add package Bit.Bortable</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the services</h3>
+    <p class="bb-card-desc">
+        It registers one scoped service: the coordinator that holds the drag in progress, so lists
+        sharing a group can hand an item to each other. Scoped means one per circuit on Blazor Server
+        and one per application on WebAssembly, so two users never share a drag. Calling it more than once
+        is harmless; without it, the first list that renders throws, as it cannot be given the service it
+        injects.
+    </p>
+    <pre class="bb-code"><span class="c">// Program.cs - in every project that renders a list</span>
+builder.Services.AddBitBortableServices();</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Reference the stylesheet</h3>
+    <p class="bb-card-desc">
+        It styles the drag states only - the ghost, the chosen item, the hidden original, the swap
+        target, the multi-drag selection - and leaves the look of the list to you. It is not injected for
+        you: link it from the host page, <code>App.razor</code> or <code>index.html</code>. The script module
+        needs no tag: the lists import it on demand, once for all of them.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"_content/Bit.Bortable/bit-bortable.css"</span> /&gt;</pre>
+    <p class="bb-card-desc">And the namespace, in <code>_Imports.razor</code>:</p>
+    <pre class="bb-code"><span class="k">@@using</span> Bit.Bortable</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A first list</h3>
+    <p class="bb-card-desc">
+        Each item is wrapped in a <code>&lt;div&gt;</code> that carries the drag handlers;
+        <code>ItemTemplate</code> renders what goes inside it. <code>Class</code> and <code>Style</code> go
+        to the list container, <code>ItemClass</code> to every item wrapper. <code>@@bind-Items</code> keeps
+        your field in step: the list is changed in place, so the order a user makes is the order your
+        code reads back.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Bortable</span> @@bind-Items=<span class="s">"_items"</span> TItem=<span class="s">"string"</span> Class=<span class="s">"todo"</span> ItemClass=<span class="s">"todo-item"</span>&gt;
+    &lt;<span class="k">ItemTemplate</span> Context=<span class="s">"item"</span>&gt;@@item&lt;/<span class="k">ItemTemplate</span>&gt;
+&lt;/<span class="k">Bortable</span>&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private</span> IList&lt;<span class="k">string</span>&gt; _items = <span class="k">new</span> List&lt;<span class="k">string</span>&gt; { <span class="s">"Write the spec"</span>, <span class="s">"Review the PR"</span>, <span class="s">"Ship it"</span> };
+}</pre>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <Bortable @bind-Items="_items" TItem="string" Id="getting-started-list"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+        <p class="demo-order"><strong>Order:</strong> <span id="getting-started-order">@string.Join(", ", _items)</span></p>
+    </div>
+
+    <div class="bb-note">
+        The list must be mutable - a <code>List&lt;T&gt;</code> or anything else whose
+        <code>IsReadOnly</code> is <code>false</code> - and the field declared as <code>IList&lt;TItem&gt;</code>,
+        the parameter's type. Items are rendered with <code>@@key</code>, so they must be unique within a list.
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> An interactive render mode</h3>
+    <p class="bb-card-desc">
+        A list answers a drag only on a page that renders interactively. A statically rendered page shows the items
+        but never drags them; a prerendered one shows them at once and starts dragging as soon as it is interactive.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Hosting model</th><th>Register the services in</th><th>Link the stylesheet from</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key">Blazor WebAssembly</td><td><code>Program.cs</code></td><td><code>wwwroot/index.html</code></td></tr>
+                <tr><td class="bb-table-key">Blazor Server</td><td><code>Program.cs</code></td><td><code>App.razor</code></td></tr>
+                <tr><td class="bb-table-key">Blazor Web App</td><td>Both <code>Program.cs</code> files, with the pages in the <code>.Client</code> project for a WebAssembly or Auto render mode</td><td>The server's <code>App.razor</code></td></tr>
+                <tr><td class="bb-table-key">Blazor Hybrid</td><td><code>MauiProgram.cs</code></td><td><code>wwwroot/index.html</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        On Blazor Server the pointer is followed and measured in the browser, and the circuit carries only what changes:
+        the start of a drag, each new drop position and its end - so a drag stays smooth there too.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> App-wide defaults</h3>
+    <p class="bb-card-desc">
+        The same registration takes defaults for every list of the app - the announcements in its language, a longer
+        long press, a slower slide. A default replaces the parameter's own default for every list that does not set the
+        parameter itself; a list that does keeps its value. Several calls add up, in order.
+    </p>
+    <pre class="bb-code">builder.Services.AddBitBortableServices(options =&gt;
+{
+    options.Messages = MyTexts.German;   <span class="c">// the texts screen readers hear</span>
+    options.TouchDelay = 300;            <span class="c">// a longer long press</span>
+    options.Animation = 200;             <span class="c">// a slower slide</span>
+});</pre>
+    <p class="bb-card-desc">
+        <code>BortableOptions</code> covers <code>Animation</code>, <code>SwapThreshold</code>, <code>Delay</code>,
+        <code>TouchDelay</code>, <code>DelayTolerance</code>, <code>ForceFallback</code>, <code>Scroll</code>,
+        <code>ScrollSensitivity</code>, <code>ScrollSpeed</code>, <code>Keyboard</code>, <code>RevertOnSpill</code>,
+        <code>Messages</code>, and the classes <code>GhostClass</code>, <code>ChosenClass</code>, <code>DragClass</code>,
+        <code>SwapClass</code> and <code>SelectedClass</code>. A property left <code>null</code> leaves the parameter's
+        own default.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> When something does not work</h3>
+    <ul class="bb-detail-list">
+        <li>
+            <strong>"There is no registered service of type 'Bit.Bortable.BortableService'"</strong> - call
+            <code>AddBitBortableServices()</code>, in both projects of a Blazor Web App.
+        </li>
+        <li><strong>The items render, but nothing can be dragged</strong> - the page is not interactive. Give it, or the app, an interactive render mode.</li>
+        <li>
+            <strong>The dragged item is not dimmed, and the original does not hide while it is previewed in another
+            list</strong> - the stylesheet is missing.
+        </li>
+        <li>
+            <strong>An item cannot be dropped into another list</strong> - both lists need the same <code>Group</code> and
+            <code>TItem</code>; the source's <code>Pull</code> must not be <code>None</code>; the target must have
+            <code>Put</code>, not be <code>Disabled</code> or full, be mutable, and not already hold an equal item.
+        </li>
+        <li><strong>An empty list cannot be dropped into</strong> - it has no height. Give it a <code>min-height</code> or some padding.</li>
+        <li><strong><code>@@bind-Items</code> does not compile</strong> - declare the field as <code>IList&lt;TItem&gt;</code>.</li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Where to go next</h3>
+    <div class="bb-try">
+        <a href="shared" class="btn btn-outline">Drag between lists →</a>
+        <a href="cloning" class="btn btn-outline">Copy instead of move →</a>
+        <a href="handle" class="btn btn-outline">Drag by a handle →</a>
+        <a href="rules" class="btn btn-outline">Allow or refuse a drop →</a>
+        <a href="accessibility" class="btn btn-outline">Keyboard and screen readers →</a>
+        <a href="events" class="btn btn-outline">React to a drop →</a>
+        <a href="styling" class="btn btn-outline">Style the drag →</a>
+    </div>
+</div>
+
+@code {
+    private IList<string> _items = new List<string> { "Write the spec", "Review the PR", "Ship it" };
+}

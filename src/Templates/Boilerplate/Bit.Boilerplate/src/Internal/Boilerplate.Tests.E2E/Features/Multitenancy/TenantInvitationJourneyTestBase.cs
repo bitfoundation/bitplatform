@@ -11,7 +11,7 @@ namespace Boilerplate.Tests.E2E.Features.Multitenancy;
 public abstract class TenantInvitationJourneyTestBase : AppTestBase
 {
     private static readonly Uri adminPanelAppUrl = new(DeployedApps.AdminPanel);
-    private const string password = "123456";
+    private const string password = "12345678";
     private const string e2eTenantFallback = "e2e";
 
     /// <summary>
@@ -68,6 +68,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
                 "The invitation body must be rendered in the recipient's Persian session culture.");
 
             var invitationLink = invitation.HttpLinksInArguments().First();
+            Assert.AreEqual(PageUrls.ManageMyTenants, new Uri(invitationLink).AbsolutePath, "The invitation has to lead to the page that accepts it, not to the home page.");
 
             // Parked off the route the link opens, so that the link being what opened the app stays observable.
             await adminPanelAppForToBeInvitedUser.GoToInApp(PageUrls.Settings);
@@ -161,11 +162,11 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
         await page.GoToInApp(PageUrls.ManageMyTenants, "fa-IR");
 
         var leave = Localized(nameof(AppStrings.LeaveTenant), faCulture);
-        var yes = Localized(nameof(AppStrings.Yes), faCulture);
+        var yes = BitBlazorUIStrings.ResourceManager.GetString(nameof(BitBlazorUIStrings.DialogOkText), faCulture)!;
         await page.GetByRole(AriaRole.Button, new() { NameRegex = LocalizedButton(leave, AppStrings.LeaveTenant) }).ClickAsync();
 
         var mailedBefore = await mcp.HangfireJobIds(email, TestContext.CancellationToken);
-        await page.GetByRole(AriaRole.Button, new() { NameRegex = LocalizedButton(yes, AppStrings.Yes) }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new() { NameRegex = LocalizedButton(yes, BitBlazorUIStrings.DialogOkText) }).ClickAsync();
         await FillElevatedAccessIfPrompted(page, email, mailedBefore, mcp);
 
         var accept = Localized(nameof(AppStrings.AcceptInvitation), faCulture);

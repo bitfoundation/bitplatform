@@ -1,0 +1,24 @@
+﻿@page "/e2e/time-zone-picker/detect"
+
+<PageTitle>BitTimeZonePicker DetectTimeZone E2E</PageTitle>
+
+<h1>BitTimeZonePicker DetectTimeZone</h1>
+
+@* DetectTimeZone reads the browser's own time zone, which a test sets on its browser context; hosted apart so the
+   main page's tests do not depend on the zone the browser runs in. *@
+<E2ESection Id="detect" Title="DetectTimeZone">
+    <BitTimeZonePicker Id="tzp-detect" TValue="string" DetectTimeZone Placeholder="Select a time zone" @bind-Value="_detected" />
+    <span id="detected">@(_detected ?? "null")</span>
+    <BitTimeZonePicker Id="tzp-detect-tzi" DetectTimeZone Placeholder="Select a time zone" @bind-Value="_detectedTimeZone" />
+    <span id="detected-tzi">@(_detectedTimeZone?.Id ?? "null")</span>
+    <BitTimeZonePicker Id="tzp-detect-kept" DetectTimeZone DefaultValue="@("Asia/Tokyo")" />
+    <BitTimeZonePicker Id="tzp-detect-disabled" TValue="string" DetectTimeZone Disabled Placeholder="Disabled" />
+    <BitTimeZonePicker Id="tzp-no-detect" TValue="string" Placeholder="Not detected" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private string? _detected;
+    private TimeZoneInfo? _detectedTimeZone;
+}

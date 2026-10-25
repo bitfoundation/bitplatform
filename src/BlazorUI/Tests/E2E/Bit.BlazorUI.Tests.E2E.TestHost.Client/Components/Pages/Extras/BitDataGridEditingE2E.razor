@@ -1,0 +1,211 @@
+﻿@page "/e2e/data-grid/editing"
+
+@* BitDataGrid's inline editing: Row mode (the command column's Edit/Save/Cancel/Delete, the toolbar's Add, Validate,
+   Enter and Escape, BeginEdit from OnRowDoubleClick and the editing API) and Cell mode (Enter, F2, a double-click or
+   typing to open, Backspace, Enter/Tab/blur to commit, Escape to cancel, Delete), an EditTemplate, and the Escape of an
+   edit inside a modal. *@
+
+<PageTitle>BitDataGrid editing E2E</PageTitle>
+
+<h1>BitDataGrid editing</h1>
+
+<E2ESection Id="row-edit" Title="Row edit mode">
+    <button id="btn-begin-edit-api" type="button" @onclick="BeginEditFromApi">BeginEditAsync(Novel, Price)</button>
+    <button id="btn-commit-api" type="button" @onclick="() => _rowGrid.CommitEditAsync()">CommitEditAsync</button>
+    <button id="btn-cancel-api" type="button" @onclick="() => _rowGrid.CancelEditAsync()">CancelEditAsync</button>
+    <button id="btn-add-api" type="button" @onclick="() => _rowGrid.AddNewRowAsync()">AddNewRowAsync</button>
+    <button id="btn-delete-api" type="button" @onclick="() => _rowGrid.DeleteRowAsync(_rowItems[0])">DeleteRowAsync(first)</button>
+    <button id="btn-read-edit" type="button" @onclick="ReadEditState">Read edit state</button>
+    <span id="row-edit-state">@_rowEditState</span>
+    <BitDataGrid @ref="_rowGrid" TItem="Product" Id="grid-row-edit" Items="@_rowItems" KeyField="p => p.Id"
+                 Editable="true" NewItemFactory="CreateProduct" CellNavigation="true"
+                 OnRowSave="OnRowSave" OnRowCancel="p => { _rowCancels++; _rowCancelArg = p.Name; }"
+                 OnRowDelete="OnRowDelete" OnRowCreate="p => { _rowCreates++; _rowCreateArg = p.Id; }"
+                 OnRowDoubleClick="p => _rowGrid.BeginEdit(p)">
+        <BitDataGridColumn Property="p => p.Id" Title="ID" Editable="false" />
+        <BitDataGridColumn Property="p => p.Name" Validate="(p, v) => ValidateName(p, v)" />
+        <BitDataGridColumn Property="p => p.Category" />
+        <BitDataGridColumn Property="p => p.Price" Validate="(p, v) => ValidatePrice(p, v)" />
+        <BitDataGridColumn Property="p => p.Discontinued" />
+        <BitDataGridColumn Property="p => p.ReleaseDate" Format="yyyy-MM-dd" />
+    </BitDataGrid>
+    <p>
+        saves <span id="row-save-count">@_rowSaves</span> <span id="row-save-arg">@_rowSaveArg</span> |
+        cancels <span id="row-cancel-count">@_rowCancels</span> <span id="row-cancel-arg">@_rowCancelArg</span> |
+        deletes <span id="row-delete-count">@_rowDeletes</span> <span id="row-delete-arg">@_rowDeleteArg</span> |
+        creates <span id="row-create-count">@_rowCreates</span> <span id="row-create-arg">@_rowCreateArg</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="cell-edit" Title="Cell edit mode">
+    @* The press keeps the focus where it is: moving it out of the open cell would commit the edit being read. *@
+    <button id="btn-read-cell-edit" type="button" @onmousedown:preventDefault="true" @onclick="ReadCellEditState">Read cell edit state</button>
+    <span id="cell-edit-state">@_cellEditState</span>
+    <BitDataGrid @ref="_cellGrid" TItem="Product" Id="grid-cell-edit" Items="@_cellItems" KeyField="p => p.Id"
+                 Editable="true" EditMode="BitDataGridEditMode.Cell"
+                 OnRowSave="p => { _cellSaves++; _cellSaveArg = Describe(p); }"
+                 OnRowCancel="p => _cellCancels++"
+                 OnRowDelete="p => { _cellDeletes++; _cellItems.Remove(p); }">
+        <BitDataGridColumn Property="p => p.Id" Title="ID" Editable="false" />
+        <BitDataGridColumn Property="p => p.Name" Validate="(p, v) => ValidateName(p, v)" />
+        <BitDataGridColumn Property="p => p.Category" />
+        <BitDataGridColumn Property="p => p.Price" Validate="(p, v) => ValidatePrice(p, v)" />
+        <BitDataGridColumn Property="p => p.Discontinued" />
+        <BitDataGridColumn Property="p => p.ReleaseDate" Format="yyyy-MM-dd" />
+    </BitDataGrid>
+    <p>
+        cell saves <span id="cell-save-count">@_cellSaves</span> <span id="cell-save-arg">@_cellSaveArg</span> |
+        cell cancels <span id="cell-cancel-count">@_cellCancels</span> |
+        cell deletes <span id="cell-delete-count">@_cellDeletes</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="types" Title="An editor and a filter for every data type">
+    <BitDataGrid TItem="TypedRow" Id="grid-types" Items="@_typedRows" KeyField="r => r.Id" Editable="true" Filterable="true" FilterDebounce="0"
+                 OnRowSave="r => _typedSave = DescribeTyped(r)">
+        <BitDataGridColumn Property="r => r.Id" Editable="false" Filterable="false" />
+        <BitDataGridColumn Property="r => r.Text" />
+        <BitDataGridColumn Property="r => r.Number" />
+        <BitDataGridColumn Property="r => r.Flag" />
+        <BitDataGridColumn Property="r => r.MaybeFlag" />
+        <BitDataGridColumn Property="r => r.Day" Format="yyyy-MM-dd" />
+        <BitDataGridColumn Property="r => r.When" Format="yyyy-MM-dd HH:mm" />
+        <BitDataGridColumn Property="r => r.At" Format="yyyy-MM-dd HH:mm zzz" />
+        <BitDataGridColumn Property="r => r.Color" />
+        <BitDataGridColumn Property="r => r.MaybeColor" />
+        <BitDataGridColumn Property="r => r.TextNumber" DataType="BitDataGridColumnDataType.Text" />
+    </BitDataGrid>
+    <p>typed save <span id="typed-save">@_typedSave</span></p>
+</E2ESection>
+
+<E2ESection Id="edit-template" Title="EditTemplate">
+    <BitDataGrid TItem="Product" Id="grid-edit-template" Items="@_templateItems" KeyField="p => p.Id" Editable="true">
+        <BitDataGridColumn Property="p => p.Id" Editable="false" />
+        <BitDataGridColumn Property="p => p.Name">
+            <EditTemplate Context="p">
+                <input class="custom-editor" aria-label="Custom name" value="@p.Name" @oninput="e => p.Name = (string?)e.Value ?? string.Empty" />
+            </EditTemplate>
+        </BitDataGridColumn>
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="modal-edit" Title="Escape inside a modal">
+    <button id="btn-open-modal" type="button" @onclick="() => _modalOpen = true">Open modal</button>
+    <span id="modal-state">@(_modalOpen ? "open" : "closed")</span>
+    <BitModal @bind-IsOpen="_modalOpen">
+        <div class="modal-body">
+            <BitDataGrid TItem="Product" Id="grid-modal-edit" Items="@_modalItems" KeyField="p => p.Id" ShowColumnChooser="true"
+                         Editable="true" EditMode="BitDataGridEditMode.Cell" OnRowCancel="p => _modalCancels++">
+                <BitDataGridColumn Property="p => p.Id" Editable="false" />
+                <BitDataGridColumn Property="p => p.Name" />
+            </BitDataGrid>
+        </div>
+    </BitModal>
+    <p>modal cancels <span id="modal-cancel-count">@_modalCancels</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public enum Category { Electronics, Books, Clothing, Home, Toys }
+
+    public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public Category Category { get; set; }
+        public decimal Price { get; set; }
+        public bool Discontinued { get; set; }
+        public DateTime ReleaseDate { get; set; }
+    }
+
+    private static List<Product> Products() =>
+    [
+        new() { Id = 1, Name = "Laptop", Category = Category.Electronics, Price = 1200, ReleaseDate = new(2023, 5, 1) },
+        new() { Id = 2, Name = "Novel", Category = Category.Books, Price = 15, ReleaseDate = new(2022, 1, 15) },
+        new() { Id = 3, Name = "Jacket", Category = Category.Clothing, Price = 90, Discontinued = true, ReleaseDate = new(2021, 11, 20) },
+        new() { Id = 4, Name = "Lamp", Category = Category.Home, Price = 45, ReleaseDate = new(2023, 2, 10) },
+        new() { Id = 5, Name = "Drone", Category = Category.Toys, Price = 299, ReleaseDate = new(2024, 3, 5) },
+    ];
+
+    public enum Color { Red, Green, Blue }
+
+    public class TypedRow
+    {
+        public int Id { get; set; }
+        public string Text { get; set; } = "";
+        public int Number { get; set; }
+        public bool Flag { get; set; }
+        public bool? MaybeFlag { get; set; }
+        public DateOnly Day { get; set; }
+        public DateTime When { get; set; }
+        public DateTimeOffset At { get; set; }
+        public Color Color { get; set; }
+        public Color? MaybeColor { get; set; }
+        public int TextNumber { get; set; }
+    }
+
+    private readonly List<TypedRow> _typedRows =
+    [
+        new() { Id = 1, Text = "alpha", Number = 5, Flag = true, MaybeFlag = null, Day = new(2024, 1, 2), When = new(2024, 1, 2, 10, 30, 0), At = new(2024, 1, 2, 23, 0, 0, TimeSpan.FromHours(3)), Color = Color.Red, MaybeColor = null, TextNumber = 12 },
+        new() { Id = 2, Text = "beta", Number = 15, Flag = false, MaybeFlag = true, Day = new(2024, 2, 3), When = new(2024, 2, 3, 8, 0, 0), At = new(2024, 2, 3, 1, 0, 0, TimeSpan.FromHours(-5)), Color = Color.Green, MaybeColor = Color.Blue, TextNumber = 21 },
+        new() { Id = 3, Text = "gamma", Number = 25, Flag = true, MaybeFlag = false, Day = new(2024, 3, 4), When = new(2024, 3, 4, 0, 0, 0), At = new(2024, 3, 4, 12, 0, 0, TimeSpan.Zero), Color = Color.Blue, MaybeColor = Color.Red, TextNumber = 3 },
+    ];
+
+    private string _typedSave = "";
+
+    private static string DescribeTyped(TypedRow r)
+        => $"{r.Text}|{r.Number}|{r.Flag}|{r.MaybeFlag?.ToString() ?? "null"}|{r.Day:yyyy-MM-dd}|{r.When:yyyy-MM-dd HH:mm}|{r.At:yyyy-MM-dd HH:mm zzz}|{r.Color}|{r.MaybeColor?.ToString() ?? "null"}|{r.TextNumber}";
+
+    private readonly List<Product> _rowItems = Products();
+    private readonly List<Product> _cellItems = Products();
+    private readonly List<Product> _templateItems = Products().Take(2).ToList();
+    private readonly List<Product> _modalItems = Products().Take(3).ToList();
+
+    private BitDataGrid<Product> _rowGrid = default!;
+    private BitDataGrid<Product> _cellGrid = default!;
+    private string _cellEditState = "";
+
+    private void ReadCellEditState()
+        => _cellEditState = $"item={_cellGrid.EditingItem?.Name ?? "none"};column={_cellGrid.EditingColumnId ?? "none"}";
+    private int _nextId = 100;
+    private string _rowEditState = "";
+
+    private int _rowSaves, _rowCancels, _rowDeletes, _rowCreates;
+    private string? _rowSaveArg, _rowCancelArg, _rowDeleteArg;
+    private int? _rowCreateArg;
+    private int _cellSaves, _cellCancels, _cellDeletes;
+    private string? _cellSaveArg;
+    private bool _modalOpen;
+    private int _modalCancels;
+
+    private Product CreateProduct() => new() { Id = _nextId++, ReleaseDate = new(2025, 1, 1) };
+
+    private static string? ValidateName(Product product, object? value)
+        => string.IsNullOrWhiteSpace(value as string) ? "Name is required." : null;
+
+    private static string? ValidatePrice(Product product, object? value)
+        => value is decimal price && price < 0 ? "Price cannot be negative." : null;
+
+    private static string Describe(Product p) => $"{p.Id}|{p.Name}|{p.Category}|{p.Price}|{p.Discontinued}|{p.ReleaseDate:yyyy-MM-dd}";
+
+    private void OnRowSave(Product product)
+    {
+        _rowSaves++;
+        _rowSaveArg = Describe(product);
+        // A new row reaches the page through OnRowCreate and is only added once it is saved.
+        if (_rowItems.Contains(product) is false) _rowItems.Add(product);
+    }
+
+    private void OnRowDelete(Product product)
+    {
+        _rowDeletes++;
+        _rowDeleteArg = product.Name;
+        _rowItems.Remove(product);
+    }
+
+    private Task BeginEditFromApi() => _rowGrid.BeginEditAsync(_rowItems.First(p => p.Name == "Novel"), "Price");
+
+    private void ReadEditState()
+        => _rowEditState = $"item={_rowGrid.EditingItem?.Name ?? "none"};column={_rowGrid.EditingColumnId ?? "none"}";
+}

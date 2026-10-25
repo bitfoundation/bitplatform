@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -189,5 +189,77 @@ public class BitChoiceGroupStateTests : BunitTestContext
 
         CollectionAssert.AreEqual(new[] { 0, 1, 2 }, reversed.Select(i => i.Index).ToArray());
         Assert.AreEqual(2, items[0].Index);
+    }
+
+    private sealed class Sku(string code)
+    {
+        public string Code { get; } = code;
+    }
+
+    private sealed class SkuComparer : IEqualityComparer<Sku>
+    {
+        public bool Equals(Sku? x, Sku? y) => x?.Code == y?.Code;
+
+        public int GetHashCode(Sku obj) => obj.Code.GetHashCode();
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNotSelectAnEqualButNotIdenticalValueWithoutAComparer()
+    {
+        var items = new List<BitChoiceGroupItem<Sku>>
+        {
+            new() { Text = "A", Value = new Sku("A") },
+            new() { Text = "B", Value = new Sku("B") },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<Sku>, Sku>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Value, new Sku("B"));
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-chg-ich").Count);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldSelectTheItemTheComparerMatches()
+    {
+        var items = new List<BitChoiceGroupItem<Sku>>
+        {
+            new() { Text = "A", Value = new Sku("A") },
+            new() { Text = "B", Value = new Sku("B") },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<Sku>, Sku>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Comparer, new SkuComparer());
+            parameters.Add(p => p.Value, new Sku("B"));
+        });
+
+        var containers = component.FindAll(".bit-chg-icn");
+
+        Assert.IsFalse(containers[0].ClassList.Contains("bit-chg-ich"));
+        Assert.IsTrue(containers[1].ClassList.Contains("bit-chg-ich"));
+        Assert.IsTrue(component.FindAll(".bit-chg-icn input")[1].HasAttribute("checked"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldSeedTheDefaultValueThroughTheComparer()
+    {
+        var items = new List<BitChoiceGroupItem<Sku>>
+        {
+            new() { Text = "A", Value = new Sku("A") },
+            new() { Text = "B", Value = new Sku("B") },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<Sku>, Sku>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Comparer, new SkuComparer());
+            parameters.Add(p => p.DefaultValue, new Sku("A"));
+        });
+
+        Assert.IsTrue(component.FindAll(".bit-chg-icn")[0].ClassList.Contains("bit-chg-ich"));
     }
 }

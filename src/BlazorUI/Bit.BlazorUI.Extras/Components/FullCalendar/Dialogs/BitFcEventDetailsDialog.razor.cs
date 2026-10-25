@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
@@ -8,6 +8,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
@@ -21,6 +22,10 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     private bool _deleteCommitted;
     private ElementReference _dialogRef;
     private readonly string _dialogTitleId = $"bfc-details-title-{Guid.NewGuid():N}";
+    // Which Escapes something inside the dialog claimed first (see _OnEscapeVerdict), for OnDialogKeyDown. Made on
+    // first use, so a dialog disposed before it rendered never starts watching.
+    private BitEscapeClaimWatch<BitFcEventDetailsDialog>? _escapeWatch;
+    private BitEscapeClaimWatch<BitFcEventDetailsDialog> EscapeWatch => _escapeWatch ??= new(JS, this);
 
     /// <summary>The action waiting for the user to say whether it means one occurrence or the series.</summary>
     private enum ScopeAction { None, Edit, Delete }
@@ -34,13 +39,19 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         : null;
 
     /// <summary>
-    /// True while the edit and delete actions are offered: the calendar has to be editable AND the
-    /// event itself must not be locked with <see cref="BitFullCalendarEvent.IsReadOnly"/>. An
-    /// occurrence is always read-only (so it cannot be dragged), so for one the lock that counts is
-    /// its series master's.
+    /// The event whose lock decides the actions: for an occurrence, its series master - the record the lock lives on,
+    /// and the one an edit or a delete of the whole series changes.
     /// </summary>
-    private bool CanEdit => State.ReadOnly is false
-        && (Event.IsOccurrence ? SeriesMaster is { IsReadOnly: false } : Event.IsReadOnly is false);
+    private BitFullCalendarEvent? LockHolder => Event.IsOccurrence ? SeriesMaster : Event;
+
+    /// <summary>
+    /// True while the Edit action is offered: the calendar is editable, editing is allowed, and the event is not
+    /// locked with <see cref="BitFullCalendarEvent.IsReadOnly"/>.
+    /// </summary>
+    private bool CanEdit => LockHolder is { } holder && State.CanEdit(holder);
+
+    /// <summary>True while the Delete action is offered - the same rule with deleting allowed instead.</summary>
+    private bool CanDelete => LockHolder is { } holder && State.CanDelete(holder);
 
     /// <summary>
     /// One-line description of the repeat rule behind this event, or <c>null</c> for a one-off.
@@ -79,15 +90,37 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         // Move focus into the dialog and trap Tab navigation once it has rendered; teardown in
         // DisposeAsync restores focus to the element that was focused before it opened.
         if (firstRender)
-            await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
+        {
+            await BitFcDialogInterop.SetupAsync(JS, _dialogRef, _dialogTitleId);
+            await EscapeWatch.WatchAsync(_dialogRef);
+        }
     }
+
+    // Whether Escape closes the dialog, the one rule OnDialogKeyDown and _EscapeClaim both go by. While the edit
+    // overlay or the scope prompt is open it owns the key (and claims it on its own dialog), and a delete in flight
+    // is left alone so the dialog can't close mid-commit.
+    private bool _ClosesOnEscape => _showEdit is false && _pendingScopeAction is ScopeAction.None && _isDeleting is false;
+
+    // The Escape that closes the dialog, claimed on the dialog (see Utils.claimEscape) so a surface the calendar sits
+    // in does not close on the same press. It stays claimed while a delete is in flight too, when the press does
+    // nothing: a surface closing on it would take the dialog away mid-commit all the same.
+    private string? _EscapeClaim => _ClosesOnEscape || _isDeleting ? "claim" : null;
 
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
     {
-        // Escape is the standard way out of a modal. While the edit overlay or the scope prompt is
-        // open it owns the key, and a delete in flight is left alone so the dialog can't close
-        // mid-commit.
-        if (e.Key is "Escape" or "Esc" && _showEdit is false && _pendingScopeAction is ScopeAction.None && _isDeleting is false)
+        if (e.Key is not "Escape") return;
+
+        // One Escape does one thing: a press something inside the dialog claimed first (a field of an
+        // EventDetailsTemplate clearing itself) is that field's, which Blazor still bubbles up to here. The verdict
+        // is read once, so it never outlives the press it was given for.
+        if (EscapeWatch.TakeForeign()) return;
+
+        // Only the plain key, the one the dialog claims: an Escape with a modifier is left to the surface the
+        // calendar sits in.
+        if (e.IsPlainEscape() is false) return;
+
+        // Escape is the standard way out of a modal.
+        if (_ClosesOnEscape)
             await OnClose.InvokeAsync();
     }
 
@@ -122,7 +155,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
 
     private Task Delete()
     {
-        if (CanEdit is false)
+        if (CanDelete is false)
             return Task.CompletedTask;
 
         if (Event.IsOccurrence)
@@ -147,7 +180,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         _pendingScopeAction = ScopeAction.None;
 
         // Read-only may have been switched on, or the series removed, while the prompt was open.
-        if (CanEdit is false || SeriesMaster is not { } master)
+        if ((action is ScopeAction.Edit ? CanEdit : CanDelete) is false || SeriesMaster is not { } master)
             return;
 
         if (action is ScopeAction.Edit)
@@ -184,19 +217,21 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
                 State.RemoveEvent(target.Id);
                 try
                 {
-                    await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                    // Refused by OnChanging: the event is already back, and the dialog stays open on it.
+                    if (await Notifier.TryNotifyAsync(new BitFullCalendarChangeEventArgs
                     {
                         Event = snapshot,
                         OldEvent = snapshot,
                         Kind = BitFullCalendarChangeKind.Delete,
                         Source = BitFullCalendarChangeSource.Dialog
-                    });
+                    }) is false)
+                        return;
                 }
                 catch
                 {
                     // Restore the removed event so the calendar doesn't show it gone while consumers
                     // were never notified; the next attempt will remove and notify again.
-                    State.AddEvent(snapshot);
+                    State.RestoreEvent(snapshot);
                     throw;
                 }
                 // Mark committed only after the notification has succeeded.
@@ -233,13 +268,14 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
                 State.UpdateEvent(updated);
                 try
                 {
-                    await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                    if (await Notifier.TryNotifyAsync(new BitFullCalendarChangeEventArgs
                     {
                         Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
                         OldEvent = snapshot,
                         Kind = BitFullCalendarChangeKind.Edit,
                         Source = BitFullCalendarChangeSource.Dialog
-                    });
+                    }) is false)
+                        return;
                 }
                 catch
                 {
@@ -257,8 +293,22 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Sent by the browser as each Escape goes down inside the dialog while it claims the key, ahead of the keydown
+    /// Blazor then dispatches, with whether something inside the dialog claimed it first - a field of an EventDetailsTemplate
+    /// clearing itself - so the key handler that runs next leaves that press alone.
+    /// <br />
+    /// <strong>This method is intended for internal use and should not be called directly.</strong>
+    /// </summary>
+    [JSInvokable("OnEscapeVerdict")]
+    public void _OnEscapeVerdict(bool foreign)
+    {
+        EscapeWatch.SetVerdict(foreign);
+    }
+
     public async ValueTask DisposeAsync()
     {
-        await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
+        await EscapeWatch.DisposeAsync();
+        await BitFcDialogInterop.TeardownAsync(JS, _dialogTitleId);
     }
 }

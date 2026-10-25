@@ -1,0 +1,134 @@
+﻿@page "/toolings/cli"
+@inherits AppComponentBase
+
+<PageOutlet Url="toolings/cli"
+            Title="bit CLI - Toolings"
+            Description="One command from an empty folder to a running app: the bit CLI creates a bit Boilerplate project, sets up your machine, builds it, starts it and gets it ready for your AI assistant, all on your own machine." />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Element="h1" Gutter>bit CLI</BitText>
+    <br />
+    <BitText Typography="BitTypography.H5" Gutter>From an empty folder to a running app, in one command</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        Starting a real app used to cost a day: installing tools, fixing versions, chasing the first build.
+        With the bit CLI it's one command. <code>bit new</code> creates a bit Boilerplate project, installs what your machine is missing,
+        builds it, starts it and opens it in your editor, ready for you and your AI assistant to work on.
+    </BitText>
+    <CodeBox>dotnet tool install --global Bit.Cli --version 10.7.0
+bit new MyApp</CodeBox>
+    Or run it once without installing it: <code>dnx Bit.Cli --version 10.7.0 -- new MyApp</code>
+    <br />
+    <br />
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Made for building with AI</BitText>
+            An AI assistant writes good code in a project that's set up well, and stalls in one that isn't. The bit CLI takes care of the setup, so the assistant can start on your app:
+            <ul>
+                <li>Describe your app to the assistant on the <a href="/templates/create-project">Create project</a> page, and it builds the <code>bit new</code> command for you.</li>
+                <li>Every project comes ready for Claude Code, GitHub Copilot, Codex, Gemini CLI and Cursor, with the instructions, skills and MCP servers they work with.</li>
+                <li><code>bit new</code> trusts the project folder for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, so the project's tasks and MCP servers work without prompts, and installs the VS Code extensions the project recommends. All that's left is signing in to Claude or Copilot.</li>
+                <li>Later, <code>bit diff</code> shows what changed in bit Boilerplate between two versions, and the project's <code>upgrade</code> skill has your assistant bring those changes into your code.</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Privacy first: your app stays yours</BitText>
+            AI app builders in the cloud are quick to start, but your code, your prompts and your data live on their servers,
+            and your app lives on their platform, under their pricing. The bit CLI gives you the same quick start without handing any of that over:
+            <ul>
+                <li>The project is created on your machine, in your own git repository. With <code>--github-repo</code> it goes to a private repository on your own GitHub account.</li>
+                <li>You pick the AI assistant, or none, and switch whenever you like. The project doesn't depend on any of them.</li>
+                <li>You host the app wherever you want: your own servers or any cloud.</li>
+                <li>The bit CLI is open source under the MIT license, built by GitHub Actions, signed and attested. <code>bit about</code> shows exactly which build you run.</li>
+                <li>Error reports never include project names, paths, file contents, prompts or keys, and <code>bit telemetry off</code> stops them.</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>What bit new does</BitText>
+            <ol>
+                <li>Checks this machine and installs what the project needs and you tick: the .NET SDK, Node.js, Git, a container runtime that's free for commercial use, the Aspire CLI, VS Code and more. The versions come from the project, and anything already installed isn't shown.</li>
+                <li>Warns, only when it's sure, about hardware that makes development slow: virtualization turned off, less than 15 GB of memory, or a hard disk instead of an SSD.</li>
+                <li>Creates the project with a development certificate of its own, and initializes git with <b>develop</b> and <b>main</b>.</li>
+                <li>Installs the build tools the chosen platforms need, restores the packages, builds, and installs the browser the UI tests run in.</li>
+                <li>Formats the code and adds the initial database migration, each in a commit of its own.</li>
+                <li>With <code>--github-repo</code>, creates a private GitHub repository and pushes to it.</li>
+                <li>Trusts the folder for the AI coding tools and installs the VS Code extensions the project recommends.</li>
+                <li>Starts the project, opens it in VS Code, then opens the Aspire dashboard and the app in your browser.</li>
+            </ol>
+            A step that fails doesn't stop the rest: the summary lists the commands that finish whatever didn't work.
+            <CodeBox>bit new Contoso.Shop
+bit new Contoso.Shop --database PostgreSQL --module Admin --redis
+bit new Contoso.Shop --platforms web,android
+bit new Contoso.Shop --dry-run</CodeBox>
+            Every option of bit Boilerplate works the same way. Pick them on the <a href="/templates/create-project">Create project</a> page to get the command for your project,
+            or run <code>bit new --help</code>.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>More commands</BitText>
+            <ul>
+                <li><code>bit setup</code> gets a cloned project ready on this machine, or adds a platform later: <code>bit setup --platforms android</code>.</li>
+                <li><code>bit doctor</code> checks the tools a project needs, and <code>bit doctor --fix</code> installs what's missing.</li>
+                <li><code>bit diff</code> shows what changed in bit Boilerplate between two versions, for your project, without touching it.</li>
+                <li><code>bit clean</code> deletes the build outputs and downloaded packages, stopping on Windows whatever still holds their files.</li>
+                <li><code>bit rename</code> renames the project everywhere its name appears: files, folders, namespaces, database names and the app id.</li>
+                <li><code>bit remove</code> deletes a project folder for good, even while the app or a build process still holds its files.</li>
+                <li><code>bit translate</code> fills in the missing translations of <code>.resx</code> files with any OpenAI-compatible LLM, and keeps the existing ones.</li>
+                <li><code>bit decode</code> reads a stack trace of an app shrunk by <a href="@Urls.Minifier">bit Minifier</a> back into the names its source has.</li>
+                <li><code>bit aot-profile</code> records which code a Blazor WebAssembly app really runs, so ahead-of-time compilation makes that code fast and leaves the download small.</li>
+                <li><code>bit trust</code> trusts a cloned repository for VS Code and the AI coding tools.</li>
+                <li><code>bit telemetry</code>, <code>bit update</code> and <code>bit about</code> show and change what bit sends, update it, and show which build you run.</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>In CI</BitText>
+            <code>bit new</code> and <code>bit setup</code> prepare CI machines too, so a pipeline needs no steps of its own for Node.js, build tools, Playwright or the development certificate.
+            The pipelines bit Boilerplate ships install bit once per job and let it build:
+            <CodeBox>dotnet tool install --global Bit.Cli --version 10.7.0
+bit setup --platforms android --no-browsers --yes</CodeBox>
+            In CI it installs what a build and its tests need, and leaves alone what only a developer's machine needs, such as containers and the Aspire CLI.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>What it changes on your machine</BitText>
+            <ul>
+                <li><b>The tools you tick</b>, with <code>winget</code> on Windows, Homebrew on macOS and the distribution's package manager on Linux. Each command is shown before it runs.</li>
+                <li><b>Administrator rights</b>: on Windows the steps that need them run in one elevated PowerShell, so Windows asks once. On macOS and Linux, <code>sudo</code> asks for your password once.</li>
+                <li><b>Trust entries</b>, only for the folder <code>bit new</code> created or the one you pass to <code>bit trust</code>.</li>
+                <li><b>bit itself</b>: when a newer version is out, it carries on with that one and updates the installed tool once the run ends. <code>--no-update</code> keeps the one you have.</li>
+                <li><b>Its own folder</b>, <code>~/.bitplatform</code>, with its settings, the template cache and the logs of every run.</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Telemetry</BitText>
+            bit sends error reports to the bit platform team so failed runs get fixed: whether each step worked and how long it took, error codes,
+            the stack trace of a crash, and the OS, .NET and bit versions.
+            It never sends project names, paths, user or machine names, file contents, prompts, API keys or the output of the tools it runs.
+            <ul>
+                <li><code>bit telemetry</code> shows the setting, and <code>bit telemetry off</code> turns it off.</li>
+                <li><code>BIT_CLI_TELEMETRY=off</code>, <code>DO_NOT_TRACK=1</code> or <code>DOTNET_CLI_TELEMETRY_OPTOUT=1</code> turn it off in CI or a container.</li>
+                <li><code>BIT_CLI_TELEMETRY=log</code> prints everything that would be sent, and sends nothing.</li>
+            </ul>
+            The full reference is in the <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Cli" target="_blank" rel="noopener">bit CLI's README</a>.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Next="Minifier" NextUrl="@Urls.Minifier" />

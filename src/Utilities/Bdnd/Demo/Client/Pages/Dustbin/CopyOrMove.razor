@@ -1,0 +1,78 @@
+﻿@page "/dustbin/copy-or-move"
+
+<PageTitle>Dustbin - Copy or Move · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Dustbin - Copy or Move</h1>
+    <p class="bb-subtitle">
+        A drag source can describe whether it should be copied or moved. Here the
+        <em>copy</em> box can be dropped any number of times, while the <em>move</em> box is
+        removed from the palette once it has been accepted by the dustbin (using the
+        <code>OnEnd</code> callback and its <code>DidDrop</code>). Each box also sets its
+        <code>DropEffect</code>, so the cursor shows whether it will be copied or moved. Released anywhere but the
+        bin - or cancelled with <kbd>Escape</kbd> - the drag ends with <code>DidDrop</code> false, and the move box
+        stays where it was.
+    </p>
+</div>
+
+<div class="bb-demo">
+    <BdndProvider>
+        <BdndDropTarget TItem="DragBox" Accept="@ItemTypes.Box" Context="t"
+                        style="display:contents" OnDrop="HandleDrop">
+            @* the bin grows with the list of what it took, rather than spilling it out of its fill *@
+            <div class="dustbin" style="@($"background-color:{(t.IsOver ? "darkgreen" : "#333")};width:14rem;height:auto;min-height:11rem;")">
+                <div>
+                    <div>Dropped @_dropped.Count item(s)</div>
+                    @foreach (var name in _dropped)
+                    {
+                        <div>@name</div>
+                    }
+                </div>
+            </div>
+        </BdndDropTarget>
+
+        <div class="row-wrap" style="margin-top:1.5rem;">
+            @foreach (var box in _boxes)
+            {
+                <BdndDraggable TItem="DragBox" Type="@ItemTypes.Box" Item="box" Context="d" @key="box"
+                               DropEffect="@(box.Effect == DropEffect.Copy ? "copy" : "move")"
+                               OnEnd="@(e => HandleEnd(box, e))">
+                    <div class="box" style="opacity:@(d.IsDragging ? "0.4" : "1")">
+                        @box.Name <small>(@box.Effect.ToString().ToLowerInvariant())</small>
+                    </div>
+                </BdndDraggable>
+            }
+        </div>
+    </BdndProvider>
+</div>
+
+<DemoCode />
+
+@code {
+    public enum DropEffect { Copy, Move }
+
+    public class DragBox
+    {
+        public required string Name { get; init; }
+        public DropEffect Effect { get; init; }
+    }
+
+    private readonly List<DragBox> _boxes =
+    [
+        new() { Name = "Glass (keep)", Effect = DropEffect.Copy },
+        new() { Name = "Banana (take)", Effect = DropEffect.Move },
+    ];
+
+    private readonly List<string> _dropped = [];
+
+    private void HandleDrop(BdndDropEventArgs<DragBox> e)
+    {
+        if (e.Item is not null) _dropped.Add(e.Item.Name);
+    }
+
+    private void HandleEnd(DragBox box, BdndDragEndContext<DragBox> e)
+    {
+        if (e.DidDrop && box.Effect == DropEffect.Move)
+            _boxes.Remove(box);
+    }
+}

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitThemeLayout
 {
@@ -30,6 +30,13 @@ public class BitThemeLayout
     /// Maps to <c>--bit-layout-dialog-actions-align</c>.
     /// </summary>
     public string? DialogActionsAlign { get; set; }
+
+    /// <summary>
+    /// The <c>text-align</c> of a dialog's title and message (<c>start</c> under Fluent and Material,
+    /// <c>center</c> for Cupertino's alerts).
+    /// Maps to <c>--bit-layout-dialog-text-align</c>.
+    /// </summary>
+    public string? DialogTextAlign { get; set; }
 
     /// <summary>Responsive breakpoint tokens driving the predefined <see cref="BitScreenQuery"/> values. Map to the <c>--bit-bp-*</c> custom properties.</summary>
     public BitThemeBreakpoints Breakpoints { get; set; } = new();

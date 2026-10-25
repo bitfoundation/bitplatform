@@ -1,5 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -19,6 +18,7 @@ public partial class BitToggleButton : BitComponentBase
 
 
 
+    private bool _autoFocus;
     private bool _showLoading;
     private int _pendingChanges;
     private CancellationTokenSource? _loadingDelayCts;
@@ -40,7 +40,7 @@ public partial class BitToggleButton : BitComponentBase
 
     /// <summary>
     /// Keeps the disabled toggle button focusable and discoverable by screen readers, rendering <c>aria-disabled</c> instead of the
-    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.IsEnabled"/> is false, preserving a consistent tab order.
+    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.Disabled"/> is true, preserving a consistent tab order.
     /// Set it to false to render the native <c>disabled</c> attribute and remove the toggle button from the tab order.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; } = true;
@@ -124,11 +124,16 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the toggle button.
     /// </summary>
-    [Parameter] public BitToggleButtonClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitToggleButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the toggle button.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ToggleButton-*</c> color variables, the checked ones included; left
+    /// unset, the toggle button is primary unless those variables say otherwise. <see cref="OnColor"/> and
+    /// <see cref="OffColor"/> replace it in their own state.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -200,8 +205,13 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// Gets or sets the position of the icon relative to the content of the toggle button.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction: Start puts the icon before the content in an LTR component and after it
+    /// in an RTL one. Every other placement leaves the icon where Start would put it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// Determines if the toggle button is in the checked state.
@@ -241,7 +251,11 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The position of the loading label in regards to the spinner icon.
     /// </summary>
-    [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.End;
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// fall back to the default.
+    /// </remarks>
+    [Parameter] public BitPlacement LoadingLabelPlacement { get; set; } = BitPlacement.End;
 
     /// <summary>
     /// The custom template used to replace the default content of the toggle button in the loading state.
@@ -282,6 +296,10 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The color of the toggle button when it is not checked.
     /// </summary>
+    /// <remarks>
+    /// Falls back to <see cref="Color"/>. An explicit value wins over the <c>--bit-ToggleButton-*</c> color variables
+    /// while the toggle button is unchecked.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? OffColor { get; set; }
 
@@ -298,7 +316,7 @@ public partial class BitToggleButton : BitComponentBase
     /// FontAwesome: OffIcon="BitIconInfo.Fa("solid house")"
     /// Custom CSS: OffIcon="BitIconInfo.Css("my-icon-class")"
     /// </example>
-    [Parameter] public BitIconInfo? OffIcon { get; set; }
+    [Parameter, Outranks(nameof(Icon))] public BitIconInfo? OffIcon { get; set; }
 
     /// <summary>
     /// The icon of the toggle button when it is not checked.
@@ -352,6 +370,10 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The color of the toggle button when it is checked.
     /// </summary>
+    /// <remarks>
+    /// Falls back to <see cref="Color"/>. An explicit value wins over the <c>--bit-ToggleButton-checked-*</c> color
+    /// variables while the toggle button is checked.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? OnColor { get; set; }
 
@@ -368,7 +390,7 @@ public partial class BitToggleButton : BitComponentBase
     /// FontAwesome: OnIcon="BitIconInfo.Fa("solid house")"
     /// Custom CSS: OnIcon="BitIconInfo.Css("my-icon-class")"
     /// </example>
-    [Parameter] public BitIconInfo? OnIcon { get; set; }
+    [Parameter, Outranks(nameof(Icon))] public BitIconInfo? OnIcon { get; set; }
 
     /// <summary>
     /// The icon of the toggle button when it is checked.
@@ -438,6 +460,11 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The size of the toggle button.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ToggleButton-*</c> size variables (min-height, padding, font size,
+    /// icon-only glyph size, spinner size, loading label font size); left unset, the toggle button is medium unless
+    /// those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -449,7 +476,7 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the toggle button.
     /// </summary>
-    [Parameter] public BitToggleButtonClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitToggleButtonClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The text of the toggle button.
@@ -518,8 +545,11 @@ public partial class BitToggleButton : BitComponentBase
 
         ClassBuilder.Register(() => NoWrap ? "bit-tgb-nwr" : string.Empty);
 
-        ClassBuilder.Register(() => IconPosition is BitIconPosition.End ? "bit-tgb-eni" : string.Empty);
+        ClassBuilder.Register(() => IconPlacement is BitPlacement.End ? "bit-tgb-eni" : string.Empty);
 
+        // Color (or the OnColor / OffColor of the current state) and Size publish nothing while they are unset, which
+        // is what lets the stylesheet tell a default from a choice: the public --bit-ToggleButton-* variables restyle
+        // the default and never an explicit value.
         ClassBuilder.Register(() => GetColor() switch
         {
             BitColor.Primary => "bit-tgb-pri",
@@ -539,16 +569,10 @@ public partial class BitToggleButton : BitComponentBase
             BitColor.PrimaryBorder => "bit-tgb-pbr",
             BitColor.SecondaryBorder => "bit-tgb-sbr",
             BitColor.TertiaryBorder => "bit-tgb-tbr",
-            _ => "bit-tgb-pri"
+            _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-tgb-sm",
-            BitSize.Medium => "bit-tgb-md",
-            BitSize.Large => "bit-tgb-lg",
-            _ => "bit-tgb-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-tgb"));
 
         ClassBuilder.Register(() => GetVariant() switch
         {
@@ -580,7 +604,6 @@ public partial class BitToggleButton : BitComponentBase
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitToggleButtonParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
@@ -589,6 +612,24 @@ public partial class BitToggleButton : BitComponentBase
 
         base.OnParametersSet();
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (IsDisposed) return;
+
+        // The autofocus attribute is written on the button, but a browser honors it only while the document is
+        // still loading: an interactive render replaces the prerendered markup that took the focus, and a
+        // WebAssembly page or a button rendered later never gets that far. So the first render gives the focus
+        // itself, by the very rule the attribute is written by.
+        if (firstRender && _autoFocus)
+        {
+            await RootElement.FocusSafelyAsync();
+        }
+    }
+
+
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
@@ -611,7 +652,7 @@ public partial class BitToggleButton : BitComponentBase
         // user lands on something a screen reader has nothing to say about.
         if (ariaHidden) return "-1";
 
-        if (IsEnabled is false && AllowDisabledFocus is false) return "-1";
+        if (Disabled && AllowDisabledFocus is false) return "-1";
 
         return TabIndex;
     }
@@ -680,7 +721,7 @@ public partial class BitToggleButton : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsLoading && Reclickable is false) return;
 
         // The auto-loading window opens before OnClick rather than after it. An async OnClick handler is part of
@@ -706,7 +747,7 @@ public partial class BitToggleButton : BitComponentBase
 
     private async Task ChangeIsChecked(bool value, bool autoLoading)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         autoLoading = autoLoading && AutoLoading;
 
@@ -909,12 +950,12 @@ public partial class BitToggleButton : BitComponentBase
     }
 
     private string GetLoadingLabelPositionClass()
-        => LoadingLabelPosition switch
+        => LoadingLabelPlacement switch
         {
-            BitLabelPosition.Top => "bit-tgb-top",
-            BitLabelPosition.Start => "bit-tgb-srt",
-            BitLabelPosition.End => "bit-tgb-end",
-            BitLabelPosition.Bottom => "bit-tgb-btm",
+            BitPlacement.Top => "bit-tgb-top",
+            BitPlacement.Start => "bit-tgb-srt",
+            BitPlacement.End => "bit-tgb-end",
+            BitPlacement.Bottom => "bit-tgb-btm",
             _ => "bit-tgb-end"
         };
 }

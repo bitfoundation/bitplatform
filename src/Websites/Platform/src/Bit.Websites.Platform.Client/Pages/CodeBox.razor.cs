@@ -16,8 +16,17 @@ public partial class CodeBox
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public bool HideCopyButton { get; set; }
     [Parameter] public string? MaxHeight { get; set; }
+    [Parameter] public bool CopyOnClick { get; set; }
+    [Parameter] public EventCallback OnCopy { get; set; }
 
 
+
+    private async Task CopyContentOnClick()
+    {
+        if (CopyOnClick is false) return;
+
+        await CopyCodeToClipboard();
+    }
 
     private async Task CopyCodeToClipboard()
     {
@@ -25,10 +34,12 @@ public partial class CodeBox
         await clipboard.WriteText(codeSample.Trim());
 
         codeIcon = "Accept";
-        copyCodeMessage = "Code copied!";
+        copyCodeMessage = "Copied!";
         isCodeCopied = true;
 
         StateHasChanged();
+
+        await OnCopy.InvokeAsync();
 
         await Task.Delay(1000);
         isCodeCopied = false;

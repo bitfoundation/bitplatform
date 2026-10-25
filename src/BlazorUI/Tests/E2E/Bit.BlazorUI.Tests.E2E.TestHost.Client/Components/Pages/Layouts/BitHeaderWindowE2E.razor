@@ -1,0 +1,28 @@
+﻿@page "/e2e/header/window"
+
+<PageTitle>BitHeader on the window E2E</PageTitle>
+
+@* A Fixed header over the whole page, driven by the scroll of the window itself: it has no scrolling ancestor, so
+   the script listens to the window, and ScrollPadding pads the document element. *@
+<BitHeader Id="window-header" Fixed Reveal ElevateOnScroll ScrollPadding Height="56"
+           OnRevealChanged="v => _revealed = v" OnScrolledChanged="v => _scrolled = v">
+    <span>Window header</span>
+</BitHeader>
+
+<div style="height: 70px"></div>
+<p>Revealed: <span id="revealed">@_revealed</span>, scrolled: <span id="scrolled">@_scrolled</span></p>
+<button id="btn-top">top</button>
+
+@for (var i = 1; i <= 60; i++)
+{
+    <div style="height: 50px; border-bottom: 1px solid #eee">Row @i</div>
+}
+
+<button id="btn-bottom">bottom</button>
+
+<E2EStatus />
+
+@code {
+    private bool _revealed = true;
+    private bool _scrolled;
+}

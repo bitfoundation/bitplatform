@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.DropMenu;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.DropMenu;
 
 public partial class BitDropMenuDemo
 {
@@ -6,10 +6,19 @@ public partial class BitDropMenuDemo
     [
         new()
         {
+            Name = "Alignment",
+            Type = "BitPlacement?",
+            DefaultValue = "null",
+            Description = "How the callout is lined up with the button across the side it opens on: Start (the default), Center or End, which follow the reading direction; Left and Right are honoured above or below the button, Top and Bottom beside it. Anything else falls back to Start.",
+            LinkType = LinkType.Link,
+            Href = "#placement-enum"
+        },
+        new()
+        {
             Name = "AriaDescription",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The description of the drop menu for the benefit of screen readers, rendered as the aria-describedby of the button."
+            Description = "The description of the drop menu for screen readers, rendered as visually hidden text the button points at through aria-describedby."
         },
         new()
         {
@@ -23,7 +32,7 @@ public partial class BitDropMenuDemo
             Name = "AutoClose",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Closes the callout as soon as a click lands anywhere inside it, which is what an action list is expected to do: picking an item completes the interaction. It is off by default, since a callout hosting a form or a filter panel is meant to stay open while it is being used."
+            Description = "Closes the callout as soon as a click lands anywhere inside it, as an action list should. Off by default, so a form or a filter panel stays open while it is used."
         },
         new()
         {
@@ -37,7 +46,7 @@ public partial class BitDropMenuDemo
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the background of the callout of the drop menu.",
+            Description = "The color kind of the background of the callout of the drop menu. An explicit value wins over --bit-DropMenu-callout-background; left unset, the callout is the primary background unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum"
         },
@@ -53,7 +62,7 @@ public partial class BitDropMenuDemo
             Name = "Border",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the border of the callout of the drop menu.",
+            Description = "The color kind of the border of the callout of the drop menu. An explicit value wins over --bit-DropMenu-callout-border-color; left unset, the callout has no border unless the --bit-DropMenu-callout-border-* variables say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum"
         },
@@ -96,7 +105,7 @@ public partial class BitDropMenuDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the button of the drop menu.",
+            Description = "The general color of the button of the drop menu. An explicit value wins over the --bit-DropMenu-* button color variables; left unset, the button takes the PrimaryBackground look unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum"
         },
@@ -122,6 +131,13 @@ public partial class BitDropMenuDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Expands the drop menu width to 100% of the available width."
+        },
+        new()
+        {
+            Name = "Gap",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The distance in pixels between the button and the callout, on whichever side the callout ends up on."
         },
         new()
         {
@@ -160,7 +176,7 @@ public partial class BitDropMenuDemo
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines whether the drop menu is in the loading state. It replaces the icon of the button with a spinner and disables the button, so the callout can no longer be opened by the user or by the Open and Toggle methods, and a callout that is already open is closed."
+            Description = "Determines whether the drop menu is in the loading state: the icon becomes a spinner, an open callout closes and it cannot be opened again until the loading ends. The button keeps the focus and is marked aria-disabled and aria-busy."
         },
         new()
         {
@@ -168,6 +184,13 @@ public partial class BitDropMenuDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines the opening state of the callout of the drop menu."
+        },
+        new()
+        {
+            Name = "LazyRender",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the content of the callout out of the page until the first opening, then keeps it, so its state survives a close."
         },
         new()
         {
@@ -237,16 +260,16 @@ public partial class BitDropMenuDemo
             Name = "OpenOnHover",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Opens the callout when the pointer enters the drop menu and closes it when the pointer leaves it, which is what a navigation menu is usually expected to do. The button keeps toggling the callout on a click, so the keyboard and the touch screens - where hovering does not exist and this mode turns itself off - are left with a way to reach it."
+            Description = "Opens the callout when the pointer enters the drop menu and closes it when the pointer leaves it, which is what a navigation menu is usually expected to do. The button keeps toggling the callout on a click, so the keyboard and the touch screens - where hovering does not exist and this mode turns itself off - are left with a way to reach it. A callout opened by hovering stays out of the keyboard's way - a Tab on the button moves on past it, and AutoFocus and TrapFocus leave the focus where it is - until an arrow key, Enter or Space on the button, or the keyboard moving the focus into it, hands it to the keyboard. A callout the keyboard holds is left open when the pointer leaves it."
         },
         new()
         {
-            Name = "PanelPosition",
-            Type = "BitPanelPosition?",
+            Name = "PanelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the responsive panel to show on the screen.",
+            Description = "The position of the responsive panel to show on the screen. Start and End follow the text direction, Left and Right stay where they are named in both; Center and the two combined values fall back to End.",
             LinkType = LinkType.Link,
-            Href = "#panel-position-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -264,10 +287,19 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "Placement",
+            Type = "BitPlacement?",
+            DefaultValue = "null",
+            Description = "The side of the button the callout opens on when there is room for it there; it falls back to the opposite side when there is not. Top, Bottom, Left and Right are honoured as they are named, Start and End against the reading direction; Center, the two combined values, or none leave the choice to DropDirection.",
+            LinkType = LinkType.Link,
+            Href = "#placement-enum"
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the button of the drop menu.",
+            Description = "The size of the button of the drop menu. An explicit value wins over the --bit-DropMenu-* size variables; left unset, the button is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum"
         },
@@ -352,6 +384,436 @@ public partial class BitDropMenuDemo
             Name = "Toggle",
             Type = "() => Task",
             Description = "Toggles the callout of the drop menu programmatically."
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-DropMenu-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text and icon color of the button at rest. The Color parameter wins over it. Shared by the three variants: --bit-DropMenu-fill-color, --bit-DropMenu-outline-color and --bit-DropMenu-text-color are read ahead of it; a drop menu with no Variant reads it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-background",
+            DefaultValue = "--bit-clr-bg-pri (transparent for Outline, Text and Transparent)",
+            Description = "Background of the button at rest. The Color parameter wins over it where the look paints one; the transparent background of Outline, Text and Transparent is its alone. Shared by the three variants: --bit-DropMenu-fill-background, --bit-DropMenu-outline-background and --bit-DropMenu-text-background are read ahead of it; a drop menu with no Variant reads it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-border-color",
+            DefaultValue = "Per Variant",
+            Description = "Border color of the button, in every state. The Color parameter wins over it where the look paints the border with the Color. Shared by the three variants: --bit-DropMenu-fill-border-color, --bit-DropMenu-outline-border-color and --bit-DropMenu-text-border-color are read ahead of it; a drop menu with no Variant reads it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-hover-border-color",
+            DefaultValue = "--bit-DropMenu-border-color, or per Variant",
+            Description = "Border color of the button on hover. Shared by the three variants: --bit-DropMenu-fill-hover-border-color, --bit-DropMenu-outline-hover-border-color and --bit-DropMenu-text-hover-border-color are read ahead of it; a drop menu with no Variant reads it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-active-border-color",
+            DefaultValue = "--bit-DropMenu-border-color, or per Variant",
+            Description = "Border color of the button while pressed or open. Shared by the three variants: --bit-DropMenu-fill-active-border-color, --bit-DropMenu-outline-active-border-color and --bit-DropMenu-text-active-border-color are read ahead of it; a drop menu with no Variant reads it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Border thickness of the button.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-radius",
+            DefaultValue = "--bit-shp-radius-button",
+            Description = "Corner radius of the button, followed by its focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-hover-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text and icon color on hover. The Color parameter wins over it. Shared by the three variants: --bit-DropMenu-fill-hover-color, --bit-DropMenu-outline-hover-color and --bit-DropMenu-text-hover-color are read ahead of it; a drop menu with no Variant reads it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background on hover. The Color parameter wins over it. Shared by the three variants: --bit-DropMenu-fill-hover-background, --bit-DropMenu-outline-hover-background and --bit-DropMenu-text-hover-background are read ahead of it; a drop menu with no Variant reads it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-active-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text and icon color while pressed or while the callout is open. The Color parameter wins over it. Shared by the three variants: --bit-DropMenu-fill-active-color, --bit-DropMenu-outline-active-color and --bit-DropMenu-text-active-color are read ahead of it; a drop menu with no Variant reads it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-active-background",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Background while pressed or while the callout is open. The Color parameter wins over it. Shared by the three variants: --bit-DropMenu-fill-active-background, --bit-DropMenu-outline-active-background and --bit-DropMenu-text-active-background are read ahead of it; a drop menu with no Variant reads it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text and icon color when disabled or loading. The Color parameter wins over it. Shared by the three variants: --bit-DropMenu-fill-disabled-color, --bit-DropMenu-outline-disabled-color and --bit-DropMenu-text-disabled-color are read ahead of it; a drop menu with no Variant reads it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-disabled-background",
+            DefaultValue = "--bit-clr-bg-pri (transparent for Outline, Text and Transparent)",
+            Description = "Background when disabled or loading. The Color parameter wins over it where the look paints one. Shared by the three variants: --bit-DropMenu-fill-disabled-background, --bit-DropMenu-outline-disabled-background and --bit-DropMenu-text-disabled-background are read ahead of it; a drop menu with no Variant reads it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-disabled-border-color",
+            DefaultValue = "Per Variant",
+            Description = "Border color when disabled or loading. Shared by the three variants: --bit-DropMenu-fill-disabled-border-color, --bit-DropMenu-outline-disabled-border-color and --bit-DropMenu-text-disabled-border-color are read ahead of it; a drop menu with no Variant reads it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-color",
+            DefaultValue = "--bit-DropMenu-color",
+            Description = "Text and icon color of the button at rest of a Fill drop menu alone, read ahead of --bit-DropMenu-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-background",
+            DefaultValue = "--bit-DropMenu-background",
+            Description = "Background of the button at rest of a Fill drop menu alone, read ahead of --bit-DropMenu-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-border-color",
+            DefaultValue = "--bit-DropMenu-border-color",
+            Description = "Border color of the button, in every state, of a Fill drop menu alone, read ahead of --bit-DropMenu-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-hover-color",
+            DefaultValue = "--bit-DropMenu-hover-color",
+            Description = "Text and icon color on hover of a Fill drop menu alone, read ahead of --bit-DropMenu-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-hover-background",
+            DefaultValue = "--bit-DropMenu-hover-background",
+            Description = "Background on hover of a Fill drop menu alone, read ahead of --bit-DropMenu-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-hover-border-color",
+            DefaultValue = "--bit-DropMenu-hover-border-color",
+            Description = "Border color on hover of a Fill drop menu alone, read ahead of --bit-DropMenu-hover-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-active-color",
+            DefaultValue = "--bit-DropMenu-active-color",
+            Description = "Text and icon color while pressed or open of a Fill drop menu alone, read ahead of --bit-DropMenu-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-active-background",
+            DefaultValue = "--bit-DropMenu-active-background",
+            Description = "Background while pressed or open of a Fill drop menu alone, read ahead of --bit-DropMenu-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-active-border-color",
+            DefaultValue = "--bit-DropMenu-active-border-color",
+            Description = "Border color while pressed or open of a Fill drop menu alone, read ahead of --bit-DropMenu-active-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-disabled-color",
+            DefaultValue = "--bit-DropMenu-disabled-color",
+            Description = "Text and icon color when disabled or loading of a Fill drop menu alone, read ahead of --bit-DropMenu-disabled-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-disabled-background",
+            DefaultValue = "--bit-DropMenu-disabled-background",
+            Description = "Background when disabled or loading of a Fill drop menu alone, read ahead of --bit-DropMenu-disabled-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-disabled-border-color",
+            DefaultValue = "--bit-DropMenu-disabled-border-color",
+            Description = "Border color when disabled or loading of a Fill drop menu alone, read ahead of --bit-DropMenu-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-color",
+            DefaultValue = "--bit-DropMenu-color",
+            Description = "Text and icon color of the button at rest of an Outline drop menu alone, read ahead of --bit-DropMenu-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-background",
+            DefaultValue = "--bit-DropMenu-background",
+            Description = "Background of the button at rest of an Outline drop menu alone, read ahead of --bit-DropMenu-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-border-color",
+            DefaultValue = "--bit-DropMenu-border-color",
+            Description = "Border color of the button, in every state, of an Outline drop menu alone, read ahead of --bit-DropMenu-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-hover-color",
+            DefaultValue = "--bit-DropMenu-hover-color",
+            Description = "Text and icon color on hover of an Outline drop menu alone, read ahead of --bit-DropMenu-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-hover-background",
+            DefaultValue = "--bit-DropMenu-hover-background",
+            Description = "Background on hover of an Outline drop menu alone, read ahead of --bit-DropMenu-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-hover-border-color",
+            DefaultValue = "--bit-DropMenu-hover-border-color",
+            Description = "Border color on hover of an Outline drop menu alone, read ahead of --bit-DropMenu-hover-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-active-color",
+            DefaultValue = "--bit-DropMenu-active-color",
+            Description = "Text and icon color while pressed or open of an Outline drop menu alone, read ahead of --bit-DropMenu-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-active-background",
+            DefaultValue = "--bit-DropMenu-active-background",
+            Description = "Background while pressed or open of an Outline drop menu alone, read ahead of --bit-DropMenu-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-active-border-color",
+            DefaultValue = "--bit-DropMenu-active-border-color",
+            Description = "Border color while pressed or open of an Outline drop menu alone, read ahead of --bit-DropMenu-active-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-disabled-color",
+            DefaultValue = "--bit-DropMenu-disabled-color",
+            Description = "Text and icon color when disabled or loading of an Outline drop menu alone, read ahead of --bit-DropMenu-disabled-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-disabled-background",
+            DefaultValue = "--bit-DropMenu-disabled-background",
+            Description = "Background when disabled or loading of an Outline drop menu alone, read ahead of --bit-DropMenu-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-disabled-border-color",
+            DefaultValue = "--bit-DropMenu-disabled-border-color",
+            Description = "Border color when disabled or loading of an Outline drop menu alone, read ahead of --bit-DropMenu-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-color",
+            DefaultValue = "--bit-DropMenu-color",
+            Description = "Text and icon color of the button at rest of a Text drop menu alone, read ahead of --bit-DropMenu-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-background",
+            DefaultValue = "--bit-DropMenu-background",
+            Description = "Background of the button at rest of a Text drop menu alone, read ahead of --bit-DropMenu-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-border-color",
+            DefaultValue = "--bit-DropMenu-border-color",
+            Description = "Border color of the button, in every state, of a Text drop menu alone, read ahead of --bit-DropMenu-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-hover-color",
+            DefaultValue = "--bit-DropMenu-hover-color",
+            Description = "Text and icon color on hover of a Text drop menu alone, read ahead of --bit-DropMenu-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-hover-background",
+            DefaultValue = "--bit-DropMenu-hover-background",
+            Description = "Background on hover of a Text drop menu alone, read ahead of --bit-DropMenu-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-hover-border-color",
+            DefaultValue = "--bit-DropMenu-hover-border-color",
+            Description = "Border color on hover of a Text drop menu alone, read ahead of --bit-DropMenu-hover-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-active-color",
+            DefaultValue = "--bit-DropMenu-active-color",
+            Description = "Text and icon color while pressed or open of a Text drop menu alone, read ahead of --bit-DropMenu-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-active-background",
+            DefaultValue = "--bit-DropMenu-active-background",
+            Description = "Background while pressed or open of a Text drop menu alone, read ahead of --bit-DropMenu-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-active-border-color",
+            DefaultValue = "--bit-DropMenu-active-border-color",
+            Description = "Border color while pressed or open of a Text drop menu alone, read ahead of --bit-DropMenu-active-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-disabled-color",
+            DefaultValue = "--bit-DropMenu-disabled-color",
+            Description = "Text and icon color when disabled or loading of a Text drop menu alone, read ahead of --bit-DropMenu-disabled-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-disabled-background",
+            DefaultValue = "--bit-DropMenu-disabled-background",
+            Description = "Background when disabled or loading of a Text drop menu alone, read ahead of --bit-DropMenu-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-disabled-border-color",
+            DefaultValue = "--bit-DropMenu-disabled-border-color",
+            Description = "Border color when disabled or loading of a Text drop menu alone, read ahead of --bit-DropMenu-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-focus-color",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Focus ring color of the button. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-min-height",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Smallest height of the button, and the width of one that holds only an icon. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-padding",
+            DefaultValue = "--bit-siz-ctrl-pad-y-md --bit-siz-ctrl-pad-x-md",
+            Description = "Padding of the button. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-gap",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the icon, the text and the chevron.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-font-size",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the button. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-font-weight",
+            DefaultValue = "--bit-tpg-font-weight",
+            Description = "Text weight of the button.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-icon-size",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the icon, the chevron and the spinner. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-spinner-color",
+            DefaultValue = "The button's own text color",
+            Description = "The moving arc of the loading spinner.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-spinner-track-color",
+            DefaultValue = "The text color at 25%",
+            Description = "The ring the spinner's arc travels on.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-background",
+            DefaultValue = "--bit-clr-bg-pri, or the Background kind",
+            Description = "Background of the callout. The Background parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-border-color",
+            DefaultValue = "None, or the Border kind",
+            Description = "Border color of the callout. The Border parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-border-width",
+            DefaultValue = "0, or --bit-shp-brd-width with Border",
+            Description = "Border thickness of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-radius",
+            DefaultValue = "--bit-shp-radius-popup",
+            Description = "Corner radius of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-shadow",
+            DefaultValue = "--bit-shd-popup",
+            Description = "Elevation of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-padding",
+            DefaultValue = "0",
+            Description = "Padding around the content of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-width",
+            DefaultValue = "auto (the Width parameter)",
+            Description = "Width of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-min-width",
+            DefaultValue = "auto (the MinWidth parameter)",
+            Description = "Narrowest the callout gets.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-max-width",
+            DefaultValue = "none (the MaxWidth parameter)",
+            Description = "Widest the callout gets.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-max-height",
+            DefaultValue = "The MaxHeight parameter",
+            Description = "Tallest the callout grows before it scrolls; only read when MaxHeight is set.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-overlay-background",
+            DefaultValue = "transparent",
+            Description = "The layer behind an open callout.",
         },
     ];
 
@@ -461,123 +923,12 @@ public partial class BitDropMenuDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
-                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
-                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
-                new() { Name = "Info", Description = "Info general color.", Value = "3" },
-                new() { Name = "Success", Description = "Success general color.", Value = "4" },
-                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
-                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
-                new() { Name = "Error", Description = "Error general color.", Value = "7" },
-                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
-                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
-                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
-                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
-                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
-                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
-                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
-                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
-                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" },
-            ]
-        },
-        new()
-        {
-            Id = "color-kind-enum",
-            Name = "BitColorKind",
-            Description = "Defines the color kinds available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Primary",
-                    Description = "The primary color kind.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Secondary",
-                    Description = "The secondary color kind.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Tertiary",
-                    Description = "The tertiary color kind.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Transparent",
-                    Description = "The transparent color kind.",
-                    Value = "3",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "drop-direction-enum",
-            Name = "BitDropDirection",
-            Description = "Determines the allowed drop directions of the callout.",
-            Items =
-            [
-                new()
-                {
-                    Name = "All",
-                    Description = "The direction determined automatically based on the available spaces in all directions.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Description = "The direction determined automatically based on the available spaces in only top and bottom directions.",
-                    Value = "1",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "panel-position-enum",
-            Name = "BitPanelPosition",
-            Description = "Determines the edge the responsive panel slides in from.",
-            Items =
-            [
-                new() { Name = "Start", Description = "The panel is positioned at the start edge (left in LTR).", Value = "0" },
-                new() { Name = "End", Description = "The panel is positioned at the end edge (right in LTR).", Value = "1" },
-                new() { Name = "Top", Description = "The panel is positioned at the top edge.", Value = "2" },
-                new() { Name = "Bottom", Description = "The panel is positioned at the bottom edge.", Value = "3" },
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" },
-            ]
-        },
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new() { Name = "Fill", Description = "Fill styled variant.", Value = "0" },
-                new() { Name = "Outline", Description = "Outline styled variant.", Value = "1" },
-                new() { Name = "Text", Description = "Text styled variant.", Value = "2" },
-            ]
-        }
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitColorKind(),
+        DemoSharedEnums.BitDropDirection(),
+        DemoSharedEnums.BitPlacement(),
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitVariant()
     ];
 
     private bool isOpen;
@@ -593,4 +944,18 @@ public partial class BitDropMenuDemo
     private BitColorKind backgroundColorKind = BitColorKind.Primary;
     private BitColorKind borderColorKind = BitColorKind.Primary;
     private BitDropDirection dropDirection = BitDropDirection.TopAndBottom;
+    private BitPlacement alignment = BitPlacement.Start;
+    private BitPlacement side = BitPlacement.End;
+    private BitPlacement panelPosition = BitPlacement.End;
+
+    private readonly BitDropMenuParams[] toolbarDropMenuParams =
+    [
+        new()
+        {
+            Gap = 4,
+            Color = BitColor.Primary,
+            Variant = BitVariant.Outline,
+            AutoClose = true
+        }
+    ];
 }

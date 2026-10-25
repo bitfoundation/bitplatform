@@ -95,14 +95,14 @@ public sealed class BitPdfMetadata
 
     private static string? ReadXmp(IBitPdfXRef xref, BitPdfDict catalog)
     {
-        if (xref.FetchIfRef(catalog.Get("Metadata")) is BitPdfStream stream)
+        if (xref.FetchIfRef(catalog.Get("Metadata")) is BitPdfBaseStream stream)
         {
             try
             {
                 byte[] bytes = BitPdfStreamDecoder.Decode(stream);
                 return System.Text.Encoding.UTF8.GetString(bytes);
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 return null;
             }

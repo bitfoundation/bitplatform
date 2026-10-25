@@ -3,10 +3,9 @@
 
 ::deep {
     .open-panel-button {
-        padding: 0;
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 50%;
+        --bit-Button-padding: 0;
+        --bit-Button-min-height: 2.5rem;
+        --bit-Button-icon-size: 1.5rem;
 
         @include lt-md {
             bottom: 4rem;
@@ -14,7 +13,6 @@
         }
 
         i {
-            font-size: 1.5rem;
             pointer-events: none;
         }
 
@@ -70,25 +68,15 @@
 
     .scr-container {
         padding-inline-end: 0.5rem;
+        --bit-MarkdownViewer-code-block-padding: 0.5rem 1rem;
+        --bit-MarkdownViewer-code-block-radius: 0.25rem;
+        --bit-MarkdownViewer-code-block-background: #{$bit-color-background-secondary};
 
         img {
             padding: 0.5rem;
             max-width: 256px;
         }
 
-        pre {
-            margin: 0;
-            overflow: auto;
-            scrollbar-width: thin;
-
-            code {
-                display: block;
-                width: fit-content;
-                padding: 0.5rem 1rem;
-                border-radius: 0.25rem;
-                background: $bit-color-background-secondary;
-            }
-        }
     }
 
     .body {
@@ -97,13 +85,7 @@
     }
 
     .message-row {
-        width: 100%;
-        align-items: flex-start;
         padding-bottom: 0.25rem; // Separates two messages; the parent stack has no gap of its own.
-
-        &.user {
-            align-items: flex-end;
-        }
 
         &:hover .message-actions, &:focus-within .message-actions {
             opacity: 1;
@@ -112,35 +94,21 @@
 
     .message-actions {
         opacity: 0;
-        width: fit-content;
         min-height: 1.25rem;
         transition: opacity 0.15s ease-in-out;
+        --bit-Button-padding: 0;
+        --bit-Button-border-width: 0;
+        --bit-Button-min-height: 1.25rem;
+        --bit-Button-icon-size: 0.7rem;
+        --bit-Button-spinner-size: 0.7rem;
+        --bit-Button-text-color: #{$bit-color-foreground-secondary};
+        --bit-Button-text-hover-color: #{$bit-color-foreground-primary};
+        --bit-Button-text-hover-background: transparent;
+        --bit-Button-text-active-background: transparent;
 
         // Something is being fetched for this message, so the row stays put instead of fading out from under it.
         &.busy {
             opacity: 1;
-        }
-
-        button {
-            width: 1.25rem;
-            height: 1.25rem;
-            border: none;
-            background: none;
-
-            i {
-                font-size: 0.7rem;
-                color: $bit-color-foreground-secondary;
-            }
-
-            &:hover i {
-                color: $bit-color-foreground-primary;
-            }
-
-            // Matches the icon it stands in for; the preset spinner is wider than this button.
-            .bit-btn-spn {
-                width: 0.7rem;
-                height: 0.7rem;
-            }
         }
     }
 
@@ -149,8 +117,7 @@
         padding: 0.5rem 1rem;
 
         pre {
-            white-space: pre-wrap;
-            word-break: break-all;
+            margin: 0;
         }
     }
 
@@ -226,6 +193,7 @@
         width: 100%;
         max-width: unset;
         gap: 0.3rem;
+        --bit-Button-float-shadow: none;
 
         // The file list is drawn after the label the box lives in, and the pending thumbnail belongs above the box.
         flex-flow: column-reverse nowrap;
@@ -235,9 +203,8 @@
         border-radius: 0.25rem;
     }
 
-    // While an image is over the box, the box says it is what will catch it. The uploader puts this class on its own
-    // root for exactly that.
-    .composer.bit-upl-drg .message-box {
+    // While an image is over the box, the box says it is what will catch it.
+    .composer.dragging .message-box {
         outline: 1px dashed $bit-color-primary;
         outline-offset: 0.25rem;
     }
@@ -245,23 +212,19 @@
     // Only as wide as the picture, and what the cross on its corner is positioned against.
     .pending-attachment {
         position: relative;
-        width: fit-content;
     }
 
     // A badge on a thumbnail rather than a control of its own, so it is smaller than the smallest preset and carries
     // no surface - under the pointer no more than at rest, since a plate lighting up over a picture reads as the
     // picture changing. The shadow is the page background, keeping the cross legible over a photograph of any color.
     .remove-attachment {
-        width: 1.25rem;
-        height: 1.25rem;
+        --bit-Button-padding: 0;
+        --bit-Button-min-height: 1.25rem;
+        --bit-Button-icon-size: 0.75rem;
         filter: drop-shadow(0 0 1px $bit-color-background-primary) drop-shadow(0 0 1px $bit-color-background-primary);
 
         &, &:hover, &:active, &:focus {
             background: none;
-        }
-
-        i {
-            font-size: 0.75rem;
         }
     }
 }

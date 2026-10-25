@@ -1,6 +1,9 @@
 ﻿namespace BitBlazorUI {
     export class PdfViewer {
         private static _rezoomTimers = new WeakMap<HTMLElement, number>();
+        // The zoom the canvases of a container are to be rasterized at: the latest one .NET named, through a paint
+        // or a re-zoom, which a paint still waiting on its fonts reads once it gets to draw (see paintCanvasPages).
+        private static _canvasScales = new WeakMap<HTMLElement, number>();
         // The controls that opened the currently trapped dialogs, innermost last, so
         // closing one hands focus back to whatever the reader was on when it opened.
         private static readonly _focusReturn: HTMLElement[] = [];
@@ -424,11 +427,22 @@
             const pinch = { active: false, distance: 0, scale: 1 };
             const spread = (t: TouchList) => Math.hypot(
                 t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+            // One page (or spread) at a time, a horizontal swipe turns the page - on a phone
+            // the surface then has nothing to scroll sideways, and the toolbar's arrows are
+            // the only other way on. A page zoomed wider than the surface keeps the swipe
+            // for panning it.
+            const swipe = { x: 0, y: 0, time: 0, tracking: false };
             const onTouchStart = (e: TouchEvent) => {
                 if (e.touches.length === 2) {
                     pinch.active = true;
                     pinch.distance = spread(e.touches);
                     pinch.scale = 1;
+                }
+                swipe.tracking = e.touches.length === 1;
+                if (swipe.tracking) {
+                    swipe.x = e.touches[0].clientX;
+                    swipe.y = e.touches[0].clientY;
+                    swipe.time = Date.now();
                 }
             };
             const onTouchMove = (e: TouchEvent) => {
@@ -455,6 +469,24 @@
                 if (e.touches.length < 2) {
                     pinch.active = false;
                 }
+                if (!swipe.tracking || e.type !== "touchend" || e.changedTouches.length !== 1) {
+                    swipe.tracking = false;
+                    return;
+                }
+                swipe.tracking = false;
+                const root = container.closest(".bit-pdv") as HTMLElement | null;
+                if (!root || !PdfViewer.isPaged(root) || container.scrollWidth > container.clientWidth + 1) {
+                    return;
+                }
+                const dx = e.changedTouches[0].clientX - swipe.x;
+                const dy = e.changedTouches[0].clientY - swipe.y;
+                if (Math.abs(dx) < 50 || Math.abs(dx) < 2 * Math.abs(dy) || Date.now() - swipe.time > 800) {
+                    return;
+                }
+                // The pages run the way the reading direction does, so a right-to-left
+                // viewer turns forward on a swipe to the right.
+                const forward = getComputedStyle(root).direction === "rtl" ? dx > 0 : dx < 0;
+                dotnetRef.invokeMethodAsync("OnShortcut", forward ? "next" : "prev");
             };
             container.addEventListener("touchstart", onTouchStart, { passive: true });
             container.addEventListener("touchmove", onTouchMove, { passive: false });
@@ -725,12 +757,26 @@
                 return { command: "sidebar", prevent: true };
             }
             if (e.key === "Escape") {
+                // Only the plain key, the one the root claims (EscapeClaim): an Escape with a
+                // modifier is claimed by nobody, so it goes on to a dialog the viewer sits in,
+                // and closing something here as well would make one press do two things.
+                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
+                    return null;
+                }
                 // The find box closes itself on Escape (so it still does with the
                 // shortcuts off). Forwarding that same key as well would reach .NET a
                 // second time and, depending on which call lands first, either close
                 // the box twice or close it and then also leave presentation mode.
                 const el = e.target as HTMLElement | null;
                 if (el && el.classList && el.classList.contains("bit-pdv-search-input")) {
+                    return null;
+                }
+                // Nor is one a part of the viewer claimed first (data-bit-esc, see
+                // Utils.claimEscape) - the properties or the password dialog closing on
+                // it - forwarded on top: one Escape does one thing. The root's own claim
+                // (EscapeClaim) is this shortcut's, so it is still forwarded.
+                const claimer = (BitBlazorUI as any).Utils?.escapeClaimer?.(e) as Element | null | undefined;
+                if (claimer && claimer !== root && root.contains(claimer)) {
                     return null;
                 }
                 return { command: "escape", prevent: false };
@@ -885,6 +931,64 @@
             }
         }
 
+        private static readonly panelSelector = ".bit-pdv-thumbs,.bit-pdv-outline,.bit-pdv-attachments,.bit-pdv-layers";
+
+        // Remembers whether focus last landed inside a side panel, so a panel that closes
+        // can hand its focus to the surface without .NET asking first. Only a move to
+        // somewhere else clears it: a focused element taken out of the DOM blurs with no
+        // relatedTarget, and that is exactly the case worth remembering.
+        public static registerFocusTracker(root: HTMLElement) {
+            if (!root) {
+                return;
+            }
+            PdfViewer.disposeFocusTracker(root);
+            const r = root as any;
+            const onFocusIn = (e: FocusEvent) => {
+                r.__bitPdvPanelFocus = !!(e.target as Element)?.closest?.(PdfViewer.panelSelector);
+            };
+            const onFocusOut = (e: FocusEvent) => {
+                const next = e.relatedTarget as Node | null;
+                if (next && !root.contains(next)) {
+                    r.__bitPdvPanelFocus = false;
+                }
+            };
+            root.addEventListener("focusin", onFocusIn);
+            root.addEventListener("focusout", onFocusOut);
+            r.__bitPdvFocusIn = onFocusIn;
+            r.__bitPdvFocusOut = onFocusOut;
+        }
+
+        public static disposeFocusTracker(root: HTMLElement) {
+            if (!root) {
+                return;
+            }
+            const r = root as any;
+            if (r.__bitPdvFocusIn) {
+                root.removeEventListener("focusin", r.__bitPdvFocusIn);
+                root.removeEventListener("focusout", r.__bitPdvFocusOut);
+                r.__bitPdvFocusIn = null;
+                r.__bitPdvFocusOut = null;
+            }
+            r.__bitPdvPanelFocus = false;
+        }
+
+        // Called after a side panel has left the DOM. A reader who was inside it (F4 from a
+        // thumbnail, say) has been dropped onto the body - outside the viewer and its
+        // shortcuts - so focus moves to the surface. One whose focus was anywhere else
+        // keeps it.
+        public static restorePanelFocus(root: HTMLElement, container: HTMLElement) {
+            const r = root as any;
+            if (!root || !r.__bitPdvPanelFocus) {
+                return;
+            }
+            r.__bitPdvPanelFocus = false;
+            const active = document.activeElement;
+            if (active && active !== document.body && active.isConnected) {
+                return;
+            }
+            container?.focus?.({ preventScroll: true });
+        }
+
         // The text the reader has selected inside the document surface, or "" when the
         // selection is empty or lies outside it (a selection elsewhere on the hosting
         // page is not the document's).
@@ -937,11 +1041,7 @@
                 PdfViewer._focusReturn.push(null as any);
             }
 
-            const focusables = () => Array.prototype.filter.call(
-                dialog.querySelectorAll(
-                    "a[href],button:not([disabled]),input:not([disabled]),select:not([disabled])," +
-                    "textarea:not([disabled]),[tabindex]:not([tabindex='-1'])"),
-                (el: HTMLElement) => el.offsetParent !== null || el === document.activeElement) as HTMLElement[];
+            const focusables = () => Utils.getFocusables(dialog);
 
             // The requested control, else the first one, else the dialog itself - which
             // carries tabindex="-1" so it can hold focus while the reader has not
@@ -1362,6 +1462,7 @@
             if (!container || !pages) {
                 return;
             }
+            PdfViewer._canvasScales.set(container, scale || 1);
             // Embedded @font-face fonts must be loaded before fillText can use them.
             try {
                 if (document.fonts && document.fonts.ready) {
@@ -1383,7 +1484,10 @@
                 // Cache the display list (and decoded images) on the element so zoom
                 // changes can re-rasterize without another interop round-trip.
                 (canvas as any).__bitPdvOps = { ops, w: p.w, h: p.h, images: new Map() };
-                await PdfViewer.replayOps(canvas, scale || 1);
+                // The zoom as it stands now, not as it stood when the paint was asked for: a zoom that settled while
+                // the fonts loaded (the fit-width zoom of a viewer that has just opened) re-zoomed every canvas that
+                // was painted by then, and this one was not yet.
+                await PdfViewer.replayOps(canvas, PdfViewer._canvasScales.get(container) || scale || 1);
             }
         }
 
@@ -1395,6 +1499,7 @@
             if (!container) {
                 return;
             }
+            PdfViewer._canvasScales.set(container, scale || 1);
             clearTimeout(PdfViewer._rezoomTimers.get(container));
             PdfViewer._rezoomTimers.set(container, setTimeout(() => {
                 container.querySelectorAll("canvas[data-bit-pdv-canvas]").forEach((canvas) => {
@@ -1407,19 +1512,10 @@
 
         private static async replayOps(canvas: HTMLCanvasElement, scale: number, pixelRatio?: number) {
             const { ops, w, h, images } = (canvas as any).__bitPdvOps as { ops: any[][], w: number, h: number, images: Map<string, HTMLImageElement> };
-            // Rasterize at devicePixelRatio x zoom so the backing store matches the
-            // on-screen pixel density (the element is CSS-scaled by --bit-pdv-scale).
-            // Print passes an explicit pixelRatio to rasterize at printer resolution.
-            // Cap the backing store to stay inside browser canvas limits on large pages.
-            const dpr = pixelRatio || Math.min(window.devicePixelRatio || 1, 3);
-            let px = dpr * Math.max(scale, 0.1);
-            px = Math.min(px, 8192 / w, 8192 / h, Math.sqrt(16777216 / (w * h)));
-            canvas.width = Math.max(1, Math.round(w * px));
-            canvas.height = Math.max(1, Math.round(h * px));
-            const ctx = canvas.getContext("2d");
-            if (!ctx) {
-                return;
-            }
+            // Two replays of one canvas overlap when a zoom settles while the first still waits on its fonts or
+            // images: only the latest one draws, so the canvas is neither left at the earlier zoom nor drawn over
+            // at two scales at once.
+            const replay = ((canvas as any).__bitPdvReplay = ((canvas as any).__bitPdvReplay || 0) + 1);
 
             // @font-face faces load lazily - only when DOM text uses them - and canvas
             // fillText never waits for (or reliably triggers) a load: it draws with the
@@ -1447,6 +1543,26 @@
                     img.onerror = () => resolve();
                     img.src = o[1];
                 })));
+
+            if ((canvas as any).__bitPdvReplay !== replay) {
+                return;
+            }
+
+            // Rasterize at devicePixelRatio x zoom so the backing store matches the
+            // on-screen pixel density (the element is CSS-scaled by --bit-pdv-scale).
+            // Print passes an explicit pixelRatio to rasterize at printer resolution.
+            // Cap the backing store to stay inside browser canvas limits on large pages.
+            // Sized only now, after the waits above, so the bitmap on screen stays until
+            // the one replacing it is drawn.
+            const dpr = pixelRatio || Math.min(window.devicePixelRatio || 1, 3);
+            let px = dpr * Math.max(scale, 0.1);
+            px = Math.min(px, 8192 / w, 8192 / h, Math.sqrt(16777216 / (w * h)));
+            canvas.width = Math.max(1, Math.round(w * px));
+            canvas.height = Math.max(1, Math.round(h * px));
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+                return;
+            }
 
             ctx.setTransform(px, 0, 0, px, 0, 0);
             let depth = 0;
@@ -1576,18 +1692,6 @@
 
         // ----- Text search (CSS Custom Highlight API) -----
 
-        private static ensureSearchStyles() {
-            if (document.getElementById("bit-pdv-search-style")) {
-                return;
-            }
-            const style = document.createElement("style");
-            style.id = "bit-pdv-search-style";
-            style.textContent =
-                "::highlight(bit-pdv-search){background:var(--bit-clr-wrn,#EDAE12);color:var(--bit-clr-wrn-text,#141414)}" +
-                "::highlight(bit-pdv-search-current){background:var(--bit-clr-swr,#CE4207);color:var(--bit-clr-swr-text,#FFFFFF)}";
-            document.head.appendChild(style);
-        }
-
         private static searchSupported() {
             return typeof (globalThis as any).Highlight !== "undefined" && typeof CSS !== "undefined" && !!(CSS as any).highlights;
         }
@@ -1704,7 +1808,6 @@
             if (!container || !query || !PdfViewer.searchSupported()) {
                 return;
             }
-            PdfViewer.ensureSearchStyles();
 
             let needle = PdfViewer.canonical(query, matchDiacritics).text;
             needle = matchCase ? needle : needle.toLowerCase();
@@ -1796,3 +1899,5 @@
         }
     }
 }
+
+// bit-lazy: teardown PdfViewer.disposeDropZone PdfViewer.disposeFocusTracker PdfViewer.disposeFullscreenSpy PdfViewer.disposeKeyboard PdfViewer.disposeScrollSpy PdfViewer.disposeThumbSpy

@@ -1,0 +1,464 @@
+﻿@page "/e2e/sticky"
+
+@* Every feature of BitSticky, one section each, every sticky inside a scrolling box of its own (and one on the page
+   itself) so a test scrolls exactly the container it reads. A paragraph is 50px high and a bar 30px. *@
+
+<PageTitle>BitSticky E2E</PageTitle>
+
+<style>
+    .e2e-stk-v {
+        position: relative;
+        width: 300px;
+        height: 200px;
+        overflow: auto;
+        border: 1px solid #888;
+    }
+
+    .e2e-stk-v p {
+        margin: 0;
+        height: 50px;
+    }
+
+    .e2e-stk-h {
+        position: relative;
+        width: 300px;
+        height: 60px;
+        overflow: auto;
+        border: 1px solid #888;
+    }
+
+    .e2e-stk-row {
+        display: flex;
+        width: max-content;
+    }
+
+    .e2e-stk-row > span {
+        display: inline-block;
+        flex: none;
+        width: 100px;
+        height: 30px;
+    }
+
+    .e2e-stk-bar {
+        height: 30px;
+        background: rgb(220, 220, 255);
+    }
+
+    .e2e-stk-hbar {
+        flex: none;
+        width: 60px;
+        height: 30px;
+        background: rgb(220, 220, 255);
+    }
+
+    .e2e-stk-2d {
+        position: relative;
+        width: 300px;
+        height: 200px;
+        overflow: auto;
+        border: 1px solid #888;
+    }
+
+    .e2e-stk-2d-inner {
+        width: 900px;
+        height: 900px;
+    }
+
+    .e2e-stuck {
+        outline: 3px solid rgb(255, 0, 0);
+    }
+
+    .e2e-stk-class {
+        background-color: rgb(1, 2, 3);
+    }
+
+    .e2e-stk-vars {
+        --bit-Sticky-offset-top: 12px;
+        --bit-Sticky-offset-bottom: 14px;
+        --bit-Sticky-offset-start: 16px;
+        --bit-Sticky-offset-end: 18px;
+        --bit-Sticky-z-index: 5;
+    }
+
+    .e2e-stk-elv-vars {
+        --bit-Sticky-background: rgb(0, 128, 0);
+        --bit-Sticky-shadow-top: rgb(255, 0, 0) 0px 4px 0px 0px;
+    }
+
+    .e2e-stk-table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .e2e-stk-table th, .e2e-stk-table td {
+        height: 30px;
+        padding: 0;
+    }
+</style>
+
+<E2ESection Id="basic" Title="Basic: pins to the top of its scrolling container">
+    <div id="v-basic" class="e2e-stk-v">
+        <BitSticky Id="stk-basic" Class="e2e-stk-bar">Basic</BitSticky>
+        @for (var i = 1; i <= 10; i++)
+        {
+            <p>Paragraph @i</p>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="placement" Title="Placement (vertical)">
+    <div>
+        @foreach (var placement in Enum.GetValues<BitPlacement>())
+        {
+            var p = placement;
+            <button id="btn-place-@p" @onclick="() => _placement = p">@p</button>
+        }
+        <button id="btn-place-none" @onclick="() => _placement = null">None</button>
+        <span id="place-current">@(_placement?.ToString() ?? "none")</span>
+        <span id="place-edges">@_placeEdges</span>
+    </div>
+    <div id="v-place" class="e2e-stk-v">
+        @for (var i = 1; i <= 6; i++)
+        {
+            <p>Before @i</p>
+        }
+        <BitSticky Id="stk-place" Class="e2e-stk-bar" Placement="_placement" OnStuckEdgesChanged="e => _placeEdges = e">Placement</BitSticky>
+        @for (var i = 1; i <= 6; i++)
+        {
+            <p>After @i</p>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="placement-h" Title="Placement (horizontal), LTR, inherited rtl and Dir=Rtl">
+    <div>
+        <button id="btn-hplace-Start" @onclick="() => _hPlacement = BitPlacement.Start">Start</button>
+        <button id="btn-hplace-End" @onclick="() => _hPlacement = BitPlacement.End">End</button>
+        <button id="btn-hplace-StartAndEnd" @onclick="() => _hPlacement = BitPlacement.StartAndEnd">StartAndEnd</button>
+        <span id="hplace-current">@_hPlacement</span>
+        <span id="h-ltr-edges">@_hLtrEdges</span>
+        <span id="h-rtl-edges">@_hRtlEdges</span>
+        <span id="h-dir-edges">@_hDirEdges</span>
+    </div>
+    <div id="h-ltr" class="e2e-stk-h">
+        <div class="e2e-stk-row">
+            <span>A</span><span>B</span><span>C</span><span>D</span>
+            <BitSticky Id="stk-h-ltr" Class="e2e-stk-hbar" Placement="_hPlacement" OnStuckEdgesChanged="e => _hLtrEdges = e">H</BitSticky>
+            <span>E</span><span>F</span><span>G</span><span>H</span>
+        </div>
+    </div>
+    <div dir="rtl">
+        <div id="h-rtl" class="e2e-stk-h">
+            <div class="e2e-stk-row">
+                <span>A</span><span>B</span><span>C</span><span>D</span>
+                <BitSticky Id="stk-h-rtl" Class="e2e-stk-hbar" Placement="_hPlacement" OnStuckEdgesChanged="e => _hRtlEdges = e">H</BitSticky>
+                <span>E</span><span>F</span><span>G</span><span>H</span>
+            </div>
+        </div>
+    </div>
+    <div id="h-dir" class="e2e-stk-h" dir="rtl">
+        <div class="e2e-stk-row">
+            <span>A</span><span>B</span><span>C</span><span>D</span>
+            <BitSticky Id="stk-h-dir" Class="e2e-stk-hbar" Placement="_hPlacement" Dir="BitDir.Rtl" OnStuckEdgesChanged="e => _hDirEdges = e">H</BitSticky>
+            <span>E</span><span>F</span><span>G</span><span>H</span>
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="offsets" Title="Top / Bottom / Left / Right offsets">
+    <div id="v-offsets" class="e2e-stk-v">
+        @for (var i = 1; i <= 6; i++)
+        {
+            <p>Before @i</p>
+        }
+        <BitSticky Id="stk-offsets" Class="e2e-stk-bar" Top="16" Bottom="2rem">Top=16 Bottom=2rem</BitSticky>
+        @for (var i = 1; i <= 6; i++)
+        {
+            <p>After @i</p>
+        }
+    </div>
+    <div id="h-offsets" class="e2e-stk-h">
+        <div class="e2e-stk-row">
+            <span>A</span><span>B</span><span>C</span><span>D</span>
+            <BitSticky Id="stk-offsets-h" Class="e2e-stk-hbar" Left="16" Right="2rem">LR</BitSticky>
+            <span>E</span><span>F</span><span>G</span><span>H</span>
+        </div>
+    </div>
+    <div id="v-offsets-mix" class="e2e-stk-v">
+        <BitSticky Id="stk-offsets-mix" Class="e2e-stk-bar" Placement="BitPlacement.Top" Top="10">Placement Top, Top=10</BitSticky>
+        <BitSticky Id="stk-offsets-decimal" Class="e2e-stk-bar" Top="9.5">Top=9.5</BitSticky>
+        <BitSticky Id="stk-offsets-calc" Class="e2e-stk-bar" Top="calc(1rem + 2px)">calc</BitSticky>
+        @for (var i = 1; i <= 10; i++)
+        {
+            <p>Paragraph @i</p>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="stuck" Title="OnStuckChanged, IsStuck, StuckEdges, StuckClass, StuckStyle, RefreshAsync">
+    <button id="btn-read-stuck" @onclick="ReadStuck">Read IsStuck / StuckEdges</button>
+    <button id="btn-refresh" @onclick="Refresh">RefreshAsync</button>
+    <span id="stuck-value">@_stuckValue</span>
+    <span id="stuck-count">@_stuckCount</span>
+    <span id="stuck-read">@_stuckRead</span>
+    <span id="refreshed">@_refreshed</span>
+    <div id="v-stuck" class="e2e-stk-v">
+        <p>Before</p>
+        <BitSticky @ref="_stuckRef" Id="stk-stuck" Class="e2e-stk-bar" StuckClass="e2e-stuck" StuckStyle="font-weight: 700"
+                   Style="font-weight: 300" OnStuckChanged="v => { _stuckValue = v; _stuckCount++; }">
+            @(_stuckValue ? "Stuck" : "Not stuck")
+        </BitSticky>
+        @for (var i = 1; i <= 10; i++)
+        {
+            <p>Paragraph @i</p>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="edges" Title="OnStuckEdgesChanged with TopAndBottom, and a corner">
+    <span id="edges-value">@_edges</span>
+    <span id="edges-count">@_edgesCount</span>
+    <span id="edges-stuck-count">@_edgesStuckCount</span>
+    <div id="v-edges" class="e2e-stk-v">
+        @for (var i = 1; i <= 6; i++)
+        {
+            <p>Before @i</p>
+        }
+        <BitSticky Id="stk-edges" Class="e2e-stk-bar" Placement="BitPlacement.TopAndBottom"
+                   OnStuckEdgesChanged="e => { _edges = e; _edgesCount++; }" OnStuckChanged="_ => _edgesStuckCount++">
+            TopAndBottom
+        </BitSticky>
+        @for (var i = 1; i <= 6; i++)
+        {
+            <p>After @i</p>
+        }
+    </div>
+    <span id="corner-edges">@_cornerEdges</span>
+    <div id="v-corner" class="e2e-stk-2d">
+        <div class="e2e-stk-2d-inner">
+            <BitSticky Id="stk-corner" Top="0" Left="0" Style="width: 60px; height: 30px; background: #ccf;"
+                       OnStuckEdgesChanged="e => _cornerEdges = e">Corner</BitSticky>
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="element" Title="Element, the role of a named div">
+    <div id="v-element" class="e2e-stk-v">
+        <BitSticky Id="stk-header" Element="header" AriaLabel="Section header" Class="e2e-stk-bar">A header</BitSticky>
+        <BitSticky Id="stk-group" AriaLabel="Named div" Class="e2e-stk-bar">Named div</BitSticky>
+        <BitSticky Id="stk-labelledby" aria-labelledby="stk-header" Class="e2e-stk-bar">Labelled div</BitSticky>
+        <BitSticky Id="stk-role" AriaLabel="With its own role" role="toolbar" Class="e2e-stk-bar">Own role</BitSticky>
+        <BitSticky Id="stk-invalid" Element="di v" Class="e2e-stk-bar">Invalid tag</BitSticky>
+        <BitSticky Id="stk-void" Element="hr">Void content</BitSticky>
+        <BitSticky Id="stk-runtime" Element="@_runtimeElement" Class="e2e-stk-bar" OnStuckChanged="v => _runtimeStuck = v">Runtime tag</BitSticky>
+        @for (var i = 1; i <= 10; i++)
+        {
+            <p>Paragraph @i</p>
+        }
+        <BitSticky Id="stk-footer" Element="footer" Placement="BitPlacement.Bottom" Class="e2e-stk-bar">A footer</BitSticky>
+    </div>
+    <button id="btn-element-nav" @onclick="ToggleRuntimeElement">Toggle runtime tag</button>
+    <span id="runtime-element">@_runtimeElement</span>
+    <span id="runtime-stuck">@_runtimeStuck</span>
+    <div id="v-table" class="e2e-stk-v">
+        <table class="e2e-stk-table">
+            <thead>
+                <tr>
+                    <BitSticky Id="stk-th" Element="th">Name</BitSticky>
+                    <BitSticky Element="th">Role</BitSticky>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 1; i <= 15; i++)
+                {
+                    <tr><td>Name @i</td><td>Role @i</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</E2ESection>
+
+<E2ESection Id="zindex" Title="ZIndex and --bit-Sticky-z-index">
+    <BitSticky Id="stk-z-default">Default</BitSticky>
+    <BitSticky Id="stk-z-param" ZIndex="3">ZIndex=3</BitSticky>
+    <div class="e2e-stk-vars">
+        <BitSticky Id="stk-z-var">From the variable</BitSticky>
+        <BitSticky Id="stk-z-var-param" ZIndex="7">The parameter wins</BitSticky>
+    </div>
+</E2ESection>
+
+<E2ESection Id="elevate" Title="ElevateOnStuck">
+    <div id="v-elevate" class="e2e-stk-v">
+        <BitSticky Id="stk-elevate" ElevateOnStuck>Elevated</BitSticky>
+        @for (var i = 1; i <= 10; i++)
+        {
+            <p>Paragraph @i</p>
+        }
+    </div>
+    <div id="v-elevate-style" class="e2e-stk-v">
+        <BitSticky Id="stk-elevate-style" ElevateOnStuck Style="background-color: rgb(250, 200, 0);">Own background</BitSticky>
+        @for (var i = 1; i <= 10; i++)
+        {
+            <p>Paragraph @i</p>
+        }
+    </div>
+    <div id="v-elevate-vars" class="e2e-stk-v e2e-stk-elv-vars">
+        <BitSticky Id="stk-elevate-vars" ElevateOnStuck>Variables</BitSticky>
+        @for (var i = 1; i <= 10; i++)
+        {
+            <p>Paragraph @i</p>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="scroll-padding" Title="ScrollPadding reserves the room the bar covers">
+    <button id="btn-toggle-padding" @onclick="() => _scrollPadding = !_scrollPadding">Toggle ScrollPadding</button>
+    <span id="padding-on">@_scrollPadding</span>
+    <div id="v-padding" class="e2e-stk-v">
+        <BitSticky Id="stk-padding" Class="e2e-stk-bar" Top="10" ScrollPadding="_scrollPadding">Reading list</BitSticky>
+        @for (var i = 1; i <= 12; i++)
+        {
+            <p><a id="pad-link-@i" href="#pad-link-@i" @onclick:preventDefault>Link @i</a></p>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled turns the stickiness off">
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle Disabled</button>
+    <span id="disabled-value">@_disabled</span>
+    <span id="disabled-stuck">@_disabledStuck</span>
+    <span id="disabled-stuck-count">@_disabledStuckCount</span>
+    <div id="v-disabled" class="e2e-stk-v">
+        <BitSticky Id="stk-disabled" Class="e2e-stk-bar" Disabled="_disabled" ScrollPadding
+                   OnStuckChanged="v => { _disabledStuck = v; _disabledStuckCount++; }">Sticky</BitSticky>
+        @for (var i = 1; i <= 10; i++)
+        {
+            <p>Paragraph @i</p>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="cascade" Title="BitParams cascade">
+    <button id="btn-cascade-change" @onclick="ChangeCascade">Change cascade</button>
+    <BitParams Parameters="_stickyParams">
+        <div id="v-cascade" class="e2e-stk-v">
+            <BitSticky Id="stk-cascade" Class="e2e-stk-bar">Cascaded</BitSticky>
+            <BitSticky Id="stk-cascade-own" Class="e2e-stk-bar" ElevateOnStuck="false" Top="40">Own</BitSticky>
+            @for (var i = 1; i <= 10; i++)
+            {
+                <p>Paragraph @i</p>
+            }
+        </div>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Id, Style, Class, Visibility, HtmlAttributes, Dir, the --bit-Sticky-offset-* variables">
+    <BitSticky Id="stk-style" Style="background-color: rgb(200, 0, 0);">Style</BitSticky>
+    <BitSticky Id="stk-class" Class="e2e-stk-class" data-e2e="sticky-attr" title="sticky title">Class</BitSticky>
+    <button id="btn-vis-visible" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-vis-hidden" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-vis-collapsed" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <BitSticky Id="stk-vis" Visibility="_visibility">Visibility</BitSticky>
+    <BitSticky Id="stk-dir" Dir="BitDir.Rtl">Rtl</BitSticky>
+    <div id="v-vars" class="e2e-stk-v e2e-stk-vars">
+        @for (var i = 1; i <= 6; i++)
+        {
+            <p>Before @i</p>
+        }
+        <BitSticky Id="stk-vars" Class="e2e-stk-bar" Placement="BitPlacement.TopAndBottom">Variables</BitSticky>
+        @for (var i = 1; i <= 6; i++)
+        {
+            <p>After @i</p>
+        }
+    </div>
+    <div id="h-vars" class="e2e-stk-h e2e-stk-vars">
+        <div class="e2e-stk-row">
+            <span>A</span><span>B</span><span>C</span><span>D</span>
+            <BitSticky Id="stk-vars-h" Class="e2e-stk-hbar" Placement="BitPlacement.StartAndEnd">SE</BitSticky>
+            <span>E</span><span>F</span><span>G</span><span>H</span>
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="unmount" Title="A sticky with its detection attached, removed">
+    <button id="btn-unmount" @onclick="() => _unmountShown = !_unmountShown">Toggle mounted</button>
+    <span id="unmount-shown">@_unmountShown</span>
+    <div id="v-unmount" class="e2e-stk-v">
+        @if (_unmountShown)
+        {
+            <BitSticky Id="stk-unmount" Class="e2e-stk-bar" ElevateOnStuck ScrollPadding OnStuckChanged="_ => { }">Removable</BitSticky>
+        }
+        @for (var i = 1; i <= 10; i++)
+        {
+            <p>Paragraph @i</p>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="page" Title="A sticky pinned to the page itself">
+    <span id="page-stuck">@_pageStuck</span>
+    <div style="height: 1600px;">
+        <BitSticky Id="stk-page" Class="e2e-stk-bar" OnStuckChanged="v => _pageStuck = v">Page sticky</BitSticky>
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private BitPlacement? _placement = BitPlacement.Top;
+    private BitStickyEdges _placeEdges;
+
+    private BitPlacement _hPlacement = BitPlacement.Start;
+    private BitStickyEdges _hLtrEdges;
+    private BitStickyEdges _hRtlEdges;
+    private BitStickyEdges _hDirEdges;
+
+    private BitSticky _stuckRef = default!;
+    private bool _stuckValue;
+    private int _stuckCount;
+    private string _stuckRead = "";
+    private int _refreshed;
+
+    private BitStickyEdges _edges;
+    private int _edgesCount;
+    private int _edgesStuckCount;
+    private BitStickyEdges _cornerEdges;
+
+    private string _runtimeElement = "nav";
+    private bool _runtimeStuck;
+
+    private bool _scrollPadding = true;
+
+    private bool _disabled;
+    private bool _disabledStuck;
+    private int _disabledStuckCount;
+
+    private BitStickyParams[] _stickyParams = [new() { ElevateOnStuck = true, Top = "8" }];
+
+    private BitVisibility _visibility;
+
+    private bool _unmountShown = true;
+
+    private bool _pageStuck;
+
+    private void ReadStuck()
+    {
+        _stuckRead = $"{_stuckRef.IsStuck}|{_stuckRef.StuckEdges}";
+    }
+
+    private async Task Refresh()
+    {
+        await _stuckRef.RefreshAsync();
+        _refreshed++;
+    }
+
+    private void ToggleRuntimeElement()
+    {
+        _runtimeElement = _runtimeElement == "nav" ? "aside" : "nav";
+    }
+
+    private void ChangeCascade()
+    {
+        _stickyParams = [new() { ElevateOnStuck = false, Top = "20", ZIndex = 9 }];
+    }
+}

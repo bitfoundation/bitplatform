@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Custom CSS classes/styles for different parts of the <see cref="BitAccordionList{TItem}"/>.
@@ -71,6 +71,12 @@ public class BitAccordionListClassStyles
     /// Custom CSS classes/styles for the expander icon of each accordion item of the BitAccordionList in the expanded state.
     /// </summary>
     public string? ItemExpandedIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the spinner that stands in the expander's slot of an item while an awaited
+    /// OnToggling of the BitAccordionList is deciding about it.
+    /// </summary>
+    public string? ItemSpinner { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the actions of each accordion item of the BitAccordionList, rendered beside the header.

@@ -1,0 +1,57 @@
+﻿@page "/examples/node-type-change"
+
+<PageTitle>Node Type Change · Blow</PageTitle>
+
+<ExampleScaffold Title="Node Type Change"
+                 Summary="A node's Type can change at runtime: set it, and the node is drawn again with the new type's look and handles. Edges whose handle went away are kept, drawn to the middle of the side the handle was on, and attach again when it comes back.">
+    <Toolbar>
+        <label>node 2's type:
+            <select value="@_node2.Type" @onchange="OnTypeChange">
+                <option value="default">default</option>
+                <option value="input">input</option>
+                <option value="output">output</option>
+            </select>
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Pick <strong>input</strong>: node 2 loses its target handle and takes the input border colour. The edge from Input is kept, and now ends at the middle of node 2's top side, where the handle was.</li>
+        <li>Pick <strong>output</strong>: the source handle goes instead, the border takes the output colour, and the edge to Output starts from the middle of node 2's bottom side.</li>
+        <li>Pick <strong>default</strong> again: both handles are back and both edges attach to them.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>Type</code> is a plain property: the list sets <code>_node2.Type</code>, this page re-renders, and the canvas draws node 2 with the built-in renderer for its new type - <code>input</code> has only a source handle, <code>output</code> only a target handle, <code>default</code> both.</li>
+        <li>The node element's class follows the type (<code>bit-blow-node-input</code>, <code>bit-blow-node-output</code>), which is where the coloured borders come from.</li>
+        <li>The canvas measures the nodes again after the render that follows, so the edges re-anchor to the handles that are left with no <code>UpdateNodeInternals</code> call.</li>
+        <li>An edge naming a handle its node no longer has stays in <code>Edges</code>. Its end is drawn to the middle of the node's <code>TargetPosition</code> or <code>SourcePosition</code> side, and no error is raised.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowNode _node2 = default!;
+
+    protected override void OnInitialized()
+    {
+        _node2 = new BlowNode { Id = "2", Type = "default", Label = "I can change", Position = new(250, 150) };
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Input", Position = new(250, 20) },
+            _node2,
+            new BlowNode { Id = "3", Type = "output", Label = "Output", Position = new(250, 300) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e2-3", Source = "2", Target = "3" },
+        ];
+    }
+
+    private void OnTypeChange(ChangeEventArgs e) => _node2.Type = e.Value?.ToString() ?? "default";
+}

@@ -5,7 +5,7 @@
 /// </summary>
 /// <remarks>
 /// Every one of these loops for as long as the icon is on the page, so each is a claim that something
-/// is still happening. All of them slow down rather than stop when the reader has asked for reduced
+/// is still happening - unless <see cref="BitIcon.AnimationIterationCount"/> stops it after a few cycles. All of them slow down rather than stop when the reader has asked for reduced
 /// motion, and <see cref="BitComponentBase.ForceAnimation"/> restores their full speed.
 /// </remarks>
 public enum BitIconAnimation

@@ -14,19 +14,64 @@
 
 # 🧾 Introduction
 
-At **bitplatform**, we've curated a comprehensive toolkit to empower you in crafting the finest projects using Blazor. Diverging from others merely offering UI Toolkits, ***bit BlazorUI components*** distinguishes itself with over 80 components, with a compact size of under 400 KB. These components boast both Dark and Light Themes, delivering unparalleled High Performance 🚀
-
-Yet, bitplatform doesn't stop there. Our platform introduces exclusive tools that elevate your development experience:
-
-***Bswup***: This unique tool harnesses the power of Progressive Web Apps (PWA) within the innovative new structure of dotnet 8. By amalgamating pre-rendering techniques reminiscent of renowned platforms like GitHub, Reddit, and Facebook, Bswup ensures an exceptional user experience 😍
-
-***Butil***: Embracing Blazor because of your love for C#? Butil enables you to stay true to that sentiment by providing essential Browser APIs in C#, eliminating the need to revert to JavaScript for any functionality 👌
-
-***Besql***: Dreaming of an offline web application capable of saving data and syncing later? Enter Besql, your solution to incorporating ef core & sqlite in your browser. It's a crucial aid for achieving this objective seamlessly 🕺
-
-***Bit Boilerplate Project Template***: If the aforementioned features have piqued your interest, dive into the Bit Boilerplate project template. Experience everything mentioned above along with additional features such as ASP.NET Core Identity integration, multilingualism, and other cool features that empowers you to develop unified Web, Android, iOS, Windows, and macOS apps from a single codebase, while providing seamless integration with native platform features and third-party Java, Kotlin, Swift, Objective-C, and JavaScript libraries 💯
+**bitplatform** is a set of open-source tools for building fast, polished apps with Blazor and C#. The libraries target **.NET 8, 9 and 10** and are built for Blazor WebAssembly, Server, and Hybrid (MAUI) apps.
 
 For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
+
+<br/>
+
+# 🚀 Get started
+
+Create a ready-to-run [bit Boilerplate](src/Templates/Boilerplate/Readme.md) project on Windows, macOS or Linux with the [bit CLI](src/Toolings/Cli/README.md):
+
+```bash
+dotnet tool install --global Bit.Cli --version 10.7.0
+bit new MyApp
+```
+
+`bit new` installs what the project needs (the .NET SDK, Node.js, Docker, the Aspire CLI, and so on), builds it, initializes git, adds the first migration, and opens your IDE. The [create project page](https://bitplatform.dev/templates/create-project) walks you through the options and builds the command for you.
+
+<br/>
+
+# 🧰 What's inside
+
+## UI
+
+- [***bit BlazorUI***](https://blazorui.bitplatform.dev) (`Bit.BlazorUI`): 90+ high-performance, accessible components with Dark and Light themes and RTL support, split across `Bit.BlazorUI`, `Bit.BlazorUI.Extras` (DataGrid, Chart, PdfViewer, RichTextEditor, Map, FullCalendar, CountryPicker, TimeZonePicker, and more), `Bit.BlazorUI.Icons` and `Bit.BlazorUI.Assets`.
+- [***BbScanner***](src/Utilities/BbScanner/README.md) (`Bit.BbScanner`): A dependency-free barcode scanner for Blazor that reads QR Code, Data Matrix, Code 128, Code 39, EAN-13, EAN-8, UPC-A, UPC-E and ITF from the camera or from still images. The decoding is written from scratch in C#; the browser only opens the camera and copies pixels.
+- [***Bdnd***](src/Utilities/Bdnd/README.md) (`Bit.Bdnd`): A declarative drag-and-drop library for Blazor inspired by React DnD, with typed items matched to drop targets by type, custom drag previews, drag handles, sortable lists, nested sources and targets, and native file, text and link drops. The drag state lives in C#; the browser only configures the native drag and tracks hover.
+- [***Bink***](src/Utilities/Bink/README.md) (`Bit.Bink`): A Blazor-native drawing and ink library, with pressure- and tilt-aware strokes, brushes, erasers, shapes, annotations, selection, layers, undo/redo, real-time collaboration and SVG/PNG export. The document model and the drawing engine run in C#; the browser only captures input and paints.
+- [***Balette***](src/Utilities/Balette/README.md) (`Bit.Balette`): A Blazor-native, keyboard-first command palette (`Ctrl+K` / `⌘K`), with fzf-style fuzzy search, nested pages, prefix modes, async sources, recents and frecency, global shortcuts and sequences, prompts, multi-select and full theming. Matching and ranking run in C#; the browser only opens the dialog and listens for keys.
+- [***Blow***](src/Utilities/Blow/README.md) (`Bit.Blow`): A Blazor-native library for node-based UIs, editors, flow charts and diagrams - a Blazor counterpart to React Flow - with a pannable, zoomable canvas, draggable, resizable and connectable nodes, sub-flows, auto-layout, alignment guides, undo/redo, copy/paste and full keyboard accessibility. Interaction, layout and geometry run in C#; the browser only measures the DOM.
+- [***Borm***](src/Utilities/Borm/README.md) (`Bit.Borm`): A schema-driven form engine for Blazor. Describe a form once - from a C# type and its DataAnnotations, a strongly typed fluent builder or a JSON Schema document - and it renders, validates and tracks it, with conditional visibility, requiredness and read-only fields, computed values, async and cascading options, multi-step wizards, repeaters, FluentValidation (`Bit.Borm.FluentValidation`) and full theming. Every decision runs in C#; the renderers are plain, accessible HTML with no JavaScript.
+- [***Bmage***](src/Utilities/Bmage/README.md) (`Bit.Bmage`): Browser-side image processing for Blazor. Load, crop, resize, adjust, annotate and export images on the user's device from strongly typed C#, with a full image editor component (`BmageEditor`) and a browser-independent engine that also runs headlessly on a server.
+- [***Bmotion***](src/Utilities/Bmotion/README.md) (`Bit.Bmotion`): A Blazor-native animation library inspired by Motion (Framer Motion), with springs, gestures, keyframes, variants, drag, layout (FLIP) and exit animations. The animation math runs in C#, so there's no JavaScript to wire up.
+- [***Bonboarding***](src/Utilities/Bonboarding/README.md) (`Bit.Bonboarding`): A Blazor-native onboarding and product tour library, with spotlights, collision-aware placement, branching and multi-page tours, persistence and built-in accessibility. Every decision is made in C#; the browser layer only measures and observes.
+- [***Bortable***](src/Utilities/Bortable/README.md) (`Bit.Bortable`): A Blazor-native drag-and-drop sortable list inspired by SortableJS - reorder items within a list or drag them between lists that share a group, with live reordering, FLIP animations, clone and move pull modes, swap thresholds, drag handles, filters, nested lists, swap mode and multi-drag. The sorting engine runs in C# on the browser's native drag events; the browser only hit-tests and animates.
+
+## App infrastructure
+
+- [***Brouter***](src/Brouter/README.md) (`Bit.Brouter`): A modern, declarative, nestable router for Blazor with async guards, data loaders, named routes, query string binding and global navigation hooks. It's the default router in bit Boilerplate.
+- [***Butil***](src/Butil/README.md) (`Bit.Butil`): The browser platform in C#. The DOM, storage, media, sensors, crypto, workers and more, exposed as injectable, strongly-typed services, so you don't have to drop back to JavaScript.
+- [***Blex***](src/Utilities/Blex/README.md) (`Bit.Blex`): Reactive state management for Blazor and .NET MAUI. A source generator turns plain `[BlexState]` fields and `[BlexAction]` methods into observable stores, with computed state, effects, middleware, persistence, undo/redo and Redux DevTools time-travel built in.
+- [***BlazeDb***](src/Utilities/BlazeDb/README.md) (`Bit.BlazeDb`): A memory-first, SQL-free embedded database for Blazor WebAssembly. Rows live in managed memory as the objects you declared, reads are method calls into source-generated hash and ordered indexes, and commits go to a write-ahead log flushed in the background to OPFS, IndexedDB or files - with transactions, encryption at rest, multi-tab replicas and an EF Core provider.
+- [***Bcrdt***](src/Utilities/Bcrdt/README.md) (`Bit.Bcrdt`): Real-time collaborative editing for .NET and Blazor - a native C# CRDT engine for text, lists, maps and sets, with a sync protocol that survives loss, duplication and long offline sessions, presence and cursors, offline-first persistence, selective undo and Blazor components, over SignalR, WebSockets or any transport. No JavaScript CRDT library underneath; the server only relays.
+- [***Besql***](src/Besql/README.md) (`Bit.Besql`): EF Core and SQLite in the browser, for offline-capable web apps that save data locally and sync later.
+- [***Bsqlite***](src/Utilities/Bsqlite/README.md) (`Bit.Bsqlite`): SQLite in the browser for Blazor, with EF Core on top. The same entities and migrations run on the client as on the server, in a dedicated worker over OPFS, IndexedDB, Cache Storage or memory, with live queries, a complete ADO.NET surface and storage selection that never loses data silently.
+- [***Bswup***](src/Bswup/README.md) (`Bit.Bswup`): Turns your Blazor app into a PWA with service-worker update progress, and works with prerendering for an experience like GitHub's or Reddit's.
+
+## Build & tooling
+
+- [***bit CLI***](src/Toolings/Cli/README.md) (`Bit.Cli`): Creates bitplatform projects (`bit new`), sets up cloned ones (`bit setup`), cleans build outputs, renames or removes projects, translates `.resx` files with an LLM, and decodes stack traces minified by Bit.Minifier.
+- [***Minifier***](src/Toolings/Minifier/README.md) (`Bit.Minifier`): Shrinks the .NET assemblies a Blazor WebAssembly app downloads by stripping non-public names and compiler-only attributes after trimming. Install it and publish in Release; there's nothing else to set up.
+- [***BevTools***](src/Utilities/BevTools/README.md) (`Bit.BevTools`): In-app developer tools for Blazor. A live component tree, a render profiler that explains why each component rendered, an activity timeline, state diffs, network, JS interop, errors, DI and circuit diagnostics, with no changes to your app's code.
+- [***BlazorES2019***](src/Toolings/BlazorES2019/README.md) (`Bit.BlazorES2019`): An ES2019 build of the Blazor scripts, so apps also run on older browsers and WebViews (for example Safari before 16.4).
+- [***Code Analyzers***](src/Toolings/CodeAnalyzers/README.md) (`Bit.CodeAnalyzers`) and [***Source Generators***](src/Toolings/SourceGenerators/README.md) (`Bit.SourceGenerators`): Analyzers that enforce our best practices, and source generators that improve code quality and performance.
+
+## Project templates
+
+- [***bit Boilerplate***](src/Templates/Boilerplate/Readme.md) (`Bit.Boilerplate`): A free, full-stack, cloud-ready project template that brings these libraries together. It builds unified Web, Android, iOS, Windows and macOS apps from a single codebase, with native platform integration and support for third-party Java, Kotlin, Swift, Objective-C and JavaScript libraries. You choose which features to include when you create the project, such as identity (passwordless, 2FA, SSO), multilingual support with RTL, offline database and sync, caching, OpenTelemetry, an AI chatbot with RAG, .NET Aspire, and CI/CD pipelines.
+- [***bit BlazorEmpty***](src/Templates/BlazorEmpty/Readme.md) (`Bit.BlazorEmpty`): A minimal Blazor template for starting from scratch.
 
 <br/>
 
@@ -54,22 +99,19 @@ The following apps are our open-source projects powered by the bit platform show
 6. [todo-offline.bitplatform.cc](https://todo-offline.bitplatform.cc): .NET 10 Todo demo app with ef-core, sqlite & sync (Azure static web app)
 7. [todo-aot.bitplatform.cc](https://todo-aot.bitplatform.cc): .NET 10 AOT Compiled PWA with Blazor WebAssembly Standalone (Azure static web app)
 8. [todo-small.bitplatform.cc](https://todo-small.bitplatform.cc): .NET 10 Todo demo app with smaller download footprint (Azure static web app)
-9. [adminpanel.bitplatform.cc](https://adminpanel.bitplatform.cc): .NET 10 PWA with Blazor WebAssembly Standalone (Azure static web app)
+9. [adminpanel.bitplatform.cc](https://adminpanel.bitplatform.cc): .NET 10 AOT Compiled PWA with Blazor WebAssembly Standalone (Azure static web app)
 
-[Todo](https://todo.bitplatform.dev) & [Adminpanel](https://adminpanel.bitplatform.dev) web apps will launch their respective Android and iOS applications if you have already installed them, mirroring the behavior of apps like YouTube and Instagram. 
+[Todo](https://todo.bitplatform.dev) & [Adminpanel](https://adminpanel.bitplatform.dev) web apps will launch their respective Android and iOS applications if you have already installed them, mirroring the behavior of apps like YouTube and Instagram.
 
-Prerendering combined with PWA functionality delivers an experience akin to that of GitHub and Reddit. The bitplatform solution, seamlessly integrated with the innovative new .NET 8 project structure, stands as the exclusive remedy for such a scenario within the realm of Blazor.
+Prerendering combined with PWA functionality delivers an experience similar to GitHub's and Reddit's. bitplatform brings that combination to Blazor apps built on the modern .NET project structure.
 
-# How to contribute?
+<br/>
+
+# 🤝 How to contribute?
 
 We welcome contributions! Many people all over the world have helped make this project better.
 
 * [Contributing](CONTRIBUTING.md) explains what kinds of contributions we welcome.
 * [Build Instructions](docs/how-to-build.md) explains how to build and test.
+* [Coding Style](docs/coding-style.md) explains the conventions we follow.
 * [Get Up and Running on bit platform](docs/up-and-running.md) explains how to get the latest builds and their libraries to test them in your own projects.
-
-<br/>
-
-# **Contributions**
-
-![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg "bit platform open source contributions report")

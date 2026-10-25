@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Plain literal text.</summary>
 public sealed class BitMarkdownTextNode : BitMarkdownNode

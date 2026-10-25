@@ -1,0 +1,1048 @@
+﻿@page "/actions"
+@using System.Text.Json.Nodes
+@inherits BlexComponentBase
+@inject CounterStore Counter
+@inject AccountStore Account
+@inject WalletStore Wallet
+@inject LedgerStore Ledger
+@inject ProgressStore Progress
+
+<DocPage Href="actions" Title="Actions"
+         Lead="An action is a named, batched, recorded unit of change. Everything that mutates state becomes one - even a direct property assignment.">
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The convention</h2>
+        <p>
+            Mark a method named <code>OnXxx</code> with <code>[BlexAction]</code>. The generator emits a
+            public <code>Xxx(...)</code> wrapper that runs your method inside a dispatch: all the
+            mutations it makes are folded into one notification and one time-travel entry.
+        </p>
+
+        <CodeBlock Code="@Basic" />
+        <CodeBlock Code="@BasicGenerated" Title="Generated" />
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Naming</h2>
+        <p>
+            The wrapper name comes from the method name with the <code>On</code> prefix stripped, or from
+            <code>[BlexAction(Name = "…")]</code>. The <code>Name</code> is used in two different ways
+            depending on whether it is a valid C# identifier:
+        </p>
+
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead><tr><th>Declaration</th><th>Method you call</th><th>Label in DevTools / history</th></tr></thead>
+                <tbody>
+                    <tr><td><code>[BlexAction] void OnIncrement()</code></td><td><code>Increment()</code></td><td><code>Increment</code></td></tr>
+                    <tr><td><code>[BlexAction(Name = "Bump")] void OnIncrement()</code></td><td><code>Bump()</code></td><td><code>Bump</code></td></tr>
+                    <tr><td><code>[BlexAction(Name = "Apply preset")] void OnApplyPreset()</code></td><td><code>ApplyPreset()</code></td><td><code>Apply preset</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p>
+            In other words: a name containing spaces (or anything else illegal in an identifier, or a C#
+            keyword) is treated purely as a display label, and the method name still comes from the
+            <code>On</code> prefix. A method that neither starts with <code>On</code> nor supplies a
+            usable name is <code>BLEX002</code>.
+        </p>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Arguments become the payload</h2>
+        <p>
+            Action parameters are captured as name/value pairs and travel with the action to middleware,
+            subscribers, the test harness and the DevTools monitor. Nothing to declare.
+        </p>
+
+        <CodeBlock Code="@Args" />
+
+        <p>
+            Capture is skipped entirely when nothing is observing - the generated wrapper checks
+            <code>IsObserved</code> first, so an app with no middleware, no DevTools and no subscribers
+            pays nothing for the payload.
+        </p>
+
+        <p>Parameter rules:</p>
+        <ul class="bb-detail-list">
+            <li>Default values and <code>params</code> are preserved on the wrapper.</li>
+            <li><code>ref</code>, <code>out</code> and <code>in</code> parameters are rejected - the wrapper has to capture them by value (<code>BLEX013</code>).</li>
+            <li>Generic action methods are rejected; the wrapper cannot carry type parameters (<code>BLEX014</code>).</li>
+        </ul>
+    </div>
+
+    <div class="bb-card" id="typed-actions">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Typed actions</h2>
+        <p>
+            A method call is only half of what an action is. Middleware, subscribers, history filters and
+            tests also need to <em>recognize</em> an action after the fact and read its payload - and a
+            string like <code>"Apply preset"</code> plus an <code>object</code> looked up by parameter name
+            breaks silently the day someone renames either. So the generator also emits a descriptor for
+            every action and effect, in a nested <code>Actions</code> class on the store.
+        </p>
+
+        <CodeBlock Code="@Typed" />
+        <CodeBlock Code="@TypedGenerated" Title="Generated" />
+
+        <p>The payload type follows the parameters:</p>
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead><tr><th>Declaration</th><th>Descriptor</th></tr></thead>
+                <tbody>
+                    <tr><td><code>void OnIncrement()</code></td><td><code>BlexAction&lt;CounterStore&gt;</code></td></tr>
+                    <tr><td><code>void OnSetStep(int step)</code></td><td><code>BlexAction&lt;CounterStore, int&gt;</code> - the argument itself</td></tr>
+                    <tr><td><code>void OnApplyPreset(int count, int step)</code></td><td><code>BlexAction&lt;CounterStore, (int Count, int Step)&gt;</code> - a tuple named after the parameters</td></tr>
+                    <tr><td><code>Task OnSearch(string query, CancellationToken ct)</code></td><td><code>BlexAction&lt;SearchStore, string&gt;</code> - an effect's token is supplied by the wrapper, so it is not part of the payload</td></tr>
+                    <tr><td><code>void OnTag(params string[] tags)</code></td><td><code>BlexAction&lt;S, string[]&gt;</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p>
+            When a parameter cannot name a tuple element - <code>rest</code>, <code>toString</code>, an
+            <code>item2</code> in first position, two parameters that differ only in case - the tuple is
+            simply left unnamed (<code>(string, int)</code>, read as <code>Item1</code>,
+            <code>Item2</code>).
+        </p>
+
+        <CodeBlock Code="@TypedUse" Title="Matching, reading and dispatching" />
+
+        <ApiTable Title="BlexAction&lt;TStore, TPayload&gt;" Rows="@DescriptorRows" />
+
+        <p>
+            The descriptor also plugs straight into the pipeline APIs:
+            <a href="cross-store">manager.SubscribeToAction(CounterStore.Actions.ApplyPreset, ...)</a>,
+            <a href="middleware">options.UseFilter(CounterStore.Actions.SetStep, ...)</a>, and the test
+            harness's <a href="testing"><code>Log.PayloadsOf(...)</code></a>.
+        </p>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="When the name Actions is taken">
+            <p>
+                A store that already declares something called <code>Actions</code> - a property, a nested
+                type, or state whose generated property is <code>Actions</code> - keeps compiling exactly
+                as before, but without the typed descriptors, and the generator says so with warning
+                <code>BLEX020</code>. Its actions stay dispatchable by name. Rename the member to get them.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card" id="dispatch-by-name">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Dispatching by name</h2>
+        <p>
+            Because every action is described as data, it can also be <em>sent</em> as data:
+            <code>manager.DispatchAsync("store/Action", payload)</code> finds the action by its qualified
+            name - the label DevTools shows - converts a JSON payload keyed by parameter name, and calls the
+            generated wrapper. The action passes the filters, reaches middleware and is recorded exactly as
+            a direct call would be. Direct assignments (<code>"counter/Set Count"</code>) and
+            <code>"counter/ResetState"</code> are dispatchable too, and an optional parameter the payload
+            leaves out takes its declared default.
+        </p>
+        <CodeBlock Code="@ByName" />
+        <p>
+            It is what the <a href="devtools">DevTools dispatcher</a> and the testing package's
+            <a href="testing">action replay</a> are built on: a log recorded in one session dispatches
+            again in another, which is the practical meaning of "a predictable state model". That makes the
+            name an action's identity, so two actions dispatched under one name - two display labels alike,
+            or a label such as <code>"Set Count"</code> that a direct assignment already records - fail the
+            build with <a href="diagnostics#blex021"><code>BLEX021</code></a>.
+        </p>
+
+        <DemoCard Title="Actions as data"
+                  Description="Pick a preset or write your own: the qualified name and the JSON payload are all DispatchAsync needs. The typed subscription below reads Apply preset's payload as (int Count, int Step)."
+                  Source="@ByNameSource">
+            <div class="bb-toolbar">
+                @foreach (var preset in DispatchPresets)
+                {
+                    <button class="btn btn-secondary" @onclick="() => Preset(preset)">@preset.Label</button>
+                }
+            </div>
+            <div class="bb-toolbar">
+                @* Enter in either box dispatches. A key handler rather than a <form>: a form renders its action
+                   from the NavigationManager, which the MCP server's renderer of this page does not have. *@
+                <input type="text" aria-label="Qualified action name" value="@_dispatchName" @oninput="e => _dispatchName = e.Value?.ToString() ?? string.Empty" @onkeydown="OnDispatchKeyDown" class="demo-input-name" />
+                <input type="text" aria-label="JSON payload" value="@_dispatchPayload" @oninput="e => _dispatchPayload = e.Value?.ToString() ?? string.Empty" @onkeydown="OnDispatchKeyDown" class="demo-input-grow" />
+                <button class="btn btn-primary" @onclick="DispatchByName">DispatchAsync</button>
+            </div>
+
+            @if (_dispatchError is not null)
+            {
+                <div class="bb-note bb-note-danger" role="alert">
+                    <strong class="demo-note-title">Not dispatched</strong>
+                    <p>@_dispatchError</p>
+                </div>
+            }
+
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Step</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.Step</Persisted></span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Last Apply preset payload</span>
+                    <span class="bb-stat-value">@_lastPreset</span>
+                </div>
+            </div>
+            <p class="bb-card-desc">
+                Dispatchable on <code>counter</code>:
+                @string.Join(", ", Counter.ActionDescriptors.Select(a => a.Name))
+            </p>
+        </DemoCard>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Batching</h2>
+        <p>
+            This is the point of actions. Assigning three fields directly produces three actions and
+            three renders; doing it inside one action produces one of each.
+        </p>
+
+        <DemoCard Title="Three ways to set the same two fields"
+                  Description="Watch the notification counter - and the Inspector's action feed - after each button."
+                  Source="@BatchSource">
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Step</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.Step</Persisted></span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Notifications from last click</span>
+                    <span class="bb-stat-value">@_lastBatchNotifications</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Actions from last click</span>
+                    <span class="bb-stat-value">@_lastBatchActions</span>
+                </div>
+            </div>
+            <div class="bb-toolbar">
+                <button class="btn demo-btn-danger" @onclick="DirectAssignment">Two direct assignments</button>
+                <button class="btn btn-primary" @onclick="ViaAction">One [BlexAction] method</button>
+                <button class="btn btn-primary" @onclick="ViaBatch">One Batch(…) call</button>
+                <button class="btn btn-secondary" @onclick="() => Measure(Counter.ResetState)">ResetState()</button>
+            </div>
+            <p class="bb-card-desc">
+                The first button dispatches <code>Set Count</code> and <code>Set Step</code> separately.
+                The other two dispatch exactly one action and render once. Each click moves both fields on from
+                where they are: assigning a field the value it already holds is no change, and notifies nobody.
+            </p>
+        </DemoCard>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Direct assignment: the "Set X" action</h2>
+        <p>
+            Generated properties have public setters (unless the store
+            <a href="actions#enforce-actions">enforces actions</a>), and assigning one from outside any
+            action is still a first-class action named <code>Set X</code>, carrying the assigned value as
+            its payload. It is vetoable by middleware, recorded for undo/redo and visible in DevTools - so
+            nothing can change state behind the pipeline's back.
+        </p>
+        <CodeBlock Code="@SetX" />
+    </div>
+
+    <div class="bb-card" id="enforce-actions">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Enforcing actions</h2>
+        <p>
+            A <code>Set X</code> is still an anonymous change: it says <em>what</em> moved, never
+            <em>why</em>, and any component holding the store can make one. A Flux store is supposed to
+            guarantee the opposite - every change is a deliberate, named action. Opt in with
+            <code>EnforceActions</code> and the guarantee is checked by the compiler:
+        </p>
+        <CodeBlock Code="@Enforce" />
+        <ul class="bb-detail-list">
+            <li>The generated state setters are <code>private</code>, so assigning one from outside the store does not compile (<code>CS0272</code>).</li>
+            <li>An assignment the store's <em>own</em> code makes outside any action throws <code>InvalidOperationException</code> once the store is registered. Assignments in the constructor, before anyone can observe the store, are fine.</li>
+            <li>Restores, hydration and <code>ResetState</code> are not assignments and work as usual; so do effects, whose bodies run inside their action.</li>
+            <li>No <code>Set X</code> descriptors are offered for dispatch by name - such an action can never have been recorded.</li>
+        </ul>
+        <p>
+            Two-way binding needs a setter, so bind such a store's state through an action instead:
+        </p>
+        <CodeBlock Code="@EnforceBind" Language="razor" />
+
+        <DemoCard Title="An enforcing store at runtime"
+                  Description="This site's AccountStore is [BlexStore(EnforceActions = true)]. Deposit and Withdraw are actions and work. SneakBonus() is the store's own code assigning Balance outside any action - it compiles, and throws. The compile-time half cannot run in a browser: account.Balance = 0 from this page would not build."
+                  Source="@EnforceSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="() => RunEnforced(() => Account.Deposit(10))">Deposit(10)</button>
+                <button class="btn btn-secondary" @onclick="() => RunEnforced(() => Account.Withdraw(10))">Withdraw(10)</button>
+                <button class="btn demo-btn-danger" @onclick="() => RunEnforced(Account.SneakBonus)">SneakBonus() - outside an action</button>
+                <button class="btn btn-secondary" @onclick="() => RunEnforced(Account.ResetState)">ResetState()</button>
+            </div>
+
+            @if (_enforceError is not null)
+            {
+                <div class="bb-note bb-note-danger" role="alert">
+                    <strong class="demo-note-title">InvalidOperationException</strong>
+                    <p>@_enforceError</p>
+                </div>
+            }
+
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">account/Balance</span>
+                    <span class="bb-stat-value demo-accent">@Account.Balance.ToString("0.00")</span>
+                </div>
+            </div>
+            <p class="bb-card-desc">
+                Dispatchable on <code>account</code>: @string.Join(", ", Account.ActionDescriptors.Select(a => a.Name))
+                - and no <code>Set Balance</code>, since nothing can ever have recorded one.
+            </p>
+        </DemoCard>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Batch: ad-hoc grouping</h2>
+        <p>
+            When the grouping is a caller's concern rather than the store's, <code>Batch</code> wraps any
+            set of mutations into one named action - Pinia's <code>$patch</code> or MobX's
+            <code>runInAction</code>.
+        </p>
+        <CodeBlock Code="@BatchApi" />
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> ResetState</h2>
+        <p>
+            Every store snapshots itself the first time it is registered with the manager.
+            <code>ResetState()</code> restores that snapshot as a normal <code>ResetState</code> action:
+            vetoable, observable, persisted and undoable. It is a no-op on a store that was never
+            registered, and equally a no-op on a store that is <em>already</em> holding its initial state -
+            resetting an untouched form notifies nobody, writes nothing and adds no undo step, the same
+            rule every other mutation in Blex follows.
+        </p>
+        <CodeBlock Code="@Reset" />
+
+        <p>
+            <code>BlexManager.ResetAll()</code> does the same across every registered store - the usual
+            sign-out move. Each store resets as its own action, so middleware can exempt individual
+            stores and DevTools shows one entry per store rather than one opaque global wipe.
+        </p>
+        <CodeBlock Code="@ResetAll" Title="Application-wide reset" />
+    </div>
+
+    <div class="bb-card" id="rollback">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> When an action throws</h2>
+        <p>
+            An action is a C# method, and by default it behaves like one: what it changed before the throw
+            stays changed - and, since it did change state, it is notified, recorded and persisted like any
+            other action. The exception still reaches the caller and the action-error hooks.
+        </p>
+        <p>
+            <code>[BlexStore(RollbackOnError = true)]</code> makes every synchronous action a transaction
+            instead: a throw puts the store's fields back to what they held when the action started, and
+            nothing is notified, recorded, persisted or added to the undo history. Each action level is its
+            own transaction, so a nested action whose failure the caller catches is undone while the
+            caller's own changes stay.
+        </p>
+        <CodeBlock Code="@Rollback" />
+
+        <DemoCard Title="The same throw, with and without RollbackOnError"
+                  Description="Two stores, one Withdraw each: take the money out, write the entry, then check the balance. Both start at 100.00. Withdraw 150 from each and compare what the throw leaves behind - and what it recorded."
+                  Source="@RollbackDemoSource">
+            <div class="bb-grid">
+                <div class="bb-card">
+                    <p class="bb-card-title">wallet <span class="bb-badge">default</span></p>
+                    <div class="bb-stats">
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Balance</span>
+                            <span class="bb-stat-value demo-accent">@Wallet.Balance.ToString("0.00")</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Entries</span>
+                            <span class="bb-stat-value">@Wallet.Entries.Count</span>
+                        </div>
+                    </div>
+                    <div class="bb-toolbar">
+                        <button class="btn btn-secondary" @onclick='() => _rollbackNote = Attempt("wallet", () => Wallet.Withdraw(30))'>Withdraw(30)</button>
+                        <button class="btn demo-btn-danger" @onclick='() => _rollbackNote = Attempt("wallet", () => Wallet.Withdraw(150))'>Withdraw(150) - throws</button>
+                    </div>
+                </div>
+                <div class="bb-card">
+                    <p class="bb-card-title">ledger <span class="bb-badge bb-badge-success">RollbackOnError</span></p>
+                    <div class="bb-stats">
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Balance</span>
+                            <span class="bb-stat-value demo-accent">@Ledger.Balance.ToString("0.00")</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Entries</span>
+                            <span class="bb-stat-value">@Ledger.Entries.Count</span>
+                        </div>
+                    </div>
+                    <div class="bb-toolbar">
+                        <button class="btn btn-secondary" @onclick='() => _rollbackNote = Attempt("ledger", () => Ledger.Withdraw(30))'>Withdraw(30)</button>
+                        <button class="btn demo-btn-danger" @onclick='() => _rollbackNote = Attempt("ledger", () => Ledger.Withdraw(150))'>Withdraw(150) - throws</button>
+                    </div>
+                </div>
+            </div>
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" @onclick="ResetLedgers">ResetState() both</button>
+            </div>
+            @if (_rollbackNote.Length > 0)
+            {
+                <p class="bb-card-desc" role="status">@_rollbackNote</p>
+            }
+        </DemoCard>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="What a rollback covers">
+            <p>
+                The snapshot is a shallow copy of the <code>[BlexState]</code> fields - one small array per
+                action, no serialization - so it undoes assignments, which is how a Blex store changes, not
+                mutations inside an object a field points to. It covers this store only, and synchronous
+                actions only: an async action has already shown the UI what it changed before its first
+                <code>await</code>.
+            </p>
+        </Callout>
+
+        <h3 id="transactions">Across stores</h3>
+        <p>
+            <code>manager.Transaction(...)</code> is the same promise for a unit of work that spans stores: if the
+            body throws, every store it changed is put back the way it was when the transaction began, and the
+            exception reaches the caller. The actions inside run and record as usual; the putting back is one
+            restore, like an undo - subscriptions re-evaluate once, persistence writes the restored state back, and
+            the undo steps those actions recorded no longer hold what was taken back. Stores the body left alone are
+            not touched. Every store is serialized when it begins, so keep it for multi-store operations; like
+            <code>RollbackOnError</code>, it is synchronous only.
+        </p>
+        <CodeBlock Code="@TransactionSample" />
+
+        <DemoCard Title="One unit of work across two stores"
+                  Description="Each button runs one transfer inside manager.Transaction: Withdraw from the wallet, Deposit into the ledger. Whatever throws in the body - the bank declining afterwards, or the wallet's own Withdraw - puts both stores back where the transaction found them, though the wallet has no RollbackOnError of its own."
+                  Source="@TransactionDemoSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="() => Transfer(20, decline: false)">Transfer 20</button>
+                <button class="btn demo-btn-danger" @onclick="() => Transfer(20, decline: true)">Transfer 20, then the bank declines</button>
+                <button class="btn demo-btn-danger" @onclick="() => Transfer(500, decline: false)">Transfer 500 - more than the wallet holds</button>
+                <button class="btn btn-secondary" @onclick="ResetLedgers">ResetState() both</button>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">wallet/Balance</span>
+                    <span class="bb-stat-value demo-accent">@Wallet.Balance.ToString("0.00")</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">ledger/Balance</span>
+                    <span class="bb-stat-value demo-accent">@Ledger.Balance.ToString("0.00")</span>
+                </div>
+            </div>
+            @if (_transactionNote.Length > 0)
+            {
+                <p class="bb-card-desc" role="status">@_transactionNote</p>
+            }
+        </DemoCard>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Async actions</h2>
+        <p>
+            An <code>[BlexAction]</code> may return <code>Task</code> or <code>ValueTask</code>. State changes
+            made before and after an <code>await</code> update the UI as they happen, but the whole
+            operation is recorded as a single action.
+        </p>
+        <CodeBlock Code="@AsyncAction" />
+
+        <DemoCard Title="An async action, rendered as it goes"
+                  Description="ProgressStore.Run is an async [BlexAction] that moves Percent from 0 to 100 in 20 steps, 100 ms apart. Every step re-renders this page the moment it lands - count the StateChanged notifications - yet the run is recorded once, as progress/Run, when it ends."
+                  Source="@AsyncDemoSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="RunProgress" disabled="@Progress.IsRunning">
+                    @(Progress.IsRunning ? "Running…" : "Run(steps: 20, delayMilliseconds: 100)")
+                </button>
+                <progress max="100" value="@Progress.Percent" aria-label="Run progress"></progress>
+            </div>
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">progress/Percent</span>
+                    <span class="bb-stat-value">@Progress.Percent%</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">StateChanged this run</span>
+                    <span class="bb-stat-value demo-accent">@_progressNotifications</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Actions recorded this run</span>
+                    <span class="bb-stat-value demo-accent">@_progressActions</span>
+                </div>
+            </div>
+            <p class="bb-card-desc">
+                The undo history gains one step for the whole run, and the Redux DevTools one entry carrying its
+                payload, <code>{ "steps": 20, "delayMilliseconds": 100 }</code>. The <a href="subscriptions#throttle">render
+                throttling demo</a> runs the same action faster, to show <code>RenderInterval</code> capping the
+                renders it causes.
+            </p>
+        </DemoCard>
+
+        <p>
+            If what you are writing is a side-effect with a loading and error lifecycle, reach for
+            <a href="effects"><code>[BlexEffect]</code></a> instead - it generates all of that for you.
+        </p>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Each async action records what its own flow changed">
+            <p>
+                An async action is recorded when it ends, with what its own body changed - across its awaits, and
+                nothing else. A click handled while it awaits, another action of the same store, a second run of
+                it started meanwhile: each is recorded as an action of its own (an assignment as its own
+                <code>Set X</code>, offered to the filters like any other), in the order they finish. Only an
+                action dispatched from <em>inside</em> its body is part of it. Rollback is synchronous only:
+                <code>RollbackOnError</code> leaves an async action alone and <code>Transaction</code> takes a
+                synchronous body, since an async action has already shown the UI what it changed before its first
+                <code>await</code>.
+            </p>
+        </Callout>
+
+        <Callout Kind="Callout.CalloutKind.Warning" Title="Never async void">
+            <p>
+                An <code>async void</code> action cannot be awaited or recorded correctly, so it is a
+                hard error (<code>BLEX010</code>). Return <code>Task</code> or <code>ValueTask</code>.
+                Similarly, an action that returns a <em>value</em> gets warning <code>BLEX011</code>,
+                because the generated wrapper discards it - put the result in a <code>[BlexState]</code>
+                field instead.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What a dispatch actually does</h2>
+        <ol class="bb-detail-list">
+            <li>Runs every middleware's <code>BeforeAction</code>. If one calls <code>Cancel()</code>, the action stops here - nothing mutates.</li>
+            <li>Opens the action for the current flow, then runs your method body. Actions dispatched from inside it are part of it; an action started elsewhere meanwhile is its own.</li>
+            <li>On completion, invalidates computed values and raises <code>StateChanged</code> once.</li>
+            <li>Records the action: middleware <code>OnAction</code> hooks run, then DevTools receives it, then subscribers.</li>
+        </ol>
+        <p>
+            The global state snapshot attached to an action is captured <em>lazily</em>, on first access.
+            Observers that never read it - persistence, for instance - never pay to serialize the whole
+            tree. When nothing at all is observing, the recording step is skipped outright.
+        </p>
+    </div>
+
+</DocPage>
+
+@code {
+    private int _notifications;
+    private int _actions;
+    private int _lastBatchNotifications;
+    private int _lastBatchActions;
+
+    [Inject] private BlexManager Manager { get; set; } = default!;
+
+    private sealed record DispatchPreset(string Label, string Name, string Payload);
+
+    private static readonly DispatchPreset[] DispatchPresets =
+    [
+        new("Apply preset", "counter/Apply preset", """{ "count": 7, "step": 2 }"""),
+        new("SetStep", "counter/SetStep", """{ "step": 3 }"""),
+        new("Set Count", "counter/Set Count", """{ "Count": 42 }"""),
+        new("ResetState", "counter/ResetState", ""),
+        new("An unknown action", "counter/Teleport", ""),
+    ];
+
+    private string _dispatchName = DispatchPresets[0].Name;
+    private string _dispatchPayload = DispatchPresets[0].Payload;
+    private string? _dispatchError;
+    private string _lastPreset = "-";
+
+    private string? _enforceError;
+    private string _rollbackNote = "";
+    private string _transactionNote = "";
+    private int _progressNotifications;
+    private int _progressActions;
+
+    protected override void OnInitialized()
+    {
+        Subscribe(Counter, Account, Wallet, Ledger, Progress);
+        Counter.StateChanged += CountNotification;
+        Progress.StateChanged += CountProgressNotification;
+
+        // OwnsSubscription hands the token to the base class, which disposes it with the component.
+        OwnsSubscription(Manager.SubscribeTo<CounterStore>(_ => _actions++));
+        OwnsSubscription(Manager.SubscribeTo<ProgressStore>(_ => _progressActions++));
+
+        // Typed: the payload arrives as the (int Count, int Step) tuple the action takes.
+        OwnsSubscription(Manager.SubscribeToAction(CounterStore.Actions.ApplyPreset,
+            (_, preset) => _lastPreset = $"Count {preset.Count}, Step {preset.Step}"));
+    }
+
+    private void RunEnforced(Action act)
+    {
+        _enforceError = null;
+        try
+        {
+            act();
+        }
+        catch (InvalidOperationException ex)
+        {
+            _enforceError = ex.Message;
+        }
+    }
+
+    /// <summary>
+    /// Runs one withdrawal and says what it left behind: whether it threw, and which actions it recorded - the
+    /// difference between a store that keeps a failed action's changes and one that rolls them back.
+    /// </summary>
+    private string Attempt(string store, Action act)
+    {
+        var recorded = new List<string>();
+        using var recording = Manager.Subscribe(ctx => recorded.Add(ctx.QualifiedName));
+        try
+        {
+            act();
+            return $"Withdrawn from {store}, and recorded as {string.Join(", ", recorded)}.";
+        }
+        catch (InvalidOperationException ex)
+        {
+            return recorded.Count == 0
+                ? $"\"{ex.Message}\" reached the caller, and {store} is exactly as it was: nothing was notified, recorded, persisted or added to the undo history."
+                : $"\"{ex.Message}\" reached the caller - and {store} kept what the action changed before the throw, recorded as {string.Join(", ", recorded)}.";
+        }
+    }
+
+    private void Transfer(decimal amount, bool decline)
+    {
+        var recorded = new List<string>();
+        using var recording = Manager.Subscribe(ctx => recorded.Add(ctx.QualifiedName));
+        try
+        {
+            Manager.Transaction(() =>
+            {
+                Wallet.Withdraw(amount);
+                Ledger.Deposit(amount);
+
+                if (decline)
+                    throw new InvalidOperationException("The bank declined the transfer.");
+            });
+
+            _transactionNote = $"Committed: {string.Join(", ", recorded)}.";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _transactionNote = $"\"{ex.Message}\" - after {(recorded.Count == 0 ? "no action" : string.Join(", ", recorded))}. "
+                + "Every store the body changed was put back in one restore, so both balances are what they were before the transfer.";
+        }
+    }
+
+    private void ResetLedgers()
+    {
+        Wallet.ResetState();
+        Ledger.ResetState();
+        _rollbackNote = "";
+        _transactionNote = "";
+    }
+
+    private void CountProgressNotification() => _progressNotifications++;
+
+    private async Task RunProgress()
+    {
+        _progressNotifications = 0;
+        _progressActions = 0;
+        await Progress.Run(20, 100);
+    }
+
+    private Task Preset(DispatchPreset preset)
+    {
+        _dispatchName = preset.Name;
+        _dispatchPayload = preset.Payload;
+        return DispatchByName();
+    }
+
+    private Task OnDispatchKeyDown(KeyboardEventArgs e) => e.Key == "Enter" ? DispatchByName() : Task.CompletedTask;
+
+    private async Task DispatchByName()
+    {
+        _dispatchError = null;
+        try
+        {
+            var payload = string.IsNullOrWhiteSpace(_dispatchPayload) ? null : JsonNode.Parse(_dispatchPayload) as JsonObject;
+            await Manager.DispatchAsync(_dispatchName.Trim(), payload);
+        }
+        catch (Exception ex)
+        {
+            // Whatever was typed: an unknown name (InvalidOperationException), a missing or null argument
+            // (ArgumentException), malformed JSON or a value that does not convert (JsonException) - or the action's
+            // own throw, since any store's action can be named here. A typo must not take the app down.
+            _dispatchError = ex.Message;
+        }
+    }
+
+    private void CountNotification() => _notifications++;
+
+    private void Measure(Action act)
+    {
+        _notifications = 0;
+        _actions = 0;
+        act();
+        _lastBatchNotifications = _notifications;
+        _lastBatchActions = _actions;
+    }
+
+    // Every button moves both fields on from where they are, so a second click has as much to report as the first.
+    private void DirectAssignment() => Measure(() =>
+    {
+        Counter.Count += 10;
+        Counter.Step += 1;
+    });
+
+    private void ViaAction() => Measure(() => Counter.ApplyPreset(Counter.Count + 20, Counter.Step + 1));
+
+    // Not "Apply preset": that is the action's own name, so the typed ApplyPreset subscription above would take
+    // this argument-less batch for it and fail to read its payload.
+    private void ViaBatch() => Measure(() => Counter.Batch("Apply preset (batched)", () =>
+    {
+        Counter.Count += 30;
+        Counter.Step += 1;
+    }));
+
+    // BlexComponentBase owns IDisposable; this is its hook for extra cleanup.
+    protected override void Dispose(bool disposing)
+    {
+        Counter.StateChanged -= CountNotification;
+        Progress.StateChanged -= CountProgressNotification;
+    }
+
+    private const string EnforceSource = """
+        [BlexStore(Name = "account", EnforceActions = true)]
+        public partial class AccountStore
+        {
+            [BlexState] private decimal _balance;
+
+            [BlexAction] private void OnDeposit(decimal amount)  => Balance += amount;
+            [BlexAction] private void OnWithdraw(decimal amount) => Balance -= amount;
+
+            // The store's own code, outside any action: compiles, throws InvalidOperationException.
+            public void SneakBonus() => Balance += 1000m;
+        }
+
+        account.Deposit(10);        // fine
+        account.SneakBonus();       // throws - "...can only change inside one of its actions"
+        account.Balance = 0;        // CS0272 - does not compile
+        """;
+
+    private const string RollbackDemoSource = """
+        // Two stores, the same body - only the attribute differs.
+        [BlexStore(Name = "wallet")]                           // default
+        [BlexStore(Name = "ledger", RollbackOnError = true)]   // a transaction per synchronous action
+
+        [BlexAction]
+        private void OnWithdraw(decimal amount)
+        {
+            Balance -= amount;
+            Entries = [.. Entries, new LedgerEntry("withdrawal", -amount)];
+
+            if (Balance < 0)
+                throw new InvalidOperationException("Insufficient funds: ...");
+        }
+
+        // wallet.Withdraw(150): throws; Balance is -50.00, the entry stays, "wallet/Withdraw" is recorded.
+        // ledger.Withdraw(150): throws; Balance is 100.00, no entry, nothing recorded.
+        """;
+
+    private const string TransactionDemoSource = """
+        @inject BlexManager Manager
+
+        private void Transfer(decimal amount, bool decline)
+        {
+            try
+            {
+                Manager.Transaction(() =>
+                {
+                    Wallet.Withdraw(amount);     // recorded
+                    Ledger.Deposit(amount);      // recorded
+
+                    if (decline)
+                        throw new InvalidOperationException("The bank declined the transfer.");
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Both stores are back where the transaction found them - the wallet included,
+                // although only the ledger is RollbackOnError.
+                _note = ex.Message;
+            }
+        }
+        """;
+
+    private const string AsyncDemoSource = """
+        [BlexStore(Name = "progress")]
+        public partial class ProgressStore
+        {
+            [BlexState] private int _percent;
+            [BlexState] private bool _isRunning;
+
+            [BlexAction]
+            private async Task OnRun(int steps, int delayMilliseconds)
+            {
+                IsRunning = true;
+                Percent = 0;
+
+                for (var step = 1; step <= steps; step++)
+                {
+                    await Task.Delay(delayMilliseconds);
+                    Percent = step * 100 / steps;    // renders now
+                }
+
+                IsRunning = false;                   // ...and the run is recorded once, here
+            }
+        }
+
+        @* The page *@
+        protected override void OnInitialized()
+        {
+            Subscribe(Progress);
+            Progress.StateChanged += () => _notifications++;
+            OwnsSubscription(Manager.SubscribeTo<ProgressStore>(_ => _actions++));
+        }
+
+        <button @onclick="() => Progress.Run(20, 100)" disabled="@Progress.IsRunning">Run</button>
+        """;
+
+    private const string Rollback = """
+        [BlexStore(Name = "ledger", RollbackOnError = true)]
+        public partial class LedgerStore
+        {
+            [BlexState] private decimal _balance;
+            [BlexState] private IReadOnlyList<Entry> _entries = [];
+
+            [BlexAction]
+            private void OnWithdraw(decimal amount)
+            {
+                Balance -= amount;
+                Entries = [.. Entries, new Entry(-amount)];
+
+                if (Balance < 0)
+                    throw new InvalidOperationException("Insufficient funds.");   // Balance and Entries are put back
+            }
+        }
+        """;
+
+    private const string TransactionSample = """
+        manager.Transaction(() =>
+        {
+            inventory.Reserve(sku, quantity);
+            cart.Add(sku, quantity);
+            wallet.Charge(price * quantity);   // throws: the reservation and the cart line are taken back too
+        });
+
+        var order = manager.Transaction(() => checkout.PlaceOrder());   // a result, when the body has one
+        """;
+
+    private const string Basic = """
+        [BlexAction]
+        private void OnIncrement() => Count += Step;
+
+        [BlexAction]
+        private void OnReset()
+        {
+            Count = 0;   // both assignments are folded into
+            Step = 1;    // a single "Reset" action and one render
+        }
+        """;
+
+    private const string BasicGenerated = """
+        public void Increment()
+            => Dispatch("Increment", () => OnIncrement());
+
+        public void Reset()
+            => Dispatch("Reset", () => OnReset());
+        """;
+
+    private const string Args = """
+        [BlexAction]
+        private void OnSetStep(int step) => Step = step;
+
+        [BlexAction]
+        private void OnAddItem(string name, int quantity = 1) => /* ... */;
+
+        // store.SetStep(5) is recorded as:
+        //   ActionName   "SetStep"
+        //   Args         [ { Name = "step", Value = 5 } ]
+        //   DevTools     { "step": 5 }
+        """;
+
+    private static readonly IReadOnlyList<ApiTable.Row> DescriptorRows =
+    [
+        new("string Name", "The action name as dispatched - the display label when it has one (<code>\"Apply preset\"</code>)."),
+        new("Type StoreType", "The store type the action belongs to."),
+        new("IReadOnlyList&lt;string&gt; ParameterNames", "The parameter names, in declaration order."),
+        new("bool Matches(BlexActionContext / BlexPreActionContext / BlexActionErrorContext)", "Whether the dispatched, about-to-run or failed action is this one: same store type, same name. Every instance of the store matches, scoped ones included."),
+        new("bool TryGetPayload(context, out TPayload)", "Reads the payload as the type the action takes, when the context is this action and its arguments were captured."),
+        new("TPayload GetPayload(context)", "The same, throwing when it is another action."),
+        new("TPayload ReadPayload(IReadOnlyList&lt;BlexActionArg&gt;)", "Rebuilds the payload from any argument list - a recorded one, or one assembled by hand."),
+        new("Task InvokeAsync(TStore, TPayload)", "Dispatches the action through its generated wrapper. Completed already for a synchronous action. <code>BlexAction&lt;TStore&gt;</code> has <code>InvokeAsync(TStore)</code>."),
+        new("Task InvokeAsync(IBlexStore, IReadOnlyList&lt;BlexActionArg&gt;?)", "The untyped form on <code>BlexActionDescriptor</code>: arguments matched by name, JSON values converted with <code>BlexJson.Options</code>."),
+    ];
+
+    private const string Typed = """
+        [BlexStore(Name = "counter")]
+        public partial class CounterStore
+        {
+            [BlexState] private int _count;
+            [BlexState] private int _step = 1;
+
+            [BlexAction] private void OnIncrement() => Count += Step;
+            [BlexAction] private void OnSetStep(int step) => Step = step;
+
+            [BlexAction(Name = "Apply preset")]
+            private void OnApplyPreset(int count, int step) { Count = count; Step = step; }
+        }
+        """;
+
+    private const string TypedGenerated = """
+        public static class Actions
+        {
+            public static readonly BlexAction<CounterStore> Increment = ...;
+            public static readonly BlexAction<CounterStore, int> SetStep = ...;
+            public static readonly BlexAction<CounterStore, (int Count, int Step)> ApplyPreset = ...;  // Name: "Apply preset"
+        }
+        """;
+
+    private const string TypedUse = """
+        // Recognize an action in any context, by symbol - a rename breaks the build, not the feature.
+        if (CounterStore.Actions.ApplyPreset.TryGetPayload(ctx, out var preset))
+            Console.WriteLine($"count {preset.Count}, step {preset.Step}");
+
+        bool isStep = CounterStore.Actions.SetStep.Matches(ctx);
+
+        // Dispatch as data, through the generated wrapper:
+        await CounterStore.Actions.ApplyPreset.InvokeAsync(counter, (10, 2));
+        await CounterStore.Actions.Increment.InvokeAsync(counter);
+        """;
+
+    private const string ByName = """
+        @inject BlexManager Manager
+
+        await Manager.DispatchAsync("counter/Apply preset", new JsonObject { ["count"] = 7, ["step"] = 2 });
+        await Manager.DispatchAsync("counter/Set Count", new JsonObject { ["Count"] = 42 });
+        await Manager.DispatchAsync("counter/ResetState");
+
+        // Arguments match by name (case-insensitively as a fallback) and convert the way stored
+        // state does: "High" for an enum, 12.5 for a decimal, an array for params.
+        // An unknown action throws InvalidOperationException; a missing argument, ArgumentException.
+
+        // Already-materialized arguments, e.g. the ones recorded when the action first ran:
+        await Manager.DispatchAsync(ctx.QualifiedName, ctx.Args);
+        """;
+
+    private const string ByNameSource = """
+        @inject BlexManager Manager
+
+        private async Task DispatchByName()
+        {
+            try
+            {
+                var payload = JsonNode.Parse(_payload) as JsonObject;   // { "count": 7, "step": 2 }
+                await Manager.DispatchAsync(_name, payload);             // "counter/Apply preset"
+            }
+            catch (Exception ex)   // an unknown name, a missing or null argument, bad JSON - or the action's own throw
+            {
+                _error = ex.Message;
+            }
+        }
+
+        protected override void OnInitialized()
+            => OwnsSubscription(Manager.SubscribeToAction(CounterStore.Actions.ApplyPreset,
+                   (_, preset) => _lastPreset = $"Count {preset.Count}, Step {preset.Step}"));
+
+        // Everything the store can be dispatched as:
+        Counter.ActionDescriptors.Select(a => a.Name)
+        """;
+
+    private const string Enforce = """
+        [BlexStore(Name = "account", EnforceActions = true)]
+        public partial class AccountStore
+        {
+            [BlexState] private decimal _balance;
+
+            [BlexAction] private void OnDeposit(decimal amount) => Balance += amount;
+
+            public void Sneak() => Balance = 0;     // compiles, but throws at runtime: not inside an action
+        }
+
+        account.Deposit(10);     // fine
+        account.Balance = 0;     // CS0272: the setter is private
+        """;
+
+    private const string EnforceBind = """
+        @* @bind needs a setter; route it through an action instead *@
+        <input @bind:get="Search.Query" @bind:set="Search.SetQuery" />
+        """;
+
+    private const string BatchSource = """
+        // 1. Two direct assignments -> two "Set X" actions, two renders.
+        Counter.Count += 10;
+        Counter.Step += 1;
+
+        // 2. One [BlexAction] method -> one action, one render.
+        Counter.ApplyPreset(Counter.Count + 20, Counter.Step + 1);
+
+        [BlexAction(Name = "Apply preset")]
+        private void OnApplyPreset(int count, int step)
+        {
+            Count = count;
+            Step = step;
+        }
+
+        // 3. Batch from the caller -> one action, one render. A name of its own: "Apply preset"
+        //    would pass for the action above, and a typed subscriber would find no payload.
+        Counter.Batch("Apply preset (batched)", () =>
+        {
+            Counter.Count += 30;
+            Counter.Step += 1;
+        });
+        """;
+
+    private const string SetX = """
+        store.Count = 5;
+
+        // Recorded as:
+        //   ActionName   "Set Count"
+        //   Args         [ { Name = "Count", Value = 5 } ]
+        """;
+
+    private const string BatchApi = """
+        // One notification, one history entry, one middleware pass. Give it a name no action
+        // of the store has: anything matching that action by name would take the batch for it.
+        store.Batch("Apply defaults", () =>
+        {
+            store.Count = 10;
+            store.Step = 5;
+        });
+        """;
+
+    private const string Reset = """
+        store.ResetState();   // back to the state captured at first registration
+        """;
+
+    private const string ResetAll = """
+        @inject BlexManager Manager
+
+        // Sign-out: every store back to its registered state, each as its own action.
+        private void SignOut()
+        {
+            _auth.Clear();
+            Manager.ResetAll();
+        }
+
+        // Keep one store out of it with a filter veto:
+        builder.Services.AddBitBlexServices(options => options.UseFilter(
+            ctx => !(ctx.Store.Name == "theme" && ctx.ActionName == "ResetState")));
+        """;
+
+    private const string AsyncAction = """
+        [BlexAction]
+        private async Task OnSaveDraft(string text)
+        {
+            IsSaving = true;              // renders immediately
+            await _api.SaveAsync(text);
+            IsSaving = false;             // renders again
+            SavedAt = DateTimeOffset.Now;
+        }
+        // Recorded once, as "SaveDraft".
+        """;
+}

@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
 namespace Bit.BlazorUI.Tests.Components.Utilities.Separator;
@@ -18,11 +18,11 @@ public class BitSeparatorTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitSeparatorShouldRespectIsEnabled(bool isEnabled)
+    public void BitSeparatorShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitSeparator>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var cssClass = isEnabled ? null : " bit-dis";
@@ -31,7 +31,7 @@ public class BitSeparatorTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitSeparatorShouldRespectIsEnabledChangingAfterRender()
+    public void BitSeparatorShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitSeparator>();
 
@@ -39,7 +39,7 @@ public class BitSeparatorTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-hrz bit-spr-ctr bit-dis"" id:ignore></div>");
@@ -297,12 +297,15 @@ public class BitSeparatorTests : BunitTestContext
                                   </div>");
     }
 
+    // Only Start, Center and End mean anything along the line; every other placement centers the content.
     [TestMethod,
-        DataRow(BitSeparatorAlignContent.Start),
-        DataRow(BitSeparatorAlignContent.Center),
-        DataRow(BitSeparatorAlignContent.End)
+        DataRow(BitPlacement.Start),
+        DataRow(BitPlacement.Center),
+        DataRow(BitPlacement.End),
+        DataRow(BitPlacement.Top),
+        DataRow(BitPlacement.Bottom)
     ]
-    public void BitSeparatorShouldRespectAlignContent(BitSeparatorAlignContent alignContent)
+    public void BitSeparatorShouldRespectAlignContent(BitPlacement alignContent)
     {
         var component = RenderComponent<BitSeparator>(parameters =>
         {
@@ -311,8 +314,8 @@ public class BitSeparatorTests : BunitTestContext
 
         var cssClass = alignContent switch
         {
-            BitSeparatorAlignContent.Start => "bit-spr-srt",
-            BitSeparatorAlignContent.End => "bit-spr-end",
+            BitPlacement.Start => "bit-spr-srt",
+            BitPlacement.End => "bit-spr-end",
             _ => "bit-spr-ctr"
         };
 
@@ -381,9 +384,9 @@ public class BitSeparatorTests : BunitTestContext
             parameters.Add(p => p.Decorative, decorative);
         });
 
-        var role = decorative ? "none" : "separator";
+        var aria = decorative ? @"role=""none"" aria-hidden=""true""" : @"role=""separator""";
 
-        component.MarkupMatches(@$"<div role=""{role}"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+        component.MarkupMatches(@$"<div {aria} class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -633,23 +636,25 @@ public class BitSeparatorTests : BunitTestContext
 
     [TestMethod,
         DataRow(null),
-        DataRow(BitSeparatorLineStyle.Solid),
-        DataRow(BitSeparatorLineStyle.Dashed),
-        DataRow(BitSeparatorLineStyle.Dotted),
-        DataRow(BitSeparatorLineStyle.Double)
+        DataRow(BitLineStyle.Solid),
+        DataRow(BitLineStyle.Dashed),
+        DataRow(BitLineStyle.Dotted),
+        DataRow(BitLineStyle.Double)
     ]
-    public void BitSeparatorShouldRespectLineStyle(BitSeparatorLineStyle? lineStyle)
+    public void BitSeparatorShouldRespectLineStyle(BitLineStyle? lineStyle)
     {
         var component = RenderComponent<BitSeparator>(parameters =>
         {
             parameters.Add(p => p.LineStyle, lineStyle);
         });
 
+        // Solid has a class of its own, unlike the unset default, so that it wins over the line-style variable.
         var cssClass = lineStyle switch
         {
-            BitSeparatorLineStyle.Dashed => "bit-spr-dsh ",
-            BitSeparatorLineStyle.Dotted => "bit-spr-dot ",
-            BitSeparatorLineStyle.Double => "bit-spr-dbl ",
+            BitLineStyle.Solid => "bit-spr-sld ",
+            BitLineStyle.Dashed => "bit-spr-dsh ",
+            BitLineStyle.Dotted => "bit-spr-dot ",
+            BitLineStyle.Double => "bit-spr-dbl ",
             _ => null
         };
 
@@ -665,7 +670,7 @@ public class BitSeparatorTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.LineStyle, BitSeparatorLineStyle.Dashed);
+            parameters.Add(p => p.LineStyle, BitLineStyle.Dashed);
         });
 
         component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-dsh bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
@@ -862,7 +867,7 @@ public class BitSeparatorTests : BunitTestContext
             parameters.Add(p => p.Thickness, "3px");
             parameters.Add(p => p.ContentOffset, "2rem");
             parameters.Add(p => p.Inset, "1rem");
-            parameters.Add(p => p.AlignContent, BitSeparatorAlignContent.Start);
+            parameters.Add(p => p.AlignContent, BitPlacement.Start);
             parameters.AddChildContent("Bit Blazor UI");
         });
 
@@ -881,7 +886,7 @@ public class BitSeparatorTests : BunitTestContext
         var component = RenderComponent<BitSeparator>(parameters =>
         {
             parameters.Add(p => p.Vertical, true);
-            parameters.Add(p => p.AlignContent, BitSeparatorAlignContent.End);
+            parameters.Add(p => p.AlignContent, BitPlacement.End);
             parameters.Add(p => p.ContentOffset, "25%");
             parameters.AddChildContent("<span>Bit</span>");
         });
@@ -976,5 +981,119 @@ public class BitSeparatorTests : BunitTestContext
 
         // Both tiers render their class; the stylesheet declares the Color tier last, so it wins.
         component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-bsg bit-spr-btr bit-spr-err bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [TestMethod,
+        DataRow("li", "LI"),
+        DataRow(" li ", "LI"),
+        DataRow("section", "SECTION"),
+        DataRow("div", "DIV"),
+        DataRow(null, "DIV"),
+        DataRow("", "DIV"),
+        DataRow("hr", "DIV"),
+        DataRow("img", "DIV"),
+        DataRow("li onclick", "DIV"),
+        DataRow("<li>", "DIV")
+    ]
+    public void BitSeparatorShouldRespectElement(string? element, string expectedTagName)
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.AddChildContent("Bit Blazor UI");
+        });
+
+        var root = component.Find(".bit-spr");
+
+        Assert.AreEqual(expectedTagName, root.TagName);
+        // Whatever tag it renders, it is a separator to assistive technologies and holds its content.
+        Assert.AreEqual("separator", root.GetAttribute("role"));
+        Assert.AreEqual("Bit Blazor UI", component.Find(".bit-spr-cnt").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldRespectElementChangingAfterRender()
+    {
+        var component = RenderComponent<BitSeparator>();
+
+        Assert.AreEqual("DIV", component.Find(".bit-spr").TagName);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Element, "li");
+        });
+
+        Assert.AreEqual("LI", component.Find(".bit-spr").TagName);
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldKeepASplattedAriaLabelledbyUnlessDecorative()
+    {
+        var component = RenderComponent<BitSeparatorAriaLabelledbyTest>();
+
+        var separators = component.FindAll(".bit-spr");
+
+        // A name the page points at elsewhere is kept as written rather than replaced by the content's id...
+        Assert.AreEqual("shipping-heading", separators[0].GetAttribute("aria-labelledby"));
+        // ...while a decorative separator is not a separator to name at all.
+        Assert.IsFalse(separators[1].HasAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldHideOnlyAnEmptyDecorativeSeparator()
+    {
+        var component = RenderComponent<BitSeparatorAriaHiddenTest>();
+
+        var separators = component.FindAll(".bit-spr");
+
+        // An empty decorative separator is hidden outright...
+        Assert.AreEqual("true", separators[0].GetAttribute("aria-hidden"));
+        // ...one with content keeps the content readable...
+        Assert.IsFalse(separators[1].HasAttribute("aria-hidden"));
+        // ...an announced one is never hidden...
+        Assert.IsFalse(separators[2].HasAttribute("aria-hidden"));
+        // ...and an aria-hidden the page splats on is kept as written.
+        Assert.AreEqual("false", separators[3].GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldUnhideADecorativeSeparatorGivenContentAfterRender()
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Decorative, true);
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-spr").GetAttribute("aria-hidden"));
+
+        component.Render(parameters =>
+        {
+            parameters.AddChildContent("Bit Blazor UI");
+        });
+
+        Assert.IsFalse(component.Find(".bit-spr").HasAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldKeepTheAttributesThePageSplatsOn()
+    {
+        var component = RenderComponent<BitSeparatorSplattedAttributesTest>();
+
+        var separators = component.FindAll(".bit-spr");
+
+        // A plain aria-label names the separator rather than being written over with the null of the parameter...
+        Assert.AreEqual("End of shipping", separators[0].GetAttribute("aria-label"));
+        // ...and wins over the content, which then does not name it as well.
+        Assert.AreEqual("End of shipping", separators[1].GetAttribute("aria-label"));
+        Assert.IsFalse(separators[1].HasAttribute("aria-labelledby"));
+        // Attribute names are case insensitive, so a differently cased one is the same attribute, kept as written.
+        Assert.AreEqual("shipping-heading", separators[2].GetAttribute("aria-labelledby"));
+        Assert.AreEqual("false", separators[3].GetAttribute("aria-hidden"));
+        // The root attributes the component builds itself are joined with, or yield to, the splatted ones.
+        Assert.IsTrue(separators[4].ClassList.Contains("bit-spr"));
+        Assert.IsTrue(separators[4].ClassList.Contains("page-class"));
+        StringAssert.Contains(separators[4].GetAttribute("style"), "margin: 0");
+        Assert.AreEqual("rtl", separators[4].GetAttribute("dir"));
+        Assert.AreEqual("page-id", separators[4].GetAttribute("id"));
     }
 }

@@ -1,0 +1,94 @@
+﻿@page "/e2e/data-grid/tree"
+
+@* BitDataGrid's tree data: ChildrenSelector turning the grid into a treegrid, TreeInitiallyExpanded both ways, the
+   node toggles, ExpandAllAsync / CollapseAllAsync, sorting within the hierarchy, a search and a filter pruning it to
+   the matching branches, the tree keyboard (the forward arrow opens, the backward one closes or goes to the parent),
+   and a lazily loaded tree (ChildrenProvider with HasChildrenSelector). *@
+
+<PageTitle>BitDataGrid tree E2E</PageTitle>
+
+<h1>BitDataGrid tree data</h1>
+
+<E2ESection Id="tree" Title="Tree data">
+    <button id="btn-tree-expand" type="button" @onclick="() => _treeGrid.ExpandAllAsync()">Expand all</button>
+    <button id="btn-tree-collapse" type="button" @onclick="() => _treeGrid.CollapseAllAsync()">Collapse all</button>
+    <BitDataGrid @ref="_treeGrid" TItem="Node" Id="grid-tree" Items="@_roots" KeyField="n => n.Id"
+                 ChildrenSelector="n => n.Children" TreeInitiallyExpanded="true"
+                 ShowSearchBox="true" SearchDebounce="0" Filterable="true" FilterDebounce="0" CellNavigation="true">
+        <BitDataGridColumn Property="n => n.Name" />
+        <BitDataGridColumn Property="n => n.Kind" />
+        <BitDataGridColumn Property="n => n.Size" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="tree-collapsed" Title="Tree initially collapsed">
+    <BitDataGrid TItem="Node" Id="grid-tree-collapsed" Items="@_roots" KeyField="n => n.Id" ChildrenSelector="n => n.Children">
+        <BitDataGridColumn Property="n => n.Name" />
+        <BitDataGridColumn Property="n => n.Kind" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="tree-lazy" Title="Lazy tree">
+    <BitDataGrid TItem="Node" Id="grid-tree-lazy" Items="@_lazyRoots" KeyField="n => n.Id"
+                 ChildrenProvider="LoadChildrenAsync" HasChildrenSelector="IsFolder" ShowSearchBox="true" Filterable="true">
+        <BitDataGridColumn Property="n => n.Name" />
+        <BitDataGridColumn Property="n => n.Kind" />
+    </BitDataGrid>
+    <p>loads <span id="lazy-loads">@_lazyLoads</span> | <span id="lazy-log">@_lazyLog</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Node
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Kind { get; set; } = "Folder";
+        public int Size { get; set; }
+        public List<Node> Children { get; set; } = [];
+    }
+
+    // src (1) > app (2) > main.cs (3), util.cs (4); src > readme.md (5); docs (6) > guide.md (7); license (8)
+    private readonly List<Node> _roots =
+    [
+        new()
+        {
+            Id = 1, Name = "src", Size = 300, Children =
+            [
+                new() { Id = 2, Name = "app", Size = 250, Children = [new() { Id = 3, Name = "main.cs", Kind = "File", Size = 200 }, new() { Id = 4, Name = "util.cs", Kind = "File", Size = 50 }] },
+                new() { Id = 5, Name = "readme.md", Kind = "File", Size = 50 },
+            ]
+        },
+        new() { Id = 6, Name = "docs", Size = 70, Children = [new() { Id = 7, Name = "guide.md", Kind = "File", Size = 70 }] },
+        new() { Id = 8, Name = "license", Kind = "File", Size = 10 },
+    ];
+
+    private readonly List<Node> _lazyRoots =
+    [
+        new() { Id = 100, Name = "photos" },
+        new() { Id = 200, Name = "music" },
+        new() { Id = 300, Name = "notes.txt", Kind = "File" },
+    ];
+
+    private BitDataGrid<Node> _treeGrid = default!;
+    private int _lazyLoads;
+    private string _lazyLog = "";
+
+    private static bool IsFolder(Node node) => node.Kind == "Folder";
+
+    private async Task<IEnumerable<Node>?> LoadChildrenAsync(Node node)
+    {
+        _lazyLoads++;
+        _lazyLog = $"loading {node.Name}";
+        StateHasChanged();
+        await Task.Delay(400);
+        _lazyLog = $"loaded {node.Name}";
+        StateHasChanged();
+        return
+        [
+            new Node { Id = node.Id + 1, Name = $"{node.Name}-a", Kind = "File" },
+            new Node { Id = node.Id + 2, Name = $"{node.Name}-b", Kind = "File" },
+        ];
+    }
+}

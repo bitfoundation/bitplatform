@@ -3,6 +3,8 @@ using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Net.Http.Headers;
 using System.Text.RegularExpressions;
 //#if(module == "Sales")
 using Boilerplate.Shared.Features.Products;
@@ -75,6 +77,51 @@ public static partial class WebApplicationExtensions
                 // remembered redirect would pin one user's language onto a url forever.
                 context.Response.GetTypedHeaders().CacheControl = new() { NoStore = true, Private = true };
                 context.Response.Redirect(UriHelper.BuildRelative(request.PathBase, $"/{culture}{barePath}", query));
+            });
+
+            return app;
+        }
+
+        /// <summary>
+        /// Serves the .br file the publish wrote next to a static file to a browser that accepts Brotli, the way
+        /// UseBlazorFrameworkFiles does for _framework, instead of leaving UseResponseCompression to compress it again.
+        /// </summary>
+        public WebApplication UsePrecompressedStaticFiles()
+        {
+            var contentTypes = new FileExtensionContentTypeProvider();
+            contentTypes.Mappings[".br"] = "application/octet-stream";
+
+            app.UseWhen(context => (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
+                && context.Request.Path.StartsWithSegments("/_framework") is false
+                && contentTypes.TryGetContentType(context.Request.Path.Value!, out _)
+                && app.Environment.WebRootFileProvider.GetFileInfo($"{context.Request.Path}.br").Exists, precompressedApp =>
+            {
+                precompressedApp.Use(async (context, next) =>
+                {
+                    context.Response.Headers.Append(HeaderNames.Vary, HeaderNames.AcceptEncoding);
+
+                    if (context.Request.GetTypedHeaders().AcceptEncoding.Any(encoding => encoding.Value.Equals("br", StringComparison.OrdinalIgnoreCase) && encoding.Quality is not 0))
+                    {
+                        context.Request.Path = $"{context.Request.Path}.br";
+                        context.Response.Headers.ContentEncoding = "br";
+                        context.Response.GetTypedHeaders().CacheControl = new() { NoTransform = true };
+                    }
+
+                    await next.Invoke();
+                });
+
+                precompressedApp.UseStaticFiles(new StaticFileOptions
+                {
+                    ContentTypeProvider = contentTypes,
+                    OnPrepareResponse = file =>
+                    {
+                        if (file.Context.Response.Headers.ContentEncoding == "br"
+                            && contentTypes.TryGetContentType(Path.GetFileNameWithoutExtension(file.File.Name), out var contentType))
+                        {
+                            file.Context.Response.ContentType = contentType;
+                        }
+                    }
+                });
             });
 
             return app;

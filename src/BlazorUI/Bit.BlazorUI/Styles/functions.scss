@@ -1,4 +1,6 @@
 ﻿@use 'sass:math';
+@use 'sass:meta';
+@use 'sass:string';
 @import "theme-variables.scss";
 @import "color-role-maps.scss";
 
@@ -28,6 +30,35 @@ $html-font-size: 16px;
 }
 
 /*
+ * mot-scaled-duration($duration) / mot-scaled-delay($delay)
+ * --------------------------------------------------
+ * The one way a component reads a duration the PAGE can set - a public --bit-<Component>-*-duration
+ * variable, a duration parameter the component writes inline as a private token - so that it follows
+ * the reduced-motion preference exactly like the theme's --bit-mot-duration* tokens do: it is scaled
+ * by $mot-duration-factor, which is 1 normally, 0 under prefers-reduced-motion, and 1 again inside a
+ * ForceAnimation (.bit-fam) subtree or wherever an app restores the --bit-mot-* tokens. A component
+ * that reads its durations through these writes no reduced-motion query and no .bit-fam restore of
+ * its own for them.
+ *
+ *     --bit-tgl-dur: mot-scaled-duration(var(--bit-Toggle-transition-duration, #{$mot-duration-short}));
+ *
+ * A collapsed duration lands on 0.01ms rather than 0ms, for the reason motion.fluent.scss gives (a
+ * zero-length transition never fires its transitionend), while a 0 the page asked for stays 0 as long
+ * as motion is on. A delay collapses to nothing: a transition that no longer plays has nothing left to
+ * postpone. The theme default named as the fallback already collapses by itself, and scaling it again
+ * changes nothing. Looping animations are not read through these - they scale by $mot-loop-factor.
+ * The factor is inherited, so the result reads the same whether it is written into the property itself
+ * or into a private token of the root that the parts read.
+ */
+@function mot-scaled-duration($duration) {
+    @return calc($duration * $mot-duration-factor + 0.01ms * (1 - $mot-duration-factor));
+}
+
+@function mot-scaled-delay($delay) {
+    @return calc($delay * $mot-duration-factor);
+}
+
+/*
  * translucent($color, $percent)
  * --------------------------------------------------
  * Applies alpha to ANY color expression - a var() token reference, currentcolor, a system color,
@@ -46,6 +77,48 @@ $html-font-size: 16px;
 }
 
 /*
+ * focus-ring-layers($color, $offset)
+ * --------------------------------------------------
+ * The two box-shadow layers of a focus ring, composed where they are used: an inner ring in the page
+ * background (the separator) and an outer ring in $color. Written out where the element is styled,
+ * every var() in them - the color, --bit-clr-bg-pri, the width and the offset - is substituted against
+ * that element, so a value set on any ancestor or on the element's own Style reaches the ring. This is
+ * the same recipe the global --bit-shd-focus-ring is declared with in shapes.fluent.scss.
+ *
+ * A zero offset is added as a number rather than as a length, and calc() refuses to add the two, so the
+ * ring that sits against its element is written with the width on its own.
+ */
+@function focus-ring-layers($color, $offset: $shp-focus-ring-offset) {
+    @if $offset == 0 {
+        @return string.unquote("0 0 0 0 #{$clr-bg-pri}, 0 0 0 #{$shp-focus-ring-width} #{$color}");
+    }
+
+    @return string.unquote("0 0 0 #{$offset} #{$clr-bg-pri}, 0 0 0 calc(#{$offset} + #{$shp-focus-ring-width}) #{$color}");
+}
+
+/*
+ * focus-ring-color($color)
+ * --------------------------------------------------
+ * The chain a focus-ring-own() call takes, out of a component's focus color: the same var()s less the
+ * primary focus color they fall back to, which is what the global ring draws anyway. It lets a component
+ * name its public focus variable once, in the plain color its flush or inset rings and borders read:
+ *
+ *   $my-focus: var(--bit-MyComponent-focus-color, #{$clr-pri-focus});
+ *   $my-focus-ring: focus-ring-color($my-focus); // var(--bit-MyComponent-focus-color)
+ */
+@function focus-ring-color($color) {
+    $color: meta.inspect($color);
+    $fallback: ', #{$clr-pri-focus}';
+    $at: string.index($color, $fallback);
+
+    @if $at == null {
+        @error "focus-ring-color() takes a color that falls back to #{$clr-pri-focus}: #{$color}";
+    }
+
+    @return string.unquote(string.slice($color, 1, $at - 1) + string.slice($color, $at + string.length($fallback)));
+}
+
+/*
  * focus-ring($color, $offset)
  * --------------------------------------------------
  * Renders a consistent, theme-aware focus indicator across components.
@@ -56,30 +129,166 @@ $html-font-size: 16px;
  *     WCAG 2.4.11 (Focus Not Obscured) and 2.4.13 (Focus Appearance).
  *   - Width is driven by --bit-shp-focus-ring-width and offset by --bit-shp-focus-ring-offset,
  *     both globally themable.
- *   - Color defaults to --bit-clr-pri-focus and accepts any role token (e.g. $clr-err-focus)
- *     so invalid/success/etc. variants can opt into matching focus colors.
+ *   - The default call draws the global --bit-shd-focus-ring, so replacing that token re-shapes
+ *     every indicator drawn with it. The token is a composite, and a composite substitutes its
+ *     var()s where it is declared: on :root, on a [bit-theme] scope, and on the element a
+ *     BitThemeProvider or BitThemeManager.ApplyBitThemeAsync applies a theme to (both re-declare it
+ *     whenever the theme re-values one of its inputs). A focus color, page background or ring
+ *     width set by app CSS on any other element does not reach it.
+ *   - A call that passes a color or an offset composes the two layers itself (focus-ring-layers),
+ *     against the element, so the color always beats the global token. That is right for a ring that
+ *     MEANS something (the error color of an invalid control, the disabled color) and for one placed
+ *     against its element by a zero offset (a grid cell), a shape the global token cannot take. A
+ *     component's own focus color - a Color parameter, a --bit-<Component>-focus-color - is drawn with
+ *     focus-ring-own instead, which gives the global token back whenever none of it is set.
  *   - In Windows High Contrast / forced-colors mode box-shadows are stripped, so a real
  *     outline in the system Highlight color is rendered instead (matching focus-underline-ring).
+ *   - $also is the box-shadow the element already draws for a reason of its own - an elevation -
+ *     which the ring would otherwise replace while the element is focused. It is kept as the last
+ *     layer, under the ring.
  *
  * Usage:
  *   .my-component {
  *       &:focus-visible { @include focus-ring; }
  *       &.bit-inv:focus-visible { @include focus-ring($clr-err-focus); }
+ *       &.bit-raised:focus-visible { @include focus-ring($also: var(--my-elevation)); }
  *   }
  */
-@mixin focus-ring($color: $clr-pri-focus, $offset: $shp-focus-ring-offset) {
+@mixin focus-ring($color: $clr-pri-focus, $offset: $shp-focus-ring-offset, $also: null) {
+    $kept: '';
+
+    @if $also != null {
+        $kept: ', #{$also}';
+    }
+
     outline: none; // Replace native outline with the themed ring below.
     --bit-focus-ring-color: #{$color};
     --bit-focus-ring-offset: #{$offset};
 
-    // Inline fallback mirrors the global --bit-shd-focus-ring expression in shapes.fluent.scss
-    // so focus indicators still render if a consumer-defined theme omits that token.
-    box-shadow: var(--bit-shd-focus-ring,
-        0 0 0 var(--bit-focus-ring-offset, #{$offset}) #{$clr-bg-pri},
-        0 0 0 calc(var(--bit-focus-ring-offset, #{$offset}) + #{$shp-focus-ring-width}) var(--bit-focus-ring-color, #{$color}));
+    @if $color == $clr-pri-focus and $offset == $shp-focus-ring-offset {
+        // Every bundle declares the global token (shapes.fluent.scss), so it is read without a fallback.
+        box-shadow: #{$box-shadow-focus-ring}#{$kept};
+    }
+    @else {
+        // A per-call color or offset cannot travel through --bit-shd-focus-ring: a custom property's
+        // var() references are substituted at the element that DECLARES it, so the composite has already
+        // resolved --bit-focus-ring-color to the primary focus color by the time anything inherits it,
+        // and the two declarations above would be read by nothing. The layers are composed here instead,
+        // where they are substituted against this element.
+        box-shadow: #{focus-ring-layers($color, $offset)}#{$kept};
+    }
 
-    // In Windows High Contrast / forced-colors mode box-shadows are stripped, which would leave the
-    // focused element with no visible indicator. Restore a real outline so focus stays perceivable.
+    @include focus-ring-forced-colors($offset);
+}
+
+/*
+ * focus-ring-own($color, $also)
+ * --------------------------------------------------
+ * The focus ring of a component that has a focus color of its own - a Color parameter, a
+ * --bit-<Component>-focus-color: drawn in that color when one is set, and as the library's global
+ * --bit-shd-focus-ring when none is, so an app that re-shapes the global ring re-shapes every
+ * component it has not recolored.
+ *
+ * $color is the component's var() chain WITHOUT the last fallback an unset parameter stood for -
+ * var(--bit-btn-clr-focus, var(--bit-Button-focus-color)), never one ending in $clr-pri-focus, which
+ * is what the global ring draws anyway. While nothing in the chain is set, the ring composed from it
+ * reads an unset variable with no fallback, which makes --bit-focus-ring-own invalid at computed-value
+ * time, and an invalid --bit-focus-ring-own is what hands box-shadow over to the global composite. The
+ * component's ring has to be composed here rather than through that composite, which substitutes its
+ * var()s where it is declared, where no color set further down the page can reach it.
+ *
+ * --bit-focus-ring-own is registered as a property that does not inherit (general.scss), so a recolored
+ * ring never reaches a focusable nested inside the element that draws it - whichever rule an engine
+ * follows for a custom property that is invalid at computed-value time.
+ *
+ * Usage:
+ *   .my-component:focus-visible {
+ *       @include focus-ring-own(var(--bit-my-clr-focus, var(--bit-MyComponent-focus-color)));
+ *   }
+ */
+@mixin focus-ring-own($color, $also: null) {
+    @if string.index(meta.inspect($color), '--bit-clr-pri-focus') {
+        @error "focus-ring-own() takes the color chain without its last fallback - leave out #{$clr-pri-focus}, which is what the global ring draws: #{$color}";
+    }
+
+    $kept: '';
+
+    @if $also != null {
+        $kept: ', #{$also}';
+    }
+
+    outline: none; // Replace native outline with the themed ring below.
+    --bit-focus-ring-offset: #{$shp-focus-ring-offset};
+    --bit-focus-ring-own: #{focus-ring-layers($color)};
+    box-shadow: var(--bit-focus-ring-own, #{$box-shadow-focus-ring})#{$kept};
+
+    @include focus-ring-forced-colors($shp-focus-ring-offset);
+}
+
+/*
+ * focus-ring-inset($color, $width, $offset, $band, $also)
+ * --------------------------------------------------
+ * The focus indicator of an element whose outward ring would be cut off: one that sits flush against
+ * the edge of an ancestor that clips its overflow (a scrolling list, a rounded frame, a slide container),
+ * or one whose box-shadow is already spent on something else (the elevation of a callout).
+ *
+ * Behavior:
+ *   - An outline drawn inwards: nothing outside the element is painted, so no ancestor's overflow can
+ *     clip it, and an outline is painted above the content, so a child with a background of its own
+ *     cannot hide it the way it hides an inset box-shadow.
+ *   - $width is the stroke (the global focus-ring width unless a heavier one is asked for) and $offset
+ *     the gap between the element's edge and the ring, 0 for a ring flush with the edge.
+ *   - $band adds the separator band of the outward ring on the inner side of the stroke, so the ring
+ *     keeps a contrasting neighbour (WCAG 1.4.11) however busy the content under it is - a slide image.
+ *     It is a color, or true for the page background the outward ring is separated with. The band is an
+ *     inset box-shadow; $also is the box-shadow the element draws for a reason of its own, kept under it.
+ *     Without a band the box-shadow is left alone, so a call that replaces a focus-ring-own ring on a
+ *     clipping layout clears that one with box-shadow: none of its own.
+ *   - In Windows High Contrast / forced-colors mode the outline survives and turns to the system
+ *     Highlight color (the band, a box-shadow, is stripped).
+ *
+ * Usage:
+ *   .my-component-item:focus-visible { @include focus-ring-inset(var(--bit-MyComponent-focus-color, #{$clr-pri-focus})); }
+ *   .my-component-arrow:focus-visible { @include focus-ring-inset(var(--bit-my-focus, #{$clr-pri-focus}), $band: true); }
+ */
+@mixin focus-ring-inset($color, $width: $shp-focus-ring-width, $offset: 0, $band: null, $also: null) {
+    outline: #{$width} solid #{$color};
+
+    @if $offset == 0 {
+        outline-offset: calc(-1 * #{$width});
+    }
+    @else {
+        outline-offset: calc(-1 * (#{$width} + #{$offset}));
+    }
+
+    @if $band != null and $band != false {
+        $band-color: $band;
+        $band-spread: calc(#{$width} + #{$shp-focus-ring-offset});
+        $kept: '';
+
+        @if $band == true {
+            $band-color: $clr-bg-pri;
+        }
+
+        @if $offset != 0 {
+            $band-spread: calc(#{$offset} + #{$width} + #{$shp-focus-ring-offset});
+        }
+
+        @if $also != null {
+            $kept: ', #{$also}';
+        }
+
+        box-shadow: inset 0 0 0 #{$band-spread} #{$band-color}#{$kept};
+    }
+
+    @media (forced-colors: active) {
+        outline-color: Highlight;
+    }
+}
+
+// In Windows High Contrast / forced-colors mode box-shadows are stripped, which would leave the
+// focused element with no visible indicator. Restore a real outline so focus stays perceivable.
+@mixin focus-ring-forced-colors($offset) {
     @media (forced-colors: active) {
         outline: #{$shp-focus-ring-width} solid Highlight;
 
@@ -121,4 +330,186 @@ $html-font-size: 16px;
  */
 @mixin focus-anchor {
     outline: none;
+}
+
+/*
+ * visually-hidden
+ * --------------------------------------------------
+ * Takes an element out of the flow and out of sight while leaving it in the accessibility tree: the
+ * text a control points at through aria-describedby, a live region announcing a state, the name of a
+ * part that shows none. display:none and visibility:hidden would hide it from the screen readers it
+ * is written for as well, and a box sized to nothing is dropped from the tree by some of them, so it
+ * keeps one pixel and is clipped away from it.
+ *   - The pixel stays where the element would have been laid out, and the negative margin draws it
+ *     back over that spot, so it adds nothing to the scrollable overflow of a container it sits at
+ *     the edge of. It is never parked off-screen with an offset: a left of -10000px makes an RTL
+ *     page, or any container that scrolls to the left, scroll by that much.
+ *   - No border and no padding, so the pixel is the whole box; nowrap, so the box does not wrap its
+ *     text a word per line, which some screen readers then read without the spaces between words.
+ *   - clip-path does the clipping (it also takes the pixel out of hit-testing), and clip, which only
+ *     an absolutely positioned box honours, stays beside it for the WebViews a Hybrid app may run in
+ *     that predate unprefixed clip-path.
+ *   - Every component hides its screen-reader-only text through this one mixin, never a copy of it,
+ *     so a change to the technique is made once (BitVisuallyHiddenContractTests). Markup built for a
+ *     page without the stylesheet (BitMarkdownRenderer's inline style) is the one place it is spelled
+ *     out, and that test pins it to these declarations.
+ *   - What the element needs beyond it (an anchor, a user-select) is declared after the include.
+ *   - The element is absolutely positioned, so the part it is rendered in is its containing block:
+ *     that part declares `position: relative` (the root, or the item, chip or cell holding it).
+ *     Otherwise the pixel is placed against whatever positioned ancestor the page happens to have,
+ *     outside every box between the two, and a component in a horizontally scrolling box - or past
+ *     its edge - adds that pixel to the page's scrollable overflow and widens the page. The one
+ *     exception is a part rendered as a sibling of the root (a description the root points at, a
+ *     live region kept out of a busy root), which nothing of the component encloses.
+ *   - A part that is shown again on a state (a skip link on focus) is hidden under a selector that
+ *     stops matching in that state (`.bit-xyz-skp:where(:not(:focus))`), so nothing the mixin sets
+ *     has to be taken back one declaration at a time.
+ *
+ * Usage:
+ *   .bit-xyz-dsc,
+ *   .bit-xyz-lvr {
+ *       @include visually-hidden;
+ *   }
+ */
+@mixin visually-hidden {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+}
+
+/*
+ * visually-hidden-control
+ * --------------------------------------------------
+ * A native form control kept in the page for what the browser does with it - the focus, the keyboard
+ * of a radio group, what a screen reader says about a checkbox - while the component draws what is
+ * seen in its place (a label, a box). It is hidden the way visually-hidden hides text, and on top of
+ * that it is never painted and never the target of the pointer, so its pixel neither shows a native
+ * focus outline nor takes a click meant for the label drawn over it. Its margin is zeroed again: the
+ * control is positioned against the part drawn for it, and a focus that scrolls it into view has to
+ * scroll to that part, not to a pixel past its edge.
+ */
+@mixin visually-hidden-control {
+    @include visually-hidden;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/*
+ * spinner-ring($size, $color, $track, $box-sizing, $stroke)
+ * --------------------------------------------------
+ * The inline busy spinner a component draws for itself - core components never render a
+ * BitSpinnerLoading - so every one of them is the same ring: a $siz-spinner-stroke border whose
+ * arc turns on the spinner motion tokens over the shared bit-spin keyframes (general.scss).
+ *   - $size is the diameter. With the default border-box it includes the stroke. $box-sizing: null
+ *     leaves box-sizing to the page, as the spinners first written without it always have: an app
+ *     with a border-box reset draws them at $size, one without it adds the stroke outside, and
+ *     forcing either way would resize them in the other kind of app.
+ *   - $color paints the moving arc, $track the ring it travels on (the arc at 25% when not given).
+ *     Pass the component's public variables with their fallbacks, so the spinner stays restylable.
+ *   - $stroke is the thickness of the ring, for a component that publishes a variable for it.
+ *   - forced-colors: every side would come back in the one system color, turning a ring that
+ *     visibly spins into a still circle, so the arc is set apart from its track with a second
+ *     system color. A component whose disabled state goes GrayText in that mode includes
+ *     spinner-ring-forced-disabled in that block, so the arc goes grey with the rest of it.
+ *
+ * Usage:
+ *   .bit-xyz-spn {
+ *       @include spinner-ring(var(--bit-Xyz-spinner-size, #{$siz-icon-md}), var(--bit-Xyz-spinner-color, currentcolor));
+ *   }
+ */
+@mixin spinner-ring($size, $color: currentcolor, $track: null, $box-sizing: border-box, $stroke: $siz-spinner-stroke) {
+    @if $track == null {
+        $track: translucent($color, 25%);
+    }
+
+    flex-shrink: 0;
+    border-radius: 50%;
+    width: $size;
+    height: $size;
+    box-sizing: $box-sizing;
+    border-style: $shp-border-style;
+    border-width: $stroke;
+    border-color: $track;
+    border-block-start-color: $color;
+    animation: bit-spin $mot-duration-spinner $mot-easing-spinner infinite;
+
+    @media (forced-colors: active) {
+        border-color: GrayText;
+        border-block-start-color: CanvasText;
+    }
+}
+
+/*
+ * spinner-ring-forced-disabled
+ * --------------------------------------------------
+ * The forced-colors look of a spinner-ring inside a part that the mode turns GrayText for being
+ * disabled: the arc goes GrayText with the rest of it, and the track takes the Canvas it sits on,
+ * since an arc and a track in the same GrayText would be a still circle again.
+ */
+@mixin spinner-ring-forced-disabled {
+    border-color: Canvas;
+    border-block-start-color: GrayText;
+}
+
+/*
+ * forced-hidden-border
+ * --------------------------------------------------
+ * A part that reserves a border's room with a transparent border - so that a state drawing it (a selection, an
+ * accented edge) moves no content when it comes and goes, or only for the room itself - shows that border under
+ * forced colors: the mode forces every border color to a system one and keeps no transparency for it, so every
+ * row or tab of the component carries the edge that was meant for one of them, or for none.
+ *   - Included in the part's forced-colors block (it carries no media query of its own), it draws the border in
+ *     Canvas, the color the mode paints the part's background in, so the border vanishes and keeps its width.
+ *   - It holds only where the part sits on Canvas: a part the mode leaves a background of its own (one opted out
+ *     with forced-color-adjust: none) paints its border to match that background instead.
+ *   - An edge that has to stay visible - the selected item's, or one continuing a rule behind the part - is set
+ *     after it, in the same block, at the same weight or more.
+ *
+ * Usage:
+ *   @media (forced-colors: active) {
+ *       .bit-xyz-itm { @include forced-hidden-border; }
+ *       .bit-xyz-sel { border-color: Highlight; }
+ *   }
+ */
+@mixin forced-hidden-border {
+    border-color: Canvas;
+}
+
+/*
+ * input-placeholder($color)
+ * --------------------------------------------------
+ * The hint an input or a textarea shows while it is empty, painted from the theme rather than left
+ * to the browser, whose own grey is not derived from the theme and misses the 4.5:1 of WCAG 1.4.3
+ * on most surfaces, dark ones above all. Every placeholder of the library is painted through it.
+ *   - $color is the component's public placeholder variable with $clr-fg-sec as its fallback: a
+ *     placeholder is often the only hint of what a field expects, so it is held to the floor of
+ *     text, which the subtle $clr-fg-ter misses on the tertiary surface.
+ *   - Included again in the component's disabled state with its disabled color, so the hint of an
+ *     empty disabled field greys out with the rest of it instead of being the one part that still
+ *     reads as live.
+ *   - Firefox dims a placeholder with an opacity of its own on top of its color, which would darken
+ *     the themed one below the floor again, so that is reset.
+ *
+ * Usage:
+ *   .bit-xyz-inp {
+ *       @include input-placeholder(var(--bit-Xyz-placeholder-color, #{$clr-fg-sec}));
+ *   }
+ *
+ *   .bit-xyz.bit-dis .bit-xyz-inp {
+ *       @include input-placeholder(var(--bit-Xyz-disabled-color, #{$clr-fg-dis}));
+ *   }
+ */
+@mixin input-placeholder($color) {
+    &::placeholder {
+        opacity: 1;
+        color: $color;
+    }
 }

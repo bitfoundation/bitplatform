@@ -1,0 +1,154 @@
+﻿@page "/examples/backgrounds"
+
+<PageTitle>Backgrounds · Blow</PageTitle>
+
+<ExampleScaffold Title="Backgrounds"
+                 Summary="BlowBackground draws a dots, lines or cross pattern under the flow that pans and zooms with it. The toolbar drives its options - spacing per axis, dot and cross size, stroke width, offset, colour and a solid backdrop - and a second background stacked under the first turns the pattern into a grid with dots in it.">
+    <Toolbar>
+        @* The values are written invariantly: a range input reads "1,5" as no value at all. *@
+        <label>Variant
+            <select @onchange="SetVariant">
+                @foreach (var v in Enum.GetValues<BlowBackgroundVariant>())
+                {
+                    <option value="@v" selected="@(v == _variant)">@v</option>
+                }
+            </select>
+        </label>
+        <label>Gap @_gap.ToString("0")
+            <input type="range" min="8" max="48" step="2" value="@Inv(_gap)"
+                   @oninput="@(e => _gap = ToDouble(e.Value, 20))" />
+        </label>
+        <label><input type="checkbox" checked="@_tallRows" @onchange="@(e => _tallRows = (bool)e.Value!)" /> Rows twice as far apart</label>
+        @* Size draws nothing on lines, and the line width nothing on dots, so each is off where it does nothing. *@
+        <label>Size @_size.ToString("0.#")
+            <input type="range" min="1" max="12" step="0.5" value="@Inv(_size)" disabled="@(_variant == BlowBackgroundVariant.Lines)"
+                   @oninput="@(e => _size = ToDouble(e.Value, DefaultSize(_variant)))" />
+        </label>
+        <label>Line width @_lineWidth.ToString("0.#")
+            <input type="range" min="0.5" max="4" step="0.5" value="@Inv(_lineWidth)" disabled="@(_variant == BlowBackgroundVariant.Dots)"
+                   @oninput="@(e => _lineWidth = ToDouble(e.Value, 1))" />
+        </label>
+        <label>Offset @_offset.ToString("0")
+            <input type="range" min="0" max="24" step="1" value="@Inv(_offset)"
+                   @oninput="@(e => _offset = ToDouble(e.Value, 0))" />
+        </label>
+        <label>Colour
+            <select @onchange="@(e => _colour = e.Value?.ToString() ?? "theme")">
+                <option value="theme" selected="@(_colour == "theme")">Theme default</option>
+                <option value="color" selected="@(_colour == "color")">Grey, by Color</option>
+                <option value="class" selected="@(_colour == "class")">Accent, by PatternClass</option>
+            </select>
+        </label>
+        <label><input type="checkbox" checked="@_backdrop" @onchange="@(e => _backdrop = (bool)e.Value!)" /> Backdrop</label>
+        <label><input type="checkbox" checked="@_stacked" @onchange="@(e => _stacked = (bool)e.Value!)" /> Grid underneath</label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" FitViewOptions="_fit">
+            @* Backgrounds paint in the order they are written, so the grid goes first, under the pattern - and the
+               backdrop goes on whichever is first, since a solid colour on the second would hide the first. Its
+               spacing is four of the pattern's, so the grid's cells hold four by four of the pattern. *@
+            @if (_stacked)
+            {
+                <BlowBackground Variant="BlowBackgroundVariant.Lines"
+                                Gap="_gap * 4"
+                                GapY="@(_tallRows ? _gap * 8 : (double?)null)"
+                                Color="var(--bit-blow-border)"
+                                BgColor="@Backdrop" />
+            }
+            <BlowBackground Variant="_variant"
+                            Gap="_gap"
+                            GapY="@(_tallRows ? _gap * 2 : (double?)null)"
+                            Size="_size"
+                            LineWidth="_lineWidth"
+                            OffsetX="_offset"
+                            OffsetY="_offset"
+                            Color="@(_colour == "color" ? "#9ca3af" : null)"
+                            PatternClass="@(_colour == "class" ? "bgx-accent" : null)"
+                            BgColor="@(_stacked ? null : Backdrop)" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Pick a <strong>Variant</strong>: <code>Dots</code>, <code>Lines</code> or <code>Cross</code>.</li>
+        <li>Drag <strong>Gap</strong> to space the pattern closer or further apart, and tick <strong>Rows twice as far apart</strong> to space the vertical axis on its own.</li>
+        <li>Drag <strong>Size</strong> to grow the dots or the arms of the crosses, and <strong>Line width</strong> to thicken the lines and crosses; each is off for the variant it does nothing to.</li>
+        <li>Drag <strong>Offset</strong> to slide the pattern against the nodes without moving them.</li>
+        <li>Switch <strong>Colour</strong> between the theme's pattern colour, a fixed grey and the accent colour applied by a CSS class.</li>
+        <li>Tick <strong>Backdrop</strong> to paint a solid colour behind the pattern, and <strong>Grid underneath</strong> to stack a coarse grid of lines under it.</li>
+        <li><strong>Drag the background</strong> to pan and <strong>scroll</strong> to zoom: the pattern travels and scales with the nodes, and stays crisp at any zoom.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>BlowBackground</code> goes inside the canvas. It is drawn in screen space from the current viewport, so it follows every pan and zoom without blurring.</li>
+        <li><code>Variant</code> (default <code>Dots</code>) picks the shape; <code>Gap</code> (20) is the spacing in flow units, and <code>GapX</code> and <code>GapY</code> override one axis each - the rows box sets <code>GapY</code> to twice the gap.</li>
+        <li><code>Size</code> is the dot diameter or the cross arm length; left unset it is 1 for dots and 6 for crosses, which is where the slider starts each time you switch variant. <code>LineWidth</code> (1) is the stroke of lines and crosses.</li>
+        <li><code>OffsetX</code> and <code>OffsetY</code> (0) shift the pattern in flow units on top of the viewport's own translation.</li>
+        <li><code>Color</code> left unset takes <code>--bit-blow-background-pattern</code>, which follows the colour mode. <code>PatternClass</code> puts a class on the pattern's shape instead, so a stylesheet can colour it - here the dots' <code>fill</code> and the lines' <code>stroke</code> from <code>--bit-blow-node-selected</code>. <code>Class</code> and <code>Style</code> do the same for the background's container.</li>
+        <li><code>BgColor</code> (transparent) paints a solid colour behind the pattern - here <code>--bit-blow-surface-muted</code>, so it changes with the colour mode too.</li>
+        <li>Backgrounds stack: each is its own layer, painted in the order written. The grid is a <code>Lines</code> background with four times the gap, placed before the pattern so it lies under it.</li>
+        <li><code>FitViewOptions</code> caps the first fit at a zoom of 1, so a gap of 20 is 20 pixels on screen when the page opens.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    /* A class on the pattern's shape outranks the fill and stroke attributes that Color writes, so a stylesheet can
+       colour the pattern - from a theme property here, so it follows the colour mode. */
+    circle.bgx-accent {
+        fill: var(--bit-blow-node-selected);
+    }
+
+    path.bgx-accent {
+        stroke: var(--bit-blow-node-selected);
+    }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    // Capped at 1, so the first fit shows the pattern at the size its parameters say rather than zoomed in on three
+    // nodes.
+    private readonly BlowFitViewOptions _fit = new() { MaxZoom = 1 };
+
+    private BlowBackgroundVariant _variant = BlowBackgroundVariant.Dots;
+    private double _gap = 20;
+    private bool _tallRows;
+    private double _size = DefaultSize(BlowBackgroundVariant.Dots);
+    private double _lineWidth = 1;
+    private double _offset;
+    private string _colour = "theme";
+    private bool _backdrop;
+    private bool _stacked;
+
+    private string? Backdrop => _backdrop ? "var(--bit-blow-surface-muted)" : null;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input",  Label = "Node 1", Position = new(120, 40) },
+            new BlowNode { Id = "2",                  Label = "Node 2", Position = new(360, 140) },
+            new BlowNode { Id = "3", Type = "output", Label = "Node 3", Position = new(120, 240) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e2-3", Source = "2", Target = "3" },
+        ];
+    }
+
+    // The library's own default for each variant, which is where the size slider starts after a switch: dots one
+    // unit across, crosses with arms of six.
+    private static double DefaultSize(BlowBackgroundVariant variant) => variant == BlowBackgroundVariant.Cross ? 6 : 1;
+
+    private void SetVariant(ChangeEventArgs e)
+    {
+        if (!Enum.TryParse<BlowBackgroundVariant>(e.Value?.ToString(), out var variant)) return;
+        _variant = variant;
+        _size = DefaultSize(variant);
+    }
+
+    private static double ToDouble(object? raw, double fallback)
+        => double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var parsed) ? parsed : fallback;
+
+    private static string Inv(double v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}

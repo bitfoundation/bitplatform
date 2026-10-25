@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Where the tooltip is anchored relative to the active items.</summary>
 public enum BitChartTooltipPositioner

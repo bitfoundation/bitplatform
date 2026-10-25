@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
@@ -98,13 +98,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorES2019" Version="10.6.2" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.2">
+        <PackageReference Include="Bit.BlazorES2019" Version="10.7.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.7.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.7" />
-        <PackageReference Include="Bit.SourceGenerators" Version="10.6.2">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.7.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -117,8 +116,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.100" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.100" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.120" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.120" />
     </ItemGroup>
 
     <!-- Build Properties must be defined within these property groups to ensure successful publishing

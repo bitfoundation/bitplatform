@@ -6,10 +6,30 @@
     gap: 1rem;
     display: flex;
     width: fit-content;
+    align-items: center;
 
     @include sm {
         flex-direction: column;
     }
+}
+
+.example-content {
+    gap: 1rem;
+    display: flex;
+    width: fit-content;
+    flex-direction: column;
+}
+
+// A container with a width of its own, which is what FullWidth stretches into and what NoWrap protects.
+.settings-panel {
+    gap: 0.5rem;
+    width: 20rem;
+    display: flex;
+    max-width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    flex-direction: column;
+    border: 1px solid $bit-color-border-secondary;
 }
 
 .clickable-box {

@@ -282,88 +282,71 @@ This single line:
 
 ---
 
-## 4. Migrations (Optional for Server-Side)
+## 4. Migrations
 
-### Important Note About Migrations
-
-**EF Core migrations are NOT mandatory** in this project, especially for:
-- Test projects
-- Rapid prototyping scenarios
-- Development environments where the database can be easily recreated
-
-### Default Approach: EnsureCreatedAsync()
-
-By default, the project uses `Database.EnsureCreatedAsync()` which **automatically creates** the database schema based on your entities without requiring migrations:
+<!--#if (database == "Sqlite")-->
+The project uses EF Core migrations from day one. The app applies them when it starts, in every environment:
+<!--#else-->
+The project uses EF Core migrations from day one. In the Development environment, the app applies them when it starts:
+<!--#endif-->
 
 **File:** [`/src/Server/Boilerplate.Server.Api/Program.cs`](/src/Server/Boilerplate.Server.Api/Program.cs)
 ```csharp
-if (builder.Environment.IsDevelopment())
-{
-    await using var scope = app.Services.CreateAsyncScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await dbContext.Database.EnsureCreatedAsync(); // Automatically creates schema
-}
-```
-
-### When to Use Migrations?
-
-You should **switch to migrations** when:
-- Deploying to **production environments**
-- You need to **preserve existing data** during schema changes
-- You want **version control** for your database schema
-- You're working in a **team environment** where schema changes need to be tracked
-
-### How to Switch to Migrations
-
-If you decide to use migrations, follow these steps:
-
-#### Step 1: Replace EnsureCreatedAsync() with MigrateAsync()
-
-Replace `EnsureCreatedAsync()` with `MigrateAsync()` in these 3 files:
-1. [`/src/Server/Boilerplate.Server.Api/Program.cs`](/src/Server/Boilerplate.Server.Api/Program.cs)
-2. [`/src/Server/Boilerplate.Server.Web/Program.cs`](/src/Server/Boilerplate.Server.Web/Program.cs)
-3. [`/src/Tests/Infrastructure/TestsAssemblyInitializer.cs`](/src/Tests/Infrastructure/TestsAssemblyInitializer.cs)
-
-**Before:**
-```csharp
-await dbContext.Database.EnsureCreatedAsync();
-```
-
-**After:**
-```csharp
+await using var scope = app.Services.CreateAsyncScope();
+var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 await dbContext.Database.MigrateAsync();
 ```
 
-#### Step 2: Delete Existing Database (If Applicable)
+<!--#if (api == "Integrated")-->
+[`/src/Server/Boilerplate.Server.Web/Program.cs`](/src/Server/Boilerplate.Server.Web/Program.cs) and [`/src/Tests/Infrastructure/TestsAssemblyInitializer.cs`](/src/Tests/Infrastructure/TestsAssemblyInitializer.cs) do the same.
+<!--#endif-->
+<!--#if (api == "Standalone")-->
+[`/src/Tests/Infrastructure/TestsAssemblyInitializer.cs`](/src/Tests/Infrastructure/TestsAssemblyInitializer.cs) does the same for the tests.
+<!--#endif-->
 
-**Important:** If you've already run the project with `EnsureCreatedAsync()`, you **must delete the existing database** before switching to migrations. 
+<!--#if (database == "Sqlite")-->
+You do **NOT** need to run `dotnet ef database update` or `Update-Database` manually. The `MigrateAsync()` call in the application startup code handles this automatically.
+<!--#else-->
+While you develop, you do **NOT** need to run `dotnet ef database update` or `Update-Database` manually: the `MigrateAsync()` call above handles it. It only runs in the Development environment, though, so a deployed app never changes its own database. See [Applying Migrations to a Deployed Database](#applying-migrations-to-a-deployed-database) below.
+<!--#endif-->
 
-- `EnsureCreatedAsync()` and `MigrateAsync()` cannot be mixed
-- Your database will be recreated with the initial migration
+### The Initial Migration
 
-#### Step 3: Create Your First Migration
-
-Open a terminal in the `Boilerplate.Server.Api` project directory and run:
+`bit new` adds the `Initial` migration to `/src/Server/Boilerplate.Server.Api/Infrastructure/Data/Migrations/` when it creates the project. A project created any other way starts without one, and `MigrateAsync()` refuses to run until it exists. Open a terminal in the `Boilerplate.Server.Api` project directory and run:
 
 ```bash
-dnx dotnet-ef@10.0.12 -- migrations add Initial --output-dir Infrastructure/Data/Migrations --verbose
+dnx dotnet-ef@10.0.13 -- migrations add Initial --output-dir Infrastructure/Data/Migrations --verbose
 ```
-
-This creates migration files in the `/Infrastructure/Data/Migrations/` folder.
-
-#### Step 4: Apply the Migration
-
-The migration will be **automatically applied** when the application starts (thanks to `MigrateAsync()`).
-
-**Note:** You do **NOT** need to run `dotnet ef database update` or `Update-Database` manually. The `MigrateAsync()` call in the application startup code handles this automatically.
 
 ### Adding Future Migrations
 
-When you modify entities or configurations, create a new migration:
+When you modify entities or configurations, create a new migration; the app applies it on its next start:
 
 ```bash
-dnx dotnet-ef@10.0.12 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose
+dnx dotnet-ef@10.0.13 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose
 ```
+
+If the model changes without a migration, `MigrateAsync()` stops the app with a "pending model changes" error until the migration is added.
+<!--#if (database != "Sqlite")-->
+
+### Applying Migrations to a Deployed Database
+
+<!--#if (pipeline == "GitHub" && database != "Sqlite" && database != "Other")-->
+The CD pipeline applies them. Its build job packs the migrations into a migrations bundle, and its deploy job runs that bundle against the database in the `DATABASE_CONNECTION_STRING` secret right before it deploys the new version. A failed migration stops the deployment, so the new version never runs on an old database schema. [Stage 16](/.docs/16-%20CI-CD%20Pipeline%20and%20Environments.md) describes the secret. To apply them by hand, use the same bundle as described below.
+<!--#elif (pipeline == "Azure" && api == "Integrated" && database != "Sqlite" && database != "Other")-->
+The CD pipeline applies them. Its build job packs the migrations into a migrations bundle, and its deploy job runs that bundle against the database in the `DATABASE_CONNECTION_STRING` secret variable right before it deploys the new version. A failed migration stops the deployment, so the new version never runs on an old database schema. [Stage 16](/.docs/16-%20CI-CD%20Pipeline%20and%20Environments.md) describes the secret variable. To apply them by hand, use the same bundle as described below.
+<!--#else-->
+Nothing in this project applies them to a deployed database, so apply them before each deployment of the api, for example with a migrations bundle as described below.
+<!--#endif-->
+
+A migrations bundle is one executable that holds the migrations. Build it in the `Boilerplate.Server.Api` project directory, with the `-r` value that matches the machine it will run on:
+
+```bash
+dnx dotnet-ef@10.0.13 -- migrations bundle --self-contained -r linux-x64
+```
+
+Copy the `efbundle` file it creates into the deployed app's folder, where it finds the app's settings and certificate, and run it there before the new version starts. When the app's settings don't hold the production connection string, give it to the bundle in the `ConnectionStrings__<name>` environment variable the app reads it from.
+<!--#endif-->
 
 ---
 <!--#if (offlineDb == true)-->
@@ -436,7 +419,7 @@ Add-Migration YourMigrationName -OutputDir Infrastructure\Data\Migrations -Conte
 
 Open a terminal in the `Boilerplate.Server.Web` project directory and run:
 ```bash
-dnx dotnet-ef@10.0.12 -- migrations add YourMigrationName --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dnx dotnet-ef@10.0.13 -- migrations add YourMigrationName --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 **Important Notes:**

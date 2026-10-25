@@ -1,0 +1,699 @@
+﻿@page "/effects"
+@inherits BlexComponentBase
+@inject EffectLabStore Lab
+@inject SearchStore Search
+
+<DocPage Href="effects" Title="Effects"
+         Lead="Async work with a loading flag, an error slot, a cancellation method and a concurrency policy - all generated.">
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The convention</h2>
+        <p>
+            Mark an async method named <code>OnXxx</code> returning <code>Task</code> or
+            <code>ValueTask</code> with <code>[BlexEffect]</code>. You get a public <code>Xxx(...)</code>
+            wrapper plus reactive lifecycle properties. The body is still recorded as one named,
+            time-travelable action.
+        </p>
+
+        <CodeBlock Code="@Basic" />
+
+        <ApiTable Title="Generated for [BlexEffect] OnLoadUser(int id, CancellationToken ct)" Rows="@GeneratedRows" />
+
+        <p>
+            The wrapper never throws: an exception from the body is captured into <code>XxxError</code>
+            instead of propagating. That is deliberate - an effect is usually fired from an event handler
+            where nothing would catch it. The failure still reaches <a href="middleware">OnActionError</a>,
+            which is where a crash reporter hears about it.
+        </p>
+
+        <ApiTable Title="[BlexEffect] properties" Rows="@AttributeRows" MemberHeader="Property" />
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Loading is reference-counted</h2>
+        <p>
+            <code>XxxIsLoading</code> stays <code>true</code> until the <em>last</em> in-flight run
+            finishes, so overlapping invocations do not flip it off early - click <strong>Parallel</strong>
+            in the lab below three times and its <code>running</code> badge stays on until the third run
+            ends. The flag and the error slot are set through <code>SetEffectState</code>, which notifies the
+            UI but never records a time-travel action - a spinner turning on is not something you want to
+            rewind to, nor an undo step.
+        </p>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Cancellation</h2>
+        <p>
+            Give the effect a <strong>trailing</strong> <code>CancellationToken</code> parameter and the
+            generator supplies the token itself - it does not appear on the public wrapper - and emits a
+            <code>CancelXxx()</code> method.
+        </p>
+
+        <CodeBlock Code="@Cancel" />
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Whose cancellation was it?">
+            <p>
+                Cancellation through the effect's <em>own</em> token - from <code>CancelXxx()</code> or
+                from being superseded in <code>Latest</code> mode - is a normal outcome and never
+                populates <code>Error</code>. A <em>foreign</em> <code>OperationCanceledException</code>,
+                such as an <code>HttpClient</code> timeout, or any cancellation in an effect that has no
+                token parameter, is a real failure and is recorded in <code>Error</code>.
+            </p>
+        </Callout>
+
+        <Callout Kind="Callout.CalloutKind.Tip" Title="Disposing a store cancels its effects">
+            <p>
+                A store is <code>IDisposable</code>, and its container disposes it - a Blazor Server
+                circuit ending, a test scope closing. That cancels every in-flight effect and stops any
+                pending debounce timer, so a request started moments before teardown does not carry on
+                resuming against a dead renderer. It counts as the effect's own cancellation, so it
+                populates no <code>Error</code>; the store itself stays usable, because disposal ordering
+                must not be able to strand a final persistence flush.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card" id="concurrency">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Concurrency</h2>
+        <p>
+            <code>[BlexEffect(Concurrency = …)]</code> decides what happens when a run starts while another
+            is still going, mirroring the RxJS flattening operators NgRx effects are built on.
+        </p>
+
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead><tr><th>Mode</th><th>RxJS</th><th>Semantics</th><th>Use it for</th></tr></thead>
+                <tbody>
+                    <tr><td class="bb-table-key"><code>Parallel</code> <span class="bb-badge">default</span></td><td class="bb-table-key"><code>mergeMap</code></td><td>Every run proceeds concurrently.</td><td>Independent fetches.</td></tr>
+                    <tr><td class="bb-table-key"><code>Latest</code></td><td class="bb-table-key"><code>switchMap</code></td><td>A new run cancels the previous one.</td><td>Type-ahead search.</td></tr>
+                    <tr><td class="bb-table-key"><code>Drop</code></td><td class="bb-table-key"><code>exhaustMap</code></td><td>New runs are ignored while one is in flight.</td><td>Double-click-proof submits.</td></tr>
+                    <tr><td class="bb-table-key"><code>Queue</code></td><td class="bb-table-key"><code>concatMap</code></td><td>Runs execute one at a time, in arrival order.</td><td>Ordered writes.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <DemoCard Title="The four modes, side by side"
+                  Description="Each button starts the same 1.2 s job. Click one several times quickly and read the timeline."
+                  Source="@LabSource">
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="RunParallel">
+                    Parallel @if (Lab.RunParallelIsLoading) { <span class="bb-badge bb-badge-warn">running</span> }
+                </button>
+                <button class="btn btn-primary" @onclick="RunLatest">
+                    Latest @if (Lab.RunLatestIsLoading) { <span class="bb-badge bb-badge-warn">running</span> }
+                </button>
+                <button class="btn btn-primary" @onclick="RunDrop">
+                    Drop @if (Lab.RunDropIsLoading) { <span class="bb-badge bb-badge-warn">running</span> }
+                </button>
+                <button class="btn btn-primary" @onclick="RunQueue">
+                    Queue @if (Lab.RunQueueIsLoading) { <span class="bb-badge bb-badge-warn">running</span> }
+                </button>
+            </div>
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" @onclick="Lab.CancelRunParallel" disabled="@(!Lab.CanCancelRunParallel)">CancelRunParallel()</button>
+                <button class="btn btn-secondary" @onclick="Lab.CancelRunLatest" disabled="@(!Lab.RunLatestIsLoading)">CancelRunLatest()</button>
+                <button class="btn btn-secondary" @onclick="Lab.Clear">Clear timeline</button>
+            </div>
+
+            @if (Lab.Events.Count == 0)
+            {
+                <p class="bb-card-desc">
+                    Timeline is empty. Try clicking <strong>Latest</strong> three times in a row, then
+                    <strong>Queue</strong> three times, and compare.
+                </p>
+            }
+            else
+            {
+                <ul class="timeline">
+                    @foreach (var e in Lab.Events)
+                    {
+                        <li>
+                            <span class="timeline__at">@e.At ms</span>
+                            <span class="timeline__mode timeline__mode--@e.Mode">@e.Mode</span>
+                            <span>run @e.Run</span>
+                            <span class="timeline__phase--@e.Phase">@e.Phase</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </DemoCard>
+
+        <h3>What you should see</h3>
+        <ul class="bb-detail-list">
+            <li><strong>Parallel</strong> - three clicks give three <code>started</code> lines immediately and three <code>finished</code> lines ~1.2 s later.</li>
+            <li><strong>Latest</strong> - each click <code>cancelled</code>s the previous run; only the last one finishes.</li>
+            <li><strong>Drop</strong> - the second and third clicks produce <code>dropped</code>; the first run finishes undisturbed.</li>
+            <li><strong>Queue</strong> - the runs start ~1.2 s apart, strictly in the order you clicked.</li>
+        </ul>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Every run is its own record">
+            <p>
+                A run is recorded when it ends, with what its own flow changed - across its awaits, and nothing
+                else. Three quick <strong>Parallel</strong> clicks are three entries in the Inspector's feed, in
+                middleware <code>OnAction</code>, in DevTools and in the undo history, in the order they finished;
+                a <strong>Drop</strong> click's <code>dropped</code> note is an entry of its own, and so is
+                anything you click while a run awaits. Only an action dispatched from <em>inside</em> a run's body
+                is part of that run's record.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A realistic type-ahead</h2>
+        <p>
+            <code>Latest</code> plus a token is the whole recipe for search-as-you-type: an obsolete
+            request cannot land after a newer one and overwrite the results.
+        </p>
+
+        <DemoCard Title="Search with Latest concurrency"
+                  Description="Type quickly: each keystroke supersedes the previous request. Flip the failure switch to see the generated error slot fill in."
+                  Source="@SearchSource">
+            <div class="bb-toolbar">
+                <input type="search" placeholder='Try "blazor" or "gen"…' aria-label="Search the catalog"
+                       value="@_queryBox" @oninput="OnQueryInput" class="demo-input-grow" />
+                <button class="btn btn-secondary" @onclick="Search.CancelSearch" disabled="@(!Search.SearchIsLoading)">Cancel</button>
+                <button class="btn btn-secondary" @onclick="ClearSearch">Clear</button>
+            </div>
+            <div class="bb-toolbar">
+                <label class="bb-check">
+                    <input type="checkbox" checked="@Search.SimulateFailure"
+                           @onchange="e => Search.SetSimulateFailure((bool)(e.Value ?? false))" />
+                    Simulate a failing service
+                </label>
+                @if (Search.SearchIsLoading)
+                {
+                    <span class="bb-badge bb-badge-warn">SearchIsLoading = true</span>
+                }
+                else
+                {
+                    <span class="bb-badge demo-badge-off">SearchIsLoading = false</span>
+                }
+                @if (Search.SearchError is not null)
+                {
+                    <span class="bb-badge bb-badge-danger">SearchError set</span>
+                }
+            </div>
+
+            @* The slot keeps the last run's error until the next run starts; the note speaks for the query
+               on screen, so it goes with a Clear. *@
+            @if (Search.SearchError is not null && Search.Query.Length > 0)
+            {
+                <div class="bb-note bb-note-danger" role="alert">
+                    <strong class="demo-note-title">SearchError</strong>
+                    <p>@Search.SearchError.Message</p>
+                </div>
+            }
+            else if (Search.HasResults)
+            {
+                <ul class="demo-list">
+                    @foreach (var result in Search.Results)
+                    {
+                        <li><span class="demo-list-name">@result</span></li>
+                    }
+                </ul>
+            }
+            else if (!Search.SearchIsLoading && !string.IsNullOrWhiteSpace(Search.Query))
+            {
+                <p class="bb-card-desc">No matches for “@Search.Query”.</p>
+            }
+        </DemoCard>
+    </div>
+
+    <div class="bb-card" id="debounce">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Debouncing</h2>
+        <p>
+            <code>Latest</code> stops a stale response from landing, but it still sends a request per
+            keystroke. <code>DebounceMilliseconds</code> waits for a quiet period first, so only the
+            invocation the user actually paused on runs at all. The two compose, and together they are
+            the complete type-ahead recipe: debounce decides <em>whether</em> to ask, <code>Latest</code>
+            decides <em>which answer</em> is allowed to land.
+        </p>
+        <CodeBlock Code="@Debounce" Title="The whole recipe" />
+
+        <p>
+            The wait happens before anything observable, which is what makes it worth generating rather
+            than hand-rolling. A superseded invocation never flips <code>XxxIsLoading</code>, never
+            clears <code>XxxError</code>, is never offered to middleware and records no action - so a
+            spinner bound to <code>IsLoading</code> does not blink once per keystroke, and DevTools does
+            not fill up with searches that never happened. A debounced effect's <code>CancelXxx()</code>
+            also cancels the invocation still waiting out its quiet period - what a Clear button needs, or
+            the pending search would start a moment after the box was emptied.
+        </p>
+
+        <DemoCard Title="Keystrokes in, requests out"
+                  Description="Type a word at normal speed. The keystroke counter climbs per character; the request counter climbs once, when you pause."
+                  Source="@DebouncedSource">
+            <div class="bb-toolbar">
+                <input type="search" placeholder='Type "blazor" quickly…' aria-label="Type-ahead search"
+                       value="@_debouncedBox" @oninput="OnDebouncedInput" class="demo-input-grow" />
+                <button class="btn btn-secondary" @onclick="ClearDebounced">Clear</button>
+            </div>
+
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Keystrokes</span>
+                    <span class="bb-stat-value">@Search.Keystrokes</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Requests started</span>
+                    <span class="bb-stat-value demo-accent">@Search.RequestsStarted</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">TypeAheadIsLoading</span>
+                    <span class="bb-stat-value">@(Search.TypeAheadIsLoading ? "true" : "false")</span>
+                </div>
+            </div>
+
+            @if (Search.TypeAheadError is not null && Search.TypeAheadQuery.Length > 0)
+            {
+                <p class="bb-card-desc">@Search.TypeAheadError.Message</p>
+            }
+            else if (Search.HasTypeAheadResults)
+            {
+                <ul class="demo-list">
+                    @foreach (var result in Search.TypeAheadResults)
+                    {
+                        <li><span class="demo-list-name">@result</span></li>
+                    }
+                </ul>
+            }
+        </DemoCard>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="The gate is per effect, not per argument">
+            <p>
+                Every invocation of the same effect shares one gate, whatever its arguments. That is
+                what you want for a search box; if you need one gate per key (say, per row in a grid),
+                debounce at the call site instead.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Retries and timeouts</h2>
+        <p>
+            Networks fail transiently. <code>RetryCount</code> runs a failed body again, waiting
+            <code>RetryDelayMilliseconds</code> before the first retry and doubling the wait before each
+            one after it, up to 30 seconds. <code>TimeoutMilliseconds</code> bounds every attempt: one
+            that overruns has its token cancelled and fails with a <code>TimeoutException</code> - which
+            is retried like any other failure.
+        </p>
+        <CodeBlock Code="@Retry" />
+
+        <p>
+            The attempts are one run. <code>XxxIsLoading</code> stays on across them, the action is
+            recorded once, and only the <em>final</em> failure lands in <code>XxxError</code> and reaches
+            <code>OnActionError</code>. Cancellation through the effect's own token -
+            <code>CancelXxx()</code>, a superseding <code>Latest</code> run, the store being disposed -
+            is never retried: it ends the run, during an attempt or during the wait before the next one.
+        </p>
+
+        <DemoCard Title="A flaky endpoint"
+                  Description="Pick how many attempts the server fails. Three retries cover up to three failures; the fourth reaches XxxError. Time out twice makes the first two attempts hang instead: each is cut off at 2000 ms with a TimeoutException and retried like any other failure. Cancel ends the run - mid-attempt or mid-wait - and leaves the error slot empty."
+                  Source="@RetrySource">
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" @onclick="() => RunFlaky(0)" disabled="@Lab.FetchFlakyIsLoading">Succeed at once</button>
+                <button class="btn btn-secondary" @onclick="() => RunFlaky(2)" disabled="@Lab.FetchFlakyIsLoading">Fail twice</button>
+                <button class="btn btn-secondary" @onclick="() => RunFlaky(4)" disabled="@Lab.FetchFlakyIsLoading">Fail four times</button>
+                <button class="btn btn-secondary" @onclick="() => RunFlaky(2, hang: true)" disabled="@Lab.FetchFlakyIsLoading">Time out twice</button>
+                <button class="btn btn-outline" @onclick="Lab.CancelFetchFlaky" disabled="@(!Lab.FetchFlakyIsLoading)">Cancel</button>
+            </div>
+
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">FetchFlakyIsLoading</span>
+                    <span class="bb-stat-value">@(Lab.FetchFlakyIsLoading ? "true" : "false")</span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">FetchFlakyError</span>
+                    <span class="bb-stat-value demo-accent">@(Lab.FetchFlakyError?.Message ?? "null")</span>
+                </div>
+            </div>
+
+            <ul class="demo-list">
+                @foreach (var line in Lab.Attempts)
+                {
+                    <li><code>@line</code></li>
+                }
+            </ul>
+        </DemoCard>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Keep what runs before the last await repeatable">
+            <p>
+                A retry runs the body again from the top, so state it changed on a failed attempt is
+                still there when the next one starts. Assign results once they have arrived, as above,
+                rather than accumulating them. A timeout needs a <code>CancellationToken</code>
+                parameter (<code>BLEX023</code>): the token is how an overrunning attempt is told to stop.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Rules</h2>
+        <ul class="bb-detail-list">
+            <li>
+                The return type must be non-generic <code>Task</code> or <code>ValueTask</code>
+                (<code>BLEX007</code>). An effect owns the loading and error lifecycle, so there is
+                nowhere to put a return value - write results into <code>[BlexState]</code> fields.
+            </li>
+            <li>
+                <code>Latest</code> without a <code>CancellationToken</code> parameter is warning
+                <code>BLEX009</code>: supersession still marks the run stale, but the superseded body
+                keeps executing because nothing can observe the cancellation.
+            </li>
+            <li>Effects cannot be <code>static</code> (<code>BLEX008</code>) or generic (<code>BLEX014</code>), and cannot take by-ref parameters (<code>BLEX013</code>).</li>
+            <li><code>async void</code> is rejected: an effect returning <code>void</code> is <code>BLEX007</code> like any other non-<code>Task</code> return, and an action is <code>BLEX010</code> - nothing could await it, or know when to record it.</li>
+            <li><code>DebounceMilliseconds</code> cannot be negative (<code>BLEX019</code>), nor can <code>RetryCount</code>, <code>RetryDelayMilliseconds</code> or <code>TimeoutMilliseconds</code> (<code>BLEX022</code>).</li>
+            <li><code>TimeoutMilliseconds</code> needs a trailing <code>CancellationToken</code> parameter (<code>BLEX023</code>) - the token is how an overrunning attempt is told to stop.</li>
+        </ul>
+
+        <Callout Kind="Callout.CalloutKind.Warning" Title="A Queue effect must never invoke itself">
+            <p>
+                <code>Queue</code> makes each run wait for its predecessor. If a queued effect invokes
+                itself - directly, or through a subscriber its body triggers - the nested call waits on a
+                gate that only the outer call can open, and both deadlock.
+            </p>
+        </Callout>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="A vetoed invocation leaves no trace">
+            <p>
+                Every invocation is offered to the middleware and filters on its own - one made while another run
+                of the same effect still awaits included - and the wrapper asks <em>before</em> it touches anything
+                observable. So a vetoed invocation never flips <code>XxxIsLoading</code>, never clears
+                <code>XxxError</code>, never cancels the <code>Latest</code> run in flight and never takes a
+                <code>Queue</code> slot: the run already going keeps going. An invocation <code>Drop</code> ignores,
+                or a debounced one a newer call superseded, never reaches the middleware at all - nothing was
+                dispatched.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The generated wrapper</h2>
+        <p>Roughly what the generator emits for a <code>Latest</code> effect with a token:</p>
+        <CodeBlock Code="@GeneratedEffect" Title="Generated (simplified)" />
+        <p>
+            The other options slot into the same shape. <code>DebounceMilliseconds</code> adds a wait on the
+            manager's clock at the very top, before the veto, which a newer invocation cancels;
+            <code>Drop</code> returns early while a run is pending; <code>Queue</code> awaits the previous
+            invocation's gate before clearing the error; and <code>RetryCount</code> /
+            <code>TimeoutMilliseconds</code> wrap the body in <code>RunEffectAttemptsAsync</code>. Disposing the
+            store cancels every effect's source through the generated <code>CancelEffects()</code>.
+        </p>
+    </div>
+
+</DocPage>
+
+@code {
+    private string _queryBox = "";
+
+    protected override void OnInitialized()
+    {
+        Subscribe(Lab, Search);
+
+        // The stores outlive this page: back on it, each box shows what the results under it were searched for.
+        _queryBox = Search.Query;
+        _debouncedBox = Search.TypeAheadQuery;
+    }
+
+    private async Task RunParallel() => await Lab.RunParallel();
+
+    private async Task RunLatest() => await Lab.RunLatest();
+
+    private async Task RunDrop()
+    {
+        // The wrapper silently returns when a run is already in flight; note it for the timeline.
+        if (Lab.RunDropIsLoading)
+            Lab.NoteDropped();
+        await Lab.RunDrop();
+    }
+
+    private async Task RunQueue() => await Lab.RunQueue();
+
+    private async Task OnQueryInput(ChangeEventArgs e)
+    {
+        _queryBox = e.Value?.ToString() ?? "";
+        await Search.Search(_queryBox);
+    }
+
+    private void ClearSearch()
+    {
+        _queryBox = "";
+
+        // Cancel first: a search still running would land its results under the emptied box.
+        Search.CancelSearch();
+        Search.Clear();
+    }
+
+    private string _debouncedBox = "";
+
+    private async Task OnDebouncedInput(ChangeEventArgs e)
+    {
+        _debouncedBox = e.Value?.ToString() ?? "";
+
+        // Counted per keystroke; the effect below is invoked per keystroke too, but its gate means
+        // only the one the user paused on ever reaches the body.
+        Search.CountKeystroke();
+        await Search.TypeAhead(_debouncedBox);
+    }
+
+    private void ClearDebounced()
+    {
+        _debouncedBox = "";
+
+        // The invocation still waiting out its quiet period too, not only a request already sent.
+        Search.CancelTypeAhead();
+        Search.ClearTypeAhead();
+    }
+
+    private async Task RunFlaky(int failures, bool hang = false)
+    {
+        Lab.PrepareFlaky(failures, hang);
+        await Lab.FetchFlaky();
+    }
+
+    private static readonly IReadOnlyList<ApiTable.Row> AttributeRows =
+    [
+        new("string? Name", "An explicit name. A valid C# identifier becomes the wrapper's name and the label; one with spaces is the label only, and the wrapper still comes from the <code>On</code> prefix - exactly as for <a href=\"actions\"><code>[BlexAction]</code></a>."),
+        new("BlexEffectConcurrency Concurrency", "What a run started while another is in flight does: <code>Parallel</code> (the default), <code>Latest</code>, <code>Drop</code> or <code>Queue</code>. See <a href=\"effects#concurrency\">Concurrency</a>."),
+        new("int DebounceMilliseconds", "Waits for this quiet period before running, restarting the wait on every invocation; only the last of a burst runs. <code>0</code> (the default) runs at once. See <a href=\"effects#debounce\">Debouncing</a>."),
+        new("int RetryCount", "How many times a failed run is retried before its exception lands in <code>XxxError</code>. <code>0</code> (the default) runs once."),
+        new("int RetryDelayMilliseconds", "The wait before the first retry, doubling before each further one, up to 30 seconds. Default <code>1000</code>; <code>0</code> retries at once."),
+        new("int TimeoutMilliseconds", "How long one attempt may take before its token is cancelled and it fails with a <code>TimeoutException</code>. <code>0</code> (the default) sets no limit. Needs a <code>CancellationToken</code> parameter."),
+    ];
+
+    private const string Retry = """
+        [BlexEffect(RetryCount = 3, RetryDelayMilliseconds = 500, TimeoutMilliseconds = 10_000)]
+        private async Task OnLoadOrders(CancellationToken ct)
+        {
+            Orders = await _api.GetOrdersAsync(ct);   // assigned once it has arrived: safe to repeat
+        }
+
+        // attempt 1 fails -> wait 500 ms -> attempt 2 fails -> wait 1 s -> attempt 3 fails
+        //                 -> wait 2 s    -> attempt 4: its failure is LoadOrdersError
+        """;
+
+    private const string RetrySource = """
+        [BlexEffect(RetryCount = 3, RetryDelayMilliseconds = 400, TimeoutMilliseconds = 2000)]
+        private async Task OnFetchFlaky(CancellationToken ct)
+        {
+            var attempt = ++_flakyAttempts;
+            Attempts = [.. Attempts, $"attempt {attempt} started"];
+
+            // "Time out twice": the timeout cancels ct at 2000 ms, and the attempt fails with a TimeoutException.
+            if (attempt <= FailuresToSimulate && HangInsteadOfFailing)
+                await Task.Delay(TimeSpan.FromSeconds(10), ct);
+
+            await Task.Delay(300, ct);   // the "network"
+
+            if (attempt <= FailuresToSimulate)
+            {
+                Attempts = [.. Attempts, $"attempt {attempt} failed"];
+                throw new InvalidOperationException($"The server failed attempt {attempt}.");
+            }
+
+            Attempts = [.. Attempts, $"attempt {attempt} succeeded"];
+        }
+        """;
+
+    private static readonly IReadOnlyList<ApiTable.Row> GeneratedRows =
+    [
+        new("Task LoadUser(int id)", "The public wrapper. Note that the <code>CancellationToken</code> parameter is <em>not</em> on it - the generator supplies the token."),
+        new("bool LoadUserIsLoading", "True while any run is in flight. Reference-counted across overlapping runs."),
+        new("Exception? LoadUserError", "The exception from the last run, or <code>null</code>. Cleared at the start of each run."),
+        new("void CancelLoadUser()", "Cancels the in-flight run (the most recently started one when runs overlap) and, for a debounced effect, the invocation still waiting out its quiet period. Emitted when the effect takes a <code>CancellationToken</code> or is debounced."),
+    ];
+
+    private const string Basic = """
+        [BlexEffect]
+        private async Task OnLoadUser(int id)
+        {
+            User = await _api.GetUserAsync(id);
+        }
+
+        // Generated:
+        //   Task       LoadUser(int id)
+        //   bool       LoadUserIsLoading
+        //   Exception? LoadUserError
+        """;
+
+    private const string Cancel = """
+        [BlexEffect(Concurrency = BlexEffectConcurrency.Latest)]
+        private async Task OnSearch(string query, CancellationToken ct)
+        {
+            Results = await _api.SearchAsync(query, ct);
+        }
+
+        // Generated:
+        //   Task       Search(string query)   <- no token on the public signature
+        //   void       CancelSearch()
+        //   bool       SearchIsLoading
+        //   Exception? SearchError
+        """;
+
+    private const string LabSource = """
+        [BlexEffect]                                             // mergeMap
+        private async Task OnRunParallel(CancellationToken ct) => await Task.Delay(1200, ct);
+
+        [BlexEffect(Concurrency = BlexEffectConcurrency.Latest)]     // switchMap
+        private async Task OnRunLatest(CancellationToken ct) => await Task.Delay(1200, ct);
+
+        [BlexEffect(Concurrency = BlexEffectConcurrency.Drop)]       // exhaustMap
+        private async Task OnRunDrop() => await Task.Delay(1200);
+
+        [BlexEffect(Concurrency = BlexEffectConcurrency.Queue)]      // concatMap
+        private async Task OnRunQueue() => await Task.Delay(1200);
+        """;
+
+    private const string SearchSource = """
+        [BlexStore(Name = "search")]
+        public partial class SearchStore
+        {
+            [BlexState] private string _query = "";
+            [BlexState] private IReadOnlyList<string> _results = [];
+            [BlexState] private bool _simulateFailure;
+
+            [BlexComputed] private bool ComputeHasResults() => Results.Count > 0;
+
+            [BlexAction] private void OnSetSimulateFailure(bool value) => SimulateFailure = value;
+
+            [BlexEffect(Concurrency = BlexEffectConcurrency.Latest)]
+            private async Task OnSearch(string query, CancellationToken ct)
+            {
+                Query = query;
+                await Task.Delay(700, ct);          // the "network"
+
+                // The failure switch: the wrapper catches this into SearchError.
+                if (SimulateFailure)
+                    throw new InvalidOperationException($"The search service is unavailable (simulated) for '{query}'.");
+
+                Results = [.. Catalog.Where(c => c.Contains(query, StringComparison.OrdinalIgnoreCase))];
+            }
+
+            [BlexAction] private void OnClear() { Query = ""; Results = []; }
+        }
+
+        @* The component's Clear cancels first: a search still running would land its results after it. *@
+        private void Clear()
+        {
+            Search.CancelSearch();
+            Search.Clear();
+        }
+        """;
+
+    private const string Debounce = """
+        [BlexEffect(DebounceMilliseconds = 300, Concurrency = BlexEffectConcurrency.Latest)]
+        private async Task OnTypeAhead(string query, CancellationToken ct)
+        {
+            Query = query;
+            Results = await _api.SearchAsync(query, ct);
+        }
+        """;
+
+    private const string DebouncedSource = """
+        [BlexStore(Name = "search")]
+        public partial class SearchStore
+        {
+            [BlexState] private string _typeAheadQuery = "";
+            [BlexState] private IReadOnlyList<string> _typeAheadResults = [];
+            [BlexState] private int _keystrokes;
+            [BlexState] private int _requestsStarted;
+
+            [BlexAction] private void OnCountKeystroke() => Keystrokes++;
+
+            [BlexEffect(DebounceMilliseconds = 300, Concurrency = BlexEffectConcurrency.Latest)]
+            private async Task OnTypeAhead(string query, CancellationToken ct)
+            {
+                // Reached only by the invocation that survived the gate.
+                RequestsStarted++;
+                TypeAheadQuery = query;
+                await Task.Delay(700, ct);          // the "network"
+                TypeAheadResults = [.. Catalog.Where(c => c.Contains(query, StringComparison.OrdinalIgnoreCase))];
+            }
+        }
+
+        @* The component invokes it on every keystroke -- the gate does the filtering. *@
+        private async Task OnInput(ChangeEventArgs e)
+        {
+            Search.CountKeystroke();
+            await Search.TypeAhead(e.Value?.ToString() ?? "");
+        }
+
+        @* CancelTypeAhead() also stops the invocation still waiting out its quiet period. *@
+        private void Clear()
+        {
+            Search.CancelTypeAhead();
+            Search.ClearTypeAhead();
+        }
+        """;
+
+    private const string GeneratedEffect = """
+        private int __SearchPending;
+        public bool SearchIsLoading => __SearchPending > 0;
+
+        private Exception? __SearchError;
+        public Exception? SearchError => __SearchError;
+
+        private CancellationTokenSource? __SearchCts;
+        public void CancelSearch() => __SearchCts?.Cancel();
+
+        private int __SearchVersion;
+
+        public async Task Search(string query)
+        {
+            // The veto first, before anything observable: a vetoed invocation flips no loading flag,
+            // clears no error and cancels no run in flight.
+            var args = IsObserved ? new[] { new BlexActionArg("query", query) } : null;
+            if (!BeginAction("Search", args))
+                return;
+
+            var version = ++__SearchVersion;    // stale runs must not clobber newer error state
+            __SearchCts?.Cancel();              // Latest: supersede the previous run
+            var cts = new CancellationTokenSource();
+            __SearchCts = cts;
+            var ct = cts.Token;
+
+            try
+            {
+                BeginEffect(ref __SearchPending);
+                SetEffectState(ref __SearchError, null);
+                await DispatchApprovedAsync("Search", () => OnSearch(query, ct), args);   // already approved
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // Our own cancellation: a normal outcome, not an error.
+            }
+            catch (Exception ex)
+            {
+                if (version == __SearchVersion)
+                    SetEffectState(ref __SearchError, ex);
+            }
+            finally
+            {
+                if (ReferenceEquals(__SearchCts, cts))
+                    __SearchCts = null;
+                cts.Dispose();
+                EndEffect(ref __SearchPending);
+            }
+        }
+        """;
+}

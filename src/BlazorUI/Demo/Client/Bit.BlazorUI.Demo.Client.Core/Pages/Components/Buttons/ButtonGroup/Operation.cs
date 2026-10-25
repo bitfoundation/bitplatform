@@ -12,7 +12,7 @@ public class Operation
 
     public bool ReversedIcon { get; set; }
 
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     public string? Class { get; set; }
 

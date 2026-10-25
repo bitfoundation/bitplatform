@@ -34,6 +34,22 @@ internal static class BitTimeSteps
     }
 
     /// <summary>
+    /// The time of day a span lands on, which is where a picker reads its parts from. A value is a
+    /// <see cref="TimeSpan"/> and can run past the end of a day or before its start - the result of a
+    /// subtraction, say - so it is wrapped into a day rather than clamped to one: a bound outside of a day is
+    /// an application asking for the edge of it, but a value outside of one is a time of day all the same,
+    /// and it is the one the field writes.
+    /// </summary>
+    public static TimeSpan? ToTimeOfDay(TimeSpan? time)
+    {
+        if (time.HasValue is false) return null;
+
+        var ticks = time.Value.Ticks % TimeSpan.TicksPerDay;
+
+        return new TimeSpan(ticks < 0 ? ticks + TimeSpan.TicksPerDay : ticks);
+    }
+
+    /// <summary>
     /// The value brought back into the range, so a part that runs off one end of the clock face carries on
     /// from the other.
     /// </summary>

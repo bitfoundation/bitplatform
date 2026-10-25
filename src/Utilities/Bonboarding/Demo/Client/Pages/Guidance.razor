@@ -1,0 +1,397 @@
+﻿@page "/guidance"
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Beacons, checklists & tour lists · Bonboarding</PageTitle>
+
+<div class="bb-intro">
+    <h1>Beacons, checklists &amp; tour lists</h1>
+    <p class="bb-subtitle">
+        Not all guidance should take over the screen. A beacon marks something worth a look and, pressed, opens a hint,
+        starts a tour or runs your code; a checklist shows a new user what is left to do; a tour list lets anyone find a
+        tour again, on purpose. All three render on the page itself, use the same engine, store and theme as the tours,
+        and need nothing more than the <code>BonboardingRoot</code> already in the layout.
+    </p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Beacons</h3>
+    <p>
+        A beacon is a small pulsing dot on an element. Press one: the dot on <strong>Import</strong> opens a hint, the one
+        on the usage panel under the product starts a tour, and the one on the <strong>account</strong> button runs a
+        handler of the page's own.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-secondary" @onclick="ResetBeaconsAsync">Bring the beacons back</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => _showUsage = !_showUsage">@(_showUsage ? "Hide" : "Show") the usage tile</button>
+        </div>
+
+        <AppWindow>
+            @if (_showUsage)
+            {
+                <div class="demo-panel" data-bonboarding-anchor="usage-detail">
+                    <p class="demo-panel-title">Usage this month</p>
+                    <p>68% of the plan's allowance. Resets on the 1st.</p>
+                </div>
+            }
+        </AppWindow>
+
+        <BonboardingBeacon Id="import-hint"
+                           Anchor="import"
+                           Title="Import is here"
+                           Description="Bring projects in from a CSV file or another workspace. It used to live under Settings." />
+
+        <BonboardingBeacon Anchor="usage-detail"
+                           Position="BonboardingBeaconPosition.TopStart"
+                           Label="Take the usage tour"
+                           Tour="UsageTour" />
+
+        <BonboardingBeacon Anchor="account"
+                           Position="_beaconPosition"
+                           Label="What's new"
+                           OnClick="() => _changelogOpened++" />
+
+        <div class="bb-fields">
+            <label class="bb-field">
+                Account beacon position
+                <select @bind="_beaconPosition">
+                    @foreach (var value in Enum.GetValues<BonboardingBeaconPosition>())
+                    {
+                        <option value="@value">@value</option>
+                    }
+                </select>
+            </label>
+        </div>
+
+        @if (_changelogOpened > 0)
+        {
+            <div class="bb-note" role="status">
+                OnClick ran @(_changelogOpened == 1 ? "once" : $"{_changelogOpened} times") - this is where an application would open its changelog.
+            </div>
+        }
+    </div>
+
+    <p>
+        Each beacon follows its element as the page scrolls or the layout changes, positioned in the browser with no call
+        into .NET per frame. It hides while its element is missing, hidden or scrolled out of sight, and while any other
+        tour runs (<code>HideWhileTourRuns</code>, on by default). Pressed, a beacon does one of three things:
+    </p>
+    <ul class="bb-detail-list">
+        <li>
+            The one on <strong>Import</strong> opens a <strong>hint</strong>: one step on its element, with no overlay and no
+            focus trap. It has an <code>Id</code>, so the hint is remembered like a one-step tour: once read, the beacon is
+            gone for good, even after a reload.
+        </li>
+        <li>
+            The one on the usage panel starts a <strong>tour</strong>, and goes once that tour is completed or dismissed
+            (<code>KeepAfterClosed</code> keeps it). Press <strong>Hide the usage tile</strong> and the beacon goes with the
+            panel it sits on.
+        </li>
+        <li>
+            The one on the <strong>account</strong> button runs a <strong>handler</strong> of yours (<code>OnClick</code>).
+            It has no <code>Id</code>, so it always shows. Pick its <code>Position</code> above: a corner, an edge or the
+            centre of its element, with Start and End mirrored in a right-to-left page; <code>OffsetX</code> and
+            <code>OffsetY</code> nudge it.
+        </li>
+    </ul>
+    <p>
+        A beacon is a real button with a 24-pixel touch target, named by its <code>Label</code> (then its
+        <code>Title</code>), that says when its hint or tour is open. <strong>Bring the beacons back</strong> forgets the
+        hint's and the tour's records.
+    </p>
+
+    <pre class="bb-code">@BeaconExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> An onboarding checklist</h3>
+    <p>
+        A checklist shows a new user the handful of things worth doing, and ticks each one off as it gets done. An item is
+        done when any of its sources says so: the first when its tour is completed (pressing it starts the tour), the
+        second when the application raises a signal (type in the box), the third while a condition holds. Progress is
+        stored next to the tours' records, so it survives a reload - and follows in another tab.
+    </p>
+    <ul class="bb-detail-list">
+        <li>
+            Tick <strong>Show the administrator's task</strong> and a fourth item appears: its <code>When</code> lists it only
+            for administrators. It has a <code>Route</code>, so pressing it goes to the settings page - and that page ticks it
+            off with <code>SetChecklistItemAsync</code>, which works from anywhere, checklist on screen or not.
+        </li>
+        <li>
+            <strong>Tick the search task off</strong> and <strong>Untick it</strong> call <code>SetChecklistItemAsync</code>
+            directly, the way your own code would.
+        </li>
+        <li>
+            When the last task is done, <code>OnCompleted</code> runs; with <strong>Hide when complete</strong> on, the checklist
+            goes away at that moment. The close button (<code>Dismissible</code>) hides it for good, until it is reset.
+        </li>
+    </ul>
+
+    <div class="bb-demo bb-demo-split">
+        <div class="bb-toolbar">
+            <input type="text"
+                   placeholder="Search projects"
+                   aria-label="Search projects"
+                   @bind="_query"
+                   @bind:event="oninput"
+                   @bind:after="SearchedAsync" />
+            <label class="bb-check">
+                <input type="checkbox" @bind="_notifications" @bind:after="RefreshChecklistAsync" />
+                Turn on notifications
+            </label>
+            <label class="bb-check">
+                <input type="checkbox" @bind="_administrator" @bind:after="RefreshChecklistAsync" />
+                Show the administrator's task
+            </label>
+            <label class="bb-check">
+                <input type="checkbox" @bind="_hideWhenComplete" />
+                Hide when complete
+            </label>
+            <button type="button" class="btn btn-secondary" @onclick="() => TickSearchAsync(true)">Tick the search task off</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => TickSearchAsync(false)">Untick it</button>
+            <button type="button" class="btn btn-secondary" @onclick="ResetChecklistAsync">Reset the checklist</button>
+        </div>
+
+        <div>
+            <BonboardingChecklist @ref="_checklist"
+                                  Checklist="Checklist"
+                                  Dismissible="true"
+                                  HideWhenComplete="_hideWhenComplete"
+                                  HeadingLevel="4"
+                                  OnCompleted="() => _checklistCompleted = true" />
+
+            @if (_checklistCompleted)
+            {
+                <div class="bb-note bb-note-success" role="status">OnCompleted ran: every task is done.</div>
+            }
+        </div>
+    </div>
+
+    <pre class="bb-code">@ChecklistExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A list of tours</h3>
+    <p>
+        The entry point of a help menu or resource centre: the tours, where the user stands with each - new, in progress or
+        completed - and a button to <strong>Start</strong>, <strong>Resume</strong> or <strong>Replay</strong> it. A replay
+        starts from the first step; anything else resumes. The list follows the tours' progress as it changes, a reset
+        included; a button is disabled while its tour runs, and each one's accessible name includes the tour's title, so a
+        screen reader hears "Start Reading your usage" rather than "Start" three times.
+    </p>
+    <p>
+        Given no <code>Tours</code>, it lists every registered tour. A tour declared in markup is registered only while its
+        page is on screen, so register the ones a help menu should always offer with <code>IBonboardingService.Register</code>.
+        The multi-page tour listed here is the one on the <a href="workspace">workspace page</a> - leave it part way and
+        this list offers to resume it.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-fields">
+            <label class="bb-check">
+                <input type="checkbox" @bind="_hideCompleted" />
+                Hide completed tours (HideCompleted)
+            </label>
+        </div>
+
+        <BonboardingTourList Tours="ListedTours" Title="Guided tours" HeadingLevel="4" HideCompleted="_hideCompleted">
+            <EmptyContent>
+                <p class="bb-muted">Every tour here is completed. Untick "Hide completed tours" to replay one.</p>
+            </EmptyContent>
+        </BonboardingTourList>
+    </div>
+
+    <pre class="bb-code">@TourListExample</pre>
+</section>
+
+@code {
+    /// <summary>The checklist's id, which the settings page ticks an item of too.</summary>
+    public const string ChecklistId = "demo-getting-started";
+
+    private BonboardingChecklist? _checklist;
+    private string _query = string.Empty;
+    private bool _notifications;
+    private bool _administrator;
+    private bool _hideWhenComplete;
+    private bool _checklistCompleted;
+    private bool _hideCompleted;
+    private bool _showUsage = true;
+    private int _changelogOpened;
+    private BonboardingBeaconPosition _beaconPosition = BonboardingBeaconPosition.TopEnd;
+
+    private static readonly BonboardingTourDefinition UsageTour = new()
+    {
+        Id = "usage-tour",
+        Title = "Reading your usage",
+        Description = "What the usage numbers mean and when they reset.",
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "tile",
+                Target = BonboardingStepTarget.Anchor("usage"),
+                Title = "Usage this month",
+                Description = "The share of your plan's allowance used so far.",
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "detail",
+                Target = BonboardingStepTarget.Anchor("usage-detail"),
+                Title = "When it resets",
+                Description = "On the first of every month, whatever the plan.",
+            },
+        },
+    };
+
+    private static readonly BonboardingTourDefinition ShortTour = new()
+    {
+        Id = "checklist-tour",
+        Title = "Create a project",
+        Description = "Where projects start.",
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "new",
+                Target = BonboardingStepTarget.Anchor("new-project"),
+                Title = "Projects start here",
+                Description = "Press Done to tick this task off the checklist.",
+            },
+        },
+    };
+
+    private BonboardingChecklistDefinition Checklist => _checklistDefinition ??= new()
+    {
+        Id = ChecklistId,
+        Title = "Get started",
+        Description = "The things to do on your first day.",
+        Items =
+        {
+            new BonboardingChecklistItem
+            {
+                Id = "tour",
+                Title = "Take the project tour",
+                Description = "A one-step tour; finishing it ticks this off.",
+                Tour = ShortTour,
+            },
+            new BonboardingChecklistItem
+            {
+                Id = "search",
+                Title = "Search for a project",
+                Description = "Type in the search box above.",
+                CompleteOnSignal = "searched",
+            },
+            new BonboardingChecklistItem
+            {
+                Id = "notifications",
+                Title = "Turn on notifications",
+                IsComplete = _ => ValueTask.FromResult(_notifications),
+            },
+            new BonboardingChecklistItem
+            {
+                Id = "api-keys",
+                Title = "Review your API keys",
+                Description = "For administrators only. Opens the settings page, which ticks this off.",
+                Route = "workspace/settings",
+                When = _ => ValueTask.FromResult(_administrator),
+            },
+        },
+    };
+
+    private BonboardingChecklistDefinition? _checklistDefinition;
+
+    private static readonly BonboardingTourDefinition[] ListedTours = [UsageTour, ShortTour, WorkspaceTour.Create()];
+
+    private async Task SearchedAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(_query)) await BonboardingService.SignalAsync("searched");
+    }
+
+    // IsComplete and When read this page's state, which the checklist cannot watch: it is told when it changed.
+    private Task RefreshChecklistAsync() => _checklist?.RefreshAsync() ?? Task.CompletedTask;
+
+    private Task TickSearchAsync(bool done) => BonboardingService.SetChecklistItemAsync(Checklist.Id, "search", done);
+
+    // Each beacon hears of the reset of its record - the hint's own id, or the tour it starts - and comes back by itself.
+    private async Task ResetBeaconsAsync()
+    {
+        await BonboardingService.ResetAsync("import-hint");
+        await BonboardingService.ResetAsync(UsageTour.Id);
+    }
+
+    private async Task ResetChecklistAsync()
+    {
+        await BonboardingService.ResetChecklistAsync(Checklist.Id);
+        await BonboardingService.ResetAsync(ShortTour.Id);
+        _query = string.Empty;
+        _notifications = false;
+        _checklistCompleted = false;
+
+        if (_checklist is not null) await _checklist.RefreshAsync();
+    }
+
+    private const string BeaconExample = """
+        @* A hint: one non-modal step on its element. With an Id, it goes for good once read. *@
+        <BonboardingBeacon Id="import-hint"
+                           Anchor="import"
+                           Title="Import is here"
+                           Description="Bring projects in from a CSV file." />
+
+        @* A tour: it goes once the tour is completed or dismissed, unless KeepAfterClosed="true". *@
+        <BonboardingBeacon Anchor="usage-detail"
+                           Position="BonboardingBeaconPosition.TopStart"
+                           Tour="UsageTour"
+                           Label="Take the usage tour" />
+
+        @* Anything else. Without an Id it always shows. *@
+        <BonboardingBeacon Anchor="account"
+                           Position="BonboardingBeaconPosition.TopEnd"
+                           OffsetX="0" OffsetY="0"
+                           Label="What's new"
+                           OnClick="OpenChangelog" />
+
+        await BonboardingService.ResetAsync("import-hint");   // brings a read hint back
+        """;
+
+    private const string ChecklistExample = """
+        new BonboardingChecklistDefinition
+        {
+            Id = "demo-getting-started",
+            Title = "Get started",
+            Items =
+            {
+                // Done once its tour is completed; pressing the item starts the tour.
+                new() { Id = "tour", Title = "Take the project tour", Tour = ProjectTour },
+                // Done, for good, when the application raises the signal while the checklist is on screen.
+                new() { Id = "search", Title = "Search for a project", CompleteOnSignal = "searched" },
+                // Done while a condition holds - call RefreshAsync() when what it reads changes.
+                new() { Id = "notifications", Title = "Turn on notifications", IsComplete = _ => ValueTask.FromResult(settings.Notify) },
+                // Listed only for administrators; pressing it goes somewhere.
+                new() { Id = "api-keys", Title = "Review your API keys", Route = "workspace/settings", When = _ => ValueTask.FromResult(user.IsAdmin) },
+            },
+        }
+
+        <BonboardingChecklist Checklist="GettingStarted" Dismissible="true" HideWhenComplete="false" OnCompleted="Celebrate" />
+
+        // Anywhere in the application, checklist on screen or not:
+        await BonboardingService.SetChecklistItemAsync("demo-getting-started", "api-keys");          // done
+        await BonboardingService.SetChecklistItemAsync("demo-getting-started", "search", false);     // not done after all
+        await BonboardingService.SignalAsync("searched");
+        await BonboardingService.ResetChecklistAsync("demo-getting-started");                        // ticks and dismissal
+        """;
+
+    private const string TourListExample = """
+        <BonboardingTourList Title="Guided tours" />                       @* every registered tour, by title *@
+
+        <BonboardingTourList Tours="[UsageTour, ProjectTour, WorkspaceTour.Create()]"
+                             Title="Guided tours"
+                             HideCompleted="true">
+            <EmptyContent>You have taken every tour.</EmptyContent>
+        </BonboardingTourList>
+
+        @* ItemTemplate replaces each row; item.Tour, item.Progress (New, InProgress, Completed),
+           item.IsRunning and item.StartAsync are what the default row is made of. *@
+        """;
+}

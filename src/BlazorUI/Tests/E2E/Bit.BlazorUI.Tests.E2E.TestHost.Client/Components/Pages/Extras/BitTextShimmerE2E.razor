@@ -1,0 +1,246 @@
+﻿@page "/e2e/text-shimmer"
+
+<PageTitle>BitTextShimmer E2E</PageTitle>
+
+<h1>BitTextShimmer</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitTextShimmer Id="tsh-basic" Text="Thinking about your question..." />
+    <BitTextShimmer Id="tsh-forced" ForceAnimation Text="This shimmer keeps animating even in reduced motion mode" />
+    <div class="bit-fam">
+        <BitTextShimmer Id="tsh-forced-ancestor" Text="Forced by an ancestor" />
+    </div>
+    <BitTextShimmer Id="tsh-empty" />
+</E2ESection>
+
+<E2ESection Id="element" Title="Element">
+    <BitTextShimmer Id="tsh-h1" Element="h1" Text="A shimmering heading" />
+    <div id="tsh-sentence">An <BitTextShimmer Id="tsh-span" Element="span" Text="inline text shimmer" /> in the middle of a sentence.</div>
+    <BitText Id="tsh-typo" Typography="BitTypography.H4">
+        <BitTextShimmer Id="tsh-in-text" Element="span" Text="A heading in the typography of the theme" />
+    </BitText>
+    <BitTextShimmer Id="tsh-el-padded" Element="  h3  " Text="Trimmed element" />
+    <BitTextShimmer Id="tsh-el-blank" Element="   " Text="Blank element" />
+    <BitTextShimmer Id="tsh-el-invalid" Element="div onclick=alert(1)" Text="Invalid element" />
+    <BitTextShimmer Id="tsh-el-digit" Element="1div" Text="Digit element" />
+    <BitTextShimmer Id="tsh-el-custom" Element="my-element" Text="Custom element" />
+    <BitTextShimmer Id="tsh-el-void" Element="br" Text="Never rendered" />
+</E2ESection>
+
+<E2ESection Id="band" Title="Band">
+    <BitTextShimmer Id="tsh-wide" Spread="5" Text="A wide shimmer band" />
+    <BitTextShimmer Id="tsh-narrow" Spread="0.5" Text="A narrow shimmer band" />
+    <BitTextShimmer Id="tsh-spread-length" SpreadLength="2em" Element="h3" Text="A band two ems wide" />
+    <BitTextShimmer Id="tsh-spread-both" Spread="5" SpreadLength="  3ch  " Text="SpreadLength wins" />
+    <BitTextShimmer Id="tsh-spread-negative" Spread="-3" Text="Hard edge" />
+    <BitTextShimmer Id="tsh-spread-nan" Spread="double.NaN" Text="Not a number" />
+    <BitTextShimmer Id="tsh-spread-emoji" Text="👍🏽👍🏽" />
+    <BitTextShimmer Id="tsh-angle" Angle="25" Element="h2" Text="A band tilted by 25 degrees" />
+    <BitTextShimmer Id="tsh-angle-negative" Angle="-25" Element="h2" Text="A band tilted by -25 degrees" />
+    <BitTextShimmer Id="tsh-angle-nan" Angle="double.PositiveInfinity" Text="Infinite angle" />
+</E2ESection>
+
+<E2ESection Id="content" Title="Content">
+    <BitTextShimmer Id="tsh-child" ContentLength="30" Text="Never shown">
+        Thinking <strong id="tsh-child-strong">really</strong> hard about it...
+    </BitTextShimmer>
+    <BitTextShimmer Id="tsh-child-icon" SpreadLength="3em">
+        <BitIcon IconName="@BitIconName.Robot" /> Searching <em>the docs</em> for an answer...
+    </BitTextShimmer>
+    <BitTextShimmer Id="tsh-child-emoji" SpreadLength="3em">
+        <span id="tsh-emoji" style="-webkit-text-fill-color:currentcolor">✨</span> Generating a summary...
+    </BitTextShimmer>
+    <BitTextShimmer Id="tsh-child-default">Ten characters by default</BitTextShimmer>
+    <BitTextShimmer Id="tsh-child-negative" ContentLength="-4">Negative length</BitTextShimmer>
+</E2ESection>
+
+<E2ESection Id="timing" Title="Timing">
+    <BitTextShimmer Id="tsh-slow" Duration="4000" Text="Slow and calm shimmer (4 seconds)" />
+    <BitTextShimmer Id="tsh-fast" Duration="750" Text="Fast and urgent shimmer (750 milliseconds)" />
+    <BitTextShimmer Id="tsh-repeat" RepeatDelay="2000" Text="A sweep, then an extra two seconds of rest" />
+    <BitTextShimmer Id="tsh-repeat-duration" Duration="1000" RepeatDelay="3000" Text="One second sweep, three seconds of rest" />
+    <BitTextShimmer Id="tsh-delay-0" Delay="0" Text="Reading the question..." />
+    <BitTextShimmer Id="tsh-delay-250" Delay="250" Text="Searching the knowledge base..." />
+    <BitTextShimmer Id="tsh-delay-500" Delay="500" Text="Drafting an answer..." />
+    <BitTextShimmer Id="tsh-negative-timing" Duration="-100" Delay="-50" RepeatDelay="-20" Text="Negatives are zero" />
+</E2ESection>
+
+<E2ESection Id="direction" Title="Direction & iterations">
+    <BitTextShimmer Id="tsh-reversed" Reversed Text="Against the reading direction" />
+    <BitTextShimmer Id="tsh-alternate" Alternate Text="Back and forth" />
+    <BitTextShimmer Id="tsh-alt-rev" Alternate Reversed Text="Back and forth, reversed" />
+    <button id="btn-replay" @onclick="() => _replayCount++">Replay</button>
+    <span id="replay-count">@_replayCount</span>
+    <BitTextShimmer @key="@($"once-{_replayCount}")" Id="tsh-once" Iterations="1" Duration="600" Element="h2" Text="Revealed with a single sweep" />
+    <BitTextShimmer @key="@($"thrice-{_replayCount}")" Id="tsh-thrice" Iterations="3" Text="Three sweeps, then at rest" />
+    <BitTextShimmer Id="tsh-iter-zero" Iterations="0" Text="Zero iterations is forever" />
+</E2ESection>
+
+<E2ESection Id="playback" Title="Playback">
+    <button id="btn-toggle-paused" @onclick="() => _isPaused = !_isPaused">Toggle paused</button>
+    <span id="paused-state">@_isPaused</span>
+    <BitTextShimmer Id="tsh-paused" Paused="_isPaused" Text="Pause me and resume me" />
+    <BitTextShimmer Id="tsh-hover" PauseOnHover Text="Hover over me to pause the sweep" />
+    <BitTextShimmer Id="tsh-hover-focus" PauseOnHover>
+        Focus <button id="tsh-hover-button">inside</button> to pause
+    </BitTextShimmer>
+    <button id="btn-toggle-static" @onclick="() => _isStatic = !_isStatic">Toggle static</button>
+    <span id="static-state">@_isStatic</span>
+    <BitTextShimmer Id="tsh-static" Static="_isStatic" Text="Stop me and start me again" />
+    <BitTextShimmer Id="tsh-static-base" Static BaseColor="rgb(10, 20, 30)" Text="Static in its base color" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <button id="btn-toggle-disabled" @onclick="() => _isDisabled = !_isDisabled">Toggle disabled</button>
+    <BitTextShimmer Id="tsh-disabled" Disabled="_isDisabled" Text="A disabled shimmer" />
+    <div style="--bit-TextShimmer-disabled-opacity:0.25">
+        <BitTextShimmer Id="tsh-disabled-var" Disabled Text="A disabled shimmer dimmed by the variable" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="thinking" Title="Thinking status">
+    <button id="btn-ask" disabled="@_isThinking" @onclick="Ask">Ask a question</button>
+    <button id="btn-answer" @onclick="Answer">Answer</button>
+    <BitTextShimmer Id="tsh-thinking"
+                    role="status"
+                    aria-live="polite"
+                    Static="_isThinking is false"
+                    RepeatDelay="1000"
+                    Text="@(_isThinking ? "Thinking about your question..." : _thinkingResult)" />
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <button id="btn-pause-all" @onclick="() => _pauseAll = !_pauseAll">Pause animations</button>
+    <BitParams Parameters="ShimmerParams">
+        <BitTextShimmer Id="tsh-cas-1" Text="Reading the question..." />
+        <BitTextShimmer Id="tsh-cas-2" Text="Searching the knowledge base..." />
+        <BitTextShimmer Id="tsh-cas-own" Duration="1000" Text="Drafting an answer (its own Duration)..." />
+        <BitTextShimmer Id="tsh-cas-own-spread" Spread="1" Text="Its own Spread" />
+        <BitTextShimmer Id="tsh-cas-own-paused" Paused="false" Text="Its own Paused" />
+    </BitParams>
+    <BitParams Parameters="ColorParams">
+        <BitTextShimmer Id="tsh-cas-gradient" Text="Params gradient" />
+        <BitTextShimmer Id="tsh-cas-own-color" Color="BitColor.Error" Text="Own color wins over the params gradient" />
+        <BitTextShimmer Id="tsh-cas-color-element" Text="Params element" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    @foreach (var color in Colors)
+    {
+        <BitTextShimmer Id="@($"tsh-color-{color.ToString().ToLowerInvariant()}")" Color="color" Text="@color.ToString()" />
+    }
+    <BitTextShimmer Id="tsh-ocean" BaseColor="#64748b" GradientColor="#22d3ee" Text="An ocean colored shimmer" />
+    <BitTextShimmer Id="tsh-gradient-wins" Color="BitColor.Error" GradientColor="rgb(1, 2, 3)" Text="GradientColor wins over Color" />
+    <button id="btn-color" @onclick="() => _runtimeColor = BitColor.Success">Set color</button>
+    <BitTextShimmer Id="tsh-color-runtime" Color="_runtimeColor" Text="A color changed at runtime" />
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <BitTextShimmer Id="tsh-styled" Style="font-size:2rem;font-weight:bold" Text="A styled text shimmer" />
+    <BitTextShimmer Id="tsh-classy" Class="e2e-tsh-class" Text="A classy text shimmer" />
+    <div id="tsh-vars" style="--bit-TextShimmer-gradient-color:rgb(255, 105, 180);--bit-TextShimmer-base-color:rgb(5, 6, 7);--bit-TextShimmer-spread:2em;--bit-TextShimmer-duration:3s;--bit-TextShimmer-delay:400ms;--bit-TextShimmer-iterations:4;--bit-TextShimmer-angle:15deg;--bit-TextShimmer-repeat-delay:3s">
+        <BitTextShimmer Id="tsh-var" Text="Restyled by the variables of its container" />
+        <BitTextShimmer Id="tsh-var-own" GradientColor="rgb(0, 191, 255)" BaseColor="rgb(9, 9, 9)" Spread="1" Angle="5" Duration="1500" Delay="100" Iterations="2" RepeatDelay="1500"
+                        Text="Its own parameters win" />
+        <BitTextShimmer Id="tsh-var-nested-outer" GradientColor="rgb(0, 128, 0)">
+            Outer <BitTextShimmer Id="tsh-var-nested-inner" Element="span" Text="inner" />
+        </BitTextShimmer>
+    </div>
+    <BitTextShimmer Id="tsh-html-attrs" Class="from-class" Style="color: red"
+                    HtmlAttributes="@(new() { ["class"] = "from-attrs", ["style"] = "letter-spacing: 3px", ["data-test"] = "splatted", ["title"] = "A title" })"
+                    Text="Attributes merged" />
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility & base">
+    <BitTextShimmer Id="tsh-aria" AriaLabel="Assistant is thinking" Text="Thinking..." />
+    <BitTextShimmer Id="tsh-tab" TabIndex="0" Text="Focusable shimmer" />
+    <BitTextShimmer Id="tsh-tab-script" TabIndex="-1" Text="Script focusable shimmer" />
+    <button id="btn-visibility" @onclick="CycleVisibility">Cycle visibility</button>
+    <span id="visibility-state">@_visibility</span>
+    <BitTextShimmer Id="tsh-visibility" Visibility="_visibility" Text="Visibility" />
+    <BitTextShimmer HtmlAttributes="@(new() { ["id"] = "tsh-splatted-id" })" Text="Splatted id" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitTextShimmer Id="tsh-rtl" Dir="BitDir.Rtl" Text="در حال فکر کردن به سوال شما..." />
+    <div dir="rtl">
+        <BitTextShimmer Id="tsh-rtl-inherited" Text="در حال جستجو در مستندات..." />
+        <BitTextShimmer Id="tsh-rtl-inherited-rev" Reversed Text="برعکس" />
+        <BitTextShimmer Id="tsh-rtl-inherited-alt" Alternate Text="رفت و برگشت" />
+        <BitTextShimmer Id="tsh-rtl-inherited-alt-rev" Alternate Reversed Text="رفت و برگشت برعکس" />
+        <BitTextShimmer Id="tsh-ltr-in-rtl" Dir="BitDir.Ltr" Text="Left to right inside" />
+    </div>
+    <BitTextShimmer Id="tsh-rtl-angle" Dir="BitDir.Rtl" Angle="25" Element="h2" Text="نواری که ۲۵ درجه کج شده است" />
+    <BitTextShimmer Id="tsh-rtl-rev" Dir="BitDir.Rtl" Reversed Text="برعکس" />
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-rerender" @onclick="ReRender">Re-render</button>
+    <BitTextShimmer Id="tsh-rerender" Text="@_rerenderText" Element="@_rerenderElement" Duration="_rerenderDuration" Reversed="_rerenderReversed" />
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitTextShimmer Id="tsh-mounted" Text="Mounted shimmer" />
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitColor[] Colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private int _replayCount;
+    private bool _isPaused;
+    private bool _isStatic;
+    private bool _isDisabled = true;
+    private bool _isThinking;
+    private string _thinkingResult = "Ask a question to see the assistant think.";
+    private bool _pauseAll;
+    private BitColor? _runtimeColor = BitColor.Primary;
+    private BitVisibility _visibility = BitVisibility.Visible;
+    private string _rerenderText = "Before";
+    private string? _rerenderElement;
+    private int? _rerenderDuration;
+    private bool _rerenderReversed;
+    private bool _mounted = true;
+
+    private BitTextShimmerParams[] ShimmerParams => [new() { Duration = 3000, RepeatDelay = 1000, SpreadLength = "3em", Paused = _pauseAll }];
+
+    private BitTextShimmerParams[] ColorParams => [new() { GradientColor = "rgb(11, 22, 33)", Element = "h4" }];
+
+    private void Ask()
+    {
+        _isThinking = true;
+    }
+
+    private void Answer()
+    {
+        _thinkingResult = "Here is your answer.";
+        _isThinking = false;
+    }
+
+    private void CycleVisibility()
+    {
+        _visibility = _visibility switch
+        {
+            BitVisibility.Visible => BitVisibility.Hidden,
+            BitVisibility.Hidden => BitVisibility.Collapsed,
+            _ => BitVisibility.Visible
+        };
+    }
+
+    private void ReRender()
+    {
+        _rerenderText = "After";
+        _rerenderElement = "h3";
+        _rerenderDuration = 5000;
+        _rerenderReversed = true;
+    }
+}

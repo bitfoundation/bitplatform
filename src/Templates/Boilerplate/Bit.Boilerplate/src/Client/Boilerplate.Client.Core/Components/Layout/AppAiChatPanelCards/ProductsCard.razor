@@ -5,14 +5,12 @@
     @if (products.Count is 0)
     {
         @* Unreadable products: what the card showed instead. *@
-        <BitMarkdownViewer Markdown="@Message.RawMarkdown"
-                           StripBidiControlCharacters
-                           Pipeline="BitMarkdownPipelines.Advanced" />
+        <BitMarkdownViewer Markdown="@Message.RawMarkdown" />
     }
     else
     {
         <BitStack Horizontal FitHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
-            <BitIcon IconName="@BitIconName.Car" Class="products-icon" />
+            <BitIcon IconName="@BitIconName.Car" />
             <BitText Typography="BitTypography.Subtitle2" Weight="BitFontWeight.Semibold">@title</BitText>
         </BitStack>
 
@@ -103,6 +101,7 @@
                                Variant="BitVariant.Text"
                                IconName="@BitIconName.Chat"
                                Title="@Localizer[nameof(AppStrings.AiChatProductsAsk)]"
+                               AriaLabel="@Localizer[nameof(AppStrings.AiChatProductsAsk)]"
                                OnClick="WrapHandled(() => Ask(product))" />
                 </Actions>
             </BitCard>

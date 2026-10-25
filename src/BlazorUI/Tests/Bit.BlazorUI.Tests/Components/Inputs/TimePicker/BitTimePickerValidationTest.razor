@@ -1,9 +1,10 @@
-@using Bit.BlazorUI.Tests.Components.Inputs.TimePicker
+﻿@using Bit.BlazorUI.Tests.Components.Inputs.TimePicker
 
 <EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
     <BitTimePicker AllowTextInput
+                   ShowInputClearButton="@ShowInputClearButton"
                    MinTime="@MinTime"
                    MaxTime="@MaxTime"
                    AllowedMinutes="@AllowedMinutes"
@@ -19,6 +20,8 @@
 
 @code {
     [Parameter] public BitTimePickerTestModel TestModel { get; set; } = new();
+
+    [Parameter] public bool ShowInputClearButton { get; set; }
 
     [Parameter] public TimeSpan? MinTime { get; set; }
 

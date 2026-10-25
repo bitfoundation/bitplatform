@@ -1,0 +1,77 @@
+﻿@page "/e2e/callout/placement"
+
+<PageTitle>BitCallout placement E2E</PageTitle>
+
+@* One callout placed against an anchor fixed at a known spot of the viewport, configured through the query string so
+   every test lays out exactly the combination it measures: ?side=Top&align=Center&gap=16&pos=near-bottom... *@
+<E2ESection Id="placement" Title="Placement, Alignment, Gap, AlignmentOffset, NoFlip, Direction, CollisionPadding, MaxWindowWidth, ShowArrow">
+    <div id="pl-wrapper" style="position: fixed; @PositionStyle">
+        <BitCallout Id="pl"
+                    Placement="ParsePlacement(Side)"
+                    Alignment="ParsePlacement(Align)"
+                    Gap="Gap"
+                    AlignmentOffset="Offset"
+                    NoFlip="NoFlip"
+                    ShowArrow="Arrow"
+                    CollisionPadding="Padding"
+                    MaxWindowWidth="@(MaxWw > 0 ? MaxWw : null)"
+                    Direction="@(Direction == "All" ? BitDropDirection.All : null)"
+                    Dir="@(Rtl ? BitDir.Rtl : null)"
+                    DefaultIsOpen="Open"
+                    NoOverlay
+                    NoDismissOnOutsideClick="Sticky"
+                    OnToggle="(bool v) => _toggles++">
+            <Anchor>
+                <button id="pl-trigger" type="button" style="@($"width: {_anchorWidth}px; height: 32px;")">Anchor</button>
+            </Anchor>
+            <Content>
+                <div id="pl-body" style="@($"width: {(W > 0 ? W : 120)}px; height: {(H > 0 ? H : 60)}px; overflow: hidden;")">
+                    <button id="pl-grow" type="button" @onclick="() => _anchorWidth += 200">Grow the anchor</button>
+                </div>
+            </Content>
+        </BitCallout>
+    </div>
+    <span id="pl-toggles">@_toggles</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    [SupplyParameterFromQuery(Name = "side")] public string? Side { get; set; }
+    [SupplyParameterFromQuery(Name = "align")] public string? Align { get; set; }
+    [SupplyParameterFromQuery(Name = "gap")] public int Gap { get; set; }
+    [SupplyParameterFromQuery(Name = "offset")] public int Offset { get; set; }
+    [SupplyParameterFromQuery(Name = "noflip")] public bool NoFlip { get; set; }
+    [SupplyParameterFromQuery(Name = "arrow")] public bool Arrow { get; set; }
+    [SupplyParameterFromQuery(Name = "padding")] public int Padding { get; set; }
+    [SupplyParameterFromQuery(Name = "maxww")] public int MaxWw { get; set; }
+    [SupplyParameterFromQuery(Name = "direction")] public string? Direction { get; set; }
+    [SupplyParameterFromQuery(Name = "rtl")] public bool Rtl { get; set; }
+    [SupplyParameterFromQuery(Name = "open")] public bool Open { get; set; }
+    [SupplyParameterFromQuery(Name = "sticky")] public bool Sticky { get; set; }
+    [SupplyParameterFromQuery(Name = "pos")] public string? Pos { get; set; }
+    [SupplyParameterFromQuery(Name = "w")] public int W { get; set; }
+    [SupplyParameterFromQuery(Name = "h")] public int H { get; set; }
+    [SupplyParameterFromQuery(Name = "aw")] public int AnchorWidth { get; set; }
+
+    private int _anchorWidth;
+    private int _toggles;
+
+    private string PositionStyle => Pos switch
+    {
+        "near-top" => "top: 4px; left: 520px;",
+        "near-bottom" => "bottom: 4px; left: 520px;",
+        "near-left" => "top: 300px; left: 4px;",
+        "near-right" => "top: 300px; right: 4px;",
+        "near-bottom-right" => "bottom: 4px; right: 4px;",
+        "middle" => "top: 340px; left: 520px;",
+        _ => "top: 300px; left: 520px;"
+    };
+
+    protected override void OnInitialized()
+    {
+        _anchorWidth = AnchorWidth > 0 ? AnchorWidth : 240;
+    }
+
+    private static BitPlacement? ParsePlacement(string? value) => Enum.TryParse<BitPlacement>(value, out var placement) ? placement : null;
+}

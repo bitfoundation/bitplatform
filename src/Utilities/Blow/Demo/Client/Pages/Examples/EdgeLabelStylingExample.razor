@@ -1,0 +1,118 @@
+﻿@page "/examples/edge-label-styling"
+
+<PageTitle>Edge Label Styling · Blow</PageTitle>
+
+<ExampleScaffold Title="Edge Label Styling"
+                 Summary="An edge's label sits on a plate that can be restyled, padded, rounded or removed, and the text itself styled - all properties of the BlowEdge. Use them to match labels to a theme, to make one label stand out, or to fit the plate to an unusual font.">
+    <Toolbar>
+        <label>
+            Padding X
+            <input type="range" min="0" max="20" step="1" value="@_paddingX"
+                   @oninput="@(e => Set(ref _paddingX, e.Value))" />
+            <span class="lbl-value">@_paddingX</span>
+        </label>
+        <label>
+            Padding Y
+            <input type="range" min="0" max="12" step="1" value="@_paddingY"
+                   @oninput="@(e => Set(ref _paddingY, e.Value))" />
+            <span class="lbl-value">@_paddingY</span>
+        </label>
+        <label>
+            Radius
+            <input type="range" min="0" max="12" step="1" value="@_radius"
+                   @oninput="@(e => Set(ref _radius, e.Value))" />
+            <span class="lbl-value">@_radius</span>
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Compare the four labels: the default plate, a green one with its own text and plate styles, one with no plate at all, and one of letters of very different widths.</li>
+        <li>Move <strong>Padding X</strong> and <strong>Padding Y</strong>: every plate widens or deepens round its text; the label with no plate stays as it is.</li>
+        <li>Move <strong>Radius</strong>: the plates' corners go from square at 0 to pills.</li>
+        <li>Look at the <em>illili vs WWMMWW</em> label at <strong>Padding X</strong> 0: the plate still roughly fits, since narrow and wide letters are counted at different widths.</li>
+        <li><strong>Scroll</strong> to zoom: labels are drawn in the zoomed layer, so they scale with the flow.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>Label</code> is drawn at the path's midpoint, and is also the edge's accessible name.</li>
+        <li><code>LabelStyle</code> is an inline style for the SVG text (<code>fill</code>, <code>font-weight</code>, ...), and <code>LabelBgStyle</code> one for the plate behind it (<code>fill</code>, <code>stroke</code>, ...). The plate's default fill is 85% opaque, so the green one sets <code>fill-opacity:1</code>.</li>
+        <li><code>LabelShowBg</code> (true by default) draws the plate; false leaves the bare text on the line.</li>
+        <li><code>LabelBgPaddingX</code> (4) and <code>LabelBgPaddingY</code> (2) are the space between the text and the plate's edge, and <code>LabelBgBorderRadius</code> (3) rounds its corners; the sliders set them on every edge.</li>
+        <li>SVG cannot size a rectangle to its text, and measuring every label in the browser would cost a round trip per edge per render, so the plate is sized from <code>BlowTextMetrics.EstimateWidth</code>, which weighs each character by its rough width. For an unusual font, tune <code>LabelBgPaddingX</code>.</li>
+        <li>For a label that keeps one size at any zoom, or needs HTML, use <code>EdgeLabelTemplate</code> instead: see the Edge Renderer example.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .lbl-value { display: inline-block; min-width: 1.5rem; text-align: right; }
+</style>
+
+@code {
+    private double _paddingX = 4;
+    private double _paddingY = 2;
+    private double _radius = 3;
+
+    private readonly List<BlowNode> _nodes =
+    [
+        new() { Id = "a1", Type = "input", Label = "Plain", Position = new(0, 0) },
+        new() { Id = "a2", Type = "output", Label = "…", Position = new(320, 60) },
+        new() { Id = "b1", Type = "input", Label = "Styled", Position = new(0, 150) },
+        new() { Id = "b2", Type = "output", Label = "…", Position = new(320, 210) },
+        new() { Id = "c1", Type = "input", Label = "No plate", Position = new(0, 300) },
+        new() { Id = "c2", Type = "output", Label = "…", Position = new(320, 360) },
+        new() { Id = "d1", Type = "input", Label = "Mixed width", Position = new(0, 450) },
+        new() { Id = "d2", Type = "output", Label = "…", Position = new(320, 510) },
+    ];
+
+    // Built once: the canvas edits this list in place as the user connects, selects and deletes,
+    // so a list rebuilt on every render would throw those edits away at the next slider move.
+    private readonly List<BlowEdge> _edges =
+    [
+        new() { Id = "plain", Source = "a1", Target = "a2", Label = "default" },
+        new()
+        {
+            Id = "styled", Source = "b1", Target = "b2", Label = "approved",
+            Stroke = "#16a34a",
+            LabelStyle = "fill:#065f46;font-weight:600",
+            LabelBgStyle = "fill:#d1fae5;fill-opacity:1;stroke:#16a34a;stroke-width:1",
+        },
+        new()
+        {
+            Id = "bare", Source = "c1", Target = "c2", Label = "no plate",
+            LabelShowBg = false,
+            LabelStyle = "fill:#dc2626;font-weight:700",
+        },
+        new()
+        {
+            // 'i' and 'm' are nothing like the same width, which a naive length-times-a-constant
+            // estimate gets badly wrong in both directions.
+            Id = "mixed", Source = "d1", Target = "d2", Label = "illili vs WWMMWW",
+        },
+    ];
+
+    protected override void OnInitialized() => ApplyPlate();
+
+    private void Set(ref double field, object? raw)
+    {
+        if (!double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var value))
+            return;
+
+        field = value;
+        ApplyPlate();
+    }
+
+    // The plate is read on every render, so retuning the edges in place is all a slider needs.
+    private void ApplyPlate()
+    {
+        foreach (var edge in _edges)
+        {
+            edge.LabelBgPaddingX = _paddingX;
+            edge.LabelBgPaddingY = _paddingY;
+            edge.LabelBgBorderRadius = _radius;
+        }
+    }
+}

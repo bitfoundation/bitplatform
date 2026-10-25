@@ -1,0 +1,53 @@
+﻿@page "/e2e/date-picker/surfaces"
+@using System.Globalization
+
+@* BitDatePicker inside the surfaces that close on Escape - a BitDialog, a BitModal and a BitPanel. The picker's
+   callout is opened through Callouts, so its Escape is the picker's alone: the first press closes the callout and
+   the surface stays open for the next one. *@
+
+<PageTitle>BitDatePicker surfaces E2E</PageTitle>
+
+<h1>BitDatePicker - inside a dialog, a modal and a panel</h1>
+
+<E2ESection Id="s-dialog" Title="BitDialog">
+    <button id="btn-open-dialog" type="button" @onclick="() => _dialogOpen = true">Open dialog</button>
+    <div>Dialog open: <span id="dialog-open">@_dialogOpen</span></div>
+    <BitDialog @bind-IsOpen="_dialogOpen" Title="Pick a date" ShowOkButton="false" ShowCancelButton="false">
+        <BitDatePicker Id="dp-dialog" Culture="_en" Today="_today" @bind-Value="_dialogValue" />
+        <BitDatePicker Id="dp-dialog-text" AllowTextInput Culture="_en" Today="_today" />
+        <div>Value: <span id="dialog-value">@Fmt(_dialogValue)</span></div>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="s-modal" Title="BitModal">
+    <button id="btn-open-modal" type="button" @onclick="() => _modalOpen = true">Open modal</button>
+    <div>Modal open: <span id="modal-open">@_modalOpen</span></div>
+    <BitModal @bind-IsOpen="_modalOpen">
+        <div style="padding: 16px; width: 360px;">
+            <BitDatePicker Id="dp-modal" Culture="_en" Today="_today" />
+        </div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="s-panel" Title="BitPanel">
+    <button id="btn-open-panel" type="button" @onclick="() => _panelOpen = true">Open panel</button>
+    <div>Panel open: <span id="panel-open">@_panelOpen</span></div>
+    <BitPanel @bind-IsOpen="_panelOpen">
+        <div style="padding: 16px;">
+            <BitDatePicker Id="dp-panel" Culture="_en" Today="_today" />
+        </div>
+    </BitPanel>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+
+    private readonly DateTimeOffset _today = new(new DateTime(2024, 6, 12, 10, 30, 0), TimeZoneInfo.Local.GetUtcOffset(new DateTime(2024, 6, 12, 10, 30, 0)));
+
+    private static string Fmt(DateTimeOffset? value) => value?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "null";
+
+    private bool _dialogOpen, _modalOpen, _panelOpen;
+    private DateTimeOffset? _dialogValue;
+}

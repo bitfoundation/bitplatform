@@ -94,4 +94,9 @@ public class BitPdfViewerClassStyles
     /// Custom CSS classes/styles for the document properties dialog of the BitPdfViewer.
     /// </summary>
     public string? PropertiesDialog { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the password dialog of the BitPdfViewer.
+    /// </summary>
+    public string? PasswordDialog { get; set; }
 }

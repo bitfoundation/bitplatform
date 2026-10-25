@@ -15,12 +15,7 @@
         width: 2.5rem;
         height: 2.5rem;
         border-radius: 50%;
-        color: $bit-color-error;
         background-color: color-mix(in srgb, #{$bit-color-error} 14%, transparent);
-
-        i {
-            font-size: 1.25rem;
-        }
     }
 
     .approval-consequences {
@@ -29,11 +24,6 @@
         padding: 0.75rem 0.875rem;
         border-radius: $bit-shape-border-radius;
         background-color: $bit-color-background-secondary;
-    }
-
-    .approval-consequence-icon {
-        font-size: 1rem;
-        color: $bit-color-foreground-secondary;
     }
 
     .approval-waiting-dot {
@@ -51,10 +41,6 @@
         border-radius: $bit-shape-border-radius;
         color: $bit-color-foreground-secondary;
         background-color: $bit-color-background-secondary;
-
-        i {
-            font-size: 0.875rem;
-        }
 
         &.approved {
             color: $bit-color-foreground-primary;

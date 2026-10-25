@@ -1,0 +1,66 @@
+﻿@namespace Bit.Bortable.Demo.Client.Examples
+
+@* A collapsible "View code" panel under one demo sample that shows the code of that sample: the
+   component named in For - a file of the Samples folder, the same component the page renders -
+   then the other files it is built from, named in Files (paths relative to Samples, separated by
+   commas). The sources come from the build-generated DemoSources lookup, and each one is a
+   CodeBlock under its file name: .razor files are coloured as Razor, .cs files as C#. *@
+
+<div class="bb-source demo-code">
+    <button type="button"
+            class="btn btn-secondary demo-code__toggle"
+            aria-expanded="@_open.ToString().ToLowerInvariant()"
+            @onclick="Toggle">
+        <span class="demo-code__caret">@(_open ? "▾" : "▸")</span>
+        <span class="demo-code__glyph">&lt;/&gt;</span>
+        @(_open ? "Hide code" : "View code")
+    </button>
+
+    @if (_open)
+    {
+        @if (_sources.Count == 0)
+        {
+            <div class="bb-empty demo-code__empty">Source for this sample is not available.</div>
+        }
+        else
+        {
+            @foreach (var (path, source) in _sources)
+            {
+                <div class="bb-source-file demo-code__file">@path</div>
+                <CodeBlock Code="@source" Language="@(path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ? "csharp" : "razor")" Class="demo-code__pre" />
+            }
+        }
+    }
+</div>
+
+@code {
+    private bool _open;
+    private bool _resolved;
+    private List<(string Path, string Source)> _sources = [];
+
+    /// <summary>The sample's component, whose .razor file of the Samples folder is shown first.</summary>
+    [Parameter, EditorRequired] public Type For { get; set; } = default!;
+
+    /// <summary>Other files of the Samples folder the sample is built from, separated by commas.</summary>
+    [Parameter] public string? Files { get; set; }
+
+    private void Toggle()
+    {
+        _open = !_open;
+        if (_open && !_resolved)
+        {
+            _sources = Resolve();
+            _resolved = true;
+        }
+    }
+
+    private List<(string Path, string Source)> Resolve()
+    {
+        var sources = new List<(string Path, string Source)>();
+        foreach (var file in (Files ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Prepend($"{For.Name}.razor"))
+        {
+            if (DemoSources.Files.TryGetValue(file, out var source)) sources.Add((file, source));
+        }
+        return sources;
+    }
+}

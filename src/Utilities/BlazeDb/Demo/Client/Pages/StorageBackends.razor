@@ -1,0 +1,756 @@
+﻿@page "/storage"
+@using Bit.BlazeDb.Browser
+@implements IAsyncDisposable
+@inject DemoDbService Db
+
+<PageTitle>Storage backends · BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Storage backends" Title="Four methods are the entire storage contract"
+            Lead="The engine never assumes a file system. It asks for bytes by name, replaces them atomically, appends to them and deletes them. Everything else - OPFS, a directory on disk, a dictionary in a test - is an implementation detail.">
+    <span class="@(Db.IsPersistent ? "bb-badge bb-badge-success" : "bb-badge bd-badge-neutral")">@Db.StorageLabel</span>
+    <span class="bb-badge bd-badge-neutral">@(Db.Trace?.CallCount ?? 0) calls traced</span>
+    @if (_quota > 0)
+    {
+        <span class="bb-badge bd-badge-neutral">@DemoSandbox.Bytes(_usage) of @DemoSandbox.Bytes(_quota) origin storage used</span>
+    }
+</PageHeader>
+
+<Section Title="The interface">
+    <div class="bb-flex">
+        <CodeBlock Title="Bit.BlazeDb.Storage.IBlazeDbStorage" Code="@InterfaceSnippet" />
+        <div class="bb-flex">
+            <Panel Title="Contract notes" IconName="info">
+                <dl class="bb-params bd-params-prose">
+                    <dt>ReadAsync</dt>
+                    <dd>Returns the whole file, or <code>null</code> when it does not exist. Never throws for a missing name.</dd>
+                    <dt>WriteAtomicAsync</dt>
+                    <dd>After a crash the reader must see either the old bytes or the new bytes, never a mixture. Used for the manifest and snapshots.</dd>
+                    <dt>AppendAsync</dt>
+                    <dd>Appends to the end, creating the file if needed. Used for the log, where a torn tail is acceptable.</dd>
+                    <dt>DeleteAsync</dt>
+                    <dd>Removes the file if present. Used to retire superseded logs and snapshots.</dd>
+                </dl>
+            </Panel>
+            <Callout Tone="accent" Title="Atomicity is the only hard requirement.">
+                Snapshot and manifest writes must be all-or-nothing; the log only needs append. That
+                asymmetry is what lets the same engine sit on a POSIX file system and on the browser's
+                origin private file system without special cases.
+            </Callout>
+            <Panel Title="Two optional interfaces" IconName="layers">
+                <dl class="bb-params bd-params-prose">
+                    <dt>IBlazeDbQuotaAwareStorage</dt>
+                    <dd><code>GetQuotaAsync</code> reports usage and allowance, so the engine can compact or refuse before a flush rather than fail during one; <code>AppendRewritesWholeFile</code> says an append needs room for the log twice over.</dd>
+                    <dt>IBlazeDbEnumerableStorage</dt>
+                    <dd><code>ListAsync</code> names every file, so <code>BlazeDbDatabase.DeleteAsync</code> can remove a database completely rather than only what its manifest names.</dd>
+                </dl>
+            </Panel>
+        </div>
+    </div>
+</Section>
+
+<Section Title="Backends that ship">
+    <Panel Flush="true">
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr><th>Type</th><th>Namespace</th><th>Construction</th><th>Where it fits</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="bd-strong">BlazeDbOpfsStorage</td>
+                        <td class="bb-mono">Bit.BlazeDb.Browser</td>
+                        <td class="bb-mono">await BlazeDbOpfsStorage.CreateAsync("name")</td>
+                        <td>Blazor WebAssembly. Private per-origin files, no user prompt, no quota dialog for reasonable sizes.</td>
+                    </tr>
+                    <tr>
+                        <td class="bd-strong">BlazeDbIndexedDbStorage</td>
+                        <td class="bb-mono">Bit.BlazeDb.Browser</td>
+                        <td class="bb-mono">await BlazeDbIndexedDbStorage.CreateAsync("name")</td>
+                        <td>Where OPFS cannot be written from the main thread - Firefox private windows, Safari before 26. The same writer lock and the same read-only pair; <code>IsOpfsAvailableAsync()</code> says which to use. <a href="tabs">See it pick</a>.</td>
+                    </tr>
+                    <tr>
+                        <td class="bd-strong">BlazeDbFileStorage</td>
+                        <td class="bb-mono">Bit.BlazeDb.Storage</td>
+                        <td class="bb-mono">new BlazeDbFileStorage(directory)</td>
+                        <td>Desktop, server and integration tests. Atomic writes via temp file plus replace; an exclusive lock on the directory for as long as it lives, and <code>OpenReadOnly(directory)</code> for a follower. <a href="hosting">Hosting models</a>.</td>
+                    </tr>
+                    <tr>
+                        <td class="bd-strong">BlazeDbInMemoryStorage</td>
+                        <td class="bb-mono">Bit.BlazeDb.Storage</td>
+                        <td class="bb-mono">new BlazeDbInMemoryStorage()</td>
+                        <td>Unit tests and the failure injection on the durability page. Exposes <code>FileNames</code>, <code>GetFile</code>/<code>SetFile</code> and <code>Clone()</code>, so you can corrupt bytes deliberately or freeze what a crash would leave behind.</td>
+                    </tr>
+                    <tr>
+                        <td class="bd-strong">BlazeDbEncryptedStorage</td>
+                        <td class="bb-mono">Bit.BlazeDb.Storage</td>
+                        <td class="bb-mono">new BlazeDbEncryptedStorage(inner, cipher)</td>
+                        <td>A decorator over any of the above: every write sealed into an AES-GCM frame, quota awareness passed through. <a href="encryption">Encryption at rest</a>.</td>
+                    </tr>
+                    <tr>
+                        <td class="bd-strong">null</td>
+                        <td class="bb-mono">-</td>
+                        <td class="bb-mono">Storage = null</td>
+                        <td>No persistence at all. Nothing is serialized, so this is the fastest configuration.</td>
+                    </tr>
+                    <tr>
+                        <td class="bd-strong">your own</td>
+                        <td class="bb-mono">-</td>
+                        <td class="bb-mono">class X : IBlazeDbStorage</td>
+                        <td>Anything addressable by name: a remote blob store, an encrypting wrapper, a tracing decorator like the one below.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </Panel>
+</Section>
+
+<Section Title="Live engine I/O"
+         Lead="Every call in this trace was made by the engine against this tab's real storage. The demo wraps its backend in a decorator that records what passes through.">
+    <div class="bd-main-side">
+        <Panel Title="Trace" IconName="file" Flush="true">
+            <Actions>
+                <button type="button" class="btn btn-secondary" @onclick="ClearTrace"><Icon Name="close" /> Clear</button>
+            </Actions>
+            <ChildContent>
+                <div class="bb-stats bd-panel-stats">
+                    <StatTile Label="Calls" Value="@((Db.Trace?.CallCount ?? 0).ToString("N0"))" />
+                    <StatTile Label="Bytes written" Tone="accent"
+                              Value="@DemoSandbox.Bytes(Db.Trace?.BytesWritten ?? 0)" />
+                    <StatTile Label="Bytes read" Value="@DemoSandbox.Bytes(Db.Trace?.BytesRead ?? 0)" />
+                </div>
+
+                @if (Db.Trace is null || Db.Trace.Ops.Count == 0)
+                {
+                    <div class="bb-empty">No I/O recorded yet. Generate some with the buttons under “Generate I/O”.</div>
+                }
+                else
+                {
+                    <div class="bd-trace">
+                        @foreach (var op in Db.Trace.Ops)
+                        {
+                            <div class="bd-trace-row">
+                                <span class="bd-trace-seq">@op.Seq</span>
+                                <span class="bd-trace-op @OpClass(op.Operation)">@op.Operation</span>
+                                <span class="bd-trace-name">@op.File</span>
+                                <span class="bd-trace-meta">@(op.Bytes > 0 ? DemoSandbox.Bytes(op.Bytes) : "-")</span>
+                                <span class="bd-trace-meta">@DemoSandbox.Duration(op.Ms)</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </ChildContent>
+        </Panel>
+
+        <div class="bb-flex">
+            <Panel Title="Generate I/O" IconName="play">
+                <div class="bd-actions">
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="WriteAndFlushAsync">
+                        <Icon Name="plus" /> Insert a row, then FlushAsync
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="CheckpointAsync">
+                        <Icon Name="layers" /> CheckpointAsync
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="ReadRawAsync">
+                        <Icon Name="file" /> Read manifest.blz directly
+                    </button>
+                </div>
+                @if (_note is not null)
+                {
+                    <div class="bb-log bd-out">@_note</div>
+                }
+            </Panel>
+
+            <Panel Title="Reads never appear here" IconName="bolt">
+                <p>
+                    Query the <a href="todos">live data</a> page as much as you like and this trace will
+                    not grow. Reads are served from memory, so the storage layer is only ever touched by
+                    the flush loop, checkpoints and recovery.
+                </p>
+            </Panel>
+
+            <CodeBlock Title="The decorator, in full" Code="@DecoratorSnippet" />
+        </div>
+    </div>
+</Section>
+
+<Section Title="OPFS and the single-writer rule"
+         Lead="The browser backend adds one constraint the others do not have: exactly one tab may own a database at a time.">
+    <div class="bb-flex">
+        <div class="bb-flex">
+            <CodeBlock Title="Opening the browser backend" Code="@OpfsSnippet" />
+            <Panel Title="How the election works" IconName="key">
+                <ol class="bb-detail-list">
+                    <li><code>CreateAsync</code> requests a Web Lock named <code>blazedb:&lt;database&gt;</code> with <code>ifAvailable: true</code>.</li>
+                    <li>If the lock is already held, the request resolves immediately as unavailable and <code>BlazeDbDatabaseLockedException</code> is thrown.</li>
+                    <li>Otherwise the lock is held for the lifetime of the <code>BlazeDbOpfsStorage</code> instance and released by <code>Dispose</code> or when the tab closes. It is checked again before every write: a tab restored from the back/forward cache stops writing - <code>db.LastBackgroundError</code> says why - if another tab has taken over meanwhile.</li>
+                    <li>Where <code>navigator.locks</code> is unavailable, <code>CreateAsync</code> throws <code>NotSupportedException</code> rather than guess - unless the application passes <code>allowWithoutWebLocks: true</code> because it guarantees a single tab.</li>
+                    <li>Where OPFS can be read but not written from the main thread (no <code>createWritable</code>), <code>CreateAsync</code> says so and points at <code>BlazeDbIndexedDbStorage</code>.</li>
+                </ol>
+            </Panel>
+        </div>
+
+        <div class="bb-flex">
+            <Panel Title="This tab" IconName="info">
+                <dl class="bb-params">
+                    <dt>Backend</dt>
+                    <dd>@Db.StorageLabel</dd>
+                    <dt>Database name</dt>
+                    <dd>@DemoDbService.DatabaseName</dd>
+                    <dt>Lock name</dt>
+                    <dd>blazedb:@DemoDbService.DatabaseName</dd>
+                    <dt>Persistent</dt>
+                    <dd>@Db.IsPersistent.ToString().ToLowerInvariant()</dd>
+                    @if (_quota > 0)
+                    {
+                        <dt>Origin usage</dt>
+                        <dd>@DemoSandbox.Bytes(_usage) / @DemoSandbox.Bytes(_quota)</dd>
+                    }
+                </dl>
+                @if (Db.StorageNote is not null)
+                {
+                    <Callout Tone="warn">@Db.StorageNote</Callout>
+                }
+            </Panel>
+
+            <Panel Title="Try to take the lock twice" IconName="lock">
+                <p>
+                    Asking for the same database again from this tab exercises the same path a second tab
+                    would take.
+                </p>
+                <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="TryLockAsync">
+                    <Icon Name="play" /> await BlazeDbOpfsStorage.CreateAsync("@DemoDbService.DatabaseName")
+                </button>
+                @if (_lockResult is not null)
+                {
+                    <div class="bb-log bd-out">@_lockResult</div>
+                }
+                <p class="bd-foot">
+                    Open this page in a second tab for the real thing: the newcomer falls back to
+                    in-memory storage and says so in the storage badge in the corner of the window.
+                </p>
+            </Panel>
+
+            <Callout Tone="info" Title="What the browser backend does not do.">
+                There is no queue for becoming the writer, no notification when the lock frees up, and
+                cancellation tokens are accepted but not forwarded to JavaScript. Other tabs can open
+                the same database read-only (<code>BlazeDbOpfsStorage.CreateReadOnlyAsync</code> plus
+                <code>BlazeDbDatabaseOptions.ReadOnly</code>) and follow the writer's checkpoints through
+                <code>BlazeDbTabSync</code> - <a href="tabs">try it across two tabs</a>. This site's own database
+                keeps things simple and falls back to memory instead.
+            </Callout>
+        </div>
+    </div>
+</Section>
+
+<Section Title="Storage quota"
+         Lead="When the backend can report the origin's allowance, the engine checks it before flushing, compacts if space is short, and refuses deliberately rather than failing mid-append. The data stays intact in memory, and the flush can be retried once space is freed.">
+    <div class="bb-split">
+        <CodeBlock Title="Options and calls" Code="@QuotaSnippet" />
+        <Panel Title="This origin" IconName="disk">
+            <dl class="bb-params">
+                <dt>db.GetStorageQuotaAsync()</dt>
+                <dd>@(_quota > 0 ? $"{DemoSandbox.Bytes(_usage)} of {DemoSandbox.Bytes(_quota)} ({_usage * 100.0 / _quota:0.##}% used)" : "null - this backend cannot say")</dd>
+                <dt>Persistence</dt>
+                <dd>@(_persisted?.ToString().ToLowerInvariant() ?? "not asked yet")</dd>
+            </dl>
+            <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="RequestPersistenceAsync">
+                <Icon Name="shield" /> await BlazeDbOpfsStorage.RequestPersistenceAsync()
+            </button>
+            <p class="bd-foot">
+                Browser storage is the origin's to keep or evict. Asking for persistence tells the browser not to evict
+                it under storage pressure; some browsers decide on their own, others ask the user. Keep
+                <a href="backups">exports</a> of what must not be lost either way.
+            </p>
+        </Panel>
+    </div>
+
+    <div class="bd-main-side">
+        <div class="bb-flex">
+            <Panel Title="Run into the quota" IconName="gauge" Sub="a private database whose storage reports a small allowance">
+                <div class="bd-actions">
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="FillAsync">
+                        <Icon Name="plus" /> Insert 150 rows, then FlushAsync
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@(_busy || _quotaDb is null)" @onclick="WaitForFlusherAsync">
+                        <Icon Name="clock" /> Let the background flusher try
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@(_busy || _quotaDb is null)" @onclick="FreeSpaceAsync">
+                        <Icon Name="refresh" /> Free space - raise the allowance - and flush
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="ResetQuotaAsync">
+                        <Icon Name="close" /> Start over
+                    </button>
+                </div>
+                @if (_limited is not null)
+                {
+                    <dl class="bb-params">
+                        <dt>Usage / allowance</dt>
+                        <dd>@DemoSandbox.Bytes(_limited.UsageBytes) / @DemoSandbox.Bytes(_limited.QuotaBytes), QuotaReserveBytes = @DemoSandbox.Bytes(QuotaReserve)</dd>
+                        <dt>Rows in memory</dt>
+                        <dd>@(_quotaDb?.GetTable(TodoEntry.Table).Count ?? 0)</dd>
+                        <dt>OnQuotaPressure calls</dt>
+                        <dd>@_pressureCalls</dd>
+                        <dt>db.LastBackgroundError</dt>
+                        <dd>@(_quotaDb?.LastBackgroundError?.GetType().Name ?? "null")</dd>
+                    </dl>
+                }
+            </Panel>
+        </div>
+        <Panel Title="Quota trace" IconName="history" Flush="true">
+            <ScenarioSteps Steps="_quotaLog.Steps" EmptyText="Insert rows until the allowance runs out." />
+        </Panel>
+    </div>
+</Section>
+
+<Section Title="The JavaScript surface"
+         Lead="One small ES module per concern - OPFS, IndexedDB, WebCrypto, BroadcastChannel - shipped as static web assets inside the package. This is the OPFS one.">
+    <div class="bb-flex">
+        <CodeBlock Title="_content/Bit.BlazeDb/bit-blazedb-opfs.js" Code="@JsSnippet" Language="text" />
+        <div class="bb-flex">
+            <Panel Title="Why so little JavaScript" IconName="bolt">
+                <p>
+                    OPFS handles cannot be marshalled into .NET, so the module exists purely to hold them
+                    and to move byte arrays across the boundary. No querying, no serialization and no
+                    application logic happens in JavaScript.
+                </p>
+                <p>
+                    The interop cost is therefore proportional to how often you flush, not to how often
+                    you read or write rows.
+                </p>
+            </Panel>
+            <Panel Title="Interop bindings" IconName="cpu">
+                <CodeBlock Code="@InteropSnippet" />
+            </Panel>
+        </div>
+    </div>
+</Section>
+
+@code {
+    private long _usage = -1;
+    private long _quota = -1;
+    private bool _busy;
+    private bool _disposed;
+    private string? _note;
+    private string? _lockResult;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Db.GetDatabaseAsync();
+
+        // The component may have been torn down while the database was opening; subscribing then
+        // would leak it through the singleton's event.
+        if (_disposed)
+        {
+            return;
+        }
+        if (Db.Trace is not null)
+        {
+            Db.Trace.Changed += OnTraceChanged;
+        }
+
+        // The engine asks the backend, so this is the same figure its quota handling works from.
+        if (await Db.Db.GetStorageQuotaAsync() is { } quota)
+        {
+            (_usage, _quota) = (quota.UsageBytes, quota.QuotaBytes);
+        }
+    }
+
+    // ---------------------------------------------------------------- quota
+
+    private const long QuotaReserve = 8 * 1024;
+    private QuotaLimitedStorage? _limited;
+    private BlazeDbDatabase? _quotaDb;
+    private readonly ScenarioLog _quotaLog = new();
+    private int _pressureCalls;
+    private int _quotaRows;
+    private bool? _persisted;
+
+    private async Task<BlazeDbDatabase> QuotaDbAsync()
+    {
+        if (_quotaDb is not null)
+        {
+            return _quotaDb;
+        }
+
+        _limited = new QuotaLimitedStorage(quotaBytes: 64 * 1024);
+        var options = DemoSandbox.BuildOptions(_limited, flushInterval: TimeSpan.FromMilliseconds(250));
+        options.QuotaReserveBytes = QuotaReserve;
+        options.OnQuotaPressure = quota =>
+        {
+            _pressureCalls++;
+            _quotaLog.Run("OnQuotaPressure", $"used {quota.UsedFraction:P0} - {DemoSandbox.Bytes(quota.UsageBytes)} of {DemoSandbox.Bytes(quota.QuotaBytes)}",
+                "Called once per episode, before the refusal - the place to ask the user to free space.");
+            _ = InvokeAsync(StateHasChanged);
+        };
+        _quotaDb = await BlazeDbDatabase.OpenAsync(options);
+        return _quotaDb;
+    }
+
+    private async Task FillAsync()
+    {
+        _busy = true;
+        try
+        {
+            var db = await QuotaDbAsync();
+            var todos = db.GetTable(TodoEntry.Table);
+            todos.InsertMany(Enumerable.Range(0, 150).Select(_ => new TodoEntry
+            {
+                Id = Guid.NewGuid(),
+                Title = $"quota row {++_quotaRows}",
+                Notes = "padding, so each row costs the log something real",
+                CreatedAt = DateTime.UtcNow,
+            }));
+
+            try
+            {
+                await db.FlushAsync();
+                _quotaLog.Ok("Inserted and flushed", $"todos.Count → {todos.Count}",
+                    $"{DemoSandbox.Bytes(_limited!.UsageBytes)} of {DemoSandbox.Bytes(_limited.QuotaBytes)} used. Files: {string.Join(", ", _limited.FileNames.OrderBy(f => f, StringComparer.Ordinal))}");
+            }
+            catch (BlazeDbStorageQuotaExceededException ex)
+            {
+                _quotaLog.Error("FlushAsync refused",
+                    $"BlazeDbStorageQuotaExceededException: needs {DemoSandbox.Bytes(ex.RequiredBytes)}, {DemoSandbox.Bytes(ex.Quota.AvailableBytes)} available ({ex.Quota.UsedFraction:P0} used)",
+                    $"It tried a checkpoint first to compact the log. The {todos.Count} rows are still committed in memory - nothing was half-written.");
+            }
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task WaitForFlusherAsync()
+    {
+        _busy = true;
+        try
+        {
+            await Task.Delay(600);
+            var error = _quotaDb!.LastBackgroundError;
+            if (error is null)
+            {
+                _quotaLog.Ok("The flusher has nothing to report", "db.LastBackgroundError → null", "Everything committed is on storage.");
+            }
+            else
+            {
+                _quotaLog.Error("The flusher keeps retrying", $"db.LastBackgroundError → {error.GetType().Name}",
+                    "Every 250 ms it tries again; the error stands until a flush succeeds - what a UI reads to say durability is lagging.");
+            }
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task FreeSpaceAsync()
+    {
+        _busy = true;
+        try
+        {
+            _limited!.QuotaBytes = 1024 * 1024;
+            await _quotaDb!.FlushAsync();
+            _quotaLog.Ok("Space freed, flush retried", "await db.FlushAsync()",
+                $"{DemoSandbox.Bytes(_limited.UsageBytes)} of {DemoSandbox.Bytes(_limited.QuotaBytes)} used; db.LastBackgroundError → {(_quotaDb.LastBackgroundError is null ? "null" : _quotaDb.LastBackgroundError.GetType().Name)}. No row was lost while it waited.");
+        }
+        catch (Exception ex)
+        {
+            _quotaLog.Error("Flush failed", ex.GetType().Name, ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ResetQuotaAsync()
+    {
+        _busy = true;
+        try
+        {
+            if (_quotaDb is not null)
+            {
+                _limited!.QuotaBytes = long.MaxValue / 4;   // let the shutdown flush through
+                await _quotaDb.DisposeAsync();
+                _quotaDb = null;
+            }
+            _limited = null;
+            _pressureCalls = 0;
+            _quotaRows = 0;
+            _quotaLog.Clear();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task RequestPersistenceAsync()
+    {
+        _busy = true;
+        try
+        {
+            _persisted = await BlazeDbOpfsStorage.RequestPersistenceAsync();
+        }
+        catch (Exception ex)
+        {
+            _note = $"{ex.GetType().Name}: {ex.Message}";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private void OnTraceChanged() => InvokeAsync(StateHasChanged);
+
+    private static string OpClass(string operation) => operation switch
+    {
+        "ReadAsync" => "bd-op-read",
+        "AppendAsync" => "bd-op-append",
+        "WriteAtomicAsync" => "bd-op-write",
+        "DeleteAsync" => "bd-op-delete",
+        _ => "",
+    };
+
+    private void ClearTrace() => Db.Trace?.Clear();
+
+    private async Task WriteAndFlushAsync()
+    {
+        _busy = true;
+        try
+        {
+            var before = Db.Trace?.CallCount ?? 0;
+
+            Db.Todos.Insert(new TodoEntry
+            {
+                Id = Guid.NewGuid(),
+                Title = "row written from the storage page",
+                Category = "engine",
+                Priority = Priority.Low,
+                CreatedAt = DateTime.UtcNow,
+                Effort = 5,
+            });
+
+            var sw = Stopwatch.StartNew();
+            await Db.Db.FlushAsync();
+
+            _note =
+                $"todos.Insert(row)   // 0 storage calls\n" +
+                $"await db.FlushAsync()   // {(Db.Trace?.CallCount ?? 0) - before} storage call(s), " +
+                $"{DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds)}";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task CheckpointAsync()
+    {
+        _busy = true;
+        try
+        {
+            var before = Db.Trace?.CallCount ?? 0;
+            var sw = Stopwatch.StartNew();
+            await Db.Db.CheckpointAsync();
+
+            _note =
+                $"await db.CheckpointAsync()\n" +
+                $"{(Db.Trace?.CallCount ?? 0) - before} storage calls in {DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds)} - " +
+                "snapshot written, manifest replaced atomically, old log deleted.";
+        }
+        catch (Exception ex)
+        {
+            _note = $"{ex.GetType().Name}: {ex.Message}";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ReadRawAsync()
+    {
+        _busy = true;
+        try
+        {
+            if (Db.Trace is null)
+            {
+                return;
+            }
+
+            var bytes = await Db.Trace.ReadAsync("manifest.blz");
+            _note = bytes is null
+                ? "storage.ReadAsync(\"manifest.blz\") → null\nThe database has not been opened over this storage yet."
+                : $"storage.ReadAsync(\"manifest.blz\") → {bytes.Length} bytes\n" +
+                  $"first bytes: {string.Join(' ', bytes.Take(12).Select(b => b.ToString("x2")))}";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task TryLockAsync()
+    {
+        _busy = true;
+        try
+        {
+            var storage = await Bit.BlazeDb.Browser.BlazeDbOpfsStorage.CreateAsync(DemoDbService.DatabaseName);
+            storage.Dispose();
+            _lockResult =
+                "The lock was available, so this tab is not the OPFS writer.\n" +
+                "That instance has been disposed again to release it.";
+        }
+        catch (BlazeDbDatabaseLockedException ex)
+        {
+            _lockResult = $"BlazeDbDatabaseLockedException\n{ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _lockResult = $"{ex.GetType().Name}\n{ex.Message}";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (Db.Trace is not null)
+        {
+            Db.Trace.Changed -= OnTraceChanged;
+        }
+        if (_quotaDb is not null)
+        {
+            _limited!.QuotaBytes = long.MaxValue / 4;
+            await _quotaDb.DisposeAsync();
+        }
+    }
+
+    private const string InterfaceSnippet = """
+        namespace Bit.BlazeDb.Storage;
+
+        public interface IBlazeDbStorage
+        {
+            ValueTask<byte[]?> ReadAsync(
+                string name,
+                CancellationToken cancellationToken = default);
+
+            ValueTask WriteAtomicAsync(
+                string name,
+                ReadOnlyMemory<byte> data,
+                CancellationToken cancellationToken = default);
+
+            ValueTask AppendAsync(
+                string name,
+                ReadOnlyMemory<byte> data,
+                CancellationToken cancellationToken = default);
+
+            ValueTask DeleteAsync(
+                string name,
+                CancellationToken cancellationToken = default);
+        }
+        """;
+
+    private const string DecoratorSnippet = """
+        public sealed class InstrumentedStorage(IBlazeDbStorage inner) : IBlazeDbStorage
+        {
+            private readonly List<StorageOp> _ops = [];
+
+            public IReadOnlyList<StorageOp> Ops => _ops;
+            public event Action? Changed;
+
+            public async ValueTask<byte[]?> ReadAsync(
+                string name, CancellationToken ct = default)
+            {
+                var sw = Stopwatch.StartNew();
+                var result = await inner.ReadAsync(name, ct);
+                Record("ReadAsync", name, result?.Length ?? 0, sw);
+                return result;
+            }
+
+            public async ValueTask AppendAsync(
+                string name, ReadOnlyMemory<byte> data, CancellationToken ct = default)
+            {
+                var sw = Stopwatch.StartNew();
+                await inner.AppendAsync(name, data, ct);
+                Record("AppendAsync", name, data.Length, sw);
+            }
+
+            // WriteAtomicAsync and DeleteAsync follow the same shape.
+        }
+        """;
+
+    private const string OpfsSnippet = """
+        try
+        {
+            var storage = await BlazeDbOpfsStorage.CreateAsync("blazedb-demo");
+
+            var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
+            {
+                Storage = storage,
+                FlushInterval = TimeSpan.FromMilliseconds(100),
+                CheckpointWalSize = 1 * 1024 * 1024,
+            }.AddTable(TodoEntry.Table));
+        }
+        catch (BlazeDbDatabaseLockedException)
+        {
+            // Another tab owns this database. Degrade to memory, or
+            // ask the visitor to close the other tab.
+            var storage = new BlazeDbInMemoryStorage();
+        }
+        """;
+
+    private const string JsSnippet = """
+        export function       hasWebLocks()                                    // boolean
+        export async function acquireLock(lockName, allowWithoutWebLocks)      // Promise<boolean>
+        export function       releaseLock(lockName)                            // void
+        export function       isLockHeld(lockName)                             // re-checked before every write
+        export function       canWrite()                                       // createWritable exists?
+        export async function openDatabaseDirectory(dbName)                    // FileSystemDirectoryHandle
+        export async function openExistingDatabaseDirectory(dbName)            // handle | null (replicas)
+        export async function readFile(directory, name)                        // Uint8Array | null
+        export function       copyBytes(source, destination)                   // into a .NET span
+        export async function writeAtomic(directory, name, bytes)              // createWritable + close
+        export async function appendFile(directory, name, bytes)               // keepExistingData: true
+        export async function deleteFile(directory, name)                      // removeEntry
+        export async function storageEstimate()                                // { usage, quota } | null
+        export async function requestPersistence()                             // Promise<boolean>
+        """;
+
+    private const string QuotaSnippet = """
+        var options = new BlazeDbDatabaseOptions
+        {
+            Storage = storage,
+            QuotaReserveBytes = 4 * 1024 * 1024,                          // keep this much free (the default)
+            OnQuotaPressure = quota => ShowStorageWarning(quota.UsedFraction),   // once per episode
+        };
+
+        var quota = await db.GetStorageQuotaAsync();       // null when the backend cannot say
+        await BlazeDbOpfsStorage.RequestPersistenceAsync(); // ask not to be evicted
+
+        try { await db.FlushAsync(); }
+        catch (BlazeDbStorageQuotaExceededException ex)    // ex.Quota, ex.RequiredBytes
+        {
+            // The data is safe in memory: free space, then flush again.
+        }
+        """;
+
+    private const string InteropSnippet = """
+        [SupportedOSPlatform("browser")]
+        internal static partial class BlazeDbOpfsInterop
+        {
+            [JSImport("acquireLock", "bit-blazedb-opfs")]
+            public static partial Task<bool> AcquireLock(string lockName, bool allowWithoutWebLocks);
+
+            [JSImport("releaseLock", "bit-blazedb-opfs")]
+            public static partial void ReleaseLock(string lockName);
+
+            // …one binding per exported function
+        }
+        """;
+}

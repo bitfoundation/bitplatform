@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // Reads a single property of an item, whichever of the three input APIs it comes from: the BitNavBarItem
 // class, the BitNavBarOption component, or a custom type read through the NameSelectors.
@@ -180,26 +180,26 @@ public partial class BitNavBar<TItem>
         return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
     }
 
-    internal bool GetIsEnabled(TItem item)
+    internal bool GetIsDisabled(TItem item)
     {
         if (item is BitNavBarItem navItem)
         {
-            return navItem.IsEnabled;
+            return navItem.IsDisabled;
         }
 
         if (item is BitNavBarOption navOption)
         {
-            return navOption.IsEnabled;
+            return navOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item) ?? true;
+            return NameSelectors.IsDisabled.Selector!(item) ?? false;
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     private string? GetKey(TItem item)
@@ -310,6 +310,28 @@ public partial class BitNavBar<TItem>
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
+    }
+
+    internal BitLinkRels? GetRel(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.Rel;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.Rel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Rel.Selector is not null)
+        {
+            return NameSelectors.Rel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitLinkRels?>(NameSelectors.Rel.Name);
     }
 
     internal string? GetTarget(TItem item)

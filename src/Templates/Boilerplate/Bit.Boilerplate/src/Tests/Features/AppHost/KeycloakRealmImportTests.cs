@@ -5,12 +5,12 @@ using Aspire.Hosting.ApplicationModel;
 namespace Boilerplate.Tests.Features.AppHost;
 
 /// <summary>
-/// <c>dev-realm.json</c> seeds accounts with well-known passwords - <c>test</c> / <c>123456</c> is in <c>g-admin</c>,
+/// <c>dev-realm.json</c> seeds accounts with well-known passwords - <c>test</c> / <c>12345678</c> is in <c>g-admin</c>,
 /// which <c>AppJwtSecureDataFormat</c> expands into every <see cref="Boilerplate.Shared.Infrastructure.Services.AppFeatures"/>
 /// value - and an OAuth client whose secret is committed in this repository. It is a development fixture.
 /// <para>
 /// It used to reach <c>aspire publish</c> output. Every other development-only resource in the app host
-/// (<c>clientwebwasm</c>, <c>mailpit</c>, the dev tunnels, <c>clientwindows</c>, the MAUI heads) sits inside
+/// (<c>clientwebwasm</c>, <c>mailpit</c>, <c>clientwindows</c>) sits inside
 /// <c>if (builder.ExecutionContext.IsRunMode)</c>; Keycloak did not, so the published application model carried the
 /// container with <c>--import-realm</c> and a bind mount of this folder, while the published app received
 /// <c>KEYCLOAK_HTTP</c> and therefore registered its OIDC scheme against it.

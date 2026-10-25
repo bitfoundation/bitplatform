@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +39,19 @@ public class BitCascadingValueAdvancedTests
         source = 9;
 
         Assert.AreEqual(9, value.Value);
+    }
+
+    [TestMethod]
+    public void ShouldCreateADisabledComputedValueWithoutRunningItsFactory()
+    {
+        var calls = 0;
+        var typed = BitCascadingValue.Computed(() => ++calls, "Count", enabled: false);
+        var untyped = BitCascadingValue.Computed(() => (object?)++calls, typeof(int), "Count", enabled: false);
+
+        Assert.IsFalse(typed.Enabled);
+        Assert.IsFalse(untyped.Enabled);
+        Assert.IsTrue(typed.IsComputed);
+        Assert.AreEqual(0, calls);
     }
 
     [TestMethod]
@@ -185,6 +198,27 @@ public class BitCascadingValueAdvancedTests
         task.GetAwaiter().GetResult();
 
         Assert.IsTrue(task.IsCompletedSuccessfully);
+    }
+
+    [TestMethod]
+    public void ShouldAssignTheNewValueAndNotifyOnceWithNotifyChangedAsync()
+    {
+        var value = (BitCascadingValue<int?>)BitCascadingValue.Lazy<int?>(() => 1, "Count");
+        var raised = 0;
+
+        value.Changed += _ => raised++;
+
+        var task = value.NotifyChangedAsync(5);
+
+        Assert.IsTrue(task.IsCompletedSuccessfully);
+        Assert.AreEqual(5, value.Value);
+        Assert.IsTrue(value.IsValueCreated);
+        Assert.AreEqual(1, raised);
+
+        // An equal value is still pushed down, which is what the explicit call is for.
+        value.NotifyChangedAsync(5);
+
+        Assert.AreEqual(2, raised);
     }
 
     [TestMethod]

@@ -1,0 +1,229 @@
+﻿@page "/e2e/date-picker/look"
+@using System.Globalization
+
+@* How BitDatePicker looks: every Color and Size, the appearance parameters (Underlined, HasBorder, IconPlacement, the
+   icons, ShowGoToToday, DropDirection), the public --bit-DatePicker-* variables, Style/Class and Styles/Classes, the
+   right-to-left layout (Dir and an inherited dir), the BitParams cascade and reduced motion. "Today" is June 12, 2024. *@
+
+<PageTitle>BitDatePicker look E2E</PageTitle>
+
+<h1>BitDatePicker - look</h1>
+
+<E2ESection Id="l-colors" Title="Color">
+    <BitDatePicker Id="dp-color-none" Culture="_en" Today="_today" />
+    @foreach (var color in _colors)
+    {
+        <BitDatePicker Id="@($"dp-color-{color}")" Color="color" HighlightCurrentMonth Culture="_en" Today="_today" />
+    }
+</E2ESection>
+
+<E2ESection Id="l-sizes" Title="Size">
+    <BitDatePicker Id="dp-size-none" Label="Unset" ShowTimePicker Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-size-Small" Label="Small" Size="BitSize.Small" ShowTimePicker Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-size-Medium" Label="Medium" Size="BitSize.Medium" ShowTimePicker Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-size-Large" Label="Large" Size="BitSize.Large" ShowTimePicker Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="l-drop" Title="DropDirection">
+    <div style="width: 300px;">
+        <BitDatePicker Id="dp-drop-all" DropDirection="BitDropDirection.All" Culture="_en" Today="_today" />
+    </div>
+    <div style="width: 300px;">
+        <BitDatePicker Id="dp-drop-tb" Culture="_en" Today="_today" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="l-appearance" Title="Underlined, HasBorder, IconPlacement, icons and ShowGoToToday">
+    <BitDatePicker Id="dp-underlined" Underlined Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-noborder" HasBorder="false" Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-iconstart" IconPlacement="BitPlacement.Start" Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-iconname" IconName="Airplane" Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-icon-ext" Icon="@BitIconInfo.Css("e2e-ext-icon")" IconName="Airplane" Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-nav-icons"
+                   PrevMonthNavIcon="@BitIconInfo.Css("e2e-prev-month")"
+                   NextMonthNavIcon="@BitIconInfo.Css("e2e-next-month")"
+                   GoToTodayIcon="@BitIconInfo.Css("e2e-today")"
+                   PrevYearNavIcon="@BitIconInfo.Css("e2e-prev-year")"
+                   NextYearNavIcon="@BitIconInfo.Css("e2e-next-year")"
+                   PrevYearRangeNavIcon="@BitIconInfo.Css("e2e-prev-range")"
+                   NextYearRangeNavIcon="@BitIconInfo.Css("e2e-next-range")"
+                   Culture="_en"
+                   Today="_today" />
+    <BitDatePicker Id="dp-nav-iconnames"
+                   PrevMonthNavIconName="ChevronLeft"
+                   NextMonthNavIconName="ChevronRight"
+                   GoToTodayIconName="Home"
+                   ClearButtonIconName="Delete"
+                   ShowClearButton
+                   Culture="_en"
+                   Today="_today"
+                   Value="_iconValue" />
+    <BitDatePicker Id="dp-time-icons"
+                   ShowTimePicker
+                   ShowSeconds
+                   ShowClearButton
+                   ShowCloseButton
+                   NowButtonIcon="@BitIconInfo.Css("e2e-now")"
+                   ClearButtonIcon="@BitIconInfo.Css("e2e-clear")"
+                   CloseButtonIcon="@BitIconInfo.Css("e2e-close")"
+                   TimePickerIncreaseHourIcon="@BitIconInfo.Css("e2e-inc-hour")"
+                   TimePickerDecreaseHourIcon="@BitIconInfo.Css("e2e-dec-hour")"
+                   TimePickerIncreaseMinuteIcon="@BitIconInfo.Css("e2e-inc-minute")"
+                   TimePickerDecreaseMinuteIcon="@BitIconInfo.Css("e2e-dec-minute")"
+                   TimePickerIncreaseSecondIcon="@BitIconInfo.Css("e2e-inc-second")"
+                   TimePickerDecreaseSecondIcon="@BitIconInfo.Css("e2e-dec-second")"
+                   Culture="_en"
+                   Today="_today"
+                   Value="_iconValue" />
+    <BitDatePicker Id="dp-overlay-icons"
+                   ShowTimePicker
+                   ShowTimePickerAsOverlay
+                   ShowTimePickerIcon="@BitIconInfo.Css("e2e-show-time")"
+                   HideTimePickerIcon="@BitIconInfo.Css("e2e-hide-time")"
+                   Culture="_en"
+                   Today="_today" />
+    <BitDatePicker Id="dp-time-iconnames"
+                   ShowTimePicker
+                   ShowSeconds
+                   ShowCloseButton
+                   PrevYearNavIconName="Back"
+                   NextYearNavIconName="Forward"
+                   PrevYearRangeNavIconName="Rewind"
+                   NextYearRangeNavIconName="FastForward"
+                   NowButtonIconName="Timer"
+                   CloseButtonIconName="ChromeClose"
+                   TimePickerIncreaseHourIconName="CaretUp8"
+                   TimePickerDecreaseHourIconName="CaretDown8"
+                   TimePickerIncreaseMinuteIconName="CaretUpSolid8"
+                   TimePickerDecreaseMinuteIconName="CaretDownSolid8"
+                   TimePickerIncreaseSecondIconName="ChevronUp"
+                   TimePickerDecreaseSecondIconName="ChevronDown"
+                   Culture="_en"
+                   Today="_today" />
+    <BitDatePicker Id="dp-overlay-iconnames"
+                   ShowTimePicker
+                   ShowTimePickerAsOverlay
+                   ShowTimePickerIconName="Stopwatch"
+                   HideTimePickerIconName="Calendar"
+                   Culture="_en"
+                   Today="_today" />
+    <BitDatePicker Id="dp-nogotoday" ShowGoToToday="false" Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="l-cssvars" Title="CSS variables">
+    <div id="vars-host" style="--bit-DatePicker-input-radius: 13px; --bit-DatePicker-input-border-color: rgb(1, 2, 3); --bit-DatePicker-icon-color: rgb(4, 5, 6); --bit-DatePicker-label-color: rgb(7, 8, 9); --bit-DatePicker-input-height: 44px; --bit-DatePicker-callout-radius: 11px; --bit-DatePicker-callout-background: rgb(250, 240, 230); --bit-DatePicker-today-background: rgb(10, 20, 30); --bit-DatePicker-today-color: rgb(200, 210, 220); --bit-DatePicker-day-radius: 3px; --bit-DatePicker-highlighted-background: rgb(40, 50, 60); --bit-DatePicker-week-number-background: rgb(70, 80, 90);">
+        <BitDatePicker Id="dp-vars" Label="From an ancestor" ShowWeekNumbers HighlightedDates="_highlightedDates" Culture="_en" Today="_today" />
+        <BitDatePicker Id="dp-vars-color" Label="Color and Size win" Color="BitColor.Error" Size="BitSize.Large" Culture="_en" Today="_today" />
+    </div>
+    <BitDatePicker Id="dp-vars-style"
+                   Style="--bit-DatePicker-selected-background: rgb(1, 100, 1); --bit-DatePicker-input-background: rgb(255, 250, 200);"
+                   Culture="_en"
+                   Today="_today"
+                   Value="_selectedValue" />
+    <BitDatePicker Id="dp-vars-callout" Styles="@(new() { Callout = "--bit-DatePicker-day-size: 40px;" })" Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="l-styles" Title="Style, Class, Styles and Classes">
+    <BitDatePicker Id="dp-styles"
+                   Label="Styled"
+                   Value="_selectedValue"
+                   Culture="_en"
+                   Today="_today"
+                   Styles="@(new() { Root = "margin-inline: 3px;",
+                                     Focused = "background-color: rgb(255, 0, 255);",
+                                     Label = "color: rgb(11, 22, 33);",
+                                     Input = "letter-spacing: 2px;",
+                                     InputContainer = "background-color: rgb(240, 255, 240);",
+                                     Icon = "color: rgb(1, 1, 1);",
+                                     Callout = "border: 2px solid rgb(9, 9, 9);",
+                                     Group = "padding: 3px;",
+                                     DayButton = "font-style: italic;",
+                                     TodayDayButton = "text-transform: uppercase;",
+                                     SelectedDayButton = "outline: 3px solid rgb(0, 128, 0);",
+                                     DayPickerMonth = "color: rgb(0, 100, 0);",
+                                     PrevMonthNavButton = "opacity: 0.5;",
+                                     MonthButton = "font-weight: 700;" })" />
+    <BitDatePicker Id="dp-classes"
+                   Label="Classed"
+                   Value="_selectedValue"
+                   HighlightedDates="_highlightedDates"
+                   Culture="_en"
+                   Today="_today"
+                   Classes="@(new() { Root = "e2e-c-root",
+                                      Focused = "e2e-c-focused",
+                                      Label = "e2e-c-label",
+                                      Input = "e2e-c-input",
+                                      InputContainer = "e2e-c-container",
+                                      Icon = "e2e-c-icon",
+                                      Overlay = "e2e-c-overlay",
+                                      Callout = "e2e-c-callout",
+                                      DayButton = "e2e-c-day",
+                                      TodayDayButton = "e2e-c-today",
+                                      SelectedDayButton = "e2e-c-selected",
+                                      HighlightedDayButton = "e2e-c-highlighted",
+                                      PrevMonthNavButton = "e2e-c-prev",
+                                      NextMonthNavButton = "e2e-c-next",
+                                      DayPickerMonth = "e2e-c-month",
+                                      DayPickerHeader = "e2e-c-header",
+                                      DayNameHeader = "e2e-c-dayname",
+                                      Divider = "e2e-c-divider",
+                                      YearMonthPickerWrapper = "e2e-c-ym",
+                                      MonthButton = "e2e-c-monthbtn" })" />
+</E2ESection>
+
+<E2ESection Id="l-rtl" Title="Right to left">
+    <BitDatePicker Id="dp-rtl" Dir="BitDir.Rtl" Culture="_en" Today="_today" />
+    <div dir="rtl">
+        <BitDatePicker Id="dp-rtl-inherited" Culture="_en" Today="_today" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="l-cascade" Title="BitParams cascade">
+    <BitParams Parameters="_cascade">
+        <BitDatePicker Id="dp-casc-1" Today="_today" />
+        <BitDatePicker Id="dp-casc-2" Placeholder="Own" ShowWeekNumbers="false" Today="_today" />
+    </BitParams>
+    <BitDatePicker Id="dp-casc-out" Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="l-motion" Title="Reduced motion and ForceAnimation">
+    <BitDatePicker Id="dp-motion" Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-motion-force" ForceAnimation Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+
+    private static DateTimeOffset Local(int year, int month, int day)
+    {
+        var dateTime = new DateTime(year, month, day);
+        return new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
+    }
+
+    private readonly DateTimeOffset _today = new(new DateTime(2024, 6, 12, 10, 30, 0), TimeZoneInfo.Local.GetUtcOffset(new DateTime(2024, 6, 12, 10, 30, 0)));
+    private readonly DateTimeOffset[] _highlightedDates = [Local(2024, 6, 5)];
+    private readonly DateTimeOffset? _selectedValue = Local(2024, 6, 20);
+    private readonly DateTimeOffset? _iconValue = Local(2024, 6, 20);
+
+    private readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly List<IBitComponentParams> _cascade =
+    [
+        new BitDatePickerParams
+        {
+            Culture = CultureInfo.GetCultureInfo("en-US"),
+            ShowWeekNumbers = true,
+            FirstDayOfWeek = DayOfWeek.Monday,
+            Placeholder = "From the cascade",
+            ShowClearButton = true
+        }
+    ];
+}

@@ -1,4 +1,4 @@
-declare type DrawLayerBuilderOptions = {
+﻿declare type DrawLayerBuilderOptions = {
     pageIndex: number;
 };
 /**

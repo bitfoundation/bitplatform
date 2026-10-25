@@ -1,0 +1,78 @@
+﻿@page "/editor"
+@inject IImageCapabilityProvider Capabilities
+
+<PageTitle>Editor · Bmage samples</PageTitle>
+
+<h1>Editor</h1>
+
+<p>
+    <code>BmageEditor</code>, whole: drop or open an image on it, or load the sample scene, then crop, adjust, filter,
+    draw, annotate, undo and export. Under Interactive Server and in the MAUI app it works too, with its previews
+    crossing to the browser over JS interop.
+    The host links <code>_content/Bit.Bmage/bit-bmage-editor.css</code>, the one thing the editor asks of it.
+</p>
+
+<div class="row">
+    <button type="button" id="editor-sample" class="btn" disabled="@(_editor is null || RendererInfo.IsInteractive is false)" @onclick="LoadSampleAsync">
+        Load the sample scene
+    </button>
+    <button type="button" id="editor-export" class="btn" disabled="@(_loaded is false)" @onclick="ExportAsync">
+        Export
+    </button>
+</div>
+
+@if (_exported is not null)
+{
+    <p id="editor-exported">Exported @_exported.Width × @_exported.Height @_exported.Format, @_exported.Length.ToString("N0") bytes.</p>
+}
+
+@if (_error is not null)
+{
+    <p class="card error" role="alert">@_error</p>
+}
+
+<div class="editor-frame">
+    <BmageEditor @ref="_editor" OnImageLoaded="OnImageLoaded" OnExported="OnExported" OnError="OnError" />
+</div>
+
+@code {
+    private BmageEditor? _editor;
+    private bool _loaded;
+    private EncodedImage? _exported;
+    private string? _error;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // The buttons wait for the editor reference, which only exists after the first render.
+        if (firstRender) StateHasChanged();
+    }
+
+    private async Task LoadSampleAsync()
+    {
+        _error = null;
+        await _editor!.LoadImageAsync(SampleScene.Draw());
+    }
+
+    private async Task ExportAsync()
+    {
+        _error = null;
+
+        try
+        {
+            // WebP where this browser can write it; the editor's managed PNG encoder otherwise.
+            var caps = await Capabilities.GetAsync();
+            var format = caps.ChooseEncodableFormat([ImageFormat.WebP, ImageFormat.Png], ImageFormat.Png);
+            await _editor!.ExportAsync(new ImageExportOptions { Format = format, Quality = 0.9 });
+        }
+        catch (Exception ex)
+        {
+            _error = $"Export failed: {ex.Message}";
+        }
+    }
+
+    private void OnImageLoaded(ImageBuffer image) => _loaded = true;
+
+    private void OnExported(EncodedImage image) => _exported = image;
+
+    private void OnError(Exception ex) => _error = ex.Message;
+}

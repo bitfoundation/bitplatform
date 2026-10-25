@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
 
 public class Section
 {
@@ -8,7 +8,7 @@ public class Section
 
     public string? Info { get; set; }
 
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     public bool? Locked { get; set; }
 

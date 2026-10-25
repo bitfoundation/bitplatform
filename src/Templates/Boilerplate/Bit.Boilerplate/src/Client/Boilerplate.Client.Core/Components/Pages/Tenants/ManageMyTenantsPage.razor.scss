@@ -14,19 +14,11 @@ section {
         max-width: 45rem;
     }
 
-    .tenants-list {
-        width: 100%;
-    }
-
     .tenant-card {
         padding: 1.5rem;
 
         @include lt-sm {
             padding: 1rem;
         }
-    }
-
-    .actions-accordion {
-        width: 100%;
     }
 }

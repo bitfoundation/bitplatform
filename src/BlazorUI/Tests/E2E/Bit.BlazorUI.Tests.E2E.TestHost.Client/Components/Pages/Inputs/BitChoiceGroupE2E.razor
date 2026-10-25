@@ -1,0 +1,599 @@
+﻿@page "/e2e/choice-group"
+
+<PageTitle>BitChoiceGroup E2E</PageTitle>
+
+<h1>BitChoiceGroup (Items)</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <button id="btn-before-basic">Before basic</button>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-basic" Label="Basic Items" Items="_basicItems" DefaultValue="@("B")" OnChange="(string? v) => { _basicChanges++; _basicLast = v; }" />
+    <button id="btn-after-basic">After basic</button>
+    <span id="basic-change-count">@_basicChanges</span>
+    <span id="basic-last">@_basicLast</span>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-nocircle" Label="NoCircle" NoCircle Items="_basicItems" DefaultValue="@("B")" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-none" Label="Nothing checked" Items="_basicItems" />
+</E2ESection>
+
+<E2ESection Id="disabled-readonly" Title="Disabled and ReadOnly">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-disabled" Label="Disabled ChoiceGroup" Disabled Items="_basicItems" DefaultValue="@("A")" />
+    <button id="btn-before-dis-item">Before disabled item</button>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-dis-item" Label="ChoiceGroup with a disabled item" Items="_disabledItems" DefaultValue="@("B")" OnChange="(string? v) => _disItemValue = v" />
+    <span id="dis-item-value">@_disItemValue</span>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-readonly" Label="ReadOnly" ReadOnly Items="_basicItems" @bind-Value="_readOnlyValue"
+                    OnClick="(BitChoiceGroupItem<string> i) => _readOnlyClicks++" Required />
+    <span id="readonly-value">@_readOnlyValue</span>
+    <span id="readonly-clicks">@_readOnlyClicks</span>
+    <button id="btn-readonly-set" @onclick="@(() => _readOnlyValue = "D")">Set read-only value</button>
+</E2ESection>
+
+<E2ESection Id="images-icons" Title="Images and Icons">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-images" Label="Image Items" Items="_imageItems" DefaultValue="@("Bar")" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-icons" Label="Icon Items" Items="_iconItems" DefaultValue="@("Day")" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-images-inline" Label="Inline image Items" Items="_inlineImageItems" DefaultValue="@("Bar")" Inline />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-icons-inline" Label="Inline icon Items" Items="_iconItems" DefaultValue="@("Day")" Inline />
+</E2ESection>
+
+<E2ESection Id="horizontal" Title="Horizontal">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-horizontal" Label="Basic" Items="_basicItems" DefaultValue="@("A")" Horizontal />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-horizontal-icons" Label="Icon" Items="_iconItems" DefaultValue="@("Day")" Horizontal />
+</E2ESection>
+
+<E2ESection Id="label-placement" Title="LabelPlacement">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-place-end" Label="End" Items="_basicItems" DefaultValue="@("A")" LabelPlacement="BitPlacement.End" Horizontal />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-place-start" Label="Start" Items="_basicItems" DefaultValue="@("A")" LabelPlacement="BitPlacement.Start" Horizontal />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-place-top" Label="Top" Items="_basicItems" DefaultValue="@("A")" LabelPlacement="BitPlacement.Top" Horizontal />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-place-bottom" Label="Bottom" Items="_basicItems" DefaultValue="@("A")" LabelPlacement="BitPlacement.Bottom" Horizontal />
+</E2ESection>
+
+<E2ESection Id="label-template" Title="LabelTemplate">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-label-tpl" Items="_basicItems" DefaultValue="@("A")">
+        <LabelTemplate>
+            <b id="custom-label">Custom label</b>
+        </LabelTemplate>
+    </BitChoiceGroup>
+</E2ESection>
+
+<E2ESection Id="item-templates" Title="Item templates">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-affix-tpl" Label="ItemPrefixTemplate and ItemSuffixTemplate" Items="_basicItems" DefaultValue="@string.Empty">
+        <ItemPrefixTemplate Context="item">
+            <span class="tpl-prefix">@(item.Index + 1).</span>
+        </ItemPrefixTemplate>
+        <ItemSuffixTemplate Context="item">
+            <b class="tpl-suffix">(@item.Value)</b>
+        </ItemSuffixTemplate>
+    </BitChoiceGroup>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-label-item-tpl" Label="ItemLabelTemplate" Items="_iconItems" @bind-Value="_itemLabelTemplateValue">
+        <ItemLabelTemplate Context="item">
+            <span class="tpl-label @(_itemLabelTemplateValue == item.Value ? "selected" : string.Empty)">@item.Text</span>
+        </ItemLabelTemplate>
+    </BitChoiceGroup>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-item-tpl" Label="ItemTemplate" Items="_templateItems" @bind-Value="_itemTemplateValue">
+        <ItemTemplate Context="item">
+            <span class="tpl-item @(_itemTemplateValue == item.Value ? "selected" : string.Empty)">@item.Text</span>
+        </ItemTemplate>
+    </BitChoiceGroup>
+    <span id="item-template-value">@_itemTemplateValue</span>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-own-tpl" Label="Item's Template" Items="_ownTemplateItems" DefaultValue="@("Day")" />
+</E2ESection>
+
+<E2ESection Id="binding" Title="Binding">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-uncontrolled" Label="Uncontrolled" Items="_basicItems" DefaultValue="@("A")" OnChange="(string? v) => _uncontrolledValue = v" />
+    <span id="uncontrolled-value">@_uncontrolledValue</span>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-oneway" Label="One-way" Items="_basicItems" Value="@_oneWayValue" />
+    <button id="btn-oneway-c" @onclick="@(() => _oneWayValue = "C")">One-way to C</button>
+    <span id="oneway-value">@_oneWayValue</span>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-twoway" Label="Two-way" Items="_basicItems" @bind-Value="_twoWayValue" />
+    <button id="btn-twoway-d" @onclick="@(() => _twoWayValue = "D")">Two-way to D</button>
+    <button id="btn-twoway-null" @onclick="@(() => _twoWayValue = null)">Two-way to null</button>
+    <span id="twoway-value">@(_twoWayValue ?? "null")</span>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<Fruit>" TValue="Fruit" Id="cg-comparer" Label="Comparer" Items="_fruitItems" @bind-Value="_fruit" Comparer="_fruitComparer" />
+    <span id="fruit-value">@(_fruit?.Name ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="validation" Title="Validation">
+    <EditForm Model="_model" OnValidSubmit="ValidSubmit" OnInvalidSubmit="InvalidSubmit" novalidate>
+        <DataAnnotationsValidator />
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-validation" Label="Pick one" Required Items="_basicItems" @bind-Value="_model.Value"
+                        aria-describedby="cg-item-error" InputHtmlAttributes="@(new Dictionary<string, object> { ["data-input"] = "radio" })" />
+        <div id="cg-item-error">
+            <ValidationMessage For="@(() => _model.Value)" />
+        </div>
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-novalidate" Label="Not validated" NoValidate Items="_basicItems" @bind-Value="_model.Other" />
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="submit-result">@_submit</span>
+    <form id="plain-form">
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-named" Label="Named" Name="plan" Items="_basicItems" DefaultValue="@("B")" />
+    </form>
+</E2ESection>
+
+<E2ESection Id="descriptions" Title="Item descriptions">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-descriptions" Label="Backup frequency" Items="_descriptionItems" DefaultValue="@("Daily")" />
+</E2ESection>
+
+<E2ESection Id="gap" Title="Gap">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-gap" Label="16px gap" Gap="16px" Items="_basicItems" DefaultValue="@("A")" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-gap-hor" Label="48px gap (Horizontal)" Gap="48px" Items="_basicItems" DefaultValue="@("A")" Horizontal />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-gap-wins" Label="Gap wins over Size" Gap="20px" Size="BitSize.Large" Items="_basicItems" DefaultValue="@("A")" Style="--bit-ChoiceGroup-gap: 2px;" />
+</E2ESection>
+
+<E2ESection Id="prefix-suffix" Title="Prefix and Suffix">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-prefix" Label="Shipping method (Prefix)" Items="_prefixItems" DefaultValue="@("Standard")" />
+    <div style="width: 400px;">
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-suffix" Label="Shipping method (Suffix)" Items="_suffixItems" DefaultValue="@("Standard")" FullWidth
+                        Styles="@(new() { ItemSuffix = "margin-inline-start: auto;", ItemLabel = "width: 100%;" })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <button id="btn-before-events">Before events</button>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-events" Label="Events" Items="_basicItems" DefaultValue="@("A")"
+                    OnChange="(string? v) => { _evChange++; _changedValue = v; }"
+                    OnClick="(BitChoiceGroupItem<string> i) => { _evClick++; _clickedItem = i.Text; }"
+                    OnFocus="(BitChoiceGroupItem<string> i) => { _evFocus++; _focusedItem = i.Text; }"
+                    OnBlur="(BitChoiceGroupItem<string> i) => { _evBlur++; _blurredItem = i.Text; }" />
+    <button id="btn-after-events">After events</button>
+    <span id="ev-state">@($"change={_evChange}:{_changedValue};click={_evClick}:{_clickedItem};focus={_evFocus}:{_focusedItem};blur={_evBlur}:{_blurredItem}")</span>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-events-disabled" Label="Disabled events" Disabled Items="_basicItems" DefaultValue="@("A")"
+                    OnClick="(BitChoiceGroupItem<string> i) => _disabledEvents++" OnChange="(string? v) => _disabledEvents++" />
+    <span id="disabled-events">@_disabledEvents</span>
+</E2ESection>
+
+<E2ESection Id="dynamic" Title="Dynamic items">
+    <button id="btn-dyn-add" @onclick="AddDynamicItem">Add item</button>
+    <button id="btn-dyn-remove" @onclick="RemoveDynamicItem">Remove item</button>
+    <button id="btn-dyn-reverse" @onclick="ReverseDynamicItems">Reverse items</button>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-dynamic" Label="Dynamic items" Items="_dynamicItems" @bind-Value="_dynamicValue">
+        <ItemPrefixTemplate Context="item">
+            <span class="dyn-index">@(item.Index + 1).</span>
+        </ItemPrefixTemplate>
+    </BitChoiceGroup>
+    <span id="dynamic-value">@_dynamicValue</span>
+</E2ESection>
+
+<E2ESection Id="group-description" Title="Group description">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-group-desc" Label="Deployment target" Description="Only the selected environment receives the new build." Items="_deploymentItems" DefaultValue="@("Staging")" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-group-desc-tpl" Label="Deployment target (template)" Description="Ignored" Items="_deploymentItems" DefaultValue="@("Staging")">
+        <DescriptionTemplate>
+            <span id="custom-description">Only the selected environment receives the new build.</span>
+        </DescriptionTemplate>
+    </BitChoiceGroup>
+</E2ESection>
+
+<E2ESection Id="fullwidth" Title="FullWidth">
+    <div id="fw-box" style="width: 500px;">
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-fw-default" Label="Default" Items="_basicItems" DefaultValue="@("A")" Horizontal />
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-fw-hor" Label="FullWidth horizontal" Items="_basicItems" DefaultValue="@("A")" Horizontal FullWidth />
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-fw-start" Label="FullWidth Start" Items="_basicItems" DefaultValue="@("A")" LabelPlacement="BitPlacement.Start" FullWidth />
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-fw-stretch" Label="FullWidth Start StretchItemLabel" Items="_basicItems" DefaultValue="@("A")" LabelPlacement="BitPlacement.Start" FullWidth StretchItemLabel />
+    </div>
+</E2ESection>
+
+<E2ESection Id="item-title" Title="Item title">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-titles" Label="Delivery window" Items="_titleItems" DefaultValue="@("24h")" />
+</E2ESection>
+
+<E2ESection Id="autofocus" Title="AutoFocus">
+    <button id="btn-mount-autofocus" @onclick="() => _showAutoFocus = !_showAutoFocus">Mount the auto focused ChoiceGroup</button>
+    <button id="btn-mount-autofocus-none" @onclick="() => _showAutoFocusNone = !_showAutoFocusNone">Mount one with nothing checked</button>
+    <button id="btn-mount-autofocus-readonly" @onclick="() => _showAutoFocusReadOnly = !_showAutoFocusReadOnly">Mount a read-only one</button>
+    @if (_showAutoFocus)
+    {
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-autofocus" AutoFocus Label="Auto focused" Items="_basicItems" DefaultValue="@("B")" />
+    }
+    @if (_showAutoFocusNone)
+    {
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-autofocus-none" AutoFocus Label="Auto focused, nothing checked" Items="_firstDisabledItems" />
+    }
+    @if (_showAutoFocusReadOnly)
+    {
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-autofocus-readonly" AutoFocus ReadOnly Label="Auto focused, read-only" Items="_basicItems" DefaultValue="@("B")" />
+    }
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant">
+    <div style="width: 500px;">
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-outline" Label="Outline" Variant="BitVariant.Outline" Items="_descriptionItems" DefaultValue="@("Daily")" FullWidth />
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-fill" Label="Fill" Variant="BitVariant.Fill" Items="_descriptionItems" DefaultValue="@("Daily")" LabelPlacement="BitPlacement.Start" FullWidth />
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-text" Label="Text" Variant="BitVariant.Text" Items="_descriptionItems" DefaultValue="@("Daily")" />
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-outline-icons" Label="Outline icons" Variant="BitVariant.Outline" Items="_iconItems" DefaultValue="@("Day")" Horizontal FullWidth />
+    </div>
+</E2ESection>
+
+<E2ESection Id="accessibility" Title="Accessibility">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-arialabel" AriaLabel="Sort order" Items="_sortItems" DefaultValue="@("Asc")" Horizontal />
+    <div id="cg-density-question">How dense should the rows be?</div>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-labelledby" AriaLabelledBy="cg-density-question" Items="_densityItems" DefaultValue="@("Cozy")" Horizontal />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-rating" Label="Rating" Items="_ratingItems" DefaultValue="@("3")" Horizontal />
+    <button id="btn-focus" @onclick="() => _focusRef.FocusAsync()">Focus the ChoiceGroup below</button>
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" @ref="_focusRef" Id="cg-focus-target" Label="Focus target" Items="_basicItems" DefaultValue="@("C")" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-tabindex-host" Label="Item Ids" Items="_idItems" DefaultValue="@("A")" />
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <div style="width: 500px;">
+        <BitParams Parameters="@_cgParams">
+            <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-cascade-1" Label="From the cascade" Items="_basicItems" DefaultValue="@("A")" />
+            <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-cascade-own" Label="Its own Variant" Variant="BitVariant.Fill" Items="_basicItems" DefaultValue="@("C")" />
+        </BitParams>
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-cascade-outside" Label="Outside" Items="_basicItems" DefaultValue="@("A")" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="colors" Title="Color">
+    @foreach (var (color, suffix) in _colors)
+    {
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="@($"cg-color-{suffix}")" Color="color" Label="@color.ToString()" Horizontal Items="_basicItems" DefaultValue="@("A")" />
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="@($"cg-color-{suffix}-dis")" Color="color" Disabled Label="@color.ToString()" Horizontal Items="_basicItems" DefaultValue="@("A")" />
+    }
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-color-default" Label="Default" Horizontal Items="_basicItems" DefaultValue="@("A")" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-color-wins" Color="BitColor.Error" Label="Color wins" Horizontal Items="_basicItems" DefaultValue="@("A")" Style="--bit-ChoiceGroup-color: rgb(1, 2, 3);" />
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External Icons">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-ext" Label="External Icons" Items="_externalIconItems" DefaultValue="@("Day")" />
+</E2ESection>
+
+<E2ESection Id="sizes" Title="Size">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-size-sm" Size="BitSize.Small" Label="Small" Items="_basicItems" DefaultValue="@("B")" Horizontal />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-size-md" Size="BitSize.Medium" Label="Medium" Items="_basicItems" DefaultValue="@("B")" Horizontal />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-size-lg" Size="BitSize.Large" Label="Large" Items="_basicItems" DefaultValue="@("B")" Horizontal />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-size-default" Label="Default" Items="_basicItems" DefaultValue="@("B")" Horizontal />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-size-sm-icons" Size="BitSize.Small" Label="Small icons" Items="_iconItems" DefaultValue="@("Day")" Horizontal />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-size-lg-icons" Size="BitSize.Large" Label="Large icons" Items="_iconItems" DefaultValue="@("Day")" Horizontal />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-size-sm-inline" Size="BitSize.Small" Label="Small inline" Items="_iconItems" DefaultValue="@("Day")" Horizontal Inline />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-size-lg-inline" Size="BitSize.Large" Label="Large inline" Items="_iconItems" DefaultValue="@("Day")" Horizontal Inline />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-size-wins" Size="BitSize.Large" Label="Size wins" Items="_basicItems" DefaultValue="@("B")" Style="--bit-ChoiceGroup-circle-size: 40px;" />
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-style" Label="Styled" Items="_basicItems" DefaultValue="@("B")" Style="margin-inline: 16px; color: rgb(32, 178, 170);" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-class" Label="Classed" Items="_basicItems" DefaultValue="@("B")" Class="custom-class" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-item-style-class" Items="_itemStyleClassItems" DefaultValue="@("B")" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-styles" Label="Styles" Items="_stylesItems" DefaultValue="@("B")" Description="Group description"
+                    Styles="@(new() { Root = "padding: 5px;", LabelContainer = "padding: 1px;", Label = "color: rgb(0, 0, 255);", Description = "font-style: italic;", Container = "padding: 2px;", ItemChecked = "background-color: rgb(135, 206, 250);", ItemDisabled = "opacity: 0.4;", ItemContainer = "padding: 8px;", ItemLabel = "cursor: crosshair;", ItemRadioButton = "outline: 1px solid rgb(255, 0, 0);", ItemText = "letter-spacing: 2px;", ItemDescription = "font-weight: 700;", ItemPrefix = "color: rgb(1, 1, 1);", ItemSuffix = "color: rgb(2, 2, 2);", ItemTextWrapper = "padding: 3px;" })" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-classes" Label="Classes" Items="_stylesItems" DefaultValue="@("B")" Description="Group description"
+                    Classes="@(new() { Root = "c-root", LabelContainer = "c-lblc", Label = "c-label", Description = "c-desc", Container = "c-cnt", ItemChecked = "c-checked", ItemDisabled = "c-disabled", ItemContainer = "c-icn", ItemLabel = "c-itl", ItemRadioButton = "c-rad", ItemText = "c-text", ItemDescription = "c-idesc", ItemPrefix = "c-prefix", ItemSuffix = "c-suffix", ItemTextWrapper = "c-txw" })" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-classes-media" Label="Media classes" Items="_mediaItems" DefaultValue="@("Bar")"
+                    Classes="@(new() { ItemImageContainer = "c-iic", ItemImageWrapper = "c-iiw", ItemImage = "c-img", ItemIconWrapper = "c-icw", ItemIcon = "c-ico" })"
+                    Styles="@(new() { ItemImageContainer = "padding: 4px;", ItemImageWrapper = "outline: 1px solid rgb(0, 128, 0);", ItemImage = "opacity: 0.9;", ItemIconWrapper = "padding: 6px;", ItemIcon = "color: rgb(128, 0, 128);" })" />
+</E2ESection>
+
+<E2ESection Id="css-variables" Title="CSS variables">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-var-geometry" Label="Bigger circle" Items="_basicItems" DefaultValue="@("A")"
+                    Style="--bit-ChoiceGroup-circle-size: 24px; --bit-ChoiceGroup-dot-size: 12px; --bit-ChoiceGroup-gap: 16px; --bit-ChoiceGroup-item-radius: 0px; --bit-ChoiceGroup-circle-border-width: 3px; --bit-ChoiceGroup-font-size: 18px; --bit-ChoiceGroup-padding: 10px;" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-var-color" Label="Recolored" Items="_basicItems" DefaultValue="@("B")"
+                    Style="--bit-ChoiceGroup-color: rgb(102, 51, 153); --bit-ChoiceGroup-hover-color: rgb(147, 112, 219); --bit-ChoiceGroup-circle-color: rgb(147, 112, 219); --bit-ChoiceGroup-item-checked-font-weight: 400; --bit-ChoiceGroup-label-color: rgb(10, 20, 30); --bit-ChoiceGroup-label-font-size: 20px; --bit-ChoiceGroup-item-color: rgb(40, 50, 60); --bit-ChoiceGroup-item-checked-color: rgb(70, 80, 90);" />
+    <div id="var-ancestor" style="--bit-ChoiceGroup-color: rgb(46, 139, 87); --bit-ChoiceGroup-item-checked-background: rgb(200, 230, 210); --bit-ChoiceGroup-item-border-color: rgb(150, 190, 160); --bit-ChoiceGroup-description-color: rgb(0, 128, 128); --bit-ChoiceGroup-required-color: rgb(0, 0, 128); --bit-ChoiceGroup-item-description-color: rgb(128, 0, 0);">
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-var-outline" Label="Outline" Variant="BitVariant.Outline" Items="_descriptionItems" DefaultValue="@("Daily")" Description="Inherited" Required />
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-var-fill" Label="Fill" Variant="BitVariant.Fill" Items="_basicItems" DefaultValue="@("B")" />
+    </div>
+    <div style="--bit-ChoiceGroup-fill-item-background: rgb(250, 240, 230); --bit-ChoiceGroup-outline-item-border-color: rgb(255, 0, 255); --bit-ChoiceGroup-disabled-color: rgb(200, 0, 0); --bit-ChoiceGroup-disabled-text-color: rgb(0, 0, 200);">
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-var-twin-fill" Label="Fill twin" Variant="BitVariant.Fill" Items="_basicItems" DefaultValue="@("B")" />
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-var-twin-outline" Label="Outline twin" Variant="BitVariant.Outline" Items="_basicItems" DefaultValue="@("B")" />
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-var-disabled" Label="Disabled vars" Disabled Items="_basicItems" DefaultValue="@("B")" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-rtl" Label="ساده" Items="_rtlItems" DefaultValue="@("A")" Dir="BitDir.Rtl" />
+    <div dir="rtl">
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-rtl-inherited" Label="از والد" Items="_rtlItems" DefaultValue="@("A")" Horizontal />
+    </div>
+</E2ESection>
+
+<E2ESection Id="base" Title="Base behaviours">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-hidden" Label="Hidden" Items="_basicItems" Visibility="BitVisibility.Hidden" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-collapsed" Label="Collapsed" Items="_basicItems" Visibility="BitVisibility.Collapsed" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-html-attrs" Label="Html attributes" Items="_basicItems" data-custom="abc" aria-required="true" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-handler-enabled" Label="Enabled with handler" Items="_basicItems" @onclick="() => _enabledRootClicks++" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-handler-disabled" Label="Disabled with handler" Items="_basicItems" Disabled="_handlerDisabled" @onclick="() => _disabledRootClicks++" />
+    <button id="btn-toggle-handler-disabled" @onclick="() => _handlerDisabled = !_handlerDisabled">Toggle disabled</button>
+    <span id="enabled-root-clicks">@_enabledRootClicks</span>
+    <span id="disabled-root-clicks">@_disabledRootClicks</span>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    @if (_showRuntime)
+    {
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-runtime" Label="@_runtimeLabel" Items="_runtimeItems" Color="_runtimeColor" Disabled="_runtimeDisabled" Horizontal="_runtimeHorizontal" @bind-Value="_runtimeValue" />
+    }
+    <button id="btn-runtime-label" @onclick="@(() => _runtimeLabel = "Changed label")">Change label</button>
+    <button id="btn-runtime-items" @onclick="() => _runtimeItems = _sortItems">Swap items</button>
+    <button id="btn-runtime-color" @onclick="() => _runtimeColor = BitColor.Success">Set color</button>
+    <button id="btn-runtime-horizontal" @onclick="() => _runtimeHorizontal = !_runtimeHorizontal">Toggle horizontal</button>
+    <button id="btn-runtime-disable" @onclick="() => _runtimeDisabled = !_runtimeDisabled">Toggle disabled</button>
+    <button id="btn-runtime-unmount" @onclick="() => _showRuntime = !_showRuntime">Toggle mount</button>
+    <span id="runtime-value">@(_runtimeValue ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Motion">
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-motion" Label="Animated" Items="_basicItems" DefaultValue="@("A")" />
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-motion-forced" Label="Forced" Items="_basicItems" DefaultValue="@("A")" ForceAnimation />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _basicChanges;
+    private string? _basicLast;
+    private string? _disItemValue = "B";
+    private string? _readOnlyValue = "A";
+    private int _readOnlyClicks;
+    private string? _itemLabelTemplateValue = "Day";
+    private string? _itemTemplateValue = "Day";
+    private string? _uncontrolledValue = "A";
+    private string? _oneWayValue = "A";
+    private string? _twoWayValue = "A";
+    private Fruit? _fruit = new() { Id = 2, Name = "Banana (copy)" };
+    private readonly IEqualityComparer<Fruit> _fruitComparer = new FruitComparer();
+
+    private readonly CgModel _model = new();
+    private string _submit = "none";
+    private int _validSubmits;
+    private int _invalidSubmits;
+
+    private int _evChange, _evClick, _evFocus, _evBlur, _disabledEvents;
+    private string? _changedValue, _clickedItem, _focusedItem, _blurredItem;
+
+    private int _dynamicCounter = 3;
+    private string? _dynamicValue = "1";
+    private List<BitChoiceGroupItem<string>> _dynamicItems =
+    [
+        new() { Text = "Item 1", Value = "1" },
+        new() { Text = "Item 2", Value = "2" },
+        new() { Text = "Item 3", Value = "3" }
+    ];
+
+    private bool _showAutoFocus;
+    private bool _showAutoFocusNone;
+    private bool _showAutoFocusReadOnly;
+
+    private BitChoiceGroup<BitChoiceGroupItem<string>, string> _focusRef = default!;
+
+    private int _enabledRootClicks;
+    private int _disabledRootClicks;
+    private bool _handlerDisabled = true;
+
+    private bool _showRuntime = true;
+    private string _runtimeLabel = "Initial label";
+    private List<BitChoiceGroupItem<string>> _runtimeItems = default!;
+    private BitColor? _runtimeColor;
+    private bool _runtimeDisabled;
+    private bool _runtimeHorizontal;
+    private string? _runtimeValue;
+
+    private readonly List<BitChoiceGroupItem<string>> _basicItems =
+    [
+        new() { Text = "Item A", Value = "A" },
+        new() { Text = "Item B", Value = "B" },
+        new() { Text = "Item C", Value = "C" },
+        new() { Text = "Item D", Value = "D" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _disabledItems =
+    [
+        new() { Text = "Item A", Value = "A" },
+        new() { Text = "Item B", Value = "B" },
+        new() { Text = "Item C", Value = "C", IsDisabled = true },
+        new() { Text = "Item D", Value = "D" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _firstDisabledItems =
+    [
+        new() { Text = "First (disabled)", Value = "1", IsDisabled = true },
+        new() { Text = "Second", Value = "2" },
+        new() { Text = "Third", Value = "3" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _imageItems =
+    [
+        new() { Text = "Bar", Value = "Bar", ImageAlt = "alt for Bar image", ImageSize = new BitImageSize(32, 32), ImageSrc = "samples/choicegroup-bar.svg", SelectedImageSrc = "samples/choicegroup-bar-selected.svg" },
+        new() { Text = "Pie", Value = "Pie", ImageAlt = "alt for Pie image", ImageSize = new BitImageSize(32, 32), ImageSrc = "samples/choicegroup-pie.svg", SelectedImageSrc = "samples/choicegroup-pie-selected.svg" },
+        new() { Text = "Plain", Value = "Plain", ImageSrc = "samples/choicegroup-pie.svg" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _inlineImageItems =
+    [
+        new() { Text = "Bar", Value = "Bar", ImageSize = new BitImageSize(20, 20), ImageSrc = "samples/choicegroup-bar.svg", SelectedImageSrc = "samples/choicegroup-bar-selected.svg" },
+        new() { Text = "Pie", Value = "Pie", ImageSize = new BitImageSize(20, 20), ImageSrc = "samples/choicegroup-pie.svg", SelectedImageSrc = "samples/choicegroup-pie-selected.svg" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _mediaItems =
+    [
+        new() { Text = "Bar", Value = "Bar", ImageSize = new BitImageSize(32, 32), ImageSrc = "samples/choicegroup-bar.svg" },
+        new() { Text = "Day", Value = "Day", IconName = BitIconName.CalendarDay }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _iconItems =
+    [
+        new() { Text = "Day", Value = "Day", IconName = BitIconName.CalendarDay },
+        new() { Text = "Week", Value = "Week", IconName = BitIconName.CalendarWeek },
+        new() { Text = "Month", Value = "Month", IconName = BitIconName.Calendar, IsDisabled = true }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _externalIconItems =
+    [
+        new() { Text = "Day", Value = "Day", Icon = BitIconInfo.Fa("solid sun") },
+        new() { Text = "Week", Value = "Week", Icon = BitIconInfo.Css("fa-solid fa-calendar-week") },
+        new() { Text = "Month", Value = "Month", Icon = BitIconInfo.Bi("calendar-month") },
+        new() { Text = "Both", Value = "Both", Icon = BitIconInfo.Bi("star"), IconName = BitIconName.Heart }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _templateItems =
+    [
+        new() { Text = "Day", Value = "Day" },
+        new() { Text = "Week", Value = "Week" },
+        new() { Text = "Month", Value = "Month" }
+    ];
+
+    private List<BitChoiceGroupItem<string>> _ownTemplateItems = default!;
+
+    private readonly List<BitChoiceGroupItem<string>> _descriptionItems =
+    [
+        new() { Text = "Daily", Value = "Daily", Description = "Backs up every night at 2 AM." },
+        new() { Text = "Weekly", Value = "Weekly", Description = "Backs up every Sunday at 2 AM." },
+        new() { Text = "Monthly", Value = "Monthly", Description = "Backs up on the first day of each month." }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _prefixItems =
+    [
+        new() { Text = "Standard", Value = "Standard", Prefix = "$0 - " },
+        new() { Text = "Express", Value = "Express", Prefix = "$10 - " },
+        new() { Text = "Overnight", Value = "Overnight", Prefix = "$25 - " }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _suffixItems =
+    [
+        new() { Text = "Standard", Value = "Standard", Suffix = "Free" },
+        new() { Text = "Express", Value = "Express", Suffix = "$10" },
+        new() { Text = "Overnight", Value = "Overnight", Suffix = "$25" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _deploymentItems =
+    [
+        new() { Text = "Development", Value = "Development" },
+        new() { Text = "Staging", Value = "Staging" },
+        new() { Text = "Production", Value = "Production" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _titleItems =
+    [
+        new() { Text = "1 h", Value = "1h", Title = "Delivered within one hour of dispatch" },
+        new() { Text = "24 h", Value = "24h", Title = "Delivered within one business day" },
+        new() { Text = "72 h", Value = "72h", Title = "Delivered within three business days" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _sortItems =
+    [
+        new() { Text = "Ascending", Value = "Asc" },
+        new() { Text = "Descending", Value = "Desc" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _densityItems =
+    [
+        new() { Text = "Compact", Value = "Compact" },
+        new() { Text = "Cozy", Value = "Cozy" },
+        new() { Text = "Comfortable", Value = "Comfortable" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _ratingItems =
+    [
+        new() { Text = "1", Value = "1", AriaLabel = "1 star" },
+        new() { Text = "2", Value = "2", AriaLabel = "2 stars" },
+        new() { Text = "3", Value = "3", AriaLabel = "3 stars" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _idItems =
+    [
+        new() { Text = "With an id", Value = "A", Id = "my-radio-a" },
+        new() { Text = "Generated id", Value = "B" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _itemStyleClassItems =
+    [
+        new() { Text = "Item A", Value = "A", Class = "custom-item" },
+        new() { Text = "Item B", Value = "B", Style = "padding: 8px; border-radius: 20px; border: 1px solid rgb(128, 128, 128)" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _stylesItems =
+    [
+        new() { Text = "Item A", Value = "A", Prefix = "P", Suffix = "S" },
+        new() { Text = "Item B", Value = "B", Description = "B description" },
+        new() { Text = "Item C", Value = "C", IsDisabled = true }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> _rtlItems =
+    [
+        new() { Text = "بخش آ", Value = "A" },
+        new() { Text = "بخش ب", Value = "B" },
+        new() { Text = "بخش پ", Value = "C" },
+        new() { Text = "بخش ت", Value = "D" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<Fruit>> _fruitItems =
+    [
+        new() { Text = "Apple", Value = new Fruit { Id = 1, Name = "Apple" } },
+        new() { Text = "Banana", Value = new Fruit { Id = 2, Name = "Banana" } },
+        new() { Text = "Cherry", Value = new Fruit { Id = 3, Name = "Cherry" } }
+    ];
+
+    private readonly IBitComponentParams[] _cgParams =
+    [
+        new BitChoiceGroupParams { Gap = "8px", FullWidth = true, Variant = BitVariant.Outline }
+    ];
+
+    private readonly (BitColor Color, string Suffix)[] _colors =
+    [
+        (BitColor.Primary, "pri"),
+        (BitColor.Secondary, "sec"),
+        (BitColor.Tertiary, "ter"),
+        (BitColor.Info, "inf"),
+        (BitColor.Success, "suc"),
+        (BitColor.Warning, "wrn"),
+        (BitColor.SevereWarning, "swr"),
+        (BitColor.Error, "err"),
+        (BitColor.PrimaryBackground, "pbg"),
+        (BitColor.SecondaryBackground, "sbg"),
+        (BitColor.TertiaryBackground, "tbg"),
+        (BitColor.PrimaryForeground, "pfg"),
+        (BitColor.SecondaryForeground, "sfg"),
+        (BitColor.TertiaryForeground, "tfg"),
+        (BitColor.PrimaryBorder, "pbr"),
+        (BitColor.SecondaryBorder, "sbr"),
+        (BitColor.TertiaryBorder, "tbr"),
+    ];
+
+    protected override void OnInitialized()
+    {
+        _runtimeItems = _basicItems;
+
+        _ownTemplateItems =
+        [
+            new() { Text = "Day", Value = "Day", Template = item => @<span class="own-tpl" style="color: rgb(255, 0, 0);">@item.Text</span> },
+            new() { Text = "Week", Value = "Week", Template = item => @<span class="own-tpl" style="color: rgb(0, 128, 0);">@item.Text</span> }
+        ];
+    }
+
+    private void ValidSubmit() => _submit = $"valid:{++_validSubmits}";
+
+    private void InvalidSubmit() => _submit = $"invalid:{++_invalidSubmits}";
+
+    private void AddDynamicItem()
+    {
+        _dynamicCounter++;
+        _dynamicItems = [.. _dynamicItems, new BitChoiceGroupItem<string> { Text = $"Item {_dynamicCounter}", Value = $"{_dynamicCounter}" }];
+    }
+
+    private void RemoveDynamicItem()
+    {
+        if (_dynamicItems.Count <= 1) return;
+
+        _dynamicItems = [.. _dynamicItems.Take(_dynamicItems.Count - 1)];
+    }
+
+    private void ReverseDynamicItems() => _dynamicItems = [.. Enumerable.Reverse(_dynamicItems)];
+
+    private sealed class CgModel
+    {
+        [Required(ErrorMessage = "Pick one")]
+        public string? Value { get; set; }
+
+        [Required(ErrorMessage = "Never shown")]
+        public string? Other { get; set; }
+    }
+
+    public sealed class Fruit
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+    }
+
+    private sealed class FruitComparer : IEqualityComparer<Fruit>
+    {
+        public bool Equals(Fruit? x, Fruit? y) => x?.Id == y?.Id;
+
+        public int GetHashCode(Fruit obj) => obj.Id;
+    }
+}

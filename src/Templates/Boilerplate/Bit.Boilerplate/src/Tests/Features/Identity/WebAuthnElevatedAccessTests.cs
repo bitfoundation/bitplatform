@@ -20,7 +20,7 @@ public class WebAuthnElevatedAccessTests
     public async Task AWebAuthnAssertionOnTheRefreshRequest_Should_DeserializeThroughTheAppSerializer()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
         var jsonSerializerOptions = scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>();
 
@@ -41,13 +41,13 @@ public class WebAuthnElevatedAccessTests
     public async Task AnUnverifiableAssertion_Should_FailTheRefreshRatherThanElevateIt()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
+        var storageService = client.Services.GetRequiredService<IStorageService>();
         var refreshToken = await storageService.GetItem("refresh_token");
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = client.GetController<IIdentityController>();
 
         await Assert.ThrowsAsync<Exception>(
             () => identityController.Refresh(new()
@@ -84,7 +84,7 @@ public class WebAuthnElevatedAccessTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 

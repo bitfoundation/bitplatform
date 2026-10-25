@@ -1,0 +1,46 @@
+﻿@* Shows the code that powers the demo next to the demo itself: the site kit's pre.bb-code - which
+   site.js gives a copy button - coloured by CodeHighlighter.cs (its token classes are mapped onto the
+   kit's code colours in demo.css), under the file it comes from and, for a long listing, behind a
+   Show / Hide toggle. *@
+<div class="bb-source bq-code">
+    <div class="bq-code-head">
+        <span class="bq-code-lang">@Language</span>
+        <span class="bb-source-file bq-code-title">@Title</span>
+        @if (Collapsible)
+        {
+            <button type="button" class="btn btn-secondary bq-code-toggle" aria-expanded="@(_open ? "true" : "false")"
+                    @onclick="() => _open = !_open">
+                <span class="bq-code-caret" aria-hidden="true">@(_open ? "▾" : "▸")</span>
+                @(_open ? "Hide code" : "Show code")
+            </button>
+        }
+    </div>
+    @if (_open)
+    {
+        <pre class="bb-code"><code>@CodeHighlighter.Highlight(Code, Language)</code></pre>
+    }
+</div>
+
+@code {
+    private bool _open;
+
+    /// <summary>File name or label shown over the code, e.g. <c>Pages/Catalog.razor</c>.</summary>
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Language { get; set; } = "csharp";
+
+    [Parameter, EditorRequired]
+    public string Code { get; set; } = string.Empty;
+
+    /// <summary>Lets the reader fold long listings away. The block still starts open.</summary>
+    [Parameter]
+    public bool Collapsible { get; set; } = true;
+
+    /// <summary>Set false for long reference listings that should start folded.</summary>
+    [Parameter]
+    public bool Open { get; set; } = true;
+
+    protected override void OnInitialized() => _open = Open;
+}

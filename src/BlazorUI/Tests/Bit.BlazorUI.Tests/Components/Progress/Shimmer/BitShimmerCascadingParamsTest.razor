@@ -1,0 +1,38 @@
+﻿@using Bit.BlazorUI
+
+@* Covers BitShimmerParams: the cascaded values fill in the parameters a shimmer did not set itself and never
+   overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitShimmerParams[]
+                         {
+                             new()
+                             {
+                                 Animation = BitShimmerAnimation.Pulse,
+                                 Background = BitColor.Success,
+                                 Color = BitColor.Primary,
+                                 Size = BitSize.Large,
+                                 Lines = 3,
+                                 Height = "0.5rem",
+                                 Width = "10rem",
+                                 Gap = "1rem",
+                                 LastLineWidth = "30%",
+                                 LineWidths = ["90%"],
+                                 Radius = "2px",
+                                 Duration = 3000,
+                                 Delay = 100,
+                                 Stagger = 50,
+                                 ShowDelay = 200,
+                                 Politeness = BitPoliteness.Assertive,
+                                 Classes = new() { Root = "cascaded-root", ShimmerWrapper = "cascaded-wrapper" },
+                                 Styles = new() { Root = "margin: 1px;" },
+                             }
+                         })">
+    <BitShimmer Label="Loading" />
+    <BitShimmer Animation="BitShimmerAnimation.Fade"
+                Color="BitColor.Error"
+                Lines="1"
+                Height="2rem"
+                Radius="0"
+                Politeness="BitPoliteness.Polite"
+                Label="Loading" />
+</BitParams>

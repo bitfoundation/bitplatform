@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @typeparam TItem where TItem : class
 
 @if (MenuButton.Sticky is false || Item != MenuButton.SelectedItem)
@@ -35,12 +35,18 @@
     else
     {
         var template = MenuButton.GetTemplate(Item);
-        var isEnabled = MenuButton.IsEnabled && MenuButton.GetIsEnabled(Item);
+        var isDisabled = MenuButton.Disabled || MenuButton.GetIsDisabled(Item);
+        var nativeDisabled = isDisabled && MenuButton.DisabledInteractive is false;
         // An item that opens a submenu is not a command of its own, so the three things that would make it
         // one - a link, a check state, a click of its own - give way to the submenu it carries.
         var hasSubmenu = _hasSubmenu;
         var href = hasSubmenu ? null : MenuButton.GetHref(Item);
         var target = MenuButton.GetTarget(Item);
+        // The rel and the new-tab sentence follow the rule every anchor of the library shares (BitNewTabUtils);
+        // only an item that renders as a followable anchor uses either of them.
+        var rel = BitNewTabUtils.AddNoOpener(MenuButton.GetRel(Item), target);
+        var hint = BitNewTabUtils.PlaceHint(BitNewTabUtils.GetHint(target, MenuButton.NewTabHint, MenuButton.NoNewTabHint),
+                                            MenuButton.GetAriaLabel(Item), null, string.Empty);
         // A row that opens a submenu is a way further in rather than a state, so neither kind of mark
         // belongs on it.
         var radioGroup = hasSubmenu ? null : MenuButton.GetRadioGroup(Item);
@@ -116,7 +122,7 @@
             </text>;
 
         <li role="presentation" style="@MenuButton.Styles?.ItemWrapper" class="@MenuButton.Classes?.ItemWrapper">
-            @if (isEnabled && href.HasValue())
+            @if (isDisabled is false && href.HasValue())
             {
                 <a @attributes="pointerAttributes"
                    @onclick="HandleOnClick" @onclick:stopPropagation
@@ -124,13 +130,17 @@
                    href="@href"
                    tabindex="-1"
                    target="@target"
-                   rel="@(target is "_blank" ? "noopener noreferrer" : null)"
+                   rel="@rel"
                    title="@MenuButton.GetTitle(Item)"
-                   aria-label="@MenuButton.GetAriaLabel(Item)"
+                   aria-label="@hint.AriaLabel"
                    aria-checked="@(checkable ? isChecked.ToString().ToLower() : null)"
                    style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemButton"
                    class="bit-mnb-itm @(isChecked ? "bit-mnb-chk" : null) @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
                     @content
+                    @if (hint.HintText.HasValue())
+                    {
+                        <span class="bit-mnb-nth">@hint.HintText</span>
+                    }
                 </a>
             }
             else
@@ -147,12 +157,12 @@
                         @onclick="HandleOnClick" @onclick:stopPropagation
                         role="@role"
                         id="@(hasSubmenu ? _itemId : null)"
-                        form="@(hasSubmenu ? null : MenuButton.FormId)"
+                        form="@(hasSubmenu ? null : MenuButton.ResolvedFormId)"
                         type="@(hasSubmenu ? "button" : MenuButton._buttonType.GetValue())"
                         title="@MenuButton.GetTitle(Item)"
                         tabindex="-1"
-                        disabled="@(isEnabled is false && MenuButton.DisabledInteractive is false)"
-                        aria-disabled="@(isEnabled is false ? "true" : null)"
+                        disabled="@nativeDisabled"
+                        aria-disabled="@(isDisabled ? "true" : null)"
                         aria-label="@MenuButton.GetAriaLabel(Item)"
                         aria-checked="@(checkable ? isChecked.ToString().ToLower() : null)"
                         aria-haspopup="@(hasSubmenu ? "menu" : null)"

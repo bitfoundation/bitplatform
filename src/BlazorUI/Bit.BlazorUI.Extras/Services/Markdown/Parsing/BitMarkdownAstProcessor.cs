@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Post-processes the parsed AST. Used by flavors such as task lists, autolinks,

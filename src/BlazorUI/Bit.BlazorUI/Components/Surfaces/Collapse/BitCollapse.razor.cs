@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The Collapse component shows and hides a section of related content with an animated transition,
@@ -6,9 +8,10 @@
 /// </summary>
 public partial class BitCollapse : BitComponentBase
 {
-    // The duration the stylesheet gives the transition when nothing overrides it, which is what a delayed
-    // unmount has to outlast. It mirrors --bit-mot-duration-long-full rather than reading it: the value only
-    // has to be long enough for the content to have finished leaving the screen before it leaves the DOM.
+    // The duration the stylesheet gives the transition when nothing overrides it. The end of a transition that
+    // something waits for is timed off what the browser says is left of it (see OnAfterRenderAsync), so this is
+    // only the estimate for when that cannot be read - before the runtime is connected - or is not worth a round
+    // trip, and it mirrors the --bit-mot-duration-long-full of the default theme.
     private const int DefaultDurationInMs = 300;
 
     // Whether the content has ever been expanded, which is the whole of what LazyRender waits for and what
@@ -27,6 +30,10 @@ public partial class BitCollapse : BitComponentBase
     // Whether the collapse transition has finished, which is the only moment at which it is safe to hand the
     // closed content to hidden="until-found": the attribute stops the content from being drawn at all, so
     // applying it while the track is still shrinking would take the close off the screen instead of playing it.
+    // The end is the one the browser plays (AwaitsTransitionEnd), so a slower theme preset is waited out too.
+    // The stylesheet cannot hold the hiding back on its own instead: WebKit lays out content whose
+    // content-visibility is mid-way through a discrete transition (allow-discrete) as already hidden, so the
+    // track snaps shut the moment the attribute lands, and a browser without transition-behavior hides it at once.
     private bool _exited = true;
 
     private ElementReference _contentElement;
@@ -43,7 +50,18 @@ public partial class BitCollapse : BitComponentBase
     // for real, so the ordinary hiding - inert and the stylesheet - takes the content back out of reach.
     private bool _revealRefused;
 
+    // Whether ExpandOnPrint holds a value handed down by the cascading BitParams rather than one assigned on the
+    // component itself, so it can be taken back to its default when that cascade stops carrying it.
+    private bool _expandOnPrintFromCascade;
+
     private CancellationTokenSource? _transitionCts;
+
+    // A transition that has started and whose end is still to be scheduled: the render that follows the change
+    // of state is what puts the new pace on the root, so the time left of it is read after that render rather
+    // than guessed before it. The wait is the estimate used when the browser is not asked.
+    private (bool Expanded, int Wait, CancellationTokenSource Cts)? _pendingTransition;
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -55,14 +73,15 @@ public partial class BitCollapse : BitComponentBase
     // is what makes the two rendering parameters inapplicable: there would be nothing left in the peek.
     private bool _keepsPeek => CollapsedSize.HasValue();
 
-    // The two reasons the closed content has to stay in the DOM: a peek has to have something to show, and
-    // find-in-page has nothing to find in a section whose content was never built or was taken back out.
-    private bool _keepsContent => _keepsPeek || _searchable;
+    // The three reasons the closed content has to stay in the DOM: a peek has to have something to show,
+    // find-in-page has nothing to find and the printer nothing to print in a section whose content was never
+    // built or was taken back out.
+    private bool _keepsContent => _keepsPeek || _searchable || ExpandOnPrint;
 
     // Whether the closed content is offered to find-in-page at all. A peek is on the screen already, so it
     // has nothing to gain and the fade it would lose is worth keeping, and a disabled collapse is one the
     // browser would reveal content inside of and never open.
-    private bool _searchable => HiddenUntilFound && _keepsPeek is false && IsEnabled && _revealRefused is false;
+    private bool _searchable => HiddenUntilFound && _keepsPeek is false && Disabled is false && _revealRefused is false;
 
     // Whether the closed content is handed to the browser as hidden-until-found, which is what makes
     // find-in-page and a fragment navigation able to reach into a closed section and open it. It waits for
@@ -85,14 +104,25 @@ public partial class BitCollapse : BitComponentBase
     // content-visibility that value carries hides the content from the same three places on its own.
     private bool _inert => _visible is false && _hiddenUntilFound is false;
 
-    // The content region is a tab stop while it is on the screen, and an explicit TabIndex says where it
-    // sits in the tab order without ever taking a closed section back into it.
-    private string _tabIndex => (IsEnabled && _visible) ? (TabIndex ?? "0") : "-1";
+    // The content region is a tab stop while it is on the screen, which is what lets a keyboard reach and
+    // scroll a section that holds nothing focusable of its own, and an explicit TabIndex says where it sits
+    // in the tab order - "-1" takes it out while still letting FocusAsync move the focus into it - without
+    // ever taking a closed section back into it.
+    private string _tabIndex => (Disabled is false && _visible) ? (TabIndex.HasValue() ? TabIndex! : "0") : "-1";
 
     // An unnamed region is dropped by assistive technology rather than announced, so the role is worth
     // keeping only while the consumer can name it; it stays the default for the markup this component has
     // always rendered, and an explicitly empty Role takes it off.
     private string? _role => Role is null ? "region" : (Role.HasValue() ? Role : null);
+
+    // ARIA prohibits naming an element with no role - a generic div - or with one of the roles that stand for
+    // the same thing, and screen readers drop a name put there, so the name is only rendered on a content
+    // region whose role can carry one.
+    private bool _nameable => _role is not null && RoleProhibitsName(_role) is false;
+
+    private string? _ariaLabel => _nameable ? AriaLabel : null;
+
+    private string? _ariaLabelledBy => _nameable ? LabelledBy : null;
 
     // Content that has never been expanded is not rendered at all while LazyRender is on, and content that
     // has been collapsed long enough for the transition to finish is dropped again while UnmountOnCollapse is.
@@ -101,6 +131,12 @@ public partial class BitCollapse : BitComponentBase
 
     // The pace of the transition that is playing, which is the one the direction of that transition asks for.
     private int? _durationValue => Expanded ? (ExpandDuration ?? Duration) : (CollapseDuration ?? Duration);
+
+    // Whether anything is waiting for the end of the transition in the given direction. Only then is the
+    // browser asked how long the transition takes; one nothing is waiting for is timed off the estimate.
+    private bool AwaitsTransitionEnd(bool expanded) => expanded
+        ? NoClip || OnExpanded.HasDelegate
+        : _searchable || (UnmountOnCollapse && _keepsContent is false) || OnCollapsed.HasDelegate;
 
 
 
@@ -113,6 +149,19 @@ public partial class BitCollapse : BitComponentBase
     /// predictable and leaving it unset still gives a stable value for the lifetime of the component.
     /// </remarks>
     public string ContentId => $"{_Id}-content";
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the collapse component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple collapse components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitCollapseParams.ParamName)]
+    public BitCollapseParams? CascadingParameters { get; set; }
 
 
 
@@ -140,7 +189,7 @@ public partial class BitCollapse : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the collapse.
     /// </summary>
-    [Parameter] public BitCollapseClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitCollapseClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The duration of the collapse transition in ms, for a section that closes at a different pace than it
@@ -161,6 +210,8 @@ public partial class BitCollapse : BitComponentBase
     /// <remarks>
     /// This is the height of the closed collapse, or its width while <see cref="Horizontal"/> is on. It is
     /// what a "show more" clamp is made of: the first few lines stay readable and the rest of them animate in.
+    /// The <c>--bit-Collapse-peek-fade</c> CSS variable fades the trailing edge of the closed peek out, which
+    /// tells the reader there is more to it.
     /// <br />
     /// A collapse that keeps a peek is still partly on the screen, so it neither fades out nor hides itself
     /// from assistive technology while it is closed, and it ignores <see cref="LazyRender"/>,
@@ -199,15 +250,17 @@ public partial class BitCollapse : BitComponentBase
     /// Leaving it unset keeps the duration the motion theme gives a transition of this length, so prefer the
     /// theme unless the pace of this particular collapse carries meaning. A value set here is still collapsed
     /// to nothing when the reader asks for reduced motion: the pace of a transition is a matter of design and
-    /// the reduced motion preference is not, and <see cref="BitComponentBase.ForceAnimation"/> is the one
-    /// thing that overrides it. Negative values are clamped away.
+    /// the reduced motion preference is not. It follows the preference the way the motion tokens of the theme
+    /// do, so <see cref="BitComponentBase.ForceAnimation"/>, or an app restoring the <c>--bit-mot-*</c>
+    /// tokens, brings it back. Negative values are clamped away.
     /// <br />
     /// It applies to both directions, and <see cref="ExpandDuration"/> and <see cref="CollapseDuration"/>
     /// retune one of them on its own.
     /// <br />
-    /// It is also what <see cref="OnExpanded"/>, <see cref="OnCollapsed"/>, <see cref="NoClip"/>,
-    /// <see cref="HiddenUntilFound"/> and <see cref="UnmountOnCollapse"/> wait for, so a collapse whose
-    /// transition is retuned in CSS rather than here is better off setting it to the same value.
+    /// <see cref="OnExpanded"/>, <see cref="OnCollapsed"/>, <see cref="NoClip"/>, <see cref="HiddenUntilFound"/>
+    /// and <see cref="UnmountOnCollapse"/> wait for the transition the browser actually plays, so a pace set
+    /// here, through the <c>--bit-Collapse-duration</c> CSS variable or by the motion tokens of the theme is
+    /// waited for all the same, and a transition the reduced motion preference collapsed ends at once.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? Duration { get; set; }
@@ -247,6 +300,22 @@ public partial class BitCollapse : BitComponentBase
     public bool Expanded { get; set; }
 
     /// <summary>
+    /// Prints the collapse expanded, whatever its state on the screen.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A closed section prints as nothing at all, which is how a page of them ends up on paper with everything
+    /// it was about left out. This opens it for the print stylesheet only; the state on the screen, and what
+    /// <see cref="Expanded"/> reports, stay as they are.
+    /// <br />
+    /// The content has to be in the DOM to be printed, so such a collapse ignores <see cref="LazyRender"/> and
+    /// <see cref="UnmountOnCollapse"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ExpandOnPrint { get; set; }
+
+    /// <summary>
     /// Hands the closed content to the browser as <c>hidden="until-found"</c>, so find-in-page and a
     /// navigation to a fragment inside the section reach into it and open it.
     /// <br />
@@ -255,9 +324,10 @@ public partial class BitCollapse : BitComponentBase
     /// <remarks>
     /// This is what a page of collapsed documentation, a FAQ or a long form wants: text the reader cannot see
     /// is still text they can search for, and the section holding the match opens itself around it. The
-    /// attribute is applied at the end of the collapse transition, so the close still animates, and the
-    /// browser takes it off again when it reveals the content - which the component answers by expanding for
-    /// real, reporting the change through <c>ExpandedChanged</c> and <see cref="OnChange"/>.
+    /// attribute is applied at the end of the collapse transition the browser plays, whatever set its pace, so
+    /// the close still animates, out of reach of the keyboard and of assistive technology from its first frame,
+    /// and the browser takes it off again when it reveals the content - which the component answers by expanding
+    /// for real, reporting the change through <c>ExpandedChanged</c> and <see cref="OnChange"/>.
     /// <br />
     /// The content of such a collapse has to stay in the DOM to be found at all, so it ignores
     /// <see cref="LazyRender"/> and <see cref="UnmountOnCollapse"/>. A collapse that keeps a
@@ -306,8 +376,9 @@ public partial class BitCollapse : BitComponentBase
     /// built, queried or measured until it is opened. Once it has been opened the content stays, unless
     /// <see cref="UnmountOnCollapse"/> says otherwise.
     /// <br />
-    /// A collapse that keeps a <see cref="CollapsedSize"/> or is searchable through
-    /// <see cref="HiddenUntilFound"/> ignores it: there has to be something to show, or something to find.
+    /// A collapse that keeps a <see cref="CollapsedSize"/>, is searchable through <see cref="HiddenUntilFound"/>
+    /// or prints expanded through <see cref="ExpandOnPrint"/> ignores it: there has to be something to show,
+    /// to find or to print.
     /// </remarks>
     [Parameter] public bool LazyRender { get; set; }
 
@@ -391,6 +462,10 @@ public partial class BitCollapse : BitComponentBase
     /// holding or gets out of the way of the space it is about to give back. Like <see cref="OnCollapsed"/>
     /// it reports every close, whether the page made it by assigning to <see cref="Expanded"/> or the
     /// component made it itself, and it never fires for a collapse that was closed to begin with.
+    /// <br />
+    /// It is also the place to move the focus back to the trigger when the section is closed from inside -
+    /// a "Done" or "Show less" button in its content - since the closed content can no longer hold the focus
+    /// and the browser would otherwise drop it to the page. The content is still focusable while it runs.
     /// </remarks>
     [Parameter] public EventCallback OnCollapsing { get; set; }
 
@@ -424,15 +499,18 @@ public partial class BitCollapse : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It is <c>region</c> by default, which becomes a landmark a screen reader can jump to as soon as
-    /// <see cref="LabelledBy"/> names it. Set it to an empty string to render no role at all, which is what a
-    /// collapse holding something that already carries semantics of its own - a list, a table, a form - wants.
+    /// <see cref="LabelledBy"/> or <see cref="BitComponentBase.AriaLabel"/> names it. Set it to an empty string
+    /// to render no role at all, which is what a collapse holding something that already carries semantics of
+    /// its own - a list, a table, a form - wants; the name goes with the role, since ARIA prohibits naming an
+    /// element that has none. It goes the same way under <c>none</c>, <c>presentation</c> and <c>generic</c>,
+    /// the roles that stand for having none.
     /// </remarks>
     [Parameter] public string? Role { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the collapse.
     /// </summary>
-    [Parameter] public BitCollapseClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitCollapseClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Takes the content back out of the DOM once the collapse has closed.
@@ -444,8 +522,9 @@ public partial class BitCollapse : BitComponentBase
     /// animates; it is put back the moment the collapse is expanded again, which means anything the content
     /// was holding - the position of a scroll, the text in a field, the frame of a video - starts over.
     /// <br />
-    /// A collapse that keeps a <see cref="CollapsedSize"/> or is searchable through
-    /// <see cref="HiddenUntilFound"/> ignores it: there would be nothing left to show, or to find.
+    /// A collapse that keeps a <see cref="CollapsedSize"/>, is searchable through <see cref="HiddenUntilFound"/>
+    /// or prints expanded through <see cref="ExpandOnPrint"/> ignores it: there would be nothing left to show,
+    /// to find or to print.
     /// </remarks>
     [Parameter] public bool UnmountOnCollapse { get; set; }
 
@@ -472,8 +551,10 @@ public partial class BitCollapse : BitComponentBase
     /// section so the reader carries on inside it rather than back at the trigger.
     /// </summary>
     /// <remarks>
-    /// A closed section is out of the tab order, so this is worth pairing with <see cref="OnExpanded"/>: by
-    /// the end of the expand transition the content is on the screen and can take the focus.
+    /// The content region is focusable while it is on the screen, so this works even when a
+    /// <see cref="BitComponentBase.TabIndex"/> of <c>-1</c> takes it out of the tab order. A closed section cannot
+    /// take the focus, so this is worth pairing with <see cref="OnExpanded"/>: by the end of the expand transition
+    /// the content is on the screen.
     /// </remarks>
     public async ValueTask FocusAsync()
     {
@@ -512,6 +593,8 @@ public partial class BitCollapse : BitComponentBase
         // text back out of find-in-page; the class takes that off and leaves the hiding to the attribute.
         ClassBuilder.Register(() => _searchable ? "bit-col-huf" : string.Empty);
 
+        ClassBuilder.Register(() => ExpandOnPrint ? "bit-col-eop" : string.Empty);
+
         ClassBuilder.Register(() => Background switch
         {
             BitColorKind.Primary => "bit-col-pbg",
@@ -542,6 +625,60 @@ public partial class BitCollapse : BitComponentBase
         StyleBuilder.Register(() => CollapsedSize.HasValue() ? $"--bit-col-csz:{CollapsedSize}" : string.Empty);
     }
 
+    protected override void OnParametersSet()
+    {
+        var expandOnPrintAssigned = HasNotBeenSet(nameof(ExpandOnPrint)) is false;
+
+        // A value the cascade handed down is not one the component keeps once the cascade stops carrying it:
+        // it goes back to its default, and the print class with it. One assigned on the component is left alone.
+        if (_expandOnPrintFromCascade && expandOnPrintAssigned is false && CascadingParameters?.ExpandOnPrint.HasValue is not true)
+        {
+            ExpandOnPrint = false;
+
+            ClassBuilder.Reset();
+        }
+
+        CascadingParameters?.UpdateParameters(this);
+
+        _expandOnPrintFromCascade = expandOnPrintAssigned is false && CascadingParameters?.ExpandOnPrint.HasValue is true;
+
+        base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (_pendingTransition is not { } pending) return;
+
+        _pendingTransition = null;
+
+        // The render that just finished is the one that put the new state and its pace on the root, so this is
+        // the moment the browser started playing the transition.
+        var started = Stopwatch.GetTimestamp();
+
+        var wait = pending.Wait;
+
+        var timed = false;
+
+        // A transition nothing is waiting for is not worth a round trip to the browser: its end only has the
+        // bookkeeping of the closed state to do, which the estimate is good enough for.
+        if (AwaitsTransitionEnd(pending.Expanded))
+        {
+            var remaining = await GetRemainingTransitionTimeAsync(started);
+
+            if (remaining.HasValue)
+            {
+                wait = remaining.Value;
+                timed = true;
+            }
+        }
+
+        if (pending.Cts.IsCancellationRequested || IsDisposed) return;
+
+        _ = CompleteTransitionAsync(wait, pending.Expanded, started, timed, pending.Cts);
+    }
+
     protected override async Task OnInitializedAsync()
     {
         if (ExpandedHasBeenSet is false && DefaultExpanded.HasValue)
@@ -563,7 +700,7 @@ public partial class BitCollapse : BitComponentBase
 
     private async Task SetExpandedAsync(bool value)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (Expanded == value) return;
 
@@ -620,14 +757,16 @@ public partial class BitCollapse : BitComponentBase
         }
 
         // The clipping goes back on the moment either transition starts, since the content is the wrong size
-        // for the whole of both of them, and the closed content is taken back out of hidden-until-found so
-        // the expand has something to draw.
+        // for the whole of both of them.
         SetEntered(false);
-        _exited = false;
 
         // A collapse that was closed to begin with never played a close, so there is nothing to report and
         // nothing to take out of the DOM that was ever put in it.
         if (Expanded is false && _everExpanded is false) return;
+
+        // The closed content of a searchable section is only handed to hidden-until-found once the close that
+        // starts here has played, and is taken back out of it as an open starts so the expand has something to draw.
+        _exited = false;
 
         var starting = Expanded ? OnExpanding : OnCollapsing;
 
@@ -637,24 +776,36 @@ public partial class BitCollapse : BitComponentBase
         }
 
         // The end is scheduled for every transition that is played rather than only for the options that are
-        // set at the moment it starts: NoClip, UnmountOnCollapse, HiddenUntilFound, OnExpanded and
-        // OnCollapsed can all be set while the transition is still running, and what they do belongs at the
-        // end of it. Which of them apply is read by CompleteTransitionAsync when it gets there, so a
-        // transition that ends up needing none of them costs one timer and does nothing when it fires.
+        // set at the moment it starts: NoClip, UnmountOnCollapse, HiddenUntilFound, OnExpanded and OnCollapsed
+        // can all be set while the transition is still running, and what they do belongs at the end of it.
+        // Which of them apply is read by CompleteTransitionAsync when it gets there, so a transition that ends
+        // up needing none of them costs one timer and does nothing when it fires, and one that has come to need
+        // one part-way through asks the browser what is left of it before acting rather than trusting the estimate.
 
         // The end of the transition is reached by the clock rather than by an event from the browser, so that
-        // it is still reached when the transition was collapsed to nothing - by NoAnimation here, or by the
-        // reduced motion preference in the stylesheet, which C# cannot see.
-        var wait = NoAnimation ? 0 : Math.Max(0, Delay ?? 0) + Math.Max(0, _durationValue ?? DefaultDurationInMs);
-
+        // it is still reached when there is no transition to end - with NoAnimation, or while the collapse is
+        // not displayed at all. The clock is set to what the browser says is left of the transition, read once
+        // the render that starts it is done, whenever one of those options is waiting for it at that moment;
+        // the parameters give the estimate otherwise, and for when the browser cannot be asked.
         var cts = new CancellationTokenSource();
 
         _transitionCts = cts;
 
-        _ = CompleteTransitionAsync(wait, Expanded, cts);
+        if (NoAnimation)
+        {
+            // There is no transition to ask the browser about, so its end is as timed as it will ever be.
+            _ = CompleteTransitionAsync(0, Expanded, Stopwatch.GetTimestamp(), true, cts);
+            return;
+        }
+
+        var estimate = Math.Max(0, Delay ?? 0) + Math.Max(0, _durationValue ?? DefaultDurationInMs);
+
+        _pendingTransition = (Expanded, estimate, cts);
     }
 
-    private async Task CompleteTransitionAsync(int wait, bool expanded, CancellationTokenSource cts)
+    // started is when the transition started playing, and timed whether wait is what the browser said was left
+    // of it rather than the estimate.
+    private async Task CompleteTransitionAsync(int wait, bool expanded, long started, bool timed, CancellationTokenSource cts)
     {
         try
         {
@@ -666,6 +817,25 @@ public partial class BitCollapse : BitComponentBase
             }
 
             if (token.IsCancellationRequested || IsDisposed || Expanded != expanded) return;
+
+            // Nothing waited for this end when the transition started, so it was timed off the estimate, and
+            // something has started waiting for it since - an OnCollapsed handed down mid-close, an
+            // UnmountOnCollapse switched on, a refused reveal that made the section unsearchable. What it does
+            // is not done on a guess: the browser is asked what is left of the transition, which is nothing
+            // unless a slower theme preset is still playing it.
+            if (timed is false && AwaitsTransitionEnd(expanded))
+            {
+                int? remaining = null;
+
+                await InvokeAsync(async () => remaining = await GetRemainingTransitionTimeAsync(started));
+
+                if (remaining > 0)
+                {
+                    await Task.Delay(remaining.Value, token);
+                }
+
+                if (token.IsCancellationRequested || IsDisposed || Expanded != expanded) return;
+            }
 
             var render = false;
 
@@ -725,6 +895,20 @@ public partial class BitCollapse : BitComponentBase
         }
     }
 
+    // The roles under which ARIA prohibits a name: generic, and none and presentation, which remove the
+    // semantics of the element altogether. A role is a list of tokens the browser takes the first it knows
+    // of, so the first token is the one that decides.
+    private static bool RoleProhibitsName(string role)
+    {
+        var span = role.AsSpan().Trim();
+        var end = span.IndexOfAny(' ', '\t', '\n');
+        var first = end < 0 ? span : span[..end];
+
+        return first.Equals("generic", StringComparison.OrdinalIgnoreCase)
+            || first.Equals("none", StringComparison.OrdinalIgnoreCase)
+            || first.Equals("presentation", StringComparison.OrdinalIgnoreCase);
+    }
+
     private void SetEntered(bool value)
     {
         if (_entered == value) return;
@@ -734,8 +918,36 @@ public partial class BitCollapse : BitComponentBase
         ClassBuilder.Reset();
     }
 
+    // What the browser says is left of the transition it is playing, in ms - whatever set its pace, and not an
+    // estimate - or null when it cannot say. The answer is that time as it stood when the browser read it, and the
+    // time the reply took to get back is not taken off: how a round trip splits between its two directions is not
+    // known - a browser busy with its first call can sit on the request for most of it - and an end that lands a
+    // little late acts on content the close has already taken off the screen, while one that lands early cuts the
+    // close short. started is when the transition started playing, which is all a browser that cannot list what
+    // it is playing leaves to work out what is left of it.
+    private async Task<int?> GetRemainingTransitionTimeAsync(long started)
+    {
+        try
+        {
+            var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+
+            var remaining = await _js.BitCollapseGetRemainingTransitionTime(RootElement, elapsed);
+
+            if (remaining.HasValue is false) return null;
+
+            return (int)Math.Ceiling(Math.Max(0, remaining.Value));
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException) { }
+        catch (TaskCanceledException) { }
+
+        return null;
+    }
+
     private void CancelPendingTransition()
     {
+        _pendingTransition = null;
+
         var cts = _transitionCts;
 
         if (cts is null) return;

@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
@@ -23,12 +23,12 @@
    the dir stay after it and keep the ones the component renders. *@
 <nav @ref="RootElement"
      aria-label="@(AriaLabel ?? "Breadcrumb")"
-     @attributes="HtmlAttributes"
+     @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <ol role="list" style="@Styles?.ItemContainer" class="bit-brc-icn @Classes?.ItemContainer">
+    <ol @ref="_itemContainerRef" role="list" style="@Styles?.ItemContainer" class="bit-brc-icn @Classes?.ItemContainer">
         @foreach (var (item, idx) in _displayItems.Select((item, index) => (item, index)))
         {
             <li @key="@GetItemKey(item, idx.ToString())" role="listitem" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
@@ -49,7 +49,8 @@
                             aria-controls="@(ExpandOverflow ? null : _calloutId)"
                             aria-expanded="@(ExpandOverflow ? null : _isCalloutOpen.ToString().ToLower())"
                             aria-label="@(OverflowAriaLabel ?? "More items")"
-                            disabled="@(IsEnabled is false)">
+                            disabled="@(Disabled)"
+                            aria-disabled="@(Disabled ? "true" : null)">
                         @if (OverflowIconTemplate is not null)
                         {
                             @OverflowIconTemplate
@@ -66,15 +67,51 @@
                     var template = GetTemplate(item);
                     if (GetItemHref(item).HasValue())
                     {
+                        var hint = GetItemNewTabHint(item);
                         <a href="@GetItemHref(item)"
                            @onclick="() => HandleOnItemClick(item)"
                            title="@GetItemTitle(item)"
                            target="@GetItemTarget(item)"
                            rel="@GetItemRel(item)"
-                           aria-label="@GetItemAriaLabel(item)"
+                           aria-label="@hint.AriaLabel"
                            aria-current="@(GetIsSelected(item) ? "page" : null)"
                            style="@GetStyles(item, false)"
                            class="bit-brc-itm @GetClasses(item, false)">
+                            @if (template is not null)
+                            {
+                                @template(item)
+                            }
+                            else if (ItemTemplate is not null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                var icon = GetIcon(item);
+                                @if (icon is not null)
+                                {
+                                    <i aria-hidden="true" style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
+                                }
+                                <span style="@Styles?.ItemText" class="bit-brc-itx @Classes?.ItemText">@GetItemText(item)</span>
+                            }
+                            @if (hint.HintText.HasValue())
+                            {
+                                <span class="bit-brc-vhd">@hint.HintText</span>
+                            }
+                        </a>
+                    }
+                    else if (IsDisabledLink(item))
+                    {
+                        @* A disabled link is still a link: it keeps the role and says it is unavailable, rather
+                           than turning into text that gives no hint there is a step to follow once it is enabled.
+                           Without an href it takes no focus and navigates nowhere. *@
+                        <a role="link"
+                           title="@GetItemTitle(item)"
+                           aria-label="@GetItemAriaLabel(item)"
+                           aria-current="@(GetIsSelected(item) ? "page" : null)"
+                           aria-disabled="true"
+                           style="@GetStyles(item, false)"
+                           class="bit-brc-nii @GetClasses(item, false)">
                             @if (template is not null)
                             {
                                 @template(item)
@@ -96,12 +133,16 @@
                     }
                     else if (HasClickHandler(item))
                     {
+                        @* The native disabled attribute tells assistive technologies the button is unavailable;
+                           aria-disabled repeats it, as on every disabled native control of the library, so one
+                           [aria-disabled="true"] selector finds a disabled step whatever element it is. *@
+                        var isDisabled = GetIsDisabled(item);
                         <button type="button"
                                 title="@GetItemTitle(item)"
                                 aria-label="@GetItemAriaLabel(item)"
                                 aria-current="@(GetIsSelected(item) ? "page" : null)"
-                                aria-disabled="@(GetIsEnabled(item) ? null : "true")"
-                                disabled="@(GetIsEnabled(item) is false)"
+                                disabled="@isDisabled"
+                                aria-disabled="@(isDisabled ? "true" : null)"
                                 style="@GetStyles(item, false)"
                                 class="bit-brc-itm @GetClasses(item, false)" @onclick="() => HandleOnItemClick(item)">
                             @if (template is not null)
@@ -125,29 +166,39 @@
                     }
                     else
                     {
+                        @* A plain span has no role an aria-label is allowed on (ARIA 1.2 prohibits naming a generic
+                           element), so the accessible label of a step that is only text - an icon-only current page,
+                           most often - is written out as visually hidden text, and what is on screen is hidden from
+                           assistive technologies instead of being read after it. *@
+                        var ariaLabel = GetItemAriaLabel(item);
                         <span title="@GetItemTitle(item)"
-                              aria-label="@GetItemAriaLabel(item)"
                               aria-current="@(GetIsSelected(item) ? "page" : null)"
-                              aria-disabled="@(GetIsEnabled(item) ? null : "true")"
+                              aria-disabled="@(GetIsDisabled(item) ? "true" : null)"
                               style="@GetStyles(item, false)"
                               class="bit-brc-nii @GetClasses(item, false)">
-                            @if (template is not null)
+                            @if (ariaLabel.HasValue())
                             {
-                                @template(item)
+                                <span class="bit-brc-vhd">@ariaLabel</span>
                             }
-                            else if (ItemTemplate is not null)
-                            {
-                                @ItemTemplate(item)
-                            }
-                            else
-                            {
-                                var icon = GetIcon(item);
-                                @if (icon is not null)
+                            <span aria-hidden="@(ariaLabel.HasValue() ? "true" : null)" class="bit-brc-nic">
+                                @if (template is not null)
                                 {
-                                    <i aria-hidden="true" style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
+                                    @template(item)
                                 }
-                                <span style="@Styles?.ItemText" class="bit-brc-itx @Classes?.ItemText">@GetItemText(item)</span>
-                            }
+                                else if (ItemTemplate is not null)
+                                {
+                                    @ItemTemplate(item)
+                                }
+                                else
+                                {
+                                    var icon = GetIcon(item);
+                                    @if (icon is not null)
+                                    {
+                                        <i aria-hidden="true" style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
+                                    }
+                                    <span style="@Styles?.ItemText" class="bit-brc-itx @Classes?.ItemText">@GetItemText(item)</span>
+                                }
+                            </span>
                         </span>
                     }
                 }
@@ -157,7 +208,7 @@
             {
                 @* The divider is decoration: it carries no information a screen reader user needs and
                    would otherwise be announced as an extra step of the trail. *@
-                <li aria-hidden="true" style="@Styles?.Divider" class="@Classes?.Divider">
+                <li aria-hidden="true" style="@Styles?.Divider" class="bit-brc-dvw @Classes?.Divider">
                     @if (DividerIconTemplate is not null)
                     {
                         @DividerIconTemplate
@@ -198,8 +249,9 @@
      id="@_overlayId"
      class="bit-brc-ovl @Classes?.Overlay"></div>
 
-@* The callout is moved to the body by the JS positioning, so it repeats the direction and the
-   look-and-feel classes of the root element instead of inheriting them. *@
+@* The callout is rendered beside the root element and moved to the body while it is open. What the
+   consumer declared on the root is carried into it there, but the component's own look-and-feel
+   classes are not, so it repeats them, along with the direction. *@
 <div @ref="_calloutRef"
      @onkeydown="HandleOnCalloutKeyDown"
      id="@_calloutId"
@@ -220,14 +272,15 @@
             <li @key="@GetItemKey(item, $"overflow-{idx}")" role="presentation" style="@Styles?.OverflowItemWrapper" class="@Classes?.OverflowItemWrapper">
                 @if (GetItemHref(item).HasValue())
                 {
+                    var hint = GetItemNewTabHint(item);
                     <a href="@GetItemHref(item)"
                        @onclick="() => HandleOnOverflowItemClick(item)"
                        role="menuitem"
                        tabindex="0"
-                       title="@GetItemTitle(item)"
+                       title="@GetItemTitle(item, true)"
                        target="@GetItemTarget(item)"
                        rel="@GetItemRel(item)"
-                       aria-label="@GetItemAriaLabel(item)"
+                       aria-label="@hint.AriaLabel"
                        aria-current="@(GetIsSelected(item) ? "page" : null)"
                        style="@GetStyles(item, true)"
                        class="bit-brc-ofi @GetClasses(item, true)">
@@ -248,18 +301,23 @@
                             }
                             <span style="@Styles?.OverflowItemText" class="bit-brc-itx @Classes?.OverflowItemText">@GetItemText(item)</span>
                         }
+                        @if (hint.HintText.HasValue())
+                        {
+                            <span class="bit-brc-vhd">@hint.HintText</span>
+                        }
                     </a>
                 }
                 else if (HasClickHandler(item))
                 {
+                    var isDisabled = GetIsDisabled(item);
                     <button type="button"
                             role="menuitem"
-                            tabindex="@(GetIsEnabled(item) ? 0 : -1)"
-                            title="@GetItemTitle(item)"
+                            tabindex="@(isDisabled ? "-1" : "0")"
+                            title="@GetItemTitle(item, true)"
                             aria-label="@GetItemAriaLabel(item)"
                             aria-current="@(GetIsSelected(item) ? "page" : null)"
-                            aria-disabled="@(GetIsEnabled(item) ? null : "true")"
-                            disabled="@(GetIsEnabled(item) is false)"
+                            aria-disabled="@(isDisabled ? "true" : null)"
+                            disabled="@isDisabled"
                             style="@GetStyles(item, true)"
                             class="bit-brc-ofi @GetClasses(item, true)" @onclick="() => HandleOnOverflowItemClick(item)">
                         @if (overflowTemplate is not null)
@@ -287,10 +345,10 @@
                        to reach, so it stays a menu item the script can move the focus onto. *@
                     <span role="menuitem"
                           tabindex="-1"
-                          title="@GetItemTitle(item)"
+                          title="@GetItemTitle(item, true)"
                           aria-label="@GetItemAriaLabel(item)"
                           aria-current="@(GetIsSelected(item) ? "page" : null)"
-                          aria-disabled="@(GetIsEnabled(item) ? null : "true")"
+                          aria-disabled="@(GetIsDisabled(item) ? "true" : null)"
                           style="@GetStyles(item, true)"
                           class="bit-brc-ofn @GetClasses(item, true)">
                           @if (overflowTemplate is not null)

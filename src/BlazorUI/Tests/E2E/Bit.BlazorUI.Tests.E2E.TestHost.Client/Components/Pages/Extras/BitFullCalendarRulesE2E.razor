@@ -1,0 +1,182 @@
+﻿@page "/e2e/full-calendar/rules"
+
+<PageTitle>BitFullCalendar E2E - booking rules and bounds</PageTitle>
+
+@* What the calendar refuses and what it hands to the app instead: the booking rules (no overlaps, business hours shaded
+   and enforced, a locked event, a background band and a blocking one), the MinDate/MaxDate window, and the OnAddClick /
+   OnEventClick handlers that replace the built-in dialogs. "Today" is pinned to Wednesday 2025-07-16 10:30. *@
+<E2ESection Id="rules" Title="Booking rules">
+    <button id="btn-restrict" @onclick="() => _rulesSettings.RestrictToBusinessHours = !_rulesSettings.RestrictToBusinessHours">Toggle RestrictToBusinessHours</button>
+    <button id="btn-overlap" @onclick="() => _rulesSettings.AllowEventOverlap = !_rulesSettings.AllowEventOverlap">Toggle AllowEventOverlap</button>
+    <button id="btn-business-days" @onclick="() => _rulesSettings.BusinessDays = [DayOfWeek.Saturday]">BusinessDays = Saturday</button>
+    <BitFullCalendar Id="rules-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_rulesEvents"
+                     Settings="_rulesSettings"
+                     DefaultView="BitFullCalendarView.Week"
+                     OnRefused="HandleRefused"
+                     OnChange="@(args => { _rulesChangeCount++; _rulesChange = Apply(_rulesEvents, args); })" />
+    <span id="refused-count">@_refusedCount</span>
+    <span id="last-refusal">@_lastRefusal</span>
+    <span id="rules-change-count">@_rulesChangeCount</span>
+    <span id="rules-change">@_rulesChange</span>
+</E2ESection>
+
+<E2ESection Id="bounds" Title="MinDate and MaxDate">
+    <button id="btn-bounds-far" @onclick="() => _boundsDate = new DateTime(2025, 12, 1)">Date = 2025-12-01</button>
+    <button id="btn-bounds-early" @onclick="() => _boundsDate = new DateTime(2025, 1, 1)">Date = 2025-01-01</button>
+    <BitFullCalendar Id="bounds-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_boundsEvents"
+                     MinDate="BoundsMin"
+                     MaxDate="BoundsMax"
+                     @bind-Date="_boundsDate"
+                     OnRefused="r => _boundsRefusal = r.ToString()"
+                     OnChange="@(args => _boundsChange = Apply(_boundsEvents, args))" />
+    <span id="bounds-date">@_boundsDate.ToString("yyyy-MM-dd")</span>
+    <span id="bounds-refusal">@_boundsRefusal</span>
+    <span id="bounds-change">@_boundsChange</span>
+</E2ESection>
+
+<E2ESection Id="future" Title="A window that leaves today out">
+    <BitFullCalendar Id="future-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     MinDate="new DateTime(2025, 8, 1)"
+                     MaxDate="new DateTime(2025, 9, 30)" />
+</E2ESection>
+
+<E2ESection Id="inverted" Title="An inverted window is ignored">
+    <BitFullCalendar Id="inverted-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     MinDate="new DateTime(2025, 8, 1)"
+                     MaxDate="new DateTime(2025, 7, 1)" />
+</E2ESection>
+
+<E2ESection Id="required" Title="A required description">
+    <BitFullCalendar Id="required-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Settings="_requiredSettings" />
+</E2ESection>
+
+<E2ESection Id="handlers" Title="OnAddClick and OnEventClick">
+    <BitFullCalendar Id="handlers-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_handlerEvents"
+                     OnAddClick="HandleAddClick"
+                     OnEventClick="HandleEventClick" />
+    <span id="add-click-count">@_addClickCount</span>
+    <span id="add-click">@_addClick</span>
+    <span id="event-click-count">@_eventClickCount</span>
+    <span id="event-click">@_eventClick</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly TimeProvider Clock = new PinnedClock(new DateTimeOffset(2025, 7, 16, 10, 30, 0, TimeSpan.Zero));
+
+    private static readonly DateTime Today = new(2025, 7, 16);
+
+    private static readonly DateTime BoundsMin = Today.AddDays(-10);
+
+    private static readonly DateTime BoundsMax = Today.AddDays(20);
+
+    private readonly BitFullCalendarSettings _rulesSettings = new()
+    {
+        AllowEventOverlap = false,
+        HighlightBusinessHours = true,
+        BusinessStartHour = 9,
+        BusinessEndHour = 17,
+        VisibleStartHour = 6,
+        VisibleEndHour = 21,
+        StartOfDayHour = 8
+    };
+
+    private readonly List<BitFullCalendarEvent> _rulesEvents =
+    [
+        new() { Id = "r1", Title = "Payroll run", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "red", IsReadOnly = true },
+        new() { Id = "r2", Title = "Design Review", StartDate = Today.AddHours(11), EndDate = Today.AddHours(12), Color = "purple" },
+        new() { Id = "r3", Title = "Retro", StartDate = Today.AddHours(15), EndDate = Today.AddHours(16), Color = "blue" },
+        new() { Id = "r4", Title = "Lunch break", StartDate = Today.AddHours(12), EndDate = Today.AddHours(13), Color = "#94a3b8", IsBackground = true, IsBlocking = true, Recurrence = new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily } },
+        new() { Id = "r5", Title = "Company offsite", StartDate = Today.AddDays(2), EndDate = Today.AddDays(2), Color = "green", IsAllDay = true, IsBackground = true },
+    ];
+
+    private int _refusedCount;
+    private string? _lastRefusal;
+    private int _rulesChangeCount;
+    private string? _rulesChange;
+
+    private void HandleRefused(BitFullCalendarChangeRefusal refusal)
+    {
+        _refusedCount++;
+        _lastRefusal = refusal.ToString();
+    }
+
+    private DateTime _boundsDate = Today;
+
+    private readonly List<BitFullCalendarEvent> _boundsEvents =
+    [
+        new() { Id = "b1", Title = "Inside", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "blue" },
+    ];
+
+    private string? _boundsRefusal;
+    private string? _boundsChange;
+
+    private readonly List<BitFullCalendarEvent> _handlerEvents =
+    [
+        new() { Id = "x1", Title = "Clickable", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "blue" },
+    ];
+
+    private readonly BitFullCalendarSettings _requiredSettings = new() { RequireEventDescription = true };
+
+    private int _addClickCount;
+    private string? _addClick;
+    private int _eventClickCount;
+    private string? _eventClick;
+
+    private void HandleAddClick(BitFullCalendarEvent? draft)
+    {
+        _addClickCount++;
+        _addClick = draft is null ? "null" : $"{draft.StartDate:yyyy-MM-dd HH:mm}|{draft.EndDate:yyyy-MM-dd HH:mm}|{draft.Id}|{draft.Resource ?? "-"}";
+    }
+
+    private void HandleEventClick(BitFullCalendarEvent ev)
+    {
+        _eventClickCount++;
+        _eventClick = $"{ev.Id}|{ev.Title}";
+    }
+
+    /// <summary>
+    /// Applies a change to the page's own list, the way an app keeps its store in step (the calendar re-syncs the list
+    /// it is given on every render), and describes it for the readout.
+    /// </summary>
+    private static string Apply(List<BitFullCalendarEvent> events, BitFullCalendarChangeEventArgs args)
+    {
+        var index = events.FindIndex(e => e.Id == args.Event.Id);
+        switch (args.Kind)
+        {
+            case BitFullCalendarChangeKind.Delete:
+                if (index >= 0) events.RemoveAt(index);
+                break;
+            default:
+                if (index >= 0) events[index] = args.Event;
+                else events.Add(args.Event);
+                break;
+        }
+
+        return $"{args.Kind}|{args.Source}|{args.Event.Title}|{args.Event.StartDate:yyyy-MM-dd HH:mm}|{args.Event.EndDate:yyyy-MM-dd HH:mm}";
+    }
+
+    private sealed class PinnedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+}

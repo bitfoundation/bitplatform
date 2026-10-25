@@ -1,4 +1,4 @@
-declare class Emitter extends EventEmitter3<string> {
+﻿declare class Emitter extends EventEmitter3<string> {
     static events: {
         readonly EDITOR_CHANGE: "editor-change";
         readonly SCROLL_BEFORE_UPDATE: "scroll-before-update";

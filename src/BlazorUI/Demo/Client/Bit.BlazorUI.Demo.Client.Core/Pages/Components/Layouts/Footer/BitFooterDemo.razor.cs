@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Footer;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Footer;
 
 public partial class BitFooterDemo
 {
@@ -48,9 +48,16 @@ public partial class BitFooterDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the BitFooter. It is applied through the Variant: as the background color in the Fill variant, and as the text and border color in the Outline and Text variants.",
+            Description = "The general color of the BitFooter. It is applied through the Variant: as the background color in the Fill variant, and as the text and border color in the Outline and Text variants. An explicit value wins over the --bit-Footer-* color variables; left unset, the footer keeps the primary background and foreground colors of the theme unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "ElevateOnScroll",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shadows a Fixed or Sticky footer only while there is content left underneath it, and fades the shadow out at the end of the scrolling area. Elevated takes precedence.",
         },
         new()
         {
@@ -89,10 +96,24 @@ public partial class BitFooterDemo
         },
         new()
         {
+            Name = "MaxWidth",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the maximum width of the content of the BitFooter, which is then centered in the footer. The footer itself keeps spanning the full width.",
+        },
+        new()
+        {
             Name = "NoGutter",
             Type = "bool",
             DefaultValue = "false",
             Description = "Removes the default paddings around the content of the BitFooter, so it can span the full width of the footer.",
+        },
+        new()
+        {
+            Name = "OnOverlapChanged",
+            Type = "EventCallback<bool>",
+            DefaultValue = "",
+            Description = "Callback for when the overlap state of the footer changes. The provided value is true while there is content left underneath the footer. Only invoked while ElevateOnScroll is enabled.",
         },
         new()
         {
@@ -106,7 +127,7 @@ public partial class BitFooterDemo
             Name = "Reveal",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Slides the footer out of the view while the page is scrolled down and brings it back while the page is scrolled up. It only has an effect on a Fixed or Sticky footer, since the others have nothing to slide over.",
+            Description = "Slides the footer out of the view while the page is scrolled down and brings it back while the page is scrolled up. It only has an effect on a Fixed or Sticky footer, and the footer comes back as soon as anything inside it takes the focus.",
         },
         new()
         {
@@ -117,10 +138,24 @@ public partial class BitFooterDemo
         },
         new()
         {
+            Name = "ScrollPadding",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reserves the height of a Fixed or Sticky BitFooter as the bottom scroll padding of the scrolling area, so a focused control, an anchor or a scrollIntoView target never lands underneath it (WCAG 2.4.11).",
+        },
+        new()
+        {
+            Name = "ScrollTarget",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the CSS selector of the element whose scrolling drives the BitFooter (Reveal and ScrollPadding). When not set, or when it matches nothing, the nearest scrolling ancestor (or the page) is used.",
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the BitFooter, which determines the paddings around its content.",
+            Description = "The size of the BitFooter, which determines the paddings around its content. An explicit value wins over --bit-Footer-padding; left unset, the footer is medium unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -178,10 +213,141 @@ public partial class BitFooterDemo
     [
         new()
         {
+            Name = "IsOverlapping",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Gets a value indicating whether there is content left underneath the footer (its scrolling area is not at its end). It is always false unless ElevateOnScroll is enabled.",
+        },
+        new()
+        {
             Name = "IsRevealed",
             Type = "bool",
             DefaultValue = "true",
             Description = "Gets a value indicating whether the footer is currently revealed. It reports the scroll driven reveal state alone, so it is always true unless Reveal is enabled, and stays true for a footer slid out of the view with Hidden.",
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Footer-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the Fill variant, softened by Translucent. The Color parameter wins over it. The Fill variant, the only one reading it, reads --bit-Footer-fill-background ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-fill-background",
+            DefaultValue = "--bit-Footer-background",
+            Description = "Background of a Fill footer alone, read ahead of --bit-Footer-background, like every variable a variant reads. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color. The Color parameter wins over it. Shared by the three variants: --bit-Footer-fill-color, --bit-Footer-outline-color and --bit-Footer-text-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-fill-color",
+            DefaultValue = "--bit-Footer-color",
+            Description = "Text color of a Fill footer alone, read ahead of --bit-Footer-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-outline-color",
+            DefaultValue = "--bit-Footer-color",
+            Description = "Text color of an Outline footer alone, read ahead of --bit-Footer-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-text-color",
+            DefaultValue = "--bit-Footer-color",
+            Description = "Text color of a Text footer alone, read ahead of --bit-Footer-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-border-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Color of the Outline border and of the Bordered divider. The Color parameter wins over it. Shared by the three variants: --bit-Footer-fill-border-color, --bit-Footer-outline-border-color and --bit-Footer-text-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-fill-border-color",
+            DefaultValue = "--bit-Footer-border-color",
+            Description = "Color of the divider of a Bordered Fill footer alone, read ahead of --bit-Footer-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-outline-border-color",
+            DefaultValue = "--bit-Footer-border-color",
+            Description = "Color of the border of an Outline footer alone, read ahead of --bit-Footer-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-text-border-color",
+            DefaultValue = "--bit-Footer-border-color",
+            Description = "Color of the divider of a Bordered Text footer alone, read ahead of --bit-Footer-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-padding",
+            DefaultValue = "spacing(1) spacing(3)",
+            Description = "Padding around the content. The Size parameter wins over it, and NoGutter still removes it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-gap",
+            DefaultValue = "0",
+            Description = "Space between the children. The Gap parameter takes precedence.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-max-width",
+            DefaultValue = "none",
+            Description = "Maximum width of the centered content. The MaxWidth parameter takes precedence.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-min-height",
+            DefaultValue = "auto",
+            Description = "Smallest height of the footer.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-font-size",
+            DefaultValue = "inherit",
+            Description = "Text size of the content.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-radius",
+            DefaultValue = "0",
+            Description = "Corner radius, for a floating or card-like footer.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-shadow",
+            DefaultValue = "--bit-shd-appbar-bottom",
+            Description = "Shadow of an Elevated (or ElevateOnScroll) footer.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-blur",
+            DefaultValue = "12px",
+            Description = "Backdrop blur of a Translucent footer. The Fill variant, the only one reading it, reads --bit-Footer-fill-blur ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-fill-blur",
+            DefaultValue = "--bit-Footer-blur",
+            Description = "Backdrop blur of a Translucent Fill footer alone, read ahead of --bit-Footer-blur, like every variable a variant reads.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-z-index",
+            DefaultValue = "--bit-zin-base",
+            Description = "Stacking order of a Fixed, Sticky or Absolute footer.",
         },
     ];
 
@@ -230,60 +396,24 @@ public partial class BitFooterDemo
                 new() { Name = "Stretch", Description = "Stretches the content to the full height of the footer (the cross axis).", Value = "7" },
             ]
         },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
-                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
-                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
-                new() { Name = "Info", Description = "Info general color.", Value = "3" },
-                new() { Name = "Success", Description = "Success general color.", Value = "4" },
-                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
-                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
-                new() { Name = "Error", Description = "Error general color.", Value = "7" },
-                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
-                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
-                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
-                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
-                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
-                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
-                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
-                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
-                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" },
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Determines the paddings around the content of the footer.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" },
-            ]
-        },
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new() { Name = "Fill", Description = "Fill styled variant.", Value = "0" },
-                new() { Name = "Outline", Description = "Outline styled variant.", Value = "1" },
-                new() { Name = "Text", Description = "Text styled variant.", Value = "2" },
-            ]
-        },
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitSize(description: "Determines the paddings around the content of the footer."),
+        DemoSharedEnums.BitVariant(),
     ];
 
 
 
     private bool isFooterRevealed = true;
+    private bool isFooterOverlapping;
     private bool isSelectionMode;
+
+    private readonly BitFooterParams[] footerParams =
+    [
+        new()
+        {
+            Bordered = true,
+            Color = BitColor.Success,
+            Variant = BitVariant.Outline,
+        }
+    ];
 }

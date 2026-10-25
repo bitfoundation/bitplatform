@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>يجب أن تكون قيمة Length في MaxLengthAttribute أكبر من صفر. استخدم MaxLength() بدون معاملات للإشارة إلى أن السلسلة أو المصفوفة يمكن أن تكون بأقصى طول مسموح.</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>يجب أن يكون حقل {0} من نوع سلسلة أو مصفوفة بطول أقصى '{1}'</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>يجب أن يكون حقل {0} من نوع سلسلة أو مصفوفة بطول أدنى '{1}'</value>
   </data>
@@ -178,156 +181,6 @@
     <value>تعذر الاتصال بالخادم</value>
   </data>
   <!-- Bit.BlazorUI messages -->
-  <data name="DataGridEmptyText" xml:space="preserve">
-    <value>لا توجد سجلات للعرض.</value>
-  </data>
-  <data name="DataGridLoadingText" xml:space="preserve">
-    <value>جارٍ التحميل…</value>
-  </data>
-  <data name="DataGridActionsText" xml:space="preserve">
-    <value>الإجراءات</value>
-  </data>
-  <data name="DataGridAddRowText" xml:space="preserve">
-    <value>+ إضافة</value>
-  </data>
-  <data name="DataGridClearFiltersText" xml:space="preserve">
-    <value>مسح عوامل التصفية</value>
-  </data>
-  <data name="DataGridExportCsvText" xml:space="preserve">
-    <value>تصدير CSV</value>
-  </data>
-  <data name="DataGridExportExcelText" xml:space="preserve">
-    <value>تصدير Excel</value>
-  </data>
-  <data name="DataGridColumnsText" xml:space="preserve">
-    <value>الأعمدة</value>
-  </data>
-  <data name="DataGridEditText" xml:space="preserve">
-    <value>تعديل</value>
-  </data>
-  <data name="DataGridDeleteText" xml:space="preserve">
-    <value>حذف</value>
-  </data>
-  <data name="DataGridSaveText" xml:space="preserve">
-    <value>حفظ</value>
-  </data>
-  <data name="DataGridCancelText" xml:space="preserve">
-    <value>إلغاء</value>
-  </data>
-  <data name="DataGridSelectAllLabel" xml:space="preserve">
-    <value>تحديد الكل</value>
-  </data>
-  <data name="DataGridSelectRowLabel" xml:space="preserve">
-    <value>تحديد الصف</value>
-  </data>
-  <data name="DataGridSelectRowFormat" xml:space="preserve">
-    <value>تحديد الصف: {0}</value>
-  </data>
-  <data name="DataGridFilterPlaceholder" xml:space="preserve">
-    <value>تصفية…</value>
-  </data>
-  <data name="DataGridFilterByFormat" xml:space="preserve">
-    <value>تصفية حسب {0}</value>
-  </data>
-  <data name="DataGridFilterAllText" xml:space="preserve">
-    <value>الكل</value>
-  </data>
-  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
-    <value>عامل التصفية لـ {0}</value>
-  </data>
-  <data name="DataGridFilterOpContains" xml:space="preserve">
-    <value>يحتوي على</value>
-  </data>
-  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
-    <value>لا يحتوي على</value>
-  </data>
-  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
-    <value>يبدأ بـ</value>
-  </data>
-  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
-    <value>ينتهي بـ</value>
-  </data>
-  <data name="DataGridBooleanTrueText" xml:space="preserve">
-    <value>صحيح</value>
-  </data>
-  <data name="DataGridBooleanFalseText" xml:space="preserve">
-    <value>خطأ</value>
-  </data>
-  <data name="DataGridGroupByFormat" xml:space="preserve">
-    <value>تجميع حسب {0}</value>
-  </data>
-  <data name="DataGridUngroupByFormat" xml:space="preserve">
-    <value>إلغاء التجميع حسب {0}</value>
-  </data>
-  <data name="DataGridExpandGroupFormat" xml:space="preserve">
-    <value>توسيع المجموعة {0}: {1}</value>
-  </data>
-  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
-    <value>طي المجموعة {0}: {1}</value>
-  </data>
-  <data name="DataGridPagerRangeFormat" xml:space="preserve">
-    <value>{0}–{1} من {2}</value>
-  </data>
-  <data name="DataGridPagerPageFormat" xml:space="preserve">
-    <value>الصفحة {0} من {1}</value>
-  </data>
-  <data name="DataGridPerPageFormat" xml:space="preserve">
-    <value>{0} / صفحة</value>
-  </data>
-  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
-    <value>الصفوف لكل صفحة</value>
-  </data>
-  <data name="DataGridFirstPageLabel" xml:space="preserve">
-    <value>الصفحة الأولى</value>
-  </data>
-  <data name="DataGridPreviousPageLabel" xml:space="preserve">
-    <value>الصفحة السابقة</value>
-  </data>
-  <data name="DataGridNextPageLabel" xml:space="preserve">
-    <value>الصفحة التالية</value>
-  </data>
-  <data name="DataGridLastPageLabel" xml:space="preserve">
-    <value>الصفحة الأخيرة</value>
-  </data>
-  <data name="DataGridEndOfResultsText" xml:space="preserve">
-    <value>- نهاية النتائج -</value>
-  </data>
-  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
-    <value>إظهار/إخفاء التفاصيل</value>
-  </data>
-  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
-    <value>إظهار/إخفاء العناصر الفرعية</value>
-  </data>
-  <data name="DataGridReorderRowTitle" xml:space="preserve">
-    <value>اسحب لإعادة الترتيب، أو ركّز واستخدم مفاتيح الأسهم لنقل هذا الصف</value>
-  </data>
-  <data name="DataGridReorderRowLabel" xml:space="preserve">
-    <value>إعادة ترتيب الصف. اضغط على السهم لأعلى أو لأسفل لنقل هذا الصف.</value>
-  </data>
-  <data name="DataGridInvalidValueError" xml:space="preserve">
-    <value>قيمة غير صالحة لـ {0}.</value>
-  </data>
-  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
-    <value>مرتب حسب {0} تصاعديًا</value>
-  </data>
-  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
-    <value>مرتب حسب {0} تنازليًا</value>
-  </data>
-  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
-    <value>تمت إزالة الترتيب حسب {0}</value>
-  </data>
-  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
-    <value>تم تطبيق التصفية على {0}</value>
-  </data>
-  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
-    <value>تم مسح التصفية على {0}</value>
-  </data>
-  <data name="DataGridAnnouncementPage" xml:space="preserve">
-    <value>الصفحة {0} من {1}</value>
-  </data>
-  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
-    <value>تم حذف الصف</value>
-  </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
     <value>نشط</value>
@@ -518,6 +371,9 @@
   <data name="BirthDate" xml:space="preserve">
     <value>تاريخ الميلاد</value>
   </data>
+  <data name="BirthDateInFuture" xml:space="preserve">
+    <value>لا يمكن أن يكون تاريخ الميلاد في المستقبل.</value>
+  </data>
   <data name="UserName" xml:space="preserve">
     <value>اسم المستخدم</value>
   </data>
@@ -541,12 +397,6 @@
   </data>
   <data name="InvalidUserCredentials" xml:space="preserve">
     <value>بيانات اعتماد المستخدم غير صالحة</value>
-  </data>
-  <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>تم تأكيد بريدك الإلكتروني بالفعل</value>
-  </data>
-  <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>تم تأكيد رقم هاتفك بالفعل</value>
   </data>
   <data name="Title" xml:space="preserve">
     <value>العنوان</value>
@@ -734,9 +584,6 @@
   <data name="OldPassword" xml:space="preserve">
     <value>كلمة المرور القديمة</value>
   </data>
-  <data name="No" xml:space="preserve">
-    <value>لا</value>
-  </data>
   <data name="NotReceivedEmailMessage" xml:space="preserve">
     <value>ألم تتلق البريد الإلكتروني؟</value>
   </data>
@@ -835,9 +682,6 @@
   </data>
   <data name="UploadNewImage" xml:space="preserve">
     <value>اسحب أو اختر صورة</value>
-  </data>
-  <data name="Yes" xml:space="preserve">
-    <value>نعم</value>
   </data>
   <data name="SelectBirthDate" xml:space="preserve">
     <value>اختر تاريخ ميلادك</value>
@@ -1360,6 +1204,9 @@
   <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
     <value>تعذّر على المساعد الرد. حاول مرة أخرى.</value>
   </data>
+  <data name="AiChatTooManyRequests" xml:space="preserve">
+    <value>أنت ترسل الرسائل بسرعة كبيرة. يرجى الانتظار دقيقة ثم المحاولة مرة أخرى.</value>
+  </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>اترك بيانات التواصل الخاصة بك وسيتواصل معك أحد موظفي الدعم.</value>
   </data>
@@ -1577,9 +1424,6 @@
   <data name="Users" xml:space="preserve">
     <value>المستخدمون</value>
   </data>
-  <data name="UsersWithCount" xml:space="preserve">
-    <value>المستخدمون {0}</value>
-  </data>
   <data name="Features" xml:space="preserve">
     <value>الميزات</value>
   </data>
@@ -1635,9 +1479,6 @@
   </data>
   <data name="DeleteRole" xml:space="preserve">
     <value>حذف مجموعة المستخدمين</value>
-  </data>
-  <data name="Sessions" xml:space="preserve">
-    <value>الجلسات {0}</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
     <value>حذف المستخدم</value>
@@ -2209,5 +2050,50 @@
   </data>
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>أرسلنا رمزًا إلى {0} و{1}.</value>
+  </data>
+    <data name="EditImage" xml:space="preserve">
+    <value>تعديل الصورة</value>
+  </data>
+    <data name="Crop" xml:space="preserve">
+    <value>اقتصاص</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>تطبيق الاقتصاص</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>تدوير لليسار</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>تدوير لليمين</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>تراجع</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>إعادة</value>
+  </data>
+    <data name="ImageEditorCropHint" xml:space="preserve">
+    <value>اسحب فوق الصورة لتحديد الجزء الذي تريد الاحتفاظ به.</value>
+  </data>
+    <data name="ImageEditorMoreFeatures" xml:space="preserve">
+    <value>هل تريد إضافة المزيد من ميزات تحرير الصور إلى مشروعك؟</value>
+  </data>
+    <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
+    <value>لا يمكن فتح هذه الصورة للتعديل هنا. لا يزال بإمكانك رفعها كما هي.</value>
+  </data>
+    <data name="UploadImageAsIs" xml:space="preserve">
+    <value>رفع كما هي</value>
+  </data>
+    <data name="ResetPasswordTwoFactorCodeRequired" xml:space="preserve">
+    <value>المصادقة الثنائية مفعّلة لهذا الحساب. أدخل رمزًا من تطبيق المصادقة أو أحد رموز الاسترداد الخاصة بك.</value>
+  </data>
+    <data name="AccountAlreadyExistsShortText" xml:space="preserve">
+    <value>لديك بالفعل حساب في Boilerplate بهذا الرقم. إذا كنت قد حاولت التسجيل للتو، فسجّل الدخول بدلًا من ذلك.</value>
+  </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>إضافة حساب آخر</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>تسجيل الخروج من جميع الحسابات على هذا الجهاز</value>
   </data>
 </root>

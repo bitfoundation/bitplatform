@@ -1,0 +1,1906 @@
+#Requires -Version 7.4
+<#
+.SYNOPSIS
+    The mechanical half of the test-platform skill (.github/agents/test-platform.md): which version every deployed app is
+    at, rolling an All CD run's Android and Windows apps out onto this machine, running the E2E suite's stages, and
+    calling https://bitplatform.dev/mcp.
+
+.DESCRIPTION
+    versions  Compares what the Boilerplate demos' and the platform website's CD workflows deploy with APP_VERSION: the
+              IIS sites, the Windows apps, the Android apps, the version each Boilerplate web app shows in its nav panel,
+              and the MCP endpoint's own version. With -CdRun it also says where that run took its Bit packages from:
+              nuget.org, or a Prerelease nuget packages run. Exits 1 when anything is behind.
+    android   Installs the APKs an All CD run built onto the one connected device, booting the AVD when none is up.
+    windows   Opens each Windows app that is behind and taps its version in the nav panel, which makes it update itself
+              from its feed and restart.
+    e2e       Runs Boilerplate.Tests.E2E stage by stage, as RunTests.bat does, keeping each stage's log and TRX.
+    mcp       One call to https://bitplatform.dev/mcp: tools/list, or tools/call when -Tool is given. -AllLibraries
+              lists every bit library's tools, as the website's chat does, not only BlazorUI's and Butil's.
+    devcontainer
+              Creates a project with bit new, brings bit Boilerplate's dev container up on a Linux Docker engine
+              with the devcontainers CLI, and runs bit doctor in it. With -Sha, bit and the template come from that
+              commit; without it, from nuget.org, as users get them. Removes the container, its volumes and its image
+              afterwards unless -Keep is given, and keeps the logs. Exits 1 when a setup step fails or bit doctor
+              finds something missing.
+    aspire    Runs a new project's Aspire app host three times: the second run reuses the first one's containers, they
+              stop once it sits idle, and the third run brings them back on the same volumes. -Sha and -Keep as above.
+    agents    Creates a project with bit new, then hands each scenario of agent-scenarios.json to a headless Claude Code
+              that sees nothing but that project, in a copy of its own, and checks what it did: which skills it read,
+              which tools it called and which files it changed after each turn. -Sha and -Keep as above.
+
+    What is deployed where is read from those CD workflows and from the E2E suite's DeployedApps.cs and
+    RunTests.bat rather than repeated here, so this script follows them.
+
+.EXAMPLE
+    pwsh .github/agents/test-platform/test-platform.ps1 versions -Sha 465ce237c
+.EXAMPLE
+    pwsh .github/agents/test-platform/test-platform.ps1 android -CdRun https://github.com/bitfoundation/bitplatform/actions/runs/36078311727
+.EXAMPLE
+    pwsh .github/agents/test-platform/test-platform.ps1 e2e -Stage web-firefox -Filter 'FullyQualifiedName~WebSmokeTests'
+.EXAMPLE
+    pwsh .github/agents/test-platform/test-platform.ps1 devcontainer -Sha 465ce237c
+.EXAMPLE
+    pwsh .github/agents/test-platform/test-platform.ps1 aspire -Sha 465ce237c
+.EXAMPLE
+    pwsh .github/agents/test-platform/test-platform.ps1 agents -Sha 465ce237c -Scenario known-bug,crud-feature -Model sonnet,opus
+.EXAMPLE
+    pwsh .github/agents/test-platform/test-platform.ps1 mcp -McpVersion 10.6.1 -Tool GetBitBlazorUIComponent -Arguments '{"name":"BitAccordion"}'
+#>
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory, Position = 0)]
+    [ValidateSet('versions', 'android', 'windows', 'e2e', 'mcp', 'devcontainer', 'aspire', 'agents')]
+    [string] $Command,
+
+    # What everything must be at. The repository's APP_VERSION variable when omitted.
+    [string] $Expected,
+
+    # The CD run's head commit, full or abbreviated. When given, a ProductVersion's +<sha> must match it too.
+    [string] $Sha,
+
+    # android: the All CD run whose android-bundle artifacts get installed. versions: the All CD run whose Bit packages
+    # source gets reported. As its id or any url of it.
+    [string] $CdRun,
+
+    # windows: taps the version of an app that is already current too, which then only checks its feed.
+    [switch] $Force,
+
+    # e2e: the stages to run, in RunTests.bat's order when omitted.
+    [ValidateSet('web-chromium', 'web-webkit', 'web-firefox', 'android', 'windows', 'api')]
+    [string[]] $Stage = @('web-chromium', 'web-webkit', 'web-firefox', 'android', 'windows', 'api'),
+
+    # e2e: narrows every stage further, e.g. 'FullyQualifiedName~WebSmokeTests'.
+    [string] $Filter,
+
+    # e2e: a stage still running after this long is killed and reported as timed out.
+    [int] $TimeoutMinutes = 120,
+
+    # e2e: starts the stages without first checking that the global admin can sign in.
+    [switch] $SkipPreflight,
+
+    # mcp: the ?v= to ask for; omitted asks for the newest release the endpoint serves.
+    [string] $McpVersion,
+
+    # mcp: the tool to call; tools/list when omitted.
+    [string] $Tool,
+
+    # mcp: the tool's arguments, as json.
+    [string] $Arguments = '{}',
+
+    [switch] $AllLibraries,
+
+    [switch] $PrereleasePackages,
+
+    [switch] $Keep,
+
+    # agents: the scenarios of agent-scenarios.json to run; every one but the baselines when omitted.
+    [string[]] $Scenario,
+
+    # agents: the models each scenario runs with, as Claude Code names them.
+    [string[]] $Model = @('sonnet'),
+
+    # agents: also sends the turns that have the agent build a whole feature, up to an hour each.
+    [switch] $Long,
+
+    # agents: runs one scenario of the lab that -Lab names; the command starts these itself.
+    [switch] $Worker,
+
+    [string] $Lab
+)
+
+$ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $false
+
+$repository = 'bitfoundation/bitplatform'
+$repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
+# Only the Boilerplate demos (AdminPanel, SalesModule, Todo) and the platform website, which serves bitplatform.dev/mcp,
+# are checked. The library demos and the other websites are left out on purpose.
+$workflows = 'admin-sample.cd.yml', 'sales-module-demo.cd.yml', 'todo-sample.cd.yml', 'platform.website.cd.yml' |
+    ForEach-Object { Get-Item (Join-Path $repositoryRoot ".github\workflows\$_") }
+$e2eProject = Join-Path $repositoryRoot 'src\Templates\Boilerplate\Bit.Boilerplate\src\Internal\Boilerplate.Tests.E2E'
+$deployedAppsFile = Join-Path $e2eProject 'Infrastructure\DeployedApps.cs'
+
+#region What the CD workflows deploy
+
+# Every deploy job hands .github/actions/deploy-to-server a site folder and the dll that proves its bundle is whole.
+function Get-IisSites {
+    foreach ($workflow in $workflows) {
+        $content = Get-Content $workflow.FullName -Raw
+        foreach ($match in [regex]::Matches($content, "site-path:\s*(?<path>\S+)\s+sentinel-file:\s*(?<dll>\S+)\s+health-check-url:\s*'(?<url>[^']+)'")) {
+            [pscustomobject]@{ Path = $match.Groups['path'].Value; Dll = $match.Groups['dll'].Value; Url = $match.Groups['url'].Value }
+        }
+    }
+}
+
+# vpk pack -u names the Velopack app id, which is also the folder its setup installs into.
+function Get-WindowsApps {
+    $ids = foreach ($workflow in $workflows) {
+        [regex]::Matches((Get-Content $workflow.FullName -Raw), 'vpk(@[\d.]+ --)? pack -u (?<id>\S+)') | ForEach-Object { $_.Groups['id'].Value }
+    }
+
+    foreach ($id in $ids | Sort-Object -Unique) {
+        $root = Join-Path $env:LOCALAPPDATA $id
+        [pscustomobject]@{ Id = $id; Root = $root; Exe = Join-Path $root "current\$id.exe" }
+    }
+}
+
+# The workflows that upload an android-bundle artifact name their package in APP_BUNDLE_ID.
+function Get-AndroidPackages {
+    foreach ($workflow in $workflows) {
+        $content = Get-Content $workflow.FullName -Raw
+
+        if ($content -match 'name: android-bundle') {
+            [regex]::Match($content, "APP_BUNDLE_ID:\s*'(?<id>[^']+)'").Groups['id'].Value
+        }
+    }
+}
+
+# The Boilerplate web apps, as the E2E suite addresses them in DeployedApps.AddressOf.
+function Get-WebApps {
+    $content = Get-Content $deployedAppsFile -Raw
+
+    $addresses = @{}
+    foreach ($match in [regex]::Matches($content, 'public const string (?<name>\w+) = "(?<url>https://[^"]+)";')) {
+        $addresses[$match.Groups['name'].Value] = $match.Groups['url'].Value
+    }
+
+    $arms = [regex]::Match($content, 'AddressOf\(App app\) => app switch\s*\{(?<arms>[^}]*)\}').Groups['arms'].Value
+    foreach ($match in [regex]::Matches($arms, 'App\.(?<app>\w+) => (?<name>\w+),')) {
+        [pscustomobject]@{ App = $match.Groups['app'].Value; Url = $addresses[$match.Groups['name'].Value] }
+    }
+}
+#endregion
+
+#region Versions
+
+function Get-ExpectedVersion {
+    if ($Expected) {
+        return $Expected
+    }
+
+    $value = (gh variable get APP_VERSION -R $repository) -join ''
+
+    if ($LASTEXITCODE -ne 0 -or -not $value) {
+        throw 'Could not read the APP_VERSION variable with gh. Pass -Expected instead.'
+    }
+
+    $value.Trim()
+}
+
+# 325.32.8, 325.32.8.0 (an assembly's four parts) and 325.32.8+<sha> (an informational version) all match 325.32.8.
+function Test-Version([string] $actual) {
+    if (-not $actual) {
+        return $false
+    }
+
+    $version, $commit = $actual.Trim() -split '\+', 2
+
+    if ($version -ne $script:expectedVersion -and $version -ne "$script:expectedVersion.0") {
+        return $false
+    }
+
+    -not ($Sha -and $commit -and -not $commit.StartsWith($Sha, [StringComparison]::OrdinalIgnoreCase))
+}
+
+# Null while the file is missing - or mid-swap, when Velopack replaces the current folder under it.
+function Get-ProductVersion([string] $path) {
+    try {
+        if (Test-Path $path) {
+            (Get-Item $path).VersionInfo.ProductVersion
+        }
+    }
+    catch {
+    }
+}
+
+function New-VersionRow([string] $area, [string] $name, [string] $actual, [string] $missing = '(missing)') {
+    [pscustomobject]@{
+        OK = if (Test-Version $actual) { 'yes' } else { 'NO' }
+        Area = $area
+        Name = $name
+        Actual = if ($actual) { $actual } else { $missing }
+    }
+}
+
+#endregion
+
+#region Android
+
+function Initialize-Adb {
+    $candidates = @(
+        (Get-Command adb -ErrorAction SilentlyContinue | ForEach-Object { Split-Path (Split-Path $_.Source) }),
+        $env:ANDROID_HOME,
+        $env:ANDROID_SDK_ROOT,
+        "${env:ProgramFiles(x86)}\Android\android-sdk",
+        "$env:LOCALAPPDATA\Android\Sdk")
+
+    $script:androidSdk = $candidates | Where-Object { $_ -and (Test-Path (Join-Path $_ 'platform-tools\adb.exe')) } | Select-Object -First 1
+
+    if (-not $script:androidSdk) {
+        throw 'No Android SDK with platform-tools was found on PATH, in ANDROID_HOME/ANDROID_SDK_ROOT, or where Visual Studio and Android Studio install it.'
+    }
+
+    $script:adb = Join-Path $script:androidSdk 'platform-tools\adb.exe'
+
+    if (-not (Get-NetTCPConnection -LocalPort 5037 -State Listen -ErrorAction SilentlyContinue)) {
+        Start-Process $script:adb -ArgumentList 'start-server' -WindowStyle Hidden
+
+        $deadline = (Get-Date).AddSeconds(30)
+
+        while (-not (Get-NetTCPConnection -LocalPort 5037 -State Listen -ErrorAction SilentlyContinue) -and (Get-Date) -lt $deadline) {
+            Start-Sleep -Milliseconds 500
+        }
+    }
+}
+
+function Invoke-Adb {
+    (& $script:adb @args 2>&1 | ForEach-Object { "$_" }) -join "`n"
+}
+
+function Get-AndroidDevices {
+    @((Invoke-Adb devices) -split "`n" | Select-Object -Skip 1 | Where-Object { $_ -match '^\S+\s+device\b' })
+}
+
+# Exactly one device, since adb and the E2E suite both address "the" device. With none, the first AVD is booted.
+function Disable-AndroidSystemSheets {
+    foreach ($setting in @{ autofill_service = 'null'; stylus_handwriting_enabled = '0' }.GetEnumerator()) {
+        if ((Invoke-Adb shell settings get secure $setting.Key).Trim() -ne $setting.Value) {
+            Invoke-Adb shell settings put secure $setting.Key $setting.Value | Out-Null
+            Write-Host "Set the device's $($setting.Key) to $($setting.Value)."
+        }
+    }
+}
+
+function Initialize-AndroidDevice {
+    $devices = Get-AndroidDevices
+
+    if ($devices.Count -gt 1) {
+        throw "More than one Android device is connected, so adb would not know which one to use:`n$($devices -join "`n")"
+    }
+
+    if ($devices.Count -eq 1) {
+        Disable-AndroidSystemSheets
+        return
+    }
+
+    $emulator = Join-Path $script:androidSdk 'emulator\emulator.exe'
+
+    # Newer emulators mix INFO lines into -list-avds, while an AVD name has no spaces.
+    $avd = (& $emulator -list-avds 2>$null) | Where-Object { $_ -and $_ -notmatch '\s' } | Select-Object -First 1
+
+    if (-not $avd) {
+        throw "No Android device is connected and $emulator lists no AVD to boot."
+    }
+
+    Write-Host "Booting the $avd emulator..."
+    Start-Process $emulator -ArgumentList '-avd', $avd | Out-Null
+
+    $deadline = (Get-Date).AddMinutes(5)
+
+    while ((Get-Date) -lt $deadline) {
+        if ((Get-AndroidDevices).Count -eq 1 -and (Invoke-Adb shell getprop sys.boot_completed).Trim() -eq '1') {
+            Disable-AndroidSystemSheets
+            return
+        }
+
+        Start-Sleep -Seconds 3
+    }
+
+    throw "The $avd emulator did not finish booting within 5 minutes."
+}
+
+function Get-AndroidVersion([string] $package) {
+    $match = [regex]::Match((Invoke-Adb shell dumpsys package $package), 'versionName=(\S+)')
+
+    if ($match.Success) {
+        $match.Groups[1].Value
+    }
+}
+
+function Get-CdRunId {
+    if ($CdRun -match 'runs/(\d+)') {
+        return $Matches[1]
+    }
+
+    if ($CdRun -match '^\d+$') {
+        return $CdRun
+    }
+
+    throw 'Pass the All CD run with -CdRun, as its id or any url of it.'
+}
+
+# With its prerelease_packages option, every job of a CD run that took the Bit packages of a Prerelease nuget packages
+# run leaves a "Bit packages" notice naming that run (.github/actions/use-prerelease-packages). No notice: nuget.org.
+function Get-BitPackagesSource([string] $runId) {
+    $notices = foreach ($jobId in gh api "repos/$repository/actions/runs/$runId/jobs?filter=all&per_page=100" --paginate --jq '.jobs[].id') {
+        gh api "repos/$repository/check-runs/$jobId/annotations" --jq '.[] | select(.title == "Bit packages") | .message'
+    }
+
+    $notices = @($notices | Sort-Object -Unique)
+
+    if ($notices.Count -eq 0) { 'nuget.org' } else { $notices -join '; ' }
+}
+
+function Install-AndroidApps {
+    $runId = Get-CdRunId
+
+    Initialize-Adb
+    Initialize-AndroidDevice
+
+    $aapt = Get-ChildItem (Join-Path $script:androidSdk 'build-tools') -Filter aapt2.exe -Recurse | Sort-Object FullName -Descending | Select-Object -First 1
+
+    $work = Join-Path ([IO.Path]::GetTempPath()) "test-platform-apks-$runId"
+    New-Item -ItemType Directory -Force $work | Out-Null
+
+    $token = (gh auth token) -join ''
+
+    # Every Android job uploads an artifact called android-bundle and a re-run job adds one more, so they are told apart by
+    # the package inside, and only the newest upload of each package counts.
+    $artifacts = gh api "repos/$repository/actions/runs/$runId/artifacts" --paginate --jq '.artifacts[] | select(.name == "android-bundle" and (.expired | not)) | "\(.id) \(.created_at)"'
+
+    $apks = foreach ($artifact in $artifacts) {
+        $id, $createdAt = $artifact -split ' '
+        $folder = Join-Path $work $id
+
+        if (-not (Test-Path $folder)) {
+            Write-Host "Downloading artifact $id..."
+            Invoke-WebRequest "https://api.github.com/repos/$repository/actions/artifacts/$id/zip" -Headers @{ Authorization = "Bearer $token" } -OutFile "$folder.zip"
+            Expand-Archive "$folder.zip" $folder -Force
+            Remove-Item "$folder.zip"
+        }
+
+        foreach ($apk in Get-ChildItem $folder -Filter *.apk -Recurse) {
+            $badging = [regex]::Match(((& $aapt.FullName dump badging $apk.FullName 2>$null) -join "`n"), "package: name='(?<package>[^']+)' versionCode='\d+' versionName='(?<version>[^']+)'")
+
+            [pscustomobject]@{ Package = $badging.Groups['package'].Value; Version = $badging.Groups['version'].Value; CreatedAt = [datetimeoffset] $createdAt; Path = $apk.FullName }
+        }
+    }
+
+    if (-not $apks) {
+        throw "Run $runId has no android-bundle artifact that has not expired."
+    }
+
+    $packages = @(Get-AndroidPackages)
+
+    foreach ($apk in $apks | Where-Object Package -In $packages | Group-Object Package | ForEach-Object { $_.Group | Sort-Object CreatedAt -Descending | Select-Object -First 1 }) {
+        Write-Host "Installing $($apk.Package) $($apk.Version)..."
+
+        $output = Invoke-Adb install -r -d $apk.Path
+
+        # A release build cannot replace one signed with another key, nor - on a user build - a newer one.
+        if ($output -match 'INSTALL_FAILED_UPDATE_INCOMPATIBLE|INSTALL_FAILED_VERSION_DOWNGRADE') {
+            Write-Host "  $($Matches[0]): uninstalling it first, which drops its data."
+            Invoke-Adb uninstall $apk.Package | Out-Null
+            $output = Invoke-Adb install $apk.Path
+        }
+
+        if ($output -match 'INSTALL_FAILED_INSUFFICIENT_STORAGE|not enough space') {
+            Write-Host "  $($Matches[0]): retrying with the low-storage limit lowered to 100 MB for this install."
+            Invoke-Adb shell settings put global sys_storage_threshold_max_bytes 104857600 | Out-Null
+
+            try {
+                $output = Invoke-Adb install -r -d $apk.Path
+
+                if ($output -match 'INSTALL_FAILED_INSUFFICIENT_STORAGE|not enough space') {
+                    Write-Host "  $($Matches[0]) again, with no room for both copies: uninstalling it first, which drops its data."
+                    Invoke-Adb uninstall $apk.Package | Out-Null
+                    $output = Invoke-Adb install $apk.Path
+                }
+            }
+            finally {
+                Invoke-Adb shell settings delete global sys_storage_threshold_max_bytes | Out-Null
+            }
+        }
+
+        if ($output -notmatch '(?m)^Success') {
+            throw "Installing $($apk.Path) failed:`n$output"
+        }
+    }
+
+    $failed = $false
+
+    foreach ($package in $packages) {
+        $installed = Get-AndroidVersion $package
+        $failed = $failed -or -not (Test-Version $installed)
+        Write-Host ("{0}: {1}" -f $package, $(if ($installed) { $installed } else { 'not installed' }))
+    }
+
+    if ($failed) {
+        exit 1
+    }
+}
+
+#endregion
+
+#region Chrome DevTools Protocol
+
+function Invoke-Cdp([string] $webSocketUrl, [string] $method, [hashtable] $parameters = @{}) {
+    $socket = [System.Net.WebSockets.ClientWebSocket]::new()
+    $cancellation = [System.Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds(30))
+
+    try {
+        $socket.ConnectAsync([uri] $webSocketUrl, $cancellation.Token).GetAwaiter().GetResult()
+
+        $request = [Text.Encoding]::UTF8.GetBytes((@{ id = 1; method = $method; params = $parameters } | ConvertTo-Json -Depth 10 -Compress))
+        $socket.SendAsync([ArraySegment[byte]]::new($request), [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cancellation.Token).GetAwaiter().GetResult()
+
+        $buffer = [byte[]]::new(64KB)
+
+        while ($true) {
+            $message = [IO.MemoryStream]::new()
+
+            do {
+                $received = $socket.ReceiveAsync([ArraySegment[byte]]::new($buffer), $cancellation.Token).GetAwaiter().GetResult()
+                $message.Write($buffer, 0, $received.Count)
+            } while (-not $received.EndOfMessage)
+
+            $response = [Text.Encoding]::UTF8.GetString($message.ToArray()) | ConvertFrom-Json -Depth 64
+
+            # Events carry no id; the answer to this call is the one with id 1.
+            if ($response.id -eq 1) {
+                return $response
+            }
+        }
+    }
+    finally {
+        $socket.Dispose()
+        $cancellation.Dispose()
+    }
+}
+
+function Get-CdpPage([int] $port, [int] $timeoutSeconds = 90) {
+    $deadline = (Get-Date).AddSeconds($timeoutSeconds)
+
+    while ((Get-Date) -lt $deadline) {
+        try {
+            # Parenthesized, since Invoke-RestMethod hands a json array down the pipeline as one object.
+            $page = (Invoke-RestMethod "http://localhost:$port/json/list" -TimeoutSec 5) | Where-Object type -eq 'page' | Select-Object -First 1
+
+            if ($page) {
+                return $page
+            }
+        }
+        catch {
+        }
+
+        Start-Sleep -Seconds 1
+    }
+
+    throw "Nothing on localhost:$port exposed a page over CDP within $timeoutSeconds seconds."
+}
+
+# The version the page shows in its nav panel, once it shows one. A navigation that replaces the page's context in the
+# meantime only fails one evaluation, so the question is simply asked again.
+function Wait-AppVersion([string] $webSocketUrl, [int] $timeoutSeconds = 120) {
+    $deadline = (Get-Date).AddSeconds($timeoutSeconds)
+
+    while ((Get-Date) -lt $deadline) {
+        try {
+            $value = (Invoke-Cdp $webSocketUrl 'Runtime.evaluate' @{ expression = "document.querySelector('.app-version')?.innerText?.trim() ?? ''"; returnByValue = $true }).result.result.value
+
+            if ($value) {
+                return $value
+            }
+        }
+        catch {
+        }
+
+        Start-Sleep -Seconds 1
+    }
+}
+
+# A headless Edge of its own - nothing cached, no service worker from an earlier visit - reads each web app's version.
+function Get-WebAppVersions {
+    $edge = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe" | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+    if (-not $edge) {
+        throw 'Microsoft Edge is not installed, and it is what reads the web apps'' versions.'
+    }
+
+    # Unique, so that no other run's folder name starts with it: the browser's processes are found by it below.
+    $userDataDir = Join-Path ([IO.Path]::GetTempPath()) "test-platform-edge-$([guid]::NewGuid().ToString('N'))"
+    # Port 0: Edge picks a free one and writes it to DevToolsActivePort in the profile folder. A fixed port may be held by
+    # a browser left from an earlier run, and Edge starts anyway, so whatever answered there would be that other browser,
+    # with its own cache and service workers.
+    Start-Process $edge -ArgumentList '--headless=new', '--remote-debugging-port=0', "--user-data-dir=`"$userDataDir`"", '--window-size=1440,900', '--no-first-run', 'about:blank'
+
+    try {
+        $port = $null
+        $endpoint = $null
+        $deadline = (Get-Date).AddSeconds(30)
+
+        while (-not $endpoint -and (Get-Date) -lt $deadline) {
+            try {
+                $port = (Get-Content (Join-Path $userDataDir 'DevToolsActivePort') -TotalCount 1 -ErrorAction Stop).Trim()
+                $endpoint = Invoke-RestMethod "http://localhost:$port/json/version" -TimeoutSec 5
+            }
+            catch {
+                Start-Sleep -Seconds 1
+            }
+        }
+
+        if (-not $endpoint) {
+            throw ($port ? "Headless Edge did not answer on its CDP port $port." : 'Headless Edge did not write its CDP port to DevToolsActivePort.')
+        }
+
+        foreach ($app in Get-WebApps) {
+            $target = (Invoke-Cdp $endpoint.webSocketDebuggerUrl 'Target.createTarget' @{ url = $app.Url }).result.targetId
+            $shown = Wait-AppVersion "ws://localhost:$port/devtools/page/$target"
+            Invoke-Cdp $endpoint.webSocketDebuggerUrl 'Target.closeTarget' @{ targetId = $target } | Out-Null
+
+            [pscustomobject]@{ App = $app.App; Url = $app.Url; Version = $shown }
+        }
+    }
+    finally {
+        # Edge relaunches itself, so the process Start-Process returned is not the browser; the profile folder is in
+        # the command line of every process that is.
+        Get-CimInstance Win32_Process -Filter "Name = 'msedge.exe'" | Where-Object CommandLine -like "*$userDataDir*" |
+            ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+        Start-Sleep -Seconds 1
+        Remove-Item $userDataDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
+#endregion
+
+#region Windows
+
+# Every Client.Windows app starts WebView2 with --remote-debugging-port=9222, so only one of them may run while one is
+# driven over CDP - a leftover instance would be the one answering. /T takes its WebView2 processes along.
+function Stop-WindowsApps {
+    $deadline = (Get-Date).AddSeconds(30)
+
+    do {
+        foreach ($process in Get-Process | Where-Object { $_.ProcessName -like '*.Client.Windows' }) {
+            taskkill /PID $process.Id /T /F 2>&1 | Out-Null
+        }
+
+        Start-Sleep -Seconds 1
+    }
+    while ((Get-NetTCPConnection -LocalPort 9222 -State Listen -ErrorAction SilentlyContinue) -and (Get-Date) -lt $deadline)
+}
+
+function Get-CdpOwner([int] $port) {
+    $listener = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+
+    if ($listener) {
+        $webView = Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"
+        (Get-Process -Id $webView.ParentProcessId -ErrorAction SilentlyContinue).ProcessName
+    }
+}
+
+function Update-WindowsApps {
+    $failed = $false
+
+    foreach ($app in Get-WindowsApps) {
+        if (-not (Test-Path $app.Exe)) {
+            Write-Host "$($app.Id): not installed. Install it from its feed's Setup.exe first."
+            $failed = $true
+            continue
+        }
+
+        $before = Get-ProductVersion $app.Exe
+
+        if ((Test-Version $before) -and -not $Force) {
+            Write-Host "$($app.Id): already at $before."
+            continue
+        }
+
+        Write-Host "$($app.Id): at $before, opening it..."
+
+        Stop-WindowsApps
+        Start-Process $app.Exe -WindowStyle Minimized
+
+        # The version button runs ForceUpdate: Velopack downloads the release and restarts the app into it.
+        $name = [IO.Path]::GetFileNameWithoutExtension($app.Exe)
+        $deadline = (Get-Date).AddMinutes(10)
+        $tapped = $false
+
+        while (-not (Test-Version (Get-ProductVersion $app.Exe)) -and (Get-Date) -lt $deadline) {
+            if (-not $tapped -and (Get-CdpOwner 9222) -eq $name) {
+                try {
+                    $page = Get-CdpPage 9222 5
+                    $shown = Wait-AppVersion $page.webSocketDebuggerUrl 5
+
+                    if ($shown) {
+                        Write-Host "  its nav panel shows $shown, tapping it."
+                        Invoke-Cdp $page.webSocketDebuggerUrl 'Runtime.evaluate' @{ expression = "document.querySelector('.app-version').click()" } | Out-Null
+                        $tapped = $true
+                    }
+                }
+                catch {
+                }
+            }
+
+            Start-Sleep -Seconds 5
+        }
+
+        Stop-WindowsApps
+
+        $after = Get-ProductVersion $app.Exe
+
+        if (Test-Version $after) {
+            Write-Host "$($app.Id): now at $after."
+        }
+        else {
+            Write-Host "$($app.Id): still at $after after 10 minutes."
+            $failed = $true
+        }
+    }
+
+    if ($failed) {
+        exit 1
+    }
+}
+
+#endregion
+
+#region E2E
+
+# A remote Playwright server refuses a client of another version, and then every test of the stage fails at connect.
+# Its WebSocket upgrade already says so: 428 with the two versions, instead of 101.
+function Test-RemotePlaywright([string] $endpoint) {
+    $packages = Get-Content (Join-Path $repositoryRoot 'src\Templates\Boilerplate\Bit.Boilerplate\src\Directory.Packages.props') -Raw
+    $version = [regex]::Match($packages, 'Include="Microsoft\.Playwright\.MSTest\.v4" Version="(?<version>[^"]+)"').Groups['version'].Value
+
+    $client = [Net.Http.HttpClient]::new()
+    $client.Timeout = [TimeSpan]::FromSeconds(10)
+
+    try {
+        $request = [Net.Http.HttpRequestMessage]::new('GET', ($endpoint -replace '^ws', 'http'))
+        $request.Headers.Connection.Add('Upgrade')
+        $request.Headers.Upgrade.ParseAdd('websocket')
+        $request.Headers.Add('Sec-WebSocket-Version', '13')
+        $request.Headers.Add('Sec-WebSocket-Key', [Convert]::ToBase64String([Guid]::NewGuid().ToByteArray()))
+        $request.Headers.TryAddWithoutValidation('User-Agent', "Playwright/$version (x64; windows 10.0) CSharp/11.0") | Out-Null
+
+        $response = $client.Send($request, [Net.Http.HttpCompletionOption]::ResponseHeadersRead)
+
+        if ([int] $response.StatusCode -eq 101) {
+            return $null
+        }
+
+        $banner = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult() -split "`n" | Where-Object { $_ -match 'server version' } | ForEach-Object { ($_ -replace '[║\s-]+', ' ').Trim() }
+
+        "the Playwright server at $endpoint refuses a $version client ($([int] $response.StatusCode)$(if ($banner) { ", $banner" })). Restart it with the command in .runsettings."
+    }
+    catch {
+        "nothing answers at $endpoint. Start the Playwright server on that machine with the command in .runsettings."
+    }
+    finally {
+        $client.Dispose()
+    }
+}
+
+function Invoke-E2EStages {
+    $runTests = Get-Content (Join-Path $e2eProject 'RunTests.bat') -Raw
+    $remoteEndpoint = [regex]::Match($runTests, 'set PLAYWRIGHT_SERVER_ENDPOINT=(?<endpoint>\S+)').Groups['endpoint'].Value
+
+    $stages = @{
+        'web-chromium' = @{ Category = 'Web'; Remote = $true; Browser = $null }
+        'web-webkit' = @{ Category = 'Web'; Remote = $true; Browser = 'webkit' }
+        'web-firefox' = @{ Category = 'Web'; Remote = $false; Browser = 'firefox' }
+        'android' = @{ Category = 'Android'; Remote = $false; Browser = $null }
+        'windows' = @{ Category = 'Windows'; Remote = $false; Browser = $null }
+        'api' = @{ Category = 'Api'; Remote = $false; Browser = $null }
+    }
+
+    Push-Location $e2eProject
+    $nugetPackages = $env:NUGET_PACKAGES
+
+    try {
+        $results = Join-Path $e2eProject 'TestResults'
+        New-Item -ItemType Directory -Force $results | Out-Null
+        $buildArguments = @()
+
+        if ($PrereleasePackages) {
+            $lab = Join-Path ([IO.Path]::GetTempPath()) 'test-platform-e2e'
+            $feed = Join-Path $lab 'feed'
+            $env:NUGET_PACKAGES = Join-Path $lab 'packages'
+            Remove-Item $feed -Recurse -Force -ErrorAction SilentlyContinue
+            Get-ChildItem $env:NUGET_PACKAGES -Directory -Filter 'bit.*' -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
+            New-Item -ItemType Directory -Force $feed | Out-Null
+            Add-PrereleasePackages $feed
+            Set-BitUnderTestFeed $lab $feed
+
+            dotnet restore --nologo -v q --configfile (Join-Path $lab 'nuget.config') > (Join-Path $results 'restore.log')
+
+            if ($LASTEXITCODE -ne 0) {
+                Select-String -Path (Join-Path $results 'restore.log') -Pattern ': error ' | ForEach-Object Line | Select-Object -Unique | Write-Host
+                throw 'Boilerplate.Tests.E2E does not restore with the prerelease packages.'
+            }
+
+            $buildArguments = @('--no-restore')
+        }
+
+        # Into a file: a warm build's warnings run to hundreds of lines.
+        Write-Host 'Building Boilerplate.Tests.E2E...'
+        dotnet build --nologo -v q -p:UseSharedCompilation=false @buildArguments > (Join-Path $results 'build.log')
+
+        if ($LASTEXITCODE -ne 0) {
+            Select-String -Path (Join-Path $results 'build.log') -Pattern ': error ' | ForEach-Object Line | Select-Object -Unique | Write-Host
+            throw 'Boilerplate.Tests.E2E does not build.'
+        }
+
+        # One sign-in first. Every test that needs the global admin signs in again after a failed attempt, and a wrong
+        # password repeated that often locks the live account out for everyone.
+        if (-not $SkipPreflight) {
+            Write-Host 'Pre-flight: signing the global admin in once...'
+            dotnet test --no-build --filter 'FullyQualifiedName~GlobalAdminTwoFactorCodeTests' > (Join-Path $results 'preflight.log')
+
+            if ($LASTEXITCODE -ne 0) {
+                Select-String -Path (Join-Path $results 'preflight.log') -Pattern 'Exception: |Assert' | Select-Object -First 3 | ForEach-Object { $_.Line.Trim() } | Write-Host
+                throw 'The global admin cannot sign in with this project''s user secrets, so no stage was started. Fix GlobalAdminEmail, GlobalAdminPassword or GlobalAdminAuthenticatorKey first.'
+            }
+        }
+
+        $summary = foreach ($name in $Stage) {
+            $settings = $stages[$name]
+
+            if ($settings.Remote) {
+                $problem = Test-RemotePlaywright $remoteEndpoint
+
+                if ($problem) {
+                    Write-Host "$name skipped: $problem"
+                    [pscustomobject]@{ Stage = $name; Outcome = "skipped: $problem"; Log = $null }
+                    continue
+                }
+            }
+
+            if ($settings.Browser -eq 'firefox') {
+                # Idempotent: downloads the Firefox build this Playwright version drives only when it is missing.
+                # Searched for rather than spelled out, since the target framework moves with every .NET upgrade.
+                $playwrightScript = Get-ChildItem (Join-Path $e2eProject 'bin\Debug') -Filter playwright.ps1 -Recurse | Select-Object -First 1
+                pwsh -NoProfile $playwrightScript.FullName install firefox | Out-Host
+            }
+
+            $env:PLAYWRIGHT_SERVER_ENDPOINT = if ($settings.Remote) { $remoteEndpoint } else { $null }
+            $env:BROWSER = $settings.Browser
+
+            # The suite runs adb by name.
+            if ($settings.Category -eq 'Android') {
+                Initialize-Adb
+                $env:ANDROID_HOME = $script:androidSdk
+                $env:PATH = "$(Join-Path $script:androidSdk 'platform-tools');$env:PATH"
+
+                if ((Get-AndroidDevices).Count -eq 1) {
+                    Disable-AndroidSystemSheets
+                }
+            }
+
+            $testFilter = "TestCategory=$($settings.Category)" + $(if ($Filter) { "&$Filter" })
+
+            # Timestamped, so re-running one failed test keeps the full run's log and TRX next to it.
+            $runName = '{0}-{1:yyyyMMdd-HHmmss}' -f $name, (Get-Date)
+            $log = Join-Path $results "$runName.log"
+
+            Write-Host "$name started at $(Get-Date -Format 'HH:mm:ss'), log: $log"
+
+            $process = Start-Process dotnet -ArgumentList 'test', '--no-build', '--filter', "`"$testFilter`"" -NoNewWindow -PassThru -RedirectStandardOutput $log -RedirectStandardError "$log.err"
+
+            if (-not $process.WaitForExit([TimeSpan]::FromMinutes($TimeoutMinutes))) {
+                taskkill /PID $process.Id /T /F 2>&1 | Out-Null
+                $outcome = "timed out after $TimeoutMinutes minutes"
+            }
+            else {
+                $outcome = switch ($process.ExitCode) { 0 { 'passed' } 2 { 'failed' } 8 { 'no test matched' } default { "exited with $_" } }
+            }
+
+            # Every stage writes TestResults.trx, so each one's is kept under its own name.
+            $trx = Join-Path $results 'TestResults.trx'
+
+            if (Test-Path $trx) {
+                Move-Item $trx (Join-Path $results "$runName.trx") -Force
+            }
+
+            $counts = (Select-String -Path $log -Pattern '^\s*(total|failed|succeeded|skipped): \d+' | ForEach-Object { $_.Line.Trim() }) -join ', '
+            Write-Host "$name $outcome at $(Get-Date -Format 'HH:mm:ss'). $counts"
+
+            [pscustomobject]@{ Stage = $name; Outcome = $outcome; Counts = $counts; Log = $log }
+        }
+
+        $summary | Format-Table -AutoSize -Wrap | Out-String -Width 220 | Write-Host
+
+        if ($summary | Where-Object Outcome -ne 'passed') {
+            exit 1
+        }
+    }
+    finally {
+        $env:NUGET_PACKAGES = $nugetPackages
+        Pop-Location
+    }
+}
+
+#endregion
+
+#region MCP
+
+function Invoke-BitMcp([string] $version, [string] $method, [string] $parameters = '{}') {
+    $query = @($(if ($version) { "v=$version" }), $(if ($AllLibraries) { 'libraries=all' })) | Where-Object { $_ }
+    $endpoint = 'https://bitplatform.dev/mcp' + $(if ($query) { '?' + ($query -join '&') })
+    $headers = @{ Accept = 'application/json, text/event-stream' }
+
+    $initialize = Invoke-WebRequest $endpoint -Method Post -ContentType 'application/json' -Headers $headers -TimeoutSec 120 `
+        -Body '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test-platform","version":"1.0"}}}'
+
+    $headers['MCP-Protocol-Version'] = '2025-06-18'
+    $session = $initialize.Headers['Mcp-Session-Id'] | Select-Object -First 1
+
+    if ($session) {
+        $headers['Mcp-Session-Id'] = $session
+    }
+
+    try {
+        Invoke-WebRequest $endpoint -Method Post -ContentType 'application/json' -Headers $headers -TimeoutSec 60 -Body '{"jsonrpc":"2.0","method":"notifications/initialized"}' | Out-Null
+
+        $answer = Invoke-WebRequest $endpoint -Method Post -ContentType 'application/json' -Headers $headers -TimeoutSec 600 `
+            -Body "{`"jsonrpc`":`"2.0`",`"id`":2,`"method`":`"$method`",`"params`":$parameters}"
+
+        [pscustomobject]@{ Server = (Read-JsonRpc $initialize).result.serverInfo; Response = Read-JsonRpc $answer }
+    }
+    finally {
+        if ($session) {
+            try { Invoke-WebRequest $endpoint -Method Delete -Headers $headers -TimeoutSec 30 | Out-Null } catch { }
+        }
+    }
+}
+
+# Streamable HTTP answers with plain json, or with an event stream whose data lines carry it.
+function Read-JsonRpc($response) {
+    $content = if ($response.Content -is [byte[]]) { [Text.Encoding]::UTF8.GetString($response.Content) } else { $response.Content }
+    $data = ($content -split "`r?`n" | Where-Object { $_.StartsWith('data: ') } | ForEach-Object { $_.Substring(6) }) -join ''
+
+    $(if ($data) { $data } else { $content }) | ConvertFrom-Json -Depth 64
+}
+
+#endregion
+
+#region Dev container
+
+function Get-DevContainerIds([string] $folder) {
+    $wanted = [IO.Path]::GetFullPath($folder).TrimEnd('\')
+
+    docker ps -a --format '{{.ID}}|{{.Label "devcontainer.local_folder"}}' | ForEach-Object {
+        $id, $local = $_ -split '\|', 2
+
+        if ($local -and [IO.Path]::GetFullPath($local).TrimEnd('\') -ieq $wanted) {
+            $id
+        }
+    }
+}
+
+function Remove-DevContainer([string] $folder) {
+    foreach ($id in Get-DevContainerIds $folder) {
+        $image = docker inspect $id --format '{{.Config.Image}}'
+        $volumes = (docker inspect $id --format '{{range .Mounts}}{{if eq .Type "volume"}}{{.Name}} {{end}}{{end}}') -split ' ' | Where-Object { $_ }
+
+        docker rm -f -v $id | Out-Null
+
+        foreach ($volume in $volumes) {
+            docker volume rm $volume 2>&1 | Out-Null
+        }
+
+        if ($image -like 'vsc-*') {
+            docker rmi $image 2>&1 | Out-Null
+        }
+
+        Write-Host "Removed the dev container $($id.Substring(0, 12)), its volumes and its image."
+    }
+}
+
+function Write-BitSteps([string] $log, [string] $after) {
+    $lines = Get-Content $log -Encoding utf8
+    $start = if ($after) { [Array]::FindIndex($lines, [Predicate[string]] { param($line) $line -match [regex]::Escape($after) }) } else { 0 }
+
+    $lines | Select-Object -Skip ([Math]::Max($start, 0)) |
+        ForEach-Object { $_ -replace '^\[[^\]]+\]\s?', '' } |
+        Where-Object { $_ -match "^\s+[✓✗!-]\s|is ready in|Tool 'bit\.cli'" } |
+        ForEach-Object { Write-Host $_.TrimEnd() }
+}
+
+function Assert-DockerLinux {
+    if ((docker version --format '{{.Server.Os}}' 2>$null) -ne 'linux') {
+        throw 'Docker must be running with Linux containers.'
+    }
+}
+
+function Install-BitUnderTest([string] $lab) {
+    $tools = Join-Path $lab 'tools'
+    $feed = Join-Path $lab 'feed'
+    $source = Join-Path $lab 'source'
+    New-Item -ItemType Directory -Force $tools, $feed | Out-Null
+    $templateArguments = @()
+
+    if ($PrereleasePackages -and -not $Sha) {
+        throw '-PrereleasePackages takes the template from the commit, so it needs -Sha.'
+    }
+
+    if ($Sha) {
+        Write-Host "Packing bit from $Sha..."
+        git -C $repositoryRoot fetch --quiet origin 2>&1 | Out-Null
+        git -C $repositoryRoot worktree add --detach $source $Sha 2>&1 | Out-Null
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "$Sha isn't a commit of this repository."
+        }
+
+        $cliProject = 'src\Toolings\Cli\Bit.Cli\Bit.Cli.csproj', 'src\Cli\Bit.Cli\Bit.Cli.csproj' | ForEach-Object { Join-Path $source $_ } | Where-Object { Test-Path $_ } | Select-Object -First 1
+        dotnet pack $cliProject -c Release -o $feed -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -nologo -v q > (Join-Path $lab 'pack.log')
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "bit doesn't pack from $Sha; see $(Join-Path $lab 'pack.log')."
+        }
+
+        dotnet tool install Bit.Cli --tool-path $tools --add-source $feed --version 0.0.0 | Out-Null
+        $templateArguments = '--template-package', (Join-Path $source 'src\Templates\Boilerplate\Bit.Boilerplate')
+
+        if ($PrereleasePackages) {
+            Add-PrereleasePackages $feed
+        }
+    }
+    else {
+        Write-Host 'Installing bit from nuget.org...'
+        dotnet tool install Bit.Cli --tool-path $tools --version 10.7.0 | Out-Null
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        throw 'bit could not be installed.'
+    }
+
+    $bit = Join-Path $tools ($IsWindows ? 'bit.exe' : 'bit')
+    Write-Host "Testing $((& $bit --version) | Select-Object -Last 1)"
+
+    [pscustomobject]@{ Path = $bit; TemplateArguments = $templateArguments }
+}
+
+function Add-PrereleasePackages([string] $feed) {
+    $runs = gh run list -R $repository --workflow prerelease.nuget.org.yml --limit 100 --json databaseId,headBranch,headSha | ConvertFrom-Json
+    $artifact = (gh api "repos/$repository/actions/artifacts?name=nupkg-files&per_page=100" | ConvertFrom-Json).artifacts |
+        Where-Object { -not $_.expired -and $_.workflow_run.id -in $runs.databaseId } |
+        Sort-Object { [datetimeoffset]$_.created_at } -Descending |
+        Select-Object -First 1
+    $run = $runs | Where-Object databaseId -eq $artifact.workflow_run.id
+
+    if (-not $run) {
+        throw 'No Prerelease nuget packages run has an unexpired nupkg-files artifact.'
+    }
+
+    $download = Join-Path $feed 'prerelease'
+    gh run download $run.databaseId -R $repository --name nupkg-files --dir $download
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "The nupkg-files artifact of Prerelease nuget packages run $($run.databaseId) could not be downloaded."
+    }
+
+    Get-ChildItem $download -Filter *.nupkg | Where-Object Name -notlike 'Bit.Cli.*' | Move-Item -Destination $feed
+    Remove-Item $download -Recurse -Force
+    Write-Host "Bit packages from Prerelease nuget packages run $($run.databaseId), $($run.headBranch) at $($run.headSha.Substring(0, 9))."
+}
+
+function Use-PrereleaseFeedForNewProjects([string] $lab) {
+    Set-BitUnderTestFeed (Join-Path $lab 'source\src\Templates\Boilerplate\Bit.Boilerplate') (Join-Path $lab 'feed')
+    $env:NUGET_PACKAGES = Join-Path $lab 'packages'
+}
+
+function Set-BitUnderTestFeed([string] $project, [string] $feed) {
+    $pattern = $PrereleasePackages ? 'Bit.*' : 'Bit.Cli'
+
+    Set-Content (Join-Path $project 'nuget.config') -Encoding utf8 -Value @"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="bit-under-test" value="$feed" />
+  </packageSources>
+  <packageSourceMapping>
+    <packageSource key="bit-under-test">
+      <package pattern="$pattern" />
+    </packageSource>
+    <packageSource key="nuget.org">
+      <package pattern="*" />
+    </packageSource>
+  </packageSourceMapping>
+</configuration>
+"@
+}
+
+function New-BitProject([string] $lab, $bit, [string] $name, [string[]] $options = @(), [switch] $setup) {
+    Write-Host "Creating $name with bit new..."
+    $env:BIT_CLI_HOME = Join-Path $lab 'home'
+    $env:BIT_CLI_NO_UPDATE = '1'
+
+    Push-Location $lab
+
+    $templateArguments = $bit.TemplateArguments
+
+    try {
+        $setupArguments = $setup ? @('--no-tools', '--no-workloads', '--ide', 'none') : @('--no-setup')
+        & $bit.Path new $name --yes --no-open --no-trust @setupArguments @options @templateArguments *> (Join-Path $lab 'new.log')
+        $newExitCode = $LASTEXITCODE
+    }
+    finally {
+        Pop-Location
+        Remove-Item Env:BIT_CLI_HOME, Env:BIT_CLI_NO_UPDATE -ErrorAction SilentlyContinue
+    }
+
+    Write-BitSteps (Join-Path $lab 'new.log')
+
+    if ($newExitCode -ne 0) {
+        throw "bit new failed; see $(Join-Path $lab 'new.log')."
+    }
+
+    Join-Path $lab $name
+}
+
+function Remove-BitUnderTest([string] $lab) {
+    $source = Join-Path $lab 'source'
+
+    if (Test-Path $source) {
+        git -C $repositoryRoot worktree remove --force $source 2>&1 | Out-Null
+    }
+
+    Remove-Item (Join-Path $lab 'tools'), (Join-Path $lab 'feed'), $source, (Join-Path $lab 'home'), (Join-Path $lab 'packages') -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+function Invoke-DevContainerTest {
+    Assert-DockerLinux
+
+    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-devcontainer-{0:yyyyMMdd-HHmmss}' -f (Get-Date))
+    $feed = Join-Path $lab 'feed'
+    $project = Join-Path $lab 'DevApp'
+    New-Item -ItemType Directory -Force $lab | Out-Null
+
+    $outputEncoding = [Console]::OutputEncoding
+    [Console]::OutputEncoding = [Text.Encoding]::UTF8
+    $failures = [Collections.Generic.List[string]]::new()
+    $nugetPackages = $env:NUGET_PACKAGES
+
+    try {
+        $bit = Install-BitUnderTest $lab
+
+        if ($PrereleasePackages) {
+            Use-PrereleaseFeedForNewProjects $lab
+        }
+
+        New-BitProject $lab $bit 'DevApp' | Out-Null
+
+        $mount = @()
+
+        if ($Sha) {
+            Set-BitUnderTestFeed $project '/feed'
+            $mount = '--mount', "type=bind,source=$($feed -replace '\\', '/'),target=/feed"
+        }
+
+        $upLog = Join-Path $lab 'up.log'
+        Write-Host "Bringing the dev container up at $(Get-Date -Format 'HH:mm:ss'), log: $upLog"
+        $started = [DateTimeOffset]::Now
+        npx -y '@devcontainers/cli' up --workspace-folder $project @mount *> $upLog
+        $result = Get-Content $upLog -Encoding utf8 | Where-Object { $_ -match '^\{"outcome"' } | Select-Object -Last 1 | ConvertFrom-Json -ErrorAction SilentlyContinue
+
+        Write-BitSteps $upLog 'Running the onCreateCommand'
+        Write-Host ('The dev container {0} after {1:mm\:ss}.' -f ($result.outcome -eq 'success' ? 'came up' : "didn't come up ($($result.outcome ?? 'no result'))"), ([DateTimeOffset]::Now - $started))
+
+        if ($result.outcome -ne 'success') {
+            $failures.Add("the dev container didn't come up; see $upLog")
+        }
+
+        if (Get-Content $upLog -Encoding utf8 | Where-Object { $_ -match '^\[[^\]]+\]\s+✗\s' }) {
+            $failures.Add('a step of bit setup failed')
+        }
+
+        if ($result.outcome -eq 'success') {
+            $doctorLog = Join-Path $lab 'doctor.log'
+            npx -y '@devcontainers/cli' exec --workspace-folder $project bit doctor *> $doctorLog
+            $doctorExitCode = $LASTEXITCODE
+
+            Get-Content $doctorLog -Encoding utf8 | Where-Object { $_ -match '^\s+[✓✗!-]\s' } | ForEach-Object { Write-Host $_.TrimEnd() }
+            Write-Host "bit doctor exited with $doctorExitCode."
+
+            if ($doctorExitCode -ne 0) {
+                $failures.Add("bit doctor found something missing; see $doctorLog")
+            }
+        }
+    }
+    finally {
+        [Console]::OutputEncoding = $outputEncoding
+        $env:NUGET_PACKAGES = $nugetPackages
+
+        if ($Keep) {
+            Write-Host "Kept the dev container of $project. Run npx @devcontainers/cli exec --workspace-folder $project <command> in it, and run this again without -Keep to start over."
+        }
+        else {
+            Remove-DevContainer $project
+            Remove-BitUnderTest $lab
+            Remove-Item $project -Recurse -Force -ErrorAction SilentlyContinue
+            Write-Host "Logs: $lab"
+        }
+    }
+
+    if ($failures.Count) {
+        $failures | ForEach-Object { Write-Host "Failed: $_" }
+        exit 1
+    }
+
+    Write-Host 'The dev container set itself up, and bit doctor found everything.'
+}
+
+#endregion
+
+#region Aspire containers
+
+function Get-AspireContainers([string[]] $names) {
+    $ids = docker ps -a --filter 'label=com.microsoft.developer.usvc-dev.persistent=true' --format '{{.ID}}'
+
+    if (-not $ids) {
+        return
+    }
+
+    docker inspect $ids --format '{{.Name}}|{{.Id}}|{{.Created}}|{{.State.StartedAt}}|{{.State.Status}}|{{range .Mounts}}{{if eq .Type "volume"}}{{.Name}} {{end}}{{end}}' | ForEach-Object {
+        $name, $id, $created, $startedAt, $status, $volumes = $_ -split '\|', 6
+
+        [pscustomobject]@{
+            Name = $name.TrimStart('/')
+            Id = $id.Substring(0, 12)
+            Created = $created
+            StartedAt = $startedAt
+            Status = $status
+            Volumes = @($volumes -split ' ' | Where-Object { $_ -and $_ -notmatch '^[0-9a-f]{64}$' } | Sort-Object)
+        }
+    } | Where-Object { -not $names -or $_.Name -in $names } | Sort-Object Name
+}
+
+function Get-IdleMinutes([string] $appHost) {
+    $call = [regex]::Match((Get-Content (Join-Path $appHost 'Program.cs') -Raw), 'UsePersistentContainers\((?:idleMinutes:\s*)?(?<minutes>\d*)\)')
+
+    if (-not $call.Success) {
+        throw "$appHost doesn't call UsePersistentContainers."
+    }
+
+    if ($call.Groups['minutes'].Value) {
+        return [int]$call.Groups['minutes'].Value
+    }
+
+    $default = Get-ChildItem $appHost -Recurse -Filter *.cs | Select-String 'UsePersistentContainers\(int idleMinutes = (?<minutes>\d+)\)' | Select-Object -First 1
+    [int]$default.Matches[0].Groups['minutes'].Value
+}
+
+function Start-AppHostRun([string] $appHost, [string] $aliveUrl, [string] $log) {
+    $started = [DateTimeOffset]::Now
+    $process = Start-Process dotnet -ArgumentList 'run', '--project', $appHost, '--no-build' -WorkingDirectory $appHost -RedirectStandardOutput $log -RedirectStandardError "$log.err" -PassThru -WindowStyle Hidden
+
+    while (([DateTimeOffset]::Now - $started).TotalMinutes -lt 15) {
+        Start-Sleep -Seconds 3
+
+        if ($process.HasExited) {
+            throw "dotnet run ended with $($process.ExitCode) before the app was up; see $log."
+        }
+
+        try {
+            if ((Invoke-WebRequest $aliveUrl -TimeoutSec 5 -SkipHttpErrorCheck).StatusCode -eq 200) {
+                return [pscustomobject]@{ Process = $process; Seconds = [int]([DateTimeOffset]::Now - $started).TotalSeconds }
+            }
+        }
+        catch {
+        }
+    }
+
+    Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+    throw "The app wasn't up 15 minutes after dotnet run started; see $log."
+}
+
+function Stop-AppHostRun($run, [string] $appHostName) {
+    Stop-Process -Id $run.Process.Id -Force
+    $deadline = (Get-Date).AddMinutes(1)
+
+    while ((Get-Process -Name $appHostName -ErrorAction SilentlyContinue) -and (Get-Date) -lt $deadline) {
+        Start-Sleep -Seconds 1
+    }
+}
+
+function Wait-ContainersRunning([string[]] $names) {
+    $deadline = (Get-Date).AddMinutes(3)
+
+    do {
+        $containers = @(Get-AspireContainers $names)
+
+        if (-not ($containers | Where-Object Status -ne 'running')) {
+            return $containers
+        }
+
+        Start-Sleep -Seconds 5
+    }
+    while ((Get-Date) -lt $deadline)
+
+    $containers
+}
+
+function Remove-AspireContainers([string[]] $names, [string] $appHostName) {
+    if (-not $names) {
+        return
+    }
+
+    $containers = @(Get-AspireContainers $names)
+
+    if (-not $containers) {
+        return
+    }
+
+    $keepers = Join-Path ([IO.Path]::GetTempPath()) 'aspire-containers-keeper'
+
+    foreach ($state in Get-ChildItem $keepers -Directory -ErrorAction SilentlyContinue) {
+        $recorded = Get-Content (Join-Path $state.FullName 'containers') -ErrorAction SilentlyContinue | ForEach-Object { $_.Substring(0, [Math]::Min(12, $_.Length)) }
+
+        if ($recorded | Where-Object { $_ -in $containers.Id }) {
+            $keeperPid = (Get-Content (Join-Path $state.FullName 'process') -Raw -ErrorAction SilentlyContinue) -split ' ' | Select-Object -First 1
+
+            if ($keeperPid) {
+                Stop-Process -Id ([int]$keeperPid) -Force -ErrorAction SilentlyContinue
+            }
+
+            Remove-Item $state.FullName -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    docker rm -f -v $containers.Id | Out-Null
+
+    foreach ($volume in $containers.Volumes | Where-Object { $_ -like "$($appHostName.ToLowerInvariant())-*" } | Sort-Object -Unique) {
+        docker volume rm $volume 2>&1 | Out-Null
+    }
+
+    Write-Host "Removed the containers, their volumes and their keeper."
+}
+
+function Invoke-AspireTest {
+    Assert-DockerLinux
+
+    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-aspire-{0:yyyyMMdd-HHmmss}' -f (Get-Date))
+    $appHostName = 'AspireApp.Server.AppHost'
+    New-Item -ItemType Directory -Force $lab | Out-Null
+
+    $outputEncoding = [Console]::OutputEncoding
+    [Console]::OutputEncoding = [Text.Encoding]::UTF8
+    $failures = [Collections.Generic.List[string]]::new()
+    $names = @()
+    $before = $null
+    $project = $null
+    $allBefore = @(docker ps -a --format '{{.Names}}')
+    $nugetPackages = $env:NUGET_PACKAGES
+
+    try {
+        $bit = Install-BitUnderTest $lab
+
+        if ($PrereleasePackages) {
+            Use-PrereleaseFeedForNewProjects $lab
+        }
+
+        $project = New-BitProject $lab $bit 'AspireApp' '--database', 'PostgreSQL', '--redis', 'true'
+        $appHost = Join-Path $project "src\Server\$appHostName"
+
+        $profiles = (Get-Content (Join-Path $project 'src\Server\AspireApp.Server.Web\Properties\launchSettings.json') -Raw | ConvertFrom-Json).profiles.PSObject.Properties.Value
+        $aliveUrl = (($profiles | Where-Object { $_.commandName -eq 'Project' -and $_.applicationUrl } | Select-Object -First 1).applicationUrl -split ';')[0].TrimEnd('/') + '/alive'
+        $idleMinutes = Get-IdleMinutes $appHost
+
+        Write-Host 'Building the app host...'
+        dotnet build $appHost -nologo -v q -p:UseSharedCompilation=false > (Join-Path $lab 'build.log')
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "The project doesn't build; see $(Join-Path $lab 'build.log')."
+        }
+
+        $before = @(Get-AspireContainers | ForEach-Object Name)
+
+        $first = Start-AppHostRun $appHost $aliveUrl (Join-Path $lab 'run1.log')
+        $names = @(Get-AspireContainers | Where-Object Name -notin $before | ForEach-Object Name)
+
+        if (-not $names) {
+            throw 'The first run started no persistent containers.'
+        }
+
+        $firstContainers = Wait-ContainersRunning $names
+        Write-Host "Run 1 was up in $($first.Seconds)s with $($names.Count) containers: $($names -join ', ')."
+        Stop-AppHostRun $first $appHostName
+
+        foreach ($container in Get-AspireContainers $names | Where-Object Status -ne 'running') {
+            $failures.Add("$($container.Name) is $($container.Status) once run 1 ended")
+        }
+
+        $second = Start-AppHostRun $appHost $aliveUrl (Join-Path $lab 'run2.log')
+        $secondContainers = Wait-ContainersRunning $names
+        Write-Host "Run 2 was up in $($second.Seconds)s."
+
+        foreach ($container in $firstContainers) {
+            $again = $secondContainers | Where-Object Name -eq $container.Name
+
+            if (-not $again -or $again.Id -ne $container.Id -or $again.Created -ne $container.Created) {
+                $failures.Add("run 2 re-created $($container.Name); its log says why: $(Join-Path $lab 'run2.log')")
+            }
+            elseif ($again.StartedAt -ne $container.StartedAt) {
+                $failures.Add("run 2 restarted $($container.Name)")
+            }
+        }
+
+        foreach ($extra in Get-AspireContainers | Where-Object Name -notin ($before + $names)) {
+            $failures.Add("run 2 started $($extra.Name), which run 1 didn't")
+        }
+
+        Stop-AppHostRun $second $appHostName
+        $idleSince = [DateTimeOffset]::Now
+        Write-Host "Waiting up to $($idleMinutes + 3) minutes for the containers to stop, from $($idleSince.ToString('HH:mm:ss'))..."
+
+        do {
+            Start-Sleep -Seconds 30
+            $running = @(Get-AspireContainers $names | Where-Object Status -eq 'running')
+        }
+        while ($running -and ([DateTimeOffset]::Now - $idleSince).TotalMinutes -lt $idleMinutes + 3)
+
+        $idle = [DateTimeOffset]::Now - $idleSince
+
+        if ($running) {
+            $failures.Add("$($running.Name -join ', ') still running $([int]$idle.TotalMinutes) minutes after the last run")
+        }
+        elseif ($idle.TotalMinutes -lt $idleMinutes - 1) {
+            $failures.Add("the containers stopped after $($idle.ToString('mm\:ss')), before the $idleMinutes idle minutes")
+        }
+        else {
+            Write-Host "They stopped $($idle.ToString('mm\:ss')) after the last run ended: $((Get-AspireContainers $names | ForEach-Object { "$($_.Name) $($_.Status)" }) -join ', ')."
+        }
+
+        $third = Start-AppHostRun $appHost $aliveUrl (Join-Path $lab 'run3.log')
+        $thirdContainers = Wait-ContainersRunning $names
+        Write-Host "Run 3 was up in $($third.Seconds)s."
+
+        foreach ($container in $firstContainers) {
+            $again = $thirdContainers | Where-Object Name -eq $container.Name
+
+            if (-not $again -or $again.Status -ne 'running') {
+                $failures.Add("run 3 didn't bring $($container.Name) back")
+            }
+            elseif (($again.Volumes -join ' ') -ne ($container.Volumes -join ' ')) {
+                $failures.Add("$($container.Name) came back on other volumes: $($again.Volumes -join ', ')")
+            }
+        }
+
+        Stop-AppHostRun $third $appHostName
+    }
+    finally {
+        [Console]::OutputEncoding = $outputEncoding
+        $env:NUGET_PACKAGES = $nugetPackages
+
+        if ($Keep) {
+            Write-Host "Kept $project and its containers."
+        }
+        else {
+            if (-not $names -and $null -ne $before) {
+                $names = @(Get-AspireContainers | Where-Object Name -notin $before | ForEach-Object Name)
+            }
+
+            Remove-AspireContainers $names $appHostName
+
+            foreach ($proxy in docker ps -a --format '{{.Names}}' | Where-Object { $_ -like 'tunnel-proxy-*' -and $_ -notin $allBefore }) {
+                docker rm -f $proxy | Out-Null
+            }
+
+            Remove-BitUnderTest $lab
+
+            if ($project) {
+                Remove-Item $project -Recurse -Force -ErrorAction SilentlyContinue
+            }
+
+            Write-Host "Logs: $lab"
+        }
+    }
+
+    if ($failures.Count) {
+        $failures | ForEach-Object { Write-Host "Failed: $_" }
+        exit 1
+    }
+
+    Write-Host 'Run 2 reused every container, they stopped once the app host sat idle, and run 3 brought them back on the same volumes.'
+}
+
+#endregion
+
+#region Agent instructions
+
+$agentScenariosFile = Join-Path $PSScriptRoot 'agent-scenarios.json'
+
+function Get-ClaudeCli {
+    $claude = Get-Command claude -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Source
+
+    if (-not $claude) {
+        $claude = Join-Path $HOME ($IsWindows ? '.local\bin\claude.exe' : '.local/bin/claude')
+    }
+
+    if (-not (Test-Path $claude)) {
+        throw 'Claude Code (claude) is not installed.'
+    }
+
+    $claude
+}
+
+function Get-ClaudeProjectFolder([string] $folder) {
+    Join-Path $HOME ".claude\projects\$($folder -replace '[^A-Za-z0-9]', '-')"
+}
+
+function Stop-FolderProcesses([string] $folder) {
+    Get-CimInstance Win32_Process |
+        Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -and $_.CommandLine.Contains($folder, [StringComparison]::OrdinalIgnoreCase) } |
+        ForEach-Object { taskkill /PID $_.ProcessId /T /F 2>&1 | Out-Null }
+}
+
+function Get-ChangedPaths([string] $folder, [string] $since) {
+    @(git -C $folder diff --name-only $since) + @(git -C $folder ls-files --others --exclude-standard) |
+        Where-Object { $_ -and $_ -notlike '.playwright-mcp/*' -and $_ -ne '.claude/settings.local.json' } |
+        Sort-Object -Unique
+}
+
+function Install-AgentFixture([string] $folder, $scenario, $scenarios) {
+    $git = @('-C', $folder, '-c', "user.name=$($scenarios.author.name)", '-c', "user.email=$($scenarios.author.email)")
+
+    if ($scenario.baseline) {
+        $paths = $scenarios.baselineRemoves | Where-Object { Test-Path (Join-Path $folder $_) }
+        git @git rm -rq @paths
+        git @git commit -q --amend --no-edit
+    }
+
+    $fixture = $scenario.fixture
+
+    if (-not $fixture) {
+        return
+    }
+
+    if ($fixture.branch) {
+        git -C $folder checkout -q -b $fixture.branch
+    }
+
+    foreach ($edit in $fixture.edits) {
+        $path = Join-Path $folder $edit.path
+        $text = [IO.File]::ReadAllText($path)
+        $lf = $text.Replace("`r`n", "`n")
+
+        if ($lf.IndexOf($edit.find, [StringComparison]::Ordinal) -lt 0) {
+            throw "The fixture of $($scenario.id) no longer matches $($edit.path): $(($edit.find -split "`n")[0])"
+        }
+
+        $changed = $lf.Replace($edit.find, $edit.replace)
+        [IO.File]::WriteAllText($path, $text.Contains("`r`n") ? $changed.Replace("`n", "`r`n") : $changed, [Text.UTF8Encoding]::new($false))
+    }
+
+    foreach ($file in $fixture.files) {
+        $path = Join-Path $folder $file.path
+        New-Item -ItemType Directory -Force (Split-Path $path) | Out-Null
+        [IO.File]::WriteAllText($path, $file.content, [Text.UTF8Encoding]::new($false))
+    }
+
+    git @git add -A
+    git @git commit -q -m $fixture.commit
+}
+
+function Set-AgentMemory([string] $folder, $scenario) {
+    if ($scenario.memory -eq 'none') {
+        return
+    }
+
+    $memory = Join-Path (Get-ClaudeProjectFolder $folder) 'memory'
+    New-Item -ItemType Directory -Force $memory | Out-Null
+    Set-Content (Join-Path $memory 'user-role.md') -Encoding utf8NoBOM -Value @'
+---
+name: user-role
+description: The user's role on this project is Developer
+metadata:
+  type: user
+---
+
+The user is a Developer on this project.
+'@
+    Set-Content (Join-Path $memory 'MEMORY.md') -Encoding utf8NoBOM -Value '- [User role](user-role.md) - Developer'
+}
+
+function ConvertTo-CallInput($value) {
+    ($value | ConvertTo-Json -Depth 32 -Compress) -replace '\\\\', '/'
+}
+
+function Read-AgentTranscript([string] $log) {
+    $calls = [Collections.Generic.List[object]]::new()
+    $texts = [Collections.Generic.List[string]]::new()
+    $session = $final = $cost = $null
+
+    foreach ($line in Get-Content $log -Encoding utf8) {
+        if (-not $line.StartsWith('{')) {
+            continue
+        }
+
+        try {
+            $event = $line | ConvertFrom-Json -Depth 64
+        }
+        catch {
+            continue
+        }
+
+        if ($event.session_id) {
+            $session = $event.session_id
+        }
+
+        if ($event.type -eq 'assistant') {
+            foreach ($use in $event.message.content | Where-Object type -eq 'tool_use') {
+                $calls.Add([pscustomobject]@{ Name = $use.name; Input = ConvertTo-CallInput $use.input })
+            }
+
+            if (-not $event.parent_tool_use_id) {
+                $event.message.content | Where-Object type -eq 'text' | ForEach-Object { $texts.Add($_.text) }
+            }
+        }
+        elseif ($event.type -eq 'result') {
+            $final = $event.result
+            $cost = $event.total_cost_usd
+        }
+    }
+
+    [pscustomobject]@{ Session = $session; Cost = $cost; Final = $final; Texts = @($texts); Calls = $calls }
+}
+
+function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [string] $session, [double] $budget, [string] $log) {
+    $arguments = @('-p', $prompt, '--model', $model, '--output-format', 'stream-json', '--verbose',
+        '--setting-sources', 'project,local', '--strict-mcp-config', '--mcp-config', (Join-Path $folder '.mcp.json'),
+        '--permission-mode', 'auto', '--permission-prompts', 'none', '--max-budget-usd', "$budget",
+        '--disallowedTools', 'mcp__aspire', 'Bash(aspire *)', 'PowerShell(aspire *)', 'Bash(git push *)', 'PowerShell(git push *)',
+        '--allowedTools', 'Read', 'Glob', 'Grep', 'Edit', 'Write', 'TodoWrite', 'Skill', 'Agent', 'WebFetch', 'WebSearch', 'ToolSearch',
+        'mcp__bitplatform', 'mcp__playwright', 'mcp__dev-mcp')
+
+    if ($session) {
+        $arguments += '--resume', $session
+    }
+
+    Push-Location $folder
+
+    try {
+        & (Get-ClaudeCli) @arguments *> $log
+    }
+    finally {
+        Pop-Location
+        Stop-FolderProcesses $folder
+    }
+
+    Read-AgentTranscript $log
+}
+
+function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
+    $scope = $check.handoff ? @($handoff) : @($turns)
+    $calls = @($scope | Where-Object { $_ } | ForEach-Object { $_.Calls })
+    $state = $check.handoff ? $states['handoff'] : $states[[int]($check.afterTurn ?? $turns.Count)]
+    $finals = @(@($scope | Where-Object { $_ } | ForEach-Object Final) + @($scope | Where-Object { $_ } | ForEach-Object Texts) + @($calls | Where-Object Name -eq 'ReportFindings' | ForEach-Object Input) | Where-Object { $_ })
+    $root = ($folder -replace '\\', '/').TrimEnd('/') + '/'
+
+    $usedSkill = {
+        param($name)
+        [bool]($calls | Where-Object { ($_.Name -eq 'Skill' -and $_.Input -like "*`"skill`":`"$name`"*") -or $_.Input -like "*agents/$name.agent.md*" -or $_.Input -like "*skills/$name/*" })
+    }
+
+    switch ($check.PSObject.Properties.Name | Where-Object { $_ -notin 'afterTurn', 'handoff', 'long' } | Select-Object -First 1) {
+        'skill' { return & $usedSkill $check.skill }
+        'noSkill' { return -not (& $usedSkill $check.noSkill) }
+        'called' { return [bool]($calls | Where-Object { $_.Name -like "*__$($check.called)" -or ($_.Name -in 'Bash', 'PowerShell', 'powershell', 'bash' -and $_.Input -like "*$($check.called)*") }) }
+        'mentions' { return [bool]($calls | Where-Object Input -like "*$($check.mentions)*") -or [bool]($finals -like "*$($check.mentions)*") }
+        'read' {
+            return [bool]($calls | Where-Object {
+                    $paths = [regex]::Matches($_.Input, '"(?:file_path|path)":"([^"]+)"') | ForEach-Object { $_.Groups[1].Value -replace "^$([regex]::Escape($root))", '' }
+                    ($paths | Where-Object { $_ -like $check.read }) -or $_.Input -like "*$($check.read)*"
+                })
+        }
+        'readChanged' {
+            $written = @($states[$turns.Count] | Where-Object { $_ -like $check.readChanged })
+            return [bool]($written -and ($calls | Where-Object { $callInput = $_.Input; $written | Where-Object { $callInput -like "*$_*" } }))
+        }
+        'changed' { return [bool]($state | Where-Object { $_ -like $check.changed }) }
+        'unchanged' { return -not ($state | Where-Object { $_ -like $check.unchanged }) }
+        'onlyChanged' { return -not ($state | Where-Object { $_ -notlike $check.onlyChanged }) }
+        'noChanges' { return -not $state }
+        'finalMatches' { return [bool]($finals -match $check.finalMatches) }
+        'fileLacks' {
+            $path = Join-Path $folder $check.fileLacks.path
+            return (Test-Path $path) -and -not ($check.fileLacks.patterns | Where-Object { (Get-Content $path -Raw).Contains($_) })
+        }
+    }
+
+    throw "Unknown check: $($check | ConvertTo-Json -Compress)"
+}
+
+function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
+    $scenarios = Get-Content $agentScenariosFile -Raw | ConvertFrom-Json -Depth 32
+    $scenario = $scenarios.scenarios | Where-Object id -eq $id
+    $results = Join-Path $lab "results\$id-$model"
+    $folder = Join-Path $lab "runs\$id-$model\$($scenarios.project)"
+    New-Item -ItemType Directory -Force $results | Out-Null
+
+    Get-ChildItem Env: | Where-Object { $_.Name -like 'CLAUDE*' -or $_.Name -eq 'OpenAI__ApiKey' } | ForEach-Object { Remove-Item "Env:$($_.Name)" }
+    [Console]::OutputEncoding = [Text.Encoding]::UTF8
+
+    robocopy (Join-Path $lab $scenarios.project) $folder /E /XD bin obj node_modules .vs /NFL /NDL /NJH /NJS /NC /NS /NP | Out-Null
+    Install-AgentFixture $folder $scenario $scenarios
+    Set-AgentMemory $folder $scenario
+    $since = git -C $folder rev-parse HEAD
+
+    $prompts = @($scenario.prompt) + @($scenario.turns | Where-Object { $_ }) + @($(if ($Long) { $scenario.longTurns | Where-Object { $_ } }))
+    $budget = $scenario.budget ?? 15
+    $turns = [Collections.Generic.List[object]]::new()
+    $states = @{}
+    $session = $null
+    $started = [DateTimeOffset]::Now
+
+    for ($i = 0; $i -lt $prompts.Count; $i++) {
+        $turn = Invoke-AgentTurn $folder $model $prompts[$i] $session $budget (Join-Path $results "turn$($i + 1).jsonl")
+        $session = $turn.Session ?? $session
+        $turns.Add($turn)
+        $states[$i + 1] = @(Get-ChangedPaths $folder $since)
+    }
+
+    $handoff = $null
+
+    if ($scenario.handoff) {
+        $handoffPrompts = @($scenario.handoff.prompt) + @($scenario.handoff.turns | Where-Object { $_ })
+        $handoff = [Collections.Generic.List[object]]::new()
+        $handoffSession = $null
+
+        for ($i = 0; $i -lt $handoffPrompts.Count; $i++) {
+            $turn = Invoke-AgentTurn $folder $model $handoffPrompts[$i] $handoffSession $budget (Join-Path $results "handoff$(if ($i) { $i + 1 }).jsonl")
+            $handoffSession = $turn.Session ?? $handoffSession
+            $handoff.Add($turn)
+        }
+
+        $states['handoff'] = @(Get-ChangedPaths $folder $since)
+    }
+
+    $checks = foreach ($check in $scenario.checks) {
+        $verdict = if ($check.long -and -not $Long) { 'skipped' }
+        elseif ($check.handoff -and -not $handoff) { 'skipped' }
+        elseif (Test-AgentCheck $check $folder $turns $handoff $states) { 'pass' }
+        else { 'fail' }
+
+        [pscustomobject]@{ Check = ($check | ConvertTo-Json -Compress -Depth 8); Verdict = $verdict }
+    }
+
+    [pscustomobject]@{
+        Scenario = $id
+        Model = $model
+        Minutes = [Math]::Round(([DateTimeOffset]::Now - $started).TotalMinutes, 1)
+        Cost = [Math]::Round((@($turns) + @($handoff) | Where-Object { $_ -and $_.Cost } | Measure-Object Cost -Sum).Sum, 2)
+        Checks = @($checks)
+        Changed = $states[$turns.Count]
+        Finals = @($turns | ForEach-Object Final) + @($(if ($handoff) { $handoff.Final }))
+    } | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $results 'result.json') -Encoding utf8NoBOM
+}
+
+function Invoke-AgentsTest {
+    $scenarios = Get-Content $agentScenariosFile -Raw | ConvertFrom-Json -Depth 32
+    $ids = $Scenario ? $Scenario : @($scenarios.scenarios | Where-Object { -not $_.baseline } | ForEach-Object id)
+
+    foreach ($id in $ids | Where-Object { $_ -notin $scenarios.scenarios.id }) {
+        throw "No scenario $id in $agentScenariosFile."
+    }
+
+    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-agents-{0:MMdd-HHmm}' -f (Get-Date))
+    New-Item -ItemType Directory -Force $lab | Out-Null
+    $nugetPackages = $env:NUGET_PACKAGES
+    $runs = foreach ($id in $ids) {
+        $definition = $scenarios.scenarios | Where-Object id -eq $id
+
+        foreach ($name in $Model) {
+            [pscustomobject]@{ Id = $id; Model = $name; Heavy = [bool]($definition.heavy -or ($Long -and $definition.longTurns)) }
+        }
+    }
+
+    try {
+        $bit = Install-BitUnderTest $lab
+
+        if ($PrereleasePackages) {
+            Use-PrereleaseFeedForNewProjects $lab
+        }
+
+        New-BitProject $lab $bit $scenarios.project $scenarios.options -setup | Out-Null
+        Write-Host "Running $($runs.Count) agent runs in $lab..."
+
+        $pwsh = (Get-Process -Id $PID).Path
+        $pending = [Collections.Generic.List[object]]::new([object[]] @($runs))
+        $running = [Collections.Generic.List[object]]::new()
+
+        while ($pending.Count -or $running.Count) {
+            foreach ($run in @($running | Where-Object { $_.Process.HasExited -or ([DateTimeOffset]::Now - $_.Started).TotalMinutes -gt 120 })) {
+                if (-not $run.Process.HasExited) {
+                    taskkill /PID $run.Process.Id /T /F 2>&1 | Out-Null
+                    Stop-FolderProcesses (Join-Path $lab "runs\$($run.Id)-$($run.Model)")
+                }
+
+                $running.Remove($run) | Out-Null
+                Write-Host "Done: $($run.Id) with $($run.Model) in $([int]([DateTimeOffset]::Now - $run.Started).TotalMinutes) min."
+            }
+
+            while ($running.Count -lt 3 -and ($run = $pending | Where-Object { -not $_.Heavy -or -not ($running | Where-Object Heavy) } | Select-Object -First 1)) {
+                $pending.Remove($run) | Out-Null
+                $arguments = @('-NoProfile', '-File', "`"$PSCommandPath`"", 'agents', '-Worker', '-Lab', "`"$lab`"", '-Scenario', $run.Id, '-Model', $run.Model) + @($(if ($Long) { '-Long' }))
+                $log = Join-Path $lab "worker-$($run.Id)-$($run.Model).log"
+                $process = Start-Process $pwsh -ArgumentList $arguments -PassThru -NoNewWindow -RedirectStandardOutput $log -RedirectStandardError "$log.err"
+                $running.Add(($run | Add-Member -PassThru Process $process | Add-Member -PassThru Started ([DateTimeOffset]::Now)))
+                Write-Host "Started: $($run.Id) with $($run.Model)."
+            }
+
+            Start-Sleep -Seconds 10
+        }
+
+        $results = Get-ChildItem (Join-Path $lab 'results') -Filter result.json -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Get-Content $_ -Raw | ConvertFrom-Json -Depth 8 }
+        $missing = $runs | Where-Object { -not ($results | Where-Object Scenario -eq $_.Id | Where-Object Model -eq $_.Model) }
+
+        $results | Sort-Object Scenario, Model | ForEach-Object {
+            [pscustomobject]@{
+                Scenario = $_.Scenario
+                Model = $_.Model
+                Passed = "$(@($_.Checks | Where-Object Verdict -eq 'pass').Count)/$(@($_.Checks | Where-Object Verdict -ne 'skipped').Count)"
+                Minutes = $_.Minutes
+                Cost = $_.Cost
+                Failed = (@($_.Checks | Where-Object Verdict -eq 'fail' | ForEach-Object Check) -join '; ')
+            }
+        } | Format-Table -AutoSize -Wrap | Out-String -Width 250 | Write-Host
+
+        foreach ($run in $missing) {
+            Write-Host "No result for $($run.Id) with $($run.Model); see $(Join-Path $lab "worker-$($run.Id)-$($run.Model).log.err")."
+        }
+
+        Write-Host "Transcripts, final messages and changed files: $(Join-Path $lab 'results')"
+
+        if ($missing -or ($results.Checks | Where-Object Verdict -eq 'fail')) {
+            $script:agentsFailed = $true
+        }
+    }
+    finally {
+        $env:NUGET_PACKAGES = $nugetPackages
+
+        if (-not $Keep) {
+            Get-ChildItem (Join-Path $lab 'runs') -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+                Stop-FolderProcesses $_.FullName
+                Remove-Item (Get-ClaudeProjectFolder (Join-Path $_.FullName $scenarios.project)) -Recurse -Force -ErrorAction SilentlyContinue
+                Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+            }
+
+            Remove-Item (Join-Path $lab $scenarios.project) -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-BitUnderTest $lab
+        }
+    }
+
+    if ($script:agentsFailed) {
+        exit 1
+    }
+}
+
+#endregion
+
+switch ($Command) {
+    'versions' {
+        $script:expectedVersion = Get-ExpectedVersion
+        Write-Host "Expected: $script:expectedVersion$(if ($Sha) { "+$Sha" })"
+
+        $rows = [Collections.Generic.List[object]]::new()
+
+        foreach ($site in Get-IisSites) {
+            $rows.Add((New-VersionRow 'IIS' "$(Split-Path $site.Path -Leaf) $($site.Url)" (Get-ProductVersion (Join-Path $site.Path $site.Dll))))
+        }
+
+        foreach ($app in Get-WindowsApps) {
+            $rows.Add((New-VersionRow 'Windows' $app.Id (Get-ProductVersion $app.Exe) '(not installed)'))
+        }
+
+        Initialize-Adb
+        $devices = Get-AndroidDevices
+
+        foreach ($package in Get-AndroidPackages) {
+            if ($devices.Count -eq 1) {
+                $rows.Add((New-VersionRow 'Android' $package (Get-AndroidVersion $package) '(not installed)'))
+            }
+            else {
+                $rows.Add((New-VersionRow 'Android' $package $null "($($devices.Count) devices connected, expected 1)"))
+            }
+        }
+
+        foreach ($app in Get-WebAppVersions) {
+            $rows.Add((New-VersionRow 'Web' "$($app.App) $($app.Url)" $app.Version '(no version in the nav panel within 2 minutes)'))
+        }
+
+        $mcp = Invoke-BitMcp '' 'tools/list'
+        $rows.Add((New-VersionRow 'MCP' "bitplatform.dev/mcp, $($mcp.Response.result.tools.Count) tools" $mcp.Server.version))
+
+        $rows | Format-Table -AutoSize -Wrap | Out-String -Width 220 | Write-Host
+
+        if ($CdRun) {
+            Write-Host "Bit packages of the CD run: $(Get-BitPackagesSource (Get-CdRunId))"
+        }
+
+        if ($rows | Where-Object OK -ne 'yes') {
+            exit 1
+        }
+    }
+
+    'android' {
+        $script:expectedVersion = Get-ExpectedVersion
+        Install-AndroidApps
+    }
+
+    'windows' {
+        $script:expectedVersion = Get-ExpectedVersion
+        Update-WindowsApps
+    }
+
+    'e2e' {
+        Invoke-E2EStages
+    }
+
+    'devcontainer' {
+        Invoke-DevContainerTest
+    }
+
+    'aspire' {
+        Invoke-AspireTest
+    }
+
+    'agents' {
+        $Scenario = @($Scenario | ForEach-Object { $_ -split ',' } | Where-Object { $_ })
+        $Model = @($Model | ForEach-Object { $_ -split ',' } | Where-Object { $_ })
+
+        if ($Worker) {
+            Invoke-AgentScenario $Lab $Scenario[0] $Model[0]
+        }
+        else {
+            Invoke-AgentsTest
+        }
+    }
+
+    'mcp' {
+        if ($Tool) {
+            $call = Invoke-BitMcp $McpVersion 'tools/call' (@{ name = $Tool; arguments = ($Arguments | ConvertFrom-Json -AsHashtable) } | ConvertTo-Json -Depth 20 -Compress)
+        }
+        else {
+            $call = Invoke-BitMcp $McpVersion 'tools/list'
+        }
+
+        Write-Host "$($call.Server.name) $($call.Server.version), ?v=$McpVersion"
+
+        if ($call.Response.error) {
+            Write-Host "JSON-RPC error: $($call.Response.error | ConvertTo-Json -Compress)"
+            exit 1
+        }
+
+        if ($Tool) {
+            if ($call.Response.result.isError) {
+                Write-Host 'The tool reported an error:'
+            }
+
+            $call.Response.result.content | Where-Object type -eq 'text' | ForEach-Object text
+
+            if ($call.Response.result.isError) {
+                exit 1
+            }
+        }
+        else {
+            Write-Host "$($call.Response.result.tools.Count) tools:"
+            $call.Response.result.tools | ForEach-Object name
+        }
+    }
+}

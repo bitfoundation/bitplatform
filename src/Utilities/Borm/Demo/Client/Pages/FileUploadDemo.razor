@@ -1,0 +1,132 @@
+﻿@page "/files"
+@implements IDisposable
+
+<PageTitle>File upload · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>File upload</h1>
+    <p class="bb-subtitle">
+        A property typed <code>IBrowserFile</code> - or a list of them - renders a file picker built on Blazor's
+        <code>InputFile</code>, keeps the chosen files on the model and lists them back with their sizes.
+        <code>Accept(...)</code> and <code>MaxFileSize(...)</code> become the picker's own <code>accept</code> filter
+        <em>and</em> rules: the filter is only a suggestion the user can switch off in the dialog, so the field judges
+        every file that actually arrives, and says what is wrong with it.
+    </p>
+</div>
+
+<div class="bb-note">
+    Pick a <code>.txt</code> as the CV, then a PDF over 2 MB: each is refused with its own reason. Attach four
+    documents and <code>Items(max: 3)</code> counts them like any other list. The chosen files are listed with their
+    sizes, and <em>Clear selection</em> takes them away. The files stay on the model until the submit, where the handler reads them with
+    <code>OpenReadStream()</code> as it would from <code>InputFile</code>. <code>[FileExtensions]</code> on the model
+    does what <code>Accept</code> does here. To send each file the moment it is chosen - with progress, cancel and
+    retry - and keep what the server returned instead, see <a href="rich-fields">uploads</a>.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Upload" ShowErrorSummary="true" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Received ✓</strong><pre>@_summary</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/files"
+
+<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Upload" ShowErrorSummary="true" />
+
+@code {
+    private readonly DocumentUpload _model = new();
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<DocumentUpload>()
+            .Title("Send us your documents")
+            .Field(x => x.Applicant, f => f.Required().Autocomplete("name"))
+            .Field(x => x.Resume, f => f
+                .Accept(".pdf,.doc,.docx")
+                .MaxFileSize(2 * 1024 * 1024)
+                .Required("Please attach your CV.")
+                .Help("PDF or Word, up to 2 MB."))
+            .Field(x => x.Attachments, f => f
+                .Accept("image/*,.pdf", multiple: true)
+                .MaxFileSize(5 * 1024 * 1024)
+                .Items(max: 3, message: "Attach at most three documents.")
+                .Help("Optional. Up to three images or PDFs, 5 MB each."))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private async Task HandleSubmit(BormState state)
+    {
+        // The files are read here, exactly as from Blazor's InputFile.
+        if (_model.Resume is { } cv)
+        {
+            await using var stream = cv.OpenReadStream(maxAllowedSize: 2 * 1024 * 1024);
+            // ... await storage.SaveAsync(cv.Name, stream) ...
+        }
+    }
+}
+""";
+
+    private readonly DocumentUpload _model = new();
+    private BormState _state = default!;
+    private bool _submitted;
+    private string _summary = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<DocumentUpload>()
+            .Title("Send us your documents")
+            .Field(x => x.Applicant, f => f.Required().Autocomplete("name"))
+            .Field(x => x.Resume, f => f
+                .Accept(".pdf,.doc,.docx")
+                .MaxFileSize(2 * 1024 * 1024)
+                .Required("Please attach your CV.")
+                .Help("PDF or Word, up to 2 MB."))
+            .Field(x => x.Attachments, f => f
+                .Accept("image/*,.pdf", multiple: true)
+                .MaxFileSize(5 * 1024 * 1024)
+                .Items(max: 3, message: "Attach at most three documents.")
+                .Help("Optional. Up to three images or PDFs, 5 MB each."))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        var lines = new List<string> { $"Applicant: {_model.Applicant}" };
+        if (_model.Resume is { } cv) lines.Add($"CV: {cv.Name} ({cv.Size:N0} bytes)");
+        foreach (var file in _model.Attachments)
+            lines.Add($"Attachment: {file.Name} ({file.Size:N0} bytes)");
+        _summary = string.Join(Environment.NewLine, lines);
+    }
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // The page created the state, so the page disposes it: an options load or async rule still in
+        // flight is cancelled instead of finishing against a form nobody is looking at.
+        _state.Dispose();
+    }
+}

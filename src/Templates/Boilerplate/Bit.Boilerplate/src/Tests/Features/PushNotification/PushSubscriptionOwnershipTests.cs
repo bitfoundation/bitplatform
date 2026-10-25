@@ -2,6 +2,13 @@
 using Microsoft.Extensions.Time.Testing;
 using Boilerplate.Shared.Features.PushNotification;
 using Boilerplate.Server.Api.Features.PushNotification;
+using System.Collections.Concurrent;
+using AdsPush;
+using AdsPush.Abstraction;
+using Hangfire;
+using Hangfire.Common;
+using Hangfire.States;
+using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Tests.Features.PushNotification;
 
@@ -12,8 +19,8 @@ namespace Boilerplate.Tests.Features.PushNotification;
 /// an ownership check breaks more than it protects, is written out at the check's absence in
 /// <c>PushNotificationService.Subscribe</c>.
 /// <para>
-/// What this file pins is the invariant that replaces it: <b>one row per device, one row per session, and the device's
-/// row always follows whoever is using the device.</b> Every test here drives a flow that an ownership check would have
+/// What this file pins is the invariant that replaces it: <b>one row per session, and a device's rows always follow
+/// whoever is using the device.</b> Every test here drives a flow that an ownership check would have
 /// broken - clearing tokens without signing out, signing in again, handing the device to somebody else - because those
 /// are the flows that were found to break, not hypotheticals.
 /// </para>
@@ -41,7 +48,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         // A per-run device id, so anything this test leaves behind is an inert orphan rather than a collision with
         // the shared development database.
@@ -51,11 +58,11 @@ public partial class PushSubscriptionOwnershipTests
         {
             Guid firstSessionId;
 
-            await using (var firstUserScope = server.WebApp.Services.CreateAsyncScope())
+            await using (var firstUserClient = server.CreateAppClient())
             {
-                await TestAccountUtils.CreateAndSignIn(server, firstUserScope, TestContext.CancellationToken);
+                await TestAccountUtils.CreateAndSignIn(firstUserClient, TestContext.CancellationToken);
 
-                await firstUserScope.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                await firstUserClient.GetController<IPushNotificationController>()
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "first-user-channel" }, TestContext.CancellationToken);
             }
 
@@ -63,13 +70,13 @@ public partial class PushSubscriptionOwnershipTests
             Assert.IsNotNull(afterFirstUser?.UserSessionId, "A subscribe made by a signed-in caller must bind the row to that caller's session, otherwise the rest of this test proves nothing.");
             firstSessionId = afterFirstUser.UserSessionId!.Value;
 
-            // A different account entirely, on the same device. IStorageService is registered per scope, so this scope
+            // A different account entirely, on the same device. Each client has a token store of its own, so this one
             // carries its own bearer token.
-            await using (var secondUserScope = server.WebApp.Services.CreateAsyncScope())
+            await using (var secondUserClient = server.CreateAppClient())
             {
-                await TestAccountUtils.CreateAndSignIn(server, secondUserScope, TestContext.CancellationToken);
+                await TestAccountUtils.CreateAndSignIn(secondUserClient, TestContext.CancellationToken);
 
-                await secondUserScope.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                await secondUserClient.GetController<IPushNotificationController>()
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "second-user-channel" }, TestContext.CancellationToken);
             }
 
@@ -82,19 +89,19 @@ public partial class PushSubscriptionOwnershipTests
             Assert.AreEqual("second-user-channel", afterSecondUser.PushChannel,
                 "Taking the row over must update the push channel too, otherwise the app keeps sending to a channel the device no longer listens on.");
 
-            await using (var countScope = server.WebApp.Services.CreateAsyncScope())
+            await using (var scopeApiAppCount = server.ApiApp.Services.CreateAsyncScope())
             {
-                var dbContext = countScope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var dbContext = scopeApiAppCount.ServiceProvider.GetRequiredService<AppDbContext>();
                 var rowCount = await dbContext.PushNotificationSubscriptions.CountAsync(s => s.DeviceId == deviceId, TestContext.CancellationToken);
 
                 Assert.AreEqual(1, rowCount,
-                    "One device, one row: DeviceId is unique, so a hand-over must re-point the existing row rather than insert a second one.");
+                    "The previous user is not on this device any more, so a hand-over must leave the device with the new user's row only.");
             }
         }
         finally
         {
-            await using var cleanupScope = server.WebApp.Services.CreateAsyncScope();
-            var dbContext = cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await using var scopeApiAppCleanup = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiAppCleanup.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
         }
     }
@@ -117,7 +124,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var deviceId = $"push-resignin-{Guid.NewGuid():N}";
 
@@ -126,11 +133,11 @@ public partial class PushSubscriptionOwnershipTests
             string email;
             Guid firstSessionId;
 
-            await using (var firstScope = server.WebApp.Services.CreateAsyncScope())
+            await using (var firstClient = server.CreateAppClient())
             {
-                (email, _) = await TestAccountUtils.CreateAndSignIn(server, firstScope, TestContext.CancellationToken);
+                (email, _) = await TestAccountUtils.CreateAndSignIn(firstClient, TestContext.CancellationToken);
 
-                await firstScope.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                await firstClient.GetController<IPushNotificationController>()
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-before" }, TestContext.CancellationToken);
             }
 
@@ -141,9 +148,9 @@ public partial class PushSubscriptionOwnershipTests
             // Step one of the real sequence, and the one that fails first: the tokens are gone, so the app reloads
             // ANONYMOUS and AppClientCoordinator propagates that state before anything else - which calls Subscribe
             // with no identity at all, for a device whose row is still bound to the surviving first session. A raw
-            // HttpClient because the DI one and the typed proxy both attach a bearer token through
+            // HttpClient because the app's own and its controllers both attach a bearer token through
             // AuthDelegatingHandler, and the whole point here is a request carrying none.
-            using (var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
+            using (var anonymousClient = server.CreateRawHttpClient())
             {
                 var anonymousPropagation = await anonymousClient.PostAsJsonAsync("api/v1/PushNotification/Subscribe",
                     new PushNotificationSubscriptionDto { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-anonymous" },
@@ -156,11 +163,11 @@ public partial class PushSubscriptionOwnershipTests
             Assert.IsNull(afterAnonymousPropagation?.UserSessionId,
                 "The device is no longer signed in, so its own anonymous re-subscribe has to detach the row from the session whose tokens are gone. Refusing it - which an ownership check does - leaves the row pointing at a dead session and the device without push.");
 
-            // A brand-new scope is a brand-new (empty) token store - exactly what clearing local storage and the cookie
+            // A brand-new client is a brand-new (empty) token store - exactly what clearing local storage and the cookie
             // leaves behind. Nothing signs the first session out, so its UserSession row survives on the server.
-            await using (var secondScope = server.WebApp.Services.CreateAsyncScope())
+            await using (var secondClient = server.CreateAppClient())
             {
-                var identityController = secondScope.ServiceProvider.GetRequiredService<IIdentityController>();
+                var identityController = secondClient.GetController<IIdentityController>();
 
                 await identityController.SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
 
@@ -168,10 +175,10 @@ public partial class PushSubscriptionOwnershipTests
                     capturedEmail => capturedEmail.Kind is CapturedEmailKind.Otp, TestContext.CancellationToken);
 
                 var tokens = await identityController.SignIn(new() { Email = email, Otp = captured.Token }, TestContext.CancellationToken);
-                await secondScope.ServiceProvider.GetRequiredService<AuthManager>().StoreTokens(tokens);
+                await secondClient.AuthManager.StoreTokens(tokens);
 
                 // This is the call the shipped client makes on the very first auth-state propagation after signing in.
-                await secondScope.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                await secondClient.GetController<IPushNotificationController>()
                     .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-after" }, TestContext.CancellationToken);
             }
 
@@ -182,16 +189,16 @@ public partial class PushSubscriptionOwnershipTests
                 "Signing in again on the same device must re-point that device's subscription at the new session, otherwise push keeps being addressed to a session whose tokens the user no longer has.");
             Assert.AreEqual("channel-after", afterSecondSignIn.PushChannel, "The re-subscribe must update the push channel too.");
 
-            await using var countScope = server.WebApp.Services.CreateAsyncScope();
-            var dbContext = countScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await using var scopeApiAppCount = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiAppCount.ServiceProvider.GetRequiredService<AppDbContext>();
 
             Assert.AreEqual(1, await dbContext.PushNotificationSubscriptions.CountAsync(s => s.DeviceId == deviceId, TestContext.CancellationToken),
                 "One device, one row - re-signing in must not accumulate a second one.");
         }
         finally
         {
-            await using var cleanupScope = server.WebApp.Services.CreateAsyncScope();
-            var dbContext = cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await using var scopeApiAppCleanup = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiAppCleanup.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
         }
     }
@@ -208,10 +215,10 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var pushNotificationController = scope.ServiceProvider.GetRequiredService<IPushNotificationController>();
+        await using var client = server.CreateAppClient();
+        var pushNotificationController = client.GetController<IPushNotificationController>();
 
         // A device token platform with no token at all.
         await Assert.ThrowsExactlyAsync<BadRequestException>(() => pushNotificationController.Subscribe(
@@ -220,7 +227,7 @@ public partial class PushSubscriptionOwnershipTests
         // The browser derives its channel from Endpoint + P256dh + Auth, and VapidSubscription.FromParameters accepts
         // nulls without complaining, so a partial triple would otherwise be stored as an undeliverable subscription.
         await Assert.ThrowsExactlyAsync<BadRequestException>(() => pushNotificationController.Subscribe(
-            new() { DeviceId = $"push-nochannel-{Guid.NewGuid():N}", Platform = "browser", Endpoint = "https://push.example/endpoint" }, TestContext.CancellationToken));
+            new() { DeviceId = $"push-nochannel-{Guid.NewGuid():N}", Platform = "browser", Endpoint = "https://fcm.googleapis.com/fcm/send/missing-keys" }, TestContext.CancellationToken));
     }
 
     /// <summary>
@@ -233,13 +240,13 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var deviceId = $"push-anon-{Guid.NewGuid():N}";
 
         try
         {
-            using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var anonymousClient = server.CreateRawHttpClient();
 
             for (var attempt = 1; attempt <= 2; attempt++)
             {
@@ -250,8 +257,8 @@ public partial class PushSubscriptionOwnershipTests
                 response.EnsureSuccessStatusCode();
             }
 
-            await using var scope = server.WebApp.Services.CreateAsyncScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var rows = await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ToArrayAsync(TestContext.CancellationToken);
 
@@ -260,37 +267,191 @@ public partial class PushSubscriptionOwnershipTests
         }
         finally
         {
-            await using var cleanupScope = server.WebApp.Services.CreateAsyncScope();
-            var dbContext = cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await using var scopeApiAppCleanup = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiAppCleanup.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
         }
     }
 
-    /// <summary>
-    /// "One row per device" is not a convention here, it is what <c>Subscribe</c>'s lookup, the ownership refusal
-    /// above and <c>DiagnosticController.PerformDiagnostic</c>'s by-device lookup all assume. Asserted against the
-    /// EF model rather than by inserting a colliding row, so it is provider accurate and writes nothing.
-    /// </summary>
     [TestMethod]
-    public async Task DeviceId_Should_BeUnique()
+    public async Task EveryAccountOnADevice_Should_KeepItsOwnRow_AndAPushAboutOneOfThem_Should_NameIt()
+    {
+        var sentPushes = new ConcurrentQueue<(string Channel, AdsPushBasicSendPayload Payload)>();
+
+        var adsPushSender = A.Fake<IAdsPushSender>();
+        A.CallTo(() => adsPushSender.BasicSendAsync(A<AdsPushTarget>._, A<string>._, A<AdsPushBasicSendPayload>._, A<CancellationToken>._))
+            .Invokes((AdsPushTarget _, string channel, AdsPushBasicSendPayload payload, CancellationToken _) => sentPushes.Enqueue((channel, payload)))
+            .Returns(Task.CompletedTask);
+
+        await using var server = new AppTestServer();
+
+        await server.Build().Start(TestContext.CancellationToken);
+
+        var deviceId = $"push-accounts-{Guid.NewGuid():N}";
+        var channel = $"channel-{Guid.NewGuid():N}";
+
+        try
+        {
+            await using var client = server.CreateAppClient();
+            var pushNotificationController = client.GetController<IPushNotificationController>();
+
+            async Task SubscribeTheDevice()
+            {
+                await pushNotificationController.Subscribe(new()
+                {
+                    DeviceId = deviceId,
+                    Platform = "fcmV1",
+                    PushChannel = channel,
+                    UserSessionIds = await client.AuthManager.GetDeviceSessionIds()
+                }, TestContext.CancellationToken);
+            }
+
+            var (firstEmail, firstUserId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+            await SubscribeTheDevice();
+
+            await TestAccountUtils.CreateAndAddAccount(client, TestContext.CancellationToken);
+            await SubscribeTheDevice();
+
+            var rows = await ReadSubscriptions(server, deviceId, TestContext.CancellationToken);
+
+            Assert.HasCount(2, rows, "Each account signed in on the device needs a row of its own, otherwise the accounts that are not active get no push.");
+            Assert.HasCount(2, rows.Select(row => row.UserSessionId).Distinct());
+
+            await using (var scope = server.ApiApp.Services.CreateAsyncScope())
+            {
+                Guid[] sessionIds = [.. rows.Select(row => row.UserSessionId!.Value)];
+
+                await scope.ServiceProvider.GetRequiredService<AppDbContext>().UserSessions
+                    .Where(us => sessionIds.Contains(us.Id))
+                    .ExecuteUpdateAsync(us => us.SetProperty(x => x.NotificationStatus, UserSessionNotificationStatus.Allowed), TestContext.CancellationToken);
+
+                List<Job> enqueuedJobs = [];
+                var backgroundJobClient = A.Fake<IBackgroundJobClient>();
+                A.CallTo(() => backgroundJobClient.Create(A<Job>._, A<IState>._))
+                    .Invokes((Job job, IState _) => enqueuedJobs.Add(job))
+                    .Returns("captured-job-id");
+
+                var pushNotificationService = ActivatorUtilities.CreateInstance<PushNotificationService>(scope.ServiceProvider, backgroundJobClient);
+
+                Assert.AreEqual(1, await pushNotificationService.RequestPush(new() { Message = "For the whole device" }, s => s.DeviceId == deviceId, TestContext.CancellationToken),
+                    "A device with several accounts has several rows, and still has to get the push once.");
+
+                Assert.AreEqual(1, await pushNotificationService.RequestPush(new() { Message = "For the first account", PageUrl = PageUrls.Settings, UserRelatedPush = true },
+                    s => s.UserSession!.UserId == firstUserId, TestContext.CancellationToken));
+
+                foreach (var job in enqueuedJobs)
+                {
+                    var pushNotificationJobRunner = ActivatorUtilities.CreateInstance<PushNotificationJobRunner>(scope.ServiceProvider, adsPushSender);
+                    await pushNotificationJobRunner.RequestPush((int[])job.Args[0], (PushNotificationRequest)job.Args[1], cancellationToken: TestContext.CancellationToken);
+                }
+            }
+
+            Assert.HasCount(2, sentPushes);
+
+            var pushAboutTheFirstAccount = sentPushes.Single(push => push.Payload.Detail.Text == "For the first account");
+
+            Assert.Contains(firstEmail, pushAboutTheFirstAccount.Payload.Title.Text, "A push about one of the device's accounts has to say which one it is about.");
+            Assert.AreEqual($"{PageUrls.Settings}?{DeviceAccountDto.QueryParameter}={firstUserId}", pushAboutTheFirstAccount.Payload.Parameters["pageUrl"].ToString(),
+                "Opening a push about one of the device's accounts has to open the app with that account.");
+        }
+        finally
+        {
+            await using var scopeApiAppCleanup = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiAppCleanup.ServiceProvider.GetRequiredService<AppDbContext>();
+            await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
+        }
+    }
+
+    [TestMethod]
+    public async Task TabsSubscribingTheSameAccountAtOnce_Should_AllSucceed()
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var deviceId = $"push-tabs-{Guid.NewGuid():N}";
 
-        var entityType = dbContext.Model.FindEntityType(typeof(PushNotificationSubscription))!;
+        try
+        {
+            await using var client = server.CreateAppClient();
+            var pushNotificationController = client.GetController<IPushNotificationController>();
 
-        var deviceIdIndex = entityType.GetIndexes()
-                                      .SingleOrDefault(i => i.Properties.Count is 1 && i.Properties[0].Name == nameof(PushNotificationSubscription.DeviceId));
+            await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-        Assert.IsNotNull(deviceIdIndex,
-            $"PushNotificationSubscription.DeviceId has no index. Indexes present: [{string.Join(", ", entityType.GetIndexes().Select(i => string.Join("+", i.Properties.Select(p => p.Name))))}].");
+            var sessionIds = await client.AuthManager.GetDeviceSessionIds();
 
-        Assert.IsTrue(deviceIdIndex.IsUnique,
-            "Without uniqueness the same device can end up with several subscription rows, and every by-device lookup then picks an arbitrary one.");
+            await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => pushNotificationController.Subscribe(new()
+            {
+                DeviceId = deviceId,
+                Platform = "fcmV1",
+                PushChannel = "the-channel",
+                UserSessionIds = sessionIds
+            }, TestContext.CancellationToken)));
+
+            Assert.HasCount(1, await ReadSubscriptions(server, deviceId, TestContext.CancellationToken));
+        }
+        finally
+        {
+            await using var scopeApiAppCleanup = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiAppCleanup.ServiceProvider.GetRequiredService<AppDbContext>();
+            await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
+        }
+    }
+
+    [TestMethod]
+    public async Task AnAccountThatLeftTheDevice_Should_LoseItsRow_AndTheOthers_Should_FollowTheNewChannel()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build().Start(TestContext.CancellationToken);
+
+        var deviceId = $"push-left-{Guid.NewGuid():N}";
+
+        try
+        {
+            await using var client = server.CreateAppClient();
+            var pushNotificationController = client.GetController<IPushNotificationController>();
+
+            async Task SubscribeTheDevice(string channel)
+            {
+                await pushNotificationController.Subscribe(new()
+                {
+                    DeviceId = deviceId,
+                    Platform = "fcmV1",
+                    PushChannel = channel,
+                    UserSessionIds = await client.AuthManager.GetDeviceSessionIds()
+                }, TestContext.CancellationToken);
+            }
+
+            await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+            await SubscribeTheDevice("first-channel");
+
+            await TestAccountUtils.CreateAndAddAccount(client, TestContext.CancellationToken);
+            await SubscribeTheDevice("first-channel");
+
+            await TestAccountUtils.CreateAndAddAccount(client, TestContext.CancellationToken);
+            await SubscribeTheDevice("second-channel");
+
+            var rows = await ReadSubscriptions(server, deviceId, TestContext.CancellationToken);
+
+            Assert.HasCount(3, rows);
+            Assert.IsTrue(rows.All(row => row.PushChannel == "second-channel"),
+                "The device's channel changed, and every account on it has to follow, not only the one that was active when it did.");
+
+            await client.AuthManager.SignOut(TestContext.CancellationToken);
+            await SubscribeTheDevice("second-channel");
+
+            rows = await ReadSubscriptions(server, deviceId, TestContext.CancellationToken);
+
+            Assert.HasCount(2, rows, "The signed out account's row has to go rather than be left for nobody.");
+            Assert.IsTrue(rows.All(row => row.UserSessionId is not null));
+        }
+        finally
+        {
+            await using var scopeApiAppCleanup = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiAppCleanup.ServiceProvider.GetRequiredService<AppDbContext>();
+            await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
+        }
     }
 
     /// <summary>
@@ -326,17 +487,17 @@ public partial class PushSubscriptionOwnershipTests
 
         await using var server = new AppTestServer();
 
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.Replace(ServiceDescriptor.Singleton<TimeProvider>(fakeTimeProvider));
-        }).Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services =>
+            {
+                services.Replace(ServiceDescriptor.Singleton<TimeProvider>(fakeTimeProvider));
+            }).Start(TestContext.CancellationToken);
 
         var deviceId = $"push-renewal-{Guid.NewGuid():N}";
 
         try
         {
-            using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var anonymousClient = server.CreateRawHttpClient();
 
             async Task Subscribe(string pushChannel)
             {
@@ -373,7 +534,7 @@ public partial class PushSubscriptionOwnershipTests
         }
         finally
         {
-            await using var cleanupScope = server.WebApp.Services.CreateAsyncScope();
+            await using var cleanupScope = server.ApiApp.Services.CreateAsyncScope();
             var dbContext = cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
         }
@@ -392,7 +553,7 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var firstDeviceId = $"push-two-rows-a-{Guid.NewGuid():N}";
         var secondDeviceId = $"push-two-rows-b-{Guid.NewGuid():N}";
@@ -400,7 +561,7 @@ public partial class PushSubscriptionOwnershipTests
         try
         {
             // An unowned row for the second device, the way an anonymous visit leaves one behind.
-            using (var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
+            using (var anonymousClient = server.CreateRawHttpClient())
             {
                 var response = await anonymousClient.PostAsJsonAsync("api/v1/PushNotification/Subscribe",
                     new PushNotificationSubscriptionDto { DeviceId = secondDeviceId, Platform = "fcmV1", PushChannel = "anonymous-channel" },
@@ -409,11 +570,11 @@ public partial class PushSubscriptionOwnershipTests
                 response.EnsureSuccessStatusCode();
             }
 
-            await using var scope = server.WebApp.Services.CreateAsyncScope();
+            await using var client = server.CreateAppClient();
 
-            await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+            await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
-            var pushNotificationController = scope.ServiceProvider.GetRequiredService<IPushNotificationController>();
+            var pushNotificationController = client.GetController<IPushNotificationController>();
 
             // This session takes the first device...
             await pushNotificationController.Subscribe(
@@ -440,8 +601,8 @@ public partial class PushSubscriptionOwnershipTests
         }
         finally
         {
-            await using var cleanupScope = server.WebApp.Services.CreateAsyncScope();
-            var dbContext = cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.PushNotificationSubscriptions
                 .Where(s => s.DeviceId == firstDeviceId || s.DeviceId == secondDeviceId)
                 .ExecuteDeleteAsync(TestContext.CancellationToken);
@@ -460,13 +621,13 @@ public partial class PushSubscriptionOwnershipTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         var deviceId = $"push-unsub-{Guid.NewGuid():N}";
 
         try
         {
-            using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var anonymousClient = server.CreateRawHttpClient();
 
             // A JSON body rather than a bare route value, because AutoCsrfProtectionFilter only lets an anonymous
             // (no Authorization header) unsafe request through when it is JSON - which is also why the shipped
@@ -504,15 +665,25 @@ public partial class PushSubscriptionOwnershipTests
         }
         finally
         {
-            await using var cleanupScope = server.WebApp.Services.CreateAsyncScope();
+            await using var cleanupScope = server.ApiApp.Services.CreateAsyncScope();
             var dbContext = cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
         }
     }
 
+    private static async Task<PushNotificationSubscription[]> ReadSubscriptions(AppTestServer server, string deviceId, CancellationToken cancellationToken)
+    {
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        return await dbContext.PushNotificationSubscriptions.AsNoTracking()
+                                                            .Where(s => s.DeviceId == deviceId)
+                                                            .ToArrayAsync(cancellationToken);
+    }
+
     private static async Task<PushNotificationSubscription?> ReadSubscription(AppTestServer server, string deviceId, CancellationToken cancellationToken)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.PushNotificationSubscriptions.AsNoTracking()

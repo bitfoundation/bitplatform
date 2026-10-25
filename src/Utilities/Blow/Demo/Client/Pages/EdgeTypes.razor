@@ -1,0 +1,108 @@
+﻿@page "/edge-types"
+
+<PageTitle>Edge Types · Blow</PageTitle>
+
+<div class="bb-intro">
+    <h1>Edge Types &amp; Markers</h1>
+    <p class="bb-subtitle">
+        All six built-in path algorithms of <code>BlowEdgeType</code> side by side - bezier, simple bezier, straight,
+        step, smooth step and routed - each with a different arrowhead set up from the edge's <code>Marker*</code>
+        properties. The toolbar picks the type of the edges you draw yourself.
+    </p>
+</div>
+
+<div class="bb-demo blow-demo bb-page-wide">
+    <div class="bb-demo-bar example-toolbar">
+        <label>New edges
+            <select @onchange="@(e => _newEdgeType = Enum.Parse<BlowEdgeType>(e.Value?.ToString() ?? nameof(BlowEdgeType.Bezier)))">
+                @foreach (var type in Enum.GetValues<BlowEdgeType>())
+                {
+                    <option value="@type" selected="@(type == _newEdgeType)">@type</option>
+                }
+            </select>
+        </label>
+        <span class="bb-muted">drag from a node's right handle to another node's left one</span>
+    </div>
+    <div class="demo-canvas">
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    DefaultEdgeType="_newEdgeType"
+                    ConnectionLineType="_newEdgeType">
+            <BlowBackground />
+            <BlowControls />
+        </BlowCanvas>
+    </div>
+</div>
+
+<DemoCode />
+
+<DemoNotes>
+    <TryIt>
+        <li>Compare the six pairs: each edge is labelled with its path type and ends in a different arrowhead.</li>
+        <li><strong>Drag a target node</strong> above or behind its source and watch how each type re-plans its path - bezier bends out further the more it has to double back, step and smooth step turn at right angles, straight ignores the sides altogether.</li>
+        <li><strong>Drag the dashed "in the way" node</strong> about: the routed edge from K to L steers round it, and falls back to a smooth step when no way round is left.</li>
+        <li>Pick a type under <strong>New edges</strong>, then drag from any node's right handle to another node's left handle: both the line you drag and the edge it leaves behind use that type.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>Type</code> on a <code>BlowEdge</code> picks its path; it defaults to <code>Bezier</code>. <code>SimpleBezier</code> keeps its control points on the handle axis for a flatter curve, and <code>Routed</code> runs orthogonal segments round the nodes near it, using the canvas's <code>Routing</code> (the built-in router when null).</li>
+        <li><code>MarkerEnd</code> (on by default) and <code>MarkerStart</code> draw arrowheads; <code>MarkerType</code> is <code>Arrow</code> (open) or <code>ArrowClosed</code>. The straight edge turns <code>MarkerEnd</code> off and the step edge turns <code>MarkerStart</code> on.</li>
+        <li>An arrowhead takes the edge's own colour unless <code>MarkerColor</code> says otherwise; <code>MarkerWidth</code> (7, or 8 for a closed head) and <code>MarkerHeight</code> size it - the smooth-step edge has a large red head.</li>
+        <li><code>Animated</code> runs dashes along the smooth-step edge; <code>Label</code> draws the text at each path's middle.</li>
+        <li><code>DefaultEdgeType</code> is the type of edges the user creates and <code>ConnectionLineType</code> the type of the line drawn while creating one; both follow the toolbar here. Neither changes edges that are already in the list.</li>
+        <li><code>SourcePosition = Right</code> and <code>TargetPosition = Left</code> on the nodes move their built-in handles to the sides, so every pair reads left to right.</li>
+    </HowItWorks>
+</DemoNotes>
+
+<style>
+    /* The obstacle reads as scenery rather than as part of the flow. */
+    .bit-blow-node.et-obstacle { border-style:dashed; color:var(--bit-blow-text-muted); }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = new();
+    private List<BlowEdge> _edges = new();
+    private BlowEdgeType _newEdgeType = BlowEdgeType.Bezier;
+
+    protected override void OnInitialized()
+    {
+        // Left to right, each target a little lower than its source: between two handles at the same height every
+        // path type would be the same straight line. Two columns of three, so the graph is about as wide as the pane.
+        _nodes =
+        [
+            Source("a1", "A", 40, 0),
+            Target("a2", "B", 40, 0),
+            Source("b1", "C", 40, 150),
+            Target("b2", "D", 40, 150),
+            Source("c1", "E", 40, 300),
+            Target("c2", "F", 40, 300),
+            Source("d1", "G", 680, 0),
+            Target("d2", "H", 680, 0),
+            Source("e1", "I", 680, 150),
+            Target("e2", "J", 680, 150),
+            Source("f1", "K", 680, 300),
+            Target("f2", "L", 680, 300),
+            // Across the straight line from K to L, so only the routed edge gets from one to the other without
+            // crossing it.
+            new BlowNode { Id = "wall", Label = "in the way", Position = new(905, 290), Width = 80, Height = 110, Class = "et-obstacle" },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e-bezier",        Source = "a1", Target = "a2", Type = BlowEdgeType.Bezier,       Label = "bezier" },
+            new BlowEdge { Id = "e-simple-bezier", Source = "b1", Target = "b2", Type = BlowEdgeType.SimpleBezier, Label = "simple bezier, closed head", MarkerType = BlowMarkerType.ArrowClosed },
+            new BlowEdge { Id = "e-straight",      Source = "c1", Target = "c2", Type = BlowEdgeType.Straight,     Label = "straight, no head", MarkerEnd = false },
+            new BlowEdge { Id = "e-step",          Source = "d1", Target = "d2", Type = BlowEdgeType.Step,         Label = "step, both ends", MarkerStart = true },
+            new BlowEdge
+            {
+                Id = "e-smoothstep", Source = "e1", Target = "e2", Type = BlowEdgeType.SmoothStep, Label = "smooth step, animated",
+                Animated = true, MarkerType = BlowMarkerType.ArrowClosed, MarkerColor = "#e11d48", MarkerWidth = 12,
+            },
+            new BlowEdge { Id = "e-routed",        Source = "f1", Target = "f2", Type = BlowEdgeType.Routed,       Label = "routed", MarkerType = BlowMarkerType.ArrowClosed },
+        ];
+    }
+
+    private static BlowNode Source(string id, string label, double x, double y) =>
+        new() { Id = id, Label = label, Position = new(x, y), SourcePosition = BlowPosition.Right, TargetPosition = BlowPosition.Left };
+
+    private static BlowNode Target(string id, string label, double x, double y) =>
+        new() { Id = id, Label = label, Position = new(x + 380, y + 60), SourcePosition = BlowPosition.Right, TargetPosition = BlowPosition.Left };
+}

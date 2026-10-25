@@ -1,3 +1,4 @@
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -8,6 +9,7 @@ public partial class BitBadge : BitComponentBase
     private bool? _bump;
     private string? _content;
     private string? _rel;
+    private bool _hasRootRole;
     private bool _isZeroContent;
     private bool _isContentCapped;
     private string? _shownText;
@@ -27,8 +29,27 @@ public partial class BitBadge : BitComponentBase
     // ShowZero takes an emptied counter off the badge; whatever else the badge holds stays on it.
     private bool _isZeroSuppressed => _isZeroContent && ShowZero is false;
 
+    // A badge that is a button or a link is what a screen reader lands on, so the label names that control.
+    private bool _isLabelOnBadge => AriaLabel.HasValue() && _isBadgeVisible && _isClickable;
+
+    // The root carries the label only when it is something that can be named and the control has not taken it.
+    private bool _isRootNamed => AriaLabel.HasValue() && _hasRootRole && _isLabelOnBadge is false;
+
+    // A number, a string or a template is something the badge says in words of its own; a dot and a lone
+    // glyph are not, and neither is an emptied counter that is no longer shown.
+    private bool _hasOwnWords => Dot is false && (ContentTemplate is not null || (_content.HasValue() && _isZeroSuppressed is false));
+
+    // What the badge says to assistive technologies in place of what it shows: the description, or - on a
+    // plain badge whose root cannot be named and that has no words of its own - the label, which would
+    // otherwise reach nobody. A count is never traded for the label: a static name read in its place would
+    // keep the figure, and every change of it, from ever reaching a screen reader.
+    private string? _textAlternative => Description.HasValue()
+                                      ? Description
+                                      : (AriaLabel.HasValue() && _isClickable is false && _hasRootRole is false && _hasOwnWords is false ? AriaLabel : null);
+
     // A badge is on the page while it has something to report - a mark, a number, a glyph, a template or a
-    // text alternative - so a badge given none of them is not rendered as an empty pill on top of its child.
+    // description - so a badge given none of them is not rendered as an empty pill on top of its child. The
+    // label is not one of them: it only names what the badge shows, so it cannot keep an empty badge up.
     private bool _isBadgeVisible => Hidden is false
                                  && (_isZeroSuppressed is false || _hasOwnContent)
                                  && (Dot || _hasOwnContent || _content.HasValue() || Description.HasValue());
@@ -51,14 +72,18 @@ public partial class BitBadge : BitComponentBase
     // What the badge stands for in words: the description when there is one, and the counter itself
     // otherwise - unless that counter is an emptied one, or one a template has taken the badge over from,
     // in which case it is not what the badge is showing.
-    private string? _liveText => Description.HasValue()
-                               ? Description
+    private string? _liveText => _textAlternative.HasValue()
+                               ? _textAlternative
                                : (Dot || _isZeroSuppressed || _hasTemplateContent ? null : _content);
 
     // The region speaks for the badge, so the badge is hidden from assistive technologies while it does -
     // otherwise the count would reach a screen reader twice. A template is the one thing the region cannot
     // speak for, so a badge showing one keeps its own voice instead of being silenced for nothing.
-    private bool _isBadgeMuted => _hasOwnLiveRegion && (Description.HasValue() || _hasTemplateContent is false);
+    private bool _isBadgeMuted => _hasOwnLiveRegion && (_textAlternative.HasValue() || _hasTemplateContent is false);
+
+    // A decorative badge repeats what its child already says, so it is kept away from assistive technologies -
+    // unless it is a button or a link, which is focusable and so cannot be hidden from them.
+    private bool _isBadgeDecorative => Decorative && _isClickable is false;
 
     // What the badge is showing in words right now, which is what a change of it is worth a bump for: a
     // badge that is off the page, showing a template or showing an emptied counter is showing no text at all.
@@ -70,6 +95,19 @@ public partial class BitBadge : BitComponentBase
     // a "99+" a reader cannot get the real count out of is the whole reason the tooltip is worth having. A
     // Title of its own always wins, and a badge showing its content in full has nothing left to reveal.
     private string? _titleText => Title ?? (_isContentCapped && _shownContent is not null ? Content?.ToString() : null);
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the badge component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple badge components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitBadgeParams.ParamName)]
+    public BitBadgeParams? CascadingParameters { get; set; }
 
 
 
@@ -96,11 +134,15 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitBadge.
     /// </summary>
-    [Parameter] public BitBadgeClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitBadgeClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the badge.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Badge-*</c> color variables; left unset, the badge is primary unless
+    /// those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -131,6 +173,22 @@ public partial class BitBadge : BitComponentBase
     [Parameter] public RenderFragment? ContentTemplate { get; set; }
 
     /// <summary>
+    /// Hides the badge from assistive technologies, for a badge whose child content already says what it shows.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A badge over a focusable child - an icon button, a link, a tab - is not what the keyboard reaches: the
+    /// child is, so the count belongs in the name of the child (an <c>AriaLabel</c> of "Inbox, 3 unread"). The
+    /// badge then only repeats it, and a decorative one keeps its looks while a screen reader skips it. Only
+    /// the badge is hidden: the child content stays exactly as announced as it was.
+    /// <br />
+    /// A <see cref="Live"/> region keeps announcing the changes, and a badge that is a button or a link
+    /// (<see cref="OnClick"/> or <see cref="Href"/>) is never hidden, since a focusable element cannot be.
+    /// </remarks>
+    [Parameter] public bool Decorative { get; set; }
+
+    /// <summary>
     /// The text alternative of the badge for assistive technologies, for example "5 unread messages".
     /// </summary>
     /// <remarks>
@@ -139,6 +197,13 @@ public partial class BitBadge : BitComponentBase
     /// assistive technologies, and hides the visual content from them so the two are not announced twice.
     /// <br />
     /// It is what makes a <see cref="Dot"/> badge accessible at all, since a dot has no content to announce.
+    /// <br />
+    /// <c>AriaLabel</c> is the other half. On a badge that is a button or a link it names that control, and
+    /// this text then describes it (<c>aria-describedby</c>). A plain badge wraps a generic element that ARIA
+    /// does not let be named, so a <see cref="Dot"/> or an icon-only one - which has no words of its own - uses
+    /// the label as this text alternative when none is given, while one showing a count or a text keeps saying
+    /// that, so the figure and its changes still reach a screen reader. A root given a <c>role</c> of its own
+    /// is named by the label instead.
     /// </remarks>
     [Parameter] public string? Description { get; set; }
 
@@ -174,7 +239,7 @@ public partial class BitBadge : BitComponentBase
     /// alerts - and <see cref="OnClick"/> for one that acts on the page it is already on. The two can be set
     /// together, in which case the handler runs and the navigation still happens.
     /// <br />
-    /// While <c>IsEnabled</c> is false the href is dropped and the badge is taken out of the tab order, so a
+    /// While <c>Disabled</c> is true the href is dropped and the badge is taken out of the tab order, so a
     /// disabled link cannot be followed by either the pointer or the keyboard.
     /// </remarks>
     [Parameter]
@@ -283,7 +348,7 @@ public partial class BitBadge : BitComponentBase
     /// </summary>
     /// <remarks>
     /// While it is set the badge is focusable and can be activated with the keyboard, and it stops being so
-    /// as soon as <c>IsEnabled</c> is false. A badge with no handler and no <see cref="Href"/> never takes
+    /// as soon as <c>Disabled</c> is true. A badge with no handler and no <see cref="Href"/> never takes
     /// focus: it is a label on the element it belongs to, and that element is what a keyboard user reaches.
     /// <br />
     /// A control needs a name, so a badge that carries no text of its own - a <see cref="Dot"/> or an
@@ -320,8 +385,9 @@ public partial class BitBadge : BitComponentBase
     /// The default value is <strong>false</strong>.
     /// </summary>
     /// <remarks>
-    /// The ring is decorative: it slows down rather than stops under a reduced-motion preference, and it
-    /// carries no meaning of its own, so pair it with a <see cref="Description"/> when the state matters.
+    /// The ring is an attention cue that carries no meaning of its own, so pair it with a <see cref="Description"/>
+    /// when the state matters. Under a reduced-motion preference it stops and stays as a still halo around the
+    /// badge, unless <c>ForceAnimation</c> asks for the motion back.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Pulse { get; set; }
@@ -331,9 +397,10 @@ public partial class BitBadge : BitComponentBase
     /// the anchor the badge becomes while <see cref="Href"/> is set.
     /// </summary>
     /// <remarks>
-    /// With no value of its own, a badge opening in a new browsing context (<see cref="Target"/> of
-    /// <c>_blank</c>) gets <c>rel="noopener"</c> on its own, which is what keeps the opened page from
-    /// reaching back into this one.
+    /// A badge opening in a new browsing context (<see cref="Target"/> of <c>_blank</c>) gets <c>noopener</c>
+    /// added to whatever this says, which is what keeps the opened page from reaching back into this one -
+    /// unless this already says what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>).
     /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
@@ -348,10 +415,18 @@ public partial class BitBadge : BitComponentBase
     public bool Reversed { get; set; }
 
     /// <summary>
-    /// The corner shape of the badge.
+    /// The corner shape of the badge (default is fully rounded).
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitShape.Pill"/>, <see cref="BitShape.Rounded"/> and <see cref="BitShape.Square"/> mean
+    /// anything here; a badge takes its box from its own content, so <see cref="BitShape.Circle"/> has no
+    /// dimension to build a circle from and leaves the badge fully rounded. A fully rounded badge is a circle
+    /// while it holds a single digit and a pill once the label grows past one.
+    /// An explicit value wins over <c>--bit-Badge-radius</c>; left unset, the badge is a pill unless that variable
+    /// says otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitBadgeShape? Shape { get; set; }
+    public BitShape? Shape { get; set; }
 
     /// <summary>
     /// Renders the badge when its content is the number zero.
@@ -371,13 +446,17 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// The size of badge, Possible values: Small | Medium | Large
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Badge-*</c> size variables (height, padding, font size, dot size);
+    /// left unset, the badge is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitBadge.
     /// </summary>
-    [Parameter] public BitBadgeClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitBadgeClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The browsing context the <see cref="Href"/> of the badge is opened in, for example <c>_blank</c>.
@@ -397,6 +476,9 @@ public partial class BitBadge : BitComponentBase
     /// <br />
     /// A badge showing a count its <see cref="Max"/> has capped spells that count out on hover on its own, so
     /// this is only needed when there is something better to say than the figure itself.
+    /// <br />
+    /// An overlaid badge lets every pointer through to the child underneath it, so that a click on the corner
+    /// of a button still reaches the button; its tooltip shows once the badge is standalone, inline or clickable.
     /// </remarks>
     [Parameter] public string? Title { get; set; }
 
@@ -414,27 +496,9 @@ public partial class BitBadge : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-bdg-pri",
-            BitColor.Secondary => "bit-bdg-sec",
-            BitColor.Tertiary => "bit-bdg-ter",
-            BitColor.Info => "bit-bdg-inf",
-            BitColor.Success => "bit-bdg-suc",
-            BitColor.Warning => "bit-bdg-wrn",
-            BitColor.SevereWarning => "bit-bdg-swr",
-            BitColor.Error => "bit-bdg-err",
-            BitColor.PrimaryBackground => "bit-bdg-pbg",
-            BitColor.SecondaryBackground => "bit-bdg-sbg",
-            BitColor.TertiaryBackground => "bit-bdg-tbg",
-            BitColor.PrimaryForeground => "bit-bdg-pfg",
-            BitColor.SecondaryForeground => "bit-bdg-sfg",
-            BitColor.TertiaryForeground => "bit-bdg-tfg",
-            BitColor.PrimaryBorder => "bit-bdg-pbr",
-            BitColor.SecondaryBorder => "bit-bdg-sbr",
-            BitColor.TertiaryBorder => "bit-bdg-tbr",
-            _ => "bit-bdg-pri"
-        });
+        // Color, Shape and Size publish nothing while they are unset, which is what lets the stylesheet tell a
+        // default from a choice: the public --bit-Badge-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-bdg"));
 
         ClassBuilder.Register(() => Dot ? "bit-bdg-dot" : string.Empty);
 
@@ -473,19 +537,13 @@ public partial class BitBadge : BitComponentBase
 
         ClassBuilder.Register(() => Shape switch
         {
-            BitBadgeShape.Circular => "bit-bdg-cir",
-            BitBadgeShape.Rounded => "bit-bdg-rnd",
-            BitBadgeShape.Square => "bit-bdg-sqr",
-            _ => "bit-bdg-cir"
+            BitShape.Pill => "bit-bdg-cir",
+            BitShape.Rounded => "bit-bdg-rnd",
+            BitShape.Square => "bit-bdg-sqr",
+            _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-bdg-sm",
-            BitSize.Medium => "bit-bdg-md",
-            BitSize.Large => "bit-bdg-lg",
-            _ => "bit-bdg-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-bdg"));
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -509,12 +567,12 @@ public partial class BitBadge : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
     }
 
-    private void OnSetContentAndMax()
+    internal void OnSetContentAndMax()
     {
         _isZeroContent = false;
         _isContentCapped = false;
@@ -546,6 +604,13 @@ public partial class BitBadge : BitComponentBase
 
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
+        // A root given a role of its own is a named region the author asked for; without one it is a generic
+        // span, which ARIA prohibits naming - a label there is dropped by every screen reader - so the label is
+        // read out of the badge instead (see _textAlternative).
+        _hasRootRole = GetSplattedAttribute("role") is not null;
+
         // The bump is decided here rather than as the content is set, because what the badge ends up showing
         // is not settled until the whole batch of parameters has landed: ShowZero, Hidden, Dot and a template
         // each take the counter off the badge without ever going through the content setter.
@@ -571,22 +636,11 @@ public partial class BitBadge : BitComponentBase
         base.OnParametersSet();
     }
 
-    private void OnSetHrefAndRel()
+    internal void OnSetHrefAndRel()
     {
-        if (Href.HasNoValue() || Href!.StartsWith('#'))
-        {
-            _rel = null;
-            return;
-        }
-
-        if (Rel.HasValue)
-        {
-            _rel = BitLinkRelUtils.GetRels(Rel.Value);
-            return;
-        }
-
-        // protects against reverse-tabnabbing when opening the link in a new browsing context
-        _rel = Target == "_blank" ? "noopener" : null;
+        // protects against reverse-tabnabbing when opening the link in a new browsing context, on top of
+        // whatever rel it was given - a NoFollow alone is about crawling and says nothing about the opener.
+        _rel = BitNewTabUtils.ResolveRel(Href, Rel, Target);
     }
 
     /// <summary>

@@ -1,0 +1,393 @@
+﻿@page "/"
+@layout MainLayout
+
+<PageTitle>Bonboarding - onboarding and product tours for Blazor</PageTitle>
+
+@* The landing page: hero → proof strip → capability grid → code walkthrough → comparison with a
+   JavaScript tour library → persona tiles → FAQ → final call to action. Everything else on the site
+   is a documentation page under DocsLayout. The hero's sample is a live product rather than a
+   picture of one - a tour library is best introduced by taking the tour. *@
+
+<div class="bb-landing">
+
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net8.0 / net9.0 / net10.0
+            </span>
+            <h1>Product tours for Blazor,<br /><span class="bb-hero-accent">decided in C#.</span></h1>
+            <p class="bb-hero-sub">
+                Multi-step product tours, spotlights, contextual hints and full application walkthroughs,
+                written in C# and Razor. There is no JavaScript tour engine underneath: the browser layer
+                only measures, observes and routes keys, and every decision about what to show, when and
+                where is made in C#.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Bonboarding</pre>
+            <div class="bb-hero-actions">
+                <button type="button" class="btn btn-primary bb-btn-lg" @onclick="StartTourAsync">Take the tour</button>
+                <a href="getting-started" class="btn btn-secondary bb-btn-lg">Get started →</a>
+                <button type="button" class="btn btn-secondary bb-btn-lg" @onclick="RestartTourAsync">Restart from the top</button>
+            </div>
+        </div>
+
+        @* The product the welcome tour below walks through, framed as a window. Every element the
+           tour points at carries a data-bonboarding-anchor attribute, and nothing else. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">Dashboard.razor</span>
+                </div>
+                <AppWindow />
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Proof strip ============================== *@
+
+    <section class="bb-proof">
+        <div><strong>Engine in C#</strong><span>placement, waiting, branching and routing</span></div>
+        <div><strong>No JavaScript tour engine</strong><span>one small module measures, observes and routes keys</span></div>
+        <div><strong>Prerender-safe</strong><span>Server, WebAssembly and Web App, on .NET 8, 9 and 10</span></div>
+        <div><strong>Accessible by design</strong><span>dialog semantics, focus trap, live announcements</span></div>
+    </section>
+
+    @* ============================== Capability grid ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Capabilities</p>
+        <h2>The hard parts of a tour, done once</h2>
+        <p class="bb-section-sub">
+            Each of these is a page of the docs with a working tour on it - and every tour on this site
+            is the library's own default card, restyled through its CSS custom properties.
+        </p>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Positioning that behaves</h3>
+                <p class="bb-card-desc">
+                    Collision-aware placement computed in C#: shift before flip, arrow clamping, viewport
+                    padding, and sane behaviour for targets larger than the screen.
+                </p>
+                <a href="placement" class="btn btn-outline">Placement &amp; spotlight →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Elements that are not there yet</h3>
+                <p class="bb-card-desc">
+                    Wait, skip, centre or fail, per step. Waiting uses a mutation observer rather than a
+                    polling timer, a target replaced by a re-render is rebound rather than lost, and a step
+                    can wait for the user to use the control - or for the application to say the job is done.
+                </p>
+                <a href="dynamic" class="btn btn-outline">Dynamic targets →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Branching and conditions</h3>
+                <p class="bb-card-desc">
+                    Steps can be gated, tours can be limited to some users, tours can fork on an answer, and
+                    Back follows the path the user actually took rather than the order the steps were declared in.
+                </p>
+                <a href="flows" class="btn btn-outline">Conditional &amp; branching →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Respectful by default</h3>
+                <p class="bb-card-desc">
+                    An automatic tour queues behind the one the user is taking, by priority. "Remind me later"
+                    snoozes, a definition is checked before anyone sees it, and a tour can be paused, resumed
+                    or driven from code.
+                </p>
+                <a href="lifecycle" class="btn btn-outline">Lifecycle &amp; orchestration →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Guidance that stays on the page</h3>
+                <p class="bb-card-desc">
+                    Beacons that open a hint or a tour, an onboarding checklist that ticks itself off, and a
+                    list of tours to start, resume or replay from a help menu.
+                </p>
+                <a href="guidance" class="btn btn-outline">Beacons, checklists &amp; tour lists →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Route-aware</h3>
+                <p class="bb-card-desc">
+                    A tour can span pages: it navigates for you and waits for the page to render. Wander
+                    off mid-tour and it holds its place instead of dragging you back; reload, and it resumes.
+                </p>
+                <a href="workspace" class="btn btn-outline">Multi-page tour →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Yours to restyle</h3>
+                <p class="bb-card-desc">
+                    Every value of the card is a public CSS custom property, in light, dark and system
+                    palettes - plus localised labels and right-to-left tours.
+                </p>
+                <a href="theming" class="btn btn-outline">Theming &amp; RTL →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Headless when you need it</h3>
+                <p class="bb-card-desc">
+                    Replace one step's body or footer, or the whole card, overlay and waiting state. The
+                    library keeps measuring, placing and focusing the popover for you.
+                </p>
+                <a href="headless" class="btn btn-outline">Headless UI →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Analytics-grade events</h3>
+                <p class="bb-card-desc">
+                    Every moment of a tour is an event - including how long each step was on screen - and
+                    progress is stored after every step, so a user resumes where they left off.
+                </p>
+                <a href="events" class="btn btn-outline">Events &amp; persistence →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>The tour above, in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>Mark what you want to point at</h3>
+                    <p>
+                        A <code>data-bonboarding-anchor</code> attribute is all a target needs. It survives
+                        re-renders, works on elements that do not exist yet, and needs no
+                        <code>ElementReference</code>. CSS selectors work too.
+                    </p>
+                    <a href="getting-started">Getting started →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">button</span> data-bonboarding-anchor=<span class="s">"new-project"</span>&gt;New project&lt;/<span class="k">button</span>&gt;
+&lt;<span class="k">input</span> type=<span class="s">"search"</span> data-bonboarding-anchor=<span class="s">"search"</span> /&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>Declare the tour next to the page</h3>
+                    <p>
+                        <code>BonboardingTour</code> renders nothing itself: the one <code>BonboardingRoot</code>
+                        your app hosts draws whichever tour is running. A step without a target is a centred card.
+                    </p>
+                    <a href="placement">Placement &amp; spotlight →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BonboardingTour</span> Id=<span class="s">"welcome"</span>
+                 AutoStart=<span class="s">"BonboardingAutoStart.Once"</span>&gt;
+    &lt;<span class="k">BonboardingStep</span> Anchor=<span class="s">"new-project"</span>
+                     Title=<span class="s">"Create a project"</span> /&gt;
+    &lt;<span class="k">BonboardingStep</span> Anchor=<span class="s">"search"</span>
+                     Title=<span class="s">"Find anything"</span> /&gt;
+&lt;/<span class="k">BonboardingTour</span>&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>Or build it as data</h3>
+                    <p>
+                        The components build a <code>BonboardingTourDefinition</code>; constructing one directly is
+                        equally supported, and is what you want when tours come from configuration or a CMS.
+                    </p>
+                    <a href="flows">Conditional &amp; branching →</a>
+                </div>
+                <pre class="bb-code"><span class="k">var</span> tour = <span class="k">new</span> BonboardingTourDefinition
+{
+    Id = <span class="s">"welcome"</span>,
+    Steps =
+    {
+        <span class="k">new</span> BonboardingStepDefinition
+        {
+            Target = BonboardingStepTarget.Anchor(<span class="s">"new-project"</span>),
+            Title = <span class="s">"Create a project"</span>,
+        },
+        <span class="k">new</span> BonboardingStepDefinition
+        {
+            Target = <span class="s">".bb-search-trigger"</span>,   <span class="c">// a CSS selector converts implicitly</span>
+            Title = <span class="s">"That is the tour"</span>,
+        },
+    },
+};
+
+<span class="k">await</span> BonboardingService.StartOnceAsync(tour);   <span class="c">// skipped once finished or dismissed</span></pre>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Why not wrap a JavaScript tour library?</h2>
+        <p class="bb-section-sub">
+            A wrapper keeps the tour's state on the other side of interop, so every condition, branch and
+            route change becomes a round trip. Bonboarding keeps the decisions in C#, next to the application
+            state they depend on.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="A JavaScript tour library compared with Bonboarding">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Concern</th><th>JavaScript library through interop</th><th>Bonboarding</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Where the tour runs</td><td>A JavaScript engine, called through interop</td><td>A C# session - the browser only measures, observes and routes keys</td></tr>
+                    <tr><td>Conditions and branches</td><td>Written in JavaScript, or a round trip per step</td><td><code>When</code>, <code>ResolveNext</code> and <code>CanAdvance</code> - C# delegates over your state</td></tr>
+                    <tr><td>Steps on other pages</td><td>Stop, navigate and restart by hand</td><td><code>Route</code> on the step: the engine navigates and waits for the page</td></tr>
+                    <tr><td>Elements that render late</td><td>Your own timers and retries</td><td>Wait, skip, centre or fail per step, on a mutation observer</td></tr>
+                    <tr><td>Testing the flow</td><td>Needs a browser</td><td>The DOM seam is an interface - the engine is unit-tested without one</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Bonboarding?</h3>
+                <p class="bb-card-desc">Install, register, link the stylesheet, host one root - a first tour in five minutes.</p>
+                <a href="getting-started" class="btn btn-primary">Getting started →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Want to see it live?</h3>
+                <p class="bb-card-desc">Every page of the docs is a working tour, with the options it demonstrates one click away.</p>
+                <a href="placement" class="btn btn-outline">Open the demos →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> and it reads the shipped library instead of guessing.</p>
+                <a href="mcp-server" class="btn btn-outline">Try the MCP server →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Is this a wrapper around a JavaScript tour library?</summary>
+                <p>
+                    No. The browser layer is a single small module that measures elements, watches them for
+                    movement, scrolls, and routes keyboard events. Which step comes next, whether it is shown,
+                    where the popover goes and what happens when a target is missing are all decided in C#.
+                </p>
+            </details>
+            <details>
+                <summary>Which render modes does it work in?</summary>
+                <p>
+                    Blazor Server, Blazor WebAssembly and Blazor Web App (Server, WebAssembly or Auto), on .NET 8,
+                    9 and 10, including while prerendering. Start tours from <code>OnAfterRenderAsync</code>, a
+                    user action or <code>AutoStart</code> - this site runs on InteractiveAuto.
+                </p>
+            </details>
+            <details>
+                <summary>Does it remember how far a user got?</summary>
+                <p>
+                    Yes. Progress is written to the registered <code>IBonboardingStore</code> after every step -
+                    by default <code>localStorage</code> with an in-memory mirror - so a user resumes where they
+                    were, and <code>StartOnceAsync</code> skips a tour they already finished or dismissed.
+                </p>
+            </details>
+            <details>
+                <summary>Can it look like my product?</summary>
+                <p>
+                    Every value of the default card is a <code>--bit-bonboarding-*</code> custom property, a step
+                    can replace its header, body or footer, and a host can render the whole card itself while
+                    the library keeps placing and focusing it.
+                </p>
+            </details>
+            <details>
+                <summary>Can it show hints and checklists, not just tours?</summary>
+                <p>
+                    Yes. <code>BonboardingBeacon</code> puts a pulsing dot on an element that opens a hint or a tour,
+                    <code>BonboardingChecklist</code> lists the things a new user should do and ticks them off as they
+                    happen, and <code>BonboardingTourList</code> is the content of a help menu. They use the same engine,
+                    store and theme as the tours.
+                </p>
+            </details>
+            <details>
+                <summary>What happens when two tours want the screen at once?</summary>
+                <p>
+                    A tour the user starts replaces the running one, which keeps its progress. A tour that starts itself
+                    - a page's <code>AutoStart</code> - queues behind the running one instead, ordered by
+                    <code>Priority</code>, and is checked again when its turn comes.
+                </p>
+            </details>
+            <details>
+                <summary>Is it accessible?</summary>
+                <p>
+                    The popover is a labelled dialog with a focus trap and focus restoration, the tour is driven
+                    from the keyboard, every step is announced in a live region, and reduced motion and forced
+                    colors are honoured.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Show people around</h2>
+        <p class="bb-section-sub">One package, one service registration, one stylesheet and one host - and any page can have a tour.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Bonboarding</pre>
+        <div class="bb-hero-actions">
+            <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="placement" class="btn btn-secondary bb-btn-lg">Browse the demos</a>
+        </div>
+    </section>
+</div>
+
+@* The tour itself. It renders nothing; the BonboardingRoot beside the router (Routes.razor)
+   displays it. The last step points at the site's own search button by CSS selector - a target does
+   not have to be marked up for the tour, any element on the page will do. *@
+<BonboardingTour @ref="_tour" Id="welcome" Title="Welcome tour" Version="1">
+
+    <BonboardingStep Id="intro"
+                     Title="Welcome aboard"
+                     Description="A two minute look around. Use the arrow keys, or press Escape at any point to leave." />
+
+    <BonboardingStep Id="create"
+                     Anchor="new-project"
+                     Title="Create a project"
+                     Description="Everything starts here. Projects hold your environments, members and billing."
+                     Placement="BonboardingPlacement.Bottom" />
+
+    <BonboardingStep Id="search"
+                     Anchor="search"
+                     Title="Find anything"
+                     Description="Search across every project you can see. It matches names, tags and members."
+                     Placement="BonboardingPlacement.Bottom" />
+
+    <BonboardingStep Id="metrics"
+                     Anchor="metrics"
+                     Title="Your numbers at a glance"
+                     Description="Usage updates hourly. The spotlight can cover a whole region, not just a single control."
+                     Placement="BonboardingPlacement.Top" />
+
+    <BonboardingStep Id="settings"
+                     Anchor="settings"
+                     Title="Make it yours"
+                     Description="Theme, locale, notifications and API keys all live under settings."
+                     Placement="BonboardingPlacement.BottomEnd" />
+
+    <BonboardingStep Id="done"
+                     Selector=".bb-search-trigger"
+                     Title="That is the tour"
+                     Description="Every page of the docs demonstrates one capability in more depth. Once you finish, press / or Ctrl+K anywhere to search them."
+                     Placement="BonboardingPlacement.BottomEnd"
+                     DoneLabel="Finish" />
+
+</BonboardingTour>
+
+@code {
+    private BonboardingTour? _tour;
+
+    private Task StartTourAsync() => _tour is null ? Task.CompletedTask : _tour.StartAsync();
+
+    private Task RestartTourAsync() => _tour is null ? Task.CompletedTask : _tour.RestartAsync();
+}

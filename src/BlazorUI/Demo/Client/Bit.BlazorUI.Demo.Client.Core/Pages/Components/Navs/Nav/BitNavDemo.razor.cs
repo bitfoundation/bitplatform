@@ -11,7 +11,7 @@ public partial class BitNavDemo
             Name = "Accent",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The accent color of the nav.",
+            Description = "The accent color of the nav: the background of the hovered and the selected item. A background, foreground or border role tints the item, a semantic role fills it and recolors its content. An explicit value wins over the --bit-Nav-* hover, pressed and selected variables; left unset, the nav takes the PrimaryBackground accent unless they say otherwise.",
             Href = "#color-enum",
             LinkType = LinkType.Link,
         },
@@ -21,6 +21,13 @@ public partial class BitNavDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Expands all items when they are first rendered. Items that arrive later are expanded as they arrive, while the items already on screen keep whatever the user has expanded or collapsed in the meantime."
+        },
+        new()
+        {
+            Name = "AutoReorderOptions",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the order of the options (what the arrow keys, Home, End and type-ahead walk), at every level of the tree, in sync with their markup order when options are added, removed or reordered after the first render. Opt-in, since it reads the DOM order back after each change.",
         },
         new()
         {
@@ -59,14 +66,14 @@ public partial class BitNavDemo
             Name = "CollapseAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The default aria-label of the expand/collapse button of an expanded item. The CollapseAriaLabel of the item takes precedence over this value, and when neither is provided the text of the item is used.",
+            Description = "The default aria-label of the expand/collapse button of an expanded item: the chevron of a parent that has a URL, or a group header. The CollapseAriaLabel of the item takes precedence over this value, and when neither is provided the text of the item is used.",
         },
         new()
         {
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the nav that is only used for colored parts like icons.",
+            Description = "The general color of the nav that is only used for colored parts like icons. An explicit value wins over --bit-Nav-icon-color and --bit-Nav-indicator-color; left unset, the nav is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -82,7 +89,7 @@ public partial class BitNavDemo
             Name = "ExpandAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The default aria-label of the expand/collapse button of a collapsed item. The ExpandAriaLabel of the item takes precedence over this value, and when neither is provided the text of the item is used.",
+            Description = "The default aria-label of the expand/collapse button of a collapsed item: the chevron of a parent that has a URL, or a group header. The ExpandAriaLabel of the item takes precedence over this value, and when neither is provided the text of the item is used.",
         },
         new()
         {
@@ -111,7 +118,7 @@ public partial class BitNavDemo
             Type = "BitNavItemTemplateRenderMode",
             DefaultValue = "BitNavItemTemplateRenderMode.Normal",
             Description = "The render mode of the custom HeaderTemplate.",
-            Href = "#nav-itemtemplate-rendermode",
+            Href = "#nav-item-template-render-mode-enum",
             LinkType = LinkType.Link,
         },
         new()
@@ -126,7 +133,7 @@ public partial class BitNavDemo
             Name = "IndentPadding",
             Type = "int",
             DefaultValue = "27",
-            Description = "The indentation padding in px for items without children (compensation space for chevron icon)."
+            Description = "The width in px of the chevron, which the items without children keep as padding in its place so every text lines up."
         },
         new()
         {
@@ -153,6 +160,13 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "ItemSuffixTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
+            Description = "Used to render custom content at the end of every item, after its text and ahead of its badge, while the item keeps its default content. The SuffixTemplate of an item wins over it. It is rendered inside the item's anchor (or button), so it holds content to look at and never a control of its own; group headers, separators, items replaced by their template and the IconOnly nav do not render it.",
+        },
+        new()
+        {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
@@ -164,7 +178,7 @@ public partial class BitNavDemo
             Type = "BitNavItemTemplateRenderMode",
             DefaultValue = "BitNavItemTemplateRenderMode.Normal",
             Description = "The render mode of the custom ItemTemplate.",
-            Href = "#nav-itemtemplate-rendermode",
+            Href = "#nav-item-template-render-mode-enum",
             LinkType = LinkType.Link,
         },
         new()
@@ -172,7 +186,7 @@ public partial class BitNavDemo
             Name = "Match",
             Type = "BitNavMatch?",
             DefaultValue = "null",
-            Description = "Gets or sets a value representing the global URL matching behavior of the nav. The Match of an item takes precedence over this value, and when neither is provided the URL of an item has to match the current one exactly.",
+            Description = "The URL matching behavior of the nav in the Automatic mode. The Match of an item takes precedence over this value, and when neither is provided the URL of an item has to match the current one exactly.",
             Href = "#nav-match-enum",
             LinkType = LinkType.Link,
         },
@@ -196,10 +210,24 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "NewTabHint",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Replaces the visually hidden \"(opens in a new tab)\" an item whose Target is _blank is announced with, e.g. to translate it. An empty value removes it.",
+        },
+        new()
+        {
             Name = "NoCollapse",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Hides all collapse/expand buttons and remove their spaces at the start of each node."
+            Description = "Keeps every item expanded and hides the collapse/expand buttons together with the space they reserve at the start of each item."
+        },
+        new()
+        {
+            Name = "NoNewTabHint",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the items whose Target is _blank from announcing that they open a new tab - only for where a visible label or heading already says so.",
         },
         new()
         {
@@ -264,7 +292,7 @@ public partial class BitNavDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the nav items.",
+            Description = "The size of the nav items. An explicit value wins over the --bit-Nav-* size variables; left unset, the nav is medium unless they say otherwise.",
             Href = "#size-enum",
             LinkType = LinkType.Link,
         },
@@ -284,6 +312,256 @@ public partial class BitNavDemo
             Href = "#nav-class-styles",
             LinkType = LinkType.Link,
         }
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Nav-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text and chevron color of an item at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-icon-color",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Icon color of an item at rest, and of a hovered, pressed or selected one its own variable leaves unset (and of one under an explicit surface Accent). The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-description-color",
+            DefaultValue = "--bit-clr-fg-ter",
+            Description = "Description color of an item at rest, and of a hovered, pressed or selected one its own variable leaves unset (and of one under an explicit surface Accent).",
+        },
+        new()
+        {
+            Name = "--bit-Nav-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text, icon, description and chevron color of a disabled item (or of every item of a disabled nav).",
+        },
+        new()
+        {
+            Name = "--bit-Nav-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background of a hovered item (pointer devices only); the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-background instead. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-hover-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text and chevron color of a hovered item; the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-color instead. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-hover-icon-color",
+            DefaultValue = "--bit-Nav-icon-color, then --bit-clr-pri",
+            Description = "Icon color of a hovered item (pointer devices only); the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-icon-color instead. The Accent and Color parameters win over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-hover-description-color",
+            DefaultValue = "--bit-Nav-description-color, then --bit-clr-fg-ter",
+            Description = "Description color of a hovered item (pointer devices only); the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-description-color instead. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-pressed-background",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Background of an item while it is pressed (the one feedback a tap gets on a touch screen); the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-pressed-background instead. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-pressed-color",
+            DefaultValue = "--bit-Nav-hover-color, then --bit-clr-fg-pri (on a touch screen --bit-clr-fg-pri)",
+            Description = "Text and chevron color of an item while it is pressed; the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-color instead. Where the pointer can hover it falls back on the hovered color; on a touch screen, where no hover applies, on the default. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-pressed-icon-color",
+            DefaultValue = "--bit-Nav-hover-icon-color, then --bit-Nav-icon-color, then --bit-clr-pri (on a touch screen --bit-Nav-icon-color, then --bit-clr-pri)",
+            Description = "Icon color of an item while it is pressed; the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-icon-color instead. Where the pointer can hover it falls back on the hovered icon color; on a touch screen, where no hover applies, on the one at rest. The Accent and Color parameters win over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-pressed-description-color",
+            DefaultValue = "--bit-Nav-hover-description-color, then --bit-Nav-description-color, then --bit-clr-fg-ter (on a touch screen --bit-Nav-description-color, then --bit-clr-fg-ter)",
+            Description = "Description color of an item while it is pressed; the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-description-color instead. Where the pointer can hover it falls back on the hovered description color; on a touch screen, where no hover applies, on the one at rest. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-background",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Background of the selected item, and of a collapsed branch that holds it. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text and chevron color of the selected item, and of a collapsed branch that holds it. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-icon-color",
+            DefaultValue = "--bit-Nav-icon-color, then --bit-clr-pri",
+            Description = "Icon color of the selected item, and of a collapsed branch that holds it - the one to move with --bit-Nav-selected-background when that is a vivid fill. The Accent and Color parameters win over it: an explicit Accent draws the icon in its own colors on its own fill (a semantic one in its on-color, a surface one in the icon color at rest), so a value set for the theme's fill never lands on the Accent's.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-description-color",
+            DefaultValue = "--bit-Nav-description-color, then --bit-clr-fg-ter",
+            Description = "Description color of the selected item, and of a collapsed branch that holds it. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-hover-background",
+            DefaultValue = "--bit-Nav-selected-background with 8% of --bit-Nav-selected-color mixed in",
+            Description = "Background of the selected item, and of a collapsed branch that holds it, while it is hovered (pointer devices only). The selection gives its feedback on its own fill rather than taking the hovered one every other item gets, so the item just picked - which the pointer is still on right after the click - never looks unselected. Where the browser has no color-mix it keeps the selected background. The Accent parameter wins over it: an explicit Accent mixes its own on-color into its own selected fill.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-pressed-background",
+            DefaultValue = "--bit-Nav-selected-hover-background with 8% of --bit-Nav-selected-hover-color mixed in",
+            Description = "Background of the selected item, and of a collapsed branch that holds it, while it is pressed - on a touch screen too, where it is the one feedback a tap gets. Where the browser has no color-mix it falls back on --bit-Nav-selected-hover-background. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-hover-color",
+            DefaultValue = "--bit-Nav-selected-color, then --bit-clr-fg-pri",
+            Description = "Text and chevron color of the selected item, and of a collapsed branch that holds it (its group header included), while it is hovered or pressed - the one to move with --bit-Nav-selected-hover-background when the selected color does not read on that fill. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-hover-icon-color",
+            DefaultValue = "--bit-Nav-selected-icon-color, then --bit-Nav-icon-color, then --bit-clr-pri",
+            Description = "Icon color of the selected item, and of a collapsed branch that holds it, while it is hovered or pressed. The Accent and Color parameters win over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-hover-description-color",
+            DefaultValue = "--bit-Nav-selected-description-color, then --bit-Nav-description-color, then --bit-clr-fg-ter",
+            Description = "Description color of the selected item, and of a collapsed branch that holds it, while it is hovered or pressed. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-indicator-color",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Color of the leading bar of the selected item. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-indicator-width",
+            DefaultValue = "--bit-shp-brd-width-thick",
+            Description = "Thickness of the leading bar of the selected item; 0 removes it. In forced colors (Windows contrast themes) the bar is the one mark of the selection left, so there it is never thinner than --bit-shp-brd-width-thick.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-item-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of an item.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-item-min-height",
+            DefaultValue = "spacing(6) (48px)",
+            Description = "Smallest height of an item. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-item-padding",
+            DefaultValue = "4px (spacing(0.5))",
+            Description = "Padding of an item; the indentation of the levels is added to its start.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-item-gap",
+            DefaultValue = "0",
+            Description = "Room between two items, at every level.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-font-size",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of an item. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-icon-size",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Icon size of an item and of a group header. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-description-font-size",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of the description of an item. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-header-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of a group header (Grouped render type).",
+        },
+        new()
+        {
+            Name = "--bit-Nav-header-font-size",
+            DefaultValue = "--bit-tpg-fs-lg",
+            Description = "Text size of a group header. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-header-min-height",
+            DefaultValue = "spacing(5.5) (44px)",
+            Description = "Smallest height of a group header; one with a description grows past it. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-header-border-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Color of the rule under a group header.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-header-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background of a hovered group header (pointer devices only); a collapsed one that holds the selected item takes --bit-Nav-selected-hover-background instead.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-separator-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Color of a separator item.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-badge-color",
+            DefaultValue = "--bit-clr-err-text",
+            Description = "Text color of the badge of an item; it keeps it in every state of the item.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-badge-background",
+            DefaultValue = "--bit-clr-err",
+            Description = "Fill of the badge and the dot of an item; it keeps it in every state of the item.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-badge-font-size",
+            DefaultValue = "--bit-tpg-fs-2xs",
+            Description = "Text size of the badge of an item. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-badge-height",
+            DefaultValue = "--bit-siz-badge-md",
+            Description = "Height of the badge of an item, which is also its smallest width, so a one-digit count stays round. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-badge-dot-size",
+            DefaultValue = "--bit-siz-badge-dot-md",
+            Description = "Diameter of the dot of an item. The Size parameter wins over it.",
+        },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -322,7 +600,7 @@ public partial class BitNavDemo
         {
             Name = "IsItemExpanded",
             Type = "Func<TItem, bool>",
-            Description = "Whether an item is currently expanded.",
+            Description = "Whether the children of an item are currently shown, which is always the case while NoCollapse is set.",
         },
         new()
         {
@@ -360,7 +638,21 @@ public partial class BitNavDemo
                    Name = "AriaLabel",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Aria label for nav item. Ignored if CollapseAriaLabel or ExpandAriaLabel is provided.",
+                   Description = "The accessible name of the nav item, in place of its text. It also names a group header, whose CollapseAriaLabel/ExpandAriaLabel only apply when it is not set.",
+               },
+               new()
+               {
+                   Name = "Badge",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The badge text to render after the text of the nav item, for a count or a short status (\"3\", \"New\"). The item keeps its icon, its text and its states; a template in the Normal mode replaces the default icon and text, but the badge remains. Wins over Dot. Group headers, separators and a template in the Replace mode do not render it; the IconOnly nav pins it to the corner of the icon.",
+               },
+               new()
+               {
+                   Name = "BadgeAriaLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The accessible description of the badge (or the dot) of the nav item, folded into its accessible name (\"Inbox (3 unread)\"). It falls back to the Badge text, and a Dot is only announced while this is set.",
                },
                new()
                {
@@ -399,6 +691,13 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Dot",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Renders a small dot after the text of the nav item, to mark it as needing attention without showing a number. Ignored while Badge is set.",
+               },
+               new()
+               {
                    Name = "ExpandAriaLabel",
                    Type = "string?",
                    DefaultValue = "null",
@@ -429,10 +728,10 @@ public partial class BitNavDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the nav item is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the nav item is disabled.",
                },
                new()
                {
@@ -466,10 +765,26 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   DefaultValue = "null",
+                   Description = "The rel attribute of the link of the nav item. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS style for the nav item.",
+               },
+               new()
+               {
+                   Name = "SuffixTemplate",
+                   Type = "RenderFragment<BitNavItem>?",
+                   DefaultValue = "null",
+                   Description = "The custom template to render at the end of the nav item, after its text and ahead of its badge, while the item keeps its default content. Wins over the ItemSuffixTemplate of the nav. It holds content to look at, never a control of its own, and the IconOnly nav does not render it.",
                },
                new()
                {
@@ -491,7 +806,7 @@ public partial class BitNavDemo
                    Type = "BitNavItemTemplateRenderMode",
                    DefaultValue = "BitNavItemTemplateRenderMode.Normal",
                    Description = "The render mode of the nav item's custom template.",
-                   Href = "#nav-itemtemplate-rendermode",
+                   Href = "#nav-item-template-render-mode-enum",
                    LinkType = LinkType.Link,
                },
                new()
@@ -544,7 +859,21 @@ public partial class BitNavDemo
                    Name = "AriaLabel",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Aria label for nav option. Ignored if CollapseAriaLabel or ExpandAriaLabel is provided.",
+                   Description = "The accessible name of the nav option, in place of its text. It also names a group header, whose CollapseAriaLabel/ExpandAriaLabel only apply when it is not set.",
+               },
+               new()
+               {
+                   Name = "Badge",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The badge text to render after the text of the nav option, for a count or a short status (\"3\", \"New\"). The option keeps its icon, its text and its states; a template in the Normal mode replaces the default icon and text, but the badge remains. Wins over Dot. Group headers, separators and a template in the Replace mode do not render it; the IconOnly nav pins it to the corner of the icon.",
+               },
+               new()
+               {
+                   Name = "BadgeAriaLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The accessible description of the badge (or the dot) of the nav option, folded into its accessible name (\"Inbox (3 unread)\"). It falls back to the Badge text, and a Dot is only announced while this is set.",
                },
                new()
                {
@@ -583,6 +912,13 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Dot",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Renders a small dot after the text of the nav option, to mark it as needing attention without showing a number. Ignored while Badge is set.",
+               },
+               new()
+               {
                    Name = "ExpandAriaLabel",
                    Type = "string?",
                    DefaultValue = "null",
@@ -613,10 +949,10 @@ public partial class BitNavDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the nav option is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the nav option is disabled.",
                },
                new()
                {
@@ -650,10 +986,26 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   DefaultValue = "null",
+                   Description = "The rel attribute of the link of the nav option. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS style for the nav option.",
+               },
+               new()
+               {
+                   Name = "SuffixTemplate",
+                   Type = "RenderFragment<BitNavOption>?",
+                   DefaultValue = "null",
+                   Description = "The custom template to render at the end of the nav option, after its text and ahead of its badge, while the option keeps its default content. Wins over the ItemSuffixTemplate of the nav. It holds content to look at, never a control of its own, and the IconOnly nav does not render it.",
                },
                new()
                {
@@ -675,7 +1027,7 @@ public partial class BitNavDemo
                    Type = "BitNavItemTemplateRenderMode",
                    DefaultValue = "BitNavItemTemplateRenderMode.Normal",
                    Description = "The render mode of the nav option's custom template.",
-                   Href = "#nav-itemtemplate-rendermode",
+                   Href = "#nav-item-template-render-mode-enum",
                    LinkType = LinkType.Link,
                },
                new()
@@ -732,6 +1084,20 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Badge",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitNavItem.Badge))",
+                   Description = "The Badge field name and selector of the custom input class.",
+               },
+               new()
+               {
+                   Name = "BadgeAriaLabel",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitNavItem.BadgeAriaLabel))",
+                   Description = "The BadgeAriaLabel field name and selector of the custom input class.",
+               },
+               new()
+               {
                    Name = "Class",
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitNavItem.Class))",
@@ -767,6 +1133,13 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Dot",
+                   Type = "BitNameSelectorPair<TItem, bool?>",
+                   DefaultValue = "new(nameof(BitNavItem.Dot))",
+                   Description = "The Dot field name and selector of the custom input class.",
+               },
+               new()
+               {
                    Name = "ExpandAriaLabel",
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitNavItem.ExpandAriaLabel))",
@@ -797,10 +1170,10 @@ public partial class BitNavDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "BitNameSelectorPair<TItem, bool?>",
-                   DefaultValue = "new(nameof(BitNavItem.IsEnabled))",
-                   Description = "The IsEnabled field name and selector of the custom input class."
+                   DefaultValue = "new(nameof(BitNavItem.IsDisabled))",
+                   Description = "The IsDisabled field name and selector of the custom input class."
                },
                new()
                {
@@ -834,10 +1207,24 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Rel",
+                   Type = "BitNameSelectorPair<TItem, BitLinkRels?>",
+                   DefaultValue = "new(nameof(BitNavItem.Rel))",
+                   Description = "The Rel field name and selector of the custom input class."
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitNavItem.Style))",
                    Description = "The Style field name and selector of the custom input class."
+               },
+               new()
+               {
+                   Name = "SuffixTemplate",
+                   Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
+                   DefaultValue = "new(nameof(BitNavItem.SuffixTemplate))",
+                   Description = "The SuffixTemplate field name and selector of the custom input class.",
                },
                new()
                {
@@ -859,7 +1246,7 @@ public partial class BitNavDemo
                    Type = "BitNameSelectorPair<TItem, BitNavItemTemplateRenderMode?>",
                    DefaultValue = "new(nameof(BitNavItem.TemplateRenderMode))",
                    Description = "The TemplateRenderMode field name and selector of the custom input class.",
-                   Href = "#nav-itemtemplate-rendermode",
+                   Href = "#nav-item-template-render-mode-enum",
                    LinkType = LinkType.Link,
                },
                new()
@@ -949,6 +1336,13 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "ItemBadge",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item badge (or the dot) of the BitNav.",
+               },
+               new()
+               {
                    Name = "ItemIcon",
                    Type = "string?",
                    DefaultValue = "null",
@@ -960,6 +1354,13 @@ public partial class BitNavDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item text of the BitNav."
+               },
+               new()
+               {
+                   Name = "ItemSuffix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item suffix of the BitNav, the end of the item that holds its suffix template and its badge.",
                },
                new()
                {
@@ -1024,276 +1425,13 @@ public partial class BitNavDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="Info Primary general color.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
-                },
-                new()
-                {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
-                },
-                new()
-                {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
-                },
-                new()
-                {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
-                },
-                new()
-                {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
-                },
-                new()
-                {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
-                },
-                new()
-                {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
-                },
-                new()
-                {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
-                },
-                new()
-                {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
-                },
-                new()
-                {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "nav-match-enum",
-            Name = "BitNavMatch",
-            Description = "Modifies the URL matching behavior for a BitNav<TItem>.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Exact",
-                    Description = "Specifies that the nav item should be active when it matches exactly the current URL.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Prefix",
-                    Description = "Specifies that the nav item should be active when it matches any prefix of the current URL.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Regex",
-                    Description = "Specifies that the nav item should be active when its provided regex matches the current URL.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Wildcard",
-                    Description = "Specifies that the nav item should be active when its provided wildcard matches the current URL.",
-                    Value = "3",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "nav-mode-enum",
-            Name = "BitNavMode",
-            Items =
-            [
-                new()
-                {
-                    Name = "Automatic",
-                    Description = "The value of selected key will change using NavigationManager and the current url inside the component.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Manual",
-                    Description = "Selected key changes will be sent back to the parent component and the component won't change its value.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "nav-render-type-enum",
-            Name = "BitNavRenderType",
-            Description="Determines how the nav items are rendered visually.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Normal",
-                    Value = "0",
-                    Description="All items will be rendered normally only based on their own properties."
-                },
-                new()
-                {
-                    Name = "Grouped",
-                    Value = "1",
-                    Description="Root elements are rendered in a specific way that resembles a grouped list of items."
-                }
-            ]
-        },
-        new()
-        {
-            Id = "nav-aria-current-enum",
-            Name = "BitNavAriaCurrent",
-            Items =
-            [
-                new()
-                {
-                    Name = "Page",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Step",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Location",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Date",
-                    Value = "3",
-                },
-                new()
-                {
-                    Name = "Time",
-                    Value = "4",
-                },
-                new()
-                {
-                    Name = "True",
-                    Value = "5",
-                },
-
-            ]
-        },
-        new()
-        {
-            Id = "nav-itemtemplate-rendermode",
-            Name = "BitNavItemTemplateRenderMode",
-            Items =
-            [
-                new()
-                {
-                    Name = "Normal",
-                    Description = "Renders the template inside the button/anchor root element of the item.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Replace",
-                    Description = "Replaces the button/anchor root element of the item.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available for a component.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Small",
-                    Description = "The small size.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Medium",
-                    Description = "The medium size.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Large",
-                    Description = "The large size.",
-                    Value = "2",
-                }
-            ]
-        },
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitNavMatch(),
+        DemoSharedEnums.BitNavMode(),
+        DemoSharedEnums.BitNavRenderType(),
+        DemoSharedEnums.BitNavAriaCurrent(),
+        DemoSharedEnums.BitNavItemTemplateRenderMode(),
+        DemoSharedEnums.BitLinkRels(),
+        DemoSharedEnums.BitSize(),
     ];
 }

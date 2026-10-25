@@ -105,6 +105,11 @@ internal record class BitScrollablePaneOptions
     public bool AutoHide { get; set; }
 
     /// <summary>
+    /// How long, in milliseconds, the auto hidden scrollbar stays up after the pane was last used.
+    /// </summary>
+    public int AutoHideDelay { get; set; }
+
+    /// <summary>
     /// Whether the reader is not to be able to move the pane at all.
     /// </summary>
     /// <remarks>

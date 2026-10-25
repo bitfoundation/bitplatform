@@ -1,13 +1,11 @@
 @import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 section {
     width: calc(50% - 0.75rem);
+    --bit-Chart-surface-color: #{$bit-color-background-secondary};
 
     @include lt-md {
         width: 100%;
-    }
-
-    ::deep .card {
-        min-height: 333px;
     }
 }

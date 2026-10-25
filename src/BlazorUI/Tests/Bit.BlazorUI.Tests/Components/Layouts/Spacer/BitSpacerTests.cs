@@ -1,3 +1,4 @@
+﻿using System.Globalization;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -77,7 +78,9 @@ public class BitSpacerTests : BunitTestContext
 
         var style = component.Find(".bit-spc").GetAttribute("style");
 
-        StringAssert.Contains(style, $"margin-inline-start:{width}px");
+        // Written invariantly, as CSS reads it: the culture of the machine would put its own minus sign (fa-IR and
+        // ar-SA lead it with a direction mark) in front of a negative width the spacer writes as plain "-8px".
+        StringAssert.Contains(style, $"margin-inline-start:{width.ToString(CultureInfo.InvariantCulture)}px");
 
         // A fixed spacer must not also absorb the leftover space of its container.
         Assert.IsFalse(style.Contains("flex-grow"));
@@ -99,6 +102,40 @@ public class BitSpacerTests : BunitTestContext
         StringAssert.Contains(style, $"margin-block-start:{height}px");
         Assert.IsFalse(style.Contains("margin-inline-start"));
         Assert.IsFalse(style.Contains("flex-grow"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldWriteANegativeLengthTheBrowserCanRead()
+    {
+        // Not every culture writes a negative number with the hyphen CSS expects: several of them use the
+        // real minus sign, which would make the whole declaration unreadable to the browser.
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.NumberFormat.NegativeSign = "−";
+
+        var originalCulture = CultureInfo.CurrentCulture;
+        var originalDefault = CultureInfo.DefaultThreadCurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+
+            var component = RenderComponent<BitSpacer>(parameters =>
+            {
+                parameters.Add(p => p.Width, -8);
+                parameters.Add(p => p.Height, -4);
+            });
+
+            var style = component.Find(".bit-spc").GetAttribute("style")!;
+
+            StringAssert.Contains(style, "margin-inline-start:-8px");
+            StringAssert.Contains(style, "margin-block-start:-4px");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+            CultureInfo.DefaultThreadCurrentCulture = originalDefault;
+        }
     }
 
     [TestMethod]
@@ -393,11 +430,11 @@ public class BitSpacerTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitSpacerShouldRespectIsEnabled(bool isEnabled)
+    public void BitSpacerShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitSpacer>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         Assert.AreEqual(isEnabled is false, component.Find(".bit-spc").ClassList.Contains("bit-dis"));
@@ -470,9 +507,88 @@ public class BitSpacerTests : BunitTestContext
 
         var root = component.Find(".bit-spc");
 
-        // A labelled spacer is meant to be announced, so the default aria-hidden steps aside.
+        // A labelled spacer is meant to be announced, so the default aria-hidden steps aside and the element takes
+        // a role that allows a name, since a generic one cannot carry an aria-label.
         Assert.AreEqual("spacer", root.GetAttribute("aria-label"));
+        Assert.AreEqual("separator", root.GetAttribute("role"));
         Assert.IsFalse(root.HasAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldBeAVerticalSeparatorByDefaultWhenLabelled()
+    {
+        var component = RenderComponent<BitSpacer>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "spacer");
+        });
+
+        // A separator is horizontal unless told otherwise, while a spacer creates its space along the inline axis
+        // by default, which puts it between the items of a row.
+        Assert.AreEqual("vertical", component.Find(".bit-spc").GetAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldBeAVerticalSeparatorWhenLabelledWithInlineSpace()
+    {
+        var component = RenderComponent<BitSpacer>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "spacer");
+            parameters.Add(p => p.Width, 20);
+            parameters.Add(p => p.Height, 10);
+        });
+
+        Assert.AreEqual("vertical", component.Find(".bit-spc").GetAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    [DataRow(true, null)]
+    [DataRow(false, 20)]
+    public void BitSpacerShouldBeAHorizontalSeparatorWhenLabelledWithBlockSpace(bool vertical, int? height)
+    {
+        var component = RenderComponent<BitSpacer>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "spacer");
+            parameters.Add(p => p.Vertical, vertical);
+            parameters.Add(p => p.Height, height);
+        });
+
+        // Horizontal is the implicit orientation of a separator, so it is left unstated.
+        Assert.IsFalse(component.Find(".bit-spc").HasAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldRenderNoOrientationWhenNotLabelled()
+    {
+        var component = RenderComponent<BitSpacer>();
+
+        Assert.IsFalse(component.Find(".bit-spc").HasAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldLetHtmlAttributesOverrideAriaOrientation()
+    {
+        var component = RenderComponent<BitSpacerAriaOrientationOverrideTest>();
+
+        var root = component.Find(".bit-spc");
+
+        Assert.AreEqual("separator", root.GetAttribute("role"));
+        Assert.AreEqual("horizontal", root.GetAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldRenderNoRoleWhenNotLabelled()
+    {
+        var component = RenderComponent<BitSpacer>();
+
+        Assert.IsFalse(component.Find(".bit-spc").HasAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldLetHtmlAttributesOverrideRole()
+    {
+        var component = RenderComponent<BitSpacerRoleOverrideTest>();
+
+        Assert.AreEqual("presentation", component.Find(".bit-spc").GetAttribute("role"));
     }
 
     [TestMethod]
@@ -525,5 +641,22 @@ public class BitSpacerTests : BunitTestContext
         Assert.AreEqual("SPAN", spacers[2].TagName);
         StringAssert.Contains(spacers[2].GetAttribute("style")!, "flex-grow:2");
         StringAssert.Contains(spacers[2].GetAttribute("style")!, "min-block-size:1rem");
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitSpacer>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-spc");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+        Assert.AreEqual("separator", root.GetAttribute("role"));
+        Assert.IsFalse(root.HasAttribute("aria-hidden"));
     }
 }

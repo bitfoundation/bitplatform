@@ -1,0 +1,166 @@
+﻿@page "/other/native-files"
+@using System.Globalization
+
+<PageTitle>Other - Native Files · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Other - Native Files</h1>
+    <p class="bb-subtitle">
+        A drop target can accept OS-level drags by listing a <code>BdndNativeTypes</code> value. The first target
+        accepts <code>BdndNativeTypes.File</code>: drag files - or a folder, which <code>ExpandDirectories</code> opens
+        up into the files inside it, each with its <code>RelativePath</code> - from your file explorer onto it, and
+        <code>OnNativeDrop</code> receives the files with their name, type, size and <code>LastModified</code> date;
+        the contents of the small text files are read with <code>OpenReadStreamAsync</code>. At most
+        @MaxFiles files are listed (<code>MaxFiles</code>); <code>TotalFileCount</code> tells how many the drop carried,
+        and <code>FileListIncomplete</code> whether a folder could not be listed in full. The second takes
+        images only, three at most (<code>AcceptFileTypes="image/*"</code>, <code>MaxFiles</code>): a drag of other
+        files is refused while it hovers, from their MIME types, and on a drop the files of other types are left out.
+        The third takes PDFs and text by extension and type (<code>.pdf</code>, <code>text/plain</code>): names are
+        known only at the drop, so it takes any file drag and sorts the files out then.
+    </p>
+</div>
+
+<div class="bb-demo">
+    <BdndProvider>
+        <div class="row-wrap" style="align-items:stretch;">
+            <BdndDropTarget TItem="object" Accept="@BdndNativeTypes.File" ExpandDirectories="true" MaxFiles="MaxFiles"
+                            Context="t" style="display:contents" OnNativeDrop="HandleNativeDrop">
+                <div class="dustbin"
+                     style="@($"width:100%;max-width:34rem;height:8rem;background:{(t.IsOver ? "#1565c0" : "#333")};")">
+                    @(t.IsOver ? "Release to drop the files" : "Drag files here from your OS")
+                </div>
+            </BdndDropTarget>
+
+            <BdndDropTarget TItem="object" Accept="@BdndNativeTypes.File" AcceptFileTypes="ImageTypes" MaxFiles="3"
+                            Context="images" class="native-zone native-images" OnNativeDrop="HandleImages">
+                @(images.IsOver ? "Release to drop the images" : "Images only")
+            </BdndDropTarget>
+
+            <BdndDropTarget TItem="object" Accept="@BdndNativeTypes.File" AcceptFileTypes="DocumentTypes"
+                            Context="documents" class="native-zone native-documents" OnNativeDrop="HandleDocuments">
+                @(documents.IsOver ? "Release to drop the documents" : "PDFs and text")
+            </BdndDropTarget>
+        </div>
+    </BdndProvider>
+
+    @if (_imagesStatus is not null)
+    {
+        <p class="demo-caption native-images-status">@_imagesStatus</p>
+    }
+    @if (_documentsStatus is not null)
+    {
+        <p class="demo-caption native-documents-status">@_documentsStatus</p>
+    }
+
+    @if (_incomplete)
+    {
+        <p class="demo-caption native-incomplete">
+            Not every file is listed: an entry could not be read, or the walk stopped at the limit of @MaxFiles.
+        </p>
+    }
+    @if (_files.Count > 0)
+    {
+        <h4 class="demo-result-title">Dropped files (@_files.Count@(_total > _files.Count ? $" of {_total}" : ""))</h4>
+        <div class="bb-scroll" style="max-width:34rem;">
+            <table class="bb-table demo-table">
+                <thead><tr><th>Name</th><th>Type</th><th>Size</th><th>Modified</th><th>Contents</th></tr></thead>
+                <tbody>
+                    @foreach (var f in _files)
+                    {
+                        <tr>
+                            <td>@(string.IsNullOrEmpty(f.RelativePath) ? f.Name : f.RelativePath)</td>
+                            <td>@(f.IsDirectory ? "folder" : string.IsNullOrEmpty(f.Type) ? "-" : f.Type)</td>
+                            <td>@FormatSize(f.Size)</td>
+                            <td class="native-modified">@(f.LastModified is { } modified ? modified.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) : "-")</td>
+                            <td>@(_previews.TryGetValue(f, out var preview) ? preview : "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<DemoCode />
+
+<div class="bb-note">
+    The browser hands a drop's files to the page during the drop only; the target keeps those of its last drop, so
+    read them in <code>OnNativeDrop</code> or soon after. A dropped file is untrusted input: check its type and size
+    before acting on its contents.
+</div>
+
+@code {
+    private const int MaxFiles = 100;
+    private const long PreviewLimit = 64_000;
+
+    // MIME types only: the browser tells them while files are dragged, so a drag of other files is refused right away
+    private static readonly string[] ImageTypes = ["image/*"];
+
+    // an extension: only known at the drop, which sorts the files out
+    private static readonly string[] DocumentTypes = [".pdf", "text/plain"];
+
+    private readonly List<BdndNativeFile> _files = [];
+    private readonly Dictionary<BdndNativeFile, string> _previews = [];
+    private int _total;
+    private bool _incomplete;
+    private string? _imagesStatus;
+    private string? _documentsStatus;
+
+    private async Task HandleNativeDrop(BdndNativeDropEventArgs e)
+    {
+        _files.Clear();
+        _previews.Clear();
+        _files.AddRange(e.Files);
+        _total = e.TotalFileCount;
+        _incomplete = e.FileListIncomplete;
+        StateHasChanged();
+
+        // the contents of the small text files, read from the browser as streams
+        foreach (var file in e.Files.Where(IsText))
+        {
+            try
+            {
+                await using var stream = await file.OpenReadStreamAsync(PreviewLimit);
+                using var reader = new StreamReader(stream);
+                var text = (await reader.ReadToEndAsync()).ReplaceLineEndings(" ").Trim();
+                _previews[file] = text.Length > 80 ? text[..80] + "…" : text;
+            }
+            catch (IOException)
+            {
+                _previews[file] = "(too large to preview)";
+            }
+            catch (InvalidOperationException)
+            {
+                // another drop took the target's place meanwhile: these files are no longer kept
+                break;
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void HandleImages(BdndNativeDropEventArgs e) => _imagesStatus = Status(e, "image");
+
+    private void HandleDocuments(BdndNativeDropEventArgs e) => _documentsStatus = Status(e, "document");
+
+    // what the target took, and what it left out (of another type, or past its MaxFiles)
+    private static string Status(BdndNativeDropEventArgs e, string noun)
+    {
+        var left = e.TotalFileCount - e.Files.Count;
+        return $"{Plural(e.Files.Count, noun)} dropped" + (left > 0 ? $" ({Plural(left, "file")} left out)." : ".");
+    }
+
+    private static string Plural(int count, string noun) => count == 1 ? $"1 {noun}" : $"{count} {noun}s";
+
+    private static bool IsText(BdndNativeFile file) =>
+        file.CanRead && (file.Type.StartsWith("text/", StringComparison.OrdinalIgnoreCase) || file.Type == "application/json"
+            || file.Name.EndsWith(".md", StringComparison.OrdinalIgnoreCase) || file.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase));
+
+    private static string FormatSize(long bytes)
+    {
+        string[] units = ["B", "KB", "MB", "GB"];
+        double size = bytes;
+        int u = 0;
+        while (size >= 1024 && u < units.Length - 1) { size /= 1024; u++; }
+        return $"{size:0.#} {units[u]}";
+    }
+}

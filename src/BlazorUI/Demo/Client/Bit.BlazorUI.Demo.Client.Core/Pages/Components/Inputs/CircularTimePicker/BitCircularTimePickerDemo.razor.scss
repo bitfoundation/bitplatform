@@ -2,13 +2,33 @@
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 .example-content {
-    width: 17rem;
     display: flex;
+    width: 18.25rem;
+    max-width: 100%;
     flex-flow: column wrap;
 }
 
 .example-content-standalone {
     padding: rem2(5px);
+}
+
+// The public CSS variables of the picker, set on a wrapper around it. They are inherited, so the wrapper
+// reaches the field, the label and the icon, and the dial too: the callout is moved to the end of the body
+// while it is open, yet it keeps inheriting from the picker's ancestors. On :root they would restyle every
+// picker of the page.
+.custom-vars {
+    --bit-CircularTimePicker-color: #6b3fa0;
+    --bit-CircularTimePicker-focus-color: #b58cf0;
+    --bit-CircularTimePicker-label-color: #6b3fa0;
+    --bit-CircularTimePicker-border-color: #6b3fa0;
+    --bit-CircularTimePicker-border-radius: 1rem;
+    --bit-CircularTimePicker-input-background: #f4efff;
+    --bit-CircularTimePicker-input-color: #3a2358;
+    --bit-CircularTimePicker-placeholder-color: #6b3fa0;
+    --bit-CircularTimePicker-callout-radius: 1.25rem;
+    --bit-CircularTimePicker-clock-background: #f4efff;
+    --bit-CircularTimePicker-number-color: #3a2358;
+    --bit-CircularTimePicker-number-hover-background: #e4d8fb;
 }
 
 .event-log {

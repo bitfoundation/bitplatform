@@ -11,19 +11,22 @@ namespace Bit.BlazorUI;
 /// </summary>
 public static class BitThemeSerialization
 {
-    private static readonly JsonSerializerOptions Options = new()
+    // The metadata of BitTheme is generated at compile time (BitThemeJsonContext) rather than reflected at run time, so
+    // a trimmed or AOT-compiled app keeps every member the JSON is read into and written from.
+    private static readonly BitThemeJsonContext Context = BitThemeJsonContext.Default;
+
+    private static readonly BitThemeJsonContext IndentedContext = new(new JsonSerializerOptions
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    };
-
-    private static readonly JsonSerializerOptions IndentedOptions = new(Options) { WriteIndented = true };
+        WriteIndented = true,
+    });
     private static readonly JsonSerializerOptions JsonNodeIndentedWriteOptions = new() { WriteIndented = true };
 
     public static string Serialize(BitTheme? theme, bool writeIndented = false)
     {
-        var serializeOptions = writeIndented ? IndentedOptions : Options;
-        var raw = JsonSerializer.Serialize(theme ?? new BitTheme(), serializeOptions);
+        var context = writeIndented ? IndentedContext : Context;
+        var raw = JsonSerializer.Serialize(theme ?? new BitTheme(), context.BitTheme);
         var node = JsonNode.Parse(raw);
         PruneEmptyObjectNodes(node);
         return node!.ToJsonString(writeIndented ? JsonNodeIndentedWriteOptions : null);
@@ -34,7 +37,7 @@ public static class BitThemeSerialization
         if (string.IsNullOrWhiteSpace(json))
             return new BitTheme();
 
-        var theme = JsonSerializer.Deserialize<BitTheme>(json, Options) ?? new BitTheme();
+        var theme = JsonSerializer.Deserialize(json, Context.BitTheme) ?? new BitTheme();
         EnsureNestedObjects(theme);
         return theme;
     }
@@ -110,6 +113,9 @@ public static class BitThemeSerialization
         theme.Color ??= new BitThemeColors();
         theme.BoxShadow ??= new BitThemeBoxShadows();
         theme.Spacing ??= new BitThemeSpacings();
+        theme.Spacing.Card ??= new BitThemeSizeScale();
+        theme.Spacing.Steps ??= new BitThemeSpacingSteps();
+        theme.Spacing.Steps.Card ??= new BitThemeSizeScale();
         theme.ZIndex ??= new BitThemeZIndices();
         theme.Shape ??= new BitThemeShapes();
         theme.Typography ??= new BitThemeTypography();
@@ -154,6 +160,8 @@ public static class BitThemeSerialization
         typography.FontSize ??= new BitThemeTypographyFontSizes();
         typography.FontWeights ??= new BitThemeTypographyFontWeights();
         typography.Control ??= new BitThemeControlTypography();
+        typography.Dialog ??= new BitThemeDialogTypography();
+        typography.FieldLabel ??= new BitThemeFieldLabelTypography();
 
         // Layout branch.
         theme.Layout.Breakpoints ??= new BitThemeBreakpoints();
@@ -170,9 +178,33 @@ public static class BitThemeSerialization
         theme.Size.Item ??= new BitThemeSizeScale();
         theme.Size.Track ??= new BitThemeSizeScale();
         theme.Size.SliderThumb ??= new BitThemeSizeScale();
+        theme.Size.Badge ??= new BitThemeSizeScale();
+        theme.Size.BadgeDot ??= new BitThemeSizeScale();
+        theme.Size.Chip ??= new BitThemeSizeScale();
         theme.Size.Switch ??= new BitThemeSwitchSizes();
         theme.Size.Switch.Width ??= new BitThemeSizeScale();
         theme.Size.Switch.Height ??= new BitThemeSizeScale();
         theme.Size.Switch.Thumb ??= new BitThemeSizeScale();
+
+        // Size steps branch.
+        var steps = theme.Size.Steps ??= new BitThemeSizeSteps();
+        steps.Control ??= new BitThemeSizeScale();
+        steps.ControlPaddingX ??= new BitThemeSizeScale();
+        steps.ControlPaddingY ??= new BitThemeSizeScale();
+        steps.Selection ??= new BitThemeSizeScale();
+        steps.Item ??= new BitThemeSizeScale();
+        steps.SliderThumb ??= new BitThemeSizeScale();
+        steps.Badge ??= new BitThemeSizeScale();
+        steps.BadgeDot ??= new BitThemeSizeScale();
+        steps.Chip ??= new BitThemeSizeScale();
+        steps.Switch ??= new BitThemeSwitchSizes();
+        steps.Switch.Width ??= new BitThemeSizeScale();
+        steps.Switch.Height ??= new BitThemeSizeScale();
+        steps.Switch.Thumb ??= new BitThemeSizeScale();
     }
 }
+
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+                             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(BitTheme))]
+internal sealed partial class BitThemeJsonContext : JsonSerializerContext;

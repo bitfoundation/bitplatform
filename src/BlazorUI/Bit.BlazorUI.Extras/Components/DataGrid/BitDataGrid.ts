@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class DataGrid {
         // Infinite scrolling is the one feature that genuinely needs to read scroll
         // position (which Blazor's scroll EventArgs do not expose), so this watches
@@ -196,10 +196,178 @@ namespace BitBlazorUI {
             };
         }
 
+        // Publishes the height of the sticky header and footer on the viewport as --bit-dtg-head-h/--bit-dtg-foot-h,
+        // which the stylesheet turns into scroll padding: whatever the browser scrolls into view inside the viewport
+        // (a cell the arrow keys move to, a checkbox reached with Tab) then stops below the header and above the
+        // footer instead of under them (WCAG 2.4.11). Both can change height at any time (wrapped titles, a filter
+        // row, a footer appearing), and so does the table they sit in, which is what is observed.
+        public static observeStickyBands(viewport: HTMLElement) {
+            if (!viewport || typeof ResizeObserver === 'undefined') return { dispose: () => { } };
+
+            const update = () => {
+                const table = viewport.firstElementChild;
+                const header = table?.querySelector<HTMLElement>(':scope > .bit-dtg-header');
+                const footer = table?.querySelector<HTMLElement>(':scope > .bit-dtg-footer');
+                viewport.style.setProperty('--bit-dtg-head-h', `${header?.offsetHeight ?? 0}px`);
+                viewport.style.setProperty('--bit-dtg-foot-h', `${footer?.offsetHeight ?? 0}px`);
+            };
+
+            const observer = new ResizeObserver(update);
+            observer.observe(viewport);
+            if (viewport.firstElementChild) observer.observe(viewport.firstElementChild);
+            update();
+
+            return { dispose: () => observer.disconnect() };
+        }
+
         // Syncs the "some but not all rows selected" state onto the select-all checkbox.
         // indeterminate is a DOM property with no attribute equivalent, so Blazor markup can't set it.
         public static setIndeterminate(element: HTMLInputElement, value: boolean) {
             if (element) element.indeterminate = value;
+        }
+
+        // Puts the focus back into a column header after its column moved: moving an element in the DOM drops the
+        // focus it held. The sort button is the header's own control, so it is preferred; a header that is not
+        // sortable falls back to its first focusable child (the resize handle).
+        public static focusHeader(root: HTMLElement, columnId: string) {
+            const header = root?.querySelector<HTMLElement>(`.bit-dtg-header-row .bit-dtg-hcell[data-col="${CSS.escape(columnId)}"]`);
+            if (!header) return;
+            const target = header.querySelector<HTMLElement>('button.bit-dtg-htext')
+                ?? Utils.firstFocusable(header);
+            target?.focus();
+        }
+
+        // Moves the focus into an editor that has just opened, so Enter/F2, a double-click or the Edit button
+        // leave the user typing rather than on a cell (or a button) that no longer holds the control. A blank
+        // column id means the row's first editor. Only the cells of this grid count, not those of a grid nested
+        // in a detail row. Text is selected, so typing replaces the value the way it does in a spreadsheet.
+        // An editor opened by typing into its cell (typed) takes the keys gathered while it was opening instead -
+        // see the cell key guard - and an input event tells .NET about them as if they had been typed into it.
+        public static focusEditor(root: HTMLElement, columnId: string, typed?: boolean) {
+            if (!root) return;
+            const gathered = typedText.get(root);
+            const text = gathered?.text;
+            typedText.delete(root);
+            // An editor opened another way (Enter, F2, a double-click) also takes what was typed into its cell while it
+            // was opening: the cell key guard gathered those keys and cancelled them, so they would otherwise be lost.
+            // Typed over the selected value, as they would have been had the editor already held the focus.
+            if (!typed && gathered && Date.now() - gathered.at < typedTextLifetime) typed = true;
+            const cells = Array.from(root.querySelectorAll<HTMLElement>('[data-bit-dtg-edit]'))
+                .filter(c => c.closest('.bit-dtg') === root);
+            const cell = (columnId ? cells.find(c => c.dataset.bitDtgEdit === columnId) : undefined) ?? cells[0];
+            const target = cell ? Utils.firstFocusable(cell) : undefined;
+            if (!target) return;
+            target.focus();
+            if (!(target instanceof HTMLInputElement) || !['text', 'search', 'number', 'email', 'tel', 'url'].includes(target.type)) return;
+            if (typed) {
+                // A key that reached .NET after the editor had already claimed the gathered text asks again, with
+                // nothing left to hand over: the editor keeps what it holds, unselected, so typing runs on.
+                if (text === undefined) return;
+                // Inserted the way typing inserts it, replacing the selected value: a number input refuses a value
+                // set from script that is not yet a number ("12." on the way to "12.5"), but keeps one typed into it.
+                // Both paths raise the input event that tells .NET.
+                try { target.select(); } catch { }
+                const inserted = text.length > 0 ? document.execCommand('insertText', false, text) : document.execCommand('delete');
+                if (!inserted) {
+                    target.value = text;
+                    target.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                return;
+            }
+            try { target.select(); } catch { }
+        }
+
+        // Moves the focus to the first focusable match of the selectors, tried in order, inside this grid - not inside
+        // a grid nested in one of its detail rows. Used when the control that held the focus is about to go away (a
+        // clear button that disappears with what it cleared) or to move (a keyed item that follows its column).
+        public static focusFirst(root: HTMLElement, selectors: string[]) {
+            if (!root) return;
+            for (const selector of selectors ?? []) {
+                let matches: HTMLElement[];
+                try {
+                    matches = Array.from(root.querySelectorAll<HTMLElement>(selector));
+                } catch {
+                    continue;
+                }
+                const target = matches.find(el => el.closest('.bit-dtg') === root && Utils.isFocusableElement(el));
+                if (target) {
+                    target.focus();
+                    return;
+                }
+            }
+        }
+
+        // Puts the focus on a row's command button (Edit) once the Save/Cancel button that held it is gone.
+        public static focusRowCommand(root: HTMLElement, ariaRowIndex: number) {
+            const row = Array.from(root?.querySelectorAll<HTMLElement>(`.bit-dtg-row[aria-rowindex="${ariaRowIndex}"]`) ?? [])
+                .find(r => r.closest('.bit-dtg') === root);
+            row?.querySelector<HTMLElement>('.bit-dtg-cell-command button:not([disabled])')?.focus();
+        }
+
+        // Cell edit mode commits when the focus leaves the open cell. A focusout whose relatedTarget is still
+        // inside the cell (a custom EditTemplate with several controls) is a move within it, not a departure -
+        // and so is one into a popup the cell's editor opened (a dropdown's list, a date picker's calendar), which
+        // the callout JS moves to the body and which only the opener's aria-controls / aria-owns ties back to it.
+        // The edit then commits once the focus or a press lands outside both. The cell carries the number of its
+        // edit, so a late report cannot commit the edit opened after it.
+        public static initCellEditBlur(root: HTMLElement, dotNetRef: DotNetObject) {
+            if (!root) return { dispose: () => { } };
+            // The edit whose focus went into one of its popups, still to commit when the user moves on from it.
+            let away: { cell: HTMLElement, version: number } | null = null;
+            // The last element pressed: a press on a part of a popup that takes no focus blurs with no relatedTarget.
+            let pressed: Node | null = null;
+            const commit = (version: number) => dotNetRef.invokeMethodAsync('OnCellEditBlurAsync', version);
+            const onFocusOut = (e: FocusEvent) => {
+                const cell = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-bit-dtg-edit-version]');
+                if (!cell || cell.closest('.bit-dtg') !== root) return;
+                const version = Number(cell.dataset.bitDtgEditVersion);
+                const next = (e.relatedTarget as Node | null) ?? pressed;
+                if (next && cell.contains(next)) return;
+                if (next && isOwnedBy(cell, next)) {
+                    away = { cell, version };
+                    return;
+                }
+                away = null;
+                commit(version);
+            };
+            // Capture phase, so a popup that stops the event still reports where the user went.
+            const onElsewhere = (e: Event) => {
+                if (e.type === 'pointerdown') pressed = e.target as Node | null;
+                if (!away) return;
+                const target = e.target as Node | null;
+                if (!away.cell.isConnected) {
+                    away = null;
+                    return;
+                }
+                if (target && (away.cell.contains(target) || isOwnedBy(away.cell, target))) return;
+                const version = away.version;
+                away = null;
+                commit(version);
+            };
+            // A press is only the cause of the blur it is in the middle of, never of a later one (Tab out to the browser).
+            const onReleased = () => pressed = null;
+            root.addEventListener('focusout', onFocusOut);
+            document.addEventListener('focusin', onElsewhere, true);
+            document.addEventListener('pointerdown', onElsewhere, true);
+            document.addEventListener('pointerup', onReleased, true);
+            document.addEventListener('pointercancel', onReleased, true);
+            return {
+                dispose: () => {
+                    root.removeEventListener('focusout', onFocusOut);
+                    document.removeEventListener('focusin', onElsewhere, true);
+                    document.removeEventListener('pointerdown', onElsewhere, true);
+                    document.removeEventListener('pointerup', onReleased, true);
+                    document.removeEventListener('pointercancel', onReleased, true);
+                }
+            };
+        }
+
+        // Has the grid's cells, rows and headers told which keys were pressed inside a surface rendered in their
+        // content (see reportNestedSurfaceKey), which the cell key guard works out for every key it sees.
+        public static watchNestedSurfaceKeys(root: HTMLElement, dotNetRef: DotNetObject) {
+            if (!root) return;
+
+            nestedSurfaceKeyWatches.set(root, { dotNetRef, nested: false });
         }
 
         // Measures an element's rendered width. Used when a column resize starts so the drag begins
@@ -210,35 +378,30 @@ namespace BitBlazorUI {
         }
 
         // Measures the widest rendered content of one column (its header included) so .NET can
-        // auto-fit the column to it. Cells clip their overflow, so scrollWidth - not the box width -
-        // is what reports the untruncated content; the horizontal padding is added back because
-        // scrollWidth excludes it on a flex container.
+        // auto-fit the column to it. Each cell is laid out at its content's own width for a moment
+        // (width: max-content), which is what a cell's box says once nothing stretches it: neither the
+        // column's track nor the label of a header, which grows to fill its cell. Its scrollWidth could
+        // not tell that: it is never less than the cell's current width, so a fitted column could only
+        // grow - by its padding on every fit - and never shrink to content narrower than itself.
         public static measureColumnContentWidth(root: HTMLElement, ariaColIndex: number): number {
             if (!root) return 0;
-            const cells = root.querySelectorAll(`[aria-colindex="${ariaColIndex}"]`);
-            let widest = 0;
-            cells.forEach(node => {
+            const cells: HTMLElement[] = [];
+            root.querySelectorAll(`[aria-colindex="${ariaColIndex}"]`).forEach(node => {
                 const cell = node as HTMLElement;
                 // A spanning cell's content belongs to several columns, so it would over-size this one.
                 if (cell.style.gridColumn) return;
-                // The filter row's editors stretch to the column (.bit-dtg-filter-wrap is width:100%),
-                // so measuring that cell would report the column's current width back as its content:
-                // a fitted column could then never shrink, and a narrow one would snap to the width of
-                // the operator dropdown. Auto-fit is about the header and the data, so skip it.
+                // The filter row's editors stretch to the column (.bit-dtg-filter-wrap is width:100%), so their
+                // own width is the column's current one: auto-fit is about the header and the data.
                 if (cell.closest('.bit-dtg-filter-row')) return;
-                const styles = getComputedStyle(cell);
-                const padding = parseFloat(styles.paddingLeft || '0') + parseFloat(styles.paddingRight || '0');
-                // The header holds the sort/group/resize affordances next to its label, so measure its
-                // children's extent rather than the label alone. Both measurements exclude the cell's
-                // own padding, which the widest calculation below adds back exactly once.
-                let content = cell.scrollWidth;
-                for (let i = 0; i < cell.children.length; i++) {
-                    const child = cell.children[i] as HTMLElement;
-                    if (child.classList.contains('bit-dtg-resizer')) continue;
-                    content = Math.max(content, child.scrollWidth);
-                }
-                widest = Math.max(widest, content + padding);
+                cells.push(cell);
             });
+            // Every cell is switched to its content's width before any is measured, and all are put back after the
+            // last: a measurement between two writes would lay the whole grid out again once per cell.
+            const widths = cells.map(cell => cell.style.width);
+            cells.forEach(cell => cell.style.width = 'max-content');
+            let widest = 0;
+            cells.forEach(cell => widest = Math.max(widest, cell.getBoundingClientRect().width));
+            cells.forEach((cell, i) => cell.style.width = widths[i]);
             // A couple of pixels of slack keeps the fitted column from re-clipping on sub-pixel rounding.
             return widest > 0 ? Math.ceil(widest) + 2 : 0;
         }
@@ -349,13 +512,26 @@ namespace BitBlazorUI {
     // key and lags a keystroke behind. A single capture-phase listener decides per-key up front and only
     // cancels the arrow keys on a focused drag handle, so Tab/Enter/Space keep working and the .NET
     // keydown handler still runs to actually move the row.
+    // The column headers own two more keys the same way: a focused resize handle (a separator) moves its edge with
+    // the arrows and takes it to its limits with Home/End, and Ctrl+Left/Right anywhere in a reorderable header
+    // (one that carries data-col) moves the column. Left alone, both would also scroll the viewport sideways.
+    const resizerKeys = new Set(['ArrowLeft', 'ArrowRight', 'Home', 'End', 'Enter']);
     let reorderKeyGuardInstalled = false;
     function installReorderKeyGuard() {
         if (reorderKeyGuardInstalled || typeof document === 'undefined') return;
         reorderKeyGuardInstalled = true;
         document.addEventListener('keydown', (e: KeyboardEvent) => {
-            if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
             const target = e.target as HTMLElement | null;
+            if (target?.classList?.contains('bit-dtg-resizer') && resizerKeys.has(e.key) && !e.altKey && !e.metaKey) {
+                e.preventDefault();
+                return;
+            }
+            if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
+                target?.closest?.('.bit-dtg-hcell[data-col]')) {
+                e.preventDefault();
+                return;
+            }
+            if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
             if (target?.classList?.contains('bit-dtg-drag-handle')) {
                 // Don't cancel the default while the row is being edited: keyboard reordering is
                 // short-circuited in that state (matching the .NET handler and the draggable guard),
@@ -366,20 +542,49 @@ namespace BitBlazorUI {
         }, { capture: true });
     }
 
+    // bit-trim: owners BitDataGrid
     installReorderKeyGuard();
 
-    // A focused, navigable data cell owns the arrow / page / home / end / enter / escape / F2 keys
+    // A column's resize handle sits inside its header, which is draggable while the column can be reordered. Firefox
+    // starts the header's native drag from a press on the handle (the press is not cancelled - that would also keep
+    // the handle from taking the focus), so the drag that should move the column's edge moved the column instead.
+    // The handle pressed last is remembered, and a drag of the header holding it is cancelled before it starts;
+    // the resize overlay then receives the pointer moves as it does in other browsers.
+    let pressedResizer: Element | null = null;
+    let resizeDragGuardInstalled = false;
+    function installResizeDragGuard() {
+        if (resizeDragGuardInstalled || typeof document === 'undefined') return;
+        resizeDragGuardInstalled = true;
+        document.addEventListener('pointerdown', (e: PointerEvent) => {
+            pressedResizer = (e.target as Element | null)?.closest?.('.bit-dtg-resizer') ?? null;
+        }, { capture: true });
+        const release = () => pressedResizer = null;
+        document.addEventListener('pointerup', release, { capture: true });
+        document.addEventListener('dragend', release, { capture: true });
+        document.addEventListener('dragstart', (e: DragEvent) => {
+            const target = e.target as Node | null;
+            if (pressedResizer && target?.contains?.(pressedResizer)) e.preventDefault();
+        }, { capture: true });
+    }
+
+    installResizeDragGuard();
+
+    // A focused, navigable data cell owns the arrow / page / home / end / enter / F2 keys
     // (cell-to-cell movement and the edit lifecycle). Their browser defaults -- scrolling the
-    // page/grid, submitting a surrounding form, resetting an input -- must be cancelled *before* the
-    // event reaches Blazor's .NET handler. As with the reorder guard, @onkeydown:preventDefault can't
-    // do this (it's evaluated at render time, can't know the upcoming key, and lags one keystroke), so
-    // a single capture-phase listener decides per-key up front. Tab and ordinary typing are left
-    // untouched so focus can still leave the grid and editors keep receiving characters.
+    // page/grid, submitting a surrounding form -- must be cancelled *before* the event reaches
+    // Blazor's .NET handler. As with the reorder guard, @onkeydown:preventDefault can't do this (it's
+    // evaluated at render time, can't know the upcoming key, and lags one keystroke), so a single
+    // capture-phase listener decides per-key up front. Tab and ordinary typing are left untouched so
+    // focus can still leave the grid and editors keep receiving characters.
     // Space is grid-owned too: it toggles the focused row's selection, so its page-scroll default must
     // be cancelled exactly like the arrow keys'.
+    // Escape is not among them: the cell claims it (data-bit-esc, see BitDataGridCell and
+    // Utils.claimEscape) exactly while an edit is open for it to cancel, which is what prevents its
+    // default then. Preventing it here as well would take every Escape pressed on a cell away from a
+    // dialog the grid sits in, the ones the grid does nothing with included.
     const cellNavKeys = new Set([
         'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-        'Home', 'End', 'PageUp', 'PageDown', 'Enter', 'Escape', 'F2', ' '
+        'Home', 'End', 'PageUp', 'PageDown', 'Enter', 'F2', ' '
     ]);
     // Keys that should stay with a self-managed control nested inside a cell. Escape is intentionally
     // excluded so it keeps bubbling to the grid as the universal "cancel edit" affordance, while the
@@ -434,6 +639,68 @@ namespace BitBlazorUI {
             : root.hasAttribute('data-bit-dtg-select-all');
     }
 
+    // Whether a node sits in a popup the container opened: inside an element that a control in the container names
+    // with aria-controls or aria-owns - the one tie a popup moved to the body keeps with its opener - or, a few levels
+    // deep, in a popup opened from such a popup (a submenu).
+    function isOwnedBy(container: HTMLElement, node: Node, depth = 0): boolean {
+        if (depth > 3) return false;
+        for (let el = node instanceof Element ? node : node.parentElement; el; el = el.parentElement) {
+            if (!el.id) continue;
+            const id = CSS.escape(el.id);
+            const opener = document.querySelector(`[aria-controls~="${id}"], [aria-owns~="${id}"]`);
+            if (!opener || opener === el) continue;
+            if (container.contains(opener) || isOwnedBy(container, opener, depth + 1)) return true;
+        }
+        return false;
+    }
+
+    // Typing into a focused cell opens its editor (see BitDataGrid.OpensEditorByTyping), but the editor exists only
+    // once .NET has rendered it - a round trip, over a network in Blazor Server - and every key typed before then
+    // lands on the cell. They are gathered here, per grid, and handed to the editor when it takes the focus. A gather
+    // left unclaimed (the edit was refused) goes stale after a pause, so it cannot leak into a later edit.
+    const typedText = new WeakMap<HTMLElement, { text: string, at: number }>();
+    const typedTextLifetime = 1500;
+    function gatherTypedKey(cell: HTMLElement, e: KeyboardEvent): boolean {
+        const kind = cell.getAttribute('data-bit-dtg-typable');
+        if (!kind || e.ctrlKey || e.metaKey || e.altKey) return false;
+        const root = cell.closest('.bit-dtg') as HTMLElement | null;
+        if (!root) return false;
+        const now = Date.now();
+        const last = typedText.get(root);
+        const gathering = !!last && now - last.at < typedTextLifetime;
+        const clears = e.key === 'Backspace';
+        // Space selects the row, so it cannot start a gather - but once one is under way it is a typed space (the
+        // edit has opened in .NET by the time it gets there, and the opening cell no longer takes the key).
+        if (!clears && (e.key.length !== 1 || (e.key === ' ' && !gathering))) return false;
+        // A number starts the way BitDataGrid.IsTypingKey lets it (no exponent: that key opens nothing in .NET, so
+        // gathering it would only prefix the next gather); an exponent can follow once one is under way.
+        if (!clears && kind === 'number' && !(gathering ? /[0-9+\-.,eE]/ : /[0-9+\-.,]/).test(e.key)) return false;
+        typedText.set(root, { text: clears ? '' : (gathering ? last!.text : '') + e.key, at: now });
+        return true;
+    }
+
+    // A dialog, a panel or a modal rendered in a cell's or a header's template - a confirmation, a lookup - is a surface
+    // of its own, and the keys pressed in it are its own and the page's: the surfaces stop no key, so the page's
+    // shortcuts keep working while one is open. The cell's, the row's and the header's .NET keydown handlers would
+    // hear them on the way out too, and cancel the edit on its Escape, delete the row on its Delete, move the focus
+    // out of it on its arrows. So the grids the key bubbles through are told whether it was pressed in such a surface
+    // ahead of the keydown Blazor dispatches - only when that changes, which a grid without a surface in it never sees
+    // - and their handlers leave it alone (BitDataGrid.KeyInNestedSurface). Each grid around the key is told on its own,
+    // as a grid in a dialog in another grid's cell is that surface's, not the outer grid's.
+    const nestedSurfaceKeyWatches = new WeakMap<HTMLElement, { dotNetRef: DotNetObject, nested: boolean }>();
+    function reportNestedSurfaceKey(target: HTMLElement): boolean {
+        let innermost: boolean | null = null;
+        for (let root = target.closest<HTMLElement>('.bit-dtg'); root; root = root.parentElement?.closest<HTMLElement>('.bit-dtg') ?? null) {
+            const nested = Utils.isInNestedSurface(target, root);
+            innermost ??= nested;
+            const watch = nestedSurfaceKeyWatches.get(root);
+            if (!watch || watch.nested === nested) continue;
+            watch.nested = nested;
+            watch.dotNetRef.invokeMethodAsync('OnNestedSurfaceKey', nested).catch(() => { });
+        }
+        return innermost === true;
+    }
+
     let cellKeyGuardInstalled = false;
     function installCellKeyGuard() {
         if (cellKeyGuardInstalled || typeof document === 'undefined') return;
@@ -441,6 +708,9 @@ namespace BitBlazorUI {
         document.addEventListener('keydown', (e: KeyboardEvent) => {
             const target = e.target as HTMLElement | null;
             if (!target) return;
+
+            // A key pressed in a surface rendered in the grid's content is that surface's: nothing below applies to it.
+            if (target instanceof Element && reportNestedSurfaceKey(target)) return;
 
             // A self-managed interactive control (button/select/textarea/link/contenteditable) can be
             // focused *inside* a navigable or editing cell via a custom cell/edit template. The cell's
@@ -450,16 +720,40 @@ namespace BitBlazorUI {
             // the embedded control. Stop propagation here so the key stays with the control; its native
             // behavior is preserved because preventDefault is intentionally not called. This is checked
             // before the cell-target branch below, which only matches when the cell itself is focused.
+            // The grid's own editors (.bit-dtg-editor) are the exception: their Enter commits and their other
+            // keys are ignored by the editing cell, so they bubble on to it. So is a row's reorder handle for
+            // ArrowUp/ArrowDown: they are its own keys, handled by its @onkeydown (BitDataGridRow's
+            // HandleReorderKeyDown), which stopping them here would never reach; their scrolling default is
+            // cancelled by the reorder guard above, and the row's own handler takes only Enter/Space.
             const ownerCell = target.closest('.bit-dtg-cell') as HTMLElement | null;
-            if (ownerCell && ownerCell !== target && nestedControlKeys.has(e.key) && isSelfManagedCellKeyControl(target)) {
+            if (ownerCell && ownerCell !== target && nestedControlKeys.has(e.key) && isSelfManagedCellKeyControl(target)
+                && !target.classList.contains('bit-dtg-editor')
+                && !((e.key === 'ArrowUp' || e.key === 'ArrowDown') && target.classList.contains('bit-dtg-drag-handle'))) {
                 e.stopPropagation();
+                return;
+            }
+
+            // In Cell mode Tab moves the edit to the next cell, which the editing cell's .NET handler does; the
+            // browser's own Tab would leave the grid (the other cells are out of the tab order). A Tab that
+            // stays among the controls of one custom editor is left native and kept from that handler.
+            if (e.key === 'Tab') {
+                const editingCell = target.closest<HTMLElement>('.bit-dtg-cell-editing');
+                if (!editingCell) return;
+                // The editor's controls that can take the focus, in DOM order: the first and last are the boundaries.
+                const controls = Utils.getFocusables(editingCell);
+                const index = controls.indexOf(target);
+                const staysInside = e.shiftKey ? index > 0 : index >= 0 && index < controls.length - 1;
+                if (staysInside) e.stopPropagation();
+                else e.preventDefault();
                 return;
             }
 
             // The navigable cell is the focused element itself (a div.bit-dtg-cell with a tabindex).
             // Suppress the grid-owned keys here so arrow/page/home/end never scroll the viewport.
             if (target.classList?.contains('bit-dtg-cell') && target.hasAttribute('tabindex')) {
-                if (cellNavKeys.has(e.key)) e.preventDefault();
+                // Gathering comes first: a Space typed while an editor is opening is text, not the selection key.
+                if (gatherTypedKey(target, e)) e.preventDefault();
+                else if (cellNavKeys.has(e.key)) e.preventDefault();
                 else if (isGridOwnedShortcut(target, e)) e.preventDefault();
                 return;
             }
@@ -472,16 +766,19 @@ namespace BitBlazorUI {
                 return;
             }
 
-            // While inline-editing the focus sits on the editor input inside the row, so only the edit
-            // lifecycle keys (Enter commits, Escape cancels) are grid-owned; cancel their native
-            // actions but leave caret movement and typing to the input.
-            if ((e.key === 'Enter' || e.key === 'Escape') &&
-                target.closest('.bit-dtg-row')?.classList?.contains('bit-dtg-editing')) {
-                // Don't swallow these keys for nested controls that own their keyboard behavior:
+            // While inline-editing the focus sits on the editor input inside the row, so the edit
+            // lifecycle keys (Enter commits, Escape cancels) are grid-owned. Enter's native action is
+            // cancelled here, leaving caret movement and typing to the input. Escape's is not: the
+            // editing cell claims it (data-bit-esc, see BitDataGridCell and Utils.claimEscape) whenever
+            // its handler cancels the edit, with or without cell navigation, which prevents the default
+            // then - and an Escape with a modifier cancels nothing, and goes on to a dialog the grid sits in.
+            if (e.key === 'Enter' &&
+                (target.closest('.bit-dtg-row')?.classList?.contains('bit-dtg-editing') || target.closest('.bit-dtg-cell-editing'))) {
+                // Don't swallow the key for nested controls that own their keyboard behavior:
                 // a <button> activates on Enter, a <select> opens/commits a choice, a <textarea>
                 // inserts a newline, and a contenteditable region edits text. Suppressing here would
                 // break those controls. Plain editor inputs aren't excluded, so Enter still avoids a
-                // surrounding form submit and Escape still avoids a native input reset for them.
+                // surrounding form submit for them.
                 if (isSelfManagedEditKeyControl(target)) return;
                 e.preventDefault();
             }

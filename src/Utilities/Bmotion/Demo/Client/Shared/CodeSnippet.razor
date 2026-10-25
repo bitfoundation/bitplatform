@@ -1,0 +1,39 @@
+﻿@* The full, copy/paste-runnable source of a sample, behind a toggle.
+
+   A quiet button rather than a slab of code under every stage: the page reads as prose and samples
+   until the reader asks for the code. Opened, it is the site kit's pre.bb-code - the code surface
+   every Utilities demo shares, and the copy button site.js hangs on each of them. The highlighter
+   joins the lines with real newlines, so that button copies the snippet line for line. *@
+
+<div class="bb-source code-snippet">
+    <button type="button" class="btn btn-secondary code-snippet-toggle" @onclick="Toggle"
+            aria-expanded="@(_show ? "true" : "false")" aria-controls="@_bodyId">
+        <span class="code-snippet-caret" aria-hidden="true">@(_show ? "▾" : "▸")</span>
+        <span class="code-snippet-glyph" aria-hidden="true">&lt;/&gt;</span>
+        @(_show ? "Hide code" : "Show code")
+        <span class="code-snippet-lang">@Language</span>
+    </button>
+
+    @if (_show)
+    {
+        <pre class="bb-code code-snippet-code" id="@_bodyId"><code>@((MarkupString)SyntaxHighlighter.Highlight(Code.Trim('\r', '\n')))</code></pre>
+    }
+</div>
+
+@code {
+    /// <summary>The full, copy/paste-runnable source snippet to display for the sample.</summary>
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+
+    /// <summary>The label printed on the toggle. Every snippet on the site is Razor; the parameter is
+    /// here so a page that shows a shell command or a JSON file can say so.</summary>
+    [Parameter] public string Language { get; set; } = "Razor";
+
+    // The toggle points at the block it opens, so a screen reader following aria-controls lands on
+    // the code rather than on the next thing in the document. Generated per instance because a
+    // page carries a dozen of these.
+    private readonly string _bodyId = $"code-{Guid.NewGuid():N}";
+
+    private bool _show;
+
+    private void Toggle() => _show = !_show;
+}

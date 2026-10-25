@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>A fenced or indented code block, rendered verbatim.</summary>
 public sealed class BitMarkdownCodeBlockNode : BitMarkdownNode

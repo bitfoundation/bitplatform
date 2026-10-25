@@ -1,4 +1,4 @@
-declare class Tooltip {
+﻿declare class Tooltip {
     quill: Quill;
     boundsContainer: HTMLElement;
     root: HTMLDivElement;

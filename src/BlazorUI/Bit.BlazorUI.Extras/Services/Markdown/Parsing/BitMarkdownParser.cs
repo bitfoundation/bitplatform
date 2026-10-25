@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Convenience entry point for parsing Markdown into an AST.</summary>
 public static class BitMarkdownParser

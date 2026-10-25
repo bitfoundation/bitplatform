@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute måste ha ett Length-värde som är större än noll. Använd MaxLength() utan parametrar för att ange att strängen eller arrayen kan ha den maximalt tillåtna längden.</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>Fältet {0} måste vara en sträng- eller arraytyp med en största längd på '{1}'.</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>Fältet {0} måste vara en sträng- eller arraytyp med en minsta längd på '{1}'.</value>
   </data>
@@ -178,156 +181,6 @@
     <value>Kan inte ansluta till servern.</value>
   </data>
   <!-- Bit.BlazorUI messages -->
-  <data name="DataGridEmptyText" xml:space="preserve">
-    <value>Inga poster att visa.</value>
-  </data>
-  <data name="DataGridLoadingText" xml:space="preserve">
-    <value>Läser in…</value>
-  </data>
-  <data name="DataGridActionsText" xml:space="preserve">
-    <value>Åtgärder</value>
-  </data>
-  <data name="DataGridAddRowText" xml:space="preserve">
-    <value>+ Lägg till</value>
-  </data>
-  <data name="DataGridClearFiltersText" xml:space="preserve">
-    <value>Rensa filter</value>
-  </data>
-  <data name="DataGridExportCsvText" xml:space="preserve">
-    <value>Exportera CSV</value>
-  </data>
-  <data name="DataGridExportExcelText" xml:space="preserve">
-    <value>Exportera Excel</value>
-  </data>
-  <data name="DataGridColumnsText" xml:space="preserve">
-    <value>Kolumner</value>
-  </data>
-  <data name="DataGridEditText" xml:space="preserve">
-    <value>Redigera</value>
-  </data>
-  <data name="DataGridDeleteText" xml:space="preserve">
-    <value>Ta bort</value>
-  </data>
-  <data name="DataGridSaveText" xml:space="preserve">
-    <value>Spara</value>
-  </data>
-  <data name="DataGridCancelText" xml:space="preserve">
-    <value>Avbryt</value>
-  </data>
-  <data name="DataGridSelectAllLabel" xml:space="preserve">
-    <value>Markera alla</value>
-  </data>
-  <data name="DataGridSelectRowLabel" xml:space="preserve">
-    <value>Markera rad</value>
-  </data>
-  <data name="DataGridSelectRowFormat" xml:space="preserve">
-    <value>Markera rad: {0}</value>
-  </data>
-  <data name="DataGridFilterPlaceholder" xml:space="preserve">
-    <value>Filtrera…</value>
-  </data>
-  <data name="DataGridFilterByFormat" xml:space="preserve">
-    <value>Filtrera efter {0}</value>
-  </data>
-  <data name="DataGridFilterAllText" xml:space="preserve">
-    <value>Alla</value>
-  </data>
-  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
-    <value>Filteroperator för {0}</value>
-  </data>
-  <data name="DataGridFilterOpContains" xml:space="preserve">
-    <value>Innehåller</value>
-  </data>
-  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
-    <value>Innehåller inte</value>
-  </data>
-  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
-    <value>Börjar med</value>
-  </data>
-  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
-    <value>Slutar med</value>
-  </data>
-  <data name="DataGridBooleanTrueText" xml:space="preserve">
-    <value>Sant</value>
-  </data>
-  <data name="DataGridBooleanFalseText" xml:space="preserve">
-    <value>Falskt</value>
-  </data>
-  <data name="DataGridGroupByFormat" xml:space="preserve">
-    <value>Gruppera efter {0}</value>
-  </data>
-  <data name="DataGridUngroupByFormat" xml:space="preserve">
-    <value>Ta bort gruppering efter {0}</value>
-  </data>
-  <data name="DataGridExpandGroupFormat" xml:space="preserve">
-    <value>Expandera grupp {0}: {1}</value>
-  </data>
-  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
-    <value>Dölj grupp {0}: {1}</value>
-  </data>
-  <data name="DataGridPagerRangeFormat" xml:space="preserve">
-    <value>{0}–{1} av {2}</value>
-  </data>
-  <data name="DataGridPagerPageFormat" xml:space="preserve">
-    <value>Sida {0} av {1}</value>
-  </data>
-  <data name="DataGridPerPageFormat" xml:space="preserve">
-    <value>{0} / sida</value>
-  </data>
-  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
-    <value>Rader per sida</value>
-  </data>
-  <data name="DataGridFirstPageLabel" xml:space="preserve">
-    <value>Första sidan</value>
-  </data>
-  <data name="DataGridPreviousPageLabel" xml:space="preserve">
-    <value>Föregående sida</value>
-  </data>
-  <data name="DataGridNextPageLabel" xml:space="preserve">
-    <value>Nästa sida</value>
-  </data>
-  <data name="DataGridLastPageLabel" xml:space="preserve">
-    <value>Sista sidan</value>
-  </data>
-  <data name="DataGridEndOfResultsText" xml:space="preserve">
-    <value>- Slut på resultaten -</value>
-  </data>
-  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
-    <value>Visa/dölj detaljer</value>
-  </data>
-  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
-    <value>Visa/dölj underordnade</value>
-  </data>
-  <data name="DataGridReorderRowTitle" xml:space="preserve">
-    <value>Dra för att ändra ordning, eller fokusera och använd piltangenterna för att flytta raden</value>
-  </data>
-  <data name="DataGridReorderRowLabel" xml:space="preserve">
-    <value>Ändra ordning på raden. Tryck på uppåt- eller nedåtpil för att flytta raden.</value>
-  </data>
-  <data name="DataGridInvalidValueError" xml:space="preserve">
-    <value>Ogiltigt värde för {0}.</value>
-  </data>
-  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
-    <value>Sorterat efter {0}, stigande</value>
-  </data>
-  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
-    <value>Sorterat efter {0}, fallande</value>
-  </data>
-  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
-    <value>Sortering efter {0} borttagen</value>
-  </data>
-  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
-    <value>Filter tillämpat på {0}</value>
-  </data>
-  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
-    <value>Filter på {0} rensat</value>
-  </data>
-  <data name="DataGridAnnouncementPage" xml:space="preserve">
-    <value>Sida {0} av {1}</value>
-  </data>
-  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
-    <value>Raden har tagits bort</value>
-  </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
     <value>Aktiv</value>
@@ -518,6 +371,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="BirthDate" xml:space="preserve">
     <value>Födelsedatum</value>
   </data>
+  <data name="BirthDateInFuture" xml:space="preserve">
+    <value>Födelsedatumet kan inte ligga i framtiden.</value>
+  </data>
   <data name="UserName" xml:space="preserve">
     <value>Användarnamn</value>
   </data>
@@ -541,12 +397,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
   <data name="InvalidUserCredentials" xml:space="preserve">
     <value>Ogiltiga användaruppgifter</value>
-  </data>
-  <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>Din e-post är redan bekräftad.</value>
-  </data>
-  <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>Ditt telefonnummer är redan bekräftat.</value>
   </data>
   <data name="Title" xml:space="preserve">
     <value>Titel</value>
@@ -734,9 +584,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="OldPassword" xml:space="preserve">
     <value>Gammalt lösenord</value>
   </data>
-  <data name="No" xml:space="preserve">
-    <value>Nej</value>
-  </data>
   <data name="NotReceivedEmailMessage" xml:space="preserve">
     <value>Har du inte fått e-posten?</value>
   </data>
@@ -835,9 +682,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
   <data name="UploadNewImage" xml:space="preserve">
     <value>Dra eller välj en bild</value>
-  </data>
-  <data name="Yes" xml:space="preserve">
-    <value>Ja</value>
   </data>
   <data name="SelectBirthDate" xml:space="preserve">
     <value>Välj ditt födelsedatum</value>
@@ -1360,6 +1204,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
     <value>Assistenten kunde inte svara. Försök igen.</value>
   </data>
+  <data name="AiChatTooManyRequests" xml:space="preserve">
+    <value>Du chattar för snabbt. Vänta en minut och försök igen.</value>
+  </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Lämna dina kontaktuppgifter så hör en handläggare av sig till dig.</value>
   </data>
@@ -1577,9 +1424,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="Users" xml:space="preserve">
     <value>Användare</value>
   </data>
-  <data name="UsersWithCount" xml:space="preserve">
-    <value>Användare {0}</value>
-  </data>
   <data name="Features" xml:space="preserve">
     <value>Funktioner</value>
   </data>
@@ -1635,9 +1479,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
   <data name="DeleteRole" xml:space="preserve">
     <value>Ta bort användargrupp</value>
-  </data>
-  <data name="Sessions" xml:space="preserve">
-    <value>Sessioner {0}</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
     <value>Ta bort användare</value>
@@ -2209,5 +2050,50 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>Vi skickade en kod till {0} och {1}.</value>
+  </data>
+    <data name="EditImage" xml:space="preserve">
+    <value>Redigera bild</value>
+  </data>
+    <data name="Crop" xml:space="preserve">
+    <value>Beskär</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>Tillämpa beskärning</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>Rotera åt vänster</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>Rotera åt höger</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>Ångra</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>Gör om</value>
+  </data>
+    <data name="ImageEditorCropHint" xml:space="preserve">
+    <value>Dra över bilden för att markera den del som ska behållas.</value>
+  </data>
+    <data name="ImageEditorMoreFeatures" xml:space="preserve">
+    <value>Vill du lägga till fler funktioner för bildredigering i ditt projekt?</value>
+  </data>
+    <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
+    <value>Den här bilden kan inte öppnas för redigering här. Du kan fortfarande ladda upp den som den är.</value>
+  </data>
+    <data name="UploadImageAsIs" xml:space="preserve">
+    <value>Ladda upp som den är</value>
+  </data>
+    <data name="ResetPasswordTwoFactorCodeRequired" xml:space="preserve">
+    <value>Tvåfaktorsautentisering är aktiverad för det här kontot. Ange en kod från din autentiseringsapp eller en av dina återställningskoder.</value>
+  </data>
+    <data name="AccountAlreadyExistsShortText" xml:space="preserve">
+    <value>Du har redan ett Boilerplate-konto med det här telefonnumret. Om du just försökte registrera dig, logga in i stället.</value>
+  </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>Lägg till ett annat konto</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>Logga ut från alla konton på den här enheten</value>
   </data>
 </root>

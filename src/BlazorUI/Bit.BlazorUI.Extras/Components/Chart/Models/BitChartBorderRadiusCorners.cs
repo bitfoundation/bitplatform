@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Per-corner radius for a bar, mirroring Chart.js <c>borderRadius</c> object form.</summary>
 public readonly record struct BitChartBorderRadiusCorners(

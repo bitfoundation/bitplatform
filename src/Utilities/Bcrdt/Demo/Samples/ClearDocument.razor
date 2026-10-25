@@ -1,0 +1,17 @@
+﻿@* A button that deletes the whole text - an edit like any other, which merges the same way. Place it inside a
+   BcrdtCollaborationScope, which cascades the open document. *@
+@using Bit.Bcrdt
+
+<button type="button" @onclick="Clear">Clear the document</button>
+
+@code {
+    [CascadingParameter] public BcrdtCollaborativeDocument Document { get; set; } = default!;
+
+    // A deletion removes only the characters this replica can see, so text a peer typed while it was
+    // offline survives it.
+    private void Clear()
+    {
+        BcrdtText text = Document.Text("body");
+        if (text.Count > 0) text.Delete(0, text.Count);
+    }
+}

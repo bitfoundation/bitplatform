@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <base href="/" />
+    @* No static <title> here: every page supplies its own through <PageTitle>, and with prerendering
+       the HeadOutlet emits a real <title> element into this head. *@
+    <meta name="description" content="bit Bsqlite (Bit.Bsqlite) - EF Core on SQLite, inside the browser tab. The same entities and migrations on the client as on the server, over OPFS, IndexedDB, Cache Storage, or memory." />
+
+    @* Link previews: the card a chat client or a social site unfurls is the first impression a
+       shared link makes. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.Bsqlite" />
+    <meta property="og:title" content="Bsqlite - EF Core on SQLite, inside the browser tab" />
+    <meta property="og:description" content="SQLite in a Web Worker under the stock EF Core provider: the same entities and migrations as the server, live queries, and a database that lives in OPFS, IndexedDB, Cache Storage or memory." />
+    <meta name="twitter:card" content="summary" />
+
+    <ResourcePreloader />
+    @* The site kit (app.css, theme.js, site.js - shared by every Utilities demo), then this demo's
+       own sample styles. The library has no stylesheet: it draws nothing. *@
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["demo.css"]" />
+    @* Scoped-CSS bundle: includes the client project's *.razor.css files as well. *@
+    <link rel="stylesheet" href="@Assets["Bit.Bsqlite.Demo.Server.styles.css"]" />
+    @* Synchronous on purpose: applies the light/dark theme before first paint. *@
+    <script src="@Assets["theme.js"]"></script>
+    <ImportMap />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231276C6'/%3E%3Cellipse cx='16' cy='9' rx='9' ry='3.6' fill='none' stroke='%23fff' stroke-width='2.2'/%3E%3Cpath d='M7 9v14c0 2 4 3.6 9 3.6s9-1.6 9-3.6V9' fill='none' stroke='%23fff' stroke-width='2.2'/%3E%3Cpath d='M7 16c0 2 4 3.6 9 3.6s9-1.6 9-3.6' fill='none' stroke='%23fff' stroke-width='2.2'/%3E%3C/svg%3E" />
+
+    @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+@* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
+   page load rather than an enhanced one. Enhanced navigation fetches and merges the next page while
+   the runtime is still starting, and the router the runtime then attaches can render the address
+   it read before the merge - the URL says /getting-started and the page is the landing page. Once the
+   app is interactive its router handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
+    @* Prerendered on the server, then hydrated by the WebAssembly runtime. Every database this site opens
+       lives in the browser - OPFS, IndexedDB, Cache Storage or memory - so none of it can open during the
+       prerender pass: each page is readable straight from the served HTML, and its data loads once the
+       runtime is interactive (Components/SessionLifecycle.razor). InteractiveWebAssembly rather than Auto or
+       Server for the same reason: the worker that owns the database has to run in the user's tab. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">&#128473;</span>
+    </div>
+
+    @* demo.js before the Blazor script so window.bsqliteDemo exists by the time the app boots. The library's
+       own modules (the worker host, the engine, the VFSes) are imported on demand and need no tag. *@
+    <script src="@Assets["demo.js"]"></script>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["site.js"]"></script>
+</body>
+
+</html>

@@ -8,24 +8,26 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
     [CascadingParameter(Name = Parameters.IsOnline)] protected bool? IsOnline { get; set; }
     [CascadingParameter] protected Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
-    [AutoInject] protected IJSRuntime JSRuntime = default!;
+    [AutoInject] private IServiceProvider serviceProvider = default!;
 
-    [AutoInject] protected IStorageService StorageService = default!;
+    protected IJSRuntime JSRuntime => field ??= serviceProvider.GetRequiredService<IJSRuntime>();
+
+    protected IStorageService StorageService => field ??= serviceProvider.GetRequiredService<IStorageService>();
 
     [AutoInject] protected JsonSerializerOptions JsonSerializerOptions = default!;
 
-    [AutoInject] protected TimeProvider TimeProvider = default!;
+    protected TimeProvider TimeProvider => field ??= serviceProvider.GetRequiredService<TimeProvider>();
 
     /// <summary>
     /// <inheritdoc cref="Infrastructure.Services.PubSubService"/>
     /// </summary>
     [AutoInject] protected PubSubService PubSubService = default!;
 
-    [AutoInject] protected IConfiguration Configuration = default!;
+    protected IConfiguration Configuration => field ??= serviceProvider.GetRequiredService<IConfiguration>();
 
     [AutoInject] protected NavigationManager NavigationManager = default!;
 
-    [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;
+    protected IAuthTokenProvider AuthTokenProvider => field ??= serviceProvider.GetRequiredService<IAuthTokenProvider>();
 
     [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
 
@@ -35,7 +37,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
 
     [AutoInject] protected SnackBarService SnackBarService = default!;
 
-    [AutoInject] protected ITelemetryContext TelemetryContext = default!;
+    protected ITelemetryContext TelemetryContext => field ??= serviceProvider.GetRequiredService<ITelemetryContext>();
 
     /// <summary>
     /// <inheritdoc cref="Infrastructure.Services.TimeZoneService"/>
@@ -45,7 +47,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
     /// <summary>
     /// <inheritdoc cref="ISharedServiceCollectionExtensions.ConfigureAuthorizationCore"/>
     /// </summary>
-    [AutoInject] protected IAuthorizationService AuthorizationService = default!;
+    protected IAuthorizationService AuthorizationService => field ??= serviceProvider.GetRequiredService<IAuthorizationService>();
 
     /// <summary>
     /// <inheritdoc cref="AbsoluteServerAddressProvider" />
@@ -274,16 +276,16 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
         if (disposed) return;
         disposed = true;
 
+        using var currentCts = cts;
+        cts = null;
+
         try
         {
-            if (cts != null)
-            {
-                using var currentCts = cts;
-                cts = null;
-                await currentCts.TryCancel();
-            }
+            var cancellation = currentCts?.TryCancel() ?? Task.CompletedTask;
 
             await DisposeAsync(true);
+
+            await cancellation;
         }
         finally
         {

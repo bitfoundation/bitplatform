@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Decides what <c>target</c> and <c>rel</c> a rendered link carries, replacing the defaults

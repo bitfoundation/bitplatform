@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Defines the clock the time picker shows its hours in.
+/// </summary>
 public enum BitTimeFormat
 {
     /// <summary>

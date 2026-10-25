@@ -1,0 +1,23 @@
+﻿@using Bit.BlazorUI
+
+@* Covers BitModalParams: the cascaded values fill in the parameters a Modal did not set itself and never overwrite
+   the ones it did. *@
+
+<BitParams Parameters="@(new BitModalParams[]
+                         {
+                             new()
+                             {
+                                 Position = BitPosition.TopCenter,
+                                 ModeFull = true,
+                                 Blocking = true,
+                                 NoBorder = true,
+                                 ShowCloseButton = true,
+                                 CloseButtonTitle = "Dismiss",
+                                 MaxWidth = "30rem",
+                                 Classes = new() { Root = "cascaded-root", Content = "cascaded-content" },
+                                 Styles = new() { Content = "margin: 1px;" },
+                             }
+                         })">
+    <BitModal IsOpen HeaderText="first">first</BitModal>
+    <BitModal IsOpen HeaderText="second" Position="BitPosition.BottomStart" MaxWidth="10rem" CloseButtonTitle="Close it" Class="second">second</BitModal>
+</BitParams>

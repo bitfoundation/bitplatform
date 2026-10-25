@@ -2,7 +2,7 @@
 
 /// <summary>
 /// Represents icon information for rendering icons in Bit BlazorUI components.
-/// Supports both built-in Fluent UI icons and custom/external icon libraries.
+/// Supports the built-in Fabric MDL2 icon set and any custom or external icon library.
 /// </summary>
 /// <remarks>
 /// An icon set names its glyphs in one of two ways, and this type carries both: with CSS classes

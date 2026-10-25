@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// MapLibre GL JS provider for <see cref="BitMap{TMapProvider}"/>. Loads MapLibre 4.7.1 from a CDN.

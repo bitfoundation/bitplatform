@@ -12,7 +12,7 @@ namespace Bit.BlazorUI.Tests.Performance;
 [TestClass]
 [TestCategory("Performance")]
 [TestCategory("Browser")]
-[Ignore("Browser tests must be run explicitly. Use: dotnet test --filter FullyQualifiedName~BitActionButtonBrowserTests")]
+[RequiresBrowser] // opt-in: RUN_BROWSER_TESTS=1 dotnet test --filter FullyQualifiedName~BitActionButtonBrowserTests
 public class BitActionButtonBrowserTests : PerformanceTestBase
 {
     #region Initial Render Performance Tests
@@ -49,7 +49,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
     {
         // Navigate to the performance test page
         await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
 
         // Click the render button
         await Page.Locator("#btn-render").ClickAsync();
@@ -103,7 +103,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
     {
         // Navigate to the performance test page
         await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
 
         // First, render the components
         await Page.Locator("#btn-render").ClickAsync();
@@ -157,7 +157,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
     {
         // Navigate to the performance test page
         await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
 
         // Get baseline memory
         var baselineMemory = await GetMemoryUsageMB();
@@ -197,7 +197,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         foreach (var count in counts)
         {
             await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
-            await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
 
             await Page.Locator("#btn-render").ClickAsync();
             await WaitForRenderComplete();
@@ -209,22 +209,24 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
 
             // Clear for next iteration
             await Page.Locator("#btn-clear").ClickAsync();
-            await Task.Delay(100);
+            await WaitForStatus("Cleared");
         }
 
         // Verify roughly linear scaling (not exponential)
-        // Time per component should remain relatively stable
+        // Time per component may fall as the count grows (the fixed setup overhead spread over more components), but not
+        // climb: the largest count is held against the cheapest one. Held against the average instead, the largest of
+        // five ratios could never fail - the largest of five values is at most five times their mean.
         var timePerComponent = renderTimes.Select(r => r.Time / r.Count).ToList();
         var avgTimePerComponent = timePerComponent.Average();
-        var maxDeviation = timePerComponent.Max() / avgTimePerComponent;
+        var growth = timePerComponent[^1] / timePerComponent.Min();
 
         Console.WriteLine($"Average time per component: {avgTimePerComponent:F4}ms");
-        Console.WriteLine($"Max deviation ratio: {maxDeviation:F2}x");
+        Console.WriteLine($"Growth ratio at {counts[^1]} components: {growth:F2}x");
 
-        // Allow up to 5x deviation (accounting for setup overhead with smaller counts)
-        if (maxDeviation > 5)
+        // Allow up to 5x growth (a pause of the runner during the largest render)
+        if (growth > 5)
         {
-            Assert.Fail($"Non-linear scaling detected. Max deviation: {maxDeviation:F2}x from average");
+            Assert.Fail($"Non-linear scaling detected. Time per component at {counts[^1]} components is {growth:F2}x the cheapest");
         }
     }
 
@@ -236,7 +238,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         const int reRenderCount = 5;
 
         await Page.GotoAsync($"{BaseUrl}/perf/action-button/{componentCount}");
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
 
         // Initial render
         await Page.Locator("#btn-render").ClickAsync();
@@ -282,7 +284,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         const int cycleCount = 5;
 
         await Page.GotoAsync($"{BaseUrl}/perf/action-button/{componentCount}");
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
 
         var cycleTimes = new List<double>();
 
@@ -319,7 +321,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         const double threshold = 10000; // 10 seconds for 2000 components
 
         await Page.GotoAsync($"{BaseUrl}/perf/action-button");
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
 
         // Set the count manually
         await Page.Locator("input[type='number']").FillAsync(count.ToString());
@@ -348,7 +350,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         const int count = 10;
 
         await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
 
         await Page.Locator("#btn-render").ClickAsync();
         await WaitForRenderComplete();
@@ -364,12 +366,12 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
 
     [TestMethod]
     [TestCategory("Visual")]
-    public async Task BitActionButton_ToggleIsEnabled_UpdatesDOM()
+    public async Task BitActionButton_ToggleDisabled_UpdatesDOM()
     {
         const int count = 10;
 
         await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
 
         await Page.Locator("#btn-render").ClickAsync();
         await WaitForRenderComplete();
@@ -378,7 +380,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         var enabledButtons = await Page.Locator("#test-container .bit-acb:not(.bit-dis)").CountAsync();
         Console.WriteLine($"Enabled buttons before toggle: {enabledButtons}");
 
-        // Toggle IsEnabled
+        // Toggle Disabled
         await Page.Locator("#btn-rerender").ClickAsync();
         await WaitForReRenderComplete();
 

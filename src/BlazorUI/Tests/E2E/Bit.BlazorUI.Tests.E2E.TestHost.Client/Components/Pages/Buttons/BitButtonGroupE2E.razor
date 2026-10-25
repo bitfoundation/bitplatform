@@ -1,0 +1,470 @@
+﻿@page "/e2e/button-group"
+
+<PageTitle>BitButtonGroup E2E (Items)</PageTitle>
+
+@* The Items API of BitButtonGroup. The custom-item (/e2e/button-group/custom) and the option (/e2e/button-group/options)
+   pages render the item-level sections of this one with the same ids and the same data through their own API, so
+   one test drives all three. The group-level sections below them (layout, color, size, variables...) do not depend on
+   the API and are only here. *@
+<h1>BitButtonGroup (Items)</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitButtonGroup Id="grp-basic" Items="@(L("grp-basic", Basic))" OnItemClick="(BitButtonGroupItem item) => _clicked = item.Text" />
+    <span id="basic-clicked">@_clicked</span>
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant">
+    @foreach (var variant in Enum.GetValues<BitVariant>())
+    {
+        <div>
+            <BitButtonGroup Id="@($"grp-variant-{variant}")" Variant="variant" Items="@(L($"grp-variant-{variant}", Basic))" />
+            <BitButtonGroup Id="@($"grp-variant-disitem-{variant}")" Variant="variant" Items="@(L($"grp-variant-disitem-{variant}", DisabledItem))" />
+            <BitButtonGroup Id="@($"grp-variant-dis-{variant}")" Variant="variant" Items="@(L($"grp-variant-dis-{variant}", Basic))" Disabled />
+        </div>
+    }
+</E2ESection>
+
+<E2ESection Id="icon" Title="Icon, IconOnly &amp; ReversedIcon">
+    <BitButtonGroup Id="grp-icon" Items="@(L("grp-icon", Icons))" />
+    <BitButtonGroup Id="grp-icononly" Items="@(L("grp-icononly", Icons))" IconOnly />
+    <BitButtonGroup Id="grp-onlyicon" Items="@(L("grp-onlyicon", OnlyIcons))" />
+    <BitButtonGroup Id="grp-reversed" Items="@(L("grp-reversed", Reversed))" />
+    <BitButtonGroup Id="grp-ext-icons" Items="@(L("grp-ext-icons", ExternalIcons))" Toggle />
+</E2ESection>
+
+<E2ESection Id="toggle" Title="Toggle">
+    <BitButtonGroup Id="grp-toggle" Toggle Items="@(L("grp-toggle", Toggles))" OnToggleChange="(BitButtonGroupItem item) => _toggleChanges.Add(item.Key!)" />
+    <span id="toggle-changes">@string.Join(",", _toggleChanges)</span>
+    <br />
+    <BitButtonGroup Id="grp-toggle-bind" Toggle Items="@(L("grp-toggle-bind", Toggles))" @bind-ToggleKey="_toggleKey" />
+    <span id="toggle-key">@(_toggleKey ?? "null")</span>
+    <button id="btn-toggle-key-forward" type="button" @onclick="SetToggleKeyForward">Set forward</button>
+    <button id="btn-toggle-key-clear" type="button" @onclick="() => _toggleKey = null">Clear</button>
+    <br />
+    <BitButtonGroup Id="grp-toggle-default" Toggle Items="@(L("grp-toggle-default", Toggles))" DefaultToggleKey="forward" OnToggleChange="(BitButtonGroupItem _) => _defaultToggleChanges++" />
+    <span id="toggle-default-changes">@_defaultToggleChanges</span>
+    <BitButtonGroup Id="grp-toggle-fixed" Toggle FixedToggle Items="@(L("grp-toggle-fixed", Toggles))" DefaultToggleKey="play" />
+</E2ESection>
+
+<E2ESection Id="vertical" Title="Vertical">
+    <BitButtonGroup Id="grp-vertical" Vertical Items="@(L("grp-vertical", Basic))" />
+    <BitButtonGroup Id="grp-vertical-toggle" Vertical Toggle Items="@(L("grp-vertical-toggle", Basic))" />
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitButtonGroup Id="grp-events" Items="@(L("grp-events", EventItems))" OnItemClick="(BitButtonGroupItem item) => _itemClicks.Add(item.Key!)" />
+    <span id="events-item-clicks">@string.Join(",", _itemClicks)</span>
+    <span id="events-own-clicks">@_ownClicks</span>
+</E2ESection>
+
+<E2ESection Id="multiple" Title="Multiple">
+    <BitButtonGroup Id="grp-multi" SelectionMode="BitSelectionMode.Multiple" Items="@(L("grp-multi", Formats))" @bind-ToggleKeys="_toggleKeys"
+                    OnToggleChange="(BitButtonGroupItem item) => _multiChanges++" />
+    <span id="multi-keys">@string.Join(",", _toggleKeys ?? [])</span>
+    <span id="multi-changes">@_multiChanges</span>
+    <button id="btn-multi-set" type="button" @onclick="SetToggleKeysWithUnknown">Set italic + unknown</button>
+    <br />
+    <BitButtonGroup Id="grp-multi-max" SelectionMode="BitSelectionMode.Multiple" MaxToggles="_maxToggles" Items="@(L("grp-multi-max", Formats))" @bind-ToggleKeys="_maxKeys" />
+    <span id="multi-max-keys">@string.Join(",", _maxKeys ?? [])</span>
+    <button id="btn-max-1" type="button" @onclick="() => _maxToggles = 1">Max 1</button>
+    <br />
+    <BitButtonGroup Id="grp-multi-fixed" SelectionMode="BitSelectionMode.Multiple" FixedToggle Items="@(L("grp-multi-fixed", Formats))" DefaultToggleKeys="@(["bold"])" OnToggleChange="(BitButtonGroupItem _) => _multiFixedChanges++" />
+    <span id="multi-fixed-changes">@_multiFixedChanges</span>
+</E2ESection>
+
+<E2ESection Id="indicator" Title="SelectionIndicator">
+    <BitButtonGroup Id="grp-indicator" ShowSelectionIndicator Toggle Items="@(L("grp-indicator", Basic))" DefaultToggleKey="edit" />
+    <BitButtonGroup Id="grp-indicator-none" ShowSelectionIndicator Items="@(L("grp-indicator-none", Basic))" />
+</E2ESection>
+
+<E2ESection Id="loading-badge" Title="Loading &amp; Badge">
+    <BitButtonGroup Id="grp-loading" Items="@(L("grp-loading", Loading))" OnItemClick="(BitButtonGroupItem item) => _loadingClicks.Add(item.Key!)" />
+    <span id="loading-clicks">@string.Join(",", _loadingClicks)</span>
+    <BitButtonGroup Id="grp-badge" Items="@(L("grp-badge", Badges))" />
+    <BitButtonGroup Id="grp-badge-icononly" IconOnly Items="@(L("grp-badge-icononly", Badges))" />
+</E2ESection>
+
+<E2ESection Id="links" Title="Links">
+    <BitButtonGroup Id="grp-links" Items="@(L("grp-links", Links))" />
+    <BitButtonGroup Id="grp-links-toggle" Toggle Items="@(L("grp-links-toggle", Links))" @bind-ToggleKey="_linkKey" />
+    <span id="links-key">@(_linkKey ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitButtonGroup Id="grp-template" Items="@(L("grp-template", Templated))" />
+    <BitButtonGroup Id="grp-itemtemplate" Items="@(L("grp-itemtemplate", Basic))">
+        <ItemTemplate Context="item"><b class="tpl-item">@item.Text</b></ItemTemplate>
+    </BitButtonGroup>
+</E2ESection>
+
+<E2ESection Id="tooltips" Title="Tooltips">
+    <BitButtonGroup Id="grp-titles" IconOnly Items="@(L("grp-titles", Titles))" />
+    <BitButtonGroup Id="grp-toggle-titles" Toggle Items="@(L("grp-toggle-titles", ToggleTitles))" />
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <input id="a11y-before" aria-label="before" />
+    <BitButtonGroup Id="grp-radio" AriaLabel="Text alignment" Toggle Items="@(L("grp-radio", Alignments))" @bind-ToggleKey="_alignKey" />
+    <span id="radio-key">@(_alignKey ?? "null")</span>
+    <input id="a11y-after" aria-label="after" />
+    <BitButtonGroup Id="grp-no-select-on-focus" AriaLabel="Committed with Space" Toggle SelectOnFocus="false" Items="@(L("grp-no-select-on-focus", Alignments))" @bind-ToggleKey="_commitKey" />
+    <span id="commit-key">@(_commitKey ?? "null")</span>
+    <BitButtonGroup Id="grp-interactive" AriaLabel="Operations with a disabled button" DisabledInteractive Items="@(L("grp-interactive", DisabledItem))"
+                    OnItemClick="(BitButtonGroupItem item) => _interactiveClicks.Add(item.Key!)" />
+    <span id="interactive-clicks">@string.Join(",", _interactiveClicks)</span>
+    <BitButtonGroup Id="grp-toolbar" AriaLabel="Operations" Items="@(L("grp-toolbar", DisabledItem))" />
+    <BitButtonGroup Id="grp-not-navigable" AriaLabel="Operations" Navigable="false" Items="@(L("grp-not-navigable", Basic))" />
+</E2ESection>
+
+<E2ESection Id="item-styles" Title="Item Class &amp; Style">
+    <BitButtonGroup Id="grp-item-styles" Items="@(L("grp-item-styles", Styled))" />
+</E2ESection>
+
+<E2ESection Id="dynamic" Title="Re-render">
+    <BitButtonGroup Id="grp-dynamic" Toggle Items="_dynamicItems" DefaultToggleKey="b" />
+    <button id="btn-add-item" type="button" @onclick="AddDynamicItem">Add item</button>
+    <button id="btn-remove-item" type="button" @onclick="RemoveDynamicItem">Remove first item</button>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <BitButtonGroup Id="grp-mounted" Toggle Items="@(L("grp-mounted", Basic))" DefaultToggleKey="add" />
+    }
+    <button id="btn-unmount" type="button" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+</E2ESection>
+
+@* ---------- the group-level sections, the same for every API ---------- *@
+
+<E2ESection Id="group-a11y" Title="Group accessibility">
+    <BitButtonGroup @ref="_focusGroup" Id="grp-focus" Toggle DefaultToggleKey="edit" Items="@(L("grp-focus", Basic))" />
+    <button id="btn-focus-group" type="button" @onclick="async () => await _focusGroup.FocusAsync()">FocusAsync</button>
+    <BitButtonGroup Id="grp-role-group" role="group" Items="@(L("grp-role-group", Basic))" />
+    <BitButtonGroup Id="grp-role-menubar" role="menubar" Items="@(L("grp-role-menubar", Basic))" />
+    <BitButtonGroup Id="grp-tabindex" TabIndex="-1" Items="@(L("grp-tabindex", Basic))" />
+</E2ESection>
+
+<E2ESection Id="full-width" Title="FullWidth">
+    <div id="fw-container" style="width: 500px;">
+        <BitButtonGroup Id="grp-fullwidth" FullWidth Items="@(L("grp-fullwidth", Basic))" />
+        <BitButtonGroup Id="grp-not-fullwidth" Items="@(L("grp-not-fullwidth", Basic))" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="justified" Title="Justified">
+    <div style="width: 600px;">
+        <BitButtonGroup Id="grp-unjustified" FullWidth Items="@(L("grp-unjustified", Uneven))" />
+        <BitButtonGroup Id="grp-justified" FullWidth Justified Items="@(L("grp-justified", Uneven))" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="detached" Title="Detached &amp; Rounded">
+    <BitButtonGroup Id="grp-detached" Detached Items="@(L("grp-detached", Basic))" />
+    <BitButtonGroup Id="grp-detached-gap" Detached Gap="24px" Items="@(L("grp-detached-gap", Basic))" />
+    <BitButtonGroup Id="grp-rounded" Rounded Items="@(L("grp-rounded", Basic))" />
+    <BitButtonGroup Id="grp-rounded-detached" Rounded Detached Items="@(L("grp-rounded-detached", Basic))" />
+    <BitButtonGroup Id="grp-rounded-vertical" Rounded Vertical Items="@(L("grp-rounded-vertical", Basic))" />
+</E2ESection>
+
+<E2ESection Id="overflow" Title="Overflow">
+    <div style="width: 220px;">
+        <BitButtonGroup Id="grp-clip" FullWidth Overflow="BitButtonGroupOverflow.Clip" Items="@(L("grp-clip", Many))" />
+        <BitButtonGroup Id="grp-wrap" FullWidth Overflow="BitButtonGroupOverflow.Wrap" Items="@(L("grp-wrap", Many))" />
+        <BitButtonGroup Id="grp-scroll" FullWidth Overflow="BitButtonGroupOverflow.Scroll" Items="@(L("grp-scroll", Many))" />
+        <BitButtonGroup Id="grp-scrollbar" FullWidth Overflow="BitButtonGroupOverflow.Scrollbar" Items="@(L("grp-scrollbar", Many))" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitButtonGroup Id="grp-disabled" Disabled="_groupDisabled" Toggle Items="@(L("grp-disabled", Basic))" OnItemClick="(BitButtonGroupItem item) => _disabledClicks++"
+                    @onclick="() => _disabledPageEvents++" @onmousedown="() => _disabledPageEvents++" />
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _groupDisabled = !_groupDisabled">Toggle disabled</button>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <span id="disabled-page-events">@_disabledPageEvents</span>
+    <BitButtonGroup Id="grp-disabled-interactive" Disabled DisabledInteractive Items="@(L("grp-disabled-interactive", Basic))" />
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="@_groupParams">
+        <BitButtonGroup Id="params-inherit" Items="@(L("params-inherit", Basic))" />
+        <BitButtonGroup Id="params-own" Items="@(L("params-own", Basic))" Variant="BitVariant.Text" />
+    </BitParams>
+    <BitButtonGroup Id="params-outside" Items="@(L("params-outside", Basic))" />
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    @foreach (var color in Enum.GetValues<BitColor>())
+    {
+        <div>
+            <BitButtonGroup Id="@($"color-{color}")" Color="color" Toggle Items="@(L($"color-{color}", Basic))" DefaultToggleKey="add" />
+            <BitButtonGroup Id="@($"color-outline-{color}")" Color="color" Variant="BitVariant.Outline" Items="@(L($"color-outline-{color}", Basic))" />
+            <BitButtonGroup Id="@($"color-dis-{color}")" Color="color" Items="@(L($"color-dis-{color}", DisabledItem))" />
+        </div>
+    }
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitButtonGroup Id="size-default" Items="@(L("size-default", Icons))" />
+    @foreach (var size in Enum.GetValues<BitSize>())
+    {
+        <BitButtonGroup Id="@($"size-{size}")" Size="size" Items="@(L($"size-{size}", Icons))" />
+        <BitButtonGroup Id="@($"size-icon-{size}")" Size="size" IconOnly Items="@(L($"size-icon-{size}", Icons))" />
+    }
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style &amp; Class">
+    <BitButtonGroup Id="sc-style" Style="margin-left: 13px;" Class="e2e-custom-class" Items="@(L("sc-style", Basic))" />
+    <BitButtonGroup Id="sc-styles" ShowSelectionIndicator Toggle DefaultToggleKey="inbox" Items="@(L("sc-styles", Badges))"
+                    Styles="@(new() { Root = "outline: 3px dotted rgb(9, 9, 9);", Button = "letter-spacing: 2px;", Badge = "color: rgb(255, 0, 0);", Icon = "color: rgb(0, 128, 0);", SelectionIndicator = "width: 21px;", Text = "text-decoration: underline;", ToggledButton = "background-color: rgb(1, 2, 3);" })" />
+    <BitButtonGroup Id="sc-styles-spinner" Items="@(L("sc-styles-spinner", Loading))" Styles="@(new() { Spinner = "border-top-color: rgb(218, 165, 32);" })" Classes="@(new() { Spinner = "c-spinner" })" />
+    <BitButtonGroup Id="sc-classes" ShowSelectionIndicator Toggle DefaultToggleKey="inbox" Items="@(L("sc-classes", Badges))"
+                    Classes="@(new() { Root = "c-root", Button = "c-button", Badge = "c-badge", Icon = "c-icon", SelectionIndicator = "c-indicator", Text = "c-text", ToggledButton = "c-toggled" })" />
+    <BitButtonGroup Id="sc-attrs" data-e2e="custom-attribute" Items="@(L("sc-attrs", Basic))" />
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div style="--bit-ButtonGroup-background: rgb(10, 20, 30); --bit-ButtonGroup-color: rgb(250, 240, 230); --bit-ButtonGroup-border-color: rgb(200, 0, 0); --bit-ButtonGroup-separator-color: rgb(0, 200, 0); --bit-ButtonGroup-selected-background: rgb(0, 0, 150); --bit-ButtonGroup-selected-color: rgb(255, 255, 0); --bit-ButtonGroup-radius: 0px; --bit-ButtonGroup-border-width: 3px; --bit-ButtonGroup-min-height: 50px; --bit-ButtonGroup-padding: 3px 21px; --bit-ButtonGroup-font-size: 19px; --bit-ButtonGroup-font-weight: 700; --bit-ButtonGroup-icon-size: 25px; --bit-ButtonGroup-content-gap: 12px; --bit-ButtonGroup-gap: 17px; --bit-ButtonGroup-badge-color: rgb(1, 1, 1); --bit-ButtonGroup-badge-background: rgb(255, 255, 255); --bit-ButtonGroup-badge-font-size: 9px; --bit-ButtonGroup-hover-background: rgb(255, 128, 0); --bit-ButtonGroup-disabled-background: rgb(77, 77, 77);">
+        <BitButtonGroup Id="vars-default" Toggle DefaultToggleKey="inbox" Items="@(L("vars-default", BadgeIcons))" />
+        <BitButtonGroup Id="vars-color" Color="BitColor.Error" Items="@(L("vars-color", Basic))" />
+        <BitButtonGroup Id="vars-size" Size="BitSize.Small" Items="@(L("vars-size", Basic))" />
+        <BitButtonGroup Id="vars-detached" Detached Items="@(L("vars-detached", Basic))" />
+        <BitButtonGroup Id="vars-disabled" Items="@(L("vars-disabled", DisabledItem))" />
+    </div>
+    <div style="--bit-ButtonGroup-outline-border-color: rgb(200, 0, 200); --bit-ButtonGroup-text-color: rgb(0, 0, 200);">
+        <BitButtonGroup Id="vars-twin-fill" Items="@(L("vars-twin-fill", Basic))" />
+        <BitButtonGroup Id="vars-twin-outline" Variant="BitVariant.Outline" Items="@(L("vars-twin-outline", Basic))" />
+        <BitButtonGroup Id="vars-twin-text" Variant="BitVariant.Text" Items="@(L("vars-twin-text", Basic))" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitButtonGroup Id="grp-rtl" Dir="BitDir.Rtl" Toggle Items="@(L("grp-rtl", Basic))" />
+    <div dir="rtl">
+        <BitButtonGroup Id="grp-rtl-inherited" Toggle Items="@(L("grp-rtl-inherited", Basic))" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="visibility" Title="Visibility">
+    <BitButtonGroup Id="grp-visibility" Visibility="_visibility" Items="@(L("grp-visibility", Basic))" />
+    <button id="btn-vis-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-vis-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-vis-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+</E2ESection>
+
+<E2ESection Id="rerender" Title="Group parameters at runtime">
+    <BitButtonGroup Id="grp-rerender" Variant="_rerenderVariant" Color="_rerenderColor" Size="_rerenderSize" Vertical="_rerenderVertical" IconOnly="_rerenderIconOnly" Items="@(L("grp-rerender", Icons))" />
+    <button id="btn-rerender" type="button" @onclick="ChangeRerender">Change parameters</button>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Reduced motion">
+    <BitButtonGroup Id="motion-default" Items="@(L("motion-default", Basic))" />
+    <BitButtonGroup Id="motion-forced" ForceAnimation Items="@(L("motion-forced", Basic))" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private string _clicked = "none";
+    private BitButtonGroup<BitButtonGroupItem> _focusGroup = default!;
+    private readonly List<string> _toggleChanges = [];
+    private string? _toggleKey;
+    private readonly List<string> _itemClicks = [];
+    private int _ownClicks;
+    private IEnumerable<string>? _toggleKeys = [];
+    private int _multiChanges;
+    private int _defaultToggleChanges;
+    private int _multiFixedChanges;
+    private IEnumerable<string>? _maxKeys = [];
+    private int? _maxToggles = 2;
+    private readonly List<string> _loadingClicks = [];
+    private string? _linkKey;
+    private string? _alignKey;
+    private string? _commitKey;
+    private readonly List<string> _interactiveClicks = [];
+    private List<BitButtonGroupItem> _dynamicItems = [new() { Key = "a", Text = "A" }, new() { Key = "b", Text = "B" }];
+    private int _dynamicCounter;
+    private bool _mounted = true;
+    private bool _groupDisabled = true;
+    private int _disabledClicks;
+    private int _disabledPageEvents;
+    private BitVisibility _visibility;
+    private BitVariant? _rerenderVariant;
+    private BitColor? _rerenderColor;
+    private BitSize? _rerenderSize;
+    private bool _rerenderVertical;
+    private bool _rerenderIconOnly;
+
+    private readonly BitButtonGroupParams[] _groupParams =
+    [
+        new()
+        {
+            Variant = BitVariant.Outline,
+            Size = BitSize.Small,
+            Color = BitColor.Secondary,
+            Rounded = true,
+        }
+    ];
+
+    private readonly Dictionary<string, List<BitButtonGroupItem>> _lists = [];
+
+    // One list per group, made once: a list handed over afresh on every render is supported too, but the tests are
+    // after the behaviour of a group whose items stay put.
+    private List<BitButtonGroupItem> L(string id, Func<List<BitButtonGroupItem>> factory)
+    {
+        if (_lists.TryGetValue(id, out var list) is false)
+        {
+            _lists[id] = list = factory();
+        }
+
+        return list;
+    }
+
+    private void SetToggleKeyForward() => _toggleKey = "forward";
+
+    private void SetToggleKeysWithUnknown() => _toggleKeys = ["italic", "nope"];
+
+    private static List<BitButtonGroupItem> Basic() =>
+    [
+        new() { Key = "add", Text = "Add" },
+        new() { Key = "edit", Text = "Edit" },
+        new() { Key = "delete", Text = "Delete" }
+    ];
+
+    private static List<BitButtonGroupItem> DisabledItem() =>
+    [
+        new() { Key = "add", Text = "Add" },
+        new() { Key = "edit", Text = "Edit", IsDisabled = true },
+        new() { Key = "delete", Text = "Delete" }
+    ];
+
+    private static List<BitButtonGroupItem> Icons() =>
+    [
+        new() { Key = "add", Text = "Add", IconName = BitIconName.Add },
+        new() { Key = "edit", Text = "Edit", IconName = BitIconName.Edit },
+        new() { Key = "delete", Text = "Delete", IconName = BitIconName.Delete }
+    ];
+
+    private static List<BitButtonGroupItem> OnlyIcons() =>
+    [
+        new() { Key = "add", AriaLabel = "Add", IconName = BitIconName.Add },
+        new() { Key = "edit", AriaLabel = "Edit", IconName = BitIconName.Edit },
+        new() { Key = "delete", AriaLabel = "Delete", IconName = BitIconName.Delete }
+    ];
+
+    private static List<BitButtonGroupItem> Reversed() =>
+    [
+        new() { Key = "add", Text = "Add", IconName = BitIconName.Add, ReversedIcon = true },
+        new() { Key = "edit", Text = "Edit", IconName = BitIconName.Edit, ReversedIcon = true },
+        new() { Key = "delete", Text = "Delete", IconName = BitIconName.Delete }
+    ];
+
+    private static List<BitButtonGroupItem> ExternalIcons() =>
+    [
+        new() { Key = "home", Text = "Home", Icon = BitIconInfo.Css("fa-solid fa-house"), OnIcon = BitIconInfo.Bi("house-fill"), OffIcon = BitIconInfo.Bi("house") },
+        new() { Key = "gear", Text = "Gear", Icon = BitIconInfo.Fa("solid gear") }
+    ];
+
+    private static List<BitButtonGroupItem> Toggles() =>
+    [
+        new() { Key = "back", OnText = "Back (2X)", OffText = "Back (1X)", OnIconName = BitIconName.RewindTwoX, OffIconName = BitIconName.Rewind, OnTitle = "Slow down", OffTitle = "Rewind" },
+        new() { Key = "play", OnText = "Pause", OffText = "Play", OnIconName = BitIconName.Pause, OffIconName = BitIconName.Play },
+        new() { Key = "forward", OnText = "Forward (2X)", OffText = "Forward (1X)", OnIconName = BitIconName.FastForwardTwoX, OffIconName = BitIconName.FastForward }
+    ];
+
+    private List<BitButtonGroupItem> EventItems() =>
+    [
+        new() { Key = "increase", Text = "Increase", IconName = BitIconName.Add, OnClick = _ => _ownClicks++ },
+        new() { Key = "reset", Text = "Reset", IconName = BitIconName.Reset, OnClick = _ => _ownClicks = 0 },
+        new() { Key = "decrease", Text = "Decrease", IconName = BitIconName.Remove, OnClick = _ => _ownClicks-- }
+    ];
+
+    private static List<BitButtonGroupItem> Formats() =>
+    [
+        new() { Key = "bold", Text = "Bold", IconName = BitIconName.Bold },
+        new() { Key = "italic", Text = "Italic", IconName = BitIconName.Italic },
+        new() { Key = "underline", Text = "Underline", IconName = BitIconName.Underline }
+    ];
+
+    private static List<BitButtonGroupItem> Loading() =>
+    [
+        new() { Key = "save", Text = "Save", IconName = BitIconName.Save, IsLoading = true },
+        new() { Key = "sync", Text = "Sync", IconName = BitIconName.Sync },
+        new() { Key = "upload", Text = "Upload", IconName = BitIconName.Upload }
+    ];
+
+    private static List<BitButtonGroupItem> Badges() =>
+    [
+        new() { Key = "inbox", Text = "Inbox", IconName = BitIconName.Inbox, Badge = "3" },
+        new() { Key = "drafts", Text = "Drafts", IconName = BitIconName.Edit, Badge = "12" },
+        new() { Key = "sent", Text = "Sent", IconName = BitIconName.Send }
+    ];
+
+    private static List<BitButtonGroupItem> BadgeIcons() => Badges();
+
+    private static List<BitButtonGroupItem> Links() =>
+    [
+        new() { Key = "home", Text = "Home", Href = "/", Target = "_blank" },
+        new() { Key = "docs", Text = "Docs", Href = "https://example.com", Rel = BitLinkRels.NoFollow, Target = "_blank" },
+        new() { Key = "self", Text = "Self", Href = "e2e/button-group#links" }
+    ];
+
+    private static List<BitButtonGroupItem> Templated() =>
+    [
+        new() { Key = "custom", Text = "Custom", Template = item => @<span class="tpl-own">@item.Text template</span> },
+        new() { Key = "plain", Text = "Plain" }
+    ];
+
+    private static List<BitButtonGroupItem> Titles() =>
+    [
+        new() { Key = "bold", Text = "Bold", IconName = BitIconName.Bold, Title = "Bold (Ctrl+B)" },
+        new() { Key = "italic", Text = "Italic", IconName = BitIconName.Italic, Title = "Italic (Ctrl+I)" }
+    ];
+
+    private static List<BitButtonGroupItem> ToggleTitles() =>
+    [
+        new() { Key = "mute", Text = "Mute", IconName = BitIconName.Microphone, OnTitle = "Unmute", OffTitle = "Mute", Title = "Microphone" },
+        new() { Key = "video", Text = "Video", IconName = BitIconName.Video, Title = "Camera" }
+    ];
+
+    private static List<BitButtonGroupItem> Alignments() =>
+    [
+        new() { Key = "left", Text = "Left", IconName = BitIconName.AlignLeft },
+        new() { Key = "center", Text = "Center", IconName = BitIconName.AlignCenter },
+        new() { Key = "right", Text = "Right", IconName = BitIconName.AlignRight }
+    ];
+
+    private static List<BitButtonGroupItem> Styled() =>
+    [
+        new() { Key = "classed", Text = "Classed", Class = "item-own-class" },
+        new() { Key = "styled", Text = "Styled", Style = "color: rgb(255, 0, 255);" }
+    ];
+
+    private static List<BitButtonGroupItem> Uneven() =>
+    [
+        new() { Key = "a", Text = "A" },
+        new() { Key = "b", Text = "A much longer label" },
+        new() { Key = "c", Text = "Mid label" }
+    ];
+
+    private static List<BitButtonGroupItem> Many() => Enumerable.Range(1, 8).Select(i => new BitButtonGroupItem { Key = $"m{i}", Text = $"Item {i}" }).ToList();
+
+    private void AddDynamicItem()
+    {
+        _dynamicCounter++;
+        _dynamicItems = [.. _dynamicItems, new() { Key = $"n{_dynamicCounter}", Text = $"New {_dynamicCounter}" }];
+    }
+
+    private void RemoveDynamicItem()
+    {
+        if (_dynamicItems.Count > 0) _dynamicItems = _dynamicItems.Skip(1).ToList();
+    }
+
+    private void ChangeRerender()
+    {
+        _rerenderVariant = BitVariant.Outline;
+        _rerenderColor = BitColor.Error;
+        _rerenderSize = BitSize.Large;
+        _rerenderVertical = true;
+        _rerenderIconOnly = true;
+    }
+}

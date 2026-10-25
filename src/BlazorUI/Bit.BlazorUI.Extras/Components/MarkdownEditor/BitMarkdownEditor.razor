@@ -1,8 +1,8 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<string?>
 
 <div @ref="RootElement"
-     @attributes="HtmlAttributes"
+     @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
@@ -10,7 +10,7 @@
 
     @if (Label is not null || LabelTemplate is not null)
     {
-        <label style="@Styles?.Label" class="bit-mde-lbl @Classes?.Label" for="@TextAreaId">
+        <label style="@Styles?.Label" class="bit-mde-lbl @(Required ? "bit-mde-req" : null) @Classes?.Label" for="@TextAreaId">
             @if (LabelTemplate is not null)
             {
                 @LabelTemplate
@@ -26,8 +26,12 @@
     {
         <div role="toolbar" aria-label="@ActiveTexts.ToolbarAriaLabel" aria-controls="@TextAreaId"
              style="@Styles?.Toolbar" class="bit-mde-tlb @Classes?.Toolbar">
-            @foreach (var item in ActiveToolbar)
+            @for (var index = 0; index < ActiveToolbar.Count; index++)
             {
+                var item = ActiveToolbar[index];
+
+                if (IsToolbarItemVisible(item) is false) continue;
+
                 if (item.Type is BitMarkdownEditorToolbarItemType.Separator)
                 {
                     <span class="bit-mde-sep" aria-hidden="true"></span>
@@ -37,22 +41,27 @@
                     @* A menu holding the active command says so on its trigger, so the caret's
                        heading level can be read off the closed toolbar. *@
                     <div class="bit-mde-dd">
+                        @{ var itemDisabled = IsToolbarItemDisabled(item); }
                         <button type="button"
                                 style="@Styles?.ToolbarButton"
-                                class="bit-mde-btn @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
+                                class="bit-mde-btn @(item.Text is null ? null : "bit-mde-btx") @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
                                 title="@GetToolbarItemTitle(item)"
                                 aria-label="@GetToolbarItemLabel(item)"
                                 aria-keyshortcuts="@GetToolbarItemKeyShortcuts(item)"
                                 aria-haspopup="menu"
                                 aria-expanded="false"
+                                aria-controls="@GetMenuId(index)"
                                 data-cmd="@item.Name"
                                 tabindex="-1"
-                                disabled="@IsToolbarItemDisabled(item)">
-                            @((MarkupString)item.Icon)
+                                disabled="@itemDisabled"
+                                aria-disabled="@(itemDisabled ? "true" : null)">
+                            @RenderItemContent(item)
                         </button>
-                        <div class="bit-mde-ddm" role="menu" aria-label="@GetToolbarItemLabel(item)">
+                        <div id="@GetMenuId(index)" class="bit-mde-ddm" role="menu" aria-label="@GetToolbarItemLabel(item)">
                             @foreach (var child in item.Children ?? [])
                             {
+                                if (IsToolbarItemVisible(child) is false) continue;
+
                                 if (child.Type is BitMarkdownEditorToolbarItemType.Separator)
                                 {
                                     <div class="bit-mde-msep" role="separator"></div>
@@ -62,6 +71,7 @@
                                     @* A menu item that reports a state is a radio: the heading picker's
                                        entries exclude one another, which "checked" says and "pressed"
                                        does not. Everything else is a plain command. *@
+                                    var childDisabled = IsToolbarItemDisabled(child);
                                     <button type="button"
                                             role="@(IsToolbarItemToggle(child) ? "menuitemradio" : "menuitem")"
                                             tabindex="-1"
@@ -71,13 +81,11 @@
                                             aria-keyshortcuts="@GetToolbarItemKeyShortcuts(child)"
                                             aria-checked="@(IsToolbarItemToggle(child) ? (IsToolbarItemActive(child) ? "true" : "false") : null)"
                                             data-cmd="@child.Name"
-                                            disabled="@IsToolbarItemDisabled(child)"
+                                            data-bit-mde-upload="@(child.Type is BitMarkdownEditorToolbarItemType.ImageUpload ? "" : null)"
+                                            disabled="@childDisabled"
+                                            aria-disabled="@(childDisabled ? "true" : null)"
                                             @onclick="() => OnToolbarItemClick(child)">
-                                        @((MarkupString)child.Icon)
-                                        @if (child.Text is not null)
-                                        {
-                                            <span class="bit-mde-mit">@child.Text</span>
-                                        }
+                                        @RenderItemContent(child)
                                     </button>
                                 }
                             }
@@ -86,18 +94,21 @@
                 }
                 else
                 {
+                    var itemDisabled = IsToolbarItemDisabled(item);
                     <button type="button"
                             style="@Styles?.ToolbarButton"
-                            class="bit-mde-btn @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
+                            class="bit-mde-btn @(item.Text is null ? null : "bit-mde-btx") @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
                             title="@GetToolbarItemTitle(item)"
                             aria-label="@GetToolbarItemLabel(item)"
                             aria-keyshortcuts="@GetToolbarItemKeyShortcuts(item)"
                             aria-pressed="@(IsToolbarItemToggle(item) ? (IsToolbarItemActive(item) ? "true" : "false") : null)"
                             data-cmd="@item.Name"
+                            data-bit-mde-upload="@(item.Type is BitMarkdownEditorToolbarItemType.ImageUpload ? "" : null)"
                             tabindex="-1"
-                            disabled="@IsToolbarItemDisabled(item)"
+                            disabled="@itemDisabled"
+                            aria-disabled="@(itemDisabled ? "true" : null)"
                             @onclick="() => OnToolbarItemClick(item)">
-                        @((MarkupString)item.Icon)
+                        @RenderItemContent(item)
                     </button>
                 }
             }
@@ -106,20 +117,31 @@
 
     @if (_showFind)
     {
+        @* data-bit-esc on the find and the replace box claims the Escape that closes the panel (OnFindKeyDown,
+           OnReplaceKeyDown, see Utils.claimEscape), so a dialog around the editor does not close on that same press.
+           The boxes are only rendered while the panel is open, which is when their handlers act on the key. *@
         <div class="bit-mde-fnd" role="region" aria-label="@ActiveTexts.FindReplaceTitle">
             <input @ref="_findRef"
+                   type="search"
+                   autocomplete="off"
+                   spellcheck="false"
                    class="bit-mde-fni"
                    placeholder="@ActiveTexts.FindPlaceholder"
                    aria-label="@ActiveTexts.FindPlaceholder"
                    value="@_findText"
                    @oninput="e => OnFindTextChanged(e.Value?.ToString() ?? string.Empty)"
-                   @onkeydown="OnFindKeyDown" />
+                   @onkeydown="OnFindKeyDown"
+                   data-bit-esc="claim" />
             <input class="bit-mde-fni"
+                   type="text"
+                   autocomplete="off"
+                   spellcheck="false"
                    placeholder="@ActiveTexts.ReplacePlaceholder"
                    aria-label="@ActiveTexts.ReplacePlaceholder"
                    value="@_replaceText"
                    @oninput="e => _replaceText = e.Value?.ToString() ?? string.Empty"
-                   @onkeydown="OnReplaceKeyDown" />
+                   @onkeydown="OnReplaceKeyDown"
+                   data-bit-esc="claim" />
             <button type="button"
                     class="bit-mde-fnb bit-mde-fnc @(_matchCase ? "bit-mde-act" : null)"
                     aria-pressed="@(_matchCase ? "true" : "false")"
@@ -129,21 +151,34 @@
             <button type="button" class="bit-mde-fnb" title="@ActiveTexts.FindPreviousAriaLabel" aria-label="@ActiveTexts.FindPreviousAriaLabel" @onclick="FindPreviousMatch">&uarr;</button>
             <button type="button" class="bit-mde-fnb" title="@ActiveTexts.FindNextAriaLabel" aria-label="@ActiveTexts.FindNextAriaLabel" @onclick="FindNextMatch">&darr;</button>
             <span class="bit-mde-fns" aria-live="polite">@FindStatusText</span>
-            <button type="button" class="bit-mde-fnb" @onclick="ReplaceOne" disabled="@(ReadOnly || IsEnabled is false)">@ActiveTexts.ReplaceButton</button>
+            @{ var replaceDisabled = ReadOnly || Disabled; }
+            <button type="button" class="bit-mde-fnb" @onclick="ReplaceOne" disabled="@replaceDisabled" aria-disabled="@(replaceDisabled ? "true" : null)">@ActiveTexts.ReplaceButton</button>
             <button type="button"
                     class="bit-mde-fnb"
                     title="@ActiveTexts.ReplaceAllAriaLabel"
                     aria-label="@ActiveTexts.ReplaceAllAriaLabel"
                     @onclick="ReplaceAll"
-                    disabled="@(ReadOnly || IsEnabled is false)">@ActiveTexts.ReplaceAllButton</button>
+                    disabled="@replaceDisabled"
+                    aria-disabled="@(replaceDisabled ? "true" : null)">@ActiveTexts.ReplaceAllButton</button>
             <button type="button" class="bit-mde-hcl" @onclick="CloseFind" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
         </div>
     }
 
     <div class="bit-mde-bdy bit-mde-@Mode.ToString().ToLowerInvariant()">
         <div class="bit-mde-pne bit-mde-epn">
-            <textarea @ref="_textAreaRef"
+            @* The Preview mode hides the textarea, and a browser refuses to submit a form over a required control it
+               cannot focus without saying why, so only aria-required stays on it there.
+               The value is the one it had before the first render, and never changes after it: that is what a
+               prerendered or static page shows before the script seeds the textarea, while the script owns it from
+               then on - a value Blazor kept in step would be written over the text being typed.
+               data-bit-esc claims the Escape the script hands to .NET while that press closes the help or the find
+               panel or leaves full-screen (EscapeClaim, see Utils.claimEscape), so a dialog around the editor waits
+               for the next one. *@
+            <textarea @ref="InputElement"
+                      @attributes="InputHtmlAttributes"
+                      value="@_seedValue"
                       id="@TextAreaId"
+                      name="@Name"
                       style="@Styles?.TextArea"
                       class="bit-mde-txa @Classes?.TextArea"
                       placeholder="@Placeholder"
@@ -151,7 +186,12 @@
                       aria-describedby="@TextAreaDescribedBy"
                       maxlength="@(MaxLength is > 0 ? MaxLength : null)"
                       spellcheck="@(SpellCheck ? "true" : "false")"
-                      readonly="@(ReadOnly || IsEnabled is false)"
+                      readonly="@(ReadOnly || Disabled)"
+                      disabled="@(Disabled)"
+                      aria-disabled="@GetInputAriaDisabled(Disabled)"
+                      required="@(Required && Mode is not BitMarkdownEditorMode.Preview)"
+                      aria-required="@(Required ? "true" : null)"
+                      data-bit-esc="@EscapeClaim"
                       autocomplete="off"
                       autocapitalize="off"
                       autocorrect="off"
@@ -160,12 +200,15 @@
         </div>
 
         @* The preview pane scrolls on its own, so it needs to be reachable by keyboard
-           for the arrow keys to be able to scroll it. *@
-        <div style="@Styles?.Preview"
+           for the arrow keys to be able to scroll it. Its Escape goes to .NET just like the textarea's, so it
+           carries the same claim (EscapeClaim). *@
+        <div @ref="_previewRef"
+             style="@Styles?.Preview"
              class="bit-mde-pne bit-mde-ppn @Classes?.Preview"
              tabindex="0"
              role="group"
-             aria-label="@ActiveTexts.PreviewAriaLabel">
+             aria-label="@ActiveTexts.PreviewAriaLabel"
+             data-bit-esc="@EscapeClaim">
             @* Edit mode hides this pane, and rendering markdown nobody can see would re-parse the
                whole document on every keystroke for nothing. *@
             @if (Mode is BitMarkdownEditorMode.Edit)
@@ -185,6 +228,24 @@
             }
         </div>
     </div>
+
+    @if (HasDescription)
+    {
+        @* A div rather than a span: a DescriptionTemplate is free to render block content. *@
+        <div id="@DescriptionId" style="@Styles?.Description" class="bit-mde-des @Classes?.Description">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                @Description
+            }
+        </div>
+    }
+
+    @* Kept on the page while empty: a live region only announces a change made after it is already there. *@
+    <span class="bit-mde-ann" aria-live="polite" aria-atomic="true">@_announcement</span>
 
     @if (ShowStatusBar)
     {
@@ -210,19 +271,24 @@
 
     @if (_showHelp)
     {
+        @* data-bit-esc on the dialog claims the Escape that closes it (OnHelpKeyDown, see Utils.claimEscape), so a
+           dialog the editor sits in does not close on that same press. The dialog is only rendered while it is
+           open, and its handler closes it on every plain Escape pressed in it. Tab and Shift+Tab are kept inside it
+           by the script (Utils.setupFocusTrap on its id, registered once it is rendered - see OnAfterRenderAsync). *@
         <div class="bit-mde-hlp" @onclick="CloseHelp">
             <div @ref="_helpRef"
+                 id="@HelpDialogId"
                  role="dialog"
                  aria-modal="true"
-                 aria-label="@ActiveTexts.KeyboardShortcutsTitle"
+                 aria-labelledby="@HelpTitleId"
                  tabindex="-1"
                  class="bit-mde-hcr"
                  @onkeydown="OnHelpKeyDown"
+                 data-bit-esc="claim"
                  @onclick:stopPropagation="true">
-                <span tabindex="0" class="bit-mde-guard" @onfocus="FocusHelpClose"></span>
                 <header>
-                    <strong>@ActiveTexts.KeyboardShortcutsTitle</strong>
-                    <button type="button" @ref="_helpCloseRef" class="bit-mde-hcl" @onclick="CloseHelp" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
+                    <h2 id="@HelpTitleId">@ActiveTexts.KeyboardShortcutsTitle</h2>
+                    <button type="button" class="bit-mde-hcl" @onclick="CloseHelp" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
                 </header>
                 <dl>
                     @foreach (var (label, keys) in HelpShortcuts)
@@ -230,8 +296,28 @@
                         <div><dt>@label</dt><dd>@keys</dd></div>
                     }
                 </dl>
-                <span tabindex="0" class="bit-mde-guard" @onfocus="FocusHelpClose"></span>
             </div>
         </div>
     }
 </div>
+
+@code {
+    // The glyph of an item - its own markup, or else the built-in icon it names - and its text. The text a menu
+    // item of the default toolbar shows is its localized title, so what is read out is also what is on screen.
+    private RenderFragment RenderItemContent(BitMarkdownEditorToolbarItem item) => __builder =>
+    {
+        @if (string.IsNullOrEmpty(item.Icon) is false)
+        {
+            @((MarkupString)item.Icon)
+        }
+        else if (string.IsNullOrEmpty(item.IconName) is false)
+        {
+            <i class="bit-mde-ico @BitIconInfo.Bit(item.IconName).GetCssClasses()" aria-hidden="true"></i>
+        }
+
+        @if (item.Text is not null)
+        {
+            <span class="bit-mde-mit">@ActiveTexts.GetToolbarTitle(item.Name, item.Text)</span>
+        }
+    };
+}

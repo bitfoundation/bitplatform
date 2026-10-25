@@ -1,9 +1,7 @@
-﻿using Microsoft.AppCenter.Crashes;
-
-namespace Bit.BlazorUI.Demo.Client.Maui.Services;
+﻿namespace Bit.BlazorUI.Demo.Client.Maui.Services;
 
 /// <summary>
-/// You can easily install AppCenter, Firebase Crashlytics, and other exception tracking libraries in your Client.Maui project.
+/// You can easily install Sentry, Firebase Crashlytics, and other exception tracking libraries in your Client.Maui project.
 /// Then, you can use their APIs to monitor all exceptions across Android, iOS, Windows, and macOS.
 /// </summary>
 public partial class MauiExceptionHandler : ExceptionHandlerBase
@@ -14,8 +12,6 @@ public partial class MauiExceptionHandler : ExceptionHandlerBase
         {
             return;
         }
-
-        Crashes.TrackError(exception, parameters?.ToDictionary(p => p.Key, p => p.Value?.ToString()));
 
         base.Handle(exception, parameters);
     }

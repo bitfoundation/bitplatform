@@ -1,0 +1,81 @@
+﻿@namespace Bit.Bcrdt.Blazor
+@inherits BcrdtComponentBase
+
+@if (ChildContent is not null)
+{
+    @ChildContent(_participants)
+}
+else
+{
+    <div class="@Class">
+        @foreach (BcrdtCollaborator participant in _participants)
+        {
+            <span title="@Describe(participant)"
+                  style="display:inline-flex;align-items:center;gap:.35em;margin-right:.6em">
+                <span aria-hidden="true"
+                      style="width:.6em;height:.6em;border-radius:50%;background:@Swatch(participant)"></span>
+                <span>@participant.User.Name@(participant.IsLocal ? " (you)" : "")</span>
+            </span>
+        }
+    </div>
+}
+
+@code {
+    private IReadOnlyList<BcrdtCollaborator> _participants = [];
+    private BcrdtPresenceService? _tracked;
+    private IDisposable? _subscription;
+
+    /// <summary>The presence source to render.</summary>
+    [Parameter, EditorRequired]
+    public BcrdtPresenceService Presence { get; set; } = default!;
+
+    /// <summary>Whether the local participant appears in the list.</summary>
+    [Parameter]
+    public bool IncludeSelf { get; set; } = true;
+
+    /// <summary>CSS classes for the default rendering.</summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Replaces the default rendering entirely.
+    /// </summary>
+    /// <remarks>
+    /// The built-in markup is deliberately plain and unopinionated - it exists so that presence is
+    /// visible in five minutes, not so that it matches your design system. Supply this to render
+    /// participants however the application wants.
+    /// </remarks>
+    [Parameter]
+    public RenderFragment<IReadOnlyList<BcrdtCollaborator>>? ChildContent { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        // The source can change - a scope switching documents hands over a different presence - and
+        // the view must follow it rather than keep listening to the old one.
+        if (!ReferenceEquals(_tracked, Presence))
+        {
+            _subscription?.Dispose();
+            _tracked = Presence;
+            _subscription = Track(Presence);
+        }
+
+        Refresh();
+    }
+
+    protected override bool ShouldRender()
+    {
+        Refresh();
+        return true;
+    }
+
+    private void Refresh() => _participants = IncludeSelf ? Presence.Participants : Presence.Others;
+
+    // The colour comes from a peer and lands in a style attribute; only a plain hex colour may.
+    private static string Swatch(BcrdtCollaborator participant) =>
+        BcrdtPresenceService.IsSafeColor(participant.User.Color) ? participant.User.Color : "currentColor";
+
+    private static string Describe(BcrdtCollaborator participant) =>
+        participant.Activity is { Length: > 0 } activity
+            ? $"{participant.User.Name} - {activity}"
+            : participant.User.Name;
+}

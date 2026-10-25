@@ -1,0 +1,110 @@
+﻿@page "/regression/country-picker"
+
+<PageTitle>Country Picker Regression</PageTitle>
+
+@* The country list of BitCountryPicker and BitPhoneInput, which share how it is built, searched and walked
+   (BitCountryList), driven through what only a browser does: the list opened, closed, disabled under itself and
+   relocated to the body, the keys the field's own listener prevents, the flags the images load, and the panel a
+   right-to-left page slides in from the left. Every case has its own wrapper id; the controls above them push the
+   parameters a page would. The callout and the overlay of each case carry a class of their own, since both are moved
+   to the body while the list is open. *@
+<div id="test-controls" style="padding: 8px; background: #f0f0f0;">
+    <button id="btn-disable" @onclick="() => _disabled = !_disabled">Toggle Disabled</button>
+    <button id="btn-open" @onclick="() => _boundOpen = true">Open Bound</button>
+    <button id="btn-open-nosearch" @onclick="() => _noSearchOpen = true">Open NoSearchBox</button>
+    <button id="btn-close-nosearch" @onclick="() => _noSearchOpen = false">Close NoSearchBox</button>
+    <button id="btn-phone-disable" @onclick="() => _phoneDisabled = !_phoneDisabled">Toggle Phone Disabled</button>
+    <button id="btn-hit" @onclick="() => _hits++">Hit</button>
+    <p style="font-family: monospace; margin: 0;">
+        Status: <span id="status">@_status</span> |
+        Value: <span id="v-value">@_value?.Iso2</span> |
+        Bound open: <span id="v-open">@(_boundOpen ? "true" : "false")</span> |
+        Disabled: <span id="v-disabled">@(_disabled ? "true" : "false")</span> |
+        NoSearchBox open: <span id="v-nosearch-open">@(_noSearchOpen ? "true" : "false")</span> |
+        NoSearchBox value: <span id="v-nosearch-value">@_noSearchValue?.Iso2</span> |
+        Phone open: <span id="v-phone-open">@(_phoneOpen ? "true" : "false")</span> |
+        Focus: <span id="v-focus">@_focus</span> |
+        Blur: <span id="v-blur">@_blur</span> |
+        Hits: <span id="v-hits">@_hits</span>
+    </p>
+</div>
+
+<div id="basic" style="padding: 8px; width: 320px;">
+    <BitCountryPicker Label="Country" Classes="@(new() { Callout = "basic-cal", Overlay = "basic-ovl" })" @bind-Value="_value" OnFocus="() => _focus++" OnBlur="() => _blur++" />
+</div>
+
+<div id="bound" style="padding: 8px; width: 320px;">
+    <BitCountryPicker Label="Bound" Classes="@(new() { Callout = "bound-cal", Overlay = "bound-ovl" })" @bind-IsOpen="_boundOpen" Disabled="_disabled" />
+</div>
+
+<div id="nosearch" style="padding: 8px; width: 320px;">
+    <BitCountryPicker Label="No search box" Classes="@(new() { Callout = "nosearch-cal", Overlay = "nosearch-ovl" })" NoSearchBox @bind-IsOpen="_noSearchOpen" @bind-Value="_noSearchValue" />
+</div>
+
+<div id="localized" style="padding: 8px; width: 320px;">
+    <BitCountryPicker Label="Localized" Classes="@(new() { Callout = "localized-cal", Overlay = "localized-ovl" })" Countries="_localized" DefaultCountry="BitCountries.Germany" />
+</div>
+
+<div id="dupes" style="padding: 8px; width: 320px;">
+    <BitCountryPicker Label="Duplicates" Classes="@(new() { Callout = "dupes-cal", Overlay = "dupes-ovl" })" Countries="_duplicates" />
+</div>
+
+<div id="noflag" style="padding: 8px; width: 320px;">
+    <BitCountryPicker Label="No flag" Classes="@(new() { Callout = "noflag-cal", Overlay = "noflag-ovl" })" Countries="_withNeverland" DefaultValue="_neverland" />
+</div>
+
+<div id="phone" style="padding: 8px; width: 320px;">
+    <BitPhoneInput Label="Phone" Classes="@(new() { Callout = "phone-cal", Overlay = "phone-ovl" })" @bind-IsOpen="_phoneOpen" Disabled="_phoneDisabled" />
+</div>
+
+@* A right-to-left page without an explicit Dir: the direction is the page's, read through :dir(rtl). *@
+<div id="rtl" dir="rtl" style="padding: 8px; width: 320px;">
+    <BitCountryPicker Label="RTL" Responsive Classes="@(new() { Callout = "rtl-cal", Overlay = "rtl-ovl" })" />
+    <BitPhoneInput Label="RTL phone" Responsive Classes="@(new() { Callout = "rtlphone-cal", Overlay = "rtlphone-ovl" })" />
+</div>
+
+<div style="height: 1200px;"></div>
+
+@code {
+    private static readonly BitCountry _neverland = new("Neverland", "999", "ZZ", "ZZZ");
+
+    private readonly List<BitCountry> _localized =
+    [
+        new("Deutschland", "49", "DE", "DEU"),
+        new("Frankreich", "33", "FR", "FRA"),
+        new("Österreich", "43", "AT", "AUT"),
+    ];
+
+    private readonly List<BitCountry> _duplicates =
+    [
+        BitCountries.UnitedStates,
+        BitCountries.Canada,
+        BitCountries.UnitedStates,
+        new("Kanada", "1", "CA", "CAN"),
+    ];
+
+    private readonly List<BitCountry> _withNeverland = [_neverland, BitCountries.France, BitCountries.Germany];
+
+    private BitCountry? _value;
+    private BitCountry? _noSearchValue;
+    private bool _boundOpen;
+    private bool _disabled;
+    private bool _noSearchOpen;
+    private bool _phoneOpen;
+    private bool _phoneDisabled;
+    private int _focus;
+    private int _blur;
+    private int _hits;
+
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

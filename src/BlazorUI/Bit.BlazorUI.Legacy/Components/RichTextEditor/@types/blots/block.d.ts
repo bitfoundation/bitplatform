@@ -1,4 +1,4 @@
-declare class Block extends BlockBlot {
+﻿declare class Block extends BlockBlot {
     cache: {
         delta?: Delta | null;
         length?: number;

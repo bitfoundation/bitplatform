@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Shape of a stroke's end caps.</summary>
 public enum BitMapLineCap
@@ -31,8 +31,11 @@ public enum BitMapLineJoin
 /// </summary>
 public sealed class BitMapVectorPathStyle
 {
-    /// <summary>Stroke color.</summary>
-    public string Color { get; set; } = "#3388ff";
+    /// <summary>
+    /// Stroke color - any CSS color, a theme variable such as <c>var(--bit-clr-pri)</c> included. Null
+    /// takes <c>--bit-Map-vector-color</c>, the theme's primary color unless set.
+    /// </summary>
+    public string? Color { get; set; }
 
     /// <summary>Stroke width in pixels. Negative or non-finite (NaN/±Infinity) inputs are clamped to 0.</summary>
     public double Weight

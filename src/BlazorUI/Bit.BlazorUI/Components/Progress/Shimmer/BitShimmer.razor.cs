@@ -1,4 +1,5 @@
-﻿namespace Bit.BlazorUI;
+﻿
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Shimmer is a temporary animation placeholder for when a service call takes time to return data and you don't want to block rendering the rest of the UI.
@@ -12,10 +13,21 @@ public partial class BitShimmer : BitComponentBase
     // Null until there has been a wait at all, so a shimmer that starts out loaded holds nothing back.
     private long? _waitStart;
     private CancellationTokenSource? _holdCts;
+    // Whether the content fades in as it replaces the placeholder. Only a placeholder that was actually seen
+    // has anything to fade from: content that was there from the first render, or a response that beat the
+    // ShowDelay holding the placeholder back, simply appears - a fade there would blink content that was never
+    // waited on, or that an overlay was still showing, out and back in.
+    private bool _reveal;
+
+    // The time an Overlay's cover takes to fade in once its ShowDelay is over: the longest $mot-duration-long of
+    // the packaged presets. The covered content is held on the page for that long (bit-smr-anim-uncover), so a
+    // refresh that ends inside the window uncovers content that never left, and fading it in would blink it.
+    // Erring long only costs the fade on a refresh that ends just after the cover is fully in.
+    private const int CoverFadeTime = 400;
 
     // Circle is the older spelling of Shape.Circle and stays the fallback for a component that was written
     // before the shape had a name of its own; an explicit Shape always wins over it.
-    private BitShimmerShape _shape => Shape ?? (Circle ? BitShimmerShape.Circle : BitShimmerShape.Rounded);
+    private BitShape _shape => Shape ?? (Circle ? BitShape.Circle : BitShape.Rounded);
 
     // Pulse is the older spelling of Animation.Pulse, with the same precedence.
     private BitShimmerAnimation _animation => Animation ?? (Pulse ? BitShimmerAnimation.Pulse : BitShimmerAnimation.Wave);
@@ -23,7 +35,7 @@ public partial class BitShimmer : BitComponentBase
     // A circle is one shape rather than a stack of lines, and a count below one is not a stack either.
     // An overlay is one shape as well: it covers a box whose size the content underneath already decides,
     // and a stack of bars inside that box would be a second layout rather than a cover for the first.
-    private int _lineCount => Overlay || _shape == BitShimmerShape.Circle ? 1 : Math.Max(1, Lines);
+    private int _lineCount => Overlay || _shape == BitShape.Circle ? 1 : Math.Max(1, Lines);
 
     // A template draws the placeholder itself, which an overlay cannot let it do: the cover has to be the one
     // box laid over the content, so the template is left to the in-place placeholder it was written for.
@@ -32,6 +44,25 @@ public partial class BitShimmer : BitComponentBase
     // The region is only worth having while there is something for it to say. It stays on the page across the
     // swap either way, so whichever of the two texts is missing simply empties it rather than removing it.
     private bool _hasLiveRegion => Label.HasValue() || LoadedLabel.HasValue();
+
+    // The region sits beside the root rather than in it, so nothing that hides the root hides the region along
+    // with it: whatever takes the root away - the Visibility parameter, or a hidden, an inert or an
+    // aria-hidden="true" the page splatted onto it - has to be followed by hand, or a shimmer that is not there
+    // would still be talking. A stylesheet that hides the root (a display:none in Style or behind a Class) is
+    // out of reach of any of that, which is what Styles.Label and Classes.Label are there to follow.
+    private bool _liveRegionHidden => Visibility is not BitVisibility.Visible
+                                      || GetSplattedAttribute("hidden") is not null
+                                      || GetSplattedAttribute("inert") is not null
+                                      || string.Equals(GetSplattedAttribute("aria-hidden")?.Trim(), "true", StringComparison.OrdinalIgnoreCase);
+
+    // The language and the direction the root is given are not inherited by a sibling either, and the label is read
+    // in both: a Persian label on a shimmer marked lang="fa" read out in the page's English voice is mispronounced.
+    private string? _liveRegionLang => GetSplattedAttribute("lang");
+
+    // The root's dir attribute is written after the splatted ones, so Dir is the only direction it ever carries.
+    private string? _liveRegionDir => Dir?.ToString().ToLower();
+
+    private string _contentClass => _loaded ? _reveal ? "bit-smr-cnt bit-smr-rvl" : "bit-smr-cnt" : "bit-smr-cvd";
 
     private string _ariaLive => Politeness switch
     {
@@ -54,8 +85,14 @@ public partial class BitShimmer : BitComponentBase
     // aria-label is not a global attribute: on a plain div or a span it names nothing at all, so a shimmer
     // that was given one publishes itself as an indeterminate progress bar - which is what a placeholder
     // standing in for content that is on its way actually is - and gives the role back once the content is
-    // in and the element is nothing but the box around it.
-    private string? _role => _loaded is false && AriaLabel.HasValue() ? "progressbar" : null;
+    // in and the element is nothing but the box around it. The role, the name and the busy state are written after
+    // the splatted attributes, where a null removes the attribute of the same name, so each falls back to the one the
+    // page wrote by hand (see BitComponentBase.GetSplattedAttribute) - a role of its own wins outright.
+    private string? _role => GetSplattedAttribute("role") ?? (_loaded is false && _ariaLabel.HasValue() ? "progressbar" : null);
+
+    private string? _ariaLabel => ResolveAriaLabel();
+
+    private string? _ariaBusy => _loaded ? GetSplattedAttribute("aria-busy") : "true";
 
     private string _animationClass => _animation switch
     {
@@ -99,6 +136,8 @@ public partial class BitShimmer : BitComponentBase
         return width.HasValue() ? $"width:{width}" : null;
     }
 
+    // Background, Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a
+    // default from a choice: the public --bit-Shimmer-* variables restyle the default and never an explicit value.
     private string _backgroundClass => Background switch
     {
         BitColor.Primary => "bit-smr-bpri",
@@ -118,8 +157,21 @@ public partial class BitShimmer : BitComponentBase
         BitColor.PrimaryBorder => "bit-smr-bpbr",
         BitColor.SecondaryBorder => "bit-smr-bsbr",
         BitColor.TertiaryBorder => "bit-smr-btbr",
-        _ => "bit-smr-bsbg"
+        _ => string.Empty
     };
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the shimmer component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple shimmer components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitShimmerParams.ParamName)]
+    public BitShimmerParams? CascadingParameters { get; set; }
 
 
 
@@ -160,7 +212,7 @@ public partial class BitShimmer : BitComponentBase
     /// The default value is <strong>false</strong>.
     /// </summary>
     /// <remarks>
-    /// This is the short spelling of <c>Shape="BitShimmerShape.Circle"</c>, which wins over it when both are set.
+    /// This is the short spelling of <c>Shape="BitShape.Circle"</c>, which wins over it when both are set.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Circle { get; set; }
@@ -168,7 +220,7 @@ public partial class BitShimmer : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitShimmer.
     /// </summary>
-    [Parameter] public BitShimmerClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitShimmerClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The color of the animated part of the shimmer.
@@ -242,7 +294,7 @@ public partial class BitShimmer : BitComponentBase
     /// <remarks>
     /// A block shimmer takes the full width of its container, which is what a placeholder standing in for a
     /// paragraph or a card wants. An inline one sits next to the words around it and takes the width given by
-    /// <see cref="Width"/>, falling back to the minimum control width of the theme.
+    /// <see cref="Width"/>, falling back to eight spacing units (64px at the default density).
     /// <br />
     /// A <see cref="Height"/> of <c>1em</c> keeps it exactly as tall as the type it sits in, whatever that
     /// type turns out to be.
@@ -267,6 +319,16 @@ public partial class BitShimmer : BitComponentBase
     /// <br />
     /// Set it on the one shimmer that stands for the whole region rather than on each of a group of them, so
     /// that a card built from six placeholders is announced once.
+    /// <br />
+    /// The region is rendered right after the root rather than inside it, so while this or
+    /// <see cref="LoadedLabel"/> is set the shimmer is two elements side by side, and a selector that counts or
+    /// pairs siblings - <c>:last-child</c>, <c>:nth-child</c>, <c>+</c> - sees the region as well.
+    /// <br />
+    /// It follows the root wherever it can: it is hidden with a <c>Visibility</c> other than visible and with a
+    /// <c>hidden</c>, an <c>inert</c> or an <c>aria-hidden="true"</c> written on the shimmer, and it is read in
+    /// the <c>Dir</c> and the <c>lang</c> the shimmer was given. A root hidden by a stylesheet - a
+    /// <c>display:none</c> in its style or behind a class - cannot be followed, so hide the region the same way
+    /// through <see cref="BitShimmerClassStyles.Label"/>, or the shimmer keeps talking while it is not there.
     /// </remarks>
     [Parameter] public string? Label { get; set; }
 
@@ -293,7 +355,7 @@ public partial class BitShimmer : BitComponentBase
     /// with the last one shortened to <see cref="LastLineWidth"/> and any of them given a measure of its own by
     /// <see cref="LineWidths"/>. <see cref="Stagger"/> offsets their animations against one another.
     /// <br />
-    /// A <see cref="BitShimmerShape.Circle"/> is a single shape rather than a stack, so it ignores this, and
+    /// A <see cref="BitShape.Circle"/> is a single shape rather than a stack, so it ignores this, and
     /// so does an <see cref="Overlay"/>, which is one box laid over the whole of the content it covers.
     /// </remarks>
     [Parameter, ResetClassBuilder]
@@ -322,6 +384,11 @@ public partial class BitShimmer : BitComponentBase
     /// The placeholder and the content are never on the page at the same time: the content replaces the
     /// placeholder and fades in, and the sizing of the placeholder is dropped with it - unless the shimmer
     /// <see cref="Overlay"/>s its content, where the two are on the page together and only one is shown.
+    /// <br />
+    /// The fade is kept for a placeholder that was actually seen: content that is loaded from the first render,
+    /// or that beats the <see cref="ShowDelay"/>, just appears, and so does the content of an <see cref="Overlay"/>
+    /// whose refresh ends before the cover has finished fading in over it. An overlay keeps its content across the swap,
+    /// so the components inside it are covered and uncovered rather than disposed and created again.
     /// <br />
     /// The swap follows this parameter at once, except where <see cref="MinShowTime"/> is holding a
     /// placeholder that has only just appeared.
@@ -364,6 +431,10 @@ public partial class BitShimmer : BitComponentBase
     /// <br />
     /// The cover is one box over the whole content, so <see cref="Lines"/> and <see cref="Template"/> no longer
     /// apply and the size comes from the content rather than from <see cref="Height"/>.
+    /// <br />
+    /// Covered content leaves the tab order, so an element inside it that has focus loses it to the page. Keep
+    /// the control that starts a refresh outside the covered content, where the keyboard user who pressed it
+    /// can press it again.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Overlay { get; set; }
@@ -399,7 +470,7 @@ public partial class BitShimmer : BitComponentBase
     /// that has to match a surface of its own - a card, a thumbnail, a control with a radius the theme does not
     /// have a name for - and it wins over the shape wherever both are set.
     /// <br />
-    /// A <see cref="BitShimmerShape.Circle"/> is round by construction, so it ignores this.
+    /// A <see cref="BitShape.Circle"/> is round by construction, so it ignores this.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Radius { get; set; }
@@ -412,9 +483,13 @@ public partial class BitShimmer : BitComponentBase
     /// <remarks>
     /// Shape the placeholder like the thing it stands in for: a circle for an avatar, a pill for a button or a
     /// tag, a square for an image that meets its container edge to edge.
+    /// <br />
+    /// The shimmer is the one component that honours all four shapes, and the only one where
+    /// <see cref="BitShape.Circle"/> means something: it takes its diameter from whichever of the height and
+    /// the width is set, and draws a single shape rather than a stack of <see cref="Lines"/>.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitShimmerShape? Shape { get; set; }
+    public BitShape? Shape { get; set; }
 
     /// <summary>
     /// The wait in ms before the placeholder appears.
@@ -462,7 +537,7 @@ public partial class BitShimmer : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitShimmer.
     /// </summary>
-    [Parameter] public BitShimmerClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitShimmerClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The custom template to replace the default shimmer container and animation.
@@ -488,7 +563,7 @@ public partial class BitShimmer : BitComponentBase
     /// content that replaces it occupy the same column.
     /// <br />
     /// A block shimmer takes the full width of its container when it is not set, and a
-    /// <see cref="BitShimmerShape.Circle"/> takes its diameter from <see cref="Height"/> or <see cref="Size"/>.
+    /// <see cref="BitShape.Circle"/> takes its diameter from <see cref="Height"/> or <see cref="Size"/>.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Width { get; set; }
@@ -499,6 +574,8 @@ public partial class BitShimmer : BitComponentBase
 
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         if (Loaded is false)
         {
             // A wait that is starting is one the placeholder is measured from; a wait already under way keeps
@@ -517,6 +594,7 @@ public partial class BitShimmer : BitComponentBase
             // that was holding it back - nor for one that has already lived out its shortest life.
             if (MinShowTime.HasValue is false || elapsed < shown || remaining <= 0)
             {
+                _reveal = _waitStart.HasValue && WasPlaceholderSeen(elapsed, shown);
                 _waitStart = null;
                 SetLoaded(true);
             }
@@ -528,6 +606,10 @@ public partial class BitShimmer : BitComponentBase
 
         base.OnParametersSet();
     }
+
+    // A placeholder has been seen once its ShowDelay is over - the content it stood in for was gone from that
+    // moment on - but the content an Overlay covers is still on the page until the cover has finished fading in.
+    private bool WasPlaceholderSeen(long elapsed, int shown) => elapsed >= shown + (Overlay ? CoverFadeTime : 0);
 
     // The swap is what the class and the style builders are keyed on, so a swap that is deferred defers their
     // reset with it: the ResetClassBuilder on the parameter fires when the parameter changes, which is not
@@ -567,6 +649,8 @@ public partial class BitShimmer : BitComponentBase
                 // the placeholder is still the right thing to be showing and there is nothing to swap.
                 if (Loaded is false) return;
 
+                _reveal = _waitStart.HasValue is false
+                          || WasPlaceholderSeen(Environment.TickCount64 - _waitStart.Value, Math.Max(0, ShowDelay ?? 0));
                 _waitStart = null;
                 SetLoaded(true);
                 StateHasChanged();
@@ -628,9 +712,9 @@ public partial class BitShimmer : BitComponentBase
                                     ? "bit-smr-tpl"
                                     : _shape switch
                                     {
-                                        BitShimmerShape.Circle => "bit-smr-crl",
-                                        BitShimmerShape.Square => "bit-smr-lin bit-smr-sqr",
-                                        BitShimmerShape.Pill => "bit-smr-lin bit-smr-pil",
+                                        BitShape.Circle => "bit-smr-crl",
+                                        BitShape.Square => "bit-smr-lin bit-smr-sqr",
+                                        BitShape.Pill => "bit-smr-lin bit-smr-pil",
                                         _ => "bit-smr-lin"
                                     });
 
@@ -643,34 +727,8 @@ public partial class BitShimmer : BitComponentBase
 
         ClassBuilder.Register(() => Inline ? "bit-smr-inl" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-smr-sm",
-            BitSize.Medium => "bit-smr-md",
-            BitSize.Large => "bit-smr-lg",
-            _ => "bit-smr-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-smr"));
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-smr-pri",
-            BitColor.Secondary => "bit-smr-sec",
-            BitColor.Tertiary => "bit-smr-ter",
-            BitColor.Info => "bit-smr-inf",
-            BitColor.Success => "bit-smr-suc",
-            BitColor.Warning => "bit-smr-wrn",
-            BitColor.SevereWarning => "bit-smr-swr",
-            BitColor.Error => "bit-smr-err",
-            BitColor.PrimaryBackground => "bit-smr-pbg",
-            BitColor.SecondaryBackground => "bit-smr-sbg",
-            BitColor.TertiaryBackground => "bit-smr-tbg",
-            BitColor.PrimaryForeground => "bit-smr-pfg",
-            BitColor.SecondaryForeground => "bit-smr-sfg",
-            BitColor.TertiaryForeground => "bit-smr-tfg",
-            BitColor.PrimaryBorder => "bit-smr-pbr",
-            BitColor.SecondaryBorder => "bit-smr-sbr",
-            BitColor.TertiaryBorder => "bit-smr-tbr",
-            _ => "bit-smr-tbg"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-smr"));
     }
 }

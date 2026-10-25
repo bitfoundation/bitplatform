@@ -14,14 +14,15 @@ internal sealed partial class McpDocumentationSite : IDisposable
     [GeneratedRegex(@"Now listening on:\s*(?<url>http://\S+)")]
     private static partial Regex ListeningRegex();
 
-    /// <summary>The libraries served per version, under the upstream names the proxy knows them by.</summary>
-    public static readonly (string UpstreamName, string ProjectPath)[] Projects =
+    /// <summary>
+    /// The libraries served per version, under the upstream names the proxy knows them by. A project that has
+    /// moved lists every path it has had, newest first: each release is built from its own worktree, where the
+    /// project still sits wherever it was when that release was tagged.
+    /// </summary>
+    public static readonly (string UpstreamName, string[] ProjectPaths)[] Projects =
     [
-        ("bitBlazorUI", "src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj"),
-        ("bitBrouter", "src/Brouter/Bit.Brouter.Demo/Server/Bit.Brouter.Demo.Server.csproj"),
-        ("bitBswup", "src/Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj"),
-        ("bitButil", "src/Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj"),
-        ("bitMotion", "src/Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj")
+        ("bitBlazorUI", ["src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj"]),
+        ("bitButil", ["src/Butil/Demo/Server/Bit.Butil.Demo.Server.csproj", "src/Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj"])
     ];
 
     private static readonly TimeSpan buildTimeout = TimeSpan.FromMinutes(30);
@@ -116,6 +117,17 @@ internal sealed partial class McpDocumentationSite : IDisposable
         // way, since no https port is configured and none is bound.
         // The content root of an app run out of its build output is the working directory, as with dotnet run.
         var startInfo = ProcessRunner.For("dotnet", [assemblyPath!], Path.GetDirectoryName(projectFilePath));
+
+        // A child inherits this site's environment, and what IIS gives this site there is this site's, not its
+        // own: an https port above all, which UseHttpsRedirection would find and answer every proxied call with
+        // a redirect off the loopback port it was reached on. Dropped rather than blanked: the middleware parses
+        // what is there.
+        foreach (var inherited in startInfo.Environment.Keys.Where(name => name.StartsWith("ASPNETCORE_", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("HTTPS_PORT", StringComparison.OrdinalIgnoreCase) || name.Equals("ANCM_HTTPS_PORT", StringComparison.OrdinalIgnoreCase)).ToArray())
+        {
+            startInfo.Environment.Remove(inherited);
+        }
+
         // Port 0, and the port it bound read back off its own startup line: reserving one here and handing it
         // over would lose the race against anything else on the machine taking it in between.
         startInfo.Environment["ASPNETCORE_URLS"] = "http://127.0.0.1:0";
@@ -123,13 +135,6 @@ internal sealed partial class McpDocumentationSite : IDisposable
         startInfo.Environment["DOTNET_ENVIRONMENT"] = "Production";
         startInfo.Environment["Logging__LogLevel__Microsoft.Hosting.Lifetime"] = "Information";
 
-        // A child inherits this site's environment, and these carry an https port that is this site's, not its
-        // own. UseHttpsRedirection would find one and answer every proxied call with a redirect off the loopback
-        // port it was reached on. Dropped rather than blanked: the middleware parses what is there.
-        foreach (var inherited in (string[])["ASPNETCORE_HTTPS_PORT", "HTTPS_PORT", "ASPNETCORE_HTTPS_PORTS", "ASPNETCORE_HTTP_PORTS", "ASPNETCORE_PORT"])
-        {
-            startInfo.Environment.Remove(inherited);
-        }
         startInfo.RedirectStandardOutput = true;
         startInfo.RedirectStandardError = true;
         startInfo.UseShellExecute = false;

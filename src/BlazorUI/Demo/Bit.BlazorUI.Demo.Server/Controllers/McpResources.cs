@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using ModelContextProtocol.Server;
 using Microsoft.AspNetCore.Components.Web;
 using Bit.BlazorUI.Demo.Server.Services.Mcp;

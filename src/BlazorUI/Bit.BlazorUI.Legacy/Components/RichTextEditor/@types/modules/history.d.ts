@@ -1,4 +1,4 @@
-interface HistoryOptions {
+﻿interface HistoryOptions {
     userOnly: boolean;
     delay: number;
     maxStack: number;

@@ -1,9 +1,10 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -14,11 +15,13 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <typeparam name="TItem">The row item type.</typeparam>
 [CascadingTypeParameter(nameof(TItem))]
-public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
+public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase
 {
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     // ---------------------------------------------------------------- Data
+    /// <summary>The rows. A plain collection is sorted, filtered and paged in memory; an <see cref="IQueryable{T}"/>
+    /// (an EF Core <c>DbSet</c>, say) has them translated into an expression the provider runs at the source.</summary>
     [Parameter] public IEnumerable<TItem>? Items { get; set; }
 
     /// <summary>Server-side data callback. When set, the grid delegates sort/filter/page to the caller.</summary>
@@ -115,14 +118,35 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     [Parameter] public Func<TItem, bool>? HasChildrenSelector { get; set; }
 
     // ------------------------------------------------------------ Appearance
-    [Parameter] public string? Class { get; set; }
-    [Parameter] public string? Style { get; set; }
     /// <summary>Height of the scroll viewport, e.g. "480px". Required for virtualization.</summary>
     [Parameter] public string? Height { get; set; }
-    [Parameter] public bool Striped { get; set; } = true;
-    [Parameter] public bool Hoverable { get; set; } = true;
-    [Parameter] public bool Bordered { get; set; } = true;
+
+    /// <summary>Custom CSS classes for the different parts of the grid.</summary>
+    [Parameter, ResetClassBuilder] public BitDataGridClassStyles? Classes { get; set; }
+
+    /// <summary>Custom CSS styles for the different parts of the grid.</summary>
+    [Parameter, ResetStyleBuilder] public BitDataGridClassStyles? Styles { get; set; }
+
+    /// <summary>Shades every other row. Default: true.</summary>
+    [Parameter, ResetClassBuilder] public bool Striped { get; set; } = true;
+
+    /// <summary>Highlights the row under the pointer. Default: true.</summary>
+    [Parameter, ResetClassBuilder] public bool Hoverable { get; set; } = true;
+
+    /// <summary>Draws the outer border and the lines between columns; the lines between rows are always drawn. Default: true.</summary>
+    [Parameter, ResetClassBuilder] public bool Bordered { get; set; } = true;
+
+    /// <summary>Renders the header rows (column titles, header groups and the filter row). Default: true.</summary>
     [Parameter] public bool ShowHeader { get; set; } = true;
+
+    /// <summary>
+    /// The id of the element - a visible heading, say - that names the grid, in place of <see cref="BitComponentBase.AriaLabel"/>.
+    /// It lands on the element that carries the grid role, where a name is read, rather than on the root.
+    /// </summary>
+    [Parameter] public string? AriaLabelledBy { get; set; }
+
+    /// <summary>The id of the element that describes the grid - a caption, or how its keyboard works - read after its name.</summary>
+    [Parameter] public string? AriaDescribedBy { get; set; }
 
     /// <summary>
     /// Renders a narrow leading column numbering the rows, the line-number gutter every desktop grid
@@ -151,18 +175,21 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter] public bool WrapCellText { get; set; }
 
+    /// <summary>Renders the footer row with the columns' aggregates (see <c>BitDataGridColumn.Aggregate</c>).</summary>
     [Parameter] public bool ShowFooter { get; set; }
-    [Parameter] public BitDir Direction { get; set; } = BitDir.Ltr;
 
     /// <summary>
-    /// Accessible name of the grid itself. A <c>role="grid"</c> element needs a name for screen-reader
-    /// users to tell it apart from the rest of the page (and from other grids on it); when this is not
-    /// set the generic <c>Strings.GridLabel</c> is used.
+    /// The params object a <see cref="BitParams"/> ancestor shares with every BitDataGrid below it, whose values apply
+    /// wherever the grid does not set the parameter itself.
     /// </summary>
-    [Parameter] public string? AriaLabel { get; set; }
+    [CascadingParameter(Name = BitDataGridParams.ParamName)]
+    public BitDataGridParams? CascadingParameters { get; set; }
 
     // -------------------------------------------------------- Feature toggles
+    /// <summary>Lets a header click sort by its column. Overridable per column. Default: true.</summary>
     [Parameter] public bool Sortable { get; set; } = true;
+
+    /// <summary>Lets Ctrl/Cmd or Shift+click add a column to the sort instead of replacing it. Default: true.</summary>
     [Parameter] public bool MultiSort { get; set; } = true;
 
     /// <summary>
@@ -173,6 +200,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// Overridable per column with <c>BitDataGridColumn.AllowUnsorted</c>.
     /// </summary>
     [Parameter] public bool AllowUnsorted { get; set; } = true;
+
+    /// <summary>Renders the filter row under the headers, with an editor that follows each column's data type.
+    /// Overridable per column.</summary>
     [Parameter] public bool Filterable { get; set; }
 
     /// <summary>
@@ -181,8 +211,24 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// (Contains for text, Equals otherwise). Overridable per column.
     /// </summary>
     [Parameter] public bool FilterOperators { get; set; }
+
+    /// <summary>
+    /// How long (in milliseconds) a text or number filter box waits after the last keystroke before it
+    /// applies, so the grid filters as the user types. Default: 300. <c>0</c> applies each keystroke;
+    /// a negative value applies only on Enter or when the box loses focus. Date, boolean and enum
+    /// editors apply on every change regardless.
+    /// </summary>
+    [Parameter] public int FilterDebounce { get; set; } = 300;
+    /// <summary>Lets the columns be resized: drag the edge of a header, double-click it to fit the content, or focus it
+    /// - it is a separator - and use Left/Right (Shift for bigger steps), Home/End for MinWidth/MaxWidth and Enter to fit.</summary>
     [Parameter] public bool Resizable { get; set; }
+
+    /// <summary>Lets the columns be reordered: drag a header (mouse, touch or pen), press Ctrl+Left/Right on anything
+    /// focused in it, or use the move buttons of the column chooser (<see cref="ShowColumnChooser"/>).</summary>
     [Parameter] public bool Reorderable { get; set; }
+
+    /// <summary>Adds a group-by toggle to the headers; grouping by several columns nests the groups. Client-side data
+    /// only. Overridable per column.</summary>
     [Parameter] public bool Groupable { get; set; }
 
     /// <summary>
@@ -192,8 +238,16 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter] public bool GroupsInitiallyCollapsed { get; set; }
 
+    /// <summary>Renders the toolbar, which hosts the Clear filters button while a filter is on. The other toolbar
+    /// features (search, export, the column chooser, Add, ToolbarTemplate) show it on their own, and a bar with nothing
+    /// in it takes no room.</summary>
     [Parameter] public bool ShowToolbar { get; set; }
+
+    /// <summary>Renders the toolbar button that opens the column chooser, which shows, hides and - with Reorderable -
+    /// moves the columns.</summary>
     [Parameter] public bool ShowColumnChooser { get; set; }
+
+    /// <summary>Renders the toolbar button that exports every matching row to CSV.</summary>
     [Parameter] public bool ShowCsvExport { get; set; }
 
     /// <summary>Renders an Excel (.xlsx) export button in the toolbar. The export is generated
@@ -220,7 +274,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// respond to arrow keys, <kbd>Home</kbd>/<kbd>End</kbd>, <kbd>PageUp</kbd>/<kbd>PageDown</kbd>
     /// (and <kbd>Ctrl</kbd> variants). <kbd>Enter</kbd>/<kbd>F2</kbd> begins editing an editable
     /// cell and <kbd>Esc</kbd> cancels. Mirrors react-data-grid's Cell Navigation. No JavaScript
-    /// is used - focus is driven by Blazor's built-in <c>FocusAsync</c>.
+    /// is used - focus is driven by Blazor's built-in <c>FocusAsync</c>. Always on for an editable grid
+    /// whose <see cref="EditMode"/> is <see cref="BitDataGridEditMode.Cell"/>, and for Single <see cref="SelectionMode"/>.
     /// </summary>
     [Parameter] public bool CellNavigation { get; set; }
 
@@ -248,9 +303,19 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     [Parameter] public EventCallback<BitDataGridRowReorderEventArgs<TItem>> OnRowReorder { get; set; }
 
     // ------------------------------------------------------------- Selection
-    [Parameter] public BitDataGridSelectionMode SelectionMode { get; set; } = BitDataGridSelectionMode.None;
+    /// <summary>How rows are selected: not at all, by a row click (Single), or by a checkbox column with a select-all
+    /// box (Multiple). Single makes the cells keyboard-navigable (<see cref="CellNavigation"/>), so Space can select the
+    /// focused row.</summary>
+    [Parameter] public BitSelectionMode SelectionMode { get; set; } = BitSelectionMode.None;
+
+    /// <summary>The selected rows, as a two-way bindable list. Tracked by <see cref="KeyField"/>, so a selection
+    /// survives a refresh that hands the grid new instances of the same rows.</summary>
     [Parameter] public IReadOnlyList<TItem>? SelectedItems { get; set; }
+
+    /// <summary>Raised with the new selection whenever it changes.</summary>
     [Parameter] public EventCallback<IReadOnlyList<TItem>> SelectedItemsChanged { get; set; }
+
+    /// <summary>Raised when a row is clicked.</summary>
     [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
 
     /// <summary>
@@ -277,10 +342,18 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     [Parameter] public Func<TItem, bool>? IsRowSelectionDisabled { get; set; }
 
     // --------------------------------------------------------------- Paging
+    /// <summary>Splits the rows into pages and renders the pager. Ignored while grouping, in tree mode and with
+    /// <see cref="OnLoadMore"/>, which show every row they hold.</summary>
     [Parameter] public bool Pageable { get; set; }
+
+    /// <summary>The number of rows per page. Default: 20.</summary>
     [Parameter] public int PageSize { get; set; } = 20;
+
+    /// <summary>The page sizes the pager's dropdown offers; the <see cref="PageSize"/> in effect is added when it is not among them.</summary>
     [Parameter] public int[] PageSizeOptions { get; set; } = { 10, 20, 50, 100 };
-    [Parameter] public BitDataGridPagerPosition PagerPosition { get; set; } = BitDataGridPagerPosition.Bottom;
+
+    /// <summary>Where the pager renders: below the rows (the default), above them, or both.</summary>
+    [Parameter] public BitPlacement PagerPlacement { get; set; } = BitPlacement.Bottom;
 
     // --------------------------------------------------------- Virtualization
     /// <summary>
@@ -297,6 +370,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// </para>
     /// </summary>
     [Parameter] public bool Virtualize { get; set; }
+
+    /// <summary>The minimum height of a row in pixels - with <see cref="Virtualize"/>, the exact height of every row. Default: 36.</summary>
     [Parameter] public float RowHeight { get; set; } = 36f;
 
     /// <summary>
@@ -317,21 +392,46 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     [Parameter] public Func<TItem, float>? RowHeightSelector { get; set; }
 
     // -------------------------------------------------------------- Editing
+    /// <summary>Lets the rows be edited inline, in editors that follow each column's data type, and adds the command
+    /// column. Edits are buffered and written to the row only once saved. Overridable per column.</summary>
     [Parameter] public bool Editable { get; set; }
+
+    /// <summary>
+    /// How much of a row an inline edit opens: the whole row with Save/Cancel (<see cref="BitDataGridEditMode.Row"/>,
+    /// the default), or one cell at a time, spreadsheet-style (<see cref="BitDataGridEditMode.Cell"/>) - opened by
+    /// Enter, F2 or a double-click and committed by Enter, by Tab (which opens the next editable cell) or by moving
+    /// the focus out of it, each commit raising
+    /// <see cref="OnRowSave"/>. Cell mode makes the cells keyboard-navigable (<see cref="CellNavigation"/>).
+    /// </summary>
+    [Parameter] public BitDataGridEditMode EditMode { get; set; }
+    /// <summary>Builds the blank row that the toolbar's Add button (and <see cref="AddNewRowAsync"/>) opens for editing.</summary>
     [Parameter] public Func<TItem>? NewItemFactory { get; set; }
+
+    /// <summary>Raised with the row once an edit is saved and its values are written to it.</summary>
     [Parameter] public EventCallback<TItem> OnRowSave { get; set; }
+
+    /// <summary>Raised with the row once an edit is cancelled and its values are restored.</summary>
     [Parameter] public EventCallback<TItem> OnRowCancel { get; set; }
+
+    /// <summary>Raised with the row that its Delete button (or the Delete key) removes; take it out of the data here.</summary>
     [Parameter] public EventCallback<TItem> OnRowDelete { get; set; }
+
+    /// <summary>Raised with the blank row <see cref="NewItemFactory"/> built, as it opens for editing.</summary>
     [Parameter] public EventCallback<TItem> OnRowCreate { get; set; }
 
     // ------------------------------------------------------------ Templates
+    /// <summary>Custom content shown in place of the rows when there are none.</summary>
     [Parameter] public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>Custom content rendered in place of the built-in spinner while <see cref="Loading"/>
     /// is true.</summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
+    /// <summary>Custom content at the start of the toolbar, before the built-in controls.</summary>
     [Parameter] public RenderFragment? ToolbarTemplate { get; set; }
+
+    /// <summary>Content rendered under a row while it is expanded - a form, a chart, a nested grid - with a toggle
+    /// column to open it (see <see cref="ShowDetailToggle"/>).</summary>
     [Parameter] public RenderFragment<TItem>? DetailTemplate { get; set; }
 
     // ----------------------------------------------------- Row appearance
@@ -359,6 +459,16 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     /// <summary>Raised with the new 1-based page number whenever the page or the page size changes.</summary>
     [Parameter] public EventCallback<int> OnPageChange { get; set; }
+
+    /// <summary>
+    /// Raised with a fresh <see cref="GetState"/> snapshot once the grid has re-rendered after anything that snapshot
+    /// captures changed - the sorting, filters, quick search, grouping and which groups are open, the page and page
+    /// size, and the columns' order, widths and visibility - whether by the user or through the programmatic API.
+    /// It is the one hook a persisted view needs (Radzen's <c>SettingsChanged</c>, Telerik's <c>OnStateChanged</c>,
+    /// MUI X's <c>onStateChange</c>): save the snapshot here and hand it back to <see cref="ApplyStateAsync"/> later.
+    /// <see cref="ApplyStateAsync"/> itself does not raise it.
+    /// </summary>
+    [Parameter] public EventCallback<BitDataGridState> OnStateChange { get; set; }
 
     // -------------------------------------------------------- Master detail
     /// <summary>
@@ -479,12 +589,25 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private bool _dataInitialized;
     private IEnumerable<TItem>? _lastItems;
     private int _lastPageSize;
-    private BitDataGridSelectionMode? _lastSelectionMode;
+    private BitSelectionMode? _lastSelectionMode;
 
     // editing
     private TItem? _editItem;
     private TItem? _pendingNew;
     private bool _isNewItem;
+    // The one cell open in Cell mode (null in Row mode), and a counter identifying each edit, so a
+    // focus-out reported by JS for an edit that is already over cannot commit the one opened after it.
+    private string? _editColumnId;
+    private int _editVersion;
+    // The editor the focus moves into after the next render: a column id, or "" for the row's first editor.
+    private string? _editorFocusRequest;
+    // Whether that editor was opened by typing into its cell, so it takes the typed text in place of its value.
+    private bool _editorFocusTyped;
+    // The row whose command button takes the focus back once its Save/Cancel button is gone.
+    private TItem? _commandFocusItem;
+    private bool _commandFocusPending;
+    private IJSObjectReference? _cellEditBlurHandle;
+    private bool _cellEditBlurAttached;
     private Dictionary<string, object?>? _editSnapshot;
     // Built-in editors write into this buffer instead of the live object, so the row's data is only
     // mutated when the edit is committed - Cancel simply discards the buffer. (Custom EditTemplates
@@ -497,22 +620,27 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // resizing
     private BitDataGridColumn<TItem>? _resizingColumn;
     private double _resizeStartX;
+    // The direction the drag started in, so every move of one drag mirrors the delta the same way.
+    private bool _resizeRtl;
     private double _resizeStartWidth;
 
     // reordering
     private BitDataGridColumn<TItem>? _dragColumn;
     private TItem? _dragRow;
     // touch/pen reorder (pointer events; mouse keeps native HTML5 DnD)
-    private ElementReference _rootRef;
     // Shared .NET reference for every JS feature that calls back into this grid instance
     // (pointer reorder, horizontal scroll); disposed once in DisposeAsync.
     private DotNetObjectReference<BitDataGrid<TItem>>? _gridSelfRef;
     private IJSObjectReference? _pointerReorderHandle;
     private bool _pointerReorderAttached;
+    private bool _nestedSurfaceKeysWatched;
 
     // select-all indeterminate state ("some but not all selected") is a DOM property, not an HTML
     // attribute, so Blazor markup can't express it; it is synced via a small JS call after render.
     private ElementReference _selectAllCheckbox;
+
+    // The column chooser's toggle, which takes the focus back when Escape closes the panel from inside it.
+    private ElementReference _columnChooserButton;
     private bool? _lastIndeterminate;
 
     // Maps row key -> absolute 0-based position in the full data view, rebuilt whenever the view
@@ -536,6 +664,13 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // server-side virtualization (Virtualize + OnRead without paging)
     private Virtualize<TItem>? _serverVirtualize;
     private bool _serverVirtualizeEmpty;
+    // The first window of rows, read before Virtualize is mounted and rendered in its place until it has rows of its
+    // own (see LoadServerHeadAsync); _serverHeadLoad is that read, still to be handed to Virtualize's first request.
+    // _serverHeadLoading has placeholder rows stand in instead: while that read is in flight, or after a refresh
+    // Virtualize has not answered yet.
+    private BitDataGridReadResult<TItem>? _serverHead;
+    private bool _serverHeadLoading;
+    private Task? _serverHeadLoad;
 
     // True while the footer shows aggregates provided by the OnRead result (computed server-side over
     // the whole dataset); local per-page recomputation must not overwrite them.
@@ -551,6 +686,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private double _hViewportWidth;
     private IJSObjectReference? _hScrollHandle;
     private bool _hScrollAttached;
+
+    // Publishes the height of the sticky header and footer on the viewport (see BitDataGrid.ts), which the
+    // stylesheet turns into scroll padding so a control scrolled into view is never left under them.
+    private IJSObjectReference? _stickyBandsHandle;
+    private bool _stickyBandsAttached;
 
     /// <summary>
     /// Column virtualization only engages once the viewport has been measured, and never together
@@ -667,6 +807,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// <summary>The 1-based current page.</summary>
     public int CurrentPage => _currentPage;
 
+    // The pager's first / previous and next / last buttons, each pair disabled by the one condition both of its
+    // attributes read.
+    private bool PreviousPagesDisabled => Disabled || CurrentPage <= 1;
+
+    private bool NextPagesDisabled => Disabled || CurrentPage >= TotalPages;
+
     /// <summary>
     /// The page sizes the pager dropdown offers. The size actually in effect is always among them:
     /// a <c>PageSize</c> that isn't one of the declared <see cref="PageSizeOptions"/> would otherwise
@@ -748,6 +894,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     internal void RemoveColumn(BitDataGridColumn<TItem> column)
     {
+        // The columns unregister while they are being disposed, which also happens when the grid goes away with
+        // them: dropping the descriptors they held would refresh, and in server mode re-query, a grid that is gone.
+        if (IsDisposing) return;
+
         // Remove by the key the column is actually registered under: a column whose ColumnId/Field
         // changed after registration is re-keyed via UpdateColumnRegistration, but guard against any
         // stale key by also matching on the column instance.
@@ -766,6 +916,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             // later column reusing the id doesn't inherit a stale operator/raw text.
             _filterOps.Remove(key);
             _filterRaw.Remove(key);
+            CancelFilterDebounce(key);
             // Drop any sort/filter/group descriptors that referenced the removed column so later
             // refreshes and remote reads no longer carry descriptors for a column that is gone.
             var removedDescriptors = _sorts.RemoveAll(s => s.ColumnId == key)
@@ -853,6 +1004,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // ------------------------------------------------------- Lifecycle
     protected override async Task OnParametersSetAsync()
     {
+        // Applied first: every decision below reads the parameters, and a cascaded one is a parameter like any other.
+        CascadingParameters?.UpdateParameters(this);
+
         // The razor markup dereferences Strings unconditionally; tolerate an explicit null.
         Strings ??= new BitDataGridStrings();
 
@@ -912,6 +1066,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             _lastGroupsInitiallyCollapsed = GroupsInitiallyCollapsed;
             _groupsCollapsedByDefault = GroupsInitiallyCollapsed;
             _groupStateOverrides.Clear();
+            _groupExpansionVersion++;
         }
 
         // A PageSize parameter change from the parent supersedes any page size the user picked in the pager.
@@ -1006,10 +1161,27 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         {
             // Virtualize owns data fetching in this mode: ask it to discard its cached windows and
             // re-query through the ItemsProvider with the current sorts/filters. Before the first
-            // render the reference is still null - the initial provider call covers that case.
+            // render the reference is still null, and Virtualize will not ask for a row until its JS
+            // has measured the viewport - which a prerender never gets to - so the first window is
+            // read here instead, the way the paged server mode reads its first page.
             if (_serverVirtualize is not null)
             {
+                // Rows read ahead belong to the query being replaced, and so does a read of them still in flight:
+                // superseding it (a new load version) keeps it from committing the old query's rows, total and
+                // aggregates over the ones Virtualize is about to read. Done unconditionally: _serverHeadLoading
+                // can already be cleared by a window Virtualize answered while that read is still pending.
+                // Stand-ins still on screen (Virtualize has not answered yet) turn into placeholders rather than
+                // going: Virtualize renders nothing until its JS has measured, so dropping them would blank the body.
+                var standInsShown = _serverHead is not null || _serverHeadLoading;
+                ResetLoadCancellation();
+                _serverHead = null;
+                _serverHeadLoad = null;
+                _serverHeadLoading = standInsShown;
                 await _serverVirtualize.RefreshDataAsync();
+            }
+            else
+            {
+                await (_serverHeadLoad = LoadServerHeadAsync());
             }
             StateHasChanged();
             return;
@@ -1042,35 +1214,164 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     private async ValueTask<ItemsProviderResult<TItem>> ProvideVirtualizedRowsAsync(ItemsProviderRequest request)
     {
-        var read = new BitDataGridReadRequest
+        // Virtualize's first request starts inside the window already read to render before it was mounted (see
+        // LoadServerHeadAsync), so that window answers as much of it as it holds and only the rows past it are read -
+        // the window is sized for an assumed viewport, which the measured one rarely matches exactly. It answers once:
+        // every later request reads afresh, as it always has.
+        BitDataGridReadResult<TItem>? head = null;
+        if (request.Count > 0 && _serverHeadLoad is { } headLoad)
         {
-            Skip = request.StartIndex,
-            Take = request.Count,
-            Sorts = _sorts.Where(s => s.Direction != BitDataGridSortDirection.None).OrderBy(s => s.Priority).ToList(),
-            Filters = _filters.ToList(),
-            Groups = _groups.ToList(),
-            Search = _search,
-            CancellationToken = request.CancellationToken
-        };
+            _serverHeadLoad = null;
+            try
+            {
+                await headLoad;
+            }
+            catch
+            {
+                // A failed read was already reported by the RefreshAsync that awaited it; this request reads afresh.
+            }
+
+            if (_serverHead is { } h && request.StartIndex < h.Items.Count)
+            {
+                head = h;
+            }
+        }
+
+        BitDataGridReadResult<TItem>? result;
+        if (head is null)
+        {
+            result = await ReadServerWindowAsync(request.StartIndex, request.Count, request.CancellationToken);
+        }
+        else
+        {
+            var end = Math.Min(request.StartIndex + request.Count, head.TotalCount);
+            var fromHead = head.Items.Skip(request.StartIndex).Take(Math.Max(0, end - request.StartIndex)).ToList();
+            var restStart = request.StartIndex + fromHead.Count;
+            if (restStart >= end)
+            {
+                result = new BitDataGridReadResult<TItem>(fromHead, head.TotalCount) { Aggregates = head.Aggregates };
+            }
+            else
+            {
+                var rest = await ReadServerWindowAsync(restStart, end - restStart, request.CancellationToken);
+                result = rest is null ? null : new BitDataGridReadResult<TItem>([.. fromHead, .. rest.Items], rest.TotalCount) { Aggregates = rest.Aggregates };
+            }
+        }
+
+        // An OnRead that never observes the token can still complete normally after cancellation.
+        // Mirroring LoadServerDataAsync's stale-response guard, bail out before committing anything so
+        // this superseded window can't overwrite state the newer request owns.
+        if (result is null || request.CancellationToken.IsCancellationRequested)
+            return new ItemsProviderResult<TItem>(Array.Empty<TItem>(), _totalCount);
+
+        var previousAggregates = _footerAggregates;
+        CommitServerWindow(result, request.StartIndex);
+
+        // The empty message and the footer render outside the Virtualize component (which only
+        // re-renders its own rows), so surface total-count transitions into/out of empty and changed
+        // footer aggregates with an explicit re-render - as well as the end of the rows rendered in
+        // Virtualize's place, which it now has rows of its own to replace. That render is deferred
+        // until Virtualize has rendered those rows (this method returns them to it first): dropping
+        // the stand-ins sooner would blank the body in between. A window without rows (the empty one
+        // Virtualize asks for when refreshed before its JS has measured) gives it nothing to replace
+        // them with, so they stay - unless there is nothing to show at all.
+        var empty = result.TotalCount == 0;
+        var footerChanged = ShowFooter && !FooterAggregatesEqual(previousAggregates, _footerAggregates);
+        var standInsDropped = (_serverHead is not null || _serverHeadLoading) && (result.Items.Count > 0 || empty);
+        if (standInsDropped)
+        {
+            _serverHead = null;
+            _serverHeadLoading = false;
+        }
+        if (empty != _serverVirtualizeEmpty || footerChanged || standInsDropped)
+        {
+            _serverVirtualizeEmpty = empty;
+            _ = InvokeAsync(async () =>
+            {
+                await Task.Yield();
+                StateHasChanged();
+            });
+        }
+
+        return new ItemsProviderResult<TItem>(result.Items, result.TotalCount);
+    }
+
+    /// <summary>
+    /// Reads the first window of a server-virtualized grid before Virtualize is mounted. Virtualize asks for no row
+    /// until its JS has measured the viewport, which never happens before the grid is interactive (a prerender, a
+    /// static SSR page), so these rows are rendered in its place - the same read the paged server mode makes for its
+    /// first page - and then handed to Virtualize's own first request.
+    /// </summary>
+    private async Task LoadServerHeadAsync()
+    {
+        var read = CreateServerWindowRequest(0, EstimatedRowWindow, ResetLoadCancellation());
+        // Capture this request's version right after ResetLoadCancellation; a newer one supersedes it.
+        var version = _loadVersion;
+        _serverHead = null;
+        _serverHeadLoading = true;
+        StateHasChanged();
 
         BitDataGridReadResult<TItem> result;
         try
         {
             result = await OnRead!(read);
         }
-        catch (OperationCanceledException) when (request.CancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (read.CancellationToken.IsCancellationRequested)
+        {
+            // Superseded by a newer request, which owns the loading state.
+            if (version == _loadVersion) _serverHeadLoading = false;
+            return;
+        }
+        catch (Exception) when (JS.IsRuntimeInvalid())
+        {
+            // Before the page is interactive this read runs on the server, where an OnRead written for the browser
+            // (a relative URL against an HttpClient with no BaseAddress) commonly fails - a read Virtualize alone
+            // never made there. The placeholders stay up and Virtualize's own first request, made in the browser
+            // once it has measured, reads the window again; a failure there is the grid's own and is reported.
+            return;
+        }
+        catch
+        {
+            if (version == _loadVersion) _serverHeadLoading = false;
+            throw;
+        }
+        if (version != _loadVersion) return;
+
+        _serverHeadLoading = false;
+        _serverHead = result;
+        _serverVirtualizeEmpty = result.TotalCount == 0;
+        CommitServerWindow(result, 0);
+    }
+
+    // Reads a window of a server-virtualized grid for Virtualize; null when a newer window superseded it.
+    private async Task<BitDataGridReadResult<TItem>?> ReadServerWindowAsync(int skip, int take, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await OnRead!(CreateServerWindowRequest(skip, take, cancellationToken));
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             // Superseded by a newer scroll window; Virtualize discards this result, so the content is
-            // irrelevant - just keep the last known total.
-            return new ItemsProviderResult<TItem>(Array.Empty<TItem>(), _totalCount);
+            // irrelevant - the caller just keeps the last known total.
+            return null;
         }
+    }
 
-        // An OnRead that never observes the token can still complete normally after cancellation.
-        // Mirroring LoadServerDataAsync's stale-response guard, bail out before committing anything so
-        // this superseded window can't overwrite state the newer request owns.
-        if (request.CancellationToken.IsCancellationRequested)
-            return new ItemsProviderResult<TItem>(Array.Empty<TItem>(), _totalCount);
+    private BitDataGridReadRequest CreateServerWindowRequest(int skip, int take, CancellationToken cancellationToken) => new()
+    {
+        Skip = skip,
+        Take = take,
+        Sorts = _sorts.Where(s => s.Direction != BitDataGridSortDirection.None).OrderBy(s => s.Priority).ToList(),
+        Filters = _filters.ToList(),
+        Groups = _groups.ToList(),
+        Search = _search,
+        CancellationToken = cancellationToken
+    };
 
+    // Makes a window of a server-virtualized grid its current rows.
+    private void CommitServerWindow(BitDataGridReadResult<TItem> result, int startIndex)
+    {
         _totalCount = result.TotalCount;
 
         // The loaded window doubles as the grid's "current rows" so select-all, keyboard navigation
@@ -1080,25 +1381,77 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
         // Prefer aggregates the data source computed over the whole filtered dataset (mirroring
         // LoadServerDataAsync); the local fallback covers only the loaded window.
-        var previousAggregates = _footerAggregates;
         _serverAggregates = result.Aggregates is not null;
         _footerAggregates = result.Aggregates?.ToList() ?? BitDataGridDataProcessor.Aggregate(result.Items, _columns);
 
-        RebuildRowIndexMap(result.Items, request.StartIndex);
+        RebuildRowIndexMap(result.Items, startIndex);
         ReconcileEditState();
+    }
 
-        // The empty message and the footer render outside the Virtualize component (which only
-        // re-renders its own rows), so surface total-count transitions into/out of empty and changed
-        // footer aggregates with an explicit re-render.
-        var empty = result.TotalCount == 0;
-        var footerChanged = ShowFooter && !FooterAggregatesEqual(previousAggregates, _footerAggregates);
-        if (empty != _serverVirtualizeEmpty || footerChanged)
+    /// <summary>
+    /// The number of rows a virtualized grid renders before anything has been measured (see
+    /// <see cref="BitVirtualizeWindow"/>), with the overscan of the Virtualize it renders its rows in.
+    /// </summary>
+    internal int EstimatedRowWindow => BitVirtualizeWindow.Estimate(RowHeight);
+
+    // The CSS height, in px, of a spacer standing in for that many rows.
+    private string SpacerHeight(int rows) => (Math.Max(0, rows) * RowHeight).ToString(CultureInfo.InvariantCulture);
+
+    // The view RenderVirtualRows hands Virtualize, kept across renders while it views the same rows from the same row.
+    private RowsAfter? _rowsAfter;
+
+    private RowsAfter GetRowsAfter(IReadOnlyList<TItem> rows, int start) =>
+        _rowsAfter is { } cached && ReferenceEquals(cached.Rows, rows) && cached.Start == start
+            ? cached
+            : _rowsAfter = new RowsAfter(rows, start);
+
+    // The rows of a list after its first ones, as the ICollection Virtualize takes, without copying them; an IList so
+    // that the Skip/Take Virtualize reads its window with index straight into the list.
+    private sealed class RowsAfter(IReadOnlyList<TItem> rows, int start) : IList<TItem>
+    {
+        public IReadOnlyList<TItem> Rows => rows;
+
+        public int Start => start;
+
+        public TItem this[int index]
         {
-            _serverVirtualizeEmpty = empty;
-            _ = InvokeAsync(StateHasChanged);
+            get => (uint)index < (uint)Count ? rows[start + index] : throw new ArgumentOutOfRangeException(nameof(index));
+            set => throw new NotSupportedException();
         }
 
-        return new ItemsProviderResult<TItem>(result.Items, result.TotalCount);
+        public int Count => Math.Max(0, rows.Count - start);
+
+        public bool IsReadOnly => true;
+
+        public int IndexOf(TItem item)
+        {
+            var comparer = EqualityComparer<TItem>.Default;
+            for (var i = 0; i < Count; i++)
+            {
+                if (comparer.Equals(rows[start + i], item)) return i;
+            }
+            return -1;
+        }
+
+        public bool Contains(TItem item) => IndexOf(item) >= 0;
+
+        public void CopyTo(TItem[] array, int arrayIndex)
+        {
+            for (var i = 0; i < Count; i++) array[arrayIndex + i] = rows[start + i];
+        }
+
+        public IEnumerator<TItem> GetEnumerator()
+        {
+            for (var i = 0; i < Count; i++) yield return rows[start + i];
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Add(TItem item) => throw new NotSupportedException();
+        public void Insert(int index, TItem item) => throw new NotSupportedException();
+        public bool Remove(TItem item) => throw new NotSupportedException();
+        public void RemoveAt(int index) => throw new NotSupportedException();
+        public void Clear() => throw new NotSupportedException();
     }
 
     private static bool FooterAggregatesEqual(IReadOnlyList<BitDataGridAggregateResult> a, IReadOnlyList<BitDataGridAggregateResult> b)
@@ -1147,7 +1500,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
                 : _view;
         }
 
-        RebuildRowIndexMap(_pageItems, _groups.Count == 0 && Pageable ? (_currentPage - 1) * _effectivePageSize : 0);
+        // A grouped view shows its rows in group order, which is what the row numbers count by.
+        RebuildRowIndexMap(_viewGroups is not null ? FlattenGroups(_viewGroups) : _pageItems,
+            _groups.Count == 0 && Pageable ? (_currentPage - 1) * _effectivePageSize : 0);
         ReconcileEditState();
     }
 
@@ -1580,6 +1935,76 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // What the script does on the page's keys and pointer it does as it loads, called by nothing: with the lazy scripts
+        // on (BitBlazorUIScripts), the grid loads it before anything else of it is called.
+        if (firstRender) await JS.EnsureScriptAsync("Bit.BlazorUI.Extras", "BitDataGrid");
+
+        if (_stateChangePending)
+        {
+            _stateChangePending = false;
+            if (OnStateChange.HasDelegate) await OnStateChange.InvokeAsync(GetState());
+        }
+
+        if (_editorFocusRequest is { } editorColumn && _editItem is not null)
+        {
+            _editorFocusRequest = null;
+            var typed = _editorFocusTyped;
+            _editorFocusTyped = false;
+            try { await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.focusEditor", RootElement, editorColumn, typed); }
+            catch (JSException) { }
+            catch (JSDisconnectedException) { }
+        }
+
+        if (_commandFocusPending)
+        {
+            _commandFocusPending = false;
+            var row = _commandFocusItem;
+            _commandFocusItem = default;
+            if (row is not null && AriaRowIndex(row) is { } rowIndex)
+            {
+                try { await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.focusRowCommand", RootElement, rowIndex); }
+                catch (JSException) { }
+                catch (JSDisconnectedException) { }
+            }
+        }
+
+        // Cell mode commits when the focus leaves the open cell - to another cell, another control or the
+        // page - which only a DOM listener can see: the focusout's relatedTarget is not in Blazor's event args.
+        // Each of these JS bridges is claimed before its call is awaited and released again however the call fails:
+        // the OnAfterRenderAsync of a render that lands while the call is in flight would otherwise attach a second
+        // one, whose listeners then answer every event twice (a touch drop moving two rows) and outlive the grid's
+        // disposal. A failure of the interop itself (IsInteropFailure) is swallowed so a later render retries it;
+        // anything else is rethrown.
+        if (Editable && IsCellEditMode && !_cellEditBlurAttached)
+        {
+            _cellEditBlurAttached = true;
+            _gridSelfRef ??= DotNetObjectReference.Create(this);
+            try
+            {
+                _cellEditBlurHandle = await JS.InvokeScriptAsync<IJSObjectReference>("BitBlazorUI.DataGrid.initCellEditBlur", RootElement, _gridSelfRef);
+            }
+            catch (Exception ex)
+            {
+                _cellEditBlurAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
+        }
+
+        if (_focusAfterRender is { } focusTargets)
+        {
+            _focusAfterRender = null;
+            try { await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.focusFirst", RootElement, focusTargets); }
+            catch (JSException) { }
+            catch (JSDisconnectedException) { }
+        }
+
+        if (_focusHeaderColumn is { } movedColumn)
+        {
+            _focusHeaderColumn = null;
+            try { await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.focusHeader", RootElement, movedColumn.Id); }
+            catch (JSException) { }
+            catch (JSDisconnectedException) { }
+        }
         if (HasSelectColumn && ShowHeader)
         {
             // Sync the select-all checkbox's indeterminate DOM property. Only invoke when the value
@@ -1588,7 +2013,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             if (firstRender || indeterminate != _lastIndeterminate)
             {
                 _lastIndeterminate = indeterminate;
-                try { await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.setIndeterminate", _selectAllCheckbox, indeterminate); }
+                try { await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.setIndeterminate", _selectAllCheckbox, indeterminate); }
                 catch (JSException) { }
                 catch (JSDisconnectedException) { }
             }
@@ -1605,41 +2030,89 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // disables reordering simply makes the callbacks no-ops.
         if ((RowReorderable || Reorderable) && !_pointerReorderAttached)
         {
+            _pointerReorderAttached = true;
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
-                _pointerReorderHandle = await JS.InvokeAsync<IJSObjectReference>(
-                    "BitBlazorUI.DataGrid.initPointerReorder", _rootRef, _gridSelfRef);
-                // Only marked attached on success, so a failed init (transient JS error) is retried on
-                // a later render instead of permanently disabling touch reorder.
-                _pointerReorderAttached = true;
+                _pointerReorderHandle = await JS.InvokeScriptAsync<IJSObjectReference>(
+                    "BitBlazorUI.DataGrid.initPointerReorder", RootElement, _gridSelfRef);
             }
-            catch (JSException) { }
-            catch (JSDisconnectedException) { }
+            // Released on failure, so a failed init (transient JS error, a timed-out call) is retried on a later render
+            // instead of permanently disabling touch reorder.
+            catch (Exception ex)
+            {
+                _pointerReorderAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
 
         // Column virtualization needs the viewport's horizontal scroll offset and width, which Blazor
         // event args don't expose; a JS observer reports them (rAF-throttled, with hysteresis).
         if (VirtualizeColumns && !_hScrollAttached)
         {
+            _hScrollAttached = true;
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
-                _hScrollHandle = await JS.InvokeAsync<IJSObjectReference>(
+                _hScrollHandle = await JS.InvokeScriptAsync<IJSObjectReference>(
                     "BitBlazorUI.DataGrid.initHorizontalScroll", _infiniteViewport, _gridSelfRef, HScrollReportThresholdPx);
-                // Only marked attached on success so a failed init retries on a later render.
-                _hScrollAttached = true;
             }
-            catch (JSException) { }
-            catch (JSDisconnectedException) { }
+            // Released on failure so a failed init retries on a later render.
+            catch (Exception ex)
+            {
+                _hScrollAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
+        }
+
+        // The keys pressed in a surface rendered in a cell's or a header's template reach their handlers too, which the
+        // script tells apart for them (see KeyInNestedSurface).
+        if (!_nestedSurfaceKeysWatched)
+        {
+            _nestedSurfaceKeysWatched = true;
+            _gridSelfRef ??= DotNetObjectReference.Create(this);
+            try
+            {
+                await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.watchNestedSurfaceKeys", RootElement, _gridSelfRef);
+            }
+            // Released on failure so a failed call retries on a later render.
+            catch (Exception ex)
+            {
+                _nestedSurfaceKeysWatched = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
+        }
+
+        if (!_stickyBandsAttached)
+        {
+            _stickyBandsAttached = true;
+            try
+            {
+                _stickyBandsHandle = await JS.InvokeScriptAsync<IJSObjectReference>("BitBlazorUI.DataGrid.observeStickyBands", _infiniteViewport);
+            }
+            // Released on failure so a failed init retries on a later render.
+            catch (Exception ex)
+            {
+                _stickyBandsAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
 
         if (IsInfiniteMode && !_infiniteObserverAttached)
         {
             _infiniteObserverAttached = true;
             _infiniteSelfRef ??= DotNetObjectReference.Create(this);
-            _infiniteHandle = await JS.InvokeAsync<IJSObjectReference>(
-                "BitBlazorUI.DataGrid.initInfiniteScroll", _infiniteViewport, _infiniteSelfRef, 200);
+            try
+            {
+                _infiniteHandle = await JS.InvokeScriptAsync<IJSObjectReference>(
+                    "BitBlazorUI.DataGrid.initInfiniteScroll", _infiniteViewport, _infiniteSelfRef, 200);
+            }
+            // Released on failure so a failed init retries on a later render.
+            catch (Exception ex)
+            {
+                _infiniteObserverAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
         else if (!IsInfiniteMode && _infiniteObserverAttached)
         {
@@ -1665,8 +2138,16 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         }
     }
 
-    public async ValueTask DisposeAsync()
+    // Whether an interop call failed in a way a later render may simply retry: a script error, the circuit going away,
+    // the call timing out or being cancelled with the renderer's teardown, or the JS runtime of a WebAssembly host
+    // disposed before the component.
+    private static bool IsInteropFailure(Exception ex)
+        => ex is JSException or JSDisconnectedException or OperationCanceledException or ObjectDisposedException;
+
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
+        if (IsDisposed || disposing is false) return;
+
         try
         {
             if (_infiniteHandle is not null)
@@ -1698,15 +2179,37 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         }
         catch (JSDisconnectedException) { }
         catch (JSException) { }
+        try
+        {
+            if (_cellEditBlurHandle is not null)
+            {
+                await _cellEditBlurHandle.InvokeVoidAsync("dispose");
+                await _cellEditBlurHandle.DisposeAsync();
+            }
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException) { }
+        try
+        {
+            if (_stickyBandsHandle is not null)
+            {
+                await _stickyBandsHandle.InvokeVoidAsync("dispose");
+                await _stickyBandsHandle.DisposeAsync();
+            }
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException) { }
         _gridSelfRef?.Dispose();
         // Drop any keystroke still waiting out its debounce so it can't run a search against a
         // disposed grid.
-        _searchDebounceCts?.Cancel();
+        _searchDebounce.Cancel();
+        CancelFilterDebounce();
         // Only signal cancellation here; deterministic disposal of _loadCts belongs to the request
         // lifecycle (ResetLoadCancellation). Disposing it during teardown could surface an
         // ObjectDisposedException for an OnRead/OnLoadMore call still holding the token.
         _loadCts?.Cancel();
-        GC.SuppressFinalize(this);
+
+        await base.DisposeAsync(disposing);
     }
 
     /// <summary>
@@ -1870,16 +2373,35 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // Each reports a snapshot (never the live backing list) so a handler holding the payload can't
     // observe - or induce - later mutations of the grid's descriptor state.
     private Task NotifySortChangeAsync()
-        => OnSortChange.HasDelegate ? OnSortChange.InvokeAsync(ActiveSorts) : Task.CompletedTask;
+    {
+        MarkStateChanged();
+        return OnSortChange.HasDelegate ? OnSortChange.InvokeAsync(ActiveSorts) : Task.CompletedTask;
+    }
 
     private Task NotifyFilterChangeAsync()
-        => OnFilterChange.HasDelegate ? OnFilterChange.InvokeAsync(ActiveFilters) : Task.CompletedTask;
+    {
+        MarkStateChanged();
+        return OnFilterChange.HasDelegate ? OnFilterChange.InvokeAsync(ActiveFilters) : Task.CompletedTask;
+    }
 
     private Task NotifyGroupChangeAsync()
-        => OnGroupChange.HasDelegate ? OnGroupChange.InvokeAsync(ActiveGroups) : Task.CompletedTask;
+    {
+        MarkStateChanged();
+        return OnGroupChange.HasDelegate ? OnGroupChange.InvokeAsync(ActiveGroups) : Task.CompletedTask;
+    }
 
     private Task NotifyPageChangeAsync()
-        => OnPageChange.HasDelegate ? OnPageChange.InvokeAsync(_currentPage) : Task.CompletedTask;
+    {
+        MarkStateChanged();
+        return OnPageChange.HasDelegate ? OnPageChange.InvokeAsync(_currentPage) : Task.CompletedTask;
+    }
+
+    // OnStateChange is raised from the next OnAfterRenderAsync rather than from where the change is made: the
+    // change is usually followed by a refresh that can still move the page (a filter clamps it), and the snapshot
+    // has to describe the view the user ends up looking at. A burst of changes in one interaction is one event.
+    private bool _stateChangePending;
+
+    private void MarkStateChanged() => _stateChangePending = true;
 
     // ----------------------------------------------------------- Filtering
     internal bool ColumnFilterable(BitDataGridColumn<TItem> column)
@@ -1904,8 +2426,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
                 ? BitDataGridFilterOperator.Contains
                 : BitDataGridFilterOperator.Equals;
 
-    internal async Task SetFilterAsync(BitDataGridColumn<TItem> column, BitDataGridFilterOperator op, object? value)
+    // keepEditorText: the call comes from the column's own filter box, whose text stays exactly what was
+    // typed ("2.50" is not rewritten to "2.5" under the caret); any other caller resyncs the box.
+    internal async Task SetFilterAsync(BitDataGridColumn<TItem> column, BitDataGridFilterOperator op, object? value, bool keepEditorText = false)
     {
+        if (!keepEditorText) CancelFilterDebounce(column.Id);
+
         // Always replace every descriptor the column holds, not just the first match: a date Equals
         // filter is stored as a paired half-open range (two descriptors), so updating one in place
         // (e.g. when the user switches the filter operator) would leave the partner descriptor
@@ -1917,7 +2443,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // also ignores whitespace-only filter values, keeping remote and client modes consistent.
         // Unspecified is the omitted/invalid operator (see the enum), so it never produces a
         // descriptor either - the filter list and OnRead payload only ever carry real operators.
-        var isEmpty = value is null || (value is string s && string.IsNullOrWhiteSpace(s));
+        // An empty set ("is any of" nothing) carries no criterion either.
+        var isEmpty = value is null || (value is string s && string.IsNullOrWhiteSpace(s))
+            || (BitDataGridDataProcessor.TryGetSetMembers(value, out var members) && members.Count == 0);
         var active = op is not BitDataGridFilterOperator.Unspecified
             && (!isEmpty || op is BitDataGridFilterOperator.IsEmpty or BitDataGridFilterOperator.IsNotEmpty);
         if (active)
@@ -1926,16 +2454,28 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             // Keep the filter editor's UI state aligned with the descriptor so a programmatic
             // ApplyFilterAsync shows up in the header (operator dropdown + raw text) like a user edit.
             _filterOps[column.Id] = op;
-            _filterRaw[column.Id] = FormatFilterRaw(value);
+            if (!keepEditorText) _filterRaw[column.Id] = FormatFilterRaw(value);
         }
-        else
+        else if (!keepEditorText)
         {
             _filterRaw.Remove(column.Id);
         }
-        Announce(string.Format(active ? Strings.AnnouncementFiltered : Strings.AnnouncementFilterCleared, column.DisplayTitle));
         _currentPage = 1;
         await NotifyFilterChangeAsync();
+        await RefreshAndAnnounceResultsAsync(string.Format(active ? Strings.AnnouncementFiltered : Strings.AnnouncementFilterCleared, column.DisplayTitle));
+    }
+
+    /// <summary>
+    /// Refreshes after a filter or search change, then announces it together with the number of rows it
+    /// leaves (WCAG 4.1.3: the result of a filter is a status message). Announced only once the count is
+    /// known, so the live region changes once. Infinite and tree grids have no meaningful total, so they
+    /// announce the change alone.
+    /// </summary>
+    private async Task RefreshAndAnnounceResultsAsync(string message)
+    {
         await RefreshAsync();
+        Announce(IsInfiniteMode || IsTreeMode ? message : string.Format(Strings.AnnouncementResultsFormat, message, TotalCount));
+        StateHasChanged();
     }
 
     // Applies a half-open [start, endExclusive) range for a column as two standard comparison descriptors
@@ -1955,14 +2495,62 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         }
         // A day-level date filter is applied as a range pair, so without this the single most common
         // date filter would be the one view change screen-reader users never hear about.
-        Announce(string.Format(active ? Strings.AnnouncementFiltered : Strings.AnnouncementFilterCleared, column.DisplayTitle));
         _currentPage = 1;
         await NotifyFilterChangeAsync();
-        await RefreshAsync();
+        await RefreshAndAnnounceResultsAsync(string.Format(active ? Strings.AnnouncementFiltered : Strings.AnnouncementFilterCleared, column.DisplayTitle));
     }
 
+    // The keystrokes still waiting out FilterDebounce, per column: superseded by the next keystroke in
+    // the same box, flushed by Enter/blur, and dropped by anything else that sets the column's filter.
+    private readonly Dictionary<string, BitDataGridDebouncer> _filterDebounces = new();
+
+    private void CancelFilterDebounce(string? columnId = null)
+    {
+        if (columnId is null)
+        {
+            foreach (var debounce in _filterDebounces.Values) debounce.Cancel();
+        }
+        else if (_filterDebounces.TryGetValue(columnId, out var debounce))
+        {
+            debounce.Cancel();
+        }
+    }
+
+    /// <summary>A keystroke in a text/number filter box: records the text, then applies it after
+    /// <see cref="FilterDebounce"/> milliseconds of quiet (immediately at 0, never at a negative value).</summary>
+    internal async Task OnFilterInputAsync(BitDataGridColumn<TItem> column, string? raw)
+    {
+        // Recorded before anything awaits, so every render in between shows what was typed.
+        _filterRaw[column.Id] = raw;
+        CancelFilterDebounce(column.Id);
+        if (FilterDebounce < 0) return;
+
+        if (FilterDebounce == 0)
+        {
+            await SetTypedFilterAsync(column, raw);
+            return;
+        }
+
+        if (!_filterDebounces.TryGetValue(column.Id, out var debounce)) _filterDebounces[column.Id] = debounce = new();
+        if (await debounce.WaitAsync(FilterDebounce)) await SetTypedFilterAsync(column, raw);
+    }
+
+    /// <summary>Enter or blur on a text/number filter box: applies at once what is still waiting out the
+    /// debounce. Text the box already applied is not applied again, which would re-announce it.</summary>
+    internal Task OnFilterCommitAsync(BitDataGridColumn<TItem> column, string? raw)
+    {
+        var pending = _filterDebounces.TryGetValue(column.Id, out var debounce) && debounce.IsPending;
+        CancelFilterDebounce(column.Id);
+        var typed = _filterRaw.TryGetValue(column.Id, out var text) ? text : null;
+        return FilterDebounce < 0 || pending || typed != raw
+            ? SetTypedFilterAsync(column, raw)
+            : Task.CompletedTask;
+    }
+
+    /// <summary>Removes every column filter, along with the operators chosen beside them.</summary>
     public async Task ClearFiltersAsync()
     {
+        CancelFilterDebounce();
         if (_filters.Count == 0 && _filterRaw.Count == 0) return;
         _filters.Clear();
         _filterRaw.Clear();
@@ -1970,10 +2558,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // leaving it selected after a clear would show a criterion that is no longer applied and give the
         // user nothing to type into.
         _filterOps.Clear();
-        Announce(Strings.AnnouncementFiltersCleared);
         _currentPage = 1;
         await NotifyFilterChangeAsync();
-        await RefreshAsync();
+        await RefreshAndAnnounceResultsAsync(Strings.AnnouncementFiltersCleared);
     }
 
     // ------------------------------------------------------- Quick search
@@ -1991,7 +2578,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// Applies the grid-wide quick-search term, resetting to the first page. Passing <c>null</c> or an
     /// empty string clears the search. Raises <see cref="SearchTextChanged"/>.
     /// </summary>
-    public async Task SearchAsync(string? text)
+    public Task SearchAsync(string? text) => SearchAsync(text, typed: false);
+
+    // typed: the term comes from the search box, whose text stays exactly what was typed - and is never written back
+    // from here, after the awaits below: a keystroke typed while they run has put a newer text in the box, which an
+    // older one written back would overwrite under the caret.
+    private async Task SearchAsync(string? text, bool typed)
     {
         var normalized = string.IsNullOrWhiteSpace(text) ? null : text;
 
@@ -1999,19 +2591,15 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // otherwise the clear button (or a programmatic search) would be undone a fraction of a second
         // later by the term the user had half-typed. A debounced search that has already run its delay
         // has dropped its own source by the time it lands here, so it never cancels itself.
-        _searchDebounceCts?.Cancel();
-        _searchDebounceCts = null;
+        _searchDebounce.Cancel();
 
         // The box always shows the term that is actually applied - including when a programmatic
         // search (or the clear button) supersedes what the user had typed into it.
-        _searchBoxText = normalized;
+        if (typed is false) _searchBoxText = normalized;
         if (_search == normalized) return;
 
         _search = normalized;
         _currentPage = 1;
-        Announce(normalized is null
-            ? Strings.AnnouncementSearchCleared
-            : string.Format(Strings.AnnouncementSearched, normalized));
 
         // Deliberately not touching _lastSearchParameter: it shadows the SearchText *parameter*, so a
         // parent that doesn't bind SearchText must not look like it is clearing the search on its next
@@ -2019,12 +2607,16 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // short-circuits on the equality check above.
         if (SearchTextChanged.HasDelegate) await SearchTextChanged.InvokeAsync(normalized);
 
-        await RefreshAsync();
+        MarkStateChanged();
+
+        await RefreshAndAnnounceResultsAsync(normalized is null
+            ? Strings.AnnouncementSearchCleared
+            : string.Format(Strings.AnnouncementSearched, normalized));
     }
 
     // Cancels a pending debounced search when a newer keystroke arrives (or the grid goes away), so
     // only the last one in a burst ever reaches SearchAsync.
-    private CancellationTokenSource? _searchDebounceCts;
+    private readonly BitDataGridDebouncer _searchDebounce = new();
 
     /// <summary>
     /// Handles a keystroke in the search box: applies the term after <see cref="SearchDebounce"/>
@@ -2037,54 +2629,34 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // user has actually typed rather than the term applied a moment ago.
         _searchBoxText = text ?? string.Empty;
 
-        _searchDebounceCts?.Cancel();
-        _searchDebounceCts = null;
-
         if (SearchDebounce <= 0)
         {
+            _searchDebounce.Cancel();
             await ApplyTypedSearchAsync(text);
             return;
         }
 
-        var cts = new CancellationTokenSource();
-        _searchDebounceCts = cts;
-        try
-        {
-            await Task.Delay(SearchDebounce, cts.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            // Superseded by a later keystroke (or by teardown); that one owns the search now.
-            return;
-        }
-        finally
-        {
-            // Each flow disposes the source it created, whether it ran out or was cancelled by a newer
-            // keystroke, so a long burst of typing doesn't leave one per character for the GC.
-            if (ReferenceEquals(_searchDebounceCts, cts)) _searchDebounceCts = null;
-            cts.Dispose();
-        }
-
-        await ApplyTypedSearchAsync(text);
+        // A wait superseded by a later keystroke, a programmatic search or teardown leaves the search to that.
+        if (await _searchDebounce.WaitAsync(SearchDebounce)) await ApplyTypedSearchAsync(text);
     }
 
     /// <summary>
-    /// Applies a term the user typed, then puts back exactly what they typed. <see cref="SearchAsync"/>
-    /// syncs the box to the <i>normalized</i> term so a programmatic search is reflected there, which
-    /// for a typed term would silently rewrite the input under the caret (a run of spaces normalizes to
-    /// "no search" and would be wiped from the box while the user is still typing).
+    /// Applies a term the user typed and leaves the box showing exactly what they typed. <see cref="SearchAsync(string?)"/>
+    /// syncs the box to the <i>normalized</i> term so a programmatic search is reflected there, which for a typed term
+    /// would silently rewrite the input under the caret (a run of spaces normalizes to "no search" and would be wiped
+    /// from the box while the user is still typing); and nothing is put back once the search has run, which would
+    /// write this keystroke's text over the ones typed while it ran.
     /// </summary>
-    private async Task ApplyTypedSearchAsync(string? text)
-    {
-        await SearchAsync(text);
-        _searchBoxText = text ?? string.Empty;
-    }
+    private Task ApplyTypedSearchAsync(string? text) => SearchAsync(text, typed: true);
 
     // The raw filter-editor text equivalent of a descriptor value, used to backfill _filterRaw when a
     // filter is applied programmatically or restored from a snapshot. Invariant formatting matches how
     // the typed editors parse their input back (see SetTypedFilterAsync).
+    // A set is written back as the comma-separated list the "is any of" editor parses.
     private static string? FormatFilterRaw(object? value)
-        => value is IFormattable f ? f.ToString(null, CultureInfo.InvariantCulture) : value?.ToString();
+        => BitDataGridDataProcessor.TryGetSetMembers(value, out var members)
+            ? string.Join(", ", members.Select(FormatFilterRaw))
+            : value is IFormattable f ? f.ToString(null, CultureInfo.InvariantCulture) : value?.ToString();
 
     // Values in a state snapshot that was round-tripped through System.Text.Json deserialize as
     // JsonElement, which never equals the CLR values the filter pipeline compares against (so such
@@ -2093,6 +2665,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private static object? NormalizeFilterValue(object? value, BitDataGridColumn<TItem> column)
     {
         if (value is not JsonElement json) return value;
+
+        // A set operand ("is any of") comes back as a JSON array; each member is coerced on its own.
+        if (json.ValueKind == JsonValueKind.Array)
+            return json.EnumerateArray().Select(e => NormalizeFilterValue(e, column)).ToList();
 
         object? raw = json.ValueKind switch
         {
@@ -2164,7 +2740,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     internal void ToggleGroup(BitDataGridGroup<TItem> group)
     {
+        if (Disabled) return;
+
         if (!_groupStateOverrides.Add(group.Path)) _groupStateOverrides.Remove(group.Path);
+        _groupExpansionVersion++;
+        MarkStateChanged();
         StateHasChanged();
     }
 
@@ -2180,6 +2760,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // including groups that don't exist yet, so the state survives a regrouping or a data refresh.
         _groupsCollapsedByDefault = collapsed;
         _groupStateOverrides.Clear();
+        _groupExpansionVersion++;
+        MarkStateChanged();
         StateHasChanged();
         return Task.CompletedTask;
     }
@@ -2187,10 +2769,14 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // The group paths encode the grouping columns and levels, so any change to the grouping makes the
     // recorded per-group exceptions meaningless; drop them rather than letting them accumulate and
     // silently apply to an unrelated group that happens to rebuild under the same path.
-    private void ResetGroupExpansionState() => _groupStateOverrides.Clear();
+    private void ResetGroupExpansionState()
+    {
+        _groupStateOverrides.Clear();
+        _groupExpansionVersion++;
+    }
 
     // ---------------------------------------------------------- Selection
-    internal bool SelectionEnabled => SelectionMode != BitDataGridSelectionMode.None;
+    internal bool SelectionEnabled => SelectionMode != BitSelectionMode.None;
 
     /// <summary>True when the given row is allowed to be selected.</summary>
     internal bool CanSelectRow(TItem item) => IsRowSelectionDisabled is null || !IsRowSelectionDisabled(item);
@@ -2219,10 +2805,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _rangeSelectPendingKey = null;
         range ??= pendingKey is not null && Equals(pendingKey, GetKey(item));
 
-        if (SelectionMode == BitDataGridSelectionMode.None) return;
+        if (SelectionMode == BitSelectionMode.None) return;
         if (!CanSelectRow(item)) return;
         var selected = value ?? !_selected.Contains(item);
-        if (SelectionMode == BitDataGridSelectionMode.Single)
+        if (SelectionMode == BitSelectionMode.Single)
         {
             _selected.Clear();
             if (selected) _selected.Add(item);
@@ -2246,11 +2832,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>Applies <paramref name="selected"/> to every selectable row between (and including)
-    /// the two rows, as they appear in the current page slice. A row that is no longer rendered (the
-    /// anchor was paged or filtered away) degrades to selecting just the clicked row.</summary>
+    /// the two rows, as they appear on screen. A row that is no longer rendered (the anchor was paged
+    /// or filtered away, or its group collapsed) degrades to selecting just the clicked row.</summary>
     private void SelectRange(TItem from, TItem to, bool selected)
     {
-        var rows = _pageItems;
+        var rows = NavigableRows;
         int start = -1, end = -1;
         for (int i = 0; i < rows.Count; i++)
         {
@@ -2274,7 +2860,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// the loaded rows in server, queryable and infinite modes).</summary>
     public async Task SelectAllAsync()
     {
-        if (SelectionMode != BitDataGridSelectionMode.Multiple) return;
+        if (SelectionMode != BitSelectionMode.Multiple) return;
         foreach (var item in _view)
         {
             if (CanSelectRow(item)) _selected.Add(item);
@@ -2395,23 +2981,26 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private void ApplyControlledSelection()
     {
         _selected.Clear();
-        if (SelectedItems is null || SelectionMode == BitDataGridSelectionMode.None) return;
+        if (SelectedItems is null || SelectionMode == BitSelectionMode.None) return;
         foreach (var i in SelectedItems)
         {
             _selected.Add(i);
-            if (SelectionMode == BitDataGridSelectionMode.Single) break;
+            if (SelectionMode == BitSelectionMode.Single) break;
         }
     }
 
     internal async Task HandleRowClickAsync(TItem item)
     {
+        // A disabled grid answers no pointer on its rows, its own events included, the way a disabled button raises no click.
+        if (Disabled) return;
+
         if (OnRowClick.HasDelegate) await OnRowClick.InvokeAsync(item);
 
         // While a row is being edited, clicks must not disturb the edit: moving the single-selection or
         // expanding a detail row would shift the editors out from under the pointer mid-edit.
         if (_editItem is not null) return;
 
-        if (SelectionMode == BitDataGridSelectionMode.Single)
+        if (SelectionMode == BitSelectionMode.Single)
             await ToggleRowSelectionAsync(item, true);
 
         if (ExpandDetailOnRowClick)
@@ -2420,6 +3009,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     internal async Task HandleRowDoubleClickAsync(TItem item)
     {
+        if (Disabled) return;
+
         if (OnRowDoubleClick.HasDelegate) await OnRowDoubleClick.InvokeAsync(item);
     }
 
@@ -2518,6 +3109,39 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     }
 
     // ---------------------------------------------------------- Editing
+    internal bool IsCellEditMode => EditMode == BitDataGridEditMode.Cell;
+
+    /// <summary>Whether cells take the focus and the keyboard: <see cref="CellNavigation"/>, which an editable
+    /// grid in Cell mode always has - a cell that only a double-click could open would shut out the keyboard - and so
+    /// does a grid whose rows are selected by a click (Single), which has no checkbox the keyboard could use instead.</summary>
+    internal bool CellNavigationActive => CellNavigation || (Editable && IsCellEditMode) || SelectionMode == BitSelectionMode.Single;
+
+    /// <summary>Whether this cell shows its editor: every cell of the edited row in Row mode, only the
+    /// opened one in Cell mode.</summary>
+    internal bool IsEditingCell(TItem item, BitDataGridColumn<TItem> column)
+        => IsEditing(item) && (!IsCellEditMode || _editColumnId == column.Id);
+
+    // Whether an Escape on a navigable cell cancels an edit, the one rule the cells' keyboard handling
+    // (BitDataGridCell.HandleKeyDown, HandleCellKeyDownAsync) and their Escape claim both go by: the open cell
+    // cancels its own edit, and any other cell the one that is open, so the key is the grid's while an edit is.
+    internal bool CancelsEditOnEscape => _editItem is not null;
+
+    // Whether the key the cells, the rows and the headers are about to hear was pressed inside a surface rendered in
+    // their content - a dialog, a panel or a modal of a template - rather than in the grid itself. No surface stops a
+    // key, so the page's shortcuts keep working while one is open, and the grid's handlers hear its keys on their way
+    // out too; they leave them to it. The script reports it ahead of the keydown, whenever it changes.
+    internal bool KeyInNestedSurface { get; private set; }
+
+    /// <summary>Invoked from JavaScript ahead of a keydown when whether it was pressed inside a surface rendered in the
+    /// grid's content changes (see <c>KeyInNestedSurface</c>).</summary>
+    [JSInvokable]
+    public void OnNestedSurfaceKey(bool nested) => KeyInNestedSurface = nested;
+
+    internal int EditVersion => _editVersion;
+
+    /// <summary>The column of the cell open for editing in <see cref="BitDataGridEditMode.Cell"/> mode, or <c>null</c>.</summary>
+    public string? EditingColumnId => _editColumnId;
+
     internal bool ColumnEditable(BitDataGridColumn<TItem> column)
         // Value-type rows are excluded from inline editing: TItem is held (and passed to the property
         // setter) by value, so edits would mutate a throwaway copy and never persist back to the bound
@@ -2541,12 +3165,151 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // open row) must leave the edit exactly as it is.
         if (_editItem is not null && KeyEquals(_editItem, item)) return;
 
+        OpenEdit(item, IsCellEditMode ? FirstEditableColumn()?.Id : null);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Opens an inline edit at a given cell and moves the focus into its editor: in Row mode the whole
+    /// row opens, in Cell mode only that cell, after committing any other cell that is open (and staying
+    /// put if that commit is refused by a validation error). No-op for a column that is not editable.
+    /// </summary>
+    public async Task BeginEditAsync(TItem item, string columnId)
+    {
+        if (_columnsById.TryGetValue(columnId, out var column)) await BeginEditAtAsync(item, column);
+    }
+
+    /// <param name="item">The row to edit.</param>
+    /// <param name="column">The column whose editor takes the focus.</param>
+    /// <param name="typed">Whether the edit was opened by typing into the cell: the editor then takes the typed text
+    /// (gathered by BitDataGrid.ts while it opens) in place of the value, the way a spreadsheet cell does.</param>
+    internal async Task BeginEditAtAsync(TItem item, BitDataGridColumn<TItem> column, bool typed = false)
+    {
+        if (Disabled || !ColumnEditable(column)) return;
+
+        // Moving on from an open edit commits it, in either mode, so a key pressed on another row (Enter, F2 or the
+        // first character typed into it) never throws away what was typed there - and a commit refused by a
+        // validation error keeps that edit open instead.
+        var sameEdit = _editItem is not null && KeyEquals(_editItem, item) && (!IsCellEditMode || _editColumnId == column.Id);
+        if (!sameEdit)
+        {
+            if (_editItem is not null)
+            {
+                await CommitEditAsync();
+                if (_editItem is not null) return;
+            }
+            OpenEdit(item, IsCellEditMode ? column.Id : null);
+        }
+
+        _editorFocusRequest = column.Id;
+        _editorFocusTyped = typed;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Whether typing into the column's focused cell opens its editor with what was typed - the cells of the built-in
+    /// text and number editors. A custom EditTemplate, and the date, boolean and enum editors (which are pickers, not
+    /// boxes to type into), open with Enter or F2 instead.
+    /// </summary>
+    internal bool OpensEditorByTyping(BitDataGridColumn<TItem> column)
+        => Disabled is false && CellNavigationActive && column.EditTemplate is null && ColumnEditable(column)
+        && column.EffectiveDataType is BitDataGridColumnDataType.Text or BitDataGridColumnDataType.Number;
+
+    // The keys that start an edit by typing: a printable character (Space is the selection's), or Backspace, which
+    // opens the editor empty. A number cell takes only what a number can start with.
+    private static bool IsTypingKey(KeyboardEventArgs e, BitDataGridColumnDataType type)
+    {
+        if (e.CtrlKey || e.MetaKey || e.AltKey) return false;
+        if (e.Key == "Backspace") return true;
+        if (e.Key is not { Length: 1 } key || key == " ") return false;
+        return type is not BitDataGridColumnDataType.Number || key[0] is (>= '0' and <= '9') or '-' or '+' or '.' or ',';
+    }
+
+    // The command column's Edit button: it is replaced by Save the moment it is pressed, so the focus
+    // it held moves into the row's first editor instead of dropping to the document.
+    internal void BeginEditFromCommand(TItem item)
+    {
+        if (Disabled) return;
+        BeginEdit(item);
+        _editorFocusRequest = string.Empty;
+    }
+
+    internal async Task CommitEditFromCommandAsync(TItem item)
+    {
+        await CommitEditAsync();
+        if (_editItem is null) RequestCommandFocus(item);
+    }
+
+    internal async Task CancelEditFromCommandAsync(TItem item)
+    {
+        await CancelEditAsync();
+        RequestCommandFocus(item);
+    }
+
+    private void RequestCommandFocus(TItem item)
+    {
+        _commandFocusItem = item;
+        _commandFocusPending = true;
+        StateHasChanged();
+    }
+
+    private BitDataGridColumn<TItem>? FirstEditableColumn() => VisibleColumns.FirstOrDefault(ColumnEditable);
+
+    private void OpenEdit(TItem item, string? columnId)
+    {
         _editItem = item;
         _isNewItem = false;
         _editBuffer = null;
         _editErrors = null;
+        _editColumnId = columnId;
+        _editVersion++;
         SnapshotEdit(item);
-        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Tab / Shift+Tab in the cell open in Cell mode: commits it, then opens the next (or previous) editable
+    /// cell, running on to the next row at the end of one. A commit refused by a validation error keeps the
+    /// cell open; past the last editable cell the focus returns to the cell just committed.
+    /// </summary>
+    internal async Task MoveCellEditAsync(TItem item, BitDataGridColumn<TItem> column, bool backwards)
+    {
+        await CommitEditAsync();
+        if (_editItem is not null) return;
+
+        // Read after the commit: its refresh may have re-sorted the row elsewhere.
+        var rows = NavigableRows;
+        var cols = VisibleColumns;
+        var r = IndexOfRow(rows, item);
+        var c = -1;
+        for (int i = 0; i < cols.Count; i++) if (ReferenceEquals(cols[i], column)) c = i;
+        var step = backwards ? -1 : 1;
+
+        if (r >= 0 && c >= 0)
+        {
+            c += step;
+            while (r >= 0 && r < rows.Count)
+            {
+                for (; c >= 0 && c < cols.Count; c += step)
+                {
+                    if (!ColumnEditable(cols[c])) continue;
+                    await BeginEditAtAsync(rows[r], cols[c]);
+                    return;
+                }
+                r += step;
+                c = backwards ? cols.Count - 1 : 0;
+            }
+        }
+
+        RefocusFocusedCell();
+    }
+
+    /// <summary>Invoked from JavaScript when the focus leaves the cell open in Cell mode: the edit
+    /// commits, exactly as Enter would. A report for an edit that is already over is ignored.</summary>
+    [JSInvokable]
+    public async Task OnCellEditBlurAsync(int editVersion)
+    {
+        if (!IsCellEditMode || _editItem is null || editVersion != _editVersion) return;
+        await CommitEditAsync();
     }
 
     /// <summary>
@@ -2564,6 +3327,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _editSnapshot = null;
         _editBuffer = null;
         _editErrors = null;
+        _editColumnId = IsCellEditMode ? FirstEditableColumn()?.Id : null;
+        _editVersion++;
+        // The Add button stays where it is, but the row it added is where the user types next.
+        _editorFocusRequest = string.Empty;
         if (OnRowCreate.HasDelegate) await OnRowCreate.InvokeAsync(item);
         StateHasChanged();
     }
@@ -2630,6 +3397,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private void ClearEditState()
     {
         _editItem = default;
+        _editColumnId = null;
+        _editorFocusRequest = null;
         _pendingNew = default;
         _editSnapshot = null;
         _isNewItem = false;
@@ -2725,12 +3494,21 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // ---------------------------------------------------------- Resizing
     internal async Task StartResizeAsync(BitDataGridColumn<TItem> column, double clientX)
     {
-        _resizingColumn = column;
-        _resizeStartX = clientX;
+        var press = ++_resizePress;
+        // Everything the drag reads is gathered before it starts: setting _resizingColumn renders the
+        // overlay that feeds OnResizeMove, which must not see a start width or direction still pending.
+        var rtl = await IsRtlAsync(JS);
         // Prefer the header cell's real rendered width: a %/fr-sized column has no px width .NET could
         // parse, and even a px-declared one may be constrained by min/max at render time. Falls back to
         // parsing the declared width when JS is unavailable (prerendering, disconnected circuit).
-        _resizeStartWidth = column.ResizedWidth ?? await MeasureColumnWidthAsync(column);
+        var startWidth = column.ResizedWidth ?? await MeasureColumnWidthAsync(column);
+        // The handle was released while those were read - a click, a double-click to fit the column - so there is
+        // no drag to follow: the overlay would only cover the page and resize the column after the button is up.
+        if (press != _resizePress) return;
+        _resizeRtl = rtl;
+        _resizeStartX = clientX;
+        _resizeStartWidth = startWidth;
+        _resizingColumn = column;
         StateHasChanged();
     }
 
@@ -2738,7 +3516,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     {
         try
         {
-            var width = await JS.InvokeAsync<double>("BitBlazorUI.DataGrid.getWidth", column.HeaderCellRef);
+            var width = await JS.InvokeScriptAsync<double>("BitBlazorUI.DataGrid.getWidth", column.HeaderCellRef);
             if (width > 0) return width;
         }
         catch (JSException) { }
@@ -2746,11 +3524,37 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         return ParseInitialWidth(column);
     }
 
+    // Bumped by every press and every release of a resize handle, so a drag whose start is still being read knows
+    // the handle has been let go in the meantime.
+    private int _resizePress;
+
+    /// <summary>The release of a resize handle's press, before the overlay that follows a drag has been rendered: a drag
+    /// still being started is called off, and one the overlay is already on its way to the browser for is ended - the
+    /// overlay would otherwise stay over the page with no button down, resizing the column as the pointer moves.</summary>
+    internal void ReleaseResizeHandle()
+    {
+        _resizePress++;
+        if (_resizingColumn is not null) EndResize();
+    }
+
+    /// <summary>The second press of a double click on a resize handle fits the column to its content. It is read off the
+    /// press (its click count) rather than the dblclick event: every press starts a drag whose overlay covers the page,
+    /// and where that overlay is rendered before the button comes back up - in WebAssembly, or over a fast link - the
+    /// release lands on it rather than on the handle, and the dblclick with it. The drag the press started is called off,
+    /// since there is nothing to follow.</summary>
+    internal async Task OnResizerMouseDownAsync(BitDataGridColumn<TItem> column, MouseEventArgs e)
+    {
+        if (e.Detail < 2 || e.Button != 0) return;
+
+        ReleaseResizeHandle();
+        await AutoFitAsync(column);
+    }
+
     internal void OnResizeMove(double clientX)
     {
         if (_resizingColumn is null) return;
         var delta = clientX - _resizeStartX;
-        if (Direction == BitDir.Rtl) delta = -delta;
+        if (_resizeRtl) delta = -delta;
         var newWidth = Math.Max(_resizingColumn.MinWidth, _resizeStartWidth + delta);
         if (_resizingColumn.MaxWidth is { } max) newWidth = Math.Min(max, newWidth);
         _resizingColumn.ResizedWidth = newWidth;
@@ -2759,7 +3563,63 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     internal void EndResize()
     {
+        if (_resizingColumn is not null) MarkStateChanged();
         _resizingColumn = null;
+        StateHasChanged();
+    }
+
+    // The arrow keys move the edge by this many pixels, and by five times as many with Shift held.
+    private const double KeyboardResizeStep = 10;
+
+    /// <summary>
+    /// The keyboard side of a column's resize handle, a focusable separator: Left/Right move its edge (mirrored in a
+    /// right-to-left grid, so the arrow always points the way the edge goes), Home and End take the column to its
+    /// MinWidth and MaxWidth, and Enter fits it to its content like a double-click. Ctrl+Arrow is passed on to the
+    /// header, which moves the column.
+    /// </summary>
+    internal async Task OnResizerKeyDownAsync(BitDataGridColumn<TItem> column, KeyboardEventArgs e)
+    {
+        if (e.CtrlKey)
+        {
+            await OnHeaderKeyDownAsync(column, e);
+            return;
+        }
+
+        if (!ColumnResizable(column) || e.AltKey || e.MetaKey) return;
+
+        switch (e.Key)
+        {
+            case "Enter":
+                await AutoFitAsync(column);
+                return;
+
+            case "Home":
+                SetColumnWidth(column, column.MinWidth);
+                return;
+
+            case "End":
+                if (column.MaxWidth is { } max) SetColumnWidth(column, max);
+                return;
+
+            case "ArrowLeft":
+            case "ArrowRight":
+                var widen = (e.Key == "ArrowRight") != await IsRtlArrowAsync(JS, e.Key);
+                var step = KeyboardResizeStep * (e.ShiftKey ? 5 : 1);
+                var current = column.ResizedWidth ?? await MeasureColumnWidthAsync(column);
+                SetColumnWidth(column, current + (widen ? step : -step));
+                return;
+        }
+    }
+
+    private void SetColumnWidth(BitDataGridColumn<TItem> column, double width)
+    {
+        width = Math.Max(column.MinWidth, width);
+        if (column.MaxWidth is { } max) width = Math.Min(max, width);
+        if (column.ResizedWidth == width) return;
+
+        column.ResizedWidth = width;
+        InvalidateVisibleColumns();
+        MarkStateChanged();
         StateHasChanged();
     }
 
@@ -2787,7 +3647,130 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _columns.Insert(to, _dragColumn);
         _dragColumn = null;
         InvalidateVisibleColumns();
+        MarkStateChanged();
         StateHasChanged();
+    }
+
+    // The column whose header takes the focus back after the render that moved it: moving the keyed header element
+    // in the DOM takes the focus off it, so it is put back once the render is done.
+    private BitDataGridColumn<TItem>? _focusHeaderColumn;
+
+    // Where the focus goes after the next render, when the control that held it is about to disappear or move: CSS
+    // selectors tried in order inside this grid (never a nested one), the first focusable match taking it.
+    private string[]? _focusAfterRender;
+
+    private static string AttributeValue(string value) => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+
+    /// <summary>The toolbar's Clear filters button: it disappears with the filters, so the focus moves on to where the
+    /// next filter is typed - the filter row, else the search box, else the toolbar - instead of dropping to the page.</summary>
+    internal async Task ClearFiltersFromToolbarAsync()
+    {
+        await ClearFiltersAsync();
+        _focusAfterRender = [".bit-dtg-filter-row :is(input, select, button)", ".bit-dtg-search-input", ".bit-dtg-toolbar button"];
+        StateHasChanged();
+    }
+
+    /// <summary>The search box's clear button: it disappears with the term, so the focus goes back into the box.</summary>
+    internal async Task ClearSearchFromButtonAsync()
+    {
+        await SearchAsync(null);
+        _focusAfterRender = [".bit-dtg-search-input"];
+        StateHasChanged();
+    }
+
+    /// <summary>A move button of the column chooser: the keyed item moves with its column, which takes the focus off
+    /// the button, so it is put back on the same button - or on the other one when the column reached an end.</summary>
+    internal async Task MoveColumnFromChooserAsync(BitDataGridColumn<TItem> column, int delta)
+    {
+        await MoveColumnByAsync(column, delta);
+        var item = $".bit-dtg-chooser-item[data-col-id=\"{AttributeValue(column.Id)}\"]";
+        _focusAfterRender = [FormattableString.Invariant($"{item} [data-move=\"{delta}\"]"), $"{item} [data-move]", $"{item} input"];
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Moves a column to the given 0-based position among all the columns (hidden ones included), the order
+    /// <see cref="GetState"/> records. Works whatever the column's <c>Reorderable</c> says, as the other programmatic
+    /// APIs do; an unknown id is ignored and the index is clamped.
+    /// </summary>
+    public Task MoveColumnAsync(string columnId, int index)
+    {
+        if (!_columnsById.TryGetValue(columnId, out var column)) return Task.CompletedTask;
+
+        var from = _columns.IndexOf(column);
+        var to = Math.Clamp(index, 0, _columns.Count - 1);
+        if (from < 0 || from == to) return Task.CompletedTask;
+
+        _columns.RemoveAt(from);
+        _columns.Insert(to, column);
+        InvalidateVisibleColumns();
+        MarkStateChanged();
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    // The neighbour a step moves a column past: among the visible columns for the header (moving past a hidden one
+    // would change nothing on screen), among all of them for the column chooser, which lists the hidden ones too.
+    // Null when there is none, or when it is not reorderable - the same rule a drop onto it follows.
+    private BitDataGridColumn<TItem>? ColumnMoveTarget(BitDataGridColumn<TItem> column, int delta, bool visibleOnly)
+    {
+        if (!ColumnReorderable(column)) return null;
+
+        var list = visibleOnly ? VisibleColumns : _columns;
+        var index = -1;
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (ReferenceEquals(list[i], column)) { index = i; break; }
+        }
+        if (index < 0) return null;
+
+        var target = index + Math.Sign(delta);
+        if (target < 0 || target >= list.Count) return null;
+
+        return ColumnReorderable(list[target]) ? list[target] : null;
+    }
+
+    internal bool CanMoveColumn(BitDataGridColumn<TItem> column, int delta) => ColumnMoveTarget(column, delta, visibleOnly: false) is not null;
+
+    /// <summary>Moves a column one place toward the start (<paramref name="delta"/> -1) or the end (+1), the way the
+    /// column chooser's buttons and Ctrl+Arrow on a header do, and announces where it landed.</summary>
+    internal Task MoveColumnByAsync(BitDataGridColumn<TItem> column, int delta, bool visibleOnly = false)
+    {
+        if (ColumnMoveTarget(column, delta, visibleOnly) is not { } target) return Task.CompletedTask;
+
+        var from = _columns.IndexOf(column);
+        var to = _columns.IndexOf(target);
+        _columns.RemoveAt(from);
+        _columns.Insert(to, column);
+        InvalidateVisibleColumns();
+        MarkStateChanged();
+
+        var visible = VisibleColumns;
+        var position = 0;
+        for (int i = 0; i < visible.Count; i++)
+        {
+            if (ReferenceEquals(visible[i], column)) { position = i + 1; break; }
+        }
+        if (position > 0) Announce(string.Format(Strings.AnnouncementColumnMoved, column.DisplayTitle, position, visible.Count));
+
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Ctrl+Left/Right on anything focused in a reorderable header moves its column one place, mirrored in a
+    /// right-to-left grid, and keeps the focus on the moved header.</summary>
+    internal async Task OnHeaderKeyDownAsync(BitDataGridColumn<TItem> column, KeyboardEventArgs e)
+    {
+        if (KeyInNestedSurface) return;
+        if (!e.CtrlKey || e.AltKey || e.MetaKey || e.ShiftKey) return;
+        if (e.Key is not ("ArrowLeft" or "ArrowRight")) return;
+        if (!ColumnReorderable(column)) return;
+
+        var forward = (e.Key == "ArrowRight") != await IsRtlArrowAsync(JS, e.Key);
+        if (ColumnMoveTarget(column, forward ? 1 : -1, visibleOnly: true) is null) return;
+
+        _focusHeaderColumn = column;
+        await MoveColumnByAsync(column, forward ? 1 : -1, visibleOnly: true);
     }
 
     /// <summary>Whether the column's cells render a native tooltip with their full text.</summary>
@@ -2801,8 +3784,13 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// </summary>
     internal bool ColumnWrapsText(BitDataGridColumn<TItem> column) => !Virtualize && (column.WrapText ?? WrapCellText);
 
-    internal bool ColumnResizable(BitDataGridColumn<TItem> column) => column.Resizable ?? Resizable;
-    internal bool ColumnReorderable(BitDataGridColumn<TItem> column) => column.Reorderable ?? Reorderable;
+    // A disabled grid offers neither pointer gesture: the resizer is not rendered and no header is draggable.
+    internal bool ColumnResizable(BitDataGridColumn<TItem> column) => Disabled is false && (column.Resizable ?? Resizable);
+    internal bool ColumnReorderable(BitDataGridColumn<TItem> column) => Disabled is false && (column.Reorderable ?? Reorderable);
+
+    /// <summary>Whether the header of the column renders as the button that sorts it: a disabled grid keeps the
+    /// sort it shows (aria-sort included) but offers no way to change it.</summary>
+    internal bool HeaderSortable(BitDataGridColumn<TItem> column) => Disabled is false && ColumnSortable(column);
 
     // ----------------------------------------------------- Row reordering
     // Row reordering moves items by index within the bound source list (see DropRowAsync). That is only
@@ -2824,7 +3812,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     internal void StartRowDrag(TItem row)
     {
-        if (!RowReorderEnabled) return;
+        if (!RowReorderEnabled || Disabled) return;
         _dragRow = row;
     }
 
@@ -2833,7 +3821,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnPointerRowDropAsync(int fromIndex, int toIndex)
     {
-        if (!RowReorderEnabled) return;
+        if (!RowReorderEnabled || Disabled) return;
         if (!TryGetRowAtDataIndex(fromIndex, out var from) || !TryGetRowAtDataIndex(toIndex, out var to)) return;
         _dragRow = from;
         await DropRowAsync(to);
@@ -2871,7 +3859,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// </summary>
     internal async Task MoveRowAsync(TItem row, int delta)
     {
-        if (!RowReorderEnabled) return;
+        if (!RowReorderEnabled || Disabled) return;
 
         // Confine neighbor selection to the current page slice so keyboard reordering never jumps across
         // pages. With no sort/filter/group active (RowReorderEnabled requires that), _pageItems is either
@@ -2893,7 +3881,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     internal async Task DropRowAsync(TItem target)
     {
-        if (!RowReorderEnabled) { _dragRow = default; return; }
+        if (!RowReorderEnabled || Disabled) { _dragRow = default; return; }
         if (_dragRow is null || KeyEquals(_dragRow, target)) { _dragRow = default; return; }
 
         var dragged = _dragRow;
@@ -2938,18 +3926,27 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // -------------------------------------------------------- Cell events
     internal async Task HandleCellClickAsync(BitDataGridColumn<TItem> column, TItem item, MouseEventArgs e)
     {
+        if (Disabled) return;
+
         if (OnCellClick.HasDelegate)
             await OnCellClick.InvokeAsync(MakeCellArgs(column, item, e));
     }
 
     internal async Task HandleCellDoubleClickAsync(BitDataGridColumn<TItem> column, TItem item, MouseEventArgs e)
     {
+        if (Disabled) return;
+
         if (OnCellDoubleClick.HasDelegate)
             await OnCellDoubleClick.InvokeAsync(MakeCellArgs(column, item, e));
+
+        // Cell mode opens a cell the spreadsheet way; Row mode leaves the double-click to OnRowDoubleClick.
+        if (IsCellEditMode && !IsEditingCell(item, column)) await BeginEditAtAsync(item, column);
     }
 
     internal async Task HandleCellContextMenuAsync(BitDataGridColumn<TItem> column, TItem item, MouseEventArgs e)
     {
+        if (Disabled) return;
+
         if (OnCellContextMenu.HasDelegate)
             await OnCellContextMenu.InvokeAsync(MakeCellArgs(column, item, e));
     }
@@ -2960,8 +3957,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         => new() { Item = item, Column = column, Value = column.GetValue(item), Mouse = e };
 
     // ------------------------------------------------- Keyboard cell navigation
-    /// <summary>The flat, ordered list of rows the keyboard navigation moves across.</summary>
-    internal IReadOnlyList<TItem> NavigableRows => _pageItems;
+    /// <summary>The flat, ordered list of rows the keyboard navigation moves across: the rows on screen, in the order
+    /// they are shown - group order, without the rows of a collapsed group, while grouped.</summary>
+    internal IReadOnlyList<TItem> NavigableRows => CurrentGroupedLayout()?.NavigableRows ?? (IReadOnlyList<TItem>)_pageItems;
 
     internal bool IsCellFocused(TItem item, int colIndex)
         => _focusedRow is not null && KeyEquals(_focusedRow, item) && _focusedCol == colIndex;
@@ -3024,6 +4022,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal void SetFocusedCell(TItem item, int colIndex)
     {
         if (IsCellFocused(item, colIndex)) return;
+        // While keyboard moves are still on their way to the DOM, the focus reaching a cell one of them went to and the
+        // next one has already moved past is that move arriving late, not the user going elsewhere: it must not take
+        // the focus back. Anywhere else, the user moved the focus, and the keys come from there again.
+        if (_focusMoving && _focusMoveTargets.Contains((GetKey(item), colIndex))) return;
+        _focusMoving = false;
+        _focusMoveTargets.Clear();
         _focusedRow = item;
         _focusedCol = colIndex;
         _focusVersion++;
@@ -3032,6 +4036,42 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     internal bool ShouldFocusCell(TItem item, int colIndex) => _focusPending && IsCellFocused(item, colIndex);
     internal void ClearFocusPending() => _focusPending = false;
+
+    // Whether a move of the focus the keyboard asked for has not reached the DOM yet: the browser delivers the keys
+    // pressed in the meantime (a held arrow, a quick typist, a slow connection) to the cell the focus is leaving, so
+    // they are applied from the cell the move goes to instead (see HandleCellKeyDownAsync).
+    private bool _focusMoving;
+
+    // The cells the keyboard moves still on their way to the DOM went to.
+    private readonly HashSet<(object Key, int Col)> _focusMoveTargets = new();
+
+    internal int FocusVersion => _focusVersion;
+
+    /// <summary>Called by the cell a keyboard move went to once its DOM focus call has returned: from then on the keys
+    /// the browser delivers come from that cell itself. A move made since is still on its way.</summary>
+    internal void SettleFocusMove(int version)
+    {
+        if (version != _focusVersion) return;
+        _focusMoving = false;
+        _focusMoveTargets.Clear();
+    }
+
+    // Records a keyboard move of the focus to the cell now held as the focused one.
+    private void StartFocusMove()
+    {
+        _focusVersion++;
+        _focusPending = true;
+        _focusMoving = true;
+        _focusMoveTargets.Add((GetKey(_focusedRow!), _focusedCol));
+    }
+
+    // The cell a key applies to: the one it was pressed on, unless a keyboard move has not reached the DOM yet.
+    private bool TryGetMovingFocus(out TItem item, out int colIndex)
+    {
+        item = _focusedRow!;
+        colIndex = _focusedCol;
+        return _focusMoving && _focusedRow is not null;
+    }
 
     /// <summary>Requests that the currently focused cell regain DOM focus on the next render
     /// (e.g. after leaving inline edit mode via the keyboard).</summary>
@@ -3044,6 +4084,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     internal async Task HandleCellKeyDownAsync(TItem item, int colIndex, KeyboardEventArgs e)
     {
+        if (TryGetMovingFocus(out var movedItem, out var movedCol))
+        {
+            item = movedItem;
+            colIndex = movedCol;
+        }
+
         var rows = NavigableRows;
         if (rows.Count == 0) return;
         var colCount = VisibleColumns.Count;
@@ -3062,7 +4108,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
                 await CopyToClipboardAsync(item);
                 return;
             }
-            if ((e.Key == "a" || e.Key == "A") && SelectionMode == BitDataGridSelectionMode.Multiple)
+            if ((e.Key == "a" || e.Key == "A") && SelectionMode == BitSelectionMode.Multiple && Disabled is false)
             {
                 await SelectAllAsync();
                 return;
@@ -3075,12 +4121,65 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // began elsewhere has no say in what the keyboard does.
         if (e.Key == " " && SelectionEnabled)
         {
-            await ToggleRowSelectionAsync(item, range: e.ShiftKey);
+            if (Disabled is false) await ToggleRowSelectionAsync(item, range: e.ShiftKey);
             return;
         }
 
+        // Typing into a cell edits it, replacing its value, as a spreadsheet does (Enter and F2 keep the value).
+        if (colIndex >= 0 && colIndex < colCount && VisibleColumns[colIndex] is { } typedColumn
+            && OpensEditorByTyping(typedColumn) && IsTypingKey(e, typedColumn.EffectiveDataType))
+        {
+            await BeginEditAtAsync(item, typedColumn, typed: true);
+            return;
+        }
+
+        // A disabled grid can still be read cell by cell - and copied - but nothing it shows can be changed from it.
+        if (Disabled && e.Key is "Enter" or "F2" or "Delete") return;
+
+        // Only the horizontal arrows depend on the direction, so only they pay for reading it.
+        var versionBeforeRead = _focusVersion;
+        var rtl = await IsRtlArrowAsync(JS, e.Key);
+
+        // A key pressed after this one can be handled while the direction is read; when it moved the focus, this one
+        // goes on from there.
+        if (_focusVersion != versionBeforeRead && TryGetMovingFocus(out movedItem, out movedCol))
+        {
+            item = movedItem;
+            colIndex = movedCol;
+            rows = NavigableRows;
+            rowIdx = Math.Max(0, IndexOfRow(rows, item));
+        }
+
         int row = rowIdx, col = colIndex;
-        var rtl = Direction == BitDir.Rtl;
+
+        // A treegrid opens and closes its nodes from the cell that holds their toggle, as the APG treegrid does: the
+        // forward arrow expands a collapsed node, the backward one collapses an expanded node or else moves up to the
+        // parent row. Past that the arrows move between cells as anywhere else, so the toggle needs no tab stop.
+        if (IsTreeMode && Disabled is false && colIndex == 0 && e.Key is "ArrowLeft" or "ArrowRight" && !e.CtrlKey && !e.AltKey && !e.MetaKey)
+        {
+            var forward = (e.Key == "ArrowRight") != rtl;
+            if (TreeHasChildren(item) && IsTreeRowExpanded(item) != forward && !IsTreeNodeLoading(item))
+            {
+                await ToggleTreeNodeAsync(item);
+                RefocusFocusedCell();
+                return;
+            }
+            if (!forward)
+            {
+                var level = TreeLevel(item);
+                for (var parent = rowIdx - 1; level > 0 && parent >= 0; parent--)
+                {
+                    if (TreeLevel(rows[parent]) != level - 1) continue;
+                    _focusedRow = rows[parent];
+                    _focusedCol = 0;
+                    StartFocusMove();
+                    StateHasChanged();
+                    break;
+                }
+                return;
+            }
+        }
+
         var handled = true;
         // Horizontal travel direction in column-index space (used to skip over spanned-away columns).
         int colDir = 0;
@@ -3098,16 +4197,20 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             case "Enter":
             case "F2":
                 var ec = VisibleColumns[Math.Clamp(col, 0, colCount - 1)];
-                if (ColumnEditable(ec)) BeginEdit(item);
-                // Keyboard parity with the row click: when the cell has no editor to open and rows
-                // expand on click, Enter toggles the detail - otherwise a grid whose toggle column is
-                // hidden would be unreachable without a pointer. Gated on no edit being active for the
-                // same reason as HandleRowClickAsync: another row's cells still route here while an
-                // edit is open, and expanding a detail would shift the editors mid-edit.
-                else if (e.Key == "Enter" && ExpandDetailOnRowClick && _editItem is null) await ToggleDetailAsync(item);
+                if (ColumnEditable(ec)) await BeginEditAtAsync(item, ec);
+                // When the cell has no editor to open, Enter toggles the row's detail content wherever the
+                // user can toggle it at all (the toggle column, or a row click): the cells are the grid's one
+                // tab stop, so the toggle button is not one, and a grid whose toggle column is hidden would
+                // otherwise be unreachable without a pointer. Details driven from code alone stay that way.
+                // Gated on no edit being active for the same reason as HandleRowClickAsync: another row's
+                // cells still route here while an edit is open, and expanding a detail would shift the
+                // editors mid-edit.
+                else if (e.Key == "Enter" && (HasDetailColumn || (HasDetailTemplate && ExpandDetailOnRowClick)) && _editItem is null)
+                    await ToggleDetailAsync(item);
                 return;
-            case "Escape":
-                if (_editItem is not null) await CancelEditAsync();
+            // Only the plain key, the one the cells claim: an Escape with a modifier is the surrounding surface's.
+            case "Escape" when e.IsPlainEscape():
+                if (CancelsEditOnEscape) await CancelEditAsync();
                 return;
             case "Delete":
                 // Keyboard parity with the command column's Delete button, gated the same way
@@ -3136,8 +4239,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         col = SnapToVirtualizedColumn(col, colDir);
         _focusedRow = rows[row];
         _focusedCol = col;
-        _focusVersion++;
-        _focusPending = true;
+        StartFocusMove();
         StateHasChanged();
     }
 
@@ -3275,6 +4377,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _currentPage = 1;
         await NotifyPageChangeAsync();
         await RefreshAsync();
+        // A new page size starts over at page 1 of a different number of pages, which the dropdown alone does not say.
+        Announce(string.Format(Strings.AnnouncementPage, _currentPage, TotalPages));
+        StateHasChanged();
     }
 
     // ------------------------------------------------------ Public state API
@@ -3335,19 +4440,25 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// special handling.
     /// </summary>
     public Task ApplyRangeFilterAsync(string columnId, object? from, object? toExclusive)
-        => _columnsById.TryGetValue(columnId, out var column)
-            ? SetRangeFilterAsync(column, from, toExclusive)
-            : Task.CompletedTask;
+    {
+        if (!_columnsById.TryGetValue(columnId, out var column)) return Task.CompletedTask;
+        // The column's filter box shows the range's lower bound rather than whatever was typed into it.
+        CancelFilterDebounce(columnId);
+        _filterRaw.Remove(columnId);
+        return SetRangeFilterAsync(column, from, toExclusive);
+    }
 
     /// <summary>Removes the filter(s) applied to the given column.</summary>
     public async Task ClearFilterAsync(string columnId)
     {
+        CancelFilterDebounce(columnId);
         _filterRaw.Remove(columnId);
         _filterOps.Remove(columnId);
         if (_filters.RemoveAll(f => f.ColumnId == columnId) == 0) return;
         _currentPage = 1;
         await NotifyFilterChangeAsync();
-        await RefreshAsync();
+        await RefreshAndAnnounceResultsAsync(string.Format(Strings.AnnouncementFilterCleared,
+            _columnsById.TryGetValue(columnId, out var column) ? column.DisplayTitle : columnId));
     }
 
     /// <summary>Adds the given column as the next (nested) grouping level. No-op when already grouped
@@ -3442,6 +4553,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
                 _sorts.Add(new BitDataGridSortDescriptor { ColumnId = s.ColumnId, Direction = s.Direction, Priority = _sorts.Count + 1 });
         }
 
+        CancelFilterDebounce();
         _filters.Clear();
         _filterOps.Clear();
         _filterRaw.Clear();
@@ -3482,6 +4594,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         {
             if (!string.IsNullOrEmpty(path)) _groupStateOverrides.Add(path);
         }
+        _groupExpansionVersion++;
         if (GroupingAllowed)
         {
             // Skipped entirely in modes that don't support grouping, so a snapshot captured in a
@@ -3533,6 +4646,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // purely a column-chooser toggle.
         column.Visible = visible;
         InvalidateVisibleColumns();
+        MarkStateChanged();
         StateHasChanged();
     }
 
@@ -3592,8 +4706,113 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// unknown - a null renders no attribute.</summary>
     internal int? AriaRowIndex(TItem item)
     {
+        // The row being added renders first in the body, ahead of the view, and the rows after it count on from it.
+        if (_pendingNew is not null && ReferenceEquals(item, _pendingNew)) return HeaderRowCount + 1;
+        if (CurrentGroupedLayout() is { } layout)
+        {
+            return item is not null && layout.RowIndex.TryGetValue(GetKey(item), out var position) ? position : null;
+        }
         if (RowDataIndex(item) is not { } index) return null;
-        return index + 1 + HeaderRowCount;
+        return index + 1 + HeaderRowCount + PendingRowCount;
+    }
+
+    // The row being added (see AddNewRowAsync), which renders above the view.
+    private int PendingRowCount => _pendingNew is not null ? 1 : 0;
+
+    /// <summary>The 1-based aria-rowindex of a group's header row, or null outside the grouped view.</summary>
+    internal int? GroupAriaRowIndex(BitDataGridGroup<TItem> group)
+        => CurrentGroupedLayout() is { } layout && layout.GroupIndex.TryGetValue(group.Path, out var position) ? position : null;
+
+    /// <summary>Whether the footer row of aggregates renders.</summary>
+    internal bool HasFooterRow => ShowFooter && _footerAggregates.Count > 0;
+
+    // While grouped, every row is in the DOM but in group order, with a header row for each group in between and the
+    // rows of a collapsed group left out, so neither a row's data position nor the view's count says where it is. One
+    // walk numbers them in render order and lists the rows the keyboard can reach, in the order they are shown. It is
+    // read on demand rather than refreshed by a render, so the keyboard handlers that run right after a refresh (a row
+    // deleted, an edit committed into another group) see the new view, and it is only walked again when what it is
+    // built from changes: the view, which groups are open, or the rows above the body.
+    private sealed record GroupedLayout(Dictionary<object, int> RowIndex, Dictionary<string, int> GroupIndex, List<TItem> NavigableRows, int BodyRowCount);
+    private GroupedLayout? _groupedLayout;
+    private (IReadOnlyList<BitDataGridGroup<TItem>>? View, int Expansion, int Start) _groupedLayoutSource;
+
+    // Bumped whenever which groups are collapsed changes, so the cached layout knows to walk again.
+    private int _groupExpansionVersion;
+
+    private GroupedLayout? CurrentGroupedLayout()
+    {
+        if (_viewGroups is null) return null;
+
+        var start = HeaderRowCount + PendingRowCount + 1;
+        var source = (_viewGroups, _groupExpansionVersion, start);
+        if (_groupedLayout is not null && ReferenceEquals(_groupedLayoutSource.View, _viewGroups)
+            && _groupedLayoutSource.Expansion == _groupExpansionVersion && _groupedLayoutSource.Start == start)
+        {
+            return _groupedLayout;
+        }
+
+        var rows = new Dictionary<object, int>();
+        var groups = new Dictionary<string, int>();
+        var navigable = new List<TItem>();
+        var next = start;
+        Walk(_viewGroups);
+        _groupedLayoutSource = source;
+        return _groupedLayout = new(rows, groups, navigable, next - start);
+
+        void Walk(IReadOnlyList<BitDataGridGroup<TItem>> list)
+        {
+            foreach (var group in list)
+            {
+                groups[group.Path] = next++;
+                if (IsGroupCollapsed(group)) continue;
+                if (group.HasSubGroups)
+                {
+                    Walk(group.SubGroups);
+                    continue;
+                }
+                foreach (var item in group.Items)
+                {
+                    if (item is null || !rows.TryAdd(GetKey(item), next)) continue;
+                    next++;
+                    navigable.Add(item);
+                }
+            }
+        }
+    }
+
+    private int _ariaRowCount;
+
+    /// <summary>
+    /// Counts the grid's rows for its aria-rowcount - the header rows, the data rows (with the group rows while grouped)
+    /// and the footer. -1 when the total is unknown (infinite scrolling).
+    /// </summary>
+    internal int ComputeAriaRowCount()
+    {
+        if (IsInfiniteMode) return _ariaRowCount = -1;
+
+        var body = CurrentGroupedLayout()?.BodyRowCount ?? TotalCount;
+        return _ariaRowCount = HeaderRowCount + PendingRowCount + body + (HasFooterRow ? 1 : 0);
+    }
+
+    /// <summary>The footer row's aria-rowindex: the last row of the grid, or null when the total is unknown.</summary>
+    internal int? FooterAriaRowIndex => _ariaRowCount > 0 ? _ariaRowCount : null;
+
+    // Every row of a grouped view in group order, collapsed groups included: the order the rows are shown in, which is
+    // what the row numbers count by.
+    private static List<TItem> FlattenGroups(IReadOnlyList<BitDataGridGroup<TItem>> groups)
+    {
+        var rows = new List<TItem>();
+        Add(groups);
+        return rows;
+
+        void Add(IReadOnlyList<BitDataGridGroup<TItem>> list)
+        {
+            foreach (var group in list)
+            {
+                if (group.HasSubGroups) Add(group.SubGroups);
+                else rows.AddRange(group.Items);
+            }
+        }
     }
 
     /// <summary>The row's absolute 0-based dataset position (its data-ri attribute), or null when
@@ -3654,7 +4873,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             // Prefix the UTF-8 byte-order mark: Excel ignores the charset in the MIME type and decodes a
             // BOM-less CSV with the system code page, mangling every non-ASCII character. The BOM is
             // added at download time only, so ToCsvAsync stays a clean string for programmatic callers.
-            await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.download",
+            await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.download",
                 $"{ExportBaseName}.csv", "﻿" + csv, "text/csv;charset=utf-8");
         }
         catch (JSDisconnectedException) { }
@@ -3699,7 +4918,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         {
             try
             {
-                style = await JS.InvokeAsync<BitDataGridExcelStyle?>("BitBlazorUI.DataGrid.getExportStyles", _rootRef);
+                style = await JS.InvokeScriptAsync<BitDataGridExcelStyle?>("BitBlazorUI.DataGrid.getExportStyles", RootElement);
                 // Vertical borders come from the grid's own Bordered mode rather than a sampled edge:
                 // cell borders are only rendered when Bordered is set, and the sampled row-separator
                 // color already covers the shared border color.
@@ -3721,7 +4940,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         var bytes = await ToExcelAsync(selectedOnly);
         try
         {
-            await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.downloadBase64", $"{ExportBaseName}.xlsx",
+            await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.downloadBase64", $"{ExportBaseName}.xlsx",
                 Convert.ToBase64String(bytes),
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         }
@@ -3797,14 +5016,18 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         if (IsQueryableMode && Items is IQueryable<TItem> queryable)
             return BitDataGridQueryableProcessor.Apply(queryable, _search, _filters, _sorts, _columnsById).ToList();
 
-        return _view;
+        return ViewInDisplayOrder;
     }
+
+    /// <summary>The rows of the view in the order the grid shows them: group order while grouped (collapsed groups
+    /// included), so an export or a copy reads the way the grid does.</summary>
+    private IReadOnlyList<TItem> ViewInDisplayOrder => _viewGroups is not null ? FlattenGroups(_viewGroups) : _view;
 
     /// <summary>The selected rows in the order they appear in the current view (rather than in
     /// selection order), so a selected-rows export reads exactly like the grid does. Empty when
     /// nothing is selected - the export is then just its header line.</summary>
     private IReadOnlyList<TItem> SelectedExportRows()
-        => _selectedSet is not { Count: > 0 } ? Array.Empty<TItem>() : _view.Where(_selected.Contains).ToList();
+        => _selectedSet is not { Count: > 0 } ? Array.Empty<TItem>() : ViewInDisplayOrder.Where(_selected.Contains).ToList();
 
     /// <summary>The provider request an export issues: no page window (<c>Take = null</c> means
     /// "all rows") with the active sorts/filters, so the provider streams every matching row.
@@ -3902,7 +5125,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     {
         // The fallback row also has to be one the grid is actually showing.
         var rows = _selected.Count > 0
-            ? _view.Where(_selected.Contains).ToList()
+            ? ViewInDisplayOrder.Where(_selected.Contains).ToList()
             : hasFallbackRow && fallbackRow is not null && _view.Any(r => KeyEquals(r, fallbackRow))
                 ? new List<TItem> { fallbackRow }
                 : new List<TItem>();
@@ -3911,7 +5134,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         var text = BuildDelimited(rows, '\t');
         try
         {
-            var copied = await JS.InvokeAsync<bool>("BitBlazorUI.DataGrid.copyToClipboard", text);
+            var copied = await JS.InvokeScriptAsync<bool>("BitBlazorUI.DataGrid.copyToClipboard", text);
             if (!copied) return 0;
         }
         catch (JSDisconnectedException) { return 0; }
@@ -3947,23 +5170,19 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         double width;
         try
         {
-            width = await JS.InvokeAsync<double>(
-                "BitBlazorUI.DataGrid.measureColumnContentWidth", _rootRef, AriaColIndex(index));
+            width = await JS.InvokeScriptAsync<double>(
+                "BitBlazorUI.DataGrid.measureColumnContentWidth", RootElement, AriaColIndex(index));
         }
         catch (JSDisconnectedException) { return; }
         catch (JSException) { return; }
         catch (InvalidOperationException) { return; } // prerendering: JS interop not available yet
 
         if (width <= 0) return;
-        width = Math.Max(column.MinWidth, width);
-        if (column.MaxWidth is { } max) width = Math.Min(max, width);
-        column.ResizedWidth = width;
-        InvalidateVisibleColumns();
-        StateHasChanged();
+        SetColumnWidth(column, width);
     }
 
     // ----------------------------------------------------- Layout helpers
-    internal bool HasSelectColumn => SelectionMode == BitDataGridSelectionMode.Multiple;
+    internal bool HasSelectColumn => SelectionMode == BitSelectionMode.Multiple;
 
     /// <summary>True when rows can render expandable detail content.</summary>
     internal bool HasDetailTemplate => DetailTemplate is not null;
@@ -3988,23 +5207,28 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private double DetailOffset => ReorderOffset + (HasReorderColumn ? ReorderColWidth : 0);
     private double SelectOffset => DetailOffset + (HasDetailColumn ? DetailColWidth : 0);
 
-    /// <summary>The inline-start CSS edge for sticky special columns, flipped to "right" in RTL.</summary>
-    private string StickyEdge => Direction == BitDir.Rtl ? "right" : "left";
-
-    internal string RowNumberStickyStyle => $"{StickyEdge}:0;";
-    internal string ReorderStickyStyle => $"{StickyEdge}:{ReorderOffset.ToString(CultureInfo.InvariantCulture)}px;";
-    internal string DetailStickyStyle => $"{StickyEdge}:{DetailOffset.ToString(CultureInfo.InvariantCulture)}px;";
-    internal string SelectStickyStyle => $"{StickyEdge}:{SelectOffset.ToString(CultureInfo.InvariantCulture)}px;";
+    // The sticky offsets are logical, so they follow whichever direction the grid ends up in - its own
+    // Dir, a cascaded one, or the one it inherits from the page - without the grid having to know it.
+    internal string RowNumberStickyStyle => "inset-inline-start:0;";
+    internal string ReorderStickyStyle => $"inset-inline-start:{ReorderOffset.ToString(CultureInfo.InvariantCulture)}px;";
+    internal string DetailStickyStyle => $"inset-inline-start:{DetailOffset.ToString(CultureInfo.InvariantCulture)}px;";
+    internal string SelectStickyStyle => $"inset-inline-start:{SelectOffset.ToString(CultureInfo.InvariantCulture)}px;";
 
     private string ColumnWidthToken(BitDataGridColumn<TItem> column)
     {
         if (column.ResizedWidth is { } w) return $"{w.ToString(CultureInfo.InvariantCulture)}px";
+        // A declared width is the column's size, held between its bounds: a minmax() would let the track fall to
+        // MinWidth whenever the grid has no free space to grow it into, which is most of the time. A flexible (fr)
+        // width cannot sit inside a math function, so only that one keeps the minmax.
         if (!string.IsNullOrEmpty(column.Width))
             return column.MaxWidth is { } mx
-                ? $"minmax({column.MinWidth}px, min({column.Width}, {mx}px))"
+                ? column.Width!.EndsWith("fr", StringComparison.OrdinalIgnoreCase)
+                    ? $"minmax({column.MinWidth}px, {mx}px)"
+                    : $"clamp({column.MinWidth}px, {column.Width}, {mx}px)"
                 : column.Width!;
+        // fr is not a length either, so min(1fr, max) would be an invalid value that drops the whole template.
         return column.MaxWidth is { } max
-            ? $"minmax({column.MinWidth}px, min(1fr, {max}px))"
+            ? $"minmax({column.MinWidth}px, {max}px)"
             : $"minmax({Math.Max(120, column.MinWidth)}px, 1fr)";
     }
 
@@ -4051,31 +5275,62 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     private string HeaderCellClass(BitDataGridColumn<TItem> column)
     {
-        var c = "bit-dtg-hcell " + AlignClass(column.Align);
-        if (IsSticky(column)) c += " bit-dtg-sticky";
-        if (ColumnSortable(column)) c += " bit-dtg-sortable";
+        var c = "bit-dtg-hcell " + AlignClass(column.Align) + FrozenClass(column);
+        if (HeaderSortable(column)) c += column.SortDescendingFirst ? " bit-dtg-sortable bit-dtg-sort-desc-first" : " bit-dtg-sortable";
         if (ColumnWrapsText(column)) c += " bit-dtg-hcell-wrap";
+        if (Classes?.HeaderCell is { Length: > 0 } custom) c += " " + custom;
         if (!string.IsNullOrEmpty(column.HeaderClass)) c += " " + column.HeaderClass;
         return c;
     }
 
-    private string RootClasses()
+    private string HeaderCellStyle(BitDataGridColumn<TItem> column) => FrozenStyle(column) + Styles?.HeaderCell;
+
+    protected override string RootElementClass => "bit-dtg";
+
+    protected override void RegisterCssClasses()
     {
-        var c = "bit-dtg";
-        if (Bordered) c += " bit-dtg-bordered";
-        if (Striped) c += " bit-dtg-striped";
-        if (Hoverable) c += " bit-dtg-hoverable";
-        if (Direction == BitDir.Rtl) c += " bit-dtg-rtl";
-        if (!string.IsNullOrEmpty(Class)) c += " " + Class;
-        return c;
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Bordered ? "bit-dtg-bordered" : string.Empty);
+        ClassBuilder.Register(() => Striped ? "bit-dtg-striped" : string.Empty);
+        ClassBuilder.Register(() => Hoverable ? "bit-dtg-hoverable" : string.Empty);
+        // The grid's own hook for the named direction, kept beside the base class's bit-rtl. Its layout follows
+        // whatever direction it ends up in through logical properties, not through either class.
+        ClassBuilder.Register(() => Dir == BitDir.Rtl ? "bit-dtg-rtl" : string.Empty);
     }
 
-    internal static string AlignClass(BitDataGridColumnAlign a) => a switch
+    protected override void RegisterCssStyles()
     {
-        BitDataGridColumnAlign.Center => "bit-dtg-center",
-        BitDataGridColumnAlign.Right => "bit-dtg-right",
+        StyleBuilder.Register(() => Styles?.Root);
+    }
+
+    // Start needs no class: a cell is laid out from its leading edge already. Everything the column cannot
+    // express - the justification and cascade keywords of BitTextAlign - falls through to that same default.
+    internal static string AlignClass(BitTextAlign a) => a switch
+    {
+        BitTextAlign.Center => "bit-dtg-center",
+        BitTextAlign.End => "bit-dtg-end",
+        BitTextAlign.Left => "bit-dtg-left",
+        BitTextAlign.Right => "bit-dtg-right",
         _ => ""
     };
+
+    /// <summary>The widths the frozen columns cover at each edge, which the viewport keeps clear as scroll padding so
+    /// a focused cell or control is never scrolled in under them (WCAG 2.4.11).</summary>
+    internal string FrozenBandsStyle
+    {
+        get
+        {
+            var start = SpecialStickyWidth;
+            var end = 0d;
+            foreach (var column in VisibleColumns)
+            {
+                if (column.Frozen) start += ColumnPixelWidth(column);
+                else if (column.FrozenEnd) end += ColumnPixelWidth(column);
+            }
+            return $"--bit-dtg-frozen-start:{start.ToString(CultureInfo.InvariantCulture)}px;--bit-dtg-frozen-end:{end.ToString(CultureInfo.InvariantCulture)}px;";
+        }
+    }
 
     private double SpecialStickyWidth => (HasRowNumberColumn ? RowNumberColWidth : 0) + (HasReorderColumn ? ReorderColWidth : 0) + (HasDetailColumn ? DetailColWidth : 0) + (HasSelectColumn ? SelectColWidth : 0);
 
@@ -4115,19 +5370,22 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     {
         if (column.Frozen)
         {
-            var edge = Direction == BitDir.Rtl ? "right" : "left";
-            return $"{edge}:{FrozenOffset(column).ToString(CultureInfo.InvariantCulture)}px;";
+            return $"inset-inline-start:{FrozenOffset(column).ToString(CultureInfo.InvariantCulture)}px;";
         }
         if (column.FrozenEnd)
         {
-            var edge = Direction == BitDir.Rtl ? "left" : "right";
-            return $"{edge}:{FrozenEndOffset(column).ToString(CultureInfo.InvariantCulture)}px;";
+            return $"inset-inline-end:{FrozenEndOffset(column).ToString(CultureInfo.InvariantCulture)}px;";
         }
         return string.Empty;
     }
 
     /// <summary>True when the column is pinned to either edge (renders with the sticky class).</summary>
     internal static bool IsSticky(BitDataGridColumn<TItem> column) => column.Frozen || column.FrozenEnd;
+
+    /// <summary>The classes that pin a column's cells: none, the sticky class, or - for a column pinned to the end edge -
+    /// the sticky class and the end marker the stylesheet draws the band's inline-start edge from.</summary>
+    internal static string FrozenClass(BitDataGridColumn<TItem> column)
+        => column.Frozen ? " bit-dtg-sticky" : column.FrozenEnd ? " bit-dtg-sticky bit-dtg-frozen-end" : string.Empty;
 
     private string AggregateLabel(BitDataGridAggregateResult agg) => agg.Type switch
     {

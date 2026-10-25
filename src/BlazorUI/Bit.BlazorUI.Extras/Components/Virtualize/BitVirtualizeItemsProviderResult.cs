@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The result returned from a <see cref="BitVirtualizeItemsProvider{TItem}"/>.

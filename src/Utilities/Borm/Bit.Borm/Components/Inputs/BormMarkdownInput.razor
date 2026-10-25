@@ -1,0 +1,75 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+@* The text area is always there - labelled, validated and the thing focus goes to - and the preview sits under it,
+   opened and closed by a disclosure button. A Write/Preview pair of tabs would take the text area out of the page
+   while the preview showed, and with it the target of every "go to this error". *@
+<div class="bit-borm-markdown">
+    <BormTextAreaInput Context="Context" />
+    <div class="bit-borm-markdown__bar">
+        <button type="button" class="bit-borm-btn bit-borm-btn--ghost bit-borm-btn--sm" aria-expanded="@(_preview ? "true" : "false")"
+                aria-controls="@PreviewId" @onclick="() => _preview = !_preview">
+            @Context.Text(_preview ? BormMessageKeys.MarkdownHidePreview : BormMessageKeys.MarkdownShowPreview)
+        </button>
+        <details class="bit-borm-markdown__help">
+            <summary>@Context.Text(BormMessageKeys.MarkdownHelp)</summary>
+            <dl>
+                <dt><code>**@Context.Text(BormMessageKeys.MarkdownBold)**</code></dt><dd><strong>@Context.Text(BormMessageKeys.MarkdownBold)</strong></dd>
+                <dt><code>*@Context.Text(BormMessageKeys.MarkdownItalic)*</code></dt><dd><em>@Context.Text(BormMessageKeys.MarkdownItalic)</em></dd>
+                <dt><code>`@Context.Text(BormMessageKeys.MarkdownCode)`</code></dt><dd><code>@Context.Text(BormMessageKeys.MarkdownCode)</code></dd>
+                <dt><code>[@Context.Text(BormMessageKeys.MarkdownLink)](https://…)</code></dt><dd>@Context.Text(BormMessageKeys.MarkdownLink)</dd>
+                <dt><code>- @Context.Text(BormMessageKeys.MarkdownBulleted)</code></dt><dd>@Context.Text(BormMessageKeys.MarkdownBulleted)</dd>
+                <dt><code>1. @Context.Text(BormMessageKeys.MarkdownNumbered)</code></dt><dd>@Context.Text(BormMessageKeys.MarkdownNumbered)</dd>
+                <dt><code>&gt; @Context.Text(BormMessageKeys.MarkdownQuote)</code></dt><dd>@Context.Text(BormMessageKeys.MarkdownQuote)</dd>
+                <dt><code># @Context.Text(BormMessageKeys.MarkdownHeading)</code></dt><dd>@Context.Text(BormMessageKeys.MarkdownHeading)</dd>
+            </dl>
+        </details>
+    </div>
+    <div class="bit-borm-markdown__preview" id="@PreviewId" role="region" aria-label="@Context.Text(BormMessageKeys.MarkdownPreview)" hidden="@(!_preview)">
+        @if (_preview)
+        {
+            @if (Html.Length == 0)
+            {
+                <p class="bit-borm-markdown__empty">@Context.Text(BormMessageKeys.MarkdownEmpty)</p>
+            }
+            else
+            {
+                @((MarkupString)Html)
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private bool _preview;
+    private bool _previewApplied;
+    private string? _renderedFor;
+    private string _html = string.Empty;
+
+    private string PreviewId => Context.ElementId + "_preview";
+
+    // BormMarkdown encodes everything the user wrote and writes only its own elements, which is what makes this
+    // MarkupString safe. Rendered once per value: the field re-renders for more than its text changing.
+    private string Html
+    {
+        get
+        {
+            var text = Context.StringValue;
+            if (!string.Equals(text, _renderedFor, StringComparison.Ordinal))
+            {
+                _renderedFor = text;
+                _html = BormMarkdown.ToHtml(text);
+            }
+            return _html;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        // Attr("preview", true) opens it to begin with.
+        if (_previewApplied) return;
+        _previewApplied = true;
+        _preview = Field.Attributes.TryGetValue("preview", out var open) && open is true;
+    }
+}

@@ -1,0 +1,527 @@
+﻿@page "/e2e/scrollable-pane"
+
+<PageTitle>BitScrollablePane E2E</PageTitle>
+
+@* The classes the Class sections hand the pane, styled here so a test can read their effect back. *@
+<style>
+    .e2e-scp-class { outline: 3px dashed rgb(1, 2, 3); }
+    .e2e-scp-row { height: 40px; box-sizing: border-box; border-bottom: 1px solid rgb(220, 220, 220); }
+    .e2e-scp-item { display: inline-block; width: 120px; height: 60px; margin-inline-end: 8px; background: rgb(200, 220, 240); white-space: normal; }
+    .e2e-scp-wide { width: 1200px; height: 20px; }
+</style>
+
+<h1>BitScrollablePane</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitScrollablePane Id="scp-basic" Height="10rem">
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="e2e-scp-row">Basic row @i</div>
+        }
+    </BitScrollablePane>
+</E2ESection>
+
+<E2ESection Id="dimensions" Title="Width, Height, Min/Max, Full*, Fit*, Auto*">
+    <BitScrollablePane Id="scp-size" Width="18rem" Height="6rem"><div class="e2e-scp-row">Sized</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-minmax" MinWidth="10rem" MaxWidth="12rem" MinHeight="3rem" MaxHeight="5rem">
+        @for (var i = 1; i <= 6; i++)
+        {
+            <div class="e2e-scp-row">Capped row @i</div>
+        }
+    </BitScrollablePane>
+    <div id="scp-box" style="width: 300px; height: 120px; display: flex; gap: 0;">
+        <BitScrollablePane Id="scp-full" FullSize><div>FullSize</div></BitScrollablePane>
+    </div>
+    <div style="width: 300px; height: 120px;">
+        <BitScrollablePane Id="scp-fullw" FullWidth Height="50px"><div>FullWidth</div></BitScrollablePane>
+        <BitScrollablePane Id="scp-fullh" FullHeight Width="50px"><div>FullHeight</div></BitScrollablePane>
+    </div>
+    <BitScrollablePane Id="scp-fit" FitSize><span id="scp-fit-text" style="display: inline-block; width: 150px; height: 30px;">Fit</span></BitScrollablePane>
+    <BitScrollablePane Id="scp-fitw" FitWidth><span style="display: inline-block; width: 140px;">FitWidth</span></BitScrollablePane>
+    <BitScrollablePane Id="scp-fith" FitHeight Height="999px"><span>FitHeight</span></BitScrollablePane>
+    <BitScrollablePane Id="scp-auto" AutoSize Width="10px" Height="10px"><div>AutoSize</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-autow" AutoWidth Width="10px"><div>AutoWidth</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-autoh" AutoHeight Height="10px"><div>AutoHeight</div></BitScrollablePane>
+</E2ESection>
+
+<E2ESection Id="overflow" Title="Overflow, OverflowX, OverflowY, NoScroll, Horizontal">
+    @foreach (var (name, value) in _overflows)
+    {
+        <BitScrollablePane Id="@($"scp-ov-{name}")" Overflow="value" Height="3rem" Width="10rem">
+            <div class="e2e-scp-wide">Overflow @name</div>
+            <div class="e2e-scp-row">Row</div>
+            <div class="e2e-scp-row">Row</div>
+        </BitScrollablePane>
+    }
+    <BitScrollablePane Id="scp-ovxy" Overflow="BitOverflow.Hidden" OverflowX="BitOverflow.Scroll" OverflowY="BitOverflow.Auto" Height="3rem" Width="10rem"><div class="e2e-scp-wide">Axes</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-noscroll" NoScroll Focusable Height="5rem" Overflow="BitOverflow.Auto" DragScroll>
+        @for (var i = 1; i <= 10; i++)
+        {
+            <div class="e2e-scp-row">Clipped row @i</div>
+        }
+    </BitScrollablePane>
+    <BitScrollablePane Id="scp-hor" Horizontal Width="20rem">
+        @for (var i = 1; i <= 8; i++)
+        {
+            <span class="e2e-scp-item">Item @i</span>
+        }
+    </BitScrollablePane>
+</E2ESection>
+
+<E2ESection Id="overscroll" Title="Overscroll, OverscrollX, OverscrollY">
+    @foreach (var (name, value) in _overscrolls)
+    {
+        <BitScrollablePane Id="@($"scp-os-{name}")" Overscroll="value" Height="2rem"><div class="e2e-scp-row">Overscroll @name</div></BitScrollablePane>
+    }
+    <BitScrollablePane Id="scp-osxy" OverscrollX="BitOverscroll.None" OverscrollY="BitOverscroll.Contain" Height="2rem"><div>Axes</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-outer-auto" Height="12rem" Width="20rem">
+        <BitScrollablePane Id="scp-inner-auto" Height="6rem" Overscroll="BitOverscroll.Auto">
+            @for (var i = 1; i <= 6; i++)
+            {
+                <div class="e2e-scp-row">Inner auto @i</div>
+            }
+        </BitScrollablePane>
+        @for (var i = 1; i <= 10; i++)
+        {
+            <div class="e2e-scp-row">Outer auto @i</div>
+        }
+    </BitScrollablePane>
+    <BitScrollablePane Id="scp-outer-contain" Height="12rem" Width="20rem">
+        <BitScrollablePane Id="scp-inner-contain" Height="6rem" Overscroll="BitOverscroll.Contain">
+            @for (var i = 1; i <= 6; i++)
+            {
+                <div class="e2e-scp-row">Inner contain @i</div>
+            }
+        </BitScrollablePane>
+        @for (var i = 1; i <= 10; i++)
+        {
+            <div class="e2e-scp-row">Outer contain @i</div>
+        }
+    </BitScrollablePane>
+</E2ESection>
+
+<E2ESection Id="scrollbar" Title="ScrollbarWidth, ScrollbarColor, Gutter, Modern, AutoHideScrollbar">
+    <BitScrollablePane Id="scp-sbw-thin" ScrollbarWidth="BitScrollbarWidth.Thin" Height="2rem"><div class="e2e-scp-row">Thin</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-sbw-none" ScrollbarWidth="BitScrollbarWidth.None" Height="2rem"><div class="e2e-scp-row">None</div><div class="e2e-scp-row">Still scrolls</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-sbw-auto" ScrollbarWidth="BitScrollbarWidth.Auto" Height="2rem"><div class="e2e-scp-row">Auto</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-sbc" ScrollbarColor="rgb(255, 0, 0) rgb(0, 0, 255)" Height="2rem"><div class="e2e-scp-row">Colored</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-gut-stable" Gutter="BitScrollbarGutter.Stable" Height="2rem"><div>Stable</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-gut-both" Gutter="BitScrollbarGutter.BothEdges" Height="2rem"><div>BothEdges</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-gut-auto" Gutter="BitScrollbarGutter.Auto" Height="2rem"><div>Auto</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-modern" Modern AutoHideScrollbar AutoHideDelay="300" Height="5rem">
+        @for (var i = 1; i <= 10; i++)
+        {
+            <div class="e2e-scp-row">Modern row @i</div>
+        }
+    </BitScrollablePane>
+    <span id="scp-modern-away">Away from the pane</span>
+</E2ESection>
+
+<E2ESection Id="fade" Title="Fade, FadeSize">
+    <BitScrollablePane Id="scp-fade" Fade Height="8rem" ScrollbarWidth="BitScrollbarWidth.None">
+        @for (var i = 1; i <= 12; i++)
+        {
+            <div class="e2e-scp-row">Fading row @i</div>
+        }
+    </BitScrollablePane>
+    <BitScrollablePane Id="scp-fade-hor" Fade Horizontal Width="20rem" FadeSize="3rem" ScrollbarWidth="BitScrollbarWidth.None">
+        @for (var i = 1; i <= 8; i++)
+        {
+            <span class="e2e-scp-item">Faded item @i</span>
+        }
+    </BitScrollablePane>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Focusable, AriaLabel, Role, TabIndex, Disabled">
+    <button id="btn-focus-pane" type="button" @onclick="() => _focusRef.FocusAsync()">Focus the pane</button>
+    <BitScrollablePane @ref="_focusRef" Id="scp-focus" Focusable AriaLabel="Release notes" Height="6rem">
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="e2e-scp-row">Note @i</div>
+        }
+    </BitScrollablePane>
+    <BitScrollablePane Id="scp-role" AriaLabel="A log" Role="log" Height="2rem"><div>Log</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-role-empty" AriaLabel="No role" Role="" Height="2rem"><div>No role</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-tabindex" TabIndex="2" Height="2rem"><div>TabIndex</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-disabled" Disabled Focusable Height="4rem">
+        @for (var i = 1; i <= 10; i++)
+        {
+            <div class="e2e-scp-row">Disabled row @i</div>
+        }
+    </BitScrollablePane>
+</E2ESection>
+
+<E2ESection Id="events" Title="OnScroll, OnScrollStart, OnScrollEnd, ScrollThrottle">
+    <BitScrollablePane @ref="_eventsRef" Id="scp-events" Height="8rem"
+                       OnScroll="HandleScroll" OnScrollStart="(BitScrollOffset o) => _scrollStarts++" OnScrollEnd="(BitScrollOffset o) => { _scrollEnds++; _endTop = o.Top; }">
+        @for (var i = 1; i <= 30; i++)
+        {
+            <div class="e2e-scp-row">Event row @i</div>
+        }
+    </BitScrollablePane>
+    <span id="ev-scrolls">@_scrolls</span>
+    <span id="ev-top">@_lastTop</span>
+    <span id="ev-percent">@_lastPercent</span>
+    <span id="ev-at">@_lastAt</span>
+    <span id="ev-dir">@_lastDir</span>
+    <span id="ev-sizes">@_lastSizes</span>
+    <span id="ev-starts">@_scrollStarts</span>
+    <span id="ev-ends">@_scrollEnds</span>
+    <span id="ev-end-top">@_endTop</span>
+    <button id="btn-ev-scroll" type="button" @onclick="() => _eventsRef.ScrollTo(null, 200)">Scroll to 200</button>
+    <button id="btn-ev-bottom" type="button" @onclick="() => _eventsRef.ScrollToEnd()">Scroll to the end</button>
+
+    <BitScrollablePane @ref="_throttleRef" Id="scp-throttle" Height="8rem" ScrollThrottle="500" OnScroll="(BitScrollOffset o) => { _throttled++; _throttledTop = o.Top; }">
+        @for (var i = 1; i <= 30; i++)
+        {
+            <div class="e2e-scp-row">Throttled row @i</div>
+        }
+    </BitScrollablePane>
+    <span id="th-scrolls">@_throttled</span>
+    <span id="th-top">@_throttledTop</span>
+</E2ESection>
+
+<E2ESection Id="reach" Title="OnReachedTop, OnReachedBottom, OnReachedLeft, OnReachedRight, ReachOffset">
+    <BitScrollablePane @ref="_reachRef" Id="scp-reach" Height="8rem" ReachOffset="20"
+                       OnReachedTop="@(() => _reached.Add("top"))"
+                       OnReachedBottom="LoadMore">
+        @for (var i = 1; i <= _rows; i++)
+        {
+            <div class="e2e-scp-row">Endless row @i</div>
+        }
+    </BitScrollablePane>
+    <span id="reach-log">@string.Join(",", _reached)</span>
+    <span id="reach-rows">@_rows</span>
+    <BitScrollablePane @ref="_reachHorRef" Id="scp-reach-hor" Horizontal Width="20rem"
+                       OnReachedLeft="@(() => _reachedHor.Add("left"))"
+                       OnReachedRight="@(() => _reachedHor.Add("right"))">
+        @for (var i = 1; i <= 8; i++)
+        {
+            <span class="e2e-scp-item">Reach item @i</span>
+        }
+    </BitScrollablePane>
+    <span id="reach-hor-log">@string.Join(",", _reachedHor)</span>
+</E2ESection>
+
+<E2ESection Id="methods" Title="ScrollToStart, ScrollToEnd, ScrollTo, ScrollBy, ScrollToElement, GetScrollOffset, FocusAsync, Refresh, Smooth, InitialScroll">
+    <button id="btn-m-start" type="button" @onclick="() => _mRef.ScrollToStart()">To start</button>
+    <button id="btn-m-end" type="button" @onclick="() => _mRef.ScrollToEnd()">To end</button>
+    <button id="btn-m-to" type="button" @onclick="() => _mRef.ScrollTo(null, 200)">To 200</button>
+    <button id="btn-m-by" type="button" @onclick="() => _mRef.ScrollBy(0, 50)">By 50</button>
+    <button id="btn-m-el" type="button" @onclick="@(() => _mRef.ScrollToElement("scp-m-row-15"))">To row 15</button>
+    <button id="btn-m-el-center" type="button" @onclick="@(() => _mRef.ScrollToElement("scp-m-row-15", alignment: BitScrollAlignment.Center))">To row 15 centered</button>
+    <button id="btn-m-el-end" type="button" @onclick="@(() => _mRef.ScrollToElement("scp-m-row-15", alignment: BitScrollAlignment.End))">To row 15 at the end</button>
+    <button id="btn-m-el-nearest" type="button" @onclick="@(() => _mRef.ScrollToElement("scp-m-row-15", alignment: BitScrollAlignment.Nearest))">To row 15 nearest</button>
+    <button id="btn-m-el-offset" type="button" @onclick="@(() => _mRef.ScrollToElement("scp-m-row-15", offset: 30))">To row 15 with an offset</button>
+    <button id="btn-m-ref" type="button" @onclick="() => _mRef.ScrollToElement(_row25)">To row 25 by reference</button>
+    <button id="btn-m-offset" type="button" @onclick="ReadOffset">Read the offset</button>
+    <button id="btn-m-focus" type="button" @onclick="() => _mRef.FocusAsync()">Focus</button>
+    <button id="btn-m-refresh" type="button" @onclick="() => _mRef.Refresh()">Refresh</button>
+    <button id="btn-m-smooth" type="button" @onclick="() => _mRef.ScrollToEnd(smooth: true)">Smooth to end</button>
+    <span id="m-offset">@_offsetText</span>
+    <BitScrollablePane @ref="_mRef" Id="scp-m" Height="10rem" ScrollPadding="2.5rem 0 0 0" OnScroll="(BitScrollOffset o) => { }">
+        @for (var i = 1; i <= 30; i++)
+        {
+            if (i == 25)
+            {
+                <div @ref="_row25" id="scp-m-row-25" class="e2e-scp-row">Method row @i</div>
+            }
+            else
+            {
+                <div id="@($"scp-m-row-{i}")" class="e2e-scp-row">Method row @i</div>
+            }
+        }
+    </BitScrollablePane>
+    <button id="btn-smooth-end" type="button" @onclick="() => _smoothRef.ScrollToEnd()">Smooth pane to end</button>
+    <button id="btn-smooth-instant" type="button" @onclick="() => _smoothRef.ScrollToStart(smooth: false)">Smooth pane to start, instantly</button>
+    <BitScrollablePane @ref="_smoothRef" Id="scp-smooth" Smooth Height="6rem">
+        @for (var i = 1; i <= 30; i++)
+        {
+            <div class="e2e-scp-row">Smooth row @i</div>
+        }
+    </BitScrollablePane>
+    <BitScrollablePane Id="scp-initial" InitialScrollTop="250" Height="8rem">
+        @for (var i = 1; i <= 30; i++)
+        {
+            <div class="e2e-scp-row">Initial row @i</div>
+        }
+    </BitScrollablePane>
+    <BitScrollablePane Id="scp-initial-left" Horizontal InitialScrollLeft="300" Width="20rem">
+        @for (var i = 1; i <= 8; i++)
+        {
+            <span class="e2e-scp-item">Initial item @i</span>
+        }
+    </BitScrollablePane>
+</E2ESection>
+
+<E2ESection Id="autoscroll" Title="AutoScroll, AutoScrollThreshold">
+    <button id="btn-as-add" type="button" @onclick="() => _logLines++">Add a line</button>
+    <BitScrollablePane Id="scp-auto-scroll" AutoScroll AutoScrollThreshold="30" Height="8rem">
+        @for (var i = 1; i <= _logLines; i++)
+        {
+            <div class="e2e-scp-row">Log line @i</div>
+        }
+    </BitScrollablePane>
+    <span id="as-lines">@_logLines</span>
+</E2ESection>
+
+<E2ESection Id="preserve" Title="PreserveScroll">
+    <button id="btn-prepend" type="button" @onclick="Prepend">Load older</button>
+    <BitScrollablePane Id="scp-preserve" PreserveScroll Height="8rem" Style="overflow-anchor: none;">
+        @foreach (var message in _messages)
+        {
+            <div id="@($"msg-p-{message}")" class="e2e-scp-row">Message @message</div>
+        }
+    </BitScrollablePane>
+    <BitScrollablePane Id="scp-nopreserve" Height="8rem" Style="overflow-anchor: none;">
+        @foreach (var message in _messages)
+        {
+            <div id="@($"msg-n-{message}")" class="e2e-scp-row">Message @message</div>
+        }
+    </BitScrollablePane>
+</E2ESection>
+
+<E2ESection Id="snap" Title="Snap, SnapAlign, SnapStop">
+    <BitScrollablePane Id="scp-snap" Horizontal Snap="BitScrollSnap.Mandatory" SnapAlign="BitScrollSnapAlign.Start" SnapStop Width="20rem">
+        @for (var i = 1; i <= 8; i++)
+        {
+            <span class="e2e-scp-item">Snap item @i</span>
+        }
+    </BitScrollablePane>
+    @foreach (var (name, value) in _snaps)
+    {
+        <BitScrollablePane Id="@($"scp-snap-{name}")" Snap="value" Height="2rem"><div>Snap @name</div></BitScrollablePane>
+    }
+    @foreach (var (name, value) in _aligns)
+    {
+        <BitScrollablePane Id="@($"scp-align-{name}")" SnapAlign="value" Height="2rem"><div id="@($"scp-align-{name}-child")">Align @name</div></BitScrollablePane>
+    }
+</E2ESection>
+
+<E2ESection Id="drag" Title="DragScroll, DragMomentum, HorizontalWheel">
+    <BitScrollablePane Id="scp-drag" Horizontal DragScroll Width="20rem">
+        @for (var i = 1; i <= 8; i++)
+        {
+            <span class="e2e-scp-item">Drag item @i</span>
+        }
+        <button id="scp-drag-button" type="button" @onclick="() => _dragButtonClicks++" style="width: 120px; height: 60px;">A button</button>
+    </BitScrollablePane>
+    <span id="drag-button-clicks">@_dragButtonClicks</span>
+    <BitScrollablePane Id="scp-momentum" Horizontal DragScroll DragMomentum Width="20rem">
+        @for (var i = 1; i <= 20; i++)
+        {
+            <span class="e2e-scp-item">Glide item @i</span>
+        }
+    </BitScrollablePane>
+    <BitScrollablePane Id="scp-wheel" Horizontal HorizontalWheel Width="20rem">
+        @for (var i = 1; i <= 8; i++)
+        {
+            <span class="e2e-scp-item">Wheel item @i</span>
+        }
+    </BitScrollablePane>
+</E2ESection>
+
+<E2ESection Id="vars" Title="CSS variables">
+    <div style="--bit-ScrollablePane-scrollbar-size: 14px; --bit-ScrollablePane-scrollbar-thumb-color: rgb(255, 0, 0); --bit-ScrollablePane-scrollbar-thumb-radius: 2px; --bit-ScrollablePane-scrollbar-track-color: rgb(0, 0, 255); --bit-ScrollablePane-fade-size: 9px; --bit-ScrollablePane-focus-color: rgb(0, 128, 0);">
+        <BitScrollablePane Id="scp-var" Modern Fade Focusable Height="4rem">
+            @for (var i = 1; i <= 10; i++)
+            {
+                <div class="e2e-scp-row">Themed row @i</div>
+            }
+        </BitScrollablePane>
+        <BitScrollablePane Id="scp-var-wins" Fade FadeSize="25px" Height="4rem">
+            @for (var i = 1; i <= 10; i++)
+            {
+                <div class="e2e-scp-row">FadeSize row @i</div>
+            }
+        </BitScrollablePane>
+    </div>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <BitParams Parameters="@_params">
+        <BitScrollablePane Id="scp-par-1"><div class="e2e-scp-row">Cascaded</div><div class="e2e-scp-row">Cascaded</div><div class="e2e-scp-row">Cascaded</div></BitScrollablePane>
+        <BitScrollablePane Id="scp-par-own" Height="6rem" Modern="false"><div class="e2e-scp-row">Own</div></BitScrollablePane>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style and Class">
+    <BitScrollablePane Id="scp-style" Height="3rem" Style="background-color: rgb(250, 240, 230); padding: 5px;"><div>Styled</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-class" Height="3rem" Class="e2e-scp-class"><div>Classed</div></BitScrollablePane>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <button id="btn-rtl-start" type="button" @onclick="() => _rtlRef.ScrollToStart()">RTL to start</button>
+    <button id="btn-rtl-end" type="button" @onclick="() => _rtlRef.ScrollToEnd()">RTL to end</button>
+    <button id="btn-rtl-to" type="button" @onclick="() => _rtlRef.ScrollTo(100, null)">RTL to 100</button>
+    <button id="btn-rtl-offset" type="button" @onclick="ReadRtlOffset">RTL offset</button>
+    <span id="rtl-offset">@_rtlOffset</span>
+    <BitScrollablePane @ref="_rtlRef" Id="scp-rtl" Dir="BitDir.Rtl" Horizontal Width="20rem" OnReachedLeft="@(() => _rtlReached.Add("left"))" OnReachedRight="@(() => _rtlReached.Add("right"))">
+        @for (var i = 1; i <= 8; i++)
+        {
+            <span class="e2e-scp-item">آیتم @i</span>
+        }
+    </BitScrollablePane>
+    <span id="rtl-reached">@string.Join(",", _rtlReached)</span>
+</E2ESection>
+
+<E2ESection Id="print" Title="ExpandOnPrint">
+    <BitScrollablePane Id="scp-print" ExpandOnPrint Height="4rem">
+        @for (var i = 1; i <= 10; i++)
+        {
+            <div class="e2e-scp-row">Printed row @i</div>
+        }
+    </BitScrollablePane>
+</E2ESection>
+
+<E2ESection Id="base" Title="Visibility, HtmlAttributes, re-render, unmount">
+    <BitScrollablePane Id="scp-vis-hidden" Visibility="BitVisibility.Hidden" Height="2rem"><div>Hidden</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-vis-collapsed" Visibility="BitVisibility.Collapsed" Height="2rem"><div>Collapsed</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-attrs" data-e2e="custom" HtmlAttributes="@_attrs" Height="2rem"><div>Attributes</div></BitScrollablePane>
+    <BitScrollablePane Id="scp-rr" Height="@_rrHeight" Modern="_rrModern" Fade="_rrFade">
+        @for (var i = 1; i <= 10; i++)
+        {
+            <div class="e2e-scp-row">Re-rendered row @i</div>
+        }
+    </BitScrollablePane>
+    <button id="btn-rr" type="button" @onclick="Rerender">Change parameters</button>
+    @if (_showUnmount)
+    {
+        <BitScrollablePane Id="scp-um" Height="4rem" Fade DragScroll AutoScroll OnScroll="(BitScrollOffset o) => { }">
+            @for (var i = 1; i <= 10; i++)
+            {
+                <div class="e2e-scp-row">Unmounted row @i</div>
+            }
+        </BitScrollablePane>
+    }
+    <button id="btn-unmount" type="button" @onclick="() => _showUnmount = !_showUnmount">Unmount</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly (string Name, BitOverflow Value)[] _overflows =
+    [
+        ("auto", BitOverflow.Auto),
+        ("hidden", BitOverflow.Hidden),
+        ("scroll", BitOverflow.Scroll),
+        ("visible", BitOverflow.Visible),
+    ];
+
+    private readonly (string Name, BitOverscroll Value)[] _overscrolls =
+    [
+        ("auto", BitOverscroll.Auto),
+        ("contain", BitOverscroll.Contain),
+        ("none", BitOverscroll.None),
+    ];
+
+    private readonly (string Name, BitScrollSnap Value)[] _snaps =
+    [
+        ("none", BitScrollSnap.None),
+        ("proximity", BitScrollSnap.Proximity),
+        ("mandatory", BitScrollSnap.Mandatory),
+    ];
+
+    private readonly (string Name, BitScrollSnapAlign Value)[] _aligns =
+    [
+        ("none", BitScrollSnapAlign.None),
+        ("start", BitScrollSnapAlign.Start),
+        ("center", BitScrollSnapAlign.Center),
+        ("end", BitScrollSnapAlign.End),
+    ];
+
+    private BitScrollablePane _eventsRef = default!;
+    private int _scrolls;
+    private string _lastTop = "";
+    private string _lastPercent = "";
+    private string _lastAt = "";
+    private string _lastDir = "";
+    private string _lastSizes = "";
+    private int _scrollStarts;
+    private int _scrollEnds;
+    private double _endTop;
+
+    private BitScrollablePane _throttleRef = default!;
+    private int _throttled;
+    private double _throttledTop;
+
+    private BitScrollablePane _reachRef = default!;
+    private BitScrollablePane _reachHorRef = default!;
+    private readonly List<string> _reached = [];
+    private readonly List<string> _reachedHor = [];
+    private int _rows = 10;
+
+    private BitScrollablePane _mRef = default!;
+    private BitScrollablePane _focusRef = default!;
+    private BitScrollablePane _smoothRef = default!;
+    private ElementReference _row25;
+    private string _offsetText = "";
+
+    private int _logLines = 3;
+
+    private readonly List<int> _messages = Enumerable.Range(100, 10).ToList();
+
+    private int _dragButtonClicks;
+
+    private readonly BitScrollablePaneParams[] _params =
+    [
+        new()
+        {
+            Height = "3rem",
+            Modern = true,
+            ScrollbarWidth = BitScrollbarWidth.Thin,
+        }
+    ];
+
+    private BitScrollablePane _rtlRef = default!;
+    private string _rtlOffset = "";
+    private readonly List<string> _rtlReached = [];
+
+    private readonly Dictionary<string, object> _attrs = new() { ["data-extra"] = "from-dictionary" };
+
+    private string _rrHeight = "4rem";
+    private bool _rrModern;
+    private bool _rrFade;
+    private bool _showUnmount = true;
+
+    private void HandleScroll(BitScrollOffset o)
+    {
+        _scrolls++;
+        _lastTop = o.Top.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        _lastPercent = o.PercentY.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+        _lastAt = $"{(o.AtTop ? "top" : "")}{(o.AtBottom ? "bottom" : "")}";
+        _lastDir = o.ScrollingDown ? "down" : o.ScrollingUp ? "up" : "none";
+        _lastSizes = $"{o.ScrollHeight}/{o.ClientHeight}/{o.MaxTop}/{(o.ScrollableY ? "y" : "")}{(o.ScrollableX ? "x" : "")}";
+    }
+
+    private void LoadMore()
+    {
+        _reached.Add("bottom");
+        _rows += 10;
+    }
+
+    private async Task ReadOffset()
+    {
+        var o = await _mRef.GetScrollOffset();
+        _offsetText = o is null ? "null" : $"{o.Top}|{o.MaxTop}|{o.AtTop}|{o.AtBottom}";
+    }
+
+    private async Task ReadRtlOffset()
+    {
+        var o = await _rtlRef.GetScrollOffset();
+        _rtlOffset = o is null ? "null" : $"{o.Left}|{o.OffsetLeft}|{o.MaxLeft}|{o.Rtl}|{o.AtLeft}|{o.AtRight}";
+    }
+
+    private void Prepend()
+    {
+        var first = _messages[0];
+        _messages.InsertRange(0, Enumerable.Range(first - 5, 5));
+    }
+
+    private void Rerender()
+    {
+        _rrHeight = "6rem";
+        _rrModern = true;
+        _rrFade = true;
+    }
+}

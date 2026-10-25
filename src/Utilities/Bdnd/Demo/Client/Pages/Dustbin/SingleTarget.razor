@@ -1,0 +1,72 @@
+﻿@page "/dustbin/single"
+
+<PageTitle>Dustbin - Single Target · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Dustbin - Single Target</h1>
+    <p class="bb-subtitle">
+        The simplest setup: a single <code>BdndDropTarget</code> that accepts one item type.
+        Drag a box onto the dustbin and it reacts to hover (<code>IsOver</code>) and records the drop
+        (<code>OnDrop</code>). Every draggable takes every input: the mouse, a finger held on a box for a moment,
+        and the keyboard - <kbd>Tab</kbd> to a box, <kbd>Space</kbd> to pick it up, an arrow key to move it over the
+        bin and <kbd>Space</kbd> to drop it. This bin has no <code>Label</code>, so a screen reader names it by its
+        place, "drop target 1 of 1"; the other pages name their targets.
+    </p>
+</div>
+
+<div class="bb-demo">
+    <BdndProvider>
+        <BdndDropTarget TItem="BoxItem" Accept="@ItemTypes.Box" Context="t"
+                        OnDrop="HandleDrop" style="display:contents">
+            <div class="dustbin" style="@DustbinStyle(t)">
+                @if (t.IsOver)
+                {
+                    <span>Release to drop</span>
+                }
+                else
+                {
+                    <span>@_label</span>
+                }
+            </div>
+        </BdndDropTarget>
+
+        <div class="row-wrap" style="margin-top:1.5rem;">
+            @foreach (var box in _boxes)
+            {
+                <BdndDraggable TItem="BoxItem" Type="@ItemTypes.Box" Item="box" Context="d">
+                    <div class="box" style="opacity:@(d.IsDragging ? "0.4" : "1")">
+                        @box.Name
+                    </div>
+                </BdndDraggable>
+            }
+        </div>
+    </BdndProvider>
+</div>
+
+<DemoCode />
+
+@code {
+    public record BoxItem(string Name);
+
+    private readonly List<BoxItem> _boxes =
+    [
+        new("Glass"), new("Banana"), new("Paper"),
+    ];
+
+    private string _label = "Drag a box here";
+    private int _droppedCount;
+
+    private void HandleDrop(BdndDropEventArgs<BoxItem> e)
+    {
+        _droppedCount++;
+        _label = $"Last dropped: {e.Item?.Name} (total {_droppedCount})";
+    }
+
+    private string DustbinStyle(BdndDropState<BoxItem> t)
+    {
+        var bg = t.IsOver
+            ? (t.CanDrop ? "darkgreen" : "darkred")
+            : "#222";
+        return $"background-color:{bg};";
+    }
+}

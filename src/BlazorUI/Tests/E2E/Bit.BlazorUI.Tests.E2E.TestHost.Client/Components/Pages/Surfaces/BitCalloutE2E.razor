@@ -1,0 +1,580 @@
+﻿@page "/e2e/callout"
+
+<PageTitle>BitCallout E2E</PageTitle>
+
+@* The classes the Class / Classes sections hand the parts, styled here so a test can read their effect back. The
+   callout is relocated to the body while it is open, which a page-wide rule still reaches. *@
+<style>
+    .e2e-clo-body { padding: 8px; }
+    .e2e-clo-class { outline: 2px dotted rgb(1, 2, 3); }
+    .e2e-clo-content { letter-spacing: 2px; }
+    .e2e-clo-anchor { padding: 3px; }
+    .e2e-clo-arrow { outline: 1px solid rgb(4, 5, 6); }
+    .e2e-clo-overlay { background-color: rgba(0, 0, 255, 0.25); }
+    .e2e-clo-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .e2e-clo-ancestor { --bit-Callout-border-width: 3px; --bit-Callout-border-color: rgb(124, 58, 237); --bit-Callout-shadow: none; }
+</style>
+
+<h1>BitCallout</h1>
+
+<E2ESection Id="basic" Title="Anchor, Content, overlay, NoOverlay">
+    <div class="e2e-clo-row">
+        <BitCallout Id="clo-basic">
+            <Anchor><button id="clo-basic-trigger" type="button">Show callout</button></Anchor>
+            <Content><div id="clo-basic-body" class="e2e-clo-body">This is the callout content.</div></Content>
+        </BitCallout>
+        <button id="clo-basic-behind" type="button" @onclick="() => _behindClicks++">Behind</button>
+        <span id="behind-clicks">@_behindClicks</span>
+
+        <BitCallout Id="clo-nooverlay" NoOverlay>
+            <Anchor><button id="clo-nooverlay-trigger" type="button">NoOverlay</button></Anchor>
+            <Content><div id="clo-nooverlay-body" class="e2e-clo-body">The page keeps its own clicks.</div></Content>
+        </BitCallout>
+        <button id="clo-nooverlay-behind" type="button" @onclick="() => _noOverlayBehindClicks++">Behind NoOverlay</button>
+        <span id="nooverlay-behind-clicks">@_noOverlayBehindClicks</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div class="e2e-clo-row">
+        <BitCallout Id="clo-disabled" Disabled>
+            <Anchor><button id="clo-disabled-trigger" type="button">Disabled</button></Anchor>
+            <Content><div id="clo-disabled-body" class="e2e-clo-body">Never shown.</div></Content>
+        </BitCallout>
+        <BitCallout Id="clo-disrt" Disabled="_disRt" NoOverlay NoDismissOnOutsideClick OnDismiss="() => _disRtDismissed++">
+            <Anchor><button id="clo-disrt-trigger" type="button">Disabled at runtime</button></Anchor>
+            <Content><div id="clo-disrt-body" class="e2e-clo-body">Closed once disabled.</div></Content>
+        </BitCallout>
+        <button id="btn-disrt" type="button" @onclick="() => _disRt = !_disRt">Disable</button>
+        <span id="disrt-dismissed">@_disRtDismissed</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="external" Title="AnchorId and AnchorEl">
+    <div class="e2e-clo-row">
+        <button id="ext-anchor" type="button" @onclick="() => _ext.Toggle()">AnchorId</button>
+        <BitCallout @ref="_ext" AnchorId="ext-anchor" OnDismiss="() => _extDismissed++">
+            <div id="ext-body" class="e2e-clo-body"><button id="ext-inner" type="button">Inside</button></div>
+        </BitCallout>
+        <span id="ext-dismissed">@_extDismissed</span>
+
+        <button @ref="_anchorEl" id="extel-anchor" type="button" @onclick="() => _extEl.Toggle()">AnchorEl</button>
+        <BitCallout @ref="_extEl" AnchorEl="() => _anchorEl">
+            <div id="extel-body" class="e2e-clo-body">Against an element reference.</div>
+        </BitCallout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="binding" Title="Two-way IsOpen">
+    <div class="e2e-clo-row">
+        <button id="btn-bind-open" type="button" @onclick="() => _bindOpen = true">Open from the page</button>
+        <BitCallout Id="clo-bind" @bind-IsOpen="_bindOpen">
+            <Anchor><button id="clo-bind-trigger" type="button">Bound anchor</button></Anchor>
+            <Content>
+                <div id="clo-bind-body" class="e2e-clo-body">
+                    <button id="btn-bind-done" type="button" @onclick="() => _bindOpen = false">Done</button>
+                </div>
+            </Content>
+        </BitCallout>
+        <span id="bind-value">@_bindOpen</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="hover" Title="OpenOnHover, HoverOpenDelay, HoverCloseDelay">
+    <div class="e2e-clo-row">
+        <BitCallout Id="clo-hover" OpenOnHover>
+            <Anchor><button id="clo-hover-trigger" type="button">Hover me</button></Anchor>
+            <Content><div id="clo-hover-body" class="e2e-clo-body" style="width: 200px; height: 60px;">Opened on hover.</div></Content>
+        </BitCallout>
+        <span style="display: inline-block; width: 220px;"></span>
+        <BitCallout Id="clo-hover-delay" OpenOnHover HoverOpenDelay="600" HoverCloseDelay="600">
+            <Anchor><button id="clo-hover-delay-trigger" type="button">Delayed</button></Anchor>
+            <Content><div id="clo-hover-delay-body" class="e2e-clo-body">Opening and closing both waited.</div></Content>
+        </BitCallout>
+        <span id="hover-far" style="margin-inline-start: 300px;">Far away</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="dismissal" Title="AutoClose, NoDismissOnScroll, NoDismissOnEscape, NoDismissOnOutsideClick">
+    <div class="e2e-clo-row">
+        <BitCallout Id="clo-autoclose" AutoClose>
+            <Anchor><button id="clo-autoclose-trigger" type="button">AutoClose</button></Anchor>
+            <Content>
+                <div id="clo-autoclose-body" class="e2e-clo-body">
+                    <button id="ac-rename" type="button" @onclick="@(() => _autoAction = "Renamed")">Rename</button>
+                    <button id="ac-delete" type="button" @onclick="@(() => _autoAction = "Deleted")">Delete</button>
+                </div>
+            </Content>
+        </BitCallout>
+        <span id="auto-action">@_autoAction</span>
+
+        <BitCallout Id="clo-scroll">
+            <Anchor><button id="clo-scroll-trigger" type="button">Closed by a scroll</button></Anchor>
+            <Content><div id="clo-scroll-body" class="e2e-clo-body">The page scrolling closes me.</div></Content>
+        </BitCallout>
+
+        <BitCallout Id="clo-noscroll" NoDismissOnScroll>
+            <Anchor><button id="clo-noscroll-trigger" type="button">NoDismissOnScroll</button></Anchor>
+            <Content><div id="clo-noscroll-body" class="e2e-clo-body">I follow my anchor.</div></Content>
+        </BitCallout>
+
+        <BitCallout @ref="_noDismiss" Id="clo-nodismiss" NoDismissOnEscape NoDismissOnOutsideClick>
+            <Anchor><button id="clo-nodismiss-trigger" type="button">No auto dismiss</button></Anchor>
+            <Content>
+                <div id="clo-nodismiss-body" class="e2e-clo-body">
+                    <button id="btn-nodismiss-close" type="button" @onclick="() => _noDismiss.Close()">Close</button>
+                </div>
+            </Content>
+        </BitCallout>
+        <button id="nodismiss-outside" type="button" @onclick="() => _noDismissOutside++">Outside</button>
+        <span id="nodismiss-outside-clicks">@_noDismissOutside</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="context" Title="OpenAt (context menu)">
+    <div id="ctx-area" style="width: 600px; height: 160px; background: rgb(240, 240, 240);"
+         @oncontextmenu="e => _ctx.OpenAt(e)" @oncontextmenu:preventDefault>
+        Right-click in here
+    </div>
+    <BitCallout @ref="_ctx" AutoClose NoOverlay OnOpen="() => _ctxOpens++">
+        <div id="ctx-body" class="e2e-clo-body">
+            <button id="ctx-cut" type="button" @onclick="@(() => _ctxAction = "Cut")">Cut</button>
+            <button id="ctx-copy" type="button" @onclick="@(() => _ctxAction = "Copied")">Copy</button>
+        </div>
+    </BitCallout>
+    <span id="ctx-action">@_ctxAction</span>
+    <span id="ctx-opens">@_ctxOpens</span>
+    <button id="btn-openat" type="button" @onclick="() => _point.OpenAt(120, 140)">OpenAt(120, 140)</button>
+    <BitCallout @ref="_point" NoOverlay>
+        <div id="point-body" class="e2e-clo-body">At a point.</div>
+    </BitCallout>
+</E2ESection>
+
+<E2ESection Id="surface" Title="Background, Border, NoShadow">
+    <div class="e2e-clo-row">
+        @foreach (var (name, kind) in _kinds)
+        {
+            <BitCallout Background="kind" NoOverlay>
+                <Anchor><button id="@($"clo-bg-{name}-trigger")" type="button">@($"Background {name}")</button></Anchor>
+                <Content><div id="@($"clo-bg-{name}-body")" class="e2e-clo-body">@name</div></Content>
+            </BitCallout>
+        }
+        @foreach (var (name, kind) in _kinds)
+        {
+            <BitCallout Border="kind" NoOverlay>
+                <Anchor><button id="@($"clo-br-{name}-trigger")" type="button">@($"Border {name}")</button></Anchor>
+                <Content><div id="@($"clo-br-{name}-body")" class="e2e-clo-body">@name</div></Content>
+            </BitCallout>
+        }
+        <BitCallout NoOverlay>
+            <Anchor><button id="clo-unset-trigger" type="button">Unset</button></Anchor>
+            <Content><div id="clo-unset-body" class="e2e-clo-body">Unset.</div></Content>
+        </BitCallout>
+        <BitCallout NoOverlay NoShadow>
+            <Anchor><button id="clo-noshadow-trigger" type="button">NoShadow</button></Anchor>
+            <Content><div id="clo-noshadow-body" class="e2e-clo-body">No elevation.</div></Content>
+        </BitCallout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="arrow" Title="ShowArrow, ArrowSize, ArrowPadding">
+    <div class="e2e-clo-row">
+        <BitCallout ShowArrow Gap="8" NoOverlay>
+            <Anchor><button id="clo-arrow-trigger" type="button" style="width: 160px;">With an arrow</button></Anchor>
+            <Content><div id="clo-arrow-body" class="e2e-clo-body" style="width: 300px;">Points at its anchor.</div></Content>
+        </BitCallout>
+        <BitCallout ShowArrow ArrowSize="20" Gap="12" NoOverlay>
+            <Anchor><button id="clo-arrowsize-trigger" type="button">ArrowSize 20</button></Anchor>
+            <Content><div id="clo-arrowsize-body" class="e2e-clo-body" style="width: 200px;">A bigger beak.</div></Content>
+        </BitCallout>
+        <BitCallout ShowArrow ArrowPadding="64" Gap="8" NoOverlay>
+            <Anchor><button id="clo-arrowpad-trigger" type="button" style="width: 24px;">P</button></Anchor>
+            <Content><div id="clo-arrowpad-body" class="e2e-clo-body" style="width: 300px;">Held 64px from the corners.</div></Content>
+        </BitCallout>
+        <BitCallout ShowArrow Gap="8" NoOverlay>
+            <Anchor><button id="clo-arrowdef-trigger" type="button" style="width: 24px;">D</button></Anchor>
+            <Content><div id="clo-arrowdef-body" class="e2e-clo-body" style="width: 300px;">Held 16px from the corners.</div></Content>
+        </BitCallout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sizing" Title="Width, MinWidth, MaxWidth, MaxHeight, SetCalloutWidth, FixedCalloutWidth">
+    <div class="e2e-clo-row">
+        <BitCallout Width="20rem" NoOverlay>
+            <Anchor><button id="clo-width-trigger" type="button">Width</button></Anchor>
+            <Content><div id="clo-width-body">A callout of a fixed width.</div></Content>
+        </BitCallout>
+        <BitCallout MaxWidth="16rem" NoOverlay>
+            <Anchor><button id="clo-maxwidth-trigger" type="button">MaxWidth</button></Anchor>
+            <Content><div id="clo-maxwidth-body">A long line of text that wraps inside the callout instead of stretching it across the whole page.</div></Content>
+        </BitCallout>
+        <BitCallout MaxHeight="12rem" MinWidth="14rem" NoOverlay>
+            <Anchor><button id="clo-maxheight-trigger" type="button">MaxHeight</button></Anchor>
+            <Content>
+                <div id="clo-maxheight-body">
+                    @for (var i = 1; i < 25; i++)
+                    {
+                        <div>Callout content @i</div>
+                    }
+                </div>
+            </Content>
+        </BitCallout>
+        <BitCallout SetCalloutWidth NoOverlay>
+            <Anchor><button id="clo-setwidth-trigger" type="button" style="width: 360px;">SetCalloutWidth</button></Anchor>
+            <Content><div id="clo-setwidth-body">Short.</div></Content>
+        </BitCallout>
+        <BitCallout FixedCalloutWidth NoOverlay>
+            <Anchor><button id="clo-fixedwidth-trigger" type="button" style="width: 220px;">FixedCalloutWidth</button></Anchor>
+            <Content><div id="clo-fixedwidth-body">A long line of text that wraps rather than making the callout wider than its anchor.</div></Content>
+        </BitCallout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sections" Title="Header, Footer, ScrollContainerId, HeaderId, FooterId">
+    <div class="e2e-clo-row">
+        <BitCallout MaxWidth="16rem" NoOverlay>
+            <Anchor><button id="clo-sections-trigger" type="button">Header and footer</button></Anchor>
+            <Header><div id="clo-sections-header">A header that stays put</div></Header>
+            <Content>
+                <div id="clo-sections-body">
+                    @for (var i = 1; i < 69; i++)
+                    {
+                        <div>Callout content @i</div>
+                    }
+                </div>
+            </Content>
+            <Footer><div id="clo-sections-footer">A footer that stays put</div></Footer>
+        </BitCallout>
+        <BitCallout ScrollContainerId="e2e-scroller" HeaderId="e2e-scroller-header" FooterId="e2e-scroller-footer" NoOverlay>
+            <Anchor><button id="clo-manual-trigger" type="button">Wired up by hand</button></Anchor>
+            <Content>
+                <div id="clo-manual-body">
+                    <div id="e2e-scroller-header">Manual header</div>
+                    <div id="e2e-scroller" style="overflow-y: auto;">
+                        @for (var i = 1; i < 69; i++)
+                        {
+                            <div>Manual content @i</div>
+                        }
+                    </div>
+                    <div id="e2e-scroller-footer">Manual footer</div>
+                </div>
+            </Content>
+        </BitCallout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="focus" Title="AutoFocus, TrapFocus, Modal, Role, aria, Tab out">
+    <div class="e2e-clo-row">
+        <BitCallout AutoFocus>
+            <Anchor><button id="clo-autofocus-trigger" type="button">AutoFocus</button></Anchor>
+            <Content>
+                <div id="clo-autofocus-body" class="e2e-clo-body">
+                    <button id="af-first" type="button">Dismiss</button>
+                    <input id="af-input" data-autofocus />
+                </div>
+            </Content>
+        </BitCallout>
+        <BitCallout AutoFocus>
+            <Anchor><button id="clo-autofocus2-trigger" type="button">AutoFocus first</button></Anchor>
+            <Content>
+                <div id="clo-autofocus2-body" class="e2e-clo-body">
+                    <button id="af2-first" type="button">First</button>
+                    <button id="af2-second" type="button">Second</button>
+                </div>
+            </Content>
+        </BitCallout>
+        <BitCallout TrapFocus>
+            <Anchor><button id="clo-trap-trigger" type="button">TrapFocus</button></Anchor>
+            <Header><div id="clo-trap-header">Contact</div></Header>
+            <Content>
+                <div id="clo-trap-body" class="e2e-clo-body">
+                    <input id="trap-name" />
+                    <input id="trap-email" />
+                    <button id="trap-submit" type="button">Submit</button>
+                </div>
+            </Content>
+        </BitCallout>
+        <BitCallout @ref="_modal" Modal AriaLabelledBy="clo-modal-title" AriaDescribedBy="clo-modal-text">
+            <Anchor><button id="clo-modal-trigger" type="button">Modal</button></Anchor>
+            <Content>
+                <div id="clo-modal-body" class="e2e-clo-body">
+                    <b id="clo-modal-title">Heads up</b>
+                    <div id="clo-modal-text">The page behind is dimmed and holds still.</div>
+                    <button id="clo-modal-ok" type="button" @onclick="() => _modal.Close()">OK</button>
+                </div>
+            </Content>
+        </BitCallout>
+        <BitCallout Role="status" AriaLabel="Sync status">
+            <Anchor><button id="clo-role-trigger" type="button">Role and AriaLabel</button></Anchor>
+            <Content><div id="clo-role-body" class="e2e-clo-body">Everything is up to date.</div></Content>
+        </BitCallout>
+        <BitCallout NoOverlay>
+            <Anchor><button id="clo-tabout-trigger" type="button">Tab out</button></Anchor>
+            <Content>
+                <div id="clo-tabout-body" class="e2e-clo-body">
+                    <button id="tabout-one" type="button">One</button>
+                    <button id="tabout-two" type="button">Two</button>
+                </div>
+            </Content>
+        </BitCallout>
+        <button id="after-tabout" type="button">After the tab-out callout</button>
+    </div>
+</E2ESection>
+
+<E2ESection Id="nesting" Title="Nested callouts">
+    <BitCallout MinWidth="15rem" OnDismiss="() => _outerDismissed++">
+        <Anchor><button id="clo-outer-trigger" type="button">Filters</button></Anchor>
+        <Content>
+            <div id="clo-outer-body" class="e2e-clo-body">
+                <div>Filters</div>
+                <BitCallout ShowArrow Gap="8" Placement="BitPlacement.End" OnDismiss="() => _midDismissed++">
+                    <Anchor><button id="clo-mid-trigger" type="button">More options</button></Anchor>
+                    <Content>
+                        <div id="clo-mid-body" class="e2e-clo-body">
+                            <div>The panel behind is still open.</div>
+                            <BitCallout ShowArrow Gap="8" AutoClose Placement="BitPlacement.End" OnDismiss="() => _innerDismissed++">
+                                <Anchor><button id="clo-inner-trigger" type="button">One more level</button></Anchor>
+                                <Content><div id="clo-inner-body" class="e2e-clo-body">And so is this one.</div></Content>
+                            </BitCallout>
+                        </div>
+                    </Content>
+                </BitCallout>
+            </div>
+        </Content>
+    </BitCallout>
+    <span id="outer-dismissed">@_outerDismissed</span>
+    <span id="mid-dismissed">@_midDismissed</span>
+    <span id="inner-dismissed">@_innerDismissed</span>
+</E2ESection>
+
+<E2ESection Id="lazy" Title="LazyRender">
+    <div class="e2e-clo-row">
+        <BitCallout LazyRender NoOverlay>
+            <Anchor><button id="clo-lazy-trigger" type="button">LazyRender</button></Anchor>
+            <Content><div id="clo-lazy-body" class="e2e-clo-body"><input id="lazy-clo-input" /></div></Content>
+        </BitCallout>
+        <BitCallout NoOverlay>
+            <Anchor><button id="clo-eager-trigger" type="button">Rendered up front</button></Anchor>
+            <Content><div id="clo-eager-body" class="e2e-clo-body"><input id="eager-clo-input" /></div></Content>
+        </BitCallout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="events" Title="OnToggle, OnOpen, OnDismiss">
+    <div class="e2e-clo-row">
+        <BitCallout OnToggle="(bool v) => { _toggleCount++; _lastToggle = v.ToString(); }" OnOpen="() => _openCount++" OnDismiss="() => _dismissCount++">
+            <Anchor><button id="clo-events-trigger" type="button">Events</button></Anchor>
+            <Content><div id="clo-events-body" class="e2e-clo-body">Events content.</div></Content>
+        </BitCallout>
+        <span id="ev-toggle">@_toggleCount</span>
+        <span id="ev-last-toggle">@_lastToggle</span>
+        <span id="ev-open">@_openCount</span>
+        <span id="ev-dismiss">@_dismissCount</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="methods" Title="Open, Close, Toggle, Reposition">
+    <div class="e2e-clo-row">
+        <button id="btn-m-open" type="button" @onclick="() => _m.Open()">Open</button>
+        <button id="btn-m-close" type="button" @onclick="() => _m.Close()">Close</button>
+        <button id="btn-m-toggle" type="button" @onclick="() => _m.Toggle()">Toggle</button>
+        <button id="btn-m-move" type="button" @onclick="() => _mShift += 120">Move the anchor</button>
+        <button id="btn-m-reposition" type="button" @onclick="() => _m.Reposition()">Reposition</button>
+        @* The spacer moves the anchor without resizing it, which the callout does not see on its own (Reposition does). *@
+        <span id="m-spacer" style="@($"display: inline-block; width: {_mShift}px;")"></span>
+        <BitCallout @ref="_m" NoOverlay NoDismissOnOutsideClick OnToggle="(bool v) => _mToggles++">
+            <Anchor><button id="clo-m-trigger" type="button">Methods anchor</button></Anchor>
+            <Content><div id="clo-m-body" class="e2e-clo-body">Driven by methods.</div></Content>
+        </BitCallout>
+        <span id="m-toggles">@_mToggles</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <div class="e2e-clo-row" style="margin-top: 120px;">
+        <BitParams Parameters="@_params">
+            <BitCallout>
+                <Anchor><button id="clo-par-trigger" type="button">Cascaded</button></Anchor>
+                <Content><div id="clo-par-body" class="e2e-clo-body">From the cascade.</div></Content>
+            </BitCallout>
+            <BitCallout Placement="BitPlacement.Bottom" ShowArrow="false">
+                <Anchor><button id="clo-par-own-trigger" type="button">Own values</button></Anchor>
+                <Content><div id="clo-par-own-body" class="e2e-clo-body">Its own values win.</div></Content>
+            </BitCallout>
+        </BitParams>
+    </div>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style, Class, Styles, Classes, CSS variables">
+    <div class="e2e-clo-row">
+        <BitCallout ShowArrow Gap="12" NoOverlay
+                    Style="--bit-Callout-background: rgb(30, 41, 59); --bit-Callout-color: rgb(248, 250, 252); --bit-Callout-radius: 16px; --bit-Callout-padding: 16px; --bit-Callout-arrow-size: 16px;">
+            <Anchor><button id="clo-vars-trigger" type="button">Inverted</button></Anchor>
+            <Content><div id="clo-vars-body">A dark surface.</div></Content>
+        </BitCallout>
+        <div class="e2e-clo-ancestor">
+            <BitCallout NoOverlay>
+                <Anchor><button id="clo-anc-trigger" type="button">Ancestor variables</button></Anchor>
+                <Content><div id="clo-anc-body">Outlined by an ancestor.</div></Content>
+            </BitCallout>
+        </div>
+        <BitCallout Style="margin-top: 5px;" NoOverlay>
+            <Anchor><button id="clo-style-trigger" type="button">Style</button></Anchor>
+            <Content><div id="clo-style-body">Style.</div></Content>
+        </BitCallout>
+        <BitCallout Class="e2e-clo-class" NoOverlay>
+            <Anchor><button id="clo-class-trigger" type="button">Class</button></Anchor>
+            <Content><div id="clo-class-body">Class.</div></Content>
+        </BitCallout>
+        <BitCallout ShowArrow Gap="8"
+                    Styles="@(new() { Root = "--e2e-anchor-color: rgb(46, 139, 87);",
+                                      Opened = "--e2e-anchor-color: rgb(4, 203, 91);",
+                                      AnchorContainer = "background-color: var(--e2e-anchor-color);",
+                                      Content = "border: 2px solid rgb(4, 203, 91);",
+                                      Arrow = "outline: 1px solid rgb(7, 8, 9);",
+                                      Overlay = "background-color: rgba(255, 0, 0, 0.2);" })">
+            <Anchor><button id="clo-styles-trigger" type="button">Styles</button></Anchor>
+            <Content><div id="clo-styles-body">Styles.</div></Content>
+        </BitCallout>
+        <BitCallout ShowArrow Gap="8"
+                    Classes="@(new() { Root = "e2e-clo-root", Opened = "e2e-clo-opened", Content = "e2e-clo-content", Arrow = "e2e-clo-arrow", AnchorContainer = "e2e-clo-anchor", Overlay = "e2e-clo-overlay" })">
+            <Anchor><button id="clo-classes-trigger" type="button">Classes</button></Anchor>
+            <Content><div id="clo-classes-body">Classes.</div></Content>
+        </BitCallout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="e2e-clo-row">
+        <BitCallout Id="clo-rtl" Dir="BitDir.Rtl" NoOverlay>
+            <Anchor><button id="clo-rtl-trigger" type="button" style="width: 260px;">نمایش کال‌اوت</button></Anchor>
+            <Content><div id="clo-rtl-body" class="e2e-clo-body">این محتوای کال‌اوت است.</div></Content>
+        </BitCallout>
+        <div dir="rtl">
+            <BitCallout Id="clo-rtl-inh" NoOverlay>
+                <Anchor><button id="clo-rtl-inh-trigger" type="button" style="width: 260px;">Inherited</button></Anchor>
+                <Content><div id="clo-rtl-inh-body" class="e2e-clo-body">Inherited direction.</div></Content>
+            </BitCallout>
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="in-modal" Title="A callout inside a modal">
+    <button id="btn-open-modal" type="button" @onclick="() => _modalOpen = true">Open the modal</button>
+    <span id="modal-open">@_modalOpen</span>
+    <BitModal @bind-IsOpen="_modalOpen" NoAutoFocus>
+        <div style="padding: 24px;">
+            <BitCallout>
+                <Anchor><button id="clo-in-modal-trigger" type="button">Callout in a modal</button></Anchor>
+                <Content><div id="clo-in-modal-body" class="e2e-clo-body">Escape closes me first.</div></Content>
+            </BitCallout>
+        </div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="base" Title="Visibility, HtmlAttributes, re-render, unmount">
+    <div class="e2e-clo-row">
+        <BitCallout Id="clo-vis-hidden" Visibility="BitVisibility.Hidden">
+            <Anchor><button id="clo-vis-hidden-trigger" type="button">Hidden</button></Anchor>
+            <Content><div id="clo-vis-hidden-body">Hidden.</div></Content>
+        </BitCallout>
+        <BitCallout Id="clo-vis-collapsed" Visibility="BitVisibility.Collapsed">
+            <Anchor><button id="clo-vis-collapsed-trigger" type="button">Collapsed</button></Anchor>
+            <Content><div id="clo-vis-collapsed-body">Collapsed.</div></Content>
+        </BitCallout>
+        <BitCallout Id="clo-attrs" data-e2e="custom" HtmlAttributes="@_attrs">
+            <Anchor><button id="clo-attrs-trigger" type="button">Attributes</button></Anchor>
+            <Content><div id="clo-attrs-body">Attributes.</div></Content>
+        </BitCallout>
+        <BitCallout Id="clo-rr" NoOverlay NoDismissOnOutsideClick Background="_rrBackground" MinWidth="@_rrMinWidth">
+            <Anchor><button id="clo-rr-trigger" type="button">Re-rendered</button></Anchor>
+            <Content><div id="clo-rr-body">@_rrText</div></Content>
+        </BitCallout>
+        <button id="btn-rr" type="button" @onclick="Rerender">Change parameters</button>
+        @if (_showUnmount)
+        {
+            <BitCallout Id="clo-um" NoOverlay NoDismissOnOutsideClick ShowArrow Modal="false">
+                <Anchor><button id="clo-um-trigger" type="button">Unmounted</button></Anchor>
+                <Content><div id="clo-um-body">Unmounted while open.</div></Content>
+            </BitCallout>
+        }
+        <button id="btn-unmount" type="button" @onclick="() => _showUnmount = !_showUnmount">Unmount</button>
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _behindClicks;
+    private int _noOverlayBehindClicks;
+
+    private bool _disRt;
+    private int _disRtDismissed;
+
+    private BitCallout _ext = default!;
+    private BitCallout _extEl = default!;
+    private ElementReference _anchorEl;
+    private int _extDismissed;
+
+    private bool _bindOpen;
+
+    private string _autoAction = "";
+    private BitCallout _noDismiss = default!;
+    private int _noDismissOutside;
+
+    private BitCallout _ctx = default!;
+    private BitCallout _point = default!;
+    private string _ctxAction = "";
+    private int _ctxOpens;
+
+    private readonly (string Name, BitColorKind Kind)[] _kinds =
+    [
+        ("primary", BitColorKind.Primary),
+        ("secondary", BitColorKind.Secondary),
+        ("tertiary", BitColorKind.Tertiary),
+        ("transparent", BitColorKind.Transparent),
+    ];
+
+    private BitCallout _modal = default!;
+
+    private int _outerDismissed;
+    private int _midDismissed;
+    private int _innerDismissed;
+
+    private int _toggleCount;
+    private string _lastToggle = "";
+    private int _openCount;
+    private int _dismissCount;
+
+    private BitCallout _m = default!;
+    private int _mShift;
+    private int _mToggles;
+
+    private readonly BitCalloutParams[] _params =
+    [
+        new()
+        {
+            ShowArrow = true,
+            Gap = 10,
+            Border = BitColorKind.Primary,
+            Placement = BitPlacement.Top,
+            NoOverlay = true,
+        }
+    ];
+
+    private bool _modalOpen;
+
+    private readonly Dictionary<string, object> _attrs = new() { ["data-extra"] = "from-dictionary" };
+
+    private BitColorKind? _rrBackground;
+    private string? _rrMinWidth;
+    private string _rrText = "Before";
+    private bool _showUnmount = true;
+
+    private void Rerender()
+    {
+        _rrBackground = BitColorKind.Tertiary;
+        _rrMinWidth = "300px";
+        _rrText = "After";
+    }
+}

@@ -1,6 +1,8 @@
+﻿using System.Diagnostics.CodeAnalysis;
+
 namespace Bit.BlazorUI;
 
-public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDisposable where TItem : class
+public partial class _BitMenuButtonItem<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : IBitMenuButtonSubmenu, IAsyncDisposable where TItem : class
 {
     // How long the pointer rests on a row before the submenu beside it opens, or before the one already
     // open is taken away. Short enough to feel immediate, long enough that sweeping the pointer across
@@ -60,7 +62,7 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
 
     public ValueTask FocusAsync()
     {
-        return _itemRef.FocusAsync();
+        return _itemRef.FocusSafelyAsync();
     }
 
     public async Task CloseSubmenuAsync()
@@ -106,7 +108,7 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
 
     private async Task OpenSubmenu(bool focusFirstItem, bool byPointer = false)
     {
-        if (MenuButton.IsEnabled is false || MenuButton.GetIsEnabled(Item) is false) return;
+        if (MenuButton.Disabled || MenuButton.GetIsDisabled(Item)) return;
 
         if (_isSubmenuOpen)
         {
@@ -154,6 +156,8 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
 
         try
         {
+            // No rootId: the submenu is opened from inside the menu's callout, so it already inherits the root
+            // through the chain Callouts.ts built for that callout.
             await _js.BitCalloutToggleCallout(
                 dotnetObj: _dotnetObj,
                 componentId: _itemId,
@@ -166,7 +170,7 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
                 isCalloutOpen: _isSubmenuOpen,
                 responsiveMode: BitResponsiveMode.None,
                 dropDirection: BitDropDirection.All,
-                isRtl: MenuButton.Dir is BitDir.Rtl,
+                isRtl: MenuButton.ExplicitRtl,
                 // The submenu caps itself to the room the viewport leaves and scrolls inside it, the way
                 // the menu it was opened from does.
                 scrollContainerId: _submenuId,
@@ -203,7 +207,7 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
             return;
         }
 
-        if (MenuButton.IsEnabled is false || MenuButton.GetIsEnabled(Item) is false) return;
+        if (MenuButton.Disabled || MenuButton.GetIsDisabled(Item)) return;
 
         // A submenu the pointer opened on its own is not one the click that follows should take away
         // again: the click is the user arriving at it, so it moves the keyboard into it instead.
@@ -223,9 +227,11 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
     {
         if (_hasSubmenu is false) return;
 
-        var openKey = MenuButton.Dir is BitDir.Rtl ? "ArrowLeft" : "ArrowRight";
+        if (e.Key is not ("ArrowLeft" or "ArrowRight")) return;
 
-        if (e.Key != openKey) return;
+        // The direction the button is laid out in, a page's or a content's included, read only for a horizontal
+        // arrow since one Dir does not name costs a round trip.
+        if ((e.Key is "ArrowLeft") != await MenuButton.IsRtlArrowAsync(_js, e.Key)) return;
 
         await OpenSubmenu(focusFirstItem: true);
     }
@@ -242,9 +248,9 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
     {
         var token = MenuButton.NextHoverToken();
 
-        if (MenuButton.IsEnabled is false) return;
+        if (MenuButton.Disabled) return;
 
-        if (_hasSubmenu && MenuButton.GetIsEnabled(Item))
+        if (_hasSubmenu && MenuButton.GetIsDisabled(Item) is false)
         {
             if (_isSubmenuOpen) return;
 

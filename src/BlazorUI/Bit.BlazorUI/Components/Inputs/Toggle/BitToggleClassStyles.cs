@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitToggleClassStyles
 {
@@ -16,6 +16,17 @@ public class BitToggleClassStyles
     /// Custom CSS classes/styles for the description of the BitToggle.
     /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the line carrying the error message of the BitToggle.
+    /// </summary>
+    public string? ErrorMessageContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the error message of the BitToggle.
+    /// Ignored when an ErrorMessageTemplate replaces the plain message.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the container of the BitToggle.

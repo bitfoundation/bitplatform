@@ -4,7 +4,7 @@
 /// The set of parameters used to customize a <see cref="BitModal"/> that is shown using the <see cref="BitModalService"/>.
 /// </summary>
 /// <remarks>
-/// BREAKING CHANGE: the boolean members (<see cref="IsEnabled"/>, <see cref="AriaModal"/>, <see cref="Blocking"/>,
+/// BREAKING CHANGE: the boolean members (<see cref="Disabled"/>, <see cref="AriaModal"/>, <see cref="Blocking"/>,
 /// <see cref="FullHeight"/>, <see cref="FullWidth"/>) are nullable (<c>bool?</c>)
 /// instead of <c>bool</c>. A <c>null</c> value means "not set" and the corresponding <see cref="BitModal"/> default
 /// is used (or the cascaded value, when merged). Code that read these members as non-nullable <c>bool</c> must be updated.
@@ -12,9 +12,9 @@
 public class BitModalParameters
 {
     /// <summary>
-    /// Whether or not the Modal is enabled. <c>null</c> means not set (defaults to enabled).
+    /// Whether or not the Modal is disabled. <c>null</c> means not set (defaults to not disabled).
     /// </summary>
-    public bool? IsEnabled { get; set; }
+    public bool? Disabled { get; set; }
 
     /// <summary>
     /// Capture and render additional attributes in addition to the Modal's parameters.
@@ -79,6 +79,11 @@ public class BitModalParameters
     /// declares one of its own is asked that one instead - the two are not both asked.
     /// </remarks>
     public Func<Task<bool>>? CanClose { get; set; }
+
+    /// <summary>
+    /// The CSS class(es) of the root element of the Modal, added next to the Root of <see cref="Classes"/>.
+    /// </summary>
+    public string? Class { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitModal component.
@@ -267,6 +272,12 @@ public class BitModalParameters
     public bool? ShowCloseButton { get; set; }
 
     /// <summary>
+    /// The CSS style of the root element of the Modal, added next to the Root of <see cref="Styles"/> - the place
+    /// to set the public <c>--bit-Modal-*</c> CSS variables of the Modals shown through the service.
+    /// </summary>
+    public string? Style { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitModal component.
     /// </summary>
     public BitModalClassStyles? Styles { get; set; }
@@ -293,6 +304,24 @@ public class BitModalParameters
 
 
     /// <summary>
+    /// A copy of this set that can be changed without reaching this one: what the change handed to
+    /// <see cref="BitModalReferenceBase{TReference, TParameters}.Update(Action{TParameters})"/> is applied to, so a
+    /// set shared between showings - one every confirmation of an app is shown with - is never changed under the
+    /// other modals. The attributes and the per-part classes and styles are copied too, being objects of their own
+    /// that such a change reaches into.
+    /// </summary>
+    internal BitModalParameters Copy()
+    {
+        var copy = (BitModalParameters)MemberwiseClone();
+
+        copy.HtmlAttributes = new(HtmlAttributes ?? []);
+        copy.Classes = BitModalClassStyles.Merge(Classes, null);
+        copy.Styles = BitModalClassStyles.Merge(Styles, null);
+
+        return copy;
+    }
+
+    /// <summary>
     /// Merges two sets of <see cref="BitModalParameters"/> giving precedence to the values of the first one.
     /// </summary>
     public static BitModalParameters? Merge(BitModalParameters? params1, BitModalParameters? params2)
@@ -305,7 +334,7 @@ public class BitModalParameters
 
         return new BitModalParameters
         {
-            IsEnabled = params1.IsEnabled ?? params2.IsEnabled,
+            Disabled = params1.Disabled ?? params2.Disabled,
             HtmlAttributes = MergeHtmlAttributes(params2.HtmlAttributes, params1.HtmlAttributes),
             AbsolutePosition = params1.AbsolutePosition ?? params2.AbsolutePosition,
             Dir = params1.Dir ?? params2.Dir,
@@ -315,6 +344,7 @@ public class BitModalParameters
             Blocking = params1.Blocking ?? params2.Blocking,
             Body = params1.Body ?? params2.Body,
             CanClose = params1.CanClose ?? params2.CanClose,
+            Class = params1.Class ?? params2.Class,
             Classes = BitModalClassStyles.Merge(params1.Classes, params2.Classes),
             CloseButtonTitle = params1.CloseButtonTitle ?? params2.CloseButtonTitle,
             CloseIcon = params1.CloseIcon ?? params2.CloseIcon,
@@ -350,6 +380,7 @@ public class BitModalParameters
             ScrollerElement = params1.ScrollerElement ?? params2.ScrollerElement,
             ScrollerSelector = params1.ScrollerSelector ?? params2.ScrollerSelector,
             ShowCloseButton = params1.ShowCloseButton ?? params2.ShowCloseButton,
+            Style = params1.Style ?? params2.Style,
             Styles = BitModalClassStyles.Merge(params1.Styles, params2.Styles),
             SubtitleAriaId = params1.SubtitleAriaId ?? params2.SubtitleAriaId,
             TitleAriaId = params1.TitleAriaId ?? params2.TitleAriaId,

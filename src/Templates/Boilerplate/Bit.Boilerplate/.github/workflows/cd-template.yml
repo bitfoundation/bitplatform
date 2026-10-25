@@ -9,6 +9,8 @@ on:
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+  # Lets the About page show the run, the commit and the attestations of the build, only in a public repository whose links anyone can open.
+  ShowBuildProvenance: ${{ github.event.repository.visibility == 'public' }}
 
 permissions:
   contents: read
@@ -18,6 +20,10 @@ jobs:
   build_api_blazor:
     name: build api + blazor web
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     environment: ${{ inputs.ENV_NAME }}
     steps:
 
@@ -31,16 +37,21 @@ jobs:
         with:
           global-json-file: global.json
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
+      - name: Install the bit CLI
+        shell: pwsh
+        run: |
+          dotnet tool install Bit.Cli --version 10.7.0 --tool-path "$env:RUNNER_TEMP/bit-cli"
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
-      - name: Use Bit.ResxTranslator
+      - name: Prepare this machine with bit setup
+        run: bit setup --no-build --yes
+
+      - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.ResxTranslator
+          bit translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -53,22 +64,33 @@ jobs:
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
 
-      - name: Install wasm
-        run:  cd src && dotnet workload install wasm-tools
-
-      - name: Generate CSS/JS files
-        run: |
-          dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
-          dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
-
       - name: Publish
         run: dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o server -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }}
       - name: Upload server artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        id: server_artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: server-bundle
           path: server
           include-hidden-files: true # Required for wwwroot/.well-known folder
+
+      - name: Attest server artifact
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: server-bundle
+          subject-digest: sha256:${{ steps.server_artifact.outputs.artifact-digest }}
+#if (api == "Integrated" && database != "Sqlite" && database != "Other")
+
+      - name: Create the database migrations bundle
+        run: dnx dotnet-ef@10.0.13 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose
+
+      - name: Upload migrations bundle
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: migrations-bundle
+          path: efbundle
+#endif
 
   deploy_api_blazor:
     name: deploy api + blazor
@@ -81,9 +103,32 @@ jobs:
     steps:
 
       - name: Retrieve server bundle
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: server-bundle
+#if (api == "Integrated" && database != "Sqlite" && database != "Other")
+
+      - name: Retrieve migrations bundle
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: migrations-bundle
+
+      - name: Apply database migrations
+        env:
+#if (database == "SqlServer")
+          ConnectionStrings__mssqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#endif
+#if (database == "PostgreSQL")
+          ConnectionStrings__postgresdb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#endif
+#if (database == "MySql")
+          ConnectionStrings__mysqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#endif
+        run: |
+          chmod +x efbundle
+          ./efbundle
+          rm efbundle
+#endif
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -93,6 +138,7 @@ jobs:
           slot-name: 'production'
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
           package: .
+          clean: false
 
 #if (cloudflare == true)
       - name: Purge Cloudflare cache
@@ -106,6 +152,10 @@ jobs:
   build_api:
     name: build api
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     environment: ${{ inputs.ENV_NAME }}
     steps:
 
@@ -130,11 +180,30 @@ jobs:
         run: dotnet publish src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj -c Release --self-contained -r linux-x64 -o server-api -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }}
 
       - name: Upload api artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        id: api_artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: api-bundle
           path: server-api
           include-hidden-files: true # Required for wwwroot/.well-known folder
+
+      - name: Attest api artifact
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: api-bundle
+          subject-digest: sha256:${{ steps.api_artifact.outputs.artifact-digest }}
+#if (database != "Sqlite" && database != "Other")
+
+      - name: Create the database migrations bundle
+        run: dnx dotnet-ef@10.0.13 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose
+
+      - name: Upload migrations bundle
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: migrations-bundle
+          path: efbundle
+#endif
 
   deploy_api:
     name: deploy api
@@ -147,9 +216,32 @@ jobs:
     steps:
 
       - name: Retrieve api bundle
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: api-bundle
+#if (database != "Sqlite" && database != "Other")
+
+      - name: Retrieve migrations bundle
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: migrations-bundle
+
+      - name: Apply database migrations
+        env:
+#if (database == "SqlServer")
+          ConnectionStrings__mssqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#endif
+#if (database == "PostgreSQL")
+          ConnectionStrings__postgresdb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#endif
+#if (database == "MySql")
+          ConnectionStrings__mysqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#endif
+        run: |
+          chmod +x efbundle
+          ./efbundle
+          rm efbundle
+#endif
 
       - name: Deploy to Azure Web App
         id: deploy-api-to-webapp
@@ -159,11 +251,16 @@ jobs:
           slot-name: 'production'
           publish-profile: ${{ secrets.API_AZURE_PUBLISH_PROFILE }}
           package: .
+          clean: false
 #endif
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
     runs-on: windows-2025
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     environment: ${{ inputs.ENV_NAME }}
     steps:
 
@@ -177,16 +274,21 @@ jobs:
         with:
           global-json-file: global.json
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
+      - name: Install the bit CLI
+        shell: pwsh
+        run: |
+          dotnet tool install Bit.Cli --version 10.7.0 --tool-path "$env:RUNNER_TEMP/bit-cli"
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
-      - name: Use Bit.ResxTranslator
+      - name: Prepare this machine with bit setup
+        run: bit setup --platforms windows --no-build --yes
+
+      - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.ResxTranslator
+          bit translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -196,24 +298,50 @@ jobs:
           ServerAddress: ${{ vars.SERVER_ADDRESS }}
           WindowsUpdate.FilesUrl: ${{ vars.WINDOWS_UPDATE_FILES_URL }}
 
-      - name: Generate CSS/JS files
-        run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
+      - name: Log in to Azure for code signing
+        if: vars.CODE_SIGNING_ACCOUNT != ''
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.CODE_SIGNING_CLIENT_ID }}
+          tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
+          subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
+
+      # vpk signs through Azure's signing library, whose DefaultAzureCredential tries managed identity, Visual Studio,
+      # VS Code and others before the Azure CLI. On a runner they only cost time or could sign in as someone else, so only
+      # the az login above is left.
+      - name: Sign the app with Artifact Signing
+        if: vars.CODE_SIGNING_ACCOUNT != ''
+        run: |
+          @{ Endpoint = '${{ vars.CODE_SIGNING_ENDPOINT }}'; CodeSigningAccountName = '${{ vars.CODE_SIGNING_ACCOUNT }}'; CertificateProfileName = '${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content "$env:RUNNER_TEMP\code-signing.json"
+          "VPK_AZURE_TRUSTED_SIGN_FILE=$env:RUNNER_TEMP\code-signing.json" >> $env:GITHUB_ENV
 
       - name: Publish
         run: |
           cd src\Client\Boilerplate.Client.Windows\
           dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION }}" --self-contained -p:Environment=${{ inputs.ENV_NAME }}
-          dnx vpk@1.2.0 -- pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle '${{ vars.APP_TITLE }}'
+          dnx vpk@1.3.39-g8d2844f -- pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle '${{ vars.APP_TITLE }}'
 
       - name: Upload artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        id: artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: win-exe-bundle
           path: src\Client\Boilerplate.Client.Windows\Releases
 
+      - name: Attest artifact
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: win-exe-bundle
+          subject-digest: sha256:${{ steps.artifact.outputs.artifact-digest }}
+
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     environment: ${{ inputs.ENV_NAME }}
 
     steps:
@@ -227,9 +355,14 @@ jobs:
         with:
           global-json-file: global.json
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
+      - name: Install the bit CLI
+        shell: pwsh
+        run: |
+          dotnet tool install Bit.Cli --version 10.7.0 --tool-path "$env:RUNNER_TEMP/bit-cli"
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
+
+      - name: Prepare this machine with bit setup
+        run: bit setup --platforms android --no-build --yes
 
       - name: Extract Android signing key
         uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
@@ -238,12 +371,12 @@ jobs:
           fileName: 'Boilerplate.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
 
-      - name: Use Bit.ResxTranslator
+      - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.ResxTranslator
+          bit translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -252,29 +385,30 @@ jobs:
         env:
           ServerAddress: ${{ vars.SERVER_ADDRESS }}
 
-      - name: Install maui
-        run: cd src && dotnet workload install maui-android
-
-      - name: Install Android Sdk platform tools
-        run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-
-      - name: Generate CSS/JS files
-        run: |
-          dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
-          dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
-
       - name: Publish aab
         run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net10.0-android
 
       - name: Upload artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        id: artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: android-bundle
           path: src/Client/Boilerplate.Client.Maui/bin/Release/net10.0-android/*-Signed.*
 
+      - name: Attest artifact
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: android-bundle
+          subject-digest: sha256:${{ steps.artifact.outputs.artifact-digest }}
+
   build_blazor_hybrid_iOS:
     name: build blazor hybrid (iOS)
-    runs-on: macOS-26
+    runs-on: xcode-27
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     environment: ${{ inputs.ENV_NAME }}
 
     steps:
@@ -291,18 +425,23 @@ jobs:
 
       - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
         with:
-          xcode-version: '26.6'
+          xcode-version: '27.1'
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
+      - name: Install the bit CLI
+        shell: pwsh
+        run: |
+          dotnet tool install Bit.Cli --version 10.7.0 --tool-path "$env:RUNNER_TEMP/bit-cli"
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
-      - name: Use Bit.ResxTranslator
+      - name: Prepare this machine with bit setup
+        run: bit setup --platforms ios --no-build --yes
+
+      - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.ResxTranslator
+          bit translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -311,33 +450,33 @@ jobs:
         env:
           ServerAddress: ${{ vars.SERVER_ADDRESS }}
 
-      - name: Install maui
-        run: cd src && dotnet workload install maui
-
       - name: Import Code-Signing Certificates
-        uses: apple-actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0
+        uses: apple-actions/import-codesign-certs@77ba2a2a8f5cfc8c405ebf3159f767c323e238f9 # v7.1.0
         with:
           p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
           p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
       - name: Download Apple Provisioning Profiles
-        uses: Apple-Actions/download-provisioning-profiles@2126b5f86a0e2863cbf4d2d312112b22b943a594 # v6.1.0
+        uses: Apple-Actions/download-provisioning-profiles@230860ab5f632551a5f9a5e1d98a774485463888 # v7.0.0
         with:
           bundle-id: ${{ vars.APP_ID }}
           issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
-      - name: Generate CSS/JS files
-        run: |
-          dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
-          dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
-
       - name: Build ipa
         run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:ApplicationId=${{ vars.APP_ID }} -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ vars.IOS_CODE_SIGN_PROVISION }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net10.0-ios
 
       - name: Upload artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        id: artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: iOS-bundle
           path: src/Client/Boilerplate.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa
+
+      - name: Attest artifact
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: iOS-bundle
+          subject-digest: sha256:${{ steps.artifact.outputs.artifact-digest }}

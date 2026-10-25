@@ -1,0 +1,128 @@
+﻿@page "/e2e/params"
+
+@* The BitParams cascade of component defaults, verified on several components of a real page: buttons, tags, badges
+   and text fields under params objects of their own types, the ones setting a parameter of their own beside them,
+   a cascade changed at runtime (a new list, a property of an object, an object removed, a value cleared), nesting and
+   Isolated, and the base parameters (Disabled, Class, Style, Dir, AriaLabel, HtmlAttributes, Visibility) cascaded
+   like the rest. *@
+
+<PageTitle>BitParams E2E</PageTitle>
+
+<style>
+    .e2e-prm-cascaded {
+        outline: 2px solid rgb(1, 2, 3);
+    }
+
+    .e2e-prm-own {
+        outline: 2px solid rgb(4, 5, 6);
+    }
+</style>
+
+<E2ESection Id="basic" Title="Color, Size and Variant from the params objects of each component type; an explicit parameter wins">
+    <BitButton Id="btn-outside">Outside</BitButton>
+    <BitTag Id="tag-outside" Text="Outside" />
+    <BitBadge Id="badge-outside" Content="1">Outside</BitBadge>
+    <BitParams Parameters="_basicParams">
+        <BitButton Id="btn-cascaded">Cascaded</BitButton>
+        <BitButton Id="btn-own" Variant="BitVariant.Text" Color="BitColor.Info">Own</BitButton>
+        <BitTag Id="tag-cascaded" Text="Cascaded" />
+        <BitTag Id="tag-own" Text="Own" Size="BitSize.Large" />
+        <BitBadge Id="badge-cascaded" Content="2">Cascaded</BitBadge>
+        <BitTextField Id="tf-cascaded" />
+        <BitTextField Id="tf-own" Placeholder="Own placeholder" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="The cascade changed at runtime">
+    <button id="btn-compact" @onclick="() => _compact = !_compact">Toggle compact</button>
+    <button id="btn-mutate" @onclick="MutateInPlace">Change a property of the object in place</button>
+    <button id="btn-remove-tag-params" @onclick="RemoveTagParams">Remove the tag params</button>
+    <button id="btn-clear-color" @onclick="() => _runtimeButtonParams.Color = null">Clear the button Color</button>
+    <span id="compact">@_compact</span>
+    <BitParams Parameters="@([new BitButtonParams { Size = _compact ? BitSize.Small : null }, new BitTagParams { Size = _compact ? BitSize.Small : null }])">
+        <BitButton Id="btn-compact-target">Accept</BitButton>
+        <BitButton Id="btn-compact-own" Size="BitSize.Large">Own size</BitButton>
+        <BitTag Id="tag-compact-target" Text="Pending" />
+    </BitParams>
+    <BitParams Parameters="_runtimeParams">
+        <BitButton Id="btn-runtime">Runtime</BitButton>
+        <BitTag Id="tag-runtime" Text="Runtime" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="nesting" Title="A nested BitParams refines its ancestors; Isolated ignores them">
+    <button id="btn-toggle-isolated" @onclick="() => _isolated = !_isolated">Toggle Isolated</button>
+    <span id="isolated">@_isolated</span>
+    <BitParams Parameters="@([new BitButtonParams { Variant = BitVariant.Outline, Size = BitSize.Small }])">
+        <BitButton Id="btn-outer">Outer</BitButton>
+        <BitParams Parameters="@([new BitButtonParams { Color = BitColor.Error }])">
+            <BitButton Id="btn-nested">Nested</BitButton>
+        </BitParams>
+        <BitParams Isolated="_isolated" Parameters="@([new BitButtonParams { Color = BitColor.Success }])">
+            <BitButton Id="btn-isolated">Isolated</BitButton>
+        </BitParams>
+        <BitParams Isolated>
+            <BitButton Id="btn-isolated-empty">Defaults</BitButton>
+        </BitParams>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="base" Title="The base parameters cascade too">
+    <button id="btn-toggle-disabled" @onclick="() => _baseButtonParams.Disabled = _baseButtonParams.Disabled is true ? null : true">Toggle cascaded Disabled</button>
+    <span id="base-clicks">@_baseClicks</span>
+    <span id="base-own-clicks">@_baseOwnClicks</span>
+    <BitParams Parameters="_baseParams">
+        <BitButton Id="btn-base" OnClick="() => _baseClicks++">Base</BitButton>
+        <BitButton Id="btn-base-own" Disabled="false" Class="e2e-prm-own" Style="margin-left: 7px;" Dir="BitDir.Ltr"
+                   OnClick="() => _baseOwnClicks++">Own</BitButton>
+        <BitTextField Id="tf-base" />
+    </BitParams>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly IEnumerable<IBitComponentParams> _basicParams =
+    [
+        new BitButtonParams { Color = BitColor.Error, Size = BitSize.Large, Variant = BitVariant.Outline },
+        new BitTagParams { Color = BitColor.Success, Size = BitSize.Small, Variant = BitVariant.Text },
+        new BitBadgeParams { Color = BitColor.Warning, Variant = BitVariant.Outline },
+        new BitTextFieldParams { Placeholder = "Cascaded placeholder", Underlined = true }
+    ];
+
+    private bool _compact;
+
+    private readonly BitButtonParams _runtimeButtonParams = new() { Color = BitColor.Tertiary };
+    private List<IBitComponentParams> _runtimeParams;
+
+    private bool _isolated = true;
+
+    private readonly BitButtonParams _baseButtonParams = new()
+    {
+        Disabled = true,
+        Class = "e2e-prm-cascaded",
+        Style = "margin-left: 3px;",
+        Dir = BitDir.Rtl,
+        AriaLabel = "Cascaded label",
+        HtmlAttributes = new() { ["data-cascaded"] = "yes" }
+    };
+    private readonly IEnumerable<IBitComponentParams> _baseParams;
+    private int _baseClicks;
+    private int _baseOwnClicks;
+
+    public BitParamsE2E()
+    {
+        _runtimeParams = [_runtimeButtonParams, new BitTagParams { Color = BitColor.Error }];
+        _baseParams = [_baseButtonParams, new BitTextFieldParams { Disabled = true }];
+    }
+
+    private void MutateInPlace()
+    {
+        _runtimeButtonParams.Color = _runtimeButtonParams.Color == BitColor.Tertiary ? BitColor.Warning : BitColor.Tertiary;
+    }
+
+    private void RemoveTagParams()
+    {
+        _runtimeParams = [_runtimeButtonParams];
+    }
+}

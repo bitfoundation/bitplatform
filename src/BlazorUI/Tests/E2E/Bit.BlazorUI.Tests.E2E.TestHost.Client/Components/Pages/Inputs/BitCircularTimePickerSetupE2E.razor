@@ -1,0 +1,36 @@
+﻿@page "/e2e/circular-time-picker/setup"
+@using System.Globalization
+
+<PageTitle>BitCircularTimePicker setup E2E</PageTitle>
+
+<h1>BitCircularTimePicker first-render setups</h1>
+
+@* The setups that act on the first render - a focus taken or a callout opened - each on a page of its own, so
+   none of them takes the focus or covers the page with an overlay in the tests of the main page. *@
+<E2ESection Id="setup" Title="@Mode">
+    @switch (Mode)
+    {
+        case "autofocus-standalone":
+            <BitCircularTimePicker Label="Standalone AutoFocus" AutoFocus Standalone Culture="_en" />
+            break;
+        case "open":
+            <BitCircularTimePicker Label="Initially open" IsOpen="_isOpen" IsOpenChanged="v => _isOpen = v" Culture="_en" />
+            break;
+        default:
+            <BitCircularTimePicker Label="AutoFocus" AutoFocus Culture="_en" OnFocus="() => _focuses++" />
+            break;
+    }
+    <span id="focus-count">@_focuses</span>
+    <span id="is-open">@_isOpen</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+
+    private int _focuses;
+    private bool _isOpen = true;
+
+    [SupplyParameterFromQuery] public string? Mode { get; set; }
+}

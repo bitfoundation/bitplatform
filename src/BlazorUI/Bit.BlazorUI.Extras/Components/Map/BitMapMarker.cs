@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Declarative marker definition used by <see cref="BitMap{TMapProvider}"/>.
@@ -68,12 +68,19 @@ public sealed record BitMapMarker
     public bool TooltipPermanent { get; init; }
 
     /// <summary>
-    /// Tooltip placement direction.
-    /// <para><b>Provider support:</b> Leaflet honours every direction; MapLibre and Mapbox honour
-    /// all but <see cref="BitMapTooltipDirection.Auto"/>, which they resolve themselves. OpenLayers
-    /// and Azure Maps always place the tooltip above the marker.</para>
+    /// Which side of the marker the tooltip is placed on, or <see langword="null"/> - the default - to leave
+    /// the provider to pick the best one.
+    /// <para><b>Provider support:</b> Leaflet honours every side; MapLibre and Mapbox honour all but an
+    /// unset one, which they resolve themselves. OpenLayers and Azure Maps always place the tooltip above
+    /// the marker.</para>
     /// </summary>
-    public BitMapTooltipDirection TooltipDirection { get; init; } = BitMapTooltipDirection.Auto;
+    /// <remarks>
+    /// The providers name their directions physically, so only <see cref="BitPlacement.Top"/>,
+    /// <see cref="BitPlacement.Bottom"/>, <see cref="BitPlacement.Left"/>, <see cref="BitPlacement.Right"/>
+    /// and <see cref="BitPlacement.Center"/> are passed through. The logical pair and the two combined
+    /// placements have no equivalent and leave the provider to pick, exactly as leaving this unset does.
+    /// </remarks>
+    public BitPlacement? TooltipPlacement { get; init; }
 
     /// <summary>
     /// Hover label for the marker. Rendering varies by provider:
@@ -136,7 +143,19 @@ public sealed record BitMapMarker
     /// <summary>When true, the marker can be moved by the user.</summary>
     public bool Draggable { get; init; }
 
-    /// <summary>Optional URL to a custom marker icon image.</summary>
+    /// <summary>
+    /// Color of the default pin - any CSS color, a theme variable such as <c>var(--bit-clr-sec)</c>
+    /// included. Null takes <c>--bit-Map-marker-color</c>, the theme's primary color unless set.
+    /// Ignored when <see cref="IconUrl"/> is set.
+    /// <para>
+    /// The same pin is drawn on every provider, so a marker colored by category looks the same on
+    /// all of them. Color alone carries no meaning to a screen reader or a color-blind user: say
+    /// the category in <see cref="Alt"/> too.
+    /// </para>
+    /// </summary>
+    public string? Color { get; init; }
+
+    /// <summary>Optional URL to a custom marker icon image, in place of the default pin.</summary>
     public string? IconUrl { get; init; }
 
     /// <summary>Width in pixels of the custom marker icon. Values below 1 are clamped to 1.</summary>

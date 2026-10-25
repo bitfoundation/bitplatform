@@ -1,0 +1,35 @@
+﻿@using System.Numerics
+@implements IHandleEvent
+
+@* Reports where the pointer is over its content without re-rendering anything. Pointer events arrive dozens of
+   times a second; letting each one re-render the page would undo the work the canvas does to avoid exactly that.
+   The callbacks are plain delegates rather than EventCallbacks for the same reason: an EventCallback re-renders
+   the component that supplied it. *@
+
+<div style="position:relative"
+     @onpointermove="OnMove"
+     @onpointerdown="OnMove"
+     @onpointerup="OnUp"
+     @onpointerleave="OnLeave">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>The content to track, normally a canvas.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Called with the pointer position relative to the content, and whether a button is pressed.</summary>
+    [Parameter] public Action<Vector2, bool>? Moved { get; set; }
+
+    /// <summary>Called when the pointer leaves the content.</summary>
+    [Parameter] public Action? Left { get; set; }
+
+    private void OnMove(PointerEventArgs e) => Moved?.Invoke(new Vector2((float)e.OffsetX, (float)e.OffsetY), e.Buttons != 0);
+
+    private void OnUp(PointerEventArgs e) => Moved?.Invoke(new Vector2((float)e.OffsetX, (float)e.OffsetY), false);
+
+    private void OnLeave(PointerEventArgs e) => Left?.Invoke();
+
+    // Handle events without the automatic re-render ComponentBase would do.
+    Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object? arg) => callback.InvokeAsync(arg);
+}

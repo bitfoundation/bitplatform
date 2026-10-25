@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>The shape an annotation draws, mirroring chartjs-plugin-annotation's annotation types.</summary>
 public enum BitChartAnnotationKind

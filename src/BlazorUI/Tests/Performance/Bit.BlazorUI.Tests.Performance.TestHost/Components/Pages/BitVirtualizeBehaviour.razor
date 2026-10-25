@@ -1,0 +1,93 @@
+﻿@page "/regression/virtualize-behaviour"
+
+<PageTitle>BitVirtualize Behaviour</PageTitle>
+
+@* Two lists of 40px rows in a 400px viewport, so ten rows are in view at a time: 10,000 items held in memory, and
+   100,000 loaded window by window from a provider that answers after 100ms and records every window it is asked
+   for. Only the rows in view and a few around them are meant to be in the DOM, and the rows that are must be the
+   ones the scroll offset puts in view. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitVirtualize Behaviour</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+<div data-probe="memory" style="margin-bottom: 24px;">
+    <button type="button" class="scroll-to-index" @onclick="() => _memory.ScrollToIndexAsync(1234)">ScrollToIndex 1234</button>
+    <button type="button" class="scroll-to-end" @onclick="() => _memory.ScrollToEndAsync()">ScrollToEnd</button>
+    <BitVirtualize @ref="_memory"
+                   TItem="int"
+                   Items="_items"
+                   ItemSize="40"
+                   AriaLabel="Memory list"
+                   Style="height: 400px; width: 300px; border: 1px solid gray;"
+                   OnVisibleRangeChanged="r => _memoryRange = r"
+                   OnAtEndChanged="e => _memoryAtEnd = e">
+        <ItemTemplate Context="item">
+            <div class="row" data-item="@item" style="height: 100%; box-sizing: border-box; border-bottom: 1px solid #ddd; padding: 0 8px; line-height: 39px;">Item @item</div>
+        </ItemTemplate>
+    </BitVirtualize>
+    <p class="report" style="font-family: monospace;">
+        range: <span class="range">@_memoryRange.Start-@_memoryRange.End</span>
+        at-end: <span class="at-end">@_memoryAtEnd</span>
+    </p>
+</div>
+
+<div data-probe="provider" style="margin-bottom: 24px;">
+    <BitVirtualize TItem="int"
+                   ItemsProvider="_provider"
+                   ItemSize="40"
+                   AriaLabel="Provider list"
+                   Style="height: 400px; width: 300px; border: 1px solid gray;">
+        <ItemTemplate Context="item">
+            <div class="row" data-item="@item" style="height: 100%; box-sizing: border-box; border-bottom: 1px solid #ddd; padding: 0 8px; line-height: 39px;">Record @item</div>
+        </ItemTemplate>
+        <PlaceholderTemplate Context="context">
+            <div class="placeholder" data-placeholder="@context.Index" style="height: 100%;">Loading @context.Index</div>
+        </PlaceholderTemplate>
+    </BitVirtualize>
+    @* The log is shown on demand rather than rendered from the provider, so the page is not rendered around the list
+       while a window is in flight. *@
+    <button type="button" class="show-requests" @onclick="() => { }">Show requests</button>
+    <p class="report" style="font-family: monospace;">
+        requests: <span class="requests">@string.Join(";", _requests)</span>
+    </p>
+</div>
+
+@code {
+    private const int ProviderTotal = 100_000;
+
+    private readonly int[] _items = Enumerable.Range(0, 10_000).ToArray();
+    private readonly List<string> _requests = [];
+
+    private readonly BitVirtualizeItemsProvider<int> _provider;
+
+    private BitVirtualize<int> _memory = default!;
+    private (int Start, int End) _memoryRange;
+    private bool _memoryAtEnd;
+
+    private string _status = "Loading";
+
+    public BitVirtualizeBehaviour()
+    {
+        _provider = LoadWindow;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private async ValueTask<BitVirtualizeItemsProviderResult<int>> LoadWindow(BitVirtualizeItemsProviderRequest request)
+    {
+        _requests.Add($"{request.StartIndex}+{request.Count}");
+
+        await Task.Delay(100, request.CancellationToken);
+
+        var count = Math.Max(0, Math.Min(request.Count, ProviderTotal - request.StartIndex));
+
+        return new(Enumerable.Range(request.StartIndex, count).ToList(), ProviderTotal);
+    }
+}

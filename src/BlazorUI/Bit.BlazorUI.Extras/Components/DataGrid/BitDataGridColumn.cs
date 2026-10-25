@@ -1,5 +1,6 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -9,12 +10,17 @@ namespace Bit.BlazorUI;
 /// or be a purely template-driven column.
 /// </summary>
 /// <typeparam name="TItem">The row item type.</typeparam>
-public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
+public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : ComponentBase, IDisposable
 {
     [CascadingParameter] internal BitDataGrid<TItem>? Grid { get; set; }
 
     /// <summary>Name of the property this column is bound to. Supports nested paths ("Address.City").
     /// Prefer <see cref="Property"/> for a strongly typed, refactor-safe alternative.</summary>
+    /// <remarks>
+    /// In a trimmed app the public properties of <typeparamref name="TItem"/> are kept for this lookup, but the
+    /// properties a nested path reaches on other types are kept only when the app reads them somewhere itself;
+    /// <see cref="Property"/> names every member of the chain, so it keeps them all.
+    /// </remarks>
     [Parameter] public string? Field { get; set; }
 
     /// <summary>
@@ -33,11 +39,13 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// <summary>CSS width, e.g. "120px" or "20%". When null the column shares remaining space.</summary>
     [Parameter] public string? Width { get; set; }
 
+    /// <summary>The narrowest the column can be resized to, in pixels. Default: 60.</summary>
     [Parameter] public int MinWidth { get; set; } = 60;
 
     /// <summary>Maximum width in pixels the column can be resized to. When null the column is unbounded.</summary>
     [Parameter] public int? MaxWidth { get; set; }
 
+    /// <summary>Overrides the grid-level <c>Sortable</c> for this column.</summary>
     [Parameter] public bool? Sortable { get; set; }
 
     /// <summary>
@@ -75,14 +83,31 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// </summary>
     [Parameter] public Func<TItem, object?, string?>? Validate { get; set; }
 
+    /// <summary>Overrides the grid-level <c>Filterable</c> for this column.</summary>
     [Parameter] public bool? Filterable { get; set; }
 
     /// <summary>Overrides the grid-level <c>FilterOperators</c> toggle (the operator dropdown next to
     /// this column's filter editor).</summary>
     [Parameter] public bool? FilterOperators { get; set; }
+
+    /// <summary>
+    /// Replaces this column's built-in filter editor in the filter row with custom markup - a
+    /// multi-select applying <see cref="BitDataGridFilterOperator.In"/>, a range slider, a preset list.
+    /// The context carries the column's current filter and the calls that apply or clear it.
+    /// Rendered only while the column is filterable.
+    /// </summary>
+    [Parameter] public RenderFragment<BitDataGridFilterContext>? FilterTemplate { get; set; }
+
+    /// <summary>Overrides the grid-level <c>Resizable</c> for this column.</summary>
     [Parameter] public bool? Resizable { get; set; }
+
+    /// <summary>Overrides the grid-level <c>Reorderable</c> for this column.</summary>
     [Parameter] public bool? Reorderable { get; set; }
+
+    /// <summary>Overrides the grid-level <c>Editable</c> for this column.</summary>
     [Parameter] public bool? Editable { get; set; }
+
+    /// <summary>Overrides the grid-level <c>Groupable</c> for this column.</summary>
     [Parameter] public bool? Groupable { get; set; }
 
     /// <summary>
@@ -142,15 +167,43 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// </summary>
     [Parameter] public Func<TItem, int?>? ColSpan { get; set; }
 
+    /// <summary>Whether the column is shown. The column chooser flips it at runtime. Default: true.</summary>
     [Parameter] public bool Visible { get; set; } = true;
 
-    [Parameter] public BitDataGridColumnAlign Align { get; set; } = BitDataGridColumnAlign.Left;
+    /// <summary>
+    /// Makes this column's cells the headers of their rows (role <c>rowheader</c>) - the column that names a row, such
+    /// as a name or an id. A screen reader then announces it as the focus moves from row to row in another column, and
+    /// the row's selection checkbox is named after it.
+    /// </summary>
+    [Parameter] public bool RowHeader { get; set; }
+
+    /// <summary>
+    /// How the content of the column's header and cells is aligned across their width (default is the leading edge).
+    /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitTextAlign.Start"/>, <see cref="BitTextAlign.Center"/>,
+    /// <see cref="BitTextAlign.End"/>, <see cref="BitTextAlign.Left"/> and <see cref="BitTextAlign.Right"/>
+    /// mean anything here; a cell is a flex box rather than a run of prose, so the justification and cascade
+    /// keywords have nothing to do and leave the column aligned to its leading edge.
+    /// <br />
+    /// Start and End follow the reading direction, so a numeric column set to End sits against the trailing
+    /// edge of an LTR and of an RTL grid alike. Left and Right name a side of the screen and stay there in
+    /// both.
+    /// <br />
+    /// Migrating from <c>BitDataGridColumnAlign</c>: its Left and Right were the leading and the trailing edge,
+    /// so they become <see cref="BitTextAlign.Start"/> and <see cref="BitTextAlign.End"/>. Renamed to Left and
+    /// Right instead, a column keeps rendering the same in an LTR grid but moves to the other side in an RTL one.
+    /// </remarks>
+    [Parameter] public BitTextAlign Align { get; set; } = BitTextAlign.Start;
 
     /// <summary>A .NET format string applied to the value (e.g. "C2", "yyyy-MM-dd").</summary>
     [Parameter] public string? Format { get; set; }
 
+    /// <summary>The kind of value the column holds, which picks its filter editor, operators and inline editor. Auto
+    /// reads it off the bound property's type.</summary>
     [Parameter] public BitDataGridColumnDataType DataType { get; set; } = BitDataGridColumnDataType.Auto;
 
+    /// <summary>The built-in aggregate shown for the column in the footer and in each group header.</summary>
     [Parameter] public BitDataGridAggregateType Aggregate { get; set; } = BitDataGridAggregateType.None;
 
     /// <summary>
@@ -164,8 +217,24 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// <summary>Format string for the aggregate value. Falls back to <see cref="Format"/>.</summary>
     [Parameter] public string? AggregateFormat { get; set; }
 
+    /// <summary>A CSS class added to the column's header cell.</summary>
     [Parameter] public string? HeaderClass { get; set; }
+
+    /// <summary>A CSS class added to each of the column's data cells.</summary>
     [Parameter] public string? CellClass { get; set; }
+
+    /// <summary>
+    /// Per-row CSS class for this column's cells, from the row's data - e.g. a negative amount in red.
+    /// Added after <see cref="CellClass"/>. The cell counterpart of the grid's <c>RowClass</c>.
+    /// </summary>
+    [Parameter] public Func<TItem, string?>? CellClassSelector { get; set; }
+
+    /// <summary>
+    /// Per-row inline style for this column's cells, from the row's data. Applied last, so it wins over
+    /// the grid's own cell styles; prefer <c>color</c>/<c>font-*</c> over <c>background</c>, which would
+    /// hide the selection and hover states the cell paints.
+    /// </summary>
+    [Parameter] public Func<TItem, string?>? CellStyleSelector { get; set; }
 
     /// <summary>Custom rendering for a data cell.</summary>
     [Parameter] public RenderFragment<TItem>? Template { get; set; }
@@ -229,6 +298,22 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     private bool _lastFrozen;
     private bool _lastFrozenEnd;
 
+    // The parameters that only change how the grid presents the column. The grid renders its header and cells ahead
+    // of the columns that describe them, so a change to one of these from the parent reached the screen only on some
+    // later render of the grid: a renamed title or a new width stayed stale until then.
+    private ColumnPresentation _lastPresentation;
+
+    private readonly record struct ColumnPresentation(
+        string? Title, string? Width, int MinWidth, int? MaxWidth, BitTextAlign Align, string? Group,
+        string? HeaderClass, string? CellClass, bool? Sortable, bool SortDescendingFirst, bool? Filterable,
+        bool? FilterOperators, bool? Resizable, bool? Reorderable, bool? Editable, bool? Groupable,
+        bool? ShowTooltip, bool? WrapText, bool RowHeader, BitDataGridColumnDataType DataType);
+
+    private ColumnPresentation CurrentPresentation()
+        => new(Title, Width, MinWidth, MaxWidth, Align, Group, HeaderClass, CellClass, Sortable, SortDescendingFirst,
+               Filterable, FilterOperators, Resizable, Reorderable, Editable, Groupable, ShowTooltip, WrapText,
+               RowHeader, DataType);
+
     internal string DisplayTitle => Title ?? Humanize(EffectiveField) ?? Id;
 
     internal bool HasField => !string.IsNullOrWhiteSpace(EffectiveField);
@@ -281,6 +366,7 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
         _lastVisible = Visible;
         _lastFrozen = Frozen;
         _lastFrozenEnd = FrozenEnd;
+        _lastPresentation = CurrentPresentation();
     }
 
     protected override void OnParametersSet()
@@ -305,6 +391,14 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
         {
             _lastFrozen = Frozen;
             _lastFrozenEnd = FrozenEnd;
+            if (_registeredId is not null) Grid?.NotifyColumnVisibilityChanged();
+        }
+
+        // So do the parameters that change how the column is presented: the grid renders again with them.
+        var presentation = CurrentPresentation();
+        if (presentation != _lastPresentation)
+        {
+            _lastPresentation = presentation;
             if (_registeredId is not null) Grid?.NotifyColumnVisibilityChanged();
         }
 
@@ -391,9 +485,32 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     internal string FormatValue(object? value)
     {
         if (value is null) return string.Empty;
+
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+
+        try
+        {
+            return FormatValue(value, culture);
+        }
+        catch (ArgumentOutOfRangeException) when (value is DateTime or DateTimeOffset or DateOnly)
+        {
+            // A culture whose calendar covers a range of years only (ar-SA's Um Al Qura: 1900 to 2077) throws on a date
+            // outside it rather than write anything, which would fail the cell and every export of the grid. Such a
+            // date is written in the Gregorian calendar of the same culture instead, or the invariant one's.
+            var gregorian = culture.OptionalCalendars.OfType<System.Globalization.GregorianCalendar>().FirstOrDefault();
+            if (gregorian is null) return FormatValue(value, System.Globalization.CultureInfo.InvariantCulture);
+
+            var fallback = (System.Globalization.CultureInfo)culture.Clone();
+            fallback.DateTimeFormat.Calendar = gregorian;
+            return FormatValue(value, fallback);
+        }
+    }
+
+    private string FormatValue(object value, IFormatProvider culture)
+    {
         if (!string.IsNullOrEmpty(Format) && value is IFormattable f)
-            return f.ToString(Format, System.Globalization.CultureInfo.CurrentCulture);
-        return value.ToString() ?? string.Empty;
+            return f.ToString(Format, culture);
+        return Convert.ToString(value, culture) ?? string.Empty;
     }
 
     private static string? Humanize(string? field)

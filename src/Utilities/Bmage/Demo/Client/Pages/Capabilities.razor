@@ -1,0 +1,188 @@
+﻿@page "/capabilities"
+@inject IImageCapabilityProvider Provider
+
+@* The capability probe's report for the browser reading this page. Nothing here is looked up from a
+   user agent: every format row is the result of actually encoding (or decoding) a pixel, and the
+   canvas limit is the largest canvas that read a written pixel back correctly. The probe needs a
+   live browser, so the prerendered page says it is probing and the numbers arrive once the runtime
+   is interactive. *@
+
+<PageTitle>Capabilities · Bmage</PageTitle>
+
+<div class="bb-intro">
+    <h1>Browser capabilities</h1>
+    <p class="bb-subtitle">
+        Every one of these is <strong>measured, not guessed</strong>. Format support is confirmed by
+        actually encoding a pixel and checking what came back, and the canvas limit is found by
+        allocating until the browser refuses.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> This browser</h3>
+
+    @if (_capabilities is null)
+    {
+        <p class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Probing this browser&hellip;</p>
+    }
+    else
+    {
+        <div class="bb-grid capabilities-report">
+            <div class="bb-card">
+                <p class="bb-overline demo-label">Environment</p>
+                <table class="bb-table">
+                    <tbody>
+                        <tr><th scope="row">Runtime</th><td>@_capabilities.Environment</td></tr>
+                        <tr><th scope="row">Device pixel ratio</th><td class="demo-num">@_capabilities.DevicePixelRatio.ToString("0.##")</td></tr>
+                        <tr><th scope="row">Logical processors</th><td class="demo-num">@(_capabilities.HardwareConcurrency?.ToString() ?? "unknown")</td></tr>
+                        <tr><th scope="row">Device memory</th><td class="demo-num">@(_capabilities.DeviceMemoryGb is { } gb ? $"{gb:0.#} GB" : "unknown")</td></tr>
+                        <tr><th scope="row">Max canvas edge</th><td class="demo-num">@_capabilities.MaxCanvasDimension px</td></tr>
+                        <tr><th scope="row">Max canvas area</th><td class="demo-num">@($"{_capabilities.MaxCanvasArea / 1_000_000.0:0.#} MP")</td></tr>
+                        <tr><th scope="row">Suggested working size</th><td class="demo-num">@_capabilities.SuggestedMaxWorkingDimension px</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bb-card">
+                <p class="bb-overline demo-label">Formats</p>
+                <table class="bb-table">
+                    <thead>
+                        <tr><th scope="col">Format</th><th scope="col">Decode</th><th scope="col">Encode</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var format in Formats)
+                        {
+                            <tr>
+                                <th scope="row">@format.ToString().ToUpperInvariant()</th>
+                                <td>@Badge(_capabilities.CanDecode(format))</td>
+                                <td>@Badge(_capabilities.CanEncode(format))</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bb-card">
+                <p class="bb-overline demo-label">Platform features</p>
+                <table class="bb-table">
+                    <tbody>
+                        @foreach (var (label, value) in Features)
+                        {
+                            <tr><th scope="row">@label</th><td>@Badge(value)</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Choosing a format from this</h3>
+    <p>
+        Never assume: ask for a preference order and take the best one this browser can actually
+        write.
+        @if (_capabilities is not null)
+        {
+            <text>
+                On this browser, <code>[Avif, WebP, Jpeg]</code> resolves to
+                <strong>@_capabilities.ChooseEncodableFormat([ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg]).ToString().ToUpperInvariant()</strong>.
+            </text>
+        }
+    </p>
+    <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Why probe at all</h3>
+    <p>
+        Browsers lie in a specific way: asked to encode a format they cannot write, they silently hand
+        back a PNG. A library that trusted the request would label that PNG as AVIF and corrupt
+        whatever stored it. Bmage encodes a pixel in each candidate format and checks the bytes that
+        came back, and <code>ImageExporter</code> refuses a substitution at export time too - it
+        throws <code>ImageCapabilityException</code> rather than passing it on.
+    </p>
+    <p>
+        The canvas limit matters as much. Browsers do not expose it, and exceeding it produces a
+        silently blank canvas rather than an error. The probe writes a pixel into progressively
+        smaller canvases until one reads back correctly; <code>CanRenderCanvas(width, height)</code>
+        and <code>SuggestedMaxWorkingDimension</code> are what to check before working at a size. The
+        result is cached for the lifetime of the provider, because it cannot change without a reload.
+    </p>
+    <p>
+        More on formats, budgets and fallbacks is in <a href="/formats">Formats</a>.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Where the code is running</h3>
+    <p>
+        <code>Environment</code> says which of the hosts on <a href="/hosting">Hosting models</a> the provider
+        found, so one component can adapt to all of them:
+    </p>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Image environments">
+        <table class="bb-table">
+            <thead>
+                <tr><th scope="col">Value</th><th scope="col">Meaning</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>BrowserWebAssembly</code></th><td>.NET runs in the browser: everything is local, and the probe's answers are this browser's.</td></tr>
+                <tr><th scope="row"><code>BrowserServer</code></th><td>Interactive Server or Blazor Hybrid: .NET runs outside the browser and reaches its codecs over JavaScript interop - across the circuit, or the WebView's bridge inside a MAUI app - and pixels cross it.</td></tr>
+                <tr><th scope="row"><code>Prerendering</code></th><td>No browser yet: the managed set is reported instead of an error. Probe again once interactive.</td></tr>
+                <tr><th scope="row"><code>Server</code></th><td>A headless host: PNG, JPEG, BMP and GIF from the managed codecs, no browser involved.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        <code>HardwareConcurrency</code> is also what sizes the pool of Web Workers the browser codecs run in -
+        one per spare core, at most four, unless <code>BitBmageOptions.MaxCodecWorkers</code> says otherwise.
+    </p>
+</div>
+
+@code {
+    private ImageCapabilities? _capabilities;
+
+    private static readonly ImageFormat[] Formats =
+    [
+        ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Gif, ImageFormat.Bmp,
+    ];
+
+    private const string Snippet = """
+        var caps = await capabilities.GetAsync();
+
+        // Never assume: pick the best format this browser can actually write.
+        var format = caps.ChooseEncodableFormat(
+            [ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg]);
+
+        if (!caps.CanRenderCanvas(width, height))
+        {
+            // Work at caps.SuggestedMaxWorkingDimension instead of producing a blank image.
+        }
+        """;
+
+    private (string Label, bool Value)[] Features => _capabilities is null ? [] :
+    [
+        ("OffscreenCanvas", _capabilities.SupportsOffscreenCanvas),
+        ("Web Workers", _capabilities.SupportsWebWorkers),
+        ("createImageBitmap", _capabilities.SupportsImageBitmap),
+        ("WebCodecs ImageDecoder", _capabilities.SupportsWebCodecs),
+        ("Clipboard read", _capabilities.SupportsClipboardRead),
+        ("Clipboard write", _capabilities.SupportsClipboardWrite),
+        ("File System Access", _capabilities.SupportsFileSystemAccess),
+        ("Camera capture", _capabilities.SupportsCamera),
+        ("WebAssembly SIMD", _capabilities.SupportsWasmSimd),
+        ("WebAssembly threads", _capabilities.SupportsWasmThreads),
+    ];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Capability probing needs a live browser, so it runs after the first interactive render
+        // rather than during initialisation, which the prerender pass also runs.
+        if (!firstRender || RendererInfo.IsInteractive is false) return;
+        _capabilities = await Provider.GetAsync();
+        StateHasChanged();
+    }
+
+    private static MarkupString Badge(bool value)
+        => new(value ? "<span class=\"bb-badge bb-badge-success\">yes</span>" : "<span class=\"bb-badge bb-badge-danger\">no</span>");
+}

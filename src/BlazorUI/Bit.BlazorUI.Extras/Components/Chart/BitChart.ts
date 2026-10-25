@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     interface BitChartZoomOptions {
         wheel: boolean;
         pan: boolean;
@@ -34,6 +34,26 @@ namespace BitBlazorUI {
             }
             element.addEventListener('keydown', onKeyDown, true);
 
+            // WCAG 1.4.13: a tooltip the pointer opened can be dismissed without moving the pointer. Escape is heard
+            // on the whole document, since the pointer gives the chart no focus, but only while this chart shows a
+            // tooltip; a keydown from inside the plot is the plot's own Escape, already handled in .NET.
+            // One Escape does one thing, as with a BitTooltip shown on hover (Utils.setupTooltip): the press is the
+            // tooltip's alone, taken in the capture phase before a dialog the chart sits in hears it - unless a
+            // component where the focus is claimed it first (Utils.claimEscape), or a modifier sends it on to the
+            // surface around the chart, or an input method is composing.
+            function onDocumentKeyDown(e: KeyboardEvent) {
+                if (e.key !== 'Escape' || e.defaultPrevented) return;
+                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || Utils.isComposingKey(e)) return;
+                if (e.target instanceof Node && element.contains(e.target)) return;
+                // Only a tooltip the pointer opened: one the keyboard position shows goes with the plot's focus.
+                if (!element.querySelector('.bit-cht-tt') || !element.matches(':hover')) return;
+
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                dotnet.invokeMethodAsync('OnDismissTooltip');
+            }
+            document.addEventListener('keydown', onDocumentKeyDown, true);
+
             let ro: ResizeObserver | null = null;
             let listening = false;
             if (responsive) {
@@ -50,6 +70,7 @@ namespace BitBlazorUI {
             return {
                 dispose() {
                     element.removeEventListener('keydown', onKeyDown, true);
+                    document.removeEventListener('keydown', onDocumentKeyDown, true);
                     if (ro) ro.disconnect();
                     if (listening) window.removeEventListener('resize', report);
                 }
@@ -191,16 +212,32 @@ namespace BitBlazorUI {
 
         // ---- export ----
 
-        // Theme tokens the chart references from SVG attributes as var(--bit-...). They resolve against
-        // the document, so an exported (standalone) SVG has to carry their computed values with it.
+        // Theme tokens an exported SVG always carries, beside the ones found in its markup (see serialize).
         private static readonly THEME_VARS = [
             '--bit-clr-fg-pri', '--bit-clr-fg-sec', '--bit-clr-brd-pri', '--bit-clr-brd-sec',
             '--bit-clr-bg-pri', '--bit-clr-pri', '--bit-tpg-font-family'
         ];
 
+        // A background may be a var() - the default one is the chart's surface - which neither a canvas fill nor a
+        // standalone file can read, so it is resolved against the chart the way the page itself would resolve it.
+        // The probe reads background-color rather than color: it does not inherit, so a var() chain that resolves to
+        // nothing falls back to transparent - no fill at all - instead of the chart's own text color.
+        private static resolveColor(element: HTMLElement, color: string | null): string | null {
+            if (!color || color.indexOf('var(') < 0) return color;
+            const probe = document.createElement('span');
+            probe.style.display = 'none';
+            probe.style.backgroundColor = color;
+            element.appendChild(probe);
+            const resolved = getComputedStyle(probe).backgroundColor;
+            element.removeChild(probe);
+            if (!resolved || resolved === 'transparent' || /^rgba\([^)]*,\s*0\)$/.test(resolved)) return null;
+            return resolved;
+        }
+
         private static serialize(element: HTMLElement, background: string | null): string | null {
             const svg = element.querySelector('svg') as SVGSVGElement | null;
             if (!svg) return null;
+            background = BitChart.resolveColor(element, background);
 
             const clone = svg.cloneNode(true) as SVGSVGElement;
             const box = svg.getBoundingClientRect();
@@ -214,11 +251,13 @@ namespace BitBlazorUI {
             // Interaction-only layers are not part of the picture.
             clone.querySelectorAll('.bit-cht-hover, .bit-cht-bands').forEach(n => n.remove());
 
-            const computed = getComputedStyle(svg);
-            for (const name of BitChart.THEME_VARS) {
-                const value = computed.getPropertyValue(name);
-                if (value) clone.style.setProperty(name, value.trim());
-            }
+            // A file is a picture, not the widget on the page: it takes no focus, has no keys to hand an application,
+            // and the hint its description points at stays behind on the page.
+            clone.setAttribute('role', 'img');
+            clone.removeAttribute('tabindex');
+            clone.removeAttribute('aria-describedby');
+
+            // The background goes in before the scan below, so a var() only its fill reads is carried too.
             if (background) {
                 const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
                 rect.setAttribute('width', '100%');
@@ -226,6 +265,28 @@ namespace BitBlazorUI {
                 rect.setAttribute('fill', background);
                 clone.insertBefore(rect, clone.firstChild);
             }
+
+            // Every custom property the drawing reads - the theme tokens, and the public --bit-Chart-* ones a
+            // page may have set on :root, an ancestor or the chart's Style - resolves against the document, so
+            // a standalone file has to carry the computed values with it. One left unset stays unset, and its
+            // var() falls back exactly as it does on the page.
+            const computed = getComputedStyle(svg);
+            const names: string[] = BitChart.THEME_VARS.slice();
+            const pattern = /var\(\s*(--[\w-]+)/g;
+            const markup = clone.outerHTML;
+            let match: RegExpExecArray | null;
+            while ((match = pattern.exec(markup)) !== null) {
+                if (names.indexOf(match[1]) < 0) names.push(match[1]);
+            }
+            for (const name of names) {
+                const value = computed.getPropertyValue(name);
+                if (value) clone.style.setProperty(name, value.trim());
+            }
+
+            // The direction the chart reads in comes from the page as well, so the file carries it too: its labels read
+            // the way they did on the page, whatever page the file ends up in. The labels the renderer anchored to a side
+            // of the screen keep their place in either direction by their own markup (see BitChartSvgPrimitive).
+            clone.style.direction = computed.direction;
             return new XMLSerializer().serializeToString(clone);
         }
 
@@ -238,6 +299,7 @@ namespace BitBlazorUI {
 
         // Rasterizes the serialized SVG onto a canvas the caller can then read as a blob or a data URL.
         private static async rasterize(element: HTMLElement, scale: number, background: string | null) {
+            background = BitChart.resolveColor(element, background);
             const markup = BitChart.serialize(element, background);
             if (!markup) return null;
             const svg = element.querySelector('svg') as SVGSVGElement;
@@ -284,14 +346,21 @@ namespace BitBlazorUI {
         // Returns the standalone SVG markup instead of downloading it, so the caller can embed,
         // upload or store the picture itself.
         public static toSvgString(element: HTMLElement, background: string | null) {
-            return BitChart.serialize(element, background);
+            return BitChart.toStream(BitChart.serialize(element, background));
         }
 
         // Returns the rasterized chart as a data URL (the same picture exportPng downloads).
         public static async toDataUrl(element: HTMLElement, mimeType: string, scale: number, background: string | null) {
             const canvas = await BitChart.rasterize(element, scale, background);
-            if (!canvas) return null;
-            return canvas.toDataURL(mimeType || 'image/png');
+            return BitChart.toStream(canvas ? canvas.toDataURL(mimeType || 'image/png') : null);
+        }
+
+        // The markup and the data URL of a sizeable chart are far larger than the 32 KB one message of a
+        // Blazor Server circuit holds, and a result past it tears the circuit down, so they reach .NET as
+        // the UTF-8 bytes of the text, which it reads as a stream (an IJSStreamReference) in chunks.
+        // Nothing to read - a chart not rendered yet - is an empty array.
+        private static toStream(text: string | null | undefined) {
+            return new TextEncoder().encode(text ?? '');
         }
 
         public static downloadText(fileName: string, content: string, mimeType: string) {

@@ -1,0 +1,21 @@
+﻿@* A note in the flow of a page - the site kit's .bb-note (Fluent's MessageBar), tinted by its tone.
+   The title runs into the text as its first, bold words. *@
+
+<div class="@Tones.Note(Tone) @Class">
+    @if (!string.IsNullOrWhiteSpace(Title))
+    {
+        <strong>@Title</strong>@(" ")
+    }
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>One of <c>info</c>, <c>ok</c>, <c>warn</c>, <c>err</c> or <c>accent</c>.</summary>
+    [Parameter] public string Tone { get; set; } = "info";
+
+    [Parameter] public string? Title { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

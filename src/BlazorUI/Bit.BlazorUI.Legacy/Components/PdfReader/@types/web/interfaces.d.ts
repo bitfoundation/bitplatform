@@ -1,4 +1,4 @@
-declare type RenderingStates = any;
+﻿declare type RenderingStates = any;
 /**
  * @interface
  */

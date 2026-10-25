@@ -1,0 +1,386 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace Bit.BlazorUI.Tests.Components.Inputs.ChoiceGroup;
+
+/// <summary>
+/// Covers the BitParams cascade of the ChoiceGroup: what a BitChoiceGroupParams fills in, what it leaves
+/// alone because the group wrote it for itself, and that one non-generic params object reaches a group of
+/// any item and value types.
+/// </summary>
+[TestClass]
+public class BitChoiceGroupParamsTests : BunitTestContext
+{
+    private static List<BitChoiceGroupItem<string>> GetItems() =>
+    [
+        new() { Text = "Item A", Value = "A" },
+        new() { Text = "Item B", Value = "B" },
+    ];
+
+    private static RenderFragment RenderChoiceGroup(Action<RenderTreeBuilder>? extraAttributes = null)
+    {
+        return builder =>
+        {
+            builder.OpenComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(0);
+            builder.AddAttribute(1, nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Items), GetItems());
+            extraAttributes?.Invoke(builder);
+            builder.CloseComponent();
+        };
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupParamsShouldHaveCorrectParamName()
+    {
+        var paramName = BitChoiceGroupParams.ParamName;
+        var expectedName = $"{nameof(BitParams)}.{nameof(BitChoiceGroup<object, object>)}";
+
+        Assert.AreEqual(expectedName, paramName);
+        Assert.AreEqual("BitParams.BitChoiceGroup", paramName);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitChoiceGroupParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitChoiceGroupParams.ParamName, @params.Name);
+    }
+
+    // What a group is about rather than how it looks - its items, how it reads them, its item templates and the
+    // callbacks it answers with - is written per group, so it has no place on the params object.
+    private static readonly string[] _notCascaded =
+    [
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.CascadingParameters),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.ChildContent),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Comparer),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.ItemLabelTemplate),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.ItemPrefixTemplate),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.ItemSuffixTemplate),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.ItemTemplate),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Items),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.NameSelectors),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.OnBlur),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.OnClick),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.OnFocus),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Options),
+    ];
+
+    [TestMethod]
+    public void BitChoiceGroupParamsShouldCarryEveryParameterThatIsNotPerGroup()
+    {
+        // What the input base declares (the value, its binding and validation) is per instance, and so is every
+        // callback, the ones the source generator writes beside a two-way bound parameter included.
+        var baseParameters = typeof(BitChoiceGroup<BitChoiceGroupItem<string>, string>).BaseType!.GetProperties().Select(p => p.Name)
+                                 .Concat(typeof(BitChoiceGroup<BitChoiceGroupItem<string>, string>).GetProperties()
+                                                       .Where(p => p.PropertyType == typeof(EventCallback) ||
+                                                                   (p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(EventCallback<>)))
+                                                       .Select(p => p.Name))
+                                 .ToHashSet();
+
+        var missing = typeof(BitChoiceGroup<BitChoiceGroupItem<string>, string>).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                                                                .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                                                                .Select(p => p.Name)
+                                                                                .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
+                                                                                .Where(n => typeof(BitChoiceGroupParams).GetProperty(n) is null)
+                                                                                .ToArray();
+
+        Assert.AreEqual(0, missing.Length, $"{nameof(BitChoiceGroupParams)} is missing: {string.Join(", ", missing)}");
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldApplyCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitChoiceGroupParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Variant = BitVariant.Outline,
+                LabelPlacement = BitPlacement.Start,
+                Horizontal = true,
+                FullWidth = true,
+                Inline = true,
+                NoCircle = true,
+                StretchItemLabel = true,
+                Label = "Cascaded label",
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(RenderChoiceGroup());
+        });
+
+        var root = component.Find(".bit-chg");
+        var instance = component.FindComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>().Instance;
+
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-otl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-lst"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-hor"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-flw"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-inl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-ncr"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-sil"));
+        Assert.AreEqual("Cascaded label", instance.Label);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupDirectParametersShouldOverrideCascadingParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitChoiceGroupParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Variant = BitVariant.Outline,
+                Label = "Cascaded label",
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(RenderChoiceGroup(builder =>
+            {
+                builder.AddAttribute(2, nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Color), BitColor.Error);
+                builder.AddAttribute(3, nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Size), BitSize.Small);
+            }));
+        });
+
+        var root = component.Find(".bit-chg");
+        var instance = component.FindComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>().Instance;
+
+        // Direct parameters win over the cascaded ones.
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-err"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-sm"));
+
+        // What the group left unset is still filled in from the cascade.
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-otl"));
+        Assert.AreEqual("Cascaded label", instance.Label);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupParamsUpdateParametersShouldSetAllProperties()
+    {
+        var @params = new BitChoiceGroupParams
+        {
+            AriaLabelledBy = "labelled-by-id",
+            AutoReorderOptions = true,
+            Color = BitColor.Warning,
+            Description = "Cascaded description",
+            FullWidth = true,
+            Gap = "1rem",
+            Horizontal = true,
+            Inline = true,
+            Label = "Cascaded label",
+            LabelPlacement = BitPlacement.Start,
+            NoCircle = true,
+            Size = BitSize.Small,
+            StretchItemLabel = true,
+            Variant = BitVariant.Fill,
+            AriaLabel = "Cascaded aria label",
+            Disabled = true,
+            TabIndex = "5",
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(RenderChoiceGroup());
+        });
+
+        var instance = component.FindComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>().Instance;
+
+        Assert.AreEqual("labelled-by-id", instance.AriaLabelledBy);
+        Assert.IsTrue(instance.AutoReorderOptions);
+        Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.AreEqual("Cascaded description", instance.Description);
+        Assert.IsTrue(instance.FullWidth);
+        Assert.AreEqual("1rem", instance.Gap);
+        Assert.IsTrue(instance.Horizontal);
+        Assert.IsTrue(instance.Inline);
+        Assert.AreEqual("Cascaded label", instance.Label);
+        Assert.AreEqual(BitPlacement.Start, instance.LabelPlacement);
+        Assert.IsTrue(instance.NoCircle);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.IsTrue(instance.StretchItemLabel);
+        Assert.AreEqual(BitVariant.Fill, instance.Variant);
+        Assert.AreEqual("Cascaded aria label", instance.AriaLabel);
+        Assert.IsTrue(instance.Disabled);
+        Assert.AreEqual("5", instance.TabIndex);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupParamsUpdateParametersShouldNotOverwriteExistingValues()
+    {
+        var @params = new BitChoiceGroupParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            Label = "Params label",
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Color, BitColor.Error);
+            parameters.Add(p => p.Size, BitSize.Small);
+            parameters.Add(p => p.Label, "Existing label");
+        });
+
+        var instance = component.Instance;
+
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing label", instance.Label);
+
+        @params.UpdateParameters(instance);
+
+        // The values stay put because HasNotBeenSet returns false for every one of them.
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing label", instance.Label);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupParamsShouldApplyClassesAndStylesAndGap()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitChoiceGroupParams
+            {
+                Gap = "1rem",
+                Classes = new BitChoiceGroupClassStyles { Root = "custom-root", ItemLabel = "custom-item-label" },
+                Styles = new BitChoiceGroupClassStyles { Root = "color: red;" },
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(RenderChoiceGroup());
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.IsTrue(root.ClassList.Contains("custom-root"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("color: red;"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-chg-gap:1rem"));
+        Assert.IsTrue(component.Find(".bit-chg-itl").ClassList.Contains("custom-item-label"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupParamsShouldApplyBaseParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitChoiceGroupParams
+            {
+                AriaLabel = "Base label",
+                Id = "test-id",
+                Class = "base-class",
+                Style = "background: blue;",
+                Dir = BitDir.Rtl,
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(RenderChoiceGroup());
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.AreEqual("Base label", root.GetAttribute("aria-label"));
+        Assert.AreEqual("test-id", root.GetAttribute("id"));
+        Assert.IsTrue(root.ClassList.Contains("base-class"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("background: blue;"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupParamsShouldNotApplyWhenTheListIsEmpty()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(RenderChoiceGroup());
+        });
+
+        var root = component.Find(".bit-chg");
+
+        // Nothing cascades, so Color and Size stay unset and publish nothing - the public --bit-ChoiceGroup-*
+        // variables restyle that default - while the Variant keeps its structural default class.
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-pri"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-md"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-txt"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<BitChoiceGroupItem<string>> { new() { Text = "A", Value = "A" } });
+        });
+
+        // An unset Color or Size publishes nothing, so the public --bit-ChoiceGroup-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-chg");
+        var published = new[]
+        {
+            "bit-chg-pri", "bit-chg-sec", "bit-chg-ter", "bit-chg-inf", "bit-chg-suc", "bit-chg-wrn", "bit-chg-swr", "bit-chg-err",
+            "bit-chg-pbg", "bit-chg-sbg", "bit-chg-tbg", "bit-chg-pfg", "bit-chg-sfg", "bit-chg-tfg", "bit-chg-pbr", "bit-chg-sbr", "bit-chg-tbr",
+            "bit-chg-sm", "bit-chg-md", "bit-chg-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupParamsShouldReachTheOptionsApiToo()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitChoiceGroupParams { Variant = BitVariant.Outline, Color = BitColor.Info }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitChoiceGroup<BitChoiceGroupOption<string>, string>>(0);
+                builder.AddAttribute(1, nameof(BitChoiceGroup<BitChoiceGroupOption<string>, string>.ChildContent), (RenderFragment)(b =>
+                {
+                    b.OpenComponent<BitChoiceGroupOption<string>>(0);
+                    b.AddAttribute(1, nameof(BitChoiceGroupOption<string>.Text), "Option A");
+                    b.AddAttribute(2, nameof(BitChoiceGroupOption<string>.Value), "A");
+                    b.CloseComponent();
+                }));
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-otl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-inf"));
+    }
+}

@@ -11,6 +11,19 @@
         }
     }
 
+    // Bounds the card examples so a FullWidth group reads as a column of cards rather than as one
+    // stretched across the whole page.
+    .variant-box {
+        max-width: rem2(420px);
+    }
+
+    // The text an AriaLabelledBy example points at: a question already on the page, which is the usual
+    // reason to reach for AriaLabelledBy instead of writing the name a second time in an AriaLabel.
+    .example-question {
+        font-weight: 600;
+        margin-block-end: rem2(8px);
+    }
+
     .custom-description {
         gap: rem2(4px);
         display: flex;

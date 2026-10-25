@@ -1,0 +1,146 @@
+﻿@page "/examples/intersection"
+
+<PageTitle>Intersection · Blow</PageTitle>
+
+<ExampleScaffold Title="Intersection"
+                 Summary="Collision tests for nodes: GetIntersectingNodes finds the nodes a dragged node overlaps, or the nodes inside any rectangle, and IsNodeIntersecting tests one node against a rectangle. Drag nodes onto each other and into the dashed zone to see both - the building blocks of drop targets, snapping a node into a group, or keeping nodes apart.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_partially" @onchange="OnPartiallyChanged" /> Partial overlap counts</label>
+        <span class="bb-muted">
+            Overlapping the dragged node: <strong>@Names(_intersecting)</strong> · In the zone: <strong>@Names(_inZone)</strong>
+        </span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    OnNodeDrag="OnNodeDrag" OnNodeDragStop="OnNodeDragStop" OnNodesInitialized="UpdateZone">
+            <NodeTemplate Context="node">
+                <div class="@NodeClass(node)">@node.Label</div>
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+                @* Only a picture of the zone: the rectangle the tests use is Zone, in the code below. In the viewport layer,
+                   so it pans and zooms with the nodes. *@
+                <BlowViewportPortal>
+                    <div class="ix-zone @(_zoneActive ? "active" : null)" style="@ZoneStyle">
+                        <span class="ix-zone__label">Zone</span>
+                    </div>
+                </BlowViewportPortal>
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag</strong> the large <strong>Drag me</strong> node over A, B or C: every node it overlaps turns orange while you drag, and the toolbar names them.</li>
+        <li><strong>Drag any node</strong> into the dashed zone: the zone lights up while the dragged node touches it, and the toolbar lists every node inside it. D starts there.</li>
+        <li>Untick <strong>Partial overlap counts</strong>: now only a node lying entirely within counts - cover a small node completely with Drag me to colour it, and push a node all the way into the zone to light it.</li>
+        <li>Let go: the orange clears, and the zone list keeps the result.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>OnNodeDrag</code> is raised on every pointer move of a drag with the node being dragged, and <code>OnNodeDragStop</code> once it ends; the tests run there.</li>
+        <li><code>GetIntersectingNodes(node, partially)</code> returns the other nodes whose rectangles overlap that node's, the node itself left out. With <code>partially: false</code> it returns only those lying entirely within it.</li>
+        <li><code>GetIntersectingNodes(BlowRect area, partially)</code> does the same against any flow-space rectangle - here the zone, a <code>new BlowRect(x, y, width, height)</code>.</li>
+        <li><code>IsNodeIntersecting(node, area, partially)</code> tests a single node: true when it overlaps the area, or with <code>partially: false</code> when it lies entirely inside it. It lights the zone.</li>
+        <li><code>partially</code> defaults to <code>true</code> in all three. A node's rectangle is its position and its size - <code>Width</code> and <code>Height</code> where set, otherwise what was measured - and hidden nodes are skipped.</li>
+        <li><code>OnNodesInitialized</code> fills the zone list once every node has been measured. <code>BlowViewportPortal</code> draws the zone inside the zoomed layer, positioned in flow coordinates.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    /* The node element keeps the library's default chrome unless told otherwise; this node draws
+       its own box, filling the node so what you see is exactly the rectangle that is tested. */
+    .bit-blow-node.ix-shell { padding:0; border:0; background:none; min-width:0; box-shadow:none; border-radius:8px; }
+    .bit-blow-node.ix-shell.selected { box-shadow:0 0 0 2px var(--bit-blow-node-selected); }
+    .ix-node {
+        display:flex; align-items:center; justify-content:center; width:100%; height:100%; box-sizing:border-box;
+        border:1px solid var(--bit-blow-edge-stroke); border-radius:8px; background:var(--bit-blow-node-bg); color:var(--bit-blow-node-color); font-weight:600;
+    }
+    .ix-node.dragging { border-color:#6366f1; background:color-mix(in srgb, #6366f1 14%, var(--bit-blow-node-bg)); }
+    .ix-node.intersecting { border-color:#ea580c; background:color-mix(in srgb, #ea580c 20%, var(--bit-blow-node-bg)); }
+
+    /* Behind the edges and nodes of the zoomed layer, and never in the way of the pointer. */
+    .ix-zone {
+        position:absolute; z-index:-1; box-sizing:border-box; pointer-events:none;
+        border:2px dashed var(--bit-blow-border); border-radius:10px;
+    }
+    .ix-zone.active { border-color:#0d9488; background:color-mix(in srgb, #0d9488 10%, transparent); }
+    .ix-zone__label { position:absolute; top:6px; left:10px; font-size:11px; font-weight:600; color:var(--bit-blow-text-muted); }
+</style>
+
+@code {
+    // The zone, in flow coordinates: what the tests use and what the picture above is drawn from.
+    private static readonly BlowRect Zone = new(400, 130, 250, 170);
+
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private readonly HashSet<string> _intersecting = [];
+    private List<string> _inZone = [];
+    private string? _draggingId;
+    private bool _zoneActive;
+    private bool _partially = true;
+
+    private static string ZoneStyle => string.Create(System.Globalization.CultureInfo.InvariantCulture,
+        $"left:{Zone.X}px;top:{Zone.Y}px;width:{Zone.Width}px;height:{Zone.Height}px;");
+
+    protected override void OnInitialized()
+    {
+        // The dragged node is bigger than the rest, so "entirely within it" has something to cover. The others frame
+        // the zone, so fitting the view to the nodes takes it in as well.
+        _nodes =
+        [
+            new BlowNode { Id = "drag", Label = "Drag me", Position = new(40, 40), Width = 170, Height = 100, Class = "ix-shell" },
+            new BlowNode { Id = "a", Label = "A", Position = new(270, 30), Width = 90, Height = 44, Class = "ix-shell" },
+            new BlowNode { Id = "b", Label = "B", Position = new(270, 260), Width = 90, Height = 44, Class = "ix-shell" },
+            new BlowNode { Id = "c", Label = "C", Position = new(560, 30), Width = 90, Height = 44, Class = "ix-shell" },
+            new BlowNode { Id = "d", Label = "D", Position = new(470, 210), Width = 90, Height = 44, Class = "ix-shell" },
+        ];
+        _edges = [];
+    }
+
+    private string NodeClass(BlowNode node)
+    {
+        var cls = "ix-node";
+        if (node.Id == _draggingId) cls += " dragging";
+        if (_intersecting.Contains(node.Id)) cls += " intersecting";
+        return cls;
+    }
+
+    private void OnNodeDrag(BlowNode node)
+    {
+        _draggingId = node.Id;
+        _intersecting.Clear();
+        if (_flow is null) return;
+
+        foreach (var n in _flow.GetIntersectingNodes(node, _partially))
+            _intersecting.Add(n.Id);
+
+        _zoneActive = _flow.IsNodeIntersecting(node, Zone, _partially);
+        UpdateZone();
+    }
+
+    private void OnNodeDragStop(BlowNode node)
+    {
+        _draggingId = null;
+        _intersecting.Clear();
+        _zoneActive = false;
+        UpdateZone();
+    }
+
+    private void OnPartiallyChanged(ChangeEventArgs e)
+    {
+        _partially = (bool)e.Value!;
+        UpdateZone();
+    }
+
+    private void UpdateZone()
+    {
+        if (_flow is null) return;
+        _inZone = _flow.GetIntersectingNodes(Zone, _partially).Select(n => n.Id).ToList();
+    }
+
+    private string Names(IEnumerable<string> ids)
+    {
+        var labels = ids.Select(id => _nodes.FirstOrDefault(n => n.Id == id)?.Label ?? id).ToList();
+        return labels.Count == 0 ? "none" : string.Join(", ", labels);
+    }
+}

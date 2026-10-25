@@ -1,0 +1,145 @@
+﻿@page "/examples/self-loop-edges"
+
+<PageTitle>Self-Connections · Blow</PageTitle>
+
+<ExampleScaffold Title="Self-Connections"
+                 Summary="An edge back to the node it left has no route between two nodes to compute, so every ordinary path algorithm would collapse onto the node itself. Blow loops it clear instead - whatever its Type, and wherever its two handles sit - and AllowSelfConnections lets the user draw one.">
+    <Toolbar>
+        <label>
+            Loop radius
+            <input type="range" min="20" max="140" step="10" value="@_radius"
+                   @oninput="@(e => SetRadius(e.Value))" />
+            <span class="radius">@_radius</span>
+        </label>
+        <label>
+            Path type
+            <select @bind="_type" @bind:after="ApplyStyle">
+                @foreach (var type in Enum.GetValues<BlowEdgeType>())
+                {
+                    <option value="@type">@type</option>
+                }
+            </select>
+        </label>
+        <label>
+            <input type="checkbox" @bind="_animated" @bind:after="ApplyStyle" /> Animated loops
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes"
+                    Edges="_edges"
+                    AllowSelfConnections="true"
+                    ConnectionRadius="30"
+                    OnConnect="@(_ => ApplyStyle())"
+                    FitViewOnInit="true"
+                    FitViewOptions="_fit">
+            <NodeTemplate Context="node">
+                <BlowHandle Type="BlowHandleType.Target" Id="in-top" Position="BlowPosition.Top" />
+                <BlowHandle Type="BlowHandleType.Target" Id="in-left" Position="BlowPosition.Left" />
+                <div class="loop-node">@node.Label</div>
+                <BlowHandle Type="BlowHandleType.Source" Id="out-right" Position="BlowPosition.Right" />
+                <BlowHandle Type="BlowHandleType.Source" Id="out-bottom" Position="BlowPosition.Bottom" />
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="24" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Look at the three loops: <strong>Retry</strong> goes from its right handle round the bottom to its left one, <strong>Poll</strong> from its right handle round the corner to its top one, and <strong>Recurse</strong> from its bottom handle round the side to its top one.</li>
+        <li>Move <strong>Loop radius</strong>: every loop swings further out from its node or tucks in closer.</li>
+        <li>Change <strong>Path type</strong>: the edge from Poll down to Recurse changes shape, while the loops stay loops whatever the type.</li>
+        <li>Untick <strong>Animated loops</strong> to stop the dash marching round them.</li>
+        <li><strong>Drag</strong> from a node's right or bottom handle back to its own top or left handle: a new loop appears, with the current radius, type and animation.</li>
+        <li><strong>Drag</strong> a node: its loop travels with it.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>An edge whose <code>Source</code> and <code>Target</code> are the same node is drawn as a loop that swings clear of the node, its <code>Type</code> ignored: a bezier or a step between two handles of one node would run through the node.</li>
+        <li><code>SourceHandle</code> and <code>TargetHandle</code> pick the two handles by id, so the same node can loop across itself, round a corner or round a side.</li>
+        <li><code>BlowEdgePathOptions.LoopRadius</code> (60 by default) is how far the loop stands off its node; the slider sets it on every loop through each edge's <code>PathOptions</code>.</li>
+        <li>Such an edge can always be put in the <code>Edges</code> list. <code>AllowSelfConnections</code> (off by default) lets the user draw one, and only between two different handles; <code>ConnectionRadius</code>, raised from 20 to 30 here, is how near a handle a release still snaps to it.</li>
+        <li><code>OnConnect</code> fires once the new edge is in the list, so the page restyles it there with the others.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .loop-node { font-weight: 600; }
+    .radius { display: inline-block; min-width: 2.5rem; text-align: right; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private double _radius = 60;
+
+    // The fit only measures nodes, and the loops reach well past them: the wider margin keeps the loop under
+    // Recurse on screen.
+    private readonly BlowFitViewOptions _fit = new() { Padding = 0.35 };
+    private BlowEdgeType _type = BlowEdgeType.Bezier;
+    private bool _animated = true;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "retry", Label = "Retry", Position = new(60, 60), Width = 150, Height = 56 },
+            new BlowNode { Id = "poll", Label = "Poll", Position = new(400, 60), Width = 150, Height = 56 },
+            new BlowNode { Id = "recurse", Label = "Recurse", Position = new(230, 280), Width = 150, Height = 56 },
+        ];
+
+        _edges =
+        [
+            // Right handle back round to the left one: without loop routing this is a straight
+            // line laid across the middle of the node.
+            Loop("retry", "out-right", "in-left", "retry"),
+
+            // Right back to the top: two handles round a corner rather than across the node. (Its left handle is
+            // where the edge from Retry comes in.)
+            Loop("poll", "out-right", "in-top", "poll again"),
+
+            // Bottom back to top: the same degeneracy as Retry's, on the other axis.
+            Loop("recurse", "out-bottom", "in-top", "recurse"),
+
+            new BlowEdge { Id = "retry-poll", Source = "retry", SourceHandle = "out-right", Target = "poll", TargetHandle = "in-left" },
+            new BlowEdge { Id = "poll-recurse", Source = "poll", SourceHandle = "out-bottom", Target = "recurse", TargetHandle = "in-top" },
+        ];
+
+        ApplyStyle();
+    }
+
+    private static BlowEdge Loop(string nodeId, string sourceHandle, string targetHandle, string label) => new()
+    {
+        Id = $"{nodeId}-self",
+        Source = nodeId,
+        SourceHandle = sourceHandle,
+        Target = nodeId,
+        TargetHandle = targetHandle,
+        Label = label,
+    };
+
+    // Restyles the edges in place - the user's own included - rather than rebuilding the list, which would throw away
+    // every edge drawn since the page loaded. Every edge takes the type, so an edge between two nodes shows what it
+    // is; only the loops take the radius and the animation.
+    private void ApplyStyle()
+    {
+        foreach (var edge in _edges)
+        {
+            edge.Type = _type;
+            if (edge.Source != edge.Target) continue;
+
+            edge.Animated = _animated;
+            (edge.PathOptions ??= new BlowEdgePathOptions()).LoopRadius = _radius;
+        }
+    }
+
+    private void SetRadius(object? raw)
+    {
+        if (!double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var value))
+            return;
+
+        // The geometry cache compares the option values rather than the object, so retuning the
+        // loops in place is enough to reroute them.
+        _radius = value;
+        ApplyStyle();
+    }
+}

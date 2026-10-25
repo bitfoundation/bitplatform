@@ -1,0 +1,1083 @@
+﻿/* ============================================================================================
+   BlazeDb demo - the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is BlazeDb's own - the panels the pages drive the engine from,
+   the row lists, the scenario traces, the I/O trace, the hex dumps, the benchmark bars, the storage
+   badge and the boot screen - and it is written against the kit's --bb-* names, so it follows the
+   light/dark theme with no rules of its own for either. Its own names start with bd-.
+   ============================================================================================ */
+
+/* ---------- Code colours ----------
+
+   CodeHighlighter.cs tokenizes more kinds than the kit colours, so the two it adds - functions and
+   numbers - get a light and a dark value here, in the same GitHub palette the kit's are taken from. */
+:root {
+    --bd-code-func: #8250DF;
+    --bd-code-number: #0A3069;
+}
+
+:root[bit-theme="dark"] {
+    --bd-code-func: #D2A8FF;
+    --bd-code-number: #A5D6FF;
+}
+
+.bb-code .tok-c { color: var(--bb-code-comment); font-style: italic; }
+.bb-code .tok-k { color: var(--bb-code-keyword); }
+.bb-code .tok-s { color: var(--bb-code-string); }
+.bb-code .tok-t,
+.bb-code .tok-a { color: var(--bb-code-param); }
+.bb-code .tok-f { color: var(--bd-code-func); }
+.bb-code .tok-n { color: var(--bd-code-number); }
+.bb-code .tok-p { color: var(--bb-code-fg); }
+
+/* A generated call whose length changes as the reader clicks wraps instead of scrolling. */
+.bb-code.bd-wrap {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* CodeBlock: the file name over the block, both in one grid cell. */
+.bd-code {
+    min-width: 0;
+    margin: 0 0 1.25rem;
+}
+
+.bd-code > .bb-code {
+    margin: 0;
+}
+
+.bd-code > .bb-source-file {
+    margin: 0 0 .375rem;
+}
+
+/* ---------- Layout of a page's samples ---------- */
+
+/* A main column and a narrower side column of panels; they stack when the docs column is too
+   narrow for both, which on a page that keeps its "on this page" rail is most of the time. */
+.bd-main-side {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1rem;
+    margin: 0 0 1.25rem;
+}
+
+.bd-main-side > * {
+    min-width: 0;
+}
+
+.bd-main-side > :first-child {
+    flex: 2 1 420px;
+}
+
+.bd-main-side > :last-child {
+    flex: 1 1 280px;
+}
+
+/* Inside a grid or a stack the gap is the spacing, so the pieces drop their own bottom margins. */
+:is(.bb-split, .bb-grid, .bb-flex, .bd-main-side) > :is(.bd-panel, .bd-code, .bb-note, .bb-stats, .bb-flex, .bb-scroll, .bb-empty) {
+    margin-bottom: 0;
+}
+
+/* A column of actions in a side panel, and a grid of them in a wider one. */
+.bd-actions {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    margin: 0 0 1rem;
+}
+
+.bd-btn-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr));
+    gap: .5rem;
+    margin: 0 0 1rem;
+}
+
+:is(.bd-actions, .bd-btn-grid) > .btn {
+    justify-content: flex-start;
+    white-space: normal;
+    text-align: start;
+}
+
+.bd-grow {
+    flex: 1 1 160px;
+    min-width: 0;
+}
+
+/* The live facts under a page's title. */
+.bd-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem;
+    margin-top: 1rem;
+}
+
+/* ---------- Panels (Components/Panel.razor) - a .bb-demo with a title bar ---------- */
+
+.bd-panel-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .25rem .5rem;
+    min-width: 0;
+    margin-inline-end: auto;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text);
+}
+
+.bd-panel-title > svg {
+    flex: none;
+    color: var(--bb-primary);
+}
+
+.bd-panel-title > strong {
+    font-weight: var(--fl-weight-semibold);
+}
+
+.bd-panel-sub {
+    font-family: var(--bb-mono);
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-regular);
+    color: var(--bb-text-soft);
+    overflow-wrap: anywhere;
+}
+
+.bd-panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+}
+
+/* A panel is a sample, not a passage: its prose is the size of the controls around it. */
+.bd-panel :where(p, li) {
+    font-size: var(--fl-font-size-200);
+    line-height: 1.6;
+    color: var(--bb-text-muted);
+}
+
+.bb-docs-content .bd-panel .bb-detail-list,
+.bb-docs-content .bd-panel .bb-note {
+    font-size: var(--fl-font-size-200);
+}
+
+.bd-panel > .btn:not(:last-child) {
+    margin-bottom: .75rem;
+}
+
+/* A label that is a call - await BlazeDbOpfsStorage.CreateAsync("...") - wraps on a phone rather
+   than pushing the page sideways. */
+.bd-panel > .btn {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: start;
+}
+
+/* A text field in a panel fills the width its field was given. */
+.bd-panel .bb-field > :is(input:not([type="checkbox"]):not([type="radio"]), select) {
+    width: 100%;
+}
+
+.bb-field .bb-check {
+    font-weight: var(--fl-weight-regular);
+}
+
+/* Flush: the content brings its own rows, so the panel loses its padding and they run edge to
+   edge - the table's own frame included. */
+.bd-flush {
+    padding: 0;
+    overflow: hidden;
+}
+
+.bd-flush > .bb-demo-bar {
+    margin: 0;
+}
+
+.bd-flush > .bb-scroll,
+.bd-flush > .bb-stats {
+    margin: 0;
+}
+
+.bd-flush > .bb-scroll > .bb-table {
+    border: 0;
+    border-radius: 0;
+}
+
+.bd-flush > .bb-empty {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+}
+
+.bd-flush > .bb-log {
+    max-height: 26rem;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+}
+
+.bd-panel-pad {
+    padding: 1rem 1.25rem;
+}
+
+.bd-panel-pad > :last-child {
+    margin-bottom: 0;
+}
+
+.bd-panel-foot {
+    border-top: 1px solid var(--bb-border);
+}
+
+.bd-flush > .bb-stats.bd-panel-stats {
+    margin: 1rem;
+}
+
+/* A filter row over a list, and the pager under it. */
+.bd-filterbar,
+.bd-pagerbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    padding: .75rem 1rem;
+}
+
+.bd-filterbar {
+    border-bottom: 1px solid var(--bb-border);
+}
+
+.bd-pagerbar {
+    justify-content: space-between;
+    padding-block: .625rem;
+    border-top: 1px solid var(--bb-border);
+}
+
+/* ---------- Readouts ---------- */
+
+/* What a call returned - the code surface, with the brand rule a result carries. */
+.bb-log.bd-out {
+    max-height: 14rem;
+    white-space: pre-wrap;
+    border-inline-start: 3px solid var(--bb-primary);
+}
+
+.bd-count {
+    margin-bottom: .5rem;
+    font-size: 2.25rem;
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.1;
+    color: var(--bb-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.bb-table :is(th, td).bd-num {
+    text-align: end;
+    white-space: nowrap;
+    font-family: var(--bb-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.bb-table td:has(> .bd-bar) {
+    vertical-align: middle;
+}
+
+.bd-strong,
+.bb-table td.bd-strong {
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+}
+
+.bd-ok,
+.bb-table td.bd-ok,
+.bb-params dd.bd-ok {
+    color: var(--bb-success-text);
+}
+
+.bd-err,
+.bb-table td.bd-err,
+.bb-params dd.bd-err {
+    color: var(--bb-danger-text);
+}
+
+.bd-small {
+    font-size: .8125rem;
+}
+
+/* A footnote under a sample. */
+.bd-foot,
+.bd-panel .bd-foot {
+    margin: .5rem 0 0;
+    font-size: var(--fl-font-size-100);
+    line-height: 1.5;
+    color: var(--bb-text-soft);
+}
+
+/* A definition list whose values are sentences rather than identifiers. */
+.bb-params.bd-params-prose dd {
+    display: block;
+    font-family: inherit;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-muted);
+}
+
+/* ---------- Badges, buttons, stats ---------- */
+
+.bb-badge.bd-badge-neutral {
+    background: var(--bb-surface-2);
+    color: var(--bb-text-muted);
+}
+
+.bb-badge.bd-badge-accent {
+    background: color-mix(in srgb, var(--bb-accent) 18%, transparent);
+    color: var(--bb-accent-text);
+}
+
+/* A destructive action: the secondary button, stroked and lettered in the danger color. */
+.btn.bd-btn-danger {
+    background: var(--bb-surface);
+    color: var(--bb-danger-text);
+    border-color: color-mix(in srgb, var(--bb-danger) 45%, transparent);
+}
+
+.btn.bd-btn-danger:hover:not(:disabled) {
+    background: var(--bb-danger-soft);
+    border-color: var(--bb-danger);
+    color: var(--bb-danger-text);
+}
+
+/* Where a measured number came from - usually the call that produced it. */
+.bd-stat-note {
+    font-family: var(--bb-mono);
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-soft);
+    overflow-wrap: anywhere;
+}
+
+.bd-stat-accent .bb-stat-value { color: var(--bb-primary); }
+.bd-stat-ok .bb-stat-value { color: var(--bb-success-text); }
+
+/* ---------- Scenario trace (Components/ScenarioSteps.razor) ---------- */
+
+.bd-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.bd-step {
+    display: flex;
+    gap: .75rem;
+    padding: .625rem 1rem;
+    border-top: 1px solid var(--bb-border);
+    font-size: var(--fl-font-size-200);
+}
+
+.bd-step:first-child {
+    border-top: 0;
+}
+
+.bd-step-num {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 1.375rem;
+    height: 1.375rem;
+    margin-top: .0625rem;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-surface-2);
+    color: var(--bb-text-muted);
+    font-family: var(--bb-mono);
+    font-size: .6875rem;
+    font-weight: var(--fl-weight-semibold);
+}
+
+.bd-step-ok .bd-step-num { background: var(--bb-success-soft); color: var(--bb-success-text); }
+.bd-step-err .bd-step-num { background: var(--bb-danger-soft); color: var(--bb-danger-text); }
+.bd-step-run .bd-step-num { background: var(--bb-primary-soft); color: var(--bb-primary-hover); }
+
+.bd-step-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.bd-step-title {
+    font-weight: var(--fl-weight-medium);
+    color: var(--bb-text);
+}
+
+.bd-step-code {
+    margin-top: .125rem;
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+    color: var(--bb-text-muted);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.bd-step-note {
+    margin-top: .125rem;
+    font-size: .8125rem;
+    color: var(--bb-text-soft);
+}
+
+.bd-step-err .bd-step-note {
+    color: var(--bb-danger-text);
+}
+
+/* ---------- Row lists ---------- */
+
+.bd-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+.bd-rows-framed {
+    margin: 0 0 .75rem;
+    overflow: hidden;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.bd-row {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .625rem 1rem;
+    border-top: 1px solid var(--bb-border);
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bd-row:first-child {
+    border-top: 0;
+}
+
+.bd-row:hover {
+    background: var(--bb-surface-hover);
+}
+
+.bd-row-editing,
+.bd-row-editing:hover {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    background: var(--bb-surface-sunken);
+}
+
+.bd-row-editing .bb-fields {
+    margin-bottom: .375rem;
+}
+
+.bd-row-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.bd-row-title {
+    overflow: hidden;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-medium);
+    color: var(--bb-text);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bd-done .bd-row-title {
+    color: var(--bb-text-soft);
+    text-decoration: line-through;
+}
+
+.bd-row-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem;
+    margin-top: .25rem;
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-soft);
+}
+
+.bd-row-actions {
+    display: flex;
+    flex: none;
+    gap: .125rem;
+}
+
+/* A todo's priority. */
+.bd-prio {
+    display: inline-flex;
+    align-items: center;
+    padding: .0625rem .4375rem;
+    border-radius: var(--bb-radius-sm);
+    font-size: .6875rem;
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.45;
+}
+
+.bd-prio-Low { background: var(--bb-surface-2); color: var(--bb-text-muted); }
+.bd-prio-Normal { background: var(--bb-primary-soft); color: var(--bb-primary-hover); }
+.bd-prio-High { background: var(--bb-warning-soft); color: var(--bb-warning-text); }
+.bd-prio-Critical { background: var(--bb-danger-soft); color: var(--bb-danger-text); }
+
+/* A checklist. */
+.bd-ticks {
+    display: flex;
+    flex-direction: column;
+    gap: .375rem;
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+}
+
+.bd-ticks li {
+    position: relative;
+    padding-inline-start: 1.5rem;
+}
+
+.bd-ticks li::before {
+    content: "";
+    position: absolute;
+    top: .45rem;
+    inset-inline-start: .25rem;
+    width: .55rem;
+    height: .3rem;
+    border-bottom: 2px solid var(--bb-success);
+    border-inline-start: 2px solid var(--bb-success);
+    transform: rotate(-45deg);
+}
+
+/* ---------- Bytes: the hex dump and the engine's I/O trace ---------- */
+
+.bd-hex {
+    overflow-x: auto;
+    padding: .75rem 1rem;
+    background: var(--bb-code-bg);
+    color: var(--bb-code-fg);
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+    line-height: 1.75;
+}
+
+.bd-hex-row {
+    display: flex;
+    gap: 1.25rem;
+    white-space: pre;
+}
+
+.bd-hex-off { flex: none; color: var(--bb-code-comment); }
+.bd-hex-bytes { flex: none; color: var(--bd-code-number); }
+.bd-hex-ascii { flex: none; color: var(--bb-code-string); }
+
+.bd-trace {
+    max-height: 26rem;
+    overflow-y: auto;
+    background: var(--bb-code-bg);
+    color: var(--bb-code-fg);
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+    line-height: 1.6;
+}
+
+.bd-trace-row {
+    display: flex;
+    gap: .75rem;
+    padding: .25rem 1rem;
+    border-top: 1px solid var(--bb-border);
+}
+
+.bd-trace-row:first-child {
+    border-top: 0;
+}
+
+.bd-trace-seq {
+    flex: none;
+    min-width: 2.5rem;
+    text-align: end;
+    color: var(--bb-code-comment);
+    font-variant-numeric: tabular-nums;
+}
+
+.bd-trace-op {
+    flex: none;
+    min-width: 8.5rem;
+    font-weight: var(--fl-weight-semibold);
+}
+
+.bd-op-read { color: var(--bb-code-keyword); }
+.bd-op-append { color: var(--bb-code-param); }
+.bd-op-write { color: var(--bb-code-string); }
+.bd-op-delete { color: var(--bb-danger-text); }
+
+.bd-trace-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bd-trace-meta {
+    flex: none;
+    color: var(--bb-code-comment);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Benchmark bars ---------- */
+
+.bd-bar {
+    min-width: 80px;
+    height: 6px;
+    overflow: hidden;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-surface-2);
+}
+
+.bd-bar-fill {
+    height: 100%;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-primary);
+    transition: width var(--fl-duration-slow) var(--bb-motion-easing);
+}
+
+.bd-bar-ok { background: var(--bb-success); }
+.bd-bar-accent { background: var(--bb-accent); }
+.bd-bar-info { background: var(--bb-primary); }
+
+.bb-table th.bd-bar-col {
+    width: 180px;
+}
+
+.bd-progress {
+    margin: 0 0 .5rem;
+}
+
+.bd-progress > .bd-foot {
+    margin-top: .375rem;
+}
+
+/* ---------- Failure-mode cases (Errors) ---------- */
+
+.bd-cases {
+    display: flex;
+    flex-direction: column;
+}
+
+.bd-case {
+    padding: .875rem 1rem;
+    border-top: 1px solid var(--bb-border);
+}
+
+.bd-case:first-child {
+    border-top: 0;
+}
+
+.bd-case-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.bd-case-what {
+    min-width: 0;
+}
+
+.bd-case-title {
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.4;
+    color: var(--bb-text);
+}
+
+code.bd-case-api {
+    display: inline-block;
+    margin-top: .25rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: .75rem;
+    color: var(--bb-text-soft);
+}
+
+.bd-case-side {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: .5rem;
+}
+
+.bd-panel .bd-case-note {
+    max-width: 78ch;
+    margin: .5rem 0 0;
+    font-size: .8125rem;
+}
+
+.bd-case-result {
+    display: flex;
+    gap: .5rem;
+    margin-top: .625rem;
+    padding: .5rem .75rem;
+    border: 1px solid transparent;
+    border-radius: var(--bb-radius);
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.bd-case-result > svg {
+    flex: none;
+    margin-top: .1875rem;
+}
+
+.bd-case-ok {
+    background: var(--bb-success-soft);
+    border-color: color-mix(in srgb, var(--bb-success) 35%, transparent);
+    color: var(--bb-success-text);
+}
+
+.bd-case-err {
+    background: var(--bb-danger-soft);
+    border-color: color-mix(in srgb, var(--bb-danger) 35%, transparent);
+    color: var(--bb-danger-text);
+}
+
+@media (max-width: 640px) {
+    .bd-case-head {
+        flex-direction: column;
+    }
+
+    .bd-case-side {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+/* ---------- Generator diagnostics (Schema) ----------
+
+   The FAQ's disclosure rows, stretched to the docs column and carrying a badge and the trigger next to
+   the title, with the rejected and the fixed table type side by side once a row is open. */
+
+.bd-diagnostics {
+    max-width: none;
+}
+
+.bd-diagnostics summary {
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.bd-diagnostics details[open] > :not(summary) + :not(summary) {
+    margin-top: .75rem;
+}
+
+/* ---------- The architecture diagram (Getting started) ---------- */
+
+.bd-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    margin: 0 0 1.25rem;
+    padding: 1.25rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-xl);
+    box-shadow: var(--bb-shadow-card);
+}
+
+.bd-dg-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+.bd-dg-box {
+    flex: 1 1 150px;
+    min-width: 0;
+    padding: .625rem .75rem;
+    background: var(--bb-surface-sunken);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.bd-dg-mem {
+    background: var(--bb-primary-soft);
+    border-color: color-mix(in srgb, var(--bb-primary) 35%, transparent);
+}
+
+.bd-dg-io {
+    border-style: dashed;
+    border-color: var(--bb-border-strong);
+}
+
+.bd-dg-title {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+}
+
+.bd-dg-title > svg {
+    flex: none;
+    color: var(--bb-primary);
+}
+
+.bd-dg-note {
+    margin-top: .125rem;
+    font-family: var(--bb-mono);
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-muted);
+    overflow-wrap: anywhere;
+}
+
+.bd-dg-arrow {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .6875rem;
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--bb-text-soft);
+}
+
+.bd-dg-arrow::before,
+.bd-dg-arrow::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--bb-border-strong);
+}
+
+/* ---------- The landing page's live sample ---------- */
+
+.bd-hero-live {
+    padding: 1rem 1.25rem 1.25rem;
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border);
+}
+
+.bd-hero-live > p {
+    margin: 0;
+}
+
+.bd-hero-add {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: 1rem;
+}
+
+.bd-hero-add > input {
+    flex: 1;
+    min-width: 0;
+}
+
+.bd-hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0 0 1rem;
+    overflow: hidden;
+    background: var(--bb-border);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.bd-hero-stats > div {
+    min-width: 0;
+    padding: .5rem .75rem;
+    background: var(--bb-surface);
+}
+
+.bd-hero-stats dt {
+    font-family: var(--bb-mono);
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-soft);
+}
+
+.bd-hero-stats dd {
+    margin: 0;
+    font-size: var(--fl-font-size-400);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+
+.bd-hero-rows {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.bd-hero-rows > li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .375rem .625rem;
+    border-radius: var(--bb-radius);
+    background: var(--bb-surface-sunken);
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text);
+}
+
+.bd-hero-rows > li > span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bd-hero-rows .bb-mono {
+    flex: none;
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-soft);
+}
+
+/* ---------- The storage badge (Components/StorageStatus.razor) ----------
+
+   Where this tab's database lives, on every page: fixed to the bottom corner, under every overlay
+   the chrome opens. The docs nav panel gets the room at its foot that the badge covers. */
+.bd-status {
+    position: fixed;
+    bottom: 1rem;
+    inset-inline-start: 1rem;
+    z-index: 900;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    max-width: calc(100vw - 2rem);
+    padding: .3125rem .75rem;
+    background: color-mix(in srgb, var(--bb-surface) 92%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-pill);
+    box-shadow: var(--bb-shadow-raised);
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text-muted);
+}
+
+.bd-status-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bd-status-rows {
+    flex: none;
+    font-family: var(--bb-mono);
+    font-weight: var(--fl-weight-regular);
+    color: var(--bb-text-soft);
+}
+
+.bd-status-rows::before {
+    content: "·";
+    margin-inline-end: .5rem;
+}
+
+.bb-docs > aside.bb-docs-sidebar {
+    padding-bottom: 4rem;
+}
+
+/* It sits in the docs shell's gutter, under the nav panel; the pages without the shell - the landing
+   page, whose hero names the storage in its window's title bar, and the not-found page - would have
+   it floating over their content instead. */
+body:not(:has(.bb-docs)) .bd-status {
+    display: none;
+}
+
+/* ---------- The boot screen (Server/Components/App.razor) ----------
+
+   Nothing is prerendered, so this is what the first response shows while the runtime downloads;
+   it goes as soon as the app's shell exists. */
+body:has(.page) .bd-boot {
+    display: none;
+}
+
+.bd-boot {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 1rem;
+    background: var(--bb-bg);
+    color: var(--bb-text-muted);
+}
+
+.bd-boot-mark {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: var(--bb-radius-xl);
+    background: var(--bb-primary);
+    color: var(--bb-primary-text);
+    box-shadow: var(--bb-shadow-raised);
+}
+
+.bd-boot-name {
+    font-family: var(--bb-font-display);
+    font-size: var(--fl-font-size-400);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: -.01em;
+    color: var(--bb-text);
+}
+
+.bd-boot-track {
+    width: 190px;
+    height: 3px;
+    overflow: hidden;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-surface-2);
+}
+
+.bd-boot-track::after {
+    content: "";
+    display: block;
+    width: var(--blazor-load-percentage, 12%);
+    min-width: 8%;
+    height: 100%;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-primary);
+    transition: width 120ms linear;
+}
+
+.bd-boot-text {
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--bb-text-soft);
+}
+
+.bd-boot-text::after {
+    content: var(--blazor-load-percentage-text, "Loading");
+}
+
+@media print {
+    .bd-status,
+    .bd-boot {
+        display: none !important;
+    }
+}
+
+@media (forced-colors: active) {
+    .bd-status,
+    .bd-dg-box,
+    .bd-case-result {
+        border: 1px solid CanvasText;
+    }
+}

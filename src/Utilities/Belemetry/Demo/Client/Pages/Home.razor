@@ -1,0 +1,329 @@
+﻿@page "/"
+@layout MainLayout
+@inject IBelemetry Belemetry
+
+<PageTitle>Belemetry - telemetry for every Blazor app</PageTitle>
+
+@* The landing page: hero -> proof strip -> the twelve consent features -> code walkthrough -> comparison
+   with the OpenTelemetry SDKs -> persona tiles -> FAQ -> final call to action. Everything else on the
+   site is a documentation page under DocsLayout.
+
+   The page has one argument to make: that a single small package covers both halves of a Blazor app in
+   OpenTelemetry's own terms, under the user's consent. The strongest form of that argument is the site
+   itself, which is instrumented with Belemetry - so the hero's sample is live: the reader's own records,
+   read back from this site's OTLP receiver as they arrive. *@
+
+<div class="bb-landing">
+
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net8.0 / net9.0 / net10.0 · ships with an MCP server
+            </span>
+            <h1>Telemetry for Blazor,<br /><span class="bb-hero-accent">both sides of the app.</span></h1>
+            <p class="bb-hero-sub">
+                One lightweight SDK for WebAssembly, Server, Auto, static SSR and Hybrid. It records the browser -
+                page views, clicks, web vitals, errors, fetch and XHR - and .NET - <code>ILogger</code>,
+                <code>Activity</code> and <code>Meter</code> - in OpenTelemetry's data model, without the
+                OpenTelemetry packages, and only what the user consented to.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Belemetry</pre>
+            <div class="bb-hero-actions">
+                <a href="web-app" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <a href="live" class="btn btn-secondary bb-btn-lg">Live telemetry</a>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </div>
+        </div>
+
+        @* The sample, framed as a window: one line of C#, and under it what this site recorded of the
+           reader's own visit - live, read back from its in-process OTLP receiver. Before the reader
+           answers the consent banner the feed says nothing is sent, which is the other half of the point. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">Checkout.razor · <strong>your records, live</strong></span>
+                </div>
+                <pre class="bb-code"><span class="k">@@inject</span> IBelemetry Belemetry
+
+&lt;<span class="k">button</span> @@onclick=<span class="s">"TrackEvent"</span>&gt;Track an event&lt;/<span class="k">button</span>&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">void</span> TrackEvent() =&gt; Belemetry.TrackEvent(<span class="s">"demo.home.click"</span>);
+}
+<span class="c">@@* Page views, clicks, web vitals and errors take no code *@@</span></pre>
+                <div class="demo-home-live">
+                    <div class="bb-toolbar">
+                        <button type="button" class="btn btn-primary" data-bit-belemetry-name="home.track-event"
+                                disabled="@(RendererInfo.IsInteractive is false)" @onclick="TrackEvent">
+                            Track an event
+                        </button>
+                        <a class="btn btn-secondary" href="consent">Choose what is sent</a>
+                    </div>
+                    @* Events and errors only - page views, clicks, web vitals, custom events: the records a
+                       reader can cause and recognize. The long tasks of the WebAssembly runtime starting
+                       up are on the Live telemetry page with everything else. *@
+                    <TelemetryFeedView Compact="true" Max="5" Match="@(r => r.Kind is "Event" or "Error")"
+                                       EmptyText="Nothing yet - press the button, or click around the site." />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Proof strip ============================== *@
+
+    <section class="bb-proof">
+        <div><strong>Both halves</strong><span>the browser script and the .NET pipeline, one registration</span></div>
+        <div><strong>No OpenTelemetry packages</strong><span>the OTel data model and OTLP, written by hand</span></div>
+        <div><strong>Every Blazor host</strong><span>WebAssembly, Server, Auto, static SSR and Hybrid</span></div>
+        <div><strong>Twelve consent features</strong><span>granted and revoked one by one, at runtime</span></div>
+    </section>
+
+    @* ============================== Capabilities ============================== *@
+
+    @* The grid is the twelve consent features, in bit order, because that is how Belemetry itself
+       divides what it collects: every record belongs to exactly one of them. *@
+    <section class="bb-section">
+        <p class="bb-overline">Capabilities</p>
+        <h2>Twelve features, each under its own consent</h2>
+        <p class="bb-section-sub">
+            A record is collected only when its feature is enabled by configuration and granted by the user.
+            Nothing is sent before the user decides, revoking a feature purges what it queued, and every tile
+            below opens the page that shows it working.
+        </p>
+        <div class="bb-grid">
+            @foreach (var feature in _capabilities)
+            {
+                <a class="bb-card" href="@feature.Href" @key="feature.Title">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-@feature.Dot"></span> @feature.Title</h3>
+                    <p class="bb-card-desc">@feature.Description</p>
+                </a>
+            }
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>One registration, two components</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>Register it with an exporter</h3>
+                    <p>
+                        In every project that hosts Blazor. The call is idempotent and follows the Options pattern,
+                        and the same options configure the browser script too.
+                    </p>
+                    <a href="web-app">Blazor Web App →</a>
+                </div>
+                <pre class="bb-code">builder.Services.<span class="k">AddBitBelemetryServices</span>(options =&gt;
+{
+    options.ServiceName = <span class="s">"MyApp"</span>;
+    options.AddOtlpExporter(<span class="s">"http://localhost:4318"</span>);   <span class="c">// Aspire, OTel Collector, ...</span>
+
+    options.Consent.Default = BelemetryFeatures.None;  <span class="c">// opt-in: the default</span>
+});</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>Start the script in the head</h3>
+                    <p>
+                        <code>&lt;BelemetryScript /&gt;</code> starts before Blazor does, so it sees the initial page
+                        load, the web vitals and the earliest errors - on static SSR pages as well.
+                    </p>
+                    <a href="browser">Browser instrumentation →</a>
+                </div>
+                <pre class="bb-code"><span class="c">@@* App.razor *@@</span>
+&lt;<span class="k">head</span>&gt;
+    ...
+    &lt;<span class="k">BelemetryScript</span> /&gt;
+&lt;/<span class="k">head</span>&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>Connect .NET, and ask</h3>
+                    <p>
+                        <code>&lt;BelemetryInitializer /&gt;</code> joins the script to .NET once the app is
+                        interactive. Then ask the user: until <code>IBelemetryConsent</code> hears an answer,
+                        nothing leaves the device.
+                    </p>
+                    <a href="consent">Consent and GDPR →</a>
+                </div>
+                <pre class="bb-code"><span class="c">@@* Routes.razor *@@</span>
+&lt;<span class="k">Router</span> AppAssembly=<span class="s">"typeof(Program).Assembly"</span>&gt;...&lt;/<span class="k">Router</span>&gt;
+&lt;<span class="k">BelemetryInitializer</span> /&gt;
+
+<span class="c">// The banner's "Accept all"</span>
+<span class="k">await</span> Consent.SetAsync(BelemetryFeatures.All);</pre>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Why not the OpenTelemetry SDKs?</h2>
+        <p class="bb-section-sub">
+            A Blazor app has two runtimes to instrument, and a user who has to agree first. With the
+            OpenTelemetry SDKs that is two SDKs and a consent layer of your own; Belemetry is one package built
+            on the same BCL listeners, with both halves and the consent built in.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="The OpenTelemetry SDKs compared with Belemetry">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Concern</th><th>OpenTelemetry SDKs</th><th>Belemetry</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Packages</td><td>The SDK, an exporter and instrumentation packages - plus a JavaScript SDK for the browser</td><td>One package; the browser script ships inside it</td></tr>
+                    <tr><td>Browser and .NET</td><td>Two SDKs, configured separately</td><td>One registration; <code>&lt;BelemetryScript /&gt;</code> hands the browser the server's options</td></tr>
+                    <tr><td>Consent</td><td>Not part of the SDK - gating the exporters is yours to build</td><td>Twelve features, opt-in by default, purge on revoke, Global Privacy Control</td></tr>
+                    <tr><td>Azure Monitor</td><td>The Azure Monitor exporter, and the Application Insights JS SDK in the page</td><td>Native <code>/v2.1/track</code> from both sides, with Live Metrics</td></tr>
+                    <tr><td>Trimming and AOT</td><td>Depends on the packages you add</td><td>Trimmable and AOT-compatible: no reflection-based serialization</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Belemetry?</h3>
+                <p class="bb-card-desc">Install, register, two components - a Blazor Web App reporting to the Aspire dashboard in five minutes.</p>
+                <a href="web-app" class="btn btn-primary">Set it up →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Want to watch it work?</h3>
+                <p class="bb-card-desc">This site exports to itself. Answer the banner, click around, and read your own records as they arrive.</p>
+                <a href="live" class="btn btn-outline">Live telemetry →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> to generate a configuration and review the one it wrote.</p>
+                <a href="mcp-server" class="btn btn-outline">Try the MCP server →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Does it use the OpenTelemetry packages?</summary>
+                <p>
+                    No. It follows the OpenTelemetry data model and semantic conventions and speaks OTLP, but it is
+                    built on the BCL's own <code>ActivityListener</code>, <code>MeterListener</code> and
+                    <code>ILoggerProvider</code>, with hand-written OTLP and Application Insights encoders and one
+                    dependency-free script.
+                </p>
+            </details>
+            <details>
+                <summary>Is anything sent before the user agrees?</summary>
+                <p>
+                    Not by default: <code>Consent.Default</code> is <code>None</code>. Records of features nobody has
+                    decided on yet are held in memory (up to <code>Consent.PendingLimit</code>, 500), then sent or
+                    dropped by the decision. Revoking a feature purges what it queued and what it stored on the device.
+                </p>
+            </details>
+            <details>
+                <summary>Which Blazor hosts does it work in?</summary>
+                <p>
+                    WebAssembly, Server, Auto, static SSR and Hybrid (MAUI, WPF, WinForms), on .NET 8, 9 and 10. In a
+                    Hybrid app the browser script relays its records to .NET, which exports them and keeps them in
+                    files while the device is offline.
+                </p>
+            </details>
+            <details>
+                <summary>Can I keep an API key out of the browser?</summary>
+                <p>
+                    Yes, and on a server it is the default: Blazor Server, static SSR and the server half of Auto never
+                    write an exporter's <code>Headers</code> into the page - the script sends only
+                    <code>BrowserHeaders</code>, for a key that is meant to be public. For the browser's own records, set
+                    <code>IncludeInBrowser = false</code> on the keyed exporter and give the page a credential-free route,
+                    or use the Relay transport on Blazor Server and Hybrid. In WebAssembly the .NET pipeline runs in the
+                    browser too, so its whole configuration is public: put the key in a collector instead.
+                </p>
+            </details>
+            <details>
+                <summary>How much does it add to the download?</summary>
+                <p>
+                    Measured on a trimmed Release publish of a WebAssembly app, brotli-compressed as served: 107 KB for
+                    <code>Bit.Belemetry.wasm</code> (the .NET pipeline, both encoders and the bridge), 16 KB for the
+                    browser script, and 29 KB for <code>System.Diagnostics.DiagnosticSource.wasm</code> when the app did
+                    not ship it already. A Server or static SSR page downloads the 16 KB script only.
+                </p>
+            </details>
+            <details>
+                <summary>Where does this site send what I do here?</summary>
+                <p>
+                    To its own server, only after you answer the banner. An in-process OTLP receiver keeps the last few
+                    hundred records per session in memory - never on disk - and hands them back only to the browser
+                    session that produced them, on the Live telemetry page.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Start measuring</h2>
+        <p class="bb-section-sub">One package, one registration, two components - and only what your users said yes to.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Belemetry</pre>
+        <div class="bb-hero-actions">
+            <a href="web-app" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="live" class="btn btn-secondary bb-btn-lg">Watch your own telemetry</a>
+        </div>
+    </section>
+</div>
+
+@code {
+    /// <summary>A capability tile: one consent feature, its one-line pitch, and the page that shows it.</summary>
+    private sealed record Capability(string Title, string Description, string Href, string Dot);
+
+    private int _events;
+
+    private static readonly Capability[] _capabilities =
+    [
+        new("Errors", "JS errors and unhandled rejections, .NET logs at Error or with an exception, and TrackException - with the stack trace, scrubbed, and an error loop recorded once instead of a thousand times.", "browser", "danger"),
+        new("Page views", "History and enhanced navigation as browser.page_view events with the URL redacted - plus TrackPageView for dialogs and wizard steps.", "browser", "primary"),
+        new("Interactions", "Clicks as browser.user_interaction events, named with data-bit-belemetry-name and kept out with data-bit-belemetry-ignore, and rage clicks as their own event. Input values are never read.", "browser", "primary"),
+        new("Performance", "LCP, INP, CLS, FCP and TTFB, the document-load span with navigation timing, resource timing and long tasks.", "browser", "success"),
+        new("Dependencies", "fetch and XHR client spans that add a W3C traceparent to your own origin, so the server's span joins the browser's trace.", "browser", "success"),
+        new("Sessions", "A session id that survives reloads in sessionStorage, rotated after inactivity. Without consent it lives in memory only.", "consent", "warning"),
+        new("User tracking", "A pseudonymous enduser.pseudo.id and the authenticated user.id from SetUserAsync - both cleared the moment it is revoked.", "consent", "warning"),
+        new("Logs", "ILogger entries below Error with their structured values, scopes and trace context, and browser console capture.", "dotnet", "primary"),
+        new("Traces", "Activity spans from the sources you list, with parent-based sampling compatible with OpenTelemetry's TraceIdRatioBased.", "dotnet", "primary"),
+        new("Metrics", "Counters, histograms, up-down counters and gauges from your Meters, aggregated with a cardinality limit per instrument.", "dotnet", "success"),
+        new("Persistence", "Exports that fail offline are kept - in localStorage, or in files on Hybrid and servers - and retried when the network is back.", "persistence", "warning"),
+        new("Events", "Custom events from TrackEvent in C# or BitBelemetry.trackEvent in JavaScript, with attributes of your own.", "browser", "success"),
+    ];
+
+    private void TrackEvent()
+    {
+        _events++;
+
+        try
+        {
+            Belemetry.TrackEvent("demo.home.click", new Dictionary<string, object?> { ["demo.count"] = _events });
+        }
+        catch
+        {
+            // Telemetry never takes the page down.
+        }
+    }
+}

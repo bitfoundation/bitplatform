@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The names and selectors of the custom input type properties for the <see cref="BitAccordionList{TItem}"/>.
@@ -76,9 +76,9 @@ public class BitAccordionListNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitAccordionListItem.IconName));
 
     /// <summary>
-    /// IsEnabled field name and selector of the custom input class.
+    /// IsDisabled field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, bool> IsEnabled { get; set; } = new(nameof(BitAccordionListItem.IsEnabled));
+    public BitNameSelectorPair<TItem, bool> IsDisabled { get; set; } = new(nameof(BitAccordionListItem.IsDisabled));
 
     /// <summary>
     /// IsExpanded field name and selector of the custom input class.

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitFcTimelineMonthView
 {
@@ -30,7 +30,7 @@ public partial class BitFcTimelineMonthView
 
     // The day cells exist only as add/drop targets, so a read-only timeline must not expose a
     // focusable no-op button per day and resource. A null attribute value is omitted from the markup.
-    private string? _slotRole => State.ReadOnly ? null : "button";
+    private string? _slotRole => State.CanAdd is false ? null : "button";
 
     // Roving tabindex: the whole grid is a single tab stop and the arrow keys move both the tabbable
     // cell and the focus - a resource row per day would otherwise flood the tab order.
@@ -40,7 +40,7 @@ public partial class BitFcTimelineMonthView
     private bool _pendingCellFocus;
 
     private string SlotElementId(string rowKey, DateTime day)
-        => $"{_scrollContainerId}-cell-{Math.Max(0, _rowKeys.IndexOf(rowKey))}-{day:yyyyMMdd}";
+        => FormattableString.Invariant($"{_scrollContainerId}-cell-{Math.Max(0, _rowKeys.IndexOf(rowKey))}-{day:yyyyMMdd}");
 
     private (string RowKey, DateTime Day) RovingCell
     {
@@ -59,7 +59,7 @@ public partial class BitFcTimelineMonthView
 
     private string? SlotTabIndex(string rowKey, DateTime day)
     {
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return null;
 
         var roving = RovingCell;
@@ -165,7 +165,8 @@ public partial class BitFcTimelineMonthView
 
     private async Task OnSlotClickAsync(string resourceId, DateTime day)
     {
-        if (State.ReadOnly)
+        // A day outside the date window is shown for context, never as an add target.
+        if (State.CanAdd is false || State.IsDateInAllowedRange(day) is false)
             return;
 
         if (OnAddClick.HasDelegate)
@@ -225,13 +226,14 @@ public partial class BitFcTimelineMonthView
         }
     }
 
-    private string? SlotAriaLabel(DateTime day, string rowLabel)
+    private string? SlotAriaLabel(string rowKey, DateTime day, string rowLabel)
     {
         // The cell is inert in read-only mode, so it carries no label to announce.
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return null;
 
-        return $"{Texts.AddEventHoverHint}, {rowLabel}, {day.ToString("D", State.Culture)}";
+        return $"{Texts.AddEventHoverHint}, {rowLabel}, {day.ToString("D", State.Culture)}"
+               + State.DescribeBackground(day.Date, day.Date.AddDays(1), rowKey == _unassignedKey ? null : rowKey, anyResource: false);
     }
 
     private void OnDragEnter(string resourceId, DateTime day)
@@ -268,8 +270,8 @@ public partial class BitFcTimelineMonthView
         // so we don't make a JS round-trip on every render of a non-current month.
         // Compare using the active culture's calendar since the rendered month follows that
         // calendar system, not the Gregorian one.
-        var cal = State.Culture.Calendar;
-        var today = DateTime.Today;
+        var cal = State.Culture.DateTimeFormat.Calendar;
+        var today = State.Today;
         if (cal.GetYear(State.SelectedDate) != cal.GetYear(today) ||
             cal.GetMonth(State.SelectedDate) != cal.GetMonth(today))
         {

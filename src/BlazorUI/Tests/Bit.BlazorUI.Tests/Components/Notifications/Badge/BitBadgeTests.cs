@@ -447,16 +447,37 @@ public class BitBadgeTests : BunitTestContext
     [DataRow(BitColor.PrimaryBorder, "bit-bdg-pbr")]
     [DataRow(BitColor.SecondaryBorder, "bit-bdg-sbr")]
     [DataRow(BitColor.TertiaryBorder, "bit-bdg-tbr")]
-    [DataRow(null, "bit-bdg-pri")]
-    public void BitBadgeShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitBadgeShouldRespectColor(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
-            if (color.HasValue) parameters.Add(p => p.Color, color.Value);
+            parameters.Add(p => p.Color, color);
         });
 
         var root = component.Find(".bit-bdg");
         Assert.IsTrue(root.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldPublishNoColorSizeOrShapeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitBadge>();
+
+        // An unset Color, Size or Shape publishes nothing, so the public --bit-Badge-* variables restyle the
+        // default while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-bdg");
+        var published = new[]
+        {
+            "bit-bdg-pri", "bit-bdg-sec", "bit-bdg-ter", "bit-bdg-inf", "bit-bdg-suc", "bit-bdg-wrn", "bit-bdg-swr", "bit-bdg-err",
+            "bit-bdg-pbg", "bit-bdg-sbg", "bit-bdg-tbg", "bit-bdg-pfg", "bit-bdg-sfg", "bit-bdg-tfg", "bit-bdg-pbr", "bit-bdg-sbr", "bit-bdg-tbr",
+            "bit-bdg-sm", "bit-bdg-md", "bit-bdg-lg",
+            "bit-bdg-cir", "bit-bdg-rnd", "bit-bdg-sqr",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod]
@@ -480,12 +501,11 @@ public class BitBadgeTests : BunitTestContext
     [DataRow(BitSize.Small, "bit-bdg-sm")]
     [DataRow(BitSize.Medium, "bit-bdg-md")]
     [DataRow(BitSize.Large, "bit-bdg-lg")]
-    [DataRow(null, "bit-bdg-md")]
-    public void BitBadgeShouldRespectSize(BitSize? size, string expectedClass)
+    public void BitBadgeShouldRespectSize(BitSize size, string expectedClass)
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
-            if (size.HasValue) parameters.Add(p => p.Size, size.Value);
+            parameters.Add(p => p.Size, size);
         });
 
         var root = component.Find(".bit-bdg");
@@ -509,15 +529,14 @@ public class BitBadgeTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitBadgeShape.Circular, "bit-bdg-cir")]
-    [DataRow(BitBadgeShape.Rounded, "bit-bdg-rnd")]
-    [DataRow(BitBadgeShape.Square, "bit-bdg-sqr")]
-    [DataRow(null, "bit-bdg-cir")]
-    public void BitBadgeShouldRespectShape(BitBadgeShape? shape, string expectedClass)
+    [DataRow(BitShape.Pill, "bit-bdg-cir")]
+    [DataRow(BitShape.Rounded, "bit-bdg-rnd")]
+    [DataRow(BitShape.Square, "bit-bdg-sqr")]
+    public void BitBadgeShouldRespectShape(BitShape shape, string expectedClass)
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
-            if (shape.HasValue) parameters.Add(p => p.Shape, shape.Value);
+            parameters.Add(p => p.Shape, shape);
         });
 
         var root = component.Find(".bit-bdg");
@@ -727,7 +746,7 @@ public class BitBadgeTests : BunitTestContext
         var component = RenderComponent<BitBadge>(parameters =>
         {
             parameters.Add(p => p.Content, 5);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
@@ -753,14 +772,14 @@ public class BitBadgeTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitBadgeOnClickBehaviorDependsOnIsEnabled(bool isEnabled)
+    public void BitBadgeOnClickBehaviorDependsOnDisabled(bool isEnabled)
     {
         var clicked = false;
 
         var component = RenderComponent<BitBadge>(parameters =>
         {
             parameters.Add(p => p.Content, 5);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => clicked = true));
         });
 
@@ -771,16 +790,119 @@ public class BitBadgeTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitBadgeShouldRenderTheAriaLabelOnItsRoot()
+    public void BitBadgeShouldNotNameAGenericRoot()
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
+            parameters.Add(p => p.Dot, true);
+            parameters.Add(p => p.AriaLabel, "New mail");
+        });
+
+        // ARIA prohibits naming a generic span, so the label of a badge with no words of its own is read out of
+        // the badge as its text alternative instead of being written where every screen reader drops it.
+        Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-label"));
+        Assert.AreEqual("New mail", component.Find(".bit-bdg-vhd").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldKeepSayingItsCountOverTheAriaLabelOfAPlainBadge()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
             parameters.Add(p => p.AriaLabel, "Inbox");
         });
 
-        Assert.AreEqual("Inbox", component.Find(".bit-bdg").GetAttribute("aria-label"));
+        // A static label read in place of the count would keep the figure from ever reaching a screen reader.
+        Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-label"));
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-vhd").Count);
+        Assert.IsNull(component.Find(".bit-bdg-con").GetAttribute("aria-hidden"));
     }
-
+
+    [TestMethod]
+    public void BitBadgeShouldNotBeKeptOnThePageByItsAriaLabelAlone()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, null);
+            parameters.Add(p => p.AriaLabel, "Notifications");
+            parameters.AddChildContent("<span>child</span>");
+        });
+
+        // The label names what the badge shows; with nothing to show there is no badge, rather than an empty pill.
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+
+        var withRole = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitBadge>(0);
+            builder.AddAttribute(1, nameof(BitBadge.AriaLabel), "Notifications");
+            builder.AddAttribute(2, "role", "group");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual(0, withRole.FindAll(".bit-bdg-ctn").Count);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldPreferTheDescriptionOverTheAriaLabelAsItsTextAlternative()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.AriaLabel, "Inbox");
+            parameters.Add(p => p.Description, "5 unread messages");
+        });
+
+        Assert.AreEqual("5 unread messages", component.Find(".bit-bdg-vhd").TextContent);
+        Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNameARootGivenARoleOfItsOwn()
+    {
+        // Unmatched attributes are captured by BitComponentBase, so they are supplied the way markup would.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitBadge>(0);
+            builder.AddAttribute(1, nameof(BitBadge.Content), 5);
+            builder.AddAttribute(2, nameof(BitBadge.AriaLabel), "Inbox");
+            builder.AddAttribute(3, "role", "group");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("Inbox", component.Find(".bit-bdg").GetAttribute("aria-label"));
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-vhd").Count);
+    }
+    [TestMethod]
+    public void BitBadgeLiveRegionShouldReadTheAriaLabelOfAPlainBadge()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Dot, true);
+            parameters.Add(p => p.AriaLabel, "New mail");
+        });
+
+        Assert.AreEqual("New mail", component.Find(".bit-bdg-lvr").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeLiveRegionShouldKeepAnnouncingTheCountOfALabelledBadge()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.AriaLabel, "Inbox");
+        });
+
+        Assert.AreEqual("5", component.Find(".bit-bdg-lvr").TextContent);
+
+        component.Render(parameters => parameters.Add(p => p.Content, 6));
+
+        Assert.AreEqual("6", component.Find(".bit-bdg-lvr").TextContent);
+    }
+
     [TestMethod]
     public void BitBadgeShouldMoveTheAriaLabelOntoItsButton()
     {
@@ -796,18 +918,40 @@ public class BitBadgeTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitBadgeShouldKeepTheAriaLabelOnItsRootWhenTheButtonHasADescription()
+    public void BitBadgeButtonShouldBeNamedByTheAriaLabelAndDescribedByTheDescription()
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
+            parameters.Add(p => p.Id, "inbox-badge");
             parameters.Add(p => p.IconName, "TestIcon");
             parameters.Add(p => p.AriaLabel, "Inbox");
             parameters.Add(p => p.Description, "5 unread messages");
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
-        Assert.AreEqual("Inbox", component.Find(".bit-bdg").GetAttribute("aria-label"));
-        Assert.IsNull(component.Find(".bit-bdg-ctn").GetAttribute("aria-label"));
+        var button = component.Find(".bit-bdg-ctn");
+
+        Assert.AreEqual("Inbox", button.GetAttribute("aria-label"));
+        Assert.AreEqual("inbox-badge-dsc", button.GetAttribute("aria-describedby"));
+        Assert.AreEqual("5 unread messages", component.Find("#inbox-badge-dsc").TextContent);
+        Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBadgeButtonShouldNotPointAtADescriptionItIsNamedBy()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Description, "5 unread messages");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        // With no label, the description inside the button is what names it, so it does not describe it too.
+        var button = component.Find(".bit-bdg-ctn");
+
+        Assert.IsNull(button.GetAttribute("aria-describedby"));
+        Assert.IsNull(component.Find(".bit-bdg-vhd").GetAttribute("id"));
     }
 
     [TestMethod]
@@ -864,6 +1008,62 @@ public class BitBadgeTests : BunitTestContext
         Assert.AreEqual("polite", region.GetAttribute("aria-live"));
         Assert.AreEqual("true", region.GetAttribute("aria-atomic"));
         Assert.AreEqual("5", region.TextContent);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitBadgeShouldRespectDecorative(bool decorative)
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 3);
+            parameters.Add(p => p.Decorative, decorative);
+            parameters.Add(p => p.ChildContent, "<button aria-label=\"Inbox, 3 unread\">Inbox</button>");
+        });
+
+        // Only the badge is taken away from assistive technologies: the child that already names the count is not.
+        Assert.AreEqual(decorative ? "true" : null, component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
+        Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-hidden"));
+        Assert.IsNull(component.Find("button").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitBadgeDecorativeShouldKeepItsLiveRegionAnnouncing()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 3);
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Decorative, true);
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
+        Assert.AreEqual("3", component.Find(".bit-bdg-lvr").TextContent);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitBadgeDecorativeShouldNeverHideAFocusableBadge(bool isLink)
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 3);
+            parameters.Add(p => p.Decorative, true);
+
+            if (isLink)
+            {
+                parameters.Add(p => p.Href, "/inbox");
+            }
+            else
+            {
+                parameters.Add(p => p.OnClick, () => { });
+            }
+        });
+
+        // ARIA forbids hiding a focusable element, which a keyboard user would then land on in silence.
+        Assert.IsNull(component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
     }
 
     [TestMethod]
@@ -1482,6 +1682,27 @@ public class BitBadgeTests : BunitTestContext
         Assert.AreEqual("nofollow noreferrer", component.Find(".bit-bdg-ctn").GetAttribute("rel"));
     }
 
+    [TestMethod,
+        DataRow("_blank", BitLinkRels.NoFollow, "nofollow noopener"),
+        DataRow("_BLANK", BitLinkRels.NoFollow, "nofollow noopener"),
+        DataRow("_BLANK", null, "noopener"),
+        DataRow("_blank", BitLinkRels.Opener, "opener")
+    ]
+    public void BitBadgeAnchorShouldAddNoOpenerToAnExplicitRel(string target, BitLinkRels? rel, string expectedRel)
+    {
+        // a NoFollow is about crawling and says nothing about the opener, so it does not stand in for the
+        // noopener a new tab needs - but an explicit Opener is the author asking for the opener back
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Target, target);
+            parameters.Add(p => p.Rel, rel);
+        });
+
+        Assert.AreEqual(expectedRel, component.Find(".bit-bdg-ctn").GetAttribute("rel"));
+    }
+
     [TestMethod]
     public void BitBadgeAnchorShouldNotAddARelToAnAnchorOnlyHref()
     {
@@ -1515,7 +1736,7 @@ public class BitBadgeTests : BunitTestContext
         {
             parameters.Add(p => p.Content, 5);
             parameters.Add(p => p.Href, "/inbox");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var badge = component.Find(".bit-bdg-ctn");
@@ -1531,7 +1752,29 @@ public class BitBadgeTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitBadgeAnchorOnClickBehaviorDependsOnIsEnabled(bool isEnabled)
+    public void BitBadgeAnchorShouldStayALinkToAssistiveTechnologiesWhileNotEnabled(bool isEnabled)
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "/inbox");
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.Disabled, isEnabled is false);
+        });
+
+        var badge = component.Find("a.bit-bdg-ctn");
+
+        // An anchor without an href is a generic element, whose aria-disabled nothing reports, so the disabled
+        // one is given the link role back; an enabled one is a link through its href alone. The target of a
+        // link that cannot be followed goes with the href.
+        Assert.AreEqual(isEnabled ? null : "link", badge.GetAttribute("role"));
+        Assert.AreEqual(isEnabled ? "_blank" : null, badge.GetAttribute("target"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitBadgeAnchorOnClickBehaviorDependsOnDisabled(bool isEnabled)
     {
         var clicked = false;
 
@@ -1539,7 +1782,7 @@ public class BitBadgeTests : BunitTestContext
         {
             parameters.Add(p => p.Content, 5);
             parameters.Add(p => p.Href, "/inbox");
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => clicked = true));
         });
 
@@ -2034,5 +2277,118 @@ public class BitBadgeTests : BunitTestContext
         });
 
         Assert.AreEqual("42", component.Find(".bit-bdg-ctn").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotTakeThePointerFromItsChildForATooltip()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 9);
+            parameters.Add(p => p.Content, 42);
+            parameters.AddChildContent("<span>child</span>");
+        });
+
+        // An overlaid badge lets every pointer through to its child, tooltip or not: a capped count carries one on
+        // its own, and a badge sitting on the corner of a button must not swallow the clicks meant for the button.
+        var badge = component.Find(".bit-bdg-ctn");
+
+        Assert.AreEqual("42", badge.GetAttribute("title"));
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-clk"));
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-ttl"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitBadge>(0);
+            builder.AddAttribute(1, nameof(BitBadge.Content), 5);
+            builder.AddAttribute(2, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-bdg");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBadgeCircleShapeShouldLeaveTheBadgeFullyRounded()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Shape, BitShape.Circle);
+        });
+
+        // A badge takes its box from its content, so a Circle has no dimension to build a circle from: it publishes
+        // nothing and leaves the badge to the fully rounded default - and to the --bit-Badge-radius variable.
+        var root = component.Find(".bit-bdg");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-bdg-cir"));
+        Assert.IsFalse(root.ClassList.Contains("bit-bdg-rnd"));
+        Assert.IsFalse(root.ClassList.Contains("bit-bdg-sqr"));
+    }
+
+    [TestMethod]
+    [DataRow("data-role", "chip")]
+    [DataRow("title", "From the attributes")]
+    public void BitBadgeShouldRespectArbitraryHtmlAttributes(string name, string value)
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitBadge>(0);
+            builder.AddAttribute(1, nameof(BitBadge.Content), 5);
+            builder.AddAttribute(2, name, value);
+            builder.CloseComponent();
+        });
+
+        // The attributes land on the root; the badge's own Title is rendered on the badge itself instead.
+        Assert.AreEqual(value, component.Find(".bit-bdg").GetAttribute(name));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldRespectAutoDirAndNoDir()
+    {
+        var auto = RenderComponent<BitBadge>(parameters => parameters.Add(p => p.Dir, BitDir.Auto));
+
+        // Only a named right-to-left direction renders the class; Auto is read off the content by the stylesheet.
+        Assert.AreEqual("auto", auto.Find(".bit-bdg").GetAttribute("dir"));
+        Assert.IsFalse(auto.Find(".bit-bdg").ClassList.Contains("bit-rtl"));
+
+        var unset = RenderComponent<BitBadge>();
+
+        Assert.IsFalse(unset.Find(".bit-bdg").HasAttribute("dir"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldRespectForceAnimation()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Pulse, true);
+            parameters.Add(p => p.ForceAnimation, true);
+        });
+
+        // The pulse stops under reduced motion unless the root, or an ancestor, carries the class that opts back in.
+        Assert.IsTrue(component.Find(".bit-bdg").ClassList.Contains("bit-fam"));
+    }
+
+    [TestMethod]
+    public async System.Threading.Tasks.Task BitBadgeShouldDisposeWithoutAnException()
+    {
+        RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        // A badge calls no script, so there is nothing for its disposal to wait on or to throw from.
+        await Context.DisposeComponentsAsync();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count);
     }
 }

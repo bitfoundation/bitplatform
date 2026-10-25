@@ -9,7 +9,7 @@ namespace Boilerplate.Client.Web.Infrastructure.Services;
 /// This implementation retrieves values persisted by the WebServerPrerenderStateService in Boilerplate.Server.Web.Services.
 /// <inheritdoc cref="IPrerenderStateService"/>
 /// </summary>
-public partial class WebClientPrerenderStateService(PersistentComponentState? persistentComponentState = null) : IPrerenderStateService
+public partial class WebClientPrerenderStateService(JsonSerializerOptions jsonSerializerOptions, PersistentComponentState? persistentComponentState = null) : IPrerenderStateService
 {
     public async Task<T?> GetValue<T>(Func<Task<T?>> factory,
         [CallerLineNumber] int lineNumber = 0,
@@ -23,7 +23,7 @@ public partial class WebClientPrerenderStateService(PersistentComponentState? pe
 
     public async Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
     {
-        if (persistentComponentState!.TryTakeFromJson(key, out T? value)) return value;
+        if (persistentComponentState!.TryTakeFromJson(key, out JsonElement value)) return value.Deserialize(jsonSerializerOptions.GetTypeInfo<T>());
 
         var result = await factory();
 

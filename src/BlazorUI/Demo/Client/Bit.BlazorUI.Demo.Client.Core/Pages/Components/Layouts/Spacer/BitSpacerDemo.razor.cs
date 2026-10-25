@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Spacer;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Spacer;
 
 public partial class BitSpacerDemo
 {
@@ -66,17 +66,35 @@ public partial class BitSpacerDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        DemoSharedEnums.BitSize(description: "Determines the fixed amount of space the spacer generates, picked from the spacing scale of the theme."),
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
         new()
         {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Determines the fixed amount of space the spacer generates, picked from the spacing scale of the theme.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" },
-            ]
+            Name = "--bit-Spacer-small-size",
+            DefaultValue = "1 theme spacing unit",
+            Description = "The fixed space of a spacer with Size Small.",
         },
+        new()
+        {
+            Name = "--bit-Spacer-medium-size",
+            DefaultValue = "2 theme spacing units",
+            Description = "The fixed space of a spacer with Size Medium.",
+        },
+        new()
+        {
+            Name = "--bit-Spacer-large-size",
+            DefaultValue = "4 theme spacing units",
+            Description = "The fixed space of a spacer with Size Large.",
+        },
+    ];
+
+
+
+    private readonly BitSpacerParams[] spacerParams =
+    [
+        new() { Gap = "1.5rem" }
     ];
 }

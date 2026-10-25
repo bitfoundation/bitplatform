@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class TagsInput {
         // The keys the tag elements answer to that would otherwise carry a browser default with them:
         // Home and End scroll the page, the arrow keys scroll it sideways, Alt with an arrow is the
@@ -8,7 +8,7 @@ namespace BitBlazorUI {
         // with would take a scroll away from the user and give nothing back.
         private static readonly tagKeys = ['ArrowLeft', 'ArrowRight', 'Home', 'End', 'Backspace', 'Delete', 'Enter', 'F2'];
 
-        public static setup(input: HTMLInputElement, isEdit: boolean = false) {
+        public static setup(input: HTMLInputElement, isEdit: boolean = false, dotnetObj: DotNetObject | null = null) {
             // The little input that replaces a tag while it is being corrected in place is set up every
             // time an edit is opened, and the engine may well hand the very same element back for the
             // next one, so the listeners are only ever attached once per element.
@@ -22,7 +22,7 @@ namespace BitBlazorUI {
                 // the separator typed into it. The event is kept from reaching Blazor's delegated
                 // listener on the document altogether, so nothing is committed half way through a word.
                 // Engines that predate isComposing report the composition through the 229 key code.
-                if (e.isComposing || e.keyCode === 229) {
+                if (Utils.isComposingKey(e)) {
                     e.stopPropagation();
                     return;
                 }
@@ -37,6 +37,15 @@ namespace BitBlazorUI {
                     if (e.key === 'Enter') {
                         e.preventDefault();
                     }
+                    return;
+                }
+
+                // Backspace in an empty input removes the last tag, or puts it back into the input to be corrected
+                // (BackspaceEditsLastTag) - which under WebAssembly is done inside this very keydown, so the deletion
+                // the browser runs after it would take the last character of that tag. An empty input has nothing for
+                // the key to delete, so its default is nothing to lose.
+                if (e.key === 'Backspace' && input.value.length === 0) {
+                    e.preventDefault();
                     return;
                 }
 
@@ -68,6 +77,10 @@ namespace BitBlazorUI {
                 const separators = TagsInput.getSeparators(input);
                 if (e.key.length === 1 && separators.includes(e.key)) {
                     e.preventDefault();
+
+                    if (hasText && dotnetObj) {
+                        TagsInput.commitSeparatedText(input, dotnetObj);
+                    }
                 }
             }, true); // capture phase - runs before the browser default and Blazor's handler
 
@@ -77,19 +90,22 @@ namespace BitBlazorUI {
                 // A single line input drops the line breaks out of whatever is pasted into it, so a
                 // column copied out of a spreadsheet would otherwise arrive as one run-on tag. The
                 // breaks are turned into the first separator before the text lands, which is what the
-                // splitting on the .NET side then reads as a list. Without a separator there is nothing
-                // to express a list with, so the paste is left to the browser.
+                // splitting on the .NET side then reads as a list.
                 if (input.readOnly || input.disabled) return;
-
-                const separators = TagsInput.getSeparators(input);
-                if (separators.length === 0) return;
 
                 const text = e.clipboardData?.getData('text');
                 if (!text || !/[\r\n]/.test(text)) return;
 
                 e.preventDefault();
 
-                const value = text.replace(/(\r\n|[\r\n])+/g, separators[0]);
+                // Without a separator there is nothing to express a list with, so the lines cannot become
+                // tags of their own - but they must not be run together into one word either, which is
+                // what a single line input does with the breaks it drops. They are joined by a space, so
+                // what lands is the text that was copied rather than "firstsecond".
+                const separators = TagsInput.getSeparators(input);
+                const joiner = separators.length > 0 ? separators[0] : ' ';
+
+                const value = text.replace(/(\r\n|[\r\n])+/g, joiner);
 
                 // insertText keeps the caret, the selection it replaces and the undo stack of the field
                 // intact, and raises the input event that the component listens to. It is a deprecated
@@ -116,6 +132,26 @@ namespace BitBlazorUI {
             });
         }
 
+        // The text a separator closes is taken out of the input in the keystroke of the separator itself, rather than by
+        // the round trip of the commit: the keys typed while that round trip is on its way would land on the text being
+        // committed and join it ("ab," followed quickly by "cd," gave the tags "ab" and "abcd"). The input event raised
+        // here (ahead of Blazor's keydown, which then finds nothing left to commit) tells the component what the input
+        // holds now, and the text goes to it on its own. A text it does not take - refused, or called off - comes back,
+        // into the input it was typed in, unless the next one is already being typed there.
+        private static commitSeparatedText(input: HTMLInputElement, dotnetObj: DotNetObject) {
+            const text = input.value;
+
+            input.value = '';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+
+            dotnetObj.invokeMethodAsync<boolean>('CommitSeparatedText', text).then(handBack => {
+                if (!handBack || input.value !== '' || input.readOnly || input.disabled) return;
+
+                input.value = text;
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            }).catch(() => { }); // the component went away (or the circuit did) with the commit on its way
+        }
+
         // The keys the chips answer to are handled on the .NET side, which runs long after the browser
         // has already acted on them: the page would be scrolled by Home, and the whole document left
         // behind by Alt with an arrow, before the tag ever moved. A single listener on the root - rather
@@ -126,7 +162,7 @@ namespace BitBlazorUI {
             root.dataset.bitTgiTagsSetup = 'true';
 
             root.addEventListener('keydown', (e: KeyboardEvent) => {
-                if (e.isComposing || e.keyCode === 229) return;
+                if (Utils.isComposingKey(e)) return;
 
                 const target = e.target as HTMLElement;
 

@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// ChoiceGroup let people select a single option from two or more choices.
 /// </summary>
-public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
+public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
     private List<TItem> _items = [];
     private string _name = default!;
@@ -22,6 +22,19 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the choice group component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple choice group components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitChoiceGroupParams.ParamName)]
+    public BitChoiceGroupParams? CascadingParameters { get; set; }
 
 
 
@@ -55,13 +68,27 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// Custom CSS classes for different parts of the BitChoiceGroup.
     /// </summary>
-    [Parameter] public BitChoiceGroupClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitChoiceGroupClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the BitChoiceGroup.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ChoiceGroup-*</c> color variables (the accent, hover, focus and disabled
+    /// colors, the checked card's border and tint, the tile background); left unset, the group is primary unless those
+    /// variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// The comparer that decides which item carries the current value, and which item the DefaultValue
+    /// seeds the selection with. It defaults to <see cref="EqualityComparer{TValue}.Default"/>, which is
+    /// all a value type, a string or an enum needs; supply one when TValue is a class whose instances are
+    /// equal by their content rather than by reference, so that a value coming back from a service selects
+    /// the matching item instead of no item at all.
+    /// </summary>
+    [Parameter] public IEqualityComparer<TValue>? Comparer { get; set; }
 
     /// <summary>
     /// The description (helper text) of the ChoiceGroup, rendered under its label. The group references it
@@ -85,6 +112,9 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// The gap between the items of the ChoiceGroup.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-ChoiceGroup-gap</c> and over the gap of the <see cref="Size"/>.
+    /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Gap { get; set; }
 
@@ -132,18 +162,21 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     /// <summary>
     /// The position of the content of each item relative to its radio circle. The default is
-    /// <see cref="BitLabelPosition.End"/>, which renders the circle first and the content after it.
+    /// <see cref="BitPlacement.End"/>, which renders the circle first and the content after it.
     /// Items rendered as image or icon tiles lay their own content out and ignore this parameter.
     /// </summary>
     /// <remarks>
     /// Replaces the removed Reversed parameter, which only offered the two horizontal positions.
     /// Migrate an existing <c>Reversed="true"</c> (in either layout) to
-    /// <c>LabelPosition="BitLabelPosition.Start"</c>; <c>Reversed="false"</c> was the default and needs
+    /// <c>LabelPlacement="BitPlacement.Start"</c>; <c>Reversed="false"</c> was the default and needs
     /// no replacement. A binding of the form <c>Reversed="@flag"</c> becomes
-    /// <c>LabelPosition="@(flag ? BitLabelPosition.Start : BitLabelPosition.End)"</c>.
+    /// <c>LabelPlacement="@(flag ? BitPlacement.Start : BitPlacement.End)"</c>.
+    /// <br />
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Custom RenderFragment for the label of the ChoiceGroup.
@@ -184,13 +217,38 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// The size of the BitChoiceGroup.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ChoiceGroup-*</c> size variables (gap, font sizes, circle, dot and icon
+    /// sizes, card padding); left unset, the group is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
     /// <summary>
+    /// Stretches the label of each item over the full width of its row and spreads its content, which puts
+    /// the circle at the far edge of the row instead of right beside the item text. Combined with
+    /// <see cref="FullWidth"/> and <see cref="BitPlacement.Start"/> it produces the text-at-the-start,
+    /// circle-at-the-end list found in settings pages. The card variants stretch their item labels already,
+    /// so this only adds the spreading to them; items rendered as image or icon tiles lay their own content
+    /// out and are not affected.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool StretchItemLabel { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitChoiceGroup.
     /// </summary>
-    [Parameter] public BitChoiceGroupClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitChoiceGroupClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The visual style of the items of the ChoiceGroup. The default is <see cref="BitVariant.Text"/>, which
+    /// draws no surface at all and renders each item as a bare radio row.
+    /// <see cref="BitVariant.Outline"/> and <see cref="BitVariant.Fill"/> turn every item into a selectable
+    /// card - a bordered one and a filled one - that carries the whole item, including its icon or image, its
+    /// text and its description, and is clickable across its full area.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
 
 
 
@@ -210,7 +268,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     internal void UnregisterOption(BitChoiceGroupOption<TValue> option)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         _items.Remove((option as TItem)!);
         _optionsOrderDirty = true;
@@ -218,6 +276,11 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         SetIndexItems();
 
         InvalidateInputTarget();
+
+        // The indexes of the options after the removed one have moved, and they feed the generated input ids and
+        // whatever an item template renders off them, so each option is pushed a re-render; the parent's own
+        // StateHasChanged does not reach an option whose parameters have not changed.
+        RefreshOptions();
 
         StateHasChanged();
     }
@@ -309,6 +372,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         base.OnParametersSet();
 
         // Opt-in: a pure reorder of existing options registers/unregisters nothing, so flag the DOM
@@ -324,7 +389,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         RefreshOptions();
 
         // A new DefaultValue has to be applied again, the previous one has already had its chance.
-        if (EqualityComparer<TValue>.Default.Equals(DefaultValue, _appliedDefaultValue) is false)
+        if (AreValuesEqual(DefaultValue, _appliedDefaultValue) is false)
         {
             _appliedDefaultValue = DefaultValue;
             _defaultValueApplied = false;
@@ -358,63 +423,49 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        ClassBuilder.Register(() => Variant switch
+        {
+            BitVariant.Fill => "bit-chg-fil",
+            BitVariant.Outline => "bit-chg-otl",
+            BitVariant.Text => "bit-chg-txt",
+            _ => "bit-chg-txt"
+        });
+
         ClassBuilder.Register(() => Inline ? "bit-chg-inl" : string.Empty);
 
         ClassBuilder.Register(() => NoCircle ? "bit-chg-ncr" : "bit-chg-wcr");
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-chg-req" : string.Empty);
+        ClassBuilder.Register(() => IsRequired ? "bit-chg-req" : string.Empty);
 
         ClassBuilder.Register(() => Horizontal ? "bit-chg-hor" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitLabelPosition.Top => "bit-chg-ltp",
-            BitLabelPosition.Bottom => "bit-chg-lbm",
-            BitLabelPosition.Start => "bit-chg-lst",
-            BitLabelPosition.End => "bit-chg-led",
+            BitPlacement.Top => "bit-chg-ltp",
+            BitPlacement.Bottom => "bit-chg-lbm",
+            BitPlacement.Start => "bit-chg-lst",
+            BitPlacement.End => "bit-chg-led",
             _ => "bit-chg-led"
         });
 
         ClassBuilder.Register(() => FullWidth ? "bit-chg-flw" : string.Empty);
 
+        ClassBuilder.Register(() => StretchItemLabel ? "bit-chg-sil" : string.Empty);
+
         ClassBuilder.Register(() => ReadOnly ? "bit-chg-rdo" : string.Empty);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-chg-pri",
-            BitColor.Secondary => "bit-chg-sec",
-            BitColor.Tertiary => "bit-chg-ter",
-            BitColor.Info => "bit-chg-inf",
-            BitColor.Success => "bit-chg-suc",
-            BitColor.Warning => "bit-chg-wrn",
-            BitColor.SevereWarning => "bit-chg-swr",
-            BitColor.Error => "bit-chg-err",
-            BitColor.PrimaryBackground => "bit-chg-pbg",
-            BitColor.SecondaryBackground => "bit-chg-sbg",
-            BitColor.TertiaryBackground => "bit-chg-tbg",
-            BitColor.PrimaryForeground => "bit-chg-pfg",
-            BitColor.SecondaryForeground => "bit-chg-sfg",
-            BitColor.TertiaryForeground => "bit-chg-tfg",
-            BitColor.PrimaryBorder => "bit-chg-pbr",
-            BitColor.SecondaryBorder => "bit-chg-sbr",
-            BitColor.TertiaryBorder => "bit-chg-tbr",
-            _ => "bit-chg-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-ChoiceGroup-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-chg"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-chg-sm",
-            BitSize.Medium => "bit-chg-md",
-            BitSize.Large => "bit-chg-lg",
-            _ => "bit-chg-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-chg"));
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-chg-item-gap:{Gap}" : string.Empty);
+        StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-chg-gap:{Gap}" : string.Empty);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -428,7 +479,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         if (ValueHasBeenSet || _defaultValueApplied || DefaultValue is null) return;
 
-        var item = _items.FirstOrDefault(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue));
+        var item = _items.FirstOrDefault(item => AreValuesEqual(GetValue(item), DefaultValue));
         if (item is null) return;
 
         _defaultValueApplied = true;
@@ -449,7 +500,20 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     // since aria-labelledby wins over aria-label that would leave the group without an accessible name.
     internal bool HasLabel => LabelTemplate is not null || Label.HasValue();
 
-    private string? GetAriaLabelledBy() => AriaLabelledBy ?? (HasLabel ? _labelId : null);
+    // Without a label of its own to point at, an aria-labelledby the page splatted is written back, since a null
+    // written after the HtmlAttributes splat would remove it.
+    private string? GetAriaLabelledBy() => AriaLabelledBy ?? (HasLabel ? _labelId : GetSplattedAttribute("aria-labelledby"));
+
+    // Follows the required asterisk the label shows, which a disabled group drops: a disabled field is
+    // neither submitted nor validated, so announcing it as required would say the opposite of what the
+    // label shows and of what the form does with it.
+    internal bool IsRequired => Disabled is false && Required;
+
+    // A Value bound one way with nothing to write a change back through keeps the choice it was given, so the click
+    // that would move the native selection away from it is cancelled the way a read-only group's is. Otherwise the
+    // radio that was clicked stays checked in the DOM - posted with the form, announced as the checked one and
+    // holding the tab stop - while the group shows the value it is bound to.
+    internal bool IsSelectionLocked => ReadOnly || InvalidValueBinding();
 
     // Same reasoning as the label: the description element is only rendered when there is a description to
     // show, so its id only joins the reference then. This attribute sits after the HtmlAttributes splat in
@@ -460,8 +524,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     private string? GetAriaDescribedBy()
     {
-        HtmlAttributes.TryGetValue("aria-describedby", out var splatted);
-        var splattedDescribedBy = splatted?.ToString();
+        var splattedDescribedBy = GetSplattedAttribute("aria-describedby");
 
         if (HasDescription is false) return splattedDescribedBy;
 
@@ -492,15 +555,9 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
             // focus at some later render, when it happens to become interactive.
             _autoFocusDone = true;
 
-            if (ReadOnly || GetIsItemEnabled(item) is false) return;
+            if (ReadOnly || GetIsItemDisabled(item)) return;
 
-            try
-            {
-                await InputElement.FocusAsync();
-            }
-            catch (JSDisconnectedException) { } // the circuit is gone (e.g. the user navigated away), nothing to focus
-            catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
-            catch (InvalidOperationException) { } // the element reference is detached from its renderer, same as above
+            await InputElement.FocusSafelyAsync();
         }
     }
 
@@ -513,7 +570,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         {
             _inputTargetDirty = false;
             _inputTargetItem = _items.FirstOrDefault(GetIsCheckedItem)
-                            ?? _items.FirstOrDefault(GetIsItemEnabled)
+                            ?? _items.FirstOrDefault(i => GetIsItemDisabled(i) is false)
                             ?? _items.FirstOrDefault();
         }
 
@@ -534,14 +591,14 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     internal async Task HandleClick(TItem item)
     {
-        if (ReadOnly || GetIsItemEnabled(item) is false) return;
+        if (ReadOnly || GetIsItemDisabled(item)) return;
 
         await OnClick.InvokeAsync(item);
     }
 
     internal void HandleChange(TItem item)
     {
-        if (ReadOnly || GetIsItemEnabled(item) is false) return;
+        if (ReadOnly || GetIsItemDisabled(item)) return;
 
         CurrentValue = GetValue(item);
 
@@ -569,7 +626,18 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         if (CurrentValue is null) return false;
 
-        return EqualityComparer<TValue>.Default.Equals(GetValue(item), CurrentValue);
+        return AreValuesEqual(GetValue(item), CurrentValue);
+    }
+
+    // A Comparer is supplied for the values of the group, not necessarily for the null an item without a
+    // value carries, so the nulls are decided here and only two real values are handed to it. The result
+    // matches what EqualityComparer<TValue>.Default answers for the same pair, which is what runs when no
+    // Comparer is set.
+    private bool AreValuesEqual(TValue? left, TValue? right)
+    {
+        if (left is null || right is null) return left is null && right is null;
+
+        return (Comparer ?? EqualityComparer<TValue>.Default).Equals(left, right);
     }
 
     // The parts are joined with a semicolon: they are separate declaration lists and a value that does not
@@ -592,6 +660,13 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         if (GetIsCheckedItem(item) && (Styles?.ItemChecked.HasValue() ?? false))
         {
             styles.Add(Styles.ItemChecked!);
+        }
+
+        // Last, so a disabled checked item ends up looking disabled: an inline declaration list is resolved
+        // in source order, and this is the state that says the item cannot be interacted with at all.
+        if (GetIsItemDisabled(item) && (Styles?.ItemDisabled.HasValue() ?? false))
+        {
+            styles.Add(Styles.ItemDisabled!);
         }
 
         return string.Join(';', styles);
@@ -625,9 +700,14 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
             }
         }
 
-        if (GetIsItemEnabled(item) is false)
+        if (GetIsItemDisabled(item))
         {
             classes.Add("bit-chg-ids");
+
+            if (Classes?.ItemDisabled.HasValue() ?? false)
+            {
+                classes.Add(Classes.ItemDisabled!);
+            }
         }
 
         // Only meaningful for the built-in item content, a template renders its own image or icon.
@@ -657,6 +737,25 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         return Name.HasValue() ? Name! : _name;
     }
 
+    // The built-in description is rendered inside the <label for> of the item, so it is already part of
+    // the accessible name that label computes - and it is referenced by aria-describedby as well, which
+    // has a screen reader announce it twice, once as the name of the option and once as its description.
+    // Naming the input with what the label shows beside the description keeps the name to the option
+    // itself and leaves the description to aria-describedby alone. Composed from the same parts the label
+    // renders, and in the same order, so the name still matches the visible text (WCAG 2.5.3).
+    internal string? GetItemAccessibleName(TItem item)
+    {
+        // An image of the item is decorative by default (an empty alt), and then it adds nothing to the
+        // name the label computes; an ImageAlt that was written for it does, and it is rendered between
+        // the prefix and the text, so it takes that place here too - otherwise naming the input from the
+        // text alone would drop the one part of the label the picture says on its own.
+        var imageAlt = GetImageSrc(item).HasValue() ? GetImageAlt(item) : null;
+
+        var name = string.Join(' ', new[] { GetPrefix(item), imageAlt, GetText(item), GetSuffix(item) }.Where(part => part.HasValue()));
+
+        return name.HasValue() ? name : null;
+    }
+
     internal string? GetAriaLabel(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
@@ -680,30 +779,30 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     }
 
     /// <summary>
-    /// An item is only interactive when both the ChoiceGroup and the item itself are enabled.
+    /// An item is disabled when either the ChoiceGroup or the item itself is disabled.
     /// </summary>
-    internal bool GetIsItemEnabled(TItem item) => IsEnabled && GetIsEnabled(item);
+    internal bool GetIsItemDisabled(TItem item) => Disabled || GetIsDisabled(item);
 
-    internal bool GetIsEnabled(TItem item)
+    internal bool GetIsDisabled(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
-            return choiceGroupItem.IsEnabled;
+            return choiceGroupItem.IsDisabled;
         }
 
         if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
-            return choiceGroupOption.IsEnabled;
+            return choiceGroupOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     internal BitIconInfo? GetIcon(TItem item)

@@ -10,7 +10,7 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
     // She is only ever the ACTOR here: the user-group she edits and the member who signs in are both created per run,
     // so this test never mutates anything another test - or its own next run - depends on.
     private const string StoreAdminEmail = "store-admin@bitplatform.dev";
-    private const string Password = "123456";
+    private const string Password = "12345678";
 
     // The "Manage roles" (a.k.a. "User groups") page is gated behind the Roles_Manage feature. In the role editor's
     // Features tab, each feature's leaf is labelled with its raw field name.
@@ -37,7 +37,7 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
     {
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         // The database outlives the test run, so the group and the member are created here rather than taken from the
         // seed. Editing a seeded user-group would mean a run that dies between the grant and the revoke leaves an admin
@@ -54,7 +54,7 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
         await SetUserGroupRolesManageFeature(Page, server, userGroupName, granted: true, elevationIsRequired: true);
 
         // ---- Browser 2: the group's member, in her own isolated browser context ----
-        await using var memberContext = await NewBrowserContext(serverAddress);
+        await using var memberContext = await NewBrowserContext(server);
         var memberPage = await memberContext.NewPageAsync();
 
         // Her first sign-in happens after the grant, so her token carries the group's freshly added feature and she
@@ -79,7 +79,7 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
     /// </summary>
     private async Task<(string UserGroupName, string MemberEmail)> CreateUserGroupWithMember(AppTestServer server)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
@@ -149,7 +149,7 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
     /// </summary>
     private async Task SetUserGroupRolesManageFeature(IPage page, AppTestServer server, string userGroupName, bool granted, bool elevationIsRequired)
     {
-        await page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.Roles).ToString(),
+        await page.GotoAsync(new Uri(server.WebAppAddress, PageUrls.Roles).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         // Everything is scoped to the user-groups card. The page's own side menu is a nav too, and a long group list can

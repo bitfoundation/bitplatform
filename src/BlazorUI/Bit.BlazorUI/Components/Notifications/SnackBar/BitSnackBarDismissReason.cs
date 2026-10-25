@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Tells what took a <see cref="BitSnackBarItem"/> off the screen, reported through

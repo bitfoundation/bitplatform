@@ -1,0 +1,240 @@
+﻿@page "/e2e/text"
+
+<PageTitle>BitText E2E</PageTitle>
+
+<h1>BitText</h1>
+
+<E2ESection Id="typography" Title="Typography">
+    <BitText Id="txt-default">Default (Subtitle1)</BitText>
+    @foreach (var typography in _typographies)
+    {
+        <BitText Id="@($"txt-typo-{typography}")" Typography="typography">@typography. Once upon a time</BitText>
+    }
+    <div id="inherit-container" style="font-size: 27px; font-weight: 200; font-family: monospace; letter-spacing: 3px;">
+        <BitText Id="txt-inherit" Typography="BitTypography.Inherit">Inherit takes the type around it.</BitText>
+    </div>
+</E2ESection>
+
+<E2ESection Id="element" Title="Element">
+    <BitText Id="txt-el-h2" Element="h2" Typography="BitTypography.H4">An h2 drawn at the size of an h4</BitText>
+    <BitText Id="txt-el-span" Element="span" Typography="BitTypography.H4">An h4 look on a span</BitText>
+    <BitText Id="txt-el-strong" Element="strong" Typography="BitTypography.Body1">Strong body</BitText>
+    <BitText Id="txt-el-blockquote" Element="blockquote" Typography="BitTypography.Body1">A quotation</BitText>
+    <BitText Id="txt-el-invalid" Element="not a tag name" Typography="BitTypography.Body2">Invalid falls back</BitText>
+    <BitText Id="txt-el-void" Element="hr">A void element holds no content</BitText>
+    <BitText Id="txt-el-padded" Element=" section " Typography="BitTypography.Body2">Trimmed</BitText>
+</E2ESection>
+
+<E2ESection Id="weight" Title="Weight and emphasis">
+    @foreach (var weight in _weights)
+    {
+        <BitText Id="@($"txt-weight-{weight}")" Weight="weight">@weight weight</BitText>
+    }
+    <BitText Id="txt-italic" Italic>Italic</BitText>
+    <BitText Id="txt-underline" Underline>Underline</BitText>
+    <BitText Id="txt-strike" Strikethrough>Strikethrough</BitText>
+    <BitText Id="txt-underline-strike" Underline Strikethrough>Underline and strikethrough</BitText>
+    @foreach (var transform in _transforms)
+    {
+        <BitText Id="@($"txt-transform-{transform}")" Transform="transform">mIxEd case transform</BitText>
+    }
+    <BitText Id="txt-overline-none" Typography="BitTypography.Overline" Transform="BitTextTransform.None">Undoing the overline</BitText>
+</E2ESection>
+
+<E2ESection Id="numbers" Title="Numbers and monospace">
+    <BitText Id="txt-proportional" Typography="BitTypography.Body1" Element="span">1111.11</BitText><br />
+    <BitText Id="txt-proportional-8" Typography="BitTypography.Body1" Element="span">8888.88</BitText><br />
+    <BitText Id="txt-numeric" Typography="BitTypography.Body1" Element="span" Numeric>1111.11</BitText><br />
+    <BitText Id="txt-numeric-8" Typography="BitTypography.Body1" Element="span" Numeric>8888.88</BitText><br />
+    <BitText Id="txt-monospace" Typography="BitTypography.Body1" Monospace>1,111.11</BitText>
+</E2ESection>
+
+<E2ESection Id="truncation" Title="Truncation">
+    <div style="width: 300px;">
+        <BitText Id="txt-nowrap" NoWrap>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
+        <BitText Id="txt-nowrap-inline" Typography="BitTypography.Caption2" NoWrap>Once upon a time, stories wove connections between people, a symphony of voices.</BitText>
+        <BitText Id="txt-nowrap-block" Typography="BitTypography.Caption2" NoWrap Block>Once upon a time, stories wove connections between people, a symphony of voices.</BitText>
+        <BitText Id="txt-clamp" LineClamp="2" title="The full text">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams that outlasted every night they were told in.</BitText>
+        <BitText Id="txt-unclamped">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams that outlasted every night they were told in.</BitText>
+        <BitText Id="txt-clamp-zero" LineClamp="0">Zero is no clamp.</BitText>
+    </div>
+</E2ESection>
+
+<E2ESection Id="wrapping" Title="Wrapping">
+    <div style="width: 200px;">
+        <BitText Id="txt-breakword" BreakWord>/a/very/long/path/segment/that/never/breaks/on/its/own.txt</BitText>
+        <BitText Id="txt-nobreak">/a/very/long/path/segment/that/never/breaks/on/its/own.txt</BitText>
+        <BitText Id="txt-forcebreak" ForceBreak>12345678901234567890123456789012345678901234567890</BitText>
+        @foreach (var wrap in _wraps)
+        {
+            <BitText Id="@($"txt-wrap-{wrap}")" Wrap="wrap">A heading whose lines are balanced against each other</BitText>
+        }
+        <BitText Id="txt-hyphenate" Hyphenate Lang="en">An incomprehensibly complicated internationalization responsibility.</BitText>
+        <BitText Id="txt-pws" PreserveWhitespace>@("Line one\n    indented line two")</BitText>
+        <BitText Id="txt-no-pws">@("Line one\n    indented line two")</BitText>
+    </div>
+</E2ESection>
+
+<E2ESection Id="align" Title="Align">
+    <div id="align-container" style="width: 400px; text-align: right;">
+        @foreach (var align in _aligns)
+        {
+            <BitText Id="@($"txt-align-{align}")" Align="align">@align</BitText>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="gutter-trim" Title="Gutter and trim">
+    <BitText Id="txt-gutter-h5" Typography="BitTypography.H5" Gutter>A heading with a gutter</BitText>
+    <BitText Id="txt-gutter-body" Typography="BitTypography.Body1" Gutter>A paragraph with a gutter</BitText>
+    <BitText Id="txt-no-gutter" Typography="BitTypography.Body1">A paragraph with none</BitText>
+    @foreach (var trim in _trims)
+    {
+        <div style="border: 1px dashed gray;"><BitText Id="@($"txt-trim-{trim}")" Typography="BitTypography.H4" Trim="trim">Trim @trim</BitText></div>
+    }
+</E2ESection>
+
+<E2ESection Id="foreground" Title="Foreground and gradient">
+    <div style="color: rgb(1, 2, 3);">
+        <BitText Id="txt-fg-none">Unset foreground</BitText>
+        <BitText Id="txt-fg-Primary" Foreground="BitColorKind.Primary">Primary foreground</BitText>
+        <BitText Id="txt-fg-Secondary" Foreground="BitColorKind.Secondary">Secondary foreground</BitText>
+        <BitText Id="txt-fg-Tertiary" Foreground="BitColorKind.Tertiary">Tertiary foreground</BitText>
+        <BitText Id="txt-fg-Transparent" Foreground="BitColorKind.Transparent">Transparent foreground</BitText>
+    </div>
+    <BitText Id="txt-gradient" Typography="BitTypography.H3" Gradient="linear-gradient(90deg, rgb(124, 58, 237), rgb(6, 182, 212))">A gradient headline</BitText>
+    <BitText Id="txt-gradient-color" Color="BitColor.Error" Gradient="radial-gradient(circle, rgb(6, 182, 212), rgb(124, 58, 237))">Gradient wins over Color</BitText>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitText Id="txt-level-div" Element="div" Typography="BitTypography.H5" AriaLevel="3">A div announced as a level 3 heading</BitText>
+    <BitText Id="txt-level-h2" Element="h2" Typography="BitTypography.H5" AriaLevel="4">An h2 announced as a level 4 heading</BitText>
+    <BitText Id="txt-level-zero" Element="div" AriaLevel="0">Level zero is left out</BitText>
+    <BitText Id="txt-vh" VisuallyHidden>Read out by a screen reader, drawn nowhere.</BitText>
+    <button id="before-skip">before</button>
+    <BitText Id="txt-vh-link" VisuallyHidden><a id="skip-link" href="#a11y">Skip to the next example</a></BitText>
+    <BitText Id="txt-lang" Lang="fr">Bonjour tout le monde</BitText>
+    <BitText Id="txt-noselect" NoSelect>This text cannot be selected</BitText>
+    <BitText Id="txt-selectable">This text can be selected</BitText>
+    <BitText Id="txt-aria-label" AriaLabel="A named text" Element="section">Named</BitText>
+    <BitText Id="txt-tabindex" TabIndex="0">Focusable text</BitText>
+</E2ESection>
+
+<E2ESection Id="visibility" Title="Visibility and disabled">
+    <div>Visible: [<BitText Id="txt-visible" Element="span" Typography="BitTypography.Inherit" Visibility="BitVisibility.Visible">Visible text</BitText>]</div>
+    <div>Hidden: [<BitText Id="txt-hidden" Element="span" Typography="BitTypography.Inherit" Visibility="BitVisibility.Hidden">Hidden text</BitText>]</div>
+    <div>Collapsed: [<BitText Id="txt-collapsed" Element="span" Typography="BitTypography.Inherit" Visibility="BitVisibility.Collapsed">Collapsed text</BitText>]</div>
+    <BitText Id="txt-disabled" Disabled>Disabled text</BitText>
+    <BitText Id="txt-disabled-gradient" Disabled Gradient="linear-gradient(90deg, rgb(124, 58, 237), rgb(6, 182, 212))">Disabled gradient</BitText>
+    <div style="--bit-Text-disabled-opacity: 0.25;">
+        <BitText Id="txt-disabled-var" Disabled>Disabled with a variable</BitText>
+    </div>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="_textParams">
+        <BitText Id="txt-params-1">Takes the cascade</BitText>
+        <BitText Id="txt-params-2">So does this one</BitText>
+        <BitText Id="txt-params-3" Transform="BitTextTransform.None" Italic>Its own transform</BitText>
+    </BitParams>
+    <BitText Id="txt-params-outside">Outside the cascade</BitText>
+</E2ESection>
+
+<E2ESection Id="colors" Title="Color">
+    @foreach (var color in _colors)
+    {
+        <BitText Id="@($"txt-color-{color}")" Color="color">@color</BitText>
+    }
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitText Id="txt-style" Style="color: rgb(255, 99, 71); font-weight: 700;">Styled through Style</BitText>
+    <BitText Id="txt-class" Class="e2e-text-class">Classed through Class</BitText>
+    <BitText Id="txt-splat" Align="BitTextAlign.Center" Class="own-class"
+             HtmlAttributes="@(new Dictionary<string, object> { ["class"] = "splat-class", ["style"] = "width: 250px", ["data-e2e"] = "splatted" })">Splatted class and style</BitText>
+    <div id="css-container" style="--bit-Text-color: rgb(15, 118, 110); --bit-Text-font-family: Arial, sans-serif; --bit-Text-heading-font-family: Georgia, serif; --bit-Text-decoration-color: rgb(245, 158, 11); --bit-Text-decoration-thickness: 2px; --bit-Text-underline-offset: 6px; --bit-Text-monospace-font-family: 'Courier New', monospace; --bit-Text-gutter: 21px;">
+        <BitText Id="txt-css-heading" Typography="BitTypography.H5">A heading in a family of its own</BitText>
+        <BitText Id="txt-css-body">Color from --bit-Text-color</BitText>
+        <BitText Id="txt-css-underline" Underline>Underline restyled</BitText>
+        <BitText Id="txt-css-mono" Monospace>Monospace in another family</BitText>
+        <BitText Id="txt-css-gutter" Gutter>Gutter from the variable</BitText>
+        <BitText Id="txt-css-color" Color="BitColor.Error">An explicit Color still wins</BitText>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width: 400px;">
+        <BitText Id="txt-rtl" Dir="BitDir.Rtl" Typography="BitTypography.H5">عنوان راست‌چین</BitText>
+        <BitText Id="txt-rtl-start" Dir="BitDir.Rtl" Align="BitTextAlign.Start">آغاز</BitText>
+        <BitText Id="txt-rtl-end" Dir="BitDir.Rtl" Align="BitTextAlign.End">پایان</BitText>
+        <div dir="rtl">
+            <BitText Id="txt-rtl-inherited" Align="BitTextAlign.Start">آغاز</BitText>
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    <BitText Id="txt-runtime" Typography="_runtimeTypography" Color="_runtimeColor" Disabled="_runtimeDisabled" Element="@_runtimeElement">@_runtimeText</BitText>
+    <button id="btn-set-typography" @onclick="() => _runtimeTypography = BitTypography.H2">H2</button>
+    <button id="btn-set-color" @onclick="() => _runtimeColor = BitColor.Success">Success</button>
+    <button id="btn-toggle-disabled" @onclick="() => _runtimeDisabled = !_runtimeDisabled">Toggle disabled</button>
+    <button id="btn-set-element" @onclick="@(() => _runtimeElement = "section")">Section</button>
+    <button id="btn-set-text" @onclick="@(() => _runtimeText = "Changed")">Change text</button>
+    <button id="btn-toggle-mounted" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitText Id="txt-mounted">Mounted</BitText>
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private BitTypography? _runtimeTypography;
+    private BitColor? _runtimeColor;
+    private bool _runtimeDisabled;
+    private string? _runtimeElement;
+    private string _runtimeText = "Runtime";
+    private bool _mounted = true;
+
+    private readonly BitTypography[] _typographies =
+    [
+        BitTypography.H1, BitTypography.H2, BitTypography.H3, BitTypography.H4, BitTypography.H5, BitTypography.H6,
+        BitTypography.Subtitle1, BitTypography.Subtitle2, BitTypography.Body1, BitTypography.Body2, BitTypography.Button,
+        BitTypography.Caption1, BitTypography.Caption2, BitTypography.Overline, BitTypography.Inherit
+    ];
+
+    private readonly BitFontWeight[] _weights = [BitFontWeight.Light, BitFontWeight.Regular, BitFontWeight.Medium, BitFontWeight.Semibold, BitFontWeight.Bold];
+
+    private readonly BitTextTransform[] _transforms = [BitTextTransform.None, BitTextTransform.Uppercase, BitTextTransform.Lowercase, BitTextTransform.Capitalize];
+
+    private readonly BitTextWrap[] _wraps = [BitTextWrap.Wrap, BitTextWrap.NoWrap, BitTextWrap.Balance, BitTextWrap.Pretty, BitTextWrap.Stable];
+
+    private readonly BitTextTrim[] _trims = [BitTextTrim.None, BitTextTrim.Start, BitTextTrim.End, BitTextTrim.Both];
+
+    private readonly BitTextAlign[] _aligns =
+    [
+        BitTextAlign.Start, BitTextAlign.End, BitTextAlign.Left, BitTextAlign.Right, BitTextAlign.Center, BitTextAlign.Justify,
+        BitTextAlign.JustifyAll, BitTextAlign.MatchParent, BitTextAlign.Inherit, BitTextAlign.Initial, BitTextAlign.Revert,
+        BitTextAlign.RevertLayer, BitTextAlign.Unset
+    ];
+
+    private readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly BitTextParams[] _textParams =
+    [
+        new()
+        {
+            Typography = BitTypography.Body1,
+            Weight = BitFontWeight.Semibold,
+            Transform = BitTextTransform.Uppercase,
+        }
+    ];
+}

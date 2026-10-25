@@ -1,10 +1,10 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Tick configuration for a scale.</summary>
 public sealed class BitChartTickOptions
 {
     public bool Display { get; set; } = true;
-    public string Color { get; set; } = "var(--bit-clr-fg-sec, #525252)";
+    public string Color { get; set; } = "var(--bit-Chart-tick-color, var(--bit-clr-fg-sec))";
     public BitChartFont Font { get; set; } = new();
     public double Padding { get; set; } = 3;
     public double? StepSize { get; set; }
@@ -16,8 +16,13 @@ public sealed class BitChartTickOptions
     public double MaxRotation { get; set; } = 50;
     /// <summary>Minimum auto-rotation (degrees) for tick labels.</summary>
     public double MinRotation { get; set; }
-    /// <summary>Tick label alignment relative to the tick (start/center/end).</summary>
-    public BitChartAlign Align { get; set; } = BitChartAlign.Center;
+    /// <summary>
+    /// Where a label of a horizontal axis lies against its tick: centered on it, or beginning (Start) or ending (End)
+    /// at it. Start and End follow the reading direction, as they do everywhere in the chart: a label at the Start runs
+    /// rightwards from its tick in a left-to-right chart and leftwards in a right-to-left one. A label turned by a
+    /// rotation always ends at its tick.
+    /// </summary>
+    public BitPlacement Align { get; set; } = BitPlacement.Center;
     /// <summary>Extra pixel shift of the tick label along the axis, mirroring Chart.js <c>ticks.labelOffset</c>.</summary>
     public double LabelOffset { get; set; }
     /// <summary>Render value-axis tick labels inside the chart area.</summary>

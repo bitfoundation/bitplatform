@@ -10,7 +10,7 @@
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">
-        <BitStack HorizontalAlign="BitAlignment.Center" FillContent Class="consent-card">
+        <BitStack HorizontalAlign="BitAlignment.Center" FillContent Padding="1rem" Class="consent-card">
 
             @if (isLoading || redirectToSignIn)
             {
@@ -115,7 +115,7 @@
                     <BitButton FullWidth
                                Variant="BitVariant.Outline"
                                Color="BitColor.SecondaryBackground"
-                               IsEnabled="@(isSubmitting is false)"
+                               Disabled="isSubmitting"
                                OnClick="WrapHandled(Deny)">
                         @Localizer[nameof(AppStrings.Cancel)]
                     </BitButton>

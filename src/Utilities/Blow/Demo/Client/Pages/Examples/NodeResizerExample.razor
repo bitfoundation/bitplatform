@@ -1,0 +1,143 @@
+﻿@page "/examples/node-resizer"
+
+<PageTitle>Node Resizer · Blow</PageTitle>
+
+<ExampleScaffold Title="Node Resizer"
+                 Summary="A BlowNodeResizer in the node template gives a node resize controls on every corner and side - by default while it is selected. The toolbar sets when they show, their colour, whether the sides resize too and a size cap; the log under the canvas follows the canvas's resize events.">
+    <Toolbar>
+        <label>Controls
+            <select @onchange="SetVisibility">
+                <option value="selected" selected="@(_visible is null)">While selected</option>
+                <option value="always" selected="@(_visible is true)">Always</option>
+                <option value="never" selected="@(_visible is false)">Never</option>
+            </select>
+        </label>
+        <label>Colour
+            <select @onchange="@(e => _color = e.Value?.ToString() ?? ThemeColor)">
+                <option value="@ThemeColor" selected="@(_color == ThemeColor)">Theme</option>
+                <option value="#f97316" selected="@(_color == "#f97316")">Orange</option>
+                <option value="#8b5cf6" selected="@(_color == "#8b5cf6")">Violet</option>
+            </select>
+        </label>
+        <label><input type="checkbox" checked="@_edgeControls" @onchange="@(e => _edgeControls = (bool)e.Value!)" /> Resize from the sides</label>
+        <label><input type="checkbox" checked="@_capped" @onchange="@(e => _capped = (bool)e.Value!)" /> Cap at @MaxSize</label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    OnNodeResizeStart="OnResizeStart"
+                    OnNodeResize="OnResize"
+                    OnNodeResizeEnd="OnResizeEnd">
+            <NodeTemplate Context="node">
+                <BlowNodeResizer MinWidth="80" MinHeight="50"
+                                 MaxWidth="@(_capped ? CapWidth : double.MaxValue)"
+                                 MaxHeight="@(_capped ? CapHeight : double.MaxValue)"
+                                 KeepAspectRatio="@(node.Id == "2")"
+                                 Visible="_visible"
+                                 Color="@_color"
+                                 ShowEdgeControls="_edgeControls" />
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" />
+                <div class="rs-node">
+                    <strong>@node.Label</strong>
+                    <span class="rs-node__size">@SizeOf(node)</span>
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" />
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <Footer>
+        @if (_log.Count == 0)
+        {
+            <span class="bb-muted">Resize a node: its resize events are listed here.</span>
+        }
+        @foreach (var line in _log)
+        {
+            <div>@line</div>
+        }
+    </Footer>
+    <TryIt>
+        <li><strong>Click a node</strong> to select it and reveal its resize controls, then <strong>drag a corner square</strong> to resize it. The opposite corner stays put, and the size inside the node follows.</li>
+        <li><strong>Drag a side</strong> - anywhere along it, not only at the middle - to resize in one direction. Untick <strong>Resize from the sides</strong> and only the corners resize.</li>
+        <li>Resize <strong>Keep ratio</strong>: however you drag, it stays square.</li>
+        <li>Nothing gets smaller than 80 × 50. Tick <strong>Cap at @MaxSize</strong> and nothing gets larger either.</li>
+        <li>Set <strong>Controls</strong> to <em>Always</em> to show them on every node without selecting it, or <em>Never</em> to hide them even on a selected node.</li>
+        <li>Pick a <strong>Colour</strong> for the corner squares and the outline.</li>
+        <li>Press <strong>Escape</strong> during a resize to put the node back as it was.</li>
+        <li>Watch the log: one line when a resize starts, and one when it ends with the new size and how many moves it took.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>BlowNodeResizer</code> goes inside the node's template and draws four corner squares, an outline and four invisible side strips. Resizing writes the node's <code>Width</code> and <code>Height</code>, and its <code>Position</code> when the left or top edge moves.</li>
+        <li><code>Visible</code> (null) shows the controls only while the node is selected; true or false forces them. <code>Color</code> (<code>var(--bit-blow-node-selected)</code>) paints the squares and the outline.</li>
+        <li><code>ShowEdgeControls</code> (true) adds the side strips. They run the whole length of each side rather than sitting at the midpoints, where the connection handles are.</li>
+        <li><code>MinWidth</code> and <code>MinHeight</code> (40 and 30; 80 and 50 here) and <code>MaxWidth</code> and <code>MaxHeight</code> (unbounded) limit the size, in flow units. <code>KeepAspectRatio</code> (false) lets the dragged axis drive the other; it is on for node 2 only.</li>
+        <li>The canvas raises <code>OnNodeResizeStart</code>, then <code>OnNodeResize</code> on every move, then <code>OnNodeResizeEnd</code>, each with the node; <code>NodesChanged</code> follows the end, once.</li>
+        <li>Both nodes start with an explicit <code>Width</code> and <code>Height</code>, and the template's content has <code>height: 100%</code>, so it fills the node at any size.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .rs-node { display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%; }
+    .rs-node__size { font-size:11px; color:var(--bit-blow-text-muted); }
+</style>
+
+@code {
+    private const string ThemeColor = "var(--bit-blow-node-selected)";
+    private const double CapWidth = 280;
+    private const double CapHeight = 180;
+    private static readonly string MaxSize = $"{CapWidth} × {CapHeight}";
+
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    private bool? _visible;
+    private string _color = ThemeColor;
+    private bool _edgeControls = true;
+    private bool _capped;
+
+    private readonly List<string> _log = [];
+    private int _moves;
+
+    // A tint of the colour mixed into the node's own fill rather than a fixed pastel, so the node reads
+    // in the light and the dark colour mode alike.
+    private static string Tint(string color) => $"background:color-mix(in srgb, {color} 20%, var(--bit-blow-node-bg));";
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Label = "Resize me", Position = new(80, 60), Width = 160, Height = 70, Style = Tint("#3b82f6") },
+            new BlowNode { Id = "2", Label = "Keep ratio", Position = new(340, 120), Width = 120, Height = 120, Style = Tint("#22c55e") },
+        ];
+        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Type = BlowEdgeType.SmoothStep } ];
+    }
+
+    private void SetVisibility(ChangeEventArgs e) => _visible = e.Value?.ToString() switch
+    {
+        "always" => true,
+        "never" => false,
+        _ => null,
+    };
+
+    private void OnResizeStart(BlowNode node)
+    {
+        _moves = 0;
+        Log($"OnNodeResizeStart: {node.Label} at {SizeOf(node)}");
+    }
+
+    // Raised on every pointer move of the gesture: counted rather than logged, or it would flood the log.
+    private void OnResize(BlowNode node) => _moves++;
+
+    private void OnResizeEnd(BlowNode node) =>
+        Log($"OnNodeResizeEnd: {node.Label} now {SizeOf(node)}, after {_moves} OnNodeResize call{(_moves == 1 ? "" : "s")}");
+
+    private void Log(string line)
+    {
+        _log.Insert(0, line);
+        if (_log.Count > 6) _log.RemoveAt(_log.Count - 1);
+    }
+
+    private static string SizeOf(BlowNode node) => $"{node.EffectiveSize.Width:0} × {node.EffectiveSize.Height:0}";
+}

@@ -1,0 +1,290 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+@* A combobox built on the browser's own: <input list> plus a <datalist> is the platform's combobox,
+   and it arrives with filtering, keyboard navigation, touch behaviour and screen-reader support that
+   every hand-rolled ARIA implementation spends a thousand lines approximating and still gets wrong on
+   some browser. What the platform does not do is map a label the user reads onto a value the model
+   stores, which is the whole difference between a datalist of suggestions and a real combobox — so
+   that is what this adds, and nothing else.
+
+   The datalist options carry the *label* as their value, because that is what the browser puts in the
+   box when one is picked. The label is translated back to the option's value on the way to the model. *@
+<div class="bit-borm-combobox">
+    @if (HasAffix)
+    {
+        <div class="bit-borm-affixed @(Context.HasError && Context.ShowMessages ? "bit-borm-affixed--invalid" : "")">
+            @if (!string.IsNullOrEmpty(Context.Prefix))
+            {
+                <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Context.Prefix</span>
+            }
+            @Control
+            @if (!string.IsNullOrEmpty(Context.Suffix))
+            {
+                <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Context.Suffix</span>
+            }
+            @if (ShowClear)
+            {
+                <button type="button" class="bit-borm-affix bit-borm-affix--btn" tabindex="-1"
+                        title="@ClearLabel" aria-label="@ClearLabel" @onclick="Clear">×</button>
+            }
+        </div>
+    }
+    else
+    {
+        @Control
+    }
+
+    @* Resolved once per render: the list is filtered and materialised, and it is read by both the
+       datalist below and the announcement beneath it. *@
+    @{ var choices = Choices; }
+    <datalist id="@ListId">
+        @foreach (var opt in choices)
+        {
+            @* Disabled options are omitted rather than rendered: a datalist has no disabled state, and
+               offering a choice the field will then reject is worse than not offering it. *@
+            <option value="@opt.Label" label="@GroupSuffix(opt)" />
+        }
+    </datalist>
+
+    @* How many choices the list holds, and whether it is still loading or failed to load — said when the
+       list arrives or changes, so a screen-reader user knows there is something to type towards. It is
+       not a count of what matches the text typed so far: the browser filters the list itself and never
+       tells the page, and finding out would mean a round-trip per keystroke, which this control
+       deliberately does not make (see WantsInputEvent). *@
+    <p class="bit-borm-sr-only" aria-live="polite">@Announce(choices.Count)</p>
+</div>
+
+@code {
+    // No role="combobox" and no aria-expanded, deliberately. An <input> carrying a `list` already *is*
+    // a combobox to the accessibility tree — the browser maps it for us — and declaring the role again
+    // takes on its contract: aria-expanded then has to say whether the popup is open, which is state
+    // only the browser has and never exposes. A hard-coded "false" is not a simplification, it is an
+    // assertion that the list is closed, told to a screen-reader user at the exact moment it is open.
+    //
+    // Splat first so the renderer's own id and ARIA wiring below always wins.
+    private RenderFragment Control => @<input @attributes="ExtraAttributes"
+                                              id="@Context.ElementId"
+                                              name="@Context.InputName"
+                                              @ref="Element"
+                                              class="@CssClass"
+                                              type="text"
+                                              list="@ListId"
+                                              value="@DisplayText"
+                                              placeholder="@Context.Placeholder"
+                                              disabled="@Disabled"
+                                              readonly="@ReadOnly"
+                                              autocomplete="off"
+                                              aria-autocomplete="list"
+                                              aria-required="@AriaRequired"
+                                              aria-invalid="@AriaInvalid"
+                                              aria-label="@AriaLabel"
+                                              aria-busy="@(Context.IsLoadingOptions ? "true" : null)"
+                                              aria-describedby="@DescribedBy"
+                                              @onchange="OnCommit"
+                                              @oninput="SearchHandler"
+                                              @onblur="OnBlur" />
+    ;
+
+    /// <summary>
+    /// The <c>input</c> handler of a field that searches its options, or none — so a combobox over a
+    /// fixed list still costs no round trip per keystroke.
+    /// </summary>
+    private EventCallback<ChangeEventArgs> SearchHandler
+        => Field.SearchMinLength is null ? default : EventCallback.Factory.Create<ChangeEventArgs>(this, OnSearchInput);
+
+    private CancellationTokenSource? _search;
+
+    /// <summary>
+    /// Searches once the user pauses. Nothing is written to the model here: what the box holds is
+    /// still text the user is typing, and only a choice — or leaving the box — commits it.
+    /// </summary>
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        var text = e.Value?.ToString() ?? "";
+        _search?.Cancel();
+        _search?.Dispose();
+        var cts = _search = new CancellationTokenSource();
+        try
+        {
+            if (Field.SearchDebounceMilliseconds > 0) await Task.Delay(Field.SearchDebounceMilliseconds, cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return; // typed past
+        }
+        await Context.State.SearchOptionsAsync(Field, Context.Path, text);
+    }
+
+    public override void Dispose()
+    {
+        _search?.Cancel();
+        _search?.Dispose();
+        _search = null;
+        base.Dispose();
+    }
+
+    protected override Task OnParametersSetAsync() => LoadOptionsAsync();
+
+    /// <summary>
+    /// A combobox never writes as the user types, whatever <see cref="BormFieldDefinition.UpdateOn"/>
+    /// says.
+    /// </summary>
+    /// <remarks>
+    /// What the box holds is a label, and what the model holds is the value the label stands for. Half
+    /// of a label stands for nothing: writing on every keystroke would store "Fran" as the country, and
+    /// then "Franc", and — on a field that accepts only what is on the list — flag each of them as an
+    /// answer that does not exist. Picking from the list and leaving the box both raise <c>change</c>,
+    /// which is where the translation belongs. <see cref="BormDefinition.Validate"/> reports a
+    /// schema that asked for the other behaviour rather than leaving it to be discovered.
+    /// </remarks>
+    protected override bool WantsInputEvent => false;
+
+    /// <summary>
+    /// The choices to offer. A provider that is still loading or that failed offers nothing, which is
+    /// what an empty list already means; the live region below says which of the two it is.
+    /// </summary>
+    private IReadOnlyList<BormSelectOption> Choices
+        => Context.Options.Where(o => !o.Disabled).ToList();
+
+    private string ListId => Context.ElementId + "_list";
+
+    /// <summary>
+    /// What the box shows: the label of the option currently selected, or the raw stored value when it
+    /// matches none — a custom answer, or one the user is still halfway through typing. Showing the
+    /// stored value rather than blanking the box is the same promise the rest of the library makes:
+    /// what the user typed is never thrown away without saying so.
+    /// </summary>
+    private string DisplayText
+    {
+        get
+        {
+            var stored = Context.StringValue;
+            if (stored.Length == 0) return "";
+
+            foreach (var opt in Context.Options)
+                if (string.Equals(opt.Value, stored, StringComparison.Ordinal))
+                {
+                    // Remembered as a pick is: a search's results are replaced as soon as the user types, and
+                    // the record the form opened with then showed its bare id - written into the box under the
+                    // caret, so typing over "Northwind Bank" turned "con" into "C-0042".
+                    if (Field.SearchMinLength is not null) Context.State.RememberChoice(Context.Path, opt);
+                    return opt.Label;
+                }
+
+            // A search field's choice outlives the results it was picked from.
+            return Context.State.ChosenOption(Context.Path, stored)?.Label ?? stored;
+        }
+    }
+
+    /// <summary>
+    /// Turns what the browser handed back — a label — into the value the model stores. An entry that
+    /// matches no label is kept verbatim, so a field that allows custom answers gets one and a field
+    /// that does not still shows the user their own text next to the message explaining it.
+    /// </summary>
+    private async Task OnCommit(ChangeEventArgs e)
+    {
+        var text = e.Value?.ToString() ?? "";
+        if (text.Length == 0)
+        {
+            await Context.SetValueAsync(null);
+            return;
+        }
+
+        if (Match(text) is { } chosen)
+        {
+            await Commit(chosen);
+            return;
+        }
+
+        if (Field.SearchMinLength is not null)
+        {
+            // Committed before the results for this text arrived — typed quickly and tabbed away. The
+            // search is run for exactly this text, and only what it finds can be the answer. Tracked, so a
+            // submit pressed while it runs waits for the answer instead of sending the value from before.
+            _search?.Cancel();
+            await Context.State.TrackEntryAsync(SearchAndCommitAsync(text));
+            return;
+        }
+
+        await Context.SetFromStringAsync(text);
+    }
+
+    private async Task SearchAndCommitAsync(string text)
+    {
+        await Context.State.SearchOptionsAsync(Field, Context.Path, text);
+        if (Match(text) is { } found)
+        {
+            await Commit(found);
+            return;
+        }
+
+        // A search field stands for a record, and text that names none is refused rather than
+        // stored as though it were one — unless the field takes answers of its own.
+        if (Field.Validators.Any(v => v is BormOneOfRule))
+        {
+            Context.State.RefuseEntry(Context.Path, text);
+            return;
+        }
+
+        await Context.SetFromStringAsync(text);
+    }
+
+    private BormSelectOption? Match(string text)
+    {
+        foreach (var opt in Context.Options)
+            if (!opt.Disabled && string.Equals(opt.Label, text, StringComparison.OrdinalIgnoreCase))
+                return opt;
+        // An option's own value typed in, in any casing - "FR" for France. Stored as typed, it passed the list's
+        // rule (which compares without regard to case) while the model held a value no option has, and the box
+        // went on showing "FR"; taken as the option, it stores "fr" and shows "France".
+        foreach (var opt in Context.Options)
+            if (!opt.Disabled && string.Equals(opt.Value, text, StringComparison.OrdinalIgnoreCase))
+                return opt;
+        return null;
+    }
+
+    private Task Commit(BormSelectOption option)
+    {
+        if (Field.SearchMinLength is not null) Context.State.RememberChoice(Context.Path, option);
+        return Context.SetFromStringAsync(option.Value);
+    }
+
+    /// <summary>
+    /// A group name shown beside the option. A datalist has no <c>optgroup</c>, and the browser renders
+    /// the <c>label</c> attribute as secondary text — which is exactly where the group belongs.
+    /// </summary>
+    private string? GroupSuffix(BormSelectOption option) => option.Group;
+
+    /// <summary>
+    /// Whether the control is wrapped — by configuration, never by value. See the text input: a wrapper
+    /// that came and went with the value replaced the input element, and the caret with it, the moment
+    /// a choice was committed while the box still had focus.
+    /// </summary>
+    private bool HasAffix
+        => !string.IsNullOrEmpty(Context.Prefix) || !string.IsNullOrEmpty(Context.Suffix) || OffersClear;
+
+    private bool ShowClear => OffersClear && Context.StringValue.Length > 0;
+
+    private bool OffersClear => Attr("clearable", false) && !DisabledOrReadOnly;
+
+    private string ClearLabel => Context.Text(BormMessageKeys.Clear);
+
+    /// <summary>Empties the box and puts the caret back in it, rather than on the page body.</summary>
+    private async Task Clear()
+    {
+        await Context.SetValueAsync(null);
+        // After the render that empties the box, not before it: Firefox decides whether a later change fires
+        // against the value the box held when it took the focus, so focused while it still showed "France",
+        // typing France again raised nothing, and the field stayed empty with the word in it.
+        RequestFocusAfterRender();
+    }
+
+    private string Announce(int count) => Context.IsLoadingOptions
+        ? Context.Text(BormMessageKeys.SelectLoading)
+        : Context.OptionsFailed
+            ? Context.Text(BormMessageKeys.SelectError)
+            : Field.SearchMinLength is { } min && (Context.State.SearchText(Context.Path)?.Length ?? 0) < min
+                ? Context.Text(BormMessageKeys.ComboboxSearchHint, min)
+                : Context.Text(BormMessageKeys.ComboboxAvailable, count);
+}

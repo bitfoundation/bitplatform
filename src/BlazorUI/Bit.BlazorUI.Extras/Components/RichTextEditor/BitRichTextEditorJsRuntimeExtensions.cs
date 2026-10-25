@@ -41,6 +41,16 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.focus", editor);
     }
 
+    public static ValueTask BitRichTextEditorEnableGridRoving(this IJSRuntime jsRuntime, ElementReference container)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.enableGridRoving", container);
+    }
+
+    public static ValueTask BitRichTextEditorRestoreFocus(this IJSRuntime jsRuntime, ElementReference editor)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.restoreFocus", editor);
+    }
+
     public static ValueTask<string> BitRichTextEditorGetHtml(this IJSRuntime jsRuntime, ElementReference editor)
     {
         return jsRuntime.Invoke<string>("BitBlazorUI.RichTextEditor.getHtml", editor);
@@ -91,14 +101,14 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.updateLink", editor, url, newTab);
     }
 
-    public static ValueTask BitRichTextEditorInsertImageUrl(this IJSRuntime jsRuntime, ElementReference editor, string url, string? alt)
+    public static ValueTask BitRichTextEditorInsertImageUrl(this IJSRuntime jsRuntime, ElementReference editor, string url, string? alt, int? width)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.insertImageUrl", editor, url, alt);
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.insertImageUrl", editor, url, alt, width);
     }
 
-    public static ValueTask BitRichTextEditorUpdateImage(this IJSRuntime jsRuntime, ElementReference editor, string url, string? alt)
+    public static ValueTask BitRichTextEditorUpdateImage(this IJSRuntime jsRuntime, ElementReference editor, string url, string? alt, int? width)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.updateImage", editor, url, alt);
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.updateImage", editor, url, alt, width);
     }
 
     public static ValueTask BitRichTextEditorAlignImage(this IJSRuntime jsRuntime, ElementReference editor, string align)

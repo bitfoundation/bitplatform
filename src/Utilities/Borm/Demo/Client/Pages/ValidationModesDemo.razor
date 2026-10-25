@@ -1,0 +1,233 @@
+﻿@page "/validation"
+@implements IDisposable
+@inject DemoDirectory Directory
+
+<PageTitle>Validation modes · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Validation modes, summary &amp; reset</h1>
+    <p class="bb-subtitle">
+        Choose <em>when</em> a field revalidates, independently for before and after the first submit —
+        the same <code>mode</code>/<code>reValidateMode</code> split React Hook Form popularised. The
+        summary below lists every error in schema order and links to the control that needs fixing.
+        The username field is <em>debounced</em>, so where a mode validates on change - after the first
+        submit, or with <em>Before submit</em> set to OnChange - its async availability check runs once
+        you pause rather than once per character; before it, OnBlur checks it as you leave the box. Try
+        <code>ada</code> or <code>admin</code> and watch the indicator below.
+    </p>
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+
+    <div class="bb-fields">
+        <label class="bb-field">
+            Before submit
+            <select @onchange="e => SetTrigger(before: true, e)">
+                @foreach (var t in Triggers)
+                {
+                    <option value="@t" selected="@(t == _state.ValidationTrigger)">@t</option>
+                }
+            </select>
+        </label>
+        <label class="bb-field">
+            After submit
+            <select @onchange="e => SetTrigger(before: false, e)">
+                @foreach (var t in Triggers)
+                {
+                    <option value="@t" selected="@(t == _state.RevalidationTrigger)">@t</option>
+                }
+            </select>
+        </label>
+        <label class="bb-check">
+            <input type="checkbox" checked="@_readOnly" @onchange="ToggleReadOnly" /> Read-only (review mode)
+        </label>
+    </div>
+
+    <BormView State="_state"
+              ReadOnly="_readOnly"
+              ShowErrorSummary="true"
+              ShowResetButton="true"
+              OnValidSubmit="HandleSubmit"
+              SubmitText="Create account" />
+
+    <p class="demo-status">
+        dirty: <strong>@_state.IsFormDirty</strong> ·
+        submitted: <strong>@_state.SubmitCount</strong> time(s) ·
+        saved: <strong>@_state.IsSubmitSuccessful</strong> ·
+        errors: <strong>@_state.AllMessages.Count()</strong> ·
+        @* Per field, not per form: a lookup on one box should not declare the whole form busy. *@
+        checking username: <strong>@(_state.IsValidatingField("Username") ? "yes — remote lookup in flight" : "no")</strong> ·
+        @* One word for one field: what a "✓ available" binds to, so it appears once the lookup has answered and not before. *@
+        username status: <strong>@UsernameStatus</strong>
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The three triggers</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Trigger</th><th>A field is checked</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>OnSubmit</code></td><td>Only when the form is submitted, or a wizard step advances.</td></tr>
+                <tr><td class="bb-table-key"><code>OnBlur</code></td><td>When the user leaves it, and on submit.</td></tr>
+                <tr><td class="bb-table-key"><code>OnChange</code></td><td>Whenever its value is written, when the user leaves it, and on submit. The default.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        <code>ValidationTrigger</code> applies until the first submit and <code>RevalidationTrigger</code> after it, so a form
+        can stay quiet while it is being filled in and turn eager once the user has asked for its verdict. Either way, a field
+        already showing an error is rechecked as soon as it changes, so the message goes the moment it is fixed.
+        A text box writes its value when the user leaves it unless it says <code>UpdateOnInput()</code>; that is why
+        <em>OnChange</em> on an ordinary text box looks like <em>OnBlur</em>.
+    </p>
+    <p class="bb-card-desc">
+        A field's synchronous rules run first and its asynchronous ones only when those found nothing: a username that
+        breaks its pattern is not sent to the server to ask whether it is taken (<code>RunAsyncRulesOnInvalidFields</code>
+        changes that). A lookup that is superseded - typed past, reset, or pressed Next on twice - is cancelled through
+        <code>ctx.CancellationToken</code> and its answer discarded. <code>GetFieldState(path).Status</code> says where a field
+        stands in one word: <code>Unvalidated</code>, <code>Pending</code>, <code>Invalid</code> or <code>Valid</code>.
+        Rules can also report a <em>warning</em> that does not block the submit - see <a href="expressions">expressions</a> -
+        and <code>SingleErrorPerField</code> shows only a field's first error - see <a href="state-api">editing an existing record</a>.
+    </p>
+</div>
+
+@* Only while it is still true: Reset, or a later submit that failed, takes back what this said. *@
+@if (_submitted && _state.IsSubmitSuccessful)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Account created ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/validation"
+@inject DemoDirectory Directory
+
+<BormView State="_state"
+          ReadOnly="_readOnly"
+          ShowErrorSummary="true"
+          ShowResetButton="true"
+          OnValidSubmit="HandleSubmit"
+          SubmitText="Create account" />
+
+@code {
+    private readonly NewAccount _model = new();
+    private BormState _state = default!;
+    private bool _readOnly;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<NewAccount>()
+            .Title("Create your account")
+            .Field(x => x.Email, f => f.Autocomplete("email"))
+            .Field(x => x.Username, f => f
+                .Required()
+                .Autocomplete("username")
+                .Trim()                                  // fix the value; do not complain about spaces
+                // Debouncing writes once per pause instead of once per character — and the async rule
+                // runs with that write, which is the whole reason to debounce a field that calls out
+                // to a service. An undebounced field's async rules still wait for blur.
+                .UpdateOnInput(debounceMilliseconds: 400)
+                .MustAsync(async ctx => await Directory.IsUsernameAvailableAsync((string?)ctx.Value ?? "", ctx.CancellationToken),
+                           "That username is taken.")
+                .Help("Try 'ada' or 'admin' to see the async rule fire."))
+            .Field(x => x.Password, f => f.Autocomplete("new-password"))
+            // [Compare] on the model already wires the confirm rule.
+            .Field(x => x.ConfirmPassword, f => f.Autocomplete("new-password"))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model))
+        {
+            // Stay quiet until the first submit, then correct eagerly.
+            ValidationTrigger = BormValidationTrigger.OnBlur,
+            RevalidationTrigger = BormValidationTrigger.OnChange
+        };
+        _state.StateChanged += OnStateChanged;
+    }
+
+    // A spinner or a tick beside one box, not a whole form that declares itself busy.
+    private bool CheckingUsername => _state.IsValidatingField("Username");
+    private bool UsernameAvailable => _state.GetFieldState("Username").Status == BormFieldStatus.Valid;
+}
+""";
+
+    private static readonly BormValidationTrigger[] Triggers = Enum.GetValues<BormValidationTrigger>();
+
+    private readonly NewAccount _model = new();
+    private BormState _state = default!;
+    private bool _readOnly;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<NewAccount>()
+            .Title("Create your account")
+            .Field(x => x.Email, f => f.Autocomplete("email"))
+            .Field(x => x.Username, f => f
+                .Required()
+                .Autocomplete("username")
+                .Trim()
+                .UpdateOnInput(debounceMilliseconds: 400)
+                // A spinner beside this one box, not a form that declares itself busy: state.IsValidatingField("Username")
+                .MustAsync(async ctx => await Directory.IsUsernameAvailableAsync((string?)ctx.Value ?? "", ctx.CancellationToken),
+                           "That username is taken.")
+                .Help("Try 'ada' or 'admin' to see the async rule fire."))
+            .Field(x => x.Password, f => f.Autocomplete("new-password"))
+            .Field(x => x.ConfirmPassword, f => f.Autocomplete("new-password"))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model))
+        {
+            ValidationTrigger = BormValidationTrigger.OnBlur,
+            RevalidationTrigger = BormValidationTrigger.OnChange
+        };
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private string UsernameStatus => _state.GetFieldState("Username").Status switch
+    {
+        BormFieldStatus.Pending => "Pending",
+        BormFieldStatus.Valid => "Valid ✓ available",
+        BormFieldStatus.Invalid => "Invalid",
+        _ => "Unvalidated"
+    };
+
+    private void SetTrigger(bool before, ChangeEventArgs e)
+    {
+        if (!Enum.TryParse<BormValidationTrigger>(e.Value?.ToString(), out var trigger)) return;
+        if (before) _state.ValidationTrigger = trigger;
+        else _state.RevalidationTrigger = trigger;
+    }
+
+    private void ToggleReadOnly(ChangeEventArgs e)
+    {
+        _readOnly = e.Value is bool b && b;
+        _state.ReadOnly = _readOnly;
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(
+            new { _model.Email, _model.Username, Password = "********" },
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // The page created the state, so the page disposes it: an options load or async rule still in
+        // flight is cancelled instead of finishing against a form nobody is looking at.
+        _state.Dispose();
+    }
+}

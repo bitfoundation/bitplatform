@@ -25,7 +25,7 @@ public partial class ResponseCacheAttributeContractTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics())
+        await server.Build(configureTestServices: services => services.FakeExternalStatistics())
                     .Start(TestContext.CancellationToken);
 
         var endpoints = ((IEndpointRouteBuilder)server.WebApp).DataSources

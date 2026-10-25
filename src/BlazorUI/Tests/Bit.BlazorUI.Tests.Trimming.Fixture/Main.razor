@@ -1,0 +1,34 @@
+﻿@page "/"
+
+@* The components of the fixture, interactive on the server so a browser can drive them against the trimmed bundles:
+   #fixture-ready shows once the circuit has rendered them, which is when they answer to a pointer or a key. *@
+
+<BitErrorBoundary>
+    <BitText>Trimming fixture</BitText>
+    <BitButton>Save</BitButton>
+    <BitTextField Label="Name" />
+    <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Label="Color" Items="_colors" />
+    <BitTooltip Text="Help">
+        <BitIcon IconName="@BitIconName.Add" />
+    </BitTooltip>
+</BitErrorBoundary>
+
+<span id="fixture-ready" hidden="@(_ready is false)">ready</span>
+
+@code {
+    private bool _ready;
+
+    private readonly List<BitDropdownItem<string>> _colors =
+    [
+        new() { Text = "Red", Value = "red" },
+        new() { Text = "Green", Value = "green" },
+    ];
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _ready = true;
+        StateHasChanged();
+    }
+}

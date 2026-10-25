@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @implements {IL10n}
  */
 declare class GenericL10n extends L10n implements IL10n {

@@ -1,4 +1,4 @@
-// Attribute / storage names - kept aligned with BitThemeAttributeNames.cs and BitThemeSsr.cs in
+﻿// Attribute / storage names - kept aligned with BitThemeAttributeNames.cs and BitThemeSsr.cs in
 // C#. If you rename a constant here, mirror the change there (the contract test under
 // Bit.BlazorUI.Tests.Utils.Theme will catch a mismatch).
 namespace BitBlazorUI {
@@ -9,11 +9,39 @@ namespace BitBlazorUI {
     const ATTR_THEME_PERSIST_COOKIE = 'bit-theme-persist-cookie';
     const ATTR_THEME_DARK = 'bit-theme-dark';
     const ATTR_THEME_LIGHT = 'bit-theme-light';
+    // Opt-in: the themes the page ships stylesheets for, space-separated. A stored preference or pair
+    // naming another one is of a preset the page no longer offers, and falls back to the page's pair.
+    const ATTR_THEME_AVAILABLE = 'bit-theme-available';
     // Opt-in marker: animate theme swaps with the View Transitions API (see swapThemeAttribute).
     const ATTR_THEME_VIEW_TRANSITION = 'bit-theme-view-transition';
     // Opt-in marker: keep <meta name="theme-color"> equal to a palette color of the live page (see
     // ThemeColorMeta). Its value names the custom property to read; empty means the default below.
     const ATTR_THEME_COLOR_META = 'bit-theme-color-meta';
+    // Written by applyTheme on its target: the family alias groups the applied theme re-values, for the
+    // stylesheets to re-declare the active theme's own aliases of there (Styles/theme-overlay.scss).
+    const ATTR_THEME_OVERLAY = 'bit-theme-overlay';
+    // The groups of family aliases ATTR_THEME_OVERLAY names, each with the custom properties it is built
+    // from - kept aligned with BitThemeMapper.FamilyAliasOverlayGroups in C#, which a BitThemeProvider
+    // renders the attribute from (a contract test pins the two to each other).
+    const FAMILY_ALIAS_OVERLAY_GROUPS: [string, string[]][] = [
+        ['radius', ['--bit-shp-brd-radius']],
+        ['radius-control', ['--bit-shp-radius-control', '--bit-shp-radius-full']],
+        ['shadow', ['--bit-shd-cal', '--bit-clr-brd-ter', '--bit-shp-brd-width', '--bit-clr-fg-pri']],
+        ['tooltip', ['--bit-clr-bg-pri', '--bit-clr-bg-sec', '--bit-clr-fg-pri']],
+        ['foreground', ['--bit-clr-fg-pri']],
+        ['pri', ['--bit-clr-pri']],
+        ['sec', ['--bit-clr-sec']],
+        ['ter', ['--bit-clr-ter']],
+        ['inf', ['--bit-clr-inf']],
+        ['suc', ['--bit-clr-suc']],
+        ['wrn', ['--bit-clr-wrn']],
+        ['swr', ['--bit-clr-swr']],
+        ['err', ['--bit-clr-err']],
+        ['typography', ['--bit-tpg-fs-2xs', '--bit-tpg-fs-xs', '--bit-tpg-fs-sm', '--bit-tpg-fs-md', '--bit-tpg-fs-lg', '--bit-tpg-fs-xl', '--bit-tpg-fs-2xl', '--bit-tpg-fs-3xl', '--bit-tpg-fs-4xl',
+                        '--bit-tpg-fw-light', '--bit-tpg-fw-regular', '--bit-tpg-fw-medium', '--bit-tpg-fw-semibold', '--bit-tpg-fw-bold']],
+        ['motion', ['--bit-mot-duration-full', '--bit-mot-duration-short-full', '--bit-mot-duration-long-full', '--bit-mot-duration-factor-full',
+            '--bit-mot-duration-spinner-full', '--bit-mot-easing-spinner-full', '--bit-mot-loop-factor-full']],
+    ];
     // The page's own background - what a status bar sits above in nearly every app.
     const THEME_COLOR_VARIABLE = '--bit-clr-bg-pri';
     const STORAGE_KEY = 'bit-current-theme';
@@ -25,6 +53,16 @@ namespace BitBlazorUI {
     const COOKIE_NAME = 'bit-theme-preference';
     // ~400 days, the upper bound modern browsers clamp persistent cookies to.
     const COOKIE_MAX_AGE_SECONDS = 34560000;
+    // Kept aligned with BitThemeAttributeNames.ThemePairStorageKey and BitThemeCookie.PairCookieName in C#.
+    // What the stored preference resolves against, kept beside it and mirrored into the cookie the same way,
+    // so the next visit - and the server - restore it: "<light> <dark>", the pair a visitor picked at runtime
+    // (setPair); or "light" / "dark", when the preference is that theme of the page's own pair, so a later
+    // change of that pair (the app switching presets) moves the preference with it. Absent otherwise, and a
+    // preference stored without it - a theme the app pinned outside the pair, or one stored before this
+    // key existed - is restored as it is, unless the page lists the themes it offers (ATTR_THEME_AVAILABLE)
+    // and that one is not among them.
+    const PAIR_STORAGE_KEY = 'bit-theme-pair';
+    const PAIR_COOKIE_NAME = 'bit-theme-pair';
 
     type onThemeChangeType = (newThemeName: string, oldThemeName: string) => void;
 
@@ -37,6 +75,14 @@ namespace BitBlazorUI {
         default?: string | null;
         darkTheme?: string | null;
         lightTheme?: string | null;
+        /**
+         * The themes the page ships stylesheets for, as names or one space-separated string - the
+         * bit-theme-available attribute. A stored pair naming a theme outside them falls back to the
+         * declared pair, and a stored preference outside them to the active pair's theme of its scheme;
+         * the declared pair and "system" count as offered whether listed or not. Omitted or empty, every
+         * stored name is restored as it is.
+         */
+        available?: string[] | string | null;
         onChange?: onThemeChangeType;
         /**
          * Keep `<meta name="theme-color">` equal to a palette color of the live page: `true` (or the
@@ -52,6 +98,25 @@ namespace BitBlazorUI {
         fromInit?: boolean;
         /** Reserved for internal OS refresh paths (same as normal set without touching follow-system flags). */
         internalOsRefresh?: boolean;
+        /**
+         * Mirrors what another tab stored: applied without writing it back, since the storage already holds it -
+         * and holds anything that tab wrote after it too, which a write-back of this older value would clobber.
+         */
+        fromOtherTab?: boolean;
+    }
+
+    /** One write of the bit-theme attribute, and the changes it announces once it has landed (see swapThemeAttribute). */
+    interface ThemeSwap {
+        /** The theme the swap writes. */
+        theme: string;
+        /** The attribute the swap found; a different one when its write is due means a write from outside landed first. */
+        from: string;
+        /** The changes announced once the write lands, as [newTheme, oldTheme], those of the swaps it superseded first. */
+        changes: [string, string][];
+        /** The View Transition the write waits on, null when it is written at once. */
+        transition: { skipTransition?: () => void } | null;
+        /** Set once the swap has written and announced, or has been superseded by a later one. */
+        done: boolean;
     }
 
     export class Theme {
@@ -66,6 +131,14 @@ namespace BitBlazorUI {
         private static _persistCookie = false;
         private static _darkTheme: string = 'dark';
         private static _lightTheme: string = 'light';
+        // The pair the page declares (bit-theme-light / bit-theme-dark, or init's lightTheme / darkTheme),
+        // the core light / dark when it declares none.
+        private static _configuredDarkTheme: string = 'dark';
+        private static _configuredLightTheme: string = 'light';
+        // The themes the page offers (ThemeOptions.available), null when it does not say.
+        private static _available: Set<string> | null = null;
+        // The pair setPair switched to, while it differs from the configured one; null otherwise.
+        private static _runtimePair: [string, string] | null = null;
         private static _initOptions: ThemeOptions = {};
         private static _currentTheme = Theme._lightTheme;
         private static _onThemeChange: onThemeChangeType = () => { };
@@ -90,25 +163,58 @@ namespace BitBlazorUI {
         // localStorage-backed store raises this event (cookie-only persistence does not).
         private static _onStorage = (e: StorageEvent) => {
             if (!Theme._persist) return;
+            // The other tab switched the pair (setPair writes it before the preference, so this arrives
+            // first), or storage was cleared (e.key null): adopt what is stored now without writing it
+            // back - the configured pair when no pair is (a scheme marker, or nothing at all).
+            if (e.key === PAIR_STORAGE_KEY || e.key === null) {
+                // A value written that is neither a pair nor a scheme marker is not the other tab's choice
+                // (a script of the page, a hand edit): left alone rather than taken for "no pair".
+                if (e.key !== null && e.newValue !== null) {
+                    const written = Theme.parsePairValue(e.newValue);
+                    if (!written.pair && !written.scheme) return;
+                }
+                // A pair this page does not offer (one a tab of an older build of the app stored) is no
+                // pair here, as it is none to the next init of this tab.
+                const stored = Theme.readPersistedPair().pair;
+                const pair = stored && Theme.isAvailablePair(stored) ? stored : null;
+                const light = pair ? pair[0] : Theme._configuredLightTheme;
+                const dark = pair ? pair[1] : Theme._configuredDarkTheme;
+                if (light !== Theme._lightTheme || dark !== Theme._darkTheme) {
+                    Theme.applyPair(light, dark, false);
+                }
+                if (e.key !== null) return;
+            }
             // e.key is null when storage was cleared; otherwise it must be our key.
             if (e.key !== null && e.key !== Theme.THEME_STORAGE_KEY) return;
-            const next = e.newValue;
+            // A theme this page does not offer goes to the active pair's theme of its scheme, as the next
+            // init of this tab restores it.
+            const next = e.newValue ? Theme.fitAvailable(e.newValue) : null;
             if (!next) return;
             // Skip when the other tab's concrete choice is already applied here: avoids a redundant
             // set() (re-persist + re-dispatch) rippling across 3+ tabs. "system" is always processed
             // because the OS scheme may differ from the currently painted attribute.
             if (next !== Theme.SYSTEM_THEME &&
-                Theme.getActualTheme(next) === (document.documentElement.getAttribute(ATTR_THEME) || '')) {
+                Theme.getActualTheme(next) === Theme.getAppliedTheme()) {
                 return;
             }
             // Mirror the other tab's intent (including a switch to "system"); set() resolves and
-            // re-cascades. storage events never fire in the tab that wrote, so this cannot loop.
-            Theme.set(next);
+            // re-cascades, without writing back what the other tab stored.
+            Theme.set(next, { fromOtherTab: true });
         };
+
+        // With bit-theme-view-transition the bit-theme attribute is written by the View Transition's
+        // callback, a frame after the swap that asked for it (see swapThemeAttribute). This is the swap
+        // still waiting on it (null when none is), whose theme every read of the applied theme sees
+        // through getAppliedTheme().
+        private static _pendingSwap: ThemeSwap | null = null;
 
         private static _dotnetNotifier: DotNetObject | null = null;
 
         private static _appliedVarKeys = new WeakMap<HTMLElement, string[]>();
+
+        // The targets applyTheme wrote ATTR_THEME_OVERLAY on: the value it wrote, and the one the target carried
+        // before (a BitThemeProvider's, or the app's markup), which it merges its groups into and puts back.
+        private static _appliedOverlays = new WeakMap<HTMLElement, { base: string | null, written: string | null }>();
 
         public static init(options: ThemeOptions) {
             Object.assign(Theme._initOptions, options);
@@ -120,13 +226,9 @@ namespace BitBlazorUI {
                 Theme._onThemeChange = Theme._initOptions.onChange;
             }
 
-            if (Theme._initOptions.darkTheme) {
-                Theme._darkTheme = Theme._initOptions.darkTheme;
-            }
-
-            if (Theme._initOptions.lightTheme) {
-                Theme._lightTheme = Theme._initOptions.lightTheme;
-            }
+            Theme._configuredDarkTheme = Theme._initOptions.darkTheme || 'dark';
+            Theme._configuredLightTheme = Theme._initOptions.lightTheme || 'light';
+            Theme._available = Theme.parseAvailable(Theme._initOptions.available);
 
             // Cookie mirroring is independent of localStorage persistence: an SSR app may want the
             // server to read the preference cookie without necessarily enabling localStorage.
@@ -134,6 +236,37 @@ namespace BitBlazorUI {
             // init({ persistCookie: false }) can clear the flag, while an init that omits the key
             // keeps the previously merged value.
             Theme._persistCookie = !!Theme._initOptions.persistCookie;
+
+            // Derive on every call (see persistCookie note above) so a later init({ persist: false })
+            // clears the flag, while an omitted key preserves the merged value.
+            Theme._persist = !!Theme._initOptions.persist;
+
+            // A pair the visitor picked (setPair) outranks the configured one: stored, it survives the
+            // visit; in memory, a later init. Same precedence as the SSR inline script in BitThemeSsr.cs.
+            const stored = (Theme._persist || Theme._persistCookie) ? Theme.readPersistedPair() : { pair: null, scheme: null };
+            const persisted = (Theme._persist || Theme._persistCookie) ? Theme.getPersisted() : null;
+            // A pair of a preset the page no longer offers - stored, or switched to in memory before this
+            // init - is no pair at all any more.
+            const storedPair = stored.pair && Theme.isAvailablePair(stored.pair) ? stored.pair : null;
+            const runtimePair = Theme._runtimePair && Theme.isAvailablePair(Theme._runtimePair) ? Theme._runtimePair : null;
+            const pair = storedPair || runtimePair;
+            const hadRuntimePair = !!Theme._runtimePair;
+            Theme._runtimePair = pair && !Theme.isConfiguredPair(pair[0], pair[1]) ? pair : null;
+            // A stored pair the page has since come to declare itself, or no longer offers, is no pick of
+            // the visitor's any more: it is dropped from storage too, so a later change of the page's pair
+            // reaches them again, and a preference of it is carried onto the active pair as the scheme it
+            // was. set() below stores the scheme marker, or the pair in use, in its place.
+            if (stored.pair && (!storedPair || !Theme._runtimePair)) {
+                stored.scheme = persisted === stored.pair[1] ? 'dark' : persisted === stored.pair[0] ? 'light' : null;
+                Theme.writePersistedPair(null);
+            }
+            Theme._lightTheme = Theme._runtimePair ? Theme._runtimePair[0] : Theme._configuredLightTheme;
+            Theme._darkTheme = Theme._runtimePair ? Theme._runtimePair[1] : Theme._configuredDarkTheme;
+            // The attributes name the active pair: the visitor's, or the configured one again once a pair this
+            // init sets aside no longer stands in for it.
+            if (Theme._runtimePair || hadRuntimePair) {
+                Theme.writePairAttributes();
+            }
 
             let theme = Theme._initOptions.theme || Theme._initOptions.default || Theme._lightTheme;
 
@@ -154,20 +287,25 @@ namespace BitBlazorUI {
             // wrong theme. Keeping the two code paths in lockstep avoids that.
             if (systemRequested) {
                 theme = Theme.isSystemDark() ? Theme._darkTheme : Theme._lightTheme;
+            } else if (Theme._runtimePair) {
+                // The page's base names a theme of the pair it declares; the visitor's pair stands in for it.
+                theme = Theme.fitToPair(theme);
             }
-
-            // Derive on every call (see persistCookie note above) so a later init({ persist: false })
-            // clears the flag, while an omitted key preserves the merged value.
-            Theme._persist = !!Theme._initOptions.persist;
 
             // Restore a previously persisted preference. getPersisted() reads localStorage first and
             // falls back to the preference cookie, so this also covers a cookie-only setup
             // (persistCookie without persist) that a pure client-side render (no SSR inline script)
             // would otherwise ignore - previously this read was gated on persist alone.
             if (Theme._persist || Theme._persistCookie) {
-                const persisted = Theme.getPersisted();
                 if (persisted) {
-                    theme = persisted;
+                    // A preference stored as the light or dark theme of the page's pair follows that pair
+                    // - the app may have switched presets since - so the visitor keeps their light or dark
+                    // choice; set() below then stores what it resolved to. So does one the page no longer
+                    // offers, going by its name's "dark" ending as the stylesheets classify it. Anything
+                    // else is restored as it is: a theme pinned outside the pair is a choice of its own.
+                    theme = persisted !== Theme.SYSTEM_THEME && stored.scheme
+                        ? (stored.scheme === 'dark' ? Theme._darkTheme : Theme._lightTheme)
+                        : Theme.fitAvailable(persisted);
                     // An explicit persisted preset (anything other than "system") means the user pinned a theme;
                     // stop following the OS even when <html bit-theme-system> is present.
                     Theme._stopFollowingSystem = persisted !== Theme.SYSTEM_THEME;
@@ -233,11 +371,13 @@ namespace BitBlazorUI {
 
         public static get() {
             // Report the theme that is actually applied: the bit-theme attribute is the source of
-            // truth (it is what is painted, and set()/OS-follow keep _currentTheme in sync with it).
+            // truth (it is what is painted, and set()/OS-follow keep _currentTheme in sync with it),
+            // or the theme a pending View Transition is about to write there, so a read right after a
+            // set() returns the new theme rather than the outgoing one (getAppliedTheme).
             // The persisted *preference* is a separate concept exposed via getPersisted(); the two
             // can legitimately diverge - e.g. runtime OS-follow updates the attribute without
             // rewriting storage - so get() must not substitute the persisted value here.
-            Theme._currentTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
+            Theme._currentTheme = Theme.getAppliedTheme();
 
             return Theme._currentTheme;
         }
@@ -250,6 +390,13 @@ namespace BitBlazorUI {
 
             const fromInit = options?.fromInit === true;
             const internalOs = options?.internalOsRefresh === true;
+
+            // A theme the page does not offer (ThemeOptions.available) has no stylesheet to paint it, and the
+            // next init - and the server - would set it aside again: a call naming one is ignored, as a blank
+            // one is. init and another tab's value are fitted onto the offered themes before they get here.
+            if (!fromInit && !internalOs && options?.fromOtherTab !== true && !Theme.isAvailable(themeName)) {
+                return Theme._currentTheme;
+            }
 
             if (!fromInit && !internalOs) {
                 if (themeName === Theme.SYSTEM_THEME) {
@@ -265,29 +412,21 @@ namespace BitBlazorUI {
             if (!resolved) return Theme._currentTheme;
             Theme._currentTheme = resolved;
 
-            if (Theme._persist) {
-                // localStorage can throw in Safari private mode, in iframes that block storage,
-                // when over quota, or under restrictive document policies (e.g. file:// in some
-                // browsers). Theme persistence is best-effort - never let it break theme switching.
-                try {
-                    localStorage.setItem(Theme.THEME_STORAGE_KEY, themeName);
-                } catch { /* persistence unavailable; continue without storing */ }
+            if (options?.fromOtherTab !== true) {
+                Theme.writePersisted(themeName);
             }
 
-            // Mirror the preference into the cookie so the server (BitThemeSsr.BuildRootThemeAttributes)
-            // can paint the matching theme on first render. Stored verbatim (the abstract key, e.g.
-            // "system" / "dark" / "fluent-light"), matching what localStorage holds.
-            if (Theme._persistCookie) {
-                Theme.writePreferenceCookie(themeName);
+            const oldTheme = Theme.getAppliedTheme();
+
+            // Re-setting the theme the page is already on - painted, or on its way in through a
+            // pending View Transition (a double click, or SetThemeAsync right after a JS set) - is no
+            // change: nothing is written or announced, and a pending transition runs on undisturbed.
+            // The startup application is always written and announced, as the first word on it.
+            if (fromInit || Theme._currentTheme !== oldTheme) {
+                // Never animate the startup application (there is nothing meaningful to transition at
+                // boot, and a transition would add a frame capture to every page load).
+                Theme.swapThemeAttribute(Theme._currentTheme, oldTheme, /* skipTransition: */ fromInit);
             }
-
-            const oldTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
-
-            // Never animate the startup application (there is nothing meaningful to transition at
-            // boot, and a transition would add a frame capture to every page load).
-            Theme.swapThemeAttribute(Theme._currentTheme, /* skipTransition: */ fromInit);
-
-            Theme.dispatchThemeChange(Theme._currentTheme, oldTheme);
 
             Theme.syncSystemThemeListener();
 
@@ -295,15 +434,14 @@ namespace BitBlazorUI {
         }
 
         public static toggleDarkLight() {
-            // Re-sync from the bit-theme attribute first (the source of truth, same as get()) so a
-            // toggle issued after an external attribute write - a non-bit script or dev tooling
-            // setting bit-theme directly - acts on what is actually painted instead of a stale
-            // _currentTheme. Read the attribute directly (not via get(), which would overwrite
-            // _currentTheme before the fallback could use it) and fall back to _currentTheme when
-            // the attribute is absent - which also bridges the one-frame window in which a pending
-            // view transition has not applied the new attribute yet, since set() updates
-            // _currentTheme synchronously.
-            const current = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || Theme._currentTheme;
+            // Re-sync from the applied theme first (the source of truth, same as get()) so a toggle
+            // issued after an external attribute write - a non-bit script or dev tooling setting
+            // bit-theme directly - acts on what is actually painted instead of a stale _currentTheme,
+            // and a toggle issued while a View Transition is still to write the previous one acts on
+            // that previous one, so two toggles in a row end where they started. Read it directly (not
+            // via get(), which would overwrite _currentTheme before the fallback could use it) and fall
+            // back to _currentTheme when the attribute is absent.
+            const current = Theme.getAppliedTheme() || Theme._currentTheme;
 
             // Toggle relative to the configured dark theme: when the dark theme is active switch to
             // light, otherwise switch to dark. Anchoring on the dark theme (rather than the light
@@ -325,6 +463,254 @@ namespace BitBlazorUI {
             return Theme.set(Theme.SYSTEM_THEME);
         }
 
+        /**
+         * [applied theme, active light, active dark, declared light, declared dark], in one read - for
+         * BitThemeSwitcher (BitThemeManager.GetThemeStateAsync), which decides from all of them which pair
+         * a design system stands for. An array, so .NET reads it back without a type of its own to trim.
+         */
+        public static getState() {
+            return [Theme.get(), Theme._lightTheme, Theme._darkTheme, Theme._configuredLightTheme, Theme._configuredDarkTheme];
+        }
+
+        /**
+         * Flips the scheme within the given pair, making it the active pair first when it is not (stored
+         * as setPair stores it) - one swap and one change notification either way. A theme that is
+         * neither of the two flips by its name's "dark" ending, so a dark one always turns light.
+         * Blank names, names containing whitespace, or a pair the page does not offer
+         * (ThemeOptions.available) make it a no-op. Returns the applied theme.
+         */
+        public static toggleDarkLightWithin(lightTheme: string, darkTheme: string) {
+            const pair = Theme.validPair(lightTheme, darkTheme);
+            if (!pair || !Theme.isAvailablePair(pair)) return Theme._currentTheme;
+
+            const [light, dark] = pair;
+            if (light !== Theme._lightTheme || dark !== Theme._darkTheme) {
+                Theme.switchPair(light, dark);
+                // Ahead of the preference set() stores, for the other tabs - as applyPair orders them.
+                Theme.writePersistedPair(Theme.pairStoreValue(null));
+            }
+
+            const current = Theme.getAppliedTheme() || Theme._currentTheme;
+            const isDark = current === dark || (current !== light && /dark$/.test(current));
+
+            return Theme.set(isDark ? light : dark);
+        }
+
+        /**
+         * Changes which themes "light" and "dark" mean - what toggleDarkLight flips between and what
+         * following the OS resolves to - for an app that lets its users pick a design system. The
+         * visitor's own choice is kept: while following the OS the new pair's theme for the OS scheme is
+         * applied and "system" stays stored; otherwise the applied theme moves to its counterpart in the
+         * new pair, and so does a stored one. The pair is persisted beside the preference (and mirrored
+         * into its cookie) when persistence is on, and written to bit-theme-light / bit-theme-dark.
+         * Blank names, names containing whitespace, and a pair the page does not offer
+         * (ThemeOptions.available) are ignored. Returns the applied theme.
+         */
+        public static setPair(lightTheme: string, darkTheme: string) {
+            const pair = Theme.validPair(lightTheme, darkTheme);
+            if (!pair || !Theme.isAvailablePair(pair)) return Theme._currentTheme;
+
+            Theme.applyPair(pair[0], pair[1], true);
+
+            return Theme._currentTheme;
+        }
+
+        /** Both names trimmed, or null when either is blank or contains whitespace. */
+        private static validPair(lightTheme: string, darkTheme: string): [string, string] | null {
+            const light = (lightTheme || '').trim();
+            const dark = (darkTheme || '').trim();
+            return !light || !dark || /\s/.test(light) || /\s/.test(dark) ? null : [light, dark];
+        }
+
+        /** Makes a pair the active one - in memory and on the attributes - without applying a theme. */
+        private static switchPair(light: string, dark: string) {
+            Theme._lightTheme = light;
+            Theme._darkTheme = dark;
+            Theme._runtimePair = Theme.isConfiguredPair(light, dark) ? null : [light, dark];
+            Theme.writePairAttributes();
+        }
+
+        private static applyPair(light: string, dark: string, persist: boolean) {
+            const oldLight = Theme._lightTheme;
+            const oldDark = Theme._darkTheme;
+
+            Theme.switchPair(light, dark);
+
+            // Following the OS, "system" stays the preference and only what it resolves to changes.
+            // Otherwise the applied theme moves to its counterpart in the new pair. Either way the switch
+            // lands on one of the pair's two themes: one of neither (a high-contrast variant, an app's
+            // "brand") goes by its name's "dark" ending, as the stylesheets classify it, and else to light.
+            const current = Theme.getAppliedTheme() || Theme._currentTheme;
+            const target = Theme.shouldFollowSystem() ? (Theme.isSystemDark() ? dark : light)
+                : current === oldDark ? dark
+                    : current === oldLight ? light
+                        : current === dark || current === light ? current
+                            : /dark$/.test(current) ? dark : light;
+
+            if (persist) {
+                // The visitor's pinned theme moves with it, so the next visit restores the same scheme.
+                const persisted = Theme.getPersisted();
+                const pinned = persisted && persisted !== Theme.SYSTEM_THEME ? target : null;
+
+                // The pair before the preference, so another tab adopts the pair first and then reads the
+                // preference against it. The configured pair is stored as no pair at all (a scheme marker
+                // at most), so the page's own pair - a preset change of the app - reaches this visitor again.
+                Theme.writePersistedPair(Theme.pairStoreValue(pinned));
+                if (pinned && persisted !== pinned) {
+                    Theme.writePreference(pinned);
+                }
+            }
+
+            Theme.applyResolvedTheme(target);
+        }
+
+        /**
+         * The theme of the active pair that stands for a theme outside it: the pair's dark theme for a
+         * name ending in "dark" (the rule the stylesheets' [bit-theme$="dark"] selectors classify by), its
+         * light theme for one ending in "light". Anything else - a member of the pair, "system", a theme
+         * of neither scheme - is kept as it is. Used for the page's own base theme, which names a theme of
+         * the pair the page declares, once the visitor's pair stands in for it.
+         */
+        private static fitToPair(theme: string) {
+            if (theme === Theme.SYSTEM_THEME || theme === Theme._lightTheme || theme === Theme._darkTheme) return theme;
+            if (/dark$/.test(theme)) return Theme._darkTheme;
+            if (/light$/.test(theme)) return Theme._lightTheme;
+            return theme;
+        }
+
+        /**
+         * Whether the page offers a theme: always when it does not list them (ThemeOptions.available), and
+         * for "system" and the declared pair whether listed or not.
+         */
+        private static isAvailable(theme: string) {
+            return !Theme._available || theme === Theme.SYSTEM_THEME
+                || theme === Theme._configuredLightTheme || theme === Theme._configuredDarkTheme
+                || Theme._available.has(theme.toLowerCase());
+        }
+
+        private static isAvailablePair(pair: [string, string]) {
+            return Theme.isAvailable(pair[0]) && Theme.isAvailable(pair[1]);
+        }
+
+        /**
+         * A theme the page offers as it is; one it does not goes to the active pair's theme of its scheme, by
+         * its name's "dark" ending as the stylesheets classify it - the light one for any other.
+         */
+        private static fitAvailable(theme: string) {
+            if (Theme.isAvailable(theme)) return theme;
+            return /dark$/.test(theme) ? Theme._darkTheme : Theme._lightTheme;
+        }
+
+        /**
+         * The names ThemeOptions.available lists, lower-cased as the server normalizes them
+         * (BitThemeSsr.NormalizeAvailableThemes); null when it lists none.
+         */
+        private static parseAvailable(value: string[] | string | null | undefined): Set<string> | null {
+            const names = (Array.isArray(value) ? value : (value || '').split(/\s+/))
+                .map(name => (name || '').trim().toLowerCase())
+                .filter(name => name);
+            return names.length ? new Set(names) : null;
+        }
+
+        private static isConfiguredPair(light: string, dark: string) {
+            return light === Theme._configuredLightTheme && dark === Theme._configuredDarkTheme;
+        }
+
+        private static writePairAttributes() {
+            document.documentElement.setAttribute(ATTR_THEME_LIGHT, Theme._lightTheme);
+            document.documentElement.setAttribute(ATTR_THEME_DARK, Theme._darkTheme);
+        }
+
+        /**
+         * What is stored under PAIR_STORAGE_KEY, from localStorage first and the cookie second -
+         * getPersisted's order: a "<light> <dark>" pair, or a "light" / "dark" scheme marker.
+         */
+        private static readPersistedPair(): { pair: [string, string] | null, scheme: string | null } {
+            let value: string | null = null;
+            if (Theme._persist) {
+                try {
+                    value = localStorage.getItem(PAIR_STORAGE_KEY);
+                } catch { /* fall through to cookie / null */ }
+            }
+
+            if (!value && Theme._persistCookie) {
+                value = Theme.readCookie(PAIR_COOKIE_NAME);
+            }
+
+            return Theme.parsePairValue(value);
+        }
+
+        /** Reads a PAIR_STORAGE_KEY value: a "<light> <dark>" pair, a "light" / "dark" scheme marker, or neither. */
+        private static parsePairValue(value: string | null): { pair: [string, string] | null, scheme: string | null } {
+            const parts = (value || '').split(' ');
+            return {
+                pair: parts.length === 2 && parts[0] && parts[1] ? [parts[0], parts[1]] : null,
+                scheme: parts.length === 1 && (parts[0] === 'light' || parts[0] === 'dark') ? parts[0] : null,
+            };
+        }
+
+        /**
+         * What PAIR_STORAGE_KEY holds beside a stored preference: the visitor's pair while one is active;
+         * otherwise "light" / "dark" when the pinned preference is that theme of the page's pair, and
+         * nothing for "system", for no preference, and for a theme outside the pair.
+         */
+        private static pairStoreValue(pinned: string | null) {
+            if (Theme._runtimePair) return `${Theme._runtimePair[0]} ${Theme._runtimePair[1]}`;
+            return pinned === Theme._darkTheme ? 'dark' : pinned === Theme._lightTheme ? 'light' : null;
+        }
+
+        private static writePersistedPair(value: string | null) {
+            if (Theme._persist) {
+                try {
+                    if (value) {
+                        localStorage.setItem(PAIR_STORAGE_KEY, value);
+                    } else {
+                        localStorage.removeItem(PAIR_STORAGE_KEY);
+                    }
+                } catch { /* persistence unavailable; continue without storing */ }
+            }
+
+            if (Theme._persistCookie) {
+                Theme.writeCookie(PAIR_COOKIE_NAME, value);
+            }
+        }
+
+        /** Stores a preference, and what it resolves against, in every store that is on. */
+        private static writePersisted(themeName: string) {
+            Theme.writePreference(themeName);
+            Theme.writePersistedPair(Theme.pairStoreValue(themeName === Theme.SYSTEM_THEME ? null : themeName));
+        }
+
+        /** Stores a preference in every store that is on. */
+        private static writePreference(themeName: string) {
+            if (Theme._persist) {
+                // localStorage can throw in Safari private mode, in iframes that block storage,
+                // when over quota, or under restrictive document policies (e.g. file:// in some
+                // browsers). Theme persistence is best-effort - never let it break theme switching.
+                try {
+                    localStorage.setItem(Theme.THEME_STORAGE_KEY, themeName);
+                } catch { /* persistence unavailable; continue without storing */ }
+            }
+
+            // Mirror the preference into the cookie so the server (BitThemeSsr.BuildRootThemeAttributes)
+            // can paint the matching theme on first render. Stored verbatim (the abstract key, e.g.
+            // "system" / "dark" / "fluent-light"), matching what localStorage holds.
+            if (Theme._persistCookie) {
+                Theme.writeCookie(COOKIE_NAME, themeName);
+            }
+        }
+
+        /** Applies a resolved theme without touching the preference or the OS-following flags. */
+        private static applyResolvedTheme(themeName: string) {
+            const oldTheme = Theme.getAppliedTheme();
+
+            Theme._currentTheme = themeName;
+
+            if (themeName === oldTheme) return;
+
+            Theme.swapThemeAttribute(themeName, oldTheme);
+        }
+
         public static applyTheme(theme: Record<string, string>, element?: HTMLElement) {
             const el = element || document.body;
             const keys = Object.keys(theme);
@@ -332,11 +718,62 @@ namespace BitBlazorUI {
             prev.filter(key => !keys.includes(key)).forEach(key => el.style.removeProperty(key));
             keys.forEach(key => el.style.setProperty(key, theme[key]));
             Theme._appliedVarKeys.set(el, keys);
+
+            // The family alias groups these variables re-value: every theme stylesheet re-declares its own
+            // aliases of each named group on the element carrying them (Styles/theme-overlay.scss).
+            Theme.writeAppliedOverlay(el, FAMILY_ALIAS_OVERLAY_GROUPS
+                .filter(([, inputs]) => inputs.some(input => keys.includes(input)))
+                .map(([group]) => group));
         }
 
-        /** Removes --bit-* properties previously applied by applyTheme on the target (default document.body). */
+        // Marks the element with the groups applyTheme re-values, merged into the value it carried before, and
+        // puts that value back once applyTheme re-values none. A value written over applyTheme's own since (a
+        // re-render of a BitThemeProvider on the same element) is the new one to merge into and put back.
+        private static writeAppliedOverlay(el: HTMLElement, groups: string[]) {
+            const current = el.getAttribute(ATTR_THEME_OVERLAY);
+            const applied = Theme._appliedOverlays.get(el);
+            const base = applied && applied.written === current ? applied.base : current;
+
+            if (groups.length === 0) {
+                Theme._appliedOverlays.delete(el);
+                Theme.setOverlayAttribute(el, base);
+                return;
+            }
+
+            const merged = (base || '').split(/\s+/).filter(group => group);
+            groups.forEach(group => merged.includes(group) || merged.push(group));
+            const written = merged.join(' ');
+
+            Theme._appliedOverlays.set(el, { base, written });
+            Theme.setOverlayAttribute(el, written);
+        }
+
+        private static setOverlayAttribute(el: HTMLElement, value: string | null) {
+            if (value === el.getAttribute(ATTR_THEME_OVERLAY)) return;
+
+            if (value === null) {
+                el.removeAttribute(ATTR_THEME_OVERLAY);
+            } else {
+                el.setAttribute(ATTR_THEME_OVERLAY, value);
+            }
+        }
+
+        // Puts back the overlay marker the element carried before applyTheme, unless something else has written
+        // over applyTheme's own since.
+        private static clearAppliedOverlay(el: HTMLElement) {
+            const applied = Theme._appliedOverlays.get(el);
+            if (!applied) return;
+
+            Theme._appliedOverlays.delete(el);
+            if (el.getAttribute(ATTR_THEME_OVERLAY) === applied.written) {
+                Theme.setOverlayAttribute(el, applied.base);
+            }
+        }
+
+        /** Removes --bit-* properties previously applied by applyTheme on the target (default document.body), and its overlay marker. */
         public static clearAppliedTheme(element?: HTMLElement) {
             const el = element || document.body;
+            Theme.clearAppliedOverlay(el);
             const keys = Theme._appliedVarKeys.get(el);
             if (!keys || keys.length === 0) return;
             keys.forEach(k => el.style.removeProperty(k));
@@ -361,7 +798,7 @@ namespace BitBlazorUI {
             // Cookie-only persistence (or localStorage unavailable): read the same preference the
             // server uses so the client and server agree on the stored choice.
             if (Theme._persistCookie) {
-                return Theme.readPreferenceCookie();
+                return Theme.readCookie(COOKIE_NAME);
             }
 
             return null;
@@ -375,19 +812,21 @@ namespace BitBlazorUI {
             Theme._dotnetNotifier = null;
         }
 
-        private static writePreferenceCookie(value: string) {
+        /** Writes a cookie, or expires it for a null value. */
+        private static writeCookie(name: string, value: string | null) {
             try {
-                if (typeof document === 'undefined' || !value) return;
+                if (typeof document === 'undefined' || value === '') return;
                 const secure = location.protocol === 'https:' ? '; Secure' : '';
-                document.cookie =
-                    `${COOKIE_NAME}=${encodeURIComponent(value)}; path=/; max-age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax${secure}`;
+                document.cookie = value === null
+                    ? `${name}=; path=/; max-age=0; SameSite=Lax${secure}`
+                    : `${name}=${encodeURIComponent(value)}; path=/; max-age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax${secure}`;
             } catch { /* cookies unavailable / blocked; best-effort like localStorage */ }
         }
 
-        private static readPreferenceCookie(): string | null {
+        private static readCookie(name: string): string | null {
             try {
                 if (typeof document === 'undefined' || !document.cookie) return null;
-                const prefix = `${COOKIE_NAME}=`;
+                const prefix = `${name}=`;
                 const match = document.cookie
                     .split(';')
                     .map(c => c.trim())
@@ -447,14 +886,7 @@ namespace BitBlazorUI {
         private static applyResolvedSystemThemeFromOs() {
             if (!Theme.shouldFollowSystem()) return;
 
-            const resolved = Theme.isSystemDark() ? Theme._darkTheme : Theme._lightTheme;
-            const oldTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
-
-            if (resolved === oldTheme) return;
-
-            Theme._currentTheme = resolved;
-            Theme.swapThemeAttribute(resolved);
-            Theme.dispatchThemeChange(resolved, oldTheme);
+            Theme.applyResolvedTheme(Theme.isSystemDark() ? Theme._darkTheme : Theme._lightTheme);
         }
 
         /**
@@ -464,33 +896,110 @@ namespace BitBlazorUI {
          * toggled at runtime). The transition is skipped - falling back to a plain synchronous
          * attribute write - when the API is unavailable or the user prefers reduced motion.
          *
+         * The change is announced once the attribute is written, so a handler of onChange, of
+         * bit-theme-change or of the .NET ThemeChanged that reads the page (getComputedStyle, the
+         * attribute) finds the new theme on it, as Theme.get() reports it.
+         *
          * Note: startViewTransition invokes its callback asynchronously (after capturing the old
-         * frame), so with the transition active the attribute updates a frame later than the
-         * Theme.set call. _currentTheme is always updated synchronously by the callers, and the
-         * change notifications carry the explicit old/new names, so observers are unaffected.
+         * frame), so with the transition active the attribute is written, and the change announced,
+         * a frame later than the Theme.set call. Until then the swap is _pendingSwap, whose theme
+         * every read of the applied theme sees through getAppliedTheme(), and a later swap
+         * supersedes it: its callback writes nothing, and the later swap announces its change ahead
+         * of its own. Whichever write lands first, the attribute ends on the theme asked for last -
+         * a write from outside the library included.
          */
-        private static swapThemeAttribute(themeName: string, skipTransition?: boolean) {
-            const apply = () => document.documentElement.setAttribute(Theme.THEME_ATTRIBUTE, themeName);
+        private static swapThemeAttribute(themeName: string, oldTheme: string, skipTransition?: boolean) {
+            const root = document.documentElement;
+            const previous = Theme._pendingSwap;
+            const swap: ThemeSwap = {
+                theme: themeName,
+                from: root.getAttribute(Theme.THEME_ATTRIBUTE) || '',
+                changes: [...(previous ? previous.changes : []), [themeName, oldTheme]],
+                transition: null,
+                done: false,
+            };
 
-            // A no-op swap (re-setting the already-applied theme, e.g. pinning the currently
-            // resolved preset) must not run a transition: startViewTransition captures and
-            // cross-fades even when the callback changes nothing visible.
-            if (skipTransition || document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) === themeName) {
+            if (previous) {
+                previous.done = true;
+            }
+            Theme._pendingSwap = null;
+
+            // Runs once, whichever of the transition's callback and the fallbacks below comes first.
+            const apply = () => {
+                if (swap.done) return;
+                swap.done = true;
+                if (Theme._pendingSwap === swap) {
+                    Theme._pendingSwap = null;
+                }
+                // A write from outside the library (a script, dev tooling) that landed while the swap
+                // was waiting was asked for after it, so it stays; the change is still announced.
+                if ((root.getAttribute(Theme.THEME_ATTRIBUTE) || '') === swap.from) {
+                    root.setAttribute(Theme.THEME_ATTRIBUTE, themeName);
+                }
+                swap.changes.forEach(([newTheme, changedFrom]) => Theme.dispatchThemeChange(newTheme, changedFrom));
+            };
+            // A transition still waiting on the superseded swap would now only cross-fade the page
+            // into the frame a direct write already shows, so it is skipped; its callback still
+            // runs, and writes nothing.
+            const applyNow = () => {
                 apply();
+                try {
+                    previous?.transition?.skipTransition?.();
+                } catch { /* the transition has already ended; nothing to skip */ }
+            };
+
+            // A no-op swap (re-setting the already-painted theme at startup, or going back to it
+            // before a pending transition has written the other one) must not run a transition:
+            // startViewTransition captures and cross-fades even when the callback changes nothing
+            // visible. Compared with the attribute itself rather than getAppliedTheme(), since the
+            // attribute is what a transition would capture.
+            if (skipTransition || swap.from === themeName) {
+                applyNow();
                 return;
             }
 
             try {
-                const doc = document as Document & { startViewTransition?: (callback: () => void) => unknown };
-                if (document.documentElement.hasAttribute(ATTR_THEME_VIEW_TRANSITION) &&
+                type Transition = { skipTransition?: () => void, updateCallbackDone?: Promise<unknown> };
+                const doc = document as Document & { startViewTransition?: (callback: () => void) => Transition | undefined };
+                if (root.hasAttribute(ATTR_THEME_VIEW_TRANSITION) &&
                     typeof doc.startViewTransition === 'function' &&
                     !(typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches)) {
-                    doc.startViewTransition(apply);
+                    // Recorded before the call, so a callback run synchronously (a polyfill) finds
+                    // the swap it settles; a throw falls through to the direct write below. A
+                    // transition started while another is waiting skips that one (the browser does).
+                    Theme._pendingSwap = swap;
+                    const transition = doc.startViewTransition(apply) || null;
+                    swap.transition = transition;
+
+                    // The browser settles updateCallbackDone once the callback has run, so a swap
+                    // still unwritten then had its callback dropped (an app's wrapper of
+                    // startViewTransition), and is written there. A call returning nothing to track
+                    // the callback by is written at once rather than left waiting for good.
+                    const callbackDone = transition?.updateCallbackDone;
+                    if (callbackDone && typeof callbackDone.then === 'function') {
+                        callbackDone.then(apply, apply);
+                    } else {
+                        apply();
+                    }
                     return;
                 }
             } catch { /* View Transition unavailable or failed to start; fall through to the direct swap */ }
 
-            apply();
+            applyNow();
+        }
+
+        /**
+         * The theme the page is on: the one a pending View Transition is still to write onto the
+         * bit-theme attribute, else the attribute itself. Every read of the applied theme goes
+         * through here, so one made between a swap and its transition's callback sees the theme on
+         * its way in rather than the outgoing one - unless a write from outside the library has
+         * landed on the attribute since, which is then the theme the page is on.
+         */
+        private static getAppliedTheme() {
+            const painted = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
+            const pending = Theme._pendingSwap;
+
+            return pending && pending.from === painted ? pending.theme : painted;
         }
 
         private static dispatchThemeChange(newTheme: string, oldTheme: string) {
@@ -540,10 +1049,9 @@ namespace BitBlazorUI {
      * their own surfaces, an app's stylesheet may re-declare the tokens, and an accent (see
      * BitAccentColor in Bit.BlazorUI.Extras) re-derives the whole palette - surfaces included - into
      * an applyTheme overlay on `<body>`. It is read off `<body>` for that last reason, and on a
-     * schedule of its own rather than from the theme-change notification: with
-     * bit-theme-view-transition the bit-theme attribute is only written a frame AFTER the change is
-     * announced, so a listener would still see the outgoing palette. What it watches instead is the
-     * DOM the color actually comes from.
+     * schedule of its own rather than from the theme-change notification: an accent, an applyTheme
+     * overlay and a swapped stylesheet all move the palette without any theme change being
+     * announced. What it watches instead is the DOM the color actually comes from.
      */
     export class ThemeColorMeta {
         private static _variable: string | null = null;
@@ -772,7 +1280,10 @@ namespace BitBlazorUI {
         }
     }
 
-    // Self-init from <html> attributes.
+    // bit-trim: markup bit-theme
+    // Self-init from <html> attributes - which an app may write in its own markup (ThemingPage) with no .NET API of the
+    // theming in use at all: kept wherever the code an app can run, or its static .html (an index.html), names one of
+    // them, which BitThemeSsr and the components that theme a region do as well.
     Theme.init({
         system: document.documentElement.hasAttribute(ATTR_THEME_SYSTEM),
         persist: document.documentElement.hasAttribute(ATTR_THEME_PERSIST),
@@ -781,6 +1292,7 @@ namespace BitBlazorUI {
         default: document.documentElement.getAttribute(ATTR_THEME_DEFAULT),
         darkTheme: document.documentElement.getAttribute(ATTR_THEME_DARK),
         lightTheme: document.documentElement.getAttribute(ATTR_THEME_LIGHT),
+        available: document.documentElement.getAttribute(ATTR_THEME_AVAILABLE),
         // Absent stays undefined rather than false: an app that turns the sync on through init()
         // instead of the attribute must not have it turned back off by this call.
         themeColorMeta: document.documentElement.hasAttribute(ATTR_THEME_COLOR_META)
@@ -788,3 +1300,5 @@ namespace BitBlazorUI {
             : undefined,
     });
 }
+
+// bit-lazy: teardown Theme.unregisterDotNetNotifier

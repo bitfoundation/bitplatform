@@ -1,0 +1,123 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-split">
+    <div class="bev-left" style="flex-basis:30%">
+        <div class="bev-toolbar"><strong>State providers</strong> <span class="bev-muted">(@_entries.Length)</span></div>
+        <div class="bev-scroll">
+            @if (_entries.Length == 0)
+            {
+                <div class="bev-empty">
+                    No state providers registered. Implement <code>IBevStateProvider</code> on your state container and register it
+                    (<code>services.AddBevToolsStateProvider&lt;T&gt;()</code>), or adapt an existing service with
+                    <code>AddBevToolsStateProvider&lt;TService&gt;(name, snapshot, subscribe)</code>. For a long-lived custom
+                    subscription, use <code>AddBevToolsStateProviderWithSubscription</code> so it is disposed with the scope.
+                    Component state is inspected per component in the Components panel.
+                </div>
+            }
+            @foreach (var item in _entries)
+            {
+                var name = item.Name;
+                <div class="bev-ev-row @(Ui.SelectedStateProvider == name ? "bev-selected" : "")" @onclick="() => { Ui.SelectedStateProvider = name; _selectedChange = null; Ui.Touch(); }">
+                    <span class="bev-ev-title bev-mono">@item.Name</span>
+                    <span class="bev-chip">@item.Origin</span>
+                    <span class="bev-ev-dur">@item.ChangeCount Δ</span>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="bev-right">
+        @if (_selected is { } entry)
+        {
+            <div class="bev-section">
+                <div class="bev-section-title">Current snapshot <span class="bev-muted" style="font-weight:normal">@entry.Description · last change @BevFmt.Ago(entry.LastChangedAt)</span></div>
+                <div class="bev-section-body">
+                    @if (entry.Error is not null)
+                    {
+                        <div class="bev-chip bev-err">@entry.Error</div>
+                    }
+                    <BevValueTree Root="_snapshot" Name="@entry.Name" Inspector="Session.Inspector" ChildrenOnly="true" />
+                </div>
+            </div>
+            <div class="bev-section">
+                <div class="bev-section-title">Change history (@entry.ChangeCount) <span class="bev-muted" style="font-weight:normal">newest first · click to see before/after</span></div>
+                <div class="bev-section-body">
+                    @foreach (var change in entry.Changes.Reverse())
+                    {
+                        var c = change;
+                        <div class="bev-ev-row @(_selectedChange?.Id == c.Id ? "bev-selected" : "")" @onclick="() => _selectedChange = c">
+                            <span class="bev-time">@BevFmt.Time(c.At)</span>
+                            <span class="bev-ev-title">@(c.Action ?? "changed") <span class="bev-muted">@c.Changes.Count member@(c.Changes.Count == 1 ? "" : "s")</span> @if (c.TriggerEventId is { } t) { <button type="button" class="bev-link" @onclick:stopPropagation="true" @onclick="() => Host.SelectEvent(t)">trigger ↗</button> }</span>
+                        </div>
+                    }
+                </div>
+            </div>
+            @if (_selectedChange is { } sc)
+            {
+                <div class="bev-section">
+                    <div class="bev-section-title">Diff @BevFmt.Time(sc.At) @(sc.Action) <button type="button" class="bev-link" style="margin-left:auto;font-weight:normal" @onclick="() => Host.SelectEvent(sc.TimelineEventId)">timeline ↗</button></div>
+                    <div class="bev-section-body">
+                        @if (sc.Changes.Count == 0)
+                        {
+                            <div class="bev-muted">No observable member changed (the object may have changed a private field or a member beyond the inspection depth).</div>
+                        }
+                        else
+                        {
+                            <table>
+                                <thead><tr><th>Member</th><th>Before</th><th>After</th></tr></thead>
+                                <tbody>
+                                    @foreach (var d in sc.Changes)
+                                    {
+                                        <tr><td class="bev-mono">@d.Path</td><td class="bev-mono bev-muted">@(d.Before ?? "∅")</td><td class="bev-mono">@(d.After ?? "∅")</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        <details style="margin-top:6px">
+                            <summary class="bev-muted">Snapshot at that point (@sc.Snapshot.Count entries)</summary>
+                            <table>
+                                <tbody>
+                                    @foreach (var kv in sc.Snapshot.OrderBy(k => k.Key))
+                                    {
+                                        <tr><td class="bev-mono">@kv.Key</td><td class="bev-mono">@kv.Value</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </details>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="bev-empty">Select a provider.</div>
+        }
+    </div>
+</div>
+
+@code {
+    private BevStateProviderEntry[] _entries = [];
+    private BevStateProviderEntry? _selected;
+    private object? _snapshot;
+    private BevStateChangeRecord? _selectedChange;
+
+    protected override void OnParametersSet()
+    {
+        _entries = Session.State.Entries;
+        Ui.SelectedStateProvider ??= _entries.FirstOrDefault()?.Name;
+        _selected = _entries.FirstOrDefault(e => e.Name == Ui.SelectedStateProvider);
+        if (_selectedChange is not null && (_selected is null || !_selected.Changes.Any(change => change.Id == _selectedChange.Id)))
+        {
+            _selectedChange = null;
+        }
+
+        try
+        {
+            _snapshot = _selected?.Provider.GetSnapshot();
+        }
+        catch (Exception ex)
+        {
+            _snapshot = "«GetSnapshot threw " + ex.GetType().Name + ": " + ex.Message + "»";
+        }
+    }
+}

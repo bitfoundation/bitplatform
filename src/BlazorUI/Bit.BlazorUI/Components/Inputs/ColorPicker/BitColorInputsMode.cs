@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Which channels the text fields of the <see cref="BitColorPicker"/> are written in.

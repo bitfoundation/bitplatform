@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitNavBar<TItem>
 {
@@ -32,18 +32,33 @@ public partial class BitNavBar<TItem>
     /// <summary>
     /// Custom CSS classes for different parts of the navbar.
     /// </summary>
-    [Parameter] public BitNavBarClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitNavBarClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the navbar, used for the icon, the text and the indicator of the selected item.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-NavBar-*</c> hover, selected, indicator, disabled and focus color
+    /// variables (and, with <see cref="Filled"/>, over the hover and selected backgrounds); left unset, the navbar is
+    /// primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// The initially selected item in manual mode.
+    /// The initially selected item in manual mode. Ignored while <see cref="SelectedItem"/> or
+    /// <see cref="SelectedKey"/> is bound.
     /// </summary>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
+
+    /// <summary>
+    /// The <c>Key</c> of the initially selected item in manual mode, applied as soon as an item with that key is
+    /// there. It is how the options API sets a default selection, since no option exists to be referenced by
+    /// <see cref="DefaultSelectedItem"/> before the options render. <see cref="DefaultSelectedItem"/> wins
+    /// when both are set, and both are ignored while <see cref="SelectedItem"/> or <see cref="SelectedKey"/>
+    /// is bound.
+    /// </summary>
+    [Parameter] public string? DefaultSelectedKey { get; set; }
 
     /// <summary>
     /// Fills the hovered and the selected item of the navbar with the <see cref="Color"/> of the navbar.
@@ -57,6 +72,16 @@ public partial class BitNavBar<TItem>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FitWidth { get; set; }
+
+    /// <summary>
+    /// Draws the <see cref="BitNavBarIndicator.Line"/> indicator along the opposite edge of the selected item:
+    /// its top edge across a horizontal navbar, which is the edge a bar pinned to the bottom of the screen
+    /// turns toward the content above it, and its trailing edge down a <see cref="Vertical"/> rail, which is
+    /// the one a rail placed at the end of the screen turns toward the content beside it. The line a forced-colors
+    /// (High Contrast) theme draws in place of the other indicators takes the same edge.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FlipIndicator { get; set; }
 
     /// <summary>
     /// The content rendered after the items of the navbar, outside of the list they form: the trailing
@@ -156,6 +181,30 @@ public partial class BitNavBar<TItem>
     [Parameter] public BitNavBarNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
+    /// Replaces the text the items opening a new tab are announced with, for translating it or for saying it
+    /// another way.
+    /// </summary>
+    /// <remarks>
+    /// A link opening a new tab takes the reader somewhere the back button no longer returns from, so one whose
+    /// target is <c>_blank</c> carries the sentence saying so - "<c>(opens in a new tab)</c>" unless this
+    /// replaces it - as visually hidden text after its content, or appended to its aria-label when it has one,
+    /// since an aria-label replaces the content rather than adding to it.
+    /// <br />
+    /// An empty value takes the announcement off, the same as <see cref="NoNewTabHint"/> does.
+    /// </remarks>
+    [Parameter] public string? NewTabHint { get; set; }
+
+    /// <summary>
+    /// Stops the items opening a new tab from announcing that they do.
+    /// </summary>
+    /// <remarks>
+    /// Only set this where the announcement would be made twice - on items whose own labels already say they open
+    /// a new tab, or under a heading that already says every one of them does. See <see cref="NewTabHint"/> for
+    /// what is being taken off.
+    /// </remarks>
+    [Parameter] public bool NoNewTabHint { get; set; }
+
+    /// <summary>
     /// Callback invoked when an item is clicked.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
@@ -171,7 +220,8 @@ public partial class BitNavBar<TItem>
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
-    /// Enables recalling the select events when the same item is selected.
+    /// Lets the click and the select events of the already selected item through: on a click in the manual
+    /// mode, and on a navigation back to its URL in the automatic mode. By default they are swallowed.
     /// </summary>
     [Parameter] public bool Reselectable { get; set; }
 
@@ -184,8 +234,9 @@ public partial class BitNavBar<TItem>
 
     /// <summary>
     /// Lets the items scroll along the navbar instead of being squeezed into it, which is what a bar (or a
-    /// rail) holding more destinations than it has room for needs. The scrollbar itself is hidden, the items
-    /// keep the size of their own content, and the selected one is scrolled into view as the selection moves.
+    /// rail) holding more destinations than it has room for needs. The scrollbar itself is hidden (a mouse wheel
+    /// scrolls a horizontal bar sideways instead), the items keep the size of their own content, and the
+    /// selected one is scrolled into view as the selection moves.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Scrollable { get; set; }
@@ -196,6 +247,17 @@ public partial class BitNavBar<TItem>
     [Parameter, TwoWayBound]
     [CallOnSet(nameof(OnSetSelectedItem))]
     public TItem? SelectedItem { get; set; }
+
+    /// <summary>
+    /// The <c>Key</c> of the selected item, kept in step with <see cref="SelectedItem"/> whichever of the two
+    /// is written. It is how the options API binds its selection, since no option exists to be referenced by
+    /// <see cref="SelectedItem"/> before the options render; a key no item carries yet is applied as soon as
+    /// one with it is there. Bound one way, it holds the selection where it is, as a one-way
+    /// <see cref="SelectedItem"/> does. In the automatic mode it only reports the item the current URL selected.
+    /// </summary>
+    [Parameter, TwoWayBound]
+    [CallOnSet(nameof(OnSetSelectedKey))]
+    public string? SelectedKey { get; set; }
 
     /// <summary>
     /// Selects an item as soon as the focus reaches it, so walking the navbar with the arrow keys switches
@@ -217,13 +279,18 @@ public partial class BitNavBar<TItem>
     /// <summary>
     /// The size of the navbar.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-NavBar-item-padding</c>, <c>--bit-NavBar-item-min-size</c>,
+    /// <c>--bit-NavBar-icon-size</c> and <c>--bit-NavBar-text-size</c>; left unset, the navbar is medium unless those
+    /// variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the navbar.
     /// </summary>
-    [Parameter] public BitNavBarClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitNavBarClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Stacks the items of the navbar in a column, which turns it into a vertical navigation rail.

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Bit.BlazorUI.Tests.E2E.TestHost": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:5290"
+    }
+  }
+}

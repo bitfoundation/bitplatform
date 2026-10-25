@@ -1,0 +1,351 @@
+﻿@page "/e2e/stack"
+
+<PageTitle>BitStack E2E</PageTitle>
+
+@* A stack fills its container by default, so each one sits in a host of a known size and holds items of a known size:
+   every position a test reads is a number it can compute. *@
+<style>
+    .stc-host { width: 400px; height: 240px; background: #f4f4f4; }
+    .stc-it { min-width: 60px; min-height: 30px; background: #ccc; box-sizing: border-box; font-size: 12px; }
+    .stc-fix { width: 80px; height: 30px; flex-shrink: 0; background: #ccc; box-sizing: border-box; font-size: 12px; }
+    .stc-sq { width: 50px; height: 50px; background: #ccc; font-size: 12px; }
+    .stc-row-host { display: flex; width: 600px; height: 160px; align-items: flex-start; background: #f4f4f4; }
+    .stc-stretch-host { display: flex; width: 600px; height: 160px; align-items: stretch; background: #f4f4f4; }
+    .stc-col-host { display: flex; flex-direction: column; width: 400px; align-items: stretch; background: #f4f4f4; }
+    .stc-long { white-space: nowrap; width: 600px; overflow: hidden; text-overflow: ellipsis; }
+    .stc-custom { background-color: rgb(0, 0, 255); }
+</style>
+
+<E2ESection Id="basic" Title="Basic: column by default, Horizontal, Reversed">
+    <div class="stc-host"><BitStack Id="basic-col" Gap="0"><div class="stc-it" id="bc-1">1</div><div class="stc-it" id="bc-2">2</div><div class="stc-it" id="bc-3">3</div></BitStack></div>
+    <div class="stc-host"><BitStack Id="basic-row" Horizontal Gap="0"><div class="stc-it" id="br-1">1</div><div class="stc-it" id="br-2">2</div><div class="stc-it" id="br-3">3</div></BitStack></div>
+    <div class="stc-host"><BitStack Id="basic-col-rev" Reversed Gap="0"><div class="stc-it" id="bcr-1">1</div><div class="stc-it" id="bcr-2">2</div><div class="stc-it" id="bcr-3">3</div></BitStack></div>
+    <div class="stc-host"><BitStack Id="basic-row-rev" Horizontal Reversed Gap="0"><div class="stc-it" id="brr-1">1</div><div class="stc-it" id="brr-2">2</div><div class="stc-it" id="brr-3">3</div></BitStack></div>
+</E2ESection>
+
+<E2ESection Id="alignment" Title="Alignment: HorizontalAlign, VerticalAlign and Alignment on a row and a column">
+    <select id="sel-ha" @onchange="e => _ha = ParseAlignment(e.Value)">
+        <option value="">(none)</option>
+        @foreach (var a in Enum.GetNames<BitAlignment>())
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+    <select id="sel-va" @onchange="e => _va = ParseAlignment(e.Value)">
+        <option value="">(none)</option>
+        @foreach (var a in Enum.GetNames<BitAlignment>())
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+    <select id="sel-al" @onchange="e => _al = ParseAlignment(e.Value)">
+        <option value="">(none)</option>
+        @foreach (var a in Enum.GetNames<BitAlignment>())
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+    <button id="btn-al-horizontal" @onclick="() => _alHorizontal = !_alHorizontal">Toggle Horizontal</button>
+    <button id="btn-al-reversed" @onclick="() => _alReversed = !_alReversed">Toggle Reversed</button>
+    <span id="al-state">@($"ha={_ha};va={_va};al={_al};h={_alHorizontal};r={_alReversed}")</span>
+    <div class="stc-host" id="al-host">
+        <BitStack Id="al-stack" Gap="0" Horizontal="_alHorizontal" Reversed="_alReversed" HorizontalAlign="_ha" VerticalAlign="_va" Alignment="_al">
+            <div class="stc-it" id="al-1">1</div>
+            <div class="stc-it" id="al-2">2</div>
+            <div class="stc-it" id="al-3">3</div>
+        </BitStack>
+    </div>
+</E2ESection>
+
+<E2ESection Id="wrap" Title="Wrap, WrapReverse and AlignContent">
+    <select id="sel-ac" @onchange="e => _ac = ParseAlignment(e.Value)">
+        <option value="">(none)</option>
+        @foreach (var a in Enum.GetNames<BitAlignment>())
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+    <button id="btn-wrap-reverse" @onclick="() => _wrapReverse = !_wrapReverse">Toggle WrapReverse</button>
+    <span id="wrap-state">@($"ac={_ac};wr={_wrapReverse}")</span>
+    <div class="stc-host" style="width: 300px; height: 300px" id="wrap-host">
+        <BitStack Id="wrap-stack" Horizontal Wrap WrapReverse="_wrapReverse" AlignContent="_ac" Gap="10px">
+            @for (var i = 1; i <= 6; i++)
+            {
+                <div class="stc-fix" id="@($"wr-{i}")">@i</div>
+            }
+        </BitStack>
+    </div>
+    <div class="stc-host" style="height: 100px" id="vwrap-host">
+        <BitStack Id="vwrap-stack" Wrap Gap="10px" AlignContent="BitAlignment.Start">
+            @for (var i = 1; i <= 5; i++)
+            {
+                <div class="stc-fix" id="@($"vw-{i}")">@i</div>
+            }
+        </BitStack>
+    </div>
+    <div class="stc-host" style="height: 100px">
+        <BitStack Id="nowrap-stack" Horizontal Gap="10px" NoShrinkContent>
+            @for (var i = 1; i <= 6; i++)
+            {
+                <div class="stc-fix" id="@($"nw-{i}")">@i</div>
+            }
+        </BitStack>
+    </div>
+</E2ESection>
+
+<E2ESection Id="wrap-responsive" Title="WrapXs to WrapXxl: wrapping per breakpoint">
+    <div style="width: 200px; height: 120px">
+        <BitStack Id="wrap-bp" Horizontal NoShrinkContent Gap="0" WrapXs="false" WrapSm="true" WrapMd="false" WrapLg="true" WrapXl="false" WrapXxl="true">
+            @for (var i = 1; i <= 4; i++)
+            {
+                <div class="stc-fix" id="@($"wbp-{i}")">@i</div>
+            }
+        </BitStack>
+    </div>
+    <div style="width: 200px; height: 120px">
+        <BitStack Id="wrap-md-off" Horizontal Wrap WrapMd="false" NoShrinkContent Gap="0">
+            @for (var i = 1; i <= 4; i++)
+            {
+                <div class="stc-fix">@i</div>
+            }
+        </BitStack>
+    </div>
+    <div style="width: 200px; height: 120px">
+        <BitStack Id="wrap-reverse-bp" Horizontal WrapReverse WrapMd="false" NoShrinkContent Gap="0">
+            @for (var i = 1; i <= 4; i++)
+            {
+                <div class="stc-fix">@i</div>
+            }
+        </BitStack>
+    </div>
+</E2ESection>
+
+<E2ESection Id="gap" Title="Gap, HorizontalGap, VerticalGap and --bit-Stack-gap">
+    <div class="stc-host"><BitStack Id="gap-default"><div class="stc-it" id="gd-1">1</div><div class="stc-it" id="gd-2">2</div></BitStack></div>
+    <div class="stc-host"><BitStack Id="gap-2rem" Gap="@_gap"><div class="stc-it" id="g2-1">1</div><div class="stc-it" id="g2-2">2</div></BitStack></div>
+    <button id="btn-gap" @onclick="@(() => _gap = "5px")">Gap 5px</button>
+    <div class="stc-host" style="width: 200px"><BitStack Id="gap-two" Horizontal Wrap Gap="10px 30px" AlignContent="BitAlignment.Start">@for (var i = 1; i <= 4; i++) { <div class="stc-fix" id="@($"gt-{i}")">@i</div> }</BitStack></div>
+    <div class="stc-host" style="width: 200px"><BitStack Id="gap-axes" Horizontal Wrap HorizontalGap="2rem" VerticalGap="0.25rem" AlignContent="BitAlignment.Start">@for (var i = 1; i <= 4; i++) { <div class="stc-fix" id="@($"ga-{i}")">@i</div> }</BitStack></div>
+    <div style="--bit-Stack-gap: 6px">
+        <div class="stc-host"><BitStack Id="gap-var"><div class="stc-it" id="gv-1">1</div><div class="stc-it" id="gv-2">2</div></BitStack></div>
+        <div class="stc-host"><BitStack Id="gap-var-own" Gap="20px"><div class="stc-it" id="gvo-1">1</div><div class="stc-it" id="gvo-2">2</div></BitStack></div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="responsive" Title="HorizontalXs to HorizontalXxl, GapXs to GapXxl and the per axis chains">
+    <div class="stc-host" style="height: 120px"><BitStack Id="rsp-md" HorizontalMd Gap="0"><div class="stc-it" id="rm-1">1</div><div class="stc-it" id="rm-2">2</div></BitStack></div>
+    <div class="stc-host" style="height: 120px"><BitStack Id="rsp-lg-off" Horizontal HorizontalLg="false" Gap="0"><div class="stc-it">1</div><div class="stc-it">2</div></BitStack></div>
+    <div class="stc-host" style="height: 120px">
+        <BitStack Id="rsp-all" Reversed Gap="0" HorizontalXs="true" HorizontalSm="false" HorizontalMd="true" HorizontalLg="false" HorizontalXl="true" HorizontalXxl="false">
+            <div class="stc-it">1</div><div class="stc-it">2</div>
+        </BitStack>
+    </div>
+    <div class="stc-host" style="height: 200px">
+        <BitStack Id="rsp-align" HorizontalMd Gap="0" VerticalAlign="BitAlignment.Center" HorizontalAlign="BitAlignment.SpaceBetween">
+            <div class="stc-it" id="ra-1">1</div><div class="stc-it" id="ra-2">2</div><div class="stc-it" id="ra-3">3</div>
+        </BitStack>
+    </div>
+    <div class="stc-host" style="height: 120px"><BitStack Id="rsp-gap-md" HorizontalMd Gap="0.25rem" GapMd="3rem"><div class="stc-it">1</div><div class="stc-it">2</div></BitStack></div>
+    <div class="stc-host" style="height: 120px">
+        <BitStack Id="rsp-gaps" GapXs="1px" GapSm="2px" GapMd="3px" GapLg="4px" GapXl="5px" GapXxl="6px"><div class="stc-it">1</div><div class="stc-it">2</div></BitStack>
+    </div>
+    <div class="stc-host" style="height: 120px">
+        <BitStack Id="rsp-axis-gaps" Horizontal Wrap
+                  HorizontalGapXs="11px" HorizontalGapSm="12px" HorizontalGapMd="13px" HorizontalGapLg="14px" HorizontalGapXl="15px" HorizontalGapXxl="16px"
+                  VerticalGapXs="21px" VerticalGapSm="22px" VerticalGapMd="23px" VerticalGapLg="24px" VerticalGapXl="25px" VerticalGapXxl="26px">
+            <div class="stc-it">1</div><div class="stc-it">2</div>
+        </BitStack>
+    </div>
+    <div class="stc-host" style="height: 120px"><BitStack Id="rsp-hgap-chain" Horizontal Wrap Gap="0.5rem" HorizontalGapMd="3rem" HorizontalGapLg="5rem"><div class="stc-it">1</div><div class="stc-it">2</div></BitStack></div>
+</E2ESection>
+
+<E2ESection Id="nesting" Title="Nesting: stacks inside stacks, each with its own direction">
+    <div class="stc-host">
+        <BitStack Id="nest-outer" Horizontal Gap="0">
+            <div class="stc-it" id="nest-1">1</div>
+            <BitStack Id="nest-col" Gap="0" AutoSize><div class="stc-it" id="nest-c1">2-1</div><div class="stc-it" id="nest-c2">2-2</div></BitStack>
+            <BitStack Id="nest-row" Horizontal Gap="0" AutoSize><div class="stc-it" id="nest-r1">3-1</div><div class="stc-it" id="nest-r2">3-2</div></BitStack>
+        </BitStack>
+    </div>
+    <div class="stc-host">
+        <BitStack Id="nest-rsp" HorizontalMd Gap="0" VerticalAlign="BitAlignment.Center">
+            <BitStack Id="nest-rsp-inner" Gap="0" AutoSize><div class="stc-it">a</div><div class="stc-it">b</div></BitStack>
+        </BitStack>
+    </div>
+</E2ESection>
+
+<E2ESection Id="content-sizing" Title="FillContent, GrowContent, EqualContent, NoShrinkContent">
+    <div class="stc-host"><BitStack Id="fill-v" FillContent Gap="0" Style="width: 300px"><div class="stc-it" id="fv-1">1</div><div class="stc-it">2</div></BitStack></div>
+    <div class="stc-host" style="height: 100px"><BitStack Id="fill-h" FillContent Horizontal Gap="0"><div class="stc-it" id="fh-1">1</div><div class="stc-it">2</div></BitStack></div>
+    <div class="stc-host" style="width: 200px; height: 200px"><BitStack Id="fill-r" FillContent Horizontal Wrap Gap="0" AlignContent="BitAlignment.Start"><div class="stc-fix" style="height: auto" id="fr-1">1</div><div class="stc-fix" style="height: 50px">2</div><div class="stc-fix" style="height: auto" id="fr-3">3</div></BitStack></div>
+    <div class="stc-host" style="width: 600px; height: 60px"><BitStack Id="grow-content" Horizontal GrowContent Gap="0"><div class="stc-it" id="gc-1">Item 1</div><div class="stc-it" id="gc-2">A much longer item 2</div><div class="stc-it" id="gc-3">Item 3</div></BitStack></div>
+    <div class="stc-host" style="width: 600px; height: 60px"><BitStack Id="equal-content" Horizontal EqualContent Gap="0"><div class="stc-it" id="ec-1">Item 1</div><div class="stc-it" id="ec-2">A much longer item 2</div><div class="stc-it" id="ec-3">Item 3</div></BitStack></div>
+    <div class="stc-host" style="width: 200px; height: 60px"><BitStack Id="squeezed" Horizontal Gap="8px">@for (var i = 1; i <= 8; i++) { <div class="stc-sq" id="@($"sq-{i}")">@i</div> }</BitStack></div>
+    <div class="stc-host" style="width: 200px; height: 60px"><BitStack Id="no-shrink-content" Horizontal NoShrinkContent Gap="8px">@for (var i = 1; i <= 8; i++) { <div class="stc-sq" id="@($"ns-{i}")">@i</div> }</BitStack></div>
+</E2ESection>
+
+<E2ESection Id="sizing" Title="AutoWidth, AutoHeight, AutoSize, FitWidth, FitHeight, FitSize">
+    <div class="stc-row-host">
+        <BitStack Id="sz-auto-width" AutoWidth Gap="0"><div class="stc-it" style="width: 70px">AutoWidth</div></BitStack>
+        <BitStack Id="sz-auto-height" AutoHeight Gap="0" Style="width: 90px"><div class="stc-it" style="height: 40px">AutoHeight</div></BitStack>
+        <BitStack Id="sz-auto-size" AutoSize Gap="0"><div class="stc-it" style="width: 75px; height: 45px">AutoSize</div></BitStack>
+    </div>
+    <div class="stc-stretch-host">
+        <BitStack Id="st-auto-height" AutoWidth AutoHeight Gap="0"><div class="stc-it" style="height: 40px">AutoHeight</div></BitStack>
+        <BitStack Id="st-fit-height" AutoWidth FitHeight Gap="0"><div class="stc-it" style="height: 40px">FitHeight</div></BitStack>
+        <BitStack Id="st-fit-size" FitSize Gap="0"><div class="stc-it" style="width: 85px; height: 40px">FitSize</div></BitStack>
+    </div>
+    <div class="stc-col-host">
+        <BitStack Id="st-auto-width" AutoWidth AutoHeight Gap="0"><div class="stc-it" style="width: 70px">AutoWidth</div></BitStack>
+        <BitStack Id="st-fit-width" FitWidth AutoHeight Gap="0"><div class="stc-it" style="width: 70px">FitWidth</div></BitStack>
+    </div>
+</E2ESection>
+
+<E2ESection Id="flex-item" Title="As a flex item: Grow, Grows, Basis, Shrink, NoShrink, Shrinkable, Self, Order">
+    <div class="stc-host" style="width: 600px; height: 50px">
+        <BitStack Horizontal Gap="0" Id="fi-grow-host">
+            <BitStack Id="fi-grow3" Grow="3" Basis="0" AutoSize>a</BitStack>
+            <BitStack Id="fi-grow2" Grow="2" Basis="0" AutoSize>b</BitStack>
+            <BitStack Id="fi-grows" Grows Basis="0" AutoSize>c</BitStack>
+        </BitStack>
+    </div>
+    <div class="stc-host" style="width: 600px; height: 50px">
+        <BitStack Horizontal Gap="0">
+            <BitStack Id="fi-g1" Grows AutoSize>One</BitStack>
+            <BitStack Id="fi-g2" Grows AutoSize>The second one, much longer</BitStack>
+            <BitStack Id="fi-g3" Grows AutoSize>Three</BitStack>
+        </BitStack>
+    </div>
+    <div class="stc-host" style="width: 600px; height: 50px">
+        <BitStack Horizontal Gap="0">
+            <BitStack Id="fi-b1" Grows Basis="0" AutoSize>One</BitStack>
+            <BitStack Id="fi-b2" Grows Basis="0" AutoSize>The second one, much longer</BitStack>
+            <BitStack Id="fi-b3" Grows Basis="0" AutoSize>Three</BitStack>
+        </BitStack>
+    </div>
+    <div class="stc-host" style="width: 400px; height: 50px">
+        <BitStack Horizontal Gap="0">
+            <BitStack Id="fi-shrink3" Shrink="3" AutoSize Style="width: 200px">a</BitStack>
+            <BitStack Id="fi-shrink-default" AutoSize Style="width: 200px">b</BitStack>
+            <BitStack Id="fi-no-shrink" NoShrink AutoSize Style="width: 200px">c</BitStack>
+        </BitStack>
+    </div>
+    <div class="stc-host" style="width: 300px; height: 50px">
+        <BitStack Horizontal Gap="0">
+            <BitStack Id="fi-not-shrinkable" AutoSize><div class="stc-long">A very long label that has nowhere near enough room to be shown in full</div></BitStack>
+            <div class="stc-fix">Fixed</div>
+        </BitStack>
+    </div>
+    <div class="stc-host" style="width: 300px; height: 50px">
+        <BitStack Horizontal Gap="0">
+            <BitStack Id="fi-shrinkable" Shrinkable AutoSize><div class="stc-long">A very long label that has nowhere near enough room to be shown in full</div></BitStack>
+            <div class="stc-fix" id="fi-shrinkable-fixed">Fixed</div>
+        </BitStack>
+    </div>
+    <div class="stc-host" style="width: 600px; height: 160px">
+        <BitStack Horizontal Gap="0" VerticalAlign="BitAlignment.Center" Id="fi-self-host">
+            <BitStack Id="fi-self-start" Self="BitAlignment.Start" AutoSize Class="stc-it">Start</BitStack>
+            <BitStack Id="fi-self-none" AutoSize Class="stc-it">Centered</BitStack>
+            <BitStack Id="fi-self-end" Self="BitAlignment.End" AutoSize Class="stc-it">End</BitStack>
+            <BitStack Id="fi-self-stretch" Self="BitAlignment.Stretch" AutoWidth Class="stc-it" Style="height: auto">Stretch</BitStack>
+            <BitStack Id="fi-self-baseline" Self="BitAlignment.Baseline" AutoSize Class="stc-it">Baseline</BitStack>
+            <BitStack Id="fi-self-between" Self="BitAlignment.SpaceBetween" AutoSize Class="stc-it">Between</BitStack>
+            <BitStack Id="fi-order" Order="-1" AutoSize Class="stc-it">Order -1</BitStack>
+        </BitStack>
+    </div>
+</E2ESection>
+
+<E2ESection Id="padding" Title="Padding">
+    <div class="stc-host" style="height: 120px">
+        <BitStack Horizontal Gap="10px">
+            <BitStack Id="pad-1rem" Padding="1rem" AutoHeight Style="width: 200px"><div class="stc-it" id="pad-1rem-it">1rem</div></BitStack>
+            <BitStack Id="pad-two" Padding="2rem 0.5rem" AutoHeight AutoWidth><div class="stc-it" id="pad-two-it">2rem 0.5rem</div></BitStack>
+        </BitStack>
+    </div>
+</E2ESection>
+
+<E2ESection Id="element" Title="Element, AriaLabel and Inline">
+    <BitStack Id="el-nav" Element="nav" AriaLabel="Main" Horizontal AutoHeight><div class="stc-it">Home</div><div class="stc-it">About</div></BitStack>
+    <BitStack Id="el-ul" Element="ul" AriaLabel="Tags" AutoHeight><li class="stc-it">First</li><li class="stc-it">Second</li><li class="stc-it">Third</li></BitStack>
+    <BitStack Id="el-ol" Element="ol" AutoHeight><li class="stc-it">One</li></BitStack>
+    <BitStack Id="el-tablist" Element="ul" Horizontal AutoHeight HtmlAttributes="@_tablistAttributes"><li class="stc-it" role="tab">Tab</li></BitStack>
+    <div id="inline-line" style="width: 600px">
+        An inline stack
+        <BitStack Id="el-inline" Inline Horizontal Gap="0.25rem"><span class="stc-it" style="display: inline-block">flows</span><span class="stc-it" style="display: inline-block">with</span></BitStack>
+        the text around it.
+    </div>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_stackParams">
+        <div class="stc-host" style="height: 80px"><BitStack Id="casc-row"><div class="stc-it" id="cr-1">1</div><div class="stc-it" id="cr-2">2</div></BitStack></div>
+        <div class="stc-host" style="height: 100px"><BitStack Id="casc-own" Horizontal="false"><div class="stc-it" id="co-1">1</div><div class="stc-it" id="co-2">2</div></BitStack></div>
+    </BitParams>
+    <div class="stc-host" style="height: 100px"><BitStack Id="casc-out"><div class="stc-it" id="cx-1">1</div><div class="stc-it" id="cx-2">2</div></BitStack></div>
+</E2ESection>
+
+<E2ESection Id="size" Title="Size: the gap from the spacing scale of the theme">
+    <div class="stc-host" style="height: 40px"><BitStack Id="size-sm" Horizontal Size="BitSize.Small"><div class="stc-it" id="ss-1">1</div><div class="stc-it" id="ss-2">2</div></BitStack></div>
+    <div class="stc-host" style="height: 40px"><BitStack Id="size-md" Horizontal Size="BitSize.Medium"><div class="stc-it" id="sm-1">1</div><div class="stc-it" id="sm-2">2</div></BitStack></div>
+    <div class="stc-host" style="height: 40px"><BitStack Id="size-lg" Horizontal Size="BitSize.Large"><div class="stc-it" id="sl-1">1</div><div class="stc-it" id="sl-2">2</div></BitStack></div>
+    <div class="stc-host" style="height: 40px"><BitStack Id="size-gap" Horizontal Size="BitSize.Large" Gap="3px"><div class="stc-it" id="sg-1">1</div><div class="stc-it" id="sg-2">2</div></BitStack></div>
+    <div class="stc-host" style="height: 40px"><BitStack Id="size-hgap" Horizontal Size="BitSize.Large" HorizontalGap="5px"><div class="stc-it" id="sh-1">1</div><div class="stc-it" id="sh-2">2</div></BitStack></div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, HtmlAttributes, the hidden attribute, Visibility, Id, TabIndex">
+    <div class="stc-host" style="height: 60px"><BitStack Id="style-grid" Style="display: grid; padding: 3px" Horizontal><div class="stc-it">1</div><div class="stc-it">2</div></BitStack></div>
+    <div class="stc-host" style="height: 60px"><BitStack Id="class-stack" Class="stc-custom"><div class="stc-it">1</div></BitStack></div>
+    <div class="stc-host" style="height: 60px"><BitStack Id="attr-stack" HtmlAttributes="@_attributes" TabIndex="0" data-own="yes"><div class="stc-it">1</div></BitStack></div>
+    <div class="stc-host" style="height: 60px"><BitStack Id="hidden-stack" HtmlAttributes="@_hiddenAttributes"><div class="stc-it">hidden</div></BitStack></div>
+    <div class="stc-host" style="height: 60px"><BitStack Id="until-found-stack" HtmlAttributes="@_untilFoundAttributes"><div class="stc-it">until-found</div></BitStack></div>
+    <div class="stc-host" style="height: 60px"><BitStack Id="vis-stack" Visibility="_visibility"><div class="stc-it">vis</div></BitStack></div>
+    <button id="btn-hidden" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-collapsed" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <BitStack Id="disabled-stack" Disabled="_disabled" AutoHeight><div class="stc-it">disabled</div></BitStack>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="stc-host" style="height: 40px"><BitStack Id="rtl-row" Horizontal Dir="BitDir.Rtl" Gap="0"><div class="stc-it" id="rr-1">1</div><div class="stc-it" id="rr-2">2</div></BitStack></div>
+    <div class="stc-host" style="height: 40px"><BitStack Id="rtl-row-rev" Horizontal Reversed Dir="BitDir.Rtl" Gap="0"><div class="stc-it" id="rrr-1">1</div><div class="stc-it" id="rrr-2">2</div></BitStack></div>
+    <div class="stc-host" style="height: 80px"><BitStack Id="rtl-col-end" Dir="BitDir.Rtl" HorizontalAlign="BitAlignment.End" Gap="0"><div class="stc-it" id="rce-1">1</div></BitStack></div>
+    <div class="stc-host" style="height: 40px" dir="rtl"><BitStack Id="rtl-inherited" Horizontal Gap="0"><div class="stc-it" id="ri-1">1</div><div class="stc-it" id="ri-2">2</div></BitStack></div>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <BitStack Id="mount-stack" Horizontal AutoHeight><div class="stc-it">mounted</div></BitStack>
+    }
+    <button id="btn-unmount" @onclick="() => _mounted = false">Unmount</button>
+    <button id="btn-mount" @onclick="() => _mounted = true">Mount</button>
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private BitAlignment? _ha;
+    private BitAlignment? _va;
+    private BitAlignment? _al;
+    private BitAlignment? _ac;
+    private bool _alHorizontal = true;
+    private bool _alReversed;
+    private bool _wrapReverse;
+    private string _gap = "2rem";
+    private bool _disabled = true;
+    private bool _mounted = true;
+    private BitVisibility _visibility = BitVisibility.Visible;
+
+    private readonly BitStackParams[] _stackParams = [new() { Horizontal = true, Gap = "2rem" }];
+
+    private readonly Dictionary<string, object> _tablistAttributes = new() { ["role"] = "tablist" };
+    private readonly Dictionary<string, object> _attributes = new() { ["data-test"] = "stack", ["title"] = "A stack" };
+    private readonly Dictionary<string, object> _hiddenAttributes = new() { ["hidden"] = true };
+    private readonly Dictionary<string, object> _untilFoundAttributes = new() { ["hidden"] = "until-found" };
+
+    private static BitAlignment? ParseAlignment(object? value)
+    {
+        return value is string s && s.Length > 0 ? Enum.Parse<BitAlignment>(s) : null;
+    }
+}

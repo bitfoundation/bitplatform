@@ -1,0 +1,12 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+
+@* Where the sample is running right now. Under Interactive Auto the same page can come up on the
+   Server renderer (a circuit) or on WebAssembly, and several scenarios behave differently on each,
+   so every sample says which one it got. It takes no parameters, so a parent re-render never
+   re-renders it: it adds nothing to the renders a scenario is about. *@
+
+<span class="demo-renderer">
+    <span class="bb-dot @(RendererInfo.IsInteractive ? "bb-dot-success" : "bb-dot-warning")" aria-hidden="true"></span>
+    Renderer: <strong>@RendererInfo.Name</strong> · @(RendererInfo.IsInteractive ? "interactive" : "prerendering")
+</span>
+<span class="demo-shortcut"><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>D</kbd> opens BevTools</span>

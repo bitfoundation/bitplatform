@@ -1,4 +1,4 @@
-declare type PDFPageViewOptions = {
+﻿declare type PDFPageViewOptions = {
     /**
      * - The viewer element.
      */

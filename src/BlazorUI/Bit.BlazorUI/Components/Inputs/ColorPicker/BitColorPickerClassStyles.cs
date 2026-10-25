@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Custom CSS classes/styles for the parts of the <see cref="BitColorPicker"/>.

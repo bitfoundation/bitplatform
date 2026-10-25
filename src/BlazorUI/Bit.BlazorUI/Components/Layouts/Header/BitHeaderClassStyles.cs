@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitHeaderClassStyles
 {
@@ -11,6 +11,12 @@ public class BitHeaderClassStyles
     /// Custom CSS classes/styles for the container element of the BitHeader that wraps its content.
     /// </summary>
     public string? Container { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the second row of the BitHeader, which is only rendered when an
+    /// <see cref="BitHeader.ExtensionContent"/> is provided.
+    /// </summary>
+    public string? Extension { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the skip link of the BitHeader, which is only rendered when a

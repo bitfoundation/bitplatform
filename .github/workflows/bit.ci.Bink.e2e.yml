@@ -1,0 +1,90 @@
+name: bit platform CI - Bink E2E
+
+# The demo app in Chromium, Firefox and WebKit: drawing with mouse, touch and pen input, keyboard handling, display
+# scaling, every demo page and its accessibility (axe-core, WCAG 2.1 AA), against the demo published the way it
+# ships. It takes far longer than the build-and-unit pipeline
+# (bit.ci.Bink.yml), so it runs only when started by hand. See src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/README.md for
+# what the browser suite proves and how to run it locally.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  e2e:
+    name: Bink E2E (${{ matrix.browser }})
+    runs-on: ubuntu-24.04
+    strategy:
+      # Each engine is a verdict of its own: one failing must not cancel what the others would find.
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Install wasm-tools
+      run: cd src && dotnet workload install wasm-tools
+
+    # The tests drive the demo published the way bink.demo.cd.yml publishes it, not a build output: only a publish
+    # trims the WebAssembly client, and an interop payload the trimmer breaks - an anonymous type whose constructor
+    # lost its parameter names, a getter nothing but System.Text.Json reads - works in every build and fails only there.
+    - name: Publish the demo
+      run: dotnet publish src/Utilities/Bink/Demo/Server/Bit.Bink.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+
+    - name: Build the E2E suite
+      run: dotnet build src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright ${{ matrix.browser }}
+      run: pwsh src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
+
+    - name: Start the published demo
+      run: |
+        cd demo
+        nohup dotnet Bit.Bink.Demo.Server.dll --urls http://127.0.0.1:5000 > ../demo.log 2>&1 &
+        for attempt in $(seq 1 60); do
+          curl --silent --fail --output /dev/null http://127.0.0.1:5000/ && exit 0
+          sleep 2
+        done
+        cat ../demo.log
+        exit 1
+
+    - name: Run E2E tests
+      env:
+        BINK_E2E_BASE_URL: http://127.0.0.1:5000
+        BINK_E2E_BROWSER: ${{ matrix.browser }}
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --report-trx --report-trx-filename bink-e2e-${{ matrix.browser }}.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bink-e2e-${{ matrix.browser }}
+        path: |
+          **/bink-e2e-${{ matrix.browser }}.trx
+          demo.log
+        if-no-files-found: ignore

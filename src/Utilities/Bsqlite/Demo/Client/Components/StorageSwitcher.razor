@@ -1,0 +1,125 @@
+﻿@inject BrowserDatabase Database
+@implements IAsyncDisposable
+
+@* The session bar: which storage backend this tab's database actually landed on, and the two
+   operations that move it somewhere else. Every page that runs against the database opens with it,
+   under its title, because every demo on that page runs against whatever it says. It is drawn as
+   the site kit's sample frame - the backend and the controls in the title bar, what the backend is
+   like underneath.
+
+   data-session names the backend once a session is open ("closed" until then, and in the
+   prerendered page), which is what the E2E suite waits for before it touches a page. *@
+
+<section class="bb-demo bq-session" aria-label="Client database session" data-session="@(Database.Resolution?.Provider.Name ?? "closed")">
+    <div class="bb-demo-bar">
+        <span class="bq-storage-dot" data-name="@CurrentName" aria-hidden="true"></span>
+        <span class="bq-session-label">Client database</span>
+        <strong class="bq-session-name">@SampleStorage.Title(CurrentName)</strong>
+
+        <div class="bq-session-controls">
+            <label class="bq-session-target">
+                <span class="bb-soft">Backend</span>
+                <select @bind="_target" disabled="@_busy" aria-label="Storage backend to move to">
+                    @foreach (var provider in Database.Providers)
+                    {
+                        <option value="@provider.Name">@SampleStorage.Title(provider.Name)</option>
+                    }
+                </select>
+            </label>
+            <button type="button" class="btn btn-secondary" disabled="@(_busy || SameTarget)"
+                    @onclick="() => SwitchAsync(StorageSwitchMode.Migrate)">
+                Move data
+            </button>
+            <button type="button" class="btn btn-secondary" disabled="@(_busy || SameTarget)"
+                    @onclick="() => SwitchAsync(StorageSwitchMode.Fresh)">
+                Start empty
+            </button>
+        </div>
+    </div>
+
+    <p class="bq-session-blurb">@SampleStorage.Blurb(CurrentName)</p>
+
+    @if (_message is not null)
+    {
+        <p class="bq-session-status @(_failed ? "bq-err" : "bq-ok")" role="status">@_message</p>
+    }
+</section>
+
+@code {
+    private string _target = "opfs";
+    private bool _busy;
+    private bool _failed;
+    private string? _message;
+
+    private string CurrentName => Database.Resolution?.Provider.Name ?? _target;
+
+    private bool SameTarget =>
+        string.Equals(CurrentName, _target, StringComparison.OrdinalIgnoreCase);
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Prerendered on the server too, where there is no session to describe: the bar shows the
+        // preferred backend until the page runs in the browser and opens the real one.
+        if (RendererInfo.IsInteractive is false)
+        {
+            return;
+        }
+
+        Database.AfterSessionReset += OnResetAsync;
+        try
+        {
+            await Database.EnsureSessionAsync();
+            _target = CurrentName;
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _failed = true;
+            _message = ex.Message;
+        }
+    }
+
+    private async Task OnResetAsync()
+    {
+        try
+        {
+            await Database.EnsureSessionAsync();
+            _target = CurrentName;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+        }
+    }
+
+    private async Task SwitchAsync(StorageSwitchMode mode)
+    {
+        _busy = true;
+        _failed = false;
+        _message = null;
+        try
+        {
+            await Database.SwitchStorageAsync(_target, mode);
+            await Database.EnsureSessionAsync();
+            var verb = mode is StorageSwitchMode.Migrate ? "Moved onto" : "Opened empty on";
+            _message = $"{verb} {SampleStorage.Title(CurrentName)}.";
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _failed = true;
+            _message = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        Database.AfterSessionReset -= OnResetAsync;
+        return ValueTask.CompletedTask;
+    }
+}

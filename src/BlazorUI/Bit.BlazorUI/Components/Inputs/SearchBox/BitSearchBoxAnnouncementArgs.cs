@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The state of the suggest items of a <see cref="BitSearchBox"/> at the moment its screen reader
@@ -8,7 +8,8 @@ public class BitSearchBoxAnnouncementArgs(string? searchTerm,
                                           IReadOnlyList<string> suggestItems,
                                           bool isLoading,
                                           bool isSearchTermTooShort,
-                                          int minSuggestTriggerChars)
+                                          int minSuggestTriggerChars,
+                                          bool hasFailed = false)
 {
     /// <summary>
     /// The current value of the search box that the suggest items were resolved for.
@@ -35,4 +36,10 @@ public class BitSearchBoxAnnouncementArgs(string? searchTerm,
     /// The value of the <see cref="BitSearchBox.MinSuggestTriggerChars"/> parameter.
     /// </summary>
     public int MinSuggestTriggerChars { get; } = minSuggestTriggerChars;
+
+    /// <summary>
+    /// Whether the <see cref="BitSearchBoxSuggestItemsProvider"/> threw, so the suggest items are empty
+    /// because the search could not run rather than because nothing matched.
+    /// </summary>
+    public bool HasFailed { get; } = hasFailed;
 }

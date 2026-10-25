@@ -7,6 +7,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Products;
 public partial class AddOrEditProductPage
 {
     [AutoInject] IProductController productController = default!;
+    [AutoInject] ImageEditorService imageEditorService = default!;
     [AutoInject] ICategoryController categoryController = default!;
     [AutoInject] IAttachmentController attachmentController = default!;
 
@@ -105,7 +106,47 @@ public partial class AddOrEditProductPage
         await LoadAsync();
     }
 
+    private async Task HandleOnFilesChange(BitFileInfo[] files)
+    {
+        if (files.All(file => file.Status is BitFileUploadStatus.Pending or BitFileUploadStatus.NotAllowed) is false) return;
+
+        if (files.FirstOrDefault(file => file.Status is BitFileUploadStatus.Pending) is not { PreviewUrl: not null } file) return;
+
+        var result = await imageEditorService.Edit(file.PreviewUrl, file.Name, cropAspectRatio: null, minWidth: 512, minHeight: 512);
+
+        if (result.Outcome is ImageEditorOutcome.KeepOriginal)
+        {
+            await fileUploadRef.Upload();
+            return;
+        }
+
+        await fileUploadRef.Reset();
+
+        if (result.Outcome is not ImageEditorOutcome.Edited) return;
+
+        isManagingFile = true;
+        StateHasChanged();
+
+        string? altText;
+        try
+        {
+            altText = await imageEditorService.Upload(result, $"api/v1/Attachment/UploadProductPrimaryImage/{Id ?? product.Id}", CurrentCancellationToken);
+        }
+        catch
+        {
+            isManagingFile = false;
+            throw;
+        }
+
+        await ApplyUploadedImage(altText);
+    }
+
     private async Task HandleOnUploadComplete(BitFileInfo fileInfo)
+    {
+        await ApplyUploadedImage(fileInfo.Message);
+    }
+
+    private async Task ApplyUploadedImage(string? altText)
     {
         try
         {
@@ -116,13 +157,18 @@ public partial class AddOrEditProductPage
             else
             {
                 product.HasPrimaryImage = true;
-                product.PrimaryImageAltText = fileInfo.Message;
+                product.PrimaryImageAltText = altText;
             }
         }
         finally
         {
             isManagingFile = false;
         }
+    }
+
+    private void HandleOnInvalid(BitFileInfo[] files)
+    {
+        SnackBarService.Error(files[0].Message ?? Localizer[nameof(AppStrings.FileUploadFailed)]);
     }
 
     private async Task HandleOnUploadFailed(BitFileInfo fileInfo)

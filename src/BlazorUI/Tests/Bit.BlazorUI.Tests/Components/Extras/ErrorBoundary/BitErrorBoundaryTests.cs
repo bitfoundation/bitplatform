@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -267,18 +268,250 @@ public partial class BitErrorBoundaryTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitErrorBoundaryShouldRenderAlertRoleAndLiveRegion()
+    public void BitErrorBoundaryShouldAnnounceTheHeaderAlone()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.Message, "What to do next");
+            parameters.Add(p => p.ShowException, true);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var header = component.Find(".bit-erb-hdr");
+
+        // The alert holds the icon, the title and the message - and neither the stack trace nor the buttons,
+        // which a live region would read out in full.
+        Assert.AreEqual("alert", header.GetAttribute("role"));
+        Assert.IsNotNull(header.QuerySelector(".bit-erb-svg"));
+        Assert.IsNotNull(header.QuerySelector(".bit-erb-ttl"));
+        Assert.IsNotNull(header.QuerySelector(".bit-erb-msg"));
+        Assert.IsNull(header.QuerySelector(".bit-erb-exp"));
+        Assert.IsNull(header.QuerySelector(".bit-erb-ftr"));
+        Assert.IsFalse(component.Find(".bit-erb").HasAttribute("aria-live"));
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldNameTheErrorUIByItsTitleAndDescribeItByItsMessage()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Broken");
+            parameters.Add(p => p.Message, "Try again later");
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var errorRoot = component.Find(".bit-erb");
+        var title = component.Find(".bit-erb-ttl");
+        var message = component.Find(".bit-erb-msg");
+
+        Assert.AreEqual("group", errorRoot.GetAttribute("role"));
+        Assert.IsFalse(string.IsNullOrEmpty(title.Id));
+        Assert.AreEqual(title.Id, errorRoot.GetAttribute("aria-labelledby"));
+        Assert.AreEqual(message.Id, errorRoot.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldNotNameAnUntitledErrorUI()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.Title, string.Empty);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var errorRoot = component.Find(".bit-erb");
+
+        Assert.IsFalse(errorRoot.HasAttribute("aria-labelledby"));
+        Assert.IsFalse(errorRoot.HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldNotGroupAnUntitledErrorUIWhoseMessageIsTheAlert()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.Title, string.Empty);
+            parameters.Add(p => p.Message, "Try again later");
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        Assert.IsFalse(component.Find(".bit-erb").HasAttribute("role"));
+        Assert.AreEqual("alert", component.Find(".bit-erb-hdr").GetAttribute("role"));
+    }
+
+    // The icon is hidden from a screen reader, so a header holding nothing else has nothing for an alert to read out,
+    // and the root takes the alert instead - with or without the icon - rather than letting the error appear silently.
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)]
+    public void BitErrorBoundaryShouldMakeTheRootTheAlertWhenTheHeaderHasNoText(bool hideIcon)
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.Title, string.Empty);
+            parameters.Add(p => p.HideIcon, hideIcon);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        Assert.AreEqual("alert", component.Find(".bit-erb").GetAttribute("role"));
+
+        if (hideIcon)
+        {
+            Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-erb-hdr"));
+        }
+        else
+        {
+            Assert.IsFalse(component.Find(".bit-erb-hdr").HasAttribute("role"));
+        }
+    }
+
+    // A role or aria-live of the page's own makes the root the live region, announced the way the page asked - and
+    // an alert nested in it would announce the error a second time, assertively.
+    [TestMethod,
+        DataRow("role", "status"),
+        DataRow("role", "alert"),
+        DataRow("role", "Log"),
+        DataRow("aria-live", "polite"),
+        DataRow("aria-live", "off")]
+    public void BitErrorBoundaryShouldLeaveTheAnnouncementToALiveRegionOfThePage(string attribute, string value)
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.AddUnmatched(attribute, value);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        Assert.AreEqual(value, component.Find(".bit-erb").GetAttribute(attribute));
+        Assert.IsFalse(component.Find(".bit-erb-hdr").HasAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldKeepTheAlertUnderASplattedRoleThatIsNoLiveRegion()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.AddUnmatched("role", "region");
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        Assert.AreEqual("region", component.Find(".bit-erb").GetAttribute("role"));
+        Assert.AreEqual("alert", component.Find(".bit-erb-hdr").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldNotRenderAnEmptyHeader()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.HideIcon, true);
+            parameters.Add(p => p.Title, string.Empty);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-erb-hdr"));
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldLeaveTheAnnouncementToTheFocusWithAutoFocus()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        Assert.IsFalse(component.Find(".bit-erb-hdr").HasAttribute("role"));
+        Assert.AreEqual("group", component.Find(".bit-erb").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldKeepTheAlertWithAutoFocusAndNoTitle()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.Title, string.Empty);
+            parameters.Add(p => p.Message, "Nothing names the error UI, so the focus has nothing to announce.");
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        Assert.AreEqual("alert", component.Find(".bit-erb-hdr").GetAttribute("role"));
+    }
+
+    // What drops the alert is the focus actually being moved for this error, not the parameter: an AutoFocus turned
+    // on after the error was caught moves nothing, so the alert stays.
+    [TestMethod]
+    public void BitErrorBoundaryShouldKeepTheAlertWhenAutoFocusIsTurnedOnAfterTheError()
     {
         var component = RenderComponent<BitErrorBoundary>(parameters =>
         {
             parameters.Add(p => p.ChildContent, ThrowingContent("err"));
         });
 
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        Assert.AreEqual("alert", component.Find(".bit-erb-hdr").GetAttribute("role"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldPutTheAlertBackWhenTheFocusCannotBeMoved()
+    {
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new InvalidOperationException("No focus"));
+
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual("alert", component.Find(".bit-erb-hdr").GetAttribute("role")));
+    }
+
+    // The root AutoFocus parks the focus on is marked as such, so that the stylesheet drops its ring - and a tabindex
+    // the page wrote itself, -1 included, is a stop it asked for and keeps the browser's outline.
+    [TestMethod,
+        DataRow(null, true),
+        DataRow("-1", false),
+        DataRow("0", false)]
+    public void BitErrorBoundaryShouldMarkOnlyTheRootItMadeFocusableAsAFocusAnchor(string? splattedTabIndex, bool isAnchor)
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            if (splattedTabIndex is not null) parameters.AddUnmatched("tabindex", splattedTabIndex);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
         var errorRoot = component.Find(".bit-erb");
 
-        Assert.AreEqual("alert", errorRoot.GetAttribute("role"));
-        Assert.AreEqual("assertive", errorRoot.GetAttribute("aria-live"));
-        Assert.AreEqual("true", errorRoot.GetAttribute("aria-atomic"));
+        Assert.AreEqual(splattedTabIndex ?? "-1", errorRoot.GetAttribute("tabindex"));
+        Assert.AreEqual(isAnchor, errorRoot.ClassList.Contains("bit-erb-anc"));
+    }
+
+    [TestMethod,
+        DataRow(null, "H3"),
+        DataRow(1, "H1"),
+        DataRow(4, "H4"),
+        DataRow(0, "H1"),
+        DataRow(9, "H6")]
+    public void BitErrorBoundaryShouldRenderTheTitleAtItsHeadingLevel(int? headingLevel, string expectedTag)
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.HeadingLevel, headingLevel);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var title = component.Find(".bit-erb-ttl");
+
+        Assert.AreEqual(expectedTag, title.TagName);
+        // The look stays the same at every level.
+        Assert.IsTrue(title.ClassList.Contains("bit-txt-h3"));
     }
 
     [TestMethod]
@@ -705,6 +938,77 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         component.Find(".template-recover").Click();
 
         Assert.AreEqual("Recovered", component.Find(".throw-once-safe").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitErrorBoundaryErrorTemplateContextShouldRefreshAndGoHome()
+    {
+        BitErrorBoundaryContext? context = null;
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.HomeUrl, "https://example.com/start");
+            parameters.Add(p => p.ErrorTemplate, (RenderFragment<BitErrorBoundaryContext>)(ctx => b =>
+            {
+                context = ctx;
+                b.AddMarkupContent(0, "<div class=\"tpl\">Template</div>");
+            }));
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var navMan = Services.GetRequiredService<BunitNavigationManager>();
+        var initialCount = navMan.History.Count;
+
+        await component.InvokeAsync(() => context!.Refresh());
+        Assert.IsTrue(navMan.History.Count > initialCount, "Refresh reloads the page like the default UI's Refresh button");
+
+        await component.InvokeAsync(() => context!.GoHome());
+        Assert.AreEqual("https://example.com/start", navMan.Uri);
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldHandTheErrorTemplateTheSameContextWhileTheExceptionStays()
+    {
+        var contexts = new List<BitErrorBoundaryContext>();
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.ErrorTemplate, (RenderFragment<BitErrorBoundaryContext>)(ctx => b =>
+            {
+                contexts.Add(ctx);
+                b.AddMarkupContent(0, "<div class=\"tpl\">Template</div>");
+            }));
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Title, "Another title"));
+
+        Assert.IsTrue(contexts.Count >= 2, "the template is rendered again with the boundary");
+        Assert.IsTrue(contexts.All(c => ReferenceEquals(c, contexts[0])), "a template bound to the context is not handed a new object on every render");
+        Assert.AreSame(component.Instance.CaughtException, contexts[0].Exception);
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldSurviveANavigationAfterItIsDisposed()
+    {
+        ThrowSwitchComponent.Reset();
+
+        var recovered = 0;
+        RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.RecoverOnNavigation, true);
+            parameters.Add(p => p.OnRecover, EventCallback.Factory.Create<BitErrorBoundaryRecoverReason>(this, _ => recovered++));
+            parameters.AddChildContent(b =>
+            {
+                b.OpenComponent<ThrowSwitchComponent>(0);
+                b.CloseComponent();
+            });
+        });
+
+        Context.DisposeComponentsAsync().GetAwaiter().GetResult();
+
+        // A boundary that is gone has let go of the navigation manager, so the navigation reaches no handler of it.
+        Services.GetRequiredService<BunitNavigationManager>().NavigateTo("/another-page");
+
+        Assert.AreEqual(0, recovered);
     }
 
     [TestMethod]
@@ -1403,11 +1707,20 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         component.Find(".throw-once-safe");
 
         // The clipboard write lands after the boundary has already cleared the error the copy belonged
-        // to, so it has nothing left to report on.
-        handler.SetVoidResult();
+        // to, so it has nothing left to report on. It is completed on the dispatcher, so the copy's
+        // continuation has run by the time the turn is over - completed from the test thread, it would be
+        // posted to the dispatcher and the assertion below could pass before it ever ran.
+        await component.InvokeAsync(() => handler.SetVoidResult());
 
-        component.WaitForAssertion(() =>
-            Assert.IsFalse(component.Markup.Contains("Copied", StringComparison.Ordinal)));
+        // The error UI went with the recovery, so the markup could not say "Copied" right now either way:
+        // where a stale message would show is on the next error the boundary puts up, whose button has to
+        // offer a copy of its own.
+        await component.InvokeAsync(() => component.Instance.Capture(new InvalidOperationException("the next one")));
+
+        var footer = component.Find(".bit-erb-ftr").TextContent;
+
+        StringAssert.Contains(footer, "Copy details");
+        Assert.IsFalse(footer.Contains("Copied", StringComparison.Ordinal));
     }
 
     private static RenderFragment ThrowingContent(string message) => b =>

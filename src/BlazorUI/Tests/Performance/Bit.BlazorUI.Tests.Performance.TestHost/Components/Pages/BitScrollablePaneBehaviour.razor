@@ -1,0 +1,85 @@
+﻿@page "/regression/scrollable-pane-behaviour"
+
+<PageTitle>BitScrollablePane Behaviour</PageTitle>
+
+@* A pane of 300 by 200 pixels over 1000 by 1000 pixels of content, which fades every edge that still has content
+   beyond it and reports where it stands and every edge it reaches. The buttons call its scrolling API without any
+   smoothing, so the move is done by the time the call returns; a target box sits 600px from the left and 500px from
+   the top of the content. The same pane is laid out right to left, where it starts at the right edge of its content. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitScrollablePane Behaviour</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+@foreach (var probe in _probes)
+{
+    var state = _states[probe];
+
+    <div data-probe="@probe" style="margin-bottom: 24px;">
+        <div class="buttons" style="margin-bottom: 8px;">
+            <button type="button" class="scroll-by" @onclick="() => _panes[probe].ScrollBy(100, 150)">ScrollBy 100,150</button>
+            <button type="button" class="scroll-to" @onclick="() => _panes[probe].ScrollTo(250, 300)">ScrollTo 250,300</button>
+            <button type="button" class="scroll-to-element" @onclick="() => _panes[probe].ScrollToElement(TargetId(probe))">ScrollToElement</button>
+            <button type="button" class="scroll-to-element-center" @onclick="() => _panes[probe].ScrollToElement(TargetId(probe), alignment: BitScrollAlignment.Center)">ScrollToElement center</button>
+            <button type="button" class="scroll-to-end" @onclick="() => _panes[probe].ScrollToEnd()">ScrollToEnd</button>
+            <button type="button" class="scroll-to-start" @onclick="() => _panes[probe].ScrollToStart()">ScrollToStart</button>
+        </div>
+        <BitScrollablePane @ref="_panes[probe]"
+                           Dir="@(probe == "rtl" ? BitDir.Rtl : null)"
+                           Width="300px"
+                           Height="200px"
+                           Fade
+                           AriaLabel="@($"Pane {probe}")"
+                           Style="border: 1px solid gray;"
+                           OnScroll="o => { state.Left = o.OffsetLeft; state.Top = o.Top; state.Scrolls++; }"
+                           OnReachedBottom="() => state.Bottom++"
+                           OnReachedTop="() => state.TopReached++"
+                           OnReachedLeft="() => state.LeftReached++"
+                           OnReachedRight="() => state.RightReached++">
+            <div class="content" style="position: relative; width: 1000px; height: 1000px; background: repeating-linear-gradient(45deg, #eee 0 20px, #fff 20px 40px);">
+                <div id="@TargetId(probe)" class="target" style="position: absolute; left: 600px; top: 500px; width: 50px; height: 50px; background: tomato;">T</div>
+            </div>
+        </BitScrollablePane>
+        <p class="report" style="font-family: monospace;">
+            left: <span class="left">@Format(state.Left)</span>
+            top: <span class="top">@Format(state.Top)</span>
+            scrolls: <span class="scrolls">@(state.Scrolls > 0 ? "some" : "none")</span>
+            reached-top: <span class="reached-top">@state.TopReached</span>
+            reached-bottom: <span class="reached-bottom">@state.Bottom</span>
+            reached-left: <span class="reached-left">@state.LeftReached</span>
+            reached-right: <span class="reached-right">@state.RightReached</span>
+        </p>
+    </div>
+}
+
+@code {
+    private sealed class ProbeState
+    {
+        public double? Left { get; set; }
+        public double? Top { get; set; }
+        public int Scrolls { get; set; }
+        public int TopReached { get; set; }
+        public int Bottom { get; set; }
+        public int LeftReached { get; set; }
+        public int RightReached { get; set; }
+    }
+
+    private static readonly string[] _probes = ["ltr", "rtl"];
+
+    private readonly Dictionary<string, ProbeState> _states = _probes.ToDictionary(p => p, _ => new ProbeState());
+    private readonly Dictionary<string, BitScrollablePane> _panes = [];
+
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private static string TargetId(string probe) => $"{probe}-target";
+
+    private static string Format(double? value) => value is null ? "none" : Math.Round(value.Value).ToString(System.Globalization.CultureInfo.InvariantCulture);
+}

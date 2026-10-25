@@ -21,6 +21,10 @@
     border-left: rem2(2px) solid $bit-color-primary;
     font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 
+    &.copy-on-click {
+        cursor: pointer;
+    }
+
     &::-webkit-scrollbar {
         width: rem2(8px);
         background-color: $White;

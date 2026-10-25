@@ -1,0 +1,463 @@
+﻿@page "/e2e/button"
+
+<PageTitle>BitButton E2E</PageTitle>
+
+<h1>BitButton</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitButton Id="basic-btn" OnClick="() => _basicClicks++">Button</BitButton>
+    <BitButton Id="basic-compound" SecondaryText="this is the secondary text">Primary text</BitButton>
+    <BitButton Id="basic-secondary-only" SecondaryText="secondary text only" />
+    <BitButton Id="basic-empty" />
+    <span id="basic-clicks">@_basicClicks</span>
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant">
+    <BitButton Id="variant-default">Default</BitButton>
+    <BitButton Id="variant-fill" Variant="BitVariant.Fill">Fill</BitButton>
+    <BitButton Id="variant-outline" Variant="BitVariant.Outline">Outline</BitButton>
+    <BitButton Id="variant-text" Variant="BitVariant.Text">Text</BitButton>
+    <br />
+    <BitButton Id="variant-dis-fill" Variant="BitVariant.Fill" Disabled>Fill</BitButton>
+    <BitButton Id="variant-dis-outline" Variant="BitVariant.Outline" Disabled>Outline</BitButton>
+    <BitButton Id="variant-dis-text" Variant="BitVariant.Text" Disabled>Text</BitButton>
+</E2ESection>
+
+<E2ESection Id="rounded" Title="Rounded">
+    <BitButton Id="rounded-off">Square corners</BitButton>
+    <BitButton Id="rounded-on" Rounded>Pill</BitButton>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    @foreach (var color in Enum.GetValues<BitColor>())
+    {
+        <div class="color-row">
+            <BitButton Id="@($"color-fill-{color}")" Color="color">@color</BitButton>
+            <BitButton Id="@($"color-outline-{color}")" Color="color" Variant="BitVariant.Outline">@color</BitButton>
+            <BitButton Id="@($"color-text-{color}")" Color="color" Variant="BitVariant.Text">@color</BitButton>
+            <BitButton Id="@($"color-dis-{color}")" Color="color" Disabled>@color</BitButton>
+        </div>
+    }
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitButton Id="size-default" IconName="@BitIconName.Emoji2">Default</BitButton>
+    @foreach (var size in Enum.GetValues<BitSize>())
+    {
+        <BitButton Id="@($"size-{size}")" Size="size" IconName="@BitIconName.Emoji2">@size</BitButton>
+        <BitButton Id="@($"size-icon-{size}")" Size="size" IconOnly AriaLabel="Emoji" IconName="@BitIconName.Emoji2" />
+        <BitButton Id="@($"size-loading-{size}")" Size="size" IsLoading LoadingLabel="Loading...">@size</BitButton>
+    }
+</E2ESection>
+
+<E2ESection Id="icon" Title="Icon">
+    <BitButton Id="icon-start" IconName="@BitIconName.Emoji">Start</BitButton>
+    <BitButton Id="icon-end" IconName="@BitIconName.Emoji2" IconPlacement="BitPlacement.End">End</BitButton>
+    <BitButton Id="icon-compound" IconName="@BitIconName.Emoji" SecondaryText="secondary">Compound</BitButton>
+    <BitButton Id="icon-url" IconUrl="@IconDataUrl">Url</BitButton>
+    <BitButton Id="icon-url-end" IconUrl="@IconDataUrl" IconPlacement="BitPlacement.End">Url end</BitButton>
+    <br />
+    <BitButton Id="icon-only" IconOnly IconName="@BitIconName.Add">Add</BitButton>
+    <BitButton Id="icon-only-aria" IconOnly AriaLabel="Delete" IconName="@BitIconName.Delete" />
+    <BitButton Id="icon-only-labelledby" IconOnly IconName="@BitIconName.Edit" aria-labelledby="icon-only-name">Edit</BitButton>
+    <span id="icon-only-name">Edit the item</span>
+    <BitButton Id="icon-only-rounded" Rounded IconOnly IconName="@BitIconName.Add">Add</BitButton>
+    <br />
+    <BitButton Id="icon-ext-string" Icon="@("fa-solid fa-house")">House</BitButton>
+    <BitButton Id="icon-ext-css" Icon="@BitIconInfo.Css("fa-solid fa-heart")">Heart</BitButton>
+    <BitButton Id="icon-ext-fa" Icon="@BitIconInfo.Fa("brands github")">GitHub</BitButton>
+    <BitButton Id="icon-ext-bi" Icon="@BitIconInfo.Bi("gear-fill")">Gear</BitButton>
+    <BitButton Id="icon-ext-wins" Icon="@BitIconInfo.Css("my-ext-icon")" IconName="@BitIconName.Emoji">Both</BitButton>
+</E2ESection>
+
+<E2ESection Id="loading" Title="Loading">
+    <BitButton Id="loading-toggle" IsLoading="_isLoading" LoadingLabel="Loading..." OnClick="() => _loadingClicks++">
+        Click me
+    </BitButton>
+    <BitButton Id="btn-toggle-loading" Variant="BitVariant.Text" OnClick="() => _isLoading = !_isLoading">Toggle loading</BitButton>
+    <span id="loading-clicks">@_loadingClicks</span>
+    <br />
+    <BitButton Id="loading-reclickable" IsLoading Reclickable OnClick="() => _reclickableLoadingClicks++">Reclickable</BitButton>
+    <span id="reclickable-loading-clicks">@_reclickableLoadingClicks</span>
+    <br />
+    @foreach (var placement in new[] { BitPlacement.End, BitPlacement.Start, BitPlacement.Top, BitPlacement.Bottom })
+    {
+        <BitButton Id="@($"loading-placement-{placement}")" IsLoading LoadingLabel="@($"{placement}...")"
+                   LoadingLabelPlacement="placement" Variant="BitVariant.Outline">@placement</BitButton>
+    }
+</E2ESection>
+
+<E2ESection Id="auto-loading" Title="AutoLoading">
+    <BitButton Id="auto-loading-btn" AutoLoading OnClick="AutoLoadingClick">Auto</BitButton>
+    <span id="auto-clicks">@_autoClicks</span>
+    <BitButton Id="btn-release-auto" Variant="BitVariant.Text" OnClick="() => _autoTcs.TrySetResult()">Release</BitButton>
+    <BitButton Id="btn-cancel-auto" Variant="BitVariant.Text" OnClick="() => _autoTcs.TrySetCanceled()">Cancel</BitButton>
+    <br />
+    <BitButton Id="reclickable-btn" AutoLoading Reclickable OnClick="ReclickableClick">Reclickable</BitButton>
+    <span id="reclick-args">@string.Join(",", _reclickArgs)</span>
+    <BitButton Id="btn-release-reclick" Variant="BitVariant.Text" OnClick="ReleaseReclick">Release</BitButton>
+    <br />
+    <BitButton Id="bind-loading-btn" AutoLoading @bind-IsLoading="_boundLoading" OnClick="BoundClick">Bound</BitButton>
+    <span id="bound-loading">@_boundLoading</span>
+    <BitButton Id="btn-release-bound" Variant="BitVariant.Text" OnClick="() => _boundTcs.TrySetResult()">Release</BitButton>
+</E2ESection>
+
+<E2ESection Id="loading-delay" Title="LoadingDelay">
+    <BitButton Id="delay-slow" AutoLoading LoadingDelay="500" OnClick="DelaySlowClick">Slow</BitButton>
+    <BitButton Id="btn-release-delay" Variant="BitVariant.Text" OnClick="() => _delayTcs.TrySetResult()">Release</BitButton>
+    <BitButton Id="delay-fast" AutoLoading LoadingDelay="1500" OnClick="DelayFastClick">Fast</BitButton>
+    <span id="delay-fast-done">@_delayFastDone</span>
+</E2ESection>
+
+<E2ESection Id="href" Title="Href">
+    <BitButton Id="href-blank" Href="/" Target="_blank">New tab</BitButton>
+    <BitButton Id="href-nofollow" Href="https://example.com" Target="_blank" Rel="BitLinkRels.NoFollow">nofollow</BitButton>
+    <BitButton Id="href-noreferrer" Href="https://example.com" Target="_blank" Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer">noreferrer</BitButton>
+    <BitButton Id="href-opener" Href="https://example.com" Target="_blank" Rel="BitLinkRels.Opener">opener</BitButton>
+    <BitButton Id="href-same-tab" Href="https://example.com" Rel="BitLinkRels.NoFollow">same tab</BitButton>
+    <BitButton Id="href-handwritten-rel" Href="https://example.com" Target="_blank" HtmlAttributes="@(new() { ["rel"] = "external" })">hand-written</BitButton>
+    <BitButton Id="href-in-page" Href="#href-target" Rel="BitLinkRels.NoFollow">In page</BitButton>
+    <BitButton Id="href-hash-nav" Href="e2e/button#href-target" OnClick="() => _hrefClicks++">Hash navigation</BitButton>
+    <BitButton Id="href-download" Href="@IconDataUrl" Download="icon.svg">Download</BitButton>
+    <BitButton Id="href-disabled" Href="https://example.com" Disabled>Disabled link</BitButton>
+    <BitButton Id="href-loading" Href="https://example.com" IsLoading>Loading link</BitButton>
+    <span id="href-clicks">@_hrefClicks</span>
+    <div id="href-target">The in-page target</div>
+</E2ESection>
+
+<E2ESection Id="form" Title="Form &amp; button type">
+    <EditForm Model="_formModel" OnValidSubmit="() => _validSubmits++" OnInvalidSubmit="() => _invalidSubmits++" novalidate>
+        <DataAnnotationsValidator />
+        <BitTextField Id="form-required" Label="Required" Required Immediate @bind-Value="_formModel.RequiredText" />
+        <ValidationMessage For="() => _formModel.RequiredText" />
+        <BitButton Id="form-default">Default type</BitButton>
+        <BitButton Id="form-submit" ButtonType="BitButtonType.Submit">Submit</BitButton>
+        <BitButton Id="form-reset" ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline" OnClick="ResetForm">Reset</BitButton>
+        <BitButton Id="form-button" ButtonType="BitButtonType.Button" Variant="BitVariant.Text" OnClick="() => _formButtonClicks++">Button</BitButton>
+        <BitButton Id="form-loading" ButtonType="BitButtonType.Submit" IsLoading>Loading submit</BitButton>
+        <BitButton Id="form-disabled-focusable" ButtonType="BitButtonType.Submit" Disabled>Disabled submit</BitButton>
+    </EditForm>
+    <span id="form-valid">@_validSubmits</span>
+    <span id="form-invalid">@_invalidSubmits</span>
+    <span id="form-button-clicks">@_formButtonClicks</span>
+    <span id="form-model">@_formModel.RequiredText</span>
+    <br />
+    <BitButton Id="type-outside-reset" ButtonType="BitButtonType.Reset">Reset outside a form</BitButton>
+    <br />
+    <EditForm id="ext-form" Model="_extModel" OnValidSubmit="() => _extSubmits++" novalidate>
+        <DataAnnotationsValidator />
+        <BitTextField Id="ext-required" Label="Required" Required Immediate @bind-Value="_extModel.RequiredText" />
+        <ValidationMessage For="() => _extModel.RequiredText" />
+    </EditForm>
+    <BitButton Id="ext-submit" FormId="ext-form" ButtonType="BitButtonType.Submit" formnovalidate formmethod="post">External submit</BitButton>
+    <span id="ext-submits">@_extSubmits</span>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitButton Id="tpl-child">
+        <i class="tpl-glyph">*</i>
+        <span class="tpl-text">A primary template</span>
+    </BitButton>
+    <BitButton Id="tpl-both" Variant="BitVariant.Outline">
+        <PrimaryTemplate><b class="tpl-primary">Primary text</b></PrimaryTemplate>
+        <SecondaryTemplate><em class="tpl-secondary">A secondary template</em></SecondaryTemplate>
+    </BitButton>
+    <BitButton Id="tpl-loading" IsLoading="_tplLoading" LoadingLabel="Announced">
+        <PrimaryTemplate>Click me</PrimaryTemplate>
+        <LoadingTemplate>
+            <div class="tpl-custom-loading">Wait...</div>
+        </LoadingTemplate>
+    </BitButton>
+    <BitButton Id="btn-toggle-tpl-loading" Variant="BitVariant.Text" OnClick="() => _tplLoading = !_tplLoading">Toggle</BitButton>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitButton Id="evt-click" OnClick="EventClick">Click me</BitButton>
+    <span id="evt-clicks">@_eventClicks</span>
+    <span id="evt-last-arg">@_eventLastArg</span>
+    <div id="evt-parent" @onclick="() => _parentClicks++">
+        <BitButton Id="evt-stop" StopPropagation OnClick="() => _childClicks++">With StopPropagation</BitButton>
+        <BitButton Id="evt-bubble" OnClick="() => _childClicks++">Without StopPropagation</BitButton>
+    </div>
+    <span id="evt-child-clicks">@_childClicks</span>
+    <span id="evt-parent-clicks">@_parentClicks</span>
+</E2ESection>
+
+<E2ESection Id="full-width" Title="FullWidth &amp; NoWrap">
+    <div id="fw-container" style="width: 400px;">
+        <BitButton Id="fw-btn" FullWidth IconName="@BitIconName.Save">Full width button</BitButton>
+        <BitButton Id="fw-off" IconName="@BitIconName.Save">Not full width</BitButton>
+    </div>
+    <div style="width: 200px;">
+        <BitButton Id="nowrap-btn" FullWidth NoWrap IconName="@BitIconName.Mail" SecondaryText="and every address it was also sent to">
+            Reply to everyone on this unusually long conversation
+        </BitButton>
+    </div>
+    <div style="width: 200px;">
+        <BitButton Id="wrap-btn" FullWidth IconName="@BitIconName.Mail" SecondaryText="and every address it was also sent to">
+            Reply to everyone on this unusually long conversation
+        </BitButton>
+    </div>
+</E2ESection>
+
+<E2ESection Id="fixed-color" Title="FixedColor">
+    <div style="padding: 8px;">
+        <BitButton Id="fixed-outline" FixedColor Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground">Fixed outline</BitButton>
+        <BitButton Id="notfixed-outline" Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground">Not fixed outline</BitButton>
+        <BitButton Id="fixed-text" FixedColor Variant="BitVariant.Text" Color="BitColor.TertiaryBackground">Fixed text</BitButton>
+        <BitButton Id="notfixed-text" Variant="BitVariant.Text" Color="BitColor.TertiaryBackground">Not fixed text</BitButton>
+        <BitButton Id="fixed-fill" FixedColor Variant="BitVariant.Fill" Color="BitColor.TertiaryBackground">Fixed fill</BitButton>
+    </div>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitButton Id="a11y-title" Title="Save your changes" IconName="@BitIconName.Save">Hover me</BitButton>
+    <BitButton Id="a11y-aria-label" AriaLabel="Close the dialog" IconName="@BitIconName.Cancel">X</BitButton>
+    <span id="a11y-extra">An author description</span>
+    <BitButton Id="a11y-desc" AriaDescription="SVG, 12 kilobytes" aria-describedby="a11y-extra">Download</BitButton>
+    <BitButton Id="a11y-hidden" AriaHidden>Hidden from AT</BitButton>
+    <BitButton Id="a11y-tabindex" TabIndex="-1">Not in tab order</BitButton>
+    <BitButton Id="btn-focus" Variant="BitVariant.Outline" OnClick="async () => await _focusTarget.FocusAsync()">Focus the next button</BitButton>
+    <BitButton Id="a11y-focus-target" @ref="_focusTarget" Color="BitColor.Success">Focus lands here</BitButton>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <input id="dis-before" aria-label="before" />
+    <BitButton Id="dis-focusable" Disabled Title="Pick a plan first" OnClick="() => _disabledClicks++"
+               @onmousedown="() => _disabledPageEvents++" @onkeydown="() => _disabledPageEvents++">Disabled (still focusable)</BitButton>
+    <BitButton Id="dis-native" Disabled AllowDisabledFocus="false" OnClick="() => _disabledClicks++">Disabled (skipped by Tab)</BitButton>
+    <input id="dis-after" aria-label="after" />
+    <span id="dis-clicks">@_disabledClicks</span>
+    <span id="dis-page-events">@_disabledPageEvents</span>
+    <br />
+    <BitButton Id="dis-toggle" Disabled="_toggleDisabled" OnClick="() => _toggleClicks++"
+               @onmousedown="() => _togglePageEvents++">Toggled</BitButton>
+    <BitButton Id="btn-toggle-disabled" Variant="BitVariant.Text" OnClick="() => _toggleDisabled = !_toggleDisabled">Toggle disabled</BitButton>
+    <span id="dis-toggle-clicks">@_toggleClicks</span>
+    <span id="dis-toggle-page-events">@_togglePageEvents</span>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="@_buttonParams">
+        <BitButton Id="params-inherit" IconName="@BitIconName.Save">Save</BitButton>
+        <BitButton Id="params-own" Color="BitColor.Error" Variant="BitVariant.Fill">Delete</BitButton>
+    </BitParams>
+    <BitButton Id="params-outside">Outside the cascade</BitButton>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style &amp; Class">
+    <BitButton Id="sc-style" Style="background-color: rgb(1, 2, 3); border-color: rgb(1, 2, 3);">Styled</BitButton>
+    <BitButton Id="sc-class" Class="e2e-custom-class">Classed</BitButton>
+    <BitButton Id="sc-styles" IconName="@BitIconName.Emoji" SecondaryText="Secondary"
+               Styles="@(new() { Root = "outline: 3px dotted rgb(9, 9, 9);", Icon = "color: rgb(255, 0, 0);", Container = "padding-left: 7px;", Primary = "color: rgb(0, 128, 0);", Secondary = "color: rgb(0, 0, 255);" })">
+        Primary
+    </BitButton>
+    <BitButton Id="sc-styles-loading" IsLoading LoadingLabel="Wait..."
+               Styles="@(new() { HiddenContent = "letter-spacing: 3px;", LoadingContainer = "padding-top: 5px;", Spinner = "border-top-color: rgb(218, 165, 32);", LoadingLabel = "color: rgb(255, 99, 71);" })">
+        Click me
+    </BitButton>
+    <BitButton Id="sc-classes" IconName="@BitIconName.Emoji" SecondaryText="Secondary"
+               Classes="@(new() { Root = "c-root", Icon = "c-icon", Container = "c-container", Primary = "c-primary", Secondary = "c-secondary" })">
+        Primary
+    </BitButton>
+    <BitButton Id="sc-classes-loading" IsLoading LoadingLabel="Sending..."
+               Classes="@(new() { HiddenContent = "c-hidden", LoadingContainer = "c-ldg", Spinner = "c-spinner", LoadingLabel = "c-label" })">
+        Click me
+    </BitButton>
+    <BitButton Id="sc-attrs" data-e2e="custom-attribute" HtmlAttributes="@(new() { ["data-from-dictionary"] = "yes" })">Attributes</BitButton>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div id="vars-ancestor" style="--bit-Button-radius: 0px; --bit-Button-background: rgb(10, 20, 30); --bit-Button-border-color: rgb(10, 20, 30); --bit-Button-color: rgb(250, 240, 230); --bit-Button-min-height: 50px; --bit-Button-font-size: 20px; --bit-Button-padding: 3px 30px; --bit-Button-gap: 13px; --bit-Button-icon-size: 25px; --bit-Button-border-width: 4px; --bit-Button-shadow: rgb(255, 0, 0) 0px 0px 0px 2px; --bit-Button-text-transform: uppercase; --bit-Button-letter-spacing: 2px; --bit-Button-font-weight: 700; --bit-Button-secondary-color: rgb(1, 100, 1); --bit-Button-secondary-font-size: 9px; --bit-Button-min-width: 222px;">
+        <BitButton Id="vars-default" IconName="@BitIconName.Emoji" SecondaryText="secondary">Restyled</BitButton>
+        <BitButton Id="vars-color" Color="BitColor.Error">Explicit color</BitButton>
+        <BitButton Id="vars-size" Size="BitSize.Small">Explicit size</BitButton>
+        <BitButton Id="vars-rounded" Rounded>Explicit rounded</BitButton>
+    </div>
+    <div id="vars-twins" style="--bit-Button-outline-border-color: rgb(200, 0, 0); --bit-Button-text-color: rgb(0, 0, 200); --bit-Button-fill-background: rgb(0, 150, 0);">
+        <BitButton Id="vars-twin-fill">Fill</BitButton>
+        <BitButton Id="vars-twin-outline" Variant="BitVariant.Outline">Outline</BitButton>
+        <BitButton Id="vars-twin-text" Variant="BitVariant.Text">Text</BitButton>
+    </div>
+    <div id="vars-states" style="--bit-Button-hover-background: rgb(0, 128, 0); --bit-Button-hover-color: rgb(255, 255, 0); --bit-Button-disabled-background: rgb(77, 77, 77); --bit-Button-spinner-color: rgb(255, 0, 255); --bit-Button-spinner-size: 30px;">
+        <BitButton Id="vars-hover">Hover me</BitButton>
+        <BitButton Id="vars-disabled" Disabled>Disabled</BitButton>
+        <BitButton Id="vars-spinner" IsLoading>Loading</BitButton>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitButton Id="rtl-ltr" IconName="@BitIconName.Emoji">Left to right</BitButton>
+    <BitButton Id="rtl-explicit" Dir="BitDir.Rtl" IconName="@BitIconName.Emoji">دکمه با آیکن</BitButton>
+    <BitButton Id="rtl-explicit-end" Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" IconPlacement="BitPlacement.End">دکمه با آیکن</BitButton>
+    <BitButton Id="rtl-loading" Dir="BitDir.Rtl" IsLoading LoadingLabel="در حال بارگذاری" />
+    <div dir="rtl">
+        <BitButton Id="rtl-inherited" IconName="@BitIconName.Emoji">دکمه با آیکن</BitButton>
+    </div>
+</E2ESection>
+
+<E2ESection Id="visibility" Title="Visibility">
+    <BitButton Id="vis-btn" Visibility="_visibility">Visibility</BitButton>
+    <span id="vis-after">after</span>
+    <BitButton Id="btn-vis-visible" Variant="BitVariant.Text" OnClick="() => _visibility = BitVisibility.Visible">Visible</BitButton>
+    <BitButton Id="btn-vis-hidden" Variant="BitVariant.Text" OnClick="() => _visibility = BitVisibility.Hidden">Hidden</BitButton>
+    <BitButton Id="btn-vis-collapsed" Variant="BitVariant.Text" OnClick="() => _visibility = BitVisibility.Collapsed">Collapsed</BitButton>
+</E2ESection>
+
+<E2ESection Id="rerender" Title="Re-render on parameter change">
+    <BitButton Id="rerender-btn" Variant="_rerenderVariant" Color="_rerenderColor" Size="_rerenderSize"
+               IconName="@_rerenderIcon" SecondaryText="@_rerenderSecondary">@_rerenderText</BitButton>
+    <BitButton Id="btn-rerender" Variant="BitVariant.Text" OnClick="ChangeRerender">Change parameters</BitButton>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <BitButton Id="mounted-btn" AutoLoading LoadingDelay="300" OnClick="MountedClick">Mounted</BitButton>
+    }
+    <BitButton Id="btn-unmount" Variant="BitVariant.Text" OnClick="() => _mounted = !_mounted">Toggle mount</BitButton>
+    <span id="mounted-done">@_mountedDone</span>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Reduced motion">
+    <BitButton Id="motion-default" IsLoading>Default</BitButton>
+    <BitButton Id="motion-forced" IsLoading ForceAnimation>ForceAnimation</BitButton>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string IconDataUrl = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><rect width='10' height='10' fill='red'/></svg>";
+
+    private int _basicClicks;
+
+    private bool _isLoading;
+    private int _loadingClicks;
+    private int _reclickableLoadingClicks;
+
+    private int _autoClicks;
+    private TaskCompletionSource _autoTcs = new();
+
+    private readonly List<bool> _reclickArgs = [];
+    private TaskCompletionSource _reclickTcs = new();
+
+    private bool _boundLoading;
+    private TaskCompletionSource _boundTcs = new();
+
+    private TaskCompletionSource _delayTcs = new();
+    private int _delayFastDone;
+
+    private int _hrefClicks;
+
+    private ButtonFormModel _formModel = new();
+    private int _validSubmits;
+    private int _invalidSubmits;
+    private int _formButtonClicks;
+    private readonly ButtonFormModel _extModel = new();
+    private int _extSubmits;
+
+    private bool _tplLoading;
+
+    private int _eventClicks;
+    private string _eventLastArg = "none";
+    private int _childClicks;
+    private int _parentClicks;
+
+    private BitButton _focusTarget = default!;
+
+    private int _disabledClicks;
+    private int _disabledPageEvents;
+    private bool _toggleDisabled = true;
+    private int _toggleClicks;
+    private int _togglePageEvents;
+
+    private readonly BitButtonParams[] _buttonParams =
+    [
+        new()
+        {
+            Size = BitSize.Small,
+            Rounded = true,
+            Variant = BitVariant.Outline,
+            Color = BitColor.Secondary,
+        }
+    ];
+
+    private BitVisibility _visibility;
+
+    private BitVariant _rerenderVariant = BitVariant.Fill;
+    private BitColor _rerenderColor = BitColor.Primary;
+    private BitSize _rerenderSize = BitSize.Medium;
+    private string? _rerenderIcon;
+    private string? _rerenderSecondary;
+    private string _rerenderText = "Before";
+
+    private bool _mounted = true;
+    private int _mountedDone;
+
+    private async Task AutoLoadingClick()
+    {
+        _autoClicks++;
+        _autoTcs = new();
+        await _autoTcs.Task;
+    }
+
+    private Task ReclickableClick(bool isLoading)
+    {
+        _reclickArgs.Add(isLoading);
+        if (isLoading is false) _reclickTcs = new();
+        return _reclickTcs.Task;
+    }
+
+    private void ReleaseReclick() => _reclickTcs.TrySetResult();
+
+    private async Task BoundClick()
+    {
+        _boundTcs = new();
+        await _boundTcs.Task;
+    }
+
+    private async Task DelaySlowClick()
+    {
+        _delayTcs = new();
+        await _delayTcs.Task;
+    }
+
+    private async Task DelayFastClick()
+    {
+        await Task.Delay(150);
+        _delayFastDone++;
+    }
+
+    private void ResetForm() => _formModel = new();
+
+    // Outlives the unmount the test triggers while it runs, so the button's AutoLoading run ends after the button
+    // is gone; the page says when it has.
+    private async Task MountedClick()
+    {
+        await Task.Delay(800);
+        _mountedDone++;
+        StateHasChanged();
+    }
+
+    private void EventClick(bool isLoading)
+    {
+        _eventClicks++;
+        _eventLastArg = isLoading.ToString();
+    }
+
+    private void ChangeRerender()
+    {
+        _rerenderVariant = BitVariant.Outline;
+        _rerenderColor = BitColor.Error;
+        _rerenderSize = BitSize.Large;
+        _rerenderIcon = BitIconName.Emoji;
+        _rerenderSecondary = "Now with a secondary line";
+        _rerenderText = "After";
+    }
+
+    private sealed class ButtonFormModel
+    {
+        [Required]
+        public string? RequiredText { get; set; }
+    }
+}

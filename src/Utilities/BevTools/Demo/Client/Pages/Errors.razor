@@ -1,0 +1,112 @@
+﻿@page "/errors"
+
+<PageTitle>Errors · BevTools</PageTitle>
+
+<div class="bb-intro">
+    <p class="bb-overline">Scenario · Errors</p>
+    <h1>Errors</h1>
+    <p class="bb-subtitle">
+        Each button produces a different kind of failure: in an event handler, after an <code>await</code>, while
+        rendering, in a child's <code>OnInitialized</code>, from an HTTP call, the same failure with another id in its
+        message each time, and two that only the browser sees - an image that does not load and a frame the page's
+        Content Security Policy refuses. BevTools → Errors shows the type, message and stack of each, the component,
+        and what happened right before it.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> The failures</h3>
+    @if (RendererInfo.Name == "Server")
+    {
+        <p class="bb-card-desc">
+            On the <strong>Server</strong> renderer an unhandled exception would terminate the circuit, and this BevTools
+            session with it, so here the scenarios run inside a page-level <code>ErrorBoundary</code>: <em>Throw in event
+            handler</em>, <em>Throw after await</em>, <em>HTTP 404</em> and <em>Open a missing order</em> are caught by it
+            instead (<em>Recover</em> brings the buttons back). On WebAssembly they stay unhandled.
+        </p>
+    }
+    else if (RendererInfo.IsInteractive)
+    {
+        <p class="bb-card-desc">
+            On <strong>@RendererInfo.Name</strong> <em>Throw in event handler</em>, <em>Throw after await</em>,
+            <em>HTTP 404</em> and <em>Open a missing order</em> are genuinely unhandled: Blazor shows its error bar at the
+            bottom of the page and the app keeps running.
+        </p>
+    }
+    <p class="bb-card-desc">
+        <em>Throw during render</em> and <em>Child throws in OnInitialized</em> happen inside an <code>ErrorBoundary</code>
+        of their own on every renderer; <em>Reset</em> recovers it.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span><RendererStatus /></div>
+
+        @if (RendererInfo.Name == "Server")
+        {
+            <ErrorBoundary @ref="_pageBoundary">
+                <ChildContent>
+                    <ErrorScenarios />
+                </ChildContent>
+                <ErrorContent Context="ex">
+                    <div class="bb-note bb-note-danger">
+                        <p>The page-level ErrorBoundary caught: @ex.GetType().Name — @ex.Message</p>
+                        <div class="bb-toolbar"><button type="button" class="btn btn-secondary" @onclick="() => _pageBoundary?.Recover()">Recover</button></div>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
+        }
+        else
+        {
+            <ErrorScenarios />
+        }
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Errors: where it came from</h3>
+    <p class="bb-card-desc">
+        The <strong>Errors</strong> panel lists each error with its source - where it was caught: a render, an
+        <code>ErrorBoundary</code>, an HTTP call, a JS call, the browser or the framework's log - and its component.
+        Select one for the rest: the stack trace, the source location (<code>ErrorScenarios.razor</code> and the line,
+        from the app's symbols), the UI event that preceded it and the last ten timeline entries before it - the click,
+        the renders and the requests that led there. The same error repeated within a minute is one row with a count.
+    </p>
+    <div class="bb-try">
+        <a href="problems#problem-6" class="btn btn-outline">Problem 6 →</a>
+        <a href="interop" class="btn btn-outline">JS errors: JS interop →</a>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Errors → Groups: one problem, many messages</h3>
+    <p class="bb-card-desc">
+        Press <em>Open a missing order</em> three times (on Server, <em>Recover</em> in between). Each message names
+        another order, so the list has three rows: <em>Order 4711 was not found.</em>, <em>Order 1302 was not
+        found.</em>… <em>Groups</em> shows them as one problem - <em>Order {n} was not found.</em> - with how many
+        occurrences and different messages, the components and the source location; select it for its errors.
+        <strong>Diagnostics</strong> reports a <em>repeated error</em>: <em>… occurred 3 times with 3 different
+        messages</em>.
+    </p>
+    <div class="bb-try">
+        <a href="problems#problem-20" class="btn btn-outline">Problem 20 →</a>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Failures only the browser sees</h3>
+    <p class="bb-card-desc">
+        <em>Load a missing image</em> requests an address the server does not have, and <em>Embed a frame the CSP
+        forbids</em> adds a frame that this site's Content Security Policy (<code>frame-src 'none'</code>) refuses before
+        anything is requested. Neither reaches .NET as an exception; the browser bridge reports both. Errors lists the
+        first with source <em>resource</em> - <em>Failed to load &lt;img&gt;</em> and its address - and the second with
+        source <em>csp</em>, naming the directive that refused it. In a real app these are a <code>_framework</code>
+        file that did not load, or a policy without <code>'wasm-unsafe-eval'</code> stopping Blazor WebAssembly.
+    </p>
+    <div class="bb-try">
+        <a href="problems#problem-24" class="btn btn-outline">Problem 24 →</a>
+    </div>
+</div>
+
+@code {
+    private ErrorBoundary? _pageBoundary;
+}

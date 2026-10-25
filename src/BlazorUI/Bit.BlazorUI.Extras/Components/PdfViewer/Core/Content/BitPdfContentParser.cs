@@ -9,9 +9,19 @@ namespace Bit.BlazorUI;
 /// </summary>
 public sealed class BitPdfContentParser
 {
+    // Nesting limit for array/dictionary operands, matching BitPdfParser's. Each level
+    // is one recursive ReadArray/ReadDict frame, so hostile content of 100000 '['
+    // would otherwise overflow the stack - an uncatchable crash of the whole process.
+    // Deeper levels are skipped (iteratively) and read as empty, so the rest of the
+    // stream still parses.
+    private const int MaxDepth = 512;
+
     private readonly BitPdfLexer _lexer;
+    private int _depth;
 
     public BitPdfContentParser(byte[] content) => _lexer = new BitPdfLexer(new BitPdfStream(content));
+
+    internal BitPdfContentParser(BitPdfBaseStream content) => _lexer = new BitPdfLexer(content);
 
     /// <summary>Reads all operations from the content stream.</summary>
     public List<BitPdfOperation> Parse()
@@ -72,6 +82,25 @@ public sealed class BitPdfContentParser
     private List<object?> ReadArray()
     {
         var array = new List<object?>();
+        if (_depth >= MaxDepth)
+        {
+            SkipNested();
+            return array;
+        }
+        _depth++;
+        try
+        {
+            ReadArrayItems(array);
+        }
+        finally
+        {
+            _depth--;
+        }
+        return array;
+    }
+
+    private void ReadArrayItems(List<object?> array)
+    {
         while (true)
         {
             object token = _lexer.GetObj();
@@ -83,17 +112,67 @@ public sealed class BitPdfContentParser
             {
                 array.Add(ReadArray());
             }
+            // A dictionary inside an array (a property list among the operands of BDC) is one element, not the
+            // delimiters, keys and values it is written with.
+            else if (token is BitPdfCmd { Value: "<<" })
+            {
+                array.Add(ReadDict());
+            }
             else
             {
                 array.Add(token);
             }
         }
-        return array;
     }
 
     private BitPdfDict ReadDict()
     {
         var dict = new BitPdfDict();
+        if (_depth >= MaxDepth)
+        {
+            SkipNested();
+            return dict;
+        }
+        _depth++;
+        try
+        {
+            ReadDictEntries(dict);
+        }
+        finally
+        {
+            _depth--;
+        }
+        return dict;
+    }
+
+    /// <summary>
+    /// Consumes the rest of an array or dictionary nested past <see cref="MaxDepth"/>
+    /// without recursing: counts openers and closers until the one already opened is
+    /// closed, or the stream ends.
+    /// </summary>
+    private void SkipNested()
+    {
+        int open = 1;
+        while (open > 0)
+        {
+            object token = _lexer.GetObj();
+            if (ReferenceEquals(token, BitPdfPrimitives.EOF))
+            {
+                return;
+            }
+            if (token is BitPdfCmd { Value: "[" or "<<" })
+            {
+                open++;
+            }
+            else if (token is BitPdfCmd { Value: "]" or ">>" })
+            {
+                open--;
+            }
+        }
+    }
+
+    private void ReadDictEntries(BitPdfDict dict)
+    {
         while (true)
         {
             object token = _lexer.GetObj();
@@ -119,7 +198,6 @@ public sealed class BitPdfContentParser
                 dict.Set(key.Value, value);
             }
         }
-        return dict;
     }
 
     private BitPdfOperation ReadInlineImage()
@@ -162,7 +240,57 @@ public sealed class BitPdfContentParser
     {
         // After "ID" exactly one whitespace byte separates the keyword from data.
         BitPdfBaseStream stream = _lexer.Stream;
-        var buffer = ((BitPdfStream)stream).Buffer;
+        if (stream.ByteSource is { } source && source.TryGetContiguous(out var memory))
+        {
+            return ReadInlineImageData(dict, memory.Span[..stream.End]);
+        }
+
+        int pos = _lexer.Pos - 1;
+        stream.Pos = pos;
+        if (stream.PeekByte() == 0x0D) stream.Skip();
+        if (stream.PeekByte() is 0x20 or 0x0A) stream.Skip();
+
+        int start = stream.Pos;
+        int rawLen = UnfilteredLength(dict);
+        bool knownLength = rawLen >= 0 && rawLen <= stream.End - start;
+        int scanFrom = knownLength ? start + rawLen : start;
+        int previous = -1;
+        if (scanFrom > stream.Start)
+        {
+            stream.Pos = scanFrom - 1;
+            previous = stream.GetByte();
+        }
+        stream.Pos = scanFrom;
+
+        for (int i = scanFrom; i < stream.End - 1; i++)
+        {
+            int value = stream.GetByte();
+            if (value == 'E' && (i == stream.Start || IsWhitespaceByte(previous))
+                && stream.PeekByte() == 'I')
+            {
+                stream.Skip();
+                int after = stream.PeekByte();
+                if (after == -1 || IsWhitespaceByte(after))
+                {
+                    _lexer.Seek(i + 2);
+                    int length = rawLen >= 0 ? rawLen : i - start;
+                    if (length > stream.End - start)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(rawLen));
+                    }
+                    return stream.GetByteRange(start, start + length);
+                }
+                stream.Pos = i + 1;
+            }
+            previous = value;
+        }
+
+        _lexer.Seek(stream.End);
+        return stream.GetByteRange(start, stream.End);
+    }
+
+    private byte[] ReadInlineImageData(BitPdfDict dict, ReadOnlySpan<byte> buffer)
+    {
         int pos = _lexer.Pos - 1; // current char position
 
         // Skip the whitespace after ID. A single space or LF is standard, but
@@ -182,7 +310,8 @@ public sealed class BitPdfContentParser
         // so we can skip straight past it and avoid a false "EI" match inside
         // binary sample data.
         int rawLen = UnfilteredLength(dict);
-        int scanFrom = rawLen >= 0 && start + rawLen <= buffer.Length ? start + rawLen : start;
+        bool knownLength = rawLen >= 0 && rawLen <= buffer.Length - start;
+        int scanFrom = knownLength ? start + rawLen : start;
 
         // Scan for the "EI" delimiter surrounded by whitespace.
         for (int i = scanFrom; i + 1 < buffer.Length; i++)
@@ -194,15 +323,15 @@ public sealed class BitPdfContentParser
                 int end = i;
                 _lexer.Seek(i + 2);
                 int len = rawLen >= 0 ? rawLen : end - start;
-                return buffer[start..(start + len)];
+                return buffer.Slice(start, len).ToArray();
             }
         }
 
         _lexer.Seek(buffer.Length);
-        return buffer[start..];
+        return buffer[start..].ToArray();
     }
 
-    private static bool IsWhitespaceByte(byte b) => b is 0x00 or 0x09 or 0x0A or 0x0C or 0x0D or 0x20;
+    private static bool IsWhitespaceByte(int b) => b is 0x00 or 0x09 or 0x0A or 0x0C or 0x0D or 0x20;
 
     /// <summary>
     /// The exact byte length of an <em>unfiltered</em> inline image

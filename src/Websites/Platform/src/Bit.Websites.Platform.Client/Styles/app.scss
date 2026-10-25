@@ -298,14 +298,6 @@
     }
 }
 
-// Shared layout of the six Lcnc placeholder pages, which have no page-specific styling of their
-// own (replaces six identical per-page scss files).
-.lcnc-page-container {
-    width: 100%;
-    display: flex;
-    flex-flow: column;
-}
-
 * {
     box-sizing: border-box;
     font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>The fallback parser: gathers a paragraph and detects setext headings.</summary>
 public sealed class BitMarkdownParagraphParser : BitMarkdownBlockParser

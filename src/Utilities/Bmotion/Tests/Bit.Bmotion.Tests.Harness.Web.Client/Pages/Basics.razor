@@ -1,0 +1,160 @@
+﻿@page "/basics"
+
+@* The <Bmotion> element itself: what it injects into the authored element, the enter animation, re-animating
+   on a parameter change, and the value shapes a target can carry (numbers, keyframes, colours, sizes, SVG). *@
+
+<HarnessHeader Title="Basics" Ready="Ready" OnLog="BindLog" />
+
+<h2>Enter</h2>
+<section class="row">
+    <Bmotion Initial="Bm.To(opacity: 0, x: -40)"
+             Animate="Bm.To(opacity: 1, x: 0)"
+             Transition="Bm.Tween(0.4)"
+             OnAnimationStart='_ => Log("enter:start")'
+             OnAnimationComplete='_ => Log("enter:complete")'>
+        <div id="enter" class="box"></div>
+    </Bmotion>
+
+    @* Initial="false": no enter animation - the element mounts already at its Animate state. *@
+    <Bmotion Initial="false"
+             Animate="Bm.To(opacity: 0.5, x: 50)"
+             Transition="Bm.Tween(5)"
+             OnAnimationComplete='_ => Log("no-initial:complete")'>
+        <div id="no-initial" class="box"></div>
+    </Bmotion>
+
+    @* No Initial at all: the element starts from its natural (CSS) state and animates to the target. *@
+    <Bmotion Animate="Bm.To(scale: 0.5)"
+             Transition="Bm.Tween(0.3)"
+             OnAnimationComplete='_ => Log("natural:complete")'>
+        <div id="natural" class="box"></div>
+    </Bmotion>
+</section>
+
+<h2>Parameter change</h2>
+<section class="row">
+    <button id="toggle-btn" @onclick="() => Change(() => _toggled = !_toggled)">toggle</button>
+    <Bmotion Animate="Bm.To(x: _toggled ? 120 : 0)"
+             Transition="Bm.Tween(0.3)"
+             OnAnimationComplete='_ => Log("toggle:complete")'>
+        <div id="toggle" class="box"></div>
+    </Bmotion>
+
+    @* A re-render that produces an equal target must not restart anything. *@
+    <button id="rerender-btn" @onclick="() => Change(() => _renders++)">re-render (@_renders)</button>
+    <Bmotion Animate="Bm.To(opacity: 0.8)"
+             Transition="Bm.Tween(0.2)"
+             OnAnimationStart='_ => Log("stable:start")'>
+        <div id="stable" class="box"></div>
+    </Bmotion>
+</section>
+
+<h2>Value shapes</h2>
+@* Started by #play, so a test sees each animation from its first frame. *@
+<section class="row">
+    <button id="play" @onclick="() => Change(() => _play = true)">play</button>
+
+    <Bmotion Animate="_play ? Bm.To(scale: [1, 1.6, 1]) : null"
+             Transition="Bm.Tween(0.8, BmEase.Linear)"
+             OnAnimationComplete='_ => Log("keyframes:complete")'>
+        <div id="keyframes" class="box"></div>
+    </Bmotion>
+
+    <Bmotion Animate="Bm.To(rotate: [0, 360])"
+             Transition="Bm.Tween(1, BmEase.Linear, repeat: BmRepeat.Forever)">
+        <div id="forever" class="small"></div>
+    </Bmotion>
+
+    <Bmotion Initial='Bm.To(backgroundColor: "rgb(255, 0, 0)")'
+             Animate='_play ? Bm.To(backgroundColor: "rgb(0, 0, 255)") : null'
+             Transition="Bm.Tween(1, BmEase.Linear)"
+             OnAnimationComplete='_ => Log("color:complete")'>
+        <div id="color" class="box"></div>
+    </Bmotion>
+
+    <Bmotion Initial='Bm.To(width: "60px")'
+             Animate='_play ? Bm.To(width: "200px") : null'
+             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             OnAnimationComplete='_ => Log("size:complete")'>
+        <div id="size" class="box"></div>
+    </Bmotion>
+
+    <Bmotion Animate="_play ? Bm.To(x: 100) : null"
+             Transition="Bm.Spring(stiffness: 300, damping: 8)"
+             OnAnimationComplete='_ => Log("spring:complete")'>
+        <div id="spring" class="small"></div>
+    </Bmotion>
+
+    <Bmotion Animate='_play ? Bm.To(cssVars: new() { ["--harness-gap"] = "12px" }, css: new() { ["border-top-width"] = "4px", ["borderTopStyle"] = "solid" }) : null'
+             Transition="Bm.Tween(0.2)"
+             OnAnimationComplete='_ => Log("css:complete")'>
+        <div id="css" class="small"></div>
+    </Bmotion>
+
+    @* OnUpdate: a per-frame callback with the CSS flushed that frame. *@
+    <Bmotion Animate="_play ? Bm.To(x: 60) : null"
+             Transition="Bm.Tween(0.5, BmEase.Linear)"
+             OnUpdate="OnFrame"
+             OnAnimationComplete='_ => Log("onupdate:complete")'>
+        <div id="onupdate" class="small"></div>
+    </Bmotion>
+    <Readout @ref="_frames" Id="onupdate-frames" Initial="0" />
+</section>
+
+<h2>Injection</h2>
+<section class="row">
+    @* An authored id is adopted as the engine id; an authored style is merged after the engine's, so it wins. *@
+    <Bmotion Initial="Bm.To(opacity: 0.2)" Animate="Bm.To(opacity: 0.7)" Transition="Bm.Tween(0.2)">
+        <div id="authored" class="box" style="border: 3px solid rgb(0, 128, 0); opacity: 0.2" data-extra="kept"></div>
+    </Bmotion>
+
+    @* The Id parameter wins over an authored id. *@
+    <Bmotion Id="param-id" Animate="Bm.To(opacity: 0.9)">
+        <div id="authored-but-ignored" class="box"></div>
+    </Bmotion>
+
+    @* No id anywhere: the engine generates one. Extra roots after the first render unchanged. *@
+    <span id="generated-wrap">
+        <Bmotion Animate="Bm.To(opacity: 0.6)" Transition="Bm.Tween(0.2)">
+            <div class="box generated"></div>
+            <span class="second-root">second root</span>
+        </Bmotion>
+    </span>
+
+    @* TransformTemplate: keeps an authored transform in front of the animated one. *@
+    <Bmotion Animate="Bm.To(x: 100)"
+             Transition="Bm.Tween(0.2)"
+             TransformTemplate='(_, generated) => $"translateY(10px) {generated}"'
+             OnAnimationComplete='_ => Log("template:complete")'>
+        <div id="template" class="small"></div>
+    </Bmotion>
+
+    @* SVG path drawing: pathLength="1" is injected so normalised dash coordinates work. *@
+    <svg width="120" height="60" viewBox="0 0 120 60">
+        <Bmotion Initial="Bm.To(pathLength: 0)"
+                 Animate="Bm.To(pathLength: 1)"
+                 Transition="Bm.Tween(0.4)"
+                 OnAnimationComplete='_ => Log("svg:complete")'>
+            <path id="svg-path" d="M 5 30 L 115 30" stroke="black" stroke-width="4" fill="none" />
+        </Bmotion>
+    </svg>
+</section>
+
+<h2>Ordinary component</h2>
+<section class="row">
+    <DispatcherProbe />
+</section>
+
+@code {
+    private bool _toggled;
+    private bool _play;
+    private int _renders;
+    private int _frameCount;
+    private Readout _frames = default!;
+
+    private void OnFrame(IReadOnlyDictionary<string, string> styles)
+    {
+        if (styles.ContainsKey("transform")) _frameCount++;
+        _frames.Set(_frameCount);
+    }
+}

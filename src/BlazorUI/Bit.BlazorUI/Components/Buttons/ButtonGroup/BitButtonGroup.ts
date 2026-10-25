@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class ButtonGroup {
         // A navigable button group owns the arrow keys along its own axis, plus Home and End: they move
         // the focus from button to button. The browser's default for those keys is to scroll the page,
@@ -64,5 +64,6 @@ namespace BitBlazorUI {
         }
     }
 
+    // bit-trim: owners BitButtonGroup
     ButtonGroup.install();
 }

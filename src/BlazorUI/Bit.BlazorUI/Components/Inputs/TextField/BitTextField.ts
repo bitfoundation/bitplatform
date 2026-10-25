@@ -1,10 +1,12 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class TextField {
         // The three concerns of a text field (the multiline behaviors, the ghost text and the IME guard)
         // are wired independently and can be turned on and off at any point in the life of a component,
         // so each of them owns its AbortController instead of sharing a single one.
         private static _abortControllers: { [key: string]: { [feature: string]: AbortController } } = {};
         private static _ghostTexts: { [key: string]: string } = {};
+        // The suggestion Escape rejected, kept away until the field is typed into or a different one arrives.
+        private static _rejectedGhostTexts: { [key: string]: string } = {};
         private static _maxRows: { [key: string]: number | null } = {};
         private static _inputElements: { [key: string]: HTMLInputElement } = {};
         private static _resizeObservers: { [key: string]: ResizeObserver } = {};
@@ -73,7 +75,7 @@ namespace BitBlazorUI {
                     // Enter commits the candidate of an input method editor, so it must keep its meaning
                     // while a composition session is running. The keyCode check covers the browsers that
                     // report the legacy 229 instead of setting isComposing.
-                    if (e.isComposing || e.keyCode === 229) return;
+                    if (Utils.isComposingKey(e)) return;
 
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -189,7 +191,7 @@ namespace BitBlazorUI {
             let isComposing = false;
 
             const composing = (e: KeyboardEvent | InputEvent) =>
-                isComposing || e.isComposing || (e as KeyboardEvent).keyCode === 229;
+                isComposing || Utils.isComposingKey(e);
 
             inputElement.addEventListener('compositionstart', () => {
                 isComposing = true;
@@ -276,6 +278,35 @@ namespace BitBlazorUI {
 
             inputElement.addEventListener('blur', () => {
                 justFocused = false;
+            }, { signal });
+        }
+
+        // The frame of the field shows a text cursor across its whole width, so a press on the chrome inside it -
+        // the prefix, the suffix, the decorative icon, the busy indicator - puts the caret in the input instead
+        // of doing nothing wherever the input itself does not reach. It is handled here rather than in .NET, where
+        // every press would cost a round trip and a render just to move the focus. The press is also kept from
+        // moving the focus in the first place, so the input never loses the selection it already had to an
+        // element that cannot hold one. The listener sits on the root and looks the input up on every press,
+        // since the Multiline mode swaps the element between an input and a textarea.
+        public static setupChromeFocus(id: string, rootElement: HTMLElement) {
+            if (!rootElement) return;
+
+            const signal = TextField.getSignal(id, 'chromeFocus');
+
+            rootElement.addEventListener('mousedown', e => {
+                const target = e.target as Element | null;
+
+                // The buttons inside the frame (clear, reveal, an icon with an action) keep their own press.
+                if (!target || target.closest('button')) return;
+
+                if (!target.closest('.bit-tfl-pre, .bit-tfl-suf, .bit-tfl-lod, .bit-tfl-ico')) return;
+
+                const input = rootElement.querySelector<HTMLInputElement | HTMLTextAreaElement>('.bit-tfl-inp');
+
+                if (!input || input.disabled) return;
+
+                e.preventDefault();
+                input.focus();
             }, { signal });
         }
 
@@ -369,15 +400,19 @@ namespace BitBlazorUI {
                 dotnetObj.invokeMethodAsync('OnGhostTextAccepted', accepted);
             };
 
-            // On every keystroke: immediately clear the ghost suggestion.
+            // On every keystroke: immediately clear the ghost suggestion, and forget the one Escape rejected, which
+            // was a rejection of the suggestion for the text as it stood.
             // The overlay is JS-owned; Blazor never touches its content.
-            inputElement.addEventListener('input', clearGhost, { signal });
+            inputElement.addEventListener('input', () => {
+                delete TextField._rejectedGhostTexts[id];
+                clearGhost();
+            }, { signal });
 
             // Tab/Enter: accept the ghost suggestion.
             inputElement.addEventListener('keydown', e => {
                 // Tab and Enter belong to the input method editor while a composition session is running:
                 // they move through and commit its candidates, so the suggestion is left alone.
-                if (e.isComposing || e.keyCode === 229) return;
+                if (Utils.isComposingKey(e)) return;
 
                 const isAcceptKey = e.key === 'Tab' || e.key === 'Enter';
 
@@ -395,6 +430,18 @@ namespace BitBlazorUI {
                 }
 
                 if (!hasGhost()) return;
+
+                // Escape rejects the suggestion and nothing else: the key is kept from the handlers of the
+                // component, so it neither clears what was typed (ClearOnEscape) nor closes a dialog around
+                // the field, the way an open list closes before anything around it hears the key.
+                // The suggestion stays rejected through the renders that follow (the keyup of the very press is one),
+                // which push it again for a field typed into (see setGhostText).
+                if (e.key === 'Escape') {
+                    e.stopPropagation();
+                    TextField._rejectedGhostTexts[id] = TextField._ghostTexts[id];
+                    clearGhost();
+                    return;
+                }
 
                 // A modifier on its own (Shift before a capital letter, Ctrl before a shortcut) does not
                 // change the value, so the suggestion survives it instead of blinking out of existence.
@@ -429,7 +476,16 @@ namespace BitBlazorUI {
 
         // Called by C# (OnAfterRenderAsync) whenever the GhostText parameter changes.
         // Stores the new ghost text and refreshes the overlay to show value + ghost.
+        // A suggestion Escape rejected is not shown again by the renders that keep pushing the same one; a different
+        // suggestion, or the same one after the field is typed into, is.
         public static setGhostText(id: string, ghostText: string) {
+            const rejected = TextField._rejectedGhostTexts[id];
+            if (rejected !== undefined && rejected === (ghostText ?? '')) {
+                ghostText = '';
+            } else {
+                delete TextField._rejectedGhostTexts[id];
+            }
+
             TextField._ghostTexts[id] = ghostText ?? '';
 
             const inputElement = TextField._inputElements[id];
@@ -490,8 +546,11 @@ namespace BitBlazorUI {
 
             delete TextField._abortControllers[id];
             delete TextField._ghostTexts[id];
+            delete TextField._rejectedGhostTexts[id];
             delete TextField._maxRows[id];
             delete TextField._inputElements[id];
         }
     }
 }
+
+// bit-lazy: teardown TextField.dispose TextField.disposeFeature

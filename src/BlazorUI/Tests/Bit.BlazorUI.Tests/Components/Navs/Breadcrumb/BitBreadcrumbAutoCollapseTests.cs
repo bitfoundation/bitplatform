@@ -1,7 +1,9 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Navs.Breadcrumb;
@@ -191,6 +193,83 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
         // while the trail is expanded even though it no longer fits the room it has.
         component.WaitForAssertion(() => Assert.AreEqual(4, GetRenderedItemCount(component)));
         Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+    }
+
+    [TestMethod]
+    public async Task BitBreadcrumbShouldTruncateTheLastItemOnceNothingIsLeftToCollapse()
+    {
+        var handler = Context.JSInterop.Setup<BitOverflowMetrics?>("BitBlazorUI.Utils.getOverflowMetrics", _ => true);
+        handler.SetResult(new BitOverflowMetrics { Available = 800, Content = 460, Widths = Widths });
+
+        List<BitBreadcrumbItem> items =
+        [
+            new() { Text = "Folder 1", Href = "/folder-1" },
+            new() { Text = "Folder 2", Href = "/folder-2" },
+            new() { Text = "Folder 3", Href = "/folder-3" },
+            new() { Text = "A very long name of the current folder", Href = "/folder-4", IsSelected = true }
+        ];
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.AutoCollapse, true);
+        });
+
+        // While there is something left to collapse nothing truncates: the collapsing measures natural widths.
+        component.WaitForAssertion(() => Assert.AreEqual(4, GetRenderedItemCount(component)));
+        Assert.IsFalse(component.Find(".bit-brc").ClassList.Contains("bit-brc-trc"));
+        Assert.IsNull(component.FindAll(".bit-brc-itm")[^1].GetAttribute("title"));
+
+        handler.SetResult(new BitOverflowMetrics { Available = 150, Content = 460, Widths = Widths });
+
+        await component.InvokeAsync(() => component.Instance._OnResize(new ContentRect()));
+
+        // Down to the one item it may not drop, the last step gives up width instead and its text becomes the
+        // tooltip, while the rows of the overflow menu, which are not cut off, carry none.
+        component.WaitForAssertion(() => Assert.AreEqual(1, GetRenderedItemCount(component)));
+        Assert.IsTrue(component.Find(".bit-brc").ClassList.Contains("bit-brc-trc"));
+        Assert.AreEqual("A very long name of the current folder", component.Find(".bit-brc-icn .bit-brc-itm").GetAttribute("title"));
+        Assert.IsTrue(component.FindAll(".bit-brc-cal .bit-brc-ofi").All(i => i.HasAttribute("title") is false));
+
+        // A trail that wraps has no single line to keep, so nothing in it truncates.
+        component.Render(parameters => parameters.Add(p => p.Wrap, true));
+
+        component.WaitForAssertion(() => Assert.AreEqual(4, GetRenderedItemCount(component)));
+        Assert.IsFalse(component.Find(".bit-brc").ClassList.Contains("bit-brc-trc"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldHandItsResizeObserverAReferenceOfItsOwnEachTimeAutoCollapseComesBack()
+    {
+        // The script's unregisterResize disposes the reference it is handed, so the observer must never be handed the
+        // one the overflow callout answers through: turning AutoCollapse off and on again would leave every later
+        // callback of the breadcrumb going to a released reference.
+        var handler = Context.JSInterop.Setup<BitOverflowMetrics?>("BitBlazorUI.Utils.getOverflowMetrics", _ => true);
+        handler.SetResult(new BitOverflowMetrics { Available = 800, Content = 460, Widths = Widths });
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.AutoCollapse, true);
+        });
+
+        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Observers.registerResize"]));
+        var firstObserverRef = Context.JSInterop.Invocations["BitBlazorUI.Observers.registerResize"][0].Arguments[2];
+
+        component.Render(parameters => parameters.Add(p => p.AutoCollapse, false));
+
+        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Observers.unregisterResize"]));
+        Assert.AreSame(firstObserverRef, Context.JSInterop.Invocations["BitBlazorUI.Observers.unregisterResize"][0].Arguments[2]);
+
+        component.Render(parameters => parameters.Add(p => p.AutoCollapse, true));
+
+        component.WaitForAssertion(() => Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Observers.registerResize"]));
+        var secondObserverRef = (DotNetObjectReference<BitBreadcrumb<BitBreadcrumbItem>>)Context.JSInterop.Invocations["BitBlazorUI.Observers.registerResize"][1].Arguments[2]!;
+
+        Assert.AreNotSame(firstObserverRef, secondObserverRef);
+        // The first one is released along with its observer, the second one is live.
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = ((DotNetObjectReference<BitBreadcrumb<BitBreadcrumbItem>>)firstObserverRef!).Value);
+        Assert.AreSame(component.Instance, secondObserverRef.Value);
     }
 
     private static int GetRenderedItemCount(IRenderedComponent<BitBreadcrumb<BitBreadcrumbItem>> component)

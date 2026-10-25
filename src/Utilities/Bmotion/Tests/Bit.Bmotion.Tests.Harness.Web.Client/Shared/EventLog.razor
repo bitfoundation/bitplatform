@@ -1,0 +1,23 @@
+﻿@* The page's event log: every Bmotion callback a harness page wires up lands here as one <li data-event>, in the
+   order it fired, so a test can wait for an event, count it and check what came before it. It re-renders only
+   itself (see HarnessPage). *@
+
+<ol id="log">
+    @foreach (var entry in _entries)
+    {
+        <li data-event="@entry">@entry</li>
+    }
+</ol>
+
+@code {
+    private readonly List<string> _entries = [];
+
+    public void Add(string entry) =>
+        // Through the dispatcher: a programmatic animation's continuation need not arrive on it, and the list is
+        // what the render enumerates.
+        _ = InvokeAsync(() =>
+        {
+            _entries.Add(entry);
+            StateHasChanged();
+        });
+}

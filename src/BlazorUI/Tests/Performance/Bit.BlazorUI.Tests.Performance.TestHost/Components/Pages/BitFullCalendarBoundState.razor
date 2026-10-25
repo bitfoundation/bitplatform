@@ -1,0 +1,144 @@
+﻿@page "/regression/fullcalendar-bound-state"
+
+<PageTitle>BitFullCalendar Bound State Regression</PageTitle>
+
+@* Calendars that open on a bound View, Mode or Date while the same parameter pass also syncs the views, the
+   resources or the read-only flag - each of which changes the state ahead of the bound value. Every section prints
+   what its binding holds and how many change callbacks it heard, so a test can tell that the calendar opened on the
+   bound value, never handed the binding another one, and still reports what the user changes afterwards. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitFullCalendar Bound State Regression</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+<section id="views">
+    <p>
+        View: <span class="bound">@_viewsView</span>
+        Pushed: <span class="pushed">@string.Join(",", _viewsPushed)</span>
+        OnViewChange: <span class="changes">@_viewsChanges</span>
+    </p>
+    <div>
+        <BitFullCalendar Views="_threeViews"
+                         View="_viewsView"
+                         ViewChanged="v => { _viewsPushed.Add(v); _viewsView = v; }"
+                         OnViewChange="() => _viewsChanges++" />
+    </div>
+</section>
+
+<section id="timeline">
+    <p>
+        Mode: <span class="bound">@_timelineMode</span>
+        Pushed: <span class="pushed">@string.Join(",", _timelinePushed)</span>
+        OnModeChange: <span class="changes">@_timelineChanges</span>
+    </p>
+    <div>
+        <BitFullCalendar Events="_events"
+                         Resources="_resources"
+                         Mode="_timelineMode"
+                         ModeChanged="m => { _timelinePushed.Add(m); _timelineMode = m; }"
+                         OnModeChange="() => _timelineChanges++" />
+    </div>
+</section>
+
+<section id="date">
+    <p>
+        Date: <span class="bound">@_date.ToString("yyyy-MM-dd")</span>
+        Expected: <span class="expected">@_expectedDate.ToString("yyyy-MM-dd")</span>
+        Pushed: <span class="pushed">@_datePushed</span>
+        Range: <span class="range">@_dateRange</span>
+        <button id="date-read" type="button" @onclick="ReadDateRange">Read range</button>
+    </p>
+    <div>
+        <BitFullCalendar @ref="_dateCalendar"
+                         Views="_twoViews"
+                         Date="_date"
+                         DateChanged="d => { _datePushed++; _date = d; }" />
+    </div>
+</section>
+
+<section id="readonly">
+    <p>
+        View: <span class="bound">@_readOnlyView</span>
+        Pushed: <span class="pushed">@string.Join(",", _readOnlyPushed)</span>
+    </p>
+    <div>
+        <BitFullCalendar ReadOnly
+                         View="_readOnlyView"
+                         ViewChanged="v => { _readOnlyPushed.Add(v); _readOnlyView = v; }" />
+    </div>
+</section>
+
+<section id="change">
+    <p>
+        View: <span class="bound">@_changeView</span>
+        Pushed: <span class="pushed">@string.Join(",", _changePushed)</span>
+        OnViewChange: <span class="changes">@_changeChanges</span>
+        @* The parent replacing its events and moving the bound view in the same render. *@
+        <button id="change-go" type="button" @onclick="ChangeEventsAndView">Change events and view</button>
+    </p>
+    <div>
+        <BitFullCalendar Events="_changeEvents"
+                         View="_changeView"
+                         ViewChanged="v => { _changePushed.Add(v); _changeView = v; }"
+                         OnViewChange="() => _changeChanges++" />
+    </div>
+</section>
+
+@code {
+    private string _status = "Loading";
+
+    private readonly IReadOnlyList<BitFullCalendarView> _threeViews = [BitFullCalendarView.Day, BitFullCalendarView.Week, BitFullCalendarView.Month];
+    private readonly IReadOnlyList<BitFullCalendarView> _twoViews = [BitFullCalendarView.Day, BitFullCalendarView.Week];
+
+    private readonly List<BitFullCalendarEvent> _events =
+    [
+        new() { Id = "a", Title = "Alpha", StartDate = DateTime.Today.AddHours(9), EndDate = DateTime.Today.AddHours(10), Resource = "r1" },
+    ];
+    private readonly List<BitFullCalendarResource> _resources = [new() { Id = "r1", Title = "Room 1" }];
+
+    private BitFullCalendarView _viewsView = BitFullCalendarView.Week;
+    private readonly List<BitFullCalendarView> _viewsPushed = [];
+    private int _viewsChanges;
+
+    private BitFullCalendarMode _timelineMode = BitFullCalendarMode.Timeline;
+    private readonly List<BitFullCalendarMode> _timelinePushed = [];
+    private int _timelineChanges;
+
+    // Captured once, so the page compares against the very date it bound.
+    private static readonly DateTime _expectedDate = DateTime.Today.AddDays(40);
+    private DateTime _date = _expectedDate;
+    private int _datePushed;
+    private string _dateRange = "";
+    private BitFullCalendar? _dateCalendar;
+
+    private BitFullCalendarView _readOnlyView = BitFullCalendarView.Week;
+    private readonly List<BitFullCalendarView> _readOnlyPushed = [];
+
+    private List<BitFullCalendarEvent>? _changeEvents;
+    private BitFullCalendarView _changeView = BitFullCalendarView.Month;
+    private readonly List<BitFullCalendarView> _changePushed = [];
+    private int _changeChanges;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _status = "Ready";
+            StateHasChanged();
+        }
+    }
+
+    private void ReadDateRange()
+    {
+        if (_dateCalendar is null) return;
+
+        var (start, end) = _dateCalendar.GetVisibleRange();
+        _dateRange = $"{start:yyyy-MM-dd}..{end:yyyy-MM-dd}";
+    }
+
+    private void ChangeEventsAndView()
+    {
+        _changeEvents = [new() { Id = "c", Title = "Changed", StartDate = DateTime.Today.AddHours(13), EndDate = DateTime.Today.AddHours(14) }];
+        _changeView = BitFullCalendarView.Week;
+    }
+}

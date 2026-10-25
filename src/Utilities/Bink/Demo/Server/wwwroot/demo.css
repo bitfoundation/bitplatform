@@ -1,0 +1,547 @@
+﻿/* ============================================================================================
+   Bink demo - the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is Bink's own - the editor frames the canvases sit in, their
+   toolbars and status bars, the colour swatches and the paper - and it is written against the
+   kit's --bb-* names, so everything around the canvases follows the light/dark theme with no rules
+   of its own for either.
+
+   The paper is the one deliberate exception. A drawing's background and its ink are content: they
+   are saved with the document and exported exactly as drawn, and the palettes offer dark inks
+   chosen for a light page. So every canvas but the landing page's sketch (see "The landing page's
+   live canvas" below) is a white sheet in both themes - the way a word processor keeps its page
+   white in dark mode - and whatever is printed ON the paper (a signature line, ruled lines, a
+   hint) takes the paper's own colours below rather than the theme's.
+   ============================================================================================ */
+
+:root {
+    --bink-paper: #FFFFFF;
+    --bink-paper-text: #5B6673;
+    --bink-paper-line: #8A96A3;
+    --bink-paper-rule: #CFDCEB;
+}
+
+/* ---------- The editor: a live sample whose rows run edge to edge ----------
+
+   Toolbars, the paper and the status bar are rows of one frame, separated by hairlines rather
+   than boxed one by one. The rows carry no background of their own, so the frame's rounded
+   corners are the only corners there are. The frame is a size container: a split editor (two
+   canvases, or a canvas and a panel) stacks when the frame, not the window, gets too narrow. */
+.bb-demo.bink-editor {
+    padding: 0;
+    margin-bottom: 2rem;
+    container: bink-editor / inline-size;
+}
+
+.bink-editor > * + *,
+.bink-peer > * + *,
+.bink-hero-live > * + * {
+    border-top: 1px solid var(--bb-border);
+}
+
+/* A row of controls. The kit's toolbar is the arrangement; this is the band it sits in. */
+.bb-toolbar.bink-toolbar {
+    min-height: 3rem;
+    margin: 0;
+    padding: .5rem .75rem;
+    gap: .5rem .625rem;
+}
+
+/* Buttons that belong together - history, view, layers, file - kept on one line where they fit. */
+.bink-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem;
+}
+
+/* The trailing group keeps to the end of the toolbar even when it wraps onto a line of its own,
+   where the spacer before it is left behind at the end of the line above. */
+.bink-toolbar > .bb-spacer + .bink-group {
+    margin-inline-start: auto;
+}
+
+/* The divider between groups. */
+.bink-sep {
+    width: 1px;
+    align-self: stretch;
+    margin-block: .25rem;
+    background: var(--bb-border);
+}
+
+/* An inline labelled control: the label, the control, and its value read back. */
+.bink-field {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-muted);
+    white-space: nowrap;
+}
+
+.bink-field input[type="range"] {
+    width: 6.5rem;
+}
+
+.bink-field input[type="text"] {
+    width: 14rem;
+    max-width: 50vw;
+}
+
+/* A short name (a layer's) and a small count (a star's points) need no more room than they hold. */
+.bink-field input.bink-layer-name {
+    width: 8rem;
+}
+
+.bink-field input[type="number"] {
+    width: 4.5rem;
+}
+
+.bink-field-value {
+    min-width: 3ch;
+    color: var(--bb-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.bink-field-value--wide {
+    min-width: 6ch;
+}
+
+/* A line of text in a toolbar: an instruction, or what the last action did. */
+.bink-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 0;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-muted);
+}
+
+.bink-hint strong {
+    color: var(--bb-text);
+}
+
+/* A link inside a sentence of a page's explanation is underlined: colour alone does not tell it from the words
+   around it (WCAG 1.4.1). */
+.bb-card-desc a:not(.btn),
+.bb-note a:not(.btn) {
+    text-decoration: underline;
+    text-underline-offset: .18em;
+}
+
+/* A destructive action - Clear, Delete - is an ordinary button whose label says so in the danger
+   colour. */
+.btn.bink-danger,
+.bb-icon-btn.bink-danger {
+    color: var(--bb-danger-text);
+}
+
+.btn.bink-danger:hover:not(:disabled),
+.bb-icon-btn.bink-danger:hover {
+    color: var(--bb-danger-text);
+    background: var(--bb-danger-soft);
+    border-color: color-mix(in srgb, var(--bb-danger) 45%, transparent);
+}
+
+/* A one-character button (zoom in, zoom out) kept square. */
+.btn.bink-btn-square {
+    min-width: 2rem;
+    padding-inline: .5rem;
+}
+
+/* The file pickers are labels styled as buttons; the input itself stays out of sight. */
+.bink-file-input {
+    display: none;
+}
+
+/* ---------- Colour swatches (Shared/ColorSwatches.razor) ----------
+
+   A swatch is a dab of ink on the paper: the fill is the ink itself, the gap around it is the
+   paper's white, and the hairline outside that comes from the theme. That is what keeps a black
+   ink readable on a dark toolbar - as it will be on the page - and a pale highlighter readable on
+   a light one. The selected swatch takes the brand ring. */
+.bink-swatches {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem;
+}
+
+.bink-swatch {
+    flex: none;
+    width: 1.625rem;
+    height: 1.625rem;
+    padding: 0;
+    border: 4px solid var(--bink-paper);
+    border-radius: var(--bb-radius-pill);
+    box-shadow: 0 0 0 1px var(--bb-border-strong);
+    cursor: pointer;
+    transition: box-shadow var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bink-swatch:hover {
+    box-shadow: 0 0 0 1px var(--bb-text-soft);
+}
+
+.bink-swatch[aria-pressed="true"],
+.bink-swatch[aria-pressed="true"]:hover {
+    box-shadow: 0 0 0 2px var(--bb-primary);
+}
+
+/* The kit's focus ring is an outline plus a ring shadow; the shadow here is the swatch's own
+   state, so only the outline is taken - pushed clear of it. */
+.bink-swatch:focus-visible {
+    outline: 2px solid var(--fl-stroke-focus-outer);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 1px var(--bb-border-strong);
+}
+
+.bink-swatch[aria-pressed="true"]:focus-visible {
+    box-shadow: 0 0 0 2px var(--bb-primary);
+}
+
+/* ---------- The paper ---------- */
+
+/* The row a canvas sits in. The canvas paints its document's background over all of it once it
+   is attached; until then (the prerendered page) this is what shows, so there is no flash of the
+   theme's colour where the paper is about to be. It is a stacking context of its own, so whatever
+   is printed over the canvas (the signature line, the rules, a hint) layers with the canvas's own
+   layers and nothing else. */
+.bink-surface {
+    position: relative;
+    isolation: isolate;
+    background: var(--bink-paper);
+}
+
+/* A hint printed on an empty sheet. It never takes the pointer. */
+.bink-surface-hint {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    pointer-events: none;
+    color: var(--bink-paper-text);
+    font-size: var(--fl-font-size-200);
+    text-align: center;
+}
+
+/* The signature line and its caption, printed on the form (Pages/Signature.razor). */
+.bink-signature-line {
+    position: absolute;
+    inset-inline: 24px;
+    bottom: 44px;
+    border-bottom: 1px solid var(--bink-paper-line);
+    pointer-events: none;
+}
+
+.bink-signature-caption {
+    position: absolute;
+    inset-inline-start: 24px;
+    bottom: 22px;
+    color: var(--bink-paper-text);
+    font-size: .8125rem;
+    pointer-events: none;
+}
+
+/* Ruled paper (Pages/Handwriting.razor). The rules are printed over the sheet rather than drawn
+   into the document - they are a writing aid, not part of the notes - and multiplied onto it, so
+   white paper shows them and dark ink is left as dark as it was. */
+.bink-ruled::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(to bottom,
+        transparent 0, transparent 35px, var(--bink-paper-rule) 35px, var(--bink-paper-rule) 36px);
+    background-position: 0 12px;
+    mix-blend-mode: multiply;
+}
+
+/* A rendering of a stored drawing: exports have a transparent background and dark ink, so they
+   are shown on paper in either theme. */
+.bink-paper {
+    padding: 1rem;
+    background: var(--bink-paper);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.bink-paper svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+/* The canvas's inline text editor is a <textarea>, and the kit dresses every textarea as a form
+   field - a minimum height, padding, a moving underline on focus. Sized and placed by the canvas
+   over the text it edits, it has to stay exactly the box the library draws, so it is handed back. */
+.bit-bink-canvas > textarea.bit-bink-text-editor,
+.bit-bink-canvas > textarea.bit-bink-text-editor:hover,
+.bit-bink-canvas > textarea.bit-bink-text-editor:focus-visible {
+    min-height: 0;
+    max-width: none;
+    padding: 0;
+    border: 1px solid Highlight;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    outline: none;
+    transition: none;
+}
+
+/* ---------- Status bar (Shared/CanvasStatus.razor) ---------- */
+
+.bink-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem 1rem;
+    padding: .5rem .875rem;
+    font-size: var(--fl-font-size-100);
+    line-height: 1.5;
+    color: var(--bb-text-muted);
+}
+
+.bink-status strong {
+    color: var(--bb-text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* A capability the canvas does not have: the kit's badge, untinted. */
+.bb-badge.bink-badge-off {
+    background: var(--bb-surface-2);
+    color: var(--bb-text-muted);
+}
+
+/* ---------- Split editors ---------- */
+
+/* Two panes side by side - two participants, or a drawing and what it was saved as. */
+.bink-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bink-peer {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.bink-peer + .bink-peer {
+    border-inline-start: 1px solid var(--bb-border);
+}
+
+/* The body of a pane that is not a canvas. */
+.bink-pane {
+    flex: 1;
+    padding: 1rem;
+}
+
+.bink-pane > .bb-params,
+.bink-pane > .bb-empty {
+    margin: 0;
+}
+
+/* A participant's name and colour (Pages/Collaboration.razor). The colour is theirs, so it is a
+   dot beside the name rather than the colour of the name. */
+.bink-participant {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+}
+
+.bink-participant-dot {
+    flex: none;
+    width: .625rem;
+    height: .625rem;
+    border-radius: var(--bb-radius-pill);
+}
+
+/* The other participants' cursors and live strokes (Shared/PresenceOverlay.razor). */
+.bink-presence {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    font-family: var(--bb-font-sans);
+}
+
+/* ---------- Document review (Pages/DocumentAnnotation.razor) ---------- */
+
+.bink-review {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 20rem);
+}
+
+.bink-review-panel {
+    min-width: 0;
+    max-height: 620px;
+    overflow: auto;
+    padding: 1rem;
+    border-inline-start: 1px solid var(--bb-border);
+    scrollbar-width: thin;
+}
+
+.bink-panel-title {
+    margin: 0 0 .75rem;
+    font-size: var(--fl-font-size-300);
+}
+
+.bink-annotations {
+    display: grid;
+    gap: .5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.bink-annotation {
+    padding: .625rem .75rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    box-shadow: var(--bb-shadow-card);
+}
+
+.bink-annotation.is-selected {
+    border-color: var(--bb-primary);
+    box-shadow: 0 0 0 1px var(--bb-primary);
+}
+
+.bink-annotation-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+}
+
+.bink-annotation-kind {
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text);
+}
+
+.bink-annotation-actions {
+    display: flex;
+    gap: .125rem;
+}
+
+.bink-annotation-text {
+    margin-top: .25rem;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-muted);
+    overflow-wrap: anywhere;
+}
+
+.bink-annotation textarea {
+    margin-top: .375rem;
+}
+
+/* ---------- Readouts ---------- */
+
+/* A serialized document or a message as it was sent: a code block that scrolls and wraps rather
+   than growing the page by the length of a stroke's point data. */
+.bb-code.bink-output {
+    max-height: 16rem;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* The editable stored document (Pages/SerializationPage.razor). */
+.bink-json {
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+    line-height: 1.5;
+}
+
+/* What a measurement covers, under its number (Pages/Performance.razor). */
+.bink-stat-detail {
+    font-size: var(--fl-font-size-100);
+    line-height: 1.45;
+    color: var(--bb-text-muted);
+}
+
+/* ---------- The landing page's live canvas ---------- */
+
+.bink-hero-live {
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border);
+}
+
+/* The one canvas that follows the theme instead of being a white sheet: it has a single pen and
+   nothing drawn on it is saved or exported, so there is no palette chosen for a light page to
+   keep. Its document has no background, so the frame's surface shows through, and its pen writes
+   in the theme's text colour, which Pages/Home.razor swaps - along with the ink already drawn -
+   whenever the theme changes. The canvas pixels themselves are never filtered. */
+.bink-hero-live .bink-surface {
+    background: none;
+}
+
+.bink-hero-live .bink-surface-hint {
+    color: var(--bb-text-muted);
+}
+
+/* ---------- Narrow editors ---------- */
+
+@container bink-editor (max-width: 44rem) {
+    /* Once a toolbar wraps onto several lines a divider ends up at the end of one of them, dividing
+       nothing; the groups' own spacing separates them instead. */
+    .bink-sep {
+        display: none;
+    }
+
+    .bink-pair,
+    .bink-review {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .bink-peer + .bink-peer {
+        border-inline-start: 0;
+        border-top: 1px solid var(--bb-border);
+    }
+
+    .bink-review-panel {
+        max-height: none;
+        border-inline-start: 0;
+        border-top: 1px solid var(--bb-border);
+    }
+}
+
+/* ---------- Forced colors ----------
+
+   The swatches and the participant dots ARE their colour - repainted with the system palette they
+   would all look the same - so they keep it, inside a ring in the system's own colours.
+
+   The landing page's sketch keeps the theme's surface for the same kind of reason: its ink is the
+   theme's text colour, drawn into canvas pixels the system palette never reaches, so the system's
+   Canvas colour behind it could be that very colour. Its row is the one place that names the
+   surface again, because the ink is chosen against --bb-surface, not against whatever its frame
+   happens to be painted with. */
+@media (forced-colors: active) {
+    .bink-swatch,
+    .bink-participant-dot,
+    .bink-hero-live .bink-surface {
+        forced-color-adjust: none;
+    }
+
+    .bink-hero-live .bink-surface {
+        background: var(--bb-surface);
+    }
+
+    .bink-swatch {
+        border-color: Canvas;
+        box-shadow: 0 0 0 1px CanvasText;
+    }
+
+    .bink-swatch[aria-pressed="true"] {
+        box-shadow: 0 0 0 3px Highlight;
+    }
+}

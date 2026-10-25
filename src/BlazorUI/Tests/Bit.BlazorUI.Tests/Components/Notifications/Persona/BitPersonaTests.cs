@@ -19,7 +19,7 @@ public class BitPersonaTests : BunitTestContext
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var persona = component.Find(".bit-prs");
@@ -303,7 +303,7 @@ public class BitPersonaTests : BunitTestContext
 
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnActionClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked = true));
         });
 
@@ -552,6 +552,83 @@ public class BitPersonaTests : BunitTestContext
         var iconEl = component.Find(".bit-prs-pre i");
 
         Assert.IsTrue(iconEl.ClassList.Contains("bit-icon--Airplane"));
+    }
+
+    [TestMethod,
+        DataRow(BitPersonaPresence.Online, "Accept"),
+        DataRow(BitPersonaPresence.Away, "Clock"),
+        DataRow(BitPersonaPresence.Offline, "Cancel"),
+        DataRow(BitPersonaPresence.Blocked, "Blocked2"),
+        DataRow(BitPersonaPresence.OutOfOffice, "Airplane"),
+        DataRow(BitPersonaPresence.Unknown, "Help")
+    ]
+    public void BitPersonaShowDefaultPresenceIconsShouldDrawTheGlyphOfEachStatus(BitPersonaPresence presence, string iconName)
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Presence, presence);
+            parameters.Add(p => p.ShowDefaultPresenceIcons, true);
+        });
+
+        var iconEl = component.Find(".bit-prs-pre i");
+
+        Assert.IsTrue(iconEl.ClassList.Contains($"bit-icon--{iconName}"));
+        Assert.AreEqual("true", iconEl.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod,
+        DataRow(BitPersonaPresence.Busy),
+        DataRow(BitPersonaPresence.Dnd)
+    ]
+    public void BitPersonaShowDefaultPresenceIconsShouldLeaveBusyPlainAndDndToItsBar(BitPersonaPresence presence)
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Presence, presence);
+            parameters.Add(p => p.ShowDefaultPresenceIcons, true);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-pre i"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldDrawNoDefaultPresenceIconUnlessAskedTo()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-pre i"));
+    }
+
+    [TestMethod]
+    public void BitPersonaGivenPresenceIconShouldTakePrecedenceOverTheDefaultOne()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Presence, BitPersonaPresence.OutOfOffice);
+            parameters.Add(p => p.PresenceIconName, "Vacation");
+            parameters.Add(p => p.ShowDefaultPresenceIcons, true);
+        });
+
+        var iconEl = component.Find(".bit-prs-pre i");
+
+        Assert.IsTrue(iconEl.ClassList.Contains("bit-icon--Vacation"));
+        Assert.IsFalse(iconEl.ClassList.Contains("bit-icon--Airplane"));
+    }
+
+    [TestMethod]
+    public void BitPersonaDefaultPresenceIconShouldNotBeRenderedOnTheSmallestSizes()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+            parameters.Add(p => p.ShowDefaultPresenceIcons, true);
+            parameters.Add(p => p.Size, BitPersonaSize.Size32);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-pre i"));
     }
 
     [TestMethod]
@@ -816,6 +893,53 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPersonaShouldPublishNoCoinColorOrShapeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+        });
+
+        // An unset CoinColor (with AutoCoinColor off) or Shape (with Squared off) publishes nothing, so the public
+        // --bit-Persona-coin-* variables restyle the default while an explicit value - which does publish its class -
+        // wins over them.
+        var root = component.Find(".bit-prs");
+        var published = new[]
+        {
+            "bit-prs-pri", "bit-prs-sec", "bit-prs-ter", "bit-prs-inf", "bit-prs-suc", "bit-prs-wrn", "bit-prs-swr", "bit-prs-err",
+            "bit-prs-pbg", "bit-prs-sbg", "bit-prs-tbg", "bit-prs-pfg", "bit-prs-sfg", "bit-prs-tfg", "bit-prs-pbr", "bit-prs-sbr", "bit-prs-tbr",
+            "bit-prs-cir", "bit-prs-sqr", "bit-prs-sqs",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldLayAnUnsetSizeOutAsSize48WithoutHandingItOverAsAChoice()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+        });
+
+        // The size class lays the persona out, so an unset Size still renders Size48's; only an explicit one adds the
+        // class that hands its gap and active ring over as a choice the --bit-Persona-* variables cannot override.
+        var root = component.Find(".bit-prs");
+        Assert.AreEqual(BitPersonaSize.Size48, component.Instance.Size);
+        Assert.IsTrue(root.ClassList.Contains("bit-prs-s48"));
+        Assert.IsFalse(root.ClassList.Contains("bit-prs-ssz"));
+
+        component.Render(parameters => parameters.Add(p => p.Size, BitPersonaSize.Size48));
+
+        root = component.Find(".bit-prs");
+        Assert.IsTrue(root.ClassList.Contains("bit-prs-s48"));
+        Assert.IsTrue(root.ClassList.Contains("bit-prs-ssz"));
+    }
+
+    [TestMethod]
     public void BitPersonaAutoCoinColorShouldBeDeterministicForSameName()
     {
         var class1 = GetAutoCoinColorClass(p => p.Add(x => x.PrimaryText, "Saleh Khafan"));
@@ -1011,6 +1135,47 @@ public class BitPersonaTests : BunitTestContext
         });
 
         Assert.AreEqual("KS", component.Find(".bit-prs-ini").TextContent.Trim());
+        Assert.IsFalse(component.Find(".bit-prs-ini").ClassList.Contains("bit-prs-rev"));
+    }
+
+    // A Dir that names no direction leaves it to the page (unset) or to the content (Auto), which .NET cannot read: a
+    // pair of left-to-right initials is then written in reading order and marked, and the stylesheet lays it out from
+    // the right wherever the persona reads right to left.
+    [TestMethod,
+        DataRow(null, "Saleh Khafan", true),
+        DataRow(BitDir.Auto, "Saleh Khafan", true),
+        DataRow(BitDir.Ltr, "Saleh Khafan", false),
+        DataRow(null, "Saleh", false),
+        DataRow(null, "משה כהן", false)
+    ]
+    public void BitPersonaInitialsShouldLeaveTheirOrderToTheStylesheetWhenDirNamesNoDirection(BitDir? dir, string name, bool marked)
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.PrimaryText, name);
+        });
+
+        var initials = component.Find(".bit-prs-ini");
+
+        Assert.AreEqual(marked, initials.ClassList.Contains("bit-prs-rev"));
+
+        if (marked)
+        {
+            Assert.AreEqual("SK", initials.TextContent.Trim());
+        }
+    }
+
+    [TestMethod]
+    public void BitPersonaImageInitialsShouldNeverBeMarked()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.ImageInitials, "AB");
+        });
+
+        Assert.IsFalse(component.Find(".bit-prs-ini").ClassList.Contains("bit-prs-rev"));
     }
 
     [TestMethod]
@@ -1184,6 +1349,43 @@ public class BitPersonaTests : BunitTestContext
 
         Assert.IsEmpty(component.FindAll(".bit-prs-img"));
         Assert.AreEqual("SK", component.Find(".bit-prs-ini").TextContent);
+    }
+
+    [TestMethod]
+    public void BitPersonaCoinShowingAPictureShouldBeMarkedSoItsEdgeIsCleared()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+        });
+
+        Assert.IsTrue(component.Find(".bit-prs-imc").ClassList.Contains("bit-prs-cph"));
+
+        // A picture that failed is replaced by the initials, which want the filled edge back.
+        component.Find(".bit-prs-img").TriggerEvent("onerror", new ErrorEventArgs());
+
+        Assert.IsFalse(component.Find(".bit-prs-imc").ClassList.Contains("bit-prs-cph"));
+    }
+
+    [TestMethod]
+    public void BitPersonaCoinWithoutAPictureShouldNotBeMarkedAsShowingOne()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+        });
+
+        Assert.IsFalse(component.Find(".bit-prs-imc").ClassList.Contains("bit-prs-cph"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+            parameters.Add(p => p.Unknown, true);
+        });
+
+        Assert.IsFalse(component.Find(".bit-prs-imc").ClassList.Contains("bit-prs-cph"));
     }
 
     [TestMethod]
@@ -1616,7 +1818,7 @@ public class BitPersonaTests : BunitTestContext
 
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked++));
         });
 
@@ -1637,7 +1839,7 @@ public class BitPersonaTests : BunitTestContext
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
@@ -1645,7 +1847,7 @@ public class BitPersonaTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
@@ -1658,7 +1860,7 @@ public class BitPersonaTests : BunitTestContext
         // Nothing that is not a control has a disabled state to announce.
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.PrimaryText, "Saleh Khafan");
         });
 
@@ -2076,12 +2278,12 @@ public class BitPersonaTests : BunitTestContext
     [TestMethod,
         DataRow(null, false, null),
         DataRow(null, true, "bit-prs-sqr"),
-        DataRow(BitPersonaShape.Circular, false, null),
-        DataRow(BitPersonaShape.Circular, true, null),
-        DataRow(BitPersonaShape.Rounded, false, "bit-prs-sqr"),
-        DataRow(BitPersonaShape.Square, false, "bit-prs-sqs")
+        DataRow(BitShape.Pill, false, "bit-prs-cir"),
+        DataRow(BitShape.Pill, true, "bit-prs-cir"),
+        DataRow(BitShape.Rounded, false, "bit-prs-sqr"),
+        DataRow(BitShape.Square, false, "bit-prs-sqs")
     ]
-    public void BitPersonaShapeShouldApplyItsClassAndSupersedeSquared(BitPersonaShape? shape, bool squared, string? expectedClass)
+    public void BitPersonaShapeShouldApplyItsClassAndSupersedeSquared(BitShape? shape, bool squared, string? expectedClass)
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
@@ -2093,8 +2295,15 @@ public class BitPersonaTests : BunitTestContext
 
         if (expectedClass is null)
         {
+            Assert.IsFalse(classList.Contains("bit-prs-cir"));
             Assert.IsFalse(classList.Contains("bit-prs-sqr"));
             Assert.IsFalse(classList.Contains("bit-prs-sqs"));
+        }
+        else if (expectedClass is "bit-prs-cir")
+        {
+            // An explicit Pill is the circle an unset Shape is too, published so it wins over --bit-Persona-coin-radius.
+            Assert.IsTrue(classList.Contains(expectedClass));
+            Assert.IsFalse(classList.Contains("bit-prs-sqr"));
         }
         else
         {
@@ -2109,7 +2318,7 @@ public class BitPersonaTests : BunitTestContext
         // presence insets and everything else the rounded coin retunes are keyed off the first of them.
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.Shape, BitPersonaShape.Square);
+            parameters.Add(p => p.Shape, BitShape.Square);
         });
 
         var classList = component.Find(".bit-prs").ClassList;
@@ -2124,7 +2333,7 @@ public class BitPersonaTests : BunitTestContext
         // The nudge follows the shape, not the legacy flag it used to be asked for with.
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.Shape, BitPersonaShape.Square);
+            parameters.Add(p => p.Shape, BitShape.Square);
             parameters.Add(p => p.CoinSize, 120);
             parameters.Add(p => p.Presence, BitPersonaPresence.Online);
         });
@@ -2132,6 +2341,26 @@ public class BitPersonaTests : BunitTestContext
         var style = component.Find(".bit-prs-pre").GetAttribute("style");
 
         Assert.Contains("--bit-prs-presence-inset:-10px;", style);
+    }
+
+    [TestMethod,
+        DataRow(BitShape.Pill),
+        DataRow(BitShape.Circle)
+    ]
+    public void BitPersonaShapeShouldNotNudgeThePresenceOfARoundCoin(BitShape shape)
+    {
+        // The coin draws Circle as round as Pill, so the presence dot keeps the round coin's own inset rather than
+        // the one tuned for square corners.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Shape, shape);
+            parameters.Add(p => p.CoinSize, 120);
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+        });
+
+        var style = component.Find(".bit-prs-pre").GetAttribute("style");
+
+        Assert.DoesNotContain("--bit-prs-presence-inset", style);
     }
 
     [TestMethod,
@@ -2605,6 +2834,26 @@ public class BitPersonaTests : BunitTestContext
         Assert.AreEqual("nofollow noreferrer", component.Find(".bit-prs-cne").GetAttribute("rel"));
     }
 
+    [TestMethod,
+        DataRow("_blank", BitLinkRels.NoFollow, "nofollow noopener"),
+        DataRow("_BLANK", BitLinkRels.NoFollow, "nofollow noopener"),
+        DataRow("_BLANK", null, "noopener"),
+        DataRow("_blank", BitLinkRels.Opener, "opener")
+    ]
+    public void BitPersonaLinkCoinShouldAddNoOpenerToAnExplicitRel(string target, BitLinkRels? rel, string expectedRel)
+    {
+        // a NoFollow is about crawling and says nothing about the opener, so it does not stand in for the
+        // noopener a new tab needs - but an explicit Opener is the author asking for the opener back
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Target, target);
+            parameters.Add(p => p.Rel, rel);
+        });
+
+        Assert.AreEqual(expectedRel, component.Find(".bit-prs-cne").GetAttribute("rel"));
+    }
+
     [TestMethod]
     public void BitPersonaLinkCoinShouldTakeNoRelForAHashOnlyHref()
     {
@@ -2623,7 +2872,7 @@ public class BitPersonaTests : BunitTestContext
         var component = RenderComponent<BitPersona>(parameters =>
         {
             parameters.Add(p => p.Href, "/profile/1024");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var coin = component.Find(".bit-prs-cne");
@@ -2633,6 +2882,20 @@ public class BitPersonaTests : BunitTestContext
         Assert.IsNull(coin.GetAttribute("href"));
         Assert.AreEqual("-1", coin.GetAttribute("tabindex"));
         Assert.AreEqual("true", coin.GetAttribute("aria-disabled"));
+
+        // An anchor without an href has no role of its own, and aria-disabled on a generic element is ignored.
+        Assert.AreEqual("link", coin.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitPersonaEnabledLinkCoinShouldKeepItsImplicitRole()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/profile/1024");
+        });
+
+        Assert.IsNull(component.Find(".bit-prs-cne").GetAttribute("role"));
     }
 
     [TestMethod]
@@ -2643,7 +2906,7 @@ public class BitPersonaTests : BunitTestContext
         var component = RenderComponent<BitPersona>(parameters =>
         {
             parameters.Add(p => p.Href, "/profile/1024");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
         });
 
@@ -2940,5 +3203,23 @@ public class BitPersonaTests : BunitTestContext
         Assert.IsNotNull(colorClass, $"No auto coin color class found on the persona: {string.Join(' ', classList)}");
 
         return colorClass;
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldKeepASplattedRoleAndAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitPersona>(0);
+            builder.AddAttribute(1, nameof(BitPersona.PrimaryText), "Annie Lindqvist");
+            builder.AddAttribute(2, "role", "listitem");
+            builder.AddAttribute(3, "aria-label", "Annie Lindqvist");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-prs");
+
+        Assert.AreEqual("listitem", root.GetAttribute("role"));
+        Assert.AreEqual("Annie Lindqvist", root.GetAttribute("aria-label"));
     }
 }

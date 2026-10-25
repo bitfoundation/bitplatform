@@ -1,0 +1,53 @@
+﻿@page "/sortable/simple"
+
+<PageTitle>Sortable - Simple · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Sortable - Simple</h1>
+    <p class="bb-subtitle">
+        React DnD's sortable recipe. Each card is <em>both</em> a <code>BdndDraggable</code> and a
+        <code>BdndDropTarget</code>. While dragging, the <code>OnHover</code> handler measures the hovered card
+        (<code>BdndInterop.GetBoundingClientRectAsync</code>), compares the pointer
+        (<code>Monitor.GetClientOffset()</code>) against its midpoint and reorders the list live. Reordering happens
+        during hover, not on drop. The keyboard reorders the same way - <kbd>Space</kbd> on a card, then each arrow
+        key moves it one place - because a keyboard drag runs <code>OnHover</code> as it moves too. The list itself is
+        a drop target as well, so the gaps between the cards are no "no-drop" zones. For most lists the
+        <a href="sortable/indicators">drop indicators</a> page shows a simpler way, which measures nothing.
+    </p>
+</div>
+
+<div class="bb-demo">
+    <BdndProvider>
+        @* the list accepts cards too, so the gaps between cards are not "no-drop" zones *@
+        <BdndDropTarget TItem="SortableCard.DragItem" Accept="@ItemTypes.Card" style="max-width:24rem;">
+            @foreach (var (card, index) in _cards.Select((c, i) => (c, i)))
+            {
+                <SortableCard Card="card" Index="index" OnMove="Move" @key="card.Id" />
+            }
+        </BdndDropTarget>
+    </BdndProvider>
+
+    <p class="demo-caption sortable-order">Order: @string.Join(", ", _cards.Select(c => c.Text))</p>
+</div>
+
+<DemoCode />
+
+@code {
+    private readonly List<SortableCard.CardModel> _cards =
+    [
+        new(1, "Write the docs"),
+        new(2, "Review the PR"),
+        new(3, "Ship the release"),
+        new(4, "Celebrate"),
+        new(5, "Sleep"),
+    ];
+
+    private void Move((int From, int To) move)
+    {
+        var (from, to) = move;
+        if (from < 0 || from >= _cards.Count || to < 0 || to >= _cards.Count) return;
+        var card = _cards[from];
+        _cards.RemoveAt(from);
+        _cards.Insert(to, card);
+    }
+}

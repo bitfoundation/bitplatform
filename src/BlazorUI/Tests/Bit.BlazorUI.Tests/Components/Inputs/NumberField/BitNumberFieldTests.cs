@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
@@ -12,12 +14,6 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.NumberField;
 public class BitNumberFieldTests : BunitTestContext
 {
     private int BitNumberFieldTwoWayBoundValue;
-
-    [TestInitialize]
-    public void SetupJsInteropMode()
-    {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-    }
 
     [TestMethod, DataRow("The placeholder")]
     public void BitNumberFieldShouldHaveCorrectPlaceholder(string placeholder)
@@ -151,7 +147,7 @@ public class BitNumberFieldTests : BunitTestContext
         {
             parameters.Add(p => p.IncrementIconName, iconName);
             parameters.Add(p => p.IncrementAriaLabel, iconAriaLabel);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
         });
 
@@ -180,7 +176,7 @@ public class BitNumberFieldTests : BunitTestContext
         {
             parameters.Add(p => p.DecrementIconName, iconName);
             parameters.Add(p => p.DecrementAriaLabel, iconAriaLabel);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
         });
 
@@ -219,23 +215,23 @@ public class BitNumberFieldTests : BunitTestContext
 
     [TestMethod,
          DataRow(null),
-         DataRow(BitLabelPosition.Start),
-         DataRow(BitLabelPosition.End),
-         DataRow(BitLabelPosition.Top),
-         DataRow(BitLabelPosition.Bottom)
+         DataRow(BitPlacement.Start),
+         DataRow(BitPlacement.End),
+         DataRow(BitPlacement.Top),
+         DataRow(BitPlacement.Bottom)
     ]
-    public void BitNumberFieldShouldHaveLabelPositionClassName(BitLabelPosition? labelPosition)
+    public void BitNumberFieldShouldHaveLabelPositionClassName(BitPlacement? labelPosition)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
-            parameters.Add(p => p.LabelPosition, labelPosition);
+            parameters.Add(p => p.LabelPlacement, labelPosition);
         });
 
         var lblClass = labelPosition switch
         {
-            BitLabelPosition.Bottom => "bit-nfl-lbt",
-            BitLabelPosition.Start => "bit-nfl-lst",
-            BitLabelPosition.End => "bit-nfl-led",
+            BitPlacement.Bottom => "bit-nfl-lbt",
+            BitPlacement.Start => "bit-nfl-lst",
+            BitPlacement.End => "bit-nfl-led",
             _ => "bit-nfl-ltp"
         };
 
@@ -277,21 +273,29 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         var ntfWrapper = component.Find(".bit-nfl-cnt");
+        var input = component.Find("input");
 
         if (string.IsNullOrEmpty(title) is false)
         {
             Assert.AreEqual(title, ntfWrapper.GetAttribute("title"));
         }
 
+        // The wrapper is a plain box with no role of its own, which makes every aria-* attribute on it
+        // invalid and ignored; the name and the set position belong on the element carrying the
+        // spinbutton role, and naming the wrapper as well would have the field read out twice.
+        Assert.IsNull(ntfWrapper.GetAttribute("aria-label"));
+        Assert.IsNull(ntfWrapper.GetAttribute("aria-setsize"));
+        Assert.IsNull(ntfWrapper.GetAttribute("aria-posinset"));
+
         if (string.IsNullOrEmpty(ariaLabel) is false)
         {
-            Assert.AreEqual(ariaLabel, ntfWrapper.GetAttribute("aria-label"));
+            Assert.AreEqual(ariaLabel, input.GetAttribute("aria-label"));
         }
 
         if (ariaSetSize is not null)
         {
-            Assert.AreEqual(ariaSetSize.ToString(), ntfWrapper.GetAttribute("aria-setsize"));
-            Assert.AreEqual(ariaPositionInSet.ToString(), ntfWrapper.GetAttribute("aria-posinset"));
+            Assert.AreEqual(ariaSetSize.ToString(), input.GetAttribute("aria-setsize"));
+            Assert.AreEqual(ariaPositionInSet.ToString(), input.GetAttribute("aria-posinset"));
         }
     }
 
@@ -319,13 +323,17 @@ public class BitNumberFieldTests : BunitTestContext
         // A misconfigured Min greater than Max describes the same (swapped) range to the clamping, so
         // the announced bounds are the ordered ones - aria-valuemin above aria-valuemax would be a
         // contradiction for assistive technologies and would not match what the field enforces.
-        var lower = min is null ? null : (max is null ? int.Parse(min) : Math.Min(int.Parse(min), int.Parse(max))).ToString();
-        var upper = max is null ? null : (min is null ? int.Parse(max) : Math.Max(int.Parse(min), int.Parse(max))).ToString();
+        // The bounds are read and written invariantly, as the component does: under a culture whose negative sign is
+        // not a plain hyphen (fa-IR, ar-SA) a culture-sensitive Parse throws on "-10" and ToString writes another sign.
+        var lower = min is null ? null : (max is null ? ParseInvariant(min) : Math.Min(ParseInvariant(min), ParseInvariant(max))).ToString(CultureInfo.InvariantCulture);
+        var upper = max is null ? null : (min is null ? ParseInvariant(max) : Math.Max(ParseInvariant(min), ParseInvariant(max))).ToString(CultureInfo.InvariantCulture);
 
         // The aria-valuemin/max attributes only render when an explicit Min/Max is provided;
         // announcing the underlying type's extremes (e.g. -2147483648) would just be noise.
         Assert.AreEqual(lower, input.GetAttribute("aria-valuemin"));
         Assert.AreEqual(upper, input.GetAttribute("aria-valuemax"));
+
+        static int ParseInvariant(string value) => int.Parse(value, CultureInfo.InvariantCulture);
     }
 
     [TestMethod,
@@ -893,17 +901,19 @@ public class BitNumberFieldTests : BunitTestContext
 
         // aria-describedby is an id reference, so the description text is rendered into a visually
         // hidden element of its own and the input points at that element.
+        // The always-present live region shares the visually hidden class, so the description is the one
+        // carrying an id.
         if (ariaDescription is null)
         {
             Assert.IsNull(input.GetAttribute("aria-describedby"));
-            Assert.AreEqual(0, component.FindAll(".bit-nfl-dsc").Count);
+            Assert.AreEqual(0, component.FindAll(".bit-nfl-dsc[id]").Count);
         }
         else
         {
             var describedById = input.GetAttribute("aria-describedby");
             Assert.IsFalse(string.IsNullOrEmpty(describedById));
 
-            var description = component.Find(".bit-nfl-dsc");
+            var description = component.Find(".bit-nfl-dsc[id]");
             Assert.AreEqual(describedById, description.Id);
             Assert.AreEqual(ariaDescription, description.TextContent);
         }
@@ -992,7 +1002,7 @@ public class BitNumberFieldTests : BunitTestContext
             ? defaultValue + int.Parse(step)
             : int.Parse(max);
 
-        Assert.AreEqual(inputValue, expectedResult.ToString());
+        Assert.AreEqual(expectedResult.ToString(), inputValue);
     }
 
     [TestMethod,
@@ -1049,7 +1059,7 @@ public class BitNumberFieldTests : BunitTestContext
             ? defaultValue - int.Parse(step)
             : int.Parse(min);
 
-        Assert.AreEqual(inputValue, expectedResult.ToString());
+        Assert.AreEqual(expectedResult.ToString(), inputValue);
     }
 
     [TestMethod,
@@ -1293,12 +1303,14 @@ public class BitNumberFieldTests : BunitTestContext
         input.KeyDown(keyboardArgs);
         var inputValue = component.Instance.Value;
         double? expectedResult = 0;
-        var isNumber = double.TryParse(userInput, out var numericValue);
+        // Read invariantly, as a field without a Culture reads it: a culture-sensitive parse takes "62.72" for 6272
+        // under de-DE and rejects "-5" under fa-IR.
+        var isNumber = double.TryParse(userInput, CultureInfo.InvariantCulture, out var numericValue);
         if (isNumber)
         {
             expectedResult = numericValue;
-            if (expectedResult > int.Parse(max)) expectedResult = int.Parse(max);
-            if (expectedResult < int.Parse(min)) expectedResult = int.Parse(min);
+            if (expectedResult > int.Parse(max, CultureInfo.InvariantCulture)) expectedResult = int.Parse(max, CultureInfo.InvariantCulture);
+            if (expectedResult < int.Parse(min, CultureInfo.InvariantCulture)) expectedResult = int.Parse(min, CultureInfo.InvariantCulture);
         }
         else
         {
@@ -1334,12 +1346,13 @@ public class BitNumberFieldTests : BunitTestContext
         input.Change(changeArgs);
         var inputValue = component.Instance.Value;
         double? expectedResult = 0;
-        var isNumber = double.TryParse(userInput, out var numericValue);
+        // Read invariantly, as a field without a Culture reads it (see BitNumberFieldEnterKeyDownTest).
+        var isNumber = double.TryParse(userInput, CultureInfo.InvariantCulture, out var numericValue);
         if (isNumber)
         {
             expectedResult = numericValue;
-            if (expectedResult > int.Parse(max)) expectedResult = int.Parse(max);
-            if (expectedResult < int.Parse(min)) expectedResult = int.Parse(min);
+            if (expectedResult > int.Parse(max, CultureInfo.InvariantCulture)) expectedResult = int.Parse(max, CultureInfo.InvariantCulture);
+            if (expectedResult < int.Parse(min, CultureInfo.InvariantCulture)) expectedResult = int.Parse(min, CultureInfo.InvariantCulture);
         }
         else
         {
@@ -1436,19 +1449,25 @@ public class BitNumberFieldTests : BunitTestContext
         var incrementButton = component.Find("button.bit-nfl-aup");
 
         // The press itself performs a single step, and the pointerdown handler must return right away
-        // instead of staying pending for the whole duration of the press.
-        incrementButton.PointerDown();
-        Assert.AreEqual(1, component.Instance.Value);
+        // instead of staying pending for the whole duration of the press. The value is read in the same
+        // turn of the renderer's dispatcher as the press, where the spin cannot start: read afterwards, a
+        // test thread held up for longer than the 20 ms delay would see the spin's first steps as well.
+        var valueAfterPress = 0;
+        await component.InvokeAsync(() =>
+        {
+            incrementButton.PointerDown();
+            valueAfterPress = component.Instance.Value;
+        });
+        Assert.AreEqual(1, valueAfterPress);
 
         // Holding the button down then keeps the value climbing on its own.
         component.WaitForAssertion(() => Assert.IsTrue(component.Instance.Value >= 5), TimeSpan.FromSeconds(10));
 
-        incrementButton.PointerUp();
+        // ... and releasing it stops the spin for good. The release is awaited, so it has been handled -
+        // after any tick that was already queued ahead of it - before the two reads that must agree are
+        // taken; a tick queued after it finds the spin cancelled.
+        await incrementButton.PointerUpAsync(new PointerEventArgs());
 
-        // ... and releasing it stops the spin for good. The value is read only after a first delay,
-        // so that a tick already in flight when the button came up has settled before the two reads
-        // that must agree are taken.
-        await Task.Delay(100);
         var valueAfterRelease = component.Instance.Value;
         await Task.Delay(100);
         Assert.AreEqual(valueAfterRelease, component.Instance.Value);
@@ -1469,14 +1488,20 @@ public class BitNumberFieldTests : BunitTestContext
 
         var decrementButton = component.Find("button.bit-nfl-adn");
 
-        decrementButton.PointerDown();
-        Assert.AreEqual(-1, component.Instance.Value);
+        // Pressed and read in one turn of the renderer's dispatcher, and released through an awaited
+        // event, as in the increment test above.
+        var valueAfterPress = 0;
+        await component.InvokeAsync(() =>
+        {
+            decrementButton.PointerDown();
+            valueAfterPress = component.Instance.Value;
+        });
+        Assert.AreEqual(-1, valueAfterPress);
 
         component.WaitForAssertion(() => Assert.IsTrue(component.Instance.Value <= -5), TimeSpan.FromSeconds(10));
 
-        decrementButton.PointerUp();
+        await decrementButton.PointerUpAsync(new PointerEventArgs());
 
-        await Task.Delay(100);
         var valueAfterRelease = component.Instance.Value;
         await Task.Delay(100);
         Assert.AreEqual(valueAfterRelease, component.Instance.Value);
@@ -1519,7 +1544,7 @@ public class BitNumberFieldTests : BunitTestContext
         var component = RenderComponent<BitNumberFieldValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitNumberFieldTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var isValid = value >= 6 && value <= 18;
@@ -1560,7 +1585,7 @@ public class BitNumberFieldTests : BunitTestContext
         var component = RenderComponent<BitNumberFieldValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitNumberFieldTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var isInvalid = value < 6 || value > 18;
@@ -1598,7 +1623,7 @@ public class BitNumberFieldTests : BunitTestContext
         var component = RenderComponent<BitNumberFieldValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitNumberFieldTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var isInvalid = value < 6 || value > 18;
@@ -1627,7 +1652,7 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod,
-         DataRow(null, "bit-nfl-pri"),
+         DataRow(BitColor.Primary, "bit-nfl-pri"),
          DataRow(BitColor.Secondary, "bit-nfl-sec"),
          DataRow(BitColor.Tertiary, "bit-nfl-ter"),
          DataRow(BitColor.Info, "bit-nfl-inf"),
@@ -1656,7 +1681,7 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod,
-         DataRow(null, "bit-nfl-bpr"),
+         DataRow(BitColorKind.Primary, "bit-nfl-bpr"),
          DataRow(BitColorKind.Secondary, "bit-nfl-bse"),
          DataRow(BitColorKind.Tertiary, "bit-nfl-btr"),
          DataRow(BitColorKind.Transparent, "bit-nfl-btn")
@@ -1672,7 +1697,7 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod,
-         DataRow(null, "bit-nfl-brp"),
+         DataRow(BitColorKind.Primary, "bit-nfl-brp"),
          DataRow(BitColorKind.Secondary, "bit-nfl-brs"),
          DataRow(BitColorKind.Tertiary, "bit-nfl-brt"),
          DataRow(BitColorKind.Transparent, "bit-nfl-brn")
@@ -1688,9 +1713,32 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNumberFieldShouldReflectTheAccentChangeOnRerender()
+    public void BitNumberFieldShouldPublishNoAccentBackgroundBorderOrSizeWhileTheyAreUnset()
     {
         var component = RenderComponent<BitNumberField<int>>();
+
+        // An unset Accent, Background, Border or Size publishes nothing, so the public --bit-NumberField-* variables
+        // restyle the default while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-nfl");
+        var published = new[]
+        {
+            "bit-nfl-pri", "bit-nfl-sec", "bit-nfl-ter", "bit-nfl-inf", "bit-nfl-suc", "bit-nfl-wrn", "bit-nfl-swr", "bit-nfl-err",
+            "bit-nfl-pbg", "bit-nfl-sbg", "bit-nfl-tbg", "bit-nfl-pfg", "bit-nfl-sfg", "bit-nfl-tfg", "bit-nfl-pbr", "bit-nfl-sbr", "bit-nfl-tbr",
+            "bit-nfl-bpr", "bit-nfl-bse", "bit-nfl-btr", "bit-nfl-btn",
+            "bit-nfl-brp", "bit-nfl-brs", "bit-nfl-brt", "bit-nfl-brn",
+            "bit-nfl-sm", "bit-nfl-md", "bit-nfl-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldReflectTheAccentChangeOnRerender()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.Accent, BitColor.Primary));
 
         Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains("bit-nfl-pri"));
 
@@ -2031,7 +2079,7 @@ public class BitNumberFieldTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.Max, "10");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.Instance.IncrementAsync();
@@ -2039,7 +2087,7 @@ public class BitNumberFieldTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.ReadOnly, true);
         });
 
@@ -2077,13 +2125,12 @@ public class BitNumberFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 4);
         });
 
-        var liveRegion = component.Find("span.bit-nfl-lvr");
-        Assert.AreEqual("polite", liveRegion.GetAttribute("aria-live"));
+        var liveRegion = component.Find("span[role=status]");
         Assert.AreEqual("4", liveRegion.TextContent.Trim());
 
         component.Find("button.bit-nfl-sbn:last-of-type").PointerDown();
 
-        Assert.AreEqual("5", component.Find("span.bit-nfl-lvr").TextContent.Trim());
+        Assert.AreEqual("5", component.Find("span[role=status]").TextContent.Trim());
     }
 
     [TestMethod]
@@ -2103,11 +2150,8 @@ public class BitNumberFieldTests : BunitTestContext
         }
     }
 
-    [TestMethod,
-         DataRow("Enter"),
-         DataRow(" ")
-    ]
-    public void BitNumberFieldHideInputButtonsShouldRespondToEnterAndSpace(string key)
+    [TestMethod]
+    public void BitNumberFieldSpinButtonsShouldRespondToANonPointerActivation()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
@@ -2116,10 +2160,204 @@ public class BitNumberFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 1);
         });
 
+        // Enter and Space on the focused button, an assistive technology's activation gesture and a
+        // programmatic click all arrive as a bare click with a detail of zero and no pointer sequence
+        // behind them, which is the only thing that reaches the button in those cases.
         // Inline mode renders the decrement button first and the increment button second.
-        component.FindAll("button.bit-nfl-sbn")[1].KeyDown(new KeyboardEventArgs { Key = key });
+        component.FindAll("button.bit-nfl-sbn")[1].Click(new MouseEventArgs { Detail = 0 });
 
         Assert.AreEqual(2, component.Instance.Value);
+
+        component.FindAll("button.bit-nfl-sbn")[0].Click(new MouseEventArgs { Detail = 0 });
+
+        Assert.AreEqual(1, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldSpinButtonsShouldNotStepTwiceForOnePointerPress()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.DefaultValue, 1);
+        });
+
+        var incrementButton = component.Find(".bit-nfl-aup");
+
+        // A real press steps on the pointerdown (which is what the press-and-hold spin needs), so the
+        // click the browser fires after it - carrying a detail of at least one - must not step again.
+        incrementButton.PointerDown();
+        incrementButton.PointerUp();
+        incrementButton.Click(new MouseEventArgs { Detail = 1 });
+
+        Assert.AreEqual(2, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldTouchTapOnASpinButtonShouldNotFocusTheInputButAnnounceTheValue()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.DefaultValue, 1);
+        });
+
+        // Focusing the input on a touch device raises the soft keyboard, which a tap on + does not ask for.
+        component.Find(".bit-nfl-aup").PointerDown(new PointerEventArgs { PointerType = "touch" });
+        component.Find(".bit-nfl-aup").PointerUp(new PointerEventArgs { PointerType = "touch" });
+
+        Assert.AreEqual(2, component.Instance.Value);
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+
+        // The spinbutton is not focused to announce its new value itself, so the live region does.
+        Assert.AreEqual("2", component.Find("span[role=status]").TextContent.Trim());
+
+        // Once the input has the focus it announces its own value, and the region goes quiet again.
+        component.Find("input").FocusIn();
+
+        Assert.AreEqual(string.Empty, component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNumberFieldTheClickOfASpinButtonShouldNotHaveTheContainerFocusTheInput()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+        });
+
+        // The click a tap ends with bubbles from the button on to the input container (bUnit bubbles it as a browser
+        // does), whose own click handler would put the focus in the input - the soft keyboard the tap was kept from
+        // raising.
+        component.Find(".bit-nfl-aup").PointerDown(new PointerEventArgs { PointerType = "touch" });
+        component.Find(".bit-nfl-aup").PointerUp(new PointerEventArgs { PointerType = "touch" });
+        component.Find(".bit-nfl-aup").Click(new MouseEventArgs { Detail = 1 });
+
+        Assert.AreEqual(1, component.Instance.Value);
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+
+        // A click on the container itself still puts the caret in the input.
+        component.Find(".bit-nfl-cnt").Click();
+
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldSpinningAFractionalStepShouldPublishTheRoundedValue()
+    {
+        double? published = null;
+
+        var component = RenderComponent<BitNumberField<double>>(parameters =>
+        {
+            parameters.Add(p => p.Step, "0.1");
+            parameters.Add(p => p.Value, 0d);
+            parameters.Add(p => p.ValueChanged, EventCallback.Factory.Create<double>(this, v => published = v));
+        });
+
+        // Three steps of 0.1 add up to 0.30000000000000004 in floating point: the binding receives what the precision
+        // the step implies rounds it to, the very value the input shows, rather than the raw sum.
+        for (var i = 0; i < 3; i++)
+        {
+            component.Find("input").KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+        }
+
+        Assert.AreEqual(0.3, published);
+        Assert.AreEqual("0.3", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldNormalizeDigitsShouldParseTheArabicDecimalSeparatorInACultureThatWritesIt()
+    {
+        var component = RenderComponent<BitNumberField<double?>>(parameters =>
+        {
+            parameters.Add(p => p.Culture, new CultureInfo("fa-IR"));
+            parameters.Add(p => p.NormalizeDigits, true);
+        });
+
+        // The separator of a Persian keyboard becomes the decimal separator of the culture the text is parsed in,
+        // rather than a '.' that culture would not read as one.
+        component.Find("input").Change("۱۲٫۵");
+
+        Assert.AreEqual(12.5, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldMousePressOnASpinButtonShouldFocusTheInput()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.DefaultValue, 1);
+        });
+
+        component.Find(".bit-nfl-aup").PointerDown(new PointerEventArgs { PointerType = "mouse" });
+        component.Find(".bit-nfl-aup").PointerUp(new PointerEventArgs { PointerType = "mouse" });
+
+        Assert.AreEqual(2, component.Instance.Value);
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+        Assert.AreEqual(string.Empty, component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNumberFieldNonPointerActivationShouldAnnounceTheValueWhileTheInputIsNotFocused()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.DefaultValue, 1);
+        });
+
+        component.Find(".bit-nfl-aup").Click(new MouseEventArgs { Detail = 0 });
+
+        Assert.AreEqual(2, component.Instance.Value);
+        Assert.AreEqual("2", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod, DataRow(false), DataRow(true)]
+    public void BitNumberFieldInputShouldBelongToItsEnclosingForm(bool hideInput)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, hideInput);
+            parameters.Add(p => p.Name, "quantity");
+        });
+
+        // An empty form attribute detaches an input from every form, so neither the value would post nor
+        // would Enter submit.
+        var input = component.Find("input");
+        Assert.IsFalse(input.HasAttribute("form"));
+        Assert.AreEqual("quantity", input.GetAttribute("name"));
+    }
+
+    [TestMethod, DataRow(false), DataRow(true)]
+    public void BitNumberFieldSpinButtonsShouldPointAriaControlsAtTheInput(bool hideInput)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, hideInput);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Inline);
+        });
+
+        var inputId = component.Find("input").GetAttribute("id");
+
+        foreach (var button in component.FindAll("button.bit-nfl-sbn"))
+        {
+            Assert.AreEqual(hideInput ? null : inputId, button.GetAttribute("aria-controls"));
+        }
+    }
+
+    [TestMethod]
+    public async Task BitNumberFieldHideInputShouldFocusTheIncrementButton()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, true);
+        });
+
+        // A hidden input cannot take the focus, so the public FocusAsync has to land on the button the
+        // stepper is operated from. An element reference that was never captured throws here, which is
+        // what makes this assert the button and not the hidden input.
+        await component.InvokeAsync(async () => await component.Instance.FocusAsync());
     }
 
     [TestMethod,
@@ -2496,5 +2734,1436 @@ public class BitNumberFieldTests : BunitTestContext
         var buttons = comp.FindAll("button");
 
         await comp.InvokeAsync(() => buttons[^1].TriggerEvent("onpointerdown", new PointerEventArgs()));
+    }
+
+    [TestMethod,
+         DataRow(BitSize.Small, "bit-nfl-sm"),
+         DataRow(BitSize.Medium, "bit-nfl-md"),
+         DataRow(BitSize.Large, "bit-nfl-lg")
+    ]
+    public void BitNumberFieldShouldRespectSize(BitSize? size, string expectedClass)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+        });
+
+        Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+         DataRow(null, ""),
+         DataRow(BitSpinButtonMode.Compact, "bit-nfl-mcp"),
+         DataRow(BitSpinButtonMode.Inline, "bit-nfl-min"),
+         DataRow(BitSpinButtonMode.Spread, "bit-nfl-msp")
+    ]
+    public void BitNumberFieldShouldRenderTheModeClass(BitSpinButtonMode? mode, string expectedClass)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, mode);
+        });
+
+        var classList = component.Find(".bit-nfl").ClassList;
+
+        if (expectedClass.HasValue())
+        {
+            Assert.IsTrue(classList.Contains(expectedClass));
+        }
+        else
+        {
+            Assert.IsFalse(classList.Contains("bit-nfl-mcp"));
+            Assert.IsFalse(classList.Contains("bit-nfl-min"));
+            Assert.IsFalse(classList.Contains("bit-nfl-msp"));
+        }
+    }
+
+    [TestMethod]
+    public void BitNumberFieldErrorMessageShouldMarkTheFieldInvalidAndDescribeIt()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "Too many items.");
+        });
+
+        var error = component.Find(".bit-nfl-erm");
+        Assert.AreEqual("Too many items.", error.TextContent.Trim());
+
+        var input = component.Find("input");
+        Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
+        Assert.IsTrue(input.GetAttribute("aria-describedby").Split(' ').Contains(error.Id));
+
+        Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains("bit-inv"));
+
+        // The message is announced by the single live region rather than by a live role of its own, so it
+        // is never read out twice.
+        Assert.AreEqual("Too many items.", component.Find("span[role=status]").TextContent.Trim());
+        Assert.IsNull(error.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldErrorMessageTemplateShouldRenderInPlaceOfTheMessage()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "b");
+                builder.AddContent(1, "Out of range");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("Out of range", component.Find(".bit-nfl-erm b").TextContent);
+        Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
+        // The template carries no text the live region can read, so it announces the rejection itself.
+        Assert.AreEqual("Invalid input", component.Find("[role=\"status\"]").TextContent);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldInvalidShouldMarkTheFieldWithoutAMessage()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
+        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNotRenderAriaInvalidWhenValid()
+    {
+        var component = RenderComponent<BitNumberField<int>>();
+
+        Assert.IsNull(component.Find("input").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldPrefixAndSuffixShouldBeReferencedByTheInput()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Prefix, "$");
+            parameters.Add(p => p.Suffix, "per month");
+        });
+
+        var ids = component.Find("input").GetAttribute("aria-describedby").Split(' ');
+
+        Assert.IsTrue(ids.Contains(component.Find(".bit-nfl-pre span").Id));
+        Assert.IsTrue(ids.Contains(component.Find(".bit-nfl-suf span").Id));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldKeepAConsumerWrittenAriaDescribedBy()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Description, "Between 1 and 9.");
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-describedby", "outside-hint" } });
+        });
+
+        var ids = component.Find("input").GetAttribute("aria-describedby").Split(' ');
+
+        Assert.IsTrue(ids.Contains("outside-hint"));
+        Assert.IsTrue(ids.Contains(component.Find(".bit-nfl-des").Id));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHideInputShouldGroupAndNameItsButtons()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, true);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Inline);
+            parameters.Add(p => p.Label, "Quantity");
+        });
+
+        var container = component.Find(".bit-nfl-cnt");
+
+        Assert.AreEqual("group", container.GetAttribute("role"));
+        Assert.AreEqual(component.Find("label").Id, container.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldCascadingParametersShouldFillWhatTheFieldLeftUnset()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new IBitComponentParams[]
+            {
+                new BitNumberFieldParams
+                {
+                    Size = BitSize.Large,
+                    Mode = BitSpinButtonMode.Compact,
+                    Min = "2",
+                    Max = "8",
+                    Step = "2",
+                    Suffix = "kg",
+                    Underlined = true
+                }
+            });
+            parameters.AddChildContent<BitNumberField<int>>();
+        });
+
+        var root = component.Find(".bit-nfl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-mcp"));
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-und"));
+        Assert.AreEqual("kg", component.Find(".bit-nfl-suf span").TextContent.Trim());
+
+        // Min/Max are strings parsed by setters of their own, so a cascaded value only reaches the bounds
+        // when the params object calls them.
+        var input = component.Find("input");
+        Assert.AreEqual("2", input.GetAttribute("aria-valuemin"));
+        Assert.AreEqual("8", input.GetAttribute("aria-valuemax"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldCascadingParametersShouldNotOverrideTheFieldsOwnValues()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new IBitComponentParams[]
+            {
+                new BitNumberFieldParams { Size = BitSize.Large, Underlined = true }
+            });
+            parameters.AddChildContent<BitNumberField<int>>(p => p.Add(x => x.Size, BitSize.Small));
+        });
+
+        var root = component.Find(".bit-nfl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-sm"));
+        Assert.IsFalse(root.ClassList.Contains("bit-nfl-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-und"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldCascadingParametersShouldCarryTheBaseParameters()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new IBitComponentParams[]
+            {
+                new BitNumberFieldParams { Dir = BitDir.Rtl, Disabled = true }
+            });
+            parameters.AddChildContent<BitNumberField<int>>();
+        });
+
+        var root = component.Find(".bit-nfl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+    }
+
+
+    [TestMethod]
+    public void BitNumberFieldLoadingShouldRenderABusyIndicatorAndAnnounceIt()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingAriaLabel, "Recalculating");
+        });
+
+        var indicator = component.Find(".bit-nfl-lod");
+        Assert.AreEqual("true", indicator.GetAttribute("aria-hidden"));
+
+        // The field draws its own spinner rather than rendering another component of the library.
+        Assert.AreEqual(1, indicator.QuerySelectorAll(".bit-nfl-spn").Length);
+        Assert.AreEqual(0, indicator.QuerySelectorAll(".bit-ldn").Length);
+
+        Assert.AreEqual("true", component.Find("input").GetAttribute("aria-busy"));
+        Assert.AreEqual("Recalculating", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNumberFieldSpinnerClassAndStyleShouldReachTheDefaultSpinner()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.Classes, new BitNumberFieldClassStyles { Spinner = "custom-spinner" });
+            parameters.Add(p => p.Styles, new BitNumberFieldClassStyles { Spinner = "color: red;" });
+        });
+
+        var spinner = component.Find(".bit-nfl-spn");
+
+        Assert.IsTrue(spinner.ClassList.Contains("custom-spinner"));
+        Assert.AreEqual("color: red;", spinner.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldLoadingShouldRenderForAStepperOnlyFieldToo()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, true);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Inline);
+            parameters.Add(p => p.Loading, true);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-nfl-lod").Count);
+        Assert.AreEqual("Loading", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNumberFieldLoadingTemplateShouldReplaceTheSpinner()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "em");
+                builder.AddContent(1, "wait");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("wait", component.Find(".bit-nfl-lod em").TextContent);
+        Assert.AreEqual(0, component.FindAll(".bit-nfl-lod .bit-nfl-spn").Count);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNotRenderABusyIndicatorWhenNotLoading()
+    {
+        var component = RenderComponent<BitNumberField<int>>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-nfl-lod").Count);
+        Assert.IsNull(component.Find("input").GetAttribute("aria-busy"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldRequiredShouldRenderAriaRequired()
+    {
+        var required = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.Required, true));
+        Assert.AreEqual("true", required.Find("input").GetAttribute("aria-required"));
+
+        var optional = RenderComponent<BitNumberField<int>>();
+        Assert.IsNull(optional.Find("input").GetAttribute("aria-required"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldAriaLabelShouldNotBeShadowedByTheVisibleLabel()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Label, "The visible label");
+            parameters.Add(p => p.AriaLabel, "A name of its own");
+        });
+
+        var input = component.Find("input");
+
+        // aria-labelledby wins over aria-label, so it is left off where a name of its own was given.
+        Assert.IsNull(input.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("A name of its own", input.GetAttribute("aria-label"));
+
+        // The label still points at the input, which is what associates the two for a click.
+        Assert.AreEqual(input.Id, component.Find("label").GetAttribute("for"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHideInputWithoutAModeShouldStillRenderItsButtons()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.HideInput, true));
+
+        Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains("bit-nfl-mcp"));
+        Assert.AreEqual(2, component.FindAll(".bit-nfl-cnt button").Count);
+
+        // Without HideInput no mode still means no buttons.
+        var plain = RenderComponent<BitNumberField<int>>();
+        Assert.AreEqual(0, plain.FindAll(".bit-nfl-cnt button").Count);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldReadOnlyShouldRenderAriaReadOnly()
+    {
+        var readOnly = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.ReadOnly, true));
+        Assert.AreEqual("true", readOnly.Find("input").GetAttribute("aria-readonly"));
+
+        var editable = RenderComponent<BitNumberField<int>>();
+        Assert.IsNull(editable.Find("input").GetAttribute("aria-readonly"));
+
+        // Only the text is protected here - the buttons, the arrows and the wheel still change the value,
+        // so the widget is not read-only.
+        var inputReadOnly = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.IsInputReadOnly, true));
+        Assert.IsNull(inputReadOnly.Find("input").GetAttribute("aria-readonly"));
+        Assert.IsTrue(inputReadOnly.Find("input").HasAttribute("readonly"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldEmptyValueShouldNotRenderAnAriaValueText()
+    {
+        var component = RenderComponent<BitNumberField<int?>>();
+
+        var input = component.Find("input");
+
+        Assert.IsNull(input.GetAttribute("aria-valuetext"));
+        Assert.IsNull(input.GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldTurnOffTheTextEditingHelpersOfASoftKeyboard()
+    {
+        var component = RenderComponent<BitNumberField<int>>();
+
+        var input = component.Find("input");
+
+        Assert.AreEqual("false", input.GetAttribute("spellcheck"));
+        Assert.AreEqual("off", input.GetAttribute("autocorrect"));
+        Assert.AreEqual("off", input.GetAttribute("autocapitalize"));
+        Assert.IsNull(input.GetAttribute("enterkeyhint"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldRenderTheEnterKeyHintAndLetInputHtmlAttributesWin()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.EnterKeyHint, "done");
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "spellcheck", "true" } });
+        });
+
+        var input = component.Find("input");
+
+        Assert.AreEqual("done", input.GetAttribute("enterkeyhint"));
+        Assert.AreEqual("true", input.GetAttribute("spellcheck"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldClearButtonTemplateShouldReplaceTheIconOnly()
+    {
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, 7);
+            parameters.Add(p => p.ClearButtonTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<em>wipe</em>")));
+        });
+
+        var button = component.Find(".bit-nfl-cbt");
+
+        Assert.AreEqual("wipe", button.QuerySelector("em").TextContent);
+        Assert.IsNull(button.QuerySelector("i"));
+        Assert.AreEqual("Clear value", button.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldEscapeShouldInvokeOnEscapeBeforeClearing()
+    {
+        var escapes = 0;
+
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, 7);
+            parameters.Add(p => p.OnEscape, () => escapes++);
+        });
+
+        component.Find("input").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, escapes);
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldEscapeShouldReachOnEscapeOnAReadOnlyField()
+    {
+        var escapes = 0;
+
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, 7);
+            parameters.Add(p => p.OnEscape, () => escapes++);
+        });
+
+        component.Find("input").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, escapes);
+        Assert.AreEqual("7", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldCultureShouldFormatAndParseInThatCulture()
+    {
+        var component = RenderComponent<BitNumberField<double?>>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("de-DE"));
+            parameters.Add(p => p.DefaultValue, 1234.5);
+        });
+
+        var input = component.Find("input");
+
+        Assert.AreEqual("1234,5", input.GetAttribute("value"));
+
+        // ARIA takes a plain invariant number, so what is on screen is carried by aria-valuetext instead.
+        Assert.AreEqual("1234.5", input.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("1234,5", input.GetAttribute("aria-valuetext"));
+
+        input.Change("1.234,5");
+
+        Assert.AreEqual(1234.5, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldCultureShouldDriveTheNumberFormat()
+    {
+        var component = RenderComponent<BitNumberField<double>>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("de-DE"));
+            parameters.Add(p => p.NumberFormat, "N2");
+            parameters.Add(p => p.DefaultValue, 1234.5);
+        });
+
+        Assert.AreEqual("1.234,50", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldWithoutACultureShouldStayInvariant()
+    {
+        var component = RenderComponent<BitNumberField<double?>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 1234.5);
+        });
+
+        Assert.AreEqual("1234.5", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldCascadingParametersShouldCarryTheCultureAndTheEnterKeyHint()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new IBitComponentParams[]
+            {
+                new BitNumberFieldParams
+                {
+                    EnterKeyHint = "next",
+                    Culture = CultureInfo.GetCultureInfo("de-DE")
+                }
+            });
+            parameters.AddChildContent<BitNumberField<double>>(p => p.Add(x => x.DefaultValue, 1234.5));
+        });
+
+        var input = component.Find("input");
+
+        Assert.AreEqual("next", input.GetAttribute("enterkeyhint"));
+        Assert.AreEqual("1234,5", input.GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHideInputLabelShouldNotPointAtTheHiddenInput()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, true);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Inline);
+            parameters.Add(p => p.Label, "Quantity");
+        });
+
+        Assert.IsNull(component.Find("label").GetAttribute("for"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHideInputGroupShouldCarryWhatDescribesTheField()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, true);
+            parameters.Add(p => p.Description, "How many boxes");
+            parameters.Add(p => p.ErrorMessage, "Too many");
+            parameters.Add(p => p.Suffix, "boxes");
+        });
+
+        // The hidden input is not exposed to assistive technologies at all, so the group around the
+        // buttons is what the hint, the error message and the suffix have to be announced through.
+        var ids = component.Find(".bit-nfl-cnt").GetAttribute("aria-describedby").Split(' ');
+
+        Assert.IsTrue(ids.Contains(component.Find(".bit-nfl-erm").Id));
+        Assert.IsTrue(ids.Contains(component.Find(".bit-nfl-des").Id));
+        Assert.IsTrue(ids.Contains(component.Find(".bit-nfl-suf span").Id));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldWithoutHideInputShouldLeaveTheDescriptionsOnTheInputAlone()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Description, "How many boxes");
+        });
+
+        // With the input exposed, naming the wrapper as well would have it read twice.
+        Assert.IsNull(component.Find(".bit-nfl-cnt").GetAttribute("aria-describedby"));
+        Assert.IsNotNull(component.Find("input").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod,
+         DataRow(-1d, false, 2),
+         DataRow(1d, false, 0),
+         DataRow(-1d, true, 0),
+         DataRow(1d, true, 2)
+    ]
+    public void BitNumberFieldShiftWheelShouldSpinOnTheHorizontalDeltaToo(double deltaX, bool invert, int expectedValue)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 1);
+            parameters.Add(p => p.InvertMouseWheel, invert);
+        });
+
+        var input = component.Find("input");
+        input.Focus();
+
+        // Holding Shift turns a vertical scroll into a horizontal one on macOS (and on a mouse with a
+        // tilt wheel), so the gesture arrives on deltaX there and has to spin the value just the same.
+        input.Wheel(new WheelEventArgs { DeltaX = deltaX, DeltaY = 0, ShiftKey = true });
+
+        Assert.AreEqual(expectedValue, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitNumberFieldSpinButtonsShouldStopTheContinuousSpinOnACancelledPointer()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 1);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.ContinuousSpinDelay, 10);
+            parameters.Add(p => p.ContinuousSpinInterval, 5);
+        });
+
+        // A pointer the browser takes over - a long-press context menu, a scroll gesture - is cancelled
+        // rather than released, so without this handler the held button would go on spinning forever.
+        // The press and the cancellation are made in one turn of the renderer's dispatcher, which is where the
+        // delay of the press-and-hold spin resumes, so the pointer is always cancelled before the spin can start.
+        // Made one after the other from the test, a test thread held up for longer than the 10 ms delay would let
+        // the spin take its first step before the cancellation, and the test would fail.
+        var incrementButton = component.Find(".bit-nfl-aup");
+        var valueAfterPress = 0;
+        await component.InvokeAsync(() =>
+        {
+            incrementButton.PointerDown();
+            valueAfterPress = component.Instance.Value;
+
+            incrementButton.TriggerEvent("onpointercancel", new PointerEventArgs());
+        });
+        Assert.AreEqual(2, valueAfterPress);
+
+        // Long past the delay the press-and-hold spin would have started after.
+        await Task.Delay(80);
+
+        Assert.AreEqual(2, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHideInputShouldAutoFocusTheIncrementButton()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, true);
+            parameters.Add(p => p.AutoFocus, true);
+        });
+
+        // There is no input left to autofocus in this mode, so the parameter lands on the button the
+        // stepper opens on instead of doing nothing at all.
+        Assert.IsTrue(component.Find(".bit-nfl-aup").HasAttribute("autofocus"));
+        Assert.IsFalse(component.Find(".bit-nfl-adn").HasAttribute("autofocus"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldClampTextThatOverflowsTheValueType()
+    {
+        // byte, sbyte, short, ushort, uint and ulong have no fast path in BindConverter, so their
+        // TypeConverter is what parses the text - and it THROWS on a number out of range instead of
+        // reporting a failure. A number typed past the end of the type's range is out of range like
+        // any other, so it clamps there rather than taking the field (or the app) down.
+        var component = RenderComponent<BitNumberField<byte>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (byte)5);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "300" });
+        Assert.AreEqual((byte)255, component.Instance.Value);
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "-5" });
+        Assert.AreEqual((byte)0, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldReportTextThatIsNotANumberOnATypeConverterType()
+    {
+        // The same converter throws for text that is no number at all, which must come back as the
+        // ordinary parse failure every other type reports: the value is left alone and the typed text
+        // stays in the input to be corrected.
+        var component = RenderComponent<BitNumberField<byte>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (byte)7);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "abc" });
+
+        Assert.AreEqual((byte)7, component.Instance.Value);
+        Assert.AreEqual("abc", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldNoClampShouldRejectTextThatDoesNotFitTheValueType()
+    {
+        // NoClamp asks for an out-of-range value to reach the validator instead of being corrected,
+        // but a number the type cannot hold cannot be handed to one either, so it stays a parse error.
+        var component = RenderComponent<BitNumberField<byte>>(parameters =>
+        {
+            parameters.Add(p => p.NoClamp, true);
+            parameters.Add(p => p.DefaultValue, (byte)7);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "300" });
+
+        Assert.AreEqual((byte)7, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldReportTheValueInAriaValueNowForANonNullableType()
+    {
+        // AriaValueNow is a TValue?, which for a non-nullable TValue is that very type and so is never
+        // null: a null check would answer with its default - 0 - for every field not bound to a
+        // nullable type, whatever the field actually holds.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 42);
+        });
+
+        Assert.AreEqual("42", component.Find("input").GetAttribute("aria-valuenow"));
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "7" });
+
+        Assert.AreEqual("7", component.Find("input").GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldImmediateShouldKeepTheTypedTextWhileItsCommitIsPending()
+    {
+        // The input's value is bound, so every render writes the component's value back into the
+        // element. While a DebounceTime waits the commit out that is still the value from before the
+        // keystroke, and writing it back would wipe what is being typed.
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 3000);
+        });
+
+        component.Find("input").Focus();
+        component.Find("input").Input(new ChangeEventArgs { Value = "12" });
+
+        component.Render();
+
+        Assert.AreEqual("12", component.Find("input").GetAttribute("value"));
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldShowTheCommittedValueAgainOnceTheFieldIsLeft()
+    {
+        // ... and the text kept visible for that pending commit is history the moment the field is
+        // left, where the committed (and possibly formatted) value is what must show.
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 3000);
+            parameters.Add(p => p.DefaultValue, 5);
+        });
+
+        component.Find("input").Focus();
+        component.Find("input").Input(new ChangeEventArgs { Value = "12" });
+        component.Find("input").FocusOut();
+
+        Assert.AreEqual("5", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldClampTextThatOverflowsAFastPathType()
+    {
+        // short, int and long go through BindConverter's fast paths, which report an overflow as a
+        // plain false rather than throwing - they must clamp exactly like the TypeConverter-backed types.
+        var component = RenderComponent<BitNumberField<short>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (short)5);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "40000" });
+        Assert.AreEqual(short.MaxValue, component.Instance.Value);
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "-40000" });
+        Assert.AreEqual(short.MinValue, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldClampOverflowingTextThatCarriesDigitGroupSpaces()
+    {
+        var component = RenderComponent<BitNumberField<byte>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, (byte)5);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "3 000" });
+
+        Assert.AreEqual((byte)255, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldStillRejectAFractionInsideTheRangeOfAnIntegralType()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 5);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "1.5" });
+
+        Assert.AreEqual(5, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitNumberFieldImmediateShouldCommitThePendingTypedTextBeforeAStep()
+    {
+        // Text typed in Immediate mode whose DebounceTime has not run out yet is what the input shows,
+        // and a step taken meanwhile applies to it - and is not undone when the debounce fires later.
+        Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true).SetResult("12");
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 30);
+            parameters.Add(p => p.DefaultValue, 5);
+        });
+
+        var input = component.Find("input");
+        input.Focus();
+
+        // The keystroke and the step are made in one turn of the renderer's dispatcher, which is where the debounce
+        // resumes, so the step always lands while the typed text is still waiting it out. Made one after the other
+        // from the test, a test thread held up for longer than the 30 ms debounce would let the text be committed
+        // first, and the step would only apply to a committed value.
+        Task typing = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            typing = input.InputAsync(new ChangeEventArgs { Value = "12" });
+            input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+        });
+
+        Assert.AreEqual(13, component.Instance.Value);
+
+        // The input event is only done once its debounce is, which must not commit the "12" again over the step.
+        await typing;
+
+        Assert.AreEqual(13, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldCommitRetypedTextThatMatchesTheValueBeforeTheLastStep()
+    {
+        // After a step has rendered, text the user types is theirs even when it happens to equal what
+        // the input showed before that step.
+        var liveValue = Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true);
+        liveValue.SetResult("5");
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 5);
+        });
+
+        var input = component.Find("input");
+        input.Focus();
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        Assert.AreEqual(6, component.Instance.Value);
+
+        // the user retypes "5" (no event is raised for it outside the Immediate mode) and steps again
+        liveValue.SetResult("5");
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        Assert.AreEqual(6, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitNumberFieldShouldHandleAKeyPressedDuringTheReadOfTheInputAfterTheKeyBeforeIt()
+    {
+        // ArrowUp reads the live text of the input before it checks the bound, a round trip; Home pressed while that
+        // read is out must not run ahead of it. In the order pressed, the ArrowUp is blocked at the Max and the Home
+        // lands on the Min - run the other way round, the ArrowUp would step up from the Min the Home had set.
+        var liveValue = Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true);
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Min, "0");
+            parameters.Add(p => p.Max, "3");
+            parameters.Add(p => p.DefaultValue, 3);
+        });
+
+        component.Find("input").Focus();
+
+        var arrowUp = component.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp" });
+        var home = component.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "Home" });
+
+        // Home waits for the ArrowUp, which waits for the read.
+        Assert.IsFalse(home.IsCompleted);
+        Assert.AreEqual(3, component.Instance.Value);
+
+        liveValue.SetResult("3");
+        await Task.WhenAll(arrowUp, home);
+
+        Assert.AreEqual(0, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitNumberFieldShouldGoOnHandlingKeysAfterOneWhoseHandlerFailed()
+    {
+        // A key whose handling throws reports that through its own event; the key after it is still handled.
+        var keys = new List<string?>();
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Min, "0");
+            parameters.Add(p => p.Max, "3");
+            parameters.Add(p => p.DefaultValue, 3);
+            parameters.Add(p => p.OnKeyDown, async (KeyboardEventArgs e) =>
+            {
+                keys.Add(e.Key);
+                await Task.Yield();
+                if (e.Key == "a") throw new InvalidOperationException("the consumer failed");
+            });
+        });
+
+        var failed = component.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "a" });
+        var home = component.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "Home" });
+
+        // bUnit hands the failure to its renderer rather than to the task, which is all the same here.
+        try { await failed; } catch (InvalidOperationException) { }
+        await home;
+
+        CollectionAssert.AreEqual(new[] { "a", "Home" }, keys);
+        Assert.AreEqual(0, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldRenderTheBaseParametersOnItsRoot()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Id, "quantity-field");
+            parameters.Add(p => p.Class, "custom-class");
+            parameters.Add(p => p.Style, "margin: 1px;");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { ["data-test"] = "root" });
+        });
+
+        var root = component.Find(".bit-nfl");
+
+        Assert.AreEqual("quantity-field", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.AreEqual("root", root.GetAttribute("data-test"));
+    }
+
+    [TestMethod,
+         DataRow(BitVisibility.Visible, null),
+         DataRow(BitVisibility.Hidden, "visibility:hidden"),
+         DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitNumberFieldShouldFollowTheVisibilityParameter(BitVisibility visibility, string? expectedStyle)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.Visibility, visibility));
+
+        var style = component.Find(".bit-nfl").GetAttribute("style");
+
+        if (expectedStyle is null)
+        {
+            Assert.IsTrue(string.IsNullOrEmpty(style));
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+    }
+
+    [TestMethod]
+    public void BitNumberFieldDisabledShouldMarkTheRootAndItsControlsAndDropThePagesActivationHandlers()
+    {
+        var clicks = 0;
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object>
+            {
+                ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++),
+                ["data-kept"] = "yes",
+            });
+        });
+
+        component.Find(".bit-nfl").Click();
+        Assert.AreEqual(1, clicks);
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        var root = component.Find(".bit-nfl");
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        // Only the handlers of the activation events go; a plain attribute stays.
+        Assert.AreEqual("yes", root.GetAttribute("data-kept"));
+
+        var input = component.Find("input");
+        Assert.IsTrue(input.HasAttribute("disabled"));
+        Assert.AreEqual("true", input.GetAttribute("aria-disabled"));
+
+        foreach (var button in component.FindAll(".bit-nfl-cnt button"))
+        {
+            Assert.IsTrue(button.HasAttribute("disabled"));
+            Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
+        }
+
+        // A click reaching the root - one a screen reader dispatches, one bubbling up from inside - runs no
+        // handler of the page while the field is disabled.
+        try
+        {
+            root.Click();
+        }
+        catch (MissingEventHandlerException) { }
+
+        Assert.AreEqual(1, clicks);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNotInvokeTheFocusCallbacksWhileDisabled()
+    {
+        var focusIns = 0;
+        var focusOuts = 0;
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.OnFocusIn, () => focusIns++);
+            parameters.Add(p => p.OnFocusOut, () => focusOuts++);
+        });
+
+        var input = component.Find("input");
+        input.FocusIn();
+        input.FocusOut();
+
+        Assert.AreEqual(0, focusIns);
+        Assert.AreEqual(0, focusOuts);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldInvokeTheFocusInAndFocusOutCallbacks()
+    {
+        var focusIns = 0;
+        var focusOuts = 0;
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.OnFocusIn, () => focusIns++);
+            parameters.Add(p => p.OnFocusOut, () => focusOuts++);
+        });
+
+        var input = component.Find("input");
+        input.FocusIn();
+        input.FocusOut();
+        input.FocusIn();
+
+        Assert.AreEqual(2, focusIns);
+        Assert.AreEqual(1, focusOuts);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldCarryTheFocusedClassAndStyleWhileFocused()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Classes, new BitNumberFieldClassStyles { Focused = "is-focused" });
+            parameters.Add(p => p.Styles, new BitNumberFieldClassStyles { Focused = "outline: 1px solid red;" });
+        });
+
+        var root = component.Find(".bit-nfl");
+        Assert.IsFalse(root.ClassList.Contains("bit-nfl-fcs"));
+        Assert.IsFalse(root.ClassList.Contains("is-focused"));
+
+        component.Find("input").FocusIn();
+
+        root = component.Find(".bit-nfl");
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-fcs"));
+        Assert.IsTrue(root.ClassList.Contains("is-focused"));
+        StringAssert.Contains(root.GetAttribute("style"), "outline: 1px solid red;");
+
+        component.Find("input").FocusOut();
+
+        root = component.Find(".bit-nfl");
+        Assert.IsFalse(root.ClassList.Contains("bit-nfl-fcs"));
+        Assert.IsFalse(root.ClassList.Contains("is-focused"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldClassesShouldReachEveryPart()
+    {
+        var classes = new BitNumberFieldClassStyles
+        {
+            Root = "c-root",
+            LabelContainer = "c-label-container",
+            Label = "c-label",
+            InputContainer = "c-input-container",
+            PrefixContainer = "c-prefix-container",
+            Prefix = "c-prefix",
+            Input = "c-input",
+            ButtonsContainer = "c-buttons",
+            IncrementButton = "c-increment",
+            IncrementIconContainer = "c-increment-icon-container",
+            IncrementIcon = "c-increment-icon",
+            DecrementButton = "c-decrement",
+            DecrementIconContainer = "c-decrement-icon-container",
+            DecrementIcon = "c-decrement-icon",
+            Icon = "c-icon",
+            SuffixContainer = "c-suffix-container",
+            Suffix = "c-suffix",
+            ErrorMessageContainer = "c-error-container",
+            ErrorMessage = "c-error",
+            DescriptionContainer = "c-description-container",
+            Description = "c-description",
+            ClearButton = "c-clear",
+            ClearButtonIcon = "c-clear-icon",
+            Loading = "c-loading",
+            Spinner = "c-spinner",
+        };
+
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.Classes, classes);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.Label, "Quantity");
+            parameters.Add(p => p.Prefix, "$");
+            parameters.Add(p => p.Suffix, "kg");
+            parameters.Add(p => p.IconName, "Add");
+            parameters.Add(p => p.ErrorMessage, "Too many");
+            parameters.Add(p => p.Description, "A hint");
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, 3);
+            parameters.Add(p => p.Loading, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains("c-root"));
+        Assert.IsTrue(component.Find(".bit-nfl-lct").ClassList.Contains("c-label-container"));
+        Assert.IsTrue(component.Find(".bit-nfl-lbl").ClassList.Contains("c-label"));
+        Assert.IsTrue(component.Find(".bit-nfl-cnt").ClassList.Contains("c-input-container"));
+        Assert.IsTrue(component.Find(".bit-nfl-pre").ClassList.Contains("c-prefix-container"));
+        Assert.IsTrue(component.Find(".bit-nfl-pre span").ClassList.Contains("c-prefix"));
+        Assert.IsTrue(component.Find(".bit-nfl-inp").ClassList.Contains("c-input"));
+        Assert.IsTrue(component.Find(".bit-nfl-act").ClassList.Contains("c-buttons"));
+        Assert.IsTrue(component.Find(".bit-nfl-aup").ClassList.Contains("c-increment"));
+        Assert.IsTrue(component.Find(".bit-nfl-aup .bit-nfl-aic").ClassList.Contains("c-increment-icon-container"));
+        Assert.IsTrue(component.Find(".bit-nfl-aup i").ClassList.Contains("c-increment-icon"));
+        Assert.IsTrue(component.Find(".bit-nfl-adn").ClassList.Contains("c-decrement"));
+        Assert.IsTrue(component.Find(".bit-nfl-adn .bit-nfl-aic").ClassList.Contains("c-decrement-icon-container"));
+        Assert.IsTrue(component.Find(".bit-nfl-adn i").ClassList.Contains("c-decrement-icon"));
+        Assert.IsTrue(component.Find(".bit-nfl-lic").ClassList.Contains("c-icon"));
+        Assert.IsTrue(component.Find(".bit-nfl-suf").ClassList.Contains("c-suffix-container"));
+        Assert.IsTrue(component.Find(".bit-nfl-suf span").ClassList.Contains("c-suffix"));
+        Assert.IsTrue(component.Find(".bit-nfl-erm").ClassList.Contains("c-error-container"));
+        Assert.IsTrue(component.Find(".bit-nfl-erm span").ClassList.Contains("c-error"));
+        Assert.IsTrue(component.Find(".bit-nfl-des").ClassList.Contains("c-description-container"));
+        Assert.IsTrue(component.Find(".bit-nfl-des span").ClassList.Contains("c-description"));
+        Assert.IsTrue(component.Find(".bit-nfl-cbt").ClassList.Contains("c-clear"));
+        Assert.IsTrue(component.Find(".bit-nfl-cbt i").ClassList.Contains("c-clear-icon"));
+        Assert.IsTrue(component.Find(".bit-nfl-lod").ClassList.Contains("c-loading"));
+        Assert.IsTrue(component.Find(".bit-nfl-spn").ClassList.Contains("c-spinner"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldStylesShouldReachEveryPart()
+    {
+        var styles = new BitNumberFieldClassStyles
+        {
+            Root = "--s: root;",
+            LabelContainer = "--s: label-container;",
+            Label = "--s: label;",
+            InputContainer = "--s: input-container;",
+            PrefixContainer = "--s: prefix-container;",
+            Prefix = "--s: prefix;",
+            Input = "--s: input;",
+            ButtonsContainer = "--s: buttons;",
+            IncrementButton = "--s: increment;",
+            IncrementIconContainer = "--s: increment-icon-container;",
+            IncrementIcon = "--s: increment-icon;",
+            DecrementButton = "--s: decrement;",
+            DecrementIconContainer = "--s: decrement-icon-container;",
+            DecrementIcon = "--s: decrement-icon;",
+            Icon = "--s: icon;",
+            SuffixContainer = "--s: suffix-container;",
+            Suffix = "--s: suffix;",
+            ErrorMessageContainer = "--s: error-container;",
+            ErrorMessage = "--s: error;",
+            DescriptionContainer = "--s: description-container;",
+            Description = "--s: description;",
+            ClearButton = "--s: clear;",
+            ClearButtonIcon = "--s: clear-icon;",
+            Loading = "--s: loading;",
+            Spinner = "--s: spinner;",
+        };
+
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.Styles, styles);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.Label, "Quantity");
+            parameters.Add(p => p.Prefix, "$");
+            parameters.Add(p => p.Suffix, "kg");
+            parameters.Add(p => p.IconName, "Add");
+            parameters.Add(p => p.ErrorMessage, "Too many");
+            parameters.Add(p => p.Description, "A hint");
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, 3);
+            parameters.Add(p => p.Loading, true);
+        });
+
+        StringAssert.Contains(component.Find(".bit-nfl").GetAttribute("style"), "--s: root;");
+        Assert.AreEqual("--s: label-container;", component.Find(".bit-nfl-lct").GetAttribute("style"));
+        Assert.AreEqual("--s: label;", component.Find(".bit-nfl-lbl").GetAttribute("style"));
+        Assert.AreEqual("--s: input-container;", component.Find(".bit-nfl-cnt").GetAttribute("style"));
+        Assert.AreEqual("--s: prefix-container;", component.Find(".bit-nfl-pre").GetAttribute("style"));
+        Assert.AreEqual("--s: prefix;", component.Find(".bit-nfl-pre span").GetAttribute("style"));
+        Assert.AreEqual("--s: input;", component.Find(".bit-nfl-inp").GetAttribute("style"));
+        Assert.AreEqual("--s: buttons;", component.Find(".bit-nfl-act").GetAttribute("style"));
+        Assert.AreEqual("--s: increment;", component.Find(".bit-nfl-aup").GetAttribute("style"));
+        Assert.AreEqual("--s: increment-icon-container;", component.Find(".bit-nfl-aup .bit-nfl-aic").GetAttribute("style"));
+        Assert.AreEqual("--s: increment-icon;", component.Find(".bit-nfl-aup i").GetAttribute("style"));
+        Assert.AreEqual("--s: decrement;", component.Find(".bit-nfl-adn").GetAttribute("style"));
+        Assert.AreEqual("--s: decrement-icon-container;", component.Find(".bit-nfl-adn .bit-nfl-aic").GetAttribute("style"));
+        Assert.AreEqual("--s: decrement-icon;", component.Find(".bit-nfl-adn i").GetAttribute("style"));
+        Assert.AreEqual("--s: icon;", component.Find(".bit-nfl-lic").GetAttribute("style"));
+        Assert.AreEqual("--s: suffix-container;", component.Find(".bit-nfl-suf").GetAttribute("style"));
+        Assert.AreEqual("--s: suffix;", component.Find(".bit-nfl-suf span").GetAttribute("style"));
+        Assert.AreEqual("--s: error-container;", component.Find(".bit-nfl-erm").GetAttribute("style"));
+        Assert.AreEqual("--s: error;", component.Find(".bit-nfl-erm span").GetAttribute("style"));
+        Assert.AreEqual("--s: description-container;", component.Find(".bit-nfl-des").GetAttribute("style"));
+        Assert.AreEqual("--s: description;", component.Find(".bit-nfl-des span").GetAttribute("style"));
+        Assert.AreEqual("--s: clear;", component.Find(".bit-nfl-cbt").GetAttribute("style"));
+        Assert.AreEqual("--s: clear-icon;", component.Find(".bit-nfl-cbt i").GetAttribute("style"));
+        Assert.AreEqual("--s: loading;", component.Find(".bit-nfl-lod").GetAttribute("style"));
+        Assert.AreEqual("--s: spinner;", component.Find(".bit-nfl-spn").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldRenderTheDefaultGlyphsOfItsButtons()
+    {
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, 3);
+        });
+
+        // One chevron, turned around for the increment button.
+        var incrementIcon = component.Find(".bit-nfl-aup i");
+        Assert.IsTrue(incrementIcon.ClassList.Contains("bit-icon--ChevronDownSmall"));
+        Assert.IsTrue(incrementIcon.ClassList.Contains("bit-ico-r180"));
+
+        var decrementIcon = component.Find(".bit-nfl-adn i");
+        Assert.IsTrue(decrementIcon.ClassList.Contains("bit-icon--ChevronDownSmall"));
+        Assert.IsFalse(decrementIcon.ClassList.Contains("bit-ico-r180"));
+
+        Assert.IsTrue(component.Find(".bit-nfl-cbt i").ClassList.Contains("bit-icon--Cancel"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldRenderTheIconsGivenAsBitIconInfoOverTheNamesBesideThem()
+    {
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, 3);
+            parameters.Add(p => p.Icon, BitIconInfo.Css("fa fa-hashtag"));
+            parameters.Add(p => p.IconName, "Add");
+            parameters.Add(p => p.IncrementIcon, BitIconInfo.Bi("plus"));
+            parameters.Add(p => p.IncrementIconName, "Up");
+            parameters.Add(p => p.DecrementIcon, BitIconInfo.Bi("dash"));
+            parameters.Add(p => p.DecrementIconName, "Down");
+            parameters.Add(p => p.ClearButtonIcon, BitIconInfo.Css("fa fa-xmark"));
+            parameters.Add(p => p.ClearButtonIconName, "Clear");
+        });
+
+        var icon = component.Find(".bit-nfl-lic");
+        Assert.IsTrue(icon.ClassList.Contains("fa-hashtag"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--Add"));
+
+        var incrementIcon = component.Find(".bit-nfl-aup i");
+        Assert.IsTrue(incrementIcon.ClassList.Contains("bi-plus"));
+        Assert.IsFalse(incrementIcon.ClassList.Contains("bit-icon--Up"));
+
+        var decrementIcon = component.Find(".bit-nfl-adn i");
+        Assert.IsTrue(decrementIcon.ClassList.Contains("bi-dash"));
+        Assert.IsFalse(decrementIcon.ClassList.Contains("bit-icon--Down"));
+
+        var clearIcon = component.Find(".bit-nfl-cbt i");
+        Assert.IsTrue(clearIcon.ClassList.Contains("fa-xmark"));
+        Assert.IsFalse(clearIcon.ClassList.Contains("bit-icon--Clear"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldRenderTheTitlesOfItsSpinButtons()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Inline);
+            parameters.Add(p => p.IncrementTitle, "One more");
+            parameters.Add(p => p.DecrementTitle, "One less");
+        });
+
+        var buttons = component.FindAll(".bit-nfl-sbn");
+
+        // Inline mode renders the decrement button first.
+        Assert.AreEqual("One less", buttons[0].GetAttribute("title"));
+        Assert.AreEqual("One more", buttons[1].GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldPrefixAndSuffixTemplatesShouldTakeTheWholeSlotOver()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Prefix, "$");
+            parameters.Add(p => p.PrefixTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<b class=\"my-prefix\">USD</b>")));
+            parameters.Add(p => p.Suffix, "kg");
+            parameters.Add(p => p.SuffixTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<b class=\"my-suffix\">kilos</b>")));
+        });
+
+        Assert.AreEqual("USD", component.Find(".bit-nfl-cnt .my-prefix").TextContent);
+        Assert.AreEqual("kilos", component.Find(".bit-nfl-cnt .my-suffix").TextContent);
+        Assert.AreEqual(0, component.FindAll(".bit-nfl-pre").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-nfl-suf").Count);
+
+        // A template takes the id with it, so there is nothing left for the input to point at.
+        Assert.IsNull(component.Find("input").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldRequiredShouldMarkTheRootAndTheInput()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+        });
+
+        var root = component.Find(".bit-nfl");
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-req"));
+        // Without a label there is nowhere to draw the indicator beside, which this class says.
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-rnl"));
+        Assert.IsTrue(component.Find("input").HasAttribute("required"));
+
+        component.Render(parameters => parameters.Add(p => p.Label, "Quantity"));
+
+        root = component.Find(".bit-nfl");
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-req"));
+        Assert.IsFalse(root.ClassList.Contains("bit-nfl-rnl"));
+
+        // A disabled field asks for nothing.
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        root = component.Find(".bit-nfl");
+        Assert.IsFalse(root.ClassList.Contains("bit-nfl-req"));
+        Assert.IsFalse(root.ClassList.Contains("bit-nfl-rnl"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldTurnTheAutoCompleteOffUnlessToldOtherwise()
+    {
+        var component = RenderComponent<BitNumberField<int>>();
+        Assert.AreEqual("off", component.Find("input").GetAttribute("autocomplete"));
+
+        component.Render(parameters => parameters.Add(p => p.AutoComplete, "on"));
+        Assert.AreEqual("on", component.Find("input").GetAttribute("autocomplete"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldAutoFocusShouldLandOnTheInput()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+        });
+
+        Assert.IsTrue(component.Find("input").HasAttribute("autofocus"));
+        // The button only takes it over in HideInput mode.
+        Assert.IsFalse(component.Find(".bit-nfl-aup").HasAttribute("autofocus"));
+        component.WaitForAssertion(() => Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus")));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldRenderTheNameOnTheInput()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Name, "quantity");
+            parameters.Add(p => p.DefaultValue, 4);
+        });
+
+        var input = component.Find("input");
+
+        Assert.AreEqual("quantity", input.GetAttribute("name"));
+        Assert.AreEqual("4", input.GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldOneWayBoundValueShouldNotMoveWithoutAHandler()
+    {
+        // A Value with neither a ValueChanged nor an OnChange beside it is the app's alone.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Value, 5);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+        });
+
+        component.Find("input").Change("9");
+        component.Find("input").KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+        component.Find(".bit-nfl-aup").Click(new MouseEventArgs { Detail = 0 });
+
+        Assert.AreEqual(5, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldLabelShouldPointAtTheInputAndNameIt()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Quantity");
+        });
+
+        var input = component.Find("input");
+        var label = component.Find("label");
+
+        Assert.AreEqual(input.Id, label.GetAttribute("for"));
+        Assert.AreEqual(label.Id, input.GetAttribute("aria-labelledby"));
+        Assert.IsTrue(label.ClassList.Contains("bit-nfl-lbl"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNotReactToTypingWhileDisabled()
+    {
+        var changes = 0;
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.DefaultValue, 5);
+            parameters.Add(p => p.OnChange, (int _) => changes++);
+        });
+
+        var input = component.Find("input");
+        input.Change("9");
+        input.Wheel(new WheelEventArgs { DeltaY = -1, ShiftKey = true });
+
+        Assert.AreEqual(5, component.Instance.Value);
+        Assert.AreEqual(0, changes);
     }
 }

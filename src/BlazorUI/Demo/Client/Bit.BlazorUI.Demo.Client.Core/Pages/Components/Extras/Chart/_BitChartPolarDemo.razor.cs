@@ -1,10 +1,10 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
 public partial class _BitChartPolarDemo
 {
     private readonly BitChartOptions _right = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.End } }
     };
 
     private readonly BitChartOptions _labels = new()
@@ -34,7 +34,7 @@ public partial class _BitChartPolarDemo
     private readonly string areaCsharpCode = @"
 private readonly BitChartOptions _right = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.End } }
 };
 
 private BitChartData Data() => new()

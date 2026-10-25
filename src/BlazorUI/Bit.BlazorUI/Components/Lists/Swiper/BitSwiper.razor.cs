@@ -1,3 +1,4 @@
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -7,7 +8,7 @@ namespace Bit.BlazorUI;
 /// The items are laid out side by side inside a scrolling box, so the swiper scrolls freely through them
 /// instead of paging like a <see cref="BitCarousel"/> does: the items keep whatever size they were given
 /// (or take one from <see cref="VisibleItemsCount"/>), and the swiper comes to rest wherever it was left,
-/// unless <see cref="Snap"/> asks it to settle on an item. It can be driven with its own next/prev
+/// unless <see cref="SnapAlign"/> asks it to settle on an item. It can be driven with its own next/prev
 /// buttons, with the dots below it, by dragging it, with the keyboard, with the mouse wheel, from
 /// application code through <see cref="GoNext"/>/<see cref="GoPrev"/>/<see cref="GoTo(int)"/>, or on its
 /// own with <see cref="AutoPlay"/>.
@@ -31,17 +32,27 @@ public partial class BitSwiper : BitComponentBase
     private bool _hovered;
     private bool _stopped;
     private bool _focused;
+    private bool _hoverOverridden;
+    private bool _focusOverridden;
+    private bool _keysOwnedByContent;
     private bool _isPaused;
     private bool _pageHidden;
+    private bool _pageVisibilityPending;
     private bool _needsSetup;
     private bool _needsRefresh;
     private bool _afterFirstRender;
+    private bool _prefersReducedMotion;
+    private bool _autoPlayApplied;
     private int _laidOutItemsCount = -1;
     private (bool Playing, bool Paused) _playbackState;
     private string _optionsSignature = string.Empty;
     private int _internalScrollItemsCount = 1;
     private System.Timers.Timer? _autoPlayTimer;
     private string _directionStyle = string.Empty;
+    private bool _stateReported;
+    private int _reportedItemsCount;
+    private bool _endReached;
+    private string? _announcement;
 
     // Nothing is known about how far the swiper reaches until the browser has measured it, and a button
     // that flashed into view only to hide itself on the first measurement would move the items under it.
@@ -51,6 +62,9 @@ public partial class BitSwiper : BitComponentBase
     private string _nextButtonStyle = "display:none;";
     private string _prevButtonStyle = "display:none;";
     private readonly List<BitSwiperItem> _allItems = [];
+
+    // What the items read off Classes and Styles for their own class and style strings, when they last built them.
+    private (string?, string?, string?, string?) _lastItemClassStyles;
     private ElementReference _swiperContainer = default!;
     private DotNetObjectReference<BitSwiper> _dotnetObj = default!;
 
@@ -69,6 +83,19 @@ public partial class BitSwiper : BitComponentBase
 
 
 
+    /// <summary>
+    /// Gets or sets the cascading parameters for the swiper component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple swiper components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitSwiperParams.ParamName)]
+    public BitSwiperParams? CascadingParameters { get; set; }
+
+
+
     // The element the controls of the swiper act on. Naming it lets every one of them point at it with
     // aria-controls, so the relation between a control and the items it moves is spelled out.
     internal string _ContainerId => $"{_Id}-cnt";
@@ -80,6 +107,9 @@ public partial class BitSwiper : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It colors the dot of the current page. <see cref="Color"/> takes precedence over it when both are set.
+    /// <br />
+    /// An explicit value wins over <c>--bit-Swiper-dot-current-color</c> and <c>--bit-Swiper-dot-current-hover-color</c>;
+    /// left unset, the current dot is primary unless those variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Accent { get; set; }
@@ -94,8 +124,8 @@ public partial class BitSwiper : BitComponentBase
     /// scrolled by the browser, which brings the timing of the platform with it.
     /// <br />
     /// The animation also collapses to nothing when the operating system or the browser reports
-    /// 'prefers-reduced-motion: reduce', unless <see cref="BitComponentBase.ForceAnimation"/> opts the
-    /// swiper out of it.
+    /// 'prefers-reduced-motion: reduce', the way the motion tokens of the theme do, so
+    /// <see cref="BitComponentBase.ForceAnimation"/>, or an app restoring those tokens, brings it back.
     /// </remarks>
     [Parameter] public double AnimationDuration { get; set; } = 0.5;
 
@@ -110,6 +140,10 @@ public partial class BitSwiper : BitComponentBase
     /// <br />
     /// A swiper that reaches its end rewinds to the start, unless <see cref="StopOnLastSlide"/> says to
     /// stop there.
+    /// <br />
+    /// When the system or the browser reports 'prefers-reduced-motion: reduce', the scrolling starts paused
+    /// (<see cref="IsPaused"/> is true) until it is started with the play/pause button or <see cref="Resume"/>,
+    /// unless <see cref="BitComponentBase.ForceAnimation"/> opts the swiper back into motion.
     /// </remarks>
     [Parameter] public bool AutoPlay { get; set; }
 
@@ -142,6 +176,9 @@ public partial class BitSwiper : BitComponentBase
     /// <br />
     /// When not set, the swiper falls back to <see cref="Accent"/>, and to the primary color of the theme
     /// when that is not set either.
+    /// <br />
+    /// An explicit value wins over the <c>--bit-Swiper-*</c> focus, button and current-dot color variables; left
+    /// unset, the swiper keeps those defaults unless the variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -215,6 +252,9 @@ public partial class BitSwiper : BitComponentBase
     /// It is only used for the items that were not given an <see cref="BitComponentBase.AriaLabel"/> of
     /// their own, which is what the carousel pattern of the ARIA authoring practices asks for when a slide
     /// has nothing better to be called.
+    /// <br />
+    /// The accessible name of an item (its own, or the one this format gives it) is also what the swiper
+    /// announces to screen readers when it comes to stand on that item, except while it plays on its own.
     /// </remarks>
     [Parameter] public string? ItemAriaLabelFormat { get; set; }
 
@@ -272,6 +312,28 @@ public partial class BitSwiper : BitComponentBase
     [Parameter] public EventCallback<int> OnChange { get; set; }
 
     /// <summary>
+    /// The event that will be called when the swiper is scrolled all the way to its end.
+    /// </summary>
+    /// <remarks>
+    /// It fires each time the swiper is moved to its end, not while it stays there, and not when the end
+    /// comes to it instead: a resize clamping it to a shorter reach, or items taken out while it stands near
+    /// the end. A swiper everything fits in has its end in view without going anywhere, so it fires for that
+    /// too, once per set of items. That makes it the place to load more items: once they are added, the
+    /// swiper either has somewhere to go again and fires the next time it gets there, or still fits them all
+    /// and fires straight away.
+    /// </remarks>
+    [Parameter] public EventCallback OnReachEnd { get; set; }
+
+    /// <summary>
+    /// The event that will be called when the swiper is scrolled all the way back to its start.
+    /// </summary>
+    /// <remarks>
+    /// It fires each time the swiper is moved back to its start, not for the start it is first laid out on,
+    /// and not when a resize or a change of its items puts it there.
+    /// </remarks>
+    [Parameter] public EventCallback OnReachStart { get; set; }
+
+    /// <summary>
     /// The accessible label of the play/pause button while the auto scrolling is running.
     /// </summary>
     [Parameter] public string PauseButtonAriaLabel { get; set; } = "Stop automatic slide show";
@@ -301,6 +363,20 @@ public partial class BitSwiper : BitComponentBase
     /// Pauses the auto scrolling while the pointer is over the swiper (the default value is true).
     /// </summary>
     [Parameter] public bool PauseOnHover { get; set; } = true;
+
+    /// <summary>
+    /// The room (any CSS length, for example <c>2rem</c>) kept at both ends of the swiper, which the items
+    /// next to the ones in view peek into.
+    /// </summary>
+    /// <remarks>
+    /// A partly shown item is the clearest hint that there is more to scroll to. The room is taken out of
+    /// the swiper before <see cref="VisibleItemsCount"/> sizes its items, so the requested number of them
+    /// still fits whole between the two ends, and the items settle against it rather than against the edge
+    /// of the swiper, both when it navigates and when it snaps. Each end is capped at a quarter of the
+    /// swiper, so half of it is always left for the items however large a peek is asked for.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? Peek { get; set; }
 
     /// <summary>
     /// The accessible label of the play/pause button while the auto scrolling is paused.
@@ -345,6 +421,17 @@ public partial class BitSwiper : BitComponentBase
     [Parameter] public string? PrevIconName { get; set; }
 
     /// <summary>
+    /// Wraps the manual navigation around: moving on from the end of the swiper goes back to its start, and
+    /// moving back from its start goes to its end.
+    /// </summary>
+    /// <remarks>
+    /// It covers the next/prev buttons (which then stay visible at both ends), the arrow keys and
+    /// <see cref="GoNext"/>/<see cref="GoPrev"/>. The wheel and the dragging stop at the ends either way, since a
+    /// scroll that jumps back to the start under the hand reads as a glitch rather than as a navigation.
+    /// </remarks>
+    [Parameter] public bool Rewind { get; set; }
+
+    /// <summary>
     /// Number of items that is going to be changed on navigation.
     /// </summary>
     /// <remarks>
@@ -385,6 +472,10 @@ public partial class BitSwiper : BitComponentBase
     /// <summary>
     /// The size of the dots and of the next/prev buttons of the swiper.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Swiper-dot-size</c> and <c>--bit-Swiper-button-size</c>; left unset, the
+    /// swiper is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -393,14 +484,14 @@ public partial class BitSwiper : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The value chooses where the item it settles on comes to rest: at the start of the swiper, in its
-    /// middle, or at its end. Without it the swiper scrolls freely, which is what a rail of items that are
-    /// read side by side wants.
+    /// middle, or at its end. Leaving it unset - or setting it to <see cref="BitScrollSnapAlign.None"/> -
+    /// lets the swiper scroll freely, which is what a rail of items that are read side by side wants.
     /// <br />
     /// The snapping itself is the browser's (CSS scroll snapping), so a touch swipe settles the same way a
     /// navigation does.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSwiperSnap? Snap { get; set; }
+    public BitScrollSnapAlign? SnapAlign { get; set; }
 
     /// <summary>
     /// Stops the auto scrolling as soon as the swiper is navigated through one of its own controls.
@@ -525,7 +616,8 @@ public partial class BitSwiper : BitComponentBase
     public bool IsAtEnd => _atEnd;
 
     /// <summary>
-    /// Whether the auto scrolling has been paused through <see cref="Pause"/> or the play/pause button.
+    /// Whether the auto scrolling has been paused through <see cref="Pause"/> or the play/pause button, or
+    /// started paused because reduced motion was requested (see <see cref="AutoPlay"/>).
     /// </summary>
     public bool IsPaused => _isPaused || _stopped;
 
@@ -551,12 +643,12 @@ public partial class BitSwiper : BitComponentBase
 
 
     /// <summary>
-    /// Navigates to the next swiper item.
+    /// Navigates to the next swiper item (back to the first one from the end when <see cref="Rewind"/> is enabled).
     /// </summary>
     public async Task GoNext() => await Go(true);
 
     /// <summary>
-    /// Navigates to the previous swiper item.
+    /// Navigates to the previous swiper item (on to the last one from the start when <see cref="Rewind"/> is enabled).
     /// </summary>
     public async Task GoPrev() => await Go(false);
 
@@ -569,7 +661,7 @@ public partial class BitSwiper : BitComponentBase
     /// </param>
     public async Task GoTo(int number)
     {
-        if (IsDisposed || IsEnabled is false || _afterFirstRender is false || _allItems.Count == 0) return;
+        if (IsDisposed || Disabled || _afterFirstRender is false || _allItems.Count == 0) return;
 
         var index = Math.Clamp(number - 1, 0, _allItems.Count - 1);
 
@@ -585,7 +677,7 @@ public partial class BitSwiper : BitComponentBase
     /// </param>
     public async Task GoToPage(int number)
     {
-        if (IsDisposed || IsEnabled is false || _pagesCount < 1) return;
+        if (IsDisposed || Disabled || _pagesCount < 1) return;
 
         await _js.BitSwiperGoToPage(_Id, Math.Clamp(number - 1, 0, _pagesCount - 1));
     }
@@ -595,7 +687,7 @@ public partial class BitSwiper : BitComponentBase
     /// </summary>
     public async Task GoToStart()
     {
-        if (IsDisposed || IsEnabled is false || _afterFirstRender is false) return;
+        if (IsDisposed || Disabled || _afterFirstRender is false) return;
 
         await _js.BitSwiperGoToEdge(_Id, false);
     }
@@ -605,7 +697,7 @@ public partial class BitSwiper : BitComponentBase
     /// </summary>
     public async Task GoToEnd()
     {
-        if (IsDisposed || IsEnabled is false || _afterFirstRender is false) return;
+        if (IsDisposed || Disabled || _afterFirstRender is false) return;
 
         await _js.BitSwiperGoToEdge(_Id, true);
     }
@@ -627,6 +719,13 @@ public partial class BitSwiper : BitComponentBase
     {
         _isPaused = false;
         _stopped = false;
+
+        // Asking for the scrolling is what the hover and focus pauses wait for, and the play/pause button
+        // that asks for it is itself under the pointer and holding the focus, so the pointer and the focus
+        // already inside the swiper no longer hold it back. Only leaving the swiper and coming back (or
+        // moving the focus on inside it) pauses it again.
+        _hoverOverridden = _hovered;
+        _focusOverridden = _focused;
 
         UpdateAutoPlayTimer();
     }
@@ -665,9 +764,26 @@ public partial class BitSwiper : BitComponentBase
     [JSInvokable("OnStateChange")]
     public async Task _OnStateChange(BitSwiperState state)
     {
-        if (IsDisposed || state is null) return;
+        if (IsDisposing || state is null) return;
 
         var previousIndex = _index;
+        var wasAtStart = _atStart;
+        var wasAtEnd = _atEnd;
+
+        // A move is a report following another one over the same box and the same items, so only the scroll
+        // position changed. A resize clamping the swiper to a shorter reach, or items taken out from under
+        // it, can leave it at an end too, but it went nowhere to get there.
+        var moved = _stateReported &&
+                    Math.Abs(_viewport - state.Viewport) <= 0.5 &&
+                    _reportedItemsCount == _allItems.Count;
+
+        // Another set of items is another end to reach, and leaving the end makes it one to reach again.
+        if (_reportedItemsCount != _allItems.Count || state.AtEnd is false)
+        {
+            _endReached = false;
+        }
+
+        _reportedItemsCount = _allItems.Count;
 
         _index = state.Index;
         _page = state.Page;
@@ -688,6 +804,16 @@ public partial class BitSwiper : BitComponentBase
         SetNavigationButtonsVisibility();
         UpdateItemsCurrentState();
 
+        // Scrolling the swiper changes nothing in the DOM a screen reader would pick up on its own, so the
+        // item it comes to stand on is announced through a live region. The first report only says where
+        // the swiper was laid out, which is not news, so it is not announced.
+        if (_stateReported && previousIndex != _index && _index >= 0 && _index < _allItems.Count)
+        {
+            _announcement = _allItems[_index].GetAriaLabel();
+        }
+
+        _stateReported = true;
+
         // The end of the swiper is what the auto scrolling hinges on, so the timer is re-evaluated here: a
         // swiper that only just received enough items to have somewhere to go starts, and one whose items
         // were taken away stops.
@@ -698,7 +824,38 @@ public partial class BitSwiper : BitComponentBase
         if (previousIndex != _index)
         {
             await OnChange.InvokeAsync(_index);
+
+            // The handler may have taken the swiper away (navigating off the page, for one).
+            if (IsDisposing) return;
         }
+
+        // Only a move counts at the start: the place the swiper is first laid out on is not one.
+        if (moved && _scrollable && wasAtStart is false && _atStart)
+        {
+            await OnReachStart.InvokeAsync();
+
+            if (IsDisposing) return;
+        }
+
+        // The end is reached by moving to it or, in a swiper everything fits in, by having it in view already;
+        // without the latter, a swiper loading more items here would stall on a first batch that fits.
+        if (_atEnd && _endReached is false && (_scrollable is false || (moved && wasAtEnd is false)))
+        {
+            _endReached = true;
+
+            await OnReachEnd.InvokeAsync();
+        }
+    }
+
+
+
+    // Reported from the browser when the keyboard focus moves onto (or away from) something inside an item that
+    // takes the navigation keys for itself: a text field, a select, a slider, a listbox, and the like. The arrow
+    // keys belong to that control then, so the swiper leaves them alone instead of moving under the caret.
+    [JSInvokable("OnKeysOwnerChange")]
+    public void _OnKeysOwnerChange(bool ownedByContent)
+    {
+        _keysOwnedByContent = ownedByContent;
     }
 
 
@@ -714,6 +871,10 @@ public partial class BitSwiper : BitComponentBase
 
     internal void UnregisterItem(BitSwiperItem item)
     {
+        // The items unregister while they are being disposed, which also happens when the swiper goes away with
+        // them: re-indexing the ones that are left is work for a swiper that is gone.
+        if (IsDisposing) return;
+
         if (_allItems.Remove(item) is false) return;
 
         // The indices of the items are what the accessible names and the current item marker are written
@@ -723,8 +884,6 @@ public partial class BitSwiper : BitComponentBase
         {
             _allItems[i].Index = i;
         }
-
-        if (IsDisposed) return;
 
         StateHasChanged();
     }
@@ -741,23 +900,19 @@ public partial class BitSwiper : BitComponentBase
 
         ClassBuilder.Register(() => ShowScrollbar ? "bit-swp-scb" : string.Empty);
 
-        ClassBuilder.Register(() => (NoDrag || IsEnabled is false) ? "bit-swp-ndr" : string.Empty);
+        ClassBuilder.Register(() => (NoDrag || Disabled) ? "bit-swp-ndr" : string.Empty);
 
-        ClassBuilder.Register(() => Snap switch
+        ClassBuilder.Register(() => SnapAlign switch
         {
-            BitSwiperSnap.Start => "bit-swp-snp bit-swp-sns",
-            BitSwiperSnap.Center => "bit-swp-snp bit-swp-snc",
-            BitSwiperSnap.End => "bit-swp-snp bit-swp-sne",
+            BitScrollSnapAlign.Start => "bit-swp-snp bit-swp-sns",
+            BitScrollSnapAlign.Center => "bit-swp-snp bit-swp-snc",
+            BitScrollSnapAlign.End => "bit-swp-snp bit-swp-sne",
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-swp-sm",
-            BitSize.Medium => "bit-swp-md",
-            BitSize.Large => "bit-swp-lg",
-            _ => string.Empty
-        });
+        // Size, Accent and Color publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Swiper-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-swp"));
 
         ClassBuilder.Register(() => Accent switch
         {
@@ -765,32 +920,12 @@ public partial class BitSwiper : BitComponentBase
             BitColorKind.Secondary => "bit-swp-asec",
             BitColorKind.Tertiary => "bit-swp-ater",
             BitColorKind.Transparent => "bit-swp-atra",
-            _ => "bit-swp-apri"
+            _ => string.Empty
         });
 
         // The color classes come after the accent ones in the stylesheet, so a swiper that sets both ends
         // up with the color it was given rather than with the accent it fell back to.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-swp-pri",
-            BitColor.Secondary => "bit-swp-sec",
-            BitColor.Tertiary => "bit-swp-ter",
-            BitColor.Info => "bit-swp-inf",
-            BitColor.Success => "bit-swp-suc",
-            BitColor.Warning => "bit-swp-wrn",
-            BitColor.SevereWarning => "bit-swp-swr",
-            BitColor.Error => "bit-swp-err",
-            BitColor.PrimaryBackground => "bit-swp-pbg",
-            BitColor.SecondaryBackground => "bit-swp-sbg",
-            BitColor.TertiaryBackground => "bit-swp-tbg",
-            BitColor.PrimaryForeground => "bit-swp-pfg",
-            BitColor.SecondaryForeground => "bit-swp-sfg",
-            BitColor.TertiaryForeground => "bit-swp-tfg",
-            BitColor.PrimaryBorder => "bit-swp-pbr",
-            BitColor.SecondaryBorder => "bit-swp-sbr",
-            BitColor.TertiaryBorder => "bit-swp-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-swp"));
     }
 
     protected override void RegisterCssStyles()
@@ -798,6 +933,8 @@ public partial class BitSwiper : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-swp-gap:{Gap}" : string.Empty);
+
+        StyleBuilder.Register(() => Peek.HasValue() ? $"--bit-swp-peek:{Peek}" : string.Empty);
 
         // The size the items are given is handed to the stylesheet as a variable rather than written onto
         // every one of them, so a swiper that changes how many items it shows costs one style on the root
@@ -816,16 +953,38 @@ public partial class BitSwiper : BitComponentBase
 
     protected override void OnInitialized()
     {
+        // The utility is shared, so another component may already have asked the page; what it knows is taken right
+        // away, and whatever it learns later - the answer to the first call, or to one it retried - comes as a change.
         _pageVisibility.OnChange += PageVisibilityChange;
+        _pageHidden = _pageVisibility.IsHidden;
 
         base.OnInitialized();
     }
 
     protected override void OnParametersSet()
     {
-        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl;" : string.Empty;
+        CascadingParameters?.UpdateParameters(this);
+
+        // The items are rendered under a fixed cascade, so a render of the swiper does not render them again,
+        // and they build their strings out of these: compared by value, so a ClassStyles changed in place counts.
+        var itemClassStyles = (Classes?.Item, Classes?.CurrentItem, Styles?.Item, Styles?.CurrentItem);
+
+        if (_lastItemClassStyles != itemClassStyles)
+        {
+            _lastItemClassStyles = itemClassStyles;
+
+            foreach (var item in _allItems)
+            {
+                item.RefreshClassStyles();
+            }
+        }
+
+        _directionStyle = ExplicitRtl is true ? "direction:rtl;" : string.Empty;
 
         _internalScrollItemsCount = Math.Max(1, ScrollItemsCount);
+
+        // Rewind decides whether the buttons stay at the ends, so they are re-evaluated with the parameters.
+        SetNavigationButtonsVisibility();
 
         // Everything the browser side of the swiper is driven with is folded into one signature, so a
         // single comparison decides whether it has to be told about a change at all.
@@ -837,6 +996,16 @@ public partial class BitSwiper : BitComponentBase
 
             _needsSetup = _afterFirstRender;
         }
+
+        // A reader who asked the system for less motion is not handed a swiper that starts scrolling on its
+        // own, including one whose AutoPlay is only switched on after the first render (the one it is on
+        // from the start is paused in OnAfterRenderAsync).
+        if (AutoPlay && _autoPlayApplied is false && _afterFirstRender && _prefersReducedMotion)
+        {
+            _isPaused = true;
+        }
+
+        _autoPlayApplied = AutoPlay;
 
         UpdateAutoPlayTimer();
 
@@ -855,11 +1024,34 @@ public partial class BitSwiper : BitComponentBase
             _needsSetup = false;
             _laidOutItemsCount = _allItems.Count;
 
+            // The page is asked whether it is hidden alongside the setup, since neither answer depends on the other,
+            // and the setup is still the first call to reach the browser, ahead of any dispose. The state the setup
+            // reports back is what first starts the timer, so the rotation is held until the page has answered: it
+            // never starts in a page nobody is looking at. A call that failed is retried by the utility itself,
+            // whose answer reaches PageVisibilityChange, so nothing waits for it beyond this first one.
+            _pageVisibilityPending = true;
+
+            var pageVisibilityInit = _pageVisibility.Init();
+
             await _js.BitSwiperSetup(_Id, RootElement, _swiperContainer, _dotnetObj, GetOptions());
 
             await RegisterPreventKeysAsync();
 
-            await _pageVisibility.Init();
+            // A reader who asked the system for less motion is not handed a swiper that starts scrolling on
+            // its own: the scrolling starts paused, and the play/pause button (or Resume) starts it. A swiper
+            // opted back into motion with ForceAnimation (itself or through an ancestor) plays. It is settled
+            // while the pending page visibility still holds the timer, so a swiper that starts paused never
+            // renders (or moves) as a playing one first.
+            _prefersReducedMotion = await _js.BitUtilsPrefersReducedMotion(RootElement);
+
+            if (AutoPlay && _prefersReducedMotion)
+            {
+                _isPaused = true;
+            }
+
+            await pageVisibilityInit;
+
+            _pageVisibilityPending = false;
 
             UpdateAutoPlayTimer();
         }
@@ -909,16 +1101,19 @@ public partial class BitSwiper : BitComponentBase
             Vertical = Vertical,
             NoDrag = NoDrag,
             Wheel = Wheel,
-            Enabled = IsEnabled,
-            Snap = Snap is not null,
-            Align = Snap switch
+            Enabled = Disabled is false,
+            // None is the snap type that says "do not snap", so it has to read the same way an unset SnapAlign
+            // does - the class builder above already leaves both of them without the snapping classes.
+            Snap = SnapAlign is not null and not BitScrollSnapAlign.None,
+            Align = SnapAlign switch
             {
-                BitSwiperSnap.Center => 0.5,
-                BitSwiperSnap.End => 1,
+                BitScrollSnapAlign.Center => 0.5,
+                BitScrollSnapAlign.End => 1,
                 _ => 0
             },
             Duration = Math.Max(0, AnimationDuration),
             Threshold = Math.Max(1, DragThreshold),
+            Rewind = Rewind,
             ScrollCount = _internalScrollItemsCount,
 
             // Only read while the swiper is being set up, so an update that carries it along never moves a
@@ -930,12 +1125,12 @@ public partial class BitSwiper : BitComponentBase
     private string ComputeOptionsSignature()
     {
         return FormattableString.Invariant(
-            $"{Vertical}|{NoDrag}|{Wheel}|{IsEnabled}|{Snap}|{AnimationDuration}|{DragThreshold}|{_internalScrollItemsCount}|{NoKeyboard}");
+            $"{Vertical}|{NoDrag}|{Wheel}|{Disabled}|{SnapAlign}|{AnimationDuration}|{DragThreshold}|{_internalScrollItemsCount}|{NoKeyboard}|{Rewind}");
     }
 
     private async Task RegisterPreventKeysAsync()
     {
-        var keys = (NoKeyboard || IsEnabled is false) ? [] : (Vertical ? _verticalNavigationKeys : _horizontalNavigationKeys);
+        var keys = (NoKeyboard || Disabled) ? [] : (Vertical ? _verticalNavigationKeys : _horizontalNavigationKeys);
 
         await _js.BitUtilsRegisterPreventKeys(RootElement, keys);
     }
@@ -964,25 +1159,30 @@ public partial class BitSwiper : BitComponentBase
         return resolved is null ? null : Math.Max(1, resolved.Value);
     }
 
+    // The default chevrons point the way they move in a left-to-right swiper, and the buttons sit at the inline ends
+    // of the swiper, swapping sides with the direction, so the chevrons are mirrored in one laid out right to left -
+    // whatever made it so: its Dir, the page's direction or its content's. BitIcon's own direction-following mirror
+    // (bit-ico-frt) does that, composed with the turn of the previous one through bit-ico-trn.
     private string GetDefaultNextIconName()
     {
         if (Vertical) return "ChevronDown";
 
-        return Dir == BitDir.Rtl ? "ChevronRight bit-ico-r180" : "ChevronRight";
+        return "ChevronRight bit-ico-trn bit-ico-frt";
     }
 
     private string GetDefaultPrevIconName()
     {
         if (Vertical) return "ChevronUp";
 
-        return Dir == BitDir.Rtl ? "ChevronRight" : "ChevronRight bit-ico-r180";
+        return "ChevronRight bit-ico-trn bit-ico-rt180 bit-ico-frt";
     }
 
     private void SetNavigationButtonsVisibility()
     {
-        // A swiper everything already fits in has nowhere to go, so neither button is of any use on it.
-        _nextButtonStyle = (_scrollable is false || _atEnd) ? "display:none;" : string.Empty;
-        _prevButtonStyle = (_scrollable is false || _atStart) ? "display:none;" : string.Empty;
+        // A swiper everything already fits in has nowhere to go, so neither button is of any use on it. A
+        // rewinding one always has somewhere to go, so it keeps both of them at its ends.
+        _nextButtonStyle = (_scrollable is false || (_atEnd && Rewind is false)) ? "display:none;" : string.Empty;
+        _prevButtonStyle = (_scrollable is false || (_atStart && Rewind is false)) ? "display:none;" : string.Empty;
     }
 
     private void UpdateItemsCurrentState()
@@ -995,7 +1195,13 @@ public partial class BitSwiper : BitComponentBase
 
     private async Task Go(bool forward, int? count = null)
     {
-        if (IsDisposed || IsEnabled is false || _afterFirstRender is false) return;
+        if (IsDisposed || Disabled || _afterFirstRender is false) return;
+
+        if (Rewind && _scrollable && (forward ? _atEnd : _atStart))
+        {
+            await _js.BitSwiperGoToEdge(_Id, forward is false);
+            return;
+        }
 
         await _js.BitSwiperGo(_Id, forward, count ?? _internalScrollItemsCount);
     }
@@ -1030,7 +1236,7 @@ public partial class BitSwiper : BitComponentBase
     {
         HandleInteraction();
 
-        if (IsDisposed || IsEnabled is false) return;
+        if (IsDisposed || Disabled) return;
 
         await _js.BitSwiperGoToPage(_Id, index);
     }
@@ -1038,7 +1244,8 @@ public partial class BitSwiper : BitComponentBase
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (NoKeyboard) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
+        if (_keysOwnedByContent) return;
 
         // A swiper that swallowed a modified arrow key would take the browser shortcuts of the page with
         // it, so only the plain keys are acted on.
@@ -1046,8 +1253,9 @@ public partial class BitSwiper : BitComponentBase
 
         // The arrow keys move the view the way they point, which is what they do in every scrolling
         // region: the right arrow reveals what sits on the right, and in a right-to-left swiper that is
-        // the item before the current one.
-        var rtl = Vertical is false && Dir == BitDir.Rtl;
+        // the item before the current one. The direction is the one the swiper is laid out in, a page's or a
+        // content's included, read only for the keys that act on it since one Dir does not name costs a round trip.
+        var rtl = Vertical is false && await IsRtlArrowAsync(_js, e.Key);
 
         switch (e.Key)
         {
@@ -1097,6 +1305,7 @@ public partial class BitSwiper : BitComponentBase
         if (_hovered is false) return;
 
         _hovered = false;
+        _hoverOverridden = false;
 
         UpdateAutoPlayTimer();
     }
@@ -1115,6 +1324,7 @@ public partial class BitSwiper : BitComponentBase
         if (_focused is false) return;
 
         _focused = false;
+        _focusOverridden = false;
 
         UpdateAutoPlayTimer();
     }
@@ -1122,11 +1332,11 @@ public partial class BitSwiper : BitComponentBase
     private bool ShouldAutoPlay()
     {
         if (AutoPlay is false) return false;
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
         if (_isPaused || _stopped) return false;
-        if (_pageHidden) return false;
-        if (PauseOnHover && _hovered) return false;
-        if (PauseOnFocus && _focused) return false;
+        if (_pageHidden || _pageVisibilityPending) return false;
+        if (PauseOnHover && _hovered && _hoverOverridden is false) return false;
+        if (PauseOnFocus && _focused && _focusOverridden is false) return false;
 
         // A swiper everything fits in has nowhere to scroll to.
         return _scrollable;
@@ -1214,6 +1424,7 @@ public partial class BitSwiper : BitComponentBase
         }
         catch (ObjectDisposedException) { } // the renderer went away between the tick and the dispatch
         catch (JSDisconnectedException) { } // the circuit went away while the items were being moved
+        catch (TaskCanceledException) { } // the move was cancelled along with the circuit, which is going away
         catch (Exception ex)
         {
             // An exception that escapes an async void handler takes the whole process down, so anything
@@ -1227,13 +1438,16 @@ public partial class BitSwiper : BitComponentBase
         }
     }
 
+    // The answer to an init the utility retried on its own comes from a timer rather than from the browser, so the
+    // change is brought onto the renderer's dispatcher before it touches the timer or asks for a render.
     private Task PageVisibilityChange(bool hidden)
     {
-        _pageHidden = hidden;
+        return InvokeAsync(() =>
+        {
+            _pageHidden = hidden;
 
-        UpdateAutoPlayTimer();
-
-        return Task.CompletedTask;
+            UpdateAutoPlayTimer();
+        });
     }
 
 
@@ -1253,12 +1467,17 @@ public partial class BitSwiper : BitComponentBase
 
         if (_dotnetObj is not null)
         {
-            //_dotnetObj.Dispose(); // it is getting disposed in the following js call:
             try
             {
+                // The script releases the reference along with the swiper.
                 await _js.BitSwiperDispose(_Id);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSException) { } // the call never reached the script, which is what the release below is for
+
+            // Released here too, for a disposal that never reached the script (or a swiper that was never set up
+            // there); releasing it twice is harmless.
+            _dotnetObj.Dispose();
         }
 
         await base.DisposeAsync(disposing);

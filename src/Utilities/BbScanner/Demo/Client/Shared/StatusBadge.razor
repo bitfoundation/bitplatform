@@ -1,0 +1,20 @@
+﻿@*
+    The scanner's lifecycle status as a badge in a sample's title bar, tinted the way the scanner's
+    own status dot is: scanning is success, paused a warning, faulted an error.
+*@
+
+<span class="@CssClass">@(Status?.ToString() ?? "Idle")</span>
+
+@code {
+    /// <summary>The status to show, or null before the scanner has rendered.</summary>
+    [Parameter]
+    public BbScannerStatus? Status { get; set; }
+
+    private string CssClass => Status switch
+    {
+        BbScannerStatus.Scanning => "bb-badge bb-badge-success",
+        BbScannerStatus.Paused => "bb-badge bb-badge-warn",
+        BbScannerStatus.Faulted => "bb-badge bb-badge-danger",
+        _ => "bb-badge",
+    };
+}

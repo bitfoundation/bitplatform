@@ -1,4 +1,4 @@
-namespace BitBlazorUI.Legacy {
+﻿namespace BitBlazorUI.Legacy {
     export class DataGrid {
         public static init(tableElement: any) {
             // Tracks the drag handles this init() bound so stop() can remove their listeners too,

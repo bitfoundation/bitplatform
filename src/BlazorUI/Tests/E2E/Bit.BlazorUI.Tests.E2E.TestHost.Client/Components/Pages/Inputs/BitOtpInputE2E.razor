@@ -1,0 +1,463 @@
+﻿@page "/e2e/otp-input"
+
+<PageTitle>BitOtpInput E2E</PageTitle>
+
+<h1>BitOtpInput</h1>
+
+@* ---------- Basic ---------- *@
+
+<E2ESection Id="basic" Title="Basic">
+    <BitOtpInput Id="otp-basic" @bind-Value="_basicValue" OnFill="v => { _fillCount++; _fillValue = v; }" />
+    <span id="basic-value">[@_basicValue]</span>
+    <span id="fill-count">@_fillCount</span>
+    <span id="fill-value">[@_fillValue]</span>
+    <BitOtpInput Id="otp-length4" Length="4" />
+    <BitOtpInput Id="otp-readonly" ReadOnly DefaultValue="12345" OnChange="v => _readOnlyChanges++" />
+    <span id="readonly-changes">@_readOnlyChanges</span>
+    <BitOtpInput Id="otp-autoshift" AutoShift @bind-Value="_autoShiftValue" />
+    <span id="autoshift-value">[@_autoShiftValue]</span>
+    <BitOtpInput Id="otp-noshift" @bind-Value="_noShiftValue" />
+    <span id="noshift-value">[@_noShiftValue]</span>
+    <BitOtpInput Id="otp-blur" BlurOnFill Length="4" />
+    <BitOtpInput Id="otp-sequential" Sequential Length="6" @bind-Value="_sequentialValue" />
+    <span id="sequential-value">[@_sequentialValue]</span>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <button id="before-disabled" type="button">before</button>
+    <BitOtpInput Id="otp-disabled" Disabled="_disabled" DefaultValue="12345" Name="disabled-code" HtmlAttributes="_disabledRootAttributes"
+                 OnFocusIn="a => _disabledFocuses++" />
+    <button id="after-disabled" type="button">after</button>
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">toggle disabled</button>
+    <span id="disabled-root-clicks">@_disabledRootClicks</span>
+    <span id="disabled-root-hovers">@_disabledRootHovers</span>
+    <span id="disabled-focuses">@_disabledFocuses</span>
+</E2ESection>
+
+<E2ESection Id="base" Title="Id, Class, Style, HtmlAttributes, Visibility, re-render">
+    <BitOtpInput Id="otp-base" Class="my-root-class" Style="margin-top: 7px;" HtmlAttributes="@(new() { ["data-test"] = "base-attr" })"
+                 InputHtmlAttributes="@(new() { ["data-input-attr"] = "yes" })" TabIndex="0" />
+    <BitOtpInput Id="otp-visibility" Visibility="_visibility" />
+    <button id="btn-vis-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">visible</button>
+    <button id="btn-vis-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">hidden</button>
+    <button id="btn-vis-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">collapsed</button>
+    <BitOtpInput Id="otp-rerender" Length="_dynLength" Label="@_dynLabel" @bind-Value="_dynValue" />
+    <span id="rerender-value">[@_dynValue]</span>
+    <button id="btn-change-params" type="button" @onclick="ChangeParams">change params</button>
+</E2ESection>
+
+@* ---------- Label and description ---------- *@
+
+<E2ESection Id="label" Title="Label and description">
+    <BitOtpInput Id="otp-label" Label="OTP" />
+    <BitOtpInput Id="otp-required" Label="OTP" Required />
+    <BitOtpInput Id="otp-label-template">
+        <LabelTemplate><span class="tpl-label">Custom label</span></LabelTemplate>
+    </BitOtpInput>
+    <BitOtpInput Id="otp-desc" Label="Verification code" Length="6" Description="We sent a 6 digit code to +1 555 0100." />
+    <BitOtpInput Id="otp-desc-template" Label="Verification code" Length="6">
+        <DescriptionTemplate><span class="tpl-desc">Didn't get it? Send it again</span></DescriptionTemplate>
+    </BitOtpInput>
+</E2ESection>
+
+@* ---------- Type and keyboard ---------- *@
+
+<E2ESection Id="types" Title="Type and keyboard">
+    @foreach (var type in _types)
+    {
+        <BitOtpInput Id="@($"otp-type-{type.ToString().ToLowerInvariant()}")" Label="@type.ToString()" Type="type" Length="3"
+                     OnInvalid="@(a => { _typeInvalid = $"{a.Value}@{a.Index}"; })" />
+    }
+    <span id="type-invalid">[@_typeInvalid]</span>
+    <BitOtpInput Id="otp-tel-keypad" Label="Number, telephone keypad" Type="BitInputType.Number" InputMode="BitInputMode.Tel" />
+    <BitOtpInput Id="otp-normalize" Label="NormalizeDigits" Length="6" Type="BitInputType.Number" NormalizeDigits @bind-Value="_normalizeValue" />
+    <span id="normalize-value">[@_normalizeValue]</span>
+</E2ESection>
+
+@* ---------- Mask and placeholder ---------- *@
+
+<E2ESection Id="mask" Title="Mask and placeholder">
+    <BitOtpInput Id="otp-placeholder" Placeholder="•" />
+    <BitOtpInput Id="otp-placeholder-spread" Length="6" Placeholder="123456" />
+    <BitOtpInput Id="otp-mask" Mask="●" @bind-Value="_maskValue" />
+    <span id="mask-value">[@_maskValue]</span>
+    <BitOtpInput Id="otp-mask-emoji" Mask="🔒" DefaultValue="12345" />
+</E2ESection>
+
+@* ---------- Pattern and casing ---------- *@
+
+<E2ESection Id="pattern" Title="Pattern and casing">
+    <BitOtpInput Id="otp-hex" Length="6" Pattern="^[a-fA-F0-9]$" @bind-Value="_hexValue" OnInvalid="@(a => _hexInvalid = $"{a.Value}@{a.Index}")" />
+    <span id="hex-value">[@_hexValue]</span>
+    <span id="hex-invalid">[@_hexInvalid]</span>
+    <BitOtpInput Id="otp-upper-strict" Length="4" Pattern="^[A-Z]$" @bind-Value="_upperStrictValue" />
+    <span id="upper-strict-value">[@_upperStrictValue]</span>
+    <BitOtpInput Id="otp-upper" Length="4" Pattern="^[A-Z]$" Uppercase @bind-Value="_upperValue" />
+    <span id="upper-value">[@_upperValue]</span>
+    <BitOtpInput Id="otp-lower" Length="4" Pattern="^[a-z]$" Lowercase @bind-Value="_lowerValue" />
+    <span id="lower-value">[@_lowerValue]</span>
+</E2ESection>
+
+@* ---------- Separator ---------- *@
+
+<E2ESection Id="separator" Title="Separator">
+    <BitOtpInput Id="otp-sep" Length="6" Separator="-" />
+    <BitOtpInput Id="otp-sep-3" Length="6" Separator="-" SeparatorInterval="3" @bind-Value="_sepValue" />
+    <span id="sep-value">[@_sepValue]</span>
+    <BitOtpInput Id="otp-sep-template" Length="6" SeparatorInterval="3">
+        <SeparatorTemplate Context="index"><span class="tpl-sep">|@index|</span></SeparatorTemplate>
+    </BitOtpInput>
+</E2ESection>
+
+@* ---------- Variant ---------- *@
+
+<E2ESection Id="variant" Title="Variant">
+    <BitOtpInput Id="otp-var-fill" Variant="BitVariant.Fill" DefaultValue="12" />
+    <BitOtpInput Id="otp-var-outline" Variant="BitVariant.Outline" DefaultValue="12" />
+    <BitOtpInput Id="otp-var-text" Variant="BitVariant.Text" DefaultValue="12" />
+    <BitOtpInput Id="otp-var-none" DefaultValue="12" />
+</E2ESection>
+
+@* ---------- Layout ---------- *@
+
+<E2ESection Id="layout" Title="Layout">
+    <BitOtpInput Id="otp-reversed" Reversed @bind-Value="_reversedValue" />
+    <span id="reversed-value">[@_reversedValue]</span>
+    <BitOtpInput Id="otp-vertical" Vertical @bind-Value="_verticalValue" />
+    <span id="vertical-value">[@_verticalValue]</span>
+    <BitOtpInput Id="otp-vertical-reversed" Vertical Reversed />
+    <div id="fullwidth-box" style="width: 384px;">
+        <BitOtpInput Id="otp-fullwidth" Length="6" FullWidth Type="BitInputType.Number" />
+    </div>
+</E2ESection>
+
+@* ---------- Merged ---------- *@
+
+<E2ESection Id="merged" Title="Merged">
+    <BitOtpInput Id="otp-merged" Length="6" Merged Type="BitInputType.Number" />
+    <BitOtpInput Id="otp-merged-3" Length="6" Merged Separator="-" SeparatorInterval="3" Type="BitInputType.Number" />
+    <BitOtpInput Id="otp-merged-vertical" Length="4" Merged Vertical Type="BitInputType.Number" />
+</E2ESection>
+
+@* ---------- Autofill, paste and copy ---------- *@
+
+<E2ESection Id="paste" Title="Autofill, paste and copy">
+    <BitOtpInput Id="otp-paste" Length="6" Type="BitInputType.Number" @bind-Value="_pasteValue"
+                 OnPaste="a => { _pasteEvents++; _pasteIndex = a.Index; }" OnInvalid="@(a => _pasteInvalid = $"{a.Value}@{a.Index}")" />
+    <span id="paste-value">[@_pasteValue]</span>
+    <span id="paste-events">@_pasteEvents</span>
+    <span id="paste-index">@_pasteIndex</span>
+    <span id="paste-invalid">[@_pasteInvalid]</span>
+    <BitOtpInput Id="otp-transformer" Length="6" Uppercase PasteTransformer="@(v => System.Text.RegularExpressions.Regex.Match(v, "[A-Za-z0-9]{6}").Value)" @bind-Value="_transformedValue" />
+    <span id="transformer-value">[@_transformedValue]</span>
+    <BitOtpInput Id="otp-sequential-paste" Length="6" Sequential @bind-Value="_sequentialPasteValue" />
+    <span id="sequential-paste-value">[@_sequentialPasteValue]</span>
+    <BitOtpInput Id="otp-copy" Length="6" @bind-Value="_copyValue" />
+    <span id="copy-value">[@_copyValue]</span>
+    <BitOtpInput Id="otp-copy-masked" Length="6" DefaultValue="A1B2C3" Mask="*" />
+    <BitOtpInput Id="otp-copy-password" Length="6" DefaultValue="A1B2C3" Type="BitInputType.Password" />
+    <BitOtpInput Id="otp-nosms" Length="6" NoSmsAutoFill />
+</E2ESection>
+
+@* ---------- Binding ---------- *@
+
+<E2ESection Id="binding" Title="Binding">
+    <BitOtpInput Id="otp-oneway" Value="@_oneWayValue" />
+    <span id="oneway-value">[@_oneWayValue]</span>
+    <button id="btn-set-oneway" type="button" @onclick="@(() => _oneWayValue = "98765")">set one-way</button>
+    <BitOtpInput Id="otp-twoway" @bind-Value="_twoWayValue" />
+    <span id="twoway-value">[@_twoWayValue]</span>
+    <button id="btn-set-twoway" type="button" @onclick="@(() => _twoWayValue = "54321")">set two-way</button>
+    <button id="btn-set-twoway-long" type="button" @onclick="@(() => _twoWayValue = "1234567")">set a longer code</button>
+    <button id="btn-clear-twoway" type="button" @onclick="@(() => _twoWayValue = null)">clear two-way</button>
+</E2ESection>
+
+@* ---------- Events ---------- *@
+
+<E2ESection Id="events" Title="Events">
+    <BitOtpInput Id="otp-events" Length="3"
+                 OnChange="v => { _changeCount++; _changeValue = v; }"
+                 OnFocusIn="@(a => _focusInLog = $"{a.Event.Type}@{a.Index}")"
+                 OnFocusOut="@(a => _focusOutLog = $"{a.Event.Type}@{a.Index}")"
+                 OnInput="@(a => _inputLog = $"{a.Event.Value}@{a.Index}")"
+                 OnKeyDown="@(a => _keyLog = $"{a.Event.Key}|{a.Event.Code}@{a.Index}")"
+                 OnFill="v => { _eventsFillCount++; }" />
+    <span id="ev-change-count">@_changeCount</span>
+    <span id="ev-change">[@_changeValue]</span>
+    <span id="ev-focusin">@_focusInLog</span>
+    <span id="ev-focusout">@_focusOutLog</span>
+    <span id="ev-input">@_inputLog</span>
+    <span id="ev-key">@_keyLog</span>
+    <span id="ev-fill-count">@_eventsFillCount</span>
+</E2ESection>
+
+@* ---------- Public API ---------- *@
+
+<E2ESection Id="api" Title="Public API">
+    <BitOtpInput @ref="_apiRef" Id="otp-api" Label="OTP" Length="6" DefaultValue="123456" OnChange="v => _apiValue = v" />
+    <span id="api-value">[@_apiValue]</span>
+    <span id="api-inputs">@_apiInputs</span>
+    <button id="btn-api-first" type="button" @onclick="() => ApiFocus(0)">Focus first</button>
+    <button id="btn-api-last" type="button" @onclick="() => ApiFocus(5)">Focus last</button>
+    <button id="btn-api-clamp" type="button" @onclick="() => ApiFocus(99)">Focus 99</button>
+    <button id="btn-api-blur" type="button" @onclick="ApiBlur">Blur</button>
+    <button id="btn-api-clear" type="button" @onclick="ApiClear">Clear</button>
+    <button id="btn-api-count" type="button" @onclick="() => _apiInputs = _apiRef?.InputElements.Length ?? -1">Count inputs</button>
+</E2ESection>
+
+@* ---------- Validation and auto submit ---------- *@
+
+<E2ESection Id="validation" Title="Validation and auto submit">
+    <EditForm Model="_model" OnValidSubmit="@(() => _formStatus = "Valid")" OnInvalidSubmit="@(() => _formStatus = "Invalid")">
+        <DataAnnotationsValidator />
+        <BitOtpInput Id="otp-form" Length="6" Name="code" @bind-Value="_model.OtpValue" />
+        <ValidationMessage For="() => _model.OtpValue" />
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="form-status">@_formStatus</span>
+    <EditForm Model="_autoModel" OnValidSubmit="@(() => _autoStatus = $"Submitted {_autoModel.OtpValue}")">
+        <DataAnnotationsValidator />
+        <BitOtpInput Id="otp-autosubmit" Length="6" Type="BitInputType.Number" AutoSubmit @bind-Value="_autoModel.OtpValue" />
+    </EditForm>
+    <span id="auto-status">@_autoStatus</span>
+</E2ESection>
+
+@* ---------- Loading and invalid ---------- *@
+
+<E2ESection Id="loading" Title="Loading and invalid">
+    <BitOtpInput Id="otp-loading" Length="6" Type="BitInputType.Number" Invalid="_invalid" IsLoading="_isLoading"
+                 Description="@_loadingDescription" @bind-Value="_loadingValue" />
+    <span id="loading-value">[@_loadingValue]</span>
+    <button id="btn-toggle-loading" type="button" @onclick="() => _isLoading = !_isLoading">toggle loading</button>
+    <button id="btn-toggle-invalid" type="button" @onclick="ToggleInvalid">toggle invalid</button>
+</E2ESection>
+
+@* ---------- Accessibility ---------- *@
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitOtpInput Id="otp-a11y-label" Label="Verification code" Length="6" />
+    <BitOtpInput Id="otp-a11y-arialabel" AriaLabel="Enter the 6 digit code sent to your phone" Length="6" />
+    <BitOtpInput Id="otp-a11y-format" Label="Localized" Length="6" InputAriaLabelFormat="رقم {0} از {1}" />
+    <button id="before-single" type="button">before single</button>
+    <BitOtpInput Id="otp-a11y-single" Label="Single tab stop" Length="6" SingleTabStop />
+    <button id="after-single" type="button">after single</button>
+</E2ESection>
+
+@* ---------- Cascading parameters ---------- *@
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_otpParams">
+        <BitOtpInput Id="otp-casc-1" Label="Cascaded" />
+        <BitOtpInput Id="otp-casc-own" Label="Own length" Length="4" />
+    </BitParams>
+    <BitOtpInput Id="otp-casc-outside" Label="Outside" />
+</E2ESection>
+
+@* ---------- Accent and Size ---------- *@
+
+<E2ESection Id="accent" Title="Accent">
+    @foreach (var color in _colors)
+    {
+        <BitOtpInput Id="@($"otp-acc-{color.ToString().ToLowerInvariant()}")" Length="2" Accent="color" />
+    }
+    <BitOtpInput Id="otp-acc-none" Length="2" />
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    @foreach (var size in _sizes)
+    {
+        <BitOtpInput Id="@($"otp-size-{size.ToString().ToLowerInvariant()}")" Length="3" Size="size" />
+    }
+</E2ESection>
+
+@* ---------- Style and Class ---------- *@
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitOtpInput Id="otp-style" Style="margin-inline: 16px; box-shadow: rgb(0, 255, 255) 0px 0px 8px;" />
+    <BitOtpInput Id="otp-class" Class="custom-class" />
+    <BitOtpInput Id="otp-styles" Label="Styles" Description="Every part has a slot." DefaultValue="1"
+                 Styles="@(new() { Root = "margin-inline: 16px;",
+                                   Label = "letter-spacing: 2px;",
+                                   Description = "font-style: italic;",
+                                   InputsWrapper = "gap: 4px;",
+                                   Input = "border-color: rgb(138, 43, 226);",
+                                   Filled = "background-color: rgb(243, 232, 255);",
+                                   Focused = "box-shadow: rgb(138, 43, 226) 0px 0px 16px;" })" />
+    <BitOtpInput Id="otp-classes" Label="Classes" Length="6" Separator="-" Description="Every part has a slot." DefaultValue="1"
+                 Classes="@(new() { Root = "custom-root",
+                                    Label = "custom-label",
+                                    Description = "custom-description",
+                                    InputsWrapper = "custom-wrapper",
+                                    Input = "custom-input",
+                                    Filled = "custom-filled",
+                                    Focused = "custom-focused",
+                                    Separator = "custom-separator" })" />
+    <BitOtpInput Id="otp-cssvar-style" Length="3" DefaultValue="1"
+                 Style="--bit-OtpInput-input-size: 56px; --bit-OtpInput-radius: 16px; --bit-OtpInput-font-size: 24px; --bit-OtpInput-gap: 8px; --bit-OtpInput-filled-background: rgb(1, 2, 3); --bit-OtpInput-filled-border-color: rgb(4, 5, 6);" />
+    <BitOtpInput Id="otp-cssvar-wh" Length="3" Style="--bit-OtpInput-input-width: 44px; --bit-OtpInput-input-height: 60px; --bit-OtpInput-border-width: 2px;" />
+    <BitOtpInput Id="otp-cssvar-explicit" Length="3" Size="BitSize.Small" Style="--bit-OtpInput-input-size: 56px;" />
+    <div id="cssvar-scope" style="--bit-OtpInput-radius: 999px; --bit-OtpInput-focus-border-color: rgb(7, 8, 9); --bit-OtpInput-outline-border-color: rgb(10, 11, 12); --bit-OtpInput-border-color: rgb(13, 14, 15);">
+        <BitOtpInput Id="otp-cssvar-ancestor" Length="3" />
+        <BitOtpInput Id="otp-cssvar-fill" Length="3" Variant="BitVariant.Fill" />
+    </div>
+</E2ESection>
+
+@* ---------- RTL ---------- *@
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitOtpInput Id="otp-rtl" Dir="BitDir.Rtl" @bind-Value="_rtlValue" />
+    <span id="rtl-value">[@_rtlValue]</span>
+    <BitOtpInput Id="otp-rtl-reversed" Dir="BitDir.Rtl" Reversed />
+    <BitOtpInput Id="otp-rtl-sep" Dir="BitDir.Rtl" Length="6" Separator="-" SeparatorInterval="3" />
+    <div dir="rtl">
+        <BitOtpInput Id="otp-rtl-inherited" />
+    </div>
+</E2ESection>
+
+@* ---------- Reduced motion ---------- *@
+
+<E2ESection Id="motion" Title="Reduced motion">
+    <BitOtpInput Id="otp-motion" Length="2" />
+    <BitOtpInput Id="otp-motion-force" Length="2" ForceAnimation />
+</E2ESection>
+
+@* ---------- Unmount ---------- *@
+
+<E2ESection Id="unmount" Title="Unmount">
+    <button id="btn-toggle-mount" type="button" @onclick="() => _mounted = !_mounted">toggle mount</button>
+    <span id="mounted">@_mounted</span>
+    @if (_mounted)
+    {
+        <BitOtpInput Id="otp-mount" Length="4" IsLoading="_mountLoading" />
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitInputType[] _types = [BitInputType.Text, BitInputType.Number, BitInputType.Password, BitInputType.Email, BitInputType.Tel, BitInputType.Url];
+    private static readonly BitSize[] _sizes = [BitSize.Small, BitSize.Medium, BitSize.Large];
+    private static readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground, BitColor.TertiaryForeground,
+        BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private string? _basicValue;
+    private int _fillCount;
+    private string? _fillValue;
+    private int _readOnlyChanges;
+    private string? _autoShiftValue = "12345";
+    private string? _noShiftValue = "12345";
+    private string? _sequentialValue;
+
+    private bool _disabled = true;
+    private int _disabledRootClicks;
+    private int _disabledRootHovers;
+    private int _disabledFocuses;
+    private Dictionary<string, object> _disabledRootAttributes = [];
+
+    private BitVisibility _visibility;
+    private int _dynLength = 4;
+    private string? _dynLabel = "First label";
+    private string? _dynValue = "1234";
+
+    private string? _typeInvalid;
+    private string? _normalizeValue;
+    private string? _maskValue;
+    private string? _hexValue;
+    private string? _hexInvalid;
+    private string? _upperStrictValue;
+    private string? _upperValue;
+    private string? _lowerValue;
+    private string? _sepValue;
+    private string? _reversedValue;
+    private string? _verticalValue;
+
+    private string? _pasteValue;
+    private int _pasteEvents;
+    private int _pasteIndex = -1;
+    private string? _pasteInvalid;
+    private string? _transformedValue;
+    private string? _sequentialPasteValue;
+    private string? _copyValue = "A1B2C3";
+
+    private string? _oneWayValue = "11111";
+    private string? _twoWayValue = "22222";
+
+    private int _changeCount;
+    private string? _changeValue;
+    private string? _focusInLog;
+    private string? _focusOutLog;
+    private string? _inputLog;
+    private string? _keyLog;
+    private int _eventsFillCount;
+
+    private BitOtpInput? _apiRef;
+    private string? _apiValue;
+    private int _apiInputs;
+
+    private readonly FormModel _model = new();
+    private string _formStatus = "None";
+    private readonly FormModel _autoModel = new();
+    private string _autoStatus = "None";
+
+    private bool _isLoading;
+    private bool _invalid;
+    private string _loadingDescription = "Checking the code...";
+    private string? _loadingValue;
+
+    private readonly BitOtpInputParams[] _otpParams =
+    [
+        new() { Length = 6, Type = BitInputType.Number, Separator = "-", SeparatorInterval = 3, Variant = BitVariant.Fill }
+    ];
+
+    private string? _rtlValue;
+    private bool _mounted = true;
+    private bool _mountLoading = true;
+
+    protected override void OnInitialized()
+    {
+        _disabledRootAttributes = new()
+        {
+            ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledRootClicks++),
+            ["onmouseover"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledRootHovers++)
+        };
+    }
+
+    private void ChangeParams()
+    {
+        _dynLength = 6;
+        _dynLabel = "Second label";
+    }
+
+    private void ToggleInvalid()
+    {
+        _invalid = !_invalid;
+        _loadingDescription = _invalid ? "That code has expired." : "Checking the code...";
+    }
+
+    private async Task ApiFocus(int index)
+    {
+        if (_apiRef is not null) await _apiRef.FocusAsync(index);
+    }
+
+    private async Task ApiBlur()
+    {
+        if (_apiRef is not null) await _apiRef.BlurAsync();
+    }
+
+    private async Task ApiClear()
+    {
+        if (_apiRef is not null) await _apiRef.Clear();
+    }
+
+    private sealed class FormModel
+    {
+        [Required(ErrorMessage = "Enter the code.")]
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "The code has 6 characters.")]
+        public string? OtpValue { get; set; }
+    }
+}

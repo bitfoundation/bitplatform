@@ -4,9 +4,7 @@
 // - src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/Extensions/IMacServiceCollectionExtensions.cs
 // - src/Client/Boilerplate.Client.Maui/Platforms/Windows/Extensions/IWindowsServiceCollectionExtensions.cs
 
-//#if (notification == true)
 using Boilerplate.Client.Maui.Platforms.Android.Services;
-//#endif
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -17,6 +15,8 @@ public static partial class IAndroidServiceCollectionExtensions
         public IServiceCollection AddClientMauiProjectAndroidServices(IConfiguration configuration)
         {
             // Services being registered here can get injected in Maui/Android.
+
+            services.AddSingleton<IAndroidAppWebOtpService, AndroidAppWebOtpService>();
 
             //#if (notification == true)
             services.AddSingleton<IPushNotificationService, AndroidPushNotificationService>();

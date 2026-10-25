@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // Find and replace.
 public partial class BitRichTextEditor
@@ -37,6 +37,12 @@ public partial class BitRichTextEditor
         ClearInlineError();
     }
 
+    private async Task CloseFind()
+    {
+        if (_showFind) await ToggleFind();
+        RequestEditorFocus();
+    }
+
     private void ResetFindCount()
     {
         _findCount = "";
@@ -57,7 +63,7 @@ public partial class BitRichTextEditor
         ResetFindCount();
         // Drop the previous valid search's highlights, which the refused term no longer describes.
         await ClearFindAsync();
-        await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", Label("find-too-long", "Search term is too long.")));
+        await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", Loc("find-too-long", "Search term is too long.")));
         return false;
     }
 
@@ -101,11 +107,11 @@ public partial class BitRichTextEditor
     {
         _findCount = _findTotal switch
         {
-            0 => Label("no-matches", "No matches"),
-            1 => string.Format(Label("match-count", "{0} match"), _findTotal),
+            0 => Loc("no-matches", "No matches"),
+            1 => string.Format(Loc("match-count", "{0} match"), _findTotal),
             _ => _findPosition > 0
-                ? string.Format(Label("match-position", "{0} of {1}"), _findPosition, _findTotal)
-                : string.Format(Label("matches-count", "{0} matches"), _findTotal)
+                ? string.Format(Loc("match-position", "{0} of {1}"), _findPosition, _findTotal)
+                : string.Format(Loc("matches-count", "{0} matches"), _findTotal)
         };
     }
 
@@ -132,14 +138,22 @@ public partial class BitRichTextEditor
         var n = await _js.BitRichTextEditorReplaceAll(_editorRef, _findTerm, _replaceTerm, _findCaseSensitive, _findWholeWord);
         _findTotal = 0;
         _findPosition = 0;
-        _findCount = string.Format(Label("replaced-count", "{0} replaced"), n);
+        _findCount = string.Format(Loc("replaced-count", "{0} replaced"), n);
     }
 
-    // Enter runs (or steps to the next match of) the search, Shift+Enter steps backwards, and
-    // Escape closes the panel - the shortcuts a find bar is expected to answer to.
+    // Enter runs (or steps to the next match of) the search and Shift+Enter steps backwards - the
+    // shortcuts a find bar is expected to answer to. Escape is the panel's own (see OnPanelKeyDown).
     private async Task OnFindKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter") await StepFindAsync(e.ShiftKey ? -1 : 1);
-        else if (e.Key == "Escape") await ToggleFind();
+    }
+
+    // Enter in the replace box replaces the current match and Ctrl/Cmd+Enter replaces them all, so the whole
+    // find-and-replace round trip stays on the keyboard.
+    private async Task OnReplaceKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key != "Enter") return;
+        if (e.CtrlKey || e.MetaKey) await ReplaceAllAsync();
+        else await ReplaceCurrentAsync();
     }
 }

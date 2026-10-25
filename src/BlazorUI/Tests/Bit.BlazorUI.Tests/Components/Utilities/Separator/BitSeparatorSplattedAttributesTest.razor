@@ -1,0 +1,22 @@
+﻿@* The attributes the separator also writes out itself, handed to it as splatted html attributes instead - in the
+   casing a page may write them in, through a dictionary, since Razor would match a "class", "dir" or "id" to its
+   parameter - so that which of the two ends up on the element can be read back one case at a time. *@
+
+<BitSeparator @attributes="@_label" />
+<BitSeparator @attributes="@_label">Bit Blazor UI</BitSeparator>
+<BitSeparator @attributes="@_labelledby">Bit Blazor UI</BitSeparator>
+<BitSeparator Decorative @attributes="@_hidden" />
+<BitSeparator @attributes="@_root" />
+
+@code {
+    private readonly Dictionary<string, object> _label = new() { { "aria-label", "End of shipping" } };
+    private readonly Dictionary<string, object> _labelledby = new() { { "Aria-LabelledBy", "shipping-heading" } };
+    private readonly Dictionary<string, object> _hidden = new() { { "Aria-Hidden", "false" } };
+    private readonly Dictionary<string, object> _root = new()
+    {
+        { "class", "page-class" },
+        { "style", "margin: 0" },
+        { "dir", "rtl" },
+        { "id", "page-id" },
+    };
+}

@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <base href="/" />
+    @* No static <title> here: every page supplies its own through <PageTitle>, and with
+       prerendering the HeadOutlet emits a real <title> element into this head. *@
+    <meta name="description" content="bit BbScanner (Bit.BbScanner) - a dependency-free barcode scanner for Blazor: QR Code, Data Matrix, Code 128, Code 39, EAN-13, EAN-8, UPC-A, UPC-E and ITF from the camera or from still images, with the decoding written in C#." />
+
+    @* Link previews: the card a chat client or a social site unfurls is the first impression a
+       shared link makes. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.BbScanner" />
+    <meta property="og:title" content="BbScanner - barcode scanning for Blazor, decoded in C#" />
+    <meta property="og:description" content="QR Code, Data Matrix, Code 128, Code 39, EAN, UPC and ITF from the camera or from still images - no barcode SDK, no JavaScript scanner library." />
+    <meta name="twitter:card" content="summary" />
+
+    <ResourcePreloader />
+    @* The site kit (app.css, theme.js, site.js - shared by every Utilities demo), then this demo's
+       own sample styles. None of them is needed by the scanner itself.
+
+       The scanner stylesheet (_content/Bit.BbScanner/bit-bbscanner.css) is not linked here:
+       Bit.BbScanner's JS initializer adds it to the page by itself. Its defaults sit in a :where()
+       block, so the brand tint demo.css gives the scanner wins whichever file loads last. *@
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["demo.css"]" />
+    @* Scoped-CSS bundle: includes the client project's *.razor.css files as well. *@
+    <link rel="stylesheet" href="@Assets["Bit.BbScanner.Demo.Server.styles.css"]" />
+    @* Synchronous on purpose: applies the light/dark theme before first paint. *@
+    <script src="@Assets["theme.js"]"></script>
+    <ImportMap />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+@* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
+   page load rather than an enhanced one. Enhanced navigation fetches and merges the next page while
+   the runtime is still starting, and the router the runtime then attaches can render the address
+   it read before the merge - the URL says /getting-started and the page is the landing page. Once the
+   app is interactive its router handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
+    @* InteractiveWebAssembly rather than Auto or Server: BbScanner reads camera frames through
+       [JSImport] memory views, which exist only on WebAssembly - under Server rendering it reports
+       NotSupported. The pages are still prerendered, so the first response carries them. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">&#128473;</span>
+    </div>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["site.js"]"></script>
+</body>
+
+</html>

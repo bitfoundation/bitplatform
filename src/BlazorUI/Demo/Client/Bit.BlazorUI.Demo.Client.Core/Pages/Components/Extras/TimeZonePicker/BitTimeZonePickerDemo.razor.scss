@@ -1,0 +1,39 @@
+﻿// A picker fills its container, so the examples are given one of a form field's width.
+.example-box {
+    gap: 0.5rem;
+    width: 100%;
+    display: flex;
+    max-width: 20rem;
+    flex-direction: column;
+}
+
+// A surface other than the primary one, which is what the Background kinds are for.
+.tzp-kind-box {
+    padding: 1rem;
+    background: var(--bit-clr-bg-dis);
+}
+
+// The public custom properties are inherited, so one scope re-skins every picker inside it, and the
+// time zone list each one opens, without a rule naming a part of the component.
+.tzp-brand-scope {
+    --bit-TimeZonePicker-radius: 0;
+    --bit-TimeZonePicker-border-width: 2px;
+    --bit-TimeZonePicker-border-color: #00796b;
+    --bit-TimeZonePicker-hover-border-color: #26a69a;
+    --bit-TimeZonePicker-focus-color: #00796b;
+    --bit-TimeZonePicker-background: #e0f2f1;
+    --bit-TimeZonePicker-color: #004d40;
+    --bit-TimeZonePicker-callout-radius: 0;
+    --bit-TimeZonePicker-item-selected-background: #e0f2f1;
+    --bit-TimeZonePicker-item-selected-color: #004d40;
+}
+
+::deep .custom-class {
+    border-radius: 1rem;
+    background: linear-gradient(90deg, rgba(138, 43, 226, 0.08), transparent);
+}
+
+::deep .custom-text {
+    color: blueviolet;
+    font-weight: bold;
+}

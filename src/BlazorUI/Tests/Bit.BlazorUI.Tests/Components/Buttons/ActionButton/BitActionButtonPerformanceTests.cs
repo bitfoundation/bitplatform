@@ -87,7 +87,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
                 parameters.Add(p => p.AriaLabel, $"Aria Label {i}");
                 parameters.Add(p => p.AriaDescription, $"Aria Description {i}");
                 parameters.Add(p => p.Color, BitColor.Primary);
-                parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.Disabled, false);
                 parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs _) => { }));
                 parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
                 {
@@ -212,7 +212,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
                 parameters.Add(p => p.AriaLabel, $"Aria Label {i}");
                 parameters.Add(p => p.AriaDescription, $"Aria Description {i}");
                 parameters.Add(p => p.Color, BitColor.Primary);
-                parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.Disabled, false);
                 parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs _) => { }));
                 parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
                 {
@@ -285,7 +285,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             var component = RenderComponent<BitActionButton>(parameters =>
             {
                 parameters.Add(p => p.IconName, "Add");
-                parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.Disabled, false);
                 parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
                 {
                     builder.AddContent(0, $"Button {i}");
@@ -301,7 +301,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
         {
             component.Render(parameters =>
             {
-                parameters.Add(p => p.IsEnabled, false);
+                parameters.Add(p => p.Disabled, true);
             });
         }
 
@@ -477,7 +477,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             {
                 parameters.Add(p => p.IconName, "Add");
                 parameters.Add(p => p.Title, $"Title {i}");
-                parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.Disabled, false);
                 parameters.Add(p => p.Color, BitColor.Primary);
                 parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
                 {
@@ -498,7 +498,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             {
                 parameters.Add(p => p.IconName, "Edit");
                 parameters.Add(p => p.Title, $"Updated Title {index}");
-                parameters.Add(p => p.IsEnabled, false);
+                parameters.Add(p => p.Disabled, true);
                 parameters.Add(p => p.Color, BitColor.Secondary);
                 parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
                 {
@@ -628,7 +628,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.IconName, "Add");
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
             {
                 builder.AddContent(0, "Stress Test Button");
@@ -642,7 +642,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
         {
             component.Render(parameters =>
             {
-                parameters.Add(p => p.IsEnabled, i % 2 == 0);
+                parameters.Add(p => p.Disabled, i % 2 != 0);
             });
         }
 
@@ -717,7 +717,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             {
                 parameters.Add(p => p.IconName, "Add");
                 parameters.Add(p => p.IsLoading, false);
-                parameters.Add(p => p.IsEnabled, true);
+                parameters.Add(p => p.Disabled, false);
             });
             components.Add(component);
         }
@@ -735,7 +735,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
                 component.Render(parameters =>
                 {
                     parameters.Add(p => p.IsLoading, isLoading);
-                    parameters.Add(p => p.IsEnabled, isEnabled);
+                    parameters.Add(p => p.Disabled, isEnabled is false);
                 });
             }
         }

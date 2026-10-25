@@ -9,12 +9,12 @@
     "ghcr.io/devcontainers/features/docker-in-docker:4": {},
     "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
       "version": "1",
-      "helm": "3",
+      "helm": "4",
       "minikube": "1"
     },
     "ghcr.io/devcontainers/features/node:2": { "version": "24" }
   },
-  "image": "mcr.microsoft.com/dotnet/sdk:10.0.401",
+  "image": "mcr.microsoft.com/dotnet/sdk:10.0.402",
   "postStartCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
   "waitFor": "onCreateCommand",
   "customizations": {

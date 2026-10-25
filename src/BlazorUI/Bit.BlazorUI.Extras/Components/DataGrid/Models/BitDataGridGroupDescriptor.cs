@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Describes a grouping applied to a column.</summary>
 public sealed class BitDataGridGroupDescriptor

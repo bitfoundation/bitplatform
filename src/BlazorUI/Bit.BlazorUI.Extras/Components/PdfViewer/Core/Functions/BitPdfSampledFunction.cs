@@ -30,7 +30,7 @@ internal sealed class BitPdfSampledFunction : BitPdfFunction
         _range = range;
     }
 
-    public static BitPdfSampledFunction? Build(BitPdfStream stream, IBitPdfXRef? xref = null)
+    public static BitPdfSampledFunction? Build(BitPdfBaseStream stream, IBitPdfXRef? xref = null)
     {
         BitPdfDict dict = stream.Dict!;
         double[] domain = ReadNumbers(dict.Get("Domain"), xref);

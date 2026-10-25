@@ -2,6 +2,7 @@ name: bit platform CI - Besql
 
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     paths:
     - 'src/Besql/**'

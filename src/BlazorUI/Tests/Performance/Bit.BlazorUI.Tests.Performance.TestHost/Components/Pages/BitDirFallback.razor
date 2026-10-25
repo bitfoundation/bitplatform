@@ -1,0 +1,145 @@
+﻿@page "/regression/dir-fallback"
+
+<PageTitle>Dir Fallback Regression</PageTitle>
+
+@* Every component with a part a right-to-left rule written with :dir() turns around (#13566), each in a probe of its own.
+   The same set is rendered four times: with no direction, with Dir=Rtl on every component, inside a box that reads
+   right to left, and with Dir=Ltr inside a right-to-left component. The components that can hold one of their own kind
+   are also rendered with Dir=Ltr inside one with Dir=Rtl, the case a class read too far up gets wrong. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>Dir Fallback Regression</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+<div id="ltr">
+    @Set(null)
+</div>
+
+<div id="own">
+    @Set(BitDir.Rtl)
+</div>
+
+<div id="inherited" dir="rtl">
+    @Set(null)
+</div>
+
+<div id="nested">
+    <BitStack Dir="BitDir.Rtl">
+        @Set(BitDir.Ltr)
+    </BitStack>
+</div>
+
+<div id="nested-same">
+    <BitCollapse Dir="BitDir.Rtl" Expanded="true">
+        <div data-probe="collapse" style="width: 300px;">
+            <BitCollapse Dir="BitDir.Ltr" Horizontal Expanded="false" CollapsedSize="40px" Style="--bit-Collapse-peek-fade: 20px;">
+                <div style="width: 200px;">Collapse content</div>
+            </BitCollapse>
+        </div>
+    </BitCollapse>
+
+    <BitTooltip Dir="BitDir.Rtl" Text="Outer">
+        <div data-probe="tooltip">
+            <BitTooltip Dir="BitDir.Ltr" Text="Inner"><span>anchor</span></BitTooltip>
+        </div>
+    </BitTooltip>
+
+    <BitMessage Dir="BitDir.Rtl">
+        <div data-probe="message" style="width: 300px;">
+            <BitMessage Dir="BitDir.Ltr" Dismissible AutoDismissTime="TimeSpan.FromHours(1)" ShowAutoDismissProgress>Message</BitMessage>
+        </div>
+    </BitMessage>
+
+    <BitCard Dir="BitDir.Rtl">
+        <div data-probe="card" style="width: 300px;">
+            <BitCard Dir="BitDir.Ltr" Loading />
+        </div>
+    </BitCard>
+</div>
+
+@code {
+    private static readonly Person[] People = [new("Ann"), new("Bob")];
+
+    private readonly List<BitSnackBar?> _snackBars = [];
+
+    private RenderFragment Set(BitDir? dir) => __builder =>
+    {
+        <div data-probe="modal"><BitModal Dir="dir" IsOpen="true" Position="BitPosition.TopLeft">Modal</BitModal></div>
+        <div data-probe="overlay" style="position: relative; height: 10px;"><BitOverlay Dir="dir" IsOpen="true" Position="BitPosition.TopLeft" /></div>
+        <div data-probe="collapse" style="width: 300px;">
+            <BitCollapse Dir="dir" Horizontal Expanded="false" CollapsedSize="40px" Style="--bit-Collapse-peek-fade: 20px;">
+                <div style="width: 200px;">Collapse content</div>
+            </BitCollapse>
+        </div>
+        <div data-probe="timeline">
+            <BitTimeline TItem="BitTimelineOption" Dir="dir" Horizontal>
+                <BitTimelineOption PrimaryText="A" />
+                <BitTimelineOption PrimaryText="B" />
+            </BitTimeline>
+        </div>
+        <div data-probe="tooltip"><BitTooltip Dir="dir" Text="Tip"><span>anchor</span></BitTooltip></div>
+        <div data-probe="panel"><BitPanel Dir="dir" IsOpen="true">Panel</BitPanel></div>
+        <div data-probe="snackbar-bar">
+            <div data-probe="snackbar-entry">
+                <BitSnackBar @ref="SnackBar" Dir="dir" AutoDismiss AutoDismissTime="TimeSpan.FromHours(1)" Position="BitPosition.CenterStart" />
+            </div>
+        </div>
+        <div data-probe="message" style="width: 300px;">
+            <BitMessage Dir="dir" Dismissible AutoDismissTime="TimeSpan.FromHours(1)" ShowAutoDismissProgress>Message</BitMessage>
+        </div>
+        <div data-probe="ellipsis"><BitEllipsisLoading Dir="dir" /></div>
+        <div data-probe="rolling-square"><BitRollingSquareLoading Dir="dir" /></div>
+        <div data-probe="slider" style="width: 300px;"><BitSlider Dir="dir" IsRanged LowerValue="20" UpperValue="80" /></div>
+        <div data-probe="chart" style="width: 400px; height: 200px;"><BitChart Dir="dir" Type="BitChartType.Bar" Data="ChartData()" Options="ChartSides(BitPlacement.Left, BitPlacement.Right)" /></div>
+        <div data-probe="chart-sides" style="width: 400px; height: 200px;"><BitChart Dir="dir" Type="BitChartType.Bar" Data="ChartData()" Options="ChartSides(BitPlacement.Start, BitPlacement.End)" /></div>
+        <div data-probe="card" style="width: 300px;"><BitCard Dir="dir" Loading /></div>
+        <div data-probe="datagrid" style="width: 300px;">
+            <BitDataGrid Dir="dir" Items="People">
+                <DetailTemplate Context="person"><div>@person.Name details</div></DetailTemplate>
+                <Columns>
+                    <BitDataGridColumn Property="person => person.Name" Title="Name" />
+                </Columns>
+            </BitDataGrid>
+        </div>
+        <div data-probe="rte" style="width: 300px;"><BitRichTextEditor Dir="dir" /></div>
+    };
+
+    private BitSnackBar? SnackBar { set => _snackBars.Add(value); }
+
+    private static BitChartData ChartData() => new()
+    {
+        Labels = ["A", "B", "C"],
+        Datasets = { new BitChartDataset { Label = "Series", Data = [3, 5, 2] } }
+    };
+
+    // A legend and a subtitle on one side of the plot and a title on the other (#13714): the physical Left and Right keep
+    // their side in either direction, the reading Start and End swap theirs.
+    private static BitChartOptions ChartSides(BitPlacement near, BitPlacement far) => new()
+    {
+        Plugins =
+        {
+            Legend = { Placement = near },
+            Subtitle = { Display = true, Text = "Sub", Placement = near },
+            Title = { Display = true, Text = "Title", Placement = far }
+        }
+    };
+
+    private sealed record Person(string Name);
+
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it reads the page.
+    private string _status = "Loading";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        foreach (var snackBar in _snackBars.Distinct())
+        {
+            if (snackBar is not null) await snackBar.Info("Probe");
+        }
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

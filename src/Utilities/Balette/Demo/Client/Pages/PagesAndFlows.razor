@@ -1,0 +1,691 @@
+﻿@page "/pages"
+@using System.ComponentModel.DataAnnotations
+@implements IDisposable
+@inject IBaletteService Palette
+@inject BaletteHistory History
+@inject BaletteOptions Options
+@inject DemoState State
+
+<PageTitle>Nested pages and flows · Balette</PageTitle>
+
+<div class="bb-intro">
+    <h1>Nested pages &amp; flows</h1>
+    <p class="bb-subtitle">
+        A palette is more than a list: a command can open a page of further commands, ask for text, collect a selection or
+        ask to be confirmed, and every one of those steps happens inside the same box, with breadcrumbs above it and
+        <kbd>Esc</kbd> or <kbd>Backspace</kbd> to step back. Each button below opens this site's palette on one of them.
+    </p>
+</div>
+
+<PaletteBar />
+
+@* The flows only this page shows - a slow command, failing ones, a chain of steps - live as long as the page does. *@
+<BaletteCommands Commands="_pageCommands" />
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">The flows of this app</span></div>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Flow</th><th>Declared with</th><th>In this app</th><th></th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key">Static page</td>
+                    <td><code>.Children(a, b, c)</code></td>
+                    <td><em>Theme</em> - three options, the current one checked</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(pageCommandId: "preferences.theme")'>Open</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Lazy page</td>
+                    <td><code>.Children(async (ctx, ct) =&gt; ...)</code></td>
+                    <td><em>Assign to…</em> - loads people for 400 ms, with a spinner</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(pageCommandId: "actions.assign-to")'>Open</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Declarative page</td>
+                    <td>Nested <code>&lt;BaletteItem&gt;</code></td>
+                    <td><em>New…</em> in <em>Quick create</em></td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(pageCommandId: "quick-create.new")'>Open</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Searching page</td>
+                    <td><code>.Source("Directory", async (query, ct) =&gt; ...)</code></td>
+                    <td><em>Find a person…</em> - asks the "server" for every query typed on the page</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(pageCommandId: "actions.find-a-person")'>Open</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Found from the root</td>
+                    <td><code>SearchNestedCommands</code> (on by default)</td>
+                    <td><em>Language › Français</em> - type <code>francais</code> without opening Language</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("francais")'>Try</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Ad-hoc page</td>
+                    <td><code>BaletteCommandResult.Page(...)</code></td>
+                    <td><em>Export…</em> - the handler decides the list, one row disabled</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.ExecuteAsync("actions.export")'>Run</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Prompt</td>
+                    <td><code>BaletteCommandResult.Prompt(...)</code></td>
+                    <td><em>Rename project…</em> - pre-filled, validated as you type, and "admin" refused by the handler with <code>Error</code></td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.ExecuteAsync("actions.rename-project")'>Run</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Multi-select</td>
+                    <td><code>.MultiSelect()</code></td>
+                    <td><em>Set labels…</em> - <kbd>Enter</kbd> or <kbd>Space</kbd> checks, <kbd>Ctrl</kbd> <kbd>Enter</kbd> applies</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(pageCommandId: "actions.set-labels")'>Open</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">A chain of steps</td>
+                    <td><code>Prompt</code> → <code>Page(..., multiSelect: true, onSubmit)</code></td>
+                    <td><em>Create webhook…</em> - an https address, then the events to send; no event is an <code>Error</code></td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.ExecuteAsync(WebhookId)'>Run</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Back to the root</td>
+                    <td><code>BaletteCommandResult.Reset</code></td>
+                    <td><em>Add a to-do…</em> - registers the to-do and lands on the root, query cleared, where it is listed ahead of every group</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.ExecuteAsync(TodoId)'>Run</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Destructive</td>
+                    <td><code>.Destructive("message")</code></td>
+                    <td><em>Delete project</em> - in the danger colour; the first <kbd>Enter</kbd> asks, the second runs, <kbd>Esc</kbd> or moving away disarms</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("delete project")'>Search</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Confirmation</td>
+                    <td><code>.Confirm("message")</code></td>
+                    <td><em>Sign out other devices</em> - the same second <kbd>Enter</kbd>, for a command that deserves a pause but is not dangerous</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("sign out")'>Search</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Toast</td>
+                    <td><code>BaletteCommandResult.Toast(...)</code></td>
+                    <td><em>What's new</em> - a message in the footer, palette kept open</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.ExecuteAsync("help.what-s-new")'>Run</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Long-running</td>
+                    <td><code>ctx.CancellationToken</code></td>
+                    <td><em>Generate report…</em> - three seconds of work: the palette shows it busy, and <kbd>Esc</kbd> cancels it</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("generate report")'>Search</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">A handler that throws</td>
+                    <td><code>CommandFailed</code></td>
+                    <td><em>Sync with server</em> - a generic message, never the exception's text</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("sync with server")'>Search</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">An error written for users</td>
+                    <td><code>e.Message = e.Exception.Message</code></td>
+                    <td><em>Publish release</em> - a <code>ValidationException</code> whose text the page chose to show</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("publish release")'>Search</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">A page that fails to load</td>
+                    <td>A loader that throws</td>
+                    <td><em>Recent deployments…</em> - fails every other time: <strong>Try again</strong> (or <kbd>Enter</kbd>) loads it</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(pageCommandId: DeploymentsId)'>Open</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Action panel</td>
+                    <td><code>.Actions(...)</code></td>
+                    <td>Any row: press <kbd>Tab</kbd>. People rows add their own two actions</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick="@(() => Palette.OpenAsync("@ada"))">Search</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-muted demo-small" role="status">
+        Project: <strong>@State.ProjectName</strong> · Labels: <strong>@(State.Labels.Count == 0 ? "none" : string.Join(", ", State.Labels))</strong>
+        · Open to-dos: <strong>@Palette.Commands.Count(c => c.Id.StartsWith("todo:", StringComparison.Ordinal))</strong>
+        · Last: <strong>@(State.Log.Count == 0 ? "nothing yet" : State.Log[0])</strong>
+    </p>
+</div>
+
+<section class="bb-card" id="navigating">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Moving between pages</h3>
+    <ul class="bb-detail-list">
+        <li>Choosing a command with children opens its page; the breadcrumbs above the input show the way back, and each
+            ancestor in them is a button back to its page.</li>
+        <li><kbd>Backspace</kbd> or <kbd>←</kbd> on an empty box, the back button, and <kbd>Esc</kbd> go back one page, and
+            the query typed before the page opened comes back with it. With text in the box, <kbd>Backspace</kbd> just
+            deletes a character.</li>
+        <li>A nested command found from the root - <code>francais</code> - opens with its ancestors' pages behind it, so
+            <kbd>Esc</kbd> goes up one level at a time. So does <code>OpenAsync(pageCommandId: ...)</code>, and a
+            <code>BaletteTrigger</code> with a <code>PageCommandId</code> - there is one on
+            <a href="getting-started">Getting started</a>.</li>
+        <li>A lazily loaded page opens at once with a loading state and fills in when its provider returns. Its
+            <code>CancellationToken</code> is cancelled when the page is left, the palette is closed, or the page is loaded
+            again, and an abandoned load changes nothing.</li>
+        <li>On a searching page (<code>.Source(...)</code>) the source is asked when the page opens and for every query typed
+            on it - debounced, cancelled, timed out and retried like the root's sources - and on a multi-select page the
+            checked rows are kept across searches.</li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What a handler returns</h3>
+    <p>
+        A handler does its work and then tells the palette what comes next. That is what keeps a multi-step flow in one
+        place: the next step is a return value, not a callback wired up somewhere else.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Result</th><th>What the palette does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Close</code></td><td>Closes. The default of every handler that returns no result, and of navigation.</td></tr>
+                <tr><td class="bb-table-key"><code>KeepOpen</code></td><td>Stays on the current page and rebuilds the list - the toggles use it.</td></tr>
+                <tr><td class="bb-table-key"><code>Back</code></td><td>Goes back one page - the theme options use it to land on the list again.</td></tr>
+                <tr><td class="bb-table-key"><code>Reset</code></td><td>Clears the query and returns to the root page, still open - <em>Add a to-do…</em> uses it.</td></tr>
+                <tr><td class="bb-table-key"><code>Page(title, commands, placeholder, multiSelect, onSubmit)</code></td><td>Pushes a page listing these commands. They are not registered anywhere: they live on the page only. With <code>multiSelect: true</code>, <kbd>Ctrl</kbd> <kbd>Enter</kbd> runs <code>onSubmit</code> with the checked ones.</td></tr>
+                <tr><td class="bb-table-key"><code>Prompt(title, onSubmit, validate, placeholder, initialValue)</code></td><td>Turns the input into a text field; <kbd>Enter</kbd> calls <code>onSubmit</code> with <code>ctx.PromptValue</code>, once <code>validate</code> - null for a value that may be submitted, the message to show otherwise - accepts it.</td></tr>
+                <tr><td class="bb-table-key"><code>Toast(message, keepOpen)</code></td><td>Shows a message in the footer, then closes shortly afterwards - or stays, with <code>keepOpen: true</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>Error(message)</code></td><td>Shows an error, announced assertively, and stays where the palette is - on a prompt, so the value can be corrected.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="bb-card" id="context">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The context a handler gets</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Member</th><th>What it holds</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Command</code></td><td>The command being run.</td></tr>
+                <tr><td class="bb-table-key"><code>Query</code> / <code>ModePrefix</code></td><td>What was typed, without the mode prefix, and that prefix - the feedback row thanks you for the query it was reached with.</td></tr>
+                <tr><td class="bb-table-key"><code>PromptValue</code></td><td>The text of a prompt step.</td></tr>
+                <tr><td class="bb-table-key"><code>SelectedCommands</code></td><td>The checked rows of a multi-select page.</td></tr>
+                <tr><td class="bb-table-key"><code>Services</code> / <code>GetRequiredService&lt;T&gt;()</code></td><td>The user's DI scope - where an API client comes from.</td></tr>
+                <tr><td class="bb-table-key"><code>Navigation</code></td><td>The <code>NavigationManager</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>Palette</code></td><td>The <code>IBaletteService</code> itself.</td></tr>
+                <tr><td class="bb-table-key"><code>CancellationToken</code></td><td>Cancelled when the palette is closed while the handler still runs; what such a handler returns afterwards is ignored, so a late page or prompt never reopens it.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A prompt</h3>
+    <pre class="bb-code">@PromptExample</pre>
+    <p>
+        The search box becomes the text field: <kbd>Enter</kbd> submits and <kbd>Esc</kbd> goes back. <kbd>Enter</kbd> on a
+        value the validator refuses shows and announces its message and marks the box <code>aria-invalid</code>; from then on
+        the message follows the text as it is corrected. A check that needs a server belongs in <code>onSubmit</code>, which
+        answers with <code>Error</code> to keep the prompt open.
+    </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A multi-select page</h3>
+    <pre class="bb-code">@MultiSelectExample</pre>
+    <p>
+        <kbd>Enter</kbd>, a click or <kbd>Space</kbd> (on an empty box) toggles a row, and <kbd>Ctrl</kbd> <kbd>Enter</kbd>
+        (<kbd>⌘</kbd> <kbd>↩</kbd>) runs the page's handler with the checked commands. A page a handler returns works the
+        same way - <em>Create webhook…</em> asks for an address first, then answers with one:
+    </p>
+    <pre class="bb-code">@ChainExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Lazy, searching and ad-hoc pages</h3>
+    <p>
+        The provider of a lazy page runs each time the page opens, with a context whose <code>Services</code> come from the
+        user's scope - which is how a real application would reach its API client from here. A searching page asks a source
+        for every query instead of downloading everything up front, and a handler can answer with a page whose list it
+        decided when it ran:
+    </p>
+    <pre class="bb-code">@LazyExample</pre>
+    <div class="bb-note">
+        <code>OpenAsync(pageCommandId: ...)</code> opens straight inside a registered command's page, and
+        <code>BaletteTrigger</code> takes the same <code>PageCommandId</code>: a "Change theme" button can be a trigger
+        that lands on the theme options rather than on the root list.
+    </div>
+</section>
+
+<section class="bb-card" id="long-running">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Long-running commands</h3>
+    <p>
+        A handler still running after 150 ms shows the palette busy: the spinner replaces the search icon, the list is
+        <code>aria-busy</code>, the running row carries <code>data-running</code>, and "Working…"
+        (<code>BaletteStrings.Running</code>) is announced. A quick handler never flickers. A second <kbd>Enter</kbd> is
+        ignored while it runs, and <kbd>Esc</kbd> closes the palette and cancels the handler's token; what it returns
+        afterwards is dropped. Run <em>Generate report…</em> and press <kbd>Esc</kbd> halfway.
+    </p>
+    <pre class="bb-code">@LongRunningExample</pre>
+</section>
+
+<section class="bb-card" id="failures">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> When something fails</h3>
+    <p>
+        An exception thrown by a handler - or by the loader of a page's children - raises
+        <code>IBaletteService.CommandFailed</code>, is logged through <code>ILogger&lt;Balette&gt;</code>, and is reported in
+        the palette: a handler's failure as a message in the footer, announced assertively, a page's as an error state with a
+        <strong>Try again</strong> button. The message is the localized, generic <code>BaletteStrings.CommandFailed</code>
+        ("Couldn’t run “Sync with server”."), so an exception's own text - which can name a server, a table or a user - never
+        reaches the screen by accident. A subscriber picks another:
+    </p>
+    <pre class="bb-code">@FailureExample</pre>
+    <ul class="bb-detail-list">
+        <li><code>Handled = true</code> says the subscriber reported it: the palette does not log it, and
+            <code>ExecuteAsync</code> does not rethrow it. This page records its own commands' failures below, so it sets it.</li>
+        <li><code>Message = ""</code> shows nothing. A failure in the palette's own UI - a row chosen by keyboard or mouse, a
+            global shortcut - is never rethrown, so it can neither end a Blazor Server circuit nor vanish into the console;
+            <code>Palette.ExecuteAsync(id)</code> rethrows an unhandled one to the code that called it.</li>
+        <li>Cancellation is not an error: a handler that throws <code>OperationCanceledException</code> simply stops - unless
+            it wraps a <code>TimeoutException</code>, which is how <code>HttpClient</code> reports a timeout, and is reported
+            like any other failure.</li>
+    </ul>
+    <p class="bb-soft demo-small">What this page's <code>CommandFailed</code> subscriber saw, newest first:</p>
+    <div class="bb-log demo-events" aria-label="Failures">
+        @if (_failures.Count == 0)
+        {
+            <div class="bb-log-empty">Run Sync with server, Publish release or Recent deployments….</div>
+        }
+        @foreach (var entry in _failures)
+        {
+            <div class="bb-log-line">@entry</div>
+        }
+    </div>
+</section>
+
+<section class="bb-card" id="history">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Recents, pins and the action panel</h3>
+    <p>
+        On the empty query of the root page, pinned commands are listed first, in the order they were pinned, and the most
+        recently used ones next - up to <code>MaxRecents</code> (@Options.MaxRecents). Every run is recorded unless the
+        command has <code>ExcludeFromHistory</code>, and the counts feed <a href="search">frecency</a>.
+    </p>
+    <p>
+        <kbd>Tab</kbd> - or <kbd>→</kbd> on an empty box, or a right click - opens the action panel of the active row: its own
+        <code>Actions</code>, then <em>Pin to top</em> or <em>Unpin</em>, <em>Remove from recents</em> when it has been used,
+        and <em>Clear recent commands</em>, which forgets every use and keeps the pins. <kbd>Ctrl</kbd> <kbd>Enter</kbd> runs
+        the first secondary action directly - on a link without actions it opens the link in a new tab, as GitHub's palette
+        does - <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>P</kbd> pins or unpins, and <kbd>Shift</kbd> <kbd>Delete</kbd> forgets.
+    </p>
+    <div class="bb-split">
+        <div>
+            <h4 class="demo-card-heading">Pinned</h4>
+            @if (!History.IsLoaded)
+            {
+                <p class="bb-muted demo-small">Loads once the page is interactive.</p>
+            }
+            else if (History.Pinned().Count == 0)
+            {
+                <p class="bb-muted demo-small">Nothing pinned. Press <kbd>Tab</kbd> on a row and pick <em>Pin to top</em>.</p>
+            }
+            else
+            {
+                <ol class="bb-detail-list">
+                    @foreach (var id in History.Pinned())
+                    {
+                        <li>@Palette.Find(id)?.Title <code class="demo-small">@id</code></li>
+                    }
+                </ol>
+            }
+        </div>
+        <div>
+            <h4 class="demo-card-heading">Recent</h4>
+            @if (History.IsLoaded && History.Recents(Options.MaxRecents).Count == 0)
+            {
+                <p class="bb-muted demo-small">Nothing used yet. Run any command.</p>
+            }
+            else if (History.IsLoaded)
+            {
+                <ol class="bb-detail-list">
+                    @foreach (var id in History.Recents(Options.MaxRecents))
+                    {
+                        <li>@Palette.Find(id)?.Title <code class="demo-small">@id</code> · used @(History.Get(id)?.Count ?? 0)×</li>
+                    }
+                </ol>
+            }
+        </div>
+    </div>
+    <p class="bb-muted demo-small">
+        Read from <code>BaletteHistory</code>, the scoped service behind the palette's recents, pins and frecency, which an app
+        can inject too: <code>Pinned()</code>, <code>Recents(max)</code>, <code>Get(id)</code>, <code>Frecency(id)</code>,
+        <code>TogglePinAsync</code>, <code>RemoveAsync</code>, <code>ClearAsync</code> and a <code>Changed</code> event.
+    </p>
+    <div class="bb-try">
+        <button type="button" class="btn btn-secondary" @onclick="() => Palette.OpenAsync()">Open the palette on the root</button>
+        <button type="button" class="btn btn-secondary" disabled="@(!History.IsLoaded)" @onclick="() => History.ClearAsync()">Clear recent commands</button>
+    </div>
+    <p>
+        History is ids, counts and times - never queries - and is kept by the default store,
+        <code>BaletteBrowserStorageHistoryStore</code>, in <code>localStorage</code> under
+        <code>HistoryStorageKey</code> (<code>@Options.HistoryStorageKey</code>), capped at <code>MaxHistoryEntries</code>
+        (@Options.MaxHistoryEntries), and validated when it is read back. To keep it elsewhere - per user on the server, or
+        nowhere - plug in a store; turn it off with <code>options.EnableHistory = false</code>, or on one palette with
+        <code>EnableHistory="false"</code>, as the inline palette on <a href="commands#settings">Registering commands</a> does.
+    </p>
+    <pre class="bb-code">@HistoryExample</pre>
+</section>
+
+@code {
+    private const string WebhookId = "this-page.create-webhook";
+    private const string TodoId = "this-page.add-a-to-do";
+    private const string DeploymentsId = "this-page.recent-deployments";
+
+    private static readonly string[] WebhookEvents = ["push", "pull_request", "issues", "release", "deployment"];
+
+    private static readonly (string Version, string Environment, string When)[] Deployments =
+    [
+        ("v4.2.1", "Production", "2 hours ago"),
+        ("v4.2.1", "Staging", "5 hours ago"),
+        ("v4.2.0", "Production", "yesterday"),
+        ("v4.1.9", "Production", "last week"),
+    ];
+
+    private const string PromptExample = """
+        BaletteCmd.New("Rename project…")
+            .Shortcut("F2")
+            .Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+                "New project name",
+                ctx =>
+                {
+                    var name = ctx.PromptValue!.Trim();
+                    if (name == "admin")
+                    {
+                        // Expected, so not an exception: shown, and the prompt stays for a correction.
+                        return Task.FromResult(BaletteCommandResult.Error("“admin” is reserved."));
+                    }
+
+                    state.Rename(name);
+                    return Task.FromResult(BaletteCommandResult.Toast($"Renamed to {name}"));
+                },
+                // Null for a value Enter may submit, the message to show otherwise.
+                validate: value => value.Trim().Length == 0 ? "A project needs a name." : null,
+                placeholder: "Project name…",
+                initialValue: state.ProjectName)))
+        """;
+
+    private const string MultiSelectExample = """
+        BaletteCmd.New("Set labels…")
+            .MultiSelect()
+            .ChildrenPlaceholder("Toggle labels, Ctrl+Enter to apply…")
+            .Children(
+                BaletteCmd.New("bug").Id("label:bug"),
+                BaletteCmd.New("enhancement").Id("label:enhancement"))
+            // Runs on Ctrl+Enter, with the checked rows.
+            .Handler(ctx =>
+            {
+                state.SetLabels(ctx.SelectedCommands.Select(c => c.Title));
+                return Task.FromResult(BaletteCommandResult.Toast(ctx.SelectedCommands.Count == 1 ? "1 label applied" : $"{ctx.SelectedCommands.Count} labels applied"));
+            })
+        """;
+
+    private const string ChainExample = """
+        BaletteCmd.New("Create webhook…").Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+            "Payload URL",
+            address => Task.FromResult(BaletteCommandResult.Page(
+                "Events to send",
+                [.. events.Select(e => BaletteCmd.New(e).Id($"event:{e}").Build())],
+                placeholder: "Check events, Ctrl+Enter to create…",
+                multiSelect: true,
+                onSubmit: picked => Task.FromResult(picked.SelectedCommands.Count == 0
+                    ? BaletteCommandResult.Error("Pick at least one event.")
+                    : BaletteCommandResult.Toast($"Webhook to {address.PromptValue} created")))),
+            validate: value => Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme == "https" ? null : "Enter an https:// address.",
+            initialValue: "https://")))
+        """;
+
+    private const string LazyExample = """
+        // Loaded each time the page opens.
+        BaletteCmd.New("Assign to…")
+            .Children(async (ctx, ct) =>
+            {
+                var people = await ctx.GetRequiredService<PeopleClient>().GetAllAsync(ct);
+                return people.Select(p => BaletteCmd.New(p.Name).Subtitle(p.Role).Build()).ToList();
+            }, placeholder: "Pick an assignee…")
+
+        // Asked for every query typed on the page (minQueryLength is 0 here, so also when it opens).
+        BaletteCmd.New("Find a person…")
+            .ChildrenPlaceholder("Search the directory…")
+            .Source("Directory", async (query, ct) =>
+            {
+                var people = await directory.SearchAsync(query, take: 20, ct);
+                return people.Select(p => BaletteCmd.New(p.Name).Subtitle(p.Role).ExcludeFromHistory().Build()).ToList();
+            })
+
+        // Decided by the handler when it runs; these rows are not registered anywhere.
+        BaletteCmd.New("Export…").Handler(_ => Task.FromResult(BaletteCommandResult.Page("Export format",
+        [
+            BaletteCmd.Action("CSV", ExportCsv).Subtitle("Comma separated values").Build(),
+            BaletteCmd.Action("PDF", ExportPdf).Disabled(true, "Requires the Pro plan").Build(),
+        ])))
+        """;
+
+    private const string LongRunningExample = """
+        BaletteCmd.New("Generate report…").Handler(async ctx =>
+        {
+            // Esc closes the palette and cancels this token; the handler simply stops.
+            await reports.GenerateAsync(ctx.CancellationToken);
+            return BaletteCommandResult.Toast("Report ready", keepOpen: true);
+        })
+        """;
+
+    private const string FailureExample = """
+        Palette.CommandFailed += (_, e) =>
+        {
+            if (e.Exception is ValidationException)
+            {
+                e.Message = e.Exception.Message; // written for users
+            }
+
+            e.Handled = true; // reported by the app: not logged, not rethrown
+        };
+        """;
+
+    private const string HistoryExample = """
+        builder.Services.AddBitBaletteHistoryStore<ServerHistoryStore>(); // per user, on your server
+        builder.Services.AddBitBaletteInMemoryHistoryStore();            // for the lifetime of the scope only
+
+        public sealed class ServerHistoryStore(HttpClient http) : IBaletteHistoryStore
+        {
+            public async ValueTask<IDictionary<string, BaletteCommandUsage>> LoadAsync(CancellationToken ct = default)
+                => await http.GetFromJsonAsync<Dictionary<string, BaletteCommandUsage>>("api/palette-history", ct)
+                   ?? new Dictionary<string, BaletteCommandUsage>();
+
+            public async ValueTask SaveAsync(IReadOnlyDictionary<string, BaletteCommandUsage> usage, CancellationToken ct = default)
+                => (await http.PutAsJsonAsync("api/palette-history", usage, ct)).EnsureSuccessStatusCode();
+        }
+        """;
+
+    private readonly List<string> _failures = [];
+    private readonly List<IDisposable> _todos = [];
+    private List<BaletteCommand> _pageCommands = [];
+    private int _deploymentLoads;
+    private int _todoCount;
+
+    protected override void OnInitialized()
+    {
+        _pageCommands =
+        [
+            BaletteCmd.New("Generate report…").Group("This page").Keywords("slow", "busy", "long running")
+                .Description("Takes three seconds: after 150 ms the palette shows it busy, and Esc cancels it.")
+                .Handler(async ctx =>
+                {
+                    try
+                    {
+                        await Task.Delay(3000, ctx.CancellationToken);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        State.Record("Report cancelled");
+                        throw;
+                    }
+
+                    State.Record("Report generated");
+                    return BaletteCommandResult.Toast("Report ready", keepOpen: true);
+                }),
+
+            BaletteCmd.New("Sync with server").Group("This page").Keywords("refresh", "pull", "error")
+                .Description("Fails with an exception whose text names a server and a user - which the palette does not show.")
+                .Handler(async ctx =>
+                {
+                    await Task.Delay(300, ctx.CancellationToken);
+                    throw new InvalidOperationException("Connection to db-prod-7.internal:5432 refused for user 'svc_sync'.");
+                }),
+
+            BaletteCmd.New("Publish release").Group("This page").Keywords("ship", "deploy", "error")
+                .Description("Fails with a ValidationException, whose message this page shows as it is.")
+                .Handler(async ctx =>
+                {
+                    await Task.Delay(300, ctx.CancellationToken);
+                    throw new ValidationException("The changelog is empty: write one before publishing.");
+                }),
+
+            BaletteCmd.New("Recent deployments…").Group("This page").Keywords("releases", "history", "retry")
+                .Description("A lazy page whose loader fails every other time, to show the error state and its retry.")
+                .Children(async (ctx, ct) =>
+                {
+                    await Task.Delay(500, ct);
+                    if (++_deploymentLoads % 2 == 1)
+                    {
+                        throw new HttpRequestException("503 Service Unavailable from deploy-api.internal");
+                    }
+
+                    return Deployments.Select(d => BaletteCmd.New($"{d.Version} to {d.Environment}")
+                            .Subtitle(d.When)
+                            .ExcludeFromHistory()
+                            .Handler(_ => Task.FromResult(BaletteCommandResult.Toast($"Opened {d.Version} on {d.Environment}")))
+                            .Build())
+                        .ToList();
+                }, placeholder: "Pick a deployment…"),
+
+            BaletteCmd.New("Create webhook…").Group("This page").Keywords("hook", "integration", "events")
+                .Description("A prompt, then a multi-select page the prompt's handler returns.")
+                .Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+                    "Payload URL",
+                    address => Task.FromResult(BaletteCommandResult.Page(
+                        "Events to send",
+                        [.. WebhookEvents.Select(e => BaletteCmd.New(e).Id($"event:{e}").Build())],
+                        placeholder: "Check events, Ctrl+Enter to create…",
+                        multiSelect: true,
+                        onSubmit: picked =>
+                        {
+                            var events = picked.SelectedCommands.Select(c => c.Title).ToList();
+                            if (events.Count == 0)
+                            {
+                                return Task.FromResult(BaletteCommandResult.Error("Pick at least one event."));
+                            }
+
+                            var url = address.PromptValue!.Trim();
+                            State.Record($"Webhook to {url} for {string.Join(", ", events)}");
+                            return Task.FromResult(BaletteCommandResult.Toast(events.Count == 1 ? "Webhook created for 1 event" : $"Webhook created for {events.Count} events"));
+                        })),
+                    validate: value => Uri.TryCreate(value.Trim(), UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps && uri.Host.Length > 0
+                        ? null
+                        : "Enter an https:// address.",
+                    placeholder: "https://example.com/hooks/balette",
+                    initialValue: "https://"))),
+
+            BaletteCmd.New("Sign out other devices").Group("This page").Keywords("logout", "sessions", "confirm")
+                .Description("Confirm without Destructive: a second Enter is needed, and the row keeps its usual colour.")
+                .Confirm("Sign out every other browser and device?")
+                .Handler(_ =>
+                {
+                    State.Record("Signed out other devices (not really)");
+                    return Task.FromResult(BaletteCommandResult.Toast("Other devices signed out"));
+                }),
+
+            BaletteCmd.New("Add a to-do…").Group("This page").Keywords("task", "todo", "note")
+                .Description("A prompt that registers a command and answers Reset: back to the root, where the new to-do is listed ahead of every group.")
+                .Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+                    "New to-do",
+                    submit =>
+                    {
+                        AddTodo(submit.PromptValue!.Trim());
+                        return Task.FromResult(BaletteCommandResult.Reset);
+                    },
+                    validate: value => value.Trim().Length == 0 ? "A to-do needs some text." : null,
+                    placeholder: "What needs doing?"))),
+        ];
+
+        State.Changed += Refresh;
+        History.Changed += Refresh;
+        Palette.CommandFailed += OnCommandFailed;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // The history lives in localStorage, which is only reachable once the page runs in the browser.
+        if (firstRender && RendererInfo.IsInteractive && !History.IsLoaded)
+        {
+            await History.EnsureLoadedAsync();
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// A to-do is a command of its own, registered at runtime without a group so it is listed first on the root page.
+    /// Running it completes it: it unregisters itself and the palette stays open on the list.
+    /// </summary>
+    private void AddTodo(string text)
+    {
+        var id = $"todo:{++_todoCount}";
+        _todos.Add(Palette.Register(BaletteCmd.New(text)
+            .Id(id)
+            .Subtitle("To-do · Enter completes it")
+            .Keywords("todo", "task")
+            .ExcludeFromHistory()
+            .Handler(_ =>
+            {
+                Palette.Unregister(id);
+                State.Record($"Done: {text}");
+                return Task.FromResult(BaletteCommandResult.KeepOpen);
+            })));
+        State.Record($"To-do added: {text}");
+    }
+
+    /// <summary>
+    /// This page's own failing commands are reported here rather than logged; any other command's failure is left to the
+    /// palette, which logs it.
+    /// </summary>
+    private void OnCommandFailed(object? sender, BaletteCommandErrorEventArgs e)
+    {
+        if (_pageCommands.All(c => c.Id != e.Command.Id))
+        {
+            return;
+        }
+
+        if (e.Exception is ValidationException)
+        {
+            e.Message = e.Exception.Message;
+        }
+
+        e.Handled = true;
+        var shown = e.Command.Id == DeploymentsId ? "the page's error state, with Try again" : $"“{e.Message}”";
+        _failures.Insert(0, $"{DateTime.Now:HH:mm:ss}  {e.Command.Title}: {e.Exception.GetType().Name} - shown as {shown}");
+        if (_failures.Count > 8)
+        {
+            _failures.RemoveAt(_failures.Count - 1);
+        }
+
+        Refresh();
+    }
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        State.Changed -= Refresh;
+        History.Changed -= Refresh;
+        Palette.CommandFailed -= OnCommandFailed;
+
+        foreach (var todo in _todos)
+        {
+            todo.Dispose();
+        }
+    }
+}

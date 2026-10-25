@@ -35,6 +35,7 @@ public partial class WebButilScriptTrimmingTests
 
         // No page of the app keeps the screen awake, so a bundle that still has the module was not trimmed.
         Assert.DoesNotContain("BitButil.wakeLock", script, $"{url} carries the WakeLock module, which nothing in the app calls.");
+        Assert.DoesNotContain("BitButil.shadowDom", script, $"{url} carries the ShadowDom module, which nothing in the app calls.");
 
         Assert.IsLessThan(maxTrimmedBytes, script.Length,
             $"{url} is {script.Length:N0} characters, close to the untrimmed bundle: the publish did not trim it.");

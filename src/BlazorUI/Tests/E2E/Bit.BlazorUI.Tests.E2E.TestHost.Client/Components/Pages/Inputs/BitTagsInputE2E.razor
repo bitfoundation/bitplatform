@@ -1,0 +1,500 @@
+﻿@page "/e2e/tags-input"
+@using System.Text.RegularExpressions
+
+<PageTitle>BitTagsInput E2E</PageTitle>
+
+<h1>BitTagsInput</h1>
+
+<div style="width: 520px;">
+
+<E2ESection Id="basic" Title="Basic">
+    <BitTagsInput Id="tgi-basic" Placeholder="Type a tag and press Enter" @bind-Value="_basic" />
+    <span id="basic-value">@J(_basic)</span>
+    <BitTagsInput Id="tgi-tags-placeholder" Placeholder="Type a tag" TagsPlaceholder="add another..." DefaultValue="@(new List<string> { "blazor" })" />
+    <BitTagsInput Id="tgi-readonly" Placeholder="ReadOnly" ReadOnly DefaultValue="@(new List<string> { "Tag 1", "Tag 2" })" OnTagClick="t => _readOnlyClicked = t" />
+    <span id="readonly-clicked">@_readOnlyClicked</span>
+    <BitTagsInput Id="tgi-disabled" Placeholder="Disabled" Disabled="_disabled" DefaultValue="@(new List<string> { "Tag 1", "Tag 2" })"
+                  OnChange="v => _disabledValue = J(v)"
+                  @onclick="() => _disabledClicks++"
+                  @onkeydown="() => _disabledClicks++" />
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <span id="disabled-value">@_disabledValue</span>
+</E2ESection>
+
+<E2ESection Id="label" Title="Label & description">
+    <BitTagsInput Id="tgi-label" Label="Tags" Required Placeholder="Add tag..." />
+    <BitTagsInput Id="tgi-description" Label="Skills" Placeholder="Add a skill..." Description="Press Enter after each skill." />
+    <BitTagsInput Id="tgi-label-template" Placeholder="Add an address...">
+        <LabelTemplate><span class="lbl-tpl">Recipients <b>list</b></span></LabelTemplate>
+        <DescriptionTemplate><span class="dsc-tpl">Separate with <b>Enter</b></span></DescriptionTemplate>
+    </BitTagsInput>
+    <BitTagsInput Id="tgi-aria-label" AriaLabel="Keywords" />
+</E2ESection>
+
+<E2ESection Id="variants" Title="Variants">
+    <BitTagsInput Id="tgi-var-default" Label="Default" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+    <BitTagsInput Id="tgi-var-fill" Label="Fill field, Outline tags" Variant="BitVariant.Fill" TagVariant="BitVariant.Outline" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+    <BitTagsInput Id="tgi-var-text" Label="Text field, Text tags" Variant="BitVariant.Text" TagVariant="BitVariant.Text" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+    <BitTagsInput Id="tgi-var-outline" Label="Outline field, Fill tags" Variant="BitVariant.Outline" TagVariant="BitVariant.Fill" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+    <BitTagsInput Id="tgi-noborder" Label="NoBorder" NoBorder DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+</E2ESection>
+
+<E2ESection Id="separators" Title="Separators & pasting">
+    <BitTagsInput Id="tgi-sep" Label="Comma or semicolon" Separators="@([",", ";"])" @bind-Value="_sep" />
+    <span id="sep-value">@J(_sep)</span>
+    <BitTagsInput Id="tgi-space" Label="Space separated" Separators="@([" "])" @bind-Value="_space" />
+    <span id="space-value">@J(_space)</span>
+    <BitTagsInput Id="tgi-notrim" Label="NoTrim" NoTrim @bind-Value="_noTrim" />
+    <span id="notrim-value">@string.Join("|", (_noTrim ?? []).Select(t => $"[{t}]"))</span>
+</E2ESection>
+
+<E2ESection Id="suggestions" Title="Suggestions">
+    <BitTagsInput Id="tgi-suggest" Label="Free text with suggestions" Suggestions="_frameworks" @bind-Value="_suggest" />
+    <span id="suggest-value">@J(_suggest)</span>
+    <BitTagsInput Id="tgi-restrict" Label="Only suggestions" Suggestions="_frameworks" RestrictToSuggestions ShowInvalidMessage Comparison="StringComparison.OrdinalIgnoreCase" @bind-Value="_restrict" />
+    <span id="restrict-value">@J(_restrict)</span>
+    <BitTagsInput Id="tgi-max-suggest" Label="Five at a time" Suggestions="_countries" MaxSuggestions="5" />
+    <BitTagsInput Id="tgi-async" Label="Fetched while you type" Suggestions="_asyncSuggestions" IsLoading="_asyncLoading" LoadingAriaLabel="Fetching countries" DebounceTime="300" OnInput="HandleAsyncInput" />
+    <span id="async-calls">@_asyncCalls</span>
+</E2ESection>
+
+<E2ESection Id="limits" Title="Limits & counter">
+    <BitTagsInput Id="tgi-max" Label="Up to 3 tags" MaxTags="3" ShowCounter ShowInvalidMessage Separators="@([","])" Suggestions="_frameworks" @bind-Value="_max" />
+    <span id="max-value">@J(_max)</span>
+    <BitTagsInput Id="tgi-minmax" Label="Between 3 and 10 characters" MinLength="3" MaxLength="10" ShowInvalidMessage ShowCounter @bind-Value="_minMax" />
+    <span id="minmax-value">@J(_minMax)</span>
+</E2ESection>
+
+<E2ESection Id="rules" Title="Rules & normalization">
+    <BitTagsInput Id="tgi-hashtag" Label="Hashtags" Transformer="NormalizeHashtag" Separators="@([","])" ShowInvalidMessage OnTagExists="t => _exists = t" @bind-Value="_hashtags" />
+    <span id="hashtag-value">@J(_hashtags)</span>
+    <span id="hashtag-exists">@_exists</span>
+    <BitTagsInput Id="tgi-email" Label="Email addresses" ShowInvalidMessage GetInvalidMessage="EmailInvalidMessage" Separators="@([",", ";", " "])" Pattern="@EmailPattern" @bind-Value="_emails" />
+    <span id="email-value">@J(_emails)</span>
+    <BitTagsInput Id="tgi-validator" Label="Known frameworks, duplicates allowed" Duplicates Validator="ValidateFramework" ShowInvalidMessage NoInvalidHighlight @bind-Value="_validated" />
+    <span id="validator-value">@J(_validated)</span>
+    <BitTagsInput Id="tgi-invalid-format" Label="Invalid format" MinLength="3" ShowInvalidMessage InvalidAnnouncementFormat="Refused {0}: {1}" />
+</E2ESection>
+
+<E2ESection Id="editable" Title="Editable tags">
+    <BitTagsInput Id="tgi-edit" Label="Double click a tag to correct it" EditableTags MinLength="3" ShowInvalidMessage MaxLength="12"
+                  @bind-Value="_edit" OnEdit="HandleEdit" />
+    <span id="edit-value">@J(_edit)</span>
+    <span id="edit-args">@_editArgs</span>
+</E2ESection>
+
+<E2ESection Id="reorder" Title="Reordering">
+    <BitTagsInput Id="tgi-reorder" Label="Drag, tap the handle, or Alt + arrows" AllowReorder @bind-Value="_reorder" OnReorder="r => _reorderArgs = r.Tag + ':' + r.OldIndex + '>' + r.NewIndex" />
+    <span id="reorder-value">@J(_reorder)</span>
+    <span id="reorder-args">@_reorderArgs</span>
+    <button id="before-modal-reorder">before</button>
+</E2ESection>
+
+<E2ESection Id="fold" Title="Folding the tags away">
+    <BitTagsInput Id="tgi-fold" Label="Three at a time" MaxDisplayedTags="3" DefaultValue="@(new List<string> { "blazor", "dotnet", "web", "ui", "wasm", "razor" })" />
+    <BitTagsInput Id="tgi-fold-custom" Label="Custom labels" MaxDisplayedTags="2" MoreTagsFormat="{0} more..." LessTagsText="Fold back" MoreTagsAriaLabelFormat="Unfold {0} tags" DefaultValue="@(new List<string> { "blazor", "dotnet", "web", "ui" })" />
+</E2ESection>
+
+<E2ESection Id="clear" Title="Clear button">
+    <BitTagsInput Id="tgi-clear" Label="Clearable" ShowClearButton @bind-Value="_clear" OnClear="c => _cleared = string.Join('|', c)" />
+    <span id="clear-value">@J(_clear)</span>
+    <span id="cleared">@_cleared</span>
+    <BitTagsInput Id="tgi-clear-guard" Label="Guarded" ShowClearButton @bind-Value="_clearGuard" OnBeforeClear="HandleBeforeClear" />
+    <span id="clear-guard-value">@J(_clearGuard)</span>
+    <span id="clear-guard-args">@_clearGuardArgs</span>
+</E2ESection>
+
+<E2ESection Id="fixed" Title="Fixed tags">
+    <BitTagsInput Id="tgi-fixed" Label="Editors" ShowClearButton CanRemoveTag="@(t => t != "ada@example.com")" FixedTagAriaDescription="The owner cannot be removed." @bind-Value="_fixed" />
+    <span id="fixed-value">@J(_fixed)</span>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard & typing">
+    <BitTagsInput Id="tgi-keys" Label="Full keyboard support" @bind-Value="_keys" />
+    <span id="keys-value">@J(_keys)</span>
+    <BitTagsInput Id="tgi-no-adds" Label="Only Enter adds" NoAddOnBlur NoAddOnTab NoBackspaceRemove @bind-Value="_noAdds" />
+    <span id="no-adds-value">@J(_noAdds)</span>
+    <BitTagsInput Id="tgi-backspace-edits" Label="BackspaceEditsLastTag & ClearOnBlur" BackspaceEditsLastTag ClearOnBlur NoAddOnBlur @bind-Value="_backspaceEdits" />
+    <span id="backspace-edits-value">@J(_backspaceEdits)</span>
+    <BitTagsInput Id="tgi-phone" Label="Recipients on a phone" Separators="@([",", ";"])" InputMode="BitInputMode.Email" EnterKeyHint="BitEnterKeyHint.Done" AutoComplete="email" SpellCheck="true" />
+    <BitTagsInput Id="tgi-cancel-empty" Label="CancelConfirmKeysOnEmpty" CancelConfirmKeysOnEmpty />
+    <BitTagsInput Id="tgi-no-escape" Label="NoClearOnEscape" NoClearOnEscape />
+    <BitTagsInput Id="tgi-throttle" Label="ThrottleTime" ThrottleTime="1000" OnInput="t => { _throttleCalls++; _throttleText = t; }" />
+    <span id="throttle-calls">@_throttleCalls</span>
+    <span id="throttle-text">@_throttleText</span>
+    <button id="after-keys">after</button>
+</E2ESection>
+
+<E2ESection Id="announcements" Title="Accessibility & localization">
+    <BitTagsInput Id="tgi-announce" Label="Announcements of your own" AllowReorder ShowClearButton EditableTags MinLength="2"
+                  AddedAnnouncementFormat="{0} was added to the list."
+                  AddedManyAnnouncementFormat="{0} tags were added to the list."
+                  RemovedAnnouncementFormat="{0} was taken off."
+                  EditedAnnouncementFormat="{0} was renamed."
+                  MovedAnnouncementFormat="{0} now at {1}/{2}."
+                  PickedUpAnnouncementFormat="Carrying {0}."
+                  PutBackAnnouncementFormat="Dropped {0} back."
+                  ClearedAnnouncementFormat="Wiped {0}."
+                  InvalidAnnouncementFormat="No {0}: {1}"
+                  DismissAriaLabelFormat="Drop {0}"
+                  DismissTitle="Drop it"
+                  EditAriaLabelFormat="Rename {0}"
+                  ReorderAriaLabelFormat="Carry {0}"
+                  ReorderDropAriaLabelFormat="Put {0} here"
+                  ReorderTitle="Carry"
+                  ClearButtonAriaLabel="Wipe everything"
+                  ClearButtonTitle="Wipe"
+                  @bind-Value="_announce" />
+    <BitTagsInput Id="tgi-names" Label="Names of your own" MaxTags="5" TagsAriaLabel="Selected skills" TagAriaDescription="Press Enter to rename this skill."
+                  TagCountAriaDescriptionFormat="{0} of {1} skills chosen." DefaultValue="@(new List<string> { "csharp", "razor" })" />
+    <BitTagsInput Id="tgi-default-hints" Label="Default hints" DefaultValue="@(new List<string> { "one", "two" })" OnTagClick="t => { }" />
+</E2ESection>
+
+<E2ESection Id="affixes" Title="Prefix & Suffix">
+    <BitTagsInput Id="tgi-prefix" Label="Recipients" Prefix="To:" Separators="@([",", ";"])" DefaultValue="@(new List<string> { "ada@example.com" })" />
+    <BitTagsInput Id="tgi-suffix" Label="Lengths in centimetres" Suffix="cm" Pattern="^[0-9]+$" ShowInvalidMessage DefaultValue="@(new List<string> { "12", "34" })" />
+    <BitTagsInput Id="tgi-affix-templates" Label="Templates" DefaultValue="@(new List<string> { "blazor", "dotnet" })">
+        <PrefixTemplate><i class="pre-tpl">#</i></PrefixTemplate>
+        <SuffixTemplate><i class="suf-tpl">!</i></SuffixTemplate>
+    </BitTagsInput>
+</E2ESection>
+
+<E2ESection Id="tag-template" Title="Tag template & per-tag styling">
+    <BitTagsInput Id="tgi-tag-template" Label="TagTemplate" DefaultValue="@(new List<string> { "blazor", "dotnet" })">
+        <TagTemplate Context="tag"><b class="tag-tpl">#@tag</b></TagTemplate>
+    </BitTagsInput>
+    <BitTagsInput Id="tgi-tag-name" Label="Named by GetTagName" GetTagName="PersonName" DefaultValue="@(new List<string> { "ada@example.com", "grace@example.com" })">
+        <TagTemplate Context="tag"><span class="person">@PersonName(tag)</span></TagTemplate>
+    </BitTagsInput>
+    <BitTagsInput Id="tgi-tag-style" Label="Recipients" GetTagStyle="RecipientStyle" DefaultValue="@(new List<string> { "ada@example.com", "not-an-address" })" />
+    <BitTagsInput Id="tgi-tag-class" Label="Priorities" GetTagClass="PriorityClass" DefaultValue="@(new List<string> { "low", "medium", "high" })" />
+</E2ESection>
+
+<E2ESection Id="forms" Title="Binding, forms & validation" style="--bit-TagsInput-invalid-color: rgb(4, 5, 6);">
+    <BitTagsInput Id="tgi-two-way" Label="Two-way bound" @bind-Value="_twoWay" />
+    <span id="two-way-value">@J(_twoWay)</span>
+    <button id="btn-two-way" @onclick="@(() => _twoWay = new List<string> { "x", "y", "z" })">x y z</button>
+    <button id="btn-two-way-null" @onclick="() => _twoWay = null">null</button>
+    <BitTagsInput Id="tgi-uncontrolled" Label="Uncontrolled" DefaultValue="@(new List<string> { "blazor" })" OnChange="v => _uncontrolled = J(v)" />
+    <span id="uncontrolled-value">@_uncontrolled</span>
+    <BitTagsInput Id="tgi-one-way" Label="One-way" Value="_oneWay" />
+    <EditForm Model="_model" OnValidSubmit="@(() => _formResult = "valid")" OnInvalidSubmit="@(() => _formResult = "invalid")">
+        <DataAnnotationsValidator />
+        <BitTagsInput Id="tgi-form" Label="Tags" Name="tags" Required Separators="@([","])"
+                      InputHtmlAttributes="@(new() { ["data-input"] = "tags", ["aria-describedby"] = "tgi-form-msg" })"
+                      @bind-Value="_model.Tags" />
+        <div id="tgi-form-msg"><ValidationMessage For="@(() => _model.Tags)" /></div>
+        <button id="tgi-form-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="form-result">@_formResult</span>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitTagsInput Id="tgi-events" Label="Events" EditableTags DefaultValue="@(new List<string> { "blazor" })"
+                  OnBeforeAdd="HandleBeforeAdd" OnBeforeRemove="HandleBeforeRemove"
+                  OnAdd="@(a => Log($"add:{string.Join(',', a)}"))" OnRemove="@(t => Log($"remove:{t}"))"
+                  OnInput="t => _lastInput = t" OnKeyDown="k => _lastKey = k.Key"
+                  OnFocusIn="@(() => Log("focusin"))" OnFocusOut="@(() => Log("focusout"))"
+                  OnTagClick="@(t => Log($"click:{t}"))" OnInvalid="@(i => Log($"invalid:{i.Tag}:{i.Reason}"))" Duplicates="false" />
+    @* The button comes ahead of the log: the focusout its own press raises grows the log, and a button after it on the same
+       line would move between the press and the release (under WebAssembly the log renders in between). *@
+    <button id="btn-clear-log" @onclick="() => _log.Clear()">clear log</button>
+    <span id="events-log">@string.Join(";", _log)</span>
+    <span id="last-input">@_lastInput</span>
+    <span id="last-key">@_lastKey</span>
+</E2ESection>
+
+<E2ESection Id="api" Title="Public API">
+    <BitTagsInput @ref="_api" Id="tgi-api" Label="Driven from the outside" MaxTags="6" EditableTags CanRemoveTag="@(t => t != "pinned")" @bind-Value="_apiValue" />
+    <span id="api-value">@J(_apiValue)</span>
+    <button id="api-add" @onclick="@(() => _api!.AddTagAsync("added"))">AddTag</button>
+    <button id="api-add-many" @onclick="@(() => _api!.AddTagsAsync(new[] { "one", "two", "pinned" }))">AddTags</button>
+    <button id="api-remove" @onclick="@(() => _api!.RemoveTagAsync("one"))">RemoveTag</button>
+    <button id="api-remove-pinned" @onclick="@(() => _api!.RemoveTagAsync("pinned"))">RemovePinned</button>
+    <button id="api-remove-at" @onclick="@(() => _api!.RemoveTagAtAsync(0))">RemoveTagAt</button>
+    <button id="api-move" @onclick="@(() => _api!.MoveTagAsync(0, 1))">MoveTag</button>
+    <button id="api-set-text" @onclick="@(() => _api!.SetInputTextAsync("typed"))">SetInputText</button>
+    <button id="api-edit" @onclick="@(() => _api!.EditTagAsync(0))">EditTag</button>
+    <button id="api-clear" @onclick="@(() => _api!.Clear())">Clear</button>
+    <button id="api-focus" @onclick="@(() => _api!.FocusAsync())">Focus</button>
+</E2ESection>
+
+<E2ESection Id="modal" Title="Escape inside a modal">
+    <button id="btn-open-modal" @onclick="() => _modalOpen = true">Open modal</button>
+    <BitModal @bind-IsOpen="_modalOpen">
+        <div style="padding: 24px; width: 320px;">
+            <BitTagsInput Id="tgi-modal" Label="In a modal" EditableTags AllowReorder @bind-Value="_modalValue" />
+        </div>
+    </BitModal>
+    <span id="modal-open">@_modalOpen</span>
+    <span id="modal-value">@J(_modalValue)</span>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_tagsParams">
+        <BitTagsInput Id="tgi-cascade-1" Label="From the cascade" @bind-Value="_cascade" />
+        <BitTagsInput Id="tgi-cascade-own" Label="Its own Color" Color="BitColor.Success" DefaultValue="@(new List<string> { "dotnet" })" />
+    </BitParams>
+    <span id="cascade-value">@J(_cascade)</span>
+    <BitTagsInput Id="tgi-cascade-outside" Label="Outside" DefaultValue="@(new List<string> { "web" })" />
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <BitTagsInput Id="tgi-color-none" DefaultValue="@(new List<string> { "tag" })" />
+    @foreach (var (color, slug) in _colors)
+    {
+        <BitTagsInput Id="@($"tgi-color-{slug}")" Color="color" DefaultValue="@(new List<string> { "tag" })" />
+    }
+</E2ESection>
+
+<E2ESection Id="icons" Title="External icons">
+    <BitTagsInput Id="tgi-icons" ShowClearButton AllowReorder DefaultValue="@(new List<string> { "a1", "b2" })"
+                  DismissIcon="@BitIconInfo.Css("ext-dismiss")" ClearButtonIcon="@BitIconInfo.Fa("solid xmark")" ReorderIcon="@BitIconInfo.Bi("grip-vertical")" />
+    <BitTagsInput Id="tgi-icon-names" ShowClearButton AllowReorder DefaultValue="@(new List<string> { "a1", "b2" })"
+                  DismissIconName="@BitIconName.ChromeClose" ClearButtonIconName="@BitIconName.Delete" ReorderIconName="@BitIconName.Move" />
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitTagsInput Id="tgi-size-sm" Size="BitSize.Small" Label="Small" DefaultValue="@(new List<string> { "tag" })" />
+    <BitTagsInput Id="tgi-size-md" Size="BitSize.Medium" Label="Medium" DefaultValue="@(new List<string> { "tag" })" />
+    <BitTagsInput Id="tgi-size-lg" Size="BitSize.Large" Label="Large" DefaultValue="@(new List<string> { "tag" })" />
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes">
+    <BitTagsInput Id="tgi-style" Style="margin-inline: 13px;" Class="custom-class" DefaultValue="@(new List<string> { "a" })" />
+    <BitTagsInput Id="tgi-styles" Label="Styles" Description="Styles description" Prefix="P" Suffix="S" ShowCounter ShowClearButton AllowReorder EditableTags IsLoading MaxDisplayedTags="2"
+                  CanRemoveTag="@(t => t != "fixed")"
+                  DefaultValue="@(new List<string> { "fixed", "b", "c" })"
+                  Styles="@(new() { Root = "padding: 5px;", Focused = "outline: 1px solid rgb(1, 1, 1);", Label = "letter-spacing: 3px;", InputContainer = "column-gap: 7px;", Prefix = "color: rgb(2, 2, 2);", Suffix = "color: rgb(3, 3, 3);", Tag = "margin-top: 2px;", FocusedTag = "outline: 2px solid rgb(4, 4, 4);", FixedTag = "font-style: italic;", EditingTag = "opacity: 0.8;", TagText = "text-decoration-line: underline;", ReorderButton = "opacity: 0.7;", ReorderIcon = "color: rgb(5, 5, 5);", DismissButton = "opacity: 0.6;", DismissIcon = "color: rgb(6, 6, 6);", ToggleButton = "color: rgb(7, 7, 7);", Input = "color: rgb(8, 8, 8);", EditInput = "color: rgb(9, 9, 9);", Counter = "color: rgb(10, 10, 10);", Spinner = "opacity: 0.5;", ClearButton = "opacity: 0.4;", ClearIcon = "color: rgb(11, 11, 11);", Description = "color: rgb(12, 12, 12);" })" />
+    <BitTagsInput Id="tgi-classes" Label="Classes" Description="Classes description" Prefix="P" Suffix="S" ShowCounter ShowClearButton AllowReorder EditableTags IsLoading MaxDisplayedTags="2"
+                  CanRemoveTag="@(t => t != "fixed")"
+                  DefaultValue="@(new List<string> { "fixed", "b", "c" })"
+                  Classes="@(new() { Root = "c-root", Focused = "c-fcs", Label = "c-lbl", InputContainer = "c-cnt", Prefix = "c-pre", Suffix = "c-suf", TagsContainer = "c-tgs", Tag = "c-tag", FocusedTag = "c-ftag", FixedTag = "c-fix", EditingTag = "c-edt", TagText = "c-ttx", ReorderButton = "c-rbt", ReorderIcon = "c-rdi", DismissButton = "c-dbt", DismissIcon = "c-dsi", ToggleButton = "c-tgl", Input = "c-inp", EditInput = "c-eip", Counter = "c-cnr", Spinner = "c-spn", ClearButton = "c-cbt", ClearIcon = "c-cli", Description = "c-dsc" })" />
+    <BitTagsInput Id="tgi-states" Label="States" AllowReorder MinLength="3" ShowInvalidMessage DefaultValue="@(new List<string> { "abc", "def" })"
+                  Styles="@(new() { PickedUpTag = "outline: 3px solid rgb(13, 13, 13);", DuplicateTag = "outline: 3px solid rgb(14, 14, 14);", InvalidMessage = "color: rgb(15, 15, 15);", TagsContainer = "color: rgb(16, 16, 16);" })"
+                  Classes="@(new() { PickedUpTag = "c-pck", DuplicateTag = "c-dup", InvalidMessage = "c-ivm" })" />
+    <BitTagsInput Id="tgi-attrs" data-test="attr-value" title="root title" DefaultValue="@(new List<string> { "a" })" />
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div style="--bit-TagsInput-font-size: 17px; --bit-TagsInput-color: rgb(1, 2, 3); --bit-TagsInput-label-color: rgb(4, 5, 6); --bit-TagsInput-required-color: rgb(7, 8, 9); --bit-TagsInput-description-color: rgb(10, 11, 12); --bit-TagsInput-description-font-size: 9px; --bit-TagsInput-counter-color: rgb(13, 14, 15); --bit-TagsInput-affix-color: rgb(16, 17, 18); --bit-TagsInput-background: rgb(19, 20, 21); --bit-TagsInput-border-color: rgb(22, 23, 24); --bit-TagsInput-border-width: 3px; --bit-TagsInput-radius: 7px; --bit-TagsInput-min-height: 50px; --bit-TagsInput-padding: 6px; --bit-TagsInput-gap: 11px; --bit-TagsInput-tag-color: rgb(25, 26, 27); --bit-TagsInput-tag-background: rgb(28, 29, 30); --bit-TagsInput-tag-border-color: rgb(31, 32, 33); --bit-TagsInput-tag-border-width: 2px; --bit-TagsInput-tag-radius: 9px; --bit-TagsInput-tag-padding: 0 8px; --bit-TagsInput-tag-gap: 5px; --bit-TagsInput-tag-font-size: 15px; --bit-TagsInput-tag-min-height: 30px; --bit-TagsInput-tag-max-width: 120px; --bit-TagsInput-dismiss-icon-size: 13px; --bit-TagsInput-clear-color: rgb(34, 35, 36);">
+        <BitTagsInput Id="tgi-vars" Label="Vars" Required Description="Vars description" ShowCounter Prefix="P" ShowClearButton Placeholder="ph" DefaultValue="@(new List<string> { "tag", "a-very-long-tag-that-will-overflow-the-max-width" })" />
+        <BitTagsInput Id="tgi-vars-explicit" Color="BitColor.Error" Size="BitSize.Small" DefaultValue="@(new List<string> { "tag" })" />
+    </div>
+    <div style="--bit-TagsInput-fill-background: rgb(40, 41, 42); --bit-TagsInput-outline-background: rgb(43, 44, 45); --bit-TagsInput-text-background: rgb(46, 47, 48); --bit-TagsInput-fill-tag-background: rgb(49, 50, 51); --bit-TagsInput-outline-tag-color: rgb(52, 53, 54); --bit-TagsInput-text-tag-color: rgb(55, 56, 57); --bit-TagsInput-background: rgb(99, 99, 99); --bit-TagsInput-tag-background: rgb(98, 98, 98); --bit-TagsInput-hover-border-color: rgb(58, 59, 60); --bit-TagsInput-disabled-background: rgb(61, 62, 63); --bit-TagsInput-tag-hover-background: rgb(64, 65, 66); --bit-TagsInput-placeholder-color: rgb(67, 68, 69);">
+        <BitTagsInput Id="tgi-vars-fill" Variant="BitVariant.Fill" TagVariant="BitVariant.Fill" DefaultValue="@(new List<string> { "tag" })" OnTagClick="t => { }" />
+        <BitTagsInput Id="tgi-vars-outline" Variant="BitVariant.Outline" TagVariant="BitVariant.Outline" Placeholder="placeholder" />
+        <BitTagsInput Id="tgi-vars-text" Variant="BitVariant.Text" TagVariant="BitVariant.Text" DefaultValue="@(new List<string> { "tag" })" />
+        <BitTagsInput Id="tgi-vars-disabled" Disabled DefaultValue="@(new List<string> { "tag" })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitTagsInput Id="tgi-rtl" Dir="BitDir.Rtl" Label="RTL" AllowReorder @bind-Value="_rtl" />
+    <span id="rtl-value">@J(_rtl)</span>
+    <div dir="rtl">
+        <BitTagsInput Id="tgi-rtl-inherited" Label="Inherited" @bind-Value="_rtlInherited" />
+    </div>
+    <span id="rtl-inherited-value">@J(_rtlInherited)</span>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    <BitTagsInput Id="tgi-runtime" Label="@_runtimeLabel" Color="_runtimeColor" Size="_runtimeSize" ReadOnly="_runtimeReadOnly" MaxDisplayedTags="_runtimeMaxDisplayed" DefaultValue="@(new List<string> { "a", "b", "c" })" />
+    <button id="btn-runtime-color" @onclick="() => _runtimeColor = BitColor.Error">Error</button>
+    <button id="btn-runtime-size" @onclick="() => _runtimeSize = BitSize.Large">Large</button>
+    <button id="btn-runtime-readonly" @onclick="() => _runtimeReadOnly = !_runtimeReadOnly">ReadOnly</button>
+    <button id="btn-runtime-fold" @onclick="() => _runtimeMaxDisplayed = 1">Fold</button>
+    <button id="btn-runtime-label" @onclick="@(() => _runtimeLabel = "Changed label")">Label</button>
+    @if (_mounted)
+    {
+        <BitTagsInput Id="tgi-unmount" DebounceTime="200" OnInput="t => { }" DefaultValue="@(new List<string> { "a" })" />
+    }
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Motion">
+    <BitTagsInput Id="tgi-motion" DefaultValue="@(new List<string> { "a" })" />
+    <BitTagsInput Id="tgi-motion-forced" ForceAnimation DefaultValue="@(new List<string> { "a" })" />
+</E2ESection>
+
+</div>
+
+<E2EStatus />
+
+@code {
+    private const string EmailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+
+    private static readonly string[] _frameworks = ["blazor", "react", "vue", "angular", "svelte"];
+    private static readonly string[] _countries = ["Argentina", "Armenia", "Australia", "Austria", "Bahrain", "Bulgaria", "Canada", "Denmark", "France", "Germany", "Iran", "Jordan", "Mauritania", "Qatar", "Sudan", "Tanzania", "Tunisia"];
+
+    private static readonly (BitColor Color, string Slug)[] _colors =
+    [
+        (BitColor.Primary, "pri"),
+        (BitColor.Secondary, "sec"),
+        (BitColor.Tertiary, "ter"),
+        (BitColor.Info, "inf"),
+        (BitColor.Success, "suc"),
+        (BitColor.Warning, "wrn"),
+        (BitColor.SevereWarning, "swr"),
+        (BitColor.Error, "err"),
+        (BitColor.PrimaryBackground, "pbg"),
+        (BitColor.SecondaryBackground, "sbg"),
+        (BitColor.TertiaryBackground, "tbg"),
+        (BitColor.PrimaryForeground, "pfg"),
+        (BitColor.SecondaryForeground, "sfg"),
+        (BitColor.TertiaryForeground, "tfg"),
+        (BitColor.PrimaryBorder, "pbr"),
+        (BitColor.SecondaryBorder, "sbr"),
+        (BitColor.TertiaryBorder, "tbr"),
+    ];
+
+    private readonly List<IBitComponentParams> _tagsParams =
+    [
+        new BitTagsInputParams
+        {
+            Size = BitSize.Small,
+            Variant = BitVariant.Fill,
+            TagVariant = BitVariant.Outline,
+            Color = BitColor.Info,
+            Separators = [","],
+            Transformer = t => t.ToUpperInvariant(),
+            Placeholder = "cascaded placeholder",
+        }
+    ];
+
+    private ICollection<string>? _basic;
+    private string? _readOnlyClicked;
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private string _disabledValue = "";
+
+    private ICollection<string>? _sep;
+    private ICollection<string>? _space;
+    private ICollection<string>? _noTrim;
+    private ICollection<string>? _suggest;
+    private ICollection<string>? _restrict;
+    private IEnumerable<string> _asyncSuggestions = [];
+    private bool _asyncLoading;
+    private int _asyncCalls;
+    private ICollection<string>? _max = new List<string> { "one", "two" };
+    private ICollection<string>? _minMax;
+    private ICollection<string>? _hashtags;
+    private string? _exists;
+    private ICollection<string>? _emails;
+    private ICollection<string>? _validated;
+    private ICollection<string>? _edit = new List<string> { "blazor", "dotnet", "web" };
+    private string _editArgs = "";
+    private ICollection<string>? _reorder = new List<string> { "first", "second", "third", "fourth" };
+    private string _reorderArgs = "";
+    private ICollection<string>? _clear = new List<string> { "blazor", "dotnet", "web" };
+    private string _cleared = "";
+    private ICollection<string>? _clearGuard = new List<string> { "blazor", "dotnet", "web" };
+    private string _clearGuardArgs = "";
+    private ICollection<string>? _fixed = new List<string> { "ada@example.com", "grace@example.com" };
+    private ICollection<string>? _keys = new List<string> { "one", "two", "three" };
+    private ICollection<string>? _noAdds = new List<string> { "one", "two" };
+    private ICollection<string>? _backspaceEdits = new List<string> { "one", "two" };
+    private ICollection<string>? _announce = new List<string> { "alpha", "beta" };
+    private int _throttleCalls;
+    private string _throttleText = "";
+    private ICollection<string>? _twoWay;
+    private string _uncontrolled = "";
+    private ICollection<string>? _oneWay = new List<string> { "fixed" };
+    private readonly TagsModel _model = new();
+    private string _formResult = "none";
+    private readonly List<string> _log = [];
+    private string _lastInput = "";
+    private string _lastKey = "";
+    private BitTagsInput? _api;
+    private ICollection<string>? _apiValue = new List<string> { "blazor" };
+    private bool _modalOpen;
+    private ICollection<string>? _modalValue = new List<string> { "m1", "m2" };
+    private ICollection<string>? _cascade;
+    private ICollection<string>? _rtl = new List<string> { "one", "two", "three" };
+    private ICollection<string>? _rtlInherited = new List<string> { "one", "two", "three" };
+    private string _runtimeLabel = "Runtime label";
+    private BitColor? _runtimeColor;
+    private BitSize? _runtimeSize;
+    private bool _runtimeReadOnly;
+    private int _runtimeMaxDisplayed;
+    private bool _mounted = true;
+
+    private static string J(ICollection<string>? tags) => tags is null ? "null" : string.Join("|", tags);
+
+    private void Log(string entry) => _log.Add(entry);
+
+    private static string NormalizeHashtag(string tag) => string.Concat(tag.TrimStart('#').Where(c => char.IsWhiteSpace(c) is false)).ToLowerInvariant();
+
+    private static string? EmailInvalidMessage(BitTagsInputInvalidArgs args) => args.Reason == BitTagsInputInvalidReason.Pattern ? $"'{args.Tag}' is not an email address." : null;
+
+    private static bool ValidateFramework(string tag) => tag is "blazor" or "react" or "vue" or "angular";
+
+    private static string PersonName(string tag) => tag switch
+    {
+        "ada@example.com" => "Ada Lovelace",
+        "grace@example.com" => "Grace Hopper",
+        _ => tag
+    };
+
+    private static string? RecipientStyle(string tag) => Regex.IsMatch(tag, EmailPattern) ? null : "background: rgb(253, 231, 233); color: rgb(164, 38, 44); border-color: rgb(164, 38, 44);";
+
+    private static string? PriorityClass(string tag) => tag switch
+    {
+        "high" => "priority-high",
+        "medium" => "priority-medium",
+        "low" => "priority-low",
+        _ => null
+    };
+
+    private void HandleEdit(BitTagsInputEditArgs args)
+    {
+        _editArgs = $"{args.Tag}->{args.NewTag}";
+        if (args.NewTag == "cancelme") args.Cancel = true;
+        if (args.NewTag == "rewrite") args.NewTag = "rewritten";
+    }
+
+    private void HandleBeforeClear(BitTagsInputClearArgs args)
+    {
+        _clearGuardArgs = string.Join('|', args.Tags);
+        args.Cancel = args.Tags.Count > 2;
+    }
+
+    private void HandleBeforeAdd(BitTagsInputBeforeArgs args)
+    {
+        if (args.Tag == "block")
+        {
+            args.Cancel = true;
+            Log("cancelled:block");
+            return;
+        }
+
+        if (args.Tag == "me") args.Tag = "me-corrected";
+    }
+
+    private void HandleBeforeRemove(BitTagsInputBeforeArgs args)
+    {
+        if (args.Tag == "blazor")
+        {
+            args.Cancel = true;
+            Log("kept:blazor");
+        }
+    }
+
+    private async Task HandleAsyncInput(string text)
+    {
+        _asyncCalls++;
+        _asyncLoading = true;
+        StateHasChanged();
+        await Task.Delay(400);
+        _asyncSuggestions = _countries.Where(c => c.Contains(text, StringComparison.OrdinalIgnoreCase)).ToList();
+        _asyncLoading = false;
+    }
+
+    public class TagsModel
+    {
+        [Required(ErrorMessage = "At least one tag is required.")]
+        [MinLength(1, ErrorMessage = "At least one tag is required.")]
+        public ICollection<string>? Tags { get; set; }
+    }
+}

@@ -1,20 +1,76 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, on the Style of a snack bar or (for the ones an item reads) on the cssStyle of a single item inherits
+// down to whatever reads it:
+//   --bit-SnackBar-z-index           stacking order of the stack                  (default: $zindex-snackbar)
+//   --bit-SnackBar-offset            distance of the stack from the screen edges  (default: 8px; the Offset parameter wins)
+//   --bit-SnackBar-gap               room between two stacked items               (default: 10px)
+//   --bit-SnackBar-min-width         minimum width of an item                     (default: none; the stack's width on a phone)
+//   --bit-SnackBar-max-width         maximum width of an item                     (default: none; the MaxWidth parameter wins)
+//   --bit-SnackBar-background        fill of an item                              (default: $clr-inf filled, $clr-bg-pri otherwise)
+//   --bit-SnackBar-color             text color of an item                        (default: $clr-inf-text filled, $clr-inf-fg otherwise)
+//   --bit-SnackBar-border-color      border color of an item                      (default: $clr-inf, transparent on Text)
+//   --bit-SnackBar-border-width      border width of an item                      (default: $shp-border-width on Outline, 0 otherwise)
+//                                    Each of the four above has a twin per variant, read ahead of it, so a theme
+//                                    can set one look apart from the other two (where the Color of an item
+//                                    paints, it still wins over both):
+//   --bit-SnackBar-fill-background       fill of an item, Fill variant                (default: --bit-SnackBar-background)
+//   --bit-SnackBar-fill-color            text color of an item, Fill variant          (default: --bit-SnackBar-color)
+//   --bit-SnackBar-fill-border-color     border color of an item, Fill variant        (default: --bit-SnackBar-border-color)
+//   --bit-SnackBar-fill-border-width     border width of an item, Fill variant        (default: --bit-SnackBar-border-width)
+//   --bit-SnackBar-outline-background    fill of an item, Outline variant             (default: --bit-SnackBar-background)
+//   --bit-SnackBar-outline-color         text color of an item, Outline variant       (default: --bit-SnackBar-color)
+//   --bit-SnackBar-outline-border-color  border color of an item, Outline variant     (default: --bit-SnackBar-border-color)
+//   --bit-SnackBar-outline-border-width  border width of an item, Outline variant     (default: --bit-SnackBar-border-width)
+//   --bit-SnackBar-text-background       fill of an item, Text variant                (default: --bit-SnackBar-background)
+//   --bit-SnackBar-text-color            text color of an item, Text variant          (default: --bit-SnackBar-color)
+//   --bit-SnackBar-text-border-color     border color of an item, Text variant        (default: --bit-SnackBar-border-color)
+//   --bit-SnackBar-text-border-width     border width of an item, Text variant        (default: --bit-SnackBar-border-width)
+//   --bit-SnackBar-radius            corner radius of an item                     (default: $shp-radius-popup)
+//   --bit-SnackBar-shadow            elevation of an item                         (default: $box-shadow-snackbar)
+//   --bit-SnackBar-padding           inner padding of an item                     (default: spacing(1.25))
+//   --bit-SnackBar-title-font-size   text size of the title                       (default: $tg-fs-md)
+//   --bit-SnackBar-title-font-weight weight of the title                          (default: $tg-fw-medium)
+//   --bit-SnackBar-body-font-size    text size of the body                        (default: $tg-fs-sm)
+//   --bit-SnackBar-icon-color        color of the leading icon and the spinner    (default: the text color)
+//   --bit-SnackBar-icon-size         size of the leading icon and the spinner     (default: $siz-icon-md)
+//   --bit-SnackBar-progress-color    color of the countdown bar                   (default: the text color)
+//   --bit-SnackBar-progress-height   thickness of the countdown bar               (default: $siz-track-md)
+//
+// A parameter wins over the variable that restyles what it sets: the explicit Color of an item over the color, the
+// background and the border color its role paints (the variables keep what a Color leaves alone - the page surface
+// the Outline and Text variants float on, and the transparent border of Text), and an explicit Size over the
+// padding, the two font sizes and the icon size. The variables restyle the default, not a choice - which is why
+// Color and Size publish nothing while they are left unset: a class that always carried the default would be
+// indistinguishable from one that was asked for.
+
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$snb-private-properties:
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    dur-full, max-w;
 
 .bit-snb {
+    @each $name in $snb-private-properties {
+        --bit-snb-#{$name}: initial;
+    }
     width: 100%;
     display: flex;
     position: fixed;
-    gap: spacing(1.25);
     pointer-events: none;
     flex-flow: column nowrap;
-    z-index: $zindex-snackbar;
-    max-width: calc(100% - 2 * var(--bit-snb-off-inline));
+    gap: var(--bit-SnackBar-gap, #{spacing(1.25)});
+    z-index: var(--bit-SnackBar-z-index, #{$zindex-snackbar});
+    max-width: calc(100% - var(--bit-snb-off-left) - var(--bit-snb-off-right));
 
     // The duration of the enter/exit animation of the items. TransitionDuration arrives inline as the -full
-    // token and the animations read this derived one, following the -full pattern of motion.fluent.scss, so
-    // the reduced-motion query below can still collapse a duration that was set inline. The fallback is the
-    // default of the parameter.
-    --bit-snb-dur: var(--bit-snb-dur-full, 200ms);
+    // token and the animations read this derived one, which scales it by the shared motion factor, so the
+    // reduced motion preference still collapses a duration that was set inline - and ForceAnimation, or an app
+    // restoring the motion tokens, still brings it back - with no query of the snack bar's own. The fallback is
+    // the default of the parameter.
+    --bit-snb-dur: #{mot-scaled-duration(var(--bit-snb-dur-full, 200ms))};
 
     // The direction an item enters from, so a snack bar at the top of the screen slides down out of the edge
     // it is pinned to and one at the bottom slides up out of its own. Re-pointed by the position classes.
@@ -23,44 +79,68 @@
     // The distance the stack keeps from the edges of the screen, so it can be moved clear of whatever chrome
     // the app already has there. Overridden inline by the Offset parameter, and split per axis so a stylesheet
     // can move a stack down without also moving it in.
-    --bit-snb-off: #{spacing(1)};
+    --bit-snb-off: var(--bit-SnackBar-offset, #{spacing(1)});
     --bit-snb-off-block: var(--bit-snb-off);
     --bit-snb-off-inline: var(--bit-snb-off);
+
+    // The offset is measured from the part of the screen that is safe to draw on, so a stack pinned to an edge
+    // clears the notch or the home indicator of a phone on a page that draws under them (viewport-fit=cover).
+    // On any other page the insets are zero and the offset is the whole distance. The sides are physical rather
+    // than logical because the insets are: a phone in landscape has its notch on one physical side whichever way
+    // the text runs.
+    --bit-snb-off-top: calc(var(--bit-snb-off-block) + env(safe-area-inset-top, 0px));
+    --bit-snb-off-bottom: calc(var(--bit-snb-off-block) + env(safe-area-inset-bottom, 0px));
+    --bit-snb-off-left: calc(var(--bit-snb-off-inline) + env(safe-area-inset-left, 0px));
+    --bit-snb-off-right: calc(var(--bit-snb-off-inline) + env(safe-area-inset-right, 0px));
 }
 
-// 0.01ms instead of 0ms for the same reason as in motion.fluent.scss: a zero-duration animation never fires
-// its animationend event.
-@media (prefers-reduced-motion: reduce) {
+// On a phone a notification sized to its text sits in a corner as a scrap of a box; every item takes the full
+// width of the stack instead, the way the notifications of the platform itself do. It is the fallback of the
+// public min-width, so a value set there still wins.
+@include xs {
     .bit-snb {
-        --bit-snb-dur: 0.01ms;
+        --bit-snb-min-w: 100%;
     }
 }
 
-// The shared .bit-fam opt-out (BitComponentBase.ForceAnimation) only re-points the --bit-mot-* tokens, so the
-// snack bar's own token is restored here, both for a snack bar that sets ForceAnimation itself and for one
-// sitting inside an opted-out subtree.
-.bit-snb.bit-fam,
-.bit-fam .bit-snb {
-    --bit-snb-dur: var(--bit-snb-dur-full, 200ms);
-}
+$snb-itm-private-properties: bg, fg, clr-txt, gap, pad, hdr-gap, ttl-fs, bdy-fs, ico-fs, cbt-size;
 
 .bit-snb-itm {
     display: flex;
     position: relative;
     width: fit-content;
 
-    // An item is as wide as its longest line needs, capped by the MaxWidth parameter where one was given, and
-    // never past the width of the stack whatever that says.
-    max-width: min(100%, var(--bit-snb-max-w, 100%));
+    // An item is as wide as its longest line needs, capped by the MaxWidth parameter where one was given (or the
+    // public variable where it was not), and never past the width of the stack whatever either says.
+    max-width: min(100%, var(--bit-snb-max-w, var(--bit-SnackBar-max-width, 100%)));
+    min-width: min(100%, var(--bit-SnackBar-min-width, var(--bit-snb-min-w, 0px)));
     pointer-events: all;
     box-sizing: border-box;
     flex-flow: column nowrap;
-    gap: var(--bit-snb-gap);
-    padding: var(--bit-snb-pad);
+    gap: var(--bit-snb-gap, #{spacing(1)});
+    font-family: $tg-font-family;
     justify-content: space-between;
-    border-radius: $shp-radius-popup;
-    box-shadow: $box-shadow-snackbar;
+    border-style: $shp-border-style;
+    // The colors are resolved per variant (see .bit-snb-fil), where the Color of the item and the public variables are
+    // ranked against each other.
+    color: var(--bit-snb-clr);
+    padding: var(--bit-snb-pad, var(--bit-SnackBar-padding, #{spacing(1.25)}));
+    box-shadow: var(--bit-SnackBar-shadow, #{$box-shadow-snackbar});
+    border-radius: var(--bit-SnackBar-radius, #{$shp-radius-popup});
+    // Resolved per variant as well, since the three default to different widths (see .bit-snb-fil).
+    border-width: var(--bit-snb-brd-w);
+    border-color: var(--bit-snb-clr-brd);
+    background-color: var(--bit-snb-clr-bg);
     animation: var(--bit-snb-ent) var(--bit-snb-dur) $mot-easing-decelerate;
+
+    // The values the Color and Size classes publish start out unset on every item - rather than inherited from an item
+    // of a snack bar this one sits inside - and those classes, declared further down at the same weight, still win on
+    // the item that carries them. Left unset, each sends the var() reading it on to the public variable and then to
+    // the default, which is what lets an explicit parameter outrank the variable while an unset one leaves the
+    // variable in charge.
+    @each $name in $snb-itm-private-properties {
+        --bit-snb-#{$name}: initial;
+    }
 
     // The horizontal half of the gesture belongs to the swipe (SwipeToDismiss) rather than to the browser, while
     // a vertical drag stays the page's scroll. Declared unconditionally so the item never changes behaviour
@@ -106,9 +186,20 @@
 .bit-snb-clk {
     cursor: pointer;
 
+    // The item's fill is whatever its color and variant say, so the hover and the press are laid over it as a
+    // tint of its own text color rather than swapped for a palette token - that reads on every fill it can take.
+    @media (hover: hover) {
+        &:hover {
+            background-image: linear-gradient(#{translucent(currentcolor, 8%)}, #{translucent(currentcolor, 8%)});
+        }
+    }
+
+    &:active {
+        background-image: linear-gradient(#{translucent(currentcolor, 12%)}, #{translucent(currentcolor, 12%)});
+    }
+
     &:focus-visible {
-        outline: $shp-focus-ring-width solid currentcolor;
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(currentcolor);
     }
 }
 
@@ -123,6 +214,20 @@
     from {
         opacity: 0;
         transform: translateY(spacing(-1.5));
+    }
+}
+
+@keyframes bit-snb-ent-l {
+    from {
+        opacity: 0;
+        transform: translateX(spacing(-1.5));
+    }
+}
+
+@keyframes bit-snb-ent-r {
+    from {
+        opacity: 0;
+        transform: translateX(spacing(1.5));
     }
 }
 
@@ -160,32 +265,27 @@
 // which is the only way a screen reader hears it; the region is taken out of the visual layout without being
 // taken out of the accessibility tree - display:none or visibility:hidden would silence it.
 .bit-snb-lvr {
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    border: 0;
-    padding: 0;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-snb-prb {
     bottom: 0;
     width: 100%;
     position: absolute;
-    height: spacing(0.5);
     inset-inline-start: 0;
     transform-origin: left center;
     animation-fill-mode: forwards;
     animation-timing-function: linear;
-    background-color: currentcolor;
     animation-name: bit-snackbar-progress-animation;
+    height: var(--bit-SnackBar-progress-height, #{$siz-track-md});
+    background-color: var(--bit-SnackBar-progress-color, currentcolor);
 }
 
 // The bar grows away from the edge the item starts at, which is the other one in a right-to-left reading order.
-.bit-rtl .bit-snb-prb {
+// :dir() also catches a page that is right to left as a whole while the snack bar sets no Dir of its own; :is()
+// keeps the class an explicit Dir renders where an engine without :dir() drops the other one, since its list is
+// forgiving. The class is reached through child combinators only, so it never reaches past the item's own bar.
+.bit-snb-prb:is(:dir(rtl), .bit-snb.bit-rtl > .bit-snb-itm > *) {
     transform-origin: right center;
 }
 
@@ -205,7 +305,7 @@
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    gap: var(--bit-snb-hdr-gap);
+    gap: var(--bit-snb-hdr-gap, #{spacing(1.25)});
     justify-content: space-between;
 }
 
@@ -215,26 +315,35 @@
 }
 
 .bit-snb-ico {
-    font-size: var(--bit-snb-ico-fs);
+    color: var(--bit-SnackBar-icon-color, currentcolor);
+    font-size: var(--bit-snb-ico-fs, var(--bit-SnackBar-icon-size, #{$siz-icon-md}));
+}
+
+// The spinner of a loading item stands where the icon would, at the size of the icon, so an item keeps its shape
+// when the work it reports is done and the spinner gives way to the icon.
+.bit-snb-spn {
+    display: block;
+    color: var(--bit-SnackBar-icon-color, currentcolor);
+    @include spinner-ring(var(--bit-snb-ico-fs, var(--bit-SnackBar-icon-size, #{$siz-icon-md})), currentcolor, translucent(currentcolor, 30%));
 }
 
 .bit-snb-ttl {
     min-width: 0;
     flex-grow: 1;
     overflow-wrap: anywhere;
-    font-weight: $tg-fw-medium;
-    font-size: var(--bit-snb-ttl-fs);
+    font-size: var(--bit-snb-ttl-fs, var(--bit-SnackBar-title-font-size, #{$tg-fs-md}));
+    font-weight: var(--bit-SnackBar-title-font-weight, #{$tg-fw-medium});
 }
 
 .bit-snb-bdy {
     overflow-wrap: anywhere;
-    font-size: var(--bit-snb-bdy-fs);
+    font-size: var(--bit-snb-bdy-fs, var(--bit-SnackBar-body-font-size, #{$tg-fs-sm}));
 }
 
 .bit-snb-act {
     display: flex;
     flex-flow: row wrap;
-    gap: var(--bit-snb-gap);
+    gap: var(--bit-snb-gap, #{spacing(1)});
     justify-content: flex-end;
 }
 
@@ -252,56 +361,92 @@
     align-items: center;
     justify-content: center;
     margin-inline-start: auto;
-    background-color: transparent;
-    border-radius: $shp-radius-popup;
+    border-radius: $shp-radius-button;
+    --bit-snb-cbt-sbg: initial;
+    background-color: var(--bit-snb-cbt-sbg, transparent);
+    transition: background-color $mot-duration-short $mot-easing;
 
     // The glyph alone is a target of about 16px, well under what a finger can be expected to hit; the button is
     // given the height of a control of the same size class so the whole of it is the target (WCAG 2.5.8).
-    min-width: var(--bit-snb-cbt-size);
-    min-height: var(--bit-snb-cbt-size);
+    min-width: var(--bit-snb-cbt-size, #{$siz-ctrl-md});
+    min-height: var(--bit-snb-cbt-size, #{$siz-ctrl-md});
 
     > i {
-        font-size: var(--bit-snb-ico-fs);
+        font-size: var(--bit-snb-ico-fs, #{$siz-icon-md});
+    }
+
+    // The button sits on the item's own fill, so the states are tinted from the color already on it rather than
+    // from a palette token, the same way the buttons of BitMessage are. They change the variable the button is
+    // painted from rather than its background, so a button the app paints through Classes keeps that paint under
+    // the pointer and while it is pressed, instead of losing it to a state that outranks the app's class.
+    @media (hover: hover) {
+        &:hover {
+            --bit-snb-cbt-sbg: #{translucent(currentcolor, 12%)};
+        }
+    }
+
+    &:active {
+        --bit-snb-cbt-sbg: #{translucent(currentcolor, 20%)};
     }
 
     // The ring is drawn in the item's own foreground rather than through the shared focus-ring mixin: the
     // button sits on a surface whose color the item picks, and only a ring in the color the item already
     // contrasts against is guaranteed to stay perceivable on all of them (WCAG 2.4.7).
     &:focus-visible {
-        outline: $shp-focus-ring-width solid currentcolor;
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(currentcolor);
     }
 }
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by the
+// explicit Color of an item; an unset one is the Info role, which the variant classes spell out after the public
+// variables.
 // (The hand-written run this replaces declared .bit-snb-pbg twice; the byte-identical duplicate
 // rule was dropped - identical declarations twice have no cascade effect.)
 @each $role, $tokens in $bit-color-roles {
     .bit-snb-#{$role} {
         --bit-snb-bg: #{role($tokens, main)};
         --bit-snb-fg: #{role($tokens, on)};
+
+        // The unfilled variants put the role's color on the page surface as text, and a role's main color is
+        // picked to be a fill (a Warning yellow on white is well under 4.5:1): the text reads the role's
+        // foreground token instead, the shade the theme picks to be read on the page (WCAG 1.4.3) - for a
+        // background or border role, which would vanish as text on the page, that is its on color.
+        --bit-snb-clr-txt: #{role($tokens, fg)};
     }
 }
 
+// The variants resolve the slots the item paints with. Each color the Color role paints is read from the role first -
+// published only by an explicit Color (see .bit-snb-itm) - then from the public variables, then from the Info role
+// an unset Color stands for; a color the role leaves alone (the page surface of Outline and Text, the transparent
+// border of Text) is the variables' alone.
+//
+// Every color variable, and the border width each variant decides on, is read in two tiers: the variant's own
+// (--bit-SnackBar-fill-*, -outline-*, -text-*) ahead of the shared one, so a theme can give the three looks different
+// colors from :root - a neutral hairline around the outlined items without a border on every filled one - while a
+// shared variable still re-skins all three at once. Both tiers sit between the role and the default, so the explicit
+// Color of an item still wins over them.
 .bit-snb-fil {
-    color: var(--bit-snb-fg);
-    background-color: var(--bit-snb-bg);
+    --bit-snb-brd-w: var(--bit-SnackBar-fill-border-width, var(--bit-SnackBar-border-width, 0px));
+    --bit-snb-clr: var(--bit-snb-fg, var(--bit-SnackBar-fill-color, var(--bit-SnackBar-color, #{$clr-inf-text})));
+    --bit-snb-clr-bg: var(--bit-snb-bg, var(--bit-SnackBar-fill-background, var(--bit-SnackBar-background, #{$clr-inf})));
+    --bit-snb-clr-brd: var(--bit-snb-bg, var(--bit-SnackBar-fill-border-color, var(--bit-SnackBar-border-color, #{$clr-inf})));
 }
 
 // A snack bar floats over whatever the page is showing, so the two variants that give up the filled
 // background take the neutral surface rather than transparency - the text of a notification has to stay
 // readable over the content it covers.
 .bit-snb-otl {
-    color: var(--bit-snb-bg);
-    border-color: var(--bit-snb-bg);
-    border-width: $shp-border-width;
-    border-style: $shp-border-style;
-    background-color: $clr-bg-pri;
+    --bit-snb-clr: var(--bit-snb-clr-txt, var(--bit-SnackBar-outline-color, var(--bit-SnackBar-color, #{$clr-inf-fg})));
+    --bit-snb-clr-bg: var(--bit-SnackBar-outline-background, var(--bit-SnackBar-background, #{$clr-bg-pri}));
+    --bit-snb-clr-brd: var(--bit-snb-bg, var(--bit-SnackBar-outline-border-color, var(--bit-SnackBar-border-color, #{$clr-inf})));
+    --bit-snb-brd-w: var(--bit-SnackBar-outline-border-width, var(--bit-SnackBar-border-width, #{$shp-border-width}));
 }
 
 .bit-snb-txt {
-    color: var(--bit-snb-bg);
-    background-color: $clr-bg-pri;
+    --bit-snb-brd-w: var(--bit-SnackBar-text-border-width, var(--bit-SnackBar-border-width, 0px));
+    --bit-snb-clr: var(--bit-snb-clr-txt, var(--bit-SnackBar-text-color, var(--bit-SnackBar-color, #{$clr-inf-fg})));
+    --bit-snb-clr-bg: var(--bit-SnackBar-text-background, var(--bit-SnackBar-background, #{$clr-bg-pri}));
+    --bit-snb-clr-brd: var(--bit-SnackBar-text-border-color, var(--bit-SnackBar-border-color, transparent));
 }
 
 // forced-colors: the fill that tells a snack bar apart from the page it floats over is stripped in High Contrast
@@ -314,19 +459,42 @@
         border-color: CanvasText;
     }
 
+    // A Fill item is the role's fill under its on-color, which the palette makes LinkText under Canvas for the
+    // primary role (and Canvas for the foreground ones) - and Chromium draws a Canvas backplate behind every line of
+    // text, the icon glyphs included, so the title and the body would be Canvas on Canvas: a toast with nothing in it.
+    // It is painted as the plain surface it is in this mode, CanvasText on Canvas, which reads with the backplate
+    // and without it (Firefox draws none); the border above keeps its edge.
+    .bit-snb-itm.bit-snb-fil {
+        color: CanvasText;
+        background-color: Canvas;
+    }
+
     // The bar is drawn in the item's foreground, which High Contrast mode forces to the same color as the surface
     // it sits on; a system color is the one thing that stays a color of its own here.
     .bit-snb-prb {
         background-color: Highlight;
     }
+
+    // The tint that marks a hovered or pressed dismiss button is flattened into the surface here, so the state is
+    // painted with the system pair that still means "this is the control under the pointer".
+    .bit-snb-cbt {
+        &:hover,
+        &:active {
+            color: HighlightText;
+            background-color: Highlight;
+        }
+    }
 }
 
+// The body follows the type ramp of the size classes (sm -> xs, md -> sm, lg -> md) and the title sits one step
+// above it, so the two read as a heading and its text at every size. Published only by an explicit Size; an unset
+// one is the medium item, which the reads of these spell out (after the public variables, where there is one).
 .bit-snb-sm {
     --bit-snb-gap: #{spacing(0.75)};
     --bit-snb-pad: #{spacing(1)};
     --bit-snb-hdr-gap: #{spacing(1)};
     --bit-snb-ttl-fs: #{$tg-fs-sm};
-    --bit-snb-bdy-fs: #{$tg-fs-2xs};
+    --bit-snb-bdy-fs: #{$tg-fs-xs};
     --bit-snb-ico-fs: #{$siz-icon-sm};
     --bit-snb-cbt-size: #{$siz-ctrl-sm};
 }
@@ -336,7 +504,7 @@
     --bit-snb-pad: #{spacing(1.25)};
     --bit-snb-hdr-gap: #{spacing(1.25)};
     --bit-snb-ttl-fs: #{$tg-fs-md};
-    --bit-snb-bdy-fs: #{$tg-fs-xs};
+    --bit-snb-bdy-fs: #{$tg-fs-sm};
     --bit-snb-ico-fs: #{$siz-icon-md};
     --bit-snb-cbt-size: #{$siz-ctrl-md};
 }
@@ -346,47 +514,172 @@
     --bit-snb-pad: #{spacing(1.5)};
     --bit-snb-hdr-gap: #{spacing(1.5)};
     --bit-snb-ttl-fs: #{$tg-fs-lg};
-    --bit-snb-bdy-fs: #{$tg-fs-sm};
+    --bit-snb-bdy-fs: #{$tg-fs-md};
     --bit-snb-ico-fs: #{$siz-icon-lg};
     --bit-snb-cbt-size: #{$siz-ctrl-lg};
 }
 
 
+// Every position spans the width the offsets and the safe area leave, and lines its items up inside it: a centered
+// stack is centered in what is left rather than pushed off center by 50% of the whole screen, which would leave it
+// under the notch on the side of a phone in landscape.
 .bit-snb-tst {
-    top: var(--bit-snb-off-block);
-    inset-inline: var(--bit-snb-off-inline);
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-tcn {
-    left: 50%;
-    top: var(--bit-snb-off-block);
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
     align-items: center;
-    transform: translateX(-50%);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-ten {
-    top: var(--bit-snb-off-block);
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
     align-items: flex-end;
-    inset-inline: var(--bit-snb-off-inline);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-bst {
-    bottom: var(--bit-snb-off-block);
-    inset-inline: var(--bit-snb-off-inline);
+    bottom: var(--bit-snb-off-bottom);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
 }
 
 .bit-snb-bcn {
-    left: 50%;
-    bottom: var(--bit-snb-off-block);
+    bottom: var(--bit-snb-off-bottom);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
     align-items: center;
-    transform: translateX(-50%);
 }
 
 .bit-snb-ben {
-    bottom: var(--bit-snb-off-block);
+    bottom: var(--bit-snb-off-bottom);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
     align-items: flex-end;
-    inset-inline: var(--bit-snb-off-inline);
+}
+
+// The physical corners and the vertically centred stacks. A physical stack cannot span the screen and let
+// align-items pick its side the way the logical ones do - flex-start is the right edge in RTL - so it is
+// pinned by the physical property and shrunk to its content instead, which keeps it on the same side of the
+// screen in both reading directions. max-width on .bit-snb still caps how wide it may grow. Which side its
+// items sit on within it is settled at the end of the block, by a margin rather than by align-items, for the
+// same reason. Like the logical ones, every edge it is pinned to is measured from the safe area.
+.bit-snb-tlf {
+    width: auto;
+    right: auto;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    --bit-snb-ent: bit-snb-ent-t;
+}
+
+.bit-snb-trg {
+    width: auto;
+    left: auto;
+    top: var(--bit-snb-off-top);
+    right: var(--bit-snb-off-right);
+    --bit-snb-ent: bit-snb-ent-t;
+}
+
+.bit-snb-blf {
+    width: auto;
+    right: auto;
+    left: var(--bit-snb-off-left);
+    bottom: var(--bit-snb-off-bottom);
+}
+
+.bit-snb-brg {
+    width: auto;
+    left: auto;
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
+}
+
+// The centred stacks span the whole safe band of the block axis and center their items in it with
+// justify-content, rather than being pinned at 50% of the screen and pulled back by a translate: the band is
+// what is left once the notch and the home indicator are cleared, so its middle is the middle of the part
+// that is safe to draw on. The stack lets the pointer through (.bit-snb), so spanning the band covers nothing.
+// A stack pinned to a side slides its items in from that side; the logical pair names the side by the reading
+// direction, so it turns its animation around with it, and the one centred on the screen, pinned to no edge, keeps
+// the default rise from below.
+.bit-snb-cst {
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
+    --bit-snb-ent: bit-snb-ent-l;
+}
+
+.bit-snb-cen {
+    align-items: flex-end;
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+// The class the component sets itself is read beside :dir(), and :is() keeps it where an engine without :dir()
+// drops the other one, since its list is forgiving.
+.bit-snb-cst:is(.bit-rtl, :dir(rtl)) {
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+.bit-snb-cen:is(.bit-rtl, :dir(rtl)) {
+    --bit-snb-ent: bit-snb-ent-l;
+}
+
+.bit-snb-clf {
+    width: auto;
+    right: auto;
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    bottom: var(--bit-snb-off-bottom);
+    --bit-snb-ent: bit-snb-ent-l;
+}
+
+.bit-snb-crg {
+    width: auto;
+    left: auto;
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+.bit-snb-ctr {
+    align-items: center;
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
+}
+
+// A stack shrunk to its content is only as wide as its widest item, so a shorter one has room to slide inside
+// it, and align-items would hand that room to the reading direction - the very flip these positions are named
+// to avoid. The cross axis takes no left/right (that pair is justify-* only), so the item is pushed against the
+// edge the stack is pinned to by the physical margin opposite it, which absorbs the free space before any
+// alignment is applied. The logical stacks keep align-items: they are the ones meant to turn around.
+.bit-snb-tlf > .bit-snb-itm,
+.bit-snb-blf > .bit-snb-itm,
+.bit-snb-clf > .bit-snb-itm {
+    margin-right: auto;
+}
+
+.bit-snb-trg > .bit-snb-itm,
+.bit-snb-brg > .bit-snb-itm,
+.bit-snb-crg > .bit-snb-itm {
+    margin-left: auto;
 }

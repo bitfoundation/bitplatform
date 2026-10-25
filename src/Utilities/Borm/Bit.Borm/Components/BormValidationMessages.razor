@@ -1,0 +1,46 @@
+﻿@namespace Bit.Borm
+@inject IServiceProvider Services
+
+@if (Show && Messages.Count > 0)
+{
+    @* No live region here on purpose. The input points `aria-describedby` at this list, so a screen
+       reader reads the message when focus reaches the field; a second announcement from a live region
+       would just repeat it. The error summary is the one place that announces.
+
+       The severity is said in words as well as shown in colour: the stylesheet writes data-severity
+       before each message — read out for an error, shown as well for a warning or a note — so an error
+       and a warning are never told apart by colour alone. Generated content is part of what a screen
+       reader reads and no part of the message's own text, which stays exactly what the rule said. *@
+    <ul class="bit-borm-messages" id="@Id">
+        @foreach (var msg in Messages)
+        {
+            <li class="bit-borm-message bit-borm-message--@msg.Severity.ToString().ToLowerInvariant()"
+                data-severity="@SeverityLabel(msg.Severity)">@msg.Message</li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<BormValidationMessage> Messages { get; set; } = Array.Empty<BormValidationMessage>();
+
+    [Parameter] public bool Show { get; set; } = true;
+
+    /// <summary>DOM id, so an input's <c>aria-describedby</c> can point at this list.</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>The form's <see cref="BormState.Language"/>, which the severity is said in.</summary>
+    [Parameter] public string? Language { get; set; }
+
+    private IBormMessageProvider? _provider;
+
+    private string SeverityLabel(BormValidationSeverity severity)
+    {
+        _provider ??= BormMessageText.Provider(Services);
+        return BormMessageText.Get(_provider, Language, severity switch
+        {
+            BormValidationSeverity.Warning => BormMessageKeys.SeverityWarning,
+            BormValidationSeverity.Info => BormMessageKeys.SeverityInfo,
+            _ => BormMessageKeys.SeverityError
+        }, []);
+    }
+}

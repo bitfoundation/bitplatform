@@ -1,0 +1,30 @@
+﻿@* The title block every documentation page opens with - the site kit's .bb-intro: an overline, the
+   page's one H1 (which FocusOnNavigate moves focus to), the lead, and a row of live facts about what
+   the page is running against. *@
+
+<div class="bb-intro">
+    @if (!string.IsNullOrWhiteSpace(Eyebrow))
+    {
+        <p class="bb-overline">@Eyebrow</p>
+    }
+    <h1>@Title</h1>
+    @if (!string.IsNullOrWhiteSpace(Lead))
+    {
+        <p class="bb-subtitle">@Lead</p>
+    }
+    @if (ChildContent is not null)
+    {
+        <div class="bd-facts">@ChildContent</div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Eyebrow { get; set; }
+
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    [Parameter] public string? Lead { get; set; }
+
+    /// <summary>Badges (<c>.bb-badge</c>) with live facts about the page.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

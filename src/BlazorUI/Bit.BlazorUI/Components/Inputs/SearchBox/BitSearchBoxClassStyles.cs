@@ -83,6 +83,41 @@ public class BitSearchBoxClassStyles
     public string? SearchButtonIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the search box's search button text.
+    /// </summary>
+    public string? SearchButtonText { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the spinner slot shown in the field while the search box is Loading. The spinner of the suggest callout is Loading instead.
+    /// </summary>
+    public string? LoadingSpinner { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the search box's busy spinner itself - the ring drawn in the field while it is Loading, and in the suggest callout when no LoadingTemplate is set.
+    /// </summary>
+    public string? Spinner { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the container of the search box's error message.
+    /// </summary>
+    public string? ErrorMessageContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the search box's error message.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the container of the search box's description.
+    /// </summary>
+    public string? DescriptionContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the search box's description.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the search box's overlay.
     /// </summary>
     public string? Overlay { get; set; }
@@ -103,7 +138,7 @@ public class BitSearchBoxClassStyles
     public string? CalloutFooter { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the loading container of the search box's callout.
+    /// Custom CSS classes/styles for the loading container of the search box's suggest callout.
     /// </summary>
     public string? Loading { get; set; }
 
@@ -111,6 +146,11 @@ public class BitSearchBoxClassStyles
     /// Custom CSS classes/styles for the no-results container of the search box's callout.
     /// </summary>
     public string? NoResults { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the container the search box's callout reports a failing suggest items provider in.
+    /// </summary>
+    public string? SuggestFailed { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the too-short-term hint of the search box's callout.

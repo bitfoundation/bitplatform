@@ -4,10 +4,10 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Bridges Blazor to the client <c>BitTheme</c> script: preset names on the <c>bit-theme</c> attribute vs inline CSS variables from <see cref="BitTheme"/>.
-/// <see cref="SetThemeAsync"/> selects packaged Fluent CSS for <c>:root[bit-theme]</c>.
+/// <see cref="SetThemeAsync(string)"/> selects packaged Fluent CSS for <c>:root[bit-theme]</c>.
 /// <see cref="ApplyBitThemeAsync"/> sets <c>--bit-*</c> variables on the target element (default <c>document.body</c>), overriding stylesheet defaults for that subtree.
 /// Nested <see cref="BitThemeProvider"/> scopes overrides to its root element.
-/// Theme swaps (from <see cref="SetThemeAsync"/>, <see cref="ToggleDarkLightAsync"/>, or OS-driven
+/// Theme swaps (from <see cref="SetThemeAsync(string)"/>, <see cref="ToggleDarkLightAsync"/>, or OS-driven
 /// updates) animate via the View Transitions API when the document element carries the
 /// <see cref="BitThemeAttributeNames.ThemeViewTransition"/> marker attribute.
 /// </summary>
@@ -56,7 +56,8 @@ public class BitThemeManager : IAsyncDisposable
     /// Sets the <c>bit-theme</c> attribute (use values from <see cref="BitThemePresets"/> or custom names matching your CSS).
     /// The name is normalized to the canonical form (trimmed and lower-cased invariantly) before it
     /// is written, so it matches the lowercase <c>:root[bit-theme=…]</c> selectors in the packaged
-    /// CSS and stays consistent with <see cref="BitThemeName"/>. A blank name is a no-op.
+    /// CSS and stays consistent with <see cref="BitThemeName"/>. A blank name is a no-op, and so is one the
+    /// page does not offer when it lists the themes it ships (<see cref="BitThemeAttributeNames.ThemeAvailable"/>).
     /// Returns <see langword="null"/> when JS interop is unavailable (e.g. prerendering / disconnected circuit).
     /// </summary>
     /// <remarks>
@@ -110,14 +111,86 @@ public class BitThemeManager : IAsyncDisposable
         return await _js.BitThemeToggleThemeDarkLight();
     }
 
+    /// <summary>
+    /// Changes which themes "light" and "dark" mean - what <see cref="ToggleDarkLightAsync"/> flips
+    /// between and what following the OS resolves to - for an app that lets its users pick a design
+    /// system (Fluent 2, Material, Cupertino, ...) at runtime. The user's own choice is kept: while
+    /// following the OS, the new pair's theme for the OS scheme is applied and <c>system</c> stays the
+    /// stored preference; otherwise the applied theme moves to its counterpart in the new pair, and so
+    /// does a stored one. Both names are normalized like <see cref="SetThemeAsync(string)"/>; a blank
+    /// one, or one the page does not offer (<see cref="BitThemeAttributeNames.ThemeAvailable"/>), makes the
+    /// call a no-op.
+    /// Returns the applied theme, or <see langword="null"/> when JS interop is unavailable (e.g.
+    /// prerendering / disconnected circuit).
+    /// </summary>
+    /// <remarks>
+    /// The pair is written to <see cref="BitThemeAttributeNames.ThemeLight"/> /
+    /// <see cref="BitThemeAttributeNames.ThemeDark"/> and, with persistence on, stored under
+    /// <see cref="BitThemeAttributeNames.ThemePairStorageKey"/> (and mirrored into the
+    /// <see cref="BitThemeCookie.PairCookieName"/> cookie with cookie persistence), so the next visit
+    /// restores it ahead of the pair the page declares. Switching back to the declared pair removes it
+    /// (leaving only the <c>light</c> / <c>dark</c> marker of a pinned preference), so a later change of
+    /// the page's own pair reaches the visitor again.
+    /// </remarks>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
+    public async ValueTask<string?> SetThemePairAsync(string lightTheme, string darkTheme)
+    {
+        await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
+        return await _js.BitThemeSetPair(NormalizeThemeName(lightTheme), NormalizeThemeName(darkTheme));
+    }
+
+    /// <summary>
+    /// <see cref="SetThemePairAsync(string, string)"/> from strongly-typed
+    /// <see cref="BitThemeName"/>s (already normalized).
+    /// </summary>
+    public ValueTask<string?> SetThemePairAsync(BitThemeName lightTheme, BitThemeName darkTheme)
+    {
+        return SetThemePairAsync(lightTheme.Value, darkTheme.Value);
+    }
+
+    /// <summary>
+    /// The applied theme, the active light / dark pair and the pair the page declares, read in one round
+    /// trip - what <c>BitThemeSwitcher</c> decides from which pair a design system stands for. Returns
+    /// <see langword="null"/> when JS interop is unavailable (e.g. prerendering / disconnected circuit).
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
+    internal async ValueTask<BitThemeState?> GetThemeStateAsync()
+    {
+        await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
+        var state = await _js.BitThemeGetState();
+
+        return state is { Length: 5 } && state[1].HasValue() && state[2].HasValue() && state[3].HasValue() && state[4].HasValue()
+            ? new(state[0], state[1]!, state[2]!, state[3]!, state[4]!)
+            : null;
+    }
+
+    /// <summary>
+    /// Flips the scheme within the given pair, making it the active pair first when it is not (stored as
+    /// <see cref="SetThemePairAsync(string, string)"/> stores it) - one theme swap and one change
+    /// notification either way. Both names are normalized like <see cref="SetThemeAsync(string)"/>; a blank
+    /// one, or one the page does not offer, makes the call a no-op. Returns the applied theme, or <see langword="null"/> when JS interop is
+    /// unavailable.
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
+    internal async ValueTask<string?> ToggleDarkLightWithinAsync(string lightTheme, string darkTheme)
+    {
+        await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
+        return await _js.BitThemeToggleDarkLightWithin(NormalizeThemeName(lightTheme), NormalizeThemeName(darkTheme));
+    }
+
     /// <summary>Applies <paramref name="bitTheme"/> as CSS custom properties on <paramref name="element"/> (default: body), overriding stylesheet tokens for that subtree.</summary>
     /// <remarks>
-    /// Semantic aliases (<c>--bit-sem-*</c>) and family aliases (the per-family radii and
-    /// elevations) whose target the theme overrides are re-declared on the target element as well,
-    /// so app CSS reading the alias tier - and the components, which read the family tier - track
-    /// the override (an alias's <c>var()</c> reference is substituted where the alias is defined, so
-    /// the <c>:root</c>-level default would otherwise keep the document's value).
-    /// Explicitly-set alias values always win over this re-declaration.
+    /// Semantic aliases (<c>--bit-sem-*</c>) whose target the theme overrides are re-declared on the target
+    /// element as well, so app CSS reading the alias tier tracks the override (an alias's <c>var()</c>
+    /// reference is substituted where the alias is defined, so the <c>:root</c>-level default would
+    /// otherwise keep the document's value). The family aliases the components read (the per-family radii
+    /// and elevations, the tooltip colors, the per-role foregrounds and tints) need the same, as the active
+    /// theme builds them, so the element is marked with <see cref="BitThemeAttributeNames.ThemeOverlay"/>,
+    /// naming the groups the theme re-values, and every theme stylesheet re-declares its own aliases for
+    /// them there. So is the global focus ring (<c>--bit-shd-focus-ring</c>), a composite of the page background,
+    /// the primary focus color and the ring's width and offset, whenever the theme re-values one of them.
+    /// Explicitly-set alias values always win over all of these. A re-valued density scale or spacing
+    /// unit needs no such help: the insets and sizes derived from them are computed where a component uses them.
     /// </remarks>
     /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
     public async ValueTask ApplyBitThemeAsync(BitTheme? bitTheme, ElementReference? element = null)
@@ -125,14 +198,17 @@ public class BitThemeManager : IAsyncDisposable
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
 
         var cssVariables = BitThemeMapper.MapToCssVariables(bitTheme ?? new BitTheme());
+        BitThemeMapper.AugmentWithFocusRingReSubstitution(cssVariables);
         BitThemeMapper.AugmentWithSemanticAliasReSubstitution(cssVariables);
-        BitThemeMapper.AugmentWithFamilyAliasReSubstitution(cssVariables);
 
+        // The client script marks the element with the family alias groups these re-value itself
+        // (BitThemeMapper.GetFamilyAliasOverlay's twin in BitTheme.ts), so a theme applied from JS is too.
         await _js.BitThemeApplyBitTheme(cssVariables, element);
     }
 
     /// <summary>
-    /// Removes custom properties previously applied by <see cref="ApplyBitThemeAsync"/> on <paramref name="element"/> (default: document body).
+    /// Removes custom properties previously applied by <see cref="ApplyBitThemeAsync"/> on <paramref name="element"/> (default: document body),
+    /// and the <see cref="BitThemeAttributeNames.ThemeOverlay"/> marker it wrote with them.
     /// Prefer scoping token overrides under <see cref="BitThemeProvider"/> when possible.
     /// </summary>
     /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>

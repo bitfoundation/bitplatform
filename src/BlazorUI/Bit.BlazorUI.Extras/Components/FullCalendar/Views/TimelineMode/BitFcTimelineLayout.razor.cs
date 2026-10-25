@@ -1,9 +1,10 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitFcTimelineLayout
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
     /// <summary>Width of a single time-axis column in pixels.</summary>
     [Parameter] public int ColumnWidthPx { get; set; } = BitFullCalendarHelpers.TimelineHourWidthPx;

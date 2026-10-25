@@ -1,0 +1,60 @@
+﻿@namespace Bit.Blow
+@* Built-in node content for the "default", "input", "output" and "group" node types. A node that declares
+   ports gets one handle per port instead of the pair its type implies. *@
+
+@if (Node.Ports is { Count: > 0 } ports)
+{
+    @foreach (var (port, style) in PortLayout(ports))
+    {
+        @* Not keyed: two ports declared with the same type and id are a mistake the canvas reports
+           (duplicate-handle-id), and a repeated @key would turn that into a render failure. *@
+        <BlowHandle Type="port.Type" Position="SideOf(port)" Id="@port.Id" Style="@style" />
+    }
+
+    <div class="bit-blow-node-label">@(Node.Label ?? (Node.Type == "group" ? null : Node.Id))</div>
+}
+else if (Node.Type == "group")
+{
+    <div class="bit-blow-node-label">@Node.Label</div>
+}
+else
+{
+    @if (Node.Type != "input")
+    {
+        <BlowHandle Type="BlowHandleType.Target" Position="Node.TargetPosition" />
+    }
+
+    <div class="bit-blow-node-label">@(Node.Label ?? Node.Id)</div>
+
+    @if (Node.Type != "output")
+    {
+        <BlowHandle Type="BlowHandleType.Source" Position="Node.SourcePosition" />
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public BlowNode Node { get; set; } = default!;
+
+    private BlowPosition SideOf(BlowPort port)
+        => port.Position ?? (port.Type == BlowHandleType.Source ? Node.SourcePosition : Node.TargetPosition);
+
+    /// <summary>
+    /// Each port with the inline style that spreads the ports sharing a side evenly along it: one port sits in the
+    /// middle, two at a third and two thirds, and so on. A lone port keeps the stylesheet's centring.
+    /// </summary>
+    private IEnumerable<(BlowPort Port, string? Style)> PortLayout(List<BlowPort> ports)
+    {
+        foreach (var group in ports.GroupBy(SideOf))
+        {
+            var onSide = group.ToList();
+            var axis = group.Key is BlowPosition.Top or BlowPosition.Bottom ? "left" : "top";
+            for (var i = 0; i < onSide.Count; i++)
+            {
+                var style = onSide.Count == 1
+                    ? null
+                    : string.Create(CultureInfo.InvariantCulture, $"{axis}:{(i + 1) * 100.0 / (onSide.Count + 1):0.##}%");
+                yield return (onSide[i], style);
+            }
+        }
+    }
+}

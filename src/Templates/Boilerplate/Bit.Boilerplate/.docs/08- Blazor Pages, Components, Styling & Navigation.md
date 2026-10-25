@@ -246,8 +246,11 @@ All platform projects (Maui, Windows, Web) are configured to support SCSS compil
 **In `Boilerplate.Client.Maui.csproj`, `Boilerplate.Client.Windows.csproj`, and `Boilerplate.Client.Web.csproj`:**
 
 ```xml
-<Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+<Target Name="BeforeBuildTasks" BeforeTargets="ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
     <CallTarget Targets="BuildCssFiles" />
+    <ItemGroup>
+        <Content Include="**\*.razor.css" Exclude="@(Content);@(None);bin\**;obj\**" />
+    </ItemGroup>
 </Target>
 
 <Target Name="BuildCssFiles">
@@ -255,7 +258,7 @@ All platform projects (Maui, Windows, Web) are configured to support SCSS compil
 </Target>
 ```
 
-This means you can create `AboutPage.razor.scss` in any of these projects, and it will be automatically compiled and scoped to that component.
+This means you can create `AboutPage.razor.scss` in any of these projects, and it will be automatically compiled and scoped to that component. The `.razor.css` files are compiled before the build gathers the scoped CSS, so even the first build of a fresh clone includes them.
 
 ---
 

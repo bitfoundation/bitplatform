@@ -1,0 +1,216 @@
+﻿@page "/e2e/choice-group/option"
+
+<PageTitle>BitChoiceGroup Option E2E</PageTitle>
+
+<h1>BitChoiceGroup (BitChoiceGroupOption)</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitChoiceGroup Id="op-basic" Label="Basic Options" DefaultValue="@("B")" TItem="BitChoiceGroupOption<string>" TValue="string"
+                    OnChange="(string? v) => _basicValue = v" OnClick="(BitChoiceGroupOption<string> o) => _clicked = o.Text">
+        <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+        <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+        <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+        <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+    </BitChoiceGroup>
+    <span id="basic-value">@_basicValue</span>
+    <span id="basic-clicked">@_clicked</span>
+    <BitChoiceGroup Id="op-options-param" Label="Through the Options parameter" DefaultValue="@("Y")" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <Options>
+            <BitChoiceGroupOption Text="Option X" Value="@("X")" />
+            <BitChoiceGroupOption Text="Option Y" Value="@("Y")" />
+        </Options>
+    </BitChoiceGroup>
+    <BitChoiceGroup Id="op-nocircle" Label="NoCircle" NoCircle DefaultValue="@("B")" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+        <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+    </BitChoiceGroup>
+</E2ESection>
+
+<E2ESection Id="parameters" Title="Option parameters">
+    <BitChoiceGroup Id="op-params" Label="Every option parameter" @bind-Value="_paramsValue" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <BitChoiceGroupOption Text="Option A" Value="@("A")" Title="Tooltip A" Class="custom-a" Prefix="$0 - " Id="option-a" />
+        <BitChoiceGroupOption Text="Option B" Value="@("B")" Description="B description" Style="padding: 6px; border: 1px solid rgb(0, 0, 255)" Suffix="Free" />
+        <BitChoiceGroupOption Text="Option C" Value="@("C")" AriaLabel="Option C, the third one" />
+        <BitChoiceGroupOption Text="Option D" Value="@("D")" IsDisabled />
+    </BitChoiceGroup>
+    <span id="params-value">@_paramsValue</span>
+</E2ESection>
+
+<E2ESection Id="media" Title="Images and icons">
+    <BitChoiceGroup Id="op-images" Label="Image Options" DefaultValue="@("Bar")" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <BitChoiceGroupOption Text="Bar" Value="@("Bar")" ImageSrc="samples/choicegroup-bar.svg" SelectedImageSrc="samples/choicegroup-bar-selected.svg" ImageAlt="alt for Bar image" ImageSize="new BitImageSize(32, 32)" />
+        <BitChoiceGroupOption Text="Pie" Value="@("Pie")" ImageSrc="samples/choicegroup-pie.svg" SelectedImageSrc="samples/choicegroup-pie-selected.svg" ImageAlt="alt for Pie image" ImageSize="new BitImageSize(24, 24)" />
+    </BitChoiceGroup>
+    <BitChoiceGroup Id="op-icons" Label="Icon Options" DefaultValue="@("Day")" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
+        <BitChoiceGroupOption Text="Week" Value="@("Week")" Icon="@BitIconInfo.Bi("calendar-week")" />
+        <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" IsDisabled />
+    </BitChoiceGroup>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitChoiceGroup Id="op-template" Label="Option's Template" @bind-Value="_templateValue" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <BitChoiceGroupOption Text="Day" Value="@("Day")">
+            <Template Context="option">
+                <span class="option-tpl" style="color: rgb(255, 0, 0);">@option.Text</span>
+            </Template>
+        </BitChoiceGroupOption>
+        <BitChoiceGroupOption Text="Week" Value="@("Week")">
+            <Template Context="option">
+                <span class="option-tpl" style="color: rgb(0, 128, 0);">@option.Text</span>
+            </Template>
+        </BitChoiceGroupOption>
+    </BitChoiceGroup>
+    <span id="template-value">@_templateValue</span>
+    <BitChoiceGroup Id="op-label-template" Label="ItemLabelTemplate" DefaultValue="@("Day")" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <ItemLabelTemplate Context="option">
+            <span class="option-label-tpl">@option.Text (@option.Index)</span>
+        </ItemLabelTemplate>
+        <Options>
+            <BitChoiceGroupOption Text="Day" Value="@("Day")" />
+            <BitChoiceGroupOption Text="Week" Value="@("Week")" />
+        </Options>
+    </BitChoiceGroup>
+</E2ESection>
+
+<E2ESection Id="behaviour" Title="Behaviour">
+    <BitChoiceGroup Id="op-keyboard" Label="Keyboard" DefaultValue="@("A")" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+        <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+        <BitChoiceGroupOption Text="Option C" Value="@("C")" IsDisabled />
+        <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+    </BitChoiceGroup>
+    <BitChoiceGroup Id="op-disabled" Label="Disabled" Disabled DefaultValue="@("A")" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+        <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+    </BitChoiceGroup>
+    <BitChoiceGroup Id="op-readonly" Label="ReadOnly" ReadOnly @bind-Value="_readOnlyValue" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+        <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+    </BitChoiceGroup>
+    <span id="readonly-value">@_readOnlyValue</span>
+    <BitChoiceGroup Id="op-oneway" Label="One-way" Value="@_oneWayValue" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+        <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+    </BitChoiceGroup>
+    <button id="btn-oneway-b" @onclick="@(() => _oneWayValue = "B")">One-way to B</button>
+    <BitChoiceGroup Id="op-styled" Label="Variant, color and size" DefaultValue="@("B")" Variant="BitVariant.Fill" Color="BitColor.Warning" Size="BitSize.Small" Horizontal TItem="BitChoiceGroupOption<string>" TValue="string">
+        <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+        <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+    </BitChoiceGroup>
+</E2ESection>
+
+<E2ESection Id="dynamic" Title="Dynamic options">
+    <button id="btn-dyn-add" @onclick="AddDynamic">Add option</button>
+    <button id="btn-dyn-remove" @onclick="RemoveDynamic">Remove option</button>
+    <button id="btn-dyn-reverse" @onclick="ReverseDynamic">Reverse options</button>
+    <BitChoiceGroup Id="op-dynamic" Label="Dynamic options" AutoReorderOptions @bind-Value="_dynamicValue" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <ItemPrefixTemplate Context="option">
+            <span class="dyn-index">@(option.Index + 1).</span>
+        </ItemPrefixTemplate>
+        <Options>
+            @foreach (var (text, value) in _dynamicOptions)
+            {
+                <BitChoiceGroupOption @key="value" Text="@text" Value="@value" />
+            }
+        </Options>
+    </BitChoiceGroup>
+    <span id="dynamic-value">@_dynamicValue</span>
+
+    <button id="btn-toggle-middle" @onclick="() => _showMiddle = !_showMiddle">Toggle the middle option</button>
+    <BitChoiceGroup Id="op-reorder" Label="AutoReorderOptions" AutoReorderOptions DefaultValue="@("1")" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <ItemPrefixTemplate Context="option">
+            <span class="reorder-index">@option.Index</span>
+        </ItemPrefixTemplate>
+        <ChildContent>
+            <BitChoiceGroupOption Text="First" Value="@("1")" />
+            @if (_showMiddle)
+            {
+                <BitChoiceGroupOption Text="Middle" Value="@("2")" />
+            }
+            <BitChoiceGroupOption Text="Last" Value="@("3")" />
+        </ChildContent>
+    </BitChoiceGroup>
+    <BitChoiceGroup Id="op-no-reorder" Label="Without AutoReorderOptions" DefaultValue="@("1")" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <ItemPrefixTemplate Context="option">
+            <span class="reorder-index">@option.Index</span>
+        </ItemPrefixTemplate>
+        <ChildContent>
+            <BitChoiceGroupOption Text="First" Value="@("1")" />
+            @if (_showMiddle)
+            {
+                <BitChoiceGroupOption Text="Middle" Value="@("2")" />
+            }
+            <BitChoiceGroupOption Text="Last" Value="@("3")" />
+        </ChildContent>
+    </BitChoiceGroup>
+</E2ESection>
+
+<E2ESection Id="validation" Title="Validation">
+    <EditForm Model="_model" OnValidSubmit="() => _submit = 1" OnInvalidSubmit="() => _submit = -1" novalidate>
+        <DataAnnotationsValidator />
+        <BitChoiceGroup Id="op-validation" Label="Pick one" Required @bind-Value="_model.Value" TItem="BitChoiceGroupOption<string>" TValue="string">
+            <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+            <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+        </BitChoiceGroup>
+        <div id="op-error"><ValidationMessage For="@(() => _model.Value)" /></div>
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="submit-result">@_submit</span>
+</E2ESection>
+
+<E2ESection Id="unmount" Title="Unmount">
+    @if (_showGroup)
+    {
+        <BitChoiceGroup Id="op-unmount" Label="Unmount me" DefaultValue="@("A")" TItem="BitChoiceGroupOption<string>" TValue="string">
+            <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+            <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+        </BitChoiceGroup>
+    }
+    <button id="btn-unmount" @onclick="() => _showGroup = !_showGroup">Toggle mount</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private string? _basicValue = "B";
+    private string? _clicked;
+    private string? _paramsValue = "B";
+    private string? _templateValue = "Day";
+    private string? _readOnlyValue = "A";
+    private string? _oneWayValue = "A";
+    private string? _dynamicValue = "1";
+    private int _dynamicCounter = 3;
+    private bool _showMiddle;
+    private bool _showGroup = true;
+    private int _submit;
+    private readonly OpModel _model = new();
+
+    private List<(string Text, string Value)> _dynamicOptions =
+    [
+        ("Option 1", "1"),
+        ("Option 2", "2"),
+        ("Option 3", "3")
+    ];
+
+    private void AddDynamic()
+    {
+        _dynamicCounter++;
+        _dynamicOptions = [.. _dynamicOptions, ($"Option {_dynamicCounter}", $"{_dynamicCounter}")];
+    }
+
+    private void RemoveDynamic()
+    {
+        if (_dynamicOptions.Count <= 1) return;
+
+        _dynamicOptions = [.. _dynamicOptions.Take(_dynamicOptions.Count - 1)];
+    }
+
+    private void ReverseDynamic() => _dynamicOptions = [.. Enumerable.Reverse(_dynamicOptions)];
+
+    private sealed class OpModel
+    {
+        [Required(ErrorMessage = "Pick one")]
+        public string? Value { get; set; }
+    }
+}

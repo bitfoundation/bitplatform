@@ -1,0 +1,5 @@
+﻿@* Fails as it renders, so a BitErrorBoundary around it shows its error UI - and the icon in it - straight away. *@
+
+@code {
+    protected override void OnInitialized() => throw new InvalidOperationException("Thrown on purpose, to show the error UI.");
+}

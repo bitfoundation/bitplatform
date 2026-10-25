@@ -1,0 +1,94 @@
+﻿@page "/e2e/snack-bar/service"
+@inject BitSnackBarService SnackBarService
+
+<PageTitle>BitSnackBar service E2E</PageTitle>
+
+@* The service reaches the host marked ServiceHost from anywhere; ?host=false renders none, which is what
+   IsHostAvailable reports and what a Show then does nothing against. A second, plain host proves the service
+   leaves the hosts that are not marked alone. *@
+<E2ESection Id="service" Title="BitSnackBarService">
+    @if (Host)
+    {
+        <BitSnackBar Id="svc-host" ServiceHost ShowIcon AutoDismiss="Ad" AutoDismissTime="TimeSpan.FromMilliseconds(800)" OnDismiss="HandleDismiss" />
+    }
+    <BitSnackBar Id="plain-host" Position="BitPosition.TopStart" />
+
+    <div style="margin: 120px auto 0; max-width: 560px;">
+        <button id="btn-svc-info" @onclick='() => Remember(SnackBarService.Info("Svc info", "Info body"))'>Info</button>
+        <button id="btn-svc-success" @onclick='() => Remember(SnackBarService.Success("Svc success", "Success body"))'>Success</button>
+        <button id="btn-svc-warning" @onclick='() => Remember(SnackBarService.Warning("Svc warning", "Warning body"))'>Warning</button>
+        <button id="btn-svc-severe" @onclick='() => Remember(SnackBarService.SevereWarning("Svc severe", "Severe body"))'>SevereWarning</button>
+        <button id="btn-svc-error" @onclick='() => Remember(SnackBarService.Error("Svc error", "Error body"))'>Error</button>
+        <button id="btn-svc-show" @onclick='() => Remember(SnackBarService.Show("Svc show", "Show body", BitColor.Tertiary, cssClass: "svc-class"))'>Show</button>
+        <button id="btn-svc-item" @onclick='() => Remember(SnackBarService.Show(new BitSnackBarItem { Title = "Svc item", Persistent = true }))'>Show item</button>
+        <button id="btn-svc-update" @onclick="UpdateLast">Update</button>
+        <button id="btn-svc-close" @onclick="() => _last is null ? Task.CompletedTask : SnackBarService.Close(_last)">Close</button>
+        <button id="btn-svc-clear" @onclick="() => SnackBarService.Clear()">Clear</button>
+        <button id="btn-svc-track" @onclick="Track">Track</button>
+        <button id="btn-svc-track-plain" @onclick="TrackPlain">Track plain</button>
+        <button id="btn-toggle-host" @onclick="() => Host = !Host">Toggle host</button>
+        <button id="btn-refresh" @onclick="() => { }">Refresh</button>
+        <span id="host-available">@SnackBarService.IsHostAvailable</span>
+        <span id="host-id">@SnackBarService.Host?.Id</span>
+        <span id="returned-title">@_last?.Title</span>
+        <span id="track-result">@_trackResult</span>
+        <span id="dismissed-log">@_dismissedLog</span>
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    [SupplyParameterFromQuery(Name = "host")] public bool? HostQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "ad")] public bool Ad { get; set; }
+
+    private bool Host = true;
+    private bool _configured;
+    private BitSnackBarItem? _last;
+    private string? _trackResult;
+    private string _dismissedLog = "";
+
+    protected override void OnParametersSet()
+    {
+        if (_configured) return;
+        _configured = true;
+        Host = HostQuery ?? true;
+    }
+
+    private async Task Remember(Task<BitSnackBarItem> show)
+    {
+        _last = await show;
+    }
+
+    private Task UpdateLast()
+    {
+        if (_last is null) return Task.CompletedTask;
+
+        _last.Title = "Svc updated";
+
+        return SnackBarService.Update(_last);
+    }
+
+    private async Task Track()
+    {
+        var result = await SnackBarService.Track(Work(), "Svc working", r => $"Svc done {r}", ex => ex.Message);
+        _trackResult = result.ToString();
+    }
+
+    private async Task TrackPlain()
+    {
+        await SnackBarService.Track(Task.Delay(300), "Svc plain working", "Svc plain done", ex => ex.Message);
+        _trackResult = "plain";
+    }
+
+    private static async Task<int> Work()
+    {
+        await Task.Delay(300);
+        return 7;
+    }
+
+    private void HandleDismiss(BitSnackBarItem item)
+    {
+        _dismissedLog += $"{item.Title}:{item.DismissReason};";
+    }
+}

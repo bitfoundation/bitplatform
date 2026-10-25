@@ -9,7 +9,7 @@ public partial class ResetPasswordRequestDto : IdentityRequestDto
     public string? Token { get; set; }
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [MinLength(6, ErrorMessage = nameof(AppStrings.MinLengthAttribute_ValidationError))]
+    [MinLength(8, ErrorMessage = nameof(AppStrings.MinLengthAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
 
@@ -17,4 +17,7 @@ public partial class ResetPasswordRequestDto : IdentityRequestDto
     [Compare(nameof(Password), ErrorMessage = nameof(AppStrings.CompareAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.ConfirmNewPassword))]
     public string? ConfirmPassword { get; set; }
+
+    [Display(Name = nameof(AppStrings.TwoFactorCode))]
+    public string? TwoFactorCode { get; set; }
 }

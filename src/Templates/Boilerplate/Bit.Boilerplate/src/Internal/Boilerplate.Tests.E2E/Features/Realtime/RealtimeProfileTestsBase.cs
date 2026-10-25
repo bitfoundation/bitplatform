@@ -14,12 +14,12 @@ namespace Boilerplate.Tests.E2E.Features.Realtime;
 /// </summary>
 public abstract partial class RealtimeProfileTestsBase : AppTestBase
 {
-    protected const string password = "123456";
+    protected const string password = "12345678";
 
     /// <summary>
-    /// <paramref name="theAppUploads"/> says which of the two sessions posts the picture. A browser can do either, but
-    /// the hybrid heads only watch: the picture is chosen through the WebView's own file chooser, which is a native
-    /// dialog rather than something the page hands over. What SignalR has to deliver is the same either way.
+    /// <paramref name="theAppUploads"/> says which of the two sessions posts the picture. Every head does both: CDP
+    /// intercepts the WebView's own file chooser, so a hybrid app uploads as well as it watches - and uploading from
+    /// one is the only thing that exercises a cross-origin post from the WebView's https://0.0.0.1 origin.
     /// </summary>
     protected async Task AProfilePictureChange_Should_ReachTheUsersOtherSession(App app, bool theAppUploads)
     {
@@ -71,15 +71,20 @@ public abstract partial class RealtimeProfileTestsBase : AppTestBase
         var fileChooser = await page.RunAndWaitForFileChooserAsync(async () =>
             await page.GetByText(AppStrings.UploadNewImage, new() { Exact = true }).ClickAsync());
 
-        var upload = await page.RunAndWaitForResponseAsync(async () => await fileChooser.SetFilesAsync(new FilePayload
+        await fileChooser.SetFilesAsync(new FilePayload
         {
             Name = "e2e-profile.png",
             MimeType = "image/png",
             Buffer = TestImages.ProfilePicturePng()
-        }), response => response.Url.Contains("/api/v1/Attachment/UploadUserProfilePicture", StringComparison.OrdinalIgnoreCase));
+        });
 
-        // 204: UploadUserProfilePicture answers with no content.
-        Assert.IsTrue(upload.Ok, $"The profile picture upload answered {upload.Status}: {await upload.TextAsync()}");
+        var imageEditor = page.Locator(".image-editor");
+        var save = imageEditor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Save, Exact = true });
+        await Expect(save).ToBeEnabledAsync(new() { Timeout = 60_000 });
+
+        await save.ClickAsync();
+
+        await Expect(imageEditor).ToBeHiddenAsync(new() { Timeout = 60_000 });
     }
 
     /// <summary>UserDto.GetProfileImageUrl: the small profile image, versioned by the user's row.</summary>

@@ -7,8 +7,15 @@
         flex-direction: row;
         align-items: flex-start;
 
+        // A nav wrapped in a block of its own (a caption above it) would hold that block at the nav's
+        // width, so the two columns could not share a tablet's preview the way two bare navs do.
+        > * {
+            min-width: 0;
+        }
+
         .bit-nav {
             width: 350px;
+            max-width: 100%;
         }
 
         @include sm {
@@ -34,11 +41,24 @@
 
     .nav-custom-item {
         gap: 4px;
+        flex-grow: 1;
         display: flex;
         color: #ff7800;
         font-weight: 600;
         align-items: center;
         flex-flow: row nowrap;
+    }
+
+    // A shortcut hint at the end of an item, ahead of its badge.
+    .nav-custom-suffix {
+        opacity: 0.6;
+        font-size: 11px;
+        font-family: monospace;
+    }
+
+    // The count sits at the far end of the row, where a sidebar keeps its badges.
+    .nav-custom-item .bit-bdg {
+        margin-inline-start: auto;
     }
 
     .custom-class {

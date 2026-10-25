@@ -1,11 +1,10 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
-<nav @ref="RootElement" @attributes="HtmlAttributes"
+<nav @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
-     role="navigation"
-     aria-label="@AriaLabel"
+     aria-label="@ResolveAriaLabel()"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -115,12 +115,9 @@ public sealed class BitThemeApcaContrastTests
         const double invisibilityFloor = 15.0;
         var roles = new[] { "pri", "sec", "ter", "inf", "suc", "wrn", "swr", "err" };
 
-        foreach (var file in Directory.EnumerateFiles(
-                     Path.Combine(AppContext.BaseDirectory, "theme-styles"),
-                     "colors.*-*.scss",
-                     SearchOption.AllDirectories))
+        foreach (var file in SourceFiles.EnumerateThemeStylesheets("colors.*-*.scss"))
         {
-            var css = File.ReadAllText(file);
+            var css = SourceFiles.ReadFullPath(file);
             var name = Path.GetFileName(file);
 
             foreach (var role in roles)

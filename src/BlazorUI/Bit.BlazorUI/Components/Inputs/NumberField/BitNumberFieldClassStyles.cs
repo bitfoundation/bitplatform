@@ -33,6 +33,16 @@ public class BitNumberFieldClassStyles
     public string? DescriptionContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the numeric field's error message.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the numeric field's error message container.
+    /// </summary>
+    public string? ErrorMessageContainer { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the numeric field's increment button.
     /// </summary>
     public string? IncrementButton { get; set; }
@@ -51,6 +61,16 @@ public class BitNumberFieldClassStyles
     /// Custom CSS classes/styles for the numeric field's label.
     /// </summary>
     public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the numeric field's busy indicator.
+    /// </summary>
+    public string? Loading { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the numeric field's default busy spinner, drawn when no LoadingTemplate is set.
+    /// </summary>
+    public string? Spinner { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the numeric field's label container.

@@ -2,10 +2,11 @@ name: bit platform CI - BlazorUI
 
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     paths:
     - 'src/BlazorUI/**'
-    - 'src/Minifier/**'
+    - 'src/Toolings/Minifier/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -41,16 +42,12 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: 24
       
     - name: dotnet workload restore
       run:  cd src/BlazorUI && dotnet workload restore
-
-    - name: InstallNodejsDependencies
-      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
 
     # BuildAllTfms=true opts back into net9.0 and net8.0, which the Debug configuration skips so that local
     # inner-loop builds only compile the TFM the demo and the tests actually run on.
@@ -59,3 +56,7 @@ jobs:
 
     - name: Test
       run: cd src/BlazorUI/Tests/Bit.BlazorUI.Tests && dotnet test --no-build --verbosity normal -p:BuildAllTfms=true
+
+    # The MCP server suite boots the demo server as a child process and talks to it over HTTP (about a minute).
+    - name: Test MCP server
+      run: dotnet run --project src/BlazorUI/Tests/Bit.BlazorUI.Tests.Mcp

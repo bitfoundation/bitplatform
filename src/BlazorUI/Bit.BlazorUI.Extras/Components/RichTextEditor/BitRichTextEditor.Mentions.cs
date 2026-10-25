@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Bit.BlazorUI;
 
@@ -65,7 +65,7 @@ public partial class BitRichTextEditor
             // A search superseded by a later keystroke, or by the menu closing, reports nothing.
             if (token != _mentionQueryToken) return;
             await RaiseErrorAsync(new BitRichTextEditorError("mention-search-failed",
-                Label("mention-search-failed", "Could not load mention suggestions.")));
+                Loc("mention-search-failed", "Could not load mention suggestions.")));
             return;
         }
 
@@ -104,8 +104,11 @@ public partial class BitRichTextEditor
                 }
                 break;
 
-            case "Escape":
+            // Only the plain key, the one the box claims (data-bit-esc): an Escape with a modifier is the
+            // surrounding surface's.
+            case "Escape" when e.IsPlainEscape():
                 CloseMention();
+                RequestEditorFocus();
                 break;
         }
     }
@@ -126,6 +129,7 @@ public partial class BitRichTextEditor
         CloseMention();
 
         await _js.BitRichTextEditorApplyMention(_editorRef, BuildMentionHtml(mention));
+        RequestEditorFocus();
         await OnMentionSelected.InvokeAsync(mention);
     }
 
@@ -148,7 +152,7 @@ public partial class BitRichTextEditor
         _focusMentionPending = false;
         try
         {
-            await _mentionInputRef.FocusAsync();
+            await _mentionInputRef.FocusSafelyAsync();
             // Suppress the browser's own handling of the menu's navigation keys on this input while
             // leaving normal typing intact.
             await _js.BitRichTextEditorBindSlashKeys(_mentionInputRef);

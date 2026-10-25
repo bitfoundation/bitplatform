@@ -1,4 +1,4 @@
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>Tooltip payload attached to an interactive data element.</summary>

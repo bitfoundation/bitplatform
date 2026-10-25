@@ -1,4 +1,4 @@
-declare type WaitOnEventOrTimeoutParameters = {
+﻿declare type WaitOnEventOrTimeoutParameters = {
     /**
      * - The event target, can for example be:
      * `window`, `document`, a DOM element, or an {EventBus} instance.

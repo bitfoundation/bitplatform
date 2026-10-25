@@ -1,0 +1,107 @@
+﻿@page "/examples/use-update-node-internals"
+@using System.Globalization
+
+<PageTitle>Update Node Internals · Blow</PageTitle>
+
+<ExampleScaffold Title="Update Node Internals"
+                 Summary="Edges attach where the canvas last measured a node's handles. When a handle moves without the node changing size - switched to another side, or shifted by CSS - call UpdateNodeInternals so the canvas reads the node again and its edges follow, as React Flow's useUpdateNodeInternals does.">
+    <Toolbar>
+        <button class="btn btn-primary" @onclick="FlipSide">Flip handle side (@_side)</button>
+        <button class="btn btn-secondary" disabled="@(_handles >= MaxHandles)" @onclick="AddHandle">Add handle</button>
+        <button class="btn btn-secondary" @onclick="UpdateInternals">Update node internals</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <NodeTemplate Context="node">
+                @if (node.Id == "dyn")
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="uni-node">
+                        <span>@node.Label</span>
+                        @* A plain checkbox with no Blazor binding: ticking it is a change only the browser sees. Its
+                           pointer-down and click stop here, so ticking it neither drags nor selects the node. *@
+                        <label class="uni-shift nodrag" @onpointerdown:stopPropagation="true" @onclick:stopPropagation="true">
+                            <input type="checkbox" /> shift handles with CSS
+                        </label>
+                    </div>
+                    @for (var i = 0; i < _handles; i++)
+                    {
+                        // Invariant: in a culture with a decimal comma, 33,33% is not CSS.
+                        var offset = (i + 1) * 100.0 / (_handles + 1);
+                        var style = _side is BlowPosition.Left or BlowPosition.Right
+                            ? string.Create(CultureInfo.InvariantCulture, $"top:{offset}%")
+                            : string.Create(CultureInfo.InvariantCulture, $"left:{offset}%");
+                        <BlowHandle Type="BlowHandleType.Source" Position="_side" Id="@($"s{i}")" Style="@style"
+                                    Class="@($"uni-out uni-out--{_side.ToString().ToLowerInvariant()}")" />
+                    }
+                }
+                else
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="uni-node">@node.Label</div>
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Flip handle side</strong> moves the node's source handles between its right and bottom sides; the edge leaves from the new place straight away.</li>
+        <li><strong>Add handle</strong> adds another source handle (up to five), spread evenly along the side. <strong>Drag from</strong> a new handle to Target to connect it.</li>
+        <li>Tick <strong>shift handles with CSS</strong> on the node: the handles slide along the side, but the edge still ends where they were. Press <strong>Update node internals</strong> and it jumps to them. Untick it and the edge is left behind again.</li>
+        <li>With the box ticked, <strong>drag</strong> the node instead: letting go measures it too, and the edge catches up.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>The handles are <code>BlowHandle</code>s in the node's <code>NodeTemplate</code>; their <code>Position</code> (side), count and <code>Style</code> (where along the side) come from fields of the page.</li>
+        <li>The canvas does not ask the browser where a handle is each time it draws an edge: it measures the nodes - their size and every handle's offset - and edges attach at what was measured. It measures by itself when a node changes size, when handles are added or removed, when a drag or a resize ends, and after each render of the page that hosts it.</li>
+        <li><code>UpdateNodeInternals("dyn")</code> has the browser layer read the named node again and send it across whatever it last reported; with no ids it reads every node, as <code>Refresh(remeasure: true)</code> does.</li>
+        <li>Flip and Add handle change the page's state, so the page renders and the canvas measures after that render anyway; they call <code>UpdateNodeInternals("dyn")</code> all the same, which is the safe habit whenever code changes a node's handles.</li>
+        <li>The call is indispensable when a handle moves and nothing renders: the CSS box shifts the handles with a <code>:has()</code> rule on the node, which the browser applies without Blazor - or the canvas - hearing of it. A node component re-rendering its own state, or a script, is the same case.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .uni-node { display:flex; flex-direction:column; gap:4px; padding:10px 16px; font-weight:600; }
+    .uni-shift { display:flex; align-items:center; gap:4px; font-size:11px; font-weight:400; cursor:pointer; }
+
+    /* The browser alone moves the handles: no render, so the canvas keeps the offsets it measured. */
+    .bit-blow-node:has(.uni-shift input:checked) .uni-out--right { translate: 0 18px; }
+    .bit-blow-node:has(.uni-shift input:checked) .uni-out--bottom { translate: 28px 0; }
+</style>
+
+@code {
+    private const int MaxHandles = 5;
+
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowPosition _side = BlowPosition.Right;
+    private int _handles = 1;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "dyn", Label = "Dynamic", Position = new(80, 120), Height = 90 },
+            new BlowNode { Id = "t0", Label = "Target", Position = new(380, 160) },
+        ];
+        _edges = [ new BlowEdge { Id = "e0", Source = "dyn", SourceHandle = "s0", Target = "t0" } ];
+    }
+
+    private void FlipSide()
+    {
+        _side = _side == BlowPosition.Right ? BlowPosition.Bottom : BlowPosition.Right;
+        _flow?.UpdateNodeInternals("dyn");
+    }
+
+    private void AddHandle()
+    {
+        if (_handles >= MaxHandles) return;
+        _handles++;
+        _flow?.UpdateNodeInternals("dyn");
+    }
+
+    private void UpdateInternals() => _flow?.UpdateNodeInternals("dyn");
+}

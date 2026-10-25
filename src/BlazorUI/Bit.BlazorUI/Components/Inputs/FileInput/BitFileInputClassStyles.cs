@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitFileInputClassStyles
 {
@@ -16,6 +16,12 @@ public class BitFileInputClassStyles
     /// Custom CSS classes/styles for the browse button (label) of the BitFileInput.
     /// </summary>
     public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the glyph of the drop zone panel of the BitFileInput,
+    /// which is only rendered while ShowDropZone is enabled.
+    /// </summary>
+    public string? DropZoneIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the description (hint) of the BitFileInput.
@@ -38,9 +44,20 @@ public class BitFileInputClassStyles
     public string? Preview { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the file type glyph shown in the thumbnail's place of each file item
+    /// that has no image preview.
+    /// </summary>
+    public string? FileIcon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the file name of each file item of the BitFileInput.
     /// </summary>
     public string? FileName { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the folder of each file item that came from a folder selection.
+    /// </summary>
+    public string? FilePath { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the file size of each file item of the BitFileInput.

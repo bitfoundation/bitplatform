@@ -1,0 +1,167 @@
+﻿@page "/examples/controlled-viewport"
+
+<PageTitle>Controlled Viewport · Blow</PageTitle>
+
+<ExampleScaffold Title="Controlled Viewport"
+                 Summary="Drive the viewport from your own state: the canvas's Viewport parameter is bound to a field that OnViewportChanged keeps up to date, so writing the field moves the view and every pan, zoom or method call reports back into it. MinZoom, MaxZoom and TranslateExtent bound wherever the view can go, whoever moves it.">
+    <Toolbar>
+        <span class="cv-readout" title="The bound field, as OnViewportChanged last set it">
+            Viewport x @_vp.X.ToString("0") · y @_vp.Y.ToString("0") · zoom @_vp.Zoom.ToString("0.00")
+        </span>
+        <span class="cv-readout" title="The last value OnMove reported">
+            OnMove x @_live.X.ToString("0") · y @_live.Y.ToString("0") · zoom @_live.Zoom.ToString("0.00")
+        </span>
+        <button class="btn btn-secondary" @onclick="Reset">Reset</button>
+        <button class="btn btn-secondary" @onclick="CenterOrigin">Center origin</button>
+        <button class="btn btn-secondary" @onclick="Fit">Fit</button>
+        <button class="btn btn-secondary" @onclick="CenterNode2">Center Node 2</button>
+        <label>Zoom range
+            <select @onchange="SetZoomRange">
+                <option value="default" selected>0.2 to 2.5 (default)</option>
+                <option value="narrow">0.75 to 1.5</option>
+                <option value="wide">0.1 to 4</option>
+            </select>
+        </label>
+        <label><input type="checkbox" checked="@_extent" @onchange="SetExtent" /> Keep the view inside the box</label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    Viewport="_vp"
+                    OnViewportChanged="v => _vp = v"
+                    OnMove="v => _live = v"
+                    MinZoom="_minZoom"
+                    MaxZoom="_maxZoom"
+                    TranslateExtent="@(_extent ? Extent : (BlowRect?)null)">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+            @* TranslateExtent draws nothing of its own, so the box is drawn in the viewport layer, in flow
+               coordinates, where it pans and zooms with the nodes. *@
+            @if (_extent)
+            {
+                <BlowViewportPortal>
+                    <div class="cv-extent" style="@ExtentStyle"></div>
+                </BlowViewportPortal>
+            }
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag the background</strong> to pan and <strong>scroll</strong> to zoom, and watch the two readouts: <strong>OnMove</strong> follows every step of a drag, while the bound <strong>Viewport</strong> field changes when you let go - and on every scroll step, since a wheel has no release.</li>
+        <li><strong>Reset</strong> writes the identity viewport (no pan, zoom 1) into the field, and <strong>Center origin</strong> writes one that puts the flow's (0, 0) in the middle of the pane at 1.5x; the canvas follows the field.</li>
+        <li><strong>Fit</strong> and <strong>Center Node 2</strong> call methods on the canvas instead; the field still ends up holding the result, because the canvas reports every change through the same callback.</li>
+        <li>Pick a <strong>Zoom range</strong>, then scroll or use the control bar: zooming stops at the new limits, and the bar's zoom buttons grey out when a limit is reached.</li>
+        <li>Tick <strong>Keep the view inside the box</strong> and pan: the view stops at the dashed border. Zoomed out until the pane is bigger than the box, the box is centred and the view will not pan at all.</li>
+        <li>With a range or the box on, press <strong>Reset</strong> or <strong>Center origin</strong>: the value you write is clamped too.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>Viewport</code> is a <code>BlowViewport</code> (<code>X</code>, <code>Y</code>, <code>Zoom</code>): the screen position of the flow's origin and the scale. Left <code>null</code> (the default) the canvas owns its viewport; set, the canvas adopts each new value you hand it and leaves your pans alone between them.</li>
+        <li><code>OnViewportChanged</code> reports each viewport the canvas commits - at the release of a drag-pan or pinch, on every wheel step and on every change made from code, the first fit of <code>FitViewOnInit</code> included - so binding it back to the field keeps the two in step.</li>
+        <li><code>OnMove</code> reports every step of a gesture as well, between <code>OnMoveStart</code> and <code>OnMoveEnd</code>. A parent that re-renders on it re-renders every frame, so keep that work cheap.</li>
+        <li><code>FitView()</code> fits the graph with a 10% margin. <code>SetCenter(x, y, zoom)</code> puts a flow point in the middle of the pane; Center Node 2 passes the larger of <code>GetZoom()</code> and 1.5, so it zooms in but never out.</li>
+        <li><code>PaneSize</code> is the pane's measured size in screen pixels, which is all Center origin needs: a flow point lands mid-pane when the viewport's <code>X</code> and <code>Y</code> are half the pane.</li>
+        <li><code>MinZoom</code> and <code>MaxZoom</code> (0.2 and 2.5) bound every zoom, from the user or from code. <code>TranslateExtent</code> is a flow-space <code>BlowRect</code> the visible area may not leave; when the pane is larger than it, it is centred.</li>
+        <li>The canvas clamps a viewport it adopts but reports nothing back, and a new range or extent applies from the next move. So after each of those, the page hands the current viewport, read with <code>GetViewport()</code>, back through <code>SetViewport(viewport)</code>, which clamps it, applies it and reports it - the view snaps inside the bounds and the field agrees with the screen.</li>
+        <li><code>BlowViewportPortal</code> draws the dashed box in flow coordinates inside the zoomed layer.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .cv-readout { font-variant-numeric: tabular-nums; color: var(--bb-text-soft); }
+    .cv-extent {
+        position: absolute;
+        border: 2px dashed var(--bit-blow-node-selected);
+        border-radius: 6px;
+        pointer-events: none;
+    }
+</style>
+
+@code {
+    // Roomy around the three nodes, so a view zoomed in to 1 or beyond still has somewhere to pan.
+    private static readonly BlowRect Extent = new(-400, -300, 1100, 860);
+
+    private static string ExtentStyle => string.Create(System.Globalization.CultureInfo.InvariantCulture,
+        $"left:{Extent.X}px;top:{Extent.Y}px;width:{Extent.Width}px;height:{Extent.Height}px");
+
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowViewport _vp = BlowViewport.Identity;
+    private BlowViewport _live = BlowViewport.Identity;
+    private double _minZoom = 0.2;
+    private double _maxZoom = 2.5;
+    private bool _extent;
+
+    // Set when the canvas is about to adopt a viewport it may clamp; see OnAfterRender.
+    private bool _settle;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(0, 0) },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(150, 120) },
+            new BlowNode { Id = "3", Type = "output", Label = "Node 3", Position = new(-50, 220) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e2-3", Source = "2", Target = "3" },
+        ];
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // The canvas clamps a viewport handed to it through the parameter to the zoom range and the extent, but
+        // raises nothing, so the field would still hold the unclamped value; and a new range or extent only applies
+        // from the next move. Handing the current viewport back through SetViewport clamps it now and reports the
+        // result through OnViewportChanged, so the view snaps inside the bounds and the readout matches the screen.
+        if (!_settle || _flow is null) return;
+        _settle = false;
+        _flow.SetViewport(_flow.GetViewport());
+    }
+
+    private void Reset()
+    {
+        _vp = BlowViewport.Identity;
+        _settle = true;
+    }
+
+    // Putting flow point (0, 0) in the middle of the pane at 1.5x is just arithmetic on the
+    // pane size: the viewport is the translation of the flow origin, in screen pixels.
+    private void CenterOrigin()
+    {
+        if (_flow is null) return;
+        var pane = _flow.PaneSize;
+        _vp = new BlowViewport(pane.Width / 2, pane.Height / 2, 1.5);
+        _settle = true;
+    }
+
+    // The imperative route: the canvas moves itself and reports the result through OnViewportChanged, so the field
+    // follows without the page writing it.
+    private void Fit() => _flow?.FitView();
+
+    private void CenterNode2()
+    {
+        // Node 2 may have been deleted (select it and press Delete), so there may be nothing to centre on.
+        if (_flow is null || _flow.GetNode("2") is not { } node) return;
+        var rect = node.GetRect();
+        _flow.SetCenter(rect.X + rect.Width / 2, rect.Y + rect.Height / 2, Math.Max(_flow.GetZoom(), 1.5));
+    }
+
+    private void SetZoomRange(ChangeEventArgs e)
+    {
+        (_minZoom, _maxZoom) = e.Value?.ToString() switch
+        {
+            "narrow" => (0.75, 1.5),
+            "wide" => (0.1, 4.0),
+            _ => (0.2, 2.5),
+        };
+        _settle = true;
+    }
+
+    private void SetExtent(ChangeEventArgs e)
+    {
+        _extent = (bool)e.Value!;
+        _settle = true;
+    }
+}

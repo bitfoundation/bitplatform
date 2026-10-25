@@ -76,7 +76,7 @@ public partial class BitActionButtonDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The color role of the action button. At rest it paints the icon and the spinner while the text keeps the neutral foreground; on hover and press it takes over the text as well, and it also picks the focus ring color.",
+            Description = "The color role of the action button. At rest it paints the icon and the spinner while the text keeps the neutral foreground; on hover and press it takes over the text as well, and it also picks the focus ring color. An explicit value wins over the --bit-ActionButton-* color variables it paints; left unset, the action button is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -106,7 +106,7 @@ public partial class BitActionButtonDemo
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Stretches the action button across the full available width. The icon and the content stay next to each other with IconPosition.Start; IconPosition.End reverses the inner wrapper, so the growing content pushes them to the opposite edges.",
+            Description = "Stretches the action button across the full available width. The icon and the content stay next to each other with IconPlacement.Start; IconPlacement.End reverses the inner wrapper, so the growing content pushes them to the opposite edges.",
         },
         new()
         {
@@ -142,12 +142,12 @@ public partial class BitActionButtonDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Gets or sets the position of the icon relative to the component's content.",
+            Description = "Gets or sets the position of the icon relative to the component's content. The default value is Start. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -211,14 +211,14 @@ public partial class BitActionButtonDemo
             DefaultValue = "null",
             Description = "Gets or sets the relationship type between the current element and the linked resource, as defined by the link's rel attribute.",
             LinkType = LinkType.Link,
-            Href = "#link-rels",
+            Href = "#link-rels-enum",
         },
         new()
         {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Sets the preset size (Small, Medium, Large) for typography and padding of the action button.",
+            Description = "Sets the preset size (Small, Medium, Large) for typography and padding of the action button. An explicit value wins over the --bit-ActionButton-* size variables (min-height, padding, font size, icon size); left unset, the action button is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -282,32 +282,32 @@ public partial class BitActionButtonDemo
         new()
         {
             Name = "--bit-ActionButton-icon-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Icon and spinner color at rest.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Icon and spinner color at rest. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ActionButton-hover-color",
-            DefaultValue = "The Color role's hover color",
-            Description = "Text and icon color while hovered (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Text and icon color while hovered (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ActionButton-active-color",
-            DefaultValue = "The Color role's active color",
-            Description = "Text and icon color while pressed.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Text and icon color while pressed. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ActionButton-disabled-color",
-            DefaultValue = "--bit-clr-fg-dis (text), the Color role's disabled text color (icon)",
-            Description = "Text and icon color when IsEnabled is false; also the focus ring color of a disabled button kept focusable with AllowDisabledFocus.",
+            DefaultValue = "--bit-clr-fg-dis (text), --bit-clr-pri-dis-text (icon)",
+            Description = "Text and icon color when Disabled is true; also the focus ring color of a disabled button kept focusable with AllowDisabledFocus. The Color parameter wins over it for the icon and the focus ring; the text is its alone.",
         },
         new()
         {
             Name = "--bit-ActionButton-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Color of the keyboard focus ring.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {
@@ -336,14 +336,14 @@ public partial class BitActionButtonDemo
         new()
         {
             Name = "--bit-ActionButton-min-height",
-            DefaultValue = "Per Size: --bit-siz-ctrl-sm / -md / -lg",
-            Description = "Smallest height of the box, which is what lines an action button up with the other controls of its size and keeps the smallest one above the 24px minimum pointer target of WCAG 2.2. It is a floor, not a height: a wrapped label still grows the box. Set it to 0 for a button that has to sit on the line of the running text around it.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Smallest height of the box, which is what lines an action button up with the other controls of its size and keeps the smallest one above the 24px minimum pointer target of WCAG 2.2. It is a floor, not a height: a wrapped label still grows the box. Set it to 0 for a button that has to sit on the line of the running text around it. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ActionButton-padding",
-            DefaultValue = "Per Size: the control's y padding and one step below the standalone button's x padding",
-            Description = "Padding of the box. Set it to 0 for a button that sits flush inside running text or a table cell.",
+            DefaultValue = "--bit-siz-ctrl-pad-y-md --bit-siz-ctrl-pad-x-sm",
+            Description = "Padding of the box: the control's y padding and one step below the standalone button's x padding. Set it to 0 for a button that sits flush inside running text or a table cell. The Size parameter wins over it.",
         },
         new()
         {
@@ -354,14 +354,14 @@ public partial class BitActionButtonDemo
         new()
         {
             Name = "--bit-ActionButton-font-size",
-            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
-            Description = "Font size of the text and the loading label.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Font size of the text and the loading label. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ActionButton-icon-size",
-            DefaultValue = "Per Size: --bit-siz-icon-sm / -md / -lg",
-            Description = "Size of the icon, the IconUrl image and the spinner, which share one slot so entering the loading state moves nothing.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the icon, the IconUrl image and the spinner, which share one slot so entering the loading state moves nothing. The Size parameter wins over it.",
         },
     ];
 
@@ -444,315 +444,11 @@ public partial class BitActionButtonDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "button-type-enum",
-            Name = "BitButtonType",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Button",
-                    Description="The button is a clickable button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Submit",
-                    Description="The button is a submit button (submits form-data).",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Reset",
-                    Description="The button is a reset button (resets the form-data to its initial values).",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="Info Primary general color.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
-                },
-                new()
-                {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
-                },
-                new()
-                {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
-                },
-                new()
-                {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
-                },
-                new()
-                {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
-                },
-                new()
-                {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
-                },
-                new()
-                {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
-                },
-                new()
-                {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
-                },
-                new()
-                {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
-                },
-                new()
-                {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Small",
-                    Description="The small size button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The medium size button.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The large size button.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Description = "Icon renders before the content (default).",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "Icon renders after the content.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "link-rels",
-            Name = "BitLinkRels",
-            Description = "The rel attribute defines the relationship between a linked resource and the current document.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Alternate",
-                    Value = "1",
-                    Description = "Provides a link to an alternate representation of the document. (i.e. print page, translated or mirror)"
-                },
-                new()
-                {
-                    Name = "Author",
-                    Value = "2",
-                    Description = "Provides a link to the author of the document."
-                },
-                new()
-                {
-                    Name = "Bookmark",
-                    Value = "4",
-                    Description = "Permanent URL used for bookmarking."
-                },
-                new()
-                {
-                    Name = "External",
-                    Value = "8",
-                    Description = "Indicates that the referenced document is not part of the same site as the current document."
-                },
-                new()
-                {
-                    Name = "Help",
-                    Value = "16",
-                    Description = "Provides a link to a help document."
-                },
-                new()
-                {
-                    Name = "License",
-                    Value = "32",
-                    Description = "Provides a link to licensing information for the document."
-                },
-                new()
-                {
-                    Name = "Next",
-                    Value = "64",
-                    Description = "Provides a link to the next document in the series."
-                },
-                new()
-                {
-                    Name = "NoFollow",
-                    Value = "128",
-                    Description = @"Links to an unendorsed document, like a paid link. (""NoFollow"" is used by Google, to specify that the Google search spider should not follow that link)"
-                },
-                new()
-                {
-                    Name = "NoOpener",
-                    Value = "256",
-                    Description = "Requires that any browsing context created by following the hyperlink must not have an opener browsing context."
-                },
-                new()
-                {
-                    Name = "NoReferrer",
-                    Value = "512",
-                    Description = "Makes the referrer unknown. No referrer header will be included when the user clicks the hyperlink."
-                },
-                new()
-                {
-                    Name = "Prev",
-                    Value = "1024",
-                    Description = "The previous document in a selection."
-                },
-                new()
-                {
-                    Name = "Search",
-                    Value = "2048",
-                    Description = "Links to a search tool for the document."
-                },
-                new()
-                {
-                    Name = "Tag",
-                    Value = "4096",
-                    Description = "A tag (keyword) for the current document."
-                },
-                new()
-                {
-                    Name = "Me",
-                    Value = "8192",
-                    Description = "Indicates that the linked document represents the person who owns the current content. (used for identity verification)"
-                },
-                new()
-                {
-                    Name = "Opener",
-                    Value = "16384",
-                    Description = "Requires that any browsing context created by following the hyperlink keeps its opener browsing context. (reverses the implicit noopener modern browsers apply to _blank targets)"
-                },
-                new()
-                {
-                    Name = "PrivacyPolicy",
-                    Value = "32768",
-                    Description = "Links to the privacy policy that applies to the current document. (rendered as privacy-policy)"
-                },
-                new()
-                {
-                    Name = "Sponsored",
-                    Value = "65536",
-                    Description = "Marks the link as an advertisement or paid placement, so search engines do not count it as an organic endorsement."
-                },
-                new()
-                {
-                    Name = "TermsOfService",
-                    Value = "131072",
-                    Description = "Links to the terms of service that apply to the current document. (rendered as terms-of-service)"
-                },
-                new()
-                {
-                    Name = "Ugc",
-                    Value = "262144",
-                    Description = "Marks the link as user-generated content, like forum posts or comments, for search engines."
-                }
-            ]
-        },
+        DemoSharedEnums.BitButtonType(),
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitPlacement(),
+        DemoSharedEnums.BitLinkRels(),
     ];
 
 
@@ -773,7 +469,7 @@ public partial class BitActionButtonDemo
         new()
         {
             Underlined = true,
-            IconPosition = BitIconPosition.End,
+            IconPlacement = BitPlacement.End,
             Target = "_blank",
         }
     ];

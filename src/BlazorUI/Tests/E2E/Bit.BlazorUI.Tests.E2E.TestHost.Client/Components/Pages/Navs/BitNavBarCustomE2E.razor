@@ -1,0 +1,155 @@
+﻿@page "/e2e/nav-bar/custom"
+
+<PageTitle>BitNavBar custom items E2E</PageTitle>
+
+@* BitNavBar over a custom item type whose members are all renamed, so every one of them is found through the
+   NameSelectors - some by Name, some by Selector. Their automatic mode is on /e2e/nav-bar/url. *@
+
+<E2ESection Id="basic" Title="Basic">
+    <div style="width: 800px;">
+        <BitNavBar Id="cnbr-basic" Items="_basicItems" NameSelectors="_selectors" Mode="BitNavMode.Manual" AriaLabel="Custom bar" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="manual" Title="Manual mode">
+    <div style="width: 600px;">
+        <BitNavBar Id="cnbr-default" Items="_defaultItems" NameSelectors="_selectors" Mode="BitNavMode.Manual" DefaultSelectedItem="_defaultItems[1]" />
+        <BitNavBar Id="cnbr-bound" TItem="Tab" Items="_boundItems" NameSelectors="_selectors" Mode="BitNavMode.Manual" @bind-SelectedItem="_boundSelected" @bind-SelectedKey="_boundKey" />
+    </div>
+    <p>Bound: <span id="cbound-selected">@(_boundSelected?.Caption ?? "none")</span>, key: <span id="cbound-key">@(_boundKey ?? "none")</span></p>
+    <button id="cbtn-select-third" @onclick="() => _boundSelected = _boundItems[2]">Select third</button>
+    <button id="cbtn-key-first" @onclick="SetKeyFirst">Key first</button>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <div style="width: 600px;">
+        <BitNavBar Id="cnbr-templates" Items="_templateItems" NameSelectors="_selectors" Mode="BitNavMode.Manual">
+            <ItemTemplate Context="tab">
+                <span class="cnbr-item-template">Item template: @tab.Caption</span>
+            </ItemTemplate>
+        </BitNavBar>
+    </div>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events, keyboard and the look">
+    <div style="width: 600px;">
+        <BitNavBar Id="cnbr-events"
+                   Items="_eventItems"
+                   NameSelectors="_selectors"
+                   Mode="BitNavMode.Manual"
+                   Indicator="BitNavBarIndicator.Pill"
+                   Color="BitColor.Warning"
+                   Size="BitSize.Small"
+                   InlineText
+                   OnItemClick="(Tab tab) => { _clicks++; _lastClicked = tab.Caption; }"
+                   OnSelectItem="(Tab tab) => { _selects++; _lastSelected = tab?.Caption; }" />
+    </div>
+    <p>
+        <span id="cevent-clicks">@_clicks</span> <span id="cevent-last-clicked">@_lastClicked</span>
+        <span id="cevent-selects">@_selects</span> <span id="cevent-last-selected">@_lastSelected</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL and Disabled">
+    <div style="width: 600px;">
+        <BitNavBar Id="cnbr-rtl" Items="_rtlItems" NameSelectors="_selectors" Dir="BitDir.Rtl" Mode="BitNavMode.Manual" />
+        <BitNavBar Id="cnbr-disabled" Items="_disabledItems" NameSelectors="_selectors" Disabled Mode="BitNavMode.Manual" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Tab
+    {
+        public string Caption { get; set; } = "";
+        public string? Route { get; set; }
+        public string? Glyph { get; set; }
+        public BitIconInfo? Picture { get; set; }
+        public string? FilledGlyph { get; set; }
+        public BitIconInfo? FilledPicture { get; set; }
+        public bool Off { get; set; }
+        public string? Identity { get; set; }
+        public string? Tip { get; set; }
+        public string? Window { get; set; }
+        public BitLinkRels? Relation { get; set; }
+        public string? Counter { get; set; }
+        public string? CounterLabel { get; set; }
+        public bool Marker { get; set; }
+        public string? Name { get; set; }
+        public BitNavAriaCurrent Current { get; set; } = BitNavAriaCurrent.Page;
+        public string? Css { get; set; }
+        public string? Inline { get; set; }
+        public object? Payload { get; set; }
+        public RenderFragment<Tab>? View { get; set; }
+        public BitNavItemTemplateRenderMode ViewMode { get; set; }
+    }
+
+    private readonly BitNavBarNameSelectors<Tab> _selectors = new()
+    {
+        Text = { Name = nameof(Tab.Caption) },
+        Url = { Selector = t => t.Route },
+        IconName = { Name = nameof(Tab.Glyph) },
+        Icon = { Selector = t => t.Picture },
+        SelectedIconName = { Name = nameof(Tab.FilledGlyph) },
+        SelectedIcon = { Selector = t => t.FilledPicture },
+        IsDisabled = { Name = nameof(Tab.Off) },
+        Key = { Selector = t => t.Identity },
+        Title = { Name = nameof(Tab.Tip) },
+        Target = { Selector = t => t.Window },
+        Rel = { Name = nameof(Tab.Relation) },
+        Badge = { Selector = t => t.Counter },
+        BadgeAriaLabel = { Name = nameof(Tab.CounterLabel) },
+        Dot = { Selector = t => t.Marker },
+        AriaLabel = { Name = nameof(Tab.Name) },
+        AriaCurrent = { Selector = t => t.Current },
+        Class = { Name = nameof(Tab.Css) },
+        Style = { Selector = t => t.Inline },
+        Data = { Name = nameof(Tab.Payload) },
+        Template = { Selector = t => t.View },
+        TemplateRenderMode = { Name = nameof(Tab.ViewMode) },
+    };
+
+    private static List<Tab> Three() =>
+    [
+        new() { Caption = "Home", Glyph = BitIconName.Home, Identity = "home" },
+        new() { Caption = "Search", Glyph = BitIconName.Search, Identity = "search" },
+        new() { Caption = "Profile", Glyph = BitIconName.Contact, Identity = "profile" },
+    ];
+
+    private readonly List<Tab> _basicItems =
+    [
+        new() { Caption = "Home", Glyph = BitIconName.Home, FilledGlyph = BitIconName.HomeSolid, Tip = "Home tip", Css = "home-class", Inline = "background-color: rgb(1, 2, 3);" },
+        new() { Caption = "Link", Glyph = BitIconName.Link, Route = "/e2e/nav-bar/url/link", Window = "_blank", Relation = BitLinkRels.NoReferrer },
+        new() { Caption = "Off", Glyph = BitIconName.Blocked, Off = true },
+        new() { Caption = "Inbox", Glyph = BitIconName.Mail, Counter = "9", CounterLabel = "9 new" },
+        new() { Caption = "Alerts", Glyph = BitIconName.Ringer, Marker = true, CounterLabel = "New alerts" },
+        new() { Caption = "Named", Glyph = BitIconName.Contact, Name = "Custom name" },
+        new() { Caption = "Stepped", Glyph = BitIconName.Step, Current = BitNavAriaCurrent.Step },
+        new() { Caption = "Pictured", Picture = BitIconInfo.Css("my-picture"), FilledPicture = BitIconInfo.Css("my-picture-solid") },
+    ];
+
+    private readonly List<Tab> _defaultItems = Three();
+    private readonly List<Tab> _boundItems = Three();
+    private Tab? _boundSelected;
+    private string? _boundKey;
+
+    private void SetKeyFirst() => _boundKey = "home";
+
+    private readonly List<Tab> _templateItems =
+    [
+        new() { Caption = "Plain" },
+        new() { Caption = "Own", View = t => @<span class="cnbr-own">Own: @t.Caption</span> },
+        new() { Caption = "Replaced", ViewMode = BitNavItemTemplateRenderMode.Replace, View = t => @<button class="cnbr-replaced">Replaced: @t.Caption</button> },
+        new() { Caption = "After" },
+    ];
+
+    private readonly List<Tab> _eventItems = Three();
+    private int _clicks;
+    private string? _lastClicked;
+    private int _selects;
+    private string? _lastSelected;
+
+    private readonly List<Tab> _rtlItems = Three();
+    private readonly List<Tab> _disabledItems = [new() { Caption = "Link", Glyph = BitIconName.Link, Route = "/e2e/nav-bar/url/x" }, new() { Caption = "Button", Glyph = BitIconName.Search }];
+}

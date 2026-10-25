@@ -1,11 +1,12 @@
 //-:cnd:noEmit
+using Microsoft.AspNetCore.RateLimiting;
 using Boilerplate.Shared.Features.PushNotification;
 
 namespace Boilerplate.Server.Api.Features.PushNotification;
 
 [ApiVersion(1)]
 [Route("api/v{v:apiVersion}/[controller]/[action]")]
-[ApiController, AllowAnonymous]
+[ApiController, AllowAnonymous, EnableRateLimiting(RateLimitOptionsExtensions.PUSH_NOTIFICATION)]
 public partial class PushNotificationController : AppControllerBase, IPushNotificationController
 {
     [AutoInject] PushNotificationService pushNotificationService = default!;

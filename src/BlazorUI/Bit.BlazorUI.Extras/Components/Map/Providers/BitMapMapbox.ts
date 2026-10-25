@@ -1,8 +1,11 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     /**
      * Mapbox GL JS provider. Loads from the official Mapbox CDN; the C# layer adds the script tag.
      * Routes every method through BitMapGlBase using the 'mapbox' provider key.
      */
+    // bit-trim: owners BitMapboxMapProvider
+    // Called through the JsObjectName of its provider, which BitMap puts together into the identifier it calls (see
+    // BitMapJsRuntimeExtensions), so no interop identifier names this script: the provider type an app passes keeps it.
     export class BitMapMapbox {
         private static readonly _key = 'mapbox';
         private static readonly _global = 'mapboxgl';
@@ -30,11 +33,11 @@ namespace BitBlazorUI {
         public static panBy(id: string, dx: number, dy: number, animate: boolean) {
             return BitMapGlBase.panBy(BitMapMapbox._key, id, dx, dy, animate);
         }
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
-            return BitMapGlBase.fitBounds(BitMapMapbox._key, id, swLat, swLng, neLat, neLng, paddingPx, maxZoom);
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number, animate: boolean = true) {
+            return BitMapGlBase.fitBounds(BitMapMapbox._key, id, swLat, swLng, neLat, neLng, paddingPx, maxZoom, animate);
         }
-        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number) {
-            return BitMapGlBase.fitBoundsToMarkers(BitMapMapbox._key, id, paddingPx, maxZoom);
+        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number, animate: boolean = true) {
+            return BitMapGlBase.fitBoundsToMarkers(BitMapMapbox._key, id, paddingPx, maxZoom, animate);
         }
         public static addMarker(id: string, markerId: string, opts: any) { return BitMapGlBase.addMarker(BitMapMapbox._key, id, markerId, opts); }
         public static removeMarker(id: string, markerId: string) { return BitMapGlBase.removeMarker(BitMapMapbox._key, id, markerId); }
@@ -46,6 +49,7 @@ namespace BitBlazorUI {
             return BitMapGlBase.setMarkerPosition(BitMapMapbox._key, id, markerId, lat, lng);
         }
         public static openMarkerPopup(id: string, markerId: string) { return BitMapGlBase.openMarkerPopup(BitMapMapbox._key, id, markerId); }
+        public static closeMarkerPopup(id: string) { return BitMapGlBase.closeMarkerPopup(BitMapMapbox._key, id); }
         public static addPolyline(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
             return BitMapGlBase.addPolyline(BitMapMapbox._key, id, layerId, latlngs, style);
         }
@@ -67,3 +71,5 @@ namespace BitBlazorUI {
         public static removeTileOverlay(id: string, overlayId: string) { return BitMapGlBase.removeTileOverlay(BitMapMapbox._key, id, overlayId); }
     }
 }
+
+// bit-lazy: teardown BitMapMapbox.dispose

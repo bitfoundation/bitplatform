@@ -1,0 +1,422 @@
+﻿@page "/document-annotation"
+@using System.Numerics
+@implements IDisposable
+
+<PageTitle>Document review · Bink</PageTitle>
+
+<div class="bb-intro">
+    <h1>Document review</h1>
+    <p class="bb-subtitle">
+        A review surface over a document: select text to highlight it, attach a callout comment, or write freehand in
+        the margin. This is the shape a PDF or contract review interface takes. The annotations are vector objects
+        carrying their own metadata, so an application can list them, filter them and store them next to the document
+        rather than burning them into a picture.
+    </p>
+</div>
+
+<div class="bb-demo bink-editor bb-page-wide">
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Review tools">
+        <div class="bb-segmented" role="group" aria-label="Tool">
+            @foreach ((string id, string label) in Tools)
+            {
+                <button type="button" aria-pressed="@(_toolId == id ? "true" : "false")"
+                        @onclick="() => SelectTool(id)">@label</button>
+            }
+        </div>
+
+        <span class="bink-sep" aria-hidden="true"></span>
+
+        <ColorSwatches Colors="HighlightColors" Value="@_color" ValueChanged="SetColor" Label="Highlight colour" />
+
+        <span class="bb-spacer"></span>
+        <div class="bink-group" role="group" aria-label="History and export">
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is null || !_canvas.History.CanUndo)" @onclick="() => _canvas?.Undo()">Undo</button>
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is null || !_canvas.History.CanRedo)" @onclick="() => _canvas?.Redo()">Redo</button>
+            <button type="button" class="btn btn-secondary" @onclick="ExportSvgAsync">Export SVG</button>
+            <button type="button" class="btn btn-secondary bink-danger" disabled="@(_annotations.Count == 0)" @onclick="ClearAnnotations">Clear annotations</button>
+        </div>
+    </div>
+
+    <div class="bink-review">
+        <div class="bink-surface">
+            <BinkCanvas @ref="_canvas" Ready="OnReady" HistoryChanged="() => StateHasChanged()"
+                       ViewportChanged="_status?.ViewportChanged ?? default"
+                       EnableTouchGestures="true"
+                       Document="_document"
+                       Height="620px"
+                       Tool="_tool"
+                       Brush="_brush"
+                       ShapeStyle="_shapeStyle"
+                       ActiveLayerId="_annotationLayer"
+                       AriaLabel="Document under review"
+                       SelectionChanged="() => StateHasChanged()"
+                       DocumentChanged="OnDocumentChanged" />
+        </div>
+
+        <aside class="bink-review-panel" aria-labelledby="bink-annotations-title">
+            <h3 class="bink-panel-title" id="bink-annotations-title">Annotations</h3>
+            @if (_annotations.Count == 0)
+            {
+                <p class="bink-hint">
+                    Drag across a line of text to highlight it, or pick "Add comment" and drag where the note should point.
+                </p>
+            }
+            else
+            {
+                <ul class="bink-annotations">
+                    @foreach (AnnotationEntry entry in _annotations)
+                    {
+                        bool selected = _canvas?.Selection.Contains(entry.Id) == true;
+                        <li class="bink-annotation @(selected ? "is-selected" : null)">
+                            <div class="bink-annotation-head">
+                                <strong class="bink-annotation-kind">@entry.Kind</strong>
+                                <div class="bink-annotation-actions">
+                                    <button type="button" class="bb-icon-btn" aria-label="@("Select " + entry.Kind.ToLowerInvariant() + " on the page")"
+                                            title="Select on the page" @onclick="() => Reveal(entry.Id)">&#8599;</button>
+                                    <button type="button" class="bb-icon-btn bink-danger" aria-label="@("Delete " + entry.Kind.ToLowerInvariant())"
+                                            title="Delete" @onclick="() => Delete(entry.Id)">&times;</button>
+                                </div>
+                            </div>
+                            @if (entry.Editable)
+                            {
+                                <textarea rows="2" maxlength="500" aria-label="Comment text"
+                                          value="@entry.Text"
+                                          @onchange="e => EditCommentAsync(entry.Id, e.Value?.ToString())"></textarea>
+                            }
+                            else
+                            {
+                                <div class="bink-annotation-text">@entry.Text</div>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </aside>
+    </div>
+
+    <CanvasStatus @ref="_status" Canvas="_canvas" />
+</div>
+
+<div class="bb-note">
+    Each annotation carries a description, so the exported SVG and the accessible summary of the canvas both
+    report what is on the page. That is how a canvas-based review tool stays usable with a screen reader: the
+    strokes themselves cannot be described, but the objects around them can. The panel beside the page is ordinary
+    HTML built from the same elements: ↗ selects an annotation on the page; × deletes it, and a comment's text is
+    edited in its box, each as one undo step.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Highlights and callouts</h3>
+    <p class="bb-card-desc">
+        A highlight is one or more rectangles drawn with multiply blending, so the text under it stays legible - the
+        right element for marking text, because a line of text is a rectangle. A callout is a text box with a pointer to
+        an anchor, the shape a review comment takes; the pointer leaves whichever edge of the box faces the anchor, so it
+        stays sensible when the callout is moved. Both can be made directly, without a tool:
+    </p>
+    <pre class="bb-code">_document.AddElement(<span class="k">new</span> BinkHighlightElement(lineRects)
+{
+    Color = BinkColor.Parse(<span class="s">"#fde047"</span>),
+    Opacity = 0.5f,
+    Description = <span class="s">"Highlighted: payment terms"</span>,
+}, _annotationLayer);
+
+_document.AddElement(<span class="k">new</span> BinkCalloutElement(box: <span class="k">new</span> BinkRect(320, 100, 200, 70), anchor: <span class="k">new</span> Vector2(280, 130), text: <span class="s">"Please confirm this clause."</span>)
+{
+    Style = <span class="k">new</span> BinkShapeStyle { FillColor = BinkColor.Parse(<span class="s">"#fff9c4"</span>), StrokeColor = BinkColor.Parse(<span class="s">"#785a00"</span>) },
+}, _annotationLayer);</pre>
+    <p class="bb-card-desc">
+        The contract is real text: each line is a <code>BinkTextElement</code> on a locked "Page" layer, so it is
+        exported as text and read by a screen reader, while the review tools can only add to the "Annotations" layer
+        above it. Export SVG writes both, with <code>Title</code> and the per-element descriptions.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Turning a box into a comment</h3>
+    <p class="bb-card-desc">
+        The page listens to the document itself rather than to the canvas callback. That way the conversion - a
+        dragged rectangle becoming a callout, a highlight gaining a description of the text under it - runs while the
+        change is still being reported, and joins the same undo step: one undo removes a comment entirely instead of
+        first turning it back into a plain box.
+    </p>
+    <pre class="bb-code">_document.Changed += OnDocumentEdited;
+
+<span class="k">private void</span> OnDocumentEdited(<span class="k">object</span>? sender, BinkDocumentChangedEventArgs args)
+{
+    <span class="c">// Only fresh local edits are converted: undo and redo replay a conversion that already happened.</span>
+    <span class="k">if</span> (args.Origin != BinkChangeOrigin.Local || args.Depth &gt; 0) <span class="k">return</span>;
+    <span class="k">foreach</span> (BinkAddElementOperation add <span class="k">in</span> AddedElements(args.Operation))
+    {
+        <span class="k">if</span> (add.LayerId == _annotationLayer) Convert(add.Element);
+    }
+}</pre>
+</div>
+
+@code {
+    private sealed record AnnotationEntry(Guid Id, string Kind, string Text, bool Editable);
+
+    private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
+    private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 620, Height = 620, Background = BinkColor.White });
+    private Guid _pageLayer;
+    private Guid _annotationLayer;
+    private string _toolId = "highlight";
+    private string _color = "#fde047";
+    private IBinkTool _tool = new BinkShapeTool(BinkShapeKind.Highlight);
+    private BinkBrush _brush = new BinkPenBrush { Width = 2.5f, Color = BinkColor.Parse("#b91c1c") };
+    private BinkShapeStyle _shapeStyle = new() { StrokeColor = BinkColor.Parse("#fde047"), StrokeWidth = 1.5f };
+    private readonly List<AnnotationEntry> _annotations = new();
+    private int _commentNumber;
+
+    private static readonly string[] HighlightColors = ["#fde047", "#86efac", "#93c5fd", "#fca5a5"];
+
+    // A sticky-note yellow with a dark amber edge: a comment reads as a note on the page, not as part of it.
+    private static readonly BinkShapeStyle CalloutStyle = new()
+    {
+        FillColor = BinkColor.Parse("#fff9c4"),
+        StrokeColor = BinkColor.Parse("#785a00"),
+        StrokeWidth = 1.5f,
+    };
+
+    private static readonly (string Id, string Label)[] Tools =
+    [
+        ("select", "Select"),
+        ("highlight", "Highlight text"),
+        ("callout", "Add comment"),
+        ("draw", "Freehand"),
+    ];
+
+    private static readonly string[] Paragraph =
+    [
+        "Master Services Agreement",
+        "",
+        "1. Scope of work",
+        "The supplier shall provide the services described in each",
+        "statement of work agreed between the parties. No change to",
+        "the scope takes effect until both parties have signed a",
+        "written amendment.",
+        "",
+        "2. Fees and payment",
+        "Invoices are due thirty days from receipt. Late payment",
+        "accrues interest at two per cent per month, or the maximum",
+        "permitted by law, whichever is lower.",
+        "",
+        "3. Intellectual property",
+        "All deliverables created under this agreement become the",
+        "property of the customer on payment in full. The supplier",
+        "retains ownership of pre-existing materials and grants a",
+        "perpetual licence to use them within the deliverables.",
+        "",
+        "4. Termination",
+        "Either party may terminate for material breach on thirty",
+        "days written notice if the breach is not remedied.",
+    ];
+
+    protected override void OnInitialized()
+    {
+        _document.UpdateLayer(_document.Layers[0].Id, p => p with { Name = "Page" });
+        _pageLayer = _document.Layers[0].Id;
+        BuildPage();
+        _document.UpdateLayer(_pageLayer, p => p with { IsLocked = true });
+        _annotationLayer = _document.AddLayer("Annotations").Id;
+
+        // Listening to the document itself, rather than the canvas callback, means the conversion below runs
+        // while the change is still being reported, so it joins the same undo step: one undo removes a
+        // highlight entirely instead of first turning it back into a plain one.
+        _document.Changed += OnDocumentEdited;
+    }
+
+    public void Dispose() => _document.Changed -= OnDocumentEdited;
+
+    private void OnReady()
+    {
+        // On a phone the lines are wider than the view: show them whole rather than their beginnings. A pinch, or
+        // Ctrl+0, still gives 100%.
+        if (_canvas is null) return;
+        BinkRect content = _document.ContentBounds;
+        if (content.Right > _canvas.ViewSize.X || content.Bottom > _canvas.ViewSize.Y)
+        {
+            _canvas.SetViewport(BinkViewport.Fit(content, _canvas.ViewSize, 8f, maxZoom: 1f));
+        }
+    }
+
+    /// <summary>Lays out the document text as real text elements, so it can be selected, exported and read.</summary>
+    private void BuildPage()
+    {
+        const float left = 48f;
+        float y = 56f;
+        using (_document.BeginBatch("Load document"))
+        {
+            foreach (string line in Paragraph)
+            {
+                if (line.Length > 0)
+                {
+                    bool heading = line.Length > 0 && (char.IsDigit(line[0]) || line.StartsWith("Master", StringComparison.Ordinal));
+                    var style = BinkTextStyle.Default with
+                    {
+                        FontSize = heading ? 15f : 13.5f,
+                        Bold = heading,
+                        Color = BinkColor.Parse("#1f2933"),
+                    };
+                    _document.AddElement(new BinkTextElement(new Vector2(left, y), line)
+                    {
+                        Style = style,
+                        Size = new Vector2(520, style.FontSize * 1.3f),
+                        Padding = 0f,
+                    }, _pageLayer);
+                }
+                y += 24f;
+            }
+        }
+    }
+
+    private void SelectTool(string id)
+    {
+        _toolId = id;
+        _tool = id switch
+        {
+            "select" => new BinkSelectTool(),
+            "callout" => new BinkShapeTool(BinkShapeKind.Rectangle),
+            "draw" => new BinkDrawTool(),
+            _ => new BinkShapeTool(BinkShapeKind.Highlight),
+        };
+    }
+
+    private void SetColor(string color)
+    {
+        _color = color;
+        // The shape tool draws highlights in the shape style's stroke colour.
+        _shapeStyle = _shapeStyle with { StrokeColor = BinkColor.Parse(color) };
+        SelectTool(_toolId);
+    }
+
+    private void OnDocumentEdited(object? sender, BinkDocumentChangedEventArgs args)
+    {
+        // Only fresh local edits are converted: undo and redo replay a conversion that already happened.
+        if (args.Origin != BinkChangeOrigin.Local || args.Depth > 0) return;
+        foreach (BinkAddElementOperation add in AddedElements(args.Operation))
+        {
+            if (add.LayerId == _annotationLayer) Convert(add.Element);
+        }
+    }
+
+    private static IEnumerable<BinkAddElementOperation> AddedElements(BinkDrawingOperation operation)
+    {
+        if (operation is BinkAddElementOperation add) yield return add;
+        else if (operation is BinkBatchOperation batch)
+        {
+            foreach (BinkDrawingOperation inner in batch.Operations)
+            {
+                foreach (BinkAddElementOperation nested in AddedElements(inner)) yield return nested;
+            }
+        }
+    }
+
+    private void OnDocumentChanged(BinkDocumentChangedEventArgs args)
+    {
+        Reindex();
+        StateHasChanged();
+    }
+
+    private void Convert(BinkElement element)
+    {
+        switch (_toolId)
+        {
+            case "highlight" when element is BinkHighlightElement highlight:
+                _document.ReplaceElement(highlight with
+                {
+                    Description = "Highlight over " + DescribeTextUnder(highlight.Bounds),
+                });
+                break;
+
+            case "callout" when element is BinkRectangleShape box:
+                _commentNumber++;
+                string text = $"Comment {_commentNumber}: please review this clause.";
+                // The box the user dragged becomes the callout body; the anchor points at the text beneath it.
+                _document.ReplaceElement(new BinkCalloutElement(box.Rect, new Vector2(box.Rect.Left - 24f, box.Rect.Center.Y), text)
+                {
+                    Id = box.Id,
+                    Version = box.Version,
+                    Style = CalloutStyle,
+                    Description = text,
+                });
+                break;
+
+            case "draw" when element is BinkStroke stroke && stroke.Description is null:
+                _document.ReplaceElement(stroke with { Description = "Handwritten margin note" });
+                break;
+        }
+    }
+
+    private string DescribeTextUnder(BinkRect area)
+    {
+        foreach (BinkElement element in _document.Layers.First(l => l.Id == _pageLayer).Elements)
+        {
+            if (element is BinkTextElement text && text.Bounds.Intersects(area)) return "\"" + text.Text + "\"";
+        }
+        return "the page";
+    }
+
+    private void Reindex()
+    {
+        _annotations.Clear();
+        if (!_document.TryGetLayer(_annotationLayer, out BinkLayer? layer)) return;
+        foreach (BinkElement element in layer.Elements)
+        {
+            string kind = element switch
+            {
+                BinkHighlightElement => "Highlight",
+                BinkCalloutElement => "Comment",
+                BinkStroke => "Freehand note",
+                _ => element.TypeName,
+            };
+            string text = element is BinkCalloutElement callout ? callout.Text : element.GetAccessibleDescription();
+            _annotations.Add(new AnnotationEntry(element.Id, kind, text, element is BinkCalloutElement));
+        }
+    }
+
+    private async Task EditCommentAsync(Guid id, string? text)
+    {
+        if (!_document.TryGetElement(id, out BinkElement? element) || element is not BinkCalloutElement callout) return;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            // A comment keeps its text; the × beside it is what deletes it. The box still shows the cleared text, and
+            // rendering the comment's text over the same text rendered last time is no change, so render what the
+            // box shows first, then the comment's own text.
+            int index = _annotations.FindIndex(entry => entry.Id == id);
+            if (index < 0) return;
+            _annotations[index] = _annotations[index] with { Text = text ?? string.Empty };
+            StateHasChanged();
+            await Task.Yield();
+            Reindex();
+            return;
+        }
+        if (callout.Text == text) return;
+        _document.ReplaceElement(callout with { Text = text, Description = text });
+        _canvas?.Refresh();
+    }
+
+    private void Reveal(Guid id)
+    {
+        if (_canvas is null) return;
+        if (_toolId != "select") SelectTool("select");
+        _canvas.Selection.Set(id);
+    }
+
+    private Task ExportSvgAsync()
+        => _canvas?.SaveSvgAsync("review.svg", new BinkSvgExportOptions { IncludeElementDescriptions = true, Title = "Document review" })
+           ?? Task.CompletedTask;
+
+    private void Delete(Guid id)
+    {
+        _document.RemoveElement(id);
+        _canvas?.Refresh();
+    }
+
+    private void ClearAnnotations()
+    {
+        if (!_document.TryGetLayer(_annotationLayer, out BinkLayer? layer)) return;
+        _document.RemoveElements(layer.Elements.Select(e => e.Id).ToArray());
+        _canvas?.Refresh();
+    }
+}

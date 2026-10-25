@@ -26,7 +26,7 @@ public class BitThemeShapes
 
 /// <summary>
 /// The radius scale (<c>--bit-shp-radius-{none,xs,sm,md,lg,xl,2xl,full}</c>) and the per-family radii
-/// (<c>--bit-shp-radius-{control,surface,popup,dialog,button,chip,selection}</c>) every component
+/// (<c>--bit-shp-radius-{control,surface,popup,dialog,sheet,button,chip,selection}</c>) every component
 /// takes its corners from.
 /// </summary>
 /// <remarks>
@@ -71,6 +71,26 @@ public class BitThemeShapeRadii
     /// </summary>
     public string? Selection { get; set; }
 
+    /// <summary>
+    /// The corners of the selection indicator of a tab strip (<c>BitPivot</c>) on the edge facing the label:
+    /// square under Fluent, a capsule under Fluent 2, rounded under Material.
+    /// </summary>
+    public string? TabIndicator { get; set; }
+
+    /// <summary>
+    /// The corners of the selection indicator of a tab strip (<c>BitPivot</c>) on the edge it stands on, away
+    /// from the label. Follows <see cref="TabIndicator"/> when unset; Material draws them square.
+    /// </summary>
+    public string? TabIndicatorBase { get; set; }
+
+    /// <summary>
+    /// The corners of a linear progress track and its bar (<c>BitProgress</c>, the progress of a
+    /// <c>BitFileUpload</c> item): square under Fluent, 4px under Fluent 2, full under Material and Cupertino.
+    /// A progress with an explicit <c>Shape</c> (or <c>Rounded</c>) takes that instead, and a segmented one
+    /// stays square unless it has one.
+    /// </summary>
+    public string? Progress { get; set; }
+
     /// <summary>Cards, accordions, messages, images, list rows.</summary>
     public string? Surface { get; set; }
 
@@ -79,4 +99,10 @@ public class BitThemeShapeRadii
 
     /// <summary>Dialogs and modals.</summary>
     public string? Dialog { get; set; }
+
+    /// <summary>
+    /// The inner corners of panels and other edge-anchored sheets. Unlike the other families it does not fall
+    /// back to <see cref="BitThemeShapes.BorderRadius"/>: a sheet is square unless it is rounded on purpose.
+    /// </summary>
+    public string? Sheet { get; set; }
 }

@@ -1,0 +1,348 @@
+@page "/accessibility"
+@inject BmotionCapabilities Caps
+
+<PageTitle>Accessibility and diagnostics · Bmotion</PageTitle>
+
+<div class="bb-intro">
+    <h1>Accessibility and diagnostics</h1>
+    <p class="bb-subtitle">
+        Motion is not free for everyone who sees it. For some people a page that slides, parallaxes and
+        springs is nausea, not delight - which is why browsers ship
+        <strong>prefers-reduced-motion</strong>. Bmotion honours it, but not by throwing every animation
+        away: opacity and colour keep animating while transforms, layout and dimension changes snap.
+        That is the difference between a page that stops moving and a page that stops working.
+    </p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Reduced motion, four ways</h3>
+    <p>
+        Pick the policy once, at registration. <code>User</code> is the recommended setting and the
+        web-platform default: follow the operating system everywhere. The default is
+        <code>IgnoreUnlessConfigured</code>, which only consults the OS inside a
+        <code>&lt;BmotionConfig&gt;</code> - a back-compatible choice, so an app that never opted in
+        can never have its animations silently switched off underneath it.
+    </p>
+
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>BmReducedMotionMode</th><th>Behaviour</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var mode in _modes)
+                {
+                    <tr>
+                        <td class="bb-table-key"><code>@mode.Name</code></td>
+                        <td>@mode.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <CodeSnippet Code="@_modesCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What "reduced" actually does</h3>
+    <p>
+        Both boxes below animate <code>x</code>, <code>rotate</code> <em>and</em>
+        <code>backgroundColor</code>. The right one sits inside
+        <code>&lt;BmotionConfig ReduceMotion="true"&gt;</code>: its position and rotation jump
+        straight to the target while its colour still crossfades. Nothing is lost - the state change
+        is still legible, it just does not travel across the screen.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">Normal</span>
+            <Bmotion Animate='@(_shifted
+                        ? Bm.To(x: 60, rotate: 180, backgroundColor: "#FD7F36")
+                        : Bm.To(x: -60, rotate: 0, backgroundColor: "#1276C6"))'
+                     Transition="Bm.Tween(0.8, BmEase.InOut)">
+                <div class="box" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">ReduceMotion="true"</span>
+            <BmotionConfig ReduceMotion="true">
+                <Bmotion Animate='@(_shifted
+                            ? Bm.To(x: 60, rotate: 180, backgroundColor: "#FD7F36")
+                            : Bm.To(x: -60, rotate: 0, backgroundColor: "#1276C6"))'
+                         Transition="Bm.Tween(0.8, BmEase.InOut)">
+                    <div class="box" />
+                </Bmotion>
+            </BmotionConfig>
+        </div>
+    </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _shifted = !_shifted)">Move both</button>
+    </div>
+
+    <CodeSnippet Code="@_reducedCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Slowing everything down</h3>
+    <p>
+        <code>TransitionSpeed</code> is a playback multiplier over a whole subtree, and it scales
+        every time-based field - duration, delay, repeat delay, a spring's visual duration - so the
+        animation stays in proportion rather than having its delays left behind. It is how you
+        review timing at quarter speed without editing a single transition, and
+        <code>TransitionSpeed="0"</code> is how you check what a page looks like with no motion at
+        all.
+    </p>
+
+    <div class="demo-row">
+        @foreach (var speed in _speeds)
+        {
+            <div class="demo-card stack">
+                <span class="demo-label">TransitionSpeed: @speed</span>
+                <BmotionConfig TransitionSpeed="speed">
+                    <Bmotion @key="@($"{_runId}-{speed}")"
+                             Initial="Bm.To(opacity: 0, y: 40, scale: 0.5)"
+                             Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
+                             Transition="Bm.Spring(bounce: 0.4, duration: 0.8)">
+                        <div class="box" />
+                    </Bmotion>
+                </BmotionConfig>
+            </div>
+        }
+    </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _runId++)">Replay all</button>
+    </div>
+
+    <CodeSnippet Code="@_speedCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Keyboard-accessible taps</h3>
+    <p>
+        <code>WhileTap</code> is not a mouse-only state. When a tappable element has focus,
+        <kbd>Enter</kbd> and <kbd>Space</kbd> press and release it exactly like a pointer -
+        <code>WhileTap</code> plays and <code>OnTap</code> fires, and losing focus mid-press cancels
+        it the way dragging off the element does. Give the element <code>tabindex="0"</code> if it
+        is not natively focusable. <strong>Tab</strong> to the box below and press
+        <kbd>Space</kbd>.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">Tab to it, then press Enter or Space</span>
+            <Bmotion WhileHover="Bm.To(scale: 1.08)"
+                     WhileFocus="Bm.To(scale: 1.08)"
+                     WhileTap="Bm.To(scale: 0.88)"
+                     OnTap="@(() => _taps++)"
+                     Transition="Bm.Spring(stiffness: 400, damping: 20)">
+                <div class="box" tabindex="0" role="button" aria-label="Tap counter">@_taps</div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_keyboardCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Knowing what the runtime can do</h3>
+    <p>
+        Rather than guessing which render mode you are in, inject <strong>BmotionCapabilities</strong>.
+        On Blazor Server there is no synchronous interop, so the per-frame loop cannot run: inertia,
+        colour interpolation, keyframe arrays and motion values collapse to instant state changes,
+        while compositor-eligible animations still play normally. Drag still works, but follows the
+        pointer a round trip behind - immediate pointer response needs WebAssembly. Detect it and
+        offer a different affordance instead of shipping a control that does not feel the way you meant.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">This runtime</span>
+            <div class="caps-list">
+                <span class="bb-badge">SupportsFrameLoop: @Caps.SupportsFrameLoop</span>
+                <span class="bb-badge">SupportsCompositor: @Caps.SupportsCompositor</span>
+            </div>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_capsCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Watching the engine</h3>
+    <p>
+        <strong>OnUpdate</strong> hands you the exact CSS the engine flushed to an element this
+        frame. It is a plain delegate rather than an <code>EventCallback</code> on purpose: it runs
+        inside the render loop, so it must not trigger a re-render per frame - read it, and update
+        the DOM yourself or throttle to state.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">Live transform, straight from the frame callback</span>
+            <Bmotion Animate="Bm.To(x: [-70, 70, -70], rotate: [0, 180, 360])"
+                     Transition="Bm.Tween(4, BmEase.InOut, repeat: BmRepeat.Forever)"
+                     OnUpdate="OnFrame">
+                <div class="box box-sm" />
+            </Bmotion>
+            <code class="frame-readout">@_lastFrame</code>
+        </div>
+    </div>
+
+    <p>
+        For everything at once there is <strong>&lt;BmotionInspector /&gt;</strong>: drop it
+        anywhere in a development build and it lists every element registered with the engine, its
+        active drivers and its live values. It is the answer to "is this element animating, and
+        what does the engine think its transform is?" - a question that is otherwise very hard to
+        ask from the outside.
+    </p>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _inspector = !_inspector)">
+            @(_inspector ? "Hide" : "Show") the inspector
+        </button>
+    </div>
+
+    @if (_inspector)
+    {
+        <BmotionInspector RefreshMs="120" />
+    }
+
+    <CodeSnippet Code="@_diagnosticsCode" />
+</section>
+
+@code {
+    private bool _shifted;
+    private int _runId;
+    private int _taps;
+    private bool _inspector;
+    private string _lastFrame = "";
+
+    private sealed record Mode(string Name, string Description);
+
+    private readonly Mode[] _modes =
+    [
+        new("IgnoreUnlessConfigured", "The default, for back-compatibility. The OS preference is respected only inside a <BmotionConfig>."),
+        new("User", "Recommended. Respect the OS preference everywhere - the web-platform default."),
+        new("Always", "Always reduce, whatever the OS says. Useful for a per-app 'reduce motion' setting."),
+        new("Never", "Never reduce. For surfaces where the motion carries the meaning."),
+    ];
+
+    private readonly double[] _speeds = [1, 0.35, 0.1];
+
+    // Plain delegate, not an EventCallback: this runs inside the engine's frame loop, so it must
+    // not re-render per frame. Here it only reads the transform into a field that the *next*
+    // ordinary render happens to pick up.
+    private void OnFrame(IReadOnlyDictionary<string, string> css)
+        => _lastFrame = css.TryGetValue("transform", out var t) ? t : string.Join("; ", css.Values);
+
+    private const string _modesCode = """
+        // Program.cs - pick the policy once.
+        builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User);
+
+        // IgnoreUnlessConfigured  the default: the OS preference matters only inside a config
+        // User                    recommended: follow the OS everywhere
+        // Always / Never          force it, whatever the OS says
+        """;
+
+    private const string _reducedCode = """
+        @using Bit.Bmotion
+
+        @* Both animate x, rotate AND backgroundColor. Under reduced motion the transform snaps
+           while the colour still crossfades - Motion's "user" semantics, and a much better
+           reduction than collapsing every property to instant. *@
+        <BmotionConfig ReduceMotion="true">
+            <Bmotion Animate='@(_shifted
+                        ? Bm.To(x: 60, rotate: 180, backgroundColor: "#FD7F36")
+                        : Bm.To(x: -60, rotate: 0, backgroundColor: "#1276C6"))'
+                     Transition="Bm.Tween(0.8, BmEase.InOut)">
+                <div class="box" />
+            </Bmotion>
+        </BmotionConfig>
+
+        @* ReduceMotion="null" follows the OS instead of forcing either answer. *@
+
+        @code {
+            private bool _shifted;
+        }
+        """;
+
+    private const string _speedCode = """
+        @using Bit.Bmotion
+
+        @* A playback multiplier over the whole subtree. Every time-based field scales together -
+           duration, delay, repeat delay, a spring's visual duration - so the animation stays in
+           proportion. 0 makes the subtree instant. *@
+        <BmotionConfig TransitionSpeed="0.35">
+            <Bmotion Initial="Bm.To(opacity: 0, y: 40, scale: 0.5)"
+                     Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
+                     Transition="Bm.Spring(bounce: 0.4, duration: 0.8)">
+                <div class="box" />
+            </Bmotion>
+        </BmotionConfig>
+        """;
+
+    private const string _keyboardCode = """
+        @using Bit.Bmotion
+
+        @* Enter and Space press and release a focused tappable element exactly like a pointer:
+           WhileTap plays, OnTapStart/OnTap fire, and losing focus mid-press cancels. The only
+           thing you supply is focusability. *@
+        <Bmotion WhileHover="Bm.To(scale: 1.08)"
+                 WhileFocus="Bm.To(scale: 1.08)"
+                 WhileTap="Bm.To(scale: 0.88)"
+                 OnTap="@(() => _taps++)"
+                 Transition="Bm.Spring(stiffness: 400, damping: 20)">
+            <div class="box" tabindex="0" role="button" aria-label="Tap counter">@_taps</div>
+        </Bmotion>
+
+        @code {
+            private int _taps;
+        }
+        """;
+
+    private const string _capsCode = """
+        @using Bit.Bmotion
+        @inject BmotionCapabilities Caps
+
+        @* SupportsFrameLoop is false on Blazor Server, where inertia, colour interpolation and
+           keyframe arrays degrade to instant state changes and drag follows the pointer a round trip
+           behind. Branch on it rather than shipping a control that doesn't feel the way you meant. *@
+        @if (Caps.SupportsFrameLoop)
+        {
+            <Bmotion Drag="true"><div class="box" /></Bmotion>
+        }
+        else
+        {
+            @* Drag works here too, a round trip behind the pointer; offer a more immediate control alongside it. *@
+            <Bmotion Drag="true"><div class="box" /></Bmotion>
+            <p>Dragging responds instantly only on Blazor WebAssembly - the buttons move it too.</p>
+        }
+        """;
+
+    private const string _diagnosticsCode = """
+        @using Bit.Bmotion
+
+        @* OnUpdate receives the CSS actually flushed to this element this frame. A plain delegate,
+           not an EventCallback: it runs inside the frame loop and must not re-render per frame. *@
+        <Bmotion Animate="Bm.To(x: [-70, 70, -70], rotate: [0, 180, 360])"
+                 Transition="Bm.Tween(4, BmEase.InOut, repeat: BmRepeat.Forever)"
+                 OnUpdate="OnFrame">
+            <div class="box" />
+        </Bmotion>
+
+        @* The whole engine at once: every registered element, its active drivers and live values.
+           Drop it into a development build. *@
+        <BmotionInspector RefreshMs="120" />
+
+        @code {
+            private string _lastFrame = "";
+
+            private void OnFrame(IReadOnlyDictionary<string, string> css)
+                => _lastFrame = css.TryGetValue("transform", out var t) ? t : "";
+        }
+        """;
+}

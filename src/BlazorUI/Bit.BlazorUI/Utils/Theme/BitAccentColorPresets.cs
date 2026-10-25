@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Sample accent (primary) hex values for branding - feed one to <see cref="BitThemeFactory"/> for a

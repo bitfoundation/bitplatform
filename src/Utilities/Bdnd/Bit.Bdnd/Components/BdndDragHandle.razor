@@ -1,0 +1,55 @@
+﻿@namespace Bit.Bdnd
+
+@* The keyboard attributes come first, so a tabindex, role or aria-label the handle is given wins over them; the
+   instructions are added to any aria-describedby it is given. *@
+<div tabindex="@(IsKeyboardActivator ? "0" : null)"
+     role="@(IsKeyboardActivator ? "button" : null)"
+     aria-label="@(IsKeyboardActivator && Has("aria-labelledby") is false ? Controller!.Label : null)"
+     @attributes="AdditionalAttributes"
+     aria-describedby="@(IsKeyboardActivator ? DescribedBy : OwnDescribedBy)"
+     style="@StyleWithCursor"
+     draggable="@(IsActive && Controller!.NativeDrag ? "true" : null)"
+     data-bit-bdnd-handle="">
+    @ChildContent
+</div>
+
+@code {
+    [CascadingParameter] private IBdndDragHandleController? Controller { get; set; }
+
+    /// <summary>The handle's content, e.g. a grip icon.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Inline style of the handle element; a <c>cursor: move</c> is prepended while the draggable can be dragged - and
+    /// <c>touch-action: none</c> while touch drags it, so that a touch on the handle drags at once instead of scrolling.
+    /// </summary>
+    [Parameter] public string? Style { get; set; }
+
+    /// <summary>Any other attribute, applied to the handle element.</summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private bool IsActive => Controller is { RequiresHandle: true, CanDrag: true };
+
+    // the handle is what the keyboard picks the draggable up from: a focusable button, described by the instructions
+    private bool IsKeyboardActivator => IsActive && Controller!.KeyboardEnabled;
+
+    private bool Has(string name) => BdndAttributes.Has(AdditionalAttributes, name);
+
+    private string? DescribedBy => BdndAttributes.DescribedBy(AdditionalAttributes, Controller?.InstructionsId);
+
+    // a null attribute after the splatted ones would remove the one the handle was given
+    private string? OwnDescribedBy => BdndAttributes.DescribedBy(AdditionalAttributes, null);
+
+    private string? StyleWithCursor
+    {
+        get
+        {
+            var cursor = Controller?.CanDrag == true
+                ? IsActive && Controller.PointerDragEnabled ? "cursor: move; touch-action: none;" : "cursor: move;"
+                : null;
+            if (string.IsNullOrEmpty(Style)) return cursor;
+            return cursor is null ? Style : $"{cursor} {Style}";
+        }
+    }
+}

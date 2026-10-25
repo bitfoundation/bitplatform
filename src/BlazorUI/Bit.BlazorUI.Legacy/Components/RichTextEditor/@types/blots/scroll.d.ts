@@ -1,4 +1,4 @@
-declare class Scroll extends ScrollBlot {
+﻿declare class Scroll extends ScrollBlot {
     static blotName: string;
     static className: string;
     static tagName: string;

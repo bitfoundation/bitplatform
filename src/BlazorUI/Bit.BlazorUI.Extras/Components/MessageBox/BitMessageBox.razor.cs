@@ -1,4 +1,5 @@
-﻿namespace Bit.BlazorUI;
+﻿
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitMessageBox is a pre-implemented box for showing messages with title and body.
@@ -10,9 +11,34 @@
 /// </remarks>
 public partial class BitMessageBox : BitComponentBase
 {
-    private bool _answering;
+    private bool _pendingRevocable;
+    private CancellationTokenSource? _pendingAnswer;
     private BitButton? _closeButtonRef;
     private readonly Dictionary<BitMessageBoxResult, BitButton> _buttonRefs = [];
+    private readonly RenderFragment _renderTitle;
+
+
+
+    public BitMessageBox()
+    {
+        // Held in a field rather than created per render, so the diff keeps being handed the same delegate.
+        _renderTitle = RenderTitle;
+    }
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the message box component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple message box components
+    /// through the <see cref="BitParams"/> component - the words on their buttons above all, which is one place to
+    /// localize every message box of an app, the ones the <see cref="BitMessageBoxService"/> shows included.
+    /// </remarks>
+    [CascadingParameter(Name = BitMessageBoxParams.ParamName)]
+    public BitMessageBoxParams? CascadingParameters { get; set; }
 
 
 
@@ -63,6 +89,9 @@ public partial class BitMessageBox : BitComponentBase
     /// <remarks>
     /// Tertiary by default, which is the neutral of the theme. <see cref="PrimaryButtonColor"/> is what
     /// singles the affirmative button out of the set - an Error-colored Delete beside a neutral Cancel.
+    /// <br />
+    /// Left unset, the buttons follow an app's <c>--bit-Button-*</c> color variables, the same as any other button
+    /// without a Color; a value set here wins over them.
     /// </remarks>
     [Parameter] public BitColor? ButtonColor { get; set; }
 
@@ -79,7 +108,7 @@ public partial class BitMessageBox : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the message box.
     /// </summary>
-    [Parameter] public BitMessageBoxClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitMessageBoxClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The title (and aria-label) of the close button, for accessibility and localization.
@@ -103,6 +132,9 @@ public partial class BitMessageBox : BitComponentBase
     /// <remarks>
     /// This is the severity of the message: Info, Success, Warning, SevereWarning and Error each carry a
     /// glyph of their own, which is why setting a color is enough to give a message box its icon.
+    /// <br />
+    /// An explicit value wins over <c>--bit-MessageBox-icon-color</c>; left unset, the icon takes the text color
+    /// unless that variable says otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -126,7 +158,9 @@ public partial class BitMessageBox : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The controls in it are the page's own, so nothing in them answers the message box on its own:
-    /// <see cref="AnswerAsync"/> is what ends it with an answer of the caller's choosing.
+    /// <see cref="AnswerAsync"/> is what ends it with an answer of the caller's choosing. The message box is
+    /// cascaded to its templates, so a component of your own in them can take it as a
+    /// <c>[CascadingParameter] BitMessageBox</c> - the way to answer one the service shows.
     /// </remarks>
     [Parameter] public RenderFragment? FooterTemplate { get; set; }
 
@@ -187,7 +221,9 @@ public partial class BitMessageBox : BitComponentBase
     /// <see cref="BitModalParameters.CanClose"/> is the guard for.
     /// <br/>
     /// Turn <see cref="AutoLoading"/> on beside it to keep the pressed button spinning while the guard
-    /// works out its answer.
+    /// works out its answer. The close button and the Cancel button stay pressable meanwhile, and take the
+    /// answer back: <see cref="BitMessageBoxBeforeResultArgs.CancellationToken"/> is cancelled, and the answer
+    /// is not handed over whatever the guard goes on to decide.
     /// </remarks>
     [Parameter] public EventCallback<BitMessageBoxBeforeResultArgs> OnBeforeResult { get; set; }
 
@@ -244,18 +280,32 @@ public partial class BitMessageBox : BitComponentBase
     /// <summary>
     /// The size of the message box, which scales its inset, its title, its body text and its leading icon together.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-MessageBox-*</c> size variables (padding, min width, title and body
+    /// font sizes, icon size); left unset, the message box is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the message box.
     /// </summary>
-    [Parameter] public BitMessageBoxClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitMessageBoxClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The title of the message box.
     /// </summary>
     [Parameter] public string? Title { get; set; }
+
+    /// <summary>
+    /// The HTML element the title of the message box is rendered as. The default is an <c>h5</c>.
+    /// </summary>
+    /// <remarks>
+    /// Pick the heading level that fits the outline of the page around the message box - an <c>h2</c> is the usual
+    /// one for the title of a dialog - rather than the look: the title keeps the type of the message box whatever
+    /// element it is rendered as. A void element (<c>img</c>, <c>br</c>, ...) or a malformed name falls back to the default.
+    /// </remarks>
+    [Parameter] public string? TitleElement { get; set; }
 
     /// <summary>
     /// The text of the Yes button.
@@ -279,7 +329,9 @@ public partial class BitMessageBox : BitComponentBase
     /// can refuse it, the callback of that answer is raised, then <see cref="OnResult"/> and
     /// <see cref="OnClose"/> - so a message box shown through the <see cref="BitMessageBoxService"/> closes
     /// and hands the answer back to whoever was waiting for it. A disabled message box answers nothing, and
-    /// neither does one that is still working out an answer it was already given.
+    /// neither does one that is still working out an answer it was already given - unless the new answer is a
+    /// dismissal (<see cref="BitMessageBoxResult.None"/> or <see cref="BitMessageBoxResult.Cancel"/>), which takes
+    /// that one back through <see cref="BitMessageBoxBeforeResultArgs.CancellationToken"/>.
     /// <br/>
     /// The result need not be one of the buttons the current <see cref="Buttons"/> set renders.
     /// </remarks>
@@ -359,8 +411,10 @@ public partial class BitMessageBox : BitComponentBase
 
     // What FocusAsync does imperatively, written into the markup: the layer the message box is the content
     // of - a modal, a panel, a callout - focuses the element marked with autofocus every time it opens,
-    // which is what a message box that is kept mounted between showings needs. OnAfterRenderAsync's call
-    // is what covers the message box rendered on its own, where nothing else is looking for the mark.
+    // which is what a message box that is kept mounted between showings needs. The button itself covers the
+    // message box rendered on its own, where nothing else is looking for the mark: a BitButton given AutoFocus
+    // takes the focus on its first render. That makes the button the one owner of the first-render focus, so the
+    // message box does not focus it again itself - two owners would move the focus twice.
     private bool _AutoFocusAction(BitMessageBoxResult action) => AutoFocus && action == _DefaultAction;
 
     // The fallback FocusAsync falls back to: a set with no action buttons in it, or a footer of the
@@ -422,35 +476,11 @@ public partial class BitMessageBox : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-MessageBox-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Classes?.Root)
-                    .Register(() => Color switch
-                    {
-                        BitColor.Primary => "bit-msb-pri",
-                        BitColor.Secondary => "bit-msb-sec",
-                        BitColor.Tertiary => "bit-msb-ter",
-                        BitColor.Info => "bit-msb-inf",
-                        BitColor.Success => "bit-msb-suc",
-                        BitColor.Warning => "bit-msb-wrn",
-                        BitColor.SevereWarning => "bit-msb-swr",
-                        BitColor.Error => "bit-msb-err",
-                        BitColor.PrimaryBackground => "bit-msb-pbg",
-                        BitColor.SecondaryBackground => "bit-msb-sbg",
-                        BitColor.TertiaryBackground => "bit-msb-tbg",
-                        BitColor.PrimaryForeground => "bit-msb-pfg",
-                        BitColor.SecondaryForeground => "bit-msb-sfg",
-                        BitColor.TertiaryForeground => "bit-msb-tfg",
-                        BitColor.PrimaryBorder => "bit-msb-pbr",
-                        BitColor.SecondaryBorder => "bit-msb-sbr",
-                        BitColor.TertiaryBorder => "bit-msb-tbr",
-                        _ => string.Empty
-                    })
-                    .Register(() => Size switch
-                    {
-                        BitSize.Small => "bit-msb-sm",
-                        BitSize.Medium => "bit-msb-md",
-                        BitSize.Large => "bit-msb-lg",
-                        _ => string.Empty
-                    });
+                    .Register(() => BitCssClasses.Color(Color, "bit-msb"))
+                    .Register(() => BitCssClasses.Size(Size, "bit-msb"));
     }
 
     protected override void RegisterCssStyles()
@@ -458,22 +488,20 @@ public partial class BitMessageBox : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnParametersSet()
     {
-        if (firstRender && AutoFocus)
-        {
-            await FocusAsync();
-        }
+        CascadingParameters?.UpdateParameters(this);
 
-        await base.OnAfterRenderAsync(firstRender);
+        base.OnParametersSet();
     }
-
-
 
     // Tertiary is the neutral the footer has always been drawn in, so a message box that says nothing
     // about its buttons looks exactly as it did before the two color parameters existed.
-    private BitColor GetActionColor(BitMessageBoxResult action)
-        => (action == _PrimaryAction ? PrimaryButtonColor : null) ?? ButtonColor ?? BitColor.Tertiary;
+    // A color the message box was given is handed to the button as its Color, which wins over the app's --bit-Button-*
+    // variables. Without one the button is left unset and drawn Tertiary through bit-btn-dft-ter, the default a host
+    // gives the buttons it renders - read after those variables, so an app's restyle of its buttons reaches these too.
+    private BitColor? GetActionColor(BitMessageBoxResult action)
+        => (action == _PrimaryAction ? PrimaryButtonColor : null) ?? ButtonColor;
 
     private string? GetActionText(BitMessageBoxResult action) => action switch
     {
@@ -502,30 +530,65 @@ public partial class BitMessageBox : BitComponentBase
         _ => Classes?.OkButton
     }) ?? Classes?.ActionButton;
 
+    // The title is written out by hand rather than in the markup because the element it is rendered as is the
+    // consumer's to choose.
+    private void RenderTitle(RenderTreeBuilder builder)
+    {
+        builder.OpenElement(0, ResolveContentElement(TitleElement, "h5"));
+        builder.AddAttribute(1, "id", _TitleId);
+        builder.AddAttribute(2, "style", Styles?.Title);
+        builder.AddAttribute(3, "class", _TitleClass);
+        builder.AddContent(4, Title);
+        builder.CloseElement();
+    }
+
     private Task HandleOnCloseClick() => HandleAction(BitMessageBoxResult.None);
 
     private async Task HandleAction(BitMessageBoxResult result)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // Only one answer is given per showing: a slow callback leaves every other button pressable, and
         // a message box answered Ok and then Cancel while the first answer is still being worked out is
-        // one whose caller is told two different things.
-        if (_answering) return;
+        // one whose caller is told two different things. A dismissal is the exception, since a guard waiting
+        // on a server the user has given up on must not hold the box open: it takes the pending answer back,
+        // which is then never handed over, and goes through in its place.
+        if (_pendingAnswer is not null)
+        {
+            if (IsDismissal(result) is false || _pendingRevocable is false) return;
 
-        _answering = true;
+            _pendingAnswer.Cancel();
+        }
+
+        using var answer = new CancellationTokenSource();
+
+        _pendingAnswer = answer;
+
+        // Only an answer still in its guard can be taken back - one past it is already being handed over - and
+        // a dismissal is not taken back by another.
+        _pendingRevocable = IsDismissal(result) is false && OnBeforeResult.HasDelegate;
 
         try
         {
             if (OnBeforeResult.HasDelegate)
             {
-                var args = new BitMessageBoxBeforeResultArgs { Result = result };
+                var args = new BitMessageBoxBeforeResultArgs { Result = result, CancellationToken = answer.Token };
 
-                await OnBeforeResult.InvokeAsync(args);
+                try
+                {
+                    await OnBeforeResult.InvokeAsync(args);
+                }
+                catch (OperationCanceledException) when (answer.IsCancellationRequested)
+                {
+                    return;
+                }
 
                 // A refused answer leaves the message box exactly as it was: nothing is reported, nothing
-                // is closed, and Result still holds whatever the last answer that went through was.
-                if (args.Cancel) return;
+                // is closed, and Result still holds whatever the last answer that went through was. One that
+                // was taken back while its guard ran is the dismissal's to finish.
+                if (args.Cancel || answer.IsCancellationRequested) return;
+
+                _pendingRevocable = false;
             }
 
             Result = result;
@@ -554,7 +617,13 @@ public partial class BitMessageBox : BitComponentBase
         }
         finally
         {
-            _answering = false;
+            // A dismissal that took this answer back is pending in its place, and stays so.
+            if (_pendingAnswer == answer)
+            {
+                _pendingAnswer = null;
+            }
         }
     }
+
+    private static bool IsDismissal(BitMessageBoxResult result) => result is BitMessageBoxResult.None or BitMessageBoxResult.Cancel;
 }

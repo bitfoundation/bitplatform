@@ -1,0 +1,108 @@
+﻿@page "/e2e/full-calendar/recurrence"
+
+<PageTitle>BitFullCalendar E2E - recurring events</PageTitle>
+
+@* Recurring events: weekly on weekdays with a skipped date, every other Friday a number of times, the third Tuesday
+   until a date plus one added date, every 15 days, the last Friday - and the dialogs that edit a rule and ask whether a
+   change means one occurrence or the whole series. Every change is applied to the page's own list, the way an app
+   keeps its store. "Today" is pinned to Wednesday 2025-07-16 10:30. *@
+<E2ESection Id="recurrence" Title="Recurring events">
+    <BitFullCalendar Id="rec-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_events"
+                     OnChange="HandleChange" />
+    <span id="change-count">@_changes.Count</span>
+    <ol id="changes">
+        @foreach (var change in _changes)
+        {
+            <li>@change</li>
+        }
+    </ol>
+    <span id="store">@string.Join(" ; ", _events.Select(Describe))</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly TimeProvider Clock = new PinnedClock(new DateTimeOffset(2025, 7, 16, 10, 30, 0, TimeSpan.Zero));
+
+    private static readonly DateTime Today = new(2025, 7, 16);
+
+    private readonly List<BitFullCalendarEvent> _events =
+    [
+        new()
+        {
+            Id = "standup", Title = "Daily Standup", StartDate = Today.AddHours(9), EndDate = Today.AddHours(9).AddMinutes(15), Color = "blue",
+            Recurrence = new()
+            {
+                Frequency = BitFullCalendarRecurrenceFrequency.Weekly,
+                DaysOfWeek = [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday],
+                ExceptionDates = [new DateTime(2025, 7, 21)]
+            }
+        },
+        new()
+        {
+            Id = "review", Title = "Sprint Review", StartDate = new DateTime(2025, 7, 18, 15, 0, 0), EndDate = new DateTime(2025, 7, 18, 16, 0, 0), Color = "purple",
+            Recurrence = new() { Frequency = BitFullCalendarRecurrenceFrequency.Weekly, Interval = 2, DaysOfWeek = [DayOfWeek.Friday], Count = 3 }
+        },
+        new()
+        {
+            Id = "board", Title = "Board Meeting", StartDate = new DateTime(2025, 7, 15, 11, 0, 0), EndDate = new DateTime(2025, 7, 15, 12, 0, 0), Color = "red",
+            Recurrence = new()
+            {
+                Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
+                WeekOfMonth = BitFullCalendarWeekOfMonth.Third,
+                DaysOfWeek = [DayOfWeek.Tuesday],
+                Until = new DateTime(2026, 1, 16),
+                AdditionalDates = [new DateTime(2025, 7, 24)]
+            }
+        },
+        new()
+        {
+            Id = "backup", Title = "Backup Check", StartDate = new DateTime(2025, 7, 1, 8, 0, 0), EndDate = new DateTime(2025, 7, 1, 8, 30, 0), Color = "green",
+            Recurrence = new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily, Interval = 15 }
+        },
+        new()
+        {
+            Id = "monthend", Title = "Month-end Report", StartDate = new DateTime(2025, 7, 25, 16, 0, 0), EndDate = new DateTime(2025, 7, 25, 17, 0, 0), Color = "orange",
+            Recurrence = new() { Frequency = BitFullCalendarRecurrenceFrequency.Monthly, WeekOfMonth = BitFullCalendarWeekOfMonth.Last, DaysOfWeek = [DayOfWeek.Friday] }
+        },
+    ];
+
+    private readonly List<string> _changes = [];
+
+    private void HandleChange(BitFullCalendarChangeEventArgs args)
+    {
+        _changes.Add($"{args.Kind}|{args.Source}|{Describe(args.Event)}");
+
+        var index = _events.FindIndex(e => e.Id == args.Event.Id);
+        if (args.Kind is BitFullCalendarChangeKind.Delete)
+        {
+            if (index >= 0) _events.RemoveAt(index);
+        }
+        else if (index >= 0)
+        {
+            _events[index] = args.Event;
+        }
+        else
+        {
+            _events.Add(args.Event);
+        }
+    }
+
+    private static string Describe(BitFullCalendarEvent ev)
+    {
+        var rule = ev.Recurrence is { } r
+            ? $"{r.Frequency}/{r.Interval}/{string.Join(",", r.DaysOfWeek ?? [])}/{r.WeekOfMonth}/{r.Count}/{r.Until:yyyy-MM-dd}/skip:{string.Join(",", (r.ExceptionDates ?? []).Select(d => d.ToString("yyyy-MM-dd")))}/add:{string.Join(",", (r.AdditionalDates ?? []).Select(d => d.ToString("yyyy-MM-dd")))}"
+            : "none";
+        return $"{ev.Title}|{ev.StartDate:yyyy-MM-dd HH:mm}|{ev.EndDate:yyyy-MM-dd HH:mm}|{rule}";
+    }
+
+    private sealed class PinnedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+}

@@ -1,7 +1,372 @@
-# bit BlazorUI
+﻿# bit BlazorUI
 
 Guidance for the bit BlazorUI component library and its demo app. Coding style comes from the
 `.editorconfig` at the root of the `src` folder ([../CLAUDE.md](../CLAUDE.md)).
+
+## Never edit outside this folder
+
+**`src/BlazorUI` is the edit boundary, and it holds for every task.** The library, Extras, Legacy,
+Icons, Assets, the source generators, the demo app and the tests are all inside it, so the work belongs
+here. Every sibling under `src/` - `Templates` (the Boilerplate), `Butil`, `Bswup`, `Besql`, `Bmotion`, `Bink`, `Balette`, `BbScanner`,
+`Bdnd`, `BlazeDb`, `Blow`, `Borm`, `Bcrdt`, `Bonboarding`, `Bortable`, `Blex`, `Bmage`, `Bsqlite`, `Brouter`, `Websites`, `CodeAnalyzers`, the rest - and the repo root are off limits, no matter what a
+change in here does to them.
+
+This bites hardest on a rename or a deletion in the public API: the Boilerplate consumes bit BlazorUI,
+so retiring a type leaves it referencing something that no longer exists. That is still not a reason
+to edit it. **Report what broke and where, and leave the fix to the maintainer** - the templates are
+versioned and released on their own schedule, and a BlazorUI branch that carries template changes is a
+branch that cannot be merged on its own.
+
+So: grep the whole repo to *find out* what a change reaches, and say so. Only write inside
+`src/BlazorUI`.
+
+## Every source file starts with a BOM
+
+`src/.editorconfig` sets `charset = utf-8-bom` for every file, and `SourceFilesBomTests` fails CI on any
+`.cs`, `.razor`, `.cshtml`, `.scss`, `.ts`, `.md`, `.xaml`, `.csproj`, `.props`, `.targets`, `.slnf` or
+`.slnx` under `src/BlazorUI` that does not start with the three bytes `EF BB BF`. `dotnet format` enforces
+the charset on C# only, and the Write tool, a shell heredoc or redirect, VS Code, `dotnet new` and npm
+scripts all save a new file without one - so this is the check that fails most often, and always on a
+file that was just created.
+
+- **Every new file of those extensions gets a BOM when it is created**, a test, a demo page, a stylesheet
+  or a doc alike. After writing it, check its first bytes (`head -c 3 <file> | xxd` shows `efbb bf`) and
+  prepend the BOM when they are missing (`printf '\xEF\xBB\xBF' | cat - <file> > <file>.tmp && mv <file>.tmp <file>`).
+- **Rewriting a file keeps its BOM.** Replacing a whole file through a tool or a script that drops it is the
+  same failure as creating one without it; check it again afterwards.
+- **An empty file is a dead file to delete**, never one to give a BOM.
+- A new extension that has to go without a BOM (a served asset, a manifest) is exempted in
+  `src/BlazorUI/.editorconfig`, never in the test's list.
+
+## The scripts and stylesheets are trimmed at publish
+
+Every package's bundles (`bit.blazorui.js`, `bit.blazorui.css` and its Fluent variants, the Extras', Legacy's and
+Icons' ones) are written by `Bit.BlazorUI.Build/build-assets.mjs` from **pieces** - one per `.ts` file, one per component
+stylesheet imported by the package's components file, one per icon glyph - which the package ships with a manifest
+(`obj/bit-assets`, `buildTransitive/bit-assets` in the package). At publish, the `Bit.BlazorUI.Build` MSBuild task
+(`buildTransitive/Bit.BlazorUI.targets`, documented there for consumers) puts each bundle back together from the pieces
+an app can use: off the types and string literals ILLink left in the trimmed assemblies, or - where the publish is not
+trimmed - off the app's type references and everything they reach. A piece left out is a component drawn unstyled or a
+`BitBlazorUI.x is undefined` in production only, so what keeps each piece is a contract:
+
+- **A script is kept by what names it.** An interop identifier in C# (`"BitBlazorUI.Utils.isRtl"` keeps the file
+  exporting `Utils.isRtl`) - always a **literal**, never put together at run time; the one exception, BitMap's providers,
+  names its provider types instead. Or a comment in the file: `// bit-trim: owners BitNav` (kept with that type; `BitFc*`
+  for a family), `// bit-trim: markup data-bit-esc` (kept when the code an app can run, or its static html, holds that
+  text - for a script acting on what markup says), `// bit-trim: always`. A file that runs code as it loads - its top
+  level, or a function invoked where it is written, calls anything, constructs anything but a plain `Map` / `Set`, or
+  assigns to the platform (`window.onresize = ...`) - must carry one of these (or `on-demand`): `build-assets.mjs` fails
+  on one that does not. A stylesheet says `always` or `owners` only.
+- **A script adds its own page-level listeners as it loads**, never `general.ts`, so an app trimmed down to components
+  that do not need them gets none. The bundle is ordered so a script follows every script it uses at load - what its top
+  level uses, and what the functions it calls there use in turn; listeners that must run in a set order on one node go
+  through a hook of the earlier script (`Utils.afterEscapeClaim`), not the file order. The manifest lists the listeners
+  each script adds as it loads (`"window keydown capture"`), which is how `BitEscapeClaimContractTests` pins the claim as
+  the first keydown listener of the window.
+- **`Utils` and `Callouts` are namespaces spread over a file per feature** (`Utils.Escape.ts`, `Utils.Focus.ts`,
+  `Callouts.Registry.ts`, ...), each one a piece: a function goes in the file of its feature, or a new `Utils.<Feature>.ts`.
+  State that scripts of different features share goes in a small file of its own (`Callouts.Registry.ts`); where the
+  dependency would have to point back the other way, the owner exposes a hook the dependent registers with as it loads
+  (`Utils.addEscapeBoundary`). `general.ts` and `Utils.Keys.ts` are what every bundle keeps - add nothing to them that
+  not every app needs.
+- **A component stylesheet compiles on its own**, with `functions.scss` as its only preamble - no variable, mixin or
+  `@extend` of another component, no keyframes of another component, and no global token (`:root`) declared in it: those
+  go in `general.scss` or the theme files, which every bundle keeps. It is kept for the component of its file name; a
+  stylesheet styling the parts of a family that are components of their own says so (`// bit-trim: owners BitFullCalendar
+  BitFc*`). `build-assets.mjs` fails when the pieces do not add up to the whole bundle byte for byte.
+- **The Extras' scripts call the core's through `Scripts/BitBlazorUI.d.ts`**, which is also what keeps those core
+  functions in a trimmed core bundle: declare every core member a script of the Extras uses.
+- **A folder of vendored files** (a library a component loads at run time, a set of images) is declared as a
+  `BitBlazorUIVendorFolder` in its package's `buildTransitive` targets, and is published only where code naming
+  `_content/<package>/<folder>/` is.
+- **A class that only registers services carries `[BitAssetTrimmingRegistrar]`**: the scan does not follow it, since
+  registering renders nothing and an app using a service names it itself.
+- **The icon font is cut with the icon stylesheet** (`BitBlazorUITrimIcons`, `IconFontSubsetter.cs`): to the codepoints
+  the kept glyph rules draw, on Node.js (fonttools, pinned by `Bit.BlazorUI.Build/fonttools/package-lock.json` and installed
+  with `npm ci`), with this assembly's own WOFF2 reader, TrueType subsetter and writer as the fallback (`Woff2.cs`,
+  `TrueTypeSubsetter.cs`). A glyph rule always draws one codepoint the font has (`BitIconFontCutTests` lists the one that
+  does not, `ContactInfoMirrored`); a change to the .NET cut's output raises its `DotNetVersion`, so no stale cut is reused.
+  The icon stylesheet's `.bit-icon` lists the core's own font after its own, which draws the core components' built-in
+  icons wherever a cut (an `Explicit` list) leaves them out - `BitIconFontCutTests` pins it.
+- `BitAssetTrimmingContractTests` checks these against the compiled assemblies (every identifier resolves, every owner is a
+  type, every component brings the stylesheets of the classes it renders); `Tests/Bit.BlazorUI.Tests.Trimming` publishes
+  real apps and reads what came out (`dotnet run`, see its README). Run both after touching a script's exports, a
+  `bit-trim` comment, the components file or the targets.
+
+The same pieces are the **lazy scripts** (`BitBlazorUILazyScripts`, `BitBlazorUIScripts`): `build-assets.mjs` also writes
+each script as an ES module (`wwwroot/scripts/modules/<name>.js`, its piece behind the imports of the scripts of its package
+it uses), a boot module importing the `always` and `markup` scripts, and the package's JavaScript initializer
+(`scripts/<package>.lib.module.js`) importing that, which Blazor loads as the app starts. The .NET side imports a module
+the first time an identifier of it is called (`BitScriptLoader`, off the `bit-lazy-scripts.json` each assembly embeds). So:
+
+- **A script's top level declares nothing another script reads** but the members of the `BitBlazorUI` namespace: as a
+  module, its own scope is its own, and `build-assets.mjs` fails on a script reading another file's top-level
+  declaration. What runs as a script loads goes inside a `namespace BitBlazorUI { }` block rather than at the bare top
+  level, where its helpers would be globals of the page in the bundle (the foot of `Callouts.ts`). A boot script (`always`, `markup`) uses nothing of another package's namespace -
+  `build-assets.mjs` fails on one that does, since nothing would import that package first.
+- **Every call of the packages' code into a script goes through the loader** - `InvokeVoid`, `Invoke`, `FastInvoke*`, or
+  the internal `InvokeScriptAsync` / `InvokeScriptVoidAsync` where a call must throw as `IJSRuntime.InvokeAsync` does -
+  never `IJSRuntime.InvokeAsync("BitBlazorUI...")` itself, whose module would never have been imported.
+- **A script kept by `owners` that runs as it loads is loaded by its component**: in lazy mode nothing calls it, so the
+  component calls `_js.EnsureScriptAsync("<package>", "<script>")` as it first renders the markup the script acts on
+  (BitNav, BitDataGrid on their first render; BitTag once it is dismissible, BitTimeline once an item is clickable). The
+  call is the owner type's own (the contract test reads its literals), and a failed import never fails the render.
+- **A function that only undoes what its script did** (a `dispose`, an `unregister`) says so in a
+  `// bit-lazy: teardown Callouts.clear ...` comment of its script: the loader skips its call in a page that never ran the
+  script, rather than download the script to release nothing. A function with an effect of its own (clearing a stored
+  preference, a file input) is no teardown.
+- `BitLazyScriptsContractTests` pins the modules, the boot module, the embedded map, the owners' loads and the calls;
+  `BitLazyScriptsTests` the loader; `LazyScriptsTrimmingTests` (in the trimming suite) publishes and runs lazy apps.
+
+App authors read all of this on the demo's Trimming page (`Pages/TrimmingPage.razor`, `/trimming`): every switch, signal,
+item, warning and lazy-script behaviour. A change to the targets, the task or the loader that an app can notice changes
+that page in the same commit.
+
+## Razor comments
+
+**Never put a `@* ... *@` comment inside a tag, between its attributes.** It compiles, but the Razor
+compiler mis-reads the attributes around it and the page throws at runtime. A comment about an
+attribute goes in the comment block right above the element's opening tag:
+
+```razor
+@* Why the chip is named through aria-label. *@
+<div role="listitem"
+     aria-label="@TagName(tag)">
+```
+
+never
+
+```razor
+<div role="listitem"
+     @* Why the chip is named through aria-label. *@
+     aria-label="@TagName(tag)">
+```
+
+## Core components never render each other
+
+A component in the core `Bit.BlazorUI` project draws everything it shows with its own markup and its own
+SCSS; it never renders another public component of the library (no `<BitSpinnerLoading>` for a busy
+state, no `<BitShimmer>` for a skeleton, no `<BitButton>` for an action). Every component is re-skinned on
+its own - its `--bit-<Component>-*` variables, its `BitParams` cascade, its `Styles` / `Classes` - so one
+rendered inside another would carry an app's restyle of the first into the second, and couple the two
+components' markup, defaults and accessibility behaviour as well.
+
+- **Draw the part locally**, under the component's own class prefix, reading the global tokens: an inline
+  busy spinner is `@include spinner-ring($size, $color, $track)` from `Styles/functions.scss` - one ring
+  of `$siz-spinner-stroke` turning on `$mot-duration-spinner` / `$mot-easing-spinner` over the shared
+  `bit-spin` keyframes, with its forced-colors pair built in - never a hand-written copy of it (see
+  `.bit-btn-spn`, `.bit-srb-spn`, `.bit-tfl-spn`). A part that goes GrayText when disabled in
+  forced-colors mode includes `spinner-ring-forced-disabled` for its spinner in that block. A skeleton is
+  a few bars of its own (`.bit-crd-skb`). Offer a `...Template` parameter for an app that wants a library
+  component there instead - rendering one is the app's choice, never the component's default.
+- **A part drawn locally is a part of the component's public surface**, since what it replaces was
+  restylable through its own API: give it a `<Component>ClassStyles` member applied as
+  `style="@Styles?.X" class="bit-xxx-yyy @Classes?.X"` (`Spinner`, `Skeleton` / `SkeletonBar`), the public
+  `--bit-<Component>-*` variables an app would reach for (`spinner-size` / `-color` / `-track-color`,
+  `skeleton-background` / `-color`) in the stylesheet's header, and both in the demo page's
+  `componentSubClasses` and `componentCssVariables` tables, which `BitComponentCssVariablesContractTests`
+  pins to the stylesheet.
+- **Not covered**: a family's own internal shell (`BitLoading`, which every `Bit*Loading` renders its
+  drawing into), plumbing that is not a visual component (`BitCascadingValueProvider`), and a service
+  whose job is to render the component it serves (`BitModalService` opening a `BitModal`).
+- **`Bit.BlazorUI.Extras` is the composition layer**: its components are built out of core ones (BitMessageBox
+  renders a BitTextField), which is exactly what keeps the core ones from having to be.
+
+## One Escape does one thing
+
+A field inside a dialog clears on Escape, and the dialog waits for the next press. Whoever acts on the key
+claims it by preventing its default, and every surface that closes on Escape (BitDialog, BitModal, BitPanel,
+the callouts, BitTooltip, BitMessage - the listeners in `Scripts/Utils.Escape.ts`, `Utils.EscapeSurfaces.ts` and
+`Utils.Tooltips.ts`) leaves a claimed key alone.
+
+- **A component that acts on Escape in .NET says so in its markup.** A Blazor `@onkeydown:preventDefault`
+  holds for every key, and the handler runs too late for any listener to read its answer, so the component
+  renders `data-bit-esc="claim"` on the element its `@onkeydown` listens on (or `"text"`: it acts while the
+  input it is on holds text). `Utils.claimEscape` reads it on the window in the capture phase, ahead of every
+  surface, and prevents the default. The value comes from one `EscapeClaim` member computed from the very state
+  the handler decides on, so the key is claimed exactly when the press does something and left to the surface
+  around the component otherwise (an empty field, a one-way binding, a closed list, a modified Escape).
+  `BitEscapeClaimContractTests` pins the values and the surfaces; each component's tests pin its states.
+- **A popup opened through `Callouts` needs no claim.** The surfaces ask `Callouts.componentContains` whether
+  the key was pressed in a component whose popup is open, and leave it to that component - and so does
+  `claimEscape`, so a claiming root around it (a NavPanel drawer, a dialog of the Extras) does not take the
+  key away from it either. A shown tooltip is the same: `claimEscape` stops at its anchor, the way it stops at
+  the nearest surface, so a claim outside the anchor never takes the tooltip's Escape.
+- **One shared watch per claiming root.** A component whose own .NET keydown on its root acts on the key it
+  claims there hears the presses a part inside it claimed first, too; it tells them apart through
+  `BitEscapeClaimWatch` (`Utils.watchEscapeClaim`), never a copy of it.
+- **No surface stops a key.** BitDialog, BitModal, BitPanel and BitCallout put no `@onkeydown:stopPropagation` on
+  their roots, so the page's own Blazor handlers around one (an app's Ctrl+S) keep hearing every key while it is
+  open. An outer surface tells a nested one's Escape from its own through `Utils._escapeSurfaceOwners` instead: the
+  innermost surface records itself as the key bubbles through its root (`claimSurfaceEscape`), the outer ones read
+  that (`isNestedSurfaceEscape`), and the ones whose .NET handler acts on Escape are told through `OnEscapeVerdict`,
+  sent by the one `Utils.sendEscapeVerdicts` and taken once by a `BitEscapeVerdict` - never a copy of either. It
+  answers only the presses that are not the handler's own, and the one after them, so an own press costs no round
+  trip. What a watch registered after the render cannot cover - the press between a BitCallout's open render and the
+  round trip that registers its popup - is claimed from the render (`data-bit-esc` on its root). A component whose .NET keydown handlers hear every key of its content leaves the keys of a surface rendered
+  there alone through `Utils.isInNestedSurface` (BitDataGrid's cells, rows and headers, BitSwiper, BitCarousel).
+  `BitSurfaceKeyPropagationContractTests` pins the keys reaching the page.
+- **A surface that dismisses itself in its own .NET keydown handler asks the JS side first.** `BitPanel`
+  (`Utils.setupEscapeGuard`) and `BitCallout` (its anchor and its content, `Utils.watchNestedEscape`) go by one
+  per-press `OnEscapeVerdict`, which folds a nested surface, a claim, an open popup opened from inside (and, for the
+  panel, a prevented default and an IME composition) into one answer - never a channel of their own for one of them.
+  A callout names itself to `Utils.isEscapeOfOpenCallout`, since it is the innermost open callout the key closes.
+- **The Escape of an IME composition is nobody's.** Every script of both packages reads it through
+  `Utils.isComposingKey` (the one reading of `isComposing` and the legacy 229 key code), every listener that closes
+  something leaves it alone, and `Utils.stopComposingEscape` stops it on the document element, ahead of Blazor's
+  delegation, so no .NET handler hears it in any engine - a component never tests for it in C#.
+  `BitEscapeClaimContractTests` pins both.
+- **Nothing guesses from what the target looks like.** No selector of inputs, roles or `aria-expanded`
+  decides who owns the key; a component the claim and the open popup do not cover is fixed by claiming,
+  never by teaching a surface a new selector. A consumer's own control opts in the same way.
+
+## A disabled component runs none of the page's activation handlers
+
+`pointer-events: none` is not a disable: a screen reader activates what it announces by dispatching a
+`click`, which ignores it, and a click or key of an enabled control inside a disabled component bubbles
+up to its root. A natively disabled form control runs none of these, so a component whose `Disabled`
+makes it unavailable splats its root with **`@attributes="DisabledAwareHtmlAttributes"`**, never
+`HtmlAttributes`: while disabled it drops the page's handlers of the events an element is activated
+through (`BitComponentBase.ActivationEvents` - click, dblclick, auxclick, contextmenu, mouse/pointer
+down and up, touchstart/end, key down/up/press) and keeps the ones that only follow the pointer or the
+focus (a hover, a focus). `BitElement` splats the same dictionary in its builder. A part whose disabled
+state also follows another component's (a `BitPivotItem` of a disabled `BitPivot`) overrides
+`IsActivationDisabled`, never filters by hand.
+
+- **Its own handlers still guard `Disabled` in C#**, a group's handler checking the group's `Disabled`
+  as well as the item's (`BitButtonGroup.HandleOnItemClick`): a key press, a screen reader or a script
+  still delivers a click to a button that `DisabledInteractive` / `AllowDisabledFocus` keeps out of the
+  `disabled` attribute, and to every link.
+- **Not covered**: a component whose `Disabled` only switches one behaviour off while the content it
+  hosts stays live - `BitBadge` on its host, `BitTooltip` and `BitCallout` on their anchor,
+  `BitAccordion` / `BitAccordionList` (the panel stays live), `BitCarousel` / `BitSwiper` (the slides),
+  `BitPivot` (the open tab's panel - its tabs are covered), `BitMap` (the overlay), a pane, panel,
+  dialog (`BitMessageBox`, `BitNavPanel`) or layout - keeps `HtmlAttributes`, since what bubbles up to
+  it there is an enabled control's own event. The test is whether page content inside the root is still
+  usable while disabled: `BitCard`'s `pointer-events: none` on its whole root, `BitNavBar`'s on its header
+  and footer, the `BitDataGrid`'s disabled controls and the `BitPdfViewer`'s `inert` regions say it is
+  not, so those are covered.
+- `BitDisabledActivationContractTests` renders every component that uses it with splatted handlers,
+  disabled and enabled, and with an enabled control in its content, and every content host keeping
+  them; a new one goes in one of its lists.
+
+## A disabled component says so the same way everywhere
+
+An app's stylesheets, scripts and test locators are written against the markup a disabled component
+renders, so it is one contract for the whole library, and the ThemingPage's "Styling a disabled
+component" section is where consumers read it:
+
+- **The root carries `bit-dis`** while `Disabled` is set, from `BitComponentBase`'s root classes - the one
+  hook for "this component is disabled", whatever element the root is.
+- **A native control rendered disabled writes `disabled` and `aria-disabled="true"`**, both
+  (`button`, `input`, `select`, `textarea`, `fieldset`, `option`, `optgroup`): `:disabled` and
+  `[aria-disabled="true"]` each find it. The aria-disabled expression covers everything the disabled one
+  does, never less (`@(X ? "true" : null)` beside `disabled="@X"`) - a string, since a bool would render
+  as an empty attribute. An input the page splats `InputHtmlAttributes` onto writes
+  `aria-disabled="@GetInputAriaDisabled(X)"`, which keeps the page's own value while enabled (read
+  through `GetSplattedInputAttribute`, the one lookup of a splatted input attribute). A
+  `type="hidden"` input is left out: nothing reaches it.
+- **Both attributes read one name.** `X` is a parameter, a property or a local - negated or compared with
+  `is true` / `is false` at most - never a condition written out in the tag: a compound or a call computed
+  once into a local (`@{ var hideDisabled = Disabled || !CanHideColumn(col); }`, or a plain `var` in a code
+  block) or a private property (`NoPages`, `PreviousPagesDisabled`) is evaluated once per control, which
+  matters when it calls an app's delegate per row, and cannot drift between the two copies. aria-disabled
+  may say more than that name (`(okDisabled || _isLoading) ? "true" : null`).
+- **Markup built in C# follows the same rule**: a RenderTreeBuilder that writes `disabled` writes
+  `aria-disabled` into the same element (`BitRichTextEditor.Toolbar.cs`, the markdown task checkbox).
+- **A control kept focusable while unavailable writes `aria-disabled="true"` alone** - a loading button,
+  `AllowDisabledFocus` / `DisabledInteractive`, a link, which has no `disabled` - since the native
+  attribute would drop the focus to the body.
+- **Never `disabled` on any other element** (HTML defines it on the form controls only), and never
+  `aria-disabled` on a structural wrapper just because it is the root: the state goes on the element
+  that stands for what is unavailable. `BitElement` is that element rather than a wrapper of one, so it
+  writes `aria-disabled` on whatever tag it renders.
+- **SCSS keys a part on both** (`&:disabled, &[aria-disabled="true"]`), the second being what reaches
+  the focusable-but-unavailable controls; a whole disabled component is styled from `.bit-dis`.
+- `BitDisabledMarkupContractTests` reads every package's markup - `.razor` and RenderTreeBuilder `.cs` -
+  for the native-control rule, the one name and that aria-disabled covers it (resolving the locals and
+  the properties a condition is computed from), and renders every component of the activation contract's
+  lists, disabled and enabled, for the root class and the pairing. `BitDisabledStateBrowserTests`
+  (`Tests/Performance`, one `?part=` of `/regression/disabled-state` per component) reads the live DOM
+  of every engine for the same, through a runtime toggle of `Disabled` and back.
+
+## Right-to-left rules work without `:dir()`
+
+`:dir(rtl)` is how a stylesheet reads the direction an element is actually laid out in, inherited or not, so it
+is the selector to reach for. But it arrived late (Chromium 120, Safari 16.4), the WebViews a Blazor Hybrid app
+runs in can be older, and an engine that does not know a selector drops the whole rule - every other selector in
+its list too. An explicit `Dir="BitDir.Rtl"` renders the `bit-rtl` class (and `dir="rtl"`), and that has to keep
+working there:
+
+- **Write the two in one forgiving `:is()`**: `.bit-mdl-tlf:is(.bit-rtl, :dir(rtl))`. An engine without `:dir()` drops
+  only that alternative and keeps the class, and `:is()` (Chromium 88, Safari 14) is older than `:dir()`, so one rule
+  covers both and nothing is written twice. When the class is on an ancestor, the alternative reaches it through child
+  combinators only (`.bit-ttp-wrp:is(:dir(rtl), .bit-ttp.bit-rtl > *)`,
+  `.bit-msg-prb:is(:dir(rtl), .bit-msg.bit-rtl > .bit-msg-prg > *)`): a descendant combinator would also reach into a
+  nested instance that reads the other way, which `:dir()` gets right.
+- **A class behind a descendant combinator goes inside `@supports not selector(:dir(rtl))`**, as a rule of its own with
+  the same declarations, in the same at-rules (`.bit-crd.bit-rtl .bit-crd-skb::after`): there, where nothing better is
+  known, reaching a nested instance is the lesser loss.
+- **A `:dir()` outside `:is()` / `:where()` stands in a list of its own**, never beside a selector without it, and
+  then needs one of the counterparts above as a separate rule.
+- **Not covered**: what is inside `@supports selector(:dir(...))` (BitIcon), which only an engine knowing `:dir()` reads.
+
+## A direction Dir does not name is read, never assumed
+
+`Dir` left unset inherits the page's direction and `Dir="BitDir.Auto"` takes its content's. The stylesheets follow both
+through `:dir()`, so nothing computed from the direction reads `Dir == BitDir.Rtl` and takes everything else for left to
+right - the layout and the behaviour would disagree.
+
+- **A script resolves it itself.** It is handed `ExplicitRtl` (`true` / `false` for a named direction, `null` for unset
+  or Auto) and reads `Utils.isRtl(el)` when it needs it, never once when it registers (`Callouts.toggle`,
+  `Swipes.setup`, `Pivot.setup`) and never on a scroll or every frame where a direction-free measure does (an offset
+  taken as `Math.abs(scrollLeft)`). A position a script hands .NET is measured in the direction already
+  (BitColorPicker's pointer, from the inline-start edge).
+- **.NET asks at the moment it acts**: `await IsRtlAsync(_js)` (`Utils.isRtl` off the root, or the element given)
+  answers a named direction without a round trip; a key handler asks through `await IsRtlArrowAsync(_js, e.Key)`, which
+  answers false without asking for every key but the horizontal arrows, and only once nothing else has turned the key
+  away. An arrow the user moved on from while that round trip was out (a Tab, a click took the focus elsewhere) is
+  refused by the script and cancels the handler with an `OperationCanceledException`, which Blazor drops, so the
+  handler never steals the focus back; a handler that still owes the key a consumer callback catches it around the part
+  the key drives (BitOtpInput), and a key handler never asks through `IsRtlAsync`. A component that knows more than `Dir` says (a culture that writes right to left) overrides `ExplicitRtl` with
+  `BitCssClasses.ExplicitRtl(Dir, _culture)`, and both helpers follow it. Two reads that do not depend on each other are
+  sent together (BitCarousel's measurement and direction), and one a later handler of the same gesture depends on is
+  kept as a task it awaits (BitNavPanel's swipe), since a JS-invoked .NET handler can run before an earlier one's round
+  trip has returned.
+- **What is rendered from the direction** reads a value resolved along with a measurement the component takes anyway
+  (BitCarousel's `_IsRtl`, BitFullCalendar's `SetAutoDirection`, read once per change of its parameters rather than
+  after every render), or is left to the stylesheet (BitSwiper's chevrons through BitIcon's `bit-ico-frt`, BitPersona's
+  initials).
+- **A right-to-left rule reads `:dir(rtl)`**, and the class or `[dir]` an explicit Dir renders only as its fallback
+  (previous section). An input that is left to right by definition (`type="tel"` with no `dir` of its own) is never
+  `:dir(rtl)`, so its rule reads the direction off its parent (`.bit-phi-fgp:dir(rtl) > .bit-phi-inp`).
+  `BitComponentDirFallbackTests.EveryRtlRuleAlsoFollowsADirectionDirDoesNotName` fails on a rule that reads the class alone.
+- The bUnit tests stand the browser's answer in with `Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", ...)`;
+  `BitDirResolvedBrowserTests` (`/regression/dir-resolved`) reads the live layout and drives the keys, the pointer and
+  the placement in a box that reads each way.
+
+`BitComponentDirFallbackTests` checks this for every stylesheet of every package, mixins included (a mixin's
+counterpart is looked for in the mixin itself). A rule whose explicit `Dir` is handled some other way (the root class
+setting a variable the part reads, or the C# doing the turn) goes in its `CoveredOtherwise` list.
+
+## A number in markup reads the same in every culture
+
+Blazor writes an attribute value that is not a string with its `ToString()` in the current culture, and an interpolated
+string formats its numbers the same way. A negative number comes out as `‎−1` under fa-IR and `؜-1` under
+ar-SA, a decimal as `1,5` under de-DE - none of which a browser reads as a number. A roving `tabindex` of -1 is then
+ignored and every day of a calendar lands in the tab order; `margin:1,5px` is dropped.
+
+- **An attribute bound to a number that can be negative is bound to a string**: `tabindex="@(focused ? "0" : "-1")"`,
+  never `? 0 : -1`; a computed one (`aria-setsize` of -1 while the size is not known) through
+  `.ToString(CultureInfo.InvariantCulture)`. A number that is never negative is safe as it is.
+- **A number written into a style, a CSS variable, an SVG attribute, an id or a selector goes through
+  `FormattableString.Invariant($"...")`** (or `ToString(CultureInfo.InvariantCulture)`), whatever its type.
+- **Text for a reader stays in the culture**: an `aria-label`, a `title`, the text an input shows, the value text of a
+  slider are formatted for the person reading them.
+- The unit suite runs in the machine's culture (invariant on CI), so `BitCultureInvariantMarkupContractTests` renders the
+  components that write such numbers under fa-IR and ar-SA, and fails on a negative number literal bound to an attribute
+  in any `.razor` of the packages. A test's expected markup is built invariantly too (`FormattableString.Invariant`),
+  or it fails on the machine of everyone whose culture writes numbers differently.
 
 ## Demo pages
 
@@ -11,6 +376,14 @@ hosting one or more `DemoExample` sections. A multi-API component splits them ac
 tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razor`, `.razor.cs` and
 `.razor.samples.cs`.
 
+- **`SecondaryNames` is the nav item's `Description`, exactly.** The `Description` of the component's item
+  in `Shared/MainLayout.razor.NavItems.cs` is the one list of what a component is also called - the
+  catalog, the search box and the MCP server read it from there - so the page's `DemoPage` passes the same
+  names, in the same order and spelling, split on the commas:
+  `Description = "Radio, RadioButton"` is `SecondaryNames="@(["Radio", "RadioButton"])"`. A nav item with
+  no `Description` means a page with no `SecondaryNames`. A new alias goes into the nav item first and is
+  then copied to the page, never added to the page alone; the words that only describe a component
+  (`Data`) stay in the nav.
 - **Order.** Component-specific sections first, starting with `Basic`; then the five near-identical
   look-and-feel ones, last and in this order: `Color`, `External Icons`, `Size`, `Style & Class`,
   `RTL`. A new section goes after the last component-specific one, before `Color`.
@@ -24,6 +397,27 @@ tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razo
   introduced.
 - **A multi-API component's tabs stay aligned**: same sections, same order, same titles, same data
   (same labels, same number of button groups per section) - only the API differs.
+- **A library-wide enum's table is written once.** `BitColor`, `BitSize`, `BitVariant` and the other
+  types many pages list come from `Models/DemoSharedEnums` (`DemoSharedEnums.BitColor()` in the page's
+  `componentSubEnums`), with one anchor id per type. A page passes `description:` for its own line above
+  the table and `.Only(...)` for the members it supports (BitPagination's eight general colors; a name
+  that is not a member throws, as does naming none), and keeps a table of its own only when the members
+  mean something different there (BitLoading's pixel sizes) - still under the shared table's anchor
+  id, and a type of its own never under a shared one (BitPersonaSize is `persona-size-enum`). A
+  default that holds on one page only goes in that page's parameter description, not in the table. A
+  shared table writes nothing but its anchor id: the members and values are read off the enum in
+  declaration order, and the prose is the enum's own XML documentation, which
+  `MSBuild/DemoSharedEnumDocs.targets` writes into a generated half of `DemoSharedEnums` before every
+  compile (a WebAssembly page has none to read) - so a table's wording is changed in the enum's doc
+  comments, and a new shared table names its enum in that file as well as adding its factory. A missing
+  summary only empties a cell at runtime; `DemoSharedEnumsTests` is what fails on it, and pins every
+  page's anchor ids - one per type, shared or not.
+- **A parameter typed with a library-wide enum links the shared table and names what it honours.**
+  `BitPlacement`, `BitPosition`, `BitShape`, `BitLineStyle` and `BitSelectionMode` are shared tables
+  like the rest; a page adds the one it needs to its sub-enum list and points its row at the table's
+  anchor id (`Href="#placement-enum"`). Which of the values a particular parameter honours is the row's
+  own `Description` - it is what the site renders and what the MCP server hands an agent, and a
+  component honouring four of nine values says nothing without it.
 - **The samples match what is rendered.** `RazorCode` / `CsharpCode` are what a reader copies out, so
   they carry the markup that section actually renders, including any parameter added or renamed.
 - **A feature that is not one file gets one tab per file.** `RazorCode` + `CsharpCode` is one file -
@@ -51,7 +445,7 @@ tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razo
 Every page is one column of anchored sections with the "on this page" rail beside it; only what the
 sections hold differs.
 
-- **Prose pages** (Overview, Getting started, Theming, Iconography, Terms): `DocsArticle` +
+- **Prose pages** (Overview, Getting started, Theming, Iconography, Trimming, Terms): `DocsArticle` +
   `DocSection` - eyebrow, title, badges, lead, sections separated by air and a hairline, then
   `DocFeedback`.
 - **Component pages** (~110): `DemoPage`, the same shell by hand (`.doc-shell` / `.doc-main` /
@@ -87,7 +481,10 @@ Three rules that are easy to get wrong:
 - **Scoped CSS needs an anchor.** `::deep` compiles to `[b-scope] .foo`, and the scope attribute lands
   only on plain HTML elements written in that `.razor`. A page whose root markup is all components
   (`<PageOutlet>`, `<DocsArticle>`) has nowhere for it to land, so it wraps the part it styles in a
-  plain element of its own (see `.icon-browser`, `.theming-doc`).
+  plain element of its own (see `.icon-browser`, `.theming-doc`). The same holds inside a `DemoExample`: a
+  class styled through an unanchored `::deep` and handed only to components (`Class`, `Classes`, a template)
+  matches nothing, so the section's markup sits in a plain `<div>`. `DemoScopedCssAnchorTests` fails on one
+  that does not, for every `.razor.scss` of the demo client at once.
 - **Prose rules stop at the section's own children.** `.doc-prose` sits on the prose pages only, but
   the same care applies wherever a wrapper can contain a live preview: a descendant selector for `ul`
   would re-indent a BitNav's list, one for `code` re-skin the Text demo's output. Every rule in that
@@ -123,7 +520,7 @@ all it takes for it to appear in the catalog, the search index and the completio
   cannot read a schema).
 - **The server's `instructions`** (`BlazorUIMcpInstructions`) are all it says before being asked
   anything, so they carry only what a per-tool description cannot: which tool to call first, and the
-  six rules that decide whether markup that compiles also looks right. Nothing else on the server
+  seven rules that decide whether markup that compiles also looks right. Nothing else on the server
   restates them - the prompts point at them - and their counts are interpolated from the catalogs,
   never typed.
 - **Redundancy is designed out of the answers too.** A component's own types are documented in full;
@@ -183,7 +580,10 @@ the whole library from one `:root[bit-theme="..."]` block.
   pagination, ...) with its sub-families `$shp-radius-button` (buttons, dialog actions),
   `$shp-radius-chip` (tags, in-field chips) and `$shp-radius-selection` (the checkbox box);
   `$shp-radius-surface` (cards, accordions, messages); `$shp-radius-popup` (callouts, menus, tooltips,
-  snackbars); `$shp-radius-dialog` (dialogs, modals). Sub-elements use the scale
+  snackbars); `$shp-radius-dialog` (dialogs, modals); `$shp-radius-sheet` (the inner corners of panels,
+  square unless a preset rounds them). Two parts design systems shape apart have a primitive of their own:
+  the tab-strip selection indicator `$shp-radius-tab-indicator` / `-base` and the linear progress track
+  and bar `$shp-radius-progress` (square under Fluent, rounded under the Extras presets). Sub-elements use the scale
   `$shp-radius-none/xs/sm/md/lg/xl/2xl/full`. Heavier strokes (underline focus, selection indicators,
   thumb rings) use `$shp-border-width-thick`; inline spinners `$siz-spinner-stroke`.
 - **Size**: control heights per size class `$siz-ctrl-sm/md/lg` (also 32px icon-button squares),
@@ -192,17 +592,45 @@ the whole library from one `:root[bit-theme="..."]` block.
   `$siz-sel-sm/md/lg`, popup list row heights `$siz-item-sm/md/lg`, pivot headers `$siz-tab` with
   selection-indicator stroke `$siz-tab-indicator`, separator thickness `$siz-divider`, linear progress
   tracks `$siz-track-sm/md/lg`, switch track and knob `$siz-switch-w/h/thumb-sm/md/lg`, slider handle
-  `$siz-slider-thumb-sm/md/lg`, scrolling popup lists `$siz-popup-max-height`.
-- **Spacing & layout**: dialogs and message boxes inset their content with `$spa-dialog`; their action
-  footers lay out via `$layout-dialog-actions-direction` / `$layout-dialog-actions-justify` /
-  `$layout-dialog-actions-align` (never a literal `row` / `flex-end` / `center` in a dialog footer -
-  Cupertino stacks its actions full width).
+  `$siz-slider-thumb-sm/md/lg`, badge height and dot `$siz-badge-sm/md/lg` / `$siz-badge-dot-sm/md/lg`,
+  tag (chip) height inside its rule `$siz-chip-sm/md/lg`, scrolling popup lists `$siz-popup-max-height`.
+- **Spacing & layout**: dialogs and message boxes inset their content with `$spa-dialog`, cards with
+  `$spa-card-sm/md/lg`; dialog action footers lay out via `$layout-dialog-actions-direction` /
+  `$layout-dialog-actions-justify` / `$layout-dialog-actions-align` (never a literal `row` /
+  `flex-end` / `center` in a dialog footer - Cupertino stacks its actions full width).
 - **Elevation**: `$box-shadow-card/popup/dialog/sheet/tooltip/snackbar/appbar-top/appbar-bottom` per
-  surface family, never `$box-shadow-callout` directly.
+  surface family (plus `$box-shadow-card-hover`, the lift of a card under the pointer), never
+  `$box-shadow-callout` directly.
 - **Motion**: `$mot-easing` for state transitions, `$mot-easing-decelerate` / `-accelerate` for popup
-  entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe.
+  entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe. A duration
+  that must survive `prefers-reduced-motion` (a color flash rather than a movement, BitModal's refusal ring)
+  reads `$mot-duration-full` / `-short-full` / `-long-full`, never `--bit-mot-*-full` itself
+  (`BitMotionTokenTests`). Whether motion is reduced is inherited state, the `--bit-mot-*-reduced` tokens: declared on `:root`
+  under the query, withdrawn (`initial`) by `.bit-fam`, and read by every rule that substitutes the plain
+  aliases again (`:root`, a scoped preset, a motion overlay, `.bit-fam`), so none of them decides it anew.
+  **Reduced motion is the tokens' job alone, and a duration the page sets follows it too.** The
+  `--bit-mot-duration*` tokens collapse under `prefers-reduced-motion` and `.bit-fam` (ForceAnimation)
+  or an app withdrawing the `-reduced` tokens at `:root` restores them; a duration the page sets on a
+  component - a public `--bit-<Component>-*-duration` variable, a duration parameter written inline as a
+  private token - is read through `mot-scaled-duration(...)` (a delay through `mot-scaled-delay(...)`) from
+  `Styles/functions.scss`, which scales it by `--bit-mot-duration-factor` (1, 0 under the query, restored
+  with the rest), so it collapses and comes back with them. A component therefore writes **no
+  `prefers-reduced-motion` query and no `.bit-fam` restore for a duration** - the per-component pair missed
+  an app restoring the tokens at `:root` and had to be kept in step by hand. A JS-driven duration reads the
+  same factor off its root (`BitSwiper.effectiveDuration`). What a duration cannot express stays a query of
+  its own, guarded with `:not(.bit-fam):not(.bit-fam *)`: a placeholder loop that stops rather than slows
+  (BitShimmer, BitTextShimmer, a skeleton), a `scroll-behavior`. `BitReducedMotionDurationContractTests`
+  pins it for every stylesheet at once.
 - **Opacity**: a disabled element that keeps its own colors dims with `$opa-dis`; text-bearing
   controls use the `$clr-*-dis` color tokens instead.
+- **Density**: a size or inset measured in spacing units is never computed in a theme scope - one
+  computed on `:root` is inherited as a length, so a density set lower down would never reach it. A
+  preset declares its unitless `--bit-<token>-steps` and resets `--bit-<token>: initial`; the
+  `theme-variables.scss` alias reads `var(--bit-<token>, calc(unit * density * var(--bit-<token>-steps)))`
+  where a component uses it, and a value set for the token itself wins. A C# inline style that needs one
+  reads it through a private property the component's stylesheet resolves from the alias (BitDialog's
+  `--bit-dlg-dmw`), never as a bare `var(--bit-<token>)`. `BitThemeDensityAwareTokensTests` pins it
+  against the compiled bundles.
 
 The packaged Fluent 2, Material and Cupertino presets ship with **Bit.BlazorUI.Extras**
 (`Bit.BlazorUI.Extras/Styles/Fluent2`, `.../Styles/Material`, `.../Styles/Cupertino`) as override-only
@@ -236,22 +664,224 @@ that reason. Inside these projects either form compiles, because `Bit.Build.prop
 `LangVersion=preview` (and the test csproj pins `14.0`). Their `colors.*.scss` palettes are GENERATED by the seed-derivation pipeline - regenerate with
 the recipe each file's header documents, never hand-edit - while `tokens.*.scss` holds the
 hand-written shape/size/typography/motion values (Fluent 2 also splits its per-scheme ambient/key
-elevation into `shadows.fluent2-*.scss`). The theme tests read every packaged preset out of one
-`theme-styles` tree, which the test csproj links both projects' stylesheets into.
+elevation into `shadows.fluent2-*.scss`). The theme tests read every packaged preset straight out of
+the source tree beside the core stylesheets: the tests' `SourceFiles` (`ReadThemeStylesheet`,
+`EnumerateThemeStylesheets`) addresses the Extras preset folders as siblings of `Fluent`.
 
 A preset declares **nothing but `--bit-*` tokens** and never selects a component class. Needing to
 restyle `.bit-<cmp>-*` from a preset is the signal that a design-system decision is missing from the
 global token tier: add the token, let the component read it, and keep the preset a pure
 `:root[bit-theme="..."]` block.
 
+**A family alias a theme declares is declared again for an inline overlay, from the same mixin.** A
+`BitThemeProvider` / `ApplyBitThemeAsync` writes only the primitives it was given, plus a
+`bit-theme-overlay` attribute naming the alias groups those feed (`BitThemeMapper.FamilyAliasOverlayGroups`:
+`radius`, `radius-control`, `shadow`, `tooltip`, `foreground`, the eight roles, `typography` - the dialog
+title and field caption, built from any step of the type ramps - and `motion` - the plain `--bit-mot-*`
+aliases of the `-full` sources `BitTheme.Motion` writes, built alike by every theme and so re-declared by one
+zero-specificity rule of `motion.fluent.scss`, reading whether motion is reduced off the inherited
+`--bit-mot-*-reduced` tokens that `.bit-fam` withdraws); every theme stylesheet
+re-declares its OWN aliases of each group on that element through the `theme-overlay($group, $names)` mixin
+of `Styles/theme-overlay.scss`, so the aliases follow the overlay as the active theme builds them - never the
+core default under a preset that decided otherwise. So a group's declarations live in one mixin per theme
+(`material-shadow-aliases`, `fluent-dark-shadow-aliases`, ...), included by the theme's main block and by its
+overlay rule; a family alias added to a theme block without the overlay rule fails
+`BitThemeFamilyAliasReSubstitutionTests` against the compiled bundles. A group's mixin carries every alias
+any theme re-declares for that group, literals included, and the core one in `family-tokens.scss` carries
+them all: the bare-`:root` document theme's overlay rule also matches inside a scoped region of another theme,
+where only the core rule's scoped twins outrank it, so an alias the core rule leaves out carries the document
+theme's recipe into the region (the same test fails on one). Every NAMED selector of the mixin - the document's
+`:root[bit-theme="x"]` one and the scoped twins - also steps aside for any region of another theme nearer to the
+overlay (`theme-overlay-nearest`, a `:where(:not(...))` of zero specificity), so nested regions hand an overlay
+the NEAREST region's recipe rather than the later bundle's or the heavier selector's. A
+new input a theme builds an alias from is a new entry in the group table - in C# and in its twin
+`FAMILY_ALIAS_OVERLAY_GROUPS` in `BitTheme.ts`, from which the client's `applyTheme` derives the attribute
+itself (the tests pin the two to each other, and every token an overlay rule reads to the inputs of its
+groups) - and a new group is a row in that table, a rule in `family-tokens.scss` and a rule per theme that
+decides it.
+
+A component's own `--bit-<Component>-*` properties (the public surface its demo page documents as
+`componentCssVariables`) are read off its root **with a fallback and never declared**, so they
+inherit. A component whose popup is rendered outside that root - a callout, a menu, a panel - renders
+it as a SIBLING of the root, and the callout JS reparents it to the body while it is open. So
+`Callouts.moveCalloutToBody` never moves the popup on its own: it moves it into a chain of
+`display: contents` copies of every ancestor it is leaving (same tag for plain structural elements,
+the consumer's classes plus `bit-fam` and `bit-css-*`, inline style, CSS-isolation scopes, `bit-*` and
+theme-scoping `data-*theme` / `-scheme` / `-mode` attributes, `dir`, `lang`; kept in step by a
+`MutationObserver` while it is open), plus one link for the root, named by the `rootId` argument of
+`BitCalloutToggleCallout`, that carries only what the consumer meant for the popup too: the custom
+properties of its inline style, `bit-fam`, `bit-theme`, the theme-scoping `data-*` attributes,
+CSS-isolation scopes, `dir`, `lang`. That link is built even when the popup is rendered straight into
+the body. A variable set on `:root`, on an ancestor's `Style` or class, or on the `Style` /
+`Styles.Root` of one instance - and a `BitThemeProvider` or `[bit-theme]` scope around it - therefore
+reaches the popup the way it reaches the root, and still follows the theme while it is open. A style
+of a passing state of the root (`Styles.Focused`, `Styles.Toggled`) does not: while it is applied the
+root renders the style it has without it as `data-bit-popup-style` (`GetPopupStyle`), and a link copies
+that instead, so the popup never flips as the focus moves between the field and the popup. What
+identifies an element or makes it act is never copied (id, role, aria-*, other `data-*`, the state
+`:hover` / `:focus-within` match), so a variable set through such a selector does not reach the popup.
+Nor are the library's component classes, which its scripts find elements by with `closest()` (so a
+popup that needs its own color and size classes, like the TimePicker's, declares them itself), nor any
+class of the root: the root is not an ancestor of the popup, and a link carrying its `Class` would let
+the consumer's rules for the field's subtree match the popup (use `Classes.Callout`). Another callout's
+relocated popup, when an inner one is opened from it, is copied for its classes alone - never its inline
+style, which holds that callout's own placement and the sizing its parameters write (a DropMenu's `Width`
+as `--bit-DropMenu-callout-width`), and which an inner popup of the same kind would read as its own; a
+component that writes private sizing variables onto its popup still resets them in that popup's own rule
+(`.bit-clo-cal`), since a closed inner popup sits under the outer one in the page too. The flip side of
+copying an ancestor's classes is deliberate, as the same classes are what carry a class-declared
+variable, an inherited text style or a `::deep` rule into the popup: a page's descendant selectors
+(`.card div`) match the popup again, as they would in place, so `general.scss` pins only the relocated
+parts' `position: fixed`; and an app's `closest('.its-class')` from inside the popup finds the inert copy
+rather than nothing. A responsive panel stays in its chain until its exit transition has run. Such a
+component resolves its variables in one mixin that both the root and the popup include, and copies
+nothing in C#: a popup's open call passes `rootId: _Id`, except one opened from inside another popup,
+which inherits through that one's chain, and the TimePicker's, which is rendered INSIDE its root and so
+inherits it as an ancestor. The exceptions are parts that sit beside the root but are never relocated -
+the calendar of a `Standalone` date picker or date range picker, the dial of a `Standalone` circular time
+picker - which get no chain, so they still have the public declarations of `Style` / `Styles.Root`
+copied onto them (`BitPublicCssVariables`, `GetStandaloneStyles` / `GetCalloutStyle`).
+
+**A public variable set on an instance reaches every instance nested inside it, and that is the rule.**
+The public variables are the cascading tier: `:root`, a `[bit-theme]` scope, an ancestor and one
+instance's `Style` all set them the same way, so a Card in a Card, an Element in an Element, a Text in a
+Text inherits the outer one's value like any inherited property. Neither way of stopping that is used:
+re-declaring them at the component boundary (`.bit-x .bit-x { --bit-X-foo: initial; }`) or registering
+them with `@property { inherits: false; }` cuts off `:root` and every ancestor along with the outer
+instance, and so global theming with it - `inherits: false` is for private variables only (BitIcon's
+`--bit-ico-*`, `--bit-focus-ring-own`, `--bit-stk-zin`). What is meant for one instance alone goes through
+the per-instance tier: a parameter (published as a private variable the root resets, below), which never
+inherits, or the real property on `Style` / `Styles.X` / `Classes.X`, which stays on that one instance only
+when the property itself does not inherit - `Style="opacity: 1"` keeps one disabled BitElement undimmed
+without reaching a disabled one inside it, where `--bit-Element-disabled-opacity: 1` would reach both, while
+an inherited property (`color`, `font-family`, `line-height`) set there reaches the nested instances that do
+not set it themselves, exactly as the variable would. The docs say so where it matters: a stylesheet header
+or demo page says a value on an instance's `Style` restyles "that one alone" only for a component that
+cannot contain another of its kind; a nestable one says the value also reaches the instances inside it;
+and a `componentCssVariables` row whose typical value means "for me only" (a `disabled-opacity` of 1, a
+Grid's column count) names the per-instance way.
+
+**A parameter written on the component wins over the public variable that restyles what it sets** -
+the variables restyle the default, never a choice, so `:root { --bit-Badge-background: gray }` leaves
+`<BitBadge Color="BitColor.Error">` red. Three things make that hold:
+
+- **An unset parameter publishes nothing.** The `_ =>` arm of a `Color` / `Size` / `Shape` switch is
+  `string.Empty`, and a value parameter (`Height`, `Gap`) writes no inline property while it is null: a
+  class that always carried the default would be indistinguishable from one that was asked for. A value
+  from a `BitParams` ancestor counts as set.
+- **The root rule resets what those classes publish**, so an instance nested in another one's content
+  never inherits the outer one's choice; the classes come later in the file at the same weight and still
+  win on the root that carries them. The reset is never written by hand: one list per component,
+  `$bdg-private-properties: clr, clr-txt, ...;`, declared above the rule, drives it with
+  `@each $name in $bdg-private-properties { --bit-bdg-#{$name}: initial; }`, so a new private variable is
+  one name added to the list. A component writing the same variables on a sibling of its root (a callout)
+  keeps a second list for it (`$srb-cal-private-properties`).
+- **Every read ranks private, then public, then default**:
+  `var(--bit-bdg-clr, var(--bit-Badge-background, #{$clr-pri}))`, never
+  `var(--bit-Badge-background, var(--bit-bdg-clr))` - the last fallback being the token the unset
+  parameter stands for (the primary role, the medium size). A state the component is in (disabled, a
+  dot) is read before all three, as before.
+
+What a parameter does not paint stays the variable's: the transparent background of an Outline badge is
+the Variant's recipe rather than the Color's, so `--bit-Badge-background` still fills it under an
+explicit `Color`. The demo page's `componentCssVariables` row says which parameter wins over each
+variable ("The Color parameter wins over it."), and the stylesheet test pins the order - no
+`var(--bit-<Component>-..., var(--bit-<prefix>-` left where the private one is a parameter's, plus the
+resets on the root. `BitBadge` and `BitShimmer` are the reference implementations. Every private property a
+role or size class publishes, or the component writes into an inline style, has to be declared again by the
+component's own rules - in its list, or by the root rule at the default the unset parameter stands for;
+`BitComponentPrivatePropertyResetTests` fails on one that is not, on a list no `@each` resets, and on a listed
+name nothing uses any more, for every stylesheet at once - a component that never had a list included. What a
+class publishes counts as reset only by the rules of the element it lands on (a callout's list resets nothing
+on the root), and a name the C# puts together (`$"--bit-stc-ai{suffix}"`) stands for every name of the
+stylesheet it can spell, so a helper that writes one variable is handed its whole name
+(`GetVar("--bit-grd-span", ...)`). `SourceFiles.GetPrivatePropertyLists` is the one reader of the lists, and a
+strict one: two names with no comma between them fail there, since Sass compiles them to one name holding a
+space, which the browser drops. A variant rule giving one slot the value `initial`
+(`.bit-drm-otl { --bit-drm-rst-bg: initial; }`) is a value, not a reset, and stays written out.
+
+The lists reset with `initial`, which every private variable gets. Registering one as
+`@property { syntax: "*"; inherits: false; }` (no `initial-value`, so the guaranteed-invalid value sends every
+`var()` of it to its fallback) goes further and keeps an ancestor's value away from the root altogether - but a
+variable that does not inherit cannot be read by the parts inside the root that sets it. So the line is drawn per
+variable, not per component:
+
+- **Read only by the root itself** (its shadow, its border width): registered as well as reset. The component
+  keeps a second list of those names - `$crd-root-only-properties` beside `$crd-private-properties` - and
+  registers it with `@each $name in $... { @property --bit-xxx-#{$name} { ... } }`; every name stays in the
+  private list too, whose `initial` reset is the fallback for a browser without `@property`. `BitIcon`
+  registers its whole list, since nothing inside an icon reads its variables.
+- **Read by a descendant** (a card's title size, its image height, its inset; a badge's offsets, which its
+  positioned indicator reads off the root): never registered, only reset - registering one would cut its own
+  parts off from it.
+
+A name moves to the root-only list only once no selector reading it matches anything but the root.
+
+**A variant reads its own tier of the public variables ahead of the shared one.** Filled, outlined and text
+looks are styled apart by nearly every design system, so a variable all three read cannot re-skin one of them
+from `:root` without the others: a neutral hairline for outline buttons would ring every filled one too. So every
+public variable a component reads in the rules of one variant has a twin for it - `--bit-<Component>-fill-X`,
+`-outline-X`, `-text-X`, whatever the variant class is called (`bit-drm-tex`, `bit-crd-vot`) - read right ahead
+of it there and falling back to it at once:
+`var(--bit-btn-clr, var(--bit-Button-outline-border-color, var(--bit-Button-border-color, <default>)))`. The
+twin sits between the private variable a parameter publishes and the shared one, so an explicit `Color` still
+wins over both; a chain falling back from one public variable to another (hover to rest) puts the twin ahead of
+each. A part with a variant axis of its own names its twins the same way (`--bit-TagsInput-outline-tag-background`).
+A rule of two variants, or of none (the root, a mixin body), never reads a shared variable that has twins - it
+is split per variant, or the literal `var()` chain is passed into the mixin from each variant's rule, since a
+name put together with Sass interpolation is invisible to the contract tests. A variable whose meaning is the
+same in every variant - a role input the variants all derive from (`--bit-FileInput-color`) - is no variant's
+and stays shared; one that a variant rule reads all the same (`--bit-Card-border-width`, the one rule every card
+draws whoever asks for it) is named in the test's `SharedByEveryLook`, never hidden from it behind a Sass variable.
+A component whose unset `Variant` renders no class (`BitDropMenu`) owns a fourth look in its root rules: each
+variant hands its twins in through a private slot the root reads ahead of the shared variable
+(`var(--bit-drm-rst-brd-p, var(--bit-DropMenu-border-color, ...))`), and the test's `RootOwnsTheUnsetLook` names it. `BitButton` is the reference; `BitComponentVariantVariablesContractTests` fails on a variant
+read without its twin, a twin not falling back to its shared variable, and a shared rule reading one with
+twins, for every stylesheet at once (the variant classes are read off the `BitVariant` arms of the C#).
+The tier must not take away what the shared variable could do before it:
+
+- **Resolve a twin on the element that paints it, never on the root.** A private slot a variant computes
+  (`--bit-chg-card-bg`, `--bit-otp-bg`, `--bit-mnb-hov-bg`) is fixed where it is declared, so one declared on the
+  root is out of reach of a variable set on a part's own style (an item's `Style`, `Styles.Input`,
+  `Styles.ChevronDownButton`). Declare it on the part (`.bit-otp-otl .bit-otp-inp`), or on the root and each part
+  that reads it (`.bit-mnb-fil, .bit-mnb-fil > .bit-mnb-opb, ...`).
+- **A variant qualifier adds no weight to a part's rule.** A single class an app hands a part through `Class` /
+  `Classes` outweighed the shared rule and must keep doing so: qualify with `:where(.bit-x-fil)`, never a second
+  class. Nor does it go through the markup with a child combinator - an app may wrap a part (an option in a tooltip's
+  anchor); a part that needs its variant renders a class of its own for it (BitButtonGroup's `bit-btg-ifl`).
+- **A rule matching parts of more than one variant reads no tier.** BitTimeline's Text plate also matches an item
+  that overrides its variant, so it reads what the item's own variant resolved (`--bit-tln-dot-ico-clr-bg`).
+- **FixedColor fixes the variant's on-color**: a Fill button's resting foreground, an Outline or Text one's hover
+  foreground - never `--bit-X-outline-color` / `-text-color`, which is the role's color and vanishes on the hover fill.
+
+`BitVariantVariablesBrowserTests` (`Tests/Performance`, `/regression/variant-variables`) checks every twin of these
+components in every engine - its own variant alone, the shared one through it, the twin winning - and each rule above.
+
+**A state moves a variable, never the paint.** A `:hover` / `:active` / `:focus*` rule outranks the single class
+an app hands a part through `Class` / `Classes`, so one that set `color`, `background`, `border-color`, `fill`
+or `stroke` itself would take the part back exactly while the user is pointing at it. The state rule keeps its
+selector and assigns a private variable instead (`--bit-acb-sbg: <the hover value>`); the part's own base rule
+resets it (`initial`, so a nested instance never inherits an outer one's hover) and the rule at rest paints from
+it with the rest value as the fallback (`background-color: var(--bit-acb-sbg, <rest value>)`). Both sit on the
+element that is painted, never an ancestor. Still painting directly, by design: a disabled state (read before
+anything else), `@media (forced-colors: active)` blocks, the browser's `::-webkit-scrollbar` parts, and the
+controls BitMap's providers draw (their own stylesheets, loaded later, paint those states at the same weight).
+`BitSplitter` is the reference; `BitComponentStatePaintTests` fails on a state that paints, for every stylesheet
+at once.
+
+A component that renders a core one and wants a default other than the core one's (BitMessageBox's neutral
+buttons) never passes it as the parameter, which would make it a choice that outranks an app's variables. It
+leaves the parameter unset and adds the core component's host-default class instead (`bit-btn-dft-<role>`),
+read after the public variables as the last fallback.
+
 Adding a preset means touching all of: its `Styles/<Name>/` folder and bundle entry point,
 `Bit.BlazorUI.Extras/compilerconfig.json` and the csproj `BuildCss` target, `BitExtraThemePresets`,
 `BitExtraThemeName` and the two extension containers (`BitThemePresetsExtensions` /
 `BitThemeNameExtensions`),
-`BitExtraThemeRegistration` (the surfaces), `BitThemeSwitcher.DefaultDesignSystems`, the test csproj's `theme-styles` link
+`BitExtraThemeRegistration` (the surfaces), `BitThemeSwitcher.DefaultDesignSystems`, the tests' `SourceFiles.ExtrasPresetFolders`
 and the palette/derivation test `DataRow`s, the demo host pages
 (`Demo/Bit.BlazorUI.Demo.Server/Components/App.razor`, the MAUI `index.html`), `ScssCompilerService`,
-and the ThemingPage docs.
+its `theme-overlay` rules for every family alias group it declares, and the ThemingPage docs.
 
 Adding a global token means touching all of: `theme-variables.scss` (the `$` alias), a
 `Styles/Fluent/*.scss` default (or `family-tokens.scss` for an alias), the `BitTheme` model class,

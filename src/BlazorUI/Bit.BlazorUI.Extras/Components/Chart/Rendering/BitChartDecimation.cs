@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Largest-Triangle-Three-Buckets downsampling for line series.</summary>
 public static class BitChartDecimation

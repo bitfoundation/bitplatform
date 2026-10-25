@@ -12,9 +12,10 @@ internal static class BitSwipeTrapJsRuntimeExtensions
                                                      BitSwipeOrientation orientationLock,
                                                      bool touchOnly,
                                                      string? skipSelector,
+                                                     bool keyboardTrigger,
                                                      DotNetObjectReference<BitSwipeTrap>? dotnetObjectReference)
     {
-        return js.InvokeVoid("BitBlazorUI.SwipeTrap.setup", id, element, trigger, triggerVelocity, threshold, throttle, orientationLock, touchOnly, skipSelector, dotnetObjectReference);
+        return js.InvokeVoid("BitBlazorUI.SwipeTrap.setup", id, element, trigger, triggerVelocity, threshold, throttle, orientationLock, touchOnly, skipSelector, keyboardTrigger, dotnetObjectReference);
     }
 
     internal static ValueTask BitSwipeTrapDispose(this IJSRuntime jsRuntime, string id)

@@ -1,0 +1,44 @@
+﻿@namespace Bit.Bink
+@using Microsoft.AspNetCore.Components.Web
+@inherits Microsoft.AspNetCore.Components.ComponentBase
+
+<div @ref="_container"
+     id="@ElementId"
+     class="@ContainerClass"
+     style="@ContainerStyle"
+     role="application"
+     aria-roledescription="drawing canvas"
+     aria-label="@AriaLabel"
+     aria-describedby="@($"{ElementId}-desc")"
+     aria-disabled="@(ReadOnly ? "true" : null)"
+     tabindex="@(Focusable ? 0 : -1)"
+     @attributes="AdditionalAttributes">
+
+    <canvas data-bink-layer="document" class="bit-bink-layer bit-bink-document" aria-hidden="true"></canvas>
+    <canvas data-bink-layer="overlay" class="bit-bink-layer bit-bink-overlay" aria-hidden="true"></canvas>
+    <div data-bink-layer="input" class="bit-bink-input" aria-hidden="true"></div>
+
+    @if (_textEditor is { } editor)
+    {
+        @* Text editing needs a real input: a canvas cannot offer selection, an IME, autocorrect or a screen
+           reader. The textarea sits exactly over the element being edited. *@
+        @* The key matters: without it Blazor reuses the same textarea for the next element, and the browser's
+           dirty-value flag keeps showing the text typed into the previous one. *@
+        <textarea @key="editor.ElementId"
+                  class="bit-bink-text-editor"
+                  maxlength="@BinkTextElement.MaxLength"
+                  style="@editor.Style"
+                  aria-label="Edit text"
+                  @ref="_textEditorElement">@editor.Text</textarea>
+    }
+
+    @if (ChildContent is not null)
+    {
+        <div class="bit-bink-content">@ChildContent</div>
+    }
+
+    @* Screen readers cannot interpret canvas pixels. This exposes what the drawing contains, using the
+       descriptions applications attach to elements, and announces changes as they happen. *@
+    <div id="@($"{ElementId}-desc")" class="bit-bink-visually-hidden">@GetContentDescription()</div>
+    <div class="bit-bink-visually-hidden" role="status" aria-live="polite" aria-atomic="true">@_announcement</div>
+</div>

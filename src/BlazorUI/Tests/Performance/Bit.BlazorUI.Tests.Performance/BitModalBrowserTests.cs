@@ -12,7 +12,7 @@ namespace Bit.BlazorUI.Tests.Performance;
 /// </summary>
 [TestClass]
 [TestCategory("Browser")]
-[Ignore("Browser tests must be run explicitly. Use: dotnet test --filter FullyQualifiedName~BitModalBrowserTests")]
+[RequiresBrowser] // opt-in: RUN_BROWSER_TESTS=1 dotnet test --filter FullyQualifiedName~BitModalBrowserTests
 public class BitModalBrowserTests : PerformanceTestBase
 {
     [TestMethod]

@@ -1,0 +1,239 @@
+﻿@inherits LayoutComponentBase
+@layout MainLayout
+@inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+@* The documentation shell - part of the site kit every Utilities demo shares (see wwwroot/app.css),
+   and the default layout of every page but the landing page (Routes.razor). The sidebar stays
+   mounted while the body swaps pages, so its scroll position survives navigation; the
+   breadcrumb, the pager and the "edit" link are all recomputed from DocsCatalog on each
+   navigation.
+
+   Three columns, in the arrangement Fluent's own documentation uses: the nav panel, the page, and
+   the "on this page" rail. The rail's contents are built by site.js from whatever headings the
+   page rendered - see the note on the <nav> below. *@
+
+<div class="bb-docs">
+    <aside class="bb-docs-sidebar @(_menuOpen ? "bb-open" : null)" id="bb-docs-nav" aria-label="Documentation navigation" @onkeydown="OnKeyDown">
+        @* The drawer's own way out, shown only at the widths where the panel is a drawer. The
+           "Hide docs" toggle that opened it sits under the drawer once it is open, so without this
+           a pointer could close it only through the scrim. It is also where focus goes on opening:
+           the panel precedes the toggle in the DOM, so Tab from the toggle would walk into the page
+           behind the drawer instead of into it. *@
+        <button type="button" class="bb-docs-close" @ref="_close" aria-label="Close documentation navigation" @onclick="CloseFromDrawer">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+        </button>
+
+        <p class="bb-overline bb-docs-nav-title">Documentation</p>
+
+        @foreach (var section in DocsCatalog.Sections)
+        {
+            @* The group label is a <p> rather than a heading on purpose: the panel precedes the
+               page in the DOM, and a heading here would open the document's outline two levels
+               below the page's own H1. The list's aria-label carries the same grouping to a
+               screen reader without touching the outline. *@
+            <div class="bb-docs-section" @key="section.Title">
+                <p class="bb-docs-group">@section.Title</p>
+                <ul aria-label="@section.Title">
+                    @foreach (var entry in section.Pages)
+                    {
+                        <li @key="entry.Url">
+                            @* A plain link rather than a NavLink: this shell re-renders on every navigation,
+                               and a NavLink's child content is a fragment the renderer can never prove
+                               unchanged, so every one of them would re-render with it. The active row is the
+                               catalog entry the breadcrumb names - which also covers a page whose route takes a
+                               parameter (/live/{Room}), listed by its bare address. *@
+                            <a href="@entry.Url" class="@(entry == _current ? "active" : null)"
+                               aria-current="@(entry == _current ? "page" : null)" title="@entry.Description">@entry.Title</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="bb-docs-nav-foot">
+            <a href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            <a href="@SiteInfo.NuGetUrl" target="_blank" rel="noopener noreferrer">NuGet ↗</a>
+        </div>
+
+        @if (_menuOpen)
+        {
+            @* As a drawer it covers the page, which is still there and still focusable: Tab past its last link comes
+               back to its close button, rather than going on to the "Hide docs" toggle and the form under the scrim. *@
+            <span class="bb-focus-sentinel" tabindex="0" @onfocus="() => _close.FocusAsync()"></span>
+        }
+    </aside>
+
+    <div class="bb-docs-main">
+        @* The narrow-width entry into the panel above. It sits with the breadcrumb because at
+           those widths the two together are the whole "where am I / where else can I go" row. *@
+        <div class="bb-docs-topbar" @onkeydown="OnKeyDown">
+            <button @ref="_toggle" type="button" class="bb-docs-menu-toggle" aria-expanded="@(_menuOpen ? "true" : "false")"
+                    aria-controls="bb-docs-nav" @onclick="ToggleMenu">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+                <span class="bb-docs-menu-label">@(_menuOpen ? "Hide" : "Browse") docs</span>
+            </button>
+
+            <nav class="bb-crumbs" aria-label="Breadcrumb">
+                <ol>
+                    <li><a href="">@SiteInfo.Name</a></li>
+                    @if (_current is not null)
+                    {
+                        <li aria-hidden="true" class="bb-crumb-sep">/</li>
+                        <li>@DocsCatalog.SectionOf(_current)</li>
+                        <li aria-hidden="true" class="bb-crumb-sep">/</li>
+                        <li aria-current="page">@_current.Title</li>
+                    }
+                </ol>
+            </nav>
+        </div>
+
+        <div class="bb-docs-content">
+            @Body
+        </div>
+
+        @* Below the page: where to go from here. The "edit" link is built from the page's own
+           component type, so a page added to the catalog gets one without anyone wiring it up. *@
+        @if (_current is not null)
+        {
+            <div class="bb-docs-foot">
+                <a class="bb-docs-edit" target="_blank" rel="noopener noreferrer" href="@SiteInfo.SourceUrlOf(_current.PageType)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    Edit this page on GitHub
+                </a>
+            </div>
+
+            <DocsPager Current="_current" />
+        }
+    </div>
+
+    @* Deliberately empty in the render tree: site.js fills it from the headings of whichever page
+       the body just rendered, so no page had to be edited to gain a rail. Blazor never diffs into
+       it because this component's output for the element never changes - the same reason the copy
+       buttons can be appended into a <pre>. The column is rendered even while empty so the content
+       column does not stretch and snap back a frame later. *@
+    <nav class="bb-rail" aria-label="On this page"></nav>
+</div>
+
+@if (_menuOpen)
+{
+    <div class="bb-docs-scrim" @onclick="CloseFromDrawer"></div>
+}
+
+@code {
+    private bool _menuOpen;
+    private bool _focusDrawerPending;
+    private bool _restorePending;
+    private ElementReference _toggle;
+    private ElementReference _close;
+    private DocsPageInfo? _current;
+
+    [CascadingParameter] private MainLayout.Drawers? Drawers { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Recompute();
+        Nav.LocationChanged += OnLocationChanged;
+        if (Drawers is not null)
+            Drawers.Opened += OnDrawerOpened;
+    }
+
+    // The header's menu opened: this drawer gives the page up to it.
+    private void OnDrawerOpened(object owner)
+    {
+        if (ReferenceEquals(owner, this) || _menuOpen is false)
+            return;
+
+        _menuOpen = false;
+        _focusDrawerPending = false;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    // Collapse the narrow-width panel after a link in it commits: a drawer that survives the
+    // navigation it started covers the page the reader just asked for.
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        Recompute();
+        if (_menuOpen) LockScroll(false);
+        _menuOpen = false;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusDrawerPending)
+        {
+            _focusDrawerPending = false;
+            await _close.FocusAsync();
+        }
+
+        if (_restorePending)
+        {
+            _restorePending = false;
+            await _toggle.FocusAsync();
+        }
+    }
+
+    /// <summary>
+    /// Opens or closes the narrow-width drawer. Opening hands focus to the drawer's close button (see
+    /// the note on it in the markup), which also puts the Escape handler on the panel within reach of
+    /// a browser that does not focus the button it was clicked on.
+    /// </summary>
+    private void ToggleMenu()
+    {
+        _menuOpen = !_menuOpen;
+        _focusDrawerPending = _menuOpen;
+        if (_menuOpen)
+            Drawers?.Open(this);
+        LockScroll(_menuOpen);
+    }
+
+    /// <summary>The drawer's close button and the scrim: the drawer closes and focus returns to its toggle.</summary>
+    private void CloseFromDrawer()
+    {
+        _menuOpen = false;
+        _restorePending = true;
+        LockScroll(false);
+    }
+
+    /// <summary>
+    /// Holds the page still while the drawer covers it, as the search palette does: a wheel turned over the scrim
+    /// scrolled the page behind it. Not awaited, for the same reason as there.
+    /// </summary>
+    private void LockScroll(bool locked) => _ = JSRuntime.InvokeVoidAsync("bitDemoSite.lockScroll", locked);
+
+    /// <summary>
+    /// Escape closes the narrow-width drawer, the way every other overlay on the site closes. The
+    /// handler sits on the panel and on the topbar - the button that opens the drawer is outside the
+    /// panel it controls - and deliberately not on the whole shell: there it would hear every key
+    /// typed into a page, and each one would be an event (on Blazor Server a round trip) and a
+    /// render of this layout.
+    /// </summary>
+    private void OnKeyDown(KeyboardEventArgs args)
+    {
+        if (_menuOpen is false || args.Key != "Escape") return;
+
+        _menuOpen = false;
+        LockScroll(false);
+        // Once hidden, a panel that was holding focus hands it to <body> and the next Tab restarts
+        // at the top of the page - hence the trip back to the button that opened it.
+        _restorePending = true;
+    }
+
+    private void Recompute() => _current = DocsCatalog.FindByPath(DocsCatalog.PathOf(Nav));
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+        if (Drawers is not null)
+            Drawers.Opened -= OnDrawerOpened;
+    }
+}

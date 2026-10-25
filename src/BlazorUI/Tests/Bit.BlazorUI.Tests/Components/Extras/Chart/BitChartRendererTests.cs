@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -42,7 +42,7 @@ public class BitChartRendererTests
         var options = new BitChartOptions { Scales = { ["y"] = scale } };
         Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), options));
 
-        Assert.IsNull(scale.Position, "an unset position must stay unset; the default is applied per render");
+        Assert.IsNull(scale.Placement, "an unset position must stay unset; the default is applied per render");
     }
 
     [TestMethod]
@@ -458,6 +458,37 @@ public class BitChartRendererTests
         Assert.AreEqual(plot.Width, scene.HitBands[0].Width, 0.5);
     }
 
+    // A band stands for its category (#14043), so it is centered on the category's tick - where the crosshair marks it -
+    // and not on the average of where its elements are drawn, which the fuller of two stacks pulls to one side and a line
+    // drawn against a secondary x axis pulls anywhere.
+    [TestMethod]
+    public void HitBandsShouldBeCenteredOnTheirCategory()
+    {
+        var data = new BitChartData
+        {
+            Labels = { "A", "B", "C" },
+            Datasets =
+            {
+                new BitChartDataset { Data = { 1, 2, 3 }, Stack = "s1" },
+                new BitChartDataset { Data = { 2, 1, 2 }, Stack = "s1" },
+                new BitChartDataset { Data = { 3, 3, 1 }, Stack = "s2" },
+                new BitChartDataset { Type = BitChartType.Line, XAxisID = "x2", YAxisID = "y2", Data = { 3, 2, 1 } }
+            }
+        };
+        var scene = Render(new BitChartConfig(BitChartType.Bar, data, new BitChartOptions
+        {
+            Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Stacked = true } }
+        }));
+
+        var plot = scene.PlotArea!.Value;
+        Assert.AreEqual(3, scene.HitBands.Count);
+        for (int k = 0; k < 3; k++)
+        {
+            var band = scene.HitBands.Single(b => b.DataIndex == k);
+            Assert.AreEqual(plot.Left + (k + 0.5) * plot.Width / 3, band.X + band.Width / 2, 0.01, $"category {k}");
+        }
+    }
+
     // ---- hover shapes ----
 
     [TestMethod]
@@ -565,16 +596,16 @@ public class BitChartRendererTests
     [TestMethod]
     public void DataLabelAnchorShouldMoveTheLabelBetweenTipAndBaseline()
     {
-        double LabelY(BitChartAlign anchor)
+        double LabelY(BitPlacement anchor)
         {
-            var options = new BitChartOptions { Plugins = { DataLabels = { Display = true, Anchor = anchor, Align = BitChartAlign.Center } } };
+            var options = new BitChartOptions { Plugins = { DataLabels = { Display = true, Anchor = anchor, Align = BitPlacement.Center } } };
             var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(10, 20, 30), options));
             return scene.Foreground.OfType<BitChartSvgText>().First().Y;
         }
 
-        double tip = LabelY(BitChartAlign.End);
-        double middle = LabelY(BitChartAlign.Center);
-        double baseline = LabelY(BitChartAlign.Start);
+        double tip = LabelY(BitPlacement.End);
+        double middle = LabelY(BitPlacement.Center);
+        double baseline = LabelY(BitPlacement.Start);
 
         Assert.IsTrue(tip < middle && middle < baseline, $"tip {tip}, middle {middle}, baseline {baseline}");
     }
@@ -778,7 +809,7 @@ public class BitChartRendererTests
         };
         var options = new BitChartOptions
         {
-            Scales = { ["y2"] = new BitChartScaleOptions { Id = "y2", Position = BitChartPosition.Right } }
+            Scales = { ["y2"] = new BitChartScaleOptions { Id = "y2", Placement = BitPlacement.Right } }
         };
         var scene = Render(new BitChartConfig(BitChartType.Line, data, options));
 
@@ -815,6 +846,103 @@ public class BitChartRendererTests
         }
 
         Assert.IsTrue(Width("iiii") < Width("WWWW"), "the label pill is measured, not counted");
+    }
+
+    [TestMethod]
+    public void AnAnnotationLabelShouldTakeTheAnnotationsColorUnlessGivenOneOfItsOwn()
+    {
+        var options = new BitChartOptions();
+        options.Plugins.Custom.Add(new BitChartAnnotationPlugin(
+            new BitChartAnnotation { Value = 2, Color = "#2ecc71", Label = "Target" },
+            new BitChartAnnotation { Value = 1, Color = "#2ecc71", Label = "Floor", LabelBackground = "#000000" }));
+        var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), options));
+
+        var pills = scene.Foreground.OfType<BitChartSvgRect>().Select(r => r.Fill).ToList();
+        CollectionAssert.AreEqual(new[] { "#2ecc71", "#000000" }, pills);
+    }
+
+    [TestMethod]
+    public void AnAnnotationShouldDefaultToTheThemedColors()
+    {
+        var annotation = new BitChartAnnotation();
+
+        StringAssert.StartsWith(annotation.Color, "var(--bit-Chart-annotation-color,");
+        StringAssert.StartsWith(annotation.LabelColor, "var(--bit-Chart-annotation-label-color,");
+        Assert.IsNull(annotation.LabelBackground);
+    }
+
+    [TestMethod]
+    public void ThePluginsShouldDescribeWhatTheyDrawForScreenReaders()
+    {
+        var data = Bars(1, 2, 3);
+        data.Datasets[0].Label = "Sales";
+        var options = new BitChartOptions { Culture = new CultureInfo("de-DE") };
+        var line = Render(new BitChartConfig(BitChartType.Line, data, options)).PluginContext!;
+        var doughnut = Render(new BitChartConfig(BitChartType.Doughnut, data, options)).PluginContext!;
+
+        var annotations = new BitChartAnnotationPlugin(
+            new BitChartAnnotation { Value = 2.5, Label = "Target" },
+            new BitChartAnnotation { Orientation = BitChartLineOrientation.Vertical, XIsIndex = true, Value = 1, Label = "Launch" },
+            new BitChartAnnotation { Kind = BitChartAnnotationKind.Box, Label = "Low", Description = "Low band: under 1" },
+            new BitChartAnnotation { Value = 1 });
+        CollectionAssert.AreEqual(new[] { "Target: 2,5", "Launch: B", "Low band: under 1" },
+            ((IBitChartPlugin)annotations).Describe(line).ToArray(), "a mark with neither a label nor a description is decoration");
+
+        var trend = new BitChartTrendlinePlugin(new BitChartTrendline { Label = "Trend" }, new BitChartTrendline());
+        CollectionAssert.AreEqual(new[] { "Trend (Sales)" }, ((IBitChartPlugin)trend).Describe(line).ToArray());
+
+        CollectionAssert.AreEqual(new[] { "120 total" }, ((IBitChartPlugin)new BitChartCenterTextPlugin("120", "total")).Describe(doughnut).ToArray());
+        Assert.AreEqual(0, ((IBitChartPlugin)new BitChartCenterTextPlugin()).Describe(doughnut).Count());
+    }
+
+    [TestMethod]
+    public void APluginShouldDescribeOnlyWhatItActuallyDrew()
+    {
+        var data = Bars(1, 2, 3);
+        data.Datasets[0].Label = "Sales";
+        var bar = Render(new BitChartConfig(BitChartType.Bar, data, new BitChartOptions())).PluginContext!;
+        var doughnut = Render(new BitChartConfig(BitChartType.Doughnut, data, new BitChartOptions())).PluginContext!;
+
+        // The cutout text is drawn on a circular chart only, the annotations and trend lines on a cartesian one only.
+        Assert.AreEqual(0, ((IBitChartPlugin)new BitChartCenterTextPlugin("120", "total")).Describe(bar).Count());
+        Assert.AreEqual(0, ((IBitChartPlugin)new BitChartAnnotationPlugin(new BitChartAnnotation { Value = 2, Label = "Target" })).Describe(doughnut).Count());
+        Assert.AreEqual(0, ((IBitChartPlugin)new BitChartTrendlinePlugin(new BitChartTrendline { Label = "Trend" })).Describe(doughnut).Count());
+
+        // A trend line fitted to a hidden dataset, or to one that does not exist, is not drawn and so not said.
+        var trend = new BitChartTrendlinePlugin(new BitChartTrendline { Label = "Trend" }, new BitChartTrendline { Label = "Ghost", DatasetIndex = 5 });
+        Assert.AreEqual(1, ((IBitChartPlugin)trend).Describe(bar).Count());
+        data.Datasets[0].Hidden = true;
+        var hidden = Render(new BitChartConfig(BitChartType.Bar, data, new BitChartOptions())).PluginContext!;
+        Assert.AreEqual(0, ((IBitChartPlugin)trend).Describe(hidden).Count());
+    }
+
+    [TestMethod]
+    public void ALineOnATimeAxisShouldBeDescribedByItsDate()
+    {
+        var data = new BitChartData
+        {
+            Datasets =
+            {
+                new BitChartDataset
+                {
+                    Points =
+                    [
+                        new BitChartDataPoint(new DateTime(2026, 1, 15).ToOADate(), 1),
+                        new BitChartDataPoint(new DateTime(2026, 6, 15).ToOADate(), 2)
+                    ]
+                }
+            }
+        };
+        var options = new BitChartOptions { Scales = { ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Time } } };
+        var ctx = Render(new BitChartConfig(BitChartType.Line, data, options)).PluginContext!;
+
+        var plugin = new BitChartAnnotationPlugin(new BitChartAnnotation
+        {
+            Orientation = BitChartLineOrientation.Vertical, Value = new DateTime(2026, 3, 1).ToOADate(), Label = "Launch"
+        });
+
+        // The axis ticks in months over half a year, so the line is named in the same unit the axis labels it with.
+        CollectionAssert.AreEqual(new[] { "Launch: Mar 2026" }, ((IBitChartPlugin)plugin).Describe(ctx).ToArray());
     }
 
     [TestMethod]
@@ -973,10 +1101,10 @@ public class BitChartRendererTests
     [TestMethod]
     public void ALegendPositionWithNowhereToGoShouldFallBackToTheTop()
     {
-        var options = new BitChartOptions { Plugins = { Legend = { Position = BitChartPosition.Center } } };
+        var options = new BitChartOptions { Plugins = { Legend = { Placement = BitPlacement.Center } } };
         var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), options));
 
-        Assert.AreEqual(BitChartPosition.Top, scene.Legend!.Position,
+        Assert.AreEqual(BitPlacement.Top, scene.Legend!.Placement,
             "the legend renders on one of four sides; anything else would silently disappear");
     }
 
@@ -1073,8 +1201,8 @@ public class BitChartRendererTests
         {
             Scales =
             {
-                ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear, Position = BitChartPosition.Center },
-                ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Position = BitChartPosition.Center }
+                ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear, Placement = BitPlacement.Center },
+                ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Placement = BitPlacement.Center }
             }
         };
         var scene = Render(new BitChartConfig(BitChartType.Scatter, data, options));
@@ -1091,16 +1219,16 @@ public class BitChartRendererTests
     [TestMethod]
     public void ACenteredAxisShouldReserveNoLayoutSpace()
     {
-        BitChartArea Plot(BitChartPosition position)
+        BitChartArea Plot(BitPlacement position)
         {
             var options = new BitChartOptions
             {
-                Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Position = position } }
+                Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Placement = position } }
             };
             return Render(new BitChartConfig(BitChartType.Line, Bars(1000, 2000, 3000), options)).PlotArea!.Value;
         }
 
-        Assert.IsTrue(Plot(BitChartPosition.Center).Left < Plot(BitChartPosition.Left).Left,
+        Assert.IsTrue(Plot(BitPlacement.Center).Left < Plot(BitPlacement.Left).Left,
             "a centered axis lives inside the plot, so it must not push the plot inwards");
     }
 
@@ -1202,7 +1330,7 @@ public class BitChartRendererTests
     {
         var options = new BitChartOptions
         {
-            Plugins = { DataLabels = { Display = true, Anchor = BitChartAlign.End, Align = BitChartAlign.End, Offset = 40 } },
+            Plugins = { DataLabels = { Display = true, Anchor = BitPlacement.End, Align = BitPlacement.End, Offset = 40 } },
             Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Display = false } }
         };
         var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(100, 100, 100), options));
@@ -1310,6 +1438,59 @@ public class BitChartRendererTests
         var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3)));
 
         Assert.IsTrue(scene.Background.OfType<BitChartSvgText>().All(t => Math.Abs(t.Rotation) < 1e-6));
+    }
+
+    // ---- labels placed on a side of the screen ----
+
+    [TestMethod]
+    public void EveryLabelPlacedBesideSomethingShouldAnchorToASideOfTheScreen()
+    {
+        // The values of a vertical axis, mirrored or not, turned category labels, the categories of a horizontal bar
+        // chart and the names and values around a radar start or end where the renderer put them on the screen, so
+        // a right-to-left chart does not swap them over the plot (#14044).
+        var rotated = new BitChartOptions();
+        rotated.Scales["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category, Ticks = { MinRotation = 30 } };
+        var mirrored = new BitChartOptions();
+        mirrored.Scales["y"] = new BitChartScaleOptions { Id = "y", Ticks = { Mirror = true } };
+        var radar = new BitChartData
+        {
+            Labels = { "Speed", "Cost", "Reliability", "Reach", "Scale" },
+            Datasets = { new BitChartDataset { Data = { 10, 20, 30, 40, 50 } } }
+        };
+
+        foreach (var (name, scene) in new[]
+        {
+            ("bar", Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3)))),
+            ("turned labels", Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), rotated))),
+            ("mirrored values", Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), mirrored))),
+            ("horizontal bar", Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), new BitChartOptions { IndexAxis = BitChartIndexAxis.Y }))),
+            ("radar", Render(new BitChartConfig(BitChartType.Radar, radar)))
+        })
+        {
+            var sided = scene.Background.OfType<BitChartSvgText>().Where(t => t.Anchor != "middle").ToList();
+
+            Assert.IsTrue(sided.Count > 1, $"{name}: labels start or end at their place");
+            foreach (var text in sided)
+                Assert.IsTrue(text.PhysicalAnchor, $"{name}: '{text.Text}' {text.Anchor} follows the reading direction");
+        }
+    }
+
+    [TestMethod]
+    public void TickAlignShouldFollowTheReadingDirection()
+    {
+        // Start and End of Align read, as every other Start and End of the chart does: SVG's own start and end.
+        var options = new BitChartOptions();
+        options.Scales["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category, Ticks = { Align = BitPlacement.Start } };
+
+        var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), options));
+        var labels = scene.Background.OfType<BitChartSvgText>().Where(t => t.Text is "A" or "B" or "C").ToList();
+
+        Assert.AreEqual(3, labels.Count);
+        foreach (var label in labels)
+        {
+            Assert.AreEqual("start", label.Anchor, label.Text);
+            Assert.IsFalse(label.PhysicalAnchor, label.Text);
+        }
     }
 
     // ---- polar area ----

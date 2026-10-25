@@ -1,0 +1,179 @@
+﻿@page "/examples/workflow-runner"
+<PageTitle>Workflow Runner · Blow</PageTitle>
+
+<ExampleScaffold Title="Workflow Runner"
+                 Summary="A pipeline validated, then run step by step in dependency order, with each step's state shown on its node through RunStates. The run is the application's - BlowGraphAlgorithms orders it and BlowGraphValidator checks it - and the canvas only shows it, by a badge whose shape says the status.">
+    <Toolbar>
+        <button class="btn btn-primary" disabled="@_running" @onclick="Run">▶ Run</button>
+        <button class="btn btn-secondary" disabled="@(!_running)" @onclick="Stop">■ Stop</button>
+        <button class="btn btn-secondary" disabled="@(_running || _states.Count == 0)" @onclick="ClearRun">Clear</button>
+        <label><input type="checkbox" @bind="_failEnrich" disabled="@_running" /> Make "Enrich" fail</label>
+        @if (_flow is not null)
+        {
+            <a class="btn btn-secondary" download="workflow.svg" href="@SvgUrl()">Export SVG</a>
+        }
+        <span class="wf-status" role="status">@_status</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    AriaLabel="Data pipeline"
+                    RunStates="_states" Validation="_validation"
+                    DefaultEdgeType="BlowEdgeType.SmoothStep"
+                    OnInit="_ => { }"
+                    EdgesChanged="_ => Validate()" NodesChanged="_ => Validate()">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Press <strong>▶ Run</strong>: every step is queued, then each runs in turn - a turning ring while it runs, a tick when it succeeds - and the status line says what is happening.</li>
+        <li>Tick <strong>Make "Enrich" fail</strong> and run again: Enrich gets a cross, and Merge, Store and Notify, which depend on it, are skipped with a dash. <strong>Tab</strong> to a node and a screen reader reads its status and message with it.</li>
+        <li>Press <strong>■ Stop</strong> during a run: the running step fails as stopped and the queued ones are skipped. <strong>Clear</strong> takes the badges off.</li>
+        <li>Break the graph: <strong>drag from</strong> Store's handle to Fetch to make a loop, or delete the edge into Validate. The problem is marked on the nodes straight away, and Run refuses with the reason.</li>
+        <li><strong>Export SVG</strong> downloads the graph as an image, drawn as it is on screen.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>RunStates</code> takes a dictionary of <code>BlowRunState</code> by node id: a <code>BlowRunStatus</code> - <code>Queued</code>, <code>Running</code>, <code>Succeeded</code>, <code>Failed</code>, <code>Skipped</code>, or <code>Idle</code> for nothing - and an optional message. Each status adds a class (<code>bit-blow-run-failed</code>, ...) and a badge whose glyph says the status without colour; a screen reader hears it, message included, with the node.</li>
+        <li>The run is the page's: <code>BlowGraphAlgorithms.TopologicalSort(graph).Order</code> over a <code>BlowGraphIndex</code> puts each step after everything with an edge into it, and <code>graph.Predecessors(id)</code> tells whether all of a step's inputs succeeded before it runs. The page changes the dictionary as the run moves on and re-renders after each step.</li>
+        <li>Before running, <code>BlowGraphValidator.CreateDefault()</code> plus <code>BlowValidationRules.NoCycles()</code> and <code>AllReachableFrom(n => n.Id == "fetch", BlowValidationSeverity.Error)</code> checks the graph. <code>NodesChanged</code> and <code>EdgesChanged</code> validate again after every edit, and the result goes to the canvas's <code>Validation</code> parameter, which marks each node and edge with a problem by shape as well as colour.</li>
+        <li><code>Announce(message)</code> puts each milestone in the canvas's live region for screen readers, and <code>AriaLabel</code> names the canvas "Data pipeline".</li>
+        <li>The edges are <code>BlowEdgeType.SmoothStep</code>, and <code>DefaultEdgeType="BlowEdgeType.SmoothStep"</code> gives edges you connect the same shape. <code>ToSvg()</code> renders the graph as a standalone SVG for the download link.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .wf-status { margin-left: auto; font-size: 12px; color: var(--bb-text-soft); }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private readonly Dictionary<string, BlowRunState> _states = [];
+    private BlowValidationResult _validation = BlowValidationResult.Empty;
+    private CancellationTokenSource? _cts;
+    private bool _running;
+    private bool _failEnrich;
+    private string _status = "Ready to run.";
+
+    private static readonly BlowGraphValidator Validator = BlowGraphValidator.CreateDefault()
+        .Add(BlowValidationRules.NoCycles())
+        .Add(BlowValidationRules.AllReachableFrom(n => n.Id == "fetch", BlowValidationSeverity.Error));
+
+    protected override void OnInitialized()
+    {
+        BlowNode Step(string id, string label, double x, double y) => new()
+        {
+            Id = id, Label = label, Position = new(x, y), Width = 130, Height = 40,
+            SourcePosition = BlowPosition.Right, TargetPosition = BlowPosition.Left,
+        };
+
+        _nodes =
+        [
+            Step("fetch", "Fetch", 0, 100),
+            Step("parse", "Parse", 200, 100),
+            Step("validate", "Validate", 400, 30),
+            Step("enrich", "Enrich", 400, 170),
+            Step("merge", "Merge", 600, 100),
+            Step("store", "Store", 800, 100),
+            Step("notify", "Notify", 800, 220),
+        ];
+        // Smooth-step like the edges the user connects, which take the canvas's DefaultEdgeType.
+        BlowEdge Link(string source, string target) => new()
+        {
+            Id = $"{source}-{target}", Source = source, Target = target, Type = BlowEdgeType.SmoothStep, MarkerEnd = true,
+        };
+
+        _edges =
+        [
+            Link("fetch", "parse"),
+            Link("parse", "validate"),
+            Link("parse", "enrich"),
+            Link("validate", "merge"),
+            Link("enrich", "merge"),
+            Link("merge", "store"),
+            Link("merge", "notify"),
+        ];
+    }
+
+    private void ClearRun()
+    {
+        _states.Clear();
+        _status = "Ready to run.";
+    }
+
+    private void Validate() => _validation = Validator.Validate(_nodes, _edges);
+
+    private async Task Run()
+    {
+        Validate();
+        if (!_validation.IsValid)
+        {
+            // The badges of the last run would otherwise say how a graph that is no longer this one went.
+            _states.Clear();
+            _status = $"Not run: {_validation.Issues.First(i => i.Severity == BlowValidationSeverity.Error).Message}";
+            return;
+        }
+
+        _cts = new CancellationTokenSource();
+        _running = true;
+        var graph = new BlowGraphIndex(_nodes, _edges);
+        var order = BlowGraphAlgorithms.TopologicalSort(graph).Order;
+        _states.Clear();
+        foreach (var node in order) _states[node.Id] = new BlowRunState(BlowRunStatus.Queued);
+        Report("Run started.");
+
+        try
+        {
+            foreach (var node in order)
+            {
+                // A step runs only when everything it depends on succeeded.
+                if (graph.Predecessors(node.Id).Any(p => _states[p.Id].Status != BlowRunStatus.Succeeded))
+                {
+                    _states[node.Id] = new BlowRunState(BlowRunStatus.Skipped, "An earlier step did not succeed.");
+                    continue;
+                }
+
+                _states[node.Id] = new BlowRunState(BlowRunStatus.Running);
+                Report($"{node.Label} running.");
+                await Task.Delay(700, _cts.Token);
+
+                _states[node.Id] = _failEnrich && node.Id == "enrich"
+                    ? new BlowRunState(BlowRunStatus.Failed, "The enrichment service timed out.")
+                    : new BlowRunState(BlowRunStatus.Succeeded);
+                Report($"{node.Label} {(_states[node.Id].Status == BlowRunStatus.Failed ? "failed" : "succeeded")}.");
+            }
+
+            var failed = _states.Count(s => s.Value.Status == BlowRunStatus.Failed);
+            Report(failed == 0 ? "Run finished: every step succeeded." : $"Run finished: {failed} step failed, the steps after it were skipped.");
+        }
+        catch (OperationCanceledException)
+        {
+            foreach (var (id, state) in _states.ToList())
+            {
+                if (state.Status == BlowRunStatus.Running) _states[id] = new BlowRunState(BlowRunStatus.Failed, "Stopped.");
+                else if (state.Status == BlowRunStatus.Queued) _states[id] = new BlowRunState(BlowRunStatus.Skipped, "The run was stopped.");
+            }
+            Report("Run stopped.");
+        }
+        finally
+        {
+            _running = false;
+            _cts.Dispose();
+            _cts = null;
+        }
+    }
+
+    private void Stop() => _cts?.Cancel();
+
+    /// <summary>Shows the status, tells a screen reader through the canvas's live region, and redraws.</summary>
+    private void Report(string message)
+    {
+        _status = message;
+        _flow?.Announce(message);
+        StateHasChanged();
+    }
+
+    private string SvgUrl()
+        => _flow is null ? "#" : "data:image/svg+xml;base64," + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(_flow.ToSvg()));
+}

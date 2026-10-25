@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 internal static class DropdownsJsRuntimeExtensions
 {
@@ -10,6 +10,19 @@ internal static class DropdownsJsRuntimeExtensions
     internal static ValueTask BitDropdownsDispose(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Dropdowns.dispose", id);
+    }
+
+    // The search box is reached from C# by the id of the callout it lives in rather than by an
+    // ElementReference: the reference is only assigned while the box is rendered, and the caller is the
+    // trigger, which is handling a key pressed before the box existed on the page at all.
+    internal static ValueTask BitDropdownsFocusSearchBox(this IJSRuntime jsRuntime, string calloutId, int caret)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Dropdowns.focusSearchBox", calloutId, caret);
+    }
+
+    internal static ValueTask<bool> BitDropdownsReclaimFocus(this IJSRuntime jsRuntime, string calloutId, ElementReference target)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Dropdowns.reclaimFocus", calloutId, target);
     }
 
     internal static ValueTask BitDropdownsFocusItem(this IJSRuntime jsRuntime, string calloutId, BitDropdownFocusMode mode, string? character, bool virtualize, int selectedIndex, int itemSize, bool noWrap)

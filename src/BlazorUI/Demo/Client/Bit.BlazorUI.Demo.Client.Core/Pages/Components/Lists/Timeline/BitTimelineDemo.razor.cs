@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
 
 public partial class BitTimelineDemo
 {
@@ -34,7 +34,7 @@ public partial class BitTimelineDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the timeline.",
+            Description = "The general color of the timeline. An explicit value (or the color of an item) wins over the --bit-Timeline-* dot color variables; left unset, the timeline is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -47,10 +47,19 @@ public partial class BitTimelineDemo
         },
         new()
         {
+            Name = "DotAlignment",
+            Type = "BitPlacement?",
+            DefaultValue = "null",
+            Description = "Where the dot of each item sits along its item, with the contents aligned to it: at its middle (Center, the default), its Start (the top in a vertical timeline) or its End (the bottom in a vertical timeline). Start pins the dot to the first line of multi-line contents. Only Center, Start and End are honoured; every other value renders the default Center.",
+            LinkType = LinkType.Link,
+            Href = "#placement-enum",
+        },
+        new()
+        {
             Name = "Horizontal",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Defines whether to render the timeline items horizontally."
+            Description = "Renders the timeline horizontally."
         },
         new()
         {
@@ -70,12 +79,21 @@ public partial class BitTimelineDemo
         },
         new()
         {
-            Name = "LineVariant",
-            Type = "BitTimelineLineVariant?",
+            Name = "LineStyle",
+            Type = "BitLineStyle?",
             DefaultValue = "null",
-            Description = "The way the connecting line of the timeline is painted, which the items can override one by one.",
+            Description = "The way the connecting line of the timeline is painted, which the items can override one by one. Only Solid, Dashed and Dotted are drawn: the connector is a hairline, which leaves Double no room for its two strokes, so it is drawn solid.",
             LinkType = LinkType.Link,
-            Href = "#line-variant-enum",
+            Href = "#line-style-enum",
+        },
+        new()
+        {
+            Name = "LinePlacement",
+            Type = "BitPlacement?",
+            DefaultValue = "null",
+            Description = "Where the connecting line runs: through the middle (Center, the default), with the primary contents on one side of it and the secondary ones on the other, or along the Start edge (the top in a horizontal timeline) or the End edge (the bottom in a horizontal timeline), with the contents of each item stacked beside it. Reversed and Alternate only apply to the centered line. Only Center, Start and End are honoured; every other value renders the default Center.",
+            LinkType = LinkType.Link,
+            Href = "#placement-enum",
         },
         new()
         {
@@ -90,7 +108,7 @@ public partial class BitTimelineDemo
         {
             Name = "OnItemClick",
             Type = "EventCallback<TItem>",
-            Description = "The callback that is called when an item of the timeline is clicked."
+            Description = "The callback that is called when an item is clicked. A clickable item is a button whose contents are read as its name, so it should hold no links or controls of its own."
         },
         new()
         {
@@ -104,7 +122,7 @@ public partial class BitTimelineDemo
             Name = "ReverseOrder",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the items in the reverse order, so the last item of the list is rendered first.",
+            Description = "Renders the items in the reverse order, so the last item of the list is painted first. The reading and the focus order keep the order of the list.",
         },
         new()
         {
@@ -118,9 +136,9 @@ public partial class BitTimelineDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of timeline, Possible values: Small | Medium | Large",
+            Description = "The size of the timeline, which sets the size of the dots and of the text. An explicit value (or the size of an item) wins over --bit-Timeline-font-size and --bit-Timeline-dot-size; left unset, the timeline is medium unless they say otherwise.",
             LinkType = LinkType.Link,
-            Href = "#timeline-size-enum",
+            Href = "#size-enum",
         },
         new()
         {
@@ -151,6 +169,160 @@ public partial class BitTimelineDemo
         },
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Timeline-font-size",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the contents. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-dot-size",
+            DefaultValue = "spacing(3.75)",
+            Description = "Diameter of the dot, and of the hidden dot's placeholder. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-dot-background",
+            DefaultValue = "--bit-clr-pri (Fill), transparent (Outline, Text)",
+            Description = "Fill of the dot. A disabled item keeps its disabled fill. The Color parameter wins over it in Fill; the transparent dot of Outline and Text is its alone. Shared by the three variants: --bit-Timeline-fill-dot-background, --bit-Timeline-outline-dot-background and --bit-Timeline-text-dot-background are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-fill-dot-background",
+            DefaultValue = "--bit-Timeline-dot-background",
+            Description = "Fill of the dot of a Fill timeline or item alone, read ahead of --bit-Timeline-dot-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-outline-dot-background",
+            DefaultValue = "--bit-Timeline-dot-background",
+            Description = "Fill of the dot of an Outline timeline or item alone, read ahead of --bit-Timeline-dot-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-text-dot-background",
+            DefaultValue = "--bit-Timeline-dot-background",
+            Description = "Fill of the dot of a Text timeline or item alone, read ahead of --bit-Timeline-dot-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone. It also fills the plate the icon of a Text dot sits on.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-dot-border-color",
+            DefaultValue = "--bit-clr-pri, transparent (Text)",
+            Description = "Border color of the dot. A disabled item keeps its disabled border. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Timeline-fill-dot-border-color, --bit-Timeline-outline-dot-border-color and --bit-Timeline-text-dot-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-fill-dot-border-color",
+            DefaultValue = "--bit-Timeline-dot-border-color",
+            Description = "Border color of the dot of a Fill timeline or item alone, read ahead of --bit-Timeline-dot-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-outline-dot-border-color",
+            DefaultValue = "--bit-Timeline-dot-border-color",
+            Description = "Border color of the dot of an Outline timeline or item alone, read ahead of --bit-Timeline-dot-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-text-dot-border-color",
+            DefaultValue = "--bit-Timeline-dot-border-color",
+            Description = "Border color of the dot of a Text timeline or item alone, read ahead of --bit-Timeline-dot-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-dot-border-width",
+            DefaultValue = "--bit-shp-border-width",
+            Description = "Border width of the dot.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-dot-radius",
+            DefaultValue = "--bit-shp-radius-full",
+            Description = "Corner radius of the dot; a smaller one turns it into a rounded square.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-dot-shadow",
+            DefaultValue = "none",
+            Description = "Shadow of the dot, e.g. a halo that sets it off the line.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-icon-color",
+            DefaultValue = "--bit-clr-pri-text (Fill), --bit-clr-pri (Outline, Text)",
+            Description = "Color of the icon inside the dot. A disabled item keeps its disabled color. The Color parameter wins over it. Shared by the three variants: --bit-Timeline-fill-icon-color, --bit-Timeline-outline-icon-color and --bit-Timeline-text-icon-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-fill-icon-color",
+            DefaultValue = "--bit-Timeline-icon-color",
+            Description = "Color of the icon inside the dot of a Fill timeline or item alone, read ahead of --bit-Timeline-icon-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-outline-icon-color",
+            DefaultValue = "--bit-Timeline-icon-color",
+            Description = "Color of the icon inside the dot of an Outline timeline or item alone, read ahead of --bit-Timeline-icon-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-text-icon-color",
+            DefaultValue = "--bit-Timeline-icon-color",
+            Description = "Color of the icon inside the dot of a Text timeline or item alone, read ahead of --bit-Timeline-icon-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-icon-size",
+            DefaultValue = "1em",
+            Description = "Size of the icon inside the dot.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-line-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Color of the connecting line, whatever its LineStyle.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-line-width",
+            DefaultValue = "--bit-shp-border-width-thick",
+            Description = "Thickness of the connecting line.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-content-gap",
+            DefaultValue = "Half the dot size",
+            Description = "Room between the line and the contents on either side of it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-item-spacing",
+            DefaultValue = "Half the dot size",
+            Description = "Room each item keeps around its contents along the line; two neighbours sit twice this apart.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-item-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of a clickable item's hover plate and focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-item-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Hover plate of a clickable item.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-item-active-background",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Pressed plate of a clickable item.",
+        },
+    ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
@@ -178,7 +350,7 @@ public partial class BitTimelineDemo
                    Name = "Color",
                    Type = "BitColor?",
                    DefaultValue = "null",
-                   Description = "The general color of the item, overriding the color of the timeline.",
+                   Description = "The general color of the item, overriding the color of the timeline. An explicit value wins over the Color of the timeline and over the --bit-Timeline-* dot color variables, on this item alone; left unset, the item takes the Color of the timeline, or is primary unless the variables say otherwise.",
                    LinkType = LinkType.Link,
                    Href = "#color-enum",
                },
@@ -214,10 +386,10 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the item is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the item is disabled.",
                },
                new()
                {
@@ -228,12 +400,12 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "LineVariant",
-                   Type = "BitTimelineLineVariant?",
+                   Name = "LineStyle",
+                   Type = "BitLineStyle?",
                    DefaultValue = "null",
-                   Description = "The way the connecting line of the item is painted, overriding the line variant of the timeline.",
+                   Description = "The way the connecting line of the item is painted, overriding the line style of the timeline. Only Solid, Dashed and Dotted are drawn; Double is drawn solid.",
                    LinkType = LinkType.Link,
-                   Href = "#line-variant-enum",
+                   Href = "#line-style-enum",
                },
                new()
                {
@@ -282,9 +454,9 @@ public partial class BitTimelineDemo
                    Name = "Size",
                    Type = "BitSize?",
                    DefaultValue = "null",
-                   Description = "The size of the item, overriding the size of the timeline.",
+                   Description = "The size of the item, overriding the size of the timeline. An explicit value wins over the Size of the timeline and over --bit-Timeline-font-size and --bit-Timeline-dot-size, on this item alone; left unset, the item takes the Size of the timeline, or is medium unless the variables say otherwise.",
                    LinkType = LinkType.Link,
-                   Href = "#timeline-size-enum",
+                   Href = "#size-enum",
                },
                new()
                {
@@ -343,7 +515,7 @@ public partial class BitTimelineDemo
                    Name = "Color",
                    Type = "BitColor?",
                    DefaultValue = "null",
-                   Description = "The general color of the option, overriding the color of the timeline.",
+                   Description = "The general color of the option, overriding the color of the timeline. An explicit value wins over the Color of the timeline and over the --bit-Timeline-* dot color variables, on this option alone; left unset, the option takes the Color of the timeline, or is primary unless the variables say otherwise.",
                    LinkType = LinkType.Link,
                    Href = "#color-enum",
                },
@@ -379,10 +551,10 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the option is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the option is disabled.",
                },
                new()
                {
@@ -393,12 +565,12 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "LineVariant",
-                   Type = "BitTimelineLineVariant?",
+                   Name = "LineStyle",
+                   Type = "BitLineStyle?",
                    DefaultValue = "null",
-                   Description = "The way the connecting line of the option is painted, overriding the line variant of the timeline.",
+                   Description = "The way the connecting line of the option is painted, overriding the line style of the timeline. Only Solid, Dashed and Dotted are drawn; Double is drawn solid.",
                    LinkType = LinkType.Link,
-                   Href = "#line-variant-enum",
+                   Href = "#line-style-enum",
                },
                new()
                {
@@ -447,9 +619,9 @@ public partial class BitTimelineDemo
                    Name = "Size",
                    Type = "BitSize?",
                    DefaultValue = "null",
-                   Description = "The size of the option, overriding the size of the timeline.",
+                   Description = "The size of the option, overriding the size of the timeline. An explicit value wins over the Size of the timeline and over --bit-Timeline-font-size and --bit-Timeline-dot-size, on this option alone; left unset, the option takes the Size of the timeline, or is medium unless the variables say otherwise.",
                    LinkType = LinkType.Link,
-                   Href = "#timeline-size-enum",
+                   Href = "#size-enum",
                },
                new()
                {
@@ -512,7 +684,7 @@ public partial class BitTimelineDemo
                     Name = "Color",
                     Type = "BitNameSelectorPair<TItem, BitColor?>",
                     DefaultValue = "new(nameof(BitTimelineItem.Color))",
-                    Description = "The Color field name and selector of the custom input class.",
+                    Description = "The Color field name and selector of the custom input class. Like the Color of an item, the value it reads wins over the Color of the timeline and over the --bit-Timeline-* dot color variables.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -554,10 +726,10 @@ public partial class BitTimelineDemo
                 },
                 new()
                 {
-                    Name = "IsEnabled",
+                    Name = "IsDisabled",
                     Type = "BitNameSelectorPair<TItem, bool>",
-                    DefaultValue = "new(nameof(BitTimelineItem.IsEnabled))",
-                    Description = "IsEnabled field name and selector of the custom input class.",
+                    DefaultValue = "new(nameof(BitTimelineItem.IsDisabled))",
+                    Description = "IsDisabled field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -572,10 +744,10 @@ public partial class BitTimelineDemo
                 },
                 new()
                 {
-                    Name = "LineVariant",
-                    Type = "BitNameSelectorPair<TItem, BitTimelineLineVariant?>",
-                    DefaultValue = "new(nameof(BitTimelineItem.LineVariant))",
-                    Description = "LineVariant field name and selector of the custom input class.",
+                    Name = "LineStyle",
+                    Type = "BitNameSelectorPair<TItem, BitLineStyle?>",
+                    DefaultValue = "new(nameof(BitTimelineItem.LineStyle))",
+                    Description = "LineStyle field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -638,7 +810,7 @@ public partial class BitTimelineDemo
                     Name = "Size",
                     Type = "BitNameSelectorPair<TItem, BitSize?>",
                     DefaultValue = "new(nameof(BitTimelineItem.Size))",
-                    Description = "The Size field name and selector of the custom input class.",
+                    Description = "The Size field name and selector of the custom input class. Like the Size of an item, the value it reads wins over the Size of the timeline and over --bit-Timeline-font-size and --bit-Timeline-dot-size.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -804,144 +976,11 @@ public partial class BitTimelineDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new()
-                {
-                    Name = "Fill",
-                    Description = "Fill styled variant.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Outline",
-                    Description = "Outline styled variant.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Text",
-                    Description = "Text styled variant.",
-                    Value = "2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="Info Primary general color.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "timeline-size-enum",
-            Name = "BitSize",
-            Description = "Determines the size of the dots and the font of the timeline.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Small",
-                    Description="The small size timeline.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The medium size timeline.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The large size timeline.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "line-variant-enum",
-            Name = "BitTimelineLineVariant",
-            Description = "Determines how the connecting line of the timeline is painted.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Solid",
-                    Description="An uninterrupted line.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Dashed",
-                    Description="A line drawn as a series of dashes, which usually marks a stretch of the timeline as pending or estimated.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Dotted",
-                    Description="A line drawn as a series of dots, a lighter version of the dashed line.",
-                    Value="2",
-                }
-            ]
-        },
+        DemoSharedEnums.BitVariant(),
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitSize(description: "Determines the size of the dots and the font of the timeline."),
+        DemoSharedEnums.BitLineStyle(),
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "truncate-line-enum",

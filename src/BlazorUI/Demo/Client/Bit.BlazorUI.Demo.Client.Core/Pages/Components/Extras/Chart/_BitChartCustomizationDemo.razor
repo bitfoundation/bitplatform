@@ -1,0 +1,46 @@
+﻿@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="CSS variables" RazorCode="@cssVariablesRazorCode" CsharpCode="@cssVariablesCsharpCode" Id="customization-css-variables">
+    <div class="example-desc">
+        Every default color, the typeface and the tooltip surface read a public <code>--bit-Chart-*</code> variable
+        that falls back to the theme, so one stylesheet rule re-skins all charts. They inherit: set them on
+        <code>:root</code>, an ancestor, or a chart's <code>Style</code> as here. <code>--bit-Chart-series-color-1..10</code>
+        replace the default palette; a color set in C# still wins for that one chart.
+    </div>
+    <div class="chart-wrapper">
+        <div class="chart-container">
+            <BitChart Type="BitChartType.Line" Data="_data" Options="_options" Style="@_brandStyle" />
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Cascading parameters" RazorCode="@cascadingRazorCode" CsharpCode="@cascadingCsharpCode" Id="customization-cascading-parameters">
+    <div class="example-desc">
+        <b>BitParams</b> carries a <b>BitChartParams</b> to every chart under it, so a dashboard sets the type,
+        the shared <code>Options</code>, the size and the look once. It is a default, not an override: the last
+        chart sets its own <code>Type</code> and keeps it.
+    </div>
+    <div class="cascade-grid">
+        <BitParams Parameters="@_chartParams">
+            <BitChart Data="_north" AriaLabel="North" />
+            <BitChart Data="_south" AriaLabel="South" />
+            <BitChart Data="_west" AriaLabel="West" Type="BitChartType.Line" />
+        </BitParams>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@styleClassRazorCode" CsharpCode="@styleClassCsharpCode" Id="customization-style-class">
+    <div class="example-desc">
+        <code>Class</code> and <code>Style</code> reach the root; <code>Classes</code> and <code>Styles</code>
+        reach each part - the title, subtitle, legend, legend items, plot, tooltip and empty state.
+    </div>
+    <div class="chart-wrapper">
+        <div class="chart-container">
+            <BitChart Type="BitChartType.Bar"
+                      Data="_data"
+                      Options="_titled"
+                      Class="custom-chart"
+                      Styles="@_styles" />
+        </div>
+    </div>
+</DemoExample>

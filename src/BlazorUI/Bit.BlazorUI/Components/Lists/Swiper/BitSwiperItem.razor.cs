@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -70,6 +70,15 @@ public partial class BitSwiperItem : BitComponentBase
         StateHasChanged();
     }
 
+    // The item and current item parts of the swiper's Classes and Styles are part of this item's own strings.
+    internal void RefreshClassStyles()
+    {
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
+
+        StateHasChanged();
+    }
+
 
 
     protected override string RootElementClass => "bit-swpi";
@@ -102,7 +111,7 @@ public partial class BitSwiperItem : BitComponentBase
 
     // The accessible name of an item falls back to its position, which is what the carousel pattern of the
     // ARIA authoring practices asks for when a slide has nothing better to be called.
-    private string? GetAriaLabel()
+    internal string? GetAriaLabel()
     {
         if (AriaLabel.HasValue()) return AriaLabel;
 

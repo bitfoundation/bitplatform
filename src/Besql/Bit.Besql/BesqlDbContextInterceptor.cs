@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Bit.Besql;
 
-public class BesqlDbContextInterceptor(IBitBesqlStorage storage) : IDbCommandInterceptor, ISingletonInterceptor
+public class BesqlDbContextInterceptor(IBitBesqlStorage storage) : IDbCommandInterceptor, ISaveChangesInterceptor, ISingletonInterceptor
 {
     private readonly string[] keywords = ["INSERT INTO ", "UPDATE ", "DELETE FROM ", "CREATE ", "ALTER ", "DROP "];
 
@@ -85,6 +85,27 @@ public class BesqlDbContextInterceptor(IBitBesqlStorage storage) : IDbCommandInt
         {
             _ = ThrottledSync(eventData.Context!.Database.GetDbConnection().DataSource).ConfigureAwait(false);
         }
+        return result;
+    }
+
+    public async ValueTask<int> SavedChangesAsync(
+        SaveChangesCompletedEventData eventData,
+        int result,
+        CancellationToken cancellationToken = default)
+    {
+        var database = eventData.Context!.Database;
+
+        // Store the database before SaveChangesAsync returns, so closing or reloading the page right after it doesn't lose the changes.
+        // Inside a transaction nothing is committed yet, so it's left to the throttled sync.
+        if (result > 0 && database.CurrentTransaction is null)
+        {
+            var fileName = database.GetDbConnection().DataSource.Trim('/');
+
+            filesSyncIds[fileName] = Guid.NewGuid(); // Cancels the throttled syncs of this save's commands.
+
+            await storage.Persist(fileName).ConfigureAwait(false);
+        }
+
         return result;
     }
 

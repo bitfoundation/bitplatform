@@ -1,4 +1,4 @@
-interface UploaderOptions {
+﻿interface UploaderOptions {
     mimetypes: string[];
     handler: (this: {
         quill: Quill;

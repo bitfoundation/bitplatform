@@ -8,6 +8,10 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 {
     private readonly BitInputRateLimiter<ChangeEventArgs> _rateLimiter = new();
 
+    // The parameters of this class are taken out of the ParameterView here, before it reaches the classes below,
+    // so their sets never see them: IsSetByMarkup adds this one to theirs, which is what HasNotBeenSet reads.
+    private readonly HashSet<string> _assignedTextInputParameters = [];
+
 
     /// <summary>
     /// Specifies the value of the autocomplete attribute of the input component.
@@ -38,51 +42,64 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
-        var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>); ;
+        _assignedTextInputParameters.Clear();
 
-        foreach (var parameter in parametersDictionary!)
+        var parametersDictionary = TakeParametersDictionary(parameters);
+
+        foreach (var parameter in parametersDictionary)
         {
             switch (parameter.Key)
             {
                 case nameof(AutoComplete):
+                    _assignedTextInputParameters.Add(nameof(AutoComplete));
                     AutoComplete = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(AutoFocus):
+                    _assignedTextInputParameters.Add(nameof(AutoFocus));
                     AutoFocus = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(DebounceTime):
+                    _assignedTextInputParameters.Add(nameof(DebounceTime));
                     DebounceTime = (int)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(Immediate):
+                    _assignedTextInputParameters.Add(nameof(Immediate));
                     Immediate = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(ThrottleTime):
+                    _assignedTextInputParameters.Add(nameof(ThrottleTime));
                     ThrottleTime = (int)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
             }
         }
 
-        return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
+        // What is left reaches the base through ParametersCache, handed over right before the call and taken by the base
+        // as it starts, so a pass that throws on the way leaves none behind; a view built from it would only be an
+        // allocation nobody reads.
+        ParametersCache = parametersDictionary;
+        return base.SetParametersAsync(ParameterView.Empty);
     }
+
+    private protected override bool IsSetByMarkup(string name) => _assignedTextInputParameters.Contains(name) || base.IsSetByMarkup(name);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender is false || IsEnabled is false) return;
+        if (firstRender is false || Disabled) return;
 
         if (AutoFocus)
         {
-            await InputElement.FocusAsync();
+            await InputElement.FocusSafelyAsync();
         }
     }
 
@@ -94,7 +111,7 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     /// <param name="e"></param>
     protected virtual async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         await SetCurrentValueAsStringAsync(e.Value?.ToString());
     }
@@ -105,13 +122,21 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     /// <param name="e"></param>
     protected virtual async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         if (Immediate is false) return;
 
         await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
             await InvokeAsync(async () => await HandleOnStringValueChangeAsync(args)));
     }
+
+
+
+    /// <summary>
+    /// Drops any input event still waiting out its <see cref="DebounceTime"/> or <see cref="ThrottleTime"/>,
+    /// for a derived component that has just committed that text by other means.
+    /// </summary>
+    protected void ResetInputRateLimiter() => _rateLimiter.Reset();
 
 
 

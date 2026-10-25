@@ -20,6 +20,33 @@ public class BitGridItemTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitGridItemShouldKeepAnAriaLabelWrittenInTheMarkup()
+    {
+        var component = RenderComponent<BitGridAttributesTest>();
+
+        var root = component.Find(".bit-grd-itm");
+
+        Assert.AreEqual("Summary", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldRenderItsParametersOverTheAttributes()
+    {
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "Own");
+            parameters.Add(p => p.TabIndex, "-1");
+            parameters.Add(p => p.Dir, BitDir.Ltr);
+        });
+
+        var root = component.Find(".bit-grd-itm");
+
+        Assert.AreEqual("Own", root.GetAttribute("aria-label"));
+        Assert.AreEqual("-1", root.GetAttribute("tabindex"));
+        Assert.AreEqual("ltr", root.GetAttribute("dir"));
+    }
+
+    [TestMethod]
     public void BitGridItemShouldRenderNoLayoutStyleOfItsOwnWhenNothingWasAskedFor()
     {
         // Everything an untouched item needs is inherited from the grid, so its own style stays empty and
@@ -551,8 +578,9 @@ public class BitGridItemTests : BunitTestContext
         var root = component.Find(".bit-grd-itm");
 
         // A negative order is how a single item is moved ahead of the ones that left theirs alone, so it
-        // must survive as it was given.
-        StringAssert.Contains(root.GetAttribute("style"), $"--bit-grd-ord:{order}");
+        // must survive as it was given - written invariantly, as CSS reads it, rather than with the minus sign of the
+        // machine's culture (fa-IR and ar-SA lead it with a direction mark).
+        StringAssert.Contains(root.GetAttribute("style"), $"--bit-grd-ord:{order.ToString(CultureInfo.InvariantCulture)}");
         Assert.IsTrue(root.ClassList.Contains("bit-grd-itm-ord"));
     }
 
@@ -936,11 +964,11 @@ public class BitGridItemTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitGridItemShouldRespectIsEnabled()
+    public void BitGridItemShouldRespectDisabled()
     {
         var component = RenderComponent<BitGridItem>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Find(".bit-grd-itm").ClassList.Contains("bit-dis"));

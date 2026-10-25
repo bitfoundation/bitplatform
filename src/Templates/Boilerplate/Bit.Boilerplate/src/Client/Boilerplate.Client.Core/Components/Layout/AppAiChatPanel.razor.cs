@@ -198,6 +198,11 @@ public partial class AppAiChatPanel : IAiChatCardHost
     protected override async Task OnAfterFirstRenderAsync()
     {
         SetDefaultValues();
+        hubConnection.Reconnecting += HubConnection_Reconnecting;
+        hubConnection.Reconnected += HubConnection_Reconnected;
+        showCardSubscription = hubConnection.On(SharedAppMessages.SHOW_AI_CHAT_CARD, (AiChatCard card) => ShowCard(card));
+        awaitCardSubscription = hubConnection.On(SharedAppMessages.AWAIT_AI_CHAT_CARD, (AiChatCard card) => AwaitCard(card));
+        showSuggestionsSubscription = hubConnection.On(SharedAppMessages.SHOW_AI_CHAT_SUGGESTIONS, (string[] suggestions) => ShowSuggestions(suggestions));
         // Recording is the one half of speech that is still a browser capability: read aloud only needs an audio
         // element to play what the backend synthesised, and every engine has one of those.
         //
@@ -206,11 +211,6 @@ public partial class AppAiChatPanel : IAiChatCardHost
         isDictationSupported = await mediaRecorder.IsSupported() && await mediaDevices.IsSupported();
         isVoiceCallSupported = await webRtc.IsSupported() && await mediaDevices.IsSupported();
         StateHasChanged();
-        hubConnection.Reconnecting += HubConnection_Reconnecting;
-        hubConnection.Reconnected += HubConnection_Reconnected;
-        showCardSubscription = hubConnection.On(SharedAppMessages.SHOW_AI_CHAT_CARD, (AiChatCard card) => ShowCard(card));
-        awaitCardSubscription = hubConnection.On(SharedAppMessages.AWAIT_AI_CHAT_CARD, (AiChatCard card) => AwaitCard(card));
-        showSuggestionsSubscription = hubConnection.On(SharedAppMessages.SHOW_AI_CHAT_SUGGESTIONS, (string[] suggestions) => ShowSuggestions(suggestions));
 
         await RestoreHistory();
 
@@ -747,13 +747,13 @@ public partial class AppAiChatPanel : IAiChatCardHost
         awaitedCard?.Decision.TrySetResult(AiChatCardDecision.NoAnswer);
         awaitedCard = null;
 
+        StopChannel();
+
         await EndVoiceCall();
 
         await StopDictation();
 
         await StopReadAloud();
-
-        StopChannel();
 
         if (historyDb is not null)
         {

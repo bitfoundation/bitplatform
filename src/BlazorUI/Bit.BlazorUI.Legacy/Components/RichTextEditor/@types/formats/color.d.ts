@@ -1,4 +1,4 @@
-declare class ColorAttributor extends StyleAttributor {
+﻿declare class ColorAttributor extends StyleAttributor {
     value(domNode: HTMLElement): string;
 }
 

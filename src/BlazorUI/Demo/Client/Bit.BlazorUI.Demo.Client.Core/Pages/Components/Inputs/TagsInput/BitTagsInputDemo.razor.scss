@@ -1,15 +1,10 @@
-@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 .example-box {
     gap: 1rem;
     display: flex;
     max-width: 25rem;
     flex-direction: column;
-}
-
-.invalid-message {
-    font-size: 0.75rem;
-    color: var(--bit-clr-err);
 }
 
 ::deep {

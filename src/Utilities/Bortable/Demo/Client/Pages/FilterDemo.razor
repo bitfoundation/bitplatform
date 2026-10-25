@@ -1,0 +1,77 @@
+﻿@page "/filter"
+
+<PageTitle>Filter · Bortable</PageTitle>
+
+<div class="bb-intro">
+    <h1>Filter</h1>
+    <p class="bb-subtitle">
+        The <code>Filter</code> predicate marks items that must not be dragged. Try dragging the red item - it can't be
+        picked up. The other items can still be dragged past it, which shifts it along by one.
+    </p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A locked item</h3>
+    <p class="bb-card-desc">
+        <code>Filter</code> is asked about every item: <code>true</code> locks it. A locked item gets the
+        <code>bit-bortable-filtered</code> class from the list - which this page paints red - and cannot be picked up by
+        the mouse, a finger or the keyboard.
+    </p>
+
+    <div class="bb-demo">
+        <LockedItem />
+    </div>
+
+    <DemoCode For="typeof(LockedItem)" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Locks that change</h3>
+    <p class="bb-card-desc">
+        The predicate reads your data, so a lock follows it: each task here has a lock button, and a locked task stays
+        put until it is unlocked. The button sits inside the item, and a click on it is the button's - it never starts a
+        drag.
+    </p>
+
+    <div class="bb-demo">
+        <LockableTasks />
+    </div>
+
+    <DemoCode For="typeof(LockableTasks)" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>Try to drag <em>Filtered (locked)</em>: nothing happens, and the cursor says it is not allowed.</li>
+        <li>
+            Drag <em>Item 3</em> below the locked item: the locked item moves up a place. A filter keeps an item from being
+            picked up; it does not pin it to its index, as in SortableJS.
+        </li>
+        <li>
+            From the keyboard, focus the locked item and press <kbd>Space</kbd>: a screen reader hears "Filtered (locked)
+            cannot be moved." - the <code>Locked</code> message.
+        </li>
+        <li>Lock <em>Deploy</em>, try to drag it, unlock it, and drag it again.</li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Good to know</h3>
+    <ul class="bb-detail-list">
+        <li>
+            <code>Filter</code> is a predicate on the item, not a CSS selector as in SortableJS: it is asked with your own
+            typed item, so the rule lives next to your data.
+        </li>
+        <li>
+            It locks an item against the user's drags only. A move made by code - <code>MoveAsync</code>,
+            <code>MoveToAsync</code> - still moves it, and in a <a href="multi-drag">multi-drag</a> list a locked item
+            cannot be selected.
+        </li>
+        <li>
+            The stylesheet dims a filtered item (<code>--bit-bortable-filtered-opacity</code>, <code>0.7</code>) and gives
+            it the not-allowed cursor; restyle <code>bit-bortable-filtered</code> to make it your own.
+        </li>
+        <li>To lock a whole list instead, see <code>Disabled</code> on <a href="disable-sort">disabling sorting</a>.</li>
+    </ul>
+</section>

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// CesiumJS 3D globe provider for <see cref="BitMap{TMapProvider}"/>.

@@ -1,0 +1,136 @@
+﻿@page "/e2e/dropdown/callout"
+
+@* Where BitDropdown places its callout and how big it makes it: below by default, above when the room is there and not
+   below, beside it with DropDirection.All when neither fits, kept within the viewport with TopAndBottom, MaxHeight,
+   PreserveCalloutWidth, the callout header and footer templates, dismissal by a scroll, a resize and another callout,
+   and the entry animation under reduced motion and ForceAnimation. *@
+
+<PageTitle>BitDropdown callout E2E</PageTitle>
+
+<h1>BitDropdown callout</h1>
+
+<E2ESection Id="widths" Title="Width">
+    <div style="width: 400px">
+        <BitDropdown Id="dd-cal-below"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Below"
+                     Items="@Short("below")"
+                     DefaultValue="@string.Empty" />
+        <BitDropdown Id="dd-cal-preserve"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="PreserveCalloutWidth"
+                     PreserveCalloutWidth
+                     Items="@Short("preserve")"
+                     DefaultValue="@string.Empty" />
+    </div>
+    <div style="width: 120px">
+        <BitDropdown Id="dd-cal-narrow"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Narrow"
+                     Items="_longTexts"
+                     DefaultValue="@string.Empty" />
+    </div>
+    <div style="width: 300px">
+        <BitDropdown Id="dd-cal-maxh"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="MaxHeight 150"
+                     MaxHeight="150"
+                     Items="_many1"
+                     DefaultValue="@string.Empty" />
+        <BitDropdown Id="dd-cal-fam"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="ForceAnimation"
+                     ForceAnimation
+                     Items="@Short("fam")"
+                     DefaultValue="@string.Empty" />
+        <BitDropdown Id="dd-cal-other"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Another dropdown"
+                     Items="@Short("other")"
+                     DefaultValue="@string.Empty" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Callout header and footer">
+    <div style="width: 300px">
+        <BitDropdown Id="dd-cal-hf"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Header and footer"
+                     Items="_many2"
+                     DefaultValue="@string.Empty">
+            <CalloutHeaderTemplate>
+                <div id="callout-header-content" style="padding: 8px">Best in the world</div>
+            </CalloutHeaderTemplate>
+            <CalloutFooterTemplate>
+                <button id="callout-footer-button" @onclick="() => _footerClicks++">New item</button>
+            </CalloutFooterTemplate>
+        </BitDropdown>
+    </div>
+    <p>Footer clicks: <span id="footer-clicks">@_footerClicks</span></p>
+</E2ESection>
+
+@* Fixed in place, so where they sit in the viewport does not depend on the sections above them. *@
+<div style="position: fixed; bottom: 12px; left: 520px; width: 220px; z-index: 1">
+    <BitDropdown Id="dd-cal-bottom"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Placeholder="Near the bottom"
+                 Items="@Short("bottom")"
+                 DefaultValue="@string.Empty" />
+</div>
+
+<div style="position: fixed; top: 300px; left: 520px; width: 200px; z-index: 1">
+    <BitDropdown Id="dd-cal-all"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Placeholder="DropDirection All"
+                 DropDirection="BitDropDirection.All"
+                 Items="_many3"
+                 DefaultValue="@string.Empty" />
+</div>
+
+<div style="position: fixed; top: 300px; left: 900px; width: 200px; z-index: 1">
+    <BitDropdown Id="dd-cal-tb"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Placeholder="TopAndBottom"
+                 DropDirection="BitDropDirection.TopAndBottom"
+                 Items="_many4"
+                 DefaultValue="@string.Empty" />
+</div>
+
+<div style="height: 1600px">Room to scroll.</div>
+
+<E2EStatus />
+
+@code {
+    private readonly Dictionary<string, List<BitDropdownItem<string>>> _lists = [];
+
+    private List<BitDropdownItem<string>> Short(string key)
+    {
+        if (_lists.TryGetValue(key, out var list) is false)
+        {
+            _lists[key] = list =
+            [
+                new() { Text = "Apple", Value = "f-app" },
+                new() { Text = "Banana", Value = "f-ban" },
+                new() { Text = "Grape", Value = "f-gra" },
+            ];
+        }
+
+        return list;
+    }
+
+    private static List<BitDropdownItem<string>> Many() =>
+        Enumerable.Range(1, 40).Select(i => new BitDropdownItem<string> { Text = $"Option {i:00}", Value = $"o{i}" }).ToList();
+
+    private readonly List<BitDropdownItem<string>> _many1 = Many();
+    private readonly List<BitDropdownItem<string>> _many2 = Many();
+    private readonly List<BitDropdownItem<string>> _many3 = Many();
+    private readonly List<BitDropdownItem<string>> _many4 = Many();
+
+    private readonly List<BitDropdownItem<string>> _longTexts =
+    [
+        new() { Text = "A rather long option text that is wider than the field", Value = "long" },
+        new() { Text = "Short", Value = "short" },
+    ];
+
+    private int _footerClicks;
+}

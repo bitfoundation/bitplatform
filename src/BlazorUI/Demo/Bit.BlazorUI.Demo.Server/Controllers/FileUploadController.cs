@@ -8,7 +8,9 @@ public partial class FileUploadController : AppControllerBase
 
     [HttpPost]
     [RequestSizeLimit(2000 * 1024 * 1024 /*~2GB*/)]
-    public async Task<IActionResult> UploadNonChunkedFile(IFormFile file, CancellationToken cancellationToken)
+    public async Task<IActionResult> UploadNonChunkedFile(IFormFile file,
+                                                          [FromHeader(Name = "BIT_FILE_ID")][Required] string bitFileId,
+                                                          CancellationToken cancellationToken)
     {
         if (file is null)
         {
@@ -23,7 +25,9 @@ public partial class FileUploadController : AppControllerBase
             Directory.CreateDirectory(_settings.UploadPath);
         }
 
-        var path = Path.Combine(_settings.UploadPath, file.FileName);
+        // the file is stored under the same {id}-{name} key the chunked endpoint uses, since that is the
+        // one the remove endpoint deletes by - storing it under the bare name would make every removal a 404.
+        var path = Path.Combine(_settings.UploadPath, $"{bitFileId}-{file.FileName}");
 
         if (System.IO.File.Exists(path))
         {
@@ -78,12 +82,13 @@ public partial class FileUploadController : AppControllerBase
     {
         var path = Path.Combine(_settings.UploadPath, $"{bitFileId}-{fileName}");
 
-        if (!System.IO.File.Exists(path))
+        // a delete is idempotent: a file this server never stored - the PreloadedFiles of the demo, which
+        // stand in for the attachments of a record, are exactly that - is already in the state asked for,
+        // and answering 404 would only mark it in the UI as a removal that failed.
+        if (System.IO.File.Exists(path))
         {
-            return NotFound();
+            System.IO.File.Delete(path);
         }
-
-        System.IO.File.Delete(path);
 
         return Ok();
     }

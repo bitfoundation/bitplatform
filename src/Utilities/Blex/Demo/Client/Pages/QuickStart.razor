@@ -1,0 +1,172 @@
+﻿@page "/quick-start"
+@inherits BlexComponentBase
+@inject CounterStore Counter
+
+<DocPage Href="quick-start" Title="Quick start"
+         Lead="A complete, reactive, time-travelable counter in three files and about twenty lines.">
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> 1. Write the store</h2>
+        <p>
+            A store is a <code>partial class</code> marked <code>[BlexStore]</code>. Fields marked
+            <code>[BlexState]</code> become reactive properties; methods marked <code>[BlexAction]</code> become
+            public wrappers that record a single named action.
+        </p>
+
+        <CodeBlock Code="@Step1" FileName="Stores/CounterStore.cs" />
+
+        <p>The naming conventions are mechanical, and the generator enforces them:</p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="Generator naming conventions">
+            <table class="bb-table">
+                <thead><tr><th>You write</th><th>You get</th><th>Rule</th></tr></thead>
+                <tbody>
+                    <tr><td><code>[BlexState] private int _count;</code></td><td><code>public int Count { get; set; }</code></td><td>Strip a leading underscore, capitalize.</td></tr>
+                    <tr><td><code>[BlexComputed] int ComputeDoubleCount()</code></td><td><code>public int DoubleCount { get; }</code></td><td>Strip <code>Compute</code> or <code>Get</code>.</td></tr>
+                    <tr><td><code>[BlexAction] void OnIncrement()</code></td><td><code>public void Increment()</code></td><td>Strip the <code>On</code> prefix.</td></tr>
+                    <tr><td><code>[BlexEffect] async Task OnLoad()</code></td><td><code>public Task Load()</code> + <code>LoadIsLoading</code> + <code>LoadError</code></td><td>Strip <code>On</code>, add the lifecycle.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> 2. Register it</h2>
+        <CodeBlock Code="@Step2" FileName="Program.cs" />
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> 3. Wrap the app and use the store</h2>
+        <CodeBlock Code="@Step3" Language="razor" FileName="App.razor" />
+        <CodeBlock Code="@Step4" Language="razor" FileName="Pages/Counter.razor" />
+
+        <p>
+            <code>BlexComponentBase.Subscribe(store)</code> re-renders the component whenever that
+            store changes, and detaches automatically when the component is disposed. That is the whole
+            integration - there is no <code>StateHasChanged</code> to call and nothing to unsubscribe.
+        </p>
+
+        <DemoCard Title="The finished counter"
+                  Description="The page above, running against this site's own CounterStore - which also persists itself, so the count survives a reload. Every click is a named action: watch the Inspector at the bottom of the page."
+                  Source="@Step4" SourceLanguage="razor">
+            <div class="bb-stats">
+                <div class="bb-stat">
+                    <span class="bb-stat-label">Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">DoubleCount</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.DoubleCount</Persisted></span>
+                </div>
+                <div class="bb-stat">
+                    <span class="bb-stat-label">IsEven</span>
+                    <span class="bb-stat-value"><Persisted>@Counter.IsEven</Persisted></span>
+                </div>
+            </div>
+            <div class="bb-toolbar">
+                <button class="btn btn-primary" @onclick="Counter.Increment">Increment</button>
+                <button class="btn btn-secondary" @onclick="Counter.Decrement">Decrement</button>
+                <button class="btn btn-secondary" @onclick="Counter.ResetState">ResetState()</button>
+            </div>
+        </DemoCard>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What you got for free</h2>
+        <div class="bb-grid">
+            <div class="bb-card">
+                <p class="bb-card-title">Batched renders</p>
+                <p class="bb-card-desc">
+                    Every mutation inside an action is folded into one notification, so a five-field
+                    action re-renders the component once - not five times.
+                </p>
+            </div>
+            <div class="bb-card">
+                <p class="bb-card-title">Named, inspectable actions</p>
+                <p class="bb-card-desc">
+                    Each action carries its name and its argument payload to middleware, subscribers and
+                    the DevTools extension.
+                </p>
+            </div>
+            <div class="bb-card">
+                <p class="bb-card-title">Snapshots</p>
+                <p class="bb-card-desc">
+                    <code>SerializeState()</code> / <code>DeserializeState()</code> are generated, which
+                    is what makes persistence, undo/redo and time-travel possible.
+                </p>
+            </div>
+            <div class="bb-card">
+                <p class="bb-card-title">Compile-time safety</p>
+                <p class="bb-card-desc">
+                    @DiagnosticsCatalog.All.Count diagnostics - @(DiagnosticsCatalog.All.Count(d => d.IsError)) of them
+                    errors - catch a malformed store at build time rather than emitting code that does not compile.
+                    See <a href="diagnostics">Diagnostics</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to next</h2>
+        <div class="bb-grid">
+            <a class="bb-card" href="stores"><p class="bb-card-title">Stores &amp; state</p><p class="bb-card-desc">The container, its options and everything the generator emits.</p></a>
+            <a class="bb-card" href="effects"><p class="bb-card-title">Effects</p><p class="bb-card-desc">Async work with generated loading, error and cancellation.</p></a>
+            <a class="bb-card" href="devtools"><p class="bb-card-title">Time travel</p><p class="bb-card-desc">Rewind your application state in the Redux DevTools.</p></a>
+        </div>
+    </div>
+
+</DocPage>
+
+@code {
+    protected override void OnInitialized() => Subscribe(Counter);
+
+    private const string Step1 = """
+        using Bit.Blex;
+
+        namespace MyApp.Stores;
+
+        [BlexStore(Name = "counter")]
+        public partial class CounterStore
+        {
+            [BlexState] private int _count;
+            [BlexState] private int _step = 1;
+
+            [BlexComputed] private int  ComputeDoubleCount() => Count * 2;
+            [BlexComputed] private bool ComputeIsEven()      => Count % 2 == 0;
+
+            [BlexAction] private void OnIncrement() => Count += Step;
+            [BlexAction] private void OnDecrement() => Count -= Step;
+        }
+        """;
+
+    private const string Step2 = """
+        builder.Services.AddBitBlexServices();
+        builder.Services.AddBitBlexStore<CounterStore>();
+        """;
+
+    private const string Step3 = """
+        <BlexProvider>
+            <Router AppAssembly="@typeof(App).Assembly">
+                <Found Context="routeData">
+                    <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+                </Found>
+                <NotFound><p>Not found.</p></NotFound>
+            </Router>
+        </BlexProvider>
+        """;
+
+    private const string Step4 = """
+        @page "/counter"
+        @inherits BlexComponentBase
+        @inject CounterStore Counter
+
+        <p>Count: @Counter.Count (double: @Counter.DoubleCount, even: @Counter.IsEven)</p>
+
+        <button class="btn" @onclick="Counter.Increment">Increment</button>
+        <button class="btn" @onclick="Counter.Decrement">Decrement</button>
+        <button class="btn" @onclick="Counter.ResetState">ResetState()</button>
+
+        @code {
+            protected override void OnInitialized() => Subscribe(Counter);
+        }
+        """;
+}

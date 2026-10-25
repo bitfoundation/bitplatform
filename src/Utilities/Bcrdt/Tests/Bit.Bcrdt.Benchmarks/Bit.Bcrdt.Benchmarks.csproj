@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <!-- Single-target: this is a measurement tool, not a shipped/multi-TFM library. net10.0 matches
+             global.json's pinned SDK. -->
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <!-- BenchmarkDotNet refuses to measure an unoptimized assembly, and it is right to: a Debug build inlines
+             nothing and would report numbers that no user ever experiences. Numbers should still come from a
+             Release run. -->
+        <Optimize>true</Optimize>
+        <!-- Not a unit-test project: it's a console harness run manually (dotnet run -c Release), so it
+             deliberately does NOT set IsTestProject. -->
+        <!-- Signed with the repository key because Bit.Bcrdt grants InternalsVisibleTo to this assembly by public
+             key, so a benchmark can time an internal code path directly when the public entry point would add
+             noise to the measurement. -->
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Bcrdt\Bit.Bcrdt.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Bit.Bcrdt" />
+    </ItemGroup>
+
+</Project>

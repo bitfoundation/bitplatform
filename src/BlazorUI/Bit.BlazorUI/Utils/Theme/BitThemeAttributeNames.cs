@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Single source of truth for the HTML attributes and storage keys used by the theme system.
@@ -34,6 +34,21 @@ public static class BitThemeAttributeNames
     public const string ThemeLight = "bit-theme-light";
 
     /// <summary>
+    /// Opt-in list of the themes the page ships stylesheets for, space-separated
+    /// (<c>bit-theme-available="fluent2-light fluent2-dark high-contrast"</c>). A stored pair naming a
+    /// theme outside it falls back to <see cref="ThemeLight"/> / <see cref="ThemeDark"/>, and a stored
+    /// preference outside it to the active pair's theme of its scheme (a name ending in <c>dark</c> to the
+    /// dark one, any other to the light one) - so a visitor whose saved theme came from a preset the app no
+    /// longer offers keeps their light or dark choice instead of a theme nothing styles. The declared pair
+    /// and <c>system</c> count as offered whether listed or not, and a call that sets a theme or a pair outside
+    /// it (<see cref="BitThemeManager.SetThemeAsync(string)"/>, <see cref="BitThemeManager.SetThemePairAsync(string, string)"/>)
+    /// is ignored rather than painted unstyled, while one another tab stores (a tab of an older build) is fitted
+    /// onto the pair the way a stored one is. Names are matched lower-cased, as the server normalizes them.
+    /// Absent, every stored name is restored as it is.
+    /// </summary>
+    public const string ThemeAvailable = "bit-theme-available";
+
+    /// <summary>
     /// Marker attribute that opts theme swaps into the View Transitions API: the page cross-fades
     /// to the new palette instead of hard-swapping. Checked live on every change, so it can be
     /// added/removed at runtime. Ignored (plain swap) when the browser lacks
@@ -57,6 +72,30 @@ public static class BitThemeAttributeNames
     /// </summary>
     public const string ThemeColorVariable = "--bit-clr-bg-pri";
 
+    /// <summary>
+    /// Marker attribute on the element of an inline theme overlay - a <see cref="BitThemeProvider"/>
+    /// wrapper, or <see cref="BitThemeManager.ApplyBitThemeAsync"/>'s target - naming, space-separated,
+    /// the groups of family aliases whose inputs the overlay re-values (<c>radius</c>, <c>radius-control</c>,
+    /// <c>shadow</c>, <c>tooltip</c>, <c>foreground</c> and the eight roles <c>pri</c> ... <c>err</c>). Every
+    /// theme stylesheet re-declares its own aliases for each named group on that element, so they follow
+    /// the overlay's values as that theme builds them (<c>Styles/theme-overlay.scss</c>). Written by the
+    /// library; a preset of an app's own selects it (<c>[bit-theme-overlay~="shadow"]</c>) to re-declare a
+    /// family alias it decides differently from the core stylesheet.
+    /// </summary>
+    public const string ThemeOverlay = "bit-theme-overlay";
+
     /// <summary><c>localStorage</c> key used by the client script when persistence is enabled.</summary>
     public const string ThemeStorageKey = "bit-current-theme";
+
+    /// <summary>
+    /// <c>localStorage</c> key the client script keeps, beside <see cref="ThemeStorageKey"/> and when
+    /// persistence is enabled, what the stored preference resolves against: the light / dark pair as
+    /// <c>"&lt;light&gt; &lt;dark&gt;"</c> once the visitor has switched it at runtime
+    /// (<see cref="BitThemeManager.SetThemePairAsync(string, string)"/>), which outranks
+    /// <see cref="ThemeLight"/> / <see cref="ThemeDark"/> on the next visit; otherwise <c>light</c> /
+    /// <c>dark</c> while the preference is that theme of the page's own pair, so it follows a later
+    /// change of that pair. Absent for any other preference, which is restored as it is - unless
+    /// <see cref="ThemeAvailable"/> leaves it out.
+    /// </summary>
+    public const string ThemePairStorageKey = "bit-theme-pair";
 }

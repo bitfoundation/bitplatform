@@ -10,6 +10,13 @@ public abstract class BitLoadingBase : BitComponentBase
     private int _delayInEffect;
     private CancellationTokenSource? _delayCts;
 
+    // The parameters of this class are taken out of the ParameterView below before it reaches
+    // BitComponentBase, so the set that BitComponentBase tracks never sees them, and the loaders
+    // themselves declare no parameters for the source generator to track. A cascade filling in what a
+    // consumer left unset therefore needs this set of its own to tell the two apart, or it would overwrite
+    // a Color or a Size that was written on the loader by hand.
+    private readonly HashSet<string> _assignedLoadingParameters = [];
+
 
 
     /// <summary>
@@ -32,9 +39,24 @@ public abstract class BitLoadingBase : BitComponentBase
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the loading components.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to every loading component
+    /// under the same <see cref="BitParams"/> component - one <see cref="BitLoadingParams"/> reaches all eighteen
+    /// of them, since they share this one API.
+    /// </remarks>
+    [CascadingParameter(Name = BitLoadingParams.ParamName)]
+    public BitLoadingParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// Gets or sets how insistently the live region of the loading component announces itself.
     /// <br />
-    /// The default value is <strong>"polite"</strong>.
+    /// The default value is <strong>"polite"</strong> for the default "status" role, and none for any other.
     /// </summary>
     /// <remarks>
     /// This is rendered as the 'aria-live' attribute of the root element. "polite" waits for the screen reader
@@ -54,6 +76,10 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <summary>
     /// The general color of the loading component.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the --bit-Loading-color CSS variable; left unset (and with no
+    /// <see cref="CustomColor"/>), the loader is primary unless that variable says otherwise.
+    /// </remarks>
     [Parameter, ResetStyleBuilder]
     public BitColor? Color { get; set; }
 
@@ -63,7 +89,7 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <remarks>
     /// Any valid CSS color works here, <c>currentColor</c> included, which is what lets a loader take the color
     /// of the text around it. It only applies while <see cref="Color"/> is left unset - a theme role always
-    /// wins over a literal color.
+    /// wins over a literal color. Like Color, it wins over the --bit-Loading-color CSS variable.
     /// </remarks>
     [Parameter, ResetStyleBuilder] public string? CustomColor { get; set; }
 
@@ -71,9 +97,11 @@ public abstract class BitLoadingBase : BitComponentBase
     /// The custom size of the loading component in px.
     /// </summary>
     /// <remarks>
-    /// The whole drawing scales with it, the label included. It only applies while <see cref="Size"/> is left unset.
+    /// The whole drawing scales with it, and the label follows within the readable range of the type ramp. It
+    /// only applies while <see cref="Size"/> is left unset. Zero and negative values are ignored. Like Size, it
+    /// wins over the --bit-Loading-size and --bit-Loading-label-font-size CSS variables.
     /// </remarks>
-    [Parameter, ResetStyleBuilder] public int? CustomSize { get; set; }
+    [Parameter, ResetClassBuilder, ResetStyleBuilder] public int? CustomSize { get; set; }
 
     /// <summary>
     /// Gets or sets how long, in milliseconds, the loading component waits before it shows anything.
@@ -102,7 +130,12 @@ public abstract class BitLoadingBase : BitComponentBase
     /// </summary>
     /// <remarks>
     /// An inline loader is laid out as an inline box aligned to the middle of the current line, so it can sit
-    /// inside a sentence, a button, a table cell or a heading without pushing anything onto a new line.
+    /// inside a sentence, a button, a table cell or a heading without pushing anything onto a new line. Every
+    /// element of a loader is a span, so it is valid markup inside a paragraph or a button either way.
+    /// <br />
+    /// Unless <see cref="Size"/> or <see cref="CustomSize"/> says otherwise, it is drawn at the size of the
+    /// surrounding text (1em) and its label takes the text size too, so it fits the line it sits in. A Size or a
+    /// CustomSize handed down by a <see cref="BitParams"/> cascade is not applied to a loader that sets Inline itself.
     /// </remarks>
     [Parameter, ResetClassBuilder] public bool Inline { get; set; }
 
@@ -118,13 +151,19 @@ public abstract class BitLoadingBase : BitComponentBase
 
     /// <summary>
     /// The position of the label of the loading component.
+    /// <br />
+    /// The default value is <strong>Top</strong>, or <strong>End</strong> for an <see cref="Inline"/> loader, which keeps
+    /// its label on the line it sits in.
     /// </summary>
     /// <remarks>
     /// The Start and End positions follow the direction of the writing and swap sides in a right-to-left
     /// layout, while Top and Bottom stay where they are.
+    /// <br />
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// The custom content of the label of the loading component.
@@ -156,18 +195,25 @@ public abstract class BitLoadingBase : BitComponentBase
     /// A "status" role turns the root into a live region, which is what makes a screen reader announce the
     /// label - or the fallback text, see <see cref="DefaultLoadingText"/> - when the loader appears.
     /// <br />
-    /// Prefer "progressbar" only where the wait is measured and reported through the aria-value attributes,
-    /// and be aware that everything inside a progressbar is presentational, so a visible label is no longer
-    /// announced from within it. Pass "none" for a purely decorative loader whose surroundings already report
-    /// the wait. A role passed straight through as a 'role' HTML attribute is honored while this parameter is
-    /// left unset.
+    /// "progressbar" makes it an indeterminate progress bar instead, which a screen reader lists as a control
+    /// but does not announce when it appears. Everything inside a progressbar is presentational, so the root is
+    /// named directly - with <see cref="BitComponentBase.AriaLabel"/>, then <see cref="Label"/>, then the
+    /// fallback text; give one drawn with a <see cref="LabelTemplate"/> an AriaLabel that says what its template
+    /// shows, or it is named by the fallback text alone. Pass "none" for a purely
+    /// decorative loader whose surroundings already report the wait. A role passed straight through as a
+    /// 'role' HTML attribute is honored while this parameter is left unset.
     /// </remarks>
     [Parameter] public string? Role { get; set; }
 
     /// <summary>
-    /// The Size of the loading component.
+    /// The Size of the loading component: 40px, 64px or 88px, with the label on the matching step of the type ramp.
     /// </summary>
-    [Parameter, ResetStyleBuilder]
+    /// <remarks>
+    /// An explicit value wins over the --bit-Loading-size and --bit-Loading-label-font-size CSS variables; left unset
+    /// (and with no <see cref="CustomSize"/>), the loader is the 64px medium one - 1em when <see cref="Inline"/> -
+    /// unless those variables say otherwise.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public BitSize? Size { get; set; }
 
     /// <summary>
@@ -181,7 +227,8 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <br />
     /// The multiplier composes with the reduced-motion preference rather than overriding it: a loader in a
     /// reduced-motion environment still turns at the calmer speed the theme picks for it, only scaled by this
-    /// value. Zero and negative values are ignored.
+    /// value. Zero and negative values are ignored. An explicit value wins over the --bit-Loading-speed CSS
+    /// variable; left unset, the loader runs at its normal speed unless that variable says otherwise.
     /// </remarks>
     [Parameter, ResetStyleBuilder] public double? Speed { get; set; }
 
@@ -204,7 +251,8 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <br />
     /// It is a literal number of pixels rather than a ratio, so it does not scale with <see cref="Size"/> or
     /// <see cref="CustomSize"/> - a hairline stays a hairline whatever the loader is sized at. Zero and
-    /// negative values are ignored.
+    /// negative values are ignored. An explicit value wins over the --bit-Loading-thickness CSS variable; left
+    /// unset, the stroke keeps its authored width unless that variable says otherwise.
     /// </remarks>
     [Parameter, ResetStyleBuilder] public int? Thickness { get; set; }
 
@@ -212,95 +260,126 @@ public abstract class BitLoadingBase : BitComponentBase
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
-        var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>);
+        _assignedLoadingParameters.Clear();
 
-        foreach (var parameter in parametersDictionary!)
+        // A cascade that no longer reaches the loader is absent from the ParameterView rather than passed as null.
+        CascadingParameters = null;
+
+        var parametersDictionary = TakeParametersDictionary(parameters);
+
+        foreach (var parameter in parametersDictionary)
         {
             switch (parameter.Key)
             {
+                case nameof(CascadingParameters):
+                    CascadingParameters = (BitLoadingParams?)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
                 case nameof(AriaLive):
+                    _assignedLoadingParameters.Add(nameof(AriaLive));
                     AriaLive = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(Classes):
+                    _assignedLoadingParameters.Add(nameof(Classes));
                     var classes = (BitLoadingClassStyles?)parameter.Value;
                     if (Classes != classes) ClassBuilder.Reset();
                     Classes = classes;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(Color):
+                    _assignedLoadingParameters.Add(nameof(Color));
                     var color = (BitColor?)parameter.Value;
                     if (Color != color) StyleBuilder.Reset();
                     Color = color;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(CustomColor):
+                    _assignedLoadingParameters.Add(nameof(CustomColor));
                     var customColor = (string?)parameter.Value;
                     if (CustomColor != customColor) StyleBuilder.Reset();
                     CustomColor = customColor;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(CustomSize):
+                    _assignedLoadingParameters.Add(nameof(CustomSize));
                     var customSize = (int?)parameter.Value;
-                    if (CustomSize != customSize) StyleBuilder.Reset();
+                    if (CustomSize != customSize)
+                    {
+                        ClassBuilder.Reset();
+                        StyleBuilder.Reset();
+                    }
                     CustomSize = customSize;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(Delay):
+                    _assignedLoadingParameters.Add(nameof(Delay));
                     Delay = (int)parameter.Value!;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(Inline):
+                    _assignedLoadingParameters.Add(nameof(Inline));
                     var inline = (bool)parameter.Value!;
                     if (Inline != inline) ClassBuilder.Reset();
                     Inline = inline;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(Label):
-                    var label = (string?)parameter.Value;
-                    Label = label;
+                    _assignedLoadingParameters.Add(nameof(Label));
+                    Label = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
-                case nameof(LabelPosition):
-                    var labelPosition = (BitLabelPosition?)parameter.Value;
-                    if (LabelPosition != labelPosition) ClassBuilder.Reset();
-                    LabelPosition = labelPosition;
+                case nameof(LabelPlacement):
+                    _assignedLoadingParameters.Add(nameof(LabelPlacement));
+                    var labelPlacement = (BitPlacement?)parameter.Value;
+                    if (LabelPlacement != labelPlacement) ClassBuilder.Reset();
+                    LabelPlacement = labelPlacement;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(LabelTemplate):
-                    var labelTemplate = (RenderFragment?)parameter.Value;
-                    LabelTemplate = labelTemplate;
+                    _assignedLoadingParameters.Add(nameof(LabelTemplate));
+                    LabelTemplate = (RenderFragment?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(Paused):
+                    _assignedLoadingParameters.Add(nameof(Paused));
                     var paused = (bool)parameter.Value!;
                     if (Paused != paused) ClassBuilder.Reset();
                     Paused = paused;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(Role):
+                    _assignedLoadingParameters.Add(nameof(Role));
                     Role = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(Size):
+                    _assignedLoadingParameters.Add(nameof(Size));
                     var size = (BitSize?)parameter.Value;
-                    if (Size != size) StyleBuilder.Reset();
+                    if (Size != size)
+                    {
+                        ClassBuilder.Reset();
+                        StyleBuilder.Reset();
+                    }
                     Size = size;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(Speed):
+                    _assignedLoadingParameters.Add(nameof(Speed));
                     var speed = (double?)parameter.Value;
                     if (Speed != speed) StyleBuilder.Reset();
                     Speed = speed;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(Styles):
+                    _assignedLoadingParameters.Add(nameof(Styles));
                     var styles = (BitLoadingClassStyles?)parameter.Value;
                     if (Styles != styles) StyleBuilder.Reset();
                     Styles = styles;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(Thickness):
+                    _assignedLoadingParameters.Add(nameof(Thickness));
                     var thickness = (int?)parameter.Value;
                     if (Thickness != thickness) StyleBuilder.Reset();
                     Thickness = thickness;
@@ -309,8 +388,11 @@ public abstract class BitLoadingBase : BitComponentBase
             }
         }
 
-        // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
-        return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
+        // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc. What is left reaches the
+        // base through ParametersCache, handed over right before the call and taken by the base as it starts, so a pass
+        // that throws on the way leaves none behind; a view built from it would only be an allocation nobody reads.
+        ParametersCache = parametersDictionary;
+        return base.SetParametersAsync(ParameterView.Empty);
     }
 
 
@@ -318,6 +400,11 @@ public abstract class BitLoadingBase : BitComponentBase
     internal new ElementClassBuilder ClassBuilder => base.ClassBuilder;
 
     internal new ElementStyleBuilder StyleBuilder => base.StyleBuilder;
+
+    private protected override bool IsSetByMarkup(string name) => _assignedLoadingParameters.Contains(name) || base.IsSetByMarkup(name);
+
+    // Read straight off the property rather than through reflection, as the generated code of a component does.
+    private protected override IBitComponentParams? CascadedParams => CascadingParameters;
 
     /// <summary>
     /// The role the root element ends up with: the parameter where it was given one, then a plain 'role'
@@ -338,8 +425,13 @@ public abstract class BitLoadingBase : BitComponentBase
     /// The decorative case wins over a politeness that was asked for explicitly, as a parameter or as a
     /// passed-through attribute: the two contradict each other, and the role is the one that says what the
     /// loader is for. It is the same call <see cref="_ScreenReaderText"/> makes about the fallback text.
+    /// <br />
+    /// The "polite" default only restates what a status region already is, for the assistive technology
+    /// that reads the attribute rather than the role. Any other role is left to its own politeness: an
+    /// "alert" is assertive and a "progressbar" no live region at all, and a polite written onto either
+    /// would change what it is.
     /// </remarks>
-    internal string? _AriaLive => _IsDecorative ? null : (AriaLive ?? PassedThrough("aria-live") ?? "polite");
+    internal string? _AriaLive => _IsDecorative ? null : (AriaLive ?? PassedThrough("aria-live") ?? (_Role is "status" ? "polite" : null));
 
     /// <summary>The writing direction of the root element, resolved the same way as <see cref="_Role"/>.</summary>
     internal string? _Dir => Dir?.ToString().ToLower() ?? PassedThrough("dir");
@@ -352,7 +444,21 @@ public abstract class BitLoadingBase : BitComponentBase
     /// label: without one, the same text is rendered inside the live region as <see cref="_ScreenReaderText"/>
     /// instead, so that a screen reader is never handed the one text twice.
     /// </summary>
-    internal string? _AriaLabel => (_HasVisibleLabel ? AriaLabel : null) ?? PassedThrough("aria-label");
+    /// <remarks>
+    /// A progressbar is the exception. Its children are presentational, so neither the label nor the hidden
+    /// text inside it is ever read, and the role requires a name of its own: the root is named with the
+    /// AriaLabel, then the text of the Label, then the fallback text. A LabelTemplate has no text to hand
+    /// over, so a progressbar drawn with one skips straight to the fallback text - unless a passed-through
+    /// 'aria-labelledby' already names it, and a second name beside that one would only compete with it.
+    /// </remarks>
+    internal string? _AriaLabel => _IsProgressBar
+                                       ? AriaLabel ?? PassedThrough("aria-label") ?? (LabelTemplate is null
+                                                                                          ? Label ?? DefaultLoadingText
+                                                                                          : (PassedThrough("aria-labelledby") is null ? DefaultLoadingText : null))
+                                       : (_HasVisibleLabel ? AriaLabel : null) ?? PassedThrough("aria-label");
+
+    /// <summary>Whether the root is a progressbar, which is named on the root rather than by its content.</summary>
+    internal bool _IsProgressBar => _Role is "progressbar";
 
     /// <summary>
     /// Whether the loader was declared purely decorative, and so announces nothing of its own: the wait it
@@ -366,30 +472,20 @@ public abstract class BitLoadingBase : BitComponentBase
     /// the root as the accessible name of the live region and is what a screen reader reads there, so the
     /// hidden text underneath it would never be reached anyway.
     /// </remarks>
-    internal string? _ScreenReaderText => (_HasVisibleLabel || _IsDecorative || PassedThrough("aria-label") is not null)
+    internal string? _ScreenReaderText => (_HasVisibleLabel || _IsDecorative || _IsProgressBar || PassedThrough("aria-label") is not null)
                                           ? null
                                           : (AriaLabel ?? DefaultLoadingText);
 
-    private string? PassedThrough(string attribute)
-    {
-        return HtmlAttributes.TryGetValue(attribute, out var value) ? value?.ToString() : null;
-    }
+    private string? PassedThrough(string attribute) => GetSplattedAttribute(attribute);
 
 
-
-    /// <summary>
-    /// The size, in pixels, the drawing of this loader was authored at.
-    /// </summary>
-    /// <remarks>
-    /// Every offset inside a loader is a literal pixel value taken from the original artwork, and
-    /// <see cref="Convert"/> rescales those values against this so that the whole drawing lands inside the
-    /// box the current size asks for. A derived component only overrides it when its artwork was drawn at
-    /// something other than the 80px the family shares.
-    /// </remarks>
-    protected virtual int OriginalSize => 80;
 
     protected override void OnParametersSet()
     {
+        // Applied before anything below reads the parameters, so that a Delay handed down by a cascade opens
+        // its window exactly as one written on the loader does.
+        CascadingParameters?.UpdateParameters(this);
+
         base.OnParametersSet();
 
         // Held back rather than hidden: content that is not in the document cannot flash up and vanish again
@@ -424,13 +520,27 @@ public abstract class BitLoadingBase : BitComponentBase
 
         ClassBuilder.Register(() => Paused ? "bit-ldn-pau" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        // An unset Size publishes nothing, which is what lets the stylesheet tell a default from a choice: the public
+        // --bit-Loading-* variables restyle the default and never an explicit value. A custom size takes a class of
+        // its own that only scales the label from the inline variable sizing the drawing. An unsized inline loader is
+        // drawn at the size of the text around it rather than the medium default - a default as well, which the
+        // stylesheet still reads after the variables.
+        ClassBuilder.Register(() => Size switch
         {
-            BitLabelPosition.Top => "bit-ldn-ltp",
-            BitLabelPosition.Bottom => "bit-ldn-lbm",
-            BitLabelPosition.Start => "bit-ldn-lst",
-            BitLabelPosition.End => "bit-ldn-led",
-            _ => "bit-ldn-ltp"
+            BitSize.Small => "bit-ldn-sm",
+            BitSize.Medium => "bit-ldn-md",
+            BitSize.Large => "bit-ldn-lg",
+            _ => CustomSize > 0 ? "bit-ldn-csz" : Inline ? "bit-ldn-em" : string.Empty
+        });
+
+        ClassBuilder.Register(() => LabelPlacement switch
+        {
+            BitPlacement.Top => "bit-ldn-ltp",
+            BitPlacement.Bottom => "bit-ldn-lbm",
+            BitPlacement.Start => "bit-ldn-lst",
+            BitPlacement.End => "bit-ldn-led",
+            // An inline loader keeps its label on the line it sits in rather than stacking the two.
+            _ => Inline ? "bit-ldn-led" : "bit-ldn-ltp"
         });
 
         ClassBuilder.Register(() => Classes?.Root);
@@ -438,6 +548,9 @@ public abstract class BitLoadingBase : BitComponentBase
 
     protected override void RegisterCssStyles()
     {
+        // Each of these is written only when its parameter asks for something, and under a name of its own that
+        // the stylesheet resolves ahead of the matching --bit-Loading-* variable: an explicit value wins over the
+        // variable, while one left unset leaves the variable in charge of the default.
         StyleBuilder.Register(() =>
         {
             var color = Color switch
@@ -460,26 +573,22 @@ public abstract class BitLoadingBase : BitComponentBase
                 BitColor.SecondaryBorder => "var(--bit-clr-brd-sec)",
                 BitColor.TertiaryBorder => "var(--bit-clr-brd-ter)",
                 // Color is nullable, so this also covers the unset case, where CustomColor applies.
-                _ => CustomColor ?? "var(--bit-clr-pri)"
+                _ => CustomColor.HasValue() ? CustomColor : null
             };
 
-            return $"--bit-ldn-color: {color}";
+            return color is null ? null : $"--bit-ldn-clr:{color}";
         });
 
-        StyleBuilder.Register(() => $"--bit-ldn-size:{GetSize()}px");
-        StyleBuilder.Register(() => $"--bit-ldn-font-size:{Format(GetFontSize())}px");
+        StyleBuilder.Register(() => Size is null && CustomSize > 0 ? $"--bit-ldn-sz:{CustomSize}px" : null);
 
         // Left unset rather than given the authored value, so that every stroke keeps reading its own
-        // fallback - the one the drawing was measured at, which is neither shared between the loaders nor
-        // the same at every size.
+        // fallback - the one the drawing was measured at, which is not shared between the loaders.
         StyleBuilder.Register(() => Thickness > 0 ? $"--bit-ldn-stroke:{Thickness}px" : null);
 
-        // Scales the loop factor the stylesheet already carries rather than replacing it, so the calmer speed
-        // a reduced-motion environment asks for - and the full speed ForceAnimation puts back - both survive
-        // the multiplier instead of being overwritten by it.
-        StyleBuilder.Register(() => Speed > 0
-                                    ? $"--bit-ldn-mot-factor:calc(var(--bit-mot-loop-factor, 1) / {Format(Speed.Value)})"
-                                    : null);
+        // A multiplier the stylesheet divides the theme's loop factor by, rather than a factor of its own, so
+        // the calmer speed a reduced-motion environment asks for - and the full speed ForceAnimation puts back -
+        // both survive it.
+        StyleBuilder.Register(() => Speed > 0 ? $"--bit-ldn-spd:{Speed.Value.ToString(CultureInfo.InvariantCulture)}" : null);
 
         StyleBuilder.Register(() => Styles?.Root);
     }
@@ -494,18 +603,6 @@ public abstract class BitLoadingBase : BitComponentBase
         }
 
         await base.DisposeAsync(disposing);
-    }
-
-    /// <summary>
-    /// Rescales one of the drawing's authored offsets to the size the component is currently rendered at,
-    /// and formats it for a CSS custom property.
-    /// </summary>
-    /// <param name="value">The offset as it was measured against <see cref="OriginalSize"/>.</param>
-    protected string Convert(double value)
-    {
-        // Rounded before it is written out: the ratio is rarely exact, and an unrounded double turns a 6.4px
-        // offset into 6.400000000000001px in the style attribute.
-        return Format(Math.Round(value * GetSize() / OriginalSize, 4));
     }
 
 
@@ -526,35 +623,5 @@ public abstract class BitLoadingBase : BitComponentBase
         IsDelayed = false;
 
         await InvokeAsync(StateHasChanged);
-    }
-
-    private static string Format(double value)
-    {
-        return value.ToString(CultureInfo.InvariantCulture);
-    }
-
-    private int GetSize()
-    {
-        return Size switch
-        {
-            BitSize.Small => 40,
-            BitSize.Medium => 64,
-            BitSize.Large => 88,
-            _ => CustomSize ?? 64
-        };
-    }
-
-    private double GetFontSize()
-    {
-        return Size switch
-        {
-            BitSize.Small => 10,
-            BitSize.Medium => 14,
-            BitSize.Large => 18,
-            // The label scales with a custom size against the same 64px/14px anchor the medium size uses.
-            // This used to be an integer division by 64, which floored every custom size below 64px to a 0px -
-            // invisible - label, and every size between 64px and 128px back to the medium 14px.
-            _ => CustomSize.HasValue ? Math.Round(CustomSize.Value * 14d / 64, 2) : 14
-        };
     }
 }

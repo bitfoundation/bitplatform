@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public sealed partial class BitChartRenderer
 {
@@ -44,6 +44,7 @@ public sealed partial class BitChartRenderer
             Scene = scene, Config = _config, IsCartesian = false, HiddenDatasets = _state.HiddenDatasets,
             CenterX = cx, CenterY = cy, InnerRadius = ringInner, OuterRadius = ringOuter
         };
+        scene.PluginContext = ctx;
         foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(ctx);
 
         double ringCursor = ringOuter;
@@ -95,7 +96,7 @@ public sealed partial class BitChartRenderer
                 // so hovering an arc never costs a full re-layout.
                 double hoverOffset = ds.Offset + ds.HoverOffset;
                 string hoverBg = ds.HoverBackgroundColor
-                    ?? (ds.BackgroundColorFn is not null ? ResolveBackground(ds, dsIndex, i, true, v, active: true) : BitChartColorUtil.Adjust(bg, 0.08));
+                    ?? (ds.BackgroundColorFn is not null ? ResolveBackground(ds, dsIndex, i, true, v, active: true) : BitChartColorUtil.Shade(bg, 0.08));
                 var hoverPath = new BitChartSvgPath
                 {
                     D = ArcPath(cx + Math.Cos(mid) * hoverOffset, cy + Math.Sin(mid) * hoverOffset, inner, outer, d0, d1, ds.BorderRadius),
@@ -136,8 +137,8 @@ public sealed partial class BitChartRenderer
                     var dl = _options.Plugins.DataLabels;
                     double lr = dl.Anchor switch
                     {
-                        BitChartAlign.Start => inner + (inner > 0 ? 0 : 0.35 * outer),
-                        BitChartAlign.End => outer,
+                        BitPlacement.Start => inner + (inner > 0 ? 0 : 0.35 * outer),
+                        BitPlacement.End => outer,
                         _ => (inner + outer) / 2
                     };
                     lr += AlignShift(dl, 1);
@@ -184,6 +185,7 @@ public sealed partial class BitChartRenderer
             Scene = scene, Config = _config, IsCartesian = false, HiddenDatasets = _state.HiddenDatasets,
             CenterX = cx, CenterY = cy, InnerRadius = 0, OuterRadius = maxR
         };
+        scene.PluginContext = pctx;
         foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(pctx);
 
         // Radial grid circles.
@@ -213,13 +215,13 @@ public sealed partial class BitChartRenderer
             var path = new BitChartSvgPath
             {
                 D = ArcPath(cx, cy, 0, r, a0 + halfGap, a1 - halfGap, ds.BorderRadius),
-                Fill = BitChartColorUtil.WithAlpha(bg, 0.7),
+                Fill = BitChartColorUtil.Translucent(bg, 0.7),
                 Stroke = bg, StrokeWidth = arcBorderWidth
             };
             var hoverPath = new BitChartSvgPath
             {
                 D = ArcPath(cx, cy, 0, r, a0 + halfGap, a1 - halfGap, ds.BorderRadius),
-                Fill = BitChartColorUtil.WithAlpha(ds.HoverBackgroundColor ?? BitChartColorUtil.Adjust(bg, -0.1), 0.85),
+                Fill = BitChartColorUtil.Translucent(ds.HoverBackgroundColor ?? BitChartColorUtil.Shade(bg, -0.1), 0.85),
                 Stroke = ds.HoverBorderColor ?? bg, StrokeWidth = ds.HoverBorderWidth ?? arcBorderWidth
             };
             double mid = (a0 + a1) / 2;
@@ -249,8 +251,8 @@ public sealed partial class BitChartRenderer
                 var dl = _options.Plugins.DataLabels;
                 double lr = dl.Anchor switch
                 {
-                    BitChartAlign.Start => 0.35 * r,
-                    BitChartAlign.End => r,
+                    BitPlacement.Start => 0.35 * r,
+                    BitPlacement.End => r,
                     _ => r / 2
                 };
                 lr += AlignShift(dl, 1);
@@ -277,7 +279,7 @@ public sealed partial class BitChartRenderer
                 {
                     X = lx, Y = ly, Text = label, Fill = pl.Color,
                     FontSize = pl.Font.Size, FontFamily = pl.Font.Family, FontWeight = pl.Font.Weight,
-                    Anchor = anchor, Baseline = "central"
+                    Anchor = anchor, PhysicalAnchor = true, Baseline = "central"
                 });
             }
         }
@@ -322,7 +324,8 @@ public sealed partial class BitChartRenderer
         scene.Background.Add(new BitChartSvgText
         {
             X = cx + 4, Y = cy - rr, Text = label, Fill = rOpts.Ticks.Color,
-            FontSize = rOpts.Ticks.Font.Size, FontFamily = rOpts.Ticks.Font.Family, Anchor = "start", Baseline = "central"
+            FontSize = rOpts.Ticks.Font.Size, FontFamily = rOpts.Ticks.Font.Family, Anchor = "start", PhysicalAnchor = true,
+            Baseline = "central"
         });
     }
 

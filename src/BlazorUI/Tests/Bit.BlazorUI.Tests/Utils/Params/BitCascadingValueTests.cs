@@ -100,7 +100,7 @@ public class BitCascadingValueTests
         Assert.ThrowsExactly<ArgumentException>(() => cascadingValue.Value = null);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("")]
     [DataRow(" ")]
     [DataRow("\t")]

@@ -1,0 +1,529 @@
+﻿@page "/e2e/panel"
+
+<PageTitle>BitPanel E2E</PageTitle>
+
+<h1>BitPanel</h1>
+
+@* Every section opens a panel of its own from a button of the page. A panel covers the page while it is open,
+   so whatever a test drives while it is open sits inside that panel's own content. *@
+
+<E2ESection Id="basic" Title="Basic: bound IsOpen, methods and every event">
+    <button id="btn-basic-open" @onclick="() => _basicOpen = true">Open basic</button>
+    <button id="btn-basic-method-open" @onclick="() => _basicRef.Open()">Open()</button>
+    <button id="btn-basic-toggle" @onclick="() => _basicRef.Toggle()">Toggle()</button>
+    <span id="basic-open">@_basicOpen</span>
+    <span id="basic-changed">@_basicChanged</span>
+    <span id="basic-log">@string.Join(",", _basicLog)</span>
+
+    <BitPanel @ref="_basicRef"
+              Id="basic-panel"
+              @bind-IsOpen="_basicOpen"
+              @bind-IsOpen:after="() => _basicChanged++"
+              AriaLabel="Basic panel"
+              OnOpen="() => _basicLog.Add(nameof(BitPanel.OnOpen))"
+              OnToggle="v => _basicLog.Add(nameof(BitPanel.OnToggle) + ':' + v)"
+              OnTransitionEnd="v => _basicLog.Add(nameof(BitPanel.OnTransitionEnd) + ':' + v)"
+              OnOverlayClick="() => _basicLog.Add(nameof(BitPanel.OnOverlayClick))"
+              OnEscapeKeyDown="e => _basicLog.Add(nameof(BitPanel.OnEscapeKeyDown) + ':' + e.Key)"
+              OnDismissing="a => _basicLog.Add(nameof(BitPanel.OnDismissing) + ':' + a.Reason + ':' + (a.Mouse is null ? 'n' : 'm'))"
+              OnDismiss="() => _basicLog.Add(nameof(BitPanel.OnDismiss))">
+        <div id="basic-content" style="padding: 24px; width: 280px;">
+            <h3 id="basic-heading">@_basicHeading</h3>
+            <input id="basic-input" />
+            <button id="basic-page-close" @onclick="() => _basicOpen = false">Page closes it</button>
+            <button id="basic-method-close" @onclick="() => _basicRef.Close()">Close()</button>
+            <button id="basic-rename" @onclick="@(() => _basicHeading = "Renamed")">Rename</button>
+        </div>
+    </BitPanel>
+</E2ESection>
+
+<E2ESection Id="chrome" Title="Header and footer: HeaderText, FooterText, Header, Body, Footer, ShowCloseButton">
+    <button id="btn-headertext-open" @onclick="() => _headerTextOpen = true">HeaderText</button>
+    <button id="btn-template-open" @onclick="() => _templateOpen = true">Templates</button>
+    <button id="btn-closeonly-open" @onclick="() => _closeOnlyOpen = true">Close button only</button>
+    <span id="headertext-open">@_headerTextOpen</span>
+    <span id="template-open">@_templateOpen</span>
+
+    <BitPanel Id="headertext-panel" @bind-IsOpen="_headerTextOpen" HeaderText="Notifications" FooterText="Updated a minute ago"
+              ShowCloseButton CloseButtonTitle="Close notifications">
+        <div id="headertext-body" style="height: 2000px;">You have no new notifications.</div>
+    </BitPanel>
+
+    <BitPanel Id="template-panel" @bind-IsOpen="_templateOpen" ShowCloseButton AriaLabel="Filters">
+        <Header>
+            <span id="template-header">Filters</span>
+        </Header>
+        <Body>
+            <p id="template-body">Pick a filter.</p>
+        </Body>
+        <Footer>
+            <button id="template-apply" @onclick="() => _templateOpen = false">Apply</button>
+        </Footer>
+    </BitPanel>
+
+    <BitPanel Id="closeonly-panel" @bind-IsOpen="_closeOnlyOpen" ShowCloseButton AriaLabel="Only a close button">
+        <p>No title.</p>
+    </BitPanel>
+</E2ESection>
+
+<E2ESection Id="placement" Title="Placement, Size and FullSize">
+    <select id="placement-select" @bind="_placementName">
+        <option value="">none</option>
+        @foreach (var name in Enum.GetNames<BitPlacement>())
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+    <label><input id="fullsize-check" type="checkbox" checked="@_fullSize" @onchange="e => _fullSize = (bool)e.Value!" /> FullSize</label>
+    <button id="btn-position-open" @onclick="() => _positionOpen = true">Open placed</button>
+    <span id="position-open">@_positionOpen</span>
+    <span id="position-transition">@_positionTransition</span>
+
+    <BitPanel Id="position-panel" @bind-IsOpen="_positionOpen" Size="300" FullSize="_fullSize" ModeFull
+              Placement="@(string.IsNullOrEmpty(_placementName) ? null : Enum.Parse<BitPlacement>(_placementName))"
+              HeaderText="@($"Placement.{_placementName}")" ShowCloseButton
+              OnTransitionEnd="@(v => _positionTransition = v ? "open" : "closed")">
+        Size 300px.
+    </BitPanel>
+</E2ESection>
+
+<E2ESection Id="overlay" Title="Overlay and dismissal: ModeFull, Blocking, NoDismissOnEscape, Modeless">
+    <button id="btn-modefull-open" @onclick="() => _modeFullOpen = true">ModeFull</button>
+    <button id="btn-blocking-open" @onclick="() => _blockingOpen = true">Blocking</button>
+    <button id="btn-noescape-open" @onclick="() => _noEscapeOpen = true">NoDismissOnEscape</button>
+    <button id="btn-modeless-open" @onclick="() => _modelessOpen = true">Modeless</button>
+    <button id="behind-button" @onclick="() => _behindClicks++">Behind</button>
+    <span id="behind-clicks">@_behindClicks</span>
+    <span id="blocking-open">@_blockingOpen</span>
+    <span id="noescape-open">@_noEscapeOpen</span>
+    <span id="modeless-open">@_modelessOpen</span>
+    <span id="overlay-log">@string.Join(",", _overlayLog)</span>
+
+    <BitPanel Id="modefull-panel" @bind-IsOpen="_modeFullOpen" ModeFull HeaderText="ModeFull" ShowCloseButton>The page is dimmed.</BitPanel>
+
+    <BitPanel Id="blocking-panel" @bind-IsOpen="_blockingOpen" Blocking HeaderText="Blocking" ShowCloseButton
+              OnOverlayClick="() => _overlayLog.Add(nameof(BitPanel.OnOverlayClick))">The overlay does not close it.</BitPanel>
+
+    <BitPanel Id="noescape-panel" @bind-IsOpen="_noEscapeOpen" NoDismissOnEscape HeaderText="NoDismissOnEscape" ShowCloseButton
+              OnEscapeKeyDown="() => _overlayLog.Add(nameof(BitPanel.OnEscapeKeyDown))">Escape does not close it.</BitPanel>
+
+    <BitPanel Id="modeless-panel" @bind-IsOpen="_modelessOpen" Modeless HeaderText="Modeless" ShowCloseButton Size="300">
+        <button id="modeless-inner">Inside</button>
+    </BitPanel>
+</E2ESection>
+
+<E2ESection Id="guarded" Title="Refusing a dismissal: OnDismissing">
+    <button id="btn-guarded-open" @onclick="() => { _guard = true; _guardedOpen = true; }">Guarded</button>
+    <span id="guarded-open">@_guardedOpen</span>
+    <span id="guarded-reasons">@string.Join(",", _guardedReasons)</span>
+    <span id="guarded-dismiss">@_guardedDismiss</span>
+
+    <BitPanel @ref="_guardedRef" Id="guarded-panel" @bind-IsOpen="_guardedOpen" HeaderText="Unsaved changes" ShowCloseButton
+              OnDismissing="HandleDismissing" OnDismiss="() => _guardedDismiss++">
+        <Body>
+            <button id="guarded-toggle" @onclick="() => _guard = !_guard">Toggle guard</button>
+            <span id="guarded-guard">@_guard</span>
+            <button id="guarded-close-method" @onclick="() => _guardedRef.Close()">Close()</button>
+        </Body>
+    </BitPanel>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility: TitleAriaId, SubtitleAriaId, IsAlert, Role, focus">
+    <button id="btn-a11y-open" @onclick="() => { _isAlert = false; _a11yOpen = true; }">TitleAriaId</button>
+    <button id="btn-alert-open" @onclick="() => { _isAlert = true; _a11yOpen = true; }">IsAlert</button>
+    <button id="btn-role-open" @onclick="() => _roleOpen = true">Role complementary</button>
+    <button id="btn-nofocus-open" @onclick="() => _noFocusOpen = true">NoAutoFocus</button>
+    <button id="btn-notrap-open" @onclick="() => _noTrapOpen = true">NoFocusTrap and NoRestoreFocus</button>
+    <button id="btn-autofocus-open" @onclick="() => _autoFocusOpen = true">data-autofocus</button>
+    <button id="btn-empty-open" @onclick="() => _emptyOpen = true">Nothing focusable</button>
+    <span id="a11y-open">@_a11yOpen</span>
+    <span id="notrap-open">@_noTrapOpen</span>
+
+    <BitPanel Id="a11y-panel" @bind-IsOpen="_a11yOpen" TitleAriaId="pnl-a11y-title" SubtitleAriaId="pnl-a11y-subtitle" IsAlert="_isAlert">
+        <div style="padding: 24px;">
+            <h3 id="pnl-a11y-title">Session timeout</h3>
+            <p id="pnl-a11y-subtitle">You will be signed out in a minute.</p>
+            <button id="a11y-first">Stay</button>
+            <button id="a11y-last">Sign out</button>
+        </div>
+    </BitPanel>
+
+    <BitPanel Id="role-panel" @bind-IsOpen="_roleOpen" Role="complementary" Modeless AriaLabel="Side notes" ShowCloseButton>
+        Notes beside the page.
+    </BitPanel>
+
+    <BitPanel Id="nofocus-panel" @bind-IsOpen="_noFocusOpen" NoAutoFocus Modeless HeaderText="NoAutoFocus" ShowCloseButton>
+        <input id="nofocus-input" />
+    </BitPanel>
+
+    <BitPanel Id="notrap-panel" @bind-IsOpen="_noTrapOpen" NoFocusTrap NoRestoreFocus HeaderText="No trap" ShowCloseButton>
+        <input id="notrap-input" />
+    </BitPanel>
+
+    <BitPanel Id="autofocus-panel" @bind-IsOpen="_autoFocusOpen" AriaLabel="data-autofocus">
+        <div style="padding: 24px;">
+            <button id="autofocus-first">First</button>
+            <input id="autofocus-target" data-autofocus />
+        </div>
+    </BitPanel>
+
+    <BitPanel Id="empty-panel" @bind-IsOpen="_emptyOpen" AriaLabel="Nothing focusable">
+        <div style="padding: 24px;">Nothing to focus.</div>
+    </BitPanel>
+</E2ESection>
+
+<E2ESection Id="scroll" Title="Page scrolling: lock, NoScrollLock, AutoToggleScroll, ScrollerSelector, forwarding">
+    <button id="btn-noscroll-open" @onclick="() => _noScrollOpen = true">NoScrollLock</button>
+    <button id="btn-autotoggle-open" @onclick="() => _autoToggleOpen = true">AutoToggleScroll</button>
+    <button id="btn-scrollsel-open" @onclick="() => _scrollSelOpen = true">ScrollerSelector</button>
+    <button id="btn-forward-open" @onclick="() => _forwardOpen = true">NoScrollLock and ScrollerSelector</button>
+    <button id="btn-scrollel-open" @onclick="() => _scrollElOpen = true">ScrollerElement</button>
+    <span id="scrollel-open">@_scrollElOpen</span>
+    <div @ref="_scrollElRef" id="pnl-scrollel-box" style="height: 120px; overflow: auto; border: 1px solid #888;">
+        <div style="height: 900px;">Tall content of the scroller element.</div>
+    </div>
+    <BitPanel Id="scrollel-panel" @bind-IsOpen="_scrollElOpen" ScrollerElement="_scrollElRef" HeaderText="ScrollerElement" ShowCloseButton>
+        The element given by reference is held.
+    </BitPanel>
+    <span id="autotoggle-open">@_autoToggleOpen</span>
+    <span id="scrollsel-open">@_scrollSelOpen</span>
+
+    <div id="pnl-scroll-box" style="height: 120px; overflow: auto; border: 1px solid #888;">
+        <div style="height: 900px;">Tall content of the scroller.</div>
+    </div>
+    <div id="pnl-forward-box" style="height: 120px; overflow: auto; border: 1px solid #888;">
+        <div style="height: 900px;">Tall content of the forwarded scroller.</div>
+    </div>
+
+    <BitPanel Id="noscroll-panel" @bind-IsOpen="_noScrollOpen" NoScrollLock HeaderText="NoScrollLock" ShowCloseButton>The page scrolls.</BitPanel>
+    <BitPanel Id="autotoggle-panel" @bind-IsOpen="_autoToggleOpen" AutoToggleScroll HeaderText="AutoToggleScroll" ShowCloseButton>Toggled.</BitPanel>
+    <BitPanel Id="scrollsel-panel" @bind-IsOpen="_scrollSelOpen" ScrollerSelector="#pnl-scroll-box" HeaderText="ScrollerSelector" ShowCloseButton>
+        The box is held.
+    </BitPanel>
+    <BitPanel Id="forward-panel" @bind-IsOpen="_forwardOpen" NoScrollLock ScrollerSelector="#pnl-forward-box" Placement="BitPlacement.Start"
+              HeaderText="Forwarding" ShowCloseButton>
+        The wheel over the overlay scrolls the box.
+    </BitPanel>
+</E2ESection>
+
+<E2ESection Id="swipe" Title="Swipe to dismiss: SwipeTrigger, NoSwipe, OnSwipeStart/Move/End">
+    <select id="swipe-placement-select" @bind="_swipePlacementName">
+        @foreach (var name in new[] { "End", "Start", "Left", "Right", "Top", "Bottom" })
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+    <select id="swipe-trigger-select" @bind="_swipeTrigger">
+        <option value="0.25">0.25</option>
+        <option value="0.5">0.5</option>
+        <option value="0.9">0.9</option>
+        <option value="5">5 (out of range)</option>
+    </select>
+    <label><input id="noswipe-check" type="checkbox" checked="@_noSwipe" @onchange="e => _noSwipe = (bool)e.Value!" /> NoSwipe</label>
+    <button id="btn-swipe-open" @onclick="() => { _swipeLog.Clear(); _swipeOpen = true; }">Open swipeable</button>
+    <button id="btn-swipe-trigger-step" @onclick="StepSwipeTrigger">Step SwipeTrigger</button>
+    <span id="swipe-trigger">@_swipeTrigger</span>
+    <span id="swipe-open">@_swipeOpen</span>
+    <span id="swipe-start">@_swipeStart</span>
+    <span id="swipe-move">@_swipeMove</span>
+    <span id="swipe-end">@_swipeEnd</span>
+    <span id="swipe-moves">@_swipeMoves</span>
+    <span id="swipe-log">@string.Join(",", _swipeLog)</span>
+
+    <BitPanel Id="swipe-panel" @bind-IsOpen="_swipeOpen" Size="300" NoSwipe="_noSwipe" SwipeTrigger="decimal.Parse(_swipeTrigger, System.Globalization.CultureInfo.InvariantCulture)"
+              Placement="Enum.Parse<BitPlacement>(_swipePlacementName)" AriaLabel="Swipe me away"
+              OnSwipeStart="v => { _swipeStart = v; _swipeLog.Add(nameof(BitPanel.OnSwipeStart)); }"
+              OnSwipeMove="v => { _swipeMove = v; _swipeMoves++; }"
+              OnSwipeEnd="v => { _swipeEnd = v; _swipeLog.Add(nameof(BitPanel.OnSwipeEnd)); }"
+              OnDismissing="a => _swipeLog.Add(nameof(BitPanel.OnDismissing) + ':' + a.Reason)">
+        <div id="swipe-surface" style="padding: 24px; height: 100%; box-sizing: border-box; user-select: none;">
+            <div id="swipe-noselect" style="height: 60px; user-select: none; background: #ddd;">Drag handle</div>
+            <p id="swipe-text" style="user-select: text;">Drag me towards my edge.</p>
+            <input id="swipe-input" />
+            <div id="swipe-noswipe" data-no-swipe style="height: 60px; background: #eee;">data-no-swipe region</div>
+        </div>
+    </BitPanel>
+</E2ESection>
+
+<E2ESection Id="nested" Title="Nested panels and ZIndex">
+    <button id="btn-outer-open" @onclick="() => _outerOpen = true">Open outer</button>
+    <span id="outer-open">@_outerOpen</span>
+    <span id="inner-open">@_innerOpen</span>
+    <span id="sibling-open">@_siblingOpen</span>
+
+    <BitPanel Id="outer-panel" @bind-IsOpen="_outerOpen" Size="360" ModeFull HeaderText="Outer" ShowCloseButton>
+        <button id="btn-inner-open" @onclick="() => _innerOpen = true">Open nested panel</button>
+        <button id="btn-sibling-open" @onclick="() => _siblingOpen = true">Open sibling panel</button>
+        <input id="outer-claim" data-bit-esc="claim" placeholder="claims Escape" />
+
+        <BitPanel Id="inner-panel" @bind-IsOpen="_innerOpen" Size="280" ModeFull Placement="BitPlacement.Start" HeaderText="Nested" ShowCloseButton>
+            <input id="inner-input" />
+        </BitPanel>
+    </BitPanel>
+
+    <BitPanel Id="sibling-panel" @bind-IsOpen="_siblingOpen" Size="280" ModeFull ZIndex="1310" Placement="BitPlacement.Start" HeaderText="Sibling"
+              ShowCloseButton>
+        Declared beside the outer panel, layered above it by its ZIndex.
+    </BitPanel>
+</E2ESection>
+
+<E2ESection Id="absolute" Title="Inside a container: AbsolutePosition">
+    <button id="btn-abs-open" @onclick="() => _absOpen = true">AbsolutePosition</button>
+    <span id="abs-open">@_absOpen</span>
+    <div id="pnl-abs-box" style="position: relative; height: 260px; overflow: hidden; border: 1px solid #888;">
+        Box content.
+        <BitPanel Id="abs-panel" @bind-IsOpen="_absOpen" AbsolutePosition ModeFull Size="220" HeaderText="AbsolutePosition" ShowCloseButton>
+            Contained by its box.
+        </BitPanel>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rendering" Title="Rendering and events: KeepMounted, OnOpen, OnToggle, OnTransitionEnd">
+    <label><input id="keepmounted-check" type="checkbox" checked="@_keepMounted" @onchange="e => _keepMounted = (bool)e.Value!" /> KeepMounted</label>
+    <button id="btn-render-open" @onclick="() => _renderOpen = true">Open</button>
+    <span id="render-open">@_renderOpen</span>
+    <span id="render-opens">@_renderOpens</span>
+    <span id="render-toggle">@_renderToggle</span>
+    <span id="render-settled">@_renderSettled</span>
+
+    <BitPanel Id="render-panel" @bind-IsOpen="_renderOpen" KeepMounted="_keepMounted" HeaderText="Rendering" ShowCloseButton
+              OnOpen="() => _renderOpens++" OnToggle="v => _renderToggle = v.ToString()" OnTransitionEnd="v => _renderSettled = v.ToString()">
+        <input id="render-input" />
+    </BitPanel>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters: BitParams">
+    <BitParams Parameters="_panelParams">
+        <button id="btn-casc-open" @onclick="() => _cascOpen = true">From the cascade</button>
+        <button id="btn-cascown-open" @onclick="() => _cascOwnOpen = true">Its own Placement</button>
+
+        <BitPanel Id="casc-panel" @bind-IsOpen="_cascOpen" HeaderText="From the cascade">Cascaded.</BitPanel>
+        <BitPanel Id="cascown-panel" @bind-IsOpen="_cascOwnOpen" Placement="BitPlacement.End" HeaderText="Its own Placement">Own placement.</BitPanel>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="icons" Title="External icons">
+    <button id="btn-iconfa-open" @onclick="() => _iconFaOpen = true">CloseIcon</button>
+    <button id="btn-iconname-open" @onclick="() => _iconNameOpen = true">CloseIconName</button>
+
+    <BitPanel Id="iconfa-panel" @bind-IsOpen="_iconFaOpen" HeaderText="CloseIcon" ShowCloseButton CloseIcon="@BitIconInfo.Fa("solid xmark")"
+              CloseIconName="@BitIconName.ChromeBack">FontAwesome.</BitPanel>
+    <BitPanel Id="iconname-panel" @bind-IsOpen="_iconNameOpen" HeaderText="CloseIconName" ShowCloseButton CloseIconName="@BitIconName.ChromeBack">
+        Built-in.
+    </BitPanel>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes and CSS variables">
+    <button id="btn-styled-open" @onclick="() => _styledOpen = true">Styles</button>
+    <button id="btn-classed-open" @onclick="() => _classedOpen = true">Classes</button>
+    <button id="btn-vars-open" @onclick="() => _varsOpen = true">CSS variables</button>
+    <button id="btn-zindex-open" @onclick="() => _zIndexOpen = true">ZIndex</button>
+
+    <BitPanel Id="styled-panel" @bind-IsOpen="_styledOpen" Style="--e2e-root: 1; letter-spacing: 1px;" Class="my-root" HeaderText="Styles"
+              FooterText="Footer" ShowCloseButton Styles="_styles">Body</BitPanel>
+    <BitPanel Id="classed-panel" @bind-IsOpen="_classedOpen" HeaderText="Classes" FooterText="Footer" ShowCloseButton Classes="_classes">Body</BitPanel>
+    <BitPanel Id="vars-panel" @bind-IsOpen="_varsOpen" ModeFull HeaderText="CSS variables" ShowCloseButton FooterText="Footer"
+              Style="--bit-Panel-size: 352px; --bit-Panel-radius: 24px; --bit-Panel-border-width: 2px; --bit-Panel-border-color: rgb(1, 2, 3); --bit-Panel-padding: 32px; --bit-Panel-header-font-size: 28px; --bit-Panel-header-font-weight: 300; --bit-Panel-overlay-background: rgba(0, 0, 0, 0.4); --bit-Panel-overlay-backdrop-filter: blur(4px); --bit-Panel-background: rgb(10, 20, 30); --bit-Panel-color: rgb(200, 210, 220); --bit-Panel-shadow: none; --bit-Panel-z-index: 2100;">
+        Restyled.
+    </BitPanel>
+    <BitPanel Id="zindex-panel" @bind-IsOpen="_zIndexOpen" ZIndex="2000" HeaderText="ZIndex" ShowCloseButton>Layered.</BitPanel>
+    <div style="--bit-Panel-max-size: 50%;">
+        <button id="btn-maxsize-open" @onclick="() => _maxSizeOpen = true">--bit-Panel-max-size</button>
+        <BitPanel Id="maxsize-panel" @bind-IsOpen="_maxSizeOpen" Size="2000" HeaderText="Capped" ShowCloseButton>Capped at half the screen.</BitPanel>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <button id="btn-rtlstart-open" @onclick="() => _rtlStartOpen = true">Rtl Start</button>
+    <button id="btn-rtlleft-open" @onclick="() => _rtlLeftOpen = true">Rtl Left</button>
+    <button id="btn-rtlinherit-open" @onclick="() => _rtlInheritOpen = true">Inherited Start</button>
+
+    <BitPanel Id="rtlstart-panel" @bind-IsOpen="_rtlStartOpen" Dir="BitDir.Rtl" Size="320" HeaderText="پنل آغاز" ShowCloseButton CloseButtonTitle="بستن"
+              Placement="BitPlacement.Start">متن آزمایشی</BitPanel>
+    <BitPanel Id="rtlleft-panel" @bind-IsOpen="_rtlLeftOpen" Dir="BitDir.Rtl" Size="320" HeaderText="چپ" ShowCloseButton Placement="BitPlacement.Left">
+        همیشه سمت چپ
+    </BitPanel>
+    <div dir="rtl">
+        <BitPanel Id="rtlinherit-panel" @bind-IsOpen="_rtlInheritOpen" Size="320" HeaderText="Inherited" ShowCloseButton Placement="BitPlacement.Start">
+            Inherited.
+        </BitPanel>
+    </div>
+</E2ESection>
+
+<E2ESection Id="base" Title="Base parameters: Id, HtmlAttributes, TabIndex, Visibility, Disabled">
+    <select id="visibility-select" @bind="_visibilityName">
+        @foreach (var name in Enum.GetNames<BitVisibility>())
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+    <button id="btn-base-open" @onclick="() => _baseOpen = true">Base</button>
+    <button id="btn-disabled-open" @onclick="() => _disabledOpen = true">Disabled, opened by IsOpen</button>
+    <button id="btn-disabled-method-open" @onclick="() => _disabledRef.Open()">Disabled, Open()</button>
+    <span id="base-open">@_baseOpen</span>
+    <span id="disabled-open">@_disabledOpen</span>
+    <span id="disabled-log">@string.Join(",", _disabledLog)</span>
+
+    <BitPanel Id="base-panel" @bind-IsOpen="_baseOpen" AriaLabel="Base" TabIndex="0" HtmlAttributes="_baseAttributes"
+              Visibility="Enum.Parse<BitVisibility>(_visibilityName)">
+        <button id="base-close" @onclick="() => _baseOpen = false">Close</button>
+    </BitPanel>
+
+    <BitPanel @ref="_disabledRef" Id="disabled-panel" @bind-IsOpen="_disabledOpen" Disabled HeaderText="Disabled" ShowCloseButton
+              OnOverlayClick="() => _disabledLog.Add(nameof(BitPanel.OnOverlayClick))"
+              OnEscapeKeyDown="() => _disabledLog.Add(nameof(BitPanel.OnEscapeKeyDown))"
+              OnDismissing="a => _disabledLog.Add(nameof(BitPanel.OnDismissing) + ':' + a.Reason)">
+        <button id="disabled-method-close" @onclick="() => _disabledRef.Close()">Close()</button>
+    </BitPanel>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle: unmounted while open">
+    <button id="btn-unmount-open" @onclick="() => { _showUnmount = true; _unmountOpen = true; }">Open, then unmount from inside</button>
+    <span id="unmount-shown">@_showUnmount</span>
+    @if (_showUnmount)
+    {
+        <BitPanel Id="unmount-panel" @bind-IsOpen="_unmountOpen" HeaderText="Going away">
+            <button id="unmount-now" @onclick="() => _showUnmount = false">Unmount</button>
+        </BitPanel>
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private BitPanel _basicRef = default!;
+    private bool _basicOpen;
+    private int _basicChanged;
+    private string _basicHeading = "Basic";
+    private readonly List<string> _basicLog = [];
+
+    private bool _headerTextOpen;
+    private bool _templateOpen;
+    private bool _closeOnlyOpen;
+
+    private string _placementName = string.Empty;
+    private bool _fullSize;
+    private bool _positionOpen;
+    private string _positionTransition = "-";
+
+    private bool _modeFullOpen;
+    private bool _blockingOpen;
+    private bool _noEscapeOpen;
+    private bool _modelessOpen;
+    private int _behindClicks;
+    private readonly List<string> _overlayLog = [];
+
+    private BitPanel _guardedRef = default!;
+    private bool _guardedOpen;
+    private bool _guard = true;
+    private int _guardedDismiss;
+    private readonly List<string> _guardedReasons = [];
+
+    private bool _a11yOpen;
+    private bool _isAlert;
+    private bool _roleOpen;
+    private bool _noFocusOpen;
+    private bool _noTrapOpen;
+    private bool _autoFocusOpen;
+    private bool _emptyOpen;
+
+    private bool _noScrollOpen;
+    private bool _autoToggleOpen;
+    private bool _scrollSelOpen;
+    private bool _forwardOpen;
+    private bool _scrollElOpen;
+    private ElementReference _scrollElRef;
+
+    private string _swipePlacementName = "End";
+    private string _swipeTrigger = "0.25";
+    private bool _noSwipe;
+    private bool _swipeOpen;
+    private decimal _swipeStart;
+    private decimal _swipeMove;
+    private decimal _swipeEnd;
+    private int _swipeMoves;
+    private readonly List<string> _swipeLog = [];
+
+    private bool _outerOpen;
+    private bool _innerOpen;
+    private bool _siblingOpen;
+
+    private bool _absOpen;
+
+    private bool _keepMounted;
+    private bool _renderOpen;
+    private int _renderOpens;
+    private string _renderToggle = "-";
+    private string _renderSettled = "-";
+
+    private bool _cascOpen;
+    private bool _cascOwnOpen;
+    private readonly BitPanelParams[] _panelParams =
+    [
+        new()
+        {
+            Placement = BitPlacement.Start,
+            Size = 320,
+            ModeFull = true,
+            ShowCloseButton = true,
+        }
+    ];
+
+    private bool _iconFaOpen;
+    private bool _iconNameOpen;
+
+    private bool _styledOpen;
+    private bool _classedOpen;
+    private bool _varsOpen;
+    private bool _zIndexOpen;
+    private bool _maxSizeOpen;
+    private readonly BitPanelClassStyles _styles = new()
+    {
+        Root = "--e2e-part: root;",
+        Overlay = "--e2e-part: overlay;",
+        Container = "--e2e-part: container;",
+        HeaderContainer = "--e2e-part: header-container;",
+        Header = "--e2e-part: header;",
+        CloseButton = "--e2e-part: close-button;",
+        CloseIcon = "--e2e-part: close-icon;",
+        Body = "--e2e-part: body;",
+        Footer = "--e2e-part: footer;",
+    };
+    private readonly BitPanelClassStyles _classes = new()
+    {
+        Root = "part-root",
+        Overlay = "part-overlay",
+        Container = "part-container",
+        HeaderContainer = "part-header-container",
+        Header = "part-header",
+        CloseButton = "part-close-button",
+        CloseIcon = "part-close-icon",
+        Body = "part-body",
+        Footer = "part-footer",
+    };
+
+    private bool _rtlStartOpen;
+    private bool _rtlLeftOpen;
+    private bool _rtlInheritOpen;
+
+    private string _visibilityName = nameof(BitVisibility.Visible);
+    private bool _baseOpen;
+    private BitPanel _disabledRef = default!;
+    private bool _disabledOpen;
+    private readonly List<string> _disabledLog = [];
+    private readonly Dictionary<string, object> _baseAttributes = new() { ["data-e2e"] = "panel-root" };
+
+    private bool _showUnmount;
+    private bool _unmountOpen;
+
+    private void StepSwipeTrigger()
+    {
+        _swipeTrigger = _swipeTrigger == "0.25" ? "0.5" : "0.25";
+    }
+
+    private void HandleDismissing(BitPanelDismissArgs args)
+    {
+        _guardedReasons.Add(args.Reason + (args.Mouse is null ? "" : "+mouse"));
+        args.Cancel = _guard;
+    }
+}

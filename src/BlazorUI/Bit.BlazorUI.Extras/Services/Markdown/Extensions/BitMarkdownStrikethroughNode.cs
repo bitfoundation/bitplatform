@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Strikethrough text (GFM), rendered as <c>&lt;del&gt;</c>.</summary>
 public sealed class BitMarkdownStrikethroughNode : BitMarkdownNode

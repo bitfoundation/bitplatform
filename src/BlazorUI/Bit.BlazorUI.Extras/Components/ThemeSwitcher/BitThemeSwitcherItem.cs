@@ -35,7 +35,7 @@ public class BitThemeSwitcherItem
     public string? AriaLabel { get; set; }
 
     /// <summary>
-    /// Whether this design system can be selected.
+    /// Whether this design system is disabled and cannot be selected.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 }

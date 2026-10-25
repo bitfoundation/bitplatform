@@ -1,0 +1,82 @@
+﻿@page "/e2e/dropdown/validation"
+
+@* BitDropdown in an EditForm with data annotations: a required single select, a multi select whose number of selected
+   items is kept within MinLength / MaxLength, ValidationMessage, the invalid state and its aria-invalid, valid and
+   invalid submits, and a NoValidate dropdown the EditContext never marks. *@
+
+<PageTitle>BitDropdown validation E2E</PageTitle>
+
+<h1>BitDropdown validation</h1>
+
+<E2ESection Id="form" Title="EditForm">
+    <EditForm Model="_model" OnValidSubmit="() => _validSubmits++" OnInvalidSubmit="() => _invalidSubmits++">
+        <DataAnnotationsValidator />
+
+        <BitDropdown Id="dd-val-cat"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Category"
+                     Items="@L("cat")"
+                     @bind-Value="_model.Category" />
+        <div id="msg-cat"><ValidationMessage For="@(() => _model.Category)" /></div>
+
+        <BitDropdown Id="dd-val-prod"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Products"
+                     MultiSelect
+                     Items="@L("prod")"
+                     @bind-Values="_model.Products" />
+        <div id="msg-prod"><ValidationMessage For="@(() => _model.Products)" /></div>
+
+        <BitDropdown Id="dd-val-novalidate"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Not validated"
+                     NoValidate
+                     Items="@L("novalidate")"
+                     @bind-Value="_model.Other" />
+
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <p>
+        Valid submits: <span id="valid-submits">@_validSubmits</span> |
+        Invalid submits: <span id="invalid-submits">@_invalidSubmits</span>
+    </p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Model
+    {
+        [Required(ErrorMessage = "Pick a category.")]
+        public string? Category { get; set; }
+
+        [Required(ErrorMessage = "Pick some products.")]
+        [MinLength(1, ErrorMessage = "Pick at least {1} product.")]
+        [MaxLength(2, ErrorMessage = "Pick at most {1} products.")]
+        public IEnumerable<string?>? Products { get; set; } = [];
+
+        [Required(ErrorMessage = "Not checked here.")]
+        public string? Other { get; set; }
+    }
+
+    private readonly Model _model = new();
+    private int _validSubmits;
+    private int _invalidSubmits;
+
+    private readonly Dictionary<string, List<BitDropdownItem<string>>> _lists = [];
+
+    private List<BitDropdownItem<string>> L(string key)
+    {
+        if (_lists.TryGetValue(key, out var list) is false)
+        {
+            _lists[key] = list =
+            [
+                new() { Text = "Apple", Value = "f-app" },
+                new() { Text = "Banana", Value = "f-ban" },
+                new() { Text = "Grape", Value = "f-gra" },
+            ];
+        }
+
+        return list;
+    }
+}

@@ -8,13 +8,36 @@ description: Sweep every version-pinned surface in the bitplatform repo (NuGet, 
 Update every version pin in the repo in one pass, then hand back a report the maintainer can review
 without opening the diff.
 
+## First, check the checkout is up to date
+
+The sweep reads its pins from the working tree, so a checkout that is behind `develop` sweeps stale
+pins: it proposes bumps that already landed upstream and misses packages added since the last pull.
+Before reading a single pin, fetch and count:
+
+```bash
+up=$(git remote -v | awk '$2 ~ /bitfoundation\/bitplatform(\.git)?$/ && $3 == "(fetch)" { print $1; exit }')
+git fetch "$up" "+refs/heads/develop:refs/remotes/$up/develop"
+git rev-list --count HEAD.."$up"/develop   # commits the checkout is missing
+```
+
+`$up` is the remote that points at `bitfoundation/bitplatform`: `upstream` when `origin` is your
+fork, `origin` in a plain clone. If the count is not 0:
+
+- On `develop` with a clean tree, fast-forward it: `git merge --ff-only "$up"/develop`.
+- Anywhere else (another branch, local changes, commits of its own), leave the checkout alone and run
+  the whole sweep, scan included, in a worktree on the latest `develop`
+  (`git worktree add --detach ../bitplatform-sweep "$up"/develop`). Once the issue exists, name the
+  branch there with `git switch -c <n>` instead of adding the worktree in Ship it step 2.
+
+Open the report with the commit the sweep read.
+
 ## Ordering
 
 Work the surfaces in this order. Each is independent; batch the network lookups.
 
 1. NuGet (`*.csproj`, `Directory.Packages.props`)
 2. npm (`package.json`, then `npm install` to refresh `package-lock.json`)
-3. GitHub Actions (`.github/workflows/`, `src/Templates/Boilerplate/Bit.Boilerplate/.github/workflows/`, `src/Butil/tests/Bit.Butil.Tests.E2E/ci/`)
+3. GitHub Actions (`.github/workflows/`, `.github/actions/`, `src/Templates/Boilerplate/Bit.Boilerplate/.github/workflows/`)
 4. Azure DevOps tasks (`src/Templates/Boilerplate/Bit.Boilerplate/.azure-devops/workflows/`)
 5. devcontainers (`.devcontainer/`, `src/Templates/Boilerplate/Bit.Boilerplate/.devcontainer/`)
 6. `dnx <package>@<version>` calls in workflows and docs (`vpk`, `dotnet-ef`), `global.json` (3 files)
@@ -27,17 +50,19 @@ not staleness — leave it, and say in the report that you left it and why.
 
 **Roslyn and MSBuild — never bump.** An analyzer, source generator, or MSBuild task loads inside the
 *consumer's* compiler, not ours. Referencing a `Microsoft.CodeAnalysis.*` newer than the oldest SDK we
-support makes it fail to load there (CS8032 / AD0001). Same for `Microsoft.Build.*` in a task
-assembly. These are floors for the oldest supported SDK:
+support makes it fail to load there (CS8032 / AD0001). Same for `Microsoft.Build.*` and
+`System.Reflection.Metadata` in a task assembly, which MSBuild supplies at run time. These are floors
+for the oldest supported SDK:
 
 | Package | Pinned | Where |
 |---|---|---|
 | `Microsoft.CodeAnalysis.Analyzers` | 3.3.3 | `Bit.BlazorUI.SourceGenerators`, `Bit.SourceGenerators` |
 | `Microsoft.CodeAnalysis.CSharp.Workspaces` | 4.3.1 | `Bit.BlazorUI.SourceGenerators`, `Bit.SourceGenerators` |
 | `Microsoft.CodeAnalysis.Workspaces.Common` | 4.3.1 | `Bit.CodeAnalyzers` |
-| `Microsoft.CodeAnalysis.CSharp` | 4.8.0 | `Bit.Brouter.Generators` + its test project (must match) |
+| `Microsoft.CodeAnalysis.CSharp` | 4.8.0 | `Bit.Brouter.Generators`, `Bit.Blex.Generators`, `Bit.BlazeDb.Generators` + their test projects, and `Bit.Blex.Demo.Server` and `Bit.BlazeDb.Demo.Server` (run their generators for their MCP servers) (must match) |
 | `Microsoft.CodeAnalysis.CSharp` | 4.14.0 | `Bit.CodeAnalyzers` |
-| `Microsoft.Build.Utilities.Core` | 17.7.2 | `Bit.Butil.Build` |
+| `Microsoft.Build.Utilities.Core` | 17.7.2 | `Bit.Butil.Build`, `Bit.BlazorUI.Build` |
+| `System.Reflection.Metadata` | 1.6.0 | `Bit.BlazorUI.Build` |
 
 **TFM-conditioned floors — only the highest band moves.** A multi-targeted library pins the `.0` of
 each band it supports, because the pin *is* the consumer's minimum runtime. Raising 8.0.0 to 8.0.x
@@ -48,25 +73,27 @@ raises that minimum for no gain.
 ```
 
 Applies to `Bit.Besql` (JSInterop, Components.WebAssembly, EF Core Sqlite), `Bit.BlazorUI` /
-`.Extras` / `.Legacy` (Components.Web, Components.WebView), and the `BlazorEmpty` template.
+`.Assets` / `.Extras` / `.Legacy`, `Bit.Bswup` and `Bit.Butil` (Components.Web), and the
+`BlazorEmpty` template.
 
 The rule keys on the `.0` in a *shipped library*. A TFM-conditioned pin at a concrete patch —
-`Bit.BlazorUI.Tests` on Components.WebView `8.0.30` / `9.0.19` / `10.0.11` — is not a floor: nothing
+`Bit.BlazorUI.Tests` on Components.WebView `8.0.x` / `9.0.x` / `10.0.x` — is not a floor: nothing
 consumes a test project, so every band takes the newest patch of its own band. Likewise a lone
 `10.0.0` sitting among `10.0.11` siblings in `Directory.Packages.props` is staleness, not intent.
 
 **Version ranges stay.** `[8.0.0,9.0.0)` is a compatibility contract, not a pin.
 
-**`Bit.*` self-references track the in-development version**, currently `10.6.2`. Never read
+**`Bit.*` self-references track the in-development version**, currently `10.7.0`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
 **TypeScript is held at 5.9.3 in the libraries.** 7.x is the Go rewrite
 (`microsoft/typescript-go`), not an incremental release. `Boilerplate.Client.Core` is the canary and
 is already on 7.0.2 — if a bump is wanted, move one library project, build it, and only then the
-rest. Do not move all eleven at once.
+rest. Do not move all twenty-one at once.
 
-**Vitest is held at `^3`** in `src/Bmotion/Tests/bit-bmotion-js` and `src/Bswup/Tests/bit-bswup-js`.
+**Vitest is held at `^3`** in `src/Utilities/Bmotion/Tests/bit-bmotion-js`, `src/Bswup/Tests/bit-bswup-js`,
+`src/Utilities/Bsqlite/Tests/bit-bsqlite-js` and `src/Utilities/BevTools/Tests/bit-bevtools-js`.
 
 **`devops-actions/variable-substitution` is held at v1.2** (`ae7b1f36…`). v2.0.0 committed 31
 symlinks into its vendored `node_modules`; the runner cannot stage them and every job dies before
@@ -81,19 +108,26 @@ gh api "repos/<owner>/<repo>/git/trees/<sha>?recursive=1" --jq '[.tree[]|select(
 A non-zero count on a JavaScript action that vendors `node_modules` means it will not stage. This is
 worth checking for *any* action bump, not just this one — it is invisible in the release notes.
 
-**MAUI is held at 10.0.100** (`Microsoft.Maui.Controls` and `Components.WebView.Maui`, in the
-Boilerplate, the BlazorUI demo and the Butil sample). 10.0.101 bundles an `Svg.Skia` that calls a
-SkiaSharp overload missing from the SkiaSharp next to it, so the resizetizer fails with `MAUIR0001` /
-`MissingMethodException: SKImageFilter.CreateMatrixConvolution` on any SVG icon with a `<filter>`
-([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). Move only once that issue is
-closed and `dotnet build -f net10.0-ios` passes on the Boilerplate. `WebView.WindowsForms` has no
-resizetizer and is not held.
+**A MAUI bump needs one MAUI build.** MAUI's resizetizer bundles an `Svg.Skia`, and from 10.0.101 to
+10.0.110 that `Svg.Skia` called a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG
+with a `<filter>` failed the build with `MAUIR0001` /
+`MissingMethodException: SKImageFilter.CreateMatrixConvolution`
+([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). The app icons of the Boilerplate
+and the BlazorUI demo have one, so before moving MAUI, build a MAUI app with the Boilerplate's
+`appicon.svg` as its icon, for any target.
 
 **`Xamarin.Firebase.Messaging` is held at 125.1.1.** 125.1.2 pulls `Xamarin.AndroidX.Fragment` 1.9.0
 (through `GooglePlayServices.Base` 118.10.1), which absorbed the ktx classes, while the rest of the
 graph still brings `Fragment.Ktx` 1.8.9.x. R8 then fails the Android build with
 `Type androidx.fragment.app.FragmentKt is defined multiple times`. Move it only once something else in
 the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinning Ktx in the template.
+`Xamarin.GooglePlayServices.Auth.Api.Phone` is held at 118.3.1 for the same reason: 118.3.1.1 pulls
+`GooglePlayServices.Basement` 118.10.0.3, which brings Fragment 1.9.0.
+
+**Linux runners are held at `ubuntu-24.04`**, in the GitHub workflows and the Azure DevOps `vmImage`.
+`ubuntu-26.04` defaults to JDK 25 (`(default)` in the image readme's Java table), and .NET for Android
+10 accepts up to 21 (`LatestSupportedJavaVersion` 21.0.99), so every Android build there fails. .NET 11
+raises the limit to 25.0.99; move the runners together with the .NET 11 move.
 
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.
@@ -115,14 +149,22 @@ A `Condition="..."` attribute sits between `PackageVersion` and `Include` on man
 `Directory.Packages.props` lines — a naive `Include="X" Version="Y"` regex silently drops ~60
 packages, including everything Aspire, FusionCache, and Agents.AI.
 
+The Boilerplate AppHost's `<Project Sdk="Aspire.AppHost.Sdk/<version>">` is a NuGet pin the grep
+doesn't see. Keep it equal to the `Aspire.Hosting.*` packages; it stayed two patches behind them once.
+
+NuGet audit warnings (NU1902/NU1903) on a transitive package whose DLL the shared framework also
+carries, such as `System.Security.Cryptography.Pkcs` in `Microsoft.AspNetCore.App`, are noise: the
+framework's copy wins and the package's file never reaches the output. Check `bin` before adding a
+direct reference to silence one.
+
 Then per package (`https://api.nuget.org/v3-flatcontainer/<lowercased-id>/index.json` returns
 versions ascending):
 
 - latest stable = last entry with no `-`
 - target = latest stable, **except** a package whose newest release is a prerelease with no stable
-  above it, which takes the prerelease. That is the whole `OpenTelemetry.*` 1.18.0-beta.1 family,
-  `Microsoft.Agents.AI.Hosting`, `Microsoft.SemanticKernel.Connectors.HuggingFace`,
-  `Aspire.Hosting.Keycloak` and `Aspire.Hosting.Maui`.
+  above it, which takes the prerelease. That is the `OpenTelemetry.*` packages on beta and rc,
+  `Microsoft.Agents.AI.Hosting`, `Microsoft.SemanticKernel.Connectors.HuggingFace` and
+  `Aspire.Hosting.Keycloak`.
 
 Run the lookups with `xargs -P 12`; ~210 packages otherwise takes minutes.
 
@@ -136,6 +178,16 @@ Only four distinct dev dependencies exist: `typescript`, `sass`, `esbuild`, `vit
 with `npm view <pkg> version` and `npm view <pkg> dist-tags --json`. After editing a `package.json`,
 run `npm install` in that directory so `package-lock.json` matches — a lock file left behind is the
 most common miss.
+
+The lock files also carry transitive packages that no direct bump moves, and that is where the
+repository's Dependabot alerts sit. Run `npm audit fix` (never `--force`) in every directory with a
+lock file, and report what only a held major would fix.
+
+A lock file has to come out of `npm install` on Linux unchanged. npm on Windows can write a `"name"`
+into the lock's root package from the folder name when `package.json` has none, and Linux npm drops
+it again. In the Boilerplate every generated project then ends its build with a modified
+`package-lock.json`, and the CI test that wants a clean git tree after `bit new` fails. Run
+`npm install` once in a Linux container to check, or keep the root package as it was.
 
 ### GitHub Actions
 
@@ -161,15 +213,24 @@ belongs to (`# v2.0.0`), so the comment records a version rather than a branch.
 
 Runner images (`runs-on`) are part of this: no `ubuntu-latest`, pin the concrete image.
 
+**Xcode follows the iOS workload.** The iOS jobs pin a runner image and `setup-xcode`'s `xcode-version`, and both
+must give the Xcode that .NET for iOS asks for: the `RecommendedXcodeVersion` in `Versions.plist` of the
+`Microsoft.iOS.Sdk.net<tfm>_<x.y>` pack whose version the newest workload set of the SDK's band names
+(`Microsoft.NET.Workloads.<band>` on NuGet). A workload set can raise it without any SDK bump, and then every iOS
+build fails with "This version of .NET for iOS requires Xcode ...". When the `macOS-*` image doesn't have that Xcode,
+use GitHub's image that does (`xcode-27` for Xcode 27).
+
 ### Azure DevOps
 
 Tasks are major-versioned (`UseDotNet@2`, `FileTransform@2`). The newest major is the highest
 `<Task>V<n>` folder in `gh api repos/microsoft/azure-pipelines-tasks/contents/Tasks --jq '.[].name'`.
 A task can change name across majors while keeping its id: `NodeTool@1` resolves to `UseNodeV1`.
 
-`AzureRmWebAppDeployment` is on @4 while @5 exists. For `webAppLinux` @5 defaults to `oneDeploy` with
-`CleanDeploymentFlag: true`, which deletes wwwroot files missing from the package — a deploy-behaviour
-decision for the maintainer, not a routine bump.
+`AzureRmWebAppDeployment@5` passes `DeploymentTypeLinux: 'zipDeploy'` on purpose. For `webAppLinux` @5
+defaults to `oneDeploy` with `CleanDeploymentFlag: true`, which deletes every file the package does not
+carry, the template's `App_Data` (SQLite database, local file storage, Hangfire jobs) included.
+`zipDeploy` keeps them, as @4 did. Keep that input on any later major. The GitHub CD's
+`azure/webapps-deploy` steps pass `clean: false` for the same reason: that action always uses OneDeploy.
 
 ### devcontainers
 
@@ -192,7 +253,10 @@ There are no `.config/dotnet-tools.json` manifests any more: every tool is run w
 <package>@<version>`, so the pins live in the workflow and doc lines that call them (`grep -rn "dnx
 .*@"`). `vpk` must equal the `Velopack` PackageReference version in the same project — Velopack
 requires the CLI and the library to match, and this has drifted before. `dotnet-ef` should equal the
-EF Core package version.
+EF Core package version. Likewise the `npx playwright@<version>` command in the Boilerplate's two
+`.runsettings` (`src/Tests` and `src/Internal/Boilerplate.Tests.E2E`) must equal
+`Microsoft.Playwright.MSTest.v4`: a remote Playwright server of any other version refuses the client, and
+every test that runs on it fails at connect.
 
 `src/global.json` is `rollForward: disable` and tracks the newest SDK. The two template
 `global.json` files are `10.0.100` + `latestFeature` deliberately — they must accept any 10.0.x on a
@@ -265,11 +329,14 @@ Finish every sweep with an issue, a PR and a full CI run. `upstream` is `bitfoun
 4. PR from `<fork-owner>:<n>` into `upstream/develop`, title `Update project dependencies (#<n>)`.
    The body starts with `closes #<n>` and carries the report: Changed, Breaking or important,
    Held back, Missed / drifted, Not verified.
-5. Run `all.ci.yml` on the fork against the branch and give its URL with the PR link:
+5. Run `all.ci.yml` and `all.ci.utilities.yml` on the fork against the branch and give both URLs
+   with the PR link:
 
    ```bash
    gh workflow run all.ci.yml --repo <fork-owner>/bitplatform --ref <n>
+   gh workflow run all.ci.utilities.yml --repo <fork-owner>/bitplatform --ref <n>
    gh run list --repo <fork-owner>/bitplatform --workflow all.ci.yml --branch <n> --limit 1 --json url --jq '.[0].url'
+   gh run list --repo <fork-owner>/bitplatform --workflow all.ci.utilities.yml --branch <n> --limit 1 --json url --jq '.[0].url'
    ```
 
    A red job goes into the PR as a comment, with the failing step and its first error line.

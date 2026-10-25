@@ -1,4 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Linq;
+using System.Reflection;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.Checkbox;
@@ -15,13 +21,13 @@ public class BitCheckboxTests : BunitTestContext
         DataRow(true, false),
         DataRow(false, false),
     ]
-    public void BitCheckboxOnClickShouldWorkIfIsEnabled(bool defaultValue, bool isEnabled)
+    public void BitCheckboxOnClickShouldWorkUnlessDisabled(bool defaultValue, bool isEnabled)
     {
         var clicked = false;
         var changed = false;
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.DefaultValue, defaultValue);
             parameters.Add(p => p.OnClick, () => clicked = true);
             parameters.Add(p => p.OnChange, () => changed = true);
@@ -70,28 +76,30 @@ public class BitCheckboxTests : BunitTestContext
         }
     }
 
+    /// <summary>
+    /// A click on an enabled mixed checkbox leaves the mixed state for the checked one; a disabled one keeps the state it
+    /// was given, since the click never reaches its handler.
+    /// </summary>
     [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
-    public void IndeterminateBitCheckboxShouldHaveCorrectClassNameIfIsEnabled(bool isEnabled)
+    public void IndeterminateBitCheckboxShouldHaveCorrectClassNameUnlessDisabled(bool isEnabled)
     {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
             parameters.Add(p => p.DefaultIndeterminate, true);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
-        var chb = component.Find(".bit-chb");
-        var chbCheckbox = component.Find("input");
-        chbCheckbox.Click();
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-ind"));
 
-        if (isEnabled)
-        {
-            Assert.IsFalse(chb.ClassList.Contains("bit-chb-ind"));
-        }
+        component.Find("input").Click();
+
+        var chb = component.Find(".bit-chb");
+
+        Assert.AreEqual(isEnabled is false, chb.ClassList.Contains("bit-chb-ind"));
+        Assert.AreEqual(isEnabled, chb.ClassList.Contains("bit-chb-ckd"));
     }
 
     [TestMethod,
@@ -286,6 +294,7 @@ public class BitCheckboxTests : BunitTestContext
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
+            parameters.Add(p => p.Value, true);
             parameters.Add(p => p.CheckIconAriaLabel, ariaLabel);
         });
 
@@ -299,6 +308,37 @@ public class BitCheckboxTests : BunitTestContext
         {
             Assert.IsNull(icon.GetAttribute("aria-label"));
         }
+    }
+
+    /// <summary>
+    /// An empty box holds the check mark at zero opacity, to be previewed on hover - so a name given to the
+    /// glyph does not expose it to assistive technologies while it is not on the screen.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxNamedCheckIconStaysHiddenWhileTheBoxIsEmptyTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.CheckIconAriaLabel, "Accepted");
+        });
+
+        var icon = component.Find(".bit-chb-box i.bit-icon");
+
+        Assert.IsNull(icon.GetAttribute("aria-label"));
+        Assert.IsNull(icon.GetAttribute("role"));
+        Assert.AreEqual("true", icon.GetAttribute("aria-hidden"));
+
+        // an unchecked icon is drawn rather than previewed, so there the name has something to name
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.CheckIconAriaLabel, "Accepted");
+            parameters.Add(p => p.UncheckedIconName, "Cancel");
+        });
+
+        icon = component.Find(".bit-chb-box i.bit-icon");
+
+        Assert.AreEqual("Accepted", icon.GetAttribute("aria-label"));
+        Assert.AreEqual("img", icon.GetAttribute("role"));
     }
 
     [TestMethod,
@@ -362,7 +402,7 @@ public class BitCheckboxTests : BunitTestContext
         var component = RenderComponent<BitCheckboxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitCheckboxTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var form = component.Find("form");
@@ -377,7 +417,6 @@ public class BitCheckboxTests : BunitTestContext
 
         Assert.AreEqual(1, component.Instance.ValidCount);
         Assert.AreEqual(1, component.Instance.InvalidCount);
-        Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
     [TestMethod,
@@ -389,7 +428,7 @@ public class BitCheckboxTests : BunitTestContext
         var component = RenderComponent<BitCheckboxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitCheckboxTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var checkBoxInput = component.Find("input[type='checkbox']");
@@ -398,7 +437,7 @@ public class BitCheckboxTests : BunitTestContext
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(checkBoxInput.HasAttribute("aria-invalid"), value);
+        Assert.AreEqual(value, checkBoxInput.HasAttribute("aria-invalid"));
         if (checkBoxInput.HasAttribute("aria-invalid"))
         {
             Assert.AreEqual("true", checkBoxInput.GetAttribute("aria-invalid"));
@@ -419,7 +458,7 @@ public class BitCheckboxTests : BunitTestContext
         var component = RenderComponent<BitCheckboxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitCheckboxTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var bitCheckBox = component.Find(".bit-chb");
@@ -531,17 +570,17 @@ public class BitCheckboxTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitLabelPosition.Top, "bit-chb-ltp"),
-        DataRow(BitLabelPosition.Bottom, "bit-chb-lbt"),
-        DataRow(BitLabelPosition.Start, "bit-chb-lst"),
-        DataRow(BitLabelPosition.End, "bit-chb-lnd"),
+        DataRow(BitPlacement.Top, "bit-chb-ltp"),
+        DataRow(BitPlacement.Bottom, "bit-chb-lbt"),
+        DataRow(BitPlacement.Start, "bit-chb-lst"),
+        DataRow(BitPlacement.End, "bit-chb-lnd"),
         DataRow(null, null)
     ]
-    public void BitCheckboxLabelPositionTest(BitLabelPosition? labelPosition, string expectedClass)
+    public void BitCheckboxLabelPositionTest(BitPlacement? labelPosition, string expectedClass)
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.LabelPosition, labelPosition);
+            parameters.Add(p => p.LabelPlacement, labelPosition);
         });
 
         var chb = component.Find(".bit-chb");
@@ -569,14 +608,96 @@ public class BitCheckboxTests : BunitTestContext
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
+            parameters.Add(p => p.Label, "Label");
             parameters.Add(p => p.Required, required);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var chbInput = component.Find("input");
 
-        Assert.AreEqual(required, chbInput.HasAttribute("required"));
+        Assert.AreEqual(required && isEnabled, chbInput.HasAttribute("required"));
         Assert.AreEqual(required && isEnabled, component.Find(".bit-chb").ClassList.Contains("bit-chb-req"));
+    }
+
+    /// <summary>
+    /// The native disabled attribute is what keeps a disabled checkbox out of its form and out of that
+    /// form's validation, so a checkbox kept focusable - which trades that attribute away - has to be kept
+    /// out of both by hand. An unchecked required one would otherwise block the very submit it cannot join.
+    /// The requirement is still announced though: the checkbox is reachable, so it is read out, and it must
+    /// not be read out as optional.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxDisabledButFocusableIsNotSubmittedOrRequiredTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Label");
+            parameters.Add(p => p.Name, "terms");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.AllowDisabledFocus, true);
+        });
+
+        var input = component.Find("input");
+
+        Assert.IsFalse(input.HasAttribute("disabled"));
+        Assert.IsFalse(input.HasAttribute("name"));
+        Assert.IsFalse(input.HasAttribute("required"));
+        Assert.AreEqual("true", input.GetAttribute("aria-required"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
+
+        Assert.AreEqual("terms", component.Find("input").GetAttribute("name"));
+        Assert.IsTrue(component.Find("input").HasAttribute("required"));
+        Assert.IsFalse(component.Find("input").HasAttribute("aria-required"));
+    }
+
+    /// <summary>
+    /// A disabled checkbox that is not kept focusable carries the native disabled attribute instead, which
+    /// already drops it out of the form - but aria-required is written all the same, so that the two
+    /// disabled checkboxes say the same thing about themselves whichever way they were disabled.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxDisabledRequiredIsStillAnnouncedAsRequiredTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Label");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        var input = component.Find("input");
+
+        Assert.IsTrue(input.HasAttribute("disabled"));
+        Assert.IsFalse(input.HasAttribute("required"));
+        Assert.AreEqual("true", input.GetAttribute("aria-required"));
+    }
+
+    /// <summary>
+    /// The asterisk is drawn after the label, so a checkbox with no label of any kind has nowhere to put
+    /// one and says it is required through the native attribute alone. A templated label is a label too.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxRequiredMarkerNeedsALabelTest()
+    {
+        var unlabeled = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.AriaLabel, "Accept");
+        });
+
+        Assert.IsTrue(unlabeled.Find("input").HasAttribute("required"));
+        Assert.IsFalse(unlabeled.Find(".bit-chb").ClassList.Contains("bit-chb-req"));
+
+        var templated = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.LabelTemplate, (RenderFragment)(builder => builder.AddContent(0, "Terms")));
+        });
+
+        Assert.IsTrue(templated.Find(".bit-chb").ClassList.Contains("bit-chb-req"));
+        Assert.IsTrue(templated.Find(".bit-chb-tpl").TextContent.Contains("Terms"));
     }
 
     [TestMethod]
@@ -646,6 +767,914 @@ public class BitCheckboxTests : BunitTestContext
 
         Assert.IsFalse(chbInput.HasAttribute("hidden"));
         Assert.IsTrue(chbInput.ClassList.Contains("bit-chb-inp"));
+    }
+
+    /// <summary>
+    /// The visible description is a line of its own outside the label - inside it the sentence would join
+    /// the accessible name of the checkbox instead of being read after it - and it is pointed at through
+    /// aria-describedby.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxDescriptionTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Auto renew");
+            parameters.Add(p => p.Description, "Renewed one day before it expires.");
+        });
+
+        var description = component.Find(".bit-chb-des");
+
+        Assert.AreEqual("Renewed one day before it expires.", description.TextContent.Trim());
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-hds"));
+        Assert.IsNull(description.Closest("label"));
+
+        var describedBy = component.Find("input").GetAttribute("aria-describedby");
+
+        Assert.IsNotNull(describedBy);
+        CollectionAssert.Contains(describedBy.Split(' '), description.Id);
+    }
+
+    [TestMethod]
+    public void BitCheckboxDescriptionTemplateTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Auto renew");
+            parameters.Add(p => p.DescriptionTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "b");
+                builder.AddContent(1, "Templated");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("Templated", component.Find(".bit-chb-des b").TextContent);
+    }
+
+    /// <summary>
+    /// aria-describedby is a list of ids, so everything that describes the checkbox ends up in it together,
+    /// in the order the three are read: the visible line, the screen-reader-only one, then whatever the page
+    /// already shows and pointed at by hand.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxDescribedByComposesEveryDescriptionTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Auto renew");
+            parameters.Add(p => p.Description, "Visible");
+            parameters.Add(p => p.AriaDescription, "Announced");
+            parameters.Add(p => p.AriaDescribedby, "external-hint");
+        });
+
+        var ids = component.Find("input").GetAttribute("aria-describedby")!.Split(' ');
+
+        Assert.AreEqual(3, ids.Length);
+        Assert.AreEqual(component.Find(".bit-chb-des").Id, ids[0]);
+        Assert.AreEqual(component.Find(".bit-chb-dsc").Id, ids[1]);
+        Assert.AreEqual("external-hint", ids[2]);
+    }
+
+    /// <summary>
+    /// A null written over a splatted attribute removes it rather than leaving it alone, so the aria-* the
+    /// component also writes itself are resolved against what InputHtmlAttributes wrote.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxKeepsTheAriaAttributesWrittenByHandTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object>
+            {
+                { "aria-label", "Written by hand" },
+                { "aria-describedby", "external-hint" },
+                { "aria-controls", "external-list" },
+                { "aria-setsize", "10" },
+                { "aria-posinset", "3" },
+                { "aria-busy", "true" },
+                { "aria-disabled", "true" },
+                { "aria-readonly", "true" }
+            });
+        });
+
+        var input = component.Find("input");
+
+        Assert.AreEqual("Written by hand", input.GetAttribute("aria-label"));
+        Assert.AreEqual("external-hint", input.GetAttribute("aria-describedby"));
+        Assert.AreEqual("external-list", input.GetAttribute("aria-controls"));
+        Assert.AreEqual("10", input.GetAttribute("aria-setsize"));
+        Assert.AreEqual("3", input.GetAttribute("aria-posinset"));
+        Assert.AreEqual("true", input.GetAttribute("aria-busy"));
+        Assert.AreEqual("true", input.GetAttribute("aria-disabled"));
+        Assert.AreEqual("true", input.GetAttribute("aria-readonly"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxAriaLabelParameterWinsOverTheSplattedOneTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "From the parameter");
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object>
+            {
+                { "aria-label", "Written by hand" }
+            });
+        });
+
+        Assert.AreEqual("From the parameter", component.Find("input").GetAttribute("aria-label"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCheckboxFullWidthTest(bool fullWidth)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Label");
+            parameters.Add(p => p.FullWidth, fullWidth);
+        });
+
+        Assert.AreEqual(fullWidth, component.Find(".bit-chb").ClassList.Contains("bit-chb-fwi"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCheckboxNoWrapTest(bool noWrap)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "A label long enough to need more than one line");
+            parameters.Add(p => p.NoWrap, noWrap);
+        });
+
+        Assert.AreEqual(noWrap, component.Find(".bit-chb").ClassList.Contains("bit-chb-nwr"));
+    }
+
+    /// <summary>
+    /// The focus ring is drawn around the box, which a custom face replaces - so the root says it has none
+    /// and the stylesheet can put the ring around the whole face instead of nowhere.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxCustomContentIsMarkedAsHavingNoBoxTest()
+    {
+        var withBox = RenderComponent<BitCheckbox>(parameters => parameters.Add(p => p.Label, "Label"));
+
+        Assert.IsFalse(withBox.Find(".bit-chb").ClassList.Contains("bit-chb-cct"));
+
+        var custom = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder => builder.AddContent(0, "Face")));
+        });
+
+        Assert.IsTrue(custom.Find(".bit-chb").ClassList.Contains("bit-chb-cct"));
+    }
+
+    [TestMethod,
+        DataRow("3"),
+        DataRow(null)
+    ]
+    public void BitCheckboxTabIndexTest(string tabIndex)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, tabIndex);
+        });
+
+        Assert.AreEqual(tabIndex, component.Find("input").GetAttribute("tabindex"));
+    }
+
+    /// <summary>
+    /// A disabled checkbox is out of the tab order, which is also where an autofocus must not pull the
+    /// focus - unless AllowDisabledFocus keeps it in, which trades the native attribute for aria-disabled.
+    /// </summary>
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCheckboxAllowDisabledFocusTest(bool allowDisabledFocus)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Label");
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+        });
+
+        var input = component.Find("input");
+
+        Assert.AreEqual(allowDisabledFocus is false, input.HasAttribute("disabled"));
+        Assert.AreEqual(allowDisabledFocus, input.HasAttribute("autofocus"));
+        Assert.AreEqual("true", input.GetAttribute("aria-disabled"));
+    }
+
+    /// <summary>
+    /// A disabled checkbox that stays focusable carries no native disabled attribute, so its click has to
+    /// be turned away by the handler rather than by the browser.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxDisabledButFocusableDoesNotToggleTest()
+    {
+        var changed = false;
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.AllowDisabledFocus, true);
+            parameters.Add(p => p.OnChange, () => changed = true);
+        });
+
+        component.Find("input").Click();
+
+        Assert.IsFalse(changed);
+        Assert.IsFalse(component.Find(".bit-chb").ClassList.Contains("bit-chb-ckd"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxFocusCallbacksTest()
+    {
+        var focused = false;
+        var blurred = false;
+        var focusedIn = false;
+        var focusedOut = false;
+
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.OnFocus, () => focused = true);
+            parameters.Add(p => p.OnFocusIn, () => focusedIn = true);
+            parameters.Add(p => p.OnFocusOut, () => focusedOut = true);
+            parameters.Add(p => p.OnBlur, () => blurred = true);
+        });
+
+        var input = component.Find("input");
+
+        input.Focus();
+        input.FocusIn();
+        input.FocusOut();
+        input.Blur();
+
+        Assert.IsTrue(focused);
+        Assert.IsTrue(focusedIn);
+        Assert.IsTrue(focusedOut);
+        Assert.IsTrue(blurred);
+    }
+
+    /// <summary>
+    /// The glyph is decorative next to the state the input itself announces, so it is hidden from assistive
+    /// technologies - unless it was given a name of its own, which is an explicit ask for it to be read.
+    /// </summary>
+    [TestMethod,
+        DataRow("Agreed"),
+        DataRow(null)
+    ]
+    public void BitCheckboxCheckIconIsHiddenUnlessNamedTest(string ariaLabel)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Value, true);
+            parameters.Add(p => p.CheckIconAriaLabel, ariaLabel);
+        });
+
+        var icon = component.Find(".bit-chb-box i");
+
+        if (ariaLabel is null)
+        {
+            Assert.AreEqual("true", icon.GetAttribute("aria-hidden"));
+            Assert.IsNull(icon.GetAttribute("role"));
+        }
+        else
+        {
+            Assert.IsNull(icon.GetAttribute("aria-hidden"));
+            Assert.AreEqual("img", icon.GetAttribute("role"));
+        }
+    }
+
+    /// <summary>
+    /// The value ends up in the attribute a form posts, so it is the invariant "true"/"false" rather than
+    /// whatever ToString would give it.
+    /// </summary>
+    [TestMethod,
+        DataRow(true, "true"),
+        DataRow(false, "false")
+    ]
+    public void BitCheckboxPostedValueTest(bool value, string expected)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, value);
+        });
+
+        Assert.AreEqual(expected, component.Find("input").GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// The mixed state of a native checkbox is a DOM property that no markup can carry, so it is pushed
+    /// from JavaScript once the element exists. aria-checked="mixed" is the same state in markup, which is
+    /// what a statically rendered page - and a screen reader reading before that push lands - has to go on.
+    /// </summary>
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCheckboxIndeterminateIsAnnouncedAsMixedTest(bool indeterminate)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Indeterminate, indeterminate);
+        });
+
+        var chbInput = component.Find("input");
+
+        if (indeterminate)
+        {
+            Assert.AreEqual("mixed", chbInput.GetAttribute("aria-checked"));
+        }
+        else
+        {
+            Assert.IsFalse(chbInput.HasAttribute("aria-checked"));
+        }
+    }
+
+    /// <summary>
+    /// The mixed state a three-state cycle reaches is announced the same way the one set from outside is.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxThreeStateAnnouncesTheMixedStateTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.ThreeState, true);
+        });
+
+        var chbInput = component.Find("input");
+
+        Assert.IsFalse(chbInput.HasAttribute("aria-checked"));
+
+        chbInput.Click(); // checked
+        Assert.IsFalse(component.Find("input").HasAttribute("aria-checked"));
+
+        chbInput.Click(); // indeterminate
+        Assert.AreEqual("mixed", component.Find("input").GetAttribute("aria-checked"));
+
+        chbInput.Click(); // unchecked
+        Assert.IsFalse(component.Find("input").HasAttribute("aria-checked"));
+    }
+
+    /// <summary>
+    /// An aria-checked written by hand is left alone while the checkbox is not in the mixed state, the same
+    /// way the other aria-* attributes a page can splat onto the input are.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxKeepsTheAriaCheckedWrittenByHandTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-checked", "false" } });
+        });
+
+        Assert.AreEqual("false", component.Find("input").GetAttribute("aria-checked"));
+    }
+
+    /// <summary>
+    /// A read-only checkbox drops the native required for the same reason a disabled one does: an unchecked
+    /// box nobody is allowed to check would refuse the submit over a click that does nothing. The
+    /// requirement is still announced, and the asterisk on the label stays.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxReadOnlyIsNotNativelyRequiredTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "I accept the terms");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        var chbInput = component.Find("input");
+
+        Assert.IsFalse(chbInput.HasAttribute("required"));
+        Assert.AreEqual("true", chbInput.GetAttribute("aria-required"));
+        Assert.AreEqual("true", chbInput.GetAttribute("aria-readonly"));
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-req"));
+    }
+
+    /// <summary>
+    /// An editable required checkbox is required natively, and says so without a second aria-* attribute
+    /// repeating what the attribute already carries.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxEditableRequiredKeepsTheNativeAttributeTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "I accept the terms");
+            parameters.Add(p => p.Required, true);
+        });
+
+        var chbInput = component.Find("input");
+
+        Assert.IsTrue(chbInput.HasAttribute("required"));
+        Assert.IsFalse(chbInput.HasAttribute("aria-required"));
+    }
+
+    /// <summary>
+    /// The id of the list a select-all checkbox governs travels to aria-controls.
+    /// </summary>
+    [TestMethod,
+        DataRow("fruits-list"),
+        DataRow(null)
+    ]
+    public void BitCheckboxAriaControlsTest(string ariaControls)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.AriaControls, ariaControls);
+        });
+
+        Assert.AreEqual(ariaControls, component.Find("input").GetAttribute("aria-controls"));
+    }
+
+    /// <summary>
+    /// A busy checkbox replaces its glyph with a spinner, is announced as busy and unavailable, and turns
+    /// clicks away without giving up the focus - the state of a change that is still being carried out.
+    /// </summary>
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCheckboxLoadingTest(bool loading)
+    {
+        var clicked = false;
+        var changed = false;
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Loading, loading);
+            parameters.Add(p => p.OnClick, () => clicked = true);
+            parameters.Add(p => p.OnChange, () => changed = true);
+        });
+
+        var chbInput = component.Find("input");
+
+        Assert.AreEqual(loading, component.Find(".bit-chb").ClassList.Contains("bit-chb-ldg"));
+        Assert.AreEqual(loading ? "true" : null, chbInput.GetAttribute("aria-busy"));
+        Assert.AreEqual(loading ? "true" : null, chbInput.GetAttribute("aria-disabled"));
+        Assert.IsFalse(chbInput.HasAttribute("disabled"));
+        Assert.AreEqual(loading, component.FindAll(".bit-chb-spn").Count == 1);
+        Assert.AreEqual(loading is false, component.FindAll(".bit-chb-ico").Count == 1);
+
+        chbInput.Click();
+
+        Assert.AreEqual(loading is false, clicked);
+        Assert.AreEqual(loading is false, changed);
+        Assert.AreEqual(loading is false, component.Find(".bit-chb").ClassList.Contains("bit-chb-ckd"));
+    }
+
+    /// <summary>
+    /// A busy required checkbox drops the native required attribute, which would otherwise refuse the submit
+    /// over a box no click can currently check, and says so through aria-required instead.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxBusyRequiredIsNotEnforcedNativelyTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "I accept the terms");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.Loading, true);
+        });
+
+        var chbInput = component.Find("input");
+
+        Assert.IsFalse(chbInput.HasAttribute("required"));
+        Assert.AreEqual("true", chbInput.GetAttribute("aria-required"));
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-req"));
+    }
+
+    /// <summary>
+    /// AutoLoading raises the busy state for as long as the callbacks behind a change are still running,
+    /// and clears it once they are done.
+    /// </summary>
+    [TestMethod]
+    public async Task BitCheckboxAutoLoadingRaisesTheBusyStateAroundTheChangeTest()
+    {
+        var release = new TaskCompletionSource();
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.OnChanging, async (BitCheckboxChangeArgs _) => await release.Task);
+        });
+
+        Assert.IsFalse(component.Find(".bit-chb").ClassList.Contains("bit-chb-ldg"));
+
+        var click = component.Find("input").ClickAsync(new());
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-ldg")));
+        Assert.AreEqual("true", component.Find("input").GetAttribute("aria-busy"));
+
+        release.SetResult();
+        await click;
+
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-chb").ClassList.Contains("bit-chb-ldg")));
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-ckd"));
+    }
+
+    /// <summary>
+    /// A second click landing while the awaited callbacks of the first one are still running is dropped
+    /// rather than starting a competing change - which on a three-state checkbox would skip a state.
+    /// </summary>
+    [TestMethod]
+    public async Task BitCheckboxDropsAClickLandingWhileAChangeIsStillRunningTest()
+    {
+        var changingCount = 0;
+        var release = new TaskCompletionSource();
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.ThreeState, true);
+            parameters.Add(p => p.OnChanging, async (BitCheckboxChangeArgs _) =>
+            {
+                changingCount++;
+                await release.Task;
+            });
+        });
+
+        var chbInput = component.Find("input");
+
+        var firstClick = chbInput.ClickAsync(new());
+        await chbInput.ClickAsync(new());
+
+        Assert.AreEqual(1, changingCount);
+
+        release.SetResult();
+        await firstClick;
+
+        Assert.AreEqual(1, changingCount);
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-ckd"));
+        Assert.IsFalse(component.Find(".bit-chb").ClassList.Contains("bit-chb-ind"));
+    }
+
+    /// <summary>
+    /// A disabled checkbox says so the same way everywhere: the root carries bit-dis, and the native control carries
+    /// both the disabled attribute and aria-disabled="true", so :disabled and [aria-disabled="true"] each find it.
+    /// </summary>
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCheckboxDisabledShouldPairTheNativeAndTheAriaAttributes(bool disabled)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Label");
+            parameters.Add(p => p.Disabled, disabled);
+        });
+
+        var input = component.Find("input");
+
+        Assert.AreEqual(disabled, component.Find(".bit-chb").ClassList.Contains("bit-dis"));
+        Assert.AreEqual(disabled, input.HasAttribute("disabled"));
+        Assert.AreEqual(disabled ? "true" : null, input.GetAttribute("aria-disabled"));
+    }
+
+    /// <summary>
+    /// A disabled checkbox runs none of the page's activation handlers: the ones splatted onto it for a click are
+    /// left off its root while it is disabled, and put back once it is enabled; a hover handler stays either way.
+    /// </summary>
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCheckboxShouldDropTheSplattedActivationHandlersWhileDisabled(bool disabled)
+    {
+        var clicks = 0;
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitCheckbox>(0);
+            builder.AddAttribute(1, nameof(BitCheckbox.Disabled), disabled);
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
+            builder.AddAttribute(3, "onmouseover", EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            builder.AddAttribute(4, "data-splatted", "yes");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-chb");
+
+        Assert.AreEqual("yes", root.GetAttribute("data-splatted"));
+        Assert.AreEqual(disabled is false, root.HasAttribute("blazor:onclick"));
+        Assert.IsTrue(root.HasAttribute("blazor:onmouseover"));
+
+        if (disabled) return;
+
+        root.Click();
+
+        Assert.AreEqual(1, clicks);
+    }
+
+    [TestMethod]
+    public void BitCheckboxShouldRenderTheBaseParameters()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Id, "the-id");
+            parameters.Add(p => p.Class, "the-class");
+            parameters.Add(p => p.Style, "margin: 1px;");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Visibility, BitVisibility.Hidden);
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { ["data-test"] = "root" });
+        });
+
+        var root = component.Find(".bit-chb");
+
+        Assert.AreEqual("the-id", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("the-class"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("margin: 1px;"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("visibility:hidden"));
+        Assert.AreEqual("root", root.GetAttribute("data-test"));
+
+        component.Render(parameters => parameters.Add(p => p.Visibility, BitVisibility.Collapsed));
+
+        Assert.IsTrue(component.Find(".bit-chb").GetAttribute("style")!.Contains("display:none"));
+    }
+
+    /// <summary>
+    /// The class and the style of a state land on the root only while the checkbox is in that state, and the spinner
+    /// of a busy checkbox takes the slot of its own.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxShouldApplyTheClassesAndStylesOfItsStates()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, false);
+            parameters.Add(p => p.Classes, new BitCheckboxClassStyles { Checked = "is-checked", Indeterminate = "is-mixed", Spinner = "the-spinner" });
+            parameters.Add(p => p.Styles, new BitCheckboxClassStyles { Checked = "color: red;", Indeterminate = "color: blue;", Spinner = "opacity: 0.5;" });
+        });
+
+        var root = component.Find(".bit-chb");
+
+        Assert.IsFalse(root.ClassList.Contains("is-checked"));
+        Assert.IsFalse(root.ClassList.Contains("is-mixed"));
+        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("color"));
+
+        component.Find("input").Click();
+
+        root = component.Find(".bit-chb");
+
+        Assert.IsTrue(root.ClassList.Contains("is-checked"));
+        StringAssert.Contains(root.GetAttribute("style"), "color: red;");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Indeterminate, true);
+            parameters.Add(p => p.Loading, true);
+        });
+
+        root = component.Find(".bit-chb");
+
+        Assert.IsTrue(root.ClassList.Contains("is-mixed"));
+        StringAssert.Contains(root.GetAttribute("style"), "color: blue;");
+        Assert.IsTrue(component.Find(".bit-chb-spn").ClassList.Contains("the-spinner"));
+        Assert.AreEqual("opacity: 0.5;", component.Find(".bit-chb-spn").GetAttribute("style"));
+    }
+
+    /// <summary>
+    /// StopPropagation keeps the click to the checkbox: the directive is rendered on the root and on the input, both of
+    /// which hear the click a label forwards, and on neither while it is off.
+    /// </summary>
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCheckboxStopPropagationTest(bool stopPropagation)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.StopPropagation, stopPropagation);
+        });
+
+        Assert.AreEqual(stopPropagation, component.Find(".bit-chb").HasAttribute("blazor:onclick:stopPropagation"));
+        Assert.AreEqual(stopPropagation, component.Find("input").HasAttribute("blazor:onclick:stopPropagation"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxOnChangeShouldReceiveTheNewValue()
+    {
+        var changes = new List<bool>();
+        MouseEventArgs? clickArgs = null;
+
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, (bool value) => changes.Add(value));
+            parameters.Add(p => p.OnClick, (MouseEventArgs args) => clickArgs ??= args);
+        });
+
+        component.Find("input").Click(new MouseEventArgs { ClientX = 7 });
+        component.Find("input").Click();
+
+        CollectionAssert.AreEqual(new[] { true, false }, changes);
+        Assert.IsNotNull(clickArgs);
+        Assert.AreEqual(7, clickArgs!.ClientX);
+    }
+
+    /// <summary>
+    /// A Value bound one way with nothing to write it back to is the app's: a click changes nothing, and the native
+    /// checked property the browser already toggled is put back onto the element.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxOneWayBoundValueShouldNotChangeOnClick()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Value, false);
+        });
+
+        component.Find("input").Click();
+
+        Assert.IsFalse(component.Instance.Value);
+        Assert.IsFalse(component.Find(".bit-chb").ClassList.Contains("bit-chb-ckd"));
+
+        var restored = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Utils.setProperty" && Equals(i.Arguments[1], "checked"));
+
+        Assert.AreEqual(false, restored.Arguments[2]);
+    }
+
+    /// <summary>
+    /// A freshly rendered input already has its indeterminate property at false, so only a checkbox that starts out
+    /// mixed has anything to push - which keeps a grid of selection checkboxes from opening with one interop call per
+    /// row that changes nothing.
+    /// </summary>
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCheckboxShouldPushTheIndeterminatePropertyOnlyWhenItStartsMixed(bool indeterminate)
+    {
+        RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Indeterminate, indeterminate);
+        });
+
+        var pushes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Utils.setProperty").ToList();
+
+        Assert.AreEqual(indeterminate ? 1 : 0, pushes.Count);
+
+        if (indeterminate)
+        {
+            Assert.AreEqual("indeterminate", pushes[0].Arguments[1]);
+            Assert.AreEqual(true, pushes[0].Arguments[2]);
+        }
+    }
+
+    /// <summary>
+    /// The step a three-state checkbox is about to take is described in full: from checked it moves to the mixed
+    /// state, which is neither checked nor unchecked.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxThreeStateOnChangingShouldDescribeTheMixedStep()
+    {
+        BitCheckboxChangeArgs? changingArgs = null;
+
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.ThreeState, true);
+            parameters.Add(p => p.DefaultValue, true);
+            parameters.Add(p => p.OnChanging, (BitCheckboxChangeArgs args) => changingArgs = args);
+        });
+
+        component.Find("input").Click();
+
+        Assert.IsNotNull(changingArgs);
+        Assert.IsFalse(changingArgs!.Value);
+        Assert.IsTrue(changingArgs.Indeterminate);
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-ind"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxLabelTest()
+    {
+        var unlabeled = RenderComponent<BitCheckbox>();
+
+        Assert.AreEqual(0, unlabeled.FindAll(".bit-chb-txt").Count);
+        Assert.AreEqual(0, unlabeled.FindAll(".bit-chb-tpl").Count);
+
+        var labeled = RenderComponent<BitCheckbox>(parameters => parameters.Add(p => p.Label, "Remember me"));
+
+        Assert.AreEqual("Remember me", labeled.Find(".bit-chb-txt").TextContent.Trim());
+
+        // A templated label is wrapped so the required asterisk and NoWrap still have a label to hang on, and it wins
+        // over the plain text.
+        var templated = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Plain");
+            parameters.Add(p => p.LabelTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "b");
+                builder.AddContent(1, "Templated");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("Templated", templated.Find(".bit-chb-tpl b").TextContent);
+        Assert.AreEqual(0, templated.FindAll(".bit-chb-txt").Count);
+    }
+
+    /// <summary>
+    /// An icon given as a BitIconInfo renders the classes of its own library and wins over the built-in name beside it,
+    /// for each of the three states.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxExternalIconsShouldWinOverTheBuiltInNames()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.UncheckedIconName, "Cancel");
+            parameters.Add(p => p.UncheckedIcon, BitIconInfo.Fa("regular square"));
+            parameters.Add(p => p.CheckIconName, "Accept");
+            parameters.Add(p => p.CheckIcon, BitIconInfo.Bi("check-lg"));
+            parameters.Add(p => p.IndeterminateIconName, "Remove");
+            parameters.Add(p => p.IndeterminateIcon, BitIconInfo.Css("my-dash"));
+        });
+
+        var icon = component.Find(".bit-chb-box i");
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-regular"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-square"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--Cancel"));
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-uci"));
+
+        component.Find("input").Click();
+
+        icon = component.Find(".bit-chb-box i");
+
+        Assert.IsTrue(icon.ClassList.Contains("bi"));
+        Assert.IsTrue(icon.ClassList.Contains("bi-check-lg"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--Accept"));
+
+        component.Render(parameters => parameters.Add(p => p.Indeterminate, true));
+
+        icon = component.Find(".bit-chb-box i");
+
+        Assert.IsTrue(icon.ClassList.Contains("my-dash"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--Remove"));
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-cii"));
+    }
+
+    /// <summary>
+    /// NoValidate keeps the checkbox out of the EditContext: the form still rejects the model, but the checkbox neither
+    /// turns invalid nor says so to assistive technologies.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckBoxNoValidateShouldLeaveTheInvalidStateToTheForm()
+    {
+        var component = RenderComponent<BitCheckboxValidationTest>(parameters =>
+        {
+            parameters.Add(p => p.TestModel, new BitCheckboxTestModel { Value = true });
+            parameters.Add(p => p.NoValidate, true);
+        });
+
+        component.Find("form").Submit();
+
+        Assert.AreEqual(1, component.Instance.InvalidCount);
+        Assert.IsFalse(component.Find(".bit-chb").ClassList.Contains("bit-inv"));
+        Assert.IsFalse(component.Find("input").HasAttribute("aria-invalid"));
+    }
+
+    /// <summary>
+    /// The mixed state and the autofocus are pushed from the after-render pass, which a prerender never reaches, so
+    /// the markup alone has to carry both for the page a visitor sees before it is interactive.
+    /// </summary>
+    [TestMethod]
+    public async Task BitCheckboxShouldPrerenderWithoutJavaScript()
+    {
+        var html = await Prerenderer.RenderAsync<BitCheckbox>(new Dictionary<string, object?>
+        {
+            [nameof(BitCheckbox.Label)] = "Prerendered",
+            [nameof(BitCheckbox.Indeterminate)] = true,
+            [nameof(BitCheckbox.AutoFocus)] = true,
+        });
+
+        StringAssert.Contains(html, "bit-chb-ind");
+        StringAssert.Contains(html, "aria-checked=\"mixed\"");
+        StringAssert.Contains(html, "autofocus");
+        StringAssert.Contains(html, "Prerendered");
+    }
+
+    [TestMethod]
+    public async Task BitCheckboxDisposeShouldNotThrow()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Indeterminate, true);
+            parameters.Add(p => p.Loading, true);
+        });
+
+        await component.Instance.DisposeAsync();
     }
 
     private void HandleValueChanged(bool isChecked) => BitCheckBoxIsChecked = isChecked;

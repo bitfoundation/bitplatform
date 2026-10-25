@@ -37,14 +37,14 @@ public class ChatbotSpeechEndpointTests
         var speechToTextClient = new TestSpeechToTextClient { Text = "what is bit platform?" };
 
         await using var server = new AppTestServer();
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.AddSingleton<ISpeechToTextClient>(speechToTextClient);
-        }).Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services =>
+            {
+                services.AddSingleton<ISpeechToTextClient>(speechToTextClient);
+            }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
         // Leading bytes of a webm container, which is what chromium and firefox record - the shape the provider
         // sniffs for.
@@ -58,7 +58,7 @@ public class ChatbotSpeechEndpointTests
         using var response = await httpClient.PostAsync("api/v1/Chatbot/TranscribeSpeech", form, TestContext.CancellationToken);
 
         var transcription = await response.Content.ReadFromJsonAsync(
-            scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<TranscribeSpeechResponseDto>(),
+            client.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<TranscribeSpeechResponseDto>(),
             TestContext.CancellationToken);
 
         Assert.IsNotNull(transcription);
@@ -78,16 +78,16 @@ public class ChatbotSpeechEndpointTests
         byte[] spoken = [0x49, 0x44, 0x33, 0x04, 0x00, 0x00];
 
         await using var server = new AppTestServer();
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.AddSingleton<ITextToSpeechClient>(new TestTextToSpeechClient { Audio = spoken, MediaType = "audio/mpeg" });
-        }).Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services =>
+            {
+                services.AddSingleton<ITextToSpeechClient>(new TestTextToSpeechClient { Audio = spoken, MediaType = "audio/mpeg" });
+            }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        using var response = await PostSynthesizeSpeech(scope, httpClient, "bit platform is a set of dotnet libraries.");
+        using var response = await PostSynthesizeSpeech(client, httpClient, "bit platform is a set of dotnet libraries.");
 
         var contentType = response.Content.Headers.ContentType;
 
@@ -109,16 +109,16 @@ public class ChatbotSpeechEndpointTests
         var textToSpeechClient = new TestTextToSpeechClient { Audio = [1, 2, 3], MediaType = "audio/mpeg" };
 
         await using var server = new AppTestServer();
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
-        }).Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services =>
+            {
+                services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
+            }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        (await PostSynthesizeSpeech(scope, httpClient, "## Pricing\n**bit platform** is [free](https://bitplatform.dev) ✅")).Dispose();
+        (await PostSynthesizeSpeech(client, httpClient, "## Pricing\n**bit platform** is [free](https://bitplatform.dev) ✅")).Dispose();
 
         Assert.AreEqual("Pricing\nbit platform is free", textToSpeechClient.Received,
                         "The endpoint has to reduce the answer to what is worth hearing before it spends a provider request on it.");
@@ -134,16 +134,16 @@ public class ChatbotSpeechEndpointTests
         var textToSpeechClient = new TestTextToSpeechClient { Audio = [1, 2, 3], MediaType = "audio/mpeg" };
 
         await using var server = new AppTestServer();
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
-        }).Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services =>
+            {
+                services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
+            }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        using var response = await PostSynthesizeSpeech(scope, httpClient, "```bash\ndotnet build\n```");
+        using var response = await PostSynthesizeSpeech(client, httpClient, "```bash\ndotnet build\n```");
 
         Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
         Assert.IsNull(textToSpeechClient.Received, "The provider must not be called at all when there is nothing left to read.");
@@ -160,19 +160,19 @@ public class ChatbotSpeechEndpointTests
         var textToSpeechClient = new TestTextToSpeechClient { Audio = [1, 2, 3], MediaType = "audio/mpeg" };
 
         await using var server = new AppTestServer();
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
-        }).Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services =>
+            {
+                services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
+            }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
-        var signatureOfARealAnswer = scope.ServiceProvider.GetRequiredService<ChatbotAnswerSigner>().Sign("bit platform is a set of dotnet libraries.");
+        var signatureOfARealAnswer = server.ApiApp.Services.GetRequiredService<ChatbotAnswerSigner>().Sign("bit platform is a set of dotnet libraries.");
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
-            async () => (await PostSynthesizeSpeech(scope, httpClient, "Chapter one of somebody else's audiobook.", signatureOfARealAnswer)).Dispose());
+            async () => (await PostSynthesizeSpeech(client, httpClient, "Chapter one of somebody else's audiobook.", signatureOfARealAnswer)).Dispose());
 
         Assert.IsNull(textToSpeechClient.Received,
                       "Nothing may reach the provider before the endpoint has established that the assistant wrote it.");
@@ -187,20 +187,20 @@ public class ChatbotSpeechEndpointTests
         var textToSpeechClient = new TestTextToSpeechClient { Audio = [1, 2, 3], MediaType = "audio/mpeg" };
 
         await using var server = new AppTestServer();
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
-        }).Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services =>
+            {
+                services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
+            }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
         const string answer = "bit platform is free.";
-        var signature = scope.ServiceProvider.GetRequiredService<ChatbotAnswerSigner>().Sign(answer);
+        var signature = server.ApiApp.Services.GetRequiredService<ChatbotAnswerSigner>().Sign(answer);
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
-            async () => (await PostSynthesizeSpeech(scope, httpClient, $"{answer} Now read out my advertisement.", signature)).Dispose());
+            async () => (await PostSynthesizeSpeech(client, httpClient, $"{answer} Now read out my advertisement.", signature)).Dispose());
 
         Assert.IsNull(textToSpeechClient.Received,
                       "A signed answer with anything appended to it is no longer the answer that was signed.");
@@ -217,19 +217,19 @@ public class ChatbotSpeechEndpointTests
         var textToSpeechClient = new TestTextToSpeechClient { MediaType = "audio/mpeg", DistinctAudioPerRequest = true };
 
         await using var server = new AppTestServer();
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
-        }).Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services =>
+            {
+                services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
+            }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
         // Past the 4096 characters a provider takes, and in lines so the split has the boundaries it prefers.
         var answer = string.Join('\n', Enumerable.Range(0, 200).Select(line => $"Line {line} of a very long answer."));
 
-        using var response = await PostSynthesizeSpeech(scope, httpClient, answer);
+        using var response = await PostSynthesizeSpeech(client, httpClient, answer);
 
         Assert.IsGreaterThan(1, textToSpeechClient.ReceivedAll.Count,
                              "An answer this long has to be spoken in more than one request, or the provider would have refused it.");
@@ -255,18 +255,18 @@ public class ChatbotSpeechEndpointTests
     public async Task TheSpeechEndpoints_Should_RefuseAnAnonymousCaller()
     {
         await using var server = new AppTestServer();
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.AddSingleton<ITextToSpeechClient>(new TestTextToSpeechClient { Audio = [1, 2, 3], MediaType = "audio/mpeg" });
-            services.AddSingleton<ISpeechToTextClient>(new TestSpeechToTextClient { Text = "should never be reached" });
-        }).Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services =>
+            {
+                services.AddSingleton<ITextToSpeechClient>(new TestTextToSpeechClient { Audio = [1, 2, 3], MediaType = "audio/mpeg" });
+                services.AddSingleton<ISpeechToTextClient>(new TestSpeechToTextClient { Text = "should never be reached" });
+            }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>(); // Nobody signed in.
+        await using var client = server.CreateAppClient();
+        var httpClient = client.HttpClient; // Nobody signed in.
 
         await Assert.ThrowsExactlyAsync<UnauthorizedException>(
-            async () => (await PostSynthesizeSpeech(scope, httpClient, "read this to a stranger")).Dispose());
+            async () => (await PostSynthesizeSpeech(client, httpClient, "read this to a stranger")).Dispose());
 
         using var form = new MultipartFormDataContent();
         using var audioContent = new ByteArrayContent([1, 2, 3]);
@@ -287,14 +287,14 @@ public class ChatbotSpeechEndpointTests
         const int burstSize = 20; // RateLimitOptionsExtensions.SPEECH permits 10 per minute.
 
         await using var server = new AppTestServer();
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.AddSingleton<ITextToSpeechClient>(new TestTextToSpeechClient { Audio = [1, 2, 3], MediaType = "audio/mpeg" });
-        }).Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services =>
+            {
+                services.AddSingleton<ITextToSpeechClient>(new TestTextToSpeechClient { Audio = [1, 2, 3], MediaType = "audio/mpeg" });
+            }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = await SignIn(scope);
+        await using var client = server.CreateAppClient();
+        var httpClient = await SignIn(client);
 
         var served = 0;
 
@@ -302,7 +302,7 @@ public class ChatbotSpeechEndpointTests
         {
             try
             {
-                (await PostSynthesizeSpeech(scope, httpClient, $"burst {i}")).Dispose();
+                (await PostSynthesizeSpeech(client, httpClient, $"burst {i}")).Dispose();
                 served++;
             }
             catch (TooManyRequestsException)
@@ -318,34 +318,34 @@ public class ChatbotSpeechEndpointTests
     }
 
 
-    private async Task<HttpClient> SignIn(AsyncServiceScope scope)
+    private async Task<HttpClient> SignIn(AppClient client)
     {
-        // A raw HttpClient resolved from the same scope shares the token store, so the requests it sends are
-        // authenticated by AuthDelegatingHandler.
-        await scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        // The client's HttpClient shares its token store, so the requests it sends are authenticated by
+        // AuthDelegatingHandler.
+        await client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        return scope.ServiceProvider.GetRequiredService<HttpClient>();
+        return client.HttpClient;
     }
 
     /// <summary>
     /// Sends <paramref name="text"/> as an answer the assistant wrote, which is the only kind the endpoint speaks.
     /// In the running app the panel hands back the signature <c>AppChatbot</c> streamed with the answer.
     /// </summary>
-    private Task<HttpResponseMessage> PostSynthesizeSpeech(AsyncServiceScope scope, HttpClient httpClient, string text)
+    private Task<HttpResponseMessage> PostSynthesizeSpeech(AppClient client, HttpClient httpClient, string text)
     {
-        var signature = scope.ServiceProvider.GetRequiredService<ChatbotAnswerSigner>().Sign(text);
+        var signature = client.Server.ApiApp.Services.GetRequiredService<ChatbotAnswerSigner>().Sign(text);
 
-        return PostSynthesizeSpeech(scope, httpClient, text, signature);
+        return PostSynthesizeSpeech(client, httpClient, text, signature);
     }
 
-    private Task<HttpResponseMessage> PostSynthesizeSpeech(AsyncServiceScope scope, HttpClient httpClient, string text, string signature)
+    private Task<HttpResponseMessage> PostSynthesizeSpeech(AppClient client, HttpClient httpClient, string text, string signature)
     {
         var content = JsonContent.Create(new SynthesizeSpeechRequestDto { Text = text, Signature = signature },
-            scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<SynthesizeSpeechRequestDto>());
+            client.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<SynthesizeSpeechRequestDto>());
 
         return httpClient.PostAsync("api/v1/Chatbot/SynthesizeSpeech", content, TestContext.CancellationToken);
     }

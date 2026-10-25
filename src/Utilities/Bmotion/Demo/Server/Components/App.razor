@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <base href="/" />
+    @* No static <title> here: every page supplies its own through <PageTitle>, and with
+       prerendering the HeadOutlet emits a real <title> element into this head. A second,
+       earlier one would win in the served HTML (browsers and crawlers take the first). *@
+    <meta name="description" content="Bit.Bmotion - a Blazor-native animation library inspired by Framer Motion: springs, gestures, variants, drag, layout and scroll animations, with all of the maths in C#." />
+
+    @* What a link to the site looks like when it is shared. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.Bmotion" />
+    <meta property="og:title" content="Bmotion - a Blazor-native animation library" />
+    <meta property="og:description" content="Springs, gestures, layout animations and variants for Blazor. All of the maths in C#, none of the JavaScript wiring, and no animation library shipped alongside it." />
+    <meta name="twitter:card" content="summary" />
+
+    <ResourcePreloader />
+    @* The site kit (app.css, theme.js, site.js - shared by every Utilities demo), then this demo's
+       own sample styles. *@
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["demo.css"]" />
+    @* The library's stylesheet. It plays the prerendered enter animations (BmPrerenderMode.Animate,
+       set in AddDemoServices): without it an element prerendered that way is simply served at rest. *@
+    <link rel="stylesheet" href="@Assets["_content/Bit.Bmotion/bit-bmotion.css"]" />
+    @* Scoped-CSS bundle: includes the client project's *.razor.css files as well. *@
+    <link rel="stylesheet" href="@Assets["Bit.Bmotion.Demo.Server.styles.css"]" />
+    @* Synchronous on purpose: applies the light/dark theme before first paint. *@
+    <script src="@Assets["theme.js"]"></script>
+    <ImportMap />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+@* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
+   page load rather than an enhanced one. Enhanced navigation fetches and merges the next page while
+   the runtime is still starting, and the router the runtime then attaches can render the address
+   it read before the merge - the URL says /getting-started and the page is the landing page. Once the
+   app is interactive its router handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
+    @* Prerendered on the server, then hydrated by the WebAssembly runtime. The C# engine can't run
+       during the prerender pass, so Bit.Bmotion (in BmPrerenderMode.Animate) serves each element at
+       rest with its enter animation compiled to CSS - it plays as soon as the HTML arrives, and the
+       runtime takes the element over where that animation got to. Gestures and everything else
+       start once the runtime is interactive, which the shell marks with data-interactive (see
+       Layout/MainLayout.razor). The library's script is not linked here: it is imported on demand
+       the first time an animation runs. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">&#128473;</span>
+    </div>
+
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["site.js"]"></script>
+</body>
+
+</html>

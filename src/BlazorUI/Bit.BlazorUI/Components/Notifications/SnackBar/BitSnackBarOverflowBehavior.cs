@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Determines what a <see cref="BitSnackBar"/> does with a new item that arrives while

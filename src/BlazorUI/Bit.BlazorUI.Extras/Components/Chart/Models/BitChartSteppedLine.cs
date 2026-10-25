@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Stepped line rendering options.</summary>
 public enum BitChartSteppedLine

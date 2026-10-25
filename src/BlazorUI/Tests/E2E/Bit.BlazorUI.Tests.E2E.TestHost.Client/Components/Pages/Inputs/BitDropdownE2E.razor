@@ -1,0 +1,483 @@
+﻿@page "/e2e/dropdown"
+
+@* The core behaviours of BitDropdown over its Items API: the single and multi select selection with its two-way
+   bindings and events, the disabled and read-only states, the open state, the clear paths, the public methods, the
+   base parameters, the BitParams cascade and the mount/unmount lifecycle. *@
+
+<PageTitle>BitDropdown E2E</PageTitle>
+
+<h1>BitDropdown</h1>
+
+<E2ESection Id="basic-single" Title="Single select">
+    <BitDropdown Id="dd-single"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Single select"
+                 Name="single-select"
+                 Placeholder="Select an item"
+                 Items="@L("single")"
+                 @bind-Value="_single"
+                 OnChange="(string? v) => { _singleChangeCount++; _singleChangeLast = v; }"
+                 OnSelectItem="(BitDropdownItem<string> i) => { _singleSelectCount++; _singleSelectLast = i.Text; }"
+                 OnClick="() => _singleClickCount++"
+                 OnOpen="() => _singleOpenCount++"
+                 OnClose="() => _singleCloseCount++"
+                 OnFocusIn="() => _singleFocusInCount++"
+                 OnFocusOut="() => _singleFocusOutCount++" />
+    <p>
+        Value: <span id="single-value">@_single</span> |
+        OnChange: <span id="single-change-count">@_singleChangeCount</span> / <span id="single-change-last">@_singleChangeLast</span> |
+        OnSelectItem: <span id="single-select-count">@_singleSelectCount</span> / <span id="single-select-last">@_singleSelectLast</span> |
+        OnClick: <span id="single-click-count">@_singleClickCount</span> |
+        OnOpen: <span id="single-open-count">@_singleOpenCount</span> |
+        OnClose: <span id="single-close-count">@_singleCloseCount</span> |
+        OnFocusIn: <span id="single-focusin-count">@_singleFocusInCount</span> |
+        OnFocusOut: <span id="single-focusout-count">@_singleFocusOutCount</span>
+    </p>
+    <button id="btn-single-set" @onclick="@(() => _single = "v-car")">Set Carrot</button>
+    <button id="btn-single-null" @onclick="@(() => _single = null)">Set null</button>
+    <button id="after-single">After single</button>
+</E2ESection>
+
+<E2ESection Id="basic-multi" Title="Multi select">
+    <BitDropdown Id="dd-multi"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Multi select"
+                 MultiSelect
+                 Placeholder="Select items"
+                 Items="@L("multi")"
+                 @bind-Values="_multi"
+                 OnValuesChange="(IEnumerable<string?> v) => { _multiChangeCount++; _multiChangeLast = string.Join(',', v); }"
+                 OnSelectItem="(BitDropdownItem<string> i) => { _multiSelectCount++; _multiSelectLast = i.Text; }"
+                 OnDeselectItem="(BitDropdownItem<string> i) => { _multiDeselectCount++; _multiDeselectLast = i.Text; }" />
+    <p>
+        Values: <span id="multi-values">@string.Join(',', _multi ?? [])</span> |
+        OnValuesChange: <span id="multi-change-count">@_multiChangeCount</span> / <span id="multi-change-last">@_multiChangeLast</span> |
+        OnSelectItem: <span id="multi-select-count">@_multiSelectCount</span> / <span id="multi-select-last">@_multiSelectLast</span> |
+        OnDeselectItem: <span id="multi-deselect-count">@_multiDeselectCount</span> / <span id="multi-deselect-last">@_multiDeselectLast</span>
+    </p>
+    <button id="btn-multi-set" @onclick="@(() => _multi = ["f-ban", "v-let"])">Set Banana, Lettuce</button>
+    <button id="btn-multi-clear" @onclick="@(() => _multi = [])">Clear</button>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitDropdown Id="dd-disabled"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Disabled"
+                 Disabled="_disabled"
+                 ShowClearButton
+                 Items="@L("disabled")"
+                 DefaultValue="@("f-app")"
+                 OnOpen="() => _disabledOpenCount++"
+                 HtmlAttributes="_disabledAttributes" />
+    <p>
+        Page clicks: <span id="disabled-clicks">@_disabledClicks</span> |
+        Page mousedowns: <span id="disabled-mousedowns">@_disabledMouseDowns</span> |
+        Page hovers: <span id="disabled-hovers">@_disabledHovers</span> |
+        OnOpen: <span id="disabled-open-count">@_disabledOpenCount</span>
+    </p>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+</E2ESection>
+
+<E2ESection Id="readonly" Title="Read only">
+    <BitDropdown Id="dd-readonly"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Read only"
+                 ReadOnly
+                 ShowClearButton
+                 Items="@L("readonly")"
+                 @bind-Value="_readonlyValue"
+                 OnSelectItem="() => _readonlySelectCount++" />
+    <BitDropdown Id="dd-readonly-chips"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Read only chips"
+                 ReadOnly
+                 Chips
+                 MultiSelect
+                 Items="@L("readonly-chips")"
+                 DefaultValues="@(["f-app", "f-ban"])" />
+    <p>
+        Value: <span id="readonly-value">@_readonlyValue</span> |
+        OnSelectItem: <span id="readonly-select-count">@_readonlySelectCount</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="is-open" Title="IsOpen">
+    <BitDropdown Id="dd-isopen"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Bound IsOpen"
+                 Items="@L("isopen")"
+                 DefaultValue="@string.Empty"
+                 @bind-IsOpen="_isOpen" />
+    <p>IsOpen: <span id="isopen-state">@_isOpen</span></p>
+    <button id="btn-open" @onclick="() => _isOpen = true">Open</button>
+    <button id="btn-close" @onclick="() => _isOpen = false">Close</button>
+</E2ESection>
+
+<E2ESection Id="reselect" Title="Reselectable">
+    <BitDropdown Id="dd-reselect"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Reselectable"
+                 Reselectable
+                 Items="@L("reselect")"
+                 DefaultValue="@("f-app")"
+                 OnSelectItem="() => _reselectCount++" />
+    <BitDropdown Id="dd-noreselect"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Not reselectable"
+                 Items="@L("noreselect")"
+                 DefaultValue="@("f-app")"
+                 OnSelectItem="() => _noReselectCount++" />
+    <p>
+        Reselectable OnSelectItem: <span id="reselect-count">@_reselectCount</span> |
+        Not reselectable OnSelectItem: <span id="noreselect-count">@_noReselectCount</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="close-on-select" Title="CloseOnSelect">
+    <BitDropdown Id="dd-cos-single"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Single that stays open"
+                 CloseOnSelect="false"
+                 Items="@L("cos-single")"
+                 @bind-Value="_cosSingle" />
+    <BitDropdown Id="dd-cos-multi"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Multi that closes"
+                 MultiSelect
+                 CloseOnSelect="true"
+                 Items="@L("cos-multi")"
+                 @bind-Values="_cosMulti" />
+    <p>
+        Single: <span id="cos-single-value">@_cosSingle</span> |
+        Multi: <span id="cos-multi-values">@string.Join(',', _cosMulti ?? [])</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="comparer" Title="ValueComparer">
+    <BitDropdown Id="dd-comparer"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Case-insensitive values"
+                 Items="@L("comparer")"
+                 ValueComparer="StringComparer.OrdinalIgnoreCase"
+                 @bind-Value="_comparerValue" />
+    <p>Value: <span id="comparer-value">@_comparerValue</span></p>
+</E2ESection>
+
+<E2ESection Id="clear" Title="Clear button and ClearOnEscape">
+    <BitDropdown Id="dd-clear-single"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Clear single"
+                 ShowClearButton
+                 ClearButtonAriaLabel="Remove the selection"
+                 Items="@L("clear-single")"
+                 @bind-Value="_clearSingle"
+                 OnClear="() => _clearSingleCount++" />
+    <BitDropdown Id="dd-clear-multi"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Clear multi"
+                 MultiSelect
+                 ShowClearButton
+                 Items="@L("clear-multi")"
+                 @bind-Values="_clearMulti"
+                 OnClear="() => _clearMultiCount++" />
+    <BitDropdown Id="dd-clear-esc"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="ClearOnEscape"
+                 ClearOnEscape
+                 Items="@L("clear-esc")"
+                 @bind-Value="_clearEsc"
+                 OnClear="() => _clearEscCount++" />
+    <BitDropdown Id="dd-clear-oneway"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="One-way value"
+                 ShowClearButton
+                 Items="@L("clear-oneway")"
+                 Value="@("f-app")"
+                 OnClear="() => _clearOneWayCount++" />
+    <p>
+        Single: <span id="clear-single-value">@_clearSingle</span> / OnClear <span id="clear-single-count">@_clearSingleCount</span> |
+        Multi: <span id="clear-multi-values">@string.Join(',', _clearMulti ?? [])</span> / OnClear <span id="clear-multi-count">@_clearMultiCount</span> |
+        Escape: <span id="clear-esc-value">@_clearEsc</span> / OnClear <span id="clear-esc-count">@_clearEscCount</span> |
+        One-way OnClear: <span id="clear-oneway-count">@_clearOneWayCount</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="methods" Title="Public methods">
+    <BitDropdown @ref="_methodsRef"
+                 Id="dd-methods"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Methods single"
+                 Items="@L("methods")"
+                 @bind-Value="_methodsValue"
+                 OnSelectItem="() => _methodsSelectCount++"
+                 OnClear="() => _methodsClearCount++" />
+    <BitDropdown @ref="_methodsMultiRef"
+                 Id="dd-methods-multi"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Methods multi"
+                 MultiSelect
+                 Items="@L("methods-multi")"
+                 @bind-Values="_methodsMultiValues"
+                 OnDeselectItem="() => _methodsDeselectCount++" />
+    <p>
+        Value: <span id="m-value">@_methodsValue</span> |
+        SelectedItem: <span id="m-selected">@_methodsSelected</span> |
+        OnSelectItem: <span id="m-select-count">@_methodsSelectCount</span> |
+        OnClear: <span id="m-clear-count">@_methodsClearCount</span> |
+        Multi values: <span id="mm-values">@string.Join(',', _methodsMultiValues ?? [])</span> |
+        SelectedItems: <span id="mm-selected">@_methodsMultiSelected</span> |
+        OnDeselectItem: <span id="mm-deselect-count">@_methodsDeselectCount</span>
+    </p>
+    <button id="btn-m-select" @onclick="SelectCarrot">SelectItem(Carrot)</button>
+    <button id="btn-m-unselect" @onclick="UnselectCarrot">UnselectItem(Carrot)</button>
+    <button id="btn-m-clear" @onclick="ClearMethods">ClearAsync()</button>
+    <button id="btn-m-focus" @onclick="FocusMethods">FocusAsync()</button>
+    <button id="btn-m-refresh" @onclick="RefreshMethods">RefreshItemsAsync()</button>
+    <button id="btn-m-read" @onclick="ReadSelection">Read selection</button>
+    <button id="btn-mm-select" @onclick="SelectBroccoli">SelectItem(Broccoli)</button>
+    <button id="btn-mm-unselect" @onclick="UnselectBroccoli">UnselectItem(Broccoli)</button>
+    <p>IsSelected flags: <span id="m-flags">@_methodsFlags</span></p>
+
+    <BitDropdown @ref="_searchRef"
+                 Id="dd-methods-search"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Methods search"
+                 ShowSearchBox
+                 Items="@L("methods-search")"
+                 DefaultValue="@string.Empty" />
+    <p>SearchInputElement: <span id="ms-element">@_searchElement</span></p>
+    <button id="btn-ms-read" @onclick="ReadSearchElement">Read SearchInputElement</button>
+    <button id="btn-ms-focus" @onclick="FocusSearch">FocusSearchInputAsync()</button>
+    <button id="btn-m-focus-noscroll" @onclick="FocusWithoutScroll">FocusAsync(preventScroll: true)</button>
+</E2ESection>
+
+<E2ESection Id="open-on-focus" Title="OpenOnFocus">
+    <button id="before-oof">Before</button>
+    <BitDropdown Id="dd-oof"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Open on focus"
+                 OpenOnFocus
+                 Items="@L("oof")"
+                 @bind-Value="_oofValue" />
+    <p>Value: <span id="oof-value">@_oofValue</span></p>
+</E2ESection>
+
+<E2ESection Id="base" Title="Base parameters">
+    <BitDropdown Id="dd-base"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Class="my-dropdown"
+                 Style="margin-top: 7px"
+                 AriaLabel="Base dropdown"
+                 Visibility="_visibility"
+                 TabIndex="3"
+                 Items="@L("base")"
+                 DefaultValue="@("f-app")"
+                 HtmlAttributes="_baseAttributes"
+                 InputHtmlAttributes="_baseInputAttributes" />
+    <p>Visibility: <span id="base-visibility">@_visibility</span></p>
+    <button id="btn-vis-visible" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-vis-hidden" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-vis-collapsed" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <form id="native-form" method="get" action="/e2e/dropdown">
+        <BitDropdown Id="dd-form"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Name="fruit"
+                     MultiSelect
+                     Items="@L("form")"
+                     DefaultValues="@(["f-app", "v-car"])" />
+    </form>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <BitParams Parameters="_params">
+        <BitDropdown Id="dd-params-a"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Cascaded"
+                     Items="@L("params-a")"
+                     DefaultValue="@("f-app")" />
+        <BitDropdown Id="dd-params-b"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Own placeholder"
+                     Placeholder="Own placeholder"
+                     ShowClearButton="false"
+                     Items="@L("params-b")"
+                     DefaultValue="@string.Empty" />
+    </BitParams>
+    <BitDropdown Id="dd-params-outside"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Outside"
+                 Items="@L("params-outside")"
+                 DefaultValue="@("f-app")" />
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Mount and unmount">
+    <button id="btn-toggle-mount" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+    <button id="btn-rerender" @onclick="ToggleLabel">Change label</button>
+    @if (_mounted)
+    {
+        <BitDropdown Id="dd-mount"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="@_mountLabel"
+                     Responsive
+                     ShowSearchBox
+                     Items="@L("mount")"
+                     DefaultValue="@string.Empty" />
+    }
+    <p>Mounted: <span id="mount-state">@_mounted</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly Dictionary<string, List<BitDropdownItem<string>>> _lists = [];
+
+    // Every dropdown gets item instances of its own: the component writes IsSelected onto the items it holds.
+    private List<BitDropdownItem<string>> L(string key)
+    {
+        if (_lists.TryGetValue(key, out var list) is false)
+        {
+            _lists[key] = list = Basic();
+        }
+
+        return list;
+    }
+
+    private static List<BitDropdownItem<string>> Basic() =>
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { Text = "Orange", Value = "f-ora", IsDisabled = true },
+        new() { Text = "Grape", Value = "f-gra" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro" },
+        new() { Text = "Carrot", Value = "v-car" },
+        new() { Text = "Lettuce", Value = "v-let" }
+    ];
+
+    private string? _single;
+    private int _singleChangeCount;
+    private string? _singleChangeLast;
+    private int _singleSelectCount;
+    private string? _singleSelectLast;
+    private int _singleClickCount;
+    private int _singleOpenCount;
+    private int _singleCloseCount;
+    private int _singleFocusInCount;
+    private int _singleFocusOutCount;
+
+    private IEnumerable<string?>? _multi = [];
+    private int _multiChangeCount;
+    private string? _multiChangeLast;
+    private int _multiSelectCount;
+    private string? _multiSelectLast;
+    private int _multiDeselectCount;
+    private string? _multiDeselectLast;
+
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private int _disabledMouseDowns;
+    private int _disabledHovers;
+    private int _disabledOpenCount;
+    private Dictionary<string, object> _disabledAttributes = default!;
+
+    private string? _readonlyValue = "f-app";
+    private int _readonlySelectCount;
+
+    private bool _isOpen;
+
+    private int _reselectCount;
+    private int _noReselectCount;
+
+    private string? _cosSingle;
+    private IEnumerable<string?>? _cosMulti = [];
+
+    private string? _comparerValue = "F-APP";
+
+    private string? _clearSingle = "f-app";
+    private int _clearSingleCount;
+    private IEnumerable<string?>? _clearMulti = ["f-app", "f-ban"];
+    private int _clearMultiCount;
+    private string? _clearEsc = "f-ban";
+    private int _clearEscCount;
+    private int _clearOneWayCount;
+
+    private BitDropdown<BitDropdownItem<string>, string> _methodsRef = default!;
+    private BitDropdown<BitDropdownItem<string>, string> _methodsMultiRef = default!;
+    private string? _methodsValue;
+    private string? _methodsSelected;
+    private int _methodsSelectCount;
+    private int _methodsClearCount;
+    private IEnumerable<string?>? _methodsMultiValues = [];
+    private string? _methodsMultiSelected;
+    private int _methodsDeselectCount;
+
+    private string? _oofValue;
+
+    private BitVisibility _visibility = BitVisibility.Visible;
+    private readonly Dictionary<string, object> _baseAttributes = new() { ["data-test"] = "base-root" };
+    private readonly Dictionary<string, object> _baseInputAttributes = new() { ["data-input"] = "base-select" };
+
+    private readonly BitDropdownParams<BitDropdownItem<string>, string>[] _params =
+    [
+        new()
+        {
+            Placeholder = "Cascaded placeholder",
+            ShowClearButton = true,
+            Size = BitSize.Large,
+        }
+    ];
+
+    private bool _mounted = true;
+    private string _mountLabel = "First label";
+
+    private void ToggleLabel() => _mountLabel = _mountLabel == "First label" ? "Second label" : "First label";
+
+    protected override void OnInitialized()
+    {
+        _disabledAttributes = new()
+        {
+            ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledClicks++),
+            ["onmousedown"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledMouseDowns++),
+            ["onmouseover"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledHovers++),
+        };
+    }
+
+    private BitDropdownItem<string> Item(string key, string text) => L(key).First(i => i.Text == text);
+
+    private async Task SelectCarrot() => await _methodsRef.SelectItem(Item("methods", "Carrot"));
+
+    private async Task UnselectCarrot() => await _methodsRef.UnselectItem(Item("methods", "Carrot"));
+
+    private async Task ClearMethods() => await _methodsRef.ClearAsync();
+
+    private async Task FocusMethods() => await _methodsRef.FocusAsync();
+
+    private async Task RefreshMethods()
+    {
+        await _methodsRef.RefreshItemsAsync();
+        _methodsSelected = "refreshed:" + _methodsRef.SelectedItem?.Text;
+    }
+
+    private void ReadSelection()
+    {
+        _methodsSelected = _methodsRef.SelectedItem?.Text ?? "(none)";
+        _methodsMultiSelected = string.Join(',', _methodsMultiRef.SelectedItems.Select(i => i.Text));
+        _methodsFlags = string.Join(',', L("methods").Concat(L("methods-multi")).Where(i => i.IsSelected).Select(i => i.Text));
+    }
+
+    private BitDropdown<BitDropdownItem<string>, string> _searchRef = default!;
+    private string? _searchElement;
+    private string? _methodsFlags;
+
+    private void ReadSearchElement() => _searchElement = _searchRef.SearchInputElement.HasValue ? "present" : "absent";
+
+    private async Task FocusSearch() => await _searchRef.FocusSearchInputAsync();
+
+    private async Task FocusWithoutScroll() => await _methodsRef.FocusAsync(preventScroll: true);
+
+    private async Task SelectBroccoli() => await _methodsMultiRef.SelectItem(Item("methods-multi", "Broccoli"));
+
+    private async Task UnselectBroccoli() => await _methodsMultiRef.UnselectItem(Item("methods-multi", "Broccoli"));
+}

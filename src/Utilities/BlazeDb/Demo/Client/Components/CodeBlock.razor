@@ -1,0 +1,63 @@
+﻿@* A code sample - the site kit's pre.bb-code, which site.js gives a copy button - coloured by the
+   demo's own highlighter (CodeHighlighter.cs; its token classes are mapped onto the kit's code colours
+   in demo.css), with an optional file name above it. *@
+
+<div class="bd-code @Class">
+    @if (!string.IsNullOrWhiteSpace(Title))
+    {
+        <p class="bb-source-file">@Title</p>
+    }
+    <pre class="bb-code @(Wrap ? "bd-wrap" : null)"><code>@_html</code></pre>
+</div>
+
+@code {
+    private MarkupString _html;
+    private string? _rendered;
+
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+
+    [Parameter] public string Language { get; set; } = "csharp";
+
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Wraps long lines instead of scrolling them - for generated calls whose length changes as you click.</summary>
+    [Parameter] public bool Wrap { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        var source = Code ?? "";
+        if (_rendered == source + "\u0000" + Language)
+        {
+            return;
+        }
+
+        _rendered = source + "\u0000" + Language;
+        _html = (MarkupString)CodeHighlighter.ToHtml(Dedent(source), Language);
+    }
+
+    /// <summary>Strips the leading indentation shared by every line.</summary>
+    private static string Dedent(string code)
+    {
+        var lines = code.Replace("\r\n", "\n").Split('\n');
+        var indent = int.MaxValue;
+
+        foreach (var line in lines)
+        {
+            if (line.Trim().Length == 0)
+            {
+                continue;
+            }
+            indent = Math.Min(indent, line.Length - line.TrimStart().Length);
+        }
+
+        if (indent is 0 or int.MaxValue)
+        {
+            return code.Trim('\n').TrimEnd();
+        }
+
+        var trimmed = lines.Select(l => l.Length >= indent ? l[indent..] : l.TrimStart());
+        return string.Join('\n', trimmed).Trim('\n').TrimEnd();
+    }
+}

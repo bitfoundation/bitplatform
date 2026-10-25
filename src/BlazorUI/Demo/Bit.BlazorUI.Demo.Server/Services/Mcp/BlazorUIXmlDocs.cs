@@ -239,8 +239,10 @@ public static partial class BlazorUIXmlDocs
         var arguments = target.IndexOf('(', StringComparison.Ordinal);
         if (arguments > 0) target = target[..arguments];
 
-        var arity = target.IndexOf('`', StringComparison.Ordinal);
-        if (arity > 0) target = target[..arity];
+        // Drop the arity markers of generic types and methods ("BitDropdown`2", "GetItem``1") wherever
+        // they sit: a member of a generic type has one in the middle of its cref, and cutting the text
+        // at the first one would drop the member and keep the namespace.
+        target = ArityRegex().Replace(target, string.Empty);
 
         var parts = target.Split('.');
 
@@ -258,4 +260,7 @@ public static partial class BlazorUIXmlDocs
 
     [GeneratedRegex(@"[ \t]{2,}")]
     private static partial Regex RepeatedSpaceRegex();
+
+    [GeneratedRegex(@"`+\d+")]
+    private static partial Regex ArityRegex();
 }

@@ -1,4 +1,4 @@
-declare class CodeToken extends Inline {
+﻿declare class CodeToken extends Inline {
     static formats(node: Element, scroll: ScrollBlot): any;
     constructor(scroll: ScrollBlot, domNode: Node, value: unknown);
     format(format: string, value: unknown): void;

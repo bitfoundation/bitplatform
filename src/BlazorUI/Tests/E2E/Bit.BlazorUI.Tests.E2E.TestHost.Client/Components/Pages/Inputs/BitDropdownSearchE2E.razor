@@ -1,0 +1,284 @@
+﻿@page "/e2e/dropdown/search"
+
+@* The search of BitDropdown: the search box and its parts, a committed and an immediate search, the four search modes,
+   MinSearchLength with its hint, diacritics folding, the highlight, a custom SearchFunction, the debounce and throttle
+   of the immediate search, the result count announcement, grouping kept while searching, and the empty and no
+   results states with their texts and templates. *@
+
+<PageTitle>BitDropdown search E2E</PageTitle>
+
+<h1>BitDropdown search</h1>
+
+<E2ESection Id="search-box" Title="Search box (committed)">
+    <BitDropdown Id="dd-search"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Committed search"
+                 ShowSearchBox
+                 SearchBoxPlaceholder="Search item"
+                 SearchBoxAriaLabel="Find a fruit"
+                 SearchBoxClearButtonAriaLabel="Wipe the search"
+                 Items="@L("search")"
+                 @bind-Value="_searchValue"
+                 OnSearch="OnCommittedSearch" />
+    <p>
+        Value: <span id="search-value">@_searchValue</span> |
+        OnSearch: <span id="search-count">@_searchCount</span> / <span id="search-last">@_searchLast</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="search-immediate" Title="Immediate, auto focused, highlighted">
+    <BitDropdown Id="dd-search-auto"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Immediate search"
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 HighlightSearch
+                 SearchResultsText="{0} hits"
+                 Items="@L("search-auto")"
+                 @bind-Value="_autoValue" />
+    <p>Value: <span id="search-auto-value">@_autoValue</span></p>
+    <BitDropdown Id="dd-search-multi"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Multi select search"
+                 MultiSelect
+                 ShowSearchBox
+                 Immediate
+                 Items="@L("search-multi")"
+                 @bind-Values="_multiValues" />
+    <p>Values: <span id="search-multi-values">@string.Join(',', _multiValues ?? [])</span></p>
+    <BitDropdown Id="dd-search-type"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Typed into while closed"
+                 ShowSearchBox
+                 Immediate
+                 Items="@L("search-type")"
+                 DefaultValue="@string.Empty" />
+</E2ESection>
+
+<E2ESection Id="search-modes" Title="SearchMode">
+    <BitDropdown Id="dd-mode-Contains" TItem="BitDropdownItem<string>" TValue="string" Label="Contains"
+                 ShowSearchBox AutoFocusSearchBox Immediate SearchMode="BitDropdownSearchMode.Contains"
+                 Items="_modeItems1" DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-mode-StartsWith" TItem="BitDropdownItem<string>" TValue="string" Label="StartsWith"
+                 ShowSearchBox AutoFocusSearchBox Immediate SearchMode="BitDropdownSearchMode.StartsWith"
+                 Items="_modeItems2" DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-mode-EndsWith" TItem="BitDropdownItem<string>" TValue="string" Label="EndsWith"
+                 ShowSearchBox AutoFocusSearchBox Immediate SearchMode="BitDropdownSearchMode.EndsWith"
+                 Items="_modeItems3" DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-mode-ExactMatch" TItem="BitDropdownItem<string>" TValue="string" Label="ExactMatch"
+                 ShowSearchBox AutoFocusSearchBox Immediate SearchMode="BitDropdownSearchMode.ExactMatch"
+                 Items="_modeItems4" DefaultValue="@string.Empty" />
+</E2ESection>
+
+<E2ESection Id="min-length" Title="MinSearchLength">
+    <BitDropdown Id="dd-minlen"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="At least three"
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 MinSearchLength="3"
+                 MinSearchLengthText="Please type {0} more"
+                 Items="@L("minlen")"
+                 OnSearch="(string? s) => _minLenLast = s"
+                 DefaultValue="@string.Empty" />
+    <p>OnSearch: <span id="minlen-last">@_minLenLast</span></p>
+    <BitDropdown Id="dd-minlen-default"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="At least two"
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 MinSearchLength="2"
+                 Items="@L("minlen-default")"
+                 DefaultValue="@string.Empty" />
+</E2ESection>
+
+<E2ESection Id="diacritics" Title="SearchIgnoreDiacritics">
+    <BitDropdown Id="dd-diacritics"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Folded"
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 HighlightSearch
+                 SearchIgnoreDiacritics
+                 Items="_accented1"
+                 DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-nodiacritics"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Not folded"
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 Items="_accented2"
+                 DefaultValue="@string.Empty" />
+</E2ESection>
+
+<E2ESection Id="search-function" Title="SearchFunction">
+    <BitDropdown Id="dd-searchfn"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Matches the value"
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 HighlightSearch
+                 SearchFunction="SearchByValue"
+                 Items="@L("searchfn")"
+                 DefaultValue="@string.Empty" />
+</E2ESection>
+
+<E2ESection Id="rate-limit" Title="DebounceTime and ThrottleTime">
+    <BitDropdown Id="dd-debounce"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Debounced"
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 DebounceTime="400"
+                 Items="@L("debounce")"
+                 OnSearch="(string? s) => { _debounceCount++; _debounceLast = s; }"
+                 DefaultValue="@string.Empty" />
+    <p>OnSearch: <span id="debounce-count">@_debounceCount</span> / <span id="debounce-last">@_debounceLast</span></p>
+    <BitDropdown Id="dd-throttle"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Throttled"
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 ThrottleTime="1000"
+                 Items="@L("throttle")"
+                 OnSearch="(string? s) => { _throttleCount++; _throttleLast = s; }"
+                 DefaultValue="@string.Empty" />
+    <p>OnSearch: <span id="throttle-count">@_throttleCount</span> / <span id="throttle-last">@_throttleLast</span></p>
+</E2ESection>
+
+<E2ESection Id="grouped-search" Title="Grouping while searching">
+    <BitDropdown Id="dd-search-group"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Grouped search"
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 Items="@L("search-group")"
+                 DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-search-hidesel"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Search without the selected"
+                 MultiSelect
+                 HideSelectedItems
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 Items="@L("search-hidesel")"
+                 DefaultValues="@(["f-ban"])" />
+</E2ESection>
+
+<E2ESection Id="empty" Title="Empty and no results">
+    <BitDropdown Id="dd-empty" TItem="BitDropdownItem<string>" TValue="string" Label="Empty"
+                 Items="_empty1" />
+    <BitDropdown Id="dd-empty-text" TItem="BitDropdownItem<string>" TValue="string" Label="EmptyText"
+                 EmptyText="There is nothing here" Items="_empty2" />
+    <BitDropdown Id="dd-empty-tpl" TItem="BitDropdownItem<string>" TValue="string" Label="EmptyTemplate"
+                 Items="_empty3">
+        <EmptyTemplate><span id="empty-tpl-content">Nothing to show!</span></EmptyTemplate>
+    </BitDropdown>
+    <BitDropdown Id="dd-noresults" TItem="BitDropdownItem<string>" TValue="string" Label="No results"
+                 ShowSearchBox AutoFocusSearchBox Immediate Items="@L("noresults")" DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-noresults-text" TItem="BitDropdownItem<string>" TValue="string" Label="NoResultsText"
+                 ShowSearchBox AutoFocusSearchBox Immediate NoResultsText="Nothing matched"
+                 Items="@L("noresults-text")" DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-noresults-tpl" TItem="BitDropdownItem<string>" TValue="string" Label="NoResultsTemplate"
+                 ShowSearchBox AutoFocusSearchBox Immediate Items="@L("noresults-tpl")" DefaultValue="@string.Empty">
+        <NoResultsTemplate><span id="noresults-tpl-content">No match, try again</span></NoResultsTemplate>
+    </BitDropdown>
+    <BitDropdown Id="dd-noresults-fallback" TItem="BitDropdownItem<string>" TValue="string" Label="Empty text for no results"
+                 ShowSearchBox AutoFocusSearchBox Immediate EmptyText="The empty text"
+                 Items="@L("noresults-fallback")" DefaultValue="@string.Empty" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly Dictionary<string, List<BitDropdownItem<string>>> _lists = [];
+
+    private List<BitDropdownItem<string>> L(string key)
+    {
+        if (_lists.TryGetValue(key, out var list) is false)
+        {
+            _lists[key] = list = Basic();
+        }
+
+        return list;
+    }
+
+    private static List<BitDropdownItem<string>> Basic() =>
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { Text = "Orange", Value = "f-ora", IsDisabled = true },
+        new() { Text = "Grape", Value = "f-gra" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro" },
+        new() { Text = "Carrot", Value = "v-car" },
+        new() { Text = "Lettuce", Value = "v-let" }
+    ];
+
+    // Words that tell the four modes apart for the term "an": Banana contains it, Ant starts with it, Pan ends with
+    // it, and "an" is it.
+    private static List<BitDropdownItem<string>> ModeItems() =>
+    [
+        new() { Text = "Banana", Value = "banana" },
+        new() { Text = "Ant", Value = "ant" },
+        new() { Text = "Pan", Value = "pan" },
+        new() { Text = "an", Value = "an" },
+        new() { Text = "Kiwi", Value = "kiwi" },
+    ];
+
+    private readonly List<BitDropdownItem<string>> _modeItems1 = ModeItems();
+    private readonly List<BitDropdownItem<string>> _modeItems2 = ModeItems();
+    private readonly List<BitDropdownItem<string>> _modeItems3 = ModeItems();
+    private readonly List<BitDropdownItem<string>> _modeItems4 = ModeItems();
+
+    private static List<BitDropdownItem<string>> Accented() =>
+    [
+        new() { Text = "José", Value = "jose" },
+        new() { Text = "Müller", Value = "muller" },
+        new() { Text = "Ångström", Value = "angstrom" },
+        new() { Text = "Zoë", Value = "zoe" },
+    ];
+
+    private readonly List<BitDropdownItem<string>> _accented1 = Accented();
+    private readonly List<BitDropdownItem<string>> _accented2 = Accented();
+
+    private readonly List<BitDropdownItem<string>> _empty1 = [];
+    private readonly List<BitDropdownItem<string>> _empty2 = [];
+    private readonly List<BitDropdownItem<string>> _empty3 = [];
+
+    private string? _searchValue;
+    private int _searchCount;
+    private string? _searchLast;
+
+    private void OnCommittedSearch(string? s)
+    {
+        _searchCount++;
+        _searchLast = s ?? "(null)";
+    }
+
+    private string? _autoValue;
+    private IEnumerable<string?>? _multiValues = [];
+
+    private string? _minLenLast;
+
+    private int _debounceCount;
+    private string? _debounceLast;
+    private int _throttleCount;
+    private string? _throttleLast;
+
+    // Matches the value rather than the text, which the built-in algorithm never looks at.
+    private static ICollection<BitDropdownItem<string>> SearchByValue(ICollection<BitDropdownItem<string>> items, string text) =>
+        items.Where(i => i.ItemType != BitDropdownItemType.Normal || (i.Value?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+}

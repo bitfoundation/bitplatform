@@ -1,0 +1,645 @@
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.RegularExpressions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace Bit.BlazorUI.Tests;
+
+/// <summary>
+/// Reads the source checkout, for the tests that pin a contract a bUnit render cannot see: what a component's
+/// stylesheet does, what its demo page documents, what its C# and its script agree on by name, what the theme
+/// stylesheets declare.
+/// </summary>
+/// <remarks>
+/// A test that reads a source file reads it through this class rather than working out the path on its own or having
+/// the csproj copy the file beside the binaries: every path is written relative to the src/BlazorUI folder, and this
+/// is the one file that knows where that folder is, so a test file can move to any depth without counting the levels
+/// again and no source file is ever read from a stale copy. The same goes for picking a stylesheet apart -
+/// <see cref="StripScssComments"/>, <see cref="GetScssBlock"/>, <see cref="GetScssDeclarations"/> and
+/// <see cref="GetScssRules"/> share one reading
+/// of what is a comment, a string and a brace, so a fix to it reaches every test at once. A source file is read once
+/// per run, and a stylesheet classified once per string however many blocks a test picks out of it.
+/// </remarks>
+internal static class SourceFiles
+{
+    /// <summary>The folders of Bit.BlazorUI.Extras/Styles that hold its packaged presets.</summary>
+    private static readonly string[] ExtrasPresetFolders = ["Fluent2", "Material", "Cupertino"];
+
+    // The source tree does not change while the tests run, so a file is read once however many tests read it - and
+    // the same string is handed back each time, which is what lets its classification be kept per string.
+    private static readonly ConcurrentDictionary<string, string> FileCache = new(StringComparer.Ordinal);
+
+    private static readonly ConcurrentDictionary<string, string> ExpandedCache = new(StringComparer.Ordinal);
+
+    private static readonly ConditionalWeakTable<string, ScssChar[]> ClassifyCache = new();
+
+    /// <summary>
+    /// The src/BlazorUI folder: the one the build recorded in the BlazorUISourceRoot assembly metadata, or else the
+    /// first folder above the test binaries that holds Bit.BlazorUI/Bit.BlazorUI.csproj.
+    /// </summary>
+    /// <remarks>
+    /// Neither depends on the path the compiler records for a source file, which a PathMap or a deterministic CI build
+    /// rewrites to one that exists on no disk.
+    /// </remarks>
+    public static string Root { get; } = FindRoot();
+
+    /// <summary>The full path of a file or folder, given by its path relative to the src/BlazorUI folder.</summary>
+    public static string GetPath(params string[] segments)
+    {
+        return Path.GetFullPath(Path.Combine([Root, .. segments]));
+    }
+
+    /// <summary>
+    /// The full path of a folder, given by its path relative to the src/BlazorUI folder; fails when it is missing.
+    /// </summary>
+    public static string GetDirectory(params string[] segments)
+    {
+        var path = GetPath(segments);
+
+        Assert.IsTrue(Directory.Exists(path), $"Missing {path}; this test reads the source tree, so it must run from a source checkout.");
+
+        return path;
+    }
+
+    /// <summary>
+    /// Reads a file, given by its path relative to the src/BlazorUI folder, with its line endings normalized to \n;
+    /// fails when it is missing.
+    /// </summary>
+    public static string Read(params string[] segments)
+    {
+        return ReadFullPath(GetPath(segments));
+    }
+
+    /// <summary>
+    /// Reads every file of the core library's BitBlazorUI.Utils namespace - Scripts/Utils.ts and the Scripts/Utils.*.ts
+    /// files beside it, one per feature, which the publish-time trimming keeps or leaves out of a bundle one by one -
+    /// as one text, in the order of their names.
+    /// </summary>
+    public static string ReadUtilsScripts()
+    {
+        var folder = GetDirectory("Bit.BlazorUI", "Scripts");
+
+        var files = Directory.EnumerateFiles(folder, "Utils*.ts")
+                             .Where(file => Path.GetFileName(file) is var name && (name == "Utils.ts" || name.StartsWith("Utils.", StringComparison.Ordinal)))
+                             .OrderBy(file => file, StringComparer.Ordinal)
+                             .ToList();
+
+        Assert.IsTrue(files.Count > 1, $"The Utils scripts were not found in {folder}.");
+
+        return string.Join("\n", files.Select(ReadFullPath));
+    }
+
+    /// <summary>
+    /// The text of a member of a script - a function of a namespace (<c>export function name(</c>) or a static of a
+    /// class (<c>public static name(</c>) - from its declaration to the next member declared at the same depth.
+    /// </summary>
+    public static string GetScriptMember(string script, string name, string type = "Utils")
+    {
+        var match = Regex.Match(script,
+            $@"\n        (?:(?:public|private) static (?:async )?|export (?:async )?function |export (?:const|let) ){name}\b.*?(?=\n        (?:public|private|export) |\n    \}})",
+            RegexOptions.Singleline);
+
+        Assert.IsTrue(match.Success, $"{type}.{name} was not found in the script.");
+
+        return match.Value;
+    }
+
+    /// <summary>Reads a file by its full path, with its line endings normalized to \n; fails when it is missing.</summary>
+    public static string ReadFullPath(string path)
+    {
+        Assert.IsTrue(File.Exists(path), $"Missing {path}; this test reads the source tree, so it must run from a source checkout.");
+
+        return FileCache.GetOrAdd(Path.GetFullPath(path), p => File.ReadAllText(p).Replace("\r\n", "\n"));
+    }
+
+    /// <summary>
+    /// Reads a component stylesheet like <see cref="Read"/>, with each reset its private property list drives
+    /// (<c>@each $name in $xxx-private-properties { --bit-xxx-#{$name}: initial; }</c>) written out as the
+    /// declarations it compiles to, in the order of the list - so a test pins what a rule resets the way it pins any
+    /// other declaration of it. The lists are read by <see cref="GetPrivatePropertyLists"/>, as every test reads them.
+    /// </summary>
+    public static string ReadStylesheet(params string[] segments)
+    {
+        return ExpandedCache.GetOrAdd(GetPath(segments), _ => ExpandPrivatePropertyResets(Read(segments)));
+    }
+
+    /// <summary>
+    /// A stylesheet with each reset its private property lists drive written out as the declarations it compiles to,
+    /// one line each at the indent of the @each, as <see cref="ReadStylesheet"/> reads a component stylesheet.
+    /// </summary>
+    public static string ExpandPrivatePropertyResets(string stylesheet)
+    {
+        var expanded = new StringBuilder(stylesheet);
+
+        // Written out from the last to the first, so the index of every reset still to go is where it was read.
+        foreach (var (list, reset) in GetPrivatePropertyLists(stylesheet).SelectMany(l => l.Resets.Select(r => (List: l, Reset: r)))
+                                                                         .OrderByDescending(r => r.Reset.Index))
+        {
+            var lineStart = stylesheet.LastIndexOf('\n', reset.Index) + 1;
+            var indent = stylesheet[lineStart..reset.Index];
+
+            Assert.IsTrue(indent.All(char.IsWhiteSpace), $"The reset of ${list.Name} does not start its own line.");
+
+            expanded.Remove(reset.Index, reset.Length)
+                    .Insert(reset.Index, string.Join($"\n{indent}", list.Names.Select(name => $"--{reset.Prefix}-{name}: initial;")));
+        }
+
+        return expanded.ToString();
+    }
+
+    /// <summary>A <c>$xxx-private-properties</c> list of a stylesheet, as <see cref="GetPrivatePropertyLists"/> reads it.</summary>
+    /// <param name="Name">The variable, without its $.</param>
+    /// <param name="Names">The names it lists, in order, without the prefix the resets give them.</param>
+    /// <param name="Resets">Every <c>@each</c> that resets it; none when nothing does.</param>
+    public sealed record PrivatePropertyList(string Name, IReadOnlyList<string> Names, IReadOnlyList<PrivatePropertyReset> Resets);
+
+    /// <summary>One <c>@each $name in $xxx-private-properties { --bit-xxx-#{$name}: initial; }</c> of a stylesheet.</summary>
+    /// <param name="Prefix">The prefix it gives every name (bit-xxx).</param>
+    /// <param name="Rule">The header of the top-level rule, or mixin, it is written in; empty at the top level.</param>
+    /// <param name="Index">Where the @each starts in the stylesheet.</param>
+    /// <param name="Length">Its length, through the brace that closes it.</param>
+    public sealed record PrivatePropertyReset(string Prefix, string Rule, int Index, int Length);
+
+    /// <summary>
+    /// Every <c>$xxx-private-properties</c> list of a stylesheet, with the <c>@each</c> blocks that reset it. The one
+    /// reading of them every test shares, and a strict one: a list is a comma separated run of names, so two names
+    /// with no comma between them fail here rather than being read as two - Sass compiles them to one name with a
+    /// space in it, a declaration the browser drops, so neither is reset. An @each over a list that does anything but
+    /// reset each name to initial fails too, and so does one over a list the stylesheet does not declare.
+    /// </summary>
+    public static IReadOnlyList<PrivatePropertyList> GetPrivatePropertyLists(string stylesheet) => PrivatePropertyListCache.GetValue(stylesheet, ReadPrivatePropertyLists);
+
+    private static readonly ConditionalWeakTable<string, IReadOnlyList<PrivatePropertyList>> PrivatePropertyListCache = new();
+
+    private static readonly Regex PrivatePropertyListStart = new(@"^\$(?<list>[a-z0-9-]+-private-properties)\s*:", RegexOptions.Multiline | RegexOptions.Compiled);
+
+    // An @each over a list that declares a custom property; one doing anything else with it (BitIcon's @property
+    // registration) is not a reset.
+    private static readonly Regex PrivatePropertyEachStart = new(@"@each\s+\$[a-z-]+\s+in\s+\$(?<list>[a-z0-9-]+-private-properties)\s*\{\s*--", RegexOptions.Compiled);
+
+    private static readonly Regex PrivatePropertyEach = new(
+        @"\G@each\s+\$(?<var>[a-z-]+)\s+in\s+\$(?<list>[a-z0-9-]+-private-properties)\s*\{\s*--(?<prefix>bit-[a-z]+)-#\{\$\k<var>\}\s*:\s*initial\s*;?\s*\}",
+        RegexOptions.Compiled);
+
+    private static IReadOnlyList<PrivatePropertyList> ReadPrivatePropertyLists(string stylesheet)
+    {
+        var kinds = Classify(stylesheet);
+
+        var resets = new Dictionary<string, List<PrivatePropertyReset>>(StringComparer.Ordinal);
+
+        foreach (Match start in PrivatePropertyEachStart.Matches(stylesheet))
+        {
+            if (kinds[start.Index] is not ScssChar.Code) continue;
+
+            var each = PrivatePropertyEach.Match(stylesheet, start.Index);
+            var list = start.Groups["list"].Value;
+
+            Assert.IsTrue(each.Success, $"The @each over ${list} has to do nothing but reset each name: @each $name in ${list} {{ --bit-xxx-#{{$name}}: initial; }}");
+
+            if (resets.TryGetValue(list, out var ofList) is false) resets[list] = ofList = [];
+
+            ofList.Add(new(each.Groups["prefix"].Value, GetTopLevelRule(stylesheet, kinds, each.Index), each.Index, each.Length));
+        }
+
+        var lists = new List<PrivatePropertyList>();
+
+        foreach (Match start in PrivatePropertyListStart.Matches(stylesheet))
+        {
+            if (kinds[start.Index] is not ScssChar.Code) continue;
+
+            var name = start.Groups["list"].Value;
+
+            // The value runs to the first semicolon of the code; the comments between the names are prose,
+            // semicolons and all, and are no part of it.
+            var value = new StringBuilder();
+            var i = start.Index + start.Length;
+            for (; i < stylesheet.Length && (kinds[i] is not ScssChar.Code || stylesheet[i] != ';'); i++)
+            {
+                if (kinds[i] is ScssChar.Code) value.Append(stylesheet[i]);
+            }
+            Assert.IsTrue(i < stylesheet.Length, $"${name} is not closed by a semicolon.");
+
+            var names = value.ToString().Split(',').Select(n => n.Trim()).ToArray();
+
+            foreach (var n in names)
+            {
+                Assert.IsTrue(Regex.IsMatch(n, "^[a-z0-9-]+$"),
+                    $"${name} lists \"{Regex.Replace(n, @"\s+", " ")}\", which is not one name: a comma is missing (Sass reads two names with none between them as one name holding a space, which the browser drops) or one is left empty.");
+            }
+
+            var duplicates = names.GroupBy(n => n, StringComparer.Ordinal).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
+            Assert.AreEqual(0, duplicates.Length, $"${name} lists {string.Join(", ", duplicates)} more than once.");
+
+            lists.Add(new(name, names, resets.Remove(name, out var listResets) ? listResets : []));
+        }
+
+        Assert.AreEqual(0, resets.Count, $"No list for the reset that reads it: ${string.Join(", $", resets.Keys)}.");
+
+        return lists;
+    }
+
+    // The header of the top-level rule (or mixin) the code at `index` is written in, or empty when it is at the top level.
+    private static string GetTopLevelRule(string stylesheet, ScssChar[] kinds, int index)
+    {
+        foreach (var rule in GetScssRules(stylesheet).Where(r => r.Ancestors.Count == 0 && r.Index < index).Reverse())
+        {
+            var open = rule.Index;
+            while (open < stylesheet.Length && (kinds[open] is not ScssChar.Code || stylesheet[open] != '{' || (open > 0 && stylesheet[open - 1] == '#'))) open++;
+
+            return FindClose(stylesheet, kinds, open) > index ? rule.Header : string.Empty;
+        }
+
+        return string.Empty;
+    }
+
+    /// <summary>
+    /// The full path of a theme stylesheet, given by its path relative to the core Bit.BlazorUI/Styles folder. The
+    /// presets Bit.BlazorUI.Extras packages (Fluent2, Material, Cupertino) are stylesheets of the same theming system,
+    /// so they are addressed as folders beside Fluent and resolved to Bit.BlazorUI.Extras/Styles.
+    /// </summary>
+    public static string GetThemeStylesheetPath(params string[] segments)
+    {
+        var relative = Path.Combine(segments);
+        var first = relative.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
+        var project = ExtrasPresetFolders.Contains(first, StringComparer.Ordinal) ? "Bit.BlazorUI.Extras" : "Bit.BlazorUI";
+
+        return GetPath(project, "Styles", relative);
+    }
+
+    /// <summary>Reads a theme stylesheet, given as <see cref="GetThemeStylesheetPath"/> takes it.</summary>
+    public static string ReadThemeStylesheet(params string[] segments)
+    {
+        return ReadFullPath(GetThemeStylesheetPath(segments));
+    }
+
+    /// <summary>
+    /// Every theme stylesheet matching <paramref name="searchPattern"/>: the whole core Bit.BlazorUI/Styles tree and
+    /// the packaged presets of Bit.BlazorUI.Extras.
+    /// </summary>
+    public static IEnumerable<string> EnumerateThemeStylesheets(string searchPattern = "*.scss")
+    {
+        return Directory.EnumerateFiles(GetDirectory("Bit.BlazorUI", "Styles"), searchPattern, SearchOption.AllDirectories)
+                        .Concat(ExtrasPresetFolders.SelectMany(folder => Directory.EnumerateFiles(GetDirectory("Bit.BlazorUI.Extras", "Styles", folder), searchPattern)));
+    }
+
+    /// <summary>
+    /// Drops the comments of a stylesheet, // and /* */ alike, so an assertion matches what the stylesheet does rather
+    /// than what its comments say about it (the header comment documenting the public variables, above all). A //
+    /// inside a string or an unquoted url() is not a comment and stays; a block comment leaves its line breaks behind,
+    /// so every rule stays on the line it was on.
+    /// </summary>
+    public static string StripScssComments(string stylesheet)
+    {
+        var kinds = Classify(stylesheet);
+        var stripped = new StringBuilder(stylesheet.Length);
+
+        for (var i = 0; i < stylesheet.Length; i++)
+        {
+            if (kinds[i] is not ScssChar.Comment || stylesheet[i] == '\n')
+            {
+                stripped.Append(stylesheet[i]);
+            }
+        }
+
+        return stripped.ToString();
+    }
+
+    /// <summary>
+    /// The rule that starts at the first occurrence of <paramref name="start"/> in the code of the stylesheet (its
+    /// selector, at-rule or mixin header), from there through the brace that closes it. An occurrence in a comment is
+    /// skipped, and so is one inside a string - a selector quoted in a mixin argument is not the rule of that selector.
+    /// Braces are counted, so the nested rules (&amp;:hover, @media, ...) are part of the block and the block ends with
+    /// the rule itself, never earlier or later; braces in comments and strings are skipped. Fails with
+    /// <paramref name="message"/>, when one is given, if there is no such rule.
+    /// </summary>
+    public static string GetScssBlock(string stylesheet, string start, string? message = null)
+    {
+        var (index, _, close, _) = FindBlock(stylesheet, start, message);
+
+        return stylesheet[index..(close + 1)];
+    }
+
+    /// <summary>
+    /// The rule <see cref="GetScssBlock"/> finds, less its nested rules (&amp;:hover, @media, ...): its header and the
+    /// declarations it makes itself. What a test means by "this rule sets X" - which a nested rule setting X, applying
+    /// only in its own state, must not satisfy. Never what a test means by "this rule sets no X": a nested rule setting
+    /// X still sets it whenever its state holds, so an assertion that something is absent reads the whole block.
+    /// </summary>
+    public static string GetScssDeclarations(string stylesheet, string start, string? message = null)
+    {
+        var (index, open, close, kinds) = FindBlock(stylesheet, start, message);
+
+        var declarations = new StringBuilder(stylesheet[index..(open + 1)]);
+        var statementStart = declarations.Length;
+        var interpolation = 0;
+
+        for (var i = open + 1; i < close; i++)
+        {
+            var c = stylesheet[i];
+
+            if (kinds[i] is ScssChar.Code && c == '{' && stylesheet[i - 1] != '#' && interpolation == 0)
+            {
+                // A nested rule: drop its header, which is the statement written so far, and skip to its closing brace.
+                declarations.Length = statementStart;
+                i = FindClose(stylesheet, kinds, i);
+                statementStart = declarations.Length;
+                continue;
+            }
+
+            declarations.Append(c);
+
+            if (kinds[i] is not ScssChar.Code) continue;
+
+            if (c == '{') interpolation++;
+            else if (c == '}') interpolation--;
+            else if (c == ';' && interpolation == 0) statementStart = declarations.Length;
+        }
+
+        return declarations.Append('}').ToString();
+    }
+
+    /// <summary>A rule of a stylesheet, as <see cref="GetScssRules"/> lists it.</summary>
+    /// <param name="Header">Its selector, at-rule or mixin header, trimmed and without its comments.</param>
+    /// <param name="Index">Where the header starts in the stylesheet.</param>
+    /// <param name="Ancestors">The headers of the rules it is nested in, the outermost first.</param>
+    /// <param name="Declarations">
+    /// The statements it makes itself, trimmed and without their comments or semicolons, in the order written: what
+    /// <see cref="GetScssDeclarations"/> reads, read in the same pass that lists the rules.
+    /// </param>
+    public sealed record ScssRule(string Header, int Index, IReadOnlyList<string> Ancestors, IReadOnlyList<string> Declarations);
+
+    /// <summary>
+    /// Every rule of a stylesheet - each brace that opens a block, with the header written before it - in the order
+    /// they open. The same reading as <see cref="GetScssBlock"/>: a brace in a comment or a string opens and closes
+    /// nothing, and neither does one of an interpolation (#{...}), which stays part of the header it is written in.
+    /// </summary>
+    public static IReadOnlyList<ScssRule> GetScssRules(string stylesheet)
+    {
+        var kinds = Classify(stylesheet);
+        var rules = new List<ScssRule>();
+        var ancestors = new List<string>();
+        var declarations = new Stack<List<string>>();
+        var statementStart = 0;
+        var interpolation = 0;
+
+        // The statement written since the last one ended, less its comments.
+        string Statement(int end)
+        {
+            var statement = new StringBuilder();
+            for (var j = statementStart; j < end; j++)
+            {
+                if (kinds[j] is not ScssChar.Comment) statement.Append(stylesheet[j]);
+            }
+
+            return statement.ToString().Trim();
+        }
+
+        for (var i = 0; i < stylesheet.Length; i++)
+        {
+            if (kinds[i] is not ScssChar.Code) continue;
+
+            var c = stylesheet[i];
+
+            if (c == '{' && (interpolation > 0 || (i > 0 && stylesheet[i - 1] == '#')))
+            {
+                interpolation++;
+            }
+            else if (interpolation > 0)
+            {
+                if (c == '}') interpolation--;
+            }
+            else if (c == '{')
+            {
+                var index = statementStart;
+                while (kinds[index] is ScssChar.Comment || char.IsWhiteSpace(stylesheet[index])) index++;
+
+                var text = Statement(i);
+                var own = new List<string>();
+
+                rules.Add(new ScssRule(text, index, ancestors.ToArray(), own));
+                ancestors.Add(text);
+                declarations.Push(own);
+                statementStart = i + 1;
+            }
+            else if (c is '}' or ';')
+            {
+                // The last statement of a block may leave out its semicolon.
+                var statement = Statement(i);
+                if (statement.Length > 0 && declarations.Count > 0) declarations.Peek().Add(statement);
+
+                if (c == '}' && ancestors.Count > 0)
+                {
+                    ancestors.RemoveAt(ancestors.Count - 1);
+                    declarations.Pop();
+                }
+
+                statementStart = i + 1;
+            }
+        }
+
+        return rules;
+    }
+
+    /// <summary>
+    /// The selectors a chain of nested rule headers stands for, the outermost first: each header's list crossed with
+    /// the selectors of the rule around it, an &amp; standing for the outer selector and a header without one being a
+    /// descendant of it. The at-rules (@media, @supports, ...) are left for the caller to drop, since they apply to the
+    /// selector they are written in.
+    /// </summary>
+    public static IEnumerable<string> ResolveScssSelectors(IEnumerable<string> headers)
+    {
+        IEnumerable<string> selectors = [""];
+
+        foreach (var header in headers)
+        {
+            var alternatives = SplitScssSelectorList(header);
+
+            selectors = selectors.SelectMany(outer => alternatives.Select(inner =>
+                inner.Contains('&') ? inner.Replace("&", outer) : (outer.Length == 0 ? inner : $"{outer} {inner}"))).ToArray();
+        }
+
+        return selectors.Where(selector => selector.Length > 0);
+    }
+
+    /// <summary>The alternatives of a selector list, split on the commas outside of any parentheses (:is(a, b) stays whole).</summary>
+    public static List<string> SplitScssSelectorList(string selectorList)
+    {
+        var alternatives = new List<string>();
+        var depth = 0;
+        var start = 0;
+
+        for (var i = 0; i < selectorList.Length; i++)
+        {
+            if (selectorList[i] == '(') depth++;
+            else if (selectorList[i] == ')') depth--;
+            else if (selectorList[i] == ',' && depth == 0)
+            {
+                alternatives.Add(selectorList[start..i].Trim());
+                start = i + 1;
+            }
+        }
+
+        alternatives.Add(selectorList[start..].Trim());
+
+        return alternatives;
+    }
+
+    private static (int Index, int Open, int Close, ScssChar[] Kinds) FindBlock(string stylesheet, string start, string? message)
+    {
+        var kinds = Classify(stylesheet);
+
+        // An occurrence counts only when it starts in the code and holds no comment: one starting inside a string is a
+        // selector quoted in a mixin argument (@include own('*:not(.bit-foo)')), not the rule of that selector.
+        var index = stylesheet.IndexOf(start, StringComparison.Ordinal);
+        while (index >= 0 && (kinds[index] is not ScssChar.Code || Array.IndexOf(kinds, ScssChar.Comment, index, start.Length) >= 0))
+        {
+            index = stylesheet.IndexOf(start, index + 1, StringComparison.Ordinal);
+        }
+        Assert.IsTrue(index >= 0, message ?? $"The stylesheet has no \"{start.Trim()}\" block.");
+
+        // The block is the one the first brace opens - the outer one when `start` reaches into a nested rule
+        // ("@media ... {\n    .bit-foo {") - and an interpolation in the selector (#{$x}) is not taken for it.
+        var open = index;
+        while (open < stylesheet.Length && (kinds[open] is not ScssChar.Code || stylesheet[open] != '{' || (open > 0 && stylesheet[open - 1] == '#')))
+        {
+            open++;
+        }
+        Assert.IsTrue(open < stylesheet.Length, $"The \"{start.Trim()}\" block has no opening brace.");
+
+        var close = FindClose(stylesheet, kinds, open);
+        Assert.IsTrue(close < stylesheet.Length, $"The \"{start.Trim()}\" block is not closed.");
+
+        return (index, open, close, kinds);
+    }
+
+    // The brace closing the one at `open`, counting only the braces outside comments and strings; the length of the
+    // stylesheet when there is none.
+    private static int FindClose(string stylesheet, ScssChar[] kinds, int open)
+    {
+        var depth = 0;
+
+        for (var i = open; i < stylesheet.Length; i++)
+        {
+            if (kinds[i] is not ScssChar.Code) continue;
+
+            if (stylesheet[i] == '{')
+            {
+                depth++;
+            }
+            else if (stylesheet[i] == '}' && --depth == 0)
+            {
+                return i;
+            }
+        }
+
+        return stylesheet.Length;
+    }
+
+    private enum ScssChar : byte { Code, Comment, String }
+
+    // What each character of a stylesheet is: code, part of a // or /* */ comment, or part of a string - a quoted one,
+    // or the inside of an unquoted url(), whose // is a protocol rather than a comment. Kept per string, since a test
+    // picks several blocks out of the one stylesheet.
+    private static ScssChar[] Classify(string stylesheet) => ClassifyCache.GetValue(stylesheet, ClassifyUncached);
+
+    private static ScssChar[] ClassifyUncached(string stylesheet)
+    {
+        var kinds = new ScssChar[stylesheet.Length];
+        var i = 0;
+
+        while (i < stylesheet.Length)
+        {
+            var from = i;
+            var c = stylesheet[i];
+            var next = i + 1 < stylesheet.Length ? stylesheet[i + 1] : '\0';
+            ScssChar kind;
+
+            if (c == '/' && next == '/')
+            {
+                i = IndexOrEnd(stylesheet, stylesheet.IndexOf('\n', i));
+                kind = ScssChar.Comment;
+            }
+            else if (c == '/' && next == '*')
+            {
+                var end = stylesheet.IndexOf("*/", i + 2, StringComparison.Ordinal);
+                i = end < 0 ? stylesheet.Length : end + 2;
+                kind = ScssChar.Comment;
+            }
+            else if (c is '"' or '\'')
+            {
+                i = EndOfString(stylesheet, i);
+                kind = ScssChar.String;
+            }
+            else if (IsUnquotedUrl(stylesheet, i))
+            {
+                var end = stylesheet.IndexOf(')', i);
+                i = end < 0 ? stylesheet.Length : end + 1;
+                kind = ScssChar.String;
+            }
+            else
+            {
+                i++;
+                kind = ScssChar.Code;
+            }
+
+            kinds.AsSpan(from, i - from).Fill(kind);
+        }
+
+        return kinds;
+    }
+
+    // Past the quote closing the string that opens at `start`; a string runs to the end of its line at the most.
+    private static int EndOfString(string text, int start)
+    {
+        var quote = text[start];
+
+        for (var i = start + 1; i < text.Length; i++)
+        {
+            if (text[i] == '\\') i++;
+            else if (text[i] == quote) return i + 1;
+            else if (text[i] == '\n') return i;
+        }
+
+        return text.Length;
+    }
+
+    private static bool IsUnquotedUrl(string text, int index)
+    {
+        if (string.Compare(text, index, "url(", 0, 4, StringComparison.OrdinalIgnoreCase) != 0) return false;
+        if (index > 0 && (char.IsLetterOrDigit(text[index - 1]) || text[index - 1] is '-' or '_')) return false;
+
+        var argument = index + 4;
+        while (argument < text.Length && char.IsWhiteSpace(text[argument])) argument++;
+
+        return argument < text.Length && text[argument] is not ('"' or '\'');
+    }
+
+    private static int IndexOrEnd(string text, int index) => index < 0 ? text.Length : index;
+
+    private static string FindRoot()
+    {
+        var recorded = typeof(SourceFiles).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                                                   .FirstOrDefault(a => a.Key == "BlazorUISourceRoot")?.Value;
+
+        if (IsRoot(recorded)) return Path.GetFullPath(recorded!);
+
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            if (IsRoot(directory.FullName)) return directory.FullName;
+        }
+
+        // Nothing found: every read then fails with the path it looked for.
+        return recorded ?? AppContext.BaseDirectory;
+    }
+
+    private static bool IsRoot(string? directory)
+    {
+        return string.IsNullOrEmpty(directory) is false && File.Exists(Path.Combine(directory, "Bit.BlazorUI", "Bit.BlazorUI.csproj"));
+    }
+}

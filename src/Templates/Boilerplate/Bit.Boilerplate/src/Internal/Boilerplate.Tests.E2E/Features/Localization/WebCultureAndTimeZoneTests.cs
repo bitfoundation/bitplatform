@@ -32,9 +32,9 @@ public partial class WebCultureAndTimeZoneTests : AppTestBase
     }
 
     [TestMethod]
-    [DataRow(App.Sales, DisplayName = "Sales (Blazor Router)")]
-    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
+    [DataRow(App.Sales, DisplayName = "Sales")]
+    [DataRow(App.Todo, DisplayName = "Todo")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
     public async Task Culture_Should_FollowTheBrowser_ThenStayWhatTheUserPicked(App app)
     {
         var page = await OpenApp(app);
@@ -58,17 +58,18 @@ public partial class WebCultureAndTimeZoneTests : AppTestBase
     }
 
     [TestMethod]
-    [DataRow(App.Sales, DisplayName = "Sales (Blazor Router)")]
-    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
+    [DataRow(App.Sales, DisplayName = "Sales")]
+    [DataRow(App.Todo, DisplayName = "Todo")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
     public async Task TimeZone_Should_StayWhatTheUserPicked_AfterAReload(App app)
     {
         var page = await OpenApp(app);
         await WaitUntilInteractive(page);
 
-        var timeZones = await OpenTimeZones(page);
+        var timeZonePicker = await OpenTimeZonePicker(page);
+        await timeZonePicker.ClickAsync();
         await page.GetByPlaceholder(Localized(nameof(AppStrings.FindTimeZone))).FillEnsuringStable("Tokyo");
-        await timeZones.Locator(".time-zone-item", new() { HasText = "Tokyo" }).First.ClickAsync();
+        await page.GetByRole(AriaRole.Option, new() { Name = "Tokyo" }).First.ClickAsync();
 
         // TimeZoneService stores the IANA id on the device, whatever runtime rendered the menu.
         await page.WaitForFunctionAsync("zone => localStorage.getItem('time-zone') === zone", pickedTimeZone);
@@ -78,8 +79,8 @@ public partial class WebCultureAndTimeZoneTests : AppTestBase
 
         Assert.AreEqual(pickedTimeZone, await page.EvaluateAsync<string?>("() => localStorage.getItem('time-zone')"));
 
-        timeZones = await OpenTimeZones(page);
-        await Expect(timeZones.Locator(".time-zone-item[aria-checked='true']")).ToContainTextAsync("Tokyo");
+        timeZonePicker = await OpenTimeZonePicker(page);
+        await Expect(timeZonePicker).ToContainTextAsync("Tokyo");
     }
 
     /// <summary>The document's language and direction, and - unless told otherwise - the url's culture segment.</summary>
@@ -100,16 +101,16 @@ public partial class WebCultureAndTimeZoneTests : AppTestBase
             await Expect(html).Not.ToHaveAttributeAsync("dir", rtl);
     }
 
-    private async Task<ILocator> OpenTimeZones(IPage page)
+    private async Task<ILocator> OpenTimeZonePicker(IPage page)
     {
         await Expect(page.Locator("main.non-identity")).ToBeVisibleAsync();
 
-        await ClickAppMenuItem(page, Localized(nameof(AppStrings.TimeZone)));
+        await OpenAppMenu(page);
 
-        var timeZones = page.Locator(".time-zone-list");
-        await Expect(timeZones).ToBeVisibleAsync();
+        var timeZonePicker = page.GetByRole(AriaRole.Combobox, new() { Name = Localized(nameof(AppStrings.TimeZone)), Exact = true });
+        await Expect(timeZonePicker).ToBeVisibleAsync();
 
-        return timeZones;
+        return timeZonePicker;
     }
 
     private static string Localized(string key) => AppStrings.ResourceManager.GetString(key, CultureInfoManager.GetCultureInfo(browserCulture))!;

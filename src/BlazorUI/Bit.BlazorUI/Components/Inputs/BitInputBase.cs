@@ -29,6 +29,23 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     private ValidationMessageStore? _parsingValidationMessages;
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
+    // Whether InputHtmlAttributes is a copy of the app's dictionary that the aria-invalid of a failed validation was
+    // added to, which is then the one aria-invalid taken off again once the field is valid.
+    private bool _hasAddedAriaInvalid;
+
+    // What an input that arrives at its value on its own (PublishValueAsync) last wrote into the Value or was last
+    // handed from outside, which is how a value the app pushed in is told apart from the one the binding hands back.
+    private TValue? _knownValue;
+    // What PublishValueAsync last arrived at, which is what a value bound one way - and so never written - moved from.
+    private TValue? _publishedValue;
+
+    // The parameters of this class are taken out of the ParameterView below before it reaches
+    // BitComponentBase, so the set that BitComponentBase tracks never sees them, and the one the source
+    // generator writes only ever holds the parameters that the component itself declares. A cascade filling
+    // in what a consumer left unset therefore has no way of telling the two apart without this third set,
+    // and would overwrite a ReadOnly or a Required that was written on the component by hand.
+    private readonly HashSet<string> _assignedInputParameters = [];
+
 
 
     protected event EventHandler OnValueChanged = default!;
@@ -146,6 +163,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
     public virtual ValueTask FocusAsync(bool preventScroll) => InputElement.FocusAsync(preventScroll);
 
+    private protected override bool IsSetByMarkup(string name) => _assignedInputParameters.Contains(name) || base.IsSetByMarkup(name);
+
 
 
     public override Task SetParametersAsync(ParameterView parameters)
@@ -153,18 +172,22 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         ValueHasBeenSet = false;
         DefaultValueHasBeenSet = false;
 
-        var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>);
+        _assignedInputParameters.Clear();
 
-        foreach (var parameter in parametersDictionary!)
+        var parametersDictionary = TakeParametersDictionary(parameters);
+
+        foreach (var parameter in parametersDictionary)
         {
             switch (parameter.Key)
             {
                 case nameof(NoValidate):
+                    _assignedInputParameters.Add(nameof(NoValidate));
                     NoValidate = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(DefaultValue):
+                    _assignedInputParameters.Add(nameof(DefaultValue));
                     DefaultValueHasBeenSet = true;
                     DefaultValue = (TValue?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
@@ -176,26 +199,32 @@ public abstract class BitInputBase<TValue> : BitComponentBase
                     break;
 
                 case nameof(DisplayName):
+                    _assignedInputParameters.Add(nameof(DisplayName));
                     DisplayName = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(InputHtmlAttributes):
+                    _assignedInputParameters.Add(nameof(InputHtmlAttributes));
                     InputHtmlAttributes = (Dictionary<string, object>?)parameter.Value;
+                    _hasAddedAriaInvalid = false;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(Name):
+                    _assignedInputParameters.Add(nameof(Name));
                     Name = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(OnChange):
+                    _assignedInputParameters.Add(nameof(OnChange));
                     OnChange = (EventCallback<TValue?>)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(ReadOnly):
+                    _assignedInputParameters.Add(nameof(ReadOnly));
                     var readOnly = (bool)parameter.Value;
                     if (ReadOnly != readOnly) ClassBuilder.Reset();
                     ReadOnly = readOnly;
@@ -203,6 +232,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
                     break;
 
                 case nameof(Required):
+                    _assignedInputParameters.Add(nameof(Required));
                     var required = (bool)parameter.Value;
                     if (Required != required) ClassBuilder.Reset();
                     Required = required;
@@ -210,17 +240,20 @@ public abstract class BitInputBase<TValue> : BitComponentBase
                     break;
 
                 case nameof(Value):
+                    _assignedInputParameters.Add(nameof(Value));
                     ValueHasBeenSet = true;
                     Value = (TValue?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(ValueChanged):
+                    _assignedInputParameters.Add(nameof(ValueChanged));
                     ValueChanged = (EventCallback<TValue>)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(ValueExpression):
+                    _assignedInputParameters.Add(nameof(ValueExpression));
                     ValueExpression = (Expression<Func<TValue>>?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
@@ -251,13 +284,17 @@ public abstract class BitInputBase<TValue> : BitComponentBase
             UpdateValidationAttributes();
         }
 
-        // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
-        return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
+        // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc. What is left reaches the
+        // base through ParametersCache, handed over right before the call and taken by the base as it starts, so a pass
+        // that throws on the way leaves none behind; a view built from it would only be an allocation nobody reads.
+        ParametersCache = parametersDictionary;
+        return base.SetParametersAsync(ParameterView.Empty);
     }
 
     protected override void OnInitialized()
     {
-        ClassBuilder.Register(() => ValueInvalid is true ? "bit-inv" : string.Empty);
+        // One class for both kinds of rejection, so an input the app marks invalid never carries it twice.
+        ClassBuilder.Register(() => IsInvalid ? "bit-inv" : string.Empty);
 
         base.OnInitialized();
     }
@@ -277,6 +314,22 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         }
     }
 
+    /// <summary>
+    /// Whether the app itself has rejected the value - by an <c>Invalid</c> flag or an error message of the
+    /// input - as opposed to the cascading EditContext, whose verdict is <see cref="ValueInvalid"/>.
+    /// </summary>
+    /// <remarks>
+    /// The parameters that raise it stay on the inputs that can show an error, so this is the one place
+    /// they are turned into the invalid look and the invalid attribute every input shares.
+    /// </remarks>
+    protected virtual bool HasError => false;
+
+    /// <summary>
+    /// Whether the input reports itself as invalid, from the app (<see cref="HasError"/>) or from the
+    /// cascading EditContext (<see cref="ValueInvalid"/>).
+    /// </summary>
+    protected bool IsInvalid => ValueInvalid is true || HasError;
+
     protected EditContext EditContext { get; set; } = default!;
 
     protected internal FieldIdentifier FieldIdentifier { get; set; }
@@ -286,7 +339,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         get => Value;
         set
         {
-            if (IsEnabled is false) return;
+            if (Disabled) return;
 
             if (EqualityComparer<TValue>.Default.Equals(value, Value)) return;
 
@@ -338,6 +391,26 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage);
 
     /// <summary>
+    /// The aria-disabled of a native control the <see cref="InputHtmlAttributes"/> are splatted onto: "true" while it
+    /// is disabled, beside its disabled attribute, and otherwise whatever the page wrote there itself.
+    /// </summary>
+    internal string? GetInputAriaDisabled(bool disabled) => disabled ? "true" : GetSplattedInputAttribute("aria-disabled");
+
+    /// <summary>
+    /// The value of an attribute the page splatted onto the input through <see cref="InputHtmlAttributes"/>, as the
+    /// renderer would have written it there: a boolean as an attribute with no value while it is true and as no
+    /// attribute at all while it is false, anything else as its text.
+    /// </summary>
+    /// <remarks>
+    /// The input writes its own attributes after the splat, and a null written over a splatted attribute does not leave
+    /// that attribute alone - it removes it. So every name the component also writes is resolved against what the page
+    /// wrote instead of being overwritten with the parameter's null. HTML attribute names are case insensitive, and so
+    /// is the deduplication the render tree does, which is why a differently cased spelling is found here too.
+    /// </remarks>
+    private protected string? GetSplattedInputAttribute(string name)
+        => TryFindAttribute(InputHtmlAttributes, name, out var value) ? StringifyAttributeValue(value) : null;
+
+    /// <summary>
     /// Initializes the value of the input from the <see cref="DefaultValue"/> parameter when the
     /// <see cref="Value"/> is not bound (uncontrolled mode).
     /// </summary>
@@ -351,7 +424,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
 
     protected async Task SetCurrentValueAsStringAsync(string? value, bool bypass = false)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _incomingValueBeforeParsing = value;
         _parsingValidationMessages?.Clear();
@@ -382,14 +455,15 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         {
             _parsingFailed = true;
 
-            // EditContext may be null if the input is not a child component of EditForm.
-            if (EditContext is not null)
+            // EditContext may be null if the input is not a child component of EditForm, and an input bound to nothing
+            // has no field to hold the message.
+            if (EditContext is not null && FieldIdentifier.Model is not null)
             {
                 _parsingValidationMessages ??= new ValidationMessageStore(EditContext);
                 _parsingValidationMessages.Add(FieldIdentifier, parsingErrorMessage);
 
                 // Since we're not writing to CurrentValue, we'll need to notify about modification from here
-                EditContext.NotifyFieldChanged(FieldIdentifier);
+                NotifyFieldChanged();
             }
         }
         else
@@ -413,10 +487,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
 
         await ValueChanged.InvokeAsync(value);
 
-        if (EditContext is not null && NoValidate is false)
-        {
-            EditContext.NotifyFieldChanged(FieldIdentifier);
-        }
+        NotifyFieldChanged();
 
         await OnChange.InvokeAsync(value);
     }
@@ -426,6 +497,77 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         return (ValueHasBeenSet &&
                 ValueChanged.HasDelegate is false &&
                 OnChange.HasDelegate is false);
+    }
+
+    /// <summary>
+    /// Tells the cascading EditContext that the value of the field changed, which validates the field and marks it
+    /// modified - unless the input validates nothing or has no field to report. An input bound to nothing has a
+    /// FieldIdentifier with no model, which the EditContext cannot even look up and a validator would throw on.
+    /// </summary>
+    protected void NotifyFieldChanged()
+    {
+        if (EditContext is null || NoValidate || FieldIdentifier.Model is null) return;
+
+        EditContext.NotifyFieldChanged(FieldIdentifier);
+    }
+
+    /// <summary>
+    /// Whether the parameters pass that is running brought in a Value the app pushed from outside, as opposed to the
+    /// one <see cref="PublishValueAsync"/> wrote and the binding handed back. Each pushed value is reported once.
+    /// </summary>
+    private protected bool TakePushedValue()
+    {
+        if (ValueHasBeenSet is false || EqualityComparer<TValue>.Default.Equals(Value, _knownValue)) return false;
+
+        _knownValue = Value;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Publishes a value the input arrived at on its own rather than one typed into it - the names of a file
+    /// selection, say: written into the Value and handed to the binding whenever it differs from it, unless the Value
+    /// is bound one way and so has nowhere to be written back to.
+    /// </summary>
+    /// <param name="value">The value the input arrived at.</param>
+    /// <param name="notifyField">
+    /// Whether the EditContext is told, which validates the field and marks it modified. That is for a change the
+    /// user made; a value only brought in step with something the app did (a reset, the data it preloaded) marks
+    /// nothing, as a value the app pushes in marks nothing.
+    /// </param>
+    /// <param name="notifyChange">Whether <see cref="OnChange"/> hears of it, once the value actually moved.</param>
+    private protected async Task PublishValueAsync(TValue? value, bool notifyField, bool notifyChange)
+    {
+        var comparer = EqualityComparer<TValue>.Default;
+
+        // A Value bound one way with no ValueChanged beside it is the app's: it is never written, and what the value
+        // moved from is then the one last published rather than the one the app keeps pushing in.
+        var writable = (ValueHasBeenSet && ValueChanged.HasDelegate is false) is false;
+        var moved = comparer.Equals(value, writable ? Value : _publishedValue) is false;
+
+        _publishedValue = value;
+
+        if (moved is false) return;
+
+        if (writable)
+        {
+            // Recorded before the binding is told, since the app re-renders from inside the callback and the value it
+            // hands back must read as this one rather than as one pushed in from outside.
+            _knownValue = value;
+            Value = value;
+
+            await ValueChanged.InvokeAsync(value);
+
+            if (notifyField)
+            {
+                NotifyFieldChanged();
+            }
+        }
+
+        if (notifyChange)
+        {
+            await OnChange.InvokeAsync(value);
+        }
     }
 
 
@@ -439,74 +581,40 @@ public abstract class BitInputBase<TValue> : BitComponentBase
 
     private void UpdateValidationAttributes()
     {
-        if (EditContext is null || NoValidate) return;
+        // An input bound to nothing has no field to hold a message, and its FieldIdentifier cannot even be looked up:
+        // the lookup would throw out of the validation of every other field of the form.
+        if (EditContext is null || NoValidate || FieldIdentifier.Model is null) return;
 
-        var hasAriaInvalidAttribute = InputHtmlAttributes is not null && InputHtmlAttributes.ContainsKey("aria-invalid");
-
+        // The dictionary is the app's own, possibly shared by several inputs, so the attribute is added to and taken off
+        // a copy of it, never the dictionary itself.
         if (EditContext.GetValidationMessages(FieldIdentifier).Any())
         {
-            if (hasAriaInvalidAttribute) return; // Do not overwrite the attribute value
+            ValueInvalid = true;
 
-            if (TryConvertingToDictionary(InputHtmlAttributes, out var inputHtmlAttributes))
-            {
-                InputHtmlAttributes = inputHtmlAttributes;
-            }
+            if (_hasAddedAriaInvalid) return;
+
+            // Do not overwrite the attribute value the app wrote itself, however it cased its name.
+            if (TryFindAttribute(InputHtmlAttributes, "aria-invalid", out _)) return;
 
             // To make the `Input` components accessible by default
             // we will automatically render the `aria-invalid` attribute when the validation fails
             // value must be "true" see https://www.w3.org/TR/wai-aria-1.1/#aria-invalid
-            inputHtmlAttributes["aria-invalid"] = "true";
-
-            ValueInvalid = true;
+            InputHtmlAttributes = new(InputHtmlAttributes ?? []) { ["aria-invalid"] = "true" };
+            _hasAddedAriaInvalid = true;
         }
         else
         {
             ValueInvalid = false;
 
-            if (hasAriaInvalidAttribute is false) return;
+            // No validation errors. Need to remove `aria-invalid` if it was rendered already, and only the one added here.
+            if (_hasAddedAriaInvalid is false) return;
 
-            // No validation errors. Need to remove `aria-invalid` if it was rendered already
+            var inputHtmlAttributes = new Dictionary<string, object>(InputHtmlAttributes!);
+            inputHtmlAttributes.Remove("aria-invalid");
 
-            if (InputHtmlAttributes!.Count == 1)
-            {
-                // Only aria-invalid argument is present which we don't need any more
-                InputHtmlAttributes = null;
-            }
-            else
-            {
-                if (TryConvertingToDictionary(InputHtmlAttributes, out var inputHtmlAttributes))
-                {
-                    InputHtmlAttributes = inputHtmlAttributes;
-                }
-
-                inputHtmlAttributes.Remove("aria-invalid");
-            }
+            InputHtmlAttributes = inputHtmlAttributes.Count == 0 ? null : inputHtmlAttributes;
+            _hasAddedAriaInvalid = false;
         }
-    }
-
-    private static bool TryConvertingToDictionary(IReadOnlyDictionary<string, object>? source, out Dictionary<string, object> result)
-    {
-        var newDictionaryCreated = true;
-
-        if (source is null)
-        {
-            result = [];
-        }
-        else if (source is Dictionary<string, object> currentDictionary)
-        {
-            result = currentDictionary;
-            newDictionaryCreated = false;
-        }
-        else
-        {
-            result = [];
-            foreach (var item in source)
-            {
-                result.Add(item.Key, item.Value);
-            }
-        }
-
-        return newDictionaryCreated;
     }
 
 

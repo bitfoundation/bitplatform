@@ -1,0 +1,38 @@
+﻿@using Bit.BlazorUI
+
+@* The grid goes away together with its columns, the way it does when the page hosting it is left; ShowName removes the
+   sorted column alone from a grid that stays. The rows come from the server, so dropping a column's sort is a new read. *@
+@if (Show)
+{
+    <BitDataGrid TItem="Row" OnRead="Read" @ref="Grid">
+        @if (ShowName)
+        {
+            <BitDataGridColumn TItem="Row" Field="Name" />
+        }
+        <BitDataGridColumn TItem="Row" Field="Price" />
+    </BitDataGrid>
+}
+
+@code {
+    [Parameter] public bool Show { get; set; } = true;
+
+    [Parameter] public bool ShowName { get; set; } = true;
+
+    public BitDataGrid<Row>? Grid { get; private set; }
+
+    public int Reads { get; private set; }
+
+    private Task<BitDataGridReadResult<Row>> Read(BitDataGridReadRequest request)
+    {
+        Reads++;
+
+        return Task.FromResult(new BitDataGridReadResult<Row>([new() { Name = "Apple", Price = 1 }, new() { Name = "Banana", Price = 2 }], 2));
+    }
+
+    public class Row
+    {
+        public string Name { get; set; } = string.Empty;
+
+        public double Price { get; set; }
+    }
+}

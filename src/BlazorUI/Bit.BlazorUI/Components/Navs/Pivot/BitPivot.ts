@@ -1,7 +1,7 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class Pivot {
         private static _instances: Record<string, PivotInstance> = {};
-        private static _keyHandlers: Record<string, { element: HTMLElement, handler: (e: KeyboardEvent) => void }> = {};
+        private static _keyHandlers: Record<string, { element: HTMLElement, handler: (e: KeyboardEvent) => void, mouseDownHandler: (e: MouseEvent) => void }> = {};
 
         public static setup(
             id: string,
@@ -10,7 +10,8 @@ namespace BitBlazorUI {
             isMenu: boolean,
             isSlide: boolean,
             isReorderable: boolean,
-            isRtl: boolean,
+            // The direction the pivot's Dir names, or null when it leaves it to the page or the content.
+            isRtl: boolean | null,
             isVertical: boolean,
             dotnetObj: DotNetObject) {
             if (!header) return;
@@ -52,11 +53,18 @@ namespace BitBlazorUI {
             if (!header) return [];
 
             try {
-                return Array.from(header.querySelectorAll<HTMLElement>('.bit-pvti:not(.bit-pvt-mor)')).map(el => el.id);
+                return Pivot.getOwnItems(header).map(el => el.id);
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.getItemsOrder:', e);
                 return [];
             }
+        }
+
+        // The tabs of this tablist, wherever they sit in it: an app can wrap each of them in an element of
+        // its own, but the tabs of a pivot nested in a header template belong to that pivot's tablist.
+        public static getOwnItems(header: HTMLElement): HTMLElement[] {
+            return Array.from(header.querySelectorAll<HTMLElement>('.bit-pvti'))
+                        .filter(el => el.closest('.bit-pvt-hct') === header);
         }
 
         // Brings a tab back into view after a selection or a focus move that did not come from a click
@@ -117,18 +125,30 @@ namespace BitBlazorUI {
                 if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
 
                 // only the tab itself: a header template can hold something interactive of its own, and
-                // the space typed into an input there belongs to the input rather than to the tablist.
-                // the More button keeps its own space as well, which is what raises the click that opens
-                // its menu.
+                // the space typed into an input there belongs to the input rather than to the tablist - as
+                // do the tabs of a pivot nested in one, whose keys are handled by that pivot.
                 const target = e.target as HTMLElement | null;
-                if (!target || !target.matches || !target.matches('.bit-pvti:not(.bit-pvt-mor)')) return;
+                if (!target || !target.classList || !target.classList.contains('bit-pvti') || target.closest('.bit-pvt-hct') !== header) return;
 
                 e.preventDefault();
             };
 
             header.addEventListener('keydown', handler);
 
-            Pivot._keyHandlers[headerId] = { element: header, handler };
+            // The tablist carries tabindex="-1" to keep a scrolling header out of the tab order (Firefox gives a
+            // scroll container a tab stop of its own), which also makes it focusable by a click on its own padding.
+            // That focus would belong to no tab, and the keys the handler above takes would then act on the tab the
+            // component last knew of; so a press on the header itself - never on a tab or anything inside it - leaves
+            // the focus where it is, as it did before the tablist became focusable at all.
+            const mouseDownHandler = (e: MouseEvent) => {
+                if (e.target === header) {
+                    e.preventDefault();
+                }
+            };
+
+            header.addEventListener('mousedown', mouseDownHandler);
+
+            Pivot._keyHandlers[headerId] = { element: header, handler, mouseDownHandler };
         }
 
         public static disposeKeys(headerId: string) {
@@ -136,6 +156,7 @@ namespace BitBlazorUI {
             if (!entry) return;
 
             entry.element.removeEventListener('keydown', entry.handler);
+            entry.element.removeEventListener('mousedown', entry.mouseDownHandler);
             delete Pivot._keyHandlers[headerId];
         }
 
@@ -159,6 +180,8 @@ namespace BitBlazorUI {
 
     class PivotInstance {
         public static readonly hiddenClass = 'bit-pvt-ovh';
+        // The keys of the overflow menu whose default BitPivot.HandleMenuKeyDown takes the place of.
+        private static readonly menuKeys = ['Tab', 'Enter', ' ', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
 
         private id: string;
         private header: HTMLElement;
@@ -166,15 +189,16 @@ namespace BitBlazorUI {
         private isMenu: boolean;
         private isSlide: boolean;
         private isReorderable: boolean;
-        private isRtl: boolean;
+        private givenRtl: boolean | null;
         private isVertical: boolean;
         private dotnetObj: DotNetObject;
         private disposed: boolean = false;
         private observer: ResizeObserver | null = null;
-        private scrollHandler: (() => void) | null = null;
+        private scrollHandler: ((() => void) & { cancel(): void }) | null = null;
         private wheelHandler: ((e: WheelEvent) => void) | null = null;
         private dragStartHandler: ((e: DragEvent) => void) | null = null;
-        private slideTimer: number | null = null;
+        private menu: HTMLElement | null = null;
+        private menuKeyHandler: ((e: KeyboardEvent) => void) | null = null;
         private lastOverflow: string = '';
         private lastSlideState: string = '';
 
@@ -185,7 +209,7 @@ namespace BitBlazorUI {
             isMenu: boolean,
             isSlide: boolean,
             isReorderable: boolean,
-            isRtl: boolean,
+            isRtl: boolean | null,
             isVertical: boolean,
             dotnetObj: DotNetObject) {
             this.id = id;
@@ -194,22 +218,33 @@ namespace BitBlazorUI {
             this.isMenu = isMenu;
             this.isSlide = isSlide;
             this.isReorderable = isReorderable;
-            this.isRtl = isRtl;
+            this.givenRtl = isRtl;
             this.isVertical = isVertical;
             this.dotnetObj = dotnetObj;
+        }
+
+        // The direction the header is laid out in: the one the pivot's Dir names, or else the one it resolves to -
+        // a page's or a content's - read when it is needed (a wheel turn, a slide), so a page that changes direction
+        // is followed too. Nothing on the scroll path reads it.
+        private get isRtl(): boolean {
+            return this.givenRtl ?? Utils.isRtl(this.header);
         }
 
         public start() {
             try {
                 this.observer = new ResizeObserver(() => this.update());
-                this.observer.observe(this.header);
+                // the More button of the Menu behavior sits beside the header, so showing it shrinks the
+                // header from inside this very callback. the wrapper around the two keeps its size through
+                // that, and observing it is what keeps the fold from re-triggering the observer (a resize
+                // loop the browser reports on window every time the fold changes).
+                const observed = this.isMenu && this.header.parentElement ? this.header.parentElement : this.header;
+                this.observer.observe(observed);
 
                 if (this.isSlide) {
-                    const throttled = Utils.throttle(() => this.updateSlide(), 100) as () => void;
-                    // the throttle only calls on its leading edge, so a scroll that comes to rest inside
-                    // its window would otherwise leave the buttons reporting the state the header was in
-                    // on the way rather than the one it ended up in.
-                    this.scrollHandler = () => { throttled(); this.scheduleSlideUpdate(); };
+                    // the throttle calls on both edges, so a scroll that comes to rest inside its window
+                    // leaves the buttons reporting the state the header ended up in rather than the one it
+                    // was in on the way - which also covers the smooth scroll a slide() starts.
+                    this.scrollHandler = Utils.throttle(() => this.updateSlide(), 100, { trailing: true });
                     this.header.addEventListener('scroll', this.scrollHandler, { passive: true });
 
                     if (!this.isVertical) {
@@ -248,6 +283,34 @@ namespace BitBlazorUI {
                         } catch { }
                     };
                     this.header.addEventListener('dragstart', this.dragStartHandler);
+                }
+
+                if (this.isMenu && this.moreButton) {
+                    // the keys of the overflow menu are answered by its Blazor keydown handler, which cannot
+                    // decide on their default per key (its flag is applied by the render that follows the key),
+                    // so their defaults are suppressed here: the arrows, Home, End and Space would scroll the
+                    // page, and the keys that close the menu and hand the focus back to the More button (or to
+                    // the chosen tab) would act once more on the element the focus is handed to - Tab moving it
+                    // on, Enter and Space clicking the button and opening the menu again. Where the handler runs
+                    // a round trip later (Blazor Server) that default has acted before the focus moves, but where
+                    // it runs during the keydown itself (WebAssembly) it acts after, on the new focus.
+                    const menuId = this.moreButton.getAttribute('aria-controls');
+                    const menu = menuId ? document.getElementById(menuId) : null;
+                    if (menu) {
+                        this.menu = menu;
+                        this.menuKeyHandler = (e: KeyboardEvent) => {
+                            if (e.target !== menu) return;
+                            if (e.altKey || e.ctrlKey || e.metaKey) return;
+                            if (PivotInstance.menuKeys.indexOf(e.key) === -1) return;
+
+                            e.preventDefault();
+                        };
+                        menu.addEventListener('keydown', this.menuKeyHandler);
+
+                        // the overlay that closes the menu on a click away sits beside it, rendered by the pivot
+                        // itself rather than opened through a callout, so it is made tappable here.
+                        Callouts.makeOverlayTappable(menu.parentElement?.querySelector<HTMLElement>(':scope > .bit-pvt-ovl') ?? null);
+                    }
                 }
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.start:', e);
@@ -289,7 +352,7 @@ namespace BitBlazorUI {
         }
 
         private getItems(): HTMLElement[] {
-            return Array.from(this.header.querySelectorAll<HTMLElement>('.bit-pvti:not(.bit-pvt-mor)'));
+            return Pivot.getOwnItems(this.header);
         }
 
         private outerSize(el: HTMLElement): number {
@@ -370,22 +433,6 @@ namespace BitBlazorUI {
             }
         }
 
-        // A final read of the header once it has come to rest, which is what the leading-edge throttle
-        // of the scroll handler cannot give on its own.
-        private scheduleSlideUpdate() {
-            if (this.disposed) return;
-
-            if (this.slideTimer !== null) {
-                clearTimeout(this.slideTimer);
-            }
-
-            this.slideTimer = setTimeout(() => {
-                this.slideTimer = null;
-                if (this.disposed) return;
-                this.updateSlide();
-            }, 150) as unknown as number;
-        }
-
         private updateSlide() {
             try {
                 let atStart: boolean;
@@ -403,14 +450,12 @@ namespace BitBlazorUI {
                     const maxScroll = this.header.scrollWidth - this.header.clientWidth;
                     hasOverflow = maxScroll > 1;
 
-                    if (this.isRtl) {
-                        const abs = Math.abs(scrollLeft);
-                        atStart = abs <= 1;
-                        atEnd = abs >= maxScroll - 1;
-                    } else {
-                        atStart = scrollLeft <= 1;
-                        atEnd = scrollLeft >= maxScroll - 1;
-                    }
+                    // The offset from the start edge, whichever way the header reads: a right-to-left one scrolls
+                    // from 0 down to -maxScroll, a left-to-right one from 0 up to it, so the distance needs no
+                    // direction - and the scroll handler that calls this reads no computed style.
+                    const fromStart = Math.abs(scrollLeft);
+                    atStart = fromStart <= 1;
+                    atEnd = fromStart >= maxScroll - 1;
                 }
 
                 const serialized = `${hasOverflow}|${atStart}|${atEnd}`;
@@ -438,10 +483,6 @@ namespace BitBlazorUI {
                     const sign = this.isRtl ? -1 : 1;
                     this.header.scrollBy({ left: direction * sign * amount, behavior });
                 }
-
-                // the smooth scroll above lands after the last scroll event the throttle let through,
-                // so the buttons are asked to read the header again once it has come to rest.
-                this.scheduleSlideUpdate();
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.slide:', e);
             }
@@ -462,19 +503,21 @@ namespace BitBlazorUI {
                 }
                 if (this.scrollHandler) {
                     this.header.removeEventListener('scroll', this.scrollHandler);
+                    this.scrollHandler.cancel();
                     this.scrollHandler = null;
                 }
                 if (this.wheelHandler) {
                     this.header.removeEventListener('wheel', this.wheelHandler);
                     this.wheelHandler = null;
                 }
-                if (this.slideTimer !== null) {
-                    clearTimeout(this.slideTimer);
-                    this.slideTimer = null;
-                }
                 if (this.dragStartHandler) {
                     this.header.removeEventListener('dragstart', this.dragStartHandler);
                     this.dragStartHandler = null;
+                }
+                if (this.menu && this.menuKeyHandler) {
+                    this.menu.removeEventListener('keydown', this.menuKeyHandler);
+                    this.menu = null;
+                    this.menuKeyHandler = null;
                 }
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.dispose:', e);
@@ -482,3 +525,5 @@ namespace BitBlazorUI {
         }
     }
 }
+
+// bit-lazy: teardown Pivot.dispose Pivot.disposeKeys

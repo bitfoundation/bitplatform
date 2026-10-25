@@ -1,4 +1,4 @@
-@* Covers BitFooterParams: the cascaded values fill in the parameters the footer did not set itself,
+﻿@* Covers BitFooterParams: the cascaded values fill in the parameters the footer did not set itself,
    and never overwrite the ones it did. *@
 
 <BitParams Parameters="@(new BitFooterParams[]
@@ -15,6 +15,10 @@
                                  RevealOffset = 80,
                                  Wrap = true,
                                  VerticalAlign = BitAlignment.End,
+                                 MaxWidth = "60rem",
+                                 ScrollPadding = true,
+                                 ScrollTarget = "#shell",
+                                 ElevateOnScroll = true,
                              }
                          })">
     <BitFooter>Cascaded</BitFooter>

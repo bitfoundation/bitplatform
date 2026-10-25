@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitTimelineOption : ComponentBase, IDisposable
 {
@@ -21,6 +21,11 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     /// <summary>
     /// The general color of the timeline option, overriding the color of the timeline.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the Color of the timeline and over the <c>--bit-Timeline-*</c> dot color variables
+    /// (dot background, dot border color, icon color), on this option alone; left unset, the option takes the Color of
+    /// the timeline, or - when that is unset too - is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter] public BitColor? Color { get; set; }
 
     /// <summary>
@@ -54,9 +59,9 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the timeline option is enabled.
+    /// Whether or not the timeline option is disabled.
     /// </summary>
-    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool IsDisabled { get; set; }
 
     /// <summary>
     /// A unique value to use as a key of the timeline option
@@ -66,7 +71,7 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     /// <summary>
     /// The way the connecting line of the timeline option is painted, overriding the line variant of the timeline.
     /// </summary>
-    [Parameter] public BitTimelineLineVariant? LineVariant { get; set; }
+    [Parameter] public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
     /// Click event handler of the timeline option.
@@ -106,6 +111,11 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     /// <summary>
     /// The size of the timeline option, overriding the size of the timeline.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the Size of the timeline and over <c>--bit-Timeline-font-size</c> and
+    /// <c>--bit-Timeline-dot-size</c>, on this option alone; left unset, the option takes the Size of the timeline, or -
+    /// when that is unset too - is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter] public BitSize? Size { get; set; }
 
     /// <summary>

@@ -97,7 +97,7 @@ public partial class BitToggleButtonDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the toggle button.",
+            Description = "The general color of the toggle button. An explicit value wins over the --bit-ToggleButton-* color variables, the checked ones included; left unset, the toggle button is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -152,12 +152,12 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the icon relative to the content of the toggle button.",
+            Description = "The position of the icon relative to the content of the toggle button. The default value is Start. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -189,12 +189,12 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "LoadingLabelPosition",
-            Type = "BitLabelPosition",
-            DefaultValue = "BitLabelPosition.End",
-            Description = "The position of the loading label in regards to the spinner icon.",
+            Name = "LoadingLabelPlacement",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.End",
+            Description = "The position of the loading label in regards to the spinner icon. Only Top, Bottom, Start and End are honoured; any other value falls back to the default.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -222,7 +222,7 @@ public partial class BitToggleButtonDemo
             Name = "OffColor",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The color of the toggle button when it is not checked. Falls back to the Color parameter when not provided.",
+            Description = "The color of the toggle button when it is not checked. Falls back to the Color parameter when not provided. An explicit value wins over the --bit-ToggleButton-* color variables while unchecked.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -302,7 +302,7 @@ public partial class BitToggleButtonDemo
             Name = "OnColor",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The color of the toggle button when it is checked. Falls back to the Color parameter when not provided.",
+            Description = "The color of the toggle button when it is checked. Falls back to the Color parameter when not provided. An explicit value wins over the --bit-ToggleButton-checked-* color variables while checked.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -369,7 +369,7 @@ public partial class BitToggleButtonDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the toggle button.",
+            Description = "The size of the toggle button. An explicit value wins over the --bit-ToggleButton-* size variables; left unset, the toggle button is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -435,128 +435,344 @@ public partial class BitToggleButtonDemo
         new()
         {
             Name = "--bit-ToggleButton-color",
-            DefaultValue = "Per Variant: the role's on color (Fill), its main color (Outline, Text)",
-            Description = "Foreground of the unchecked toggle button at rest. The checked state paints its own, so setting this one alone never changes how the state reads.",
+            DefaultValue = "Per Variant: --bit-clr-pri-text (Fill), --bit-clr-pri (Outline, Text)",
+            Description = "Foreground of the unchecked toggle button at rest. The checked state paints its own, so setting this one alone never changes how the state reads. The Color parameter (or OffColor) wins over it. Shared by the three variants: --bit-ToggleButton-fill-color, --bit-ToggleButton-outline-color and --bit-ToggleButton-text-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-background",
-            DefaultValue = "Per Variant: the role's main color (Fill), transparent (Outline, Text)",
-            Description = "Background of the unchecked toggle button at rest, and the fallback of its resting border color.",
+            DefaultValue = "Per Variant: --bit-clr-pri (Fill), transparent (Outline, Text)",
+            Description = "Background of the unchecked toggle button at rest, and the fallback of its resting border color. The Color parameter (or OffColor) wins over it in Fill; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-ToggleButton-fill-background, --bit-ToggleButton-outline-background and --bit-ToggleButton-text-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-border-color",
             DefaultValue = "--bit-ToggleButton-background, then per Variant",
-            Description = "Border color of the unchecked toggle button at rest. The Outline variant is the one that draws it in the role color while the background stays transparent.",
+            Description = "Border color of the unchecked toggle button at rest. The Outline variant is the one that draws it in the role color while the background stays transparent. The Color parameter (or OffColor) wins over it, except over the transparent border of Text. Shared by the three variants: --bit-ToggleButton-fill-border-color, --bit-ToggleButton-outline-border-color and --bit-ToggleButton-text-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-hover-color",
-            DefaultValue = "Per Variant: the resting foreground (Fill), the role's on color (Outline, Text)",
-            Description = "Foreground while hovered, on pointer devices only.",
+            DefaultValue = "Per Variant: the resting foreground (Fill), --bit-clr-pri-text (Outline, Text)",
+            Description = "Foreground while hovered, on pointer devices only, and the one an unchecked Outline or Text toggle button with FixedColor wears in every state. The Color parameter (or OffColor) wins over it. Shared by the three variants: --bit-ToggleButton-fill-hover-color, --bit-ToggleButton-outline-hover-color and --bit-ToggleButton-text-hover-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-hover-background",
-            DefaultValue = "The Color role's hover color",
-            Description = "Background while hovered, and the fallback of the hovered border color.",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Background while hovered, and the fallback of the hovered border color. The Color parameter (or OffColor) wins over it. Shared by the three variants: --bit-ToggleButton-fill-hover-background, --bit-ToggleButton-outline-hover-background and --bit-ToggleButton-text-hover-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-hover-border-color",
             DefaultValue = "--bit-ToggleButton-hover-background",
-            Description = "Border color while hovered. Set it on its own to keep an outline steady under a changing background.",
+            Description = "Border color while hovered. Set it on its own to keep an outline steady under a changing background. The Color parameter (or OffColor) wins over it. Shared by the three variants: --bit-ToggleButton-fill-hover-border-color, --bit-ToggleButton-outline-hover-border-color and --bit-ToggleButton-text-hover-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-active-color",
             DefaultValue = "--bit-ToggleButton-hover-color",
-            Description = "Foreground while pressed.",
+            Description = "Foreground while pressed. The Color parameter (or OffColor) wins over it. Shared by the three variants: --bit-ToggleButton-fill-active-color, --bit-ToggleButton-outline-active-color and --bit-ToggleButton-text-active-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-active-background",
-            DefaultValue = "The Color role's active color",
-            Description = "Background while pressed, and the fallback of the pressed border color.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Background while pressed, and the fallback of the pressed border color. The Color parameter (or OffColor) wins over it. Shared by the three variants: --bit-ToggleButton-fill-active-background, --bit-ToggleButton-outline-active-background and --bit-ToggleButton-text-active-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-active-border-color",
             DefaultValue = "--bit-ToggleButton-active-background",
-            Description = "Border color while pressed.",
+            Description = "Border color while pressed. The Color parameter (or OffColor) wins over it. Shared by the three variants: --bit-ToggleButton-fill-active-border-color, --bit-ToggleButton-outline-active-border-color and --bit-ToggleButton-text-active-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-checked-color",
-            DefaultValue = "The Color role's on color",
-            Description = "Foreground while checked, in every variant.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Foreground while checked, in every variant. The Color parameter (or OnColor) wins over it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-checked-hover-color",
             DefaultValue = "--bit-ToggleButton-checked-color",
-            Description = "Foreground while checked and hovered, on pointer devices only.",
+            Description = "Foreground while checked and hovered, on pointer devices only. The Color parameter (or OnColor) wins over it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-checked-active-color",
             DefaultValue = "--bit-ToggleButton-checked-hover-color",
-            Description = "Foreground while checked and pressed.",
+            Description = "Foreground while checked and pressed. The Color parameter (or OnColor) wins over it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-checked-background",
-            DefaultValue = "The Color role's dark color",
-            Description = "Background while checked, and the fallback of the checked border color. It is what separates the two states visually, so it stays worth keeping distinct from the resting background.",
+            DefaultValue = "--bit-clr-pri-dark",
+            Description = "Background while checked, and the fallback of the checked border color. It is what separates the two states visually, so it stays worth keeping distinct from the resting background. The Color parameter (or OnColor) wins over it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-checked-border-color",
             DefaultValue = "--bit-ToggleButton-checked-background",
-            Description = "Border color while checked.",
+            Description = "Border color while checked. The Color parameter (or OnColor) wins over it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-checked-hover-background",
-            DefaultValue = "The Color role's dark hover color",
-            Description = "Background while checked and hovered.",
+            DefaultValue = "--bit-clr-pri-dark-hover",
+            Description = "Background while checked and hovered. The Color parameter (or OnColor) wins over it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-checked-hover-border-color",
             DefaultValue = "--bit-ToggleButton-checked-hover-background",
-            Description = "Border color while checked and hovered.",
+            Description = "Border color while checked and hovered. The Color parameter (or OnColor) wins over it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-checked-active-background",
-            DefaultValue = "The Color role's dark active color",
-            Description = "Background while checked and pressed.",
+            DefaultValue = "--bit-clr-pri-dark-active",
+            Description = "Background while checked and pressed. The Color parameter (or OnColor) wins over it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-checked-active-border-color",
             DefaultValue = "--bit-ToggleButton-checked-active-background",
-            Description = "Border color while checked and pressed.",
+            Description = "Border color while checked and pressed. The Color parameter (or OnColor) wins over it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-disabled-color",
-            DefaultValue = "The Color role's disabled text color",
-            Description = "Foreground when IsEnabled is false; also the focus ring color of a disabled toggle button kept focusable with AllowDisabledFocus.",
+            DefaultValue = "--bit-clr-pri-dis-text",
+            Description = "Foreground when Disabled is true; also the focus ring color of a disabled toggle button kept focusable with AllowDisabledFocus. The Color parameter (or OnColor / OffColor) wins over it. Shared by the three variants: --bit-ToggleButton-fill-disabled-color, --bit-ToggleButton-outline-disabled-color and --bit-ToggleButton-text-disabled-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-disabled-background",
-            DefaultValue = "Per Variant: the role's disabled color (Fill), transparent (Outline, Text)",
-            Description = "Background when IsEnabled is false.",
+            DefaultValue = "Per Variant: --bit-clr-pri-dis (Fill), transparent (Outline, Text)",
+            Description = "Background when Disabled is true. The Color parameter (or OnColor / OffColor) wins over it in Fill; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-ToggleButton-fill-disabled-background, --bit-ToggleButton-outline-disabled-background and --bit-ToggleButton-text-disabled-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-disabled-border-color",
             DefaultValue = "--bit-ToggleButton-disabled-background, then per Variant",
-            Description = "Border color when IsEnabled is false.",
+            Description = "Border color when Disabled is true. The Color parameter (or OnColor / OffColor) wins over it, except over the transparent border of Text. Shared by the three variants: --bit-ToggleButton-fill-disabled-border-color, --bit-ToggleButton-outline-disabled-border-color and --bit-ToggleButton-text-disabled-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-fill-color",
+            DefaultValue = "--bit-ToggleButton-color",
+            Description = "Foreground at rest of an unchecked Fill toggle button alone, read ahead of --bit-ToggleButton-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-fill-background",
+            DefaultValue = "--bit-ToggleButton-background",
+            Description = "Background at rest of an unchecked Fill toggle button alone, read ahead of --bit-ToggleButton-background so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-fill-border-color",
+            DefaultValue = "--bit-ToggleButton-border-color",
+            Description = "Border color at rest of an unchecked Fill toggle button alone, read ahead of --bit-ToggleButton-border-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-fill-hover-color",
+            DefaultValue = "--bit-ToggleButton-hover-color",
+            Description = "Foreground while hovered (pointer devices only) of an unchecked Fill toggle button alone, read ahead of --bit-ToggleButton-hover-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-fill-hover-background",
+            DefaultValue = "--bit-ToggleButton-hover-background",
+            Description = "Background while hovered (pointer devices only) of an unchecked Fill toggle button alone, read ahead of --bit-ToggleButton-hover-background so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-fill-hover-border-color",
+            DefaultValue = "--bit-ToggleButton-hover-border-color",
+            Description = "Border color while hovered (pointer devices only) of an unchecked Fill toggle button alone, read ahead of --bit-ToggleButton-hover-border-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-fill-active-color",
+            DefaultValue = "--bit-ToggleButton-active-color",
+            Description = "Foreground while pressed of an unchecked Fill toggle button alone, read ahead of --bit-ToggleButton-active-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-fill-active-background",
+            DefaultValue = "--bit-ToggleButton-active-background",
+            Description = "Background while pressed of an unchecked Fill toggle button alone, read ahead of --bit-ToggleButton-active-background so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-fill-active-border-color",
+            DefaultValue = "--bit-ToggleButton-active-border-color",
+            Description = "Border color while pressed of an unchecked Fill toggle button alone, read ahead of --bit-ToggleButton-active-border-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-fill-disabled-color",
+            DefaultValue = "--bit-ToggleButton-disabled-color",
+            Description = "Foreground when disabled of an unchecked Fill toggle button alone, read ahead of --bit-ToggleButton-disabled-color so a theme can set this variant apart from the other two. It also draws the focus ring of a disabled toggle button of this variant, checked or not, while AllowDisabledFocus keeps it in the tab order. The Color parameter (or OnColor / OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-fill-disabled-background",
+            DefaultValue = "--bit-ToggleButton-disabled-background",
+            Description = "Background when disabled of an unchecked Fill toggle button alone, read ahead of --bit-ToggleButton-disabled-background so a theme can set this variant apart from the other two. The Color parameter (or OnColor / OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-fill-disabled-border-color",
+            DefaultValue = "--bit-ToggleButton-disabled-border-color",
+            Description = "Border color when disabled of an unchecked Fill toggle button alone, read ahead of --bit-ToggleButton-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter (or OnColor / OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-outline-color",
+            DefaultValue = "--bit-ToggleButton-color",
+            Description = "Foreground at rest of an unchecked Outline toggle button alone, read ahead of --bit-ToggleButton-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-outline-background",
+            DefaultValue = "--bit-ToggleButton-background",
+            Description = "Background at rest of an unchecked Outline toggle button alone, read ahead of --bit-ToggleButton-background so a theme can set this variant apart from the other two. The Color parameter (or OffColor) leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-outline-border-color",
+            DefaultValue = "--bit-ToggleButton-border-color",
+            Description = "Border color at rest of an unchecked Outline toggle button alone, read ahead of --bit-ToggleButton-border-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-outline-hover-color",
+            DefaultValue = "--bit-ToggleButton-hover-color",
+            Description = "Foreground while hovered (pointer devices only) of an unchecked Outline toggle button alone, and the one it wears in every state with FixedColor, read ahead of --bit-ToggleButton-hover-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-outline-hover-background",
+            DefaultValue = "--bit-ToggleButton-hover-background",
+            Description = "Background while hovered (pointer devices only) of an unchecked Outline toggle button alone, read ahead of --bit-ToggleButton-hover-background so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-outline-hover-border-color",
+            DefaultValue = "--bit-ToggleButton-hover-border-color",
+            Description = "Border color while hovered (pointer devices only) of an unchecked Outline toggle button alone, read ahead of --bit-ToggleButton-hover-border-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-outline-active-color",
+            DefaultValue = "--bit-ToggleButton-active-color",
+            Description = "Foreground while pressed of an unchecked Outline toggle button alone, read ahead of --bit-ToggleButton-active-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-outline-active-background",
+            DefaultValue = "--bit-ToggleButton-active-background",
+            Description = "Background while pressed of an unchecked Outline toggle button alone, read ahead of --bit-ToggleButton-active-background so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-outline-active-border-color",
+            DefaultValue = "--bit-ToggleButton-active-border-color",
+            Description = "Border color while pressed of an unchecked Outline toggle button alone, read ahead of --bit-ToggleButton-active-border-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-outline-disabled-color",
+            DefaultValue = "--bit-ToggleButton-disabled-color",
+            Description = "Foreground when disabled of an unchecked Outline toggle button alone, read ahead of --bit-ToggleButton-disabled-color so a theme can set this variant apart from the other two. It also draws the focus ring of a disabled toggle button of this variant, checked or not, while AllowDisabledFocus keeps it in the tab order. The Color parameter (or OnColor / OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-outline-disabled-background",
+            DefaultValue = "--bit-ToggleButton-disabled-background",
+            Description = "Background when disabled of an unchecked Outline toggle button alone, read ahead of --bit-ToggleButton-disabled-background so a theme can set this variant apart from the other two. The Color parameter (or OnColor / OffColor) leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-outline-disabled-border-color",
+            DefaultValue = "--bit-ToggleButton-disabled-border-color",
+            Description = "Border color when disabled of an unchecked Outline toggle button alone, read ahead of --bit-ToggleButton-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter (or OnColor / OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-text-color",
+            DefaultValue = "--bit-ToggleButton-color",
+            Description = "Foreground at rest of an unchecked Text toggle button alone, read ahead of --bit-ToggleButton-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-text-background",
+            DefaultValue = "--bit-ToggleButton-background",
+            Description = "Background at rest of an unchecked Text toggle button alone, read ahead of --bit-ToggleButton-background so a theme can set this variant apart from the other two. The Color parameter (or OffColor) leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-text-border-color",
+            DefaultValue = "--bit-ToggleButton-border-color",
+            Description = "Border color at rest of an unchecked Text toggle button alone, read ahead of --bit-ToggleButton-border-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-text-hover-color",
+            DefaultValue = "--bit-ToggleButton-hover-color",
+            Description = "Foreground while hovered (pointer devices only) of an unchecked Text toggle button alone, and the one it wears in every state with FixedColor, read ahead of --bit-ToggleButton-hover-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-text-hover-background",
+            DefaultValue = "--bit-ToggleButton-hover-background",
+            Description = "Background while hovered (pointer devices only) of an unchecked Text toggle button alone, read ahead of --bit-ToggleButton-hover-background so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-text-hover-border-color",
+            DefaultValue = "--bit-ToggleButton-hover-border-color",
+            Description = "Border color while hovered (pointer devices only) of an unchecked Text toggle button alone, read ahead of --bit-ToggleButton-hover-border-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-text-active-color",
+            DefaultValue = "--bit-ToggleButton-active-color",
+            Description = "Foreground while pressed of an unchecked Text toggle button alone, read ahead of --bit-ToggleButton-active-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-text-active-background",
+            DefaultValue = "--bit-ToggleButton-active-background",
+            Description = "Background while pressed of an unchecked Text toggle button alone, read ahead of --bit-ToggleButton-active-background so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-text-active-border-color",
+            DefaultValue = "--bit-ToggleButton-active-border-color",
+            Description = "Border color while pressed of an unchecked Text toggle button alone, read ahead of --bit-ToggleButton-active-border-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-text-disabled-color",
+            DefaultValue = "--bit-ToggleButton-disabled-color",
+            Description = "Foreground when disabled of an unchecked Text toggle button alone, read ahead of --bit-ToggleButton-disabled-color so a theme can set this variant apart from the other two. It also draws the focus ring of a disabled toggle button of this variant, checked or not, while AllowDisabledFocus keeps it in the tab order. The Color parameter (or OnColor / OffColor) wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-text-disabled-background",
+            DefaultValue = "--bit-ToggleButton-disabled-background",
+            Description = "Background when disabled of an unchecked Text toggle button alone, read ahead of --bit-ToggleButton-disabled-background so a theme can set this variant apart from the other two. The Color parameter (or OnColor / OffColor) leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-text-disabled-border-color",
+            DefaultValue = "--bit-ToggleButton-disabled-border-color",
+            Description = "Border color when disabled of an unchecked Text toggle button alone, read ahead of --bit-ToggleButton-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter (or OnColor / OffColor) leaves it alone.",
         },
         new()
         {
@@ -567,8 +783,8 @@ public partial class BitToggleButtonDemo
         new()
         {
             Name = "--bit-ToggleButton-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Color of the keyboard focus ring.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring. The Color parameter (or OnColor / OffColor) wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {
@@ -591,14 +807,14 @@ public partial class BitToggleButtonDemo
         new()
         {
             Name = "--bit-ToggleButton-min-height",
-            DefaultValue = "Per Size: --bit-siz-ctrl-sm / -md / -lg",
-            Description = "Smallest height of the box, which is what lines a toggle button up with the other controls of its size and keeps the smallest one above the 24px minimum pointer target of WCAG 2.2. It is a floor, not a height: a wrapped label still grows the box. It is also the minimum width of an icon-only toggle button.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Smallest height of the box, which is what lines a toggle button up with the other controls of its size and keeps the smallest one above the 24px minimum pointer target of WCAG 2.2. It is a floor, not a height: a wrapped label still grows the box. It is also the minimum width of an icon-only toggle button. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-padding",
-            DefaultValue = "Per Size: the control's y and x padding, square when icon-only",
-            Description = "Padding of the box.",
+            DefaultValue = "--bit-siz-ctrl-pad-y-md --bit-siz-ctrl-pad-x-md, --bit-siz-ctrl-pad-y-md when icon-only",
+            Description = "Padding of the box. The Size parameter wins over it.",
         },
         new()
         {
@@ -609,8 +825,8 @@ public partial class BitToggleButtonDemo
         new()
         {
             Name = "--bit-ToggleButton-font-size",
-            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
-            Description = "Font size of the text.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Font size of the text. The Size parameter wins over it.",
         },
         new()
         {
@@ -621,20 +837,20 @@ public partial class BitToggleButtonDemo
         new()
         {
             Name = "--bit-ToggleButton-icon-size",
-            DefaultValue = "The text size, or per Size the glyph size when icon-only",
-            Description = "Size of the icon and the check mark. With a label beside it the glyph rides the text by default, which is what keeps the two lined up at any font scale.",
+            DefaultValue = "The text size, or spacing(2.35) when icon-only",
+            Description = "Size of the icon and the check mark. With a label beside it the glyph rides the text by default, which is what keeps the two lined up at any font scale. The Size parameter wins over it on an icon-only toggle button.",
         },
         new()
         {
             Name = "--bit-ToggleButton-spinner-size",
-            DefaultValue = "Per Size: spacing(2) / spacing(2.35) / spacing(2.75)",
-            Description = "Diameter of the spinner shown in the loading state.",
+            DefaultValue = "spacing(2.35)",
+            Description = "Diameter of the spinner shown in the loading state. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ToggleButton-loading-label-font-size",
-            DefaultValue = "Per Size: --bit-tpg-fs-2xs / -xs / -sm",
-            Description = "Font size of the LoadingLabel beside the spinner, one step of the ramp below the text of the toggle button.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Font size of the LoadingLabel beside the spinner, one step of the ramp below the text of the toggle button. The Size parameter wins over it.",
         },
     ];
 
@@ -777,225 +993,10 @@ public partial class BitToggleButtonDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="Info Primary general color.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
-                },
-                new()
-                {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
-                },
-                new()
-                {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
-                },
-                new()
-                {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
-                },
-                new()
-                {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
-                },
-                new()
-                {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
-                },
-                new()
-                {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
-                },
-                new()
-                {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
-                },
-                new()
-                {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
-                },
-                new()
-                {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Start",
-                    Description="Icon renders before the content (default).",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="Icon renders after the content.",
-                    Value="1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "Determines the position of the loading label in regards to the spinner icon.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label renders above the spinner.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label renders after the spinner.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label renders below the spinner.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label renders before the spinner.",
-                    Value="3",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Small",
-                    Description="The small size button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The medium size button.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The large size button.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new()
-                {
-                    Name= "Fill",
-                    Description="Fill styled variant.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Outline",
-                    Description="Outline styled variant.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Text",
-                    Description="Text styled variant.",
-                    Value="2",
-                }
-            ]
-        }
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitPlacement(),
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitVariant()
     ];
 
 

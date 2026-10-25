@@ -1,0 +1,400 @@
+﻿@page "/"
+@layout MainLayout
+@using System.Diagnostics
+@using Bit.BbScanner.TestKit
+
+<PageTitle>BbScanner - barcode scanning for Blazor, decoded in C#</PageTitle>
+
+@* The landing page: hero → proof strip → feature grid → code walkthrough → comparison with a
+   JavaScript scanner → persona tiles → FAQ → final call to action. Everything else on the site is
+   a documentation page under DocsLayout. The hero's sample decodes a real symbol in the visitor's
+   own tab rather than showing a picture of a result - without opening a camera, so the first page
+   of the site never asks for a permission. *@
+
+<div class="bb-landing">
+
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net8.0 / net9.0 / net10.0
+            </span>
+            <h1>Barcode scanning for Blazor,<br /><span class="bb-hero-accent">decoded in C#.</span></h1>
+            <p class="bb-hero-sub">
+                QR Code, Micro QR, Data Matrix, PDF417, Aztec, MaxiCode, Code 128, Code 39, Code 93, Codabar,
+                EAN-13, EAN-8, UPC-A, UPC-E, ITF and the GS1 DataBar family - from the camera or from still images. No barcode SDK and no JavaScript scanner library: the browser opens the
+                camera and copies pixels, and everything after that is managed code you can step into.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.BbScanner</pre>
+            <div class="bb-hero-actions">
+                <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <a href="scan" class="btn btn-secondary bb-btn-lg">Live playground</a>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </div>
+        </div>
+
+        @* The sample, framed as a window: the markup on top, and underneath it the library's own
+           decoder reading a symbol this page drew - live, in this tab. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">Checkout.razor</span>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BbScanner</span> Formats=<span class="s">"BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13"</span>
+           Region=<span class="s">"BbScanRegion.CenteredSquare(0.7)"</span>
+           OnScan=<span class="s">"HandleScan"</span> /&gt;
+
+<span class="k">private void</span> HandleScan(BbBarcodeResult result)
+    =&gt; Console.WriteLine(<span class="s">$"{result.Format}: {result.Text}"</span>);</pre>
+                <div class="home-live">
+                    <div class="home-viewfinder @(_hero is not null ? "home-viewfinder-found" : null)">
+                        <BarcodeSvg Matrix="Symbol.Matrix" Caption="@Symbol.Caption" Value="@Symbol.Value" Size="116" ShowCaption="false" />
+                        <span class="home-corner home-corner-tl"></span>
+                        <span class="home-corner home-corner-tr"></span>
+                        <span class="home-corner home-corner-bl"></span>
+                        <span class="home-corner home-corner-br"></span>
+                    </div>
+                    <div class="home-live-side">
+                        <p class="bb-overline">Live · in this tab</p>
+                        <p class="home-live-copy">The same decoder a camera frame goes through, on the symbol beside this text.</p>
+                        <button type="button" class="btn btn-primary" id="hero-decode" @onclick="DecodeHero" disabled="@(RendererInfo.IsInteractive is false)">
+                            Decode it in C#
+                        </button>
+                        <div class="home-live-result" role="status" aria-live="polite">
+                            @if (_hero is { } hit)
+                            {
+                                <span class="bb-badge bb-badge-success">@hit.Format</span>
+                                <code id="hero-text">@hit.Text</code>
+                                <span class="bb-soft">@hit.Milliseconds.ToString("0.0") ms</span>
+                            }
+                            else if (_heroMissed)
+                            {
+                                <span class="bb-badge bb-badge-danger">Not decoded</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Proof strip ============================== *@
+
+    <section class="bb-proof">
+        <div><strong>Decoding in C#</strong><span>no barcode SDK, no JavaScript scanner library</span></div>
+        <div><strong>One copy per frame</strong><span>a <code>[JSImport]</code> memory view, no JSON or base64</span></div>
+        <div><strong>Eighteen symbologies</strong><span>read to specification, check digits verified</span></div>
+        <div><strong>Runs anywhere .NET runs</strong><span><code>BbBarcodeDecoder</code> needs no browser</span></div>
+    </section>
+
+    @* ============================== Feature grid ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Capabilities</p>
+        <h2>A scanner component, and the decoder behind it</h2>
+        <p class="bb-section-sub">
+            <code>&lt;BbScanner&gt;</code> owns the camera, the frame loop, the overlays and the controls;
+            <code>BbBarcodeDecoder</code> turns pixels into a strongly typed <code>BbBarcodeResult</code> - with
+            the corner points, the raw bytes and the symbol's metadata - wherever .NET runs.
+        </p>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Every parameter, live</h3>
+                <p class="bb-card-desc">
+                    Formats, frame rate, processing size, region, duplicate suppression and the advanced
+                    <code>BbScannerOptions</code> - all applied to the running camera without dropping it.
+                </p>
+                <a href="scan" class="btn btn-outline">Live playground →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Camera, torch and zoom</h3>
+                <p class="bb-card-desc">
+                    Device selection, front and rear cameras, torch and zoom where the hardware offers them -
+                    and never a control the hardware will refuse.
+                </p>
+                <a href="camera" class="btn btn-outline">Camera control →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Aim with a region</h3>
+                <p class="bb-card-desc">
+                    A normalized <code>BbScanRegion</code> crops the frame before any pixel is touched, so every
+                    later stage gets cheaper in proportion to the area removed.
+                </p>
+                <a href="region" class="btn btn-outline">Scan region →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Photos and buffers</h3>
+                <p class="bb-card-desc">
+                    A built-in file picker and drop target for still images, <code>ScanImageAsync</code> for an
+                    upload the application already holds, and <code>DecodeImage</code> for raw pixels - tuned for
+                    one exhaustive attempt rather than fifteen a second, and never asking for the camera.
+                </p>
+                <a href="image" class="btn btn-outline">Image scanning →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Built for real workflows</h3>
+                <p class="bb-card-desc">
+                    Read one code and stop, pause for "scan another", count each value once for a stocktake, ignore
+                    every code but the one you expect, read a whole sheet of labels at once, and beep or vibrate on a scan.
+                </p>
+                <a href="lifecycle" class="btn btn-outline">Lifecycle &amp; duplicates →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Measured, not guessed</h3>
+                <p class="bb-card-desc">
+                    Per-stage timings for every frame, and a decoder benchmark that runs in your browser on your
+                    device - with no garbage allocated per frame.
+                </p>
+                <a href="performance" class="btn btn-outline">Performance →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Yours to restyle and translate</h3>
+                <p class="bb-card-desc">
+                    Every colour, radius and dimension is a CSS custom property, the reticle and the messages are
+                    render fragments, and every text it shows or announces can be translated - with right-to-left,
+                    screen readers, reduced motion and forced colours built in.
+                </p>
+                <a href="customize" class="btn btn-outline">Customisation →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Failures you can act on</h3>
+                <p class="bb-card-desc">
+                    Permission refused, no camera, camera in use, no HTTPS, an image that is not one: every failure
+                    arrives as a classified <code>BbScannerException</code>, and the permission can be checked before
+                    the browser ever asks.
+                </p>
+                <a href="errors" class="btn btn-outline">Errors &amp; permissions →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>See it in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>One package, one namespace</h3>
+                    <p>
+                        No services to register, no script tag and no stylesheet link: the package's initializer
+                        adds the stylesheet and the component imports its own module. Put it on a page rendered
+                        with <code>InteractiveWebAssembly</code>.
+                    </p>
+                    <a href="getting-started">Getting started →</a>
+                </div>
+                <pre class="bb-code">dotnet add package Bit.BbScanner
+
+<span class="c">@@* _Imports.razor *@@</span>
+<span class="k">@@using</span> Bit.BbScanner
+
+<span class="c">@@* Scan.razor *@@</span>
+&lt;<span class="k">BbScanner</span> OnScan=<span class="s">"r =&gt; _last = r"</span> /&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>Ask for less, get it faster</h3>
+                    <p>
+                        Narrow <code>Formats</code> to the symbologies you need - an unused one costs nothing because
+                        its decoder is never created - and aim the decoder at the part of the frame that matters.
+                    </p>
+                    <a href="scan">Live playground →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BbScanner</span> Formats=<span class="s">"BbBarcodeFormat.Ean13"</span>
+           Region=<span class="s">"BbScanRegion.CenteredSquare(0.6)"</span>
+           OnScan=<span class="s">"AddToBasket"</span> /&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>Decode without a camera</h3>
+                    <p>
+                        The pipeline has no dependency on Blazor, JavaScript or a camera: a server decoding uploads,
+                        a MAUI app feeding the platform camera's frames, or a unit test uses the same decoder.
+                    </p>
+                    <a href="api">API reference →</a>
+                </div>
+                <pre class="bb-code"><span class="k">using var</span> decoder = <span class="k">new</span> BbBarcodeDecoder(BbScannerOptions.ForStillImages());
+
+<span class="k">var</span> result = decoder.Decode(rgbaPixels, width, height, BbPixelFormat.Rgba32);
+<span class="k">if</span> (result <span class="k">is not null</span>)
+    Console.WriteLine(<span class="s">$"{result.Format}: {result.Text}"</span>);
+
+<span class="c">// result.Corners, result.RawBytes, result.Metadata …</span></pre>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Why not wrap a JavaScript scanner?</h2>
+        <p class="bb-section-sub">
+            Wrapping a JavaScript barcode library puts the part that matters - the decoding - on the far side of
+            interop, in code your .NET tests, debugger and server cannot reach. BbScanner keeps only the camera in
+            the browser.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="A wrapped JavaScript scanner compared with BbScanner">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Concern</th><th>JavaScript scanner behind interop</th><th>BbScanner</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Where the decoding runs</td><td>JavaScript, outside the .NET debugger</td><td>C#, in managed code you can step into</td></tr>
+                    <tr><td>What crosses interop</td><td>Results marshalled back as JSON</td><td>One memory-view copy of each frame into a reused buffer</td></tr>
+                    <tr><td>Dependencies</td><td>A script library to ship and keep up to date</td><td>None beyond <code>Microsoft.AspNetCore.Components.Web</code></td></tr>
+                    <tr><td>The result</td><td>Whatever shape the library returns</td><td><code>BbBarcodeResult</code>: text, raw bytes, corners, metadata</td></tr>
+                    <tr><td>Without a browser</td><td>A second decoder for the server</td><td>The same <code>BbBarcodeDecoder</code>, anywhere .NET runs</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to BbScanner?</h3>
+                <p class="bb-card-desc">Install, add the namespace, drop the component on a page - scanning in five minutes.</p>
+                <a href="getting-started" class="btn btn-primary">Getting started →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> No barcode to hand?</h3>
+                <p class="bb-card-desc">Every symbology is drawn on the samples page: open it on a second screen and scan it with the playground.</p>
+                <a href="samples" class="btn btn-outline">Sample barcodes →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> and it reads the shipped library instead of guessing.</p>
+                <a href="mcp-server" class="btn btn-outline">Try the MCP server →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Which render modes can open the camera?</summary>
+                <p>
+                    WebAssembly: a standalone Blazor WebAssembly app, or the <code>InteractiveWebAssembly</code> pages of
+                    a Blazor Web App, on .NET 8, 9 and 10. Under Blazor Server and Blazor Hybrid the component reports
+                    <code>NotSupported</code> instead, and <code>BbBarcodeDecoder</code> decodes pixels in-process there.
+                </p>
+            </details>
+            <details>
+                <summary>Why does the camera not start on my test server?</summary>
+                <p>
+                    Browsers only expose the camera in a secure context - a page served over HTTPS, or from
+                    <code>localhost</code>. Anywhere else the component reports <code>NotSupported</code> straight away,
+                    with a message that says so, rather than waiting on a prompt that will never appear.
+                </p>
+            </details>
+            <details>
+                <summary>How does it avoid misreads?</summary>
+                <p>
+                    Misreading is treated as worse than missing: check digits and guard patterns are verified, a
+                    Reed-Solomon correction is only accepted when the corrected block re-verifies, and ITF, Codabar,
+                    UPC-E, the GS1 DataBar family and unchecked Code 39 results must repeat on a second scan line
+                    before they are reported. Narrowing <code>Formats</code> to what you expect, and
+                    <code>ItfLengths</code> to the lengths you use, closes the rest of the gap.
+                </p>
+            </details>
+            <details>
+                <summary>Does it read PDF417?</summary>
+                <p>
+                    Yes - the kind on driving licences, boarding passes and shipping labels. The library ships the
+                    specification's symbol character table, finds a symbol at any rotation before reading it row by
+                    row, and repairs damaged rows with the symbol's own error correction. Compact (truncated) PDF417,
+                    with its right row indicator dropped, reads too; MicroPDF417, a different symbology, is not read.
+                </p>
+            </details>
+            <details>
+                <summary>Does it read Aztec?</summary>
+                <p>
+                    Yes - the code on boarding passes and rail and transit tickets, compact and full range, at any
+                    rotation and seen at an angle. Its bullseye is found wherever it is in the frame, and a large symbol
+                    is fitted through its own reference grid. Mirrored symbols read too, and an Aztec Rune reads as its number.
+                </p>
+            </details>
+            <details>
+                <summary>Does it read MaxiCode and Micro QR?</summary>
+                <p>
+                    Yes. MaxiCode, the hexagonal code with a bullseye on parcels, is found by its rings at any angle and
+                    seen at a slant, and a carrier's structured message - postal code, country and class of service -
+                    comes back as the carrier writes it. Micro QR, the one-finder QR for small parts, reads in all four
+                    sizes and is only looked for when no QR code was, so it costs QR scanning nothing.
+                </p>
+            </details>
+            <details>
+                <summary>Does it read GS1 DataBar?</summary>
+                <p>
+                    Yes, the whole family. Omnidirectional, Truncated and their two-row Stacked forms - the small
+                    barcode on loose produce - and DataBar Limited, on packs too small for anything else, come back as
+                    the GS1 element string, <code>01</code> and fourteen digits. DataBar Expanded and Expanded Stacked,
+                    on weighed fresh food and coupons, come back as whatever element string they carry - a GTIN with its
+                    weight, price, batch or best-before date - with a group separator after each variable length element.
+                    A symbol too short, or turned too far, for one scan line to cross whole is pieced together from
+                    several. The linear part of a GS1 Composite symbol is not read, because the two-dimensional part
+                    that holds the rest of its data is not.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Point it at a barcode</h2>
+        <p class="bb-section-sub">One package, one namespace, one component - and the camera hands its pixels to C#.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.BbScanner</pre>
+        <div class="bb-hero-actions">
+            <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="samples" class="btn btn-secondary bb-btn-lg">Sample barcodes</a>
+        </div>
+    </section>
+</div>
+
+@code {
+    private sealed record HeroHit(BbBarcodeFormat Format, string Text, double Milliseconds);
+
+    /// <summary>The site's own address as a QR code - the first sample of the samples page.</summary>
+    private static BarcodeSample Symbol => SampleCatalog.All[0];
+
+    private HeroHit? _hero;
+    private bool _heroMissed;
+
+    /// <summary>
+    /// Rasterises the symbol into a grayscale frame and decodes it with the library, exactly as a
+    /// camera frame is decoded - only without the camera.
+    /// </summary>
+    private void DecodeHero()
+    {
+        using var image = SyntheticImage.FromMatrix(Symbol.Matrix!, scale: 6);
+        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        {
+            Formats = BbBarcodeFormat.All,
+            DuplicateSuppressionWindow = TimeSpan.Zero,
+        });
+
+        var start = Stopwatch.GetTimestamp();
+        var result = decoder.Decode(image.View, suppressDuplicates: false);
+        var elapsed = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+
+        _hero = result is null ? null : new HeroHit(result.Format, result.Text, elapsed);
+        _heroMissed = result is null;
+    }
+}

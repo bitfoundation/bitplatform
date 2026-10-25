@@ -1,0 +1,264 @@
+﻿@page "/e2e/icon"
+
+<PageTitle>BitIcon E2E</PageTitle>
+
+<HeadContent>
+    <link rel="stylesheet" href="samples/icon-sets.css" />
+</HeadContent>
+
+<h1>BitIcon</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitIcon Id="ico-accept" IconName="@BitIconName.Accept" />
+    <BitIcon Id="ico-bus" IconName="@BitIconName.Bus" />
+    <BitIcon Id="ico-pinned" IconName="@BitIconName.Pinned" />
+    <BitIcon Id="ico-unknown" IconName="NoSuchGlyphAnywhere" />
+    <BitIcon Id="ico-disabled" IconName="@BitIconName.Accept" Disabled />
+</E2ESection>
+
+<E2ESection Id="variants" Title="Variant">
+    <BitIcon Id="ico-variant-default" IconName="@BitIconName.Accept" />
+    <BitIcon Id="ico-variant-Text" IconName="@BitIconName.Accept" Variant="BitVariant.Text" />
+    <BitIcon Id="ico-variant-Outline" IconName="@BitIconName.Accept" Variant="BitVariant.Outline" />
+    <BitIcon Id="ico-variant-Fill" IconName="@BitIconName.Accept" Variant="BitVariant.Fill" />
+    <BitIcon Id="ico-variant-outline-circular" IconName="@BitIconName.Accept" Variant="BitVariant.Outline" Circular />
+    <BitIcon Id="ico-variant-fill-circular" IconName="@BitIconName.Accept" Variant="BitVariant.Fill" Circular />
+    <BitIcon Id="ico-variant-dis-Text" IconName="@BitIconName.Accept" Variant="BitVariant.Text" Disabled />
+    <BitIcon Id="ico-variant-dis-Outline" IconName="@BitIconName.Accept" Variant="BitVariant.Outline" Disabled />
+    <BitIcon Id="ico-variant-dis-Fill" IconName="@BitIconName.Accept" Variant="BitVariant.Fill" Disabled />
+</E2ESection>
+
+<E2ESection Id="rotate-flip" Title="Rotate and Flip">
+    <BitIcon Id="ico-rot-none" IconName="@BitIconName.Up" />
+    <BitIcon Id="ico-rot-Rotate90" IconName="@BitIconName.Up" Rotate="BitIconRotate.Rotate90" />
+    <BitIcon Id="ico-rot-Rotate180" IconName="@BitIconName.Up" Rotate="BitIconRotate.Rotate180" />
+    <BitIcon Id="ico-rot-Rotate270" IconName="@BitIconName.Up" Rotate="BitIconRotate.Rotate270" />
+    <BitIcon Id="ico-rot-45" IconName="@BitIconName.Up" RotateAngle="45" Variant="BitVariant.Fill" />
+    <BitIcon Id="ico-rot-0-fill" IconName="@BitIconName.Up" Variant="BitVariant.Fill" />
+    <BitIcon Id="ico-rot-neg30" IconName="@BitIconName.Up" RotateAngle="-30" />
+    <BitIcon Id="ico-rot-angle-wins" IconName="@BitIconName.Up" Rotate="BitIconRotate.Rotate90" RotateAngle="10" />
+    <BitIcon Id="ico-flip-Horizontal" IconName="@BitIconName.ReplyAlt" Flip="BitIconFlip.Horizontal" />
+    <BitIcon Id="ico-flip-Vertical" IconName="@BitIconName.ReplyAlt" Flip="BitIconFlip.Vertical" />
+    <BitIcon Id="ico-flip-Both" IconName="@BitIconName.ReplyAlt" Flip="BitIconFlip.Both" />
+    <BitIcon Id="ico-flip-rotate" IconName="@BitIconName.ReplyAlt" Flip="BitIconFlip.Horizontal" RotateAngle="45" />
+    <div>
+        <BitIcon Id="ico-fliprtl-ltr" IconName="@BitIconName.Forward" FlipRtl />
+        <BitIcon Id="ico-clock-ltr" IconName="@BitIconName.Clock" />
+    </div>
+    <div dir="rtl">
+        <BitIcon Id="ico-fliprtl-rtl" IconName="@BitIconName.Forward" FlipRtl />
+        <BitIcon Id="ico-clock-rtl" IconName="@BitIconName.Clock" />
+        <BitIcon Id="ico-fliprtl-explicit-ltr" IconName="@BitIconName.Forward" FlipRtl Dir="BitDir.Ltr" />
+    </div>
+    <BitIcon Id="ico-fliprtl-dir" IconName="@BitIconName.Forward" FlipRtl Dir="BitDir.Rtl" />
+    <BitIcon Id="ico-fliprtl-flip" IconName="@BitIconName.Forward" FlipRtl Flip="BitIconFlip.Horizontal" Dir="BitDir.Rtl" />
+</E2ESection>
+
+<E2ESection Id="animation" Title="Animation">
+    <BitIcon Id="ico-anim-Spin" IconName="@BitIconName.Sync" Animation="BitIconAnimation.Spin" />
+    <BitIcon Id="ico-anim-SpinReverse" IconName="@BitIconName.Sync" Animation="BitIconAnimation.SpinReverse" />
+    <BitIcon Id="ico-anim-Pulse" IconName="@BitIconName.ProgressRingDots" Animation="BitIconAnimation.Pulse" />
+    <BitIcon Id="ico-anim-Beat" IconName="@BitIconName.Heart" Animation="BitIconAnimation.Beat" />
+    <BitIcon Id="ico-anim-Fade" IconName="@BitIconName.StatusCircleInner" Animation="BitIconAnimation.Fade" />
+    <BitIcon Id="ico-anim-Shake" IconName="@BitIconName.Ringer" Animation="BitIconAnimation.Shake" />
+    <BitIcon Id="ico-anim-Bounce" IconName="@BitIconName.Up" Animation="BitIconAnimation.Bounce" />
+    <BitIcon Id="ico-anim-BeatFade" IconName="@BitIconName.CircleFill" Animation="BitIconAnimation.BeatFade" />
+    <BitIcon Id="ico-anim-duration" IconName="@BitIconName.Sync" Animation="BitIconAnimation.Spin" AnimationDuration="4s" />
+    <BitIcon Id="ico-anim-delay" IconName="@BitIconName.CircleFill" Animation="BitIconAnimation.Fade" AnimationDuration="1.2s" AnimationDelay="0.4s" />
+    <BitIcon Id="ico-anim-count" IconName="@BitIconName.Ringer" Animation="BitIconAnimation.Shake" AnimationDuration="0.2s" AnimationIterationCount="3" />
+    <BitIcon Id="ico-anim-negative" IconName="@BitIconName.Ringer" Animation="BitIconAnimation.Shake" AnimationIterationCount="-2" />
+    <BitIcon Id="ico-anim-turned" IconName="@BitIconName.Send" Animation="BitIconAnimation.Beat" RotateAngle="45" />
+    <BitIcon Id="ico-anim-force" IconName="@BitIconName.Sync" Animation="BitIconAnimation.Spin" ForceAnimation />
+    <BitIcon Id="ico-anim-circular" IconName="@BitIconName.Sync" Animation="BitIconAnimation.Spin" Variant="BitVariant.Fill" Circular />
+</E2ESection>
+
+<E2ESection Id="fixed-width" Title="Fixed width">
+    <ul id="list-plain" style="list-style: none; padding: 0;">
+        <li><BitIcon Id="ico-plain-home" IconName="@BitIconName.Home" /><span>Home</span></li>
+        <li><BitIcon Id="ico-plain-signout" IconName="@BitIconName.SignOut" /><span>Sign out</span></li>
+    </ul>
+    <ul id="list-fixed" style="list-style: none; padding: 0;">
+        <li><BitIcon Id="ico-fixed-home" IconName="@BitIconName.Home" FixedWidth /><span id="fixed-home-label">Home</span></li>
+        <li><BitIcon Id="ico-fixed-signout" IconName="@BitIconName.SignOut" FixedWidth /><span id="fixed-signout-label">Sign out</span></li>
+    </ul>
+</E2ESection>
+
+<E2ESection Id="clickable" Title="Clickable">
+    <button id="before-clickable">before</button>
+    <BitIcon Id="ico-star" IconName="@(_isStarred ? BitIconName.FavoriteStarFill : BitIconName.FavoriteStar)" Title="Favorite"
+             aria-pressed="@(_isStarred ? "true" : "false")" OnClick="() => _isStarred = !_isStarred" />
+    <BitIcon Id="ico-refresh" IconName="@BitIconName.Refresh" Variant="BitVariant.Outline" AriaLabel="Refresh the list" OnClick="HandleRefresh" />
+    <BitIcon Id="ico-delete" IconName="@BitIconName.Delete" Variant="BitVariant.Fill" Title="Deleting is unavailable here" Disabled OnClick="() => _deleteClicks++" />
+    <BitIcon Id="ico-unnamed-click" IconName="@BitIconName.Settings" OnClick="() => _unnamedClicks++" />
+    <button id="after-clickable">after</button>
+    <span id="starred">@_isStarred</span>
+    <span id="refresh-count">@_refreshCount</span>
+    <span id="refresh-args">@_refreshArgs</span>
+    <span id="delete-clicks">@_deleteClicks</span>
+    <span id="unnamed-clicks">@_unnamedClicks</span>
+    <div style="height: 3000px;"></div>
+</E2ESection>
+
+<E2ESection Id="custom" Title="Custom content">
+    <span id="custom-host" style="color: rgb(1, 2, 3);">
+        <BitIcon Id="ico-custom">
+            <svg id="custom-svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 15.1 8.6 22 9.7l-5 4.9 1.2 7L12 18.3 5.8 21.6 7 14.6l-5-4.9 6.9-1.1z" /></svg>
+        </BitIcon>
+    </span>
+    <BitIcon Id="ico-custom-fill" Variant="BitVariant.Fill">
+        <svg id="custom-fill-svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" /></svg>
+    </BitIcon>
+    <div>Aligned by its box <BitIcon Id="ico-not-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" /></svg></BitIcon>
+        and dropped onto the line <BitIcon Id="ico-inline" Inline><svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" /></svg></BitIcon></div>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitIcon Id="ico-aria-label" IconName="@BitIconName.CompletedSolid" AriaLabel="Succeeded" />
+    <BitIcon Id="ico-title" IconName="@BitIconName.ErrorBadge" Title="Failed on the last run" />
+    <BitIcon Id="ico-labelledby" IconName="@BitIconName.Info" aria-labelledby="external-icon-name" />
+    <span id="external-icon-name">External icon name</span>
+    <BitIcon Id="ico-tabstop" IconName="@BitIconName.Info" TabIndex="0" />
+    <BitIcon Id="ico-tabstop-css" Icon="@BitIconInfo.Css("e2e-css-icon e2e-star")" TabIndex="0" />
+    <BitIcon Id="ico-tabstop-negative" IconName="@BitIconName.Info" TabIndex="-1" />
+    <BitIcon Id="ico-splat-hidden" IconName="@BitIconName.Info" AriaLabel="Named but hidden" aria-hidden="false" />
+    <BitIcon Id="ico-splat-role" IconName="@BitIconName.Info" AriaLabel="A presentation" role="presentation" />
+    <span><BitIcon Id="ico-decorative" IconName="@BitIconName.Attach" /> Decorative, beside its own label</span>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="_iconParams">
+        <BitIcon Id="ico-params-1" IconName="@BitIconName.Mail" />
+        <BitIcon Id="ico-params-2" IconName="@BitIconName.Calendar" />
+        <BitIcon Id="ico-params-3" IconName="@BitIconName.Settings" Variant="BitVariant.Fill" />
+        <BitIcon Id="ico-params-resolved" IconName="house" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="colors" Title="Color">
+    @foreach (var color in _colors)
+    {
+        <BitIcon Id="@($"ico-color-{color}")" IconName="@BitIconName.Accept" Color="color" />
+        <BitIcon Id="@($"ico-color-fill-{color}")" IconName="@BitIconName.Accept" Color="color" Variant="BitVariant.Fill" />
+        <BitIcon Id="@($"ico-color-dis-{color}")" IconName="@BitIconName.Accept" Color="color" Variant="BitVariant.Fill" Disabled />
+    }
+</E2ESection>
+
+<E2ESection Id="external" Title="External Icons">
+    <BitIcon Id="ico-ext-string" Icon="@("fa-solid fa-heart")" />
+    <BitIcon Id="ico-ext-css" Icon="@BitIconInfo.Css("fa-solid fa-heart")" Color="BitColor.Error" />
+    <BitIcon Id="ico-ext-fa" Icon="@BitIconInfo.Fa("fa-brands fa-github")" />
+    <BitIcon Id="ico-ext-fa-short" Icon="@BitIconInfo.Fa("solid heart")" />
+    <BitIcon Id="ico-ext-bi" Icon="@BitIconInfo.Bi("github")" />
+    <BitIcon Id="ico-ext-mi" Icon="@BitIconInfo.Mi("home")" />
+    <BitIcon Id="ico-ext-mi-outlined" Icon="@BitIconInfo.Mi("home", "outlined")" />
+    <BitIcon Id="ico-ext-ms" Icon="@BitIconInfo.Ms("favorite")" Color="BitColor.Error" />
+    <BitIcon Id="ico-ext-ms-rounded" Icon="@BitIconInfo.Ms("settings", "rounded")" TabIndex="0" />
+    <BitIcon Id="ico-ext-bit" Icon="@BitIconInfo.Bit("Bus")" />
+    <BitIcon Id="ico-ext-icon-wins" Icon="@BitIconInfo.Bi("github")" IconName="@BitIconName.Accept" />
+    <BitIcon Id="ico-resolver-house" IconName="house" IconResolver="_faResolver" />
+    <BitIcon Id="ico-resolver-accept" IconName="Accept" IconResolver="_faResolver" Color="BitColor.Success" />
+</E2ESection>
+
+<E2ESection Id="sizes" Title="Size">
+    <BitIcon Id="ico-size-Small" Size="BitSize.Small" IconName="@BitIconName.Accept" />
+    <BitIcon Id="ico-size-Medium" Size="BitSize.Medium" IconName="@BitIconName.Accept" />
+    <BitIcon Id="ico-size-Large" Size="BitSize.Large" IconName="@BitIconName.Accept" />
+    <BitIcon Id="ico-fontsize" FontSize="40px" IconName="@BitIconName.Accept" />
+    <BitIcon Id="ico-fontsize-wins" FontSize="33px" Size="BitSize.Small" IconName="@BitIconName.Accept" />
+    <div style="font-size: 28px;">Sized by the text <BitIcon Id="ico-fontsize-inherit" FontSize="inherit" IconName="@BitIconName.FavoriteStarFill" /></div>
+</E2ESection>
+
+<E2ESection Id="style-css" Title="Style, Class and CSS variables">
+    <BitIcon Id="ico-style" Size="BitSize.Large" IconName="@BitIconName.Accept" Style="color: rgb(255, 255, 255); background-color: rgb(165, 42, 42); border-radius: 4px" />
+    <BitIcon Id="ico-class" Class="e2e-icon-class" IconName="@BitIconName.Accept" />
+    <div style="--bit-Icon-color: rgb(10, 20, 30); --bit-Icon-contrast-color: rgb(250, 240, 230); --bit-Icon-size: 31px; --bit-Icon-padding: 7px; --bit-Icon-radius: 9px; --bit-Icon-border-width: 3px; --bit-Icon-fixed-width: 50px; --bit-Icon-focus-color: rgb(0, 150, 0);">
+        <BitIcon Id="ico-css-text" IconName="@BitIconName.Accept" />
+        <BitIcon Id="ico-css-fill" IconName="@BitIconName.Accept" Variant="BitVariant.Fill" />
+        <BitIcon Id="ico-css-outline" IconName="@BitIconName.Accept" Variant="BitVariant.Outline" />
+        <BitIcon Id="ico-css-fixed" IconName="@BitIconName.Accept" FixedWidth />
+        <BitIcon Id="ico-css-params" IconName="@BitIconName.Accept" Color="BitColor.Error" Size="BitSize.Small" />
+        <button id="before-css-click">before</button>
+        <BitIcon Id="ico-css-click" IconName="@BitIconName.Accept" AriaLabel="Restyled" OnClick="() => { }" />
+    </div>
+    <div style="--bit-Icon-hover-color: rgb(100, 0, 0); --bit-Icon-active-color: rgb(0, 0, 100);">
+        <BitIcon Id="ico-css-states" IconName="@BitIconName.Accept" AriaLabel="States" OnClick="() => { }" />
+    </div>
+    <div style="--bit-Icon-color: rgb(10, 20, 30);">
+        <BitIcon Id="ico-css-derived" IconName="@BitIconName.Accept" AriaLabel="Derived" OnClick="() => { }" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div dir="rtl">
+        <BitIcon Id="ico-rtl" Dir="BitDir.Rtl" IconName="@BitIconName.Accept" />
+        <BitIcon Id="ico-rtl-flip" Dir="BitDir.Rtl" IconName="@BitIconName.Send" Variant="BitVariant.Outline" FlipRtl />
+    </div>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    <BitIcon Id="ico-runtime" IconName="@_runtimeName" Color="_runtimeColor" Disabled="_runtimeDisabled" OnClick="RuntimeOnClick" AriaLabel="Runtime" />
+    <span id="runtime-clicks">@_runtimeClicks</span>
+    <button id="btn-set-name" @onclick="() => _runtimeName = BitIconName.Bus">Bus</button>
+    <button id="btn-set-color" @onclick="() => _runtimeColor = BitColor.Success">Success</button>
+    <button id="btn-toggle-disabled" @onclick="() => _runtimeDisabled = !_runtimeDisabled">Toggle disabled</button>
+    <button id="btn-toggle-clickable" @onclick="() => _runtimeClickable = !_runtimeClickable">Toggle clickable</button>
+    <button id="btn-toggle-mounted" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitIcon Id="ico-mounted" IconName="@BitIconName.Accept" AriaLabel="Mounted" OnClick="() => { }" />
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private bool _isStarred;
+    private int _refreshCount;
+    private string? _refreshArgs;
+    private int _deleteClicks;
+    private int _unnamedClicks;
+
+    private string _runtimeName = BitIconName.Accept;
+    private BitColor? _runtimeColor;
+    private bool _runtimeDisabled;
+    private bool _runtimeClickable = true;
+    private int _runtimeClicks;
+    private bool _mounted = true;
+
+    private readonly Func<string, BitIconInfo?> _faResolver =
+        name => name is "house" or "heart" ? BitIconInfo.Fa($"solid {name}") : null;
+
+    private readonly BitIconParams[] _iconParams;
+
+    private readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    public BitIconE2E()
+    {
+        _iconParams =
+        [
+            new()
+            {
+                Variant = BitVariant.Outline,
+                Circular = true,
+                IconResolver = _faResolver,
+            }
+        ];
+    }
+
+    private EventCallback<MouseEventArgs> RuntimeOnClick => _runtimeClickable
+        ? EventCallback.Factory.Create<MouseEventArgs>(this, () => _runtimeClicks++)
+        : default;
+
+    private void HandleRefresh(MouseEventArgs e)
+    {
+        _refreshCount++;
+        _refreshArgs = $"detail={e.Detail};ctrl={e.CtrlKey};shift={e.ShiftKey}";
+    }
+}

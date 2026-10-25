@@ -1,0 +1,133 @@
+﻿namespace Bit.Blex.Demo.Client.Stores;
+
+/// <summary>A normalized entity stored in <see cref="ContactsStore"/>.</summary>
+public sealed record Contact(int Id, string Name, string Team, bool Starred);
+
+/// <summary>
+/// Normalized collection state via <see cref="BlexEntityAdapter{TEntity, TKey}"/>. The adapter is a
+/// static field (it holds the id selector and is not serialized); the <c>[BlexStateAttribute]</c> field holds
+/// the immutable <see cref="BlexEntityState{TEntity, TKey}"/> that every operation returns anew.
+/// </summary>
+[BlexStoreAttribute(Name = "contacts")]
+public partial class ContactsStore
+{
+    /// <summary>Sorted by name, so <c>Ids</c> stays ordered after every operation.</summary>
+    private static readonly BlexEntityAdapter<Contact, int> Adapter =
+        new(c => c.Id, Comparer<Contact>.Create((a, b) => string.CompareOrdinal(a.Name, b.Name)));
+
+    [BlexStateAttribute] private BlexEntityState<Contact, int> _contacts = Adapter.GetInitialState(
+    [
+        new(1, "Ada Lovelace", "Research", true),
+        new(2, "Grace Hopper", "Compilers", false),
+        new(3, "Alan Turing", "Research", false),
+        new(4, "Barbara Liskov", "Languages", true),
+    ]);
+
+    [BlexStateAttribute] private string _teamFilter = "All";
+
+    /// <summary>
+    /// The id the next contact gets, derived from the state rather than counted in a field beside it. A
+    /// field is not part of the state tree: an undo, a time-travel jump or a reset would leave it pointing
+    /// at an id the restored collection already holds, and <c>AddOne</c> ignores an id that exists.
+    /// </summary>
+    private int NextId => Contacts.Count == 0 ? 1 : Contacts.Ids.Max() + 1;
+
+    [BlexComputedAttribute] private int ComputeTotal() => Contacts.Count;
+
+    [BlexComputedAttribute] private int ComputeStarred() => Contacts.All.Count(c => c.Starred);
+
+    [BlexComputedAttribute]
+    private IReadOnlyList<Contact> ComputeVisible()
+        => TeamFilter == "All"
+            ? [.. Contacts.All]
+            : [.. Contacts.All.Where(c => c.Team == TeamFilter)];
+
+    /// <summary>
+    /// The teams to filter by. The selected one stays listed after its last contact is gone, so the filter
+    /// that is on is always a button that can be switched off -- not an empty list with nothing selected.
+    /// </summary>
+    [BlexComputedAttribute]
+    private IReadOnlyList<string> ComputeTeams()
+        => ["All", .. Contacts.All.Select(c => c.Team).Append(TeamFilter).Where(t => t != "All").Distinct().Order()];
+
+    [BlexActionAttribute] private void OnSetTeamFilter(string team) => TeamFilter = team;
+
+    [BlexActionAttribute]
+    private void OnAdd(string name, string team)
+        => Contacts = Adapter.AddOne(Contacts, new Contact(NextId, name, team, false));
+
+    /// <summary>Two contacts in one call. <c>AddMany</c> skips an id that already exists, as <c>AddOne</c> does.</summary>
+    [BlexActionAttribute]
+    private void OnAddPair()
+        => Contacts = Adapter.AddMany(Contacts,
+        [
+            new(NextId, "Edsger Dijkstra", "Languages", false),
+            new(NextId + 1, "Frances Allen", "Compilers", false),
+        ]);
+
+    [BlexActionAttribute]
+    private void OnToggleStar(int id)
+        => Contacts = Adapter.UpdateOne(Contacts, id, c => c with { Starred = !c.Starred });
+
+    /// <summary>One transform over the listed ids; an id that is not there is skipped.</summary>
+    [BlexActionAttribute]
+    private void OnStarTeam(string team)
+        => Contacts = Adapter.UpdateMany(Contacts,
+            [.. Contacts.All.Where(c => c.Team == team).Select(c => c.Id)],
+            c => c with { Starred = true });
+
+    [BlexActionAttribute] private void OnRemove(int id) => Contacts = Adapter.RemoveOne(Contacts, id);
+
+    [BlexActionAttribute]
+    private void OnStarAll()
+        => Contacts = Adapter.Map(Contacts, c => c with { Starred = true });
+
+    [BlexActionAttribute]
+    private void OnRemoveUnstarred()
+        => Contacts = Adapter.RemoveMany(Contacts, [.. Contacts.All.Where(c => !c.Starred).Select(c => c.Id)]);
+
+    [BlexActionAttribute] private void OnRemoveAll() => Contacts = Adapter.RemoveAll(Contacts);
+
+    /// <summary>
+    /// Stands in for a save response arriving after the row may already have been removed.
+    /// <c>SetOne</c> applies it only if the id is still present; <c>UpsertOne</c> would put a
+    /// deleted contact back.
+    /// </summary>
+    [BlexActionAttribute]
+    private void OnLateSaveResponse(int id)
+        => Contacts = Adapter.SetOne(Contacts, Saved(id));
+
+    /// <summary>The same late response through <c>UpsertOne</c>, which inserts an id it does not have - resurrecting a removed row.</summary>
+    [BlexActionAttribute]
+    private void OnLateUpsertResponse(int id)
+        => Contacts = Adapter.UpsertOne(Contacts, Saved(id));
+
+    /// <summary>A late batch for ids 1 and 99: <c>SetMany</c> replaces the ids that are still there and ignores the rest.</summary>
+    [BlexActionAttribute]
+    private void OnLateBatchSetMany() => Contacts = Adapter.SetMany(Contacts, [Saved(1), Saved(99)]);
+
+    /// <summary>The same batch through <c>UpsertMany</c>: replaces id 1 and inserts id 99.</summary>
+    [BlexActionAttribute]
+    private void OnLateBatchUpsertMany() => Contacts = Adapter.UpsertMany(Contacts, [Saved(1), Saved(99)]);
+
+    /// <summary>What the "server" answers a save of <paramref name="id"/> with.</summary>
+    private static Contact Saved(int id) => new(id, $"Contact {id} (saved)", "Research", true);
+
+    /// <summary>
+    /// Reseeds with the exact same four contacts. The adapter compares before it commits, so this
+    /// returns the same state instance: no notification, no action recorded, no undo step.
+    /// </summary>
+    [BlexActionAttribute]
+    private void OnReseedIdentical()
+        => Contacts = Adapter.SetAll(Contacts, [.. Contacts.All]);
+
+    [BlexActionAttribute]
+    private void OnReseed()
+        => Contacts = Adapter.SetAll(Contacts,
+        [
+            new(1, "Ada Lovelace", "Research", true),
+            new(2, "Grace Hopper", "Compilers", false),
+            new(3, "Alan Turing", "Research", false),
+            new(4, "Barbara Liskov", "Languages", true),
+        ]);
+}

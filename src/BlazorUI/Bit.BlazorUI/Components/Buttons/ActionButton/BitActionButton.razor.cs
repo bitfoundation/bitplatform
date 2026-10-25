@@ -1,5 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
@@ -8,7 +7,9 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitActionButton : BitComponentBase
 {
+    private int _clickId;
     private string? _rel;
+    private bool _autoFocus;
     private bool _showLoading;
     private BitButtonType _buttonType;
     private CancellationTokenSource? _loadingDelayCts;
@@ -84,12 +85,16 @@ public partial class BitActionButton : BitComponentBase
     /// <summary>
     /// Custom CSS classes for the root, icon, and content sections of the action button.
     /// </summary>
-    [Parameter] public BitActionButtonClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitActionButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The color role of the action button. At rest it paints the icon and the spinner while the text keeps the neutral
     /// foreground; on hover and press it takes over the text as well, and it also picks the focus ring color.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ActionButton-*</c> color variables it paints (icon, hover, active, focus
+    /// and the disabled icon color); left unset, the action button is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -108,7 +113,7 @@ public partial class BitActionButton : BitComponentBase
 
     /// <summary>
     /// Stretches the action button across the full available width. The icon and the content stay next to each other
-    /// with <see cref="BitIconPosition.Start"/>; <see cref="BitIconPosition.End"/> reverses the inner wrapper, so the
+    /// with <see cref="BitPlacement.Start"/>; <see cref="BitPlacement.End"/> reverses the inner wrapper, so the
     /// growing content pushes them to the opposite edges.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -169,8 +174,13 @@ public partial class BitActionButton : BitComponentBase
     /// <summary>
     /// Gets or sets the position of the icon relative to the component's content.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction: Start puts the icon before the content in an LTR component and after it
+    /// in an RTL one. Every other placement leaves the icon where Start would put it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// The url of a custom image to render as the icon of the action button, used when neither <see cref="Icon"/> nor <see cref="IconName"/> is set.
@@ -225,7 +235,12 @@ public partial class BitActionButton : BitComponentBase
     /// Enables re-clicking the action button while it is in the loading state.
     /// By default, clicks are ignored while the button is loading to protect against double submissions.
     /// </summary>
-    [Parameter] public bool Reclickable { get; set; }
+    /// <remarks>
+    /// The re-click only raises <see cref="OnClick"/>: with <see cref="AutoLoading"/>, the state stays as it is until
+    /// the run the last click started has ended.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Reclickable { get; set; }
 
     /// <summary>
     /// Gets or sets the relationship type between the current element and the linked resource, as defined by the link's rel attribute.
@@ -247,6 +262,10 @@ public partial class BitActionButton : BitComponentBase
     /// <summary>
     /// Sets the preset size (Small, Medium, Large) for typography and padding of the action button.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ActionButton-*</c> size variables (min-height, padding, font size, icon
+    /// size); left unset, the action button is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -264,7 +283,7 @@ public partial class BitActionButton : BitComponentBase
     /// If not set, the component uses its built-in styling.
     /// This property is typically used to provide additional visual customization.
     /// </remarks>
-    [Parameter] public BitActionButtonClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitActionButtonClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the target frame or window for the navigation action when the action button renders as an anchor (by providing the Href parameter).
@@ -306,27 +325,9 @@ public partial class BitActionButton : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-acb-pri",
-            BitColor.Secondary => "bit-acb-sec",
-            BitColor.Tertiary => "bit-acb-ter",
-            BitColor.Info => "bit-acb-inf",
-            BitColor.Success => "bit-acb-suc",
-            BitColor.Warning => "bit-acb-wrn",
-            BitColor.SevereWarning => "bit-acb-swr",
-            BitColor.Error => "bit-acb-err",
-            BitColor.PrimaryBackground => "bit-acb-pbg",
-            BitColor.SecondaryBackground => "bit-acb-sbg",
-            BitColor.TertiaryBackground => "bit-acb-tbg",
-            BitColor.PrimaryForeground => "bit-acb-pfg",
-            BitColor.SecondaryForeground => "bit-acb-sfg",
-            BitColor.TertiaryForeground => "bit-acb-tfg",
-            BitColor.PrimaryBorder => "bit-acb-pbr",
-            BitColor.SecondaryBorder => "bit-acb-sbr",
-            BitColor.TertiaryBorder => "bit-acb-tbr",
-            _ => "bit-acb-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-ActionButton-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-acb"));
 
         ClassBuilder.Register(() => FullWidth ? "bit-acb-fwi" : string.Empty);
 
@@ -334,19 +335,18 @@ public partial class BitActionButton : BitComponentBase
 
         ClassBuilder.Register(() => IsLoading ? "bit-acb-lod" : string.Empty);
 
+        // The pointer is taken away from a loading button only while it refuses the click: a Reclickable one is
+        // still there to be clicked, and a rule keyed on the loading state alone would block the very re-click
+        // Reclickable exists for.
+        ClassBuilder.Register(() => IsLoading && Reclickable is false ? "bit-acb-lnc" : string.Empty);
+
         ClassBuilder.Register(() => NoWrap ? "bit-acb-nwr" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-acb-sm",
-            BitSize.Medium => "bit-acb-md",
-            BitSize.Large => "bit-acb-lg",
-            _ => "bit-acb-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-acb"));
 
         ClassBuilder.Register(() => Underlined ? "bit-acb-und" : string.Empty);
 
-        ClassBuilder.Register(() => IconPosition is BitIconPosition.End ? "bit-acb-eni" : string.Empty);
+        ClassBuilder.Register(() => IconPlacement is BitPlacement.End ? "bit-acb-eni" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -354,7 +354,6 @@ public partial class BitActionButton : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitActionButtonParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
@@ -370,10 +369,19 @@ public partial class BitActionButton : BitComponentBase
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsLoading && Reclickable is false) return;
 
-        if (AutoLoading)
+        var isLoading = IsLoading;
+
+        // The loading state belongs to the latest click alone. A Reclickable button's re-click arrives while
+        // that state is already on, so it only raises the event: entering it again would be a no-op, and
+        // leaving it when this run ends would clear the spinner of the run that is still in flight - or,
+        // for a handler that abandons its previous run by throwing into it, clear it on the way out of the
+        // run the user has just replaced.
+        var clickId = ++_clickId;
+
+        if (AutoLoading && isLoading is false)
         {
             if (await AssignIsLoading(true) is false) return;
 
@@ -386,7 +394,9 @@ public partial class BitActionButton : BitComponentBase
         }
         finally
         {
-            if (AutoLoading)
+            // in a finally so that a handler that throws leaves the button clickable again instead of
+            // stranding it in a loading state that nothing will ever clear.
+            if (AutoLoading && clickId == _clickId)
             {
                 await AssignIsLoading(false);
 
@@ -397,22 +407,26 @@ public partial class BitActionButton : BitComponentBase
 
 
 
+    // Only the Rel parameter itself is kept here, never the noopener a new tab adds to it: a null left for a link
+    // that has no Rel is what lets GetRel fall back to a rel written by hand.
     internal void OnSetHrefRelAndTarget()
     {
-        if (Href.HasNoValue() || Href!.StartsWith('#'))
-        {
-            _rel = null;
-            return;
-        }
+        _rel = BitNewTabUtils.IsInPageHref(Href) || Rel.HasValue is false ? null : BitLinkRelUtils.GetRels(Rel.Value);
+    }
 
-        var rel = Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null;
 
-        if (Target is "_blank" && (rel is null || (rel.Contains("noopener") is false && rel.Contains("noreferrer") is false)))
-        {
-            rel = rel.HasValue() ? $"{rel} noopener" : "noopener";
-        }
 
-        _rel = rel;
+    // Neither a target nor a rel written by hand is a parameter, so the rel the anchor renders is resolved against the
+    // splatted one instead of overwriting it with the Rel parameter's null, and the reverse-tabnabbing guard is applied
+    // once, here, against the target the anchor actually renders - unless the author already said what the opener
+    // relationship should be.
+    private string? GetRel(string? target)
+    {
+        var rel = _rel ?? GetSplattedAttribute("rel");
+
+        if (BitNewTabUtils.IsInPageHref(Href)) return rel;
+
+        return BitNewTabUtils.AddNoOpener(rel, target);
     }
 
 
@@ -423,7 +437,7 @@ public partial class BitActionButton : BitComponentBase
         // user lands on something a screen reader has nothing to say about.
         if (ariaHidden) return "-1";
 
-        if (IsEnabled is false)
+        if (Disabled)
         {
             if (AllowDisabledFocus is false) return "-1";
 
@@ -485,6 +499,24 @@ public partial class BitActionButton : BitComponentBase
         _loadingDelayCts.Cancel();
         _loadingDelayCts.Dispose();
         _loadingDelayCts = null;
+    }
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (IsDisposed) return;
+
+        // The autofocus attribute is written on the button, but a browser honors it only while the document is
+        // still loading: an interactive render replaces the prerendered markup that took the focus, and a
+        // WebAssembly page or a button rendered later never gets that far. So the first render gives the focus
+        // itself, by the very rule the attribute is written by.
+        if (firstRender && _autoFocus)
+        {
+            await RootElement.FocusSafelyAsync();
+        }
     }
 
 

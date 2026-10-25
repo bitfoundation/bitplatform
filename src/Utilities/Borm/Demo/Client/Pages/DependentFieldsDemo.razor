@@ -1,0 +1,209 @@
+﻿@page "/dependent-fields"
+@implements IDisposable
+
+<PageTitle>Dependent fields · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Dependent fields</h1>
+    <p class="bb-subtitle">
+        A rule that reads two values lives on one of them, so only one of the two changes ever runs it.
+        Get the confirmation wrong, then fix the <em>first</em> box to agree with what you typed — the
+        complaint underneath the confirmation is now wrong, and without <code>RevalidateOn</code> it
+        stays there until you go back and touch a field that was already right. React Hook Form spells
+        this <code>deps</code>; TanStack Form spells it <code>onChangeListenTo</code>.
+    </p>
+</div>
+
+<div class="bb-note">
+    Try each of these:
+    <ol class="bb-detail-list">
+        <li>Type an email, then a different one below it, then <em>correct the first</em>.</li>
+        <li>Set a return date before the departure date, then move the <em>departure</em> back.</li>
+        <li>Book fewer rooms than travellers, then reduce the <em>travellers</em>.</li>
+        <li>
+            Tick the hire car, give it some days, then untick it — the estimate drops the car again,
+            because clearing a hidden field is a change like any other.
+        </li>
+    </ol>
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">Live form</span>
+        <span class="demo-hint">
+            @(_wired
+                ? "As shipped. Fixing either side settles both."
+                : "Turned off, so you can watch the stale message the declaration exists to prevent.")
+        </span>
+        <label class="bb-check">
+            <input type="checkbox" checked="@_wired" @onchange="ToggleWiring" />
+            Revalidate dependents
+        </label>
+    </div>
+
+    <BormView State="_state"
+              ShowErrorSummary="true"
+              ShowResetButton="true"
+              OnValidSubmit="HandleSubmit"
+              SubmitText="Request trip" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Trip requested ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+var schema = BormBuilder.For<TripRequest>()
+    .Title("Request a trip")
+    .Columns(2)
+
+    // [Compare] on the model already wires the rule *and* its revalidation, exactly as the
+    // builder's MatchesField(...) does. Nothing extra to declare.
+    .Field(x => x.Email)
+    .Field(x => x.ConfirmEmail)
+
+    // A hand-written cross-field rule has to say what it reads. Without RevalidateOn, moving the
+    // departure date later leaves "must be on or after" sitting under a return date that is now fine.
+    .Field(x => x.Start)
+    .Field(x => x.End, f => f
+        .RevalidateOn(nameof(TripRequest.Start))
+        .Must(ctx => ctx.Value is not DateOnly end
+                     || ctx.Data.GetValue(nameof(TripRequest.Start)) is not DateOnly start
+                     || end >= start,
+              "The return date must be on or after the departure date."))
+
+    .Field(x => x.Travellers, f => f.Range(1, 12))
+    .Field(x => x.Rooms, f => f
+        .Range(1, 12)
+        .RevalidateOn(nameof(TripRequest.Travellers))
+        .Must(ctx => ctx.Value is not int rooms
+                     || ctx.Data.GetValue(nameof(TripRequest.Travellers)) is not int people
+                     || rooms * 4 >= people,
+              "That is not enough rooms for this many travellers."))
+
+    // Clearing a hidden field runs the same sweeps a typed-in value does, so the estimate below
+    // drops the hire car the moment the checkbox is unticked.
+    .Field(x => x.HireCar, f => f.AsSwitch())
+    .Field(x => x.CarDays, f => f
+        .Range(1, 60)
+        .VisibleWhen(nameof(TripRequest.HireCar), BormConditionOperator.IsTrue)
+        .RequiredWhen(nameof(TripRequest.HireCar), BormConditionOperator.IsTrue)
+        .ClearOnHide())
+
+    .Field(x => x.Estimate, f => f
+        .ReadOnly()
+        .Prefix("€")
+        .Computed(ctx => Estimate(ctx),
+                  nameof(TripRequest.Travellers), nameof(TripRequest.Rooms), nameof(TripRequest.CarDays)))
+    .Build();
+""";
+
+    private readonly TripRequest _model = new();
+    private BormDefinition _schema = default!;
+    private BormState _state = default!;
+    private bool _wired = true;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized() => Build();
+
+    private void Build()
+    {
+        _schema = BormBuilder.For<TripRequest>()
+            .Title("Request a trip")
+            .Columns(2)
+            .Field(x => x.Email)
+            .Field(x => x.ConfirmEmail)
+            .Field(x => x.Start, f => f.Help("Fix this one after the return date complains."))
+            .Field(x => x.End, f => f
+                .RevalidateOn(nameof(TripRequest.Start))
+                .Must(ctx => ctx.Value is not DateOnly end
+                             || ctx.Data.GetValue(nameof(TripRequest.Start)) is not DateOnly start
+                             || end >= start,
+                      "The return date must be on or after the departure date."))
+            .Field(x => x.Travellers, f => f.Range(1, 12))
+            .Field(x => x.Rooms, f => f
+                .Range(1, 12)
+                .RevalidateOn(nameof(TripRequest.Travellers))
+                .Must(ctx => ctx.Value is not int rooms
+                             || ctx.Data.GetValue(nameof(TripRequest.Travellers)) is not int people
+                             || rooms * 4 >= people,
+                      "That is not enough rooms for this many travellers.")
+                .Help("Four to a room, at most."))
+            .Field(x => x.HireCar, f => f.AsSwitch().ColumnSpan(2))
+            .Field(x => x.CarDays, f => f
+                .Range(1, 60)
+                .VisibleWhen(nameof(TripRequest.HireCar), BormConditionOperator.IsTrue)
+                .RequiredWhen(nameof(TripRequest.HireCar), BormConditionOperator.IsTrue)
+                .ClearOnHide())
+            .Field(x => x.Estimate, f => f
+                .ReadOnly()
+                .Prefix("€")
+                .Help("120 per traveller, 80 per room, 45 a day for the car.")
+                .Computed(Estimate,
+                          nameof(TripRequest.Travellers), nameof(TripRequest.Rooms), nameof(TripRequest.CarDays)))
+            .Build();
+
+        _state = new BormState(_schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+
+    // What each field revalidates on, while the switch has taken it away.
+    private readonly Dictionary<BormFieldDefinition, string[]> _unwired = new();
+
+    private static object? Estimate(BormComputedContext ctx)
+    {
+        var travellers = Convert.ToDecimal(ctx.Sibling(nameof(TripRequest.Travellers)) ?? 0);
+        var rooms = Convert.ToDecimal(ctx.Sibling(nameof(TripRequest.Rooms)) ?? 0);
+        var carDays = Convert.ToDecimal(ctx.Sibling(nameof(TripRequest.CarDays)) ?? 0);
+        return (travellers * 120m) + (rooms * 80m) + (carDays * 45m);
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    /// <summary>
+    /// The switch: with the dependencies stripped out, the second half of every cross-field rule never runs again and
+    /// the page shows the bug this feature exists to fix. Taken out of - and put back into - the schema the form
+    /// already reads, rather than a new form built over the answers so far: that one started from them, so Reset
+    /// emptied nothing, and the messages on screen went with the old form.
+    /// </summary>
+    private void ToggleWiring(ChangeEventArgs e)
+    {
+        _wired = e.Value is bool b && b;
+        foreach (var field in _schema.AllFields())
+        {
+            if (_wired)
+            {
+                if (!_unwired.Remove(field, out var paths)) continue;
+                foreach (var path in paths) field.RevalidateOn.Add(path);
+            }
+            else if (field.RevalidateOn.Count > 0)
+            {
+                _unwired[field] = [.. field.RevalidateOn];
+                field.RevalidateOn.Clear();
+            }
+        }
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose()
+    {
+        if (_state is null) return;
+        _state.StateChanged -= OnStateChanged;
+        _state.Dispose();
+    }
+}

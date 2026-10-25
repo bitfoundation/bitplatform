@@ -1,0 +1,82 @@
+﻿@page "/examples/hidden"
+
+<PageTitle>Hidden · Blow</PageTitle>
+
+<ExampleScaffold Title="Hidden"
+                 Summary="Set Hidden on a node or an edge to take it off the canvas while it stays in your lists. Hiding a node also hides every edge attached to it, so folding part of a graph away needs only the nodes named; fitting the view leaves hidden nodes out unless IncludeHiddenNodes asks for them.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_rowHidden" @onchange="ToggleRow" /> hide the middle row</label>
+        <label><input type="checkbox" checked="@_edgeHidden" @onchange="ToggleEdge" /> hide edge 3&nbsp;→&nbsp;4 on its own</label>
+        <button class="btn btn-secondary" @onclick="@(() => FitAsync(includeHidden: false))">Fit visible nodes</button>
+        <button class="btn btn-secondary" @onclick="@(() => FitAsync(includeHidden: true))">Fit with hidden nodes</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Tick <strong>hide the middle row</strong>: nodes 2 and 3 disappear and take all four edges with them, since every edge touches one of them. Untick it and everything comes back as it was.</li>
+        <li>Tick <strong>hide edge 3 → 4 on its own</strong>: just that edge goes, with both of its nodes still on screen.</li>
+        <li>With the row hidden, press <strong>Fit visible nodes</strong>: the view closes in on nodes 1 and 4 alone. Press <strong>Fit with hidden nodes</strong>: it widens again to leave room for nodes 2 and 3. The control bar's fit button fits the visible nodes.</li>
+        <li>While the row is hidden, click the background and press <strong>Ctrl+A</strong>: only nodes 1 and 4 are selected. The minimap leaves the hidden nodes out too.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>BlowNode.Hidden = true</code> keeps the node in <code>Nodes</code>, where your code still sees it, but leaves it out of rendering, selection, box selection, select-all, connecting, fit-view, alignment guides, the minimap and keyboard nudges.</li>
+        <li>An edge with a hidden end is not drawn: there is nothing left for it to be a line between. So the checkbox names only the two nodes, and does no bookkeeping over <code>Edges</code>.</li>
+        <li><code>BlowEdge.Hidden</code> hides a single edge and leaves its nodes alone.</li>
+        <li><code>FitViewAsync</code> with a <code>BlowFitViewOptions</code> skips hidden nodes unless <code>IncludeHiddenNodes</code> is true; <code>Duration</code> eases the view there.</li>
+        <li>The layout helpers still place hidden nodes (<code>LayoutAsync</code> skips them). A node with children can be collapsed with <code>SetCollapsedAsync</code> instead, which keeps the edges to the outside: see the Layouts and Collapsing example.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private bool _rowHidden;
+    private bool _edgeHidden;
+
+    protected override void OnInitialized()
+    {
+        // The middle row reaches well past the other two nodes on both sides, so fitting the view with and without it
+        // gives two clearly different zooms.
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(250, 0) },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(-100, 110) },
+            new BlowNode { Id = "3", Label = "Node 3", Position = new(600, 110) },
+            new BlowNode { Id = "4", Type = "output", Label = "Node 4", Position = new(250, 220) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4" },
+        ];
+    }
+
+    private void ToggleRow(ChangeEventArgs e)
+    {
+        // Only the nodes are named: every edge touching them goes with them, which is what makes folding a branch
+        // away a flag per node rather than a bookkeeping exercise over the edge list.
+        _rowHidden = (bool)e.Value!;
+        foreach (var n in _nodes.Where(n => n.Id is "2" or "3")) n.Hidden = _rowHidden;
+    }
+
+    private void ToggleEdge(ChangeEventArgs e)
+    {
+        // An edge can still be hidden on its own, with both of its nodes left on screen. It may have been deleted.
+        _edgeHidden = (bool)e.Value!;
+        if (_edges.FirstOrDefault(ed => ed.Id == "e3-4") is { } edge) edge.Hidden = _edgeHidden;
+    }
+
+    private async Task FitAsync(bool includeHidden)
+    {
+        if (_flow is null) return;
+        await _flow.FitViewAsync(new BlowFitViewOptions { IncludeHiddenNodes = includeHidden, Duration = 300 });
+    }
+}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NOTE: The L10n-implementations should use lowercase language-codes
  *       internally.
  * @implements {IL10n}

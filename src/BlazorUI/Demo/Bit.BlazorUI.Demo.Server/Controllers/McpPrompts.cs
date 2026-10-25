@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using ModelContextProtocol.Server;
 
 namespace Bit.BlazorUI.Demo.Server.Controllers;
@@ -14,7 +14,7 @@ namespace Bit.BlazorUI.Demo.Server.Controllers;
 /// </para>
 /// <para>
 /// What none of them spends words on is the library's six standing rules - the registrations, the
-/// styling API, the enums, IsEnabled, the binding form. Those are in the server's
+/// styling API, the enums, Disabled, the binding form. Those are in the server's
 /// <c>instructions</c>, which the client has had in context since <c>initialize</c>; a prompt that
 /// repeated them would be paying a second time for a model that had already read them once.
 /// </para>
@@ -131,7 +131,8 @@ public static class McpPrompts
                was needed. When the change is one component rather than the app, call `GetBitBlazorUIComponent`
                for it first: the variables it reads off its own root are answered there with their defaults,
                and they inherit, so one of them set on :root, on an ancestor or on that instance's Style is
-               the whole change.
+               the whole change. Set on an instance's Style, it also reaches the instances nested inside that
+               one; what is meant for one alone is a parameter, or the real CSS property on its Style.
             5. If the app renders on the server, handle the first frame - "Server-side rendering" - or the app
                flashes the wrong theme before any JavaScript has run.
             6. Show me the diff, and say which layer each change landed in and why.

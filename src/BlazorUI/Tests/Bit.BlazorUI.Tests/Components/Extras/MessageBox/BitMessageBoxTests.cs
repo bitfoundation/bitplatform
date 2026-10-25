@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -77,11 +78,11 @@ public class BitMessageBoxTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitMessageBoxShouldRespectIsEnabled(bool isEnabled)
+    public void BitMessageBoxShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitMessageBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-msb");
@@ -101,11 +102,16 @@ public class BitMessageBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitMessageBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
         });
 
-        foreach (var button in component.FindAll(".bit-msb .bit-btn"))
+        var buttons = component.FindAll(".bit-msb .bit-btn");
+
+        // The close button and the two of the set, so the loop below cannot pass by finding none.
+        Assert.AreEqual(3, buttons.Count);
+
+        foreach (var button in buttons)
         {
             Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
             Assert.IsTrue(button.ClassList.Contains("bit-dis"));
@@ -119,7 +125,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var component = RenderComponent<BitMessageBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnResult, r => results.Add(r));
         });
 
@@ -289,9 +295,50 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
         });
 
-        foreach (var button in component.FindAll(".bit-msb-ftr .bit-btn"))
+        // The neutral color is the default the message box gives its buttons rather than a Color of theirs, so an
+        // app's --bit-Button-* variables still restyle them: no role class, only the host default read after those.
+        var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
+
+        Assert.AreEqual(2, buttons.Count);
+
+        foreach (var button in buttons)
+        {
+            Assert.IsTrue(button.ClassList.Contains("bit-btn-dft-ter"));
+            Assert.IsFalse(button.ClassList.Contains("bit-btn-ter"));
+        }
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldDrawItsCloseButtonInTheNeutralColorAsADefault()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.ShowCloseButton, true);
+        });
+
+        var close = component.Find(".bit-msb-hdr .bit-btn");
+        Assert.IsTrue(close.ClassList.Contains("bit-btn-dft-ter"));
+        Assert.IsFalse(close.ClassList.Contains("bit-btn-ter"));
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldHandAColorItWasGivenToItsButtonsAsAChoice()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+            parameters.Add(p => p.ButtonColor, BitColor.Tertiary);
+        });
+
+        var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
+
+        Assert.AreEqual(2, buttons.Count);
+
+        foreach (var button in buttons)
         {
             Assert.IsTrue(button.ClassList.Contains("bit-btn-ter"));
+            Assert.IsFalse(button.ClassList.Contains("bit-btn-dft-ter"));
         }
     }
 
@@ -304,7 +351,11 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.ButtonColor, BitColor.Primary);
         });
 
-        foreach (var button in component.FindAll(".bit-msb-ftr .bit-btn"))
+        var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
+
+        Assert.AreEqual(2, buttons.Count);
+
+        foreach (var button in buttons)
         {
             Assert.IsTrue(button.ClassList.Contains("bit-btn-pri"));
         }
@@ -335,7 +386,12 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
         });
 
-        foreach (var button in component.FindAll(".bit-msb .bit-btn"))
+        var buttons = component.FindAll(".bit-msb .bit-btn");
+
+        // The close button and the two of the set, so the loop below cannot pass by finding none.
+        Assert.AreEqual(3, buttons.Count);
+
+        foreach (var button in buttons)
         {
             Assert.IsTrue(button.ClassList.Contains("bit-btn-sm"));
         }
@@ -653,6 +709,26 @@ public class BitMessageBoxTests : BunitTestContext
         Assert.IsFalse(classList.Contains("bit-msb-lg"));
     }
 
+    [TestMethod]
+    public void BitMessageBoxShouldRenderNoColorClassByDefault()
+    {
+        var component = RenderComponent<BitMessageBox>();
+
+        // An unset Color publishes nothing, so --bit-MessageBox-icon-color restyles the default icon while an explicit
+        // Color - which does publish its class - wins over it.
+        var classList = component.Find(".bit-msb").ClassList;
+        var published = new[]
+        {
+            "bit-msb-pri", "bit-msb-sec", "bit-msb-ter", "bit-msb-inf", "bit-msb-suc", "bit-msb-wrn", "bit-msb-swr", "bit-msb-err",
+            "bit-msb-pbg", "bit-msb-sbg", "bit-msb-tbg", "bit-msb-pfg", "bit-msb-sfg", "bit-msb-tfg", "bit-msb-pbr", "bit-msb-sbr", "bit-msb-tbr",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(classList.Contains(cssClass), $"An unset Color published {cssClass}.");
+        }
+    }
+
     [TestMethod,
         DataRow(BitDir.Ltr, "ltr"),
         DataRow(BitDir.Rtl, "rtl"),
@@ -870,7 +946,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var component = RenderComponent<BitMessageBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnResult, r => results.Add(r));
         });
 
@@ -989,7 +1065,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var component = RenderComponent<BitMessageBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnBeforeResult, (BitMessageBoxBeforeResultArgs _) => asked++);
         });
 
@@ -1019,6 +1095,72 @@ public class BitMessageBoxTests : BunitTestContext
         component.Find(".bit-msb-ftr .bit-btn").Click();
 
         CollectionAssert.AreEqual(new[] { BitMessageBoxResult.Ok }, results);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxShouldLetTheCloseButtonTakeBackAnAnswerItsGuardIsStillWorkingOut()
+    {
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var token = CancellationToken.None;
+        var results = new List<BitMessageBoxResult>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+            parameters.Add(p => p.OnBeforeResult, async (BitMessageBoxBeforeResultArgs args) =>
+            {
+                if (args.Result is not BitMessageBoxResult.Ok) return;
+
+                token = args.CancellationToken;
+                await gate.Task;
+            });
+            parameters.Add(p => p.OnResult, r => results.Add(r));
+        });
+
+        var answering = component.FindAll(".bit-msb-ftr .bit-btn")[0].ClickAsync(new MouseEventArgs());
+
+        // A guard waiting on a server the user has given up on does not hold the box open.
+        await component.Find(".bit-msb-hdr .bit-btn").ClickAsync(new MouseEventArgs());
+
+        Assert.IsTrue(token.IsCancellationRequested);
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None }, results);
+
+        // The answer taken back is never handed over, whatever its guard goes on to decide.
+        gate.SetResult();
+        await answering;
+
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None }, results);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxShouldNotLetAnotherAnswerTakeBackOneItsGuardIsStillWorkingOut()
+    {
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var results = new List<BitMessageBoxResult>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.YesNo);
+            parameters.Add(p => p.OnBeforeResult, async (BitMessageBoxBeforeResultArgs args) =>
+            {
+                if (args.Result is BitMessageBoxResult.Yes) await gate.Task;
+            });
+            parameters.Add(p => p.OnResult, r => results.Add(r));
+        });
+
+        var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
+
+        var answering = buttons[0].ClickAsync(new MouseEventArgs());
+
+        // No is an answer rather than a dismissal, so it waits its turn like any other.
+        await buttons[1].ClickAsync(new MouseEventArgs());
+
+        Assert.AreEqual(0, results.Count);
+
+        gate.SetResult();
+        await answering;
+
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.Yes }, results);
     }
 
     [TestMethod]
@@ -1115,5 +1257,399 @@ public class BitMessageBoxTests : BunitTestContext
         });
 
         Assert.AreEqual(1, component.FindAll(".bit-msb-hdr .bit-btn[autofocus]").Count);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxTitleShouldBeAnH5ByDefault()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Id, "box");
+            parameters.Add(p => p.Title, "The title");
+        });
+
+        var title = component.Find(".bit-msb-ttl");
+
+        Assert.AreEqual("H5", title.TagName);
+        Assert.AreEqual("box-ttl", title.Id);
+        Assert.AreEqual("The title", title.TextContent);
+    }
+
+    [TestMethod]
+    [DataRow("h2", "H2")]
+    [DataRow("div", "DIV")]
+    [DataRow("img", "H5")]
+    [DataRow("not an element", "H5")]
+    public void BitMessageBoxTitleShouldBeRenderedAsTheTitleElement(string element, string expected)
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Id, "box");
+            parameters.Add(p => p.Title, "The title");
+            parameters.Add(p => p.TitleElement, element);
+            parameters.Add(p => p.Classes, new BitMessageBoxClassStyles { Title = "own-title" });
+            parameters.Add(p => p.Styles, new BitMessageBoxClassStyles { Title = "color:red" });
+        });
+
+        var title = component.Find(".bit-msb-ttl");
+
+        Assert.AreEqual(expected, title.TagName);
+        Assert.AreEqual("box-ttl", title.Id);
+        Assert.IsTrue(title.ClassList.Contains("own-title"));
+        Assert.AreEqual("color:red", title.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitMessageBoxSpacerShouldCarryItsOwnClassAndTheConsumers()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Title, "The title");
+            parameters.Add(p => p.Classes, new BitMessageBoxClassStyles { Spacer = "own-spacer" });
+        });
+
+        var spacer = component.Find(".bit-msb-hdr .bit-spc");
+
+        // The class is what the stylesheet collapses the spacer by where a title fills the header itself.
+        Assert.IsTrue(spacer.ClassList.Contains("bit-msb-spc"));
+        Assert.IsTrue(spacer.ClassList.Contains("own-spacer"));
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldRenderTheBaseParametersOnItsRoot()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Id, "the-box");
+            parameters.Add(p => p.Class, "own-class");
+            parameters.Add(p => p.Style, "margin:1px");
+            parameters.Add(p => p.Visibility, BitVisibility.Hidden);
+        });
+
+        var root = component.Find(".bit-msb");
+
+        Assert.AreEqual("the-box", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("own-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldCollapseWhenAskedTo()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
+        });
+
+        StringAssert.Contains(component.Find(".bit-msb").GetAttribute("style"), "display:none");
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldSplatTheAttributesItWasGivenOnItsRoot()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitMessageBox>(0);
+            builder.AddAttribute(1, nameof(BitMessageBox.Title), "Title");
+            builder.AddAttribute(2, "data-test", "box");
+            builder.AddAttribute(3, "role", "note");
+            builder.CloseComponent();
+        }).FindComponent<BitMessageBox>();
+
+        var root = component.Find(".bit-msb");
+
+        Assert.AreEqual("box", root.GetAttribute("data-test"));
+        Assert.AreEqual("note", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldApplyItsStylesToTheIconTheSpacerAndTheButtons()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.Color, BitColor.Info);
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+            parameters.Add(p => p.Styles, new BitMessageBoxClassStyles
+            {
+                IconContainer = "color: red",
+                Icon = "color: blue",
+                Spacer = "color: green",
+                CloseButton = new() { Root = "color: yellow" },
+                ActionButton = new() { Root = "color: purple" },
+                CancelButton = new() { Root = "color: orange" },
+            });
+        });
+
+        StringAssert.Contains(component.Find(".bit-msb-ict").GetAttribute("style"), "color: red");
+        StringAssert.Contains(component.Find(".bit-msb-ico").GetAttribute("style"), "color: blue");
+        StringAssert.Contains(component.Find(".bit-msb-hdr .bit-spc").GetAttribute("style"), "color: green");
+        StringAssert.Contains(component.Find(".bit-msb-hdr .bit-btn").GetAttribute("style"), "color: yellow");
+
+        var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
+
+        // The shared set reaches the button that has none of its own; the Cancel button's own set stands alone.
+        StringAssert.Contains(buttons[0].GetAttribute("style"), "color: purple");
+        StringAssert.Contains(buttons[1].GetAttribute("style"), "color: orange");
+        Assert.IsFalse(buttons[1].GetAttribute("style")!.Contains("color: purple"));
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldApplyThePerButtonClassesOfTheYesNoSet()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.YesNo);
+            parameters.Add(p => p.Classes, new BitMessageBoxClassStyles
+            {
+                YesButton = new() { Root = "custom-yes" },
+                NoButton = new() { Root = "custom-no" },
+            });
+        });
+
+        var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
+
+        Assert.IsTrue(buttons[0].ClassList.Contains("custom-yes"));
+        Assert.IsTrue(buttons[1].ClassList.Contains("custom-no"));
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldRenderAnExternalCloseIcon()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.CloseIcon, BitIconInfo.Fa("solid xmark"));
+            parameters.Add(p => p.CloseIconName, "Cancel");
+        });
+
+        var icon = component.Find(".bit-msb-hdr .bit-btn i");
+
+        // The external icon wins over the icon name, the way it does on every other component.
+        Assert.IsTrue(icon.ClassList.Contains("fa-xmark"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--Cancel"));
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxShouldKeepThePressedButtonLoadingWhileItsCallbackRuns()
+    {
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+            parameters.Add(p => p.OnOk, () => gate.Task);
+        });
+
+        var answering = component.FindAll(".bit-msb-ftr .bit-btn")[0].ClickAsync(new MouseEventArgs());
+
+        // The pressed button spins and is kept from a second press; the other button is left alone.
+        component.WaitForAssertion(() =>
+        {
+            var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
+
+            Assert.AreEqual(1, buttons[0].QuerySelectorAll(".bit-btn-ldg").Length);
+            Assert.AreEqual("true", buttons[0].GetAttribute("aria-busy"));
+            Assert.AreEqual(0, buttons[1].QuerySelectorAll(".bit-btn-ldg").Length);
+        });
+
+        gate.SetResult();
+        await answering;
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-msb-ftr .bit-btn-ldg").Count));
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxShouldNotSpinWithoutAutoLoading()
+    {
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.OnOk, () => gate.Task);
+        });
+
+        var answering = component.Find(".bit-msb-ftr .bit-btn").ClickAsync(new MouseEventArgs());
+
+        Assert.AreEqual(0, component.FindAll(".bit-msb-ftr .bit-btn-ldg").Count);
+
+        gate.SetResult();
+        await answering;
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxShouldSwallowTheCancellationOfAnAnswerItsGuardGaveUpOn()
+    {
+        var results = new List<BitMessageBoxResult>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+            parameters.Add(p => p.OnBeforeResult, async (BitMessageBoxBeforeResultArgs args) =>
+            {
+                if (args.Result is not BitMessageBoxResult.Ok) return;
+
+                // A guard that observes its token the usual way throws once the answer is taken back.
+                await Task.Delay(Timeout.Infinite, args.CancellationToken);
+            });
+            parameters.Add(p => p.OnResult, r => results.Add(r));
+        });
+
+        var answering = component.FindAll(".bit-msb-ftr .bit-btn")[0].ClickAsync(new MouseEventArgs());
+
+        await component.FindAll(".bit-msb-ftr .bit-btn")[1].ClickAsync(new MouseEventArgs());
+
+        // The cancellation is the message box's own doing, so it is not an error of the click that was taken back.
+        await answering;
+
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.Cancel }, results);
+        Assert.AreEqual(BitMessageBoxResult.Cancel, component.Instance.Result);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldTakeTheFocusOnItsFirstRenderWhenAskedTo()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+        });
+
+        // Once, onto the default button: the message box rendered on its own has no layer looking for the mark.
+        component.WaitForAssertion(() =>
+        {
+            var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+            Assert.AreEqual(1, focused.Count);
+            Assert.AreEqual(component.FindComponents<BitButton>()[1].Instance.RootElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
+        });
+
+        // A later render does not take it again.
+        component.Render(parameters => parameters.Add(p => p.Body, "Changed"));
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldLeaveTheFocusAloneByDefault()
+    {
+        RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+        });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    [DataRow(BitMessageBoxButtons.YesNoCancel, null, 1)]
+    [DataRow(BitMessageBoxButtons.YesNoCancel, BitMessageBoxResult.No, 2)]
+    [DataRow(BitMessageBoxButtons.YesNoCancel, BitMessageBoxResult.Ok, 1)]
+    [DataRow(BitMessageBoxButtons.YesNoCancel, BitMessageBoxResult.None, 0)]
+    [DataRow(BitMessageBoxButtons.None, null, 0)]
+    public async Task BitMessageBoxFocusAsyncShouldLandOnTheDefaultButton(BitMessageBoxButtons buttons, BitMessageBoxResult? defaultButton, int index)
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, buttons);
+            parameters.Add(p => p.DefaultButton, defaultButton);
+        });
+
+        await component.InvokeAsync(() => component.Instance.FocusAsync().AsTask());
+
+        // The buttons in render order: the close button first, then the actions. A DefaultButton the set does not
+        // render falls back to the primary action, and None (or a set with no action) lands on the close button.
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.AreEqual(1, focused.Count);
+        Assert.AreEqual(component.FindComponents<BitButton>()[index].Instance.RootElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxFocusAsyncShouldLandOnTheCloseButtonBesideAFooterOfTheConsumersOwn()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+            parameters.Add(p => p.FooterTemplate, "<button class=\"custom-footer\"></button>");
+        });
+
+        await component.InvokeAsync(() => component.Instance.FocusAsync().AsTask());
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.AreEqual(1, focused.Count);
+        Assert.AreEqual(component.FindComponent<BitButton>().Instance.RootElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxFocusAsyncShouldDoNothingWithNoButtonToLandOn()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Body, "Only a body.");
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.None);
+            parameters.Add(p => p.ShowCloseButton, false);
+        });
+
+        await component.InvokeAsync(() => component.Instance.FocusAsync().AsTask());
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxFocusAsyncShouldFollowAChangedSetOfButtons()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.YesNoCancel);
+            parameters.Add(p => p.DefaultButton, BitMessageBoxResult.Cancel);
+        });
+
+        // The Cancel button is gone, and the ref it left behind is not one of the buttons on the screen.
+        component.Render(parameters => parameters.Add(p => p.Buttons, BitMessageBoxButtons.YesNo));
+
+        await component.InvokeAsync(() => component.Instance.FocusAsync().AsTask());
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.AreEqual(1, focused.Count);
+        Assert.AreEqual(component.FindComponents<BitButton>()[1].Instance.RootElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldHandItselfDownToItsTemplates()
+    {
+        BitMessageBox? fromBody = null;
+        BitMessageBox? fromFooter = null;
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.BodyTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<CascadeReader>(0);
+                builder.AddAttribute(1, nameof(CascadeReader.OnRead), (System.Action<BitMessageBox?>)(m => fromBody = m));
+                builder.CloseComponent();
+            }));
+            parameters.Add(p => p.FooterTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<CascadeReader>(0);
+                builder.AddAttribute(1, nameof(CascadeReader.OnRead), (System.Action<BitMessageBox?>)(m => fromFooter = m));
+                builder.CloseComponent();
+            }));
+        });
+
+        Assert.AreSame(component.Instance, fromBody);
+        Assert.AreSame(component.Instance, fromFooter);
+    }
+
+    private sealed class CascadeReader : ComponentBase
+    {
+        [CascadingParameter] public BitMessageBox? MessageBox { get; set; }
+
+        [Parameter] public System.Action<BitMessageBox?>? OnRead { get; set; }
+
+        protected override void OnParametersSet() => OnRead?.Invoke(MessageBox);
     }
 }

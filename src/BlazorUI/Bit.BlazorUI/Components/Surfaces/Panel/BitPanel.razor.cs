@@ -1,4 +1,5 @@
-﻿namespace Bit.BlazorUI;
+﻿
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Panel is an overlay surface that slides in from an edge of the screen to host supplementary content -
@@ -47,6 +48,13 @@ public partial class BitPanel : BitComponentBase
     private MouseEventArgs? _dismissArgs;
     private DotNetObjectReference<BitPanel>? _dotnetObj;
     private DotNetObjectReference<BitPanel>? _swipesDotnetObj;
+    // What the escape guard answered for the Escape Blazor is about to hand the key handler (see
+    // _OnEscapeVerdict), taken by the handler as it starts.
+    private readonly BitEscapeVerdict _escapeVerdict = new();
+    // Done once the callbacks of the latest change of state (OnToggle with OnOpen or OnDismiss) have been called.
+    // The end of the transition that change started waits for it: the open and close sequences make round trips
+    // of their own before they call them, and a short transition can end in the browser while they are under way.
+    private Task _stateChangeNotified = Task.CompletedTask;
 
 
 
@@ -59,6 +67,17 @@ public partial class BitPanel : BitComponentBase
     // Bit.BlazorUI.Extras, which this assembly cannot reference.
     [CascadingParameter(Name = "BitAppShell.Container")]
     private ElementReference? AppShellContainer { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the panel component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple panel components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitPanelParams.ParamName)]
+    public BitPanelParams? CascadingParameters { get; set; }
 
 
 
@@ -123,7 +142,7 @@ public partial class BitPanel : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the panel.
     /// </summary>
-    [Parameter] public BitPanelClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitPanelClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The accessible name of the close button, which is what a screen reader reads out for it and what the
@@ -319,8 +338,10 @@ public partial class BitPanel : BitComponentBase
     /// slid in from.
     /// </summary>
     /// <remarks>
-    /// It is what a panel hosting something that is itself dragged needs - a slider, a canvas, a table that
-    /// scrolls sideways - since the gesture would otherwise be taken by the panel before it reaches them.
+    /// A drag that starts on a field, a slider or an editable region is left to it, and so is a mouse drag
+    /// that selects text, so the gesture never takes those away. Anything else inside the panel that is
+    /// dragged itself - a canvas, a table that scrolls sideways - keeps its own drags when it is marked with a
+    /// <c>data-no-swipe</c> attribute; this turns the gesture off for the whole of the panel.
     /// </remarks>
     [Parameter] public bool NoSwipe { get; set; }
 
@@ -360,6 +381,10 @@ public partial class BitPanel : BitComponentBase
     /// <br />
     /// A dismissal the panel does perform is reported through <see cref="OnDismissing"/> - which can still
     /// refuse it - and then through <see cref="OnDismiss"/>.
+    /// <br />
+    /// An Escape that belongs to something inside the panel - it closes the open list of a dropdown in the
+    /// content, or a handler there already prevented its default - is left to it and never reaches the
+    /// panel, so one press does not take the panel away along with the list the user meant to close.
     /// </remarks>
     [Parameter] public EventCallback<KeyboardEventArgs> OnEscapeKeyDown { get; set; }
 
@@ -406,6 +431,10 @@ public partial class BitPanel : BitComponentBase
     /// panel changed state on, which is the start of the movement rather than the end of it. This is the one
     /// to wait for where the panel has to have arrived: measuring it, scrolling something into view inside
     /// it, or starting the work its arrival was the cue for.
+    /// <br />
+    /// It always comes after those three: a transition that ends in the browser while the panel is still
+    /// opening or closing on the .NET side - a short one, or a slow connection - is reported once their
+    /// calls are done.
     /// </remarks>
     [Parameter] public EventCallback<bool> OnTransitionEnd { get; set; }
 
@@ -413,7 +442,12 @@ public partial class BitPanel : BitComponentBase
     /// The edge of the screen the panel slides in from. Start and End are the logical edges, so they follow
     /// the direction of the panel. It defaults to End.
     /// </summary>
-    [Parameter] public BitPanelPosition? Position { get; set; }
+    /// <remarks>
+    /// Left and Right are the physical edges, so they stay where they are named in both directions, whether the
+    /// direction is set on the component or inherited from the page; Center and the two combined values name no
+    /// edge and fall back to the default.
+    /// </remarks>
+    [Parameter] public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// The ARIA role the panel reports itself under, which takes over from the <c>dialog</c> it is announced
@@ -474,7 +508,7 @@ public partial class BitPanel : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the panel component.
     /// </summary>
-    [Parameter] public BitPanelClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitPanelClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The ARIA id of the element that describes the panel, which is what a screen reader reads out after
@@ -501,9 +535,11 @@ public partial class BitPanel : BitComponentBase
     /// shares. The overlay takes this value and the panel itself sits one above it.
     /// </summary>
     /// <remarks>
-    /// It is what a panel opened from inside another one needs: the two panels sit at the same layer
-    /// otherwise, where the overlay of the inner one lands underneath the panel it was opened from and a
-    /// click there reaches that panel rather than dismissing the inner one.
+    /// A panel declared inside the content of another one needs none of it: it is stacked inside the panel it
+    /// was opened from, so its overlay already covers that panel. It is what a panel that has to cover
+    /// something it is not nested in needs - another panel declared beside it, or a fixed header of the page
+    /// stacked above the layer the library shares - since the two would otherwise be layered by the order
+    /// they come in the page.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? ZIndex { get; set; }
@@ -515,7 +551,7 @@ public partial class BitPanel : BitComponentBase
     /// </summary>
     public async Task Open()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (IsOpen) return;
 
@@ -568,7 +604,11 @@ public partial class BitPanel : BitComponentBase
     [JSInvokable("OnTransitionEnd")]
     public async Task _OnTransitionEnd()
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
+
+        await _stateChangeNotified;
+
+        if (IsDisposing) return;
 
         // The content of a closed panel is only taken out of the page once the panel has finished sliding
         // away with it, so the closing is still seen with something in it.
@@ -588,6 +628,16 @@ public partial class BitPanel : BitComponentBase
         await ClosePanel(BitPanelDismissReason.Swipe);
 
         await InvokeAsync(StateHasChanged);
+    }
+
+    // Sent by the escape guard as each Escape goes down inside the panel, ahead of the keydown Blazor then
+    // dispatches, so the key handler that runs next reads the answer that was taken for its own key. Only the
+    // presses that are not the panel's are answered, and the one after them, so one that never reaches the
+    // handler - a component in between stopped it - is overwritten before the next one is read (BitEscapeVerdict).
+    [JSInvokable("OnEscapeVerdict")]
+    public void _OnEscapeVerdict(bool foreign)
+    {
+        _escapeVerdict.Set(foreign);
     }
 
 
@@ -628,6 +678,15 @@ public partial class BitPanel : BitComponentBase
         _contentRendered = IsOpen;
 
         base.OnInitialized();
+    }
+
+    // Filled in before OnParametersSetAsync reads any of them: the swipe geometry, the focus trap and the scroll
+    // hold are all decided from parameters a BitParams ancestor may be the one giving.
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -711,6 +770,8 @@ public partial class BitPanel : BitComponentBase
         {
             await SetupTransitionEnd();
 
+            await SetupEscapeGuard();
+
             await SetupSwipes();
         }
 
@@ -718,6 +779,21 @@ public partial class BitPanel : BitComponentBase
 
         _internalIsOpen = IsOpen;
 
+        var notified = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _stateChangeNotified = notified.Task;
+
+        try
+        {
+            await OnStateChangedAsync();
+        }
+        finally
+        {
+            notified.TrySetResult();
+        }
+    }
+
+    private async Task OnStateChangedAsync()
+    {
         // Every way the panel can be opened or closed - the overlay, the Escape key, a swipe, the Open, Close
         // and Toggle methods, and the IsOpen parameter being set from the outside - ends up here, on the
         // render that has already put the new state in the page. So the keyboard, the page scrolling and the
@@ -786,7 +862,7 @@ public partial class BitPanel : BitComponentBase
 
         // A disabled panel takes nothing from the user, but the code that owns it can always close it: a
         // panel disabled while it was open would otherwise be left on the screen with no way off it.
-        if (IsEnabled is false && reason is not BitPanelDismissReason.Programmatic) return false;
+        if (Disabled && reason is not BitPanelDismissReason.Programmatic) return false;
 
         if (OnDismissing.HasDelegate)
         {
@@ -815,7 +891,7 @@ public partial class BitPanel : BitComponentBase
 
     private async Task HandleOnOverlayClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         await OnOverlayClick.InvokeAsync(e);
 
@@ -833,9 +909,18 @@ public partial class BitPanel : BitComponentBase
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsOpen is false || IsEnabled is false) return;
-
         if (e.Key is not "Escape") return;
+
+        // Taken before anything is awaited, and whether or not the panel goes on to act, so the answer that
+        // was sent for this key is the one read and is gone before the next one's comes in.
+        var foreign = _escapeVerdict.Take();
+
+        if (IsOpen is false || Disabled) return;
+
+        // An Escape that closes an open popup of the content - a dropdown's list, a date picker's calendar -
+        // is that popup's, not the panel's, and neither is one a handler inside already claimed, one that
+        // cancels an IME composition, or one a panel nested inside this one answered or refused.
+        if (foreign) return;
 
         // Reported before the dismissal is attempted, and reported whether or not there is going to be one,
         // so that a panel which refuses the key still hears it.
@@ -847,10 +932,6 @@ public partial class BitPanel : BitComponentBase
 
         StateHasChanged();
     }
-
-    // Whether the Escape key is the panel's to act on, which is also whether it stops at the panel rather
-    // than carrying on up to whatever the panel was opened from.
-    private bool DismissesOnEscape => IsOpen && IsEnabled && NoDismissOnEscape is false;
 
     // The scroller the panel holds while it is open, as an element where one is to be had. A selector the
     // consumer named beats the shell's scroller, since a panel inside a shell that names a region of its own
@@ -903,9 +984,10 @@ public partial class BitPanel : BitComponentBase
                                         && AbsolutePosition is false
                                         && (ScrollerElementTarget.HasValue || ScrollerSelector.HasValue());
 
-    // Whether the panel slides in along the horizontal axis, which is what decides both the axis the swipe
-    // gesture is locked to and which of the two coordinates the swipe callbacks are given.
-    private bool IsHorizontal => (Position ?? BitPanelPosition.End) is BitPanelPosition.Start or BitPanelPosition.End;
+    // The edge the panel actually slides in from; every consumer of Placement goes through it (see ToPanelSide).
+    private BitPlacement EffectivePosition => Placement.ToPanelSide();
+
+    private bool IsHorizontal => EffectivePosition.IsInlineSide();
 
     // Whether the content of the panel is in the page. It goes in on the first opening and comes back out
     // once the panel has finished sliding away, so every opening starts over; a KeepMounted panel keeps it
@@ -996,12 +1078,13 @@ public partial class BitPanel : BitComponentBase
     {
         List<string> classes = ["bit-pnl-cnt"];
 
-        classes.Add(Position switch
+        classes.Add(EffectivePosition switch
         {
-            BitPanelPosition.Start => "bit-pnl-start",
-            BitPanelPosition.End => "bit-pnl-end",
-            BitPanelPosition.Top => "bit-pnl-top",
-            BitPanelPosition.Bottom => "bit-pnl-bottom",
+            BitPlacement.Start => "bit-pnl-start",
+            BitPlacement.Left => "bit-pnl-left",
+            BitPlacement.Right => "bit-pnl-right",
+            BitPlacement.Top => "bit-pnl-top",
+            BitPlacement.Bottom => "bit-pnl-bottom",
             _ => "bit-pnl-end"
         });
 
@@ -1035,7 +1118,7 @@ public partial class BitPanel : BitComponentBase
     // The geometry the swipe gesture was registered with, or null when there is no gesture to register.
     private string? GetSwipesKey()
     {
-        return NoSwipe ? null : $"{Position ?? BitPanelPosition.End}|{Dir}|{GetSwipeTrigger()}";
+        return NoSwipe ? null : $"{EffectivePosition}|{Dir}|{GetSwipeTrigger()}";
     }
 
     // A trigger outside of the range it can mean - a fraction of the size of the panel, so greater than zero
@@ -1049,9 +1132,20 @@ public partial class BitPanel : BitComponentBase
     {
         if (NoSwipe || IsDisposed) return;
 
+        // A pass of the parameters that overlapped this one - a second change arriving while the first was still
+        // waiting on the browser - may have registered the gesture in the meantime. Swipes.setup adds a
+        // registration rather than replacing one, so that one is taken back first: left in place, every drag
+        // would be reported twice, and once its reference was released, through a reference that no longer exists.
+        if (_swipesKey is not null)
+        {
+            await DisposeSwipes();
+
+            if (NoSwipe || IsDisposed) return;
+        }
+
         _swipesKey = GetSwipesKey();
 
-        var position = Position ?? BitPanelPosition.End;
+        var position = EffectivePosition;
 
         // Swipes.dispose releases the .NET reference it was handed, so a re-registration gets one of its own
         // rather than reusing a reference that has already been released.
@@ -1063,11 +1157,11 @@ public partial class BitPanel : BitComponentBase
                 id: _containerId,
                 trigger: GetSwipeTrigger(),
                 position: position,
-                isRtl: Dir is BitDir.Rtl,
-                // The axis the panel is swiped away along is the one it slid in on, and the lock is what takes
-                // that axis from the page: a top or bottom panel dragged with the wrong lock follows the finger
-                // while the page scrolls out from under it at the same time.
-                orientationLock: IsHorizontal ? BitSwipeOrientation.Horizontal : BitSwipeOrientation.Vertical,
+                // A panel given no direction slides the way the page it is in reads, and one given Auto the
+                // way its content resolves it to, so for both the script reads that off the layout rather
+                // than being told a left-to-right it may not be.
+                isRtl: ExplicitRtl,
+                orientationLock: position.ToSwipeOrientation(),
                 dotnetObj: _swipesDotnetObj,
                 isResponsive: false);
         }
@@ -1080,6 +1174,11 @@ public partial class BitPanel : BitComponentBase
 
         _swipesKey = null;
 
+        // Taken off the field before the round trip, so a registration an overlapping pass makes while this one
+        // waits keeps the reference it was handed rather than having it released from under it here.
+        var dotnetObj = _swipesDotnetObj;
+        _swipesDotnetObj = null;
+
         try
         {
             await _js.BitSwipesDispose(_containerId);
@@ -1088,8 +1187,7 @@ public partial class BitPanel : BitComponentBase
 
         // Swipes.setup can bail out before it registers anything, leaving nothing for Swipes.dispose to
         // release, so the reference is also released here (disposing it is idempotent).
-        _swipesDotnetObj?.Dispose();
-        _swipesDotnetObj = null;
+        dotnetObj?.Dispose();
     }
 
     private async Task SetupTransitionEnd()
@@ -1101,6 +1199,17 @@ public partial class BitPanel : BitComponentBase
         try
         {
             await _js.BitUtilsSetupTransitionEnd(_containerId, _dotnetObj);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task SetupEscapeGuard()
+    {
+        if (IsDisposed || _dotnetObj is null) return;
+
+        try
+        {
+            await _js.BitUtilsSetupEscapeGuard(_Id, _dotnetObj);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1314,6 +1423,8 @@ public partial class BitPanel : BitComponentBase
         try
         {
             await _js.BitUtilsDisposeTransitionEnd(_containerId);
+
+            await _js.BitUtilsDisposeEscapeGuard(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Diagnostics.CodeAnalysis;
 
@@ -19,7 +19,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private TValue? _displayValueSource;
     private bool _displayValueIsTransient;
     private bool _keepDisplayValueOnNextChange;
-    private bool _lastNormalizationActive;
+    private bool _lastNormalizeDigits;
+    private Func<string?, string?>? _lastDigitsNormalizer;
     private TValue _min = default!;
     private TValue _max = default!;
     private bool _hasExplicitMin;
@@ -31,12 +32,23 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private string _inputMode;
     private readonly string _labelId;
     private readonly string _inputId;
+    private readonly string _errorId;
+    private readonly string _prefixId;
+    private readonly string _ariaDescriptionId;
+    private readonly string _suffixId;
     private readonly string _descriptionId;
     private readonly string _defaultInputMode;
     private readonly Type _typeOfValue;
     private readonly TValue _zeroValue;
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
+    private bool _announceValue;
+    private bool _isSpinButtonPressed;
+    private bool _isSpinButtonClick;
+    private bool _isSelfValueChangePending;
+    private string? _uncommittedImmediateText;
+    private int _selfValueChangeVersion;
+    private Task _pendingKeyDown = Task.CompletedTask;
     private CancellationTokenSource _continuousChangeValueCts = new();
 
 
@@ -66,6 +78,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         _inputId = $"BitNumberField-{UniqueId}-input";
         _labelId = $"BitNumberField-{UniqueId}-label";
+        _errorId = $"BitNumberField-{UniqueId}-error";
+        _ariaDescriptionId = $"BitNumberField-{UniqueId}-aria-description";
+        _prefixId = $"BitNumberField-{UniqueId}-prefix";
+        _suffixId = $"BitNumberField-{UniqueId}-suffix";
         _descriptionId = $"BitNumberField-{UniqueId}-description";
 
         _defaultInputMode = (_typeOfValue == typeof(decimal) || _typeOfValue == typeof(double) || _typeOfValue == typeof(float)) ? "decimal" : "numeric";
@@ -79,9 +95,27 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the number field component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple number field components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitNumberFieldParams.ParamName)]
+    public BitNumberFieldParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// The general color of the number field, used for its focus indicator and for the icon,
     /// prefix and suffix while the field is focused (Primary by default).
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-NumberField-*</c> variables it paints (the focus color, the focused
+    /// icon and affix colors, the loading and spinner colors); left unset, the accent is primary unless those
+    /// variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Accent { get; set; }
 
@@ -114,19 +148,27 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// The color kind of the number field background (Primary by default).
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-NumberField-background</c>; left unset, the background is the primary
+    /// kind unless that variable says otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Background { get; set; }
 
     /// <summary>
     /// The color kind of the number field border (Primary by default).
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-NumberField-border-color</c> and <c>--bit-NumberField-hover-border-color</c>;
+    /// left unset, the border is the primary kind unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Border { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitNumberField.
     /// </summary>
-    [Parameter] public BitNumberFieldClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitNumberFieldClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The delay in milliseconds before the value starts changing continuously while an
@@ -139,6 +181,17 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// increment/decrement button is held down.
     /// </summary>
     [Parameter] public int ContinuousSpinInterval { get; set; } = 75;
+
+    /// <summary>
+    /// The culture the value is written and read in. Left unset, a <see cref="NumberFormat"/> renders in the
+    /// culture of the current thread while the plain (unformatted) value is written and parsed with the
+    /// invariant culture, which is what keeps the text of the input round-tripping through Blazor's own
+    /// numeric binding. Setting it pins both to one culture instead, so the field shows and accepts the
+    /// separators of that culture ("1.234,5" in German) regardless of what the thread happens to be set to.
+    /// The aria-valuenow/valuemin/valuemax attributes stay invariant either way - ARIA requires plain
+    /// decimal numbers there - and the culture's own rendering is announced through aria-valuetext.
+    /// </summary>
+    [Parameter] public CultureInfo? Culture { get; set; }
 
     /// <summary>
     /// Accessible label text for the decrement button (for screen reader users).
@@ -199,6 +252,30 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public Func<string?, string?>? DigitsNormalizer { get; set; }
 
     /// <summary>
+    /// The action label of the enter key on a virtual keyboard (enterkeyhint), e.g. "done", "next", "go",
+    /// "search" or "send". On a numeric soft keyboard the key is otherwise unlabeled, so this is what tells
+    /// a mobile user whether finishing the field submits the form or moves on to the next one.
+    /// </summary>
+    [Parameter] public string? EnterKeyHint { get; set; }
+
+    /// <summary>
+    /// An error message rendered under the field, which also marks the field as invalid and is announced
+    /// through a polite live region the moment it appears. It is the way to report what a validator outside
+    /// of an <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/> found - a server-side check, a
+    /// business rule - without having to build a form around the field. A failing EditContext validation
+    /// already marks the field on its own, so the two never have to be combined.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// A custom template rendered in place of the <see cref="ErrorMessage"/>, marking the field invalid and
+    /// referenced by the input through its aria-describedby attribute just the same.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Stretches the number field to the full width of its container. By default the field only
     /// takes the width it needs, which keeps a stepper from spanning a whole form row.
     /// </summary>
@@ -207,9 +284,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     /// <summary>
     /// Hides the text input element while keeping the increment/decrement buttons functional,
-    /// turning the component into a stepper-only control.
+    /// turning the component into a stepper-only control. Left without a <see cref="Mode"/> it falls back to
+    /// the compact stack, since there would otherwise be nothing left to render.
     /// </summary>
-    [Parameter] public bool HideInput { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool HideInput { get; set; }
 
     /// <summary>
     /// The aria label of the icon for the benefit of screen readers.
@@ -279,6 +358,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     public BitInputMode? InputMode { get; set; }
 
     /// <summary>
+    /// Marks the field as invalid without a message of its own, for a rejection that is already explained
+    /// elsewhere (a summary at the top of the form, a message beside a group of fields). It paints the field
+    /// and renders aria-invalid exactly as a failing validation does.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
+
+    /// <summary>
     /// Reverses the direction of the value change when the user spins the value using the mouse wheel
     /// (the wheel only changes the value while the Shift key is held down, to keep normal page scrolling intact).
     /// </summary>
@@ -294,11 +381,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// The position of the label in regards to the field (Top by default).
     /// </summary>
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
-    /// Descriptive label for the number field, rendered next to it (per LabelPosition) and read by screen readers.
+    /// Descriptive label for the number field, rendered next to it (per LabelPlacement) and read by screen readers.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public string? Label { get; set; }
@@ -307,6 +398,25 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Shows the custom Label for number field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// Shows a busy indicator inside the field, which is what tells the user that something is running
+    /// against the value - a price being recalculated, a quantity being checked against stock. The field
+    /// stays editable while it is on, so the typing and the stepping are never interrupted by it.
+    /// </summary>
+    [Parameter] public bool Loading { get; set; }
+
+    /// <summary>
+    /// What a screen reader announces while <see cref="Loading"/> is on, in place of the default "Loading".
+    /// It is announced whichever indicator is drawn, so a <see cref="LoadingTemplate"/> drawing a bare
+    /// spinner of its own still tells an assistive technology that something is running.
+    /// </summary>
+    [Parameter] public string? LoadingAriaLabel { get; set; }
+
+    /// <summary>
+    /// The custom content of the busy indicator, which replaces the default spinner.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
     /// The minimum value of the number field. Values below it get clamped to it, both when typed and when spinning.
@@ -329,7 +439,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Inline (side by side at the end) or Spread (one on each side). When null (default), no buttons render,
     /// while the value can still be changed using the arrow keys and the mouse wheel.
     /// </summary>
-    [Parameter] public BitSpinButtonMode? Mode { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitSpinButtonMode? Mode { get; set; }
 
     /// <summary>
     /// Removes the border of the number field, which is what you want when it sits inside a surface
@@ -400,6 +511,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// been committed, so the bound value it observes is already the one the user just entered.
     /// </summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnEnter { get; set; }
+
+    /// <summary>
+    /// Callback for when the Escape key is pressed on the input. It is invoked before the field clears
+    /// itself (which it only does while a clear button is shown), so a handler is free to take the key
+    /// for something else - closing the surface the field sits on, reverting an edit - and the argument
+    /// carries the event for that.
+    /// </summary>
+    [Parameter] public EventCallback<KeyboardEventArgs> OnEscape { get; set; }
 
     /// <summary>
     /// Callback for when focus moves into the input
@@ -506,6 +625,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? ClearButtonIconName { get; set; }
 
     /// <summary>
+    /// A custom template rendered inside the clear button in place of its icon. The button itself - its
+    /// accessible name, its click and Escape handling - stays the same, so only what it looks like changes.
+    /// </summary>
+    [Parameter] public RenderFragment? ClearButtonTemplate { get; set; }
+
+    /// <summary>
     /// Accessible label text for the clear button (for screen reader users), useful for localization.
     /// </summary>
     [Parameter] public string? ClearButtonAriaLabel { get; set; }
@@ -520,6 +645,19 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// the keyboard equivalent of clicking it.
     /// </summary>
     [Parameter] public bool ShowClearButton { get; set; }
+
+    /// <summary>
+    /// Sets the preset size (Small, Medium, Large) of the number field: the height of the control, its type
+    /// scale, the size of its icons and the width of its buttons all follow it, so a field lines up with the
+    /// other controls of the same size around it (Medium by default).
+    /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-NumberField-*</c> size variables (height, font sizes, inline padding,
+    /// icon size, spinner size, button width and glyph size); left unset, the field is medium unless those
+    /// variables say otherwise.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Snaps the committed value to the nearest multiple of the <see cref="Step"/> (anchored at the
@@ -543,7 +681,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// Custom CSS styles for different parts of the BitNumberField.
     /// </summary>
-    [Parameter] public BitNumberFieldClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitNumberFieldClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Suffix displayed after the numeric field contents. This is not included in the value. 
@@ -592,7 +730,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     public Task ClearAsync() => InvokeAsync(async () =>
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         await ClearValue();
 
@@ -604,13 +742,24 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     });
 
     /// <summary>
+    /// Moves the focus into the field. In <see cref="HideInput"/> mode there is no input left to focus -
+    /// a hidden one cannot take it - so the increment button does instead, it being the tab stop the
+    /// stepper is operated from.
+    /// </summary>
+    public override ValueTask FocusAsync() => HideInput ? _buttonIncrement.FocusAsync() : base.FocusAsync();
+
+    /// <inheritdoc cref="FocusAsync()"/>
+    public override ValueTask FocusAsync(bool preventScroll)
+        => HideInput ? _buttonIncrement.FocusAsync(preventScroll) : base.FocusAsync(preventScroll);
+
+    /// <summary>
     /// The shared body of <see cref="IncrementAsync"/>/<see cref="DecrementAsync"/>. It is dispatched
     /// through InvokeAsync so that a call arriving from a background thread (a timer, a SignalR message)
     /// still mutates the component on its own renderer's synchronization context.
     /// </summary>
     private Task SpinAsync(bool isIncrement) => InvokeAsync(async () =>
     {
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        if (Disabled || ReadOnly || InvalidValueBinding()) return;
 
         if (IsSpinBlocked(isIncrement)) return;
 
@@ -627,49 +776,45 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-nfl-fcs {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitLabelPosition.Bottom => "bit-nfl-lbt",
-            BitLabelPosition.Start => "bit-nfl-lst",
-            BitLabelPosition.End => "bit-nfl-led",
+            BitPlacement.Bottom => "bit-nfl-lbt",
+            BitPlacement.Start => "bit-nfl-lst",
+            BitPlacement.End => "bit-nfl-led",
             _ => "bit-nfl-ltp"
         });
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-nfl-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required ? "bit-nfl-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required && Label.HasNoValue() ? "bit-nfl-rnl" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required && Label.HasNoValue() ? "bit-nfl-rnl" : string.Empty);
 
         ClassBuilder.Register(() => FullWidth ? "bit-nfl-fwd" : string.Empty);
 
-        // The description is a third child of the root flex box, which the row label layouts have to
-        // wrap onto a line of its own; the class is what scopes that to the fields that need it.
-        ClassBuilder.Register(() => Description.HasValue() || DescriptionTemplate is not null ? "bit-nfl-hds" : string.Empty);
+        // The description and the error message are further children of the root flex box, which the row
+        // label layouts have to wrap onto a line of their own; the class is what scopes that to the fields
+        // that need it.
+        ClassBuilder.Register(() => HasDescription || HasErrorMessage ? "bit-nfl-hds" : string.Empty);
+
+        // Size, Accent, Background and Border publish nothing while they are unset, which is what lets the stylesheet
+        // tell a default from a choice: the public --bit-NumberField-* variables restyle the default and never an
+        // explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-nfl"));
+
+        // The mode is on the root so the stylesheet can reach the whole field from the layout its buttons
+        // are in - which is what lets the stacked pair grow to a usable pointer target on a touch device.
+        ClassBuilder.Register(() => EffectiveMode switch
+        {
+            BitSpinButtonMode.Compact => "bit-nfl-mcp",
+            BitSpinButtonMode.Inline => "bit-nfl-min",
+            BitSpinButtonMode.Spread => "bit-nfl-msp",
+            _ => string.Empty
+        });
 
         ClassBuilder.Register(() => NoBorder ? "bit-nfl-nbd" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-nfl-und" : string.Empty);
 
-        ClassBuilder.Register(() => Accent switch
-        {
-            BitColor.Primary => "bit-nfl-pri",
-            BitColor.Secondary => "bit-nfl-sec",
-            BitColor.Tertiary => "bit-nfl-ter",
-            BitColor.Info => "bit-nfl-inf",
-            BitColor.Success => "bit-nfl-suc",
-            BitColor.Warning => "bit-nfl-wrn",
-            BitColor.SevereWarning => "bit-nfl-swr",
-            BitColor.Error => "bit-nfl-err",
-            BitColor.PrimaryBackground => "bit-nfl-pbg",
-            BitColor.SecondaryBackground => "bit-nfl-sbg",
-            BitColor.TertiaryBackground => "bit-nfl-tbg",
-            BitColor.PrimaryForeground => "bit-nfl-pfg",
-            BitColor.SecondaryForeground => "bit-nfl-sfg",
-            BitColor.TertiaryForeground => "bit-nfl-tfg",
-            BitColor.PrimaryBorder => "bit-nfl-pbr",
-            BitColor.SecondaryBorder => "bit-nfl-sbr",
-            BitColor.TertiaryBorder => "bit-nfl-tbr",
-            _ => "bit-nfl-pri"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Accent, "bit-nfl"));
 
         ClassBuilder.Register(() => Background switch
         {
@@ -677,7 +822,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             BitColorKind.Secondary => "bit-nfl-bse",
             BitColorKind.Tertiary => "bit-nfl-btr",
             BitColorKind.Transparent => "bit-nfl-btn",
-            _ => "bit-nfl-bpr"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Border switch
@@ -686,7 +831,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             BitColorKind.Secondary => "bit-nfl-brs",
             BitColorKind.Tertiary => "bit-nfl-brt",
             BitColorKind.Transparent => "bit-nfl-brn",
-            _ => "bit-nfl-brp"
+            _ => string.Empty
         });
     }
 
@@ -710,21 +855,23 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     protected override void OnParametersSet()
     {
-        // Whether digit normalization (built-in NormalizeDigits or a custom DigitsNormalizer) is
-        // currently active. The Min/Max/Step string parameters are parsed through this normalization,
-        // so their cached numeric values (and the derived precision) must be recomputed whenever the
-        // normalization is toggled. Re-running only on a state change - rather than on every render -
-        // avoids repeatedly invoking a potentially expensive or side-effectful custom DigitsNormalizer
-        // delegate, while still covering:
+        CascadingParameters?.UpdateParameters(this);
+
+        // The digit normalization (built-in NormalizeDigits or a custom DigitsNormalizer) the Min/Max/Step
+        // string parameters are parsed through, so their cached numeric values (and the derived precision)
+        // must be recomputed whenever it changes - toggled, or one custom normalizer swapped for another,
+        // whether by the markup or by a params object writing or putting back either input. Re-running only
+        // on a change - rather than on every render - avoids repeatedly invoking a potentially expensive or
+        // side-effectful custom DigitsNormalizer delegate, while still covering:
         //   * the first render, where the Min/Max/Step CallOnSet handlers may have executed during
         //     SetParametersAsync before NormalizeDigits/DigitsNormalizer were assigned (parameter
         //     assignment order is not guaranteed), and
         //   * toggling normalization off, where a previously parsed non-Latin Min/Max/Step no longer
         //     parses and must fall back to the type defaults instead of keeping its stale value.
-        var normalizationActive = NormalizeDigits || DigitsNormalizer is not null;
-        if (normalizationActive != _lastNormalizationActive)
+        if (NormalizeDigits != _lastNormalizeDigits || Equals(DigitsNormalizer, _lastDigitsNormalizer) is false)
         {
-            _lastNormalizationActive = normalizationActive;
+            _lastNormalizeDigits = NormalizeDigits;
+            _lastDigitsNormalizer = DigitsNormalizer;
 
             // Only re-run for parameters that were actually provided. Re-running a setter for an
             // unset parameter would reset it to its default (and is unnecessary work).
@@ -746,6 +893,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         await base.OnAfterRenderAsync(firstRender);
 
+        // A step the component took itself has reached the input by now, so reading the live text is
+        // meaningful again (see CommitPendingInputValue).
+        _isSelfValueChangePending = false;
+
         await RegisterPreventKeys();
     }
 
@@ -759,7 +910,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         if (IsDisposed) return;
 
-        var interactive = IsEnabled && ReadOnly is false && HideInput is false;
+        var interactive = Disabled is false && ReadOnly is false && HideInput is false;
 
         List<string> keys = [];
         if (interactive)
@@ -809,7 +960,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
         else if (NormalizeDigits)
         {
-            value = NormalizeUnicodeDigits(value);
+            // The Arabic decimal separator becomes the decimal separator of the culture the text is read in next:
+            // the field's own for the plain text, and the formatting culture's for a NumberFormat (whose separators
+            // MapCultureSeparatorsToInvariant maps below). A '.' would be no separator at all in a culture like fa-IR,
+            // so a fraction typed there could never be parsed.
+            var decimalSeparator = (NumberFormat is null ? ValueCulture : FormatCulture).NumberFormat.NumberDecimalSeparator;
+            value = NormalizeUnicodeDigits(value, decimalSeparator);
             digitsNormalized = string.Equals(value, originalValue, StringComparison.Ordinal) is false;
         }
 
@@ -845,7 +1001,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             return false;
         }
 
-        if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result) is false)
+        // A NumberFormat leaves nothing but digits, a dot and a minus sign behind (CleanValue above), so
+        // that branch always parses invariant; the plain text is parsed in the culture it was written in.
+        var parseCulture = NumberFormat is null ? ValueCulture : CultureInfo.InvariantCulture;
+
+        if (TryConvertToValue(value, parseCulture, out result) is false)
         {
             // A number carrying whitespace between its digit groups ("1 234", or the non-breaking and
             // narrow no-break spaces that spreadsheets and web pages use for grouping) is a perfectly
@@ -854,12 +1014,19 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             // is not a plain number starts parsing, and no separator whose meaning differs per culture
             // is reinterpreted.
             var unspaced = RemoveWhiteSpace(value);
-            if (string.Equals(unspaced, value, StringComparison.Ordinal) ||
-                unspaced.HasNoValue() ||
-                BindConverter.TryConvertTo(unspaced, CultureInfo.InvariantCulture, out result) is false)
+            var canRetryUnspaced = string.Equals(unspaced, value, StringComparison.Ordinal) is false && unspaced.HasValue();
+            if (canRetryUnspaced is false || TryConvertToValue(unspaced, parseCulture, out result) is false)
             {
-                parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
-                return false;
+                // A number too large or too small for the value type is clamped to the end of its range
+                // it ran past, exactly as a number outside an explicit Min/Max is - the type's own range
+                // is the bound the field can never let the value escape. NoClamp is what asks for an
+                // out-of-range value to be reported instead, and a value that does not fit the type
+                // cannot be handed to a validator either, so there it stays a parse error.
+                if (NoClamp || TryGetTypeBoundOf(canRetryUnspaced ? unspaced : value, parseCulture, out result!) is false)
+                {
+                    parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
+                    return false;
+                }
             }
         }
 
@@ -877,7 +1044,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
             var parsedValue = result;
 
-            result = Snap(result);
+            result = Snap(result!);
 
             // The precision rounding runs before the clamping, so that it cannot push the committed
             // value back out of the range afterwards (with Max=1.005 and Precision=2, rounding a
@@ -993,7 +1160,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private string? GetAriaValueNow()
     {
-        var value = AriaValueNow ?? CurrentValue;
+        // AriaValueNow is a TValue?, which for a non-nullable TValue (int, double, ...) is that very
+        // type and so is never null. Falling back on a null check would therefore answer with its
+        // default - 0 - for every field not bound to a nullable type, making aria-valuenow report zero
+        // no matter what the field holds. Whether the parameter was given at all is the real question.
+        var value = HasNotBeenSet(nameof(AriaValueNow)) ? CurrentValue : AriaValueNow;
 
         return value is null ? null : BindConverter.FormatValue(value, CultureInfo.InvariantCulture)?.ToString();
     }
@@ -1024,6 +1195,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         var display = GetDisplayValueAsString();
 
+        // An empty field has no value to describe, and an empty aria-valuetext is worse than none at all:
+        // it is a text alternative, so a screen reader reads it in place of the (absent) number.
+        if (display.HasNoValue()) return null;
+
         return string.Equals(display, GetAriaValueNow(), StringComparison.Ordinal) ? null : display;
     }
 
@@ -1033,6 +1208,19 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// still corresponds to the current value; otherwise the regular formatted value is used.
     /// </summary>
     private string? GetDisplayValueAsString()
+    {
+        // Text typed but not committed yet (Immediate with a DebounceTime/ThrottleTime) is what the
+        // input is showing, and what every render has to keep showing until its commit lands.
+        if (_uncommittedImmediateText is not null && _hasFocus) return _uncommittedImmediateText;
+
+        return GetCommittedDisplayValueAsString();
+    }
+
+    /// <summary>
+    /// The text of the committed value, which is what the input shows whenever nothing typed is
+    /// waiting on its commit (see <see cref="GetDisplayValueAsString"/>).
+    /// </summary>
+    private string? GetCommittedDisplayValueAsString()
     {
         if (_displayValue is not null
             && NumberFormat is null
@@ -1055,7 +1243,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // them to correct.
         if (string.Equals(current, FormatValueAsString(CurrentValue), StringComparison.Ordinal) is false) return current;
 
-        return CurrentValue is null ? null : BindConverter.FormatValue(CurrentValue, CultureInfo.InvariantCulture)?.ToString();
+        return CurrentValue is null ? null : BindConverter.FormatValue(CurrentValue, ValueCulture)?.ToString();
     }
 
     /// <summary>
@@ -1068,29 +1256,32 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private bool IsDisplayDigitEquivalent(string? originalValue, TValue value)
     {
-        return string.Equals(NormalizeUnicodeDigits(originalValue), FormatValueAsString(value), StringComparison.Ordinal);
+        return string.Equals(NormalizeUnicodeDigits(originalValue, ValueCulture.NumberFormat.NumberDecimalSeparator), FormatValueAsString(value), StringComparison.Ordinal);
     }
 
     protected override string? FormatValueAsString(TValue? value)
     {
         if (value is null) return null;
 
-        // The displayed text must round-trip through TryParseValueFromString, which parses with the
-        // invariant culture. A culture-sensitive ToString would render "1,5" in e.g. a German culture
-        // and then fail to parse (or worse, parse as 15, since ',' is the invariant group separator).
-        if (NumberFormat is null) return BindConverter.FormatValue(value, CultureInfo.InvariantCulture)?.ToString();
+        // The displayed text must round-trip through TryParseValueFromString, which parses the plain value
+        // with the very same culture. Left to the thread it would render "1,5" in e.g. a German culture and
+        // then fail to parse (or worse, parse as 15, since ',' is the invariant group separator), which is
+        // why the default here is the invariant culture rather than the current one.
+        if (NumberFormat is null) return BindConverter.FormatValue(value, ValueCulture)?.ToString();
 
-        return _typeOfValue == typeof(byte) ? Convert.ToByte(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(sbyte) ? Convert.ToSByte(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(short) ? Convert.ToInt16(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(ushort) ? Convert.ToUInt16(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(int) ? Convert.ToInt32(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(uint) ? Convert.ToUInt32(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(long) ? Convert.ToInt64(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(ulong) ? Convert.ToUInt64(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(float) ? Convert.ToSingle(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(decimal) ? Convert.ToDecimal(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(double) ? Convert.ToDouble(value).ToString(NumberFormat)
+        var culture = FormatCulture;
+
+        return _typeOfValue == typeof(byte) ? Convert.ToByte(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(sbyte) ? Convert.ToSByte(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(short) ? Convert.ToInt16(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(ushort) ? Convert.ToUInt16(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(int) ? Convert.ToInt32(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(uint) ? Convert.ToUInt32(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(long) ? Convert.ToInt64(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(ulong) ? Convert.ToUInt64(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(float) ? Convert.ToSingle(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(decimal) ? Convert.ToDecimal(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(double) ? Convert.ToDouble(value).ToString(NumberFormat, culture)
              : "0";
     }
 
@@ -1100,6 +1291,103 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// whether there is something for the clear button (and the Escape key) to clear.
     /// </summary>
     private bool HasVisibleText() => GetDisplayValueAsString().HasValue();
+
+    // The two cultures the field works in, and why they are not the same one by default. The plain text of
+    // the input has to round-trip through the parse below, which is what Blazor's own numeric binding does
+    // with the invariant culture; a NumberFormat, on the other hand, is a rendering for the reader and has
+    // always followed the thread. An explicit Culture pins both to it.
+    // Without the text box the buttons are the whole component, so a HideInput field that was given no Mode
+    // would render nothing a user can see or reach. It falls back to the compact stack instead.
+    private BitSpinButtonMode? EffectiveMode => HideInput ? (Mode ?? BitSpinButtonMode.Compact) : Mode;
+
+    private CultureInfo ValueCulture => Culture ?? CultureInfo.InvariantCulture;
+
+    private CultureInfo FormatCulture => Culture ?? CultureInfo.CurrentCulture;
+
+    // A number is never a word, so the text-editing helpers of a soft keyboard have nothing to correct here
+    // and only get in the way: a red squiggle under a perfectly good figure, or a capital letter offered for
+    // a field that accepts no letters. A consumer who wants them back writes them into InputHtmlAttributes.
+    private string SpellCheck => GetSplattedInputAttribute("spellcheck") ?? "false";
+
+    private string AutoCorrect => GetSplattedInputAttribute("autocorrect") ?? "off";
+
+    private string AutoCapitalize => GetSplattedInputAttribute("autocapitalize") ?? "off";
+
+    private bool HasDescription => Description.HasValue() || DescriptionTemplate is not null;
+
+    private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
+
+    // A message saying what is wrong with the value is a rejection of it, so it marks the field the same way
+    // the forced state does instead of drawing a red line under a field that still looks accepted.
+    protected override bool HasError => Invalid || HasErrorMessage;
+
+    /// <summary>
+    /// The ids the input points aria-describedby at, in reading order: what is wrong with the value first,
+    /// then the visible hint, then the screen-reader-only one. A consumer is free to write the attribute on
+    /// the input by hand, so whatever they wrote is kept and these ids are added to it rather than replacing
+    /// it - the attribute is a list of ids.
+    /// </summary>
+    private string? AriaDescribedBy
+    {
+        get
+        {
+            var ids = string.Join(' ', new[]
+            {
+                GetSplattedInputAttribute("aria-describedby"),
+                HasErrorMessage ? _errorId : null,
+                HasDescription ? _descriptionId : null,
+                AriaDescription.HasValue() ? _ariaDescriptionId : null,
+                // The unit or the currency sits beside the field rather than inside its value, so without
+                // this a screen reader reads out a bare number and never says what it is counted in. A
+                // template takes the whole slot over, id and all, so there is nothing left to point at.
+                PrefixTemplate is null && Prefix.HasValue() ? _prefixId : null,
+                SuffixTemplate is null && Suffix.HasValue() ? _suffixId : null
+            }.Where(id => id.HasValue()));
+
+            return ids.HasValue() ? ids : null;
+        }
+    }
+
+    // The forced invalid state and the one the base class derives from the EditContext are the same thing to
+    // a screen reader; the base class writes the latter into the splatted attributes, so the value of the
+    // consumer is read back here instead of being overwritten by the explicit attribute of the input.
+    private string? AriaInvalid => HasError ? "true" : GetSplattedInputAttribute("aria-invalid");
+
+    // A live region only announces what changes inside it after it is already on the page: one that arrives
+    // with its text already in it is regularly missed altogether. The region is therefore always rendered and
+    // only its text comes and goes. In HideInput mode the value takes it over, since a hidden input is not
+    // exposed to assistive technologies at all and nothing else would ever announce the spinning.
+    // The same goes for a step taken while the input is not focused (a tap on a touch screen, a button an
+    // assistive technology activated), until the input takes the focus back and announces the value itself.
+    // An ErrorMessageTemplate has no text on this side of the DOM to read out, so the region says that the
+    // value was rejected rather than staying silent and leaving the field sounding accepted.
+    private string? LiveText => HasErrorMessage ? (ErrorMessage.HasValue() ? ErrorMessage : "Invalid input")
+                              : Loading ? (LoadingAriaLabel ?? "Loading")
+                              : HideInput || _announceValue ? GetDisplayValueAsString()
+                              : null;
+
+    private string? AriaBusy => Loading ? "true" : GetSplattedInputAttribute("aria-busy");
+
+    // The spinbutton role replaces the native role of the input, and with it the readonly attribute's own
+    // mapping into the accessibility tree, so the state is written out - the same reasoning that writes out
+    // aria-required. IsInputReadOnly is deliberately not included: it only stops the text being typed into,
+    // while the arrows and the buttons go on changing the value, so the widget is not read-only at all.
+    private string? AriaReadOnly => ReadOnly ? "true" : GetSplattedInputAttribute("aria-readonly");
+
+    private string? AriaRequired => Required ? "true" : GetSplattedInputAttribute("aria-required");
+
+    private string? AriaDisabled => GetInputAriaDisabled(Disabled);
+
+    // The parameter is the hint of the component, but the attribute is one a consumer may just as well have
+    // splatted in through InputHtmlAttributes; an unset parameter reads theirs back rather than erasing it.
+    private string? EffectiveEnterKeyHint => EnterKeyHint ?? GetSplattedInputAttribute("enterkeyhint");
+
+    // aria-labelledby takes precedence over aria-label, so pointing at the visible label while a name of
+    // its own was given would quietly throw that name away. The visible label keeps naming the input
+    // through the for/id pair either way, which is what the label element is for.
+    private string? LabelledBy => (Label.HasValue() || LabelTemplate is not null) && AriaLabel.HasNoValue()
+                                    ? _labelId
+                                    : null;
 
     /// <summary>
     /// The effective range, with the bounds ordered so that a misconfigured Min greater than Max
@@ -1142,6 +1430,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         if (Immediate)
         {
+            // The input's value is bound, so every render of this component writes the value the
+            // component holds back into the element. While a DebounceTime or ThrottleTime waits the
+            // commit out, that is still the value from before the keystroke - and writing it back
+            // wipes what is being typed, leaving only what was typed since the last render. Keeping
+            // the text until its own commit lands makes those renders write back exactly what the
+            // user has in front of them.
+            _uncommittedImmediateText = value;
+
             await HandleOnStringValueInputAsync(args);
         }
         else
@@ -1150,9 +1446,41 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    private async Task HandleOnKeyDown(KeyboardEventArgs e)
+    /// <summary>
+    /// Handles the keys in the order they were pressed. A key handler awaits a round trip before it decides
+    /// (<see cref="CommitPendingInputValue"/> reads the live text of the input, the consumer's OnKeyDown may await
+    /// anything), and every key arrives as an event of its own, so a key pressed while that round trip is out would
+    /// otherwise be handled first: an ArrowUp on a value at the Max followed at once by Home would land on the Min
+    /// and then step from there, the blocked ArrowUp running after the Home that was pressed after it. So each key
+    /// waits for the one before it to be handled.
+    /// </summary>
+    private Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        var previous = _pendingKeyDown;
+
+        // The dispatcher runs one handler at a time, so reading and replacing the pending key needs no lock; a key
+        // with none in front of it starts at once, which keeps the common case synchronous up to its first await.
+        var current = previous.IsCompleted ? HandleOnKeyDownCore(e) : HandleOnKeyDownAfter(previous, e);
+
+        _pendingKeyDown = current;
+
+        return current;
+    }
+
+    private async Task HandleOnKeyDownAfter(Task previous, KeyboardEventArgs e)
+    {
+        // A key whose handling failed has had its failure reported through its own event; the next one is handled all
+        // the same, as it would have been had the two not overlapped.
+        try { await previous; } catch { }
+
+        if (IsDisposed) return;
+
+        await HandleOnKeyDownCore(e);
+    }
+
+    private async Task HandleOnKeyDownCore(KeyboardEventArgs e)
+    {
+        if (Disabled) return;
 
         // The consumer callback is invoked for every key (even the ones handled below as value
         // commands) and before the internal handling, so that it observes the same key sequence a
@@ -1175,6 +1503,23 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             }
 
             await OnEnter.InvokeAsync(e);
+            return;
+        }
+
+        // Escape is handled the same way round as Enter, and for the same reason: the consumer sees it even
+        // on a read-only field, and before the field acts on it. The clear button is deliberately kept out
+        // of the tab order (like the spin buttons), so Escape is the keyboard path to the clear action, as
+        // it is in BitSearchBox - it only acts when the button is actually rendered, i.e. there is something
+        // to clear and the field is not read-only.
+        if (e.Key is "Escape" && HasModifier(e) is false)
+        {
+            await OnEscape.InvokeAsync(e);
+
+            if (IsDisposed) return;
+
+            if (ClearsOnEscape() is false) return;
+
+            await HandleOnClearButtonClick();
             return;
         }
 
@@ -1271,15 +1616,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                 await SetBoundValueAsync(_max);
                 break;
 
-            // The clear button is deliberately kept out of the tab order (like the spin buttons), so
-            // Escape provides the keyboard path to the clear action, as it does in BitSearchBox. It
-            // only acts when the clear button is actually rendered, i.e. there is something to clear.
-            case "Escape":
-                if (HasModifier(e) || ShowClearButton is false) return;
-                if (HasVisibleText() is false) return;
-                await HandleOnClearButtonClick();
-                break;
-
             default:
                 break;
         }
@@ -1287,16 +1623,23 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private static bool HasModifier(KeyboardEventArgs e) => e.ShiftKey || e.CtrlKey || e.AltKey || e.MetaKey;
 
+    // Whether a plain Escape clears the field: only where the clear button it stands in for is drawn. The input
+    // carries the answer as data-bit-esc, so the key is claimed from a dialog around the field exactly then.
+    private bool ClearsOnEscape() => ReadOnly is false
+                                     && InvalidValueBinding() is false
+                                     && ShowClearButton
+                                     && HasVisibleText();
+
     private async Task HandleOnKeyUp(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnKeyUp.InvokeAsync(e);
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
     }
@@ -1308,25 +1651,45 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private async Task HandleOnInputContainerClick()
     {
-        // Clicking the input itself already focused it, so the interop round trip is skipped there.
-        if (IsEnabled is false || HideInput || _hasFocus) return;
+        // A click that bubbled up from a spin button is the button's own: its press has already put the focus where it
+        // belongs, or deliberately left it where it was - a touch tap, so that no soft keyboard slides up, and an
+        // assistive technology's activation (see HandleOnPointerDown and HandleOnButtonClick).
+        if (_isSpinButtonClick)
+        {
+            _isSpinButtonClick = false;
+            return;
+        }
 
-        await InputElement.FocusAsync();
+        // Clicking the input itself already focused it, so the interop round trip is skipped there.
+        if (Disabled || HideInput || _hasFocus) return;
+
+        await InputElement.FocusSafelyAsync();
     }
 
     /// <summary>
-    /// Activates an increment/decrement button from the keyboard. The buttons are driven by pointer
-    /// events (to support the press-and-hold continuous spin), which the browser does not synthesize
-    /// for a keyboard activation, so Enter/Space are handled explicitly. This only matters while the
-    /// buttons are reachable by keyboard, i.e. in <see cref="HideInput"/> mode.
+    /// Activates an increment/decrement button from everything that is not a pointer. The buttons are
+    /// driven by pointer events, which is what the press-and-hold continuous spin needs, but a keyboard
+    /// activation (Enter/Space on the focused button), an assistive technology's own one (a double tap
+    /// in TalkBack or VoiceOver, a browse-mode Enter in NVDA or JAWS, a voice command) and a
+    /// programmatic <c>click()</c> all arrive as a bare click with no pointer sequence behind them, so
+    /// the button would otherwise do nothing at all for any of them.
+    /// A click a real pointer produced carries a detail of at least one and is ignored here: the
+    /// pointerdown that preceded it has already stepped the value.
     /// </summary>
-    private async Task HandleOnButtonKeyDown(KeyboardEventArgs e, bool isIncrement)
+    private async Task HandleOnButtonClick(MouseEventArgs e, bool isIncrement)
     {
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        // Set before anything else: the same click reaches HandleOnInputContainerClick next, as it bubbles.
+        _isSpinButtonClick = true;
 
-        if (e.Key is not ("Enter" or " " or "Spacebar")) return;
+        if (e.Detail != 0) return;
+
+        if (Disabled || ReadOnly || InvalidValueBinding()) return;
 
         if (IsSpinBlocked(isIncrement)) return;
+
+        // The activation leaves the focus on the button (or wherever the assistive technology keeps it),
+        // so the spinbutton is not the element being read and would change its value in silence.
+        if (_hasFocus is false) _announceValue = true;
 
         await ChangeValueAndInvokeEvents(isIncrement);
     }
@@ -1338,9 +1701,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         ClearPreservedDisplayValue();
 
+        _uncommittedImmediateText = null;
+
         var previous = CurrentValue;
 
         CurrentValue = CheckMinAndMax(bound);
+
+        _selfValueChangeVersion++;
+        _isSelfValueChangePending = true;
 
         StateHasChanged();
 
@@ -1366,6 +1734,22 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     }
 
     /// <summary>
+    /// Commits the text of an input or change event, which is where the text kept visible for a
+    /// pending commit (see <see cref="HandleOnStringValueSet"/>) stops being needed. A commit
+    /// carrying older text than what has been typed since leaves it in place, so those newer
+    /// keystrokes are not wiped by the render this commit causes.
+    /// </summary>
+    protected override async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
+    {
+        if (string.Equals(e.Value?.ToString(), _uncommittedImmediateText, StringComparison.Ordinal))
+        {
+            _uncommittedImmediateText = null;
+        }
+
+        await base.HandleOnStringValueChangeAsync(e);
+    }
+
+    /// <summary>
     /// Commits the text currently sitting in the input element before a step is applied. Without the
     /// Immediate mode, typed text only commits on blur/Enter, so stepping right after typing would
     /// otherwise apply to the stale previous value instead of what the user currently sees.
@@ -1374,6 +1758,18 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private async Task CommitPendingInputValue()
     {
+        // A step this component has just taken may not be on screen yet: the render that carries it is
+        // a round trip of its own in a Server circuit. The text read back here would then be the value
+        // from BEFORE that step, and committing it would undo it - a user spinning with the arrow keys
+        // (or the buttons) faster than that round trip would silently lose steps. Nothing can have been
+        // typed in that gap either, so the read waits until the step has been rendered.
+        if (_isSelfValueChangePending) return;
+
+        // Reading the input is a round trip of its own, and the component can step again while it is
+        // in flight (each key arrives as its own event). A read that overlaps a step of this component
+        // describes a value that is already out of date, so it is discarded rather than committed.
+        var version = _selfValueChangeVersion;
+
         string? liveValue = null;
         try
         {
@@ -1383,24 +1779,35 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         catch (InvalidOperationException) { } // JS interop is unavailable during prerendering
         catch (JSException) { } // the element is gone or the property read failed, the last committed value is used
 
-        if (liveValue.HasValue() && string.Equals(liveValue, GetDisplayValueAsString(), StringComparison.Ordinal) is false)
-        {
-            await SetCurrentValueAsStringAsync(liveValue);
-        }
+        if (liveValue.HasNoValue() || version != _selfValueChangeVersion) return;
+
+        // Compared against the COMMITTED value's text, not what the input is kept showing: text typed
+        // in Immediate mode whose DebounceTime/ThrottleTime has not run out yet is exactly what the
+        // input shows, and it is the very text that has to be committed before the step applies.
+        if (string.Equals(liveValue, GetCommittedDisplayValueAsString(), StringComparison.Ordinal)) return;
+
+        _uncommittedImmediateText = null;
+
+        // Committed here and now, the text must not be committed a second time when the pending
+        // debounce/throttle fires - that would overwrite the step about to be applied on top of it.
+        ResetInputRateLimiter();
+
+        await SetCurrentValueAsStringAsync(liveValue);
     }
 
     private async Task HandleOnBlur(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnBlur.InvokeAsync(e);
     }
 
     private async Task HandleOnFocusIn(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
+        _announceValue = false;
         ClassBuilder.Reset();
         StyleBuilder.Reset();
         // The text selection is handled in HandleOnFocus; the focus event always accompanies
@@ -1410,9 +1817,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnFocusOut(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = false;
+
+        _uncommittedImmediateText = null;
 
         // The text kept visible only to keep the caret usable while typing (Immediate mode) has served
         // its purpose; leaving the field is the commit point where the canonical value must show.
@@ -1428,7 +1837,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnFocus(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         ClassBuilder.Reset();
@@ -1442,9 +1851,16 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         await OnFocus.InvokeAsync(e);
     }
 
-    private async Task HandleOnPointerDown(bool isIncrement)
+    private async Task HandleOnPointerDown(PointerEventArgs e, bool isIncrement)
     {
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        if (Disabled || ReadOnly || InvalidValueBinding()) return;
+
+        // The release is what ends the press, and it can arrive before this handler is done: everything
+        // below awaits at least one interop round trip, and the pointerup event is dispatched in that
+        // gap. Recording the press here - and clearing it in HandleOnPointerUpOrOut - is what lets the
+        // continuous spin below see a release that has already happened. Without it a quick click
+        // cancels a token source that is then replaced by a fresh one, leaving a spin nothing can stop.
+        _isSpinButtonPressed = true;
 
         // Focus belongs on the input: it is the element carrying the spinbutton role and its value, so
         // keeping it focused is what lets a screen reader announce each change and lets the user carry
@@ -1454,13 +1870,21 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // is then a real tab stop - takes the focus instead.
         if (HideInput)
         {
-            await (isIncrement ? _buttonIncrement : _buttonDecrement).FocusAsync();
+            await (isIncrement ? _buttonIncrement : _buttonDecrement).FocusSafelyAsync();
         }
         else
         {
-            if (_hasFocus is false)
+            // A finger tapping a spin button of a field it is not typing into wants the value stepped, not
+            // the soft keyboard sliding up over half the screen - which is what focusing the input does on
+            // a touch device. The focus stays where it is, so the value is announced through the live
+            // region instead, the spinbutton not being focused to announce it itself.
+            if (_hasFocus is false && e.PointerType is "touch")
             {
-                await InputElement.FocusAsync();
+                _announceValue = true;
+            }
+            else if (_hasFocus is false)
+            {
+                await InputElement.FocusSafelyAsync();
             }
 
             // Since the press no longer moves focus out of the input, the browser no longer raises the
@@ -1480,6 +1904,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         await ChangeValueAndInvokeEvents(isIncrement);
 
         if (IsDisposed) return;
+
+        // A click short enough to be released while the awaits above were pending is over: the single
+        // step it asked for has been taken and there is nothing left to hold down.
+        if (_isSpinButtonPressed is false) return;
 
         ResetCts();
 
@@ -1508,20 +1936,27 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void HandleOnPointerUpOrOut()
     {
+        _isSpinButtonPressed = false;
+
         ResetCts();
     }
 
     private async Task HandleOnMouseWheel(WheelEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly || NoMouseWheel || InvalidValueBinding()) return;
+        if (Disabled || ReadOnly || NoMouseWheel || InvalidValueBinding()) return;
         if (e.ShiftKey is false) return;
         // The wheel only spins the value of the field the user is actually editing. Reacting to a
         // merely hovered field would silently change data while the user is scrolling the page.
         if (_hasFocus is false) return;
 
-        if (e.DeltaY == 0) return;
+        // Holding Shift turns a vertical scroll into a horizontal one on macOS (and on a mouse with
+        // a tilt wheel), so the gesture arrives on deltaX there. Either axis spins the value, which is
+        // what makes the wheel work the same on every platform.
+        var delta = e.DeltaY != 0 ? e.DeltaY : e.DeltaX;
 
-        var isIncrement = (e.DeltaY < 0) != InvertMouseWheel;
+        if (delta == 0) return;
+
+        var isIncrement = (delta < 0) != InvertMouseWheel;
 
         await CommitPendingInputValue();
 
@@ -1537,11 +1972,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnClearButtonClick()
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         await ClearValue();
 
-        await InputElement.FocusAsync();
+        await InputElement.FocusSafelyAsync();
 
         await OnClear.InvokeAsync();
     }
@@ -1554,6 +1989,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private async Task ClearValue()
     {
         ClearPreservedDisplayValue();
+
+        _uncommittedImmediateText = null;
 
         await HandleOnStringValueChangeAsync(new() { Value = string.Empty });
     }
@@ -1689,13 +2126,26 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
 
         result = Snap(result);
+
+        // A step is rounded to the precision exactly as a typed value is (TryParseValueFromString), and before the
+        // value is published: three steps of 0.1 add up to 0.30000000000000004 in floating point, which the binding
+        // would otherwise receive while the input, normalized afterwards, shows 0.3.
+        result = Normalize(result);
+
         result = CheckMinAndMax(result);
 
         // The value is being changed via the spin buttons / wheel / arrow keys, so any preserved
         // user-typed display text is no longer relevant and the formatted value should be shown.
         ClearPreservedDisplayValue();
 
+        _uncommittedImmediateText = null;
+
         CurrentValue = result;
+
+        // The new value only reaches the input with the render below, which is what
+        // CommitPendingInputValue waits for before trusting the text it reads back.
+        _selfValueChangeVersion++;
+        _isSelfValueChangePending = true;
 
         StateHasChanged();
 
@@ -1709,6 +2159,75 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         _continuousChangeValueCts?.Cancel();
         _continuousChangeValueCts?.Dispose();
         _continuousChangeValueCts = new();
+    }
+
+    /// <summary>
+    /// Converts a string into the value type, reporting a failure rather than raising one.
+    /// <see cref="BindConverter"/> only has a fast path for a handful of types (short, int, long,
+    /// float, double, decimal, ...); every other one - byte, sbyte, ushort, uint and ulong - goes
+    /// through the type's <see cref="System.ComponentModel.TypeConverter"/>, which THROWS on text it
+    /// cannot convert instead of returning false. Left to escape, that exception is raised while the
+    /// component is rendering, which takes the whole field (and, without an error boundary around it,
+    /// the app) down over nothing worse than a number typed into a field.
+    /// </summary>
+    private static bool TryConvertToValue(string? value, CultureInfo culture, out TValue? result)
+    {
+        try
+        {
+            return BindConverter.TryConvertTo(value, culture, out result);
+        }
+        catch (Exception)
+        {
+            result = default;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// The value a number that does not fit the type at all commits to: the end of the type's range it
+    /// ran past. Typing 300 into a byte field is the same kind of out-of-range input as typing 300 into
+    /// a field with Max=255, so it clamps the same way rather than being rejected as unreadable.
+    /// The number is compared against the range itself rather than inferred from how the conversion
+    /// failed: the fast paths of <see cref="BindConverter"/> (short, int, long) report an overflow as a
+    /// plain false, indistinguishable from text that is not a number, while the TypeConverter-backed
+    /// types throw. Text that failed for another reason (a fraction typed into an integral field) is
+    /// inside the range, so it is still reported as unparsable.
+    /// </summary>
+    private bool TryGetTypeBoundOf(string? value, CultureInfo culture, out TValue result)
+    {
+        result = default!;
+
+        // float and double read a number past their range as infinity instead of failing, so only the
+        // integral types and decimal can be overflowed by what is typed.
+        if (_typeOfValue == typeof(float) || _typeOfValue == typeof(double)) return false;
+
+        const NumberStyles styles = NumberStyles.Float | NumberStyles.AllowThousands;
+
+        var max = GetTypeMaxValue();
+        var min = GetTypeMinValue();
+
+        bool isAbove, isBelow;
+        if (decimal.TryParse(value, styles, culture, out var number))
+        {
+            isAbove = number > Convert.ToDecimal(max, CultureInfo.InvariantCulture);
+            isBelow = number < Convert.ToDecimal(min, CultureInfo.InvariantCulture);
+        }
+        else if (double.TryParse(value, styles, culture, out var huge) && double.IsFinite(huge))
+        {
+            // Beyond decimal's range, which is beyond the range of every type handled here.
+            isAbove = huge > 0;
+            isBelow = huge < 0;
+        }
+        else
+        {
+            return false;
+        }
+
+        if (isAbove is false && isBelow is false) return false;
+
+        result = isAbove ? max : min;
+
+        return true;
     }
 
     private TValue GetTypeMaxValue()
@@ -1803,7 +2322,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         return result;
     }
 
-    private static string? NormalizeUnicodeDigits(string? value)
+    /// <summary>
+    /// Maps every Unicode decimal digit to its Latin equivalent, the Arabic decimal separator to
+    /// <paramref name="decimalSeparator"/> (the one of the culture the result is parsed in next) and drops the Arabic
+    /// thousands separator.
+    /// </summary>
+    private static string? NormalizeUnicodeDigits(string? value, string decimalSeparator = ".")
     {
         if (value.HasNoValue()) return value;
 
@@ -1854,7 +2378,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             // Decimal separator emitted by Persian/Arabic keyboard layouts.
             if (c is '٫') // U+066B ARABIC DECIMAL SEPARATOR
             {
-                sb.Append('.');
+                sb.Append(decimalSeparator);
                 changed = true;
                 continue;
             }
@@ -1875,16 +2399,16 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     }
 
     /// <summary>
-    /// Maps the current culture's group and decimal separators to their invariant equivalents
+    /// Maps the formatting culture's group and decimal separators to their invariant equivalents
     /// (group separators get removed, decimal separators become '.'). The group separators must be
     /// handled first: in cultures like German the group separator is '.' itself, which would
     /// otherwise collide with the invariant decimal point.
     /// </summary>
-    private static string? MapCultureSeparatorsToInvariant(string? value)
+    private string? MapCultureSeparatorsToInvariant(string? value)
     {
         if (value.HasNoValue()) return value;
 
-        var numberFormatInfo = CultureInfo.CurrentCulture.NumberFormat;
+        var numberFormatInfo = FormatCulture.NumberFormat;
         var result = value!;
 
         foreach (var groupSeparator in new[] { numberFormatInfo.NumberGroupSeparator, numberFormatInfo.CurrencyGroupSeparator })
@@ -1938,10 +2462,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         return value;
     }
 
-    private void OnSetMin()
+    internal void OnSetMin()
     {
         var min = CleanValue(NormalizeNumericParameter(Min));
-        if (BindConverter.TryConvertTo(min, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
+        if (TryConvertToValue(min, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
         {
             _min = result;
             _hasExplicitMin = true;
@@ -1956,10 +2480,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    private void OnSetMax()
+    internal void OnSetMax()
     {
         var max = CleanValue(NormalizeNumericParameter(Max));
-        if (BindConverter.TryConvertTo(max, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
+        if (TryConvertToValue(max, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
         {
             _max = result;
             _hasExplicitMax = true;
@@ -1971,10 +2495,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    private void OnSetStep()
+    internal void OnSetStep()
     {
         var step = CleanValue(NormalizeNumericParameter(Step));
-        if (BindConverter.TryConvertTo(step, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
+        if (TryConvertToValue(step, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
         {
             _step = result;
         }
@@ -1991,10 +2515,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         OnSetPrecision();
     }
 
-    private void OnSetPageStep()
+    internal void OnSetPageStep()
     {
         var pageStep = CleanValue(NormalizeNumericParameter(PageStep));
-        if (BindConverter.TryConvertTo(pageStep, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
+        if (TryConvertToValue(pageStep, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
         {
             _pageStep = result;
             _hasPageStep = true;
@@ -2007,12 +2531,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    private void OnSetPrecision()
+    internal void OnSetPrecision()
     {
         _precision = Precision ?? CalculatePrecision();
     }
 
-    private void OnSetInputMode()
+    internal void OnSetInputMode()
     {
         _inputMode = InputMode?.ToString().ToLowerInvariant() ?? _defaultInputMode;
     }

@@ -1,0 +1,81 @@
+﻿@namespace Bit.Balette
+
+@if (Positions is not { Length: > 0 } || string.IsNullOrEmpty(Text))
+{
+    @Text
+}
+else
+{
+    var hits = HitMask(Text, Positions);
+    var i = 0;
+    while (i < Text.Length)
+    {
+        var start = i;
+        var hit = hits[i];
+        while (i < Text.Length && hits[i] == hit)
+        {
+            i++;
+        }
+
+        var segment = Text.Substring(start, i - start);
+        if (hit)
+        {
+            <mark class="bit-balette-mark" data-balette="mark">@segment</mark>
+        }
+        else
+        {
+            @segment
+        }
+    }
+}
+
+@code {
+    /// <summary>Text to render.</summary>
+    [Parameter, EditorRequired] public string? Text { get; set; }
+
+    /// <summary>Character indexes to highlight.</summary>
+    [Parameter] public int[]? Positions { get; set; }
+
+    /// <summary>
+    /// Which characters to mark, widened to whole grapheme clusters: a match on "e" in a decomposed "é" or on half of an
+    /// emoji's surrogate pair marks the whole cluster, so no combining mark or lone surrogate ends up in an element of
+    /// its own, detached from its base character.
+    /// </summary>
+    internal static bool[] HitMask(string text, int[] positions)
+    {
+        var hits = new bool[text.Length];
+        var any = false;
+        foreach (var p in positions)
+        {
+            if ((uint)p < (uint)text.Length)
+            {
+                hits[p] = true;
+                any = true;
+            }
+        }
+
+        if (!any || System.Text.Ascii.IsValid(text))
+        {
+            return hits;
+        }
+
+        var starts = System.Globalization.StringInfo.ParseCombiningCharacters(text);
+        for (var e = 0; e < starts.Length; e++)
+        {
+            var from = starts[e];
+            var to = e + 1 < starts.Length ? starts[e + 1] : text.Length;
+            var hit = false;
+            for (var k = from; k < to && !hit; k++)
+            {
+                hit = hits[k];
+            }
+
+            if (hit)
+            {
+                Array.Fill(hits, true, from, to - from);
+            }
+        }
+
+        return hits;
+    }
+}

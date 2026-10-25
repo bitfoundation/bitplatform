@@ -1,0 +1,158 @@
+﻿@page "/drag-around/custom-layer"
+@using System.Globalization
+@inject BdndInterop Interop
+
+<PageTitle>Drag Around - Custom Drag Layer · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Drag Around - Custom Drag Layer</h1>
+    <p class="bb-subtitle">
+        The boxes set <code>UseCustomDragLayer="true"</code> to hide the native preview, and a
+        <code>&lt;BdndDragLayer&gt;</code> renders our own preview positioned at
+        <code>SourceClientOffset</code> - where the box's corner would be if it moved with the pointer. This gives full
+        control over how the dragged item looks, and where: the modes below keep the preview, and the drop, on one axis
+        (<code>SourceClientOffsetOn(BdndAxis.Horizontal)</code>), on a 40 px grid (<code>SnapTo</code>) or with its
+        corner inside the dashed area (<code>Clamp</code>). The table under the board is a second layer, which shows
+        every offset the layer's state carries as the pointer moves.
+    </p>
+</div>
+
+<div class="bb-toolbar">
+    <span class="bb-segmented" role="group" aria-label="Where the preview may go">
+        @foreach (var mode in Enum.GetValues<Mode>())
+        {
+            <button type="button" aria-pressed="@(_mode == mode ? "true" : "false")" @onclick="() => _mode = mode">@ModeName(mode)</button>
+        }
+    </span>
+</div>
+
+<BdndProvider>
+    <BdndDropTarget TItem="DragBox" Accept="@ItemTypes.DragAroundBox"
+                    style="display:contents" OnDrop="HandleDrop">
+        <div class="drag-around-container">
+            @if (_mode == Mode.Inside)
+            {
+                <div class="drag-around-area" @ref="_area" aria-hidden="true"></div>
+            }
+            @if (_mode == Mode.Grid)
+            {
+                <div class="drag-around-grid" aria-hidden="true"></div>
+            }
+            @foreach (var box in _boxes)
+            {
+                <BdndDraggable TItem="DragBox" Type="@ItemTypes.DragAroundBox" Item="box"
+                               UseCustomDragLayer="true" Context="ds"
+                               class="drag-around-box"
+                               style="@($"left:{Px(box.Left)};top:{Px(box.Top)};opacity:{(box == _draggingBox ? "0.5" : "1")};")"
+                               OnBegin="@(_ => BeginAsync(box))"
+                               OnEnd="@(_ => _draggingBox = null)">
+                    @box.Title
+                </BdndDraggable>
+            }
+        </div>
+    </BdndDropTarget>
+
+    @* Accept: this layer draws the boxes of this board only; a drag of any other type is no drag to it. *@
+    <BdndDragLayer TItem="DragBox" Accept="@ItemTypes.DragAroundBox" Context="layer">
+        @if (layer.IsDragging && Constrain(layer.SourceClientOffset, layer.InitialSourceClientOffset, layer.Item) is { } pos && layer.Item is { } item)
+        {
+            <div class="drag-layer-preview" style="@($"position:fixed;left:{Px(pos.X)};top:{Px(pos.Y)};z-index:1000;pointer-events:none;margin:0;")">
+                @item.Title
+            </div>
+        }
+    </BdndDragLayer>
+
+    @* A layer is any markup that follows the drag: this one is a readout of the offsets, in client pixels. *@
+    <BdndDragLayer TItem="DragBox" Accept="@ItemTypes.DragAroundBox" Context="layer">
+        <dl class="bb-params drag-around-offsets">
+            <dt>IsDragging</dt>
+            <dd>@(layer.IsDragging ? $"true - {layer.Item?.Title}" : "false")</dd>
+            <dt>InitialClientOffset</dt>
+            <dd>@Show(layer.InitialClientOffset)</dd>
+            <dt>InitialSourceClientOffset</dt>
+            <dd>@Show(layer.InitialSourceClientOffset)</dd>
+            <dt>ClientOffset</dt>
+            <dd>@Show(layer.ClientOffset)</dd>
+            <dt>DifferenceFromInitialOffset</dt>
+            <dd>@Show(layer.DifferenceFromInitialOffset)</dd>
+            <dt>SourceClientOffset</dt>
+            <dd>@Show(layer.SourceClientOffset)</dd>
+            <dt>The preview, @ModeName(_mode).ToLowerInvariant()</dt>
+            <dd>@Show(Constrain(layer.SourceClientOffset, layer.InitialSourceClientOffset, layer.Item))</dd>
+        </dl>
+    </BdndDragLayer>
+</BdndProvider>
+
+<DemoCode />
+
+@code {
+    public class DragBox
+    {
+        public required string Title { get; init; }
+        public double Left { get; set; }
+        public double Top { get; set; }
+    }
+
+    public enum Mode { Free, Horizontal, Grid, Inside }
+
+    private const double Cell = 40;
+
+    private readonly List<DragBox> _boxes =
+    [
+        new() { Title = "Custom preview", Left = 40, Top = 40 },
+        new() { Title = "Drag me", Left = 240, Top = 160 },
+    ];
+
+    private DragBox? _draggingBox;
+    private Mode _mode = Mode.Free;
+
+    private ElementReference _area;
+    private BdndDomRect? _areaRect;
+
+    // The area is measured as a drag begins: the offsets are client coordinates, which scrolling the page changes.
+    private async Task BeginAsync(DragBox box)
+    {
+        _draggingBox = box;
+        _areaRect = _mode == Mode.Inside ? await Interop.GetBoundingClientRectAsync(_area) : null;
+    }
+
+    // Where the box's corner goes: the pointer decides, and the mode keeps the corner on an axis, on the grid or in
+    // the area. The preview and the drop use the same answer, so the box lands where its preview was.
+    private BdndXYCoord? Constrain(BdndXYCoord? offset, BdndXYCoord? initial, DragBox? box)
+    {
+        if (offset is not { } at || initial is not { } from || box is null) return offset;
+        return _mode switch
+        {
+            // the same as layer.SourceClientOffsetOn(BdndAxis.Horizontal)
+            Mode.Horizontal => at.KeepTo(BdndAxis.Horizontal, from),
+            // the grid is laid from the board's corner: the box's position minus where it sits on the board
+            Mode.Grid => at.SnapTo(Cell, Cell, from - new BdndXYCoord(box.Left, box.Top)),
+            Mode.Inside when _areaRect is { } area => at.Clamp(new(area.Left, area.Top), new(area.Left + area.Width, area.Top + area.Height)),
+            _ => at,
+        };
+    }
+
+    private void HandleDrop(BdndDropEventArgs<DragBox> e)
+    {
+        var initial = e.Monitor.GetInitialSourceClientOffset();
+        if (e.Item is null || initial is null || Constrain(e.Monitor.GetSourceClientOffset(), initial, e.Item) is not { } to) return;
+        var delta = to - initial.Value;
+        e.Item.Left = Math.Round(e.Item.Left + delta.X);
+        e.Item.Top = Math.Round(e.Item.Top + delta.Y);
+    }
+
+    private static string ModeName(Mode mode) => mode switch
+    {
+        Mode.Horizontal => "Horizontal only",
+        Mode.Grid => "Snap to grid",
+        Mode.Inside => "Inside the area",
+        _ => "Free",
+    };
+
+    private static string Show(BdndXYCoord? offset) =>
+        offset is { } o ? $"{o.X.ToString("0", CultureInfo.InvariantCulture)}, {o.Y.ToString("0", CultureInfo.InvariantCulture)}" : "null";
+
+    // Format with the invariant culture so the decimal separator is always '.'
+    // (a comma would produce invalid CSS like left:282,5px).
+    private static string Px(double v) => v.ToString("0.###", CultureInfo.InvariantCulture) + "px";
+}

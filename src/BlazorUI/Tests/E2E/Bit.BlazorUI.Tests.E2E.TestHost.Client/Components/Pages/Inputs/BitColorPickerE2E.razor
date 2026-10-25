@@ -1,0 +1,504 @@
+﻿@page "/e2e/color-picker"
+
+<PageTitle>BitColorPicker E2E</PageTitle>
+
+<h1>BitColorPicker</h1>
+
+@* ---------------------------------------------------------------- Basic *@
+
+<E2ESection Id="basic" Title="Basic">
+    <BitColorPicker Id="clp-basic" @bind-Value="_basic" @bind-Alpha="_basicAlpha" />
+    <span id="basic-value">@_basic</span>
+    <span id="basic-alpha">@_basicAlpha.ToString(System.Globalization.CultureInfo.InvariantCulture)</span>
+</E2ESection>
+
+<E2ESection Id="label" Title="Label">
+    <BitColorPicker Label="Brand color" Required @bind-Value="_label" />
+</E2ESection>
+
+<E2ESection Id="label-template" Title="LabelTemplate">
+    <BitColorPicker @bind-Value="_labelTemplate">
+        <LabelTemplate><b id="custom-label">Custom label</b></LabelTemplate>
+    </BitColorPicker>
+</E2ESection>
+
+<E2ESection Id="unnamed" Title="Unnamed">
+    <BitColorPicker ShowAlphaSlider Value="#FF0000" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitColorPicker Disabled="_disabled" ShowInputs ShowAlphaSlider ShowInputsModeSwitch Presets="_brand" @bind-Value="_disabledValue"
+                    @onclick="() => _disabledClicks++" @onkeydown="() => _disabledKeys++" />
+    <span id="disabled-value">@_disabledValue</span>
+    <span id="disabled-click-count">@_disabledClicks</span>
+    <span id="disabled-key-count">@_disabledKeys</span>
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+</E2ESection>
+
+<E2ESection Id="readonly" Title="ReadOnly">
+    <BitColorPicker ReadOnly ShowInputs ShowAlphaSlider ShowInputsModeSwitch Presets="_brand" @bind-Value="_readOnly" OnChangeEnd="() => _readOnlyEnds++" />
+    <span id="readonly-value">@_readOnly</span>
+    <span id="readonly-ends">@_readOnlyEnds</span>
+</E2ESection>
+
+<E2ESection Id="one-way" Title="One-way Value">
+    <BitColorPicker Value="@_oneWay" ShowPreview ShowInputs />
+    <button id="btn-one-way-green" type="button" @onclick="@(() => _oneWay = "#00FF00")">Green</button>
+    <button id="btn-one-way-tomato" type="button" @onclick="@(() => _oneWay = "tomato")">Tomato</button>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Alpha & preview *@
+
+<E2ESection Id="alpha" Title="Alpha & Preview">
+    <BitColorPicker ShowAlphaSlider ShowPreview @bind-Value="_alpha" @bind-Alpha="_alphaValue" />
+    <span id="alpha-value">@_alpha</span>
+    <span id="alpha-alpha">@_alphaValue.ToString(System.Globalization.CultureInfo.InvariantCulture)</span>
+    <button id="btn-set-alpha" type="button" @onclick="() => _alphaValue = 0.25">Alpha 0.25</button>
+</E2ESection>
+
+<E2ESection Id="preview" Title="Preview">
+    <BitColorPicker ShowPreview @bind-Value="_preview" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Inputs *@
+
+<E2ESection Id="inputs" Title="Inputs (HexAlpha)">
+    <BitColorPicker ShowInputs ShowPreview ShowAlphaSlider Format="BitColorFormat.HexAlpha" @bind-Value="_inputs" />
+    <span id="inputs-value">@_inputs</span>
+</E2ESection>
+
+<E2ESection Id="inputs-rgb" Title="Inputs (HexRgb)">
+    <BitColorPicker ShowInputs Format="BitColorFormat.Hex" @bind-Value="_inputsRgb" />
+    <span id="inputs-rgb-value">@_inputsRgb</span>
+</E2ESection>
+
+<E2ESection Id="inputs-switch" Title="Inputs mode switch">
+    <BitColorPicker ShowInputs ShowInputsModeSwitch @bind-InputsMode="_mode" @bind-Value="_inputsSwitch" />
+    <span id="inputs-switch-mode">@_mode</span>
+    <span id="inputs-switch-value">@_inputsSwitch</span>
+</E2ESection>
+
+<E2ESection Id="inputs-hsl" Title="Inputs HSL">
+    <BitColorPicker ShowInputs InputsMode="BitColorInputsMode.Hsl" @bind-Value="_inputsHsl" />
+    <span id="inputs-hsl-value">@_inputsHsl</span>
+</E2ESection>
+
+<E2ESection Id="inputs-hsv" Title="Inputs HSV by default">
+    <BitColorPicker ShowInputs ShowInputsModeSwitch DefaultInputsMode="BitColorInputsMode.Hsv" @bind-Value="_inputsHsv" />
+    <span id="inputs-hsv-value">@_inputsHsv</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Presets *@
+
+<E2ESection Id="presets" Title="Presets">
+    <BitColorPicker ShowPreview Presets="_brand" @bind-Value="_presets" OnChangeEnd="() => _presetEnds++" />
+    <span id="presets-value">@_presets</span>
+    <span id="presets-ends">@_presetEnds</span>
+</E2ESection>
+
+<E2ESection Id="presets-alpha" Title="Presets with alpha">
+    <BitColorPicker ShowPreview ShowAlphaSlider Presets="_alphaPresets" Format="BitColorFormat.Rgba" @bind-Value="_presetsAlpha" />
+    <span id="presets-alpha-value">@_presetsAlpha</span>
+</E2ESection>
+
+<E2ESection Id="presets-grid" Title="Presets per row">
+    <BitColorPicker ShowPreview Presets="_ramp" PresetsPerRow="5" @bind-Value="_presetsGrid" />
+    <span id="presets-grid-value">@_presetsGrid</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Eye dropper *@
+
+<E2ESection Id="eyedropper" Title="Eye dropper">
+    <BitColorPicker ShowEyeDropper ShowPreview ShowInputs @bind-Value="_eyeDropper" OnChangeEnd="() => _eyeDropperEnds++" />
+    <span id="eyedropper-value">@_eyeDropper</span>
+    <span id="eyedropper-ends">@_eyeDropperEnds</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Contrast *@
+
+<E2ESection Id="contrast" Title="Contrast">
+    <BitColorPicker ShowContrast ShowInputs ShowPreview ContrastColor="@_contrastBackground" @bind-Value="_contrast" />
+    <span id="contrast-value">@_contrast</span>
+    <button id="btn-contrast-black" type="button" @onclick="@(() => _contrastBackground = "#000000")">Black background</button>
+</E2ESection>
+
+<E2ESection Id="contrast-dark" Title="Contrast on a dark surface">
+    <BitColorPicker ShowContrast ShowAlphaSlider ShowPreview ContrastColor="#1B1A19" Format="BitColorFormat.Rgba" @bind-Value="_contrastDark" />
+    <span id="contrast-dark-value">@_contrastDark</span>
+</E2ESection>
+
+<E2ESection Id="contrast-alone" Title="Contrast without the area">
+    <BitColorPicker ShowContrast ShowSaturationArea="false" Value="#777777" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Format *@
+
+<E2ESection Id="format" Title="Format">
+    <BitColorPicker ShowAlphaSlider Format="_format" @bind-Value="_formatValue" />
+    <span id="format-value">@_formatValue</span>
+    @foreach (var format in _formats)
+    {
+        <button id="fmt-@format.ToString().ToLowerInvariant()" type="button" @onclick="() => _format = format">@format</button>
+    }
+</E2ESection>
+
+<E2ESection Id="format-detect" Title="Format detected from the value">
+    <BitColorPicker @bind-Value="_detected" />
+    <span id="format-detect-value">@_detected</span>
+    <button id="btn-detect-hsl" type="button" @onclick="@(() => _detected = "hsl(120, 100%, 25%)")">hsl</button>
+    <button id="btn-detect-hex" type="button" @onclick="@(() => _detected = "#336699")">hex</button>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Binding *@
+
+<E2ESection Id="binding" Title="Two-way binding">
+    <BitColorPicker ShowAlphaSlider ShowPreview @bind-Value="_twoWay" @bind-Alpha="_twoWayAlpha" />
+    <input id="binding-text" @bind="_twoWay" />
+    <span id="binding-value">@_twoWay</span>
+    <span id="binding-alpha">@_twoWayAlpha.ToString(System.Globalization.CultureInfo.InvariantCulture)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Events & API *@
+
+<E2ESection Id="events" Title="Events & API">
+    <BitColorPicker @ref="_ref" ShowAlphaSlider ShowPreview Value="@_events" ValueChanged="v => _events = v"
+                    OnColorChange="a => { _colorChanges++; _lastColor = a; }"
+                    OnChangeEnd="a => { _changeEnds++; _lastEnd = a; }"
+                    OnChange="v => { _changes++; _lastChange = v; }" />
+    <span id="ev-color">@_colorChanges</span>
+    <span id="ev-color-arg">@_lastColor?.Color|@_lastColor?.Hex|@_lastColor?.Rgba|@Fmt(_lastColor?.Alpha)</span>
+    <span id="ev-end">@_changeEnds</span>
+    <span id="ev-end-arg">@_lastEnd?.Color|@_lastEnd?.Hex|@_lastEnd?.HexAlpha|@_lastEnd?.Rgb|@_lastEnd?.Rgba|@_lastEnd?.ColorDescription</span>
+    <span id="ev-end-tuples">@Tuple(_lastEnd?.Hsl)|@Tuple(_lastEnd?.Hsv)|@Tuple(_lastEnd?.Hwb)|@Tuple(_lastEnd?.Oklch)</span>
+    <span id="ev-change">@_changes</span>
+    <span id="ev-change-arg">@_lastChange</span>
+    <button id="btn-read" type="button" @onclick="StateHasChanged">Read</button>
+    <button id="btn-focus" type="button" @onclick="() => _ref!.FocusAsync()">FocusAsync()</button>
+    <span id="api">@_ref?.Hex|@_ref?.HexAlpha|@_ref?.Rgb|@_ref?.Rgba|@_ref?.ColorDescription</span>
+    <span id="api-tuples">@Tuple(_ref?.Hsl)|@Tuple(_ref?.Hsv)|@Tuple(_ref?.Hwb)|@Tuple(_ref?.Oklch)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Accessibility & localization *@
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitColorPicker ShowAlphaSlider ShowInputs ShowPreview AriaLabel="Choose the brand color" @bind-Value="_a11y" />
+    <span id="a11y-value">@_a11y</span>
+</E2ESection>
+
+<E2ESection Id="texts" Title="Texts">
+    <BitColorPicker ShowAlphaSlider ShowInputs ShowInputsModeSwitch ShowContrast ShowEyeDropper Presets="_brand" Texts="_texts" @bind-Value="_textsValue" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Compact pickers *@
+
+<E2ESection Id="palette" Title="Palette only">
+    <BitColorPicker @ref="_palette" ShowSaturationArea="false" ShowHueSlider="false" ShowPreview Presets="_brand" PresetsPerRow="4" @bind-Value="_paletteValue" />
+    <span id="palette-value">@_paletteValue</span>
+    <button id="btn-focus-palette" type="button" @onclick="() => _palette!.FocusAsync()">FocusAsync()</button>
+</E2ESection>
+
+<E2ESection Id="tint" Title="Tint picker">
+    <BitColorPicker ShowHueSlider="false" ShowPreview ShowInputs @bind-Value="_tint" />
+    <span id="tint-value">@_tint</span>
+</E2ESection>
+
+<E2ESection Id="fields" Title="Fields only">
+    <BitColorPicker @ref="_fields" ShowSaturationArea="false" ShowHueSlider="false" ShowInputs ShowInputsModeSwitch ShowPreview ShowAlphaSlider @bind-Value="_fieldsValue" />
+    <span id="fields-value">@_fieldsValue</span>
+    <button id="btn-focus-fields" type="button" @onclick="() => _fields!.FocusAsync()">FocusAsync()</button>
+</E2ESection>
+
+<E2ESection Id="nothing" Title="Nothing but the hidden input">
+    <BitColorPicker ShowSaturationArea="false" ShowHueSlider="false" Value="#123456" Name="lonely" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Cascading parameters *@
+
+<E2ESection Id="cascade" Title="Cascading parameters">
+    <BitParams Parameters="_cascade">
+        <div id="cascade-1"><BitColorPicker @bind-Value="_cascade1" /></div>
+        <div id="cascade-2"><BitColorPicker Size="BitSize.Small" ShowPreview="false" Format="BitColorFormat.Rgb" @bind-Value="_cascade2" /></div>
+    </BitParams>
+    <div id="cascade-none"><BitColorPicker @bind-Value="_cascade3" /></div>
+    <span id="cascade-1-value">@_cascade1</span>
+    <span id="cascade-2-value">@_cascade2</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Validation *@
+
+<E2ESection Id="form" Title="Validation">
+    <EditForm Model="_formModel" OnValidSubmit="() => _formStatus = Saved()" OnInvalidSubmit="() => _formStatus = Rejected()">
+        <DataAnnotationsValidator />
+        <BitColorPicker Required ShowInputs ShowPreview Presets="_brand" Label="Brand color" Name="brand" @bind-Value="_formModel.Color" />
+        <div id="form-message"><ValidationMessage For="@(() => _formModel.Color)" /></div>
+        <button id="form-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="form-value">@_formModel.Color</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- External icons *@
+
+<E2ESection Id="icons" Title="Icons">
+    <div id="icons-default"><BitColorPicker ShowEyeDropper ShowInputs ShowInputsModeSwitch /></div>
+    <div id="icons-bit"><BitColorPicker ShowEyeDropper ShowInputs ShowInputsModeSwitch EyeDropperIconName="@BitIconName.Color" InputsModeSwitchIconName="@BitIconName.Switch" /></div>
+    <div id="icons-fa"><BitColorPicker ShowEyeDropper ShowInputs ShowInputsModeSwitch EyeDropperIcon="@BitIconInfo.Fa("solid eye-dropper")" InputsModeSwitchIcon="@BitIconInfo.Fa("solid right-left")" EyeDropperIconName="@BitIconName.Color" /></div>
+    <div id="icons-bi"><BitColorPicker ShowEyeDropper ShowInputs ShowInputsModeSwitch EyeDropperIcon="@BitIconInfo.Bi("eyedropper")" InputsModeSwitchIcon="@BitIconInfo.Bi("arrow-left-right")" /></div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Size *@
+
+<E2ESection Id="sizes" Title="Size">
+    <div id="size-small"><BitColorPicker Size="BitSize.Small" ShowAlphaSlider ShowInputs ShowPreview Presets="_brand" /></div>
+    <div id="size-medium"><BitColorPicker Size="BitSize.Medium" ShowAlphaSlider ShowInputs ShowPreview Presets="_brand" /></div>
+    <div id="size-large"><BitColorPicker Size="BitSize.Large" ShowAlphaSlider ShowInputs ShowPreview Presets="_brand" /></div>
+    <div id="size-none"><BitColorPicker ShowAlphaSlider ShowInputs ShowPreview Presets="_brand" /></div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Style & Class *@
+
+<E2ESection Id="style-class" Title="Style & Class">
+    <div id="sc-style"><BitColorPicker ShowAlphaSlider Style="width: 230px; height: 150px;" /></div>
+    <div id="sc-class"><BitColorPicker ShowAlphaSlider Class="custom-class" /></div>
+    <div id="sc-styles">
+        <BitColorPicker Label="Styles" ShowAlphaSlider ShowPreview ShowInputs ShowInputsModeSwitch ShowContrast ShowEyeDropper Presets="_brand" Value="#D13438" ValueChanged="v => { }"
+                        Styles="@(new() { Root = "margin: 9px;", LabelContainer = "padding-top: 3px;", Label = "color: rgb(1, 1, 1);",
+                                          SaturationPicker = "border-radius: 16px;", SaturationThumb = "width: 24px;", Content = "padding-top: 4px;",
+                                          Sliders = "padding-top: 5px;", HueSlider = "padding-top: 6px;", AlphaSlider = "padding-top: 7px;",
+                                          SliderInput = "opacity: 0.9;", EyeDropper = "color: rgb(2, 2, 2);", EyeDropperIcon = "color: rgb(3, 3, 3);",
+                                          Preview = "border-radius: 50%;", Inputs = "padding-top: 8px;", Field = "padding-top: 1px;",
+                                          FieldInput = "color: rgb(4, 4, 4);", FieldLabel = "color: rgb(5, 5, 5);", InputsModeSwitch = "color: rgb(6, 6, 6);",
+                                          InputsModeSwitchIcon = "color: rgb(7, 7, 7);", Contrast = "padding-top: 2px;", ContrastRatio = "color: rgb(8, 8, 8);",
+                                          ContrastBadge = "padding-top: 3px;", Presets = "padding-top: 9px;", Preset = "border-radius: 50%;",
+                                          SelectedPreset = "outline: 2px solid rgb(9, 9, 9);" })" />
+    </div>
+    <div id="sc-classes">
+        <BitColorPicker Label="Classes" ShowAlphaSlider ShowPreview ShowInputs ShowInputsModeSwitch ShowContrast ShowEyeDropper Presets="_brand" Value="#D13438" ValueChanged="v => { }"
+                        Classes="@(new() { Root = "c-root", LabelContainer = "c-label-container", Label = "c-label", SaturationPicker = "c-saturation",
+                                           SaturationThumb = "c-thumb", Content = "c-content", Sliders = "c-sliders", HueSlider = "c-hue", AlphaSlider = "c-alpha",
+                                           SliderInput = "c-slider-input", EyeDropper = "c-eyedropper", EyeDropperIcon = "c-eyedropper-icon", Preview = "c-preview",
+                                           Inputs = "c-inputs", Field = "c-field", FieldInput = "c-field-input", FieldLabel = "c-field-label",
+                                           InputsModeSwitch = "c-switch", InputsModeSwitchIcon = "c-switch-icon", Contrast = "c-contrast",
+                                           ContrastRatio = "c-contrast-ratio", ContrastBadge = "c-contrast-badge", Presets = "c-presets", Preset = "c-preset",
+                                           SelectedPreset = "c-selected-preset" })" />
+    </div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- CSS variables *@
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div id="css-vars-instance">
+        <BitColorPicker ShowAlphaSlider ShowInputs ShowPreview Presets="_brand"
+                        Style="--bit-ColorPicker-width: 288px;
+                               --bit-ColorPicker-saturation-height: 128px;
+                               --bit-ColorPicker-saturation-radius: 16px;
+                               --bit-ColorPicker-track-height: 12px;
+                               --bit-ColorPicker-swatch-size: 20px;
+                               --bit-ColorPicker-swatch-radius: 50%;
+                               --bit-ColorPicker-border-color: rgb(126, 74, 226);
+                               --bit-ColorPicker-padding: 6px;
+                               --bit-ColorPicker-background: rgb(250, 240, 230);" />
+    </div>
+    <div style="--bit-ColorPicker-width: 300px; --bit-ColorPicker-preview-size: 40px; --bit-ColorPicker-field-background: rgb(10, 20, 30);">
+        <div id="css-vars-ancestor"><BitColorPicker ShowInputs ShowPreview /></div>
+        <div id="css-vars-explicit"><BitColorPicker ShowInputs ShowPreview Size="BitSize.Small" /></div>
+    </div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- RTL *@
+
+<E2ESection Id="rtl" Title="RTL">
+    <div id="rtl-explicit">
+        <BitColorPicker Dir="BitDir.Rtl" ShowAlphaSlider ShowPreview ShowInputs Presets="_brand" @bind-Value="_rtl" />
+        <span id="rtl-value">@_rtl</span>
+    </div>
+    <div id="rtl-inherited" dir="rtl">
+        <BitColorPicker ShowAlphaSlider ShowInputs Presets="_brand" @bind-Value="_rtlInherited" />
+        <span id="rtl-inherited-value">@_rtlInherited</span>
+    </div>
+    <div id="ltr">
+        <BitColorPicker ShowAlphaSlider Presets="_brand" @bind-Value="_ltr" />
+    </div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Base behaviours *@
+
+<E2ESection Id="visibility" Title="Visibility">
+    <BitColorPicker Visibility="_visibility" />
+    <span id="visibility-after">After</span>
+    <button id="btn-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+</E2ESection>
+
+<E2ESection Id="attributes" Title="Id, AriaLabel, HtmlAttributes, InputHtmlAttributes, Name, TabIndex">
+    <BitColorPicker Id="clp-attrs" Name="paint" TabIndex="5" ShowInputs Presets="_brand" Value="#0078D4" ValueChanged="v => { }"
+                    HtmlAttributes="@(new Dictionary<string, object> { ["data-root"] = "root-value", ["title"] = "Root title" })"
+                    InputHtmlAttributes="@(new Dictionary<string, object> { ["data-input"] = "input-value" })" />
+</E2ESection>
+
+<E2ESection Id="drag" Title="Dragging">
+    <BitColorPicker ShowAlphaSlider ShowInputs @bind-Value="_drag" OnColorChange="() => _dragChanges++" OnChangeEnd="() => _dragEnds++" />
+    <span id="drag-value">@_drag</span>
+    <span id="drag-changes">@_dragChanges</span>
+    <span id="drag-ends">@_dragEnds</span>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard">
+    <BitColorPicker ShowAlphaSlider Format="BitColorFormat.Hsva" @bind-Value="_keyboard" />
+    <span id="keyboard-value">@_keyboard</span>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <BitColorPicker ShowSaturationArea="_showArea" ShowAlphaSlider="_showAlpha" Presets="_lifecyclePresets" @bind-Value="_lifecycle" />
+    }
+    <span id="lifecycle-value">@_lifecycle</span>
+    <button id="btn-toggle-mounted" type="button" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    <button id="btn-toggle-area" type="button" @onclick="() => _showArea = !_showArea">Toggle area</button>
+    <button id="btn-toggle-alpha" type="button" @onclick="() => _showAlpha = !_showAlpha">Toggle alpha</button>
+    <button id="btn-presets" type="button" @onclick="() => _lifecyclePresets = _ramp">Ramp presets</button>
+    <button id="btn-no-presets" type="button" @onclick="() => _lifecyclePresets = null">No presets</button>
+</E2ESection>
+
+<E2EStatus Status="@_formStatus" />
+
+@code {
+    private static readonly string[] _brand = ["#D13438", "#FF8C00", "#FFB900", "#107C10", "#0078D4", "#5C2D91", "#000000", "#FFFFFF"];
+    private static readonly string[] _alphaPresets = ["rgba(0,120,212,1)", "rgba(0,120,212,0.5)", "rgba(0,120,212,0.25)", "#D1343880"];
+    private static readonly string[] _ramp = ["#FFF4CE", "#FFE699", "#FFD966", "#FFC000", "#BF9000", "#DEEBF7", "#BDD7EE", "#9DC3E6", "#2E75B6", "#1F4E79"];
+
+    private static readonly BitColorFormat[] _formats =
+    [
+        BitColorFormat.Hex, BitColorFormat.HexAlpha, BitColorFormat.Rgb, BitColorFormat.Rgba, BitColorFormat.Hsl, BitColorFormat.Hsla,
+        BitColorFormat.Hsv, BitColorFormat.Hsva, BitColorFormat.Hwb, BitColorFormat.Hwba, BitColorFormat.Oklab, BitColorFormat.Oklaba,
+        BitColorFormat.Oklch, BitColorFormat.Oklcha
+    ];
+
+    private readonly BitColorPickerTexts _texts = new()
+    {
+        SaturationAreaLabel = "Sattigung",
+        SaturationAreaRoleDescription = "Flaeche",
+        SaturationValueFormat = "{3} ({1}/{2})",
+        HueLabel = "Farbton",
+        HueValueFormat = "Farbton {0}",
+        AlphaLabel = "Deckkraft",
+        AlphaValueFormat = "Deckkraft {0}",
+        AlphaFieldLabel = "D%",
+        HexFieldLabel = "Hexa",
+        RedLabel = "Rot",
+        RedFieldLabel = "Ro",
+        GreenLabel = "Gruen",
+        GreenFieldLabel = "Gr",
+        BlueLabel = "Blau",
+        BlueFieldLabel = "Bl",
+        PickerLabelWithAlphaFormat = "Waehler {1}-{2}-{3}-{4}",
+        EyeDropperLabel = "Pipette",
+        HexRgbModeLabel = "HEXRGB",
+        InputsModeFormat = "Felder: {0}",
+        InputsModeSwitchFormat = "Felder {0} wechseln",
+        PresetsLabel = "Vorlagen",
+        PresetLabelFormat = "Vorlage {1}",
+        ContrastRatioFormat = "Kontrast {0}",
+        ContrastAaBadge = "AA!",
+        ContrastAaFormat = "AA normal {0}",
+        ContrastAaLargeBadge = "AA gross",
+        ContrastAaLargeFormat = "AA gross {0}",
+        ContrastPassLabel = "ja",
+        ContrastFailLabel = "nein"
+    };
+
+    private readonly List<IBitComponentParams> _cascade =
+    [
+        new BitColorPickerParams
+        {
+            Presets = _ramp,
+            ShowInputs = true,
+            ShowPreview = true,
+            Format = BitColorFormat.Hex,
+            DefaultInputsMode = BitColorInputsMode.Rgb,
+            ShowAlphaSlider = true
+        }
+    ];
+
+    private string? _basic = "#FF0000";
+    private double _basicAlpha = 1;
+    private string? _label = "#0078D4";
+    private string? _labelTemplate = "#0078D4";
+    private bool _disabled = true;
+    private string? _disabledValue = "#B34D4D";
+    private int _disabledClicks, _disabledKeys;
+    private string? _readOnly = "#B34D4D";
+    private int _readOnlyEnds;
+    private string? _oneWay = "#FF0000";
+    private string? _alpha = "#0078D4";
+    private double _alphaValue = 1;
+    private string? _preview = "#107C10";
+    private string? _inputs = "#0078D4FF";
+    private string? _inputsRgb = "#0078D4";
+    private BitColorInputsMode _mode = BitColorInputsMode.HexRgb;
+    private string? _inputsSwitch = "#FF0000";
+    private string? _inputsHsl = "#FF0000";
+    private string? _inputsHsv = "#FF0000";
+    private string? _presets = "#0078D4";
+    private int _presetEnds;
+    private string? _presetsAlpha = "rgba(0,120,212,1)";
+    private string? _presetsGrid = "#FFC000";
+    private string? _eyeDropper = "#FF0000";
+    private int _eyeDropperEnds;
+    private string? _contrast = "#767676";
+    private string? _contrastBackground = "#FFFFFF";
+    private string? _contrastDark = "rgba(255,255,255,1)";
+    private BitColorFormat _format = BitColorFormat.Hex;
+    private string? _formatValue = "#FF0000";
+    private string? _detected = "rgb(0,128,0)";
+    private string? _twoWay = "#FF0000";
+    private double _twoWayAlpha = 1;
+    private BitColorPicker? _ref;
+    private string? _events = "#FF0000";
+    private int _colorChanges, _changeEnds, _changes;
+    private BitColorChangeEventArgs? _lastColor, _lastEnd;
+    private string? _lastChange;
+    private string? _a11y = "#00FF00";
+    private string? _textsValue = "#FF0000";
+    private BitColorPicker? _palette;
+    private string? _paletteValue = "#107C10";
+    private string? _tint = "#0078D4";
+    private BitColorPicker? _fields;
+    private string? _fieldsValue = "#FF0000";
+    private string? _cascade1 = "#FF0000";
+    private string? _cascade2 = "#FF0000";
+    private string? _cascade3 = "#FF0000";
+    private string? _rtl = "#FF0000";
+    private string? _rtlInherited = "#FF0000";
+    private string? _ltr = "#FF0000";
+    private BitVisibility _visibility;
+    private string? _drag = "#FF0000";
+    private int _dragChanges, _dragEnds;
+    private string? _keyboard = "hsva(0,100%,50%,1)";
+    private bool _mounted = true;
+    private bool _showArea = true;
+    private bool _showAlpha;
+    private IEnumerable<string>? _lifecyclePresets;
+    private string? _lifecycle = "#FF0000";
+
+    private readonly FormModel _formModel = new();
+    private string? _formStatus;
+    private int _submits;
+
+    private string Saved() => $"Saved {++_submits}";
+
+    private string Rejected() => $"Rejected {++_submits}";
+
+    private static string Fmt(double? value) => value?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+
+    private static string Tuple((double, double, double)? value) => value is null
+        ? string.Empty
+        : string.Join(",", new[] { value.Value.Item1, value.Value.Item2, value.Value.Item3 }.Select(v => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)));
+
+    private sealed class FormModel
+    {
+        [Required(ErrorMessage = "Pick a brand color.")]
+        public string? Color { get; set; }
+    }
+}

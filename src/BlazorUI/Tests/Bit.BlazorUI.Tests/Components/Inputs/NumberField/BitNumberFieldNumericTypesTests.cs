@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,12 +14,6 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.NumberField;
 [TestClass]
 public class BitNumberFieldNumericTypesTests : BunitTestContext
 {
-    [TestInitialize]
-    public void SetupJsInteropMode()
-    {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-    }
-
     private void Spin<TValue>(IRenderedComponent<BitNumberField<TValue>> component, bool up)
     {
         component.Find("input").KeyDown(new KeyboardEventArgs { Key = up ? "ArrowUp" : "ArrowDown" });
@@ -774,6 +768,26 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
         Assert.AreEqual(10, component.Instance.Value);
     }
 
+    [TestMethod,
+        DataRow(true, false, 10, "claim"),
+        DataRow(false, false, 10, null),
+        DataRow(true, true, 10, null),
+        DataRow(true, false, null, null)
+    ]
+    public void BitNumberFieldShouldClaimTheEscapeKeyExactlyWhenItClears(bool showClearButton, bool readOnly, int? value, string? claim)
+    {
+        // The input carries data-bit-esc (Utils.claimEscape) for the press that clears the field, so a dialog
+        // around it does not close on it - and only for that one, so any other Escape still closes the dialog.
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, showClearButton);
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.DefaultValue, value);
+        });
+
+        Assert.AreEqual(claim, component.Find("input").GetAttribute("data-bit-esc"));
+    }
+
     [TestMethod]
     public void BitNumberFieldShouldKeepTheValueWhenTheRoundingScaleOverflows()
     {
@@ -965,15 +979,17 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
         Assert.AreEqual("0", incrementButton.GetAttribute("tabindex"));
         Assert.AreEqual("0", decrementButton.GetAttribute("tabindex"));
 
-        incrementButton.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        // Enter and Space on a focused button reach it as a click with a detail of zero, which is also
+        // how an assistive technology activates it.
+        incrementButton.Click(new MouseEventArgs { Detail = 0 });
         Assert.AreEqual(6, component.Instance.Value);
 
-        decrementButton.KeyDown(new KeyboardEventArgs { Key = " " });
+        decrementButton.Click(new MouseEventArgs { Detail = 0 });
         Assert.AreEqual(5, component.Instance.Value);
     }
 
     [TestMethod]
-    public void BitNumberFieldSpinButtonsShouldIgnoreNonActivationKeys()
+    public void BitNumberFieldSpinButtonsShouldIgnoreTheClickAPointerPressProduces()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
@@ -982,9 +998,15 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 5);
         });
 
-        component.Find(".bit-nfl-aup").KeyDown(new KeyboardEventArgs { Key = "a" });
+        var incrementButton = component.Find(".bit-nfl-aup");
 
-        Assert.AreEqual(5, component.Instance.Value);
+        // The press has already stepped on its pointerdown, so the click the browser fires after it -
+        // which carries a detail of at least one - must not step a second time.
+        incrementButton.PointerDown();
+        incrementButton.PointerUp();
+        incrementButton.Click(new MouseEventArgs { Detail = 1 });
+
+        Assert.AreEqual(6, component.Instance.Value);
     }
 
     [TestMethod]
@@ -998,7 +1020,7 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 5);
         });
 
-        component.Find(".bit-nfl-aup").KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        component.Find(".bit-nfl-aup").Click(new MouseEventArgs { Detail = 0 });
 
         Assert.AreEqual(5, component.Instance.Value);
     }
@@ -1037,7 +1059,7 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
 
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnKeyDown, () => keyDowns++);
         });
 
@@ -1138,6 +1160,9 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
+            // A NumberFormat formats in the thread's culture unless the field has one of its own, so the
+            // grouping separator of the expected text is pinned here rather than taken from the machine.
+            parameters.Add(p => p.Culture, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
             parameters.Add(p => p.NumberFormat, "N0");
             parameters.Add(p => p.DefaultValue, 1234567);
         });
@@ -1161,6 +1186,8 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
         // Without the select-all, swapping the text on focus would move the caret the user just placed.
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
+            // The grouping separator of the expected text is pinned (see the test above).
+            parameters.Add(p => p.Culture, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
             parameters.Add(p => p.NumberFormat, "N0");
             parameters.Add(p => p.NoSelectOnFocus, true);
             parameters.Add(p => p.DefaultValue, 1234567);

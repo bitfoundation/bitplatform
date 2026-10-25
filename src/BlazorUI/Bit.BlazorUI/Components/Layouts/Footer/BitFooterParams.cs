@@ -1,3 +1,5 @@
+﻿using System.Diagnostics.CodeAnalysis;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -14,6 +16,13 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
     /// of typographical errors.
     /// </remarks>
     public const string ParamName = $"{nameof(BitParams)}.{nameof(BitFooter)}";
+
+
+
+    // What BitParams reads of a params object by reflection is kept by its constructor rather than by the component
+    // reading it, so the trimmer keeps it only for the params types an app creates.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFooterParams))]
+    public BitFooterParams() { }
 
 
 
@@ -47,6 +56,11 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Keeps the footer flat at the end of its scrolling area and shadowed while content is left underneath it.
+    /// </summary>
+    public bool? ElevateOnScroll { get; set; }
+
+    /// <summary>
     /// Renders the footer with a shadow cast upwards.
     /// </summary>
     public bool? Elevated { get; set; }
@@ -72,6 +86,11 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
     public bool? Hidden { get; set; }
 
     /// <summary>
+    /// The maximum width of the content of the footer, which is then centered in the footer.
+    /// </summary>
+    public string? MaxWidth { get; set; }
+
+    /// <summary>
     /// Removes the default paddings around the content of the footer.
     /// </summary>
     public bool? NoGutter { get; set; }
@@ -85,6 +104,16 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
     /// How far (in pixels) the scroll has to travel from the top before a Reveal footer starts hiding itself.
     /// </summary>
     public int? RevealOffset { get; set; }
+
+    /// <summary>
+    /// Reserves the height of the footer at the bottom of the scrolling area, so nothing scrolled to lands underneath it.
+    /// </summary>
+    public bool? ScrollPadding { get; set; }
+
+    /// <summary>
+    /// The CSS selector of the element whose scrolling drives the footer.
+    /// </summary>
+    public string? ScrollTarget { get; set; }
 
     /// <summary>
     /// The size of the footer, which determines the paddings around its content.
@@ -140,142 +169,124 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitFooter);
 
-        if (Absolute.HasValue && bitFooter.HasNotBeenSet(nameof(Absolute)))
+        if (Absolute.HasValue)
         {
-            bitFooter.Absolute = Absolute.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(Absolute), Absolute.Value, static f => f.Absolute, static (f, v) => f.Absolute = v);
         }
 
-        if (Alignment.HasValue && bitFooter.HasNotBeenSet(nameof(Alignment)))
+        if (Alignment.HasValue)
         {
-            bitFooter.Alignment = Alignment.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(Alignment), Alignment.Value, static f => f.Alignment, static (f, v) => f.Alignment = v);
         }
 
-        if (Bordered.HasValue && bitFooter.HasNotBeenSet(nameof(Bordered)))
+        if (Bordered.HasValue)
         {
-            bitFooter.Bordered = Bordered.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(Bordered), Bordered.Value, static f => f.Bordered, static (f, v) => f.Bordered = v);
         }
 
-        if (Classes is not null && bitFooter.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitFooter.Classes = Classes;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(Classes), Classes, static f => f.Classes, static (f, v) => f.Classes = v);
         }
 
-        if (Color.HasValue && bitFooter.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitFooter.Color = Color.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(Color), Color.Value, static f => f.Color, static (f, v) => f.Color = v);
         }
 
-        if (Elevated.HasValue && bitFooter.HasNotBeenSet(nameof(Elevated)))
+        if (ElevateOnScroll.HasValue)
         {
-            bitFooter.Elevated = Elevated.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(ElevateOnScroll), ElevateOnScroll.Value, static f => f.ElevateOnScroll, static (f, v) => f.ElevateOnScroll = v);
         }
 
-        if (Fixed.HasValue && bitFooter.HasNotBeenSet(nameof(Fixed)))
+        if (Elevated.HasValue)
         {
-            bitFooter.Fixed = Fixed.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(Elevated), Elevated.Value, static f => f.Elevated, static (f, v) => f.Elevated = v);
         }
 
-        if (Gap is not null && bitFooter.HasNotBeenSet(nameof(Gap)))
+        if (Fixed.HasValue)
         {
-            bitFooter.Gap = Gap;
-
-            bitFooter.StyleBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(Fixed), Fixed.Value, static f => f.Fixed, static (f, v) => f.Fixed = v);
         }
 
-        if (Height.HasValue && bitFooter.HasNotBeenSet(nameof(Height)))
+        if (Gap is not null)
         {
-            bitFooter.Height = Height.Value;
-
-            bitFooter.StyleBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(Gap), Gap, static f => f.Gap, static (f, v) => f.Gap = v);
         }
 
-        if (Hidden.HasValue && bitFooter.HasNotBeenSet(nameof(Hidden)))
+        if (Height.HasValue)
         {
-            bitFooter.Hidden = Hidden.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(Height), Height.Value, static f => f.Height, static (f, v) => f.Height = v);
         }
 
-        if (NoGutter.HasValue && bitFooter.HasNotBeenSet(nameof(NoGutter)))
+        if (Hidden.HasValue)
         {
-            bitFooter.NoGutter = NoGutter.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(Hidden), Hidden.Value, static f => f.Hidden, static (f, v) => f.Hidden = v);
         }
 
-        if (Reveal.HasValue && bitFooter.HasNotBeenSet(nameof(Reveal)))
+        if (MaxWidth is not null)
         {
-            bitFooter.Reveal = Reveal.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(MaxWidth), MaxWidth, static f => f.MaxWidth, static (f, v) => f.MaxWidth = v);
         }
 
-        if (RevealOffset.HasValue && bitFooter.HasNotBeenSet(nameof(RevealOffset)))
+        if (NoGutter.HasValue)
         {
-            bitFooter.RevealOffset = RevealOffset.Value;
+            bitFooter.TakeFromCascade(nameof(NoGutter), NoGutter.Value, static f => f.NoGutter, static (f, v) => f.NoGutter = v);
         }
 
-        if (Size.HasValue && bitFooter.HasNotBeenSet(nameof(Size)))
+        if (Reveal.HasValue)
         {
-            bitFooter.Size = Size.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(Reveal), Reveal.Value, static f => f.Reveal, static (f, v) => f.Reveal = v);
         }
 
-        if (Sticky.HasValue && bitFooter.HasNotBeenSet(nameof(Sticky)))
+        if (RevealOffset.HasValue)
         {
-            bitFooter.Sticky = Sticky.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(RevealOffset), RevealOffset.Value, static f => f.RevealOffset, static (f, v) => f.RevealOffset = v);
         }
 
-        if (Styles is not null && bitFooter.HasNotBeenSet(nameof(Styles)))
+        if (ScrollPadding.HasValue)
         {
-            bitFooter.Styles = Styles;
-
-            bitFooter.StyleBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(ScrollPadding), ScrollPadding.Value, static f => f.ScrollPadding, static (f, v) => f.ScrollPadding = v);
         }
 
-        if (Translucent.HasValue && bitFooter.HasNotBeenSet(nameof(Translucent)))
+        if (ScrollTarget is not null)
         {
-            bitFooter.Translucent = Translucent.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(ScrollTarget), ScrollTarget, static f => f.ScrollTarget, static (f, v) => f.ScrollTarget = v);
         }
 
-        if (Variant.HasValue && bitFooter.HasNotBeenSet(nameof(Variant)))
+        if (Size.HasValue)
         {
-            bitFooter.Variant = Variant.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(Size), Size.Value, static f => f.Size, static (f, v) => f.Size = v);
         }
 
-        if (VerticalAlign.HasValue && bitFooter.HasNotBeenSet(nameof(VerticalAlign)))
+        if (Sticky.HasValue)
         {
-            bitFooter.VerticalAlign = VerticalAlign.Value;
-
-            bitFooter.ClassBuilder.Reset();
+            bitFooter.TakeFromCascade(nameof(Sticky), Sticky.Value, static f => f.Sticky, static (f, v) => f.Sticky = v);
         }
 
-        if (Wrap.HasValue && bitFooter.HasNotBeenSet(nameof(Wrap)))
+        if (Styles is not null)
         {
-            bitFooter.Wrap = Wrap.Value;
+            bitFooter.TakeFromCascade(nameof(Styles), Styles, static f => f.Styles, static (f, v) => f.Styles = v);
+        }
 
-            bitFooter.ClassBuilder.Reset();
+        if (Translucent.HasValue)
+        {
+            bitFooter.TakeFromCascade(nameof(Translucent), Translucent.Value, static f => f.Translucent, static (f, v) => f.Translucent = v);
+        }
+
+        if (Variant.HasValue)
+        {
+            bitFooter.TakeFromCascade(nameof(Variant), Variant.Value, static f => f.Variant, static (f, v) => f.Variant = v);
+        }
+
+        if (VerticalAlign.HasValue)
+        {
+            bitFooter.TakeFromCascade(nameof(VerticalAlign), VerticalAlign.Value, static f => f.VerticalAlign, static (f, v) => f.VerticalAlign = v);
+        }
+
+        if (Wrap.HasValue)
+        {
+            bitFooter.TakeFromCascade(nameof(Wrap), Wrap.Value, static f => f.Wrap, static (f, v) => f.Wrap = v);
         }
     }
 }

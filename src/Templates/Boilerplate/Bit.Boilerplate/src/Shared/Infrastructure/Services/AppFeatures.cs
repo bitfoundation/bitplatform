@@ -1,79 +1,74 @@
 //+:cnd:noEmit
+using System.ComponentModel;
+
 namespace Boilerplate.Shared.Infrastructure.Services;
 
 /// <summary>
 /// Values for the <see cref="AppClaimTypes.FEATURES"/>
 /// These features will be implemented as a policy. If the user has the specified value in the <see cref="AppClaimTypes.FEATURES"/> claim,
 /// the policy will be fulfilled, granting the user access to the resource <see cref="ISharedServiceCollectionExtensions.ConfigureAuthorizationCore"/>
+/// The <see cref="DescriptionAttribute"/> of each feature is shown as its tooltip on the roles page.
 /// </summary>
 public class AppFeatures
 {
     public class Management
     {
         /// <summary>
-        /// Change AI Chatbot's system prompt.
         /// The value can be anything (1.0, 1.0.0, m-1.0, m-ai etc), but it has to be unique.
         /// The reason behind small feature values is that they're stored in jwt token, so in order to keep jwt token payload small, such a short-unique values has been assigned.
         /// </summary>
+        [Description("Change AI Chatbot's system prompt.")]
         public const string SystemPrompts_Write = "1.0";
 
+        [Description("Create, rename and delete roles, grant them features and users, and send their users notifications.")]
         public const string Roles_Manage = "1.1";
 
+        [Description("See and delete users, and revoke their sessions.")]
         public const string Users_Manage = "1.2";
 
         //#if (multitenant == true)
-        /// <summary>
-        /// This feature is for tenant-admins only. It allows them to manage their own tenant.
-        /// </summary>
+        [Description("This feature is for tenant-admins only. It allows them to manage their own tenant.")]
         public const string Tenant_Manage = "1.3";
 
-        /// <summary>
-        /// This feature is for global-admins only. It allows them to manage tenants across the system.
-        /// </summary>
+        [Description("This feature is for global-admins only. It allows them to manage tenants across the system.")]
         public const string Tenants_Manage_Global = "1.4";
         //#endif
     }
 
     public class System
     {
-        /// <summary>
-        /// Manage background jobs using hangfire's dashboard.
-        /// </summary>
+        [Description("Manage background jobs using hangfire's dashboard.")]
         public const string Jobs_Manage = "2.1";
 
         /// <summary>
-        /// Read-only inspection of a running deployment via /dev-mcp. Not 2.0: that value used to mean Logs_View.
+        /// Not 2.0: that value used to mean Logs_View.
         /// </summary>
+        [Description("Read-only inspection of a running deployment via /dev-mcp.")]
         public const string DevMcp = "2.2";
 
         /// <summary>
-        /// See and cut off the external applications users have authorized over OAuth. A System feature rather than a
-        /// Management one - an OAuth client is registered against the deployment, not a tenant - which is what makes
+        /// A System feature rather than a Management one - an OAuth client is registered against the deployment, not a tenant - which is what makes
         /// it global-admin only, see <see cref="GetTenantAdminFeatures"/>.
         /// </summary>
+        [Description("See and cut off the external applications users have authorized over OAuth.")]
         public const string OAuthClients_Manage = "2.3";
 
-        /// <summary>
-        /// Open the operations page, and see every health check's status and failure details through /healthz.
-        /// </summary>
+        [Description("Open the operations page, and see every health check's status and failure details through /healthz.")]
         public const string Operations_View = "2.4";
     }
 
     public class AdminPanel
     {
+        [Description("See the dashboard's statistics of products and categories.")]
         public const string Dashboard_View = "3.0";
 
-        /// <summary>
-        /// Create/Update/Delete products and categories.
-        /// </summary>
+        [Description("Create/Update/Delete products and categories.")]
         public const string ProductCatalog_Manage = "3.1";
     }
 
     public class Todo
     {
-        /// <summary>
-        /// Create/Update/Delete todo items for the user itself.
-        /// </summary>
+        [Description("Create/Update/Delete todo items for the user itself.")]
         public const string Todo_Manage_Self = "4.0";
     }
 

@@ -1,0 +1,907 @@
+﻿@using Bit.Bmage.Analysis
+@using Bit.Bmage.Editor.Tools
+@using Bit.Bmage.Operations.Adjustments
+@using Bit.Bmage.Operations.Filters
+@using Bit.Bmage.Operations.Transforms
+
+@*
+    The default options panel: adjustments, filters, style controls for the active tool, the annotation list and the
+    history. Each section is a plain form, so a host that wants a different layout can copy the calls it needs.
+*@
+
+<aside class="bmg-panel" aria-label="@Context.Strings.PanelLabel">
+    <div class="bmg-panel-tabs" role="tablist" aria-label="@Context.Strings.PanelLabel">
+        @foreach (var tab in Tabs)
+        {
+            <button type="button"
+                    role="tab"
+                    id="@($"{_id}-tab-{tab.Key}")"
+                    class="bmg-panel-tab @(_activeTab == tab.Key ? "bmg-panel-tab-active" : null)"
+                    aria-selected="@(_activeTab == tab.Key ? "true" : "false")"
+                    aria-controls="@($"{_id}-panel-{tab.Key}")"
+                    tabindex="@(_activeTab == tab.Key ? 0 : -1)"
+                    @onclick="() => _activeTab = tab.Key"
+                    @onkeydown="e => OnTabKeyDown(e, tab.Key)">
+                @tab.Label
+            </button>
+        }
+    </div>
+
+    <div class="bmg-panel-body"
+         role="tabpanel"
+         id="@($"{_id}-panel-{_activeTab}")"
+         aria-labelledby="@($"{_id}-tab-{_activeTab}")"
+         tabindex="0">
+
+        @switch (_activeTab)
+        {
+            case PanelTab.Adjust:
+                <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage)">
+                    <legend class="bmg-visually-hidden">@Context.Strings.Adjust</legend>
+                    @if (GetHistogram() is { } histogram)
+                    {
+                        @* A summary for the eye; the clipping figures below it say the same in words. *@
+                        <figure class="bmg-histogram">
+                            <svg viewBox="0 0 256 64" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                                <path d="@histogram.Path" />
+                            </svg>
+                            <figcaption>@Context.Strings.Histogram: @Context.Strings.FormatClipping(histogram.Black, histogram.White)</figcaption>
+                        </figure>
+                    }
+                    <div class="bmg-field-actions" role="group" aria-label="@Context.Strings.Auto">
+                        <button type="button" class="bmg-button" aria-pressed="@(Context.FindAdjustment<AutoLevelsOperation>() is not null ? "true" : "false")"
+                                disabled="@Context.IsBusy" @onclick="Context.ToggleAutoLevelsAsync">@Context.Strings.AutoLevels</button>
+                        <button type="button" class="bmg-button" aria-pressed="@(Context.FindAdjustment<AutoWhiteBalanceOperation>() is not null ? "true" : "false")"
+                                disabled="@Context.IsBusy" @onclick="Context.ToggleAutoWhiteBalanceAsync">@Context.Strings.AutoWhiteBalance</button>
+                        <button type="button" class="bmg-button" aria-pressed="@(Context.IsPickingWhiteBalance ? "true" : "false")"
+                                disabled="@Context.IsBusy" @onclick="Context.PickWhiteBalance">@Context.Strings.PickWhiteBalance</button>
+                    </div>
+                    @RenderSlider(Context.Strings.Brightness, GetValue<BrightnessAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BrightnessAdjustment((float)v), Context.Strings.Brightness, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BrightnessAdjustment>(), Context.Strings.Brightness))
+                    @RenderSlider(Context.Strings.Contrast, GetValue<ContrastAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new ContrastAdjustment((float)v), Context.Strings.Contrast, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<ContrastAdjustment>(), Context.Strings.Contrast))
+                    @RenderSlider(Context.Strings.Saturation, GetValue<SaturationAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new SaturationAdjustment((float)v), Context.Strings.Saturation, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<SaturationAdjustment>(), Context.Strings.Saturation))
+                    @RenderSlider(Context.Strings.Exposure, GetValue<ExposureAdjustment>(a => a.Ev), -3, 3, 0.05,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new ExposureAdjustment((float)v), Context.Strings.Exposure, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<ExposureAdjustment>(), Context.Strings.Exposure))
+                    @RenderSlider(Context.Strings.Temperature, GetValue<TemperatureAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new TemperatureAdjustment((float)v), Context.Strings.Temperature, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<TemperatureAdjustment>(), Context.Strings.Temperature))
+                    @RenderSlider(Context.Strings.Vibrance, GetValue<VibranceAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new VibranceAdjustment((float)v), Context.Strings.Vibrance, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<VibranceAdjustment>(), Context.Strings.Vibrance))
+                    @RenderSlider(Context.Strings.Shadows, GetValue<ShadowsHighlightsAdjustment>(a => a.Shadows), -1, 1, 0.01,
+                        v => SetShadowsHighlights((float)v, GetValue<ShadowsHighlightsAdjustment>(a => a.Highlights), true),
+                        () => SetShadowsHighlights(GetValue<ShadowsHighlightsAdjustment>(a => a.Shadows), GetValue<ShadowsHighlightsAdjustment>(a => a.Highlights), false))
+                    @RenderSlider(Context.Strings.Highlights, GetValue<ShadowsHighlightsAdjustment>(a => a.Highlights), -1, 1, 0.01,
+                        v => SetShadowsHighlights(GetValue<ShadowsHighlightsAdjustment>(a => a.Shadows), (float)v, true),
+                        () => SetShadowsHighlights(GetValue<ShadowsHighlightsAdjustment>(a => a.Shadows), GetValue<ShadowsHighlightsAdjustment>(a => a.Highlights), false))
+                    @RenderSlider(Context.Strings.Whites, GetValue<WhitesBlacksAdjustment>(a => a.Whites), -1, 1, 0.01,
+                        v => SetWhitesBlacks((float)v, GetValue<WhitesBlacksAdjustment>(a => a.Blacks), true),
+                        () => SetWhitesBlacks(GetValue<WhitesBlacksAdjustment>(a => a.Whites), GetValue<WhitesBlacksAdjustment>(a => a.Blacks), false))
+                    @RenderSlider(Context.Strings.Blacks, GetValue<WhitesBlacksAdjustment>(a => a.Blacks), -1, 1, 0.01,
+                        v => SetWhitesBlacks(GetValue<WhitesBlacksAdjustment>(a => a.Whites), (float)v, true),
+                        () => SetWhitesBlacks(GetValue<WhitesBlacksAdjustment>(a => a.Whites), GetValue<WhitesBlacksAdjustment>(a => a.Blacks), false))
+                    @RenderSlider(Context.Strings.Tint, GetValue<TintAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new TintAdjustment((float)v), Context.Strings.Tint, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<TintAdjustment>(), Context.Strings.Tint))
+                    @RenderSlider(Context.Strings.Hue, GetValue<HueAdjustment>(a => a.Degrees), -180, 180, 1,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new HueAdjustment((float)v), Context.Strings.Hue, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<HueAdjustment>(), Context.Strings.Hue))
+                    @RenderSlider(Context.Strings.Sharpen, GetValue<SharpenFilter>(a => a.Amount), 0, 2, 0.05,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new SharpenFilter((float)v), Context.Strings.Sharpen, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<SharpenFilter>(), Context.Strings.Sharpen))
+                    @RenderSlider(Context.Strings.Blur, GetValue<BlurFilter>(a => a.Radius), 0, 20, 0.5,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BlurFilter((float)v), Context.Strings.Blur, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BlurFilter>(), Context.Strings.Blur))
+                    @RenderSlider(Context.Strings.Vignette, GetValue<VignetteFilter>(a => a.Amount), 0, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new VignetteFilter((float)v), Context.Strings.Vignette, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<VignetteFilter>(), Context.Strings.Vignette))
+                </fieldset>
+                <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage)">
+                    <legend class="bmg-legend">@Context.Strings.ColorMixer</legend>
+                    <label class="bmg-field">
+                        <span class="bmg-field-label">@Context.Strings.Band</span>
+                        <select class="bmg-select" @onchange="OnBandChanged">
+                            @foreach (var band in Enum.GetValues<HueBand>())
+                            {
+                                <option value="@band" selected="@(_band == band)">@BandName(band)</option>
+                            }
+                        </select>
+                    </label>
+                    @RenderSlider($"{BandName(_band)} {Context.Strings.Hue}", Shift.Hue, -60, 60, 1,
+                        v => SetShift(Shift with { Hue = (float)v }, true), () => SetShift(Shift, false))
+                    @RenderSlider($"{BandName(_band)} {Context.Strings.Saturation}", Shift.Saturation, -1, 1, 0.01,
+                        v => SetShift(Shift with { Saturation = (float)v }, true), () => SetShift(Shift, false))
+                    @RenderSlider($"{BandName(_band)} {Context.Strings.Lightness}", Shift.Lightness, -1, 1, 0.01,
+                        v => SetShift(Shift with { Lightness = (float)v }, true), () => SetShift(Shift, false))
+                </fieldset>
+                break;
+
+            case PanelTab.Filters:
+                <div class="bmg-filter-grid" role="group" aria-label="@Context.Strings.Filters">
+                    @foreach (var filter in FilterPresets)
+                    {
+                        <button type="button"
+                                class="bmg-filter @(IsFilterActive(filter.Key) ? "bmg-filter-active" : null)"
+                                disabled="@(!Context.HasImage || Context.IsBusy)"
+                                aria-pressed="@(IsFilterActive(filter.Key) ? "true" : "false")"
+                                @onclick="() => ApplyFilterAsync(filter.Key)">
+                            @filter.Label
+                        </button>
+                    }
+                </div>
+                <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage)">
+                    <legend class="bmg-legend">@Context.Strings.MotionBlur</legend>
+                    @RenderSlider(Context.Strings.MotionBlur, GetValue<MotionBlurFilter>(a => a.Distance), 0, 120, 1,
+                        v => SetMotionBlur((float)v, GetValue<MotionBlurFilter>(a => a.Angle), true),
+                        () => SetMotionBlur(GetValue<MotionBlurFilter>(a => a.Distance), GetValue<MotionBlurFilter>(a => a.Angle), false))
+                    @RenderSlider(Context.Strings.Angle, GetValue<MotionBlurFilter>(a => a.Angle), -90, 90, 1,
+                        v => SetMotionBlur(GetValue<MotionBlurFilter>(a => a.Distance), (float)v, true),
+                        () => SetMotionBlur(GetValue<MotionBlurFilter>(a => a.Distance), GetValue<MotionBlurFilter>(a => a.Angle), false))
+                </fieldset>
+                break;
+
+            case PanelTab.Transform:
+                <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage || Context.IsBusy)">
+                    <legend class="bmg-legend">@Context.Strings.Straighten</legend>
+                    @RenderSlider(Context.Strings.Straighten, GetStraighten(), -StraightenOperation.MaxDegrees, StraightenOperation.MaxDegrees, 0.1,
+                        v => Context.SetStraightenAsync(v, true), () => Context.SetStraightenAsync(GetStraighten()))
+                </fieldset>
+                <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage || Context.IsBusy)">
+                    <legend class="bmg-legend">@Context.Strings.Resize</legend>
+                    @{ SyncTransformFields(); }
+                    <div class="bmg-field-row">
+                        <label class="bmg-field">
+                            <span class="bmg-field-label">@Context.Strings.Width</span>
+                            <input type="number" class="bmg-number" min="1" max="16384" step="1" value="@_resizeWidth" @onchange="e => OnResizeChanged(e, width: true)" />
+                        </label>
+                        <label class="bmg-field">
+                            <span class="bmg-field-label">@Context.Strings.Height</span>
+                            <input type="number" class="bmg-number" min="1" max="16384" step="1" value="@_resizeHeight" @onchange="e => OnResizeChanged(e, width: false)" />
+                        </label>
+                    </div>
+                    <label class="bmg-field bmg-field-inline">
+                        <input type="checkbox" checked="@_keepProportions" @onchange="e => _keepProportions = (bool)(e.Value ?? false)" />
+                        <span class="bmg-field-label">@Context.Strings.KeepProportions</span>
+                    </label>
+                    <div class="bmg-field-actions">
+                        <button type="button" class="bmg-button" @onclick="() => Context.ResizeAsync(_resizeWidth, _resizeHeight)">@Context.Strings.Apply</button>
+                    </div>
+                </fieldset>
+                <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage || Context.IsBusy)">
+                    <legend class="bmg-legend">@Context.Strings.CanvasSize</legend>
+                    <div class="bmg-field-row">
+                        <label class="bmg-field">
+                            <span class="bmg-field-label">@Context.Strings.Width</span>
+                            <input type="number" class="bmg-number" min="1" max="16384" step="1" value="@_canvasWidth" @onchange="e => _canvasWidth = ParseSize(e, _canvasWidth)" />
+                        </label>
+                        <label class="bmg-field">
+                            <span class="bmg-field-label">@Context.Strings.Height</span>
+                            <input type="number" class="bmg-number" min="1" max="16384" step="1" value="@_canvasHeight" @onchange="e => _canvasHeight = ParseSize(e, _canvasHeight)" />
+                        </label>
+                    </div>
+                    <label class="bmg-field">
+                        <span class="bmg-field-label">@Context.Strings.Anchor</span>
+                        <select class="bmg-select" @onchange="OnAnchorChanged">
+                            @foreach (var anchor in Enum.GetValues<Anchor>())
+                            {
+                                <option value="@anchor" selected="@(_canvasAnchor == anchor)">@Context.Strings.FormatAnchor(anchor)</option>
+                            }
+                        </select>
+                    </label>
+                    <label class="bmg-field">
+                        <span class="bmg-field-label">@Context.Strings.Background</span>
+                        <input type="color" class="bmg-color" value="@_canvasColor.ToHex(false)" disabled="@_canvasTransparent"
+                               @onchange="e => { if (e.Value is string hex && Rgba32.TryParseHex(hex, out var color)) _canvasColor = color; }" />
+                    </label>
+                    <label class="bmg-field bmg-field-inline">
+                        <input type="checkbox" checked="@_canvasTransparent" @onchange="e => _canvasTransparent = (bool)(e.Value ?? false)" />
+                        <span class="bmg-field-label">@Context.Strings.Transparent</span>
+                    </label>
+                    <div class="bmg-field-actions">
+                        <button type="button" class="bmg-button"
+                                @onclick="() => Context.SetCanvasSizeAsync(_canvasWidth, _canvasHeight, _canvasAnchor, _canvasTransparent ? Rgba32.Transparent : _canvasColor)">
+                            @Context.Strings.Apply
+                        </button>
+                        <button type="button" class="bmg-button" @onclick="Context.TrimAsync">@Context.Strings.Trim</button>
+                    </div>
+                </fieldset>
+                break;
+
+            case PanelTab.Style:
+                @if (Context.SelectedAnnotation is { } chosen)
+                {
+                    @* The selected annotation's own properties: what the canvas shows selected, editable without the pointer. *@
+                    <fieldset class="bmg-fieldset" disabled="@Context.IsBusy">
+                        <legend class="bmg-legend">@Context.Strings.SelectedAnnotation: @KindOf(chosen)</legend>
+                        @if (chosen is TextAnnotation text)
+                        {
+                            <label class="bmg-field">
+                                <span class="bmg-field-label">@Context.Strings.Text</span>
+                                <textarea class="bmg-textarea" rows="3" value="@text.Text" disabled="@text.IsLocked"
+                                          @oninput="e => SetText(text, e, true)" @onchange="e => SetText(text, e, false)"></textarea>
+                            </label>
+                            @RenderSlider($"{KindOf(chosen)} {Context.Strings.FontSize}", text.Style.FontSize, 8, 400, 1,
+                                v => UpdateSelected(a => ((TextAnnotation)a) with { Style = ((TextAnnotation)a).Style with { FontSize = (float)v }, MeasuredSize = null }, true),
+                                () => UpdateSelected(a => a, false))
+                        }
+                        @RenderSlider($"{KindOf(chosen)} {Context.Strings.Rotation}", chosen.Rotation, -180, 180, 1,
+                            v => UpdateSelected(a => a with { Rotation = (float)v }, true), () => UpdateSelected(a => a, false))
+                        @RenderSlider($"{KindOf(chosen)} {Context.Strings.Opacity}", chosen.Opacity, 0, 1, 0.01,
+                            v => UpdateSelected(a => a with { Opacity = (float)v }, true), () => UpdateSelected(a => a, false))
+                        <div class="bmg-field-actions">
+                            <button type="button" class="bmg-button" disabled="@chosen.IsLocked" @onclick="() => Context.ApplyAsync(d => d.BringToFront(chosen.Id), Context.Strings.BringToFront)">@Context.Strings.BringToFront</button>
+                            <button type="button" class="bmg-button" disabled="@chosen.IsLocked" @onclick="() => Context.ApplyAsync(d => d.SendToBack(chosen.Id), Context.Strings.SendToBack)">@Context.Strings.SendToBack</button>
+                            <button type="button" class="bmg-button" aria-pressed="@(chosen.IsLocked ? "true" : "false")"
+                                    @onclick="() => Context.UpdateAnnotationAsync(chosen with { IsLocked = !chosen.IsLocked })">
+                                @(chosen.IsLocked ? Context.Strings.Unlock : Context.Strings.Lock)
+                            </button>
+                            <button type="button" class="bmg-button" disabled="@chosen.IsLocked" @onclick="() => Context.DeleteAnnotationAsync(chosen.Id)">@Context.Strings.Delete</button>
+                        </div>
+                    </fieldset>
+                }
+                <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage)">
+                    <legend class="bmg-visually-hidden">@Context.Strings.Tools</legend>
+                    <label class="bmg-field">
+                        <span class="bmg-field-label">@Context.Strings.StrokeColor</span>
+                        <input type="color" class="bmg-color"
+                               value="@Context.Settings.StrokeColor.ToHex(false)"
+                               @onchange="e => UpdateColor(e, true)" />
+                    </label>
+                    <label class="bmg-field">
+                        <span class="bmg-field-label">@Context.Strings.FillColor</span>
+                        <input type="color" class="bmg-color"
+                               value="@Context.Settings.FillColor.ToHex(false)"
+                               @onchange="e => UpdateColor(e, false)" />
+                    </label>
+                    <label class="bmg-field bmg-field-inline">
+                        <input type="checkbox" checked="@Context.Settings.Filled"
+                               @onchange="e => Context.UpdateSettings(s => s with { Filled = (bool)(e.Value ?? false) })" />
+                        <span class="bmg-field-label">@Context.Strings.Filled</span>
+                    </label>
+                    <label class="bmg-field bmg-field-inline">
+                        <input type="checkbox" checked="@Context.Settings.Dashed"
+                               @onchange="e => Context.UpdateSettings(s => s with { Dashed = (bool)(e.Value ?? false) })" />
+                        <span class="bmg-field-label">@Context.Strings.Dashed</span>
+                    </label>
+                    @RenderSlider(Context.Strings.StrokeWidth, Context.Settings.StrokeWidth, 1, 40, 1,
+                        v => { Context.UpdateSettings(s => s with { StrokeWidth = (float)v }); return Task.CompletedTask; }, null)
+                    @RenderSlider(Context.Strings.Opacity, Context.Settings.Opacity, 0.05, 1, 0.05,
+                        v => { Context.UpdateSettings(s => s with { Opacity = (float)v }); return Task.CompletedTask; }, null)
+                    @RenderSlider(Context.Strings.FontSize, Context.Settings.FontSize, 8, 200, 1,
+                        v => { Context.UpdateSettings(s => s with { FontSize = (float)v }); return Task.CompletedTask; }, null)
+
+                    @if (Context.Tool is EditorToolKind.Brush or EditorToolKind.Eraser)
+                    {
+                        @RenderSlider(Context.Strings.BrushSize, Context.Settings.BrushSize, 1, 300, 1,
+                            v => { Context.UpdateSettings(s => s with { BrushSize = (float)v }); return Task.CompletedTask; }, null)
+                        @RenderSlider(Context.Strings.Hardness, Context.Settings.BrushHardness, 0, 1, 0.05,
+                            v => { Context.UpdateSettings(s => s with { BrushHardness = (float)v }); return Task.CompletedTask; }, null)
+                    }
+                    @if (Context.Tool is EditorToolKind.Fill or EditorToolKind.MagicEraser or EditorToolKind.MagicWand)
+                    {
+                        @RenderSlider(Context.Strings.Tolerance, Context.Settings.Tolerance, 0, 1, 0.01,
+                            v => { Context.UpdateSettings(s => s with { Tolerance = (float)v }); return Task.CompletedTask; }, null)
+                    }
+                    @if (Context.Tool == EditorToolKind.Redact)
+                    {
+                        <label class="bmg-field">
+                            <span class="bmg-field-label">@Context.Strings.RedactionStyle</span>
+                            <select class="bmg-select" @onchange="OnRedactionModeChanged">
+                                <option value="@nameof(RedactionMode.Solid)" selected="@(Context.Settings.RedactionMode == RedactionMode.Solid)">@Context.Strings.Solid</option>
+                                <option value="@nameof(RedactionMode.Pixelate)" selected="@(Context.Settings.RedactionMode == RedactionMode.Pixelate)">@Context.Strings.Pixelate</option>
+                                <option value="@nameof(RedactionMode.Blur)" selected="@(Context.Settings.RedactionMode == RedactionMode.Blur)">@Context.Strings.Blur</option>
+                            </select>
+                        </label>
+                    }
+                </fieldset>
+                break;
+
+            case PanelTab.Layers:
+                <div class="bmg-field-actions" role="group" aria-label="@Context.Strings.Layers">
+                    <button type="button" class="bmg-button" disabled="@(!Context.HasImage || Context.IsBusy)" @onclick="Context.AddPaintLayerAsync">@Context.Strings.AddPaintLayer</button>
+                    <span class="bmg-file-button">
+                        <InputFile OnChange="OnAddImageLayer" accept="image/*" class="bmg-file-input" disabled="@(!Context.HasImage || Context.IsBusy)"
+                                   aria-label="@Context.Strings.AddImageLayer" />
+                        <span class="bmg-button" aria-hidden="true">@Context.Strings.AddImageLayer</span>
+                    </span>
+                </div>
+                @if (Context.Annotations.Count == 0 && Context.Layers.Count == 0)
+                {
+                    <p class="bmg-empty">@Context.Strings.None</p>
+                }
+                @if (Context.Layers.Count > 0)
+                {
+                    @* Image, fill, adjustment, paint and group layers, top of the stack first, as photo editors list them, a
+                       group's own layers in a list under it. *@
+                    <ul class="bmg-layer-list" aria-label="@Context.Strings.Layers">
+                        @LayerRows(Context.Layers)
+                    </ul>
+                    @if (Context.ActiveLayer is { } selected && Context.Document is { } document && document.TryLocateLayer(selected.Id, out var parent, out var position))
+                    {
+                        var below = position > 0 ? (parent?.Layers ?? document.Layers)[position - 1] : null;
+                        <fieldset class="bmg-fieldset" disabled="@(selected.IsLocked || Context.IsBusy)">
+                            <legend class="bmg-legend">@NameOf(selected)</legend>
+                            @RenderSlider(Context.Strings.Opacity, selected.Opacity, 0, 1, 0.01,
+                                v => UpdateActiveLayer(l => l with { Opacity = (float)v }, true), () => UpdateActiveLayer(l => l, false))
+                            <label class="bmg-field">
+                                <span class="bmg-field-label">@Context.Strings.BlendMode</span>
+                                <select class="bmg-select" @onchange="OnBlendModeChanged">
+                                    @foreach (var mode in Enum.GetValues<BlendMode>())
+                                    {
+                                        <option value="@mode" selected="@(selected.BlendMode == mode)">@Context.Strings.FormatBlendMode(mode)</option>
+                                    }
+                                </select>
+                            </label>
+                            @if (selected is GroupLayer group)
+                            {
+                                <label class="bmg-field bmg-field-inline">
+                                    <input type="checkbox" checked="@group.Isolated"
+                                           @onchange="e => UpdateActiveLayer(l => l is GroupLayer g ? g with { Isolated = (bool)(e.Value ?? false) } : l, false)" />
+                                    <span class="bmg-field-label">@Context.Strings.BlendGroupAsOne</span>
+                                </label>
+                            }
+                            <div class="bmg-field-actions">
+                                <button type="button" class="bmg-button" aria-pressed="@(selected.ClipToLayerBelow ? "true" : "false")" disabled="@(below is null)"
+                                        @onclick="() => UpdateActiveLayer(l => l with { ClipToLayerBelow = !l.ClipToLayerBelow }, false)">
+                                    @Context.Strings.ClipToLayerBelow
+                                </button>
+                                @if (below is not null)
+                                {
+                                    <button type="button" class="bmg-button" @onclick="() => Context.GroupWithLayerBelowAsync(selected.Id)">
+                                        @(below is GroupLayer ? Context.Strings.MoveIntoGroupBelow : Context.Strings.GroupWithLayerBelow)
+                                    </button>
+                                }
+                                @if (parent is not null)
+                                {
+                                    <button type="button" class="bmg-button" @onclick="() => Context.MoveLayerOutOfGroupAsync(selected.Id)">@Context.Strings.MoveOutOfGroup</button>
+                                }
+                                @if (selected is GroupLayer)
+                                {
+                                    <button type="button" class="bmg-button" @onclick="() => Context.UngroupAsync(selected.Id)">@Context.Strings.Ungroup</button>
+                                }
+                            </div>
+                        </fieldset>
+                    }
+                }
+                @if (Context.Annotations.Count > 0)
+                {
+                    <ul class="bmg-layer-list" role="listbox" aria-label="@(Context.Layers.Count > 0 ? Context.Strings.Annotations : Context.Strings.Layers)">
+                        @foreach (var annotation in Context.Annotations.Reverse())
+                        {
+                            <li class="bmg-layer @(Context.SelectedAnnotationId == annotation.Id ? "bmg-layer-selected" : null)"
+                                role="option"
+                                aria-selected="@(Context.SelectedAnnotationId == annotation.Id ? "true" : "false")">
+                                <button type="button" class="bmg-layer-name" @onclick="() => Context.SelectAnnotation(annotation.Id)">
+                                    @KindOf(annotation)
+                                </button>
+                                <button type="button" class="bmg-icon-button" title="@Context.Strings.Delete" aria-label="@($"{Context.Strings.Delete}: {KindOf(annotation)}")"
+                                        @onclick="() => Context.DeleteAnnotationAsync(annotation.Id)">
+                                    @((MarkupString)Icons.Delete)
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+                break;
+
+            case PanelTab.History:
+                <ol class="bmg-history-list" aria-label="@Context.Strings.History">
+                    @for (var i = 0; i < Context.History.Count; i++)
+                    {
+                        var index = i;
+                        var entry = Context.History[i];
+                        <li class="bmg-history-entry @(index == Context.HistoryPosition ? "bmg-history-current" : null) @(index > Context.HistoryPosition ? "bmg-history-future" : null)">
+                            <button type="button" class="bmg-history-button" @onclick="() => GoToHistory(index)">
+                                @(index == 0 ? Context.Strings.Original : entry.Label)
+                            </button>
+                        </li>
+                    }
+                </ol>
+                break;
+
+            case PanelTab.Export:
+                <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage)">
+                    <legend class="bmg-visually-hidden">@Context.Strings.Export</legend>
+                    <p class="bmg-readout">
+                        @Context.Strings.FormatDimensions(Context.OutputSize.Width, Context.OutputSize.Height)
+                        @if (Context.UsesProxy)
+                        {
+                            <span class="bmg-note">@($" ({Context.Strings.FormatDimensions(Context.SourceSize.Width, Context.SourceSize.Height)})")</span>
+                        }
+                    </p>
+                    <label class="bmg-field">
+                        <span class="bmg-field-label">@Context.Strings.Format</span>
+                        <select class="bmg-select" @onchange="OnFormatChanged">
+                            @foreach (var format in AvailableFormats)
+                            {
+                                <option value="@format" selected="@(ExportFormat == format)">@format.ToString().ToUpperInvariant()</option>
+                            }
+                        </select>
+                    </label>
+                    @if (ExportFormat.IsLossy())
+                    {
+                        @RenderSlider(Context.Strings.Quality, _exportQuality, 0.1, 1, 0.01,
+                            v => { _exportQuality = v; return Task.CompletedTask; }, null)
+                    }
+                    <label class="bmg-field">
+                        <span class="bmg-field-label">@Context.Strings.Metadata</span>
+                        <select class="bmg-select" @onchange="OnMetadataChanged">
+                            <option value="@nameof(MetadataPolicy.Remove)" selected="@(_metadataPolicy == MetadataPolicy.Remove)">@Context.Strings.RemoveMetadata</option>
+                            <option value="@nameof(MetadataPolicy.StripSensitive)" selected="@(_metadataPolicy == MetadataPolicy.StripSensitive)">@Context.Strings.StripSensitiveMetadata</option>
+                            <option value="@nameof(MetadataPolicy.Preserve)" selected="@(_metadataPolicy == MetadataPolicy.Preserve)">@Context.Strings.KeepMetadata</option>
+                        </select>
+                    </label>
+                    <div class="bmg-field-actions">
+                        <button type="button" class="bmg-button bmg-button-primary" disabled="@Context.IsBusy" @onclick="DownloadAsync">
+                            @Context.Strings.Download
+                        </button>
+                        @if (Context.Capabilities?.SupportsClipboardWrite == true)
+                        {
+                            <button type="button" class="bmg-button" disabled="@Context.IsBusy" @onclick="Context.CopyToClipboardAsync">
+                                @Context.Strings.CopyToClipboard
+                            </button>
+                        }
+                    </div>
+                </fieldset>
+                <fieldset class="bmg-fieldset">
+                    <legend class="bmg-legend">@Context.Strings.SaveProject</legend>
+                    <div class="bmg-field-actions">
+                        <button type="button" class="bmg-button" disabled="@(!Context.HasImage || Context.IsBusy)" @onclick="() => Context.SaveProjectAsync(DownloadFileName)">
+                            @Context.Strings.SaveProject
+                        </button>
+                        <span class="bmg-file-button">
+                            <InputFile OnChange="OnOpenProject" accept=".bmage,application/zip" class="bmg-file-input" disabled="@Context.IsBusy"
+                                       aria-label="@Context.Strings.OpenProject" />
+                            <span class="bmg-button" aria-hidden="true">@Context.Strings.OpenProject</span>
+                        </span>
+                    </div>
+                </fieldset>
+                break;
+        }
+    </div>
+</aside>
+
+@code {
+    private readonly string _id = $"bmg-panel-{Guid.NewGuid():N}";
+    private PanelTab _activeTab = PanelTab.Adjust;
+    // The Export tab starts from the editor's ExportOptions, and the reader's choices there win until the host hands
+    // in other options.
+    private ImageExportOptions? _exportDefaults;
+    private ImageFormat _exportFormat = ImageFormat.Png;
+    private double _exportQuality = 0.85;
+    private MetadataPolicy _metadataPolicy = MetadataPolicy.Remove;
+
+    /// <summary>The editor context supplying state and actions.</summary>
+    [Parameter, EditorRequired] public BmageEditorContext Context { get; set; } = default!;
+
+    /// <summary>File name used by the download button.</summary>
+    [Parameter] public string DownloadFileName { get; set; } = "image";
+
+    private enum PanelTab { Adjust, Filters, Transform, Style, Layers, History, Export }
+
+    // Kinds and the default layer names are English words from the model; the strings record names them for the UI.
+    private string KindOf(Annotation annotation) => Context.Strings.FormatKind(annotation.Kind);
+
+    private string NameOf(Layer layer) => layer.Name ?? Context.Strings.FormatKind(layer.Kind);
+
+    private (PanelTab Key, string Label)[] Tabs =>
+    [
+        (PanelTab.Adjust, Context.Strings.Adjust),
+        (PanelTab.Filters, Context.Strings.Filters),
+        (PanelTab.Transform, Context.Strings.Transform),
+        (PanelTab.Style, Context.Strings.Tools),
+        (PanelTab.Layers, Context.Strings.Layers),
+        (PanelTab.History, Context.Strings.History),
+        (PanelTab.Export, Context.Strings.Export),
+    ];
+
+    private (string Key, string Label)[] FilterPresets =>
+    [
+        ("none", Context.Strings.None),
+        ("grayscale", Context.Strings.Grayscale),
+        ("sepia", Context.Strings.Sepia),
+        ("invert", Context.Strings.Invert),
+        ("posterize", Context.Strings.Posterize),
+        ("threshold", Context.Strings.Threshold),
+        ("blackAndWhite", Context.Strings.BlackAndWhite),
+        ("duotone", Context.Strings.Duotone),
+    ];
+
+    /// <summary>The look the duotone preset gives: navy shadows, warm gold highlights.</summary>
+    private static readonly (Rgba32 Shadows, Rgba32 Highlights) DuotoneColors = (new Rgba32(24, 32, 88), new Rgba32(250, 214, 140));
+
+    /// <summary>Whether an operation is one of the mutually exclusive looks the filter grid offers.</summary>
+    private static bool IsPreset(IImageOperation operation)
+        => operation is GrayscaleFilter or SepiaFilter or InvertFilter or PosterizeFilter or ThresholdFilter or GradientMapOperation or ChannelMixerAdjustment { IsMonochrome: true };
+
+    private IEnumerable<ImageFormat> AvailableFormats
+    {
+        get
+        {
+            var capabilities = Context.Capabilities;
+            var candidates = new[] { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Avif };
+            return capabilities is null ? candidates.Take(2) : candidates.Where(capabilities.CanEncode);
+        }
+    }
+
+    /// <summary>The chosen format, or the first one offered when this browser cannot write it: what the list shows.</summary>
+    private ImageFormat ExportFormat => AvailableFormats.Contains(_exportFormat) ? _exportFormat : AvailableFormats.First();
+
+    private void OnTabKeyDown(KeyboardEventArgs e, PanelTab current)
+    {
+        // Arrow key navigation between tabs, as expected for a tablist.
+        var tabs = Tabs;
+        var index = Array.FindIndex(tabs, t => t.Key == current);
+        var next = e.Key switch
+        {
+            "ArrowRight" or "ArrowDown" => (index + 1) % tabs.Length,
+            "ArrowLeft" or "ArrowUp" => (index - 1 + tabs.Length) % tabs.Length,
+            "Home" => 0,
+            "End" => tabs.Length - 1,
+            _ => -1,
+        };
+        if (next >= 0) _activeTab = tabs[next].Key;
+    }
+
+    private float GetValue<TOperation>(Func<TOperation, float> read) where TOperation : class, IImageOperation
+        => Context.FindAdjustment<TOperation>() is { } op ? read(op) : 0f;
+
+    private Task SetShadowsHighlights(float shadows, float highlights, bool transient)
+    {
+        var operation = shadows == 0 && highlights == 0 ? null : new ShadowsHighlightsAdjustment(shadows, highlights);
+        return Context.SetAdjustmentAsync(operation, Context.Strings.Shadows, transient);
+    }
+
+    private void UpdateColor(ChangeEventArgs e, bool stroke)
+    {
+        if (e.Value is not string hex || !Rgba32.TryParseHex(hex, out var color)) return;
+        Context.UpdateSettings(s => stroke
+            ? s with { StrokeColor = color }
+            : s with { FillColor = color.WithAlpha(s.FillColor.A) });
+    }
+
+    private void OnRedactionModeChanged(ChangeEventArgs e)
+    {
+        if (e.Value is string value && Enum.TryParse<RedactionMode>(value, out var mode))
+            Context.UpdateSettings(s => s with { RedactionMode = mode });
+    }
+
+    private void OnFormatChanged(ChangeEventArgs e)
+    {
+        if (e.Value is string value && Enum.TryParse<ImageFormat>(value, out var format)) _exportFormat = format;
+    }
+
+    private void OnMetadataChanged(ChangeEventArgs e)
+    {
+        if (e.Value is string value && Enum.TryParse<MetadataPolicy>(value, out var policy)) _metadataPolicy = policy;
+    }
+
+    private bool IsFilterActive(string key) => key switch
+    {
+        "grayscale" => Context.FindAdjustment<GrayscaleFilter>() is not null,
+        "sepia" => Context.FindAdjustment<SepiaFilter>() is not null,
+        "invert" => Context.FindAdjustment<InvertFilter>() is not null,
+        "posterize" => Context.FindAdjustment<PosterizeFilter>() is not null,
+        "threshold" => Context.FindAdjustment<ThresholdFilter>() is not null,
+        "blackAndWhite" => Context.FindAdjustment<ChannelMixerAdjustment>() is { IsMonochrome: true },
+        "duotone" => Context.FindAdjustment<GradientMapOperation>() is not null,
+        "none" => Context.Document?.Pipeline.Any(IsPreset) != true,
+        _ => false,
+    };
+
+    private Task ApplyFilterAsync(string key)
+    {
+        IImageOperation? filter = key switch
+        {
+            "grayscale" => new GrayscaleFilter(),
+            "sepia" => new SepiaFilter(),
+            "invert" => new InvertFilter(),
+            "posterize" => new PosterizeFilter(6),
+            "threshold" => new ThresholdFilter(),
+            "blackAndWhite" => ChannelMixerAdjustment.Monochrome(),
+            "duotone" => GradientMapOperation.Duotone(DuotoneColors.Shadows, DuotoneColors.Highlights),
+            _ => null,
+        };
+        var label = key switch
+        {
+            "grayscale" => Context.Strings.Grayscale,
+            "sepia" => Context.Strings.Sepia,
+            "invert" => Context.Strings.Invert,
+            "posterize" => Context.Strings.Posterize,
+            "threshold" => Context.Strings.Threshold,
+            "blackAndWhite" => Context.Strings.BlackAndWhite,
+            "duotone" => Context.Strings.Duotone,
+            _ => Context.Strings.Filters,
+        };
+        // Filters are mutually exclusive in this panel: one edit removes the others and adds the choice, so it costs
+        // one history entry and one render.
+        return Context.ApplyAsync(d =>
+        {
+            var pipeline = d.Pipeline;
+            for (var i = pipeline.Count - 1; i >= 0; i--)
+                if (IsPreset(pipeline[i])) pipeline = pipeline.RemoveAt(i);
+            return d.WithPipeline(filter is null ? pipeline : pipeline.Add(filter));
+        }, label);
+    }
+
+    private Task GoToHistory(int index) => Context.GoToHistoryAsync(index);
+
+    // ---- Whites, blacks, the colour mixer and motion blur ----
+
+    private Task SetWhitesBlacks(float whites, float blacks, bool transient)
+        => Context.SetAdjustmentAsync(whites == 0 && blacks == 0 ? null : new WhitesBlacksAdjustment(whites, blacks), Context.Strings.Whites, transient);
+
+    private HueBand _band = HueBand.Reds;
+
+    private HslShift Shift => Context.FindAdjustment<HslAdjustment>() is { } hsl ? hsl[_band] : default;
+
+    private Task SetShift(HslShift shift, bool transient)
+    {
+        var hsl = (Context.FindAdjustment<HslAdjustment>() ?? new HslAdjustment()).With(_band, shift);
+        return Context.SetAdjustmentAsync(hsl.IsIdentity ? null : hsl, Context.Strings.ColorMixer, transient);
+    }
+
+    private void OnBandChanged(ChangeEventArgs e)
+    {
+        if (e.Value is string value && Enum.TryParse<HueBand>(value, out var band)) _band = band;
+    }
+
+    private string BandName(HueBand band) => band switch
+    {
+        HueBand.Reds => Context.Strings.Reds,
+        HueBand.Oranges => Context.Strings.Oranges,
+        HueBand.Yellows => Context.Strings.Yellows,
+        HueBand.Greens => Context.Strings.Greens,
+        HueBand.Aquas => Context.Strings.Aquas,
+        HueBand.Blues => Context.Strings.Blues,
+        HueBand.Purples => Context.Strings.Purples,
+        _ => Context.Strings.Magentas,
+    };
+
+    private Task SetMotionBlur(float distance, float angle, bool transient)
+        => Context.SetAdjustmentAsync(distance < 1 ? null : new MotionBlurFilter(distance, angle), Context.Strings.MotionBlur, transient);
+
+    // ---- Histogram ----
+
+    private ImageBuffer? _histogramSource;
+    private (string Path, double Black, double White)? _histogram;
+
+    /// <summary>
+    /// The luminance histogram of the preview, as an SVG path, with the fractions of pixels clipped to black and white.
+    /// Every fourth pixel of every fourth row is counted, a sixteenth of the preview, which is plenty for 256 bins on
+    /// a display and keeps it cheap on the interpreter while a slider is dragged; it is worked out again only when the
+    /// preview changes.
+    /// </summary>
+    private (string Path, double Black, double White)? GetHistogram()
+    {
+        if (Context.Session?.Preview is not { IsDisposed: false } preview) return null;
+        if (ReferenceEquals(preview, _histogramSource) && _histogram is not null) return _histogram;
+        var bins = new long[256];
+        long total = 0;
+        for (var y = 0; y < preview.Height; y += 4)
+        {
+            var row = preview.GetRow(y);
+            for (var x = 0; x < row.Length; x += 4)
+            {
+                var p = row[x];
+                if (p.A == 0) continue;
+                bins[Masks.MaskBuffer.Luma(p)]++;
+                total++;
+            }
+        }
+        if (total == 0) return null;
+        // Scaled to the tallest bin but the extremes, which a clipped photo piles up in and would flatten the rest.
+        var peak = Math.Max(1, bins.Skip(1).Take(254).Max());
+        var path = new System.Text.StringBuilder("M0 64");
+        for (var i = 0; i < 256; i++)
+        {
+            var h = 64 - Math.Min(64, bins[i] * 64.0 / peak);
+            path.Append(System.Globalization.CultureInfo.InvariantCulture, $" L{i} {h:0.#}");
+        }
+        path.Append(" L255 64 Z");
+        _histogramSource = preview;
+        _histogram = (path.ToString(), bins[0] / (double)total, bins[255] / (double)total);
+        return _histogram;
+    }
+
+    // ---- Transform ----
+
+    private float GetStraighten() => Context.FindAdjustment<StraightenOperation>() is { } s ? (float)s.Degrees : 0f;
+
+    private System.Drawing.Size _transformFieldsFor;
+    private int _resizeWidth, _resizeHeight, _canvasWidth, _canvasHeight;
+    private bool _keepProportions = true;
+    private Anchor _canvasAnchor = Anchor.Center;
+    private Rgba32 _canvasColor = Rgba32.White;
+    private bool _canvasTransparent;
+
+    /// <summary>Fills the size fields with the image's size whenever it changes, so they start from what is there.</summary>
+    private void SyncTransformFields()
+    {
+        var size = Context.OutputSize;
+        if (size == _transformFieldsFor || size.IsEmpty) return;
+        _transformFieldsFor = size;
+        _resizeWidth = _canvasWidth = size.Width;
+        _resizeHeight = _canvasHeight = size.Height;
+    }
+
+    private static int ParseSize(ChangeEventArgs e, int fallback)
+        => int.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var v) ? Math.Clamp(v, 1, 16384) : fallback;
+
+    private void OnResizeChanged(ChangeEventArgs e, bool width)
+    {
+        var source = Context.OutputSize;
+        if (width)
+        {
+            _resizeWidth = ParseSize(e, _resizeWidth);
+            if (_keepProportions && source.Width > 0) _resizeHeight = Math.Max(1, (int)Math.Round(_resizeWidth * (double)source.Height / source.Width));
+        }
+        else
+        {
+            _resizeHeight = ParseSize(e, _resizeHeight);
+            if (_keepProportions && source.Height > 0) _resizeWidth = Math.Max(1, (int)Math.Round(_resizeHeight * (double)source.Width / source.Height));
+        }
+    }
+
+    private void OnAnchorChanged(ChangeEventArgs e)
+    {
+        if (e.Value is string value && Enum.TryParse<Anchor>(value, out var anchor)) _canvasAnchor = anchor;
+    }
+
+    // ---- The selected annotation ----
+
+    private Guid? _shownSelection;
+
+    /// <summary>
+    /// Selecting something on the canvas shows its properties: the Tools tab opens when the selection changes, unless
+    /// the Layers tab, where an annotation can be selected from the list, is the one in use.
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        var selected = Context.SelectedAnnotationId;
+        if (selected != _shownSelection && selected is not null && _activeTab != PanelTab.Layers) _activeTab = PanelTab.Style;
+        _shownSelection = selected;
+
+        // By the values the tab shows: a host that writes its options inline hands in a fresh copy on every render,
+        // one its dictionary of extensions makes unequal as a record even when nothing changed.
+        var options = Context.ExportOptions;
+        if (_exportDefaults is null || options.Format != _exportDefaults.Format || options.Quality != _exportDefaults.Quality || options.Metadata != _exportDefaults.Metadata)
+        {
+            _exportFormat = options.Format;
+            _exportQuality = options.Quality;
+            _metadataPolicy = options.Metadata;
+        }
+        _exportDefaults = options;
+    }
+
+    private Task UpdateSelected(Func<Annotation, Annotation> change, bool transient)
+        => Context.SelectedAnnotation is { IsLocked: false } annotation ? Context.UpdateAnnotationAsync(change(annotation), transient) : Task.CompletedTask;
+
+    private Task SetText(TextAnnotation text, ChangeEventArgs e, bool transient)
+        => e.Value is string value ? UpdateSelected(a => a is TextAnnotation t ? t with { Text = value, MeasuredSize = null } : a, transient) : Task.CompletedTask;
+
+    // ---- Layers ----
+
+    private Task OnAddImageLayer(InputFileChangeEventArgs e)
+        => Context.AddImageLayerAsync(Input.ImageSource.FromBrowserFile(e.File));
+
+    private Task OnOpenProject(InputFileChangeEventArgs e) => Context.OpenProjectAsync(e.File);
+
+    /// <summary>The rows of a list of layers, top first, each group's own layers in a list nested under its row.</summary>
+    private RenderFragment LayerRows(IReadOnlyList<Layer> list) => __builder =>
+    {
+        for (var i = list.Count - 1; i >= 0; i--)
+        {
+            var layer = list[i];
+            var index = i;
+            var active = Context.ActiveLayerId == layer.Id;
+            <li class="bmg-layer-item">
+                <div class="bmg-layer @(layer.IsVisible ? null : "bmg-layer-hidden") @(active ? "bmg-layer-selected" : null) @(layer.ClipToLayerBelow && index > 0 ? "bmg-layer-clipped" : null)">
+                    <button type="button" class="bmg-layer-name" aria-pressed="@(active ? "true" : "false")"
+                            @onclick="() => Context.SelectLayer(layer.Id)">
+                        @NameOf(layer)
+                    </button>
+                    <button type="button" class="bmg-icon-button"
+                            title="@(layer.IsVisible ? Context.Strings.Hide : Context.Strings.Show)"
+                            aria-label="@($"{(layer.IsVisible ? Context.Strings.Hide : Context.Strings.Show)}: {NameOf(layer)}")"
+                            aria-pressed="@(layer.IsVisible ? "false" : "true")"
+                            disabled="@layer.IsLocked"
+                            @onclick="() => Context.UpdateLayerAsync(layer with { IsVisible = !layer.IsVisible })">
+                        @((MarkupString)(layer.IsVisible ? Icons.Visible : Icons.Hidden))
+                    </button>
+                    <button type="button" class="bmg-icon-button"
+                            title="@(layer.IsLocked ? Context.Strings.Unlock : Context.Strings.Lock)"
+                            aria-label="@($"{(layer.IsLocked ? Context.Strings.Unlock : Context.Strings.Lock)}: {NameOf(layer)}")"
+                            aria-pressed="@(layer.IsLocked ? "true" : "false")"
+                            @onclick="() => Context.UpdateLayerAsync(layer with { IsLocked = !layer.IsLocked })">
+                        @((MarkupString)(layer.IsLocked ? Icons.Locked : Icons.Unlocked))
+                    </button>
+                    <button type="button" class="bmg-icon-button" title="@Context.Strings.MoveUp" aria-label="@($"{Context.Strings.MoveUp}: {NameOf(layer)}")"
+                            disabled="@(layer.IsLocked || index == list.Count - 1)"
+                            @onclick="() => Context.MoveLayerAsync(layer.Id, index + 1)">
+                        @((MarkupString)Icons.MoveUp)
+                    </button>
+                    <button type="button" class="bmg-icon-button" title="@Context.Strings.MoveDown" aria-label="@($"{Context.Strings.MoveDown}: {NameOf(layer)}")"
+                            disabled="@(layer.IsLocked || index == 0)"
+                            @onclick="() => Context.MoveLayerAsync(layer.Id, index - 1)">
+                        @((MarkupString)Icons.MoveDown)
+                    </button>
+                    <button type="button" class="bmg-icon-button" title="@Context.Strings.Duplicate" aria-label="@($"{Context.Strings.Duplicate}: {NameOf(layer)}")"
+                            @onclick="() => Context.DuplicateLayerAsync(layer.Id)">
+                        @((MarkupString)Icons.Duplicate)
+                    </button>
+                    <button type="button" class="bmg-icon-button" title="@Context.Strings.Delete" aria-label="@($"{Context.Strings.Delete}: {NameOf(layer)}")"
+                            disabled="@layer.IsLocked"
+                            @onclick="() => Context.RemoveLayerAsync(layer.Id)">
+                        @((MarkupString)Icons.Delete)
+                    </button>
+                </div>
+                @if (layer is GroupLayer { Layers.Count: > 0 } group)
+                {
+                    <ul class="bmg-layer-children" aria-label="@NameOf(group)">
+                        @LayerRows(group.Layers)
+                    </ul>
+                }
+            </li>
+        }
+    };
+
+    private Task UpdateActiveLayer(Func<Layer, Layer> change, bool transient)
+        => Context.ActiveLayer is { IsLocked: false } layer ? Context.UpdateLayerAsync(change(layer), transient) : Task.CompletedTask;
+
+    private Task OnBlendModeChanged(ChangeEventArgs e)
+        => e.Value is string value && Enum.TryParse<BlendMode>(value, out var mode) ? UpdateActiveLayer(l => l with { BlendMode = mode }, false) : Task.CompletedTask;
+
+    // The rest of the host's options - the background, a size budget - still apply.
+    private Task DownloadAsync() => Context.DownloadAsync(DownloadFileName, (_exportDefaults ?? Context.ExportOptions) with
+    {
+        Format = ExportFormat,
+        Quality = _exportQuality,
+        Metadata = _metadataPolicy,
+    });
+
+    private RenderFragment RenderSlider(string label, double value, double min, double max, double step, Func<double, Task> onInput, Func<Task>? onCommit) => builder =>
+    {
+        var id = $"{_id}-{label.GetHashCode(StringComparison.Ordinal):x}";
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "bmg-field");
+
+        builder.OpenElement(2, "label");
+        builder.AddAttribute(3, "class", "bmg-field-label");
+        builder.AddAttribute(4, "for", id);
+        builder.AddContent(5, label);
+        builder.OpenElement(6, "output");
+        builder.AddAttribute(7, "class", "bmg-field-value");
+        builder.AddContent(8, value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
+        builder.CloseElement();
+        builder.CloseElement();
+
+        builder.OpenElement(9, "input");
+        builder.AddAttribute(10, "type", "range");
+        builder.AddAttribute(11, "class", "bmg-slider");
+        builder.AddAttribute(12, "id", id);
+        builder.AddAttribute(13, "min", min.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        builder.AddAttribute(14, "max", max.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        builder.AddAttribute(15, "step", step.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        builder.AddAttribute(16, "value", value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        builder.AddAttribute(17, "aria-valuetext", $"{label} {value:0.##}");
+        builder.AddAttribute(18, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, async e =>
+        {
+            if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v))
+                await onInput(v);
+        }));
+        if (onCommit is not null)
+        {
+            // Commit on release so the history gets one entry per interaction, not one per pixel of slider travel.
+            builder.AddAttribute(19, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, async _ => await onCommit()));
+        }
+        builder.CloseElement();
+        builder.CloseElement();
+    };
+}

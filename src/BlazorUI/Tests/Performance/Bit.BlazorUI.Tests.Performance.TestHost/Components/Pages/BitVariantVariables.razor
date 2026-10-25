@@ -1,0 +1,168 @@
+﻿@page "/regression/variant-variables"
+
+<PageTitle>Variant Variables Regression</PageTitle>
+
+@* Every component that reads a tier of its public variables per variant (#13655), each rendered in all three variants,
+   enabled and disabled, in a wrapper the test sets the variables on. The second half holds the cases the tier must not
+   break: a variable set on a part's own style, a class an app hands a part, a variant an item overrides. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>Variant Variables Regression</h3>
+    <p>Status: <span id="status">@_status</span></p>
+    <button id="btn-disable" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+</div>
+
+<div id="variants">
+    @foreach (var variant in Variants)
+    {
+        @foreach (var disabled in new[] { false, true })
+        {
+            <div data-variant="@variant.ToString().ToLowerInvariant()" data-disabled="@(disabled ? "true" : "false")" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; margin-bottom: 8px;">
+                @Instances(variant, disabled)
+            </div>
+        }
+    }
+</div>
+
+<div id="scenarios" style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
+    @foreach (var variant in Variants)
+    {
+        var v = variant.ToString().ToLowerInvariant();
+
+        @* A public item variable set on one item's Style reaches that item's card. *@
+        <div data-case="chg-item-style" data-variant="@v">
+            <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Variant="variant" Items="_styledChoiceItems" DefaultValue="@("a")" />
+        </div>
+
+        @* An option an app wraps in an element of its own is painted like the one placed straight in the group. *@
+        <div data-case="btg-wrapped" data-variant="@v">
+            <BitButtonGroup TItem="BitButtonGroupOption" Variant="variant">
+                <span class="wrapper"><BitButtonGroupOption Text="Wrapped" /></span>
+                <BitButtonGroupOption Text="Direct" />
+            </BitButtonGroup>
+        </div>
+
+        @* FixedColor wears the on-color of the variant, never the resting foreground of Outline and Text. *@
+        <div data-case="fixed-color" data-variant="@v">
+            <BitButton Variant="variant" FixedColor>Button</BitButton>
+            <BitToggleButton Variant="variant" FixedColor Text="Toggle" />
+        </div>
+
+        @* A public variable set on Styles.Input / Styles.InputsWrapper reaches the boxes. *@
+        <div data-case="otp-input-style" data-variant="@v">
+            <BitOtpInput Variant="variant" Length="2" Styles="@(new() { Input = "--bit-OtpInput-border-color: rgb(201, 1, 1); --bit-OtpInput-background: rgb(201, 1, 2);" })" />
+            <BitOtpInput Variant="variant" Length="2" Styles="@(new() { InputsWrapper = "--bit-OtpInput-border-color: rgb(201, 1, 3);" })" />
+        </div>
+
+        @* A public variable set on a half's own style reaches that half's hover and press. *@
+        <div data-case="mnb-half-style" data-variant="@v">
+            <BitMenuButton TItem="BitMenuButtonItem" Variant="variant" Text="Menu" Split Items="_menuItems"
+                           Styles="@(new() { ChevronDownButton = "--bit-MenuButton-hover-background: rgb(201, 1, 1); --bit-MenuButton-active-background: rgb(201, 1, 2);", OperatorButton = "--bit-MenuButton-hover-background: rgb(201, 1, 3);" })" />
+        </div>
+
+        @* A public variable set on the remove buttons' or the label's own style reaches them while disabled. *@
+        <div data-case="fin-part-style" data-variant="@v">
+            <BitFileInput Variant="variant" Disabled="_disabled" ShowRemoveButton Multiple
+                          Styles="@(new() { RemoveButton = "--bit-FileInput-disabled-background: rgb(201, 1, 1);", Label = "--bit-FileInput-disabled-background: rgb(201, 1, 2);" })" />
+            <div data-plain>
+                <BitFileInput Variant="variant" Disabled="_disabled" ShowRemoveButton Multiple />
+            </div>
+        </div>
+
+        <div data-case="upl-label-style" data-variant="@v">
+            <BitFileUpload Variant="variant" Disabled UploadUrl="/upload"
+                           Styles="@(new() { Label = "--bit-FileUpload-disabled-background: rgb(201, 1, 1); --bit-FileUpload-disabled-border-color: rgb(201, 1, 2);" })" />
+            <BitFileUpload Variant="variant" Disabled ShowDropArea UploadUrl="/upload"
+                           Styles="@(new() { Label = "--bit-FileUpload-disabled-background: rgb(201, 1, 1); --bit-FileUpload-disabled-border-color: rgb(201, 1, 2);" })" />
+        </div>
+
+        @* A class an app hands a part through Class / Classes outweighs nothing the variant adds. *@
+        <div data-case="class-weight" data-variant="@v">
+            <BitHeader Variant="variant" Bordered Class="app-divider">Header</BitHeader>
+            <BitFooter Variant="variant" Bordered Class="app-divider">Footer</BitFooter>
+            <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Variant="variant" Items="_tileItems" Classes="@(new() { ItemContainer = "app-tile" })" />
+            <BitButtonGroup TItem="BitButtonGroupItem" Variant="variant" Items="_buttonGroupItems" Classes="@(new() { Button = "app-button" })" />
+        </div>
+    }
+
+    @* The items of a Text timeline that override their variant are handed their own variant's plate, not the Text tier. *@
+    <div data-case="tln-mixed">
+        <BitTimeline TItem="BitTimelineItem" Variant="BitVariant.Text" Items="_mixedTimelineItems" />
+    </div>
+</div>
+
+@code {
+    private static readonly BitVariant[] Variants = [BitVariant.Fill, BitVariant.Outline, BitVariant.Text];
+
+    private bool _disabled;
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    private readonly Dictionary<BitVariant, BitSnackBar?> _snackBars = [];
+
+    private readonly List<BitButtonGroupItem> _buttonGroupItems = [new() { Text = "One" }, new() { Text = "Two" }];
+    private readonly List<BitMenuButtonItem> _menuItems = [new() { Text = "First", Key = "a" }, new() { Text = "Second", Key = "b" }];
+    private readonly List<BitChoiceGroupItem<string>> _choiceItems =
+    [
+        new() { Text = "A", Value = "a" },
+        new() { Text = "B", Value = "b" },
+        new() { Text = "C", Value = "c", IconName = BitIconName.Home },
+    ];
+    private readonly List<BitChoiceGroupItem<string>> _styledChoiceItems =
+    [
+        new() { Text = "A", Value = "a", Style = "--bit-ChoiceGroup-item-checked-background: rgb(201, 1, 3);" },
+        new() { Text = "B", Value = "b", Style = "--bit-ChoiceGroup-item-background: rgb(201, 1, 1); --bit-ChoiceGroup-item-border-color: rgb(201, 1, 2);" },
+    ];
+    private readonly List<BitChoiceGroupItem<string>> _tileItems = [new() { Text = "Tile", Value = "t", IconName = BitIconName.Home }];
+    private readonly ICollection<string> _tags = ["one", "two"];
+    private readonly List<BitTimelineItem> _timelineItems =
+    [
+        new() { PrimaryText = "One", IconName = BitIconName.Home },
+        new() { PrimaryText = "Two" },
+    ];
+    private readonly List<BitTimelineItem> _mixedTimelineItems =
+    [
+        new() { PrimaryText = "Text", IconName = BitIconName.Home, Key = "text" },
+        new() { PrimaryText = "Fill", IconName = BitIconName.Home, Variant = BitVariant.Fill, Key = "fill" },
+        new() { PrimaryText = "Outline", IconName = BitIconName.Home, Variant = BitVariant.Outline, Key = "outline" },
+    ];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        foreach (var snackBar in _snackBars.Values)
+        {
+            if (snackBar is not null) await snackBar.Show("Snack", "Body", persistent: true);
+        }
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private RenderFragment Instances(BitVariant variant, bool disabled) => __builder =>
+    {
+        <div data-cmp="Button"><BitButton Variant="variant" Disabled="disabled">Button</BitButton></div>
+        <div data-cmp="ButtonGroup"><BitButtonGroup TItem="BitButtonGroupItem" Variant="variant" Disabled="disabled" Items="_buttonGroupItems" /></div>
+        <div data-cmp="MenuButton"><BitMenuButton TItem="BitMenuButtonItem" Variant="variant" Disabled="disabled" Text="Menu" Split Items="_menuItems" /></div>
+        <div data-cmp="ToggleButton"><BitToggleButton Variant="variant" Disabled="disabled" Text="Toggle" /></div>
+        <div data-cmp="ChoiceGroup"><BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Variant="variant" Disabled="disabled" Items="_choiceItems" DefaultValue="@("a")" /></div>
+        <div data-cmp="FileInput"><BitFileInput Variant="variant" Disabled="disabled" /></div>
+        <div data-cmp="FileUpload"><BitFileUpload Variant="variant" Disabled="disabled" UploadUrl="/upload" /><BitFileUpload Variant="variant" Disabled="disabled" ShowDropArea UploadUrl="/upload" /></div>
+        <div data-cmp="OtpInput"><BitOtpInput Variant="variant" Disabled="disabled" Length="2" /></div>
+        <div data-cmp="TagsInput"><BitTagsInput Variant="variant" TagVariant="variant" Disabled="disabled" DefaultValue="_tags" /></div>
+        <div data-cmp="Footer" style="width: 200px;"><BitFooter Variant="variant" Disabled="disabled" Bordered>Footer</BitFooter></div>
+        <div data-cmp="Header" style="width: 200px;"><BitHeader Variant="variant" Disabled="disabled" Bordered>Header</BitHeader></div>
+        <div data-cmp="Timeline" style="width: 200px;"><BitTimeline TItem="BitTimelineItem" Variant="variant" Disabled="disabled" Items="_timelineItems" /></div>
+        <div data-cmp="DropMenu"><BitDropMenu Variant="variant" Disabled="disabled" Text="Drop"><div>Body</div></BitDropMenu></div>
+        <div data-cmp="Pagination"><BitPagination Variant="variant" Disabled="disabled" Count="3" /></div>
+        <div data-cmp="Badge"><BitBadge Variant="variant" Disabled="disabled" Content="5"><span>Inbox</span></BitBadge></div>
+        <div data-cmp="Message" style="width: 200px;"><BitMessage Variant="variant" Disabled="disabled">Message</BitMessage></div>
+        <div data-cmp="Tag"><BitTag Variant="variant" Disabled="disabled" Text="Tag" /></div>
+        @if (disabled is false)
+        {
+            @* A snack bar is a host of the items shown in it, with no disabled state of its own. *@
+            <div data-cmp="SnackBar"><BitSnackBar @ref="_snackBars[variant]" Variant="variant" /></div>
+        }
+    };
+}

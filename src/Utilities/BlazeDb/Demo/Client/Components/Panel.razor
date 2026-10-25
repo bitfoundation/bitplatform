@@ -1,0 +1,55 @@
+﻿@* A framed piece of a page - a live sample, a readout, a set of controls - drawn as the site kit's
+   .bb-demo, with an optional title bar (.bb-demo-bar) carrying an icon, the title, a monospaced
+   sub-title and actions at the far end. Flush drops the inner padding for content that brings its
+   own rows: a table, a log, a hex dump. A flush panel with no title is no frame at all - its table
+   is framed already. The title is not a heading, so the "On this page" rail lists the page's
+   sections rather than every panel in them. *@
+
+@if (Flush && !HasBar)
+{
+    @ChildContent
+}
+else
+{
+    <div class="bb-demo bd-panel @(Flush ? "bd-flush" : null) @Class">
+        @if (HasBar)
+        {
+            <div class="bb-demo-bar">
+                <div class="bd-panel-title">
+                    @if (!string.IsNullOrWhiteSpace(IconName))
+                    {
+                        <Icon Name="@IconName" Size="16" />
+                    }
+                    <strong>@Title</strong>
+                    @if (!string.IsNullOrWhiteSpace(Sub))
+                    {
+                        <span class="bd-panel-sub">@Sub</span>
+                    }
+                </div>
+                @if (Actions is not null)
+                {
+                    <div class="bd-panel-actions">@Actions</div>
+                }
+            </div>
+        }
+        @ChildContent
+    </div>
+}
+
+@code {
+    [Parameter] public string? Title { get; set; }
+
+    [Parameter] public string? IconName { get; set; }
+
+    [Parameter] public string? Sub { get; set; }
+
+    [Parameter] public bool Flush { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private bool HasBar => !string.IsNullOrWhiteSpace(Title) || Actions is not null;
+}

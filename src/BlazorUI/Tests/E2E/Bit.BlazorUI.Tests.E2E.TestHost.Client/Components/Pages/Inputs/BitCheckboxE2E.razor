@@ -1,0 +1,493 @@
+﻿@page "/e2e/checkbox"
+
+<PageTitle>BitCheckbox E2E</PageTitle>
+
+<h1>BitCheckbox</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitCheckbox Id="cb-basic" Label="Basic checkbox" OnChange="v => { _basicChanges++; _basicLast = v; }" />
+    <span id="basic-change-count">@_basicChanges</span>
+    <span id="basic-last">@_basicLast</span>
+    <BitCheckbox Id="cb-default-checked" Label="Checked by default" DefaultValue="true" />
+    <BitCheckbox Id="cb-title" Label="Hover over me" Title="The native tooltip of the checkbox" />
+    <BitCheckbox Id="cb-disabled" Label="Disable checkbox" Disabled />
+    <BitCheckbox Id="cb-disabled-checked" Label="Disable checked checkbox" Disabled Value="true" />
+</E2ESection>
+
+<E2ESection Id="icons" Title="Icons">
+    <BitCheckbox Id="cb-icon-check" Label="Custom check icon" CheckIconName="@BitIconName.Heart" />
+    <BitCheckbox Id="cb-icon-unchecked" Label="Custom unchecked icon" UncheckedIconName="@BitIconName.Cancel" />
+    <BitCheckbox Id="cb-icon-ind" Label="Custom indeterminate icon" Indeterminate IndeterminateIconName="@BitIconName.Remove" />
+    <BitCheckbox Id="cb-icon-disabled" Label="Disabled custom check icon" CheckIconName="@BitIconName.WavingHand" Value="true" Disabled />
+    <BitCheckbox Id="cb-icon-named" Label="Named glyph" CheckIconName="@BitIconName.Heart" CheckIconAriaLabel="Favorite" />
+    <BitCheckbox Id="cb-icon-default" Label="Default glyph" />
+</E2ESection>
+
+<E2ESection Id="placement" Title="Label placement">
+    <BitCheckbox Id="cb-place-end" Label="End" LabelPlacement="BitPlacement.End" />
+    <BitCheckbox Id="cb-place-start" Label="Start" LabelPlacement="BitPlacement.Start" />
+    <BitCheckbox Id="cb-place-top" Label="Top" LabelPlacement="BitPlacement.Top" />
+    <BitCheckbox Id="cb-place-bottom" Label="Bottom" LabelPlacement="BitPlacement.Bottom" />
+    <BitCheckbox Id="cb-place-reversed" Label="Reversed" Reversed />
+    <BitCheckbox Id="cb-place-reversed-end" Label="Reversed but End" Reversed LabelPlacement="BitPlacement.End" />
+    <BitCheckbox Id="cb-place-left" Label="Left is not meaningful" LabelPlacement="BitPlacement.Left" />
+</E2ESection>
+
+<E2ESection Id="fullwidth" Title="FullWidth and NoWrap">
+    <div id="fw-panel" style="width: 400px;">
+        <BitCheckbox Id="cb-fw" FullWidth Reversed Label="Wi-Fi" DefaultValue="true" />
+    </div>
+    <div id="nw-panel" style="width: 200px;">
+        <BitCheckbox Id="cb-wrap" FullWidth Label="Send me a weekly digest of everything that happened in my workspace" />
+        <BitCheckbox Id="cb-nowrap" FullWidth NoWrap
+                     Title="Send me a weekly digest of everything that happened in my workspace"
+                     Label="Send me a weekly digest of everything that happened in my workspace" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="description" Title="Description">
+    <BitCheckbox Id="cb-desc" Label="Auto renew" Description="The subscription is renewed one day before it expires." @bind-Value="_descValue" />
+    <span id="desc-value">@_descValue</span>
+    <BitCheckbox Id="cb-desc-tpl" Label="I accept the terms">
+        <DescriptionTemplate>
+            Read the <a id="desc-tpl-link" href="#description">full agreement</a> before you agree.
+        </DescriptionTemplate>
+    </BitCheckbox>
+</E2ESection>
+
+<E2ESection Id="indeterminate" Title="Indeterminate and three-state">
+    <BitCheckbox Id="cb-ind" Label="Indeterminate checkbox" @bind-Value="_indValue" @bind-Indeterminate="_indInd" />
+    <span id="ind-value">@_indValue</span>
+    <span id="ind-ind">@_indInd</span>
+    <button id="btn-ind-set" @onclick="() => _indInd = true">Make indeterminate</button>
+    <BitCheckbox Id="cb-def-ind" Label="Indeterminate by default" DefaultIndeterminate="true" />
+    <BitCheckbox Id="cb-dis-ind" Label="Disabled indeterminate checkbox" Indeterminate Disabled />
+
+    <BitCheckbox Id="cb-select-all" Label="Select all fruits"
+                 Value="_selectAll"
+                 OnChange="HandleSelectAllChange"
+                 @bind-Indeterminate="_selectAllInd" />
+    <div class="fruits">
+        <BitCheckbox Id="cb-apple" Label="Apple" Value="_apple" OnChange="v => { _apple = v; RefreshSelectAll(); }" />
+        <BitCheckbox Id="cb-banana" Label="Banana" Value="_banana" OnChange="v => { _banana = v; RefreshSelectAll(); }" />
+        <BitCheckbox Id="cb-orange" Label="Orange" Value="_orange" OnChange="v => { _orange = v; RefreshSelectAll(); }" />
+    </div>
+    <span id="fruits-state">@($"{_apple},{_banana},{_orange}")</span>
+
+    <BitCheckbox Id="cb-three" Label="Three-state checkbox" ThreeState
+                 @bind-Value="_threeValue"
+                 @bind-Indeterminate="_threeInd" />
+    <span id="three-state">@($"{_threeValue},{_threeInd}")</span>
+
+    <BitCheckbox Id="cb-nullable" Label="Subscribe to the newsletter" ThreeState
+                 Value="_subscribed is true" ValueChanged="HandleSubscribedValueChanged"
+                 Indeterminate="_subscribed is null" IndeterminateChanged="HandleSubscribedIndeterminateChanged" />
+    <span id="nullable-state">@(_subscribed?.ToString() ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="binding" Title="Binding">
+    <BitCheckbox Id="cb-fixed" Label="One-way checked (Fixed)" Value="true" />
+    <BitCheckbox Id="cb-oneway" Label="One-way" Value="_oneWay" />
+    <button id="btn-oneway" @onclick="() => _oneWay = !_oneWay">Toggle one-way</button>
+    <BitCheckbox Id="cb-twoway" Label="Two-way" @bind-Value="_twoWay" />
+    <button id="btn-twoway" @onclick="() => _twoWay = !_twoWay">Toggle two-way</button>
+    <span id="twoway-value">@_twoWay</span>
+    <BitCheckbox Id="cb-fixed-ind" Label="One-way indeterminate (Fixed)" Indeterminate />
+    <BitCheckbox Id="cb-oneway-ind" Label="One-way indeterminate" Indeterminate="_oneWayInd" />
+    <button id="btn-oneway-ind" @onclick="() => _oneWayInd = !_oneWayInd">Toggle one-way indeterminate</button>
+    <BitCheckbox Id="cb-twoway-ind" Label="Two-way indeterminate" @bind-Indeterminate="_twoWayInd" />
+    <button id="btn-twoway-ind" @onclick="() => _twoWayInd = !_twoWayInd">Toggle two-way indeterminate</button>
+    <span id="twoway-ind-value">@_twoWayInd</span>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitCheckbox Id="cb-label-tpl" @bind-Value="_labelTplValue">
+        <LabelTemplate>
+            <b id="label-tpl-content">Label Template</b>
+        </LabelTemplate>
+    </BitCheckbox>
+    <span id="label-tpl-value">@_labelTplValue</span>
+    <button id="btn-before-custom">Before custom</button>
+    <BitCheckbox Id="cb-custom" @bind-Value="_customValue">
+        <span id="custom-face" style="display:inline-flex;width:22px;height:22px;border:1px solid gray">@(_customValue ? "X" : "")</span>
+        <span>Custom basic checkbox</span>
+    </BitCheckbox>
+    <span id="custom-value">@_customValue</span>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <button id="btn-before-events">Before events</button>
+    <BitCheckbox Id="cb-events" Label="Click me"
+                 OnClick="() => Log(ref _evClick, nameof(BitCheckbox.OnClick))"
+                 OnChanging="LogChanging"
+                 OnChange="LogChange"
+                 OnFocus="() => Log(ref _evFocus, nameof(BitCheckbox.OnFocus))"
+                 OnFocusIn="() => Log(ref _evFocusIn, nameof(BitCheckbox.OnFocusIn))"
+                 OnFocusOut="() => Log(ref _evFocusOut, nameof(BitCheckbox.OnFocusOut))"
+                 OnBlur="() => Log(ref _evBlur, nameof(BitCheckbox.OnBlur))" />
+    <button id="btn-after-events">After events</button>
+    <button id="btn-clear-log" @onclick="() => _evLog = string.Empty">Clear log</button>
+    <span id="ev-log">@_evLog</span>
+    <span id="ev-counts">@($"click={_evClick};changing={_evChanging};change={_evChange};focus={_evFocus};focusin={_evFocusIn};focusout={_evFocusOut};blur={_evBlur}")</span>
+
+    <BitCheckbox Id="cb-allow" Label="Allow the change" @bind-Value="_allowChange" />
+    <BitCheckbox Id="cb-guard" Label="Guarded checkbox" @bind-Value="_guardValue" OnChanging="HandleGuardChanging" />
+    <span id="guard-cancelled">@_cancelled</span>
+    <span id="guard-value">@_guardValue</span>
+
+    <div id="clickable-box" style="padding: 8px; border: 1px dashed gray;" @onclick="() => _containerClicks++">
+        <BitCheckbox Id="cb-bubbles" Label="Bubbles up" />
+        <BitCheckbox Id="cb-stops" Label="Stops here" StopPropagation />
+    </div>
+    <span id="container-clicks">@_containerClicks</span>
+    <button id="btn-reset-container" @onclick="() => _containerClicks = 0">Reset container</button>
+</E2ESection>
+
+<E2ESection Id="readonly-required" Title="Read-only and Required">
+    <BitCheckbox Id="cb-readonly" Label="Read-only checkbox" ReadOnly @bind-Value="_readOnlyValue" />
+    <button id="btn-readonly" @onclick="() => _readOnlyValue = !_readOnlyValue">Change it from here</button>
+    <span id="readonly-value">@_readOnlyValue</span>
+    <BitCheckbox Id="cb-required" Label="I accept the terms" Required />
+    <BitCheckbox Id="cb-required-tpl" Required>
+        <LabelTemplate>I accept the <a href="#readonly-required">terms</a></LabelTemplate>
+    </BitCheckbox>
+    <BitCheckbox Id="cb-required-readonly" Label="Read-only required" Required ReadOnly />
+    <BitCheckbox Id="cb-required-disabled" Label="Disabled required" Required Disabled />
+    <BitCheckbox Id="cb-required-arialabel" AriaLabel="Required without a label" Required />
+</E2ESection>
+
+<E2ESection Id="validation" Title="Validation">
+    <EditForm Model="_model" OnValidSubmit="ValidSubmit" OnInvalidSubmit="InvalidSubmit">
+        <DataAnnotationsValidator />
+        <BitCheckbox Id="cb-terms" Label="I agree with the terms and conditions."
+                     AriaDescribedby="terms-error"
+                     @bind-Value="_model.TermsAgreement" />
+        <div id="terms-error">
+            <ValidationMessage For="@(() => _model.TermsAgreement)" />
+        </div>
+        <BitCheckbox Id="cb-novalidate" Label="Not validated" NoValidate @bind-Value="_model.Other" />
+        <BitCheckbox Id="cb-own-invalid" Label="Own aria-invalid"
+                     InputHtmlAttributes="@(new Dictionary<string, object> { ["aria-invalid"] = "grammar", ["data-test"] = "kept" })"
+                     @bind-Value="_model.Third" />
+        <BitCheckbox Id="cb-named" Label="Named" Name="newsletter" @bind-Value="_model.Fourth" />
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="submit-result">@_submit</span>
+</E2ESection>
+
+<E2ESection Id="accessibility" Title="Accessibility">
+    <button id="btn-before-a11y">Before a11y</button>
+    <BitCheckbox Id="cb-a11y" Label="Focus me with Tab, toggle me with Space" @bind-Value="_a11yValue" />
+    <span id="a11y-value">@_a11yValue</span>
+    <BitCheckbox Id="cb-tabindex" Label="Out of the tab order" TabIndex="-1" />
+    <BitCheckbox Id="cb-after-tabindex" Label="After the skipped one" />
+    <button id="btn-focus" @onclick="FocusTheCheckbox">Focus the checkbox</button>
+    <BitCheckbox @ref="_focusRef" Id="cb-focus-target" Label="Programmatic focus target" />
+    <BitCheckbox Id="cb-arialabel" AriaLabel="Select the row" />
+    <BitCheckbox Id="cb-ariadesc" Label="Auto renew" AriaDescription="The subscription will be renewed one day before it expires." Description="Visible line" />
+    <span id="newsletter-label">Weekly newsletter</span>
+    <BitCheckbox Id="cb-labelledby" AriaLabelledby="newsletter-label" />
+    <button id="btn-before-disabled-focus">Before disabled</button>
+    <BitCheckbox Id="cb-dis-skipped" Label="Disabled and skipped" Disabled />
+    <BitCheckbox Id="cb-dis-focus" Label="Disabled but still reachable" Disabled AllowDisabledFocus OnChange="_ => _disFocusChanges++" />
+    <span id="dis-focus-changes">@_disFocusChanges</span>
+    <BitCheckbox Id="cb-set3" Label="Item 3" AriaSetSize="10" AriaPositionInSet="3" />
+    <BitCheckbox Id="cb-controls" Label="Select all fruits" AriaControls="fruit-list" Indeterminate />
+    <div id="fruit-list"></div>
+</E2ESection>
+
+<E2ESection Id="loading" Title="Loading">
+    <BitCheckbox Id="cb-loading" Label="Busy" Loading OnChange="_ => _loadingChanges++" />
+    <BitCheckbox Id="cb-loading-checked" Label="Busy and checked" Loading Value />
+    <BitCheckbox Id="cb-loading-ind" Label="Busy and mixed" Loading Indeterminate />
+    <span id="loading-changes">@_loadingChanges</span>
+    <BitCheckbox Id="cb-autoloading" AutoLoading Label="Sync with the server" @bind-Value="_autoValue" OnChanging="HandleSlowChanging" />
+    <button id="btn-release" @onclick="Release">Release</button>
+    <span id="auto-changing">@_autoChanging</span>
+    <span id="auto-saved">@_autoSaved</span>
+    <span id="auto-value">@_autoValue</span>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <div style="width: 400px;">
+        <BitParams Parameters="@_cbParams">
+            <BitCheckbox Id="cb-cascade-1" Label="Wi-Fi" DefaultValue="true" />
+            <BitCheckbox Id="cb-cascade-own" Reversed="false" Label="Its own placement" DefaultValue="true" />
+        </BitParams>
+        <BitCheckbox Id="cb-cascade-outside" Label="Outside the cascade" DefaultValue="true" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="colors" Title="Color">
+    @foreach (var (color, suffix) in _colors)
+    {
+        <div class="color-row">
+            <BitCheckbox Id="@($"cb-color-{suffix}")" Color="color" Label="@color.ToString()" Value />
+            <BitCheckbox Id="@($"cb-color-{suffix}-ind")" Color="color" Label="@color.ToString()" Indeterminate />
+            <BitCheckbox Id="@($"cb-color-{suffix}-dis")" Color="color" Label="@color.ToString()" Value Disabled />
+        </div>
+    }
+    <BitCheckbox Id="cb-color-default" Label="Default color" Value />
+    <BitCheckbox Id="cb-color-wins" Color="BitColor.Error" Label="Color wins" Value Style="--bit-Checkbox-checked-background: rgb(1, 2, 3);" />
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External Icons">
+    <BitCheckbox Id="cb-ext-string" Label="House (CheckIcon string)" CheckIcon="@("fa-solid fa-house")" Value />
+    <BitCheckbox Id="cb-ext-css" Label="Heart (BitIconInfo.Css)" CheckIcon="@BitIconInfo.Css("fa-solid fa-heart")" Value />
+    <BitCheckbox Id="cb-ext-fa" Label="Rocket (BitIconInfo.Fa)" CheckIcon="@BitIconInfo.Fa("solid rocket")" Value />
+    <BitCheckbox Id="cb-ext-ind" Label="Minus (IndeterminateIcon)" Indeterminate IndeterminateIcon="@BitIconInfo.Fa("solid minus")" />
+    <BitCheckbox Id="cb-ext-bi" Label="Gear (BitIconInfo.Bi)" CheckIcon="@BitIconInfo.Bi("gear-fill")" Value />
+    <BitCheckbox Id="cb-ext-unchecked" Label="Square (UncheckedIcon)" UncheckedIcon="@BitIconInfo.Bi("app")" />
+    <BitCheckbox Id="cb-ext-wins" Label="Icon wins over name" CheckIcon="@BitIconInfo.Bi("star")" CheckIconName="@BitIconName.Heart" Value />
+</E2ESection>
+
+<E2ESection Id="sizes" Title="Size">
+    <BitCheckbox Id="cb-size-sm" Size="BitSize.Small" Label="Checkbox" Value />
+    <BitCheckbox Id="cb-size-md" Size="BitSize.Medium" Label="Checkbox" Value />
+    <BitCheckbox Id="cb-size-lg" Size="BitSize.Large" Label="Checkbox" Value />
+    <BitCheckbox Id="cb-size-default" Label="Checkbox" Value />
+    <BitCheckbox Id="cb-size-wins" Size="BitSize.Large" Label="Size wins" Value Style="--bit-Checkbox-box-size: 40px;" />
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitCheckbox Id="cb-style" Label="Styled checkbox" Style="color: rgb(30, 144, 255);" />
+    <BitCheckbox Id="cb-class" Label="Classed checkbox" Class="custom-class" />
+    <BitCheckbox Id="cb-styles" Label="Styles" @bind-Value="_stylesValue"
+                 Styles="@(new() { Root = "padding: 3px;", Checked = "outline: 2px solid rgb(255, 20, 147);", Label = "color: rgb(0, 128, 0);", Box = "border-radius: 50%;", Icon = "color: rgb(255, 255, 0);", Container = "letter-spacing: 2px;", Description = "font-style: italic;" })"
+                 Description="Styled description" />
+    <BitCheckbox Id="cb-styles-ind" Label="Styles indeterminate" Indeterminate
+                 Styles="@(new() { Indeterminate = "outline: 3px solid rgb(0, 0, 255);" })" />
+    <BitCheckbox Id="cb-classes" Label="Classes" @bind-Value="_classesValue"
+                 Classes="@(new() { Root = "c-root", Checked = "c-checked", Icon = "c-icon", Label = "c-label", Box = "c-box", Container = "c-container", Description = "c-desc" })"
+                 Description="Classed description" />
+    <BitCheckbox Id="cb-classes-ind" Label="Classes indeterminate" Indeterminate Classes="@(new() { Indeterminate = "c-ind" })" />
+    <BitCheckbox Id="cb-classes-loading" Label="Classes spinner" Loading Classes="@(new() { Spinner = "c-spinner" })" Styles="@(new() { Spinner = "opacity: 0.5;" })" />
+</E2ESection>
+
+<E2ESection Id="css-variables" Title="CSS variables">
+    <BitCheckbox Id="cb-var-own" Label="Rounded, thick, custom fill" Value
+                 Style="--bit-Checkbox-radius: 50%; --bit-Checkbox-border-width: 2px; --bit-Checkbox-checked-background: rgb(102, 51, 153); --bit-Checkbox-check-color: rgb(255, 255, 255);" />
+    <BitCheckbox Id="cb-var-size" Label="Bigger box, wider gap" Value
+                 Style="--bit-Checkbox-box-size: 28px; --bit-Checkbox-gap: 16px; --bit-Checkbox-font-size: 20px; --bit-Checkbox-font-weight: 700;" />
+    <BitCheckbox Id="cb-var-ind" Label="Mixed state in its own color" Indeterminate
+                 Style="--bit-Checkbox-indeterminate-color: rgb(255, 140, 0);" />
+    <div id="var-ancestor"
+         style="--bit-Checkbox-border-color: rgb(0, 128, 0); --bit-Checkbox-checked-background: rgb(0, 100, 0); --bit-Checkbox-description-color: rgb(0, 128, 128); --bit-Checkbox-color: rgb(128, 0, 0); --bit-Checkbox-background: rgb(240, 255, 240); --bit-Checkbox-required-color: rgb(0, 0, 128);">
+        <BitCheckbox Id="cb-var-anc-checked" Label="Analytics" Description="Anonymous usage statistics." Value />
+        <BitCheckbox Id="cb-var-anc-unchecked" Label="Crash reports" Description="Stack traces only, never your data." Required />
+    </div>
+    <div style="--bit-Checkbox-disabled-color: rgb(200, 0, 0); --bit-Checkbox-disabled-text-color: rgb(0, 0, 200);">
+        <BitCheckbox Id="cb-var-disabled" Label="Disabled vars" Value Disabled />
+    </div>
+    <div style="--bit-Checkbox-min-height: 0px; --bit-Checkbox-box-size: 12px;">
+        <BitCheckbox Id="cb-var-minheight" Label="Inline" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitCheckbox Id="cb-rtl" Dir="BitDir.Rtl" Label="چکباکس راست به چپ" />
+    <div dir="rtl">
+        <BitCheckbox Id="cb-rtl-inherited" Label="چکباکس از والد" />
+    </div>
+    <BitCheckbox Id="cb-ltr" Label="Left to right" />
+</E2ESection>
+
+<E2ESection Id="base" Title="Base behaviours">
+    <BitCheckbox Id="cb-hidden" Label="Hidden" Visibility="BitVisibility.Hidden" />
+    <BitCheckbox Id="cb-collapsed" Label="Collapsed" Visibility="BitVisibility.Collapsed" />
+    <BitCheckbox Id="cb-html-attrs" Label="Html attributes" data-custom="abc" HtmlAttributes="@(new Dictionary<string, object> { ["data-extra"] = "xyz" })" />
+    <BitCheckbox Id="cb-input-attrs" Label="Input attributes" InputHtmlAttributes="@(new Dictionary<string, object> { ["data-input"] = "in", ["aria-describedby"] = "basic" })" Description="Own description" />
+    <BitCheckbox Id="cb-handler-enabled" Label="Enabled with handler" @onclick="() => _enabledRootClicks++" />
+    <BitCheckbox Id="cb-handler-disabled" Label="Disabled with handler" Disabled="_handlerDisabled" @onclick="() => _disabledRootClicks++" />
+    <button id="btn-toggle-handler-disabled" @onclick="() => _handlerDisabled = !_handlerDisabled">Toggle disabled</button>
+    <span id="enabled-root-clicks">@_enabledRootClicks</span>
+    <span id="disabled-root-clicks">@_disabledRootClicks</span>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    @if (_showRuntime)
+    {
+        <BitCheckbox Id="cb-runtime" Label="@_runtimeLabel" Color="_runtimeColor" Disabled="_runtimeDisabled" Size="_runtimeSize" @bind-Value="_runtimeValue" />
+    }
+    <button id="btn-runtime-label" @onclick="@(() => _runtimeLabel = "Changed label")">Change label</button>
+    <button id="btn-runtime-color" @onclick="() => _runtimeColor = BitColor.Success">Set color</button>
+    <button id="btn-runtime-size" @onclick="() => _runtimeSize = BitSize.Large">Set size</button>
+    <button id="btn-runtime-disable" @onclick="() => _runtimeDisabled = !_runtimeDisabled">Toggle disabled</button>
+    <button id="btn-runtime-value" @onclick="() => _runtimeValue = !_runtimeValue">Toggle value</button>
+    <button id="btn-runtime-unmount" @onclick="() => _showRuntime = !_showRuntime">Toggle mount</button>
+    <span id="runtime-value">@_runtimeValue</span>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Motion">
+    <BitCheckbox Id="cb-motion" Label="Animated" />
+    <BitCheckbox Id="cb-motion-forced" Label="Forced animation" ForceAnimation />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _basicChanges;
+    private bool _basicLast;
+    private bool _descValue;
+
+    private bool _indValue;
+    private bool _indInd = true;
+
+    private bool _apple;
+    private bool _banana;
+    private bool _orange;
+    private bool _selectAll;
+    private bool _selectAllInd;
+
+    private bool _threeValue;
+    private bool _threeInd;
+    private bool? _subscribed = false;
+
+    private bool _oneWay;
+    private bool _twoWay;
+    private bool _oneWayInd = true;
+    private bool _twoWayInd = true;
+
+    private bool _labelTplValue;
+    private bool _customValue;
+
+    private string _evLog = string.Empty;
+    private int _evClick, _evChanging, _evChange, _evFocus, _evFocusIn, _evFocusOut, _evBlur;
+    private bool _allowChange;
+    private bool _guardValue;
+    private int _cancelled;
+    private int _containerClicks;
+
+    private bool _readOnlyValue;
+
+    private readonly CheckboxModel _model = new();
+    private string _submit = "none";
+    private int _validSubmits;
+    private int _invalidSubmits;
+
+    private bool _a11yValue;
+    private BitCheckbox _focusRef = default!;
+    private int _disFocusChanges;
+
+    private int _loadingChanges;
+    private bool _autoValue;
+    private int _autoChanging;
+    private int _autoSaved;
+    private TaskCompletionSource? _gate;
+
+    private bool _stylesValue;
+    private bool _classesValue;
+
+    private int _enabledRootClicks;
+    private int _disabledRootClicks;
+    private bool _handlerDisabled = true;
+
+    private bool _showRuntime = true;
+    private string _runtimeLabel = "Initial label";
+    private BitColor? _runtimeColor;
+    private BitSize? _runtimeSize;
+    private bool _runtimeDisabled;
+    private bool _runtimeValue;
+
+    private readonly IBitComponentParams[] _cbParams =
+    [
+        new BitCheckboxParams { FullWidth = true, Reversed = true, CheckIconName = BitIconName.Heart }
+    ];
+
+    private readonly (BitColor Color, string Suffix)[] _colors =
+    [
+        (BitColor.Primary, "pri"),
+        (BitColor.Secondary, "sec"),
+        (BitColor.Tertiary, "ter"),
+        (BitColor.Info, "inf"),
+        (BitColor.Success, "suc"),
+        (BitColor.Warning, "wrn"),
+        (BitColor.SevereWarning, "swr"),
+        (BitColor.Error, "err"),
+        (BitColor.PrimaryBackground, "pbg"),
+        (BitColor.SecondaryBackground, "sbg"),
+        (BitColor.TertiaryBackground, "tbg"),
+        (BitColor.PrimaryForeground, "pfg"),
+        (BitColor.SecondaryForeground, "sfg"),
+        (BitColor.TertiaryForeground, "tfg"),
+        (BitColor.PrimaryBorder, "pbr"),
+        (BitColor.SecondaryBorder, "sbr"),
+        (BitColor.TertiaryBorder, "tbr"),
+    ];
+
+    private void HandleSelectAllChange(bool value)
+    {
+        _selectAll = value;
+        _selectAllInd = false;
+        _apple = _banana = _orange = value;
+    }
+
+    private void RefreshSelectAll()
+    {
+        var count = (_apple ? 1 : 0) + (_banana ? 1 : 0) + (_orange ? 1 : 0);
+        _selectAll = count == 3;
+        _selectAllInd = count is > 0 and < 3;
+    }
+
+    private void HandleSubscribedIndeterminateChanged(bool indeterminate) => _subscribed = indeterminate ? null : _subscribed is true;
+
+    private void HandleSubscribedValueChanged(bool value) => _subscribed = _subscribed is null ? null : value;
+
+    private void Log(ref int counter, string name)
+    {
+        counter++;
+        AppendLog(name);
+    }
+
+    private void AppendLog(string entry) => _evLog += _evLog.Length == 0 ? entry : $">{entry}";
+
+    private void LogChanging(BitCheckboxChangeArgs args)
+    {
+        _evChanging++;
+        AppendLog($"OnChanging({args.Value},{args.Indeterminate})");
+    }
+
+    private void LogChange(bool value)
+    {
+        _evChange++;
+        AppendLog($"OnChange({value})");
+    }
+
+    private void ValidSubmit() => _submit = $"valid:{++_validSubmits}";
+
+    private void InvalidSubmit() => _submit = $"invalid:{++_invalidSubmits}";
+
+    private void HandleGuardChanging(BitCheckboxChangeArgs args)
+    {
+        if (_allowChange) return;
+
+        args.Cancel = true;
+        _cancelled++;
+    }
+
+    private async Task FocusTheCheckbox() => await _focusRef.FocusAsync();
+
+    private async Task HandleSlowChanging(BitCheckboxChangeArgs args)
+    {
+        _autoChanging++;
+        _gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _gate.Task;
+        _autoSaved++;
+    }
+
+    private void Release() => _gate?.TrySetResult();
+
+    private sealed class CheckboxModel
+    {
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the terms and conditions.")]
+        public bool TermsAgreement { get; set; }
+
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Never shown.")]
+        public bool Other { get; set; }
+
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Third must be checked.")]
+        public bool Third { get; set; }
+
+        public bool Fourth { get; set; }
+    }
+}

@@ -1,0 +1,95 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+@inject ProductApi Api
+
+@* A component of its own so the Errors page can wrap it in an ErrorBoundary: event handler exceptions are routed to
+   the boundary above the component that owns the handler, so a boundary inside the page could not catch them. *@
+
+<div class="bb-toolbar">
+    <button type="button" class="btn btn-secondary" @onclick="ThrowInHandler">Throw in event handler</button>
+    <button type="button" class="btn btn-secondary" @onclick="ThrowAsync">Throw after await</button>
+    <button type="button" class="btn btn-secondary" @onclick="() => _renderBomb = true">Throw during render (inside ErrorBoundary)</button>
+    <button type="button" class="btn btn-secondary" @onclick="() => _initBomb = true">Child throws in OnInitialized (inside ErrorBoundary)</button>
+    <button type="button" class="btn btn-secondary" @onclick="Http404">HTTP 404</button>
+    <button type="button" class="btn btn-secondary" @onclick="OpenMissingOrder">Open a missing order (another id each time)</button>
+    <button type="button" class="btn btn-secondary" @onclick="() => _missingImage = true">Load a missing image</button>
+    <button type="button" class="btn btn-secondary" @onclick="() => _blockedFrame = true">Embed a frame the CSP forbids</button>
+    <button type="button" class="btn btn-outline" @onclick="Reset">Reset</button>
+</div>
+
+@* Problem 24: failures only the browser sees. The image's address does not exist; the frame is refused by the page's
+   Content Security Policy (frame-src 'none', sent by the demo's server), so the browser never requests it. *@
+@if (_missingImage || _blockedFrame)
+{
+    <div class="demo-tiles demo-tiles-pair">
+        @if (_missingImage)
+        {
+            <div class="demo-tile">
+                <h4 class="demo-tile-title">Missing image</h4>
+                <img src="images/product-photo-that-does-not-exist.png" alt="A product photo that is not on the server" width="160" height="90" />
+            </div>
+        }
+        @if (_blockedFrame)
+        {
+            <div class="demo-tile">
+                <h4 class="demo-tile-title">Blocked frame</h4>
+                <iframe src="getting-started" title="The getting started page, blocked by the Content Security Policy" width="240" height="90"></iframe>
+            </div>
+        }
+    </div>
+}
+
+<ErrorBoundary @ref="_boundary">
+    <ChildContent>
+        <div class="demo-tile">
+            <h4 class="demo-tile-title">Protected area</h4>
+            @if (_renderBomb)
+            {
+                <div>@ThrowingValue</div>
+            }
+            @if (_initBomb)
+            {
+                <BrokenChild />
+            }
+            <div class="bb-muted">Nothing exploded (yet).</div>
+        </div>
+    </ChildContent>
+    <ErrorContent Context="ex">
+        <div class="bb-note bb-note-danger">ErrorBoundary caught: @ex.GetType().Name — @ex.Message</div>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private ErrorBoundary? _boundary;
+    private bool _renderBomb;
+    private bool _initBomb;
+    private bool _missingImage;
+    private bool _blockedFrame;
+
+    private void Reset()
+    {
+        _renderBomb = false;
+        _initBomb = false;
+        _missingImage = false;
+        _blockedFrame = false;
+        _boundary?.Recover();
+    }
+
+    private string ThrowingValue => throw new InvalidOperationException("Render-time failure: computed property threw while building the render tree.");
+
+    private void ThrowInHandler() => throw new InvalidOperationException("Handler failure: simulated exception in an @onclick handler.");
+
+    private async Task ThrowAsync()
+    {
+        await Task.Delay(150);
+        throw new TimeoutException("Async failure: the continuation after an await threw.");
+    }
+
+    // Problem 20: one failure whose message carries another id every time.
+    private void OpenMissingOrder() => throw new KeyNotFoundException("Order " + Random.Shared.Next(1000, 10000) + " was not found.");
+
+    private async Task Http404()
+    {
+        var response = await Api.GetMissingAsync();
+        response.EnsureSuccessStatusCode();
+    }
+}

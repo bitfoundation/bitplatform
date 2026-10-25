@@ -1,4 +1,4 @@
-declare class Video extends BlockEmbed {
+﻿declare class Video extends BlockEmbed {
     static blotName: string;
     static className: string;
     static tagName: string;

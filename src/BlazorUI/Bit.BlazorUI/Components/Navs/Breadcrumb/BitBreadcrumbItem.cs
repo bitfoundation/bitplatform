@@ -29,9 +29,14 @@ public class BitBreadcrumbItem
     public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether an item is enabled or not.
+    /// Where the icon is rendered relative to the text, in place of the IconPlacement of the breadcrumb.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public BitPlacement? IconPlacement { get; set; }
+
+    /// <summary>
+    /// Whether an item is disabled or not.
+    /// </summary>
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// Display the breadcrumb item as the selected item.
@@ -54,9 +59,15 @@ public class BitBreadcrumbItem
     public RenderFragment<BitBreadcrumbItem>? OverflowTemplate { get; set; }
 
     /// <summary>
-    /// Reverses the positions of the icon and the item text of the item content.
+    /// The relationship of the link of the breadcrumb item to the current document, rendered as the rel attribute of its anchor.
     /// </summary>
-    public bool? ReversedIcon { get; set; }
+    /// <remarks>
+    /// A link opening a new tab (<see cref="Target"/> of <c>_blank</c>) gets <c>noopener</c> added to whatever this
+    /// says, unless it already says what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>). Nothing adds <c>noreferrer</c> on its
+    /// own: ask for it here where the page the link leads to must not learn which page it was followed from.
+    /// </remarks>
+    public BitLinkRels? Rel { get; set; }
 
     /// <summary>
     /// Style attribute for breadcrumb item.

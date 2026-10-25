@@ -1,0 +1,34 @@
+﻿@using Bit.BlazorUI
+
+@* Covers BitMapParams: the cascaded values fill in the parameters a map did not set itself, never overwrite the ones
+   it did, reach every map whatever its provider type, and go back to the map's own defaults once withdrawn. *@
+
+<BitParams Parameters="@(WithParams ? Cascade : [])">
+    <BitMap TMapProvider="BitLeafletMapProvider" />
+    <BitMap TMapProvider="BitLeafletMapProvider"
+            CooperativeGestures="false"
+            KeyboardInstructions="Own keys"
+            Classes="@(new() { Root = "own-root" })"
+            Class="second" />
+    <BitMap TMapProvider="BitOpenLayersMapProvider" />
+</BitParams>
+
+@code {
+    [Parameter] public bool WithParams { get; set; } = true;
+
+    private static readonly IBitComponentParams[] Cascade =
+    [
+        new BitMapParams
+        {
+            CooperativeGestures = true,
+            KeyboardInstructions = "Cascaded keys",
+            RoleDescription = "cascaded map",
+            MarkerListMode = BitMapMarkerListMode.Visible,
+            MarkerListCaption = "Cascaded caption",
+            Classes = new() { Root = "cascaded-root", Canvas = "cascaded-canvas" },
+            Styles = new() { Canvas = "--cascaded-canvas: 1" },
+            Style = "--bit-Map-radius: 1rem",
+            Class = "cascaded",
+        }
+    ];
+}

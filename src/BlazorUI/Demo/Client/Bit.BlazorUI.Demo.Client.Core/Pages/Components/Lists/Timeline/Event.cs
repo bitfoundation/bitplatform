@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
 
 public class Event
 {
@@ -14,11 +14,13 @@ public class Event
 
     public BitIconInfo? ExternalIcon { get; set; }
 
-    public BitTimelineLineVariant? LineStyle { get; set; }
+    public BitLineStyle? LineStyle { get; set; }
 
     public bool NoDot { get; set; }
 
     public string? Icon { get; set; }
+
+    public string? Label { get; set; }
 
     public bool Disabled { get; set; }
 
@@ -33,6 +35,8 @@ public class Event
     public BitSize? DotSize { get; set; }
 
     public string? Style { get; set; }
+
+    public string? Tooltip { get; set; }
 
     public RenderFragment<Event>? Content { get; set; }
 

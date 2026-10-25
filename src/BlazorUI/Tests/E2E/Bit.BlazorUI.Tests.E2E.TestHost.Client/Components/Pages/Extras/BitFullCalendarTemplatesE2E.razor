@@ -1,0 +1,94 @@
+﻿@page "/e2e/full-calendar/templates"
+
+<PageTitle>BitFullCalendar E2E - templates</PageTitle>
+
+@* Every template of the calendar: the event content of the day, week and month views, the extra content of a month
+   day, an agenda row, and the app's own part of the details and the add/edit dialogs - a location kept in Data, which
+   the editor's draft saves. "Today" is pinned to Wednesday 2025-07-16 10:30. *@
+<E2ESection Id="templates" Title="Templates">
+    <BitFullCalendar Id="tpl"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_events"
+                     DayEventTemplate="EventCard"
+                     WeekEventTemplate="EventCard"
+                     MonthEventTemplate="MonthBadge"
+                     MonthCellTemplate="HolidayCell"
+                     AgendaEventTemplate="AgendaRow"
+                     EventDetailsTemplate="LocationRow"
+                     EventEditorTemplate="LocationField"
+                     OnChange="HandleChange" />
+    <span id="tpl-change">@_change</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly TimeProvider Clock = new PinnedClock(new DateTimeOffset(2025, 7, 16, 10, 30, 0, TimeSpan.Zero));
+
+    private static readonly DateTime Today = new(2025, 7, 16);
+
+    private readonly List<BitFullCalendarEvent> _events =
+    [
+        new() { Id = "p1", Title = "Planning", Description = "Quarter goals.", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "blue", Data = "Room 4B" },
+        new() { Id = "p2", Title = "Retro", Description = "What went well.", StartDate = Today.AddDays(1).AddHours(15), EndDate = Today.AddDays(1).AddHours(16), Color = "green" },
+    ];
+
+    private readonly Dictionary<DateTime, string> _holidays = new()
+    {
+        [new DateTime(2025, 7, 20)] = "Founders' Day",
+        [new DateTime(2025, 7, 27)] = "Public holiday",
+    };
+
+    private string? _change;
+
+    private void HandleChange(BitFullCalendarChangeEventArgs args)
+    {
+        _change = $"{args.Kind}|{args.Source}|{args.Event.Title}|{args.Event.Data ?? "null"}|old:{args.OldEvent?.Data ?? "null"}";
+        var index = _events.FindIndex(e => e.Id == args.Event.Id);
+        if (args.Kind is BitFullCalendarChangeKind.Delete) { if (index >= 0) _events.RemoveAt(index); }
+        else if (index >= 0) _events[index] = args.Event;
+        else _events.Add(args.Event);
+    }
+
+    private RenderFragment<BitFullCalendarEvent> EventCard => ev =>
+        @<div class="event-card">
+            <strong class="event-card-title">@ev.Title</strong>
+            <span class="event-card-desc">@ev.Description</span>
+        </div>;
+
+    private RenderFragment<BitFullCalendarEvent> MonthBadge => ev => @<span class="month-badge">Pin: @ev.Title</span>;
+
+    private RenderFragment<BitFullCalendarCell> HolidayCell => cell =>
+        @<text>
+            <span class="cell-info" data-day="@cell.Day" data-current="@cell.CurrentMonth.ToString()" data-date="@cell.Date.ToString("yyyy-MM-dd")"></span>
+            @if (_holidays.TryGetValue(cell.Date, out var holiday))
+            {
+                <span class="holiday">Holiday: @holiday</span>
+            }
+        </text>;
+
+    private RenderFragment<BitFullCalendarEvent> AgendaRow => ev =>
+        @<span class="agenda-row">
+            <strong>@ev.Title</strong>
+            <span class="agenda-row-time">@ev.StartDate.ToString("HH:mm")</span>
+        </span>;
+
+    private RenderFragment<BitFullCalendarEvent> LocationRow => ev =>
+        @<text>
+            @if (ev.Data is string location)
+            {
+                <span class="location-row">Location: @location</span>
+            }
+        </text>;
+
+    private RenderFragment<BitFullCalendarEvent> LocationField => ev =>
+        @<BitTextField Label="Location" Class="location-field" ClearOnEscape Value="@(ev.Data as string)" ValueChanged="(string? value) => ev.Data = value" />;
+
+    private sealed class PinnedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+}

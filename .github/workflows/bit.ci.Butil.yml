@@ -1,7 +1,11 @@
 name: bit platform CI - Butil
 
+# Build, MCP and hosting tests. The browser, hybrid and publish-gate suites live in bit.ci.Butil.e2e.yml and run
+# on demand only.
+
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     paths:
     - 'src/Butil/**'
@@ -13,6 +17,8 @@ permissions:
   contents: read
 
 jobs:
+
+  # Its `if:` skips the job on Release/Prerelease/Version PRs.
   build-Butil:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build Bit.Butil
@@ -40,16 +46,12 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: 24
 
     - name: dotnet workload restore
       run:  cd src/Butil && dotnet workload restore
-
-    - name: InstallNodejsDependencies
-      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Butil/Bit.Butil.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
 
     - name: dotnet build
       run: dotnet build src/Butil/Bit.Butil.slnx
@@ -59,7 +61,7 @@ jobs:
     # solution build above already compiled both projects; this only redirects the server's output.
     - name: Build the demo server the MCP suite boots
       run: >
-        dotnet build src/Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj
+        dotnet build src/Butil/Demo/Server/Bit.Butil.Demo.Server.csproj
         --artifacts-path ${{ runner.temp }}/bit-butil-mcp-tests
 
     # Run from inside src/ so global.json is in scope: dotnet test resolves it from the working
@@ -69,14 +71,14 @@ jobs:
       env:
         BUTIL_MCP_ARTIFACTS_PATH: ${{ runner.temp }}/bit-butil-mcp-tests
       run: >
-        cd src/Butil &&
-        dotnet test tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj
+        cd src/Butil/Tests/Bit.Butil.Tests.Mcp &&
+        dotnet test
         --no-build
         --report-trx --report-trx-filename butil-mcp.trx
 
     - name: Upload MCP test results
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: butil-mcp-results
         path: '**/butil-mcp.trx'
@@ -84,17 +86,17 @@ jobs:
 
     # Every render mode of the Blazor Web App harness host over HTTP, on net8.0/net9.0/net10.0: the prerendered
     # pages, the served scripts, and every member of every service called during a static render. Browser, hybrid
-    # and trimmed/AOT publish coverage runs in bit.ci.Butil.e2e.yml.
+    # and trimmed/AOT publish coverage is in bit.ci.Butil.e2e.yml.
     - name: Hosting tests
       run: >
-        cd src/Butil &&
-        dotnet test tests/Bit.Butil.Tests.Hosting/Bit.Butil.Tests.Hosting.csproj
+        cd src/Butil/Tests/Bit.Butil.Tests.Hosting &&
+        dotnet test
         --no-build
         --report-trx --report-trx-filename butil-hosting.trx
 
     - name: Upload hosting test results
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: butil-hosting-results
         path: '**/butil-hosting*.trx'

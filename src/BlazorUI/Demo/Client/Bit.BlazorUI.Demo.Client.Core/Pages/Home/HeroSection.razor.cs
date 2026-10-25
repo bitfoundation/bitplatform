@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages;
 
 public partial class HeroSection
 {
@@ -28,7 +28,7 @@ public partial class HeroSection
                 ItemType = BitDropdownItemType.Normal,
                 Text = "Orange",
                 Value = "f-ora",
-                IsEnabled = false
+                IsDisabled = true
             },
             new()
             {

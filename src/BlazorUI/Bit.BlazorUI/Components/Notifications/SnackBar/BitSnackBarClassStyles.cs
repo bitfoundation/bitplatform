@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitSnackBarClassStyles
 {
@@ -26,6 +26,11 @@ public class BitSnackBarClassStyles
     /// Custom CSS classes/styles for the leading icon of the BitSnackBar.
     /// </summary>
     public string? Icon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the spinner of a loading item of the BitSnackBar.
+    /// </summary>
+    public string? Spinner { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the dismiss button of the BitSnackBar.

@@ -1,0 +1,15 @@
+{
+  "name": "bit-bevtools-js-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Unit tests for the bit-bevtools.js page hub and bridge, the companion frontend and the browser extension source",
+  "scripts": {
+    "test": "vitest run",
+    "watch": "vitest"
+  },
+  "devDependencies": {
+    "happy-dom": "20.14.4",
+    "vitest": "^3.2.4"
+  }
+}

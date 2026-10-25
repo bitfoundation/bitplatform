@@ -433,7 +433,9 @@ published trimmed - a Blazor WebAssembly publish is - the package's build logic 
 `Bit.Butil.dll`, finds which `BitButil.<module>.*` identifiers survived (every interop call goes
 through such a literal, so the trimmed assembly is the exact list of modules the app can still reach)
 and replaces `bit-butil.js` with a bundle assembled from only those modules and their dependencies.
-Fingerprints, integrity hashes and compressed variants are computed from the new content. An app
+Fingerprints, integrity hashes and compressed variants are computed from the new content, and so is a PWA's
+`service-worker-assets.js` - including the one a Blazor Web App's WebAssembly client wrote before the server
+trimmed, which the server's publish rewrites to list what it actually serves. An app
 that injects `Clipboard`, `LocalStorage` and `Window` ships about 6 KB of JavaScript instead of the
 321 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
 that is where the assembly being trimmed is the assembly calling the served JavaScript; a server that hosts
@@ -593,7 +595,7 @@ and needs no thought, but only in the project that publishes trimmed.
 
 ## Samples and docs
 
-The `Bit.Butil.Demo` project in this repository is a full documentation site: one page per API,
+The `Demo` app in this repository is a full documentation site: one page per API,
 with runnable samples, an API reference table, and a browser-support matrix. Run it to try any of
 the above in your own browser.
 
@@ -622,12 +624,19 @@ There are seven tools, and no more: a tool description is paid for in every requ
 session, so a listing is not a tool of its own, a single-item lookup is not a tool when one that
 takes a set already resolves each member, and nothing restates the server's `instructions`, which
 the client has had in context since `initialize`. Start with `SearchButil`. See
-[McpController](Bit.Butil.Demo/Server/Controllers/McpController.cs).
+[McpController](Demo/Server/Controllers/McpController.cs).
 
 The site's own **`/mcp-server` page** is a working client for it: it handshakes with this server on
 load, lists its tools, and lets you call one and read both halves of the exchange - the JSON-RPC
 request, the response, and the text a model would be handed. It is the fastest way to see what a
 tool actually returns before wiring an agent up to it.
+
+[`Samples`](Samples/) is the hosting-model harness rather than the docs: one shared
+[Core](Samples/Core/) project of sample pages, hosted unchanged under [Server](Samples/Server/),
+[WASM](Samples/Wasm/) and [Auto](Samples/Auto/) so the same Butil calls can be exercised in each
+Blazor render mode, under [Web](Samples/Web/) as a standalone WebAssembly app (the host the
+end-to-end suite and the benchmarks drive), and under [MAUI](Samples/Maui/) (Android, iOS,
+Mac Catalyst and Windows), where a `BlazorWebView` runs it as a Blazor Hybrid app.
 
 Every public member carries XML documentation with a link to the corresponding MDN page, so IntelliSense
 is the reference of record.

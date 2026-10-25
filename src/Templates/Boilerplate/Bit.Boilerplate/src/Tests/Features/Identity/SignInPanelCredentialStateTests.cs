@@ -1,4 +1,5 @@
 using Bunit;
+using OtpNet;
 using Bit.BlazorUI;
 using Microsoft.AspNetCore.Components.Authorization;
 using Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
@@ -114,6 +115,64 @@ public class SignInPanelCredentialStateTests
         }, timeout: TimeSpan.FromSeconds(30));
     }
 
+    [TestMethod]
+    public async Task SignInPanel_Should_KeepTheMagicLinkOtp_ForTheTwoFactorStep()
+    {
+        await using var server = new AppTestServer();
+        await server.Build().Start(TestContext.CancellationToken);
+
+        string email;
+        string recoveryCode;
+
+        await using (var client = server.CreateAppClient())
+        {
+            (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+
+            var userController = client.GetController<IUserController>();
+            var enrolment = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
+            var enabled = await userController.TwoFactorAuth(new()
+            {
+                Enable = true,
+                TwoFactorCode = new Totp(Base32Encoding.ToBytes(enrolment.SharedKey!.Replace(" ", ""))).ComputeTotp()
+            }, TestContext.CancellationToken);
+
+            recoveryCode = enabled.RecoveryCodes![0];
+        }
+
+        await using (var anonymousClient = server.CreateAppClient())
+        {
+            await anonymousClient.GetController<IIdentityController>().SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
+        }
+
+        var magicLink = await server.WaitForCapturedEmail(email,
+            capturedEmail => capturedEmail.Kind is CapturedEmailKind.Otp, TestContext.CancellationToken);
+
+        await using var ctx = server.CreateBunitContext();
+
+        ctx.Services.GetRequiredService<NavigationManager>().NavigateTo(magicLink.Link!.PathAndQuery);
+
+        var cut = ctx.Render<CascadingAuthenticationState>(parameters => parameters
+            .AddChildContent<SignInPanel>(panel => panel
+                .Add(p => p.SignInPanelType, SignInPanelType.Full)
+                .Add(p => p.ReturnUrl, PageUrls.Settings)));
+
+        var recoveryCodeSelector = $"input[placeholder='{AppStrings.TwoFactorRecoveryCode}']";
+
+        cut.WaitForAssertion(() => cut.Find(recoveryCodeSelector), timeout: TimeSpan.FromSeconds(30));
+
+        cut.Find(recoveryCodeSelector).Input(recoveryCode);
+        cut.Find("form").Submit();
+
+        var authenticationStateProvider = ctx.Services.GetRequiredService<AuthenticationStateProvider>();
+
+        await cut.WaitForAssertionAsync(async () =>
+        {
+            var user = (await authenticationStateProvider.GetAuthenticationStateAsync()).User;
+            Assert.IsTrue(user.IsAuthenticated(),
+                "The magic link's one-time code is the first factor, so it has to go out again along with the second one.");
+        }, timeout: TimeSpan.FromSeconds(30));
+    }
+
     /// <summary>
     /// Pins BP-409, at the place the invariant now lives.
     ///
@@ -131,10 +190,10 @@ public class SignInPanelCredentialStateTests
     public async Task MagicLink_Should_IdentifyTheRecipientByEmail_NotByUserName()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         // A per-run account, not the shared seeded one. SendOtp stamps OtpRequestedOn on whoever it is called for and
         // that state outlives the run, so issuing a code for test@bitplatform.dev here would leave a live magic link
@@ -142,7 +201,7 @@ public class SignInPanelCredentialStateTests
         // the two would race even within a single run. It also re-arms SendOtp's own resend throttle. See
         // TestAccountUtils. CreateAndSignIn leaves the account e-mail confirmed, which is what makes the call below
         // send a plain OTP e-mail carrying the magic link rather than a confirmation e-mail.
-        var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        var (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         await identityController.SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
 

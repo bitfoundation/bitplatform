@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 
 public partial class _BitNavBarItemDemo
 {
@@ -14,7 +14,7 @@ public partial class _BitNavBarItemDemo
     [
         new() { Text = "Home", IconName = BitIconName.Home  },
         new() { Text = "Products", IconName = BitIconName.ProductVariant },
-        new() { Text = "Academy", IconName = BitIconName.LearningTools, IsEnabled = false },
+        new() { Text = "Academy", IconName = BitIconName.LearningTools, IsDisabled = true },
         new() { Text = "Profile", IconName = BitIconName.Contact },
     ];
 
@@ -34,14 +34,14 @@ public partial class _BitNavBarItemDemo
     // they still light up on a match, but a click cannot navigate to a URL no page answers.
     private static readonly List<BitNavBarItem> wildcardMatchItems =
     [
-        new() { Text = "/components/*", IconName = BitIconName.F12DevTools, Url = "/components/*", Match = BitNavMatch.Wildcard, IsEnabled = false },
-        new() { Text = "/iconography/*", IconName = BitIconName.AppIconDefault, Url = "/iconography/*", Match = BitNavMatch.Wildcard, IsEnabled = false },
+        new() { Text = "/components/*", IconName = BitIconName.F12DevTools, Url = "/components/*", Match = BitNavMatch.Wildcard, IsDisabled = true },
+        new() { Text = "/iconography/*", IconName = BitIconName.AppIconDefault, Url = "/iconography/*", Match = BitNavMatch.Wildcard, IsDisabled = true },
     ];
 
     private static readonly List<BitNavBarItem> regexMatchItems =
     [
-        new() { Text = "^/components/navbar$", IconName = BitIconName.Code, Url = "^/components/navbar$", Match = BitNavMatch.Regex, IsEnabled = false },
-        new() { Text = "^/iconography$", IconName = BitIconName.Code, Url = "^/iconography$", Match = BitNavMatch.Regex, IsEnabled = false },
+        new() { Text = "^/components/navbar$", IconName = BitIconName.Code, Url = "^/components/navbar$", Match = BitNavMatch.Regex, IsDisabled = true },
+        new() { Text = "^/iconography$", IconName = BitIconName.Code, Url = "^/iconography$", Match = BitNavMatch.Regex, IsDisabled = true },
     ];
 
     private static readonly List<BitNavBarItem> additionalUrlsItems =
@@ -56,6 +56,17 @@ public partial class _BitNavBarItemDemo
         new() { Text = "Products & services", IconName = BitIconName.ProductVariant },
         new() { Text = "Academy", IconName = BitIconName.LearningTools },
         new() { Text = "Me", IconName = BitIconName.Contact },
+    ];
+
+    private static readonly BitNavBarParams[] navBarParams =
+    [
+        new()
+        {
+            Mode = BitNavMode.Manual,
+            Filled = true,
+            Color = BitColor.Info,
+            Indicator = BitNavBarIndicator.Pill,
+        }
     ];
 
     private static readonly List<BitNavBarItem> badgeNavBarItems =
@@ -85,6 +96,16 @@ public partial class _BitNavBarItemDemo
         new() { Text = "Reports", IconName = BitIconName.ReportDocument },
         new() { Text = "Settings", IconName = BitIconName.Settings },
         new() { Text = "Support", IconName = BitIconName.Help },
+        new() { Text = "Calendar", IconName = BitIconName.Calendar },
+        new() { Text = "Chat", IconName = BitIconName.Chat },
+        new() { Text = "People", IconName = BitIconName.People },
+        new() { Text = "News", IconName = BitIconName.News },
+        new() { Text = "Photos", IconName = BitIconName.Photo2 },
+        new() { Text = "Videos", IconName = BitIconName.Video },
+        new() { Text = "Music", IconName = BitIconName.MusicNote },
+        new() { Text = "Documents", IconName = BitIconName.Document },
+        new() { Text = "Cloud", IconName = BitIconName.Cloud },
+        new() { Text = "Maps", IconName = BitIconName.MapPin },
         new() { Text = "Profile", IconName = BitIconName.Contact },
     ];
 
@@ -114,7 +135,7 @@ public partial class _BitNavBarItemDemo
     ];
 
     private static IEnumerable<BitChoiceGroupItem<BitNavBarItem>> choiceGroupItems =
-         basicNavBarItems.Select(i => new BitChoiceGroupItem<BitNavBarItem>() { Id = i.Text, Text = i.Text, IsEnabled = i.IsEnabled, Value = i });
+         basicNavBarItems.Select(i => new BitChoiceGroupItem<BitNavBarItem>() { Id = i.Text, Text = i.Text, IsDisabled = i.IsDisabled, Value = i });
 
     private int dynamicItemsCount = 3;
     private BitNavBarItem? dynamicSelectedItem;
@@ -140,10 +161,10 @@ public partial class _BitNavBarItemDemo
 
     private void ReverseDynamicItems() => dynamicNavBarItems.Reverse();
 
-    private int countClick;
-    private bool reselectable = true;
-    private BitNavBarItem selectedItem = basicNavBarItems[0];
-    private BitNavBarItem twoWaySelectedItem = basicNavBarItems[0];
+    private int clickCount;
+    private int selectCount;
+    private bool reselectable;
+    private BitNavBarItem? twoWaySelectedItem;
     private BitNavBarItem? scrollableSelectedItem;
     private BitNavBarItem? eventsClickedItem;
     private BitNavBarItem? eventsSelectedItem;

@@ -1,0 +1,225 @@
+﻿@using System.Text.Json
+@implements IDisposable
+@inject BlexManager Manager
+@inject ActionFeed Feed
+@inject BlexHistory History
+@inject ErrorLog Errors
+@inject DemoGuard Guard
+
+@*
+    The docs site is itself a Blex app, so this dock shows the real pipeline: every action you
+    dispatch anywhere on the site, the live global state tree, the undo stack and any isolated
+    pipeline error. Nothing here is mocked. Routes.razor mounts it once, outside the page shell, so
+    it stays put across navigations; its styles are in demo.css.
+*@
+<aside class="dock @(_open ? "dock--open" : null)" aria-label="Blex inspector">
+    @* The read-only badge is on the handle rather than only in the open panel: the guard is switched
+       on from the middleware page but vetoes actions on every page, and a reader who has moved on
+       would otherwise see buttons that silently do nothing. *@
+    <button type="button" class="dock__handle" aria-expanded="@(_open ? "true" : "false")" aria-controls="@(_open ? "dock-body" : null)" @onclick="() => _open = !_open">
+        <span class="dock__handle-label">Inspector</span>
+        <span class="bb-badge">@Feed.TotalSeen</span>
+        @if (Guard.IsReadOnly)
+        {
+            <span class="bb-badge bb-badge-warn" title="The read-only guard middleware is vetoing every action">read-only</span>
+        }
+        <span class="dock__handle-caret" aria-hidden="true">@(_open ? "▾" : "▴")</span>
+    </button>
+
+    @if (_open)
+    {
+        <div class="dock__body" id="dock-body">
+            @* The ARIA tabs pattern: one Tab stop for the whole row (the selected tab), the arrow keys,
+               Home and End to move between tabs, and each tab tied to the panel it shows. *@
+            <div class="bb-tabs dock__tabs" role="tablist" aria-label="Inspector views" @onkeydown="OnTabKeyDown">
+                @for (var i = 0; i < Tabs.Length; i++)
+                {
+                    var index = i;
+                    var tab = Tabs[index];
+                    <button type="button"
+                            role="tab"
+                            id="@($"dock-tab-{tab}")"
+                            aria-controls="dock-panel"
+                            aria-selected="@(_tab == tab ? "true" : "false")"
+                            tabindex="@(_tab == tab ? 0 : -1)"
+                            @ref="_tabButtons[index]"
+                            @onclick="() => _tab = tab">
+                        @tab
+                        @if (tab == "Errors" && Errors.Errors.Count > 0)
+                        {
+                            <span class="bb-badge bb-badge-danger">@Errors.Errors.Count</span>
+                        }
+                    </button>
+                }
+            </div>
+
+            <div class="dock__panel" role="tabpanel" id="dock-panel" aria-labelledby="@($"dock-tab-{_tab}")">
+                @switch (_tab)
+                {
+                    case "Actions":
+                        <div class="bb-toolbar dock__toolbar">
+                            <span class="bb-muted">@Feed.TotalSeen dispatched since load</span>
+                            <button type="button" class="btn btn-secondary" @onclick="Feed.Clear">Clear</button>
+                        </div>
+                        @if (Feed.Entries.Count == 0)
+                        {
+                            <p class="dock__empty">No actions yet. Interact with a demo.</p>
+                        }
+                        else
+                        {
+                            <ol class="feed">
+                                @foreach (var entry in Feed.Entries)
+                                {
+                                    <li class="feed__row">
+                                        <span class="feed__seq">#@entry.Sequence</span>
+                                        <span class="feed__store">@entry.Store</span>
+                                        <span class="feed__action">@entry.Action</span>
+                                        @if (!string.IsNullOrEmpty(entry.Args))
+                                        {
+                                            <span class="feed__args">@entry.Args</span>
+                                        }
+                                        <span class="feed__time">@entry.At.ToLocalTime().ToString("HH:mm:ss")</span>
+                                    </li>
+                                }
+                            </ol>
+                        }
+                        break;
+
+                    case "State":
+                        <div class="bb-toolbar dock__toolbar">
+                            <span class="bb-muted">@Manager.Stores.Count stores · live global tree</span>
+                        </div>
+                        <pre class="bb-code dock__json"><code>@CodeHighlighter.Highlight(StateJson, "json")</code></pre>
+                        break;
+
+                    case "History":
+                        <div class="bb-toolbar dock__toolbar">
+                            <button type="button" class="btn btn-secondary" disabled="@(!History.CanUndo)" @onclick="History.Undo">
+                                Undo @History.NextUndoLabel
+                            </button>
+                            <button type="button" class="btn btn-secondary" disabled="@(!History.CanRedo)" @onclick="History.Redo">
+                                Redo @History.NextRedoLabel
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="History.Clear">Clear</button>
+                        </div>
+                        <div class="bb-stats dock__stats">
+                            <div class="bb-stat"><span class="bb-stat-label">Undo depth</span><span class="bb-stat-value">@History.UndoCount</span></div>
+                            <div class="bb-stat"><span class="bb-stat-label">Redo depth</span><span class="bb-stat-value">@History.RedoCount</span></div>
+                            <div class="bb-stat"><span class="bb-stat-label">Max entries</span><span class="bb-stat-value">@History.MaxEntries</span></div>
+                        </div>
+                        <p class="dock__note">
+                            Undo and redo restore every store at once and never record a new action,
+                            so stepping back does not pollute the history.
+                        </p>
+                        break;
+
+                    case "Errors":
+                        <div class="bb-toolbar dock__toolbar">
+                            <span class="bb-muted">options.OnError sink</span>
+                            <button type="button" class="btn btn-secondary" @onclick="Errors.Clear">Clear</button>
+                        </div>
+                        @if (Errors.Errors.Count == 0)
+                        {
+                            <p class="dock__empty">No isolated errors. Blex would have written these to Console.Error without a handler.</p>
+                        }
+                        else
+                        {
+                            <ul class="err-list">
+                                @foreach (var err in Errors.Errors)
+                                {
+                                    <li>
+                                        <span class="err-list__source">@err.Source</span>
+                                        <span class="err-list__detail">@err.Detail</span>
+                                        <span class="err-list__msg">@err.Exception.Message</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        break;
+                }
+            </div>
+
+            @if (Guard.IsReadOnly)
+            {
+                <div class="dock__banner">
+                    Read-only guard is ON - middleware is vetoing every action
+                    (@Guard.BlockedCount blocked).
+                    <button type="button" class="btn btn-secondary" @onclick="() => Guard.IsReadOnly = false">Turn off</button>
+                </div>
+            }
+        </div>
+    }
+</aside>
+
+@code {
+    private static readonly string[] Tabs = ["Actions", "State", "History", "Errors"];
+    private static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
+
+    private bool _open;
+    private string _tab = "Actions";
+    private bool _focusTabPending;
+    private readonly ElementReference[] _tabButtons = new ElementReference[Tabs.Length];
+    private IDisposable? _actions;
+
+    private string StateJson => Manager.CaptureGlobalState().ToJsonString(Indented);
+
+    protected override void OnInitialized()
+    {
+        _actions = Manager.Subscribe(_ => Refresh());
+        Manager.StateRestored += Refresh;
+        // A scoped store joins the tree when its <BlexScope> mounts and leaves it when that goes,
+        // neither of which is an action - without these the State tab would show the tree as it was.
+        Manager.StoreRegistered += OnStoreMembershipChanged;
+        Manager.StoreUnregistered += OnStoreMembershipChanged;
+        Feed.Changed += Refresh;
+        History.Changed += Refresh;
+        Errors.Changed += Refresh;
+        Guard.Changed += Refresh;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusTabPending is false) return;
+
+        _focusTabPending = false;
+        await _tabButtons[Array.IndexOf(Tabs, _tab)].FocusAsync();
+    }
+
+    /// <summary>
+    /// Arrow keys, Home and End move the selection along the tab row and take focus with it - the
+    /// row is a single Tab stop, so this is the only way across it from the keyboard.
+    /// </summary>
+    private void OnTabKeyDown(KeyboardEventArgs args)
+    {
+        var current = Array.IndexOf(Tabs, _tab);
+        var next = args.Key switch
+        {
+            "ArrowRight" => (current + 1) % Tabs.Length,
+            "ArrowLeft" => (current - 1 + Tabs.Length) % Tabs.Length,
+            "Home" => 0,
+            "End" => Tabs.Length - 1,
+            _ => -1,
+        };
+
+        if (next < 0) return;
+
+        _tab = Tabs[next];
+        _focusTabPending = true;
+    }
+
+    private void OnStoreMembershipChanged(IBlexStore store) => Refresh();
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        _actions?.Dispose();
+        Manager.StateRestored -= Refresh;
+        Manager.StoreRegistered -= OnStoreMembershipChanged;
+        Manager.StoreUnregistered -= OnStoreMembershipChanged;
+        Feed.Changed -= Refresh;
+        History.Changed -= Refresh;
+        Errors.Changed -= Refresh;
+        Guard.Changed -= Refresh;
+    }
+}

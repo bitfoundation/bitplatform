@@ -128,6 +128,9 @@
     <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute must have a Length value that is greater than zero. Use MaxLength() without parameters to indicate that the string or array can have the maximum allowable length.</value>
   </data>
+    <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>The field {0} must be a string or array type with a maximum length of '{1}'.</value>
+  </data>
     <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>The field {0} must be a string or array type with a minimum length of '{1}'.</value>
   </data>
@@ -178,156 +181,6 @@
     <value>Unable to connect to server.</value>
   </data>
     <!-- Bit.BlazorUI messages -->
-    <data name="DataGridEmptyText" xml:space="preserve">
-    <value>No records to display.</value>
-  </data>
-    <data name="DataGridLoadingText" xml:space="preserve">
-    <value>Loading…</value>
-  </data>
-    <data name="DataGridActionsText" xml:space="preserve">
-    <value>Actions</value>
-  </data>
-    <data name="DataGridAddRowText" xml:space="preserve">
-    <value>+ Add</value>
-  </data>
-    <data name="DataGridClearFiltersText" xml:space="preserve">
-    <value>Clear filters</value>
-  </data>
-    <data name="DataGridExportCsvText" xml:space="preserve">
-    <value>Export CSV</value>
-  </data>
-    <data name="DataGridExportExcelText" xml:space="preserve">
-    <value>Export Excel</value>
-  </data>
-    <data name="DataGridColumnsText" xml:space="preserve">
-    <value>Columns</value>
-  </data>
-    <data name="DataGridEditText" xml:space="preserve">
-    <value>Edit</value>
-  </data>
-    <data name="DataGridDeleteText" xml:space="preserve">
-    <value>Delete</value>
-  </data>
-    <data name="DataGridSaveText" xml:space="preserve">
-    <value>Save</value>
-  </data>
-    <data name="DataGridCancelText" xml:space="preserve">
-    <value>Cancel</value>
-  </data>
-    <data name="DataGridSelectAllLabel" xml:space="preserve">
-    <value>Select all</value>
-  </data>
-    <data name="DataGridSelectRowLabel" xml:space="preserve">
-    <value>Select row</value>
-  </data>
-    <data name="DataGridSelectRowFormat" xml:space="preserve">
-    <value>Select row: {0}</value>
-  </data>
-    <data name="DataGridFilterPlaceholder" xml:space="preserve">
-    <value>Filter…</value>
-  </data>
-    <data name="DataGridFilterByFormat" xml:space="preserve">
-    <value>Filter by {0}</value>
-  </data>
-    <data name="DataGridFilterAllText" xml:space="preserve">
-    <value>All</value>
-  </data>
-    <data name="DataGridFilterOperatorLabel" xml:space="preserve">
-    <value>Filter operator for {0}</value>
-  </data>
-    <data name="DataGridFilterOpContains" xml:space="preserve">
-    <value>Contains</value>
-  </data>
-    <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
-    <value>Doesn't contain</value>
-  </data>
-    <data name="DataGridFilterOpStartsWith" xml:space="preserve">
-    <value>Starts with</value>
-  </data>
-    <data name="DataGridFilterOpEndsWith" xml:space="preserve">
-    <value>Ends with</value>
-  </data>
-    <data name="DataGridBooleanTrueText" xml:space="preserve">
-    <value>True</value>
-  </data>
-    <data name="DataGridBooleanFalseText" xml:space="preserve">
-    <value>False</value>
-  </data>
-    <data name="DataGridGroupByFormat" xml:space="preserve">
-    <value>Group by {0}</value>
-  </data>
-    <data name="DataGridUngroupByFormat" xml:space="preserve">
-    <value>Ungroup by {0}</value>
-  </data>
-    <data name="DataGridExpandGroupFormat" xml:space="preserve">
-    <value>Expand group {0}: {1}</value>
-  </data>
-    <data name="DataGridCollapseGroupFormat" xml:space="preserve">
-    <value>Collapse group {0}: {1}</value>
-  </data>
-    <data name="DataGridPagerRangeFormat" xml:space="preserve">
-    <value>{0}–{1} of {2}</value>
-  </data>
-    <data name="DataGridPagerPageFormat" xml:space="preserve">
-    <value>Page {0} of {1}</value>
-  </data>
-    <data name="DataGridPerPageFormat" xml:space="preserve">
-    <value>{0} / page</value>
-  </data>
-    <data name="DataGridRowsPerPageLabel" xml:space="preserve">
-    <value>Rows per page</value>
-  </data>
-    <data name="DataGridFirstPageLabel" xml:space="preserve">
-    <value>First page</value>
-  </data>
-    <data name="DataGridPreviousPageLabel" xml:space="preserve">
-    <value>Previous page</value>
-  </data>
-    <data name="DataGridNextPageLabel" xml:space="preserve">
-    <value>Next page</value>
-  </data>
-    <data name="DataGridLastPageLabel" xml:space="preserve">
-    <value>Last page</value>
-  </data>
-    <data name="DataGridEndOfResultsText" xml:space="preserve">
-    <value>- End of results -</value>
-  </data>
-    <data name="DataGridToggleDetailsLabel" xml:space="preserve">
-    <value>Toggle details</value>
-  </data>
-    <data name="DataGridToggleChildrenLabel" xml:space="preserve">
-    <value>Toggle children</value>
-  </data>
-    <data name="DataGridReorderRowTitle" xml:space="preserve">
-    <value>Drag to reorder, or focus and use the arrow keys to move this row</value>
-  </data>
-    <data name="DataGridReorderRowLabel" xml:space="preserve">
-    <value>Reorder row. Press Arrow Up or Arrow Down to move this row.</value>
-  </data>
-    <data name="DataGridInvalidValueError" xml:space="preserve">
-    <value>Invalid value for {0}.</value>
-  </data>
-    <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
-    <value>Sorted by {0}, ascending</value>
-  </data>
-    <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
-    <value>Sorted by {0}, descending</value>
-  </data>
-    <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
-    <value>Sorting by {0} removed</value>
-  </data>
-    <data name="DataGridAnnouncementFiltered" xml:space="preserve">
-    <value>Filter applied on {0}</value>
-  </data>
-    <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
-    <value>Filter on {0} cleared</value>
-  </data>
-    <data name="DataGridAnnouncementPage" xml:space="preserve">
-    <value>Page {0} of {1}</value>
-  </data>
-    <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
-    <value>Row deleted</value>
-  </data>
     <!-- Boilerplate strings -->
     <data name="Active" xml:space="preserve">
     <value>Active</value>
@@ -518,6 +371,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="BirthDate" xml:space="preserve">
     <value>Birthdate</value>
   </data>
+    <data name="BirthDateInFuture" xml:space="preserve">
+    <value>The birthdate can't be in the future.</value>
+  </data>
     <data name="UserName" xml:space="preserve">
     <value>Username</value>
   </data>
@@ -541,12 +397,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="InvalidUserCredentials" xml:space="preserve">
     <value>Invalid user credentials</value>
-  </data>
-    <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>Your email is already confirmed.</value>
-  </data>
-    <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>Your phone number is already confirmed.</value>
   </data>
     <data name="Title" xml:space="preserve">
     <value>Title</value>
@@ -734,9 +584,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="OldPassword" xml:space="preserve">
     <value>Old Password</value>
   </data>
-    <data name="No" xml:space="preserve">
-    <value>No</value>
-  </data>
     <data name="NotReceivedEmailMessage" xml:space="preserve">
     <value>Haven't you received the email?</value>
   </data>
@@ -835,9 +682,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="UploadNewImage" xml:space="preserve">
     <value>Drag or select an image</value>
-  </data>
-    <data name="Yes" xml:space="preserve">
-    <value>Yes</value>
   </data>
     <data name="SelectBirthDate" xml:space="preserve">
     <value>Select your birth date</value>
@@ -1360,6 +1204,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
     <value>The assistant couldn't answer. Try again.</value>
   </data>
+    <data name="AiChatTooManyRequests" xml:space="preserve">
+    <value>You are chatting too fast. Please wait a minute and try again.</value>
+  </data>
     <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Leave your contact details and a human operator will follow up with you.</value>
   </data>
@@ -1577,9 +1424,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="Users" xml:space="preserve">
     <value>Users</value>
   </data>
-    <data name="UsersWithCount" xml:space="preserve">
-    <value>Users {0}</value>
-  </data>
     <data name="Features" xml:space="preserve">
     <value>Features</value>
   </data>
@@ -1635,9 +1479,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="DeleteRole" xml:space="preserve">
     <value>Delete user group</value>
-  </data>
-    <data name="Sessions" xml:space="preserve">
-    <value>Sessions {0}</value>
   </data>
     <data name="DeleteUser" xml:space="preserve">
     <value>Delete user</value>
@@ -2209,5 +2050,50 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>We sent a code to {0} and {1}.</value>
+  </data>
+    <data name="EditImage" xml:space="preserve">
+    <value>Edit image</value>
+  </data>
+    <data name="Crop" xml:space="preserve">
+    <value>Crop</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>Apply crop</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>Rotate left</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>Rotate right</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>Undo</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>Redo</value>
+  </data>
+    <data name="ImageEditorCropHint" xml:space="preserve">
+    <value>Drag over the picture to mark the part to keep.</value>
+  </data>
+    <data name="ImageEditorMoreFeatures" xml:space="preserve">
+    <value>Want to add more photo editing features to your project?</value>
+  </data>
+    <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
+    <value>This picture can't be opened for editing here. You can still upload it as it is.</value>
+  </data>
+    <data name="UploadImageAsIs" xml:space="preserve">
+    <value>Upload as is</value>
+  </data>
+    <data name="ResetPasswordTwoFactorCodeRequired" xml:space="preserve">
+    <value>Two-factor authentication is on for this account. Enter a code from your authenticator app or one of your recovery codes.</value>
+  </data>
+    <data name="AccountAlreadyExistsShortText" xml:space="preserve">
+    <value>You already have a Boilerplate account with this phone number. If you just tried to sign up, sign in instead.</value>
+  </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>Add another account</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>Sign out of all accounts on this device</value>
   </data>
 </root>

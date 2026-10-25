@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <!-- Single-target: this is a measurement tool, not a shipped/multi-TFM library. net10.0 matches
+             global.json's pinned SDK. -->
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <!-- BenchmarkDotNet requires optimized, non-debug binaries to produce trustworthy numbers. -->
+        <Optimize>true</Optimize>
+        <ServerGarbageCollection>true</ServerGarbageCollection>
+        <!-- Not a unit-test project: it's a console harness run manually (dotnet run -c Release). -->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Blex\Bit.Blex.csproj" />
+        <ProjectReference Include="..\..\Bit.Blex.Generators\Bit.Blex.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+</Project>

@@ -7,7 +7,7 @@
         @foreach (var dep in deps)
         {
             <div class="dep-card" @key="dep.Name">
-                <BitStack Horizontal AutoHeight Class="dep-top" Gap="0.5rem" VerticalAlign="BitAlignment.Center" HorizontalAlign="BitAlignment.SpaceBetween">
+                <BitStack Horizontal AutoHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center" HorizontalAlign="BitAlignment.SpaceBetween">
                     <BitLink Class="dep-name" Href="@(dep.Url ?? dep.Repo)" Target="_blank">@dep.Name</BitLink>
                     @if (dep.Repo is not null)
                     {
@@ -37,7 +37,7 @@
 }
 
 <CascadingValue Value="BitDir.Ltr">
-    <section class="acknowledgements">
+    <section class="acknowledgements app-latin-digits">
         <BitStack Gap="1.25rem">
             <BitStack Gap="0.25rem">
                 <BitText Typography="BitTypography.H4">Standing on the shoulders of giants</BitText>
@@ -54,7 +54,7 @@
                 {
                     <BitStack AutoHeight Class="ack-section" Gap="0.6rem">
                         <BitStack Horizontal Wrap AutoHeight Class="ack-section-head" Gap="0.5rem" VerticalAlign="BitAlignment.Baseline">
-                            <BitText Class="ack-section-title" Typography="BitTypography.Subtitle1">@s.Title</BitText>
+                            <BitText Weight="BitFontWeight.Semibold" Typography="BitTypography.Subtitle1">@s.Title</BitText>
                             <span class="ack-count">@s.Items.Length</span>
                             <BitText Class="ack-section-sub" Typography="BitTypography.Caption2" Color="BitColor.SecondaryForeground">@s.Subtitle</BitText>
                         </BitStack>

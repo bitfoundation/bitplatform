@@ -1,4 +1,4 @@
-@page "/getting-started"
+﻿@page "/getting-started"
 @inherits AppComponentBase
 
 <PageOutlet Url="getting-started"
@@ -93,8 +93,9 @@
                         Description="One package carries the whole core library. Pick whichever of the three routes matches how you work.">
 
                 @* MountAll: all three panels belong in the rendered HTML, so the route a reader did not
-                   click is still there for search engines and for anyone reading with a screen reader. *@
-                <BitPivot MountAll>
+                   click is still there for search engines and for anyone reading with a screen reader.
+                   Scroll: the three headers are wider than the narrowest phones. *@
+                <BitPivot MountAll OverflowBehavior="BitPivotOverflowBehavior.Scroll">
                     <BitPivotItem HeaderText=".NET CLI">
                         <div class="gs-stack">
                             <BitText Element="p">Run this in the directory of the project your components live in:</BitText>
@@ -220,9 +221,10 @@ dotnet add package Bit.BlazorUI.Legacy</CodeBox>
                 </BitText>
                 <CodeBox Language="csharp">builder.Services.AddBitBlazorUIServices();</CodeBox>
 
-                <BitText Element="p">It registers five services:</BitText>
+                <BitText Element="p">It registers six services:</BitText>
                 <ul>
                     <li><code>BitModalService</code> - opens a modal from C# instead of from markup.</li>
+                    <li><code>BitSnackBarService</code> - shows a notification from any component, through the layout's <code>&lt;BitSnackBar ServiceHost /&gt;</code>.</li>
                     <li><code>BitThemeManager</code> - switches preset, toggles dark mode, overrides tokens at runtime.</li>
                     <li><code>BitThemeNotifications</code> - raises <code>ThemeChanged</code> when any of that happens.</li>
                     <li><code>BitExternalThemeLoader</code> - pulls a preset stylesheet in on demand.</li>
@@ -411,13 +413,14 @@ builder.Services.AddBitBlazorUILegacyServices(); // Bit.BlazorUI.Legacy</CodeBox
                 <BitText Element="h3" Typography="BitTypography.Subtitle1">bit Boilerplate</BitText>
                 <BitText Element="p">
                     The same wiring plus what a real product needs on day one - identity, an API, a
-                    database, localization, and the Android, iOS, macOS and Windows heads of one codebase:
+                    database, localization, and the Android, iOS, macOS and Windows heads of one codebase.
+                    The bit CLI creates it and installs whatever this machine is missing to run it:
                 </BitText>
-                <CodeBox>dotnet new install Bit.Boilerplate
-dotnet new bit-bp -n MyBitProject</CodeBox>
+                <CodeBox>dotnet tool install --global Bit.Cli --version 10.7.0
+bit new MyBitProject</CodeBox>
 
                 <BitText Element="p">
-                    Both are <code>dotnet new</code> templates rather than dependencies: what they produce
+                    Both are templates rather than dependencies: what they produce
                     is your source, with no runtime tie back to them.
                 </BitText>
             </DocSection>
@@ -472,8 +475,58 @@ dotnet new bit-bp -n MyBitProject</CodeBox>
                 </BitAccordion>
             </DocSection>
 
+            <DocSection Id="trimming" Title="Trimming and lazy scripts"
+                        Description="In production an app downloads the css and js of the components it uses, and nothing else. The tags from step 4 stay exactly as they are.">
+
+                <BitText Element="p">
+                    The stylesheets and scripts of the packages are built from one piece per component and per
+                    script. When an app is <b>published</b>, each bundle is put back together from only the pieces the
+                    app can use - under the same name and URL, so the <code>&lt;link&gt;</code> and
+                    <code>&lt;script&gt;</code> tags, <code>@@Assets[""]</code> and the cache busting above all keep
+                    working. A build, <code>dotnet run</code> and <code>dotnet watch</code> are never touched: what
+                    you develop against is always the full bundles.
+                </BitText>
+
+                <table class="gs-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Your app</th>
+                            <th scope="col">What to do</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Standalone WebAssembly</th>
+                            <td>Nothing: it is on by default, and works off what the .NET trimmer kept - as in any project published with <code>PublishTrimmed</code>.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Blazor Web App, Blazor Server</th>
+                            <td>Turn it on in the server project: <code>&lt;BitBlazorUITrimAssets&gt;true&lt;/BitBlazorUITrimAssets&gt;</code></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Blazor Hybrid (MAUI)</th>
+                            <td>Not trimmed: the files are read from the device, never downloaded.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <BitText Element="p">
+                    Or go further with lazy scripts - <code>&lt;BitBlazorUILazyScripts&gt;true&lt;/BitBlazorUILazyScripts&gt;</code>
+                    and no <code>&lt;script&gt;</code> tag of the packages at all: each page then downloads the scripts
+                    of the components it renders, the first time it uses them. The
+                    <BitLink Href="/trimming">trimming page</BitLink> has every switch, how the publish knows what an
+                    app uses, how to name what it cannot see, and what to look for when something goes missing.
+                </BitText>
+
+                <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Center">
+                    <BitButton Href="/trimming" Variant="BitVariant.Outline" IconName="@BitIconName.Download">
+                        Trimming and lazy scripts
+                    </BitButton>
+                </BitStack>
+            </DocSection>
+
             <DocSection Id="troubleshooting" Title="Troubleshooting"
-                        Description="Nearly everything that goes wrong in the first hour is one of these seven, and each of them points back at the step it came from.">
+                        Description="Nearly everything that goes wrong in the first hour is one of these eight, and each of them points back at the step it came from.">
 
                 @* Symptom first, because the symptom is what the reader arrives with. Hairline-separated
                    rows rather than cards: this is a table someone scans for their own line, not a set of
@@ -544,6 +597,16 @@ dotnet new bit-bp -n MyBitProject</CodeBox>
                             deployment than after it.
                         </p>
                     </div>
+                    <div class="trouble">
+                        <p class="trouble-symptom">A component looks unstyled, or "BitBlazorUI.x is undefined", only in the published app</p>
+                        <p class="trouble-fix">
+                            The publish <BitLink Href="/trimming">trimmed</BitLink> away something
+                            it could not see the app use - a component rendered by reflection, a script called from
+                            JavaScript loaded from elsewhere. Name it with <code>&lt;BitBlazorUIComponent&gt;</code> or
+                            <code>&lt;BitBlazorUIAsset&gt;</code>, or publish with
+                            <code>-p:BitBlazorUITrimAssets=false</code> to confirm that is what it is.
+                        </p>
+                    </div>
                 </div>
 
                 <BitText Element="p">
@@ -574,7 +637,7 @@ dotnet new bit-bp -n MyBitProject</CodeBox>
                 </BitText>
 
                 <BitButton Href="/mcp-server" Variant="BitVariant.Outline"
-                           IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
+                           IconName="@BitIconName.ChevronRightSmall" IconPlacement="BitPlacement.End">
                     Connect your agent
                 </BitButton>
             </DocSection>

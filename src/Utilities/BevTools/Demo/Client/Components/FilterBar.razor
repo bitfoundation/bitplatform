@@ -1,0 +1,24 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+@inject FilterState Filter
+
+<div class="bb-toolbar">
+    <input type="search" class="demo-search" aria-label="Search products" placeholder="Search products (every keystroke notifies FilterState)" @bind:get="Filter.Query" @bind:set="OnQuery" @bind:event="oninput" />
+    <select aria-label="Category" value="@Filter.Category" @onchange="OnCategory">
+        <option>All</option>
+        <option>Office</option>
+        <option>Audio</option>
+        <option>Furniture</option>
+        <option>Outdoor</option>
+        <option>Accessories</option>
+    </select>
+    <label class="bb-check">Max price <input type="range" min="10" max="1000" @bind:get="Filter.MaxPrice" @bind:set="OnPrice" @bind:event="oninput" /> <span class="demo-range-value">@Filter.MaxPrice.ToString("C0")</span></label>
+    <button type="button" class="btn btn-secondary" @onclick="Filter.Touch">Notify without change (@Filter.ChangeCount)</button>
+</div>
+
+@code {
+    private void OnQuery(string? value) => Filter.Query = value ?? string.Empty;
+
+    private void OnCategory(ChangeEventArgs e) => Filter.Category = e.Value?.ToString() ?? "All";
+
+    private void OnPrice(decimal value) => Filter.MaxPrice = value;
+}

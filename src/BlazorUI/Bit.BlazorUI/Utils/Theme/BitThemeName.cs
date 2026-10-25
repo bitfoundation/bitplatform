@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Type-safe wrapper for the <c>bit-theme</c> attribute name. Use the static factories
@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// <para>
 /// Existing callers can keep using the <c>string</c> constants on <see cref="BitThemePresets"/>;
 /// this struct is additive and provides an implicit conversion to <see cref="string"/> so it slots
-/// straight into <see cref="BitThemeManager.SetThemeAsync"/> without ceremony.
+/// straight into <see cref="BitThemeManager.SetThemeAsync(string)"/> without ceremony.
 /// </para>
 /// <para>
 /// The wrapper normalizes the value (trim + lower-case invariant) so <c>Custom("Fluent-Light")</c>

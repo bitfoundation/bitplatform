@@ -1,4 +1,4 @@
-
+﻿
 namespace Bit.BlazorUI;
 
 public sealed partial class BitChartRenderer
@@ -45,6 +45,7 @@ public sealed partial class BitChartRenderer
             Scene = scene, Config = _config, IsCartesian = false, HiddenDatasets = _state.HiddenDatasets,
             CenterX = cx, CenterY = cy, InnerRadius = 0, OuterRadius = maxR
         };
+        scene.PluginContext = pctx;
         foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(pctx);
 
         // Grid rings (polygons by default, circles when grid.circular).
@@ -96,7 +97,7 @@ public sealed partial class BitChartRenderer
                 {
                     X = lx, Y = ly, Text = label, Fill = pl.Color,
                     FontSize = pl.Font.Size, FontFamily = pl.Font.Family, FontWeight = pl.Font.Weight,
-                    Anchor = anchor, Baseline = "central"
+                    Anchor = anchor, PhysicalAnchor = true, Baseline = "central"
                 });
             }
         }
@@ -134,6 +135,7 @@ public sealed partial class BitChartRenderer
             // together with the joint points instead of staying fixed.
             scene.Series.Add(new BitChartSvgPolygon
             {
+                DatasetIndex = d,
                 Points = verts.Select(p => (p.x, p.y)).ToList(),
                 Fill = ds.Fill != BitChartFillMode.None ? fill : "none",
                 Stroke = border,

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// OpenLayers provider for <see cref="BitMap{TMapProvider}"/>. Loads OpenLayers from esm.sh

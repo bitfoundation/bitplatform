@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -48,7 +49,7 @@ public class BitPdfViewerTests : BunitTestContext
     {
         var component = RenderComponent<BitPdfViewer>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var root = component.Find(".bit-pdv");
@@ -117,7 +118,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         Assert.IsTrue(component.Instance.ExtractPageText(1).Contains("Hello"));
         Assert.IsTrue(component.Instance.RenderPageHtml(1).Contains("bit-pdv-html-page"));
@@ -132,7 +133,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.Instance.GoToPage(42);
         Assert.AreEqual(1, component.Instance.CurrentPage);
@@ -167,7 +168,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld(), "hello.pdf"));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         var toolbar = component.Find(".bit-pdv-toolbar");
         // A labelled group, not an aria toolbar: the bar holds a text box and three
@@ -211,7 +212,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.ToolbarItems, BitPdfToolbarItems.Navigation | BitPdfToolbarItems.Zoom);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         var toolbar = component.Find(".bit-pdv-toolbar");
         // Prev, next, zoom out, zoom in - and nothing else.
@@ -229,12 +230,9 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
         });
 
-        component.WaitForAssertion(() =>
-        {
-            Assert.AreEqual(3, component.Instance.PageCount);
-            Assert.AreEqual(1, component.FindAll(".bit-pdv-thumbs").Count);
-        });
+        component.WaitForPages(3);
 
+        Assert.AreEqual(1, component.FindAll(".bit-pdv-thumbs").Count);
         Assert.AreEqual(BitPdfSidebar.Thumbnails, component.Instance.Sidebar);
         Assert.AreEqual(3, component.FindAll("[data-thumb]").Count);
     }
@@ -250,7 +248,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.OnSidebarChanged, EventCallback.Factory.Create<BitPdfSidebar>(this, s => reported = s));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
         Assert.AreEqual(BitPdfSidebar.None, component.Instance.Sidebar);
 
         await component.InvokeAsync(() => component.Instance.ShowSidebar(BitPdfSidebar.Bookmarks));
@@ -271,7 +269,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
         Assert.IsFalse(component.Instance.HasOutline);
 
         await component.InvokeAsync(() => component.Instance.ShowSidebar(BitPdfSidebar.Bookmarks));
@@ -287,7 +285,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(5)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+        component.WaitForPages(5);
 
         await component.InvokeAsync(() => component.Instance.LastPage());
         Assert.AreEqual(5, component.Instance.CurrentPage);
@@ -309,7 +307,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.MaxZoom, 0.05);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.SetZoom(1));
         Assert.AreEqual(0.05, component.Instance.Zoom, 0.0001);
@@ -333,7 +331,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.OnZoomChanged, EventCallback.Factory.Create<double>(this, z => zooms.Add(z)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
         Assert.AreEqual(1, component.Instance.Zoom, 0.001);
 
         await component.InvokeAsync(() => component.Instance.ZoomIn());
@@ -359,7 +357,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.ActualSize);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.SetZoom(3));
         Assert.AreEqual(3, component.Instance.Zoom, 0.001);
@@ -380,7 +378,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.OnRotationChanged, EventCallback.Factory.Create<int>(this, r => rotations.Add(r)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
         Assert.AreEqual(0, component.Instance.Rotation);
 
         await component.InvokeAsync(() => component.Instance.RotateClockwise());
@@ -402,20 +400,28 @@ public class BitPdfViewerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPdfViewerShouldSwapPageDimensionsOnAQuarterTurn()
+    public async Task BitPdfViewerShouldSwapPageDimensionsOnAQuarterTurn()
     {
         var component = RenderComponent<BitPdfViewer>(parameters =>
         {
-            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.RichDocument()));
+            // 300x200 pages: a quarter turn is visible in the page box.
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithLayers()));
+            parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.ActualSize);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(1);
+        StringAssert.StartsWith(component.Find("[data-page='1']").GetAttribute("style"), "width:300px;height:200px");
 
-        // The fixture's pages are square, so assert on a landscape-friendly axis:
-        // rotating must keep the page element sized and not blank it out.
-        string before = component.Find("[data-page='1']").GetAttribute("style") ?? string.Empty;
-        Assert.IsTrue(before.Contains("width:"));
-        Assert.IsTrue(before.Contains("height:"));
+        await component.InvokeAsync(() => component.Instance.RotateClockwise());
+
+        component.WaitForAssertion(() =>
+            StringAssert.StartsWith(component.Find("[data-page='1']").GetAttribute("style"), "width:200px;height:300px"));
+
+        // A half turn lands the box back on its own dimensions.
+        await component.InvokeAsync(() => component.Instance.RotateClockwise());
+
+        component.WaitForAssertion(() =>
+            StringAssert.StartsWith(component.Find("[data-page='1']").GetAttribute("style"), "width:300px;height:200px"));
     }
 
     [TestMethod]
@@ -428,7 +434,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(bytes, "rich.pdf"));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
         var instance = component.Instance;
         Assert.IsNotNull(instance.Document);
@@ -483,7 +489,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
         string text = component.Instance.ExtractText("|");
 
@@ -501,7 +507,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.RichDocument(), "rich.pdf"));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
         // PageCount flips before the render that enables the toolbar: clicking the
         // still-disabled button of the previous render would be ignored.
         component.WaitForAssertion(() => Assert.IsFalse(component.Find("button[aria-label='Document properties']").HasAttribute("disabled")));
@@ -553,7 +559,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Styles, new BitPdfViewerClassStyles { Surface = "background:red", Page = "opacity:0.5" });
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         Assert.IsTrue(component.Find(".bit-pdv").ClassList.Contains("custom-root"));
         Assert.IsTrue(component.Find(".bit-pdv-toolbar").ClassList.Contains("custom-toolbar"));
@@ -563,6 +569,75 @@ public class BitPdfViewerTests : BunitTestContext
         string pageStyle = component.Find("[data-page='1']").GetAttribute("style") ?? "";
         Assert.IsTrue(pageStyle.Contains("--bit-pdv-scale"));
         Assert.IsTrue(pageStyle.Contains("opacity:0.5"));
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldApplyTheBaseParametersToItsRoot()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Id, "viewer-1");
+            parameters.Add(p => p.Class, "host-class");
+            parameters.Add(p => p.Style, "margin:1px");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { ["data-host"] = "yes" });
+        });
+
+        var root = component.Find(".bit-pdv");
+
+        Assert.AreEqual("viewer-1", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("host-class"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.AreEqual("yes", root.GetAttribute("data-host"));
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, ""),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")]
+    public void BitPdfViewerShouldRespectVisibility(BitVisibility visibility, string expectedStyle)
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        string style = component.Find(".bit-pdv").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle.Length == 0)
+        {
+            Assert.IsFalse(style.Contains("visibility:") || style.Contains("display:"), style);
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldDropThePagesActivationHandlersWhileDisabled()
+    {
+        // The root takes DisabledAwareHtmlAttributes: a click handler the page splatted on it runs while the
+        // viewer is enabled and is dropped while it is disabled, as a natively disabled control's would be.
+        var clicks = 0;
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object>
+            {
+                ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++),
+            });
+        });
+
+        Assert.IsFalse(component.Find(".bit-pdv").HasAttribute("blazor:onclick"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
+
+        component.Find(".bit-pdv").Click();
+        Assert.AreEqual(1, clicks);
     }
 
     [TestMethod]
@@ -633,7 +708,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.ActualSize);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.PageCount));
+        component.WaitForPages(4);
 
         await component.InvokeAsync(() => component.Instance.OnShortcut("next"));
         Assert.AreEqual(2, component.Instance.CurrentPage);
@@ -672,7 +747,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
         Assert.IsFalse(component.Instance.IsSearchOpen);
 
         await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
@@ -689,10 +764,10 @@ public class BitPdfViewerTests : BunitTestContext
         var component = RenderComponent<BitPdfViewer>(parameters =>
         {
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
         await component.InvokeAsync(() => component.Instance.OnShortcut("next"));
 
@@ -707,7 +782,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.Search("Hello"));
 
@@ -727,7 +802,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
         await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
         component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-search-input").Count));
 
@@ -756,7 +831,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.MaxZoom, 2);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         // Compare whole option labels: ">50%<" would otherwise also match "150%".
         var labels = component.FindAll("select.bit-pdv-select option")
@@ -783,7 +858,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld(), "hello.pdf"));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         component.WaitForAssertion(() => Assert.IsFalse(component.Find("button[aria-label='Download document']").HasAttribute("disabled")));
     }
@@ -804,7 +879,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(4)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.PageCount));
+        component.WaitForPages(4);
 
         var pages = component.Find(".bit-pdv-pages");
 
@@ -828,7 +903,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.ScrollMode, mode);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.PageCount));
+        component.WaitForPages(4);
 
         Assert.AreEqual(mode, component.Instance.CurrentScrollMode);
         Assert.IsTrue(component.Find(".bit-pdv-pages").ClassList.Contains(expectedClass));
@@ -845,7 +920,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.ScrollMode, BitPdfScrollMode.Page);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.PageCount));
+        component.WaitForPages(4);
 
         Assert.AreEqual(1, component.FindAll(".bit-pdv-page.bit-pdv-cur").Count);
         Assert.IsTrue(component.Find("[data-page='1']").ClassList.Contains("bit-pdv-cur"));
@@ -860,7 +935,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.ScrollMode, BitPdfScrollMode.Horizontal);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
         Assert.AreEqual("h", component.Find(".bit-pdv-surface").GetAttribute("data-bit-pdv-axis"));
     }
@@ -874,7 +949,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.SpreadMode, BitPdfSpreadMode.Odd);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+        component.WaitForPages(5);
 
         var rows = component.FindAll(".bit-pdv-row");
 
@@ -896,7 +971,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.SpreadMode, BitPdfSpreadMode.Even);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+        component.WaitForPages(5);
 
         var rows = component.FindAll(".bit-pdv-row");
 
@@ -916,7 +991,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(4)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.PageCount));
+        component.WaitForPages(4);
 
         await component.InvokeAsync(() => component.Instance.SetScrollMode(BitPdfScrollMode.Wrapped));
         Assert.AreEqual(BitPdfScrollMode.Wrapped, component.Instance.CurrentScrollMode);
@@ -944,7 +1019,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
         Assert.AreEqual(BitPdfCursorTool.Select, component.Instance.CurrentCursorTool);
         Assert.IsFalse(component.Find(".bit-pdv-surface").ClassList.Contains("bit-pdv-pan"));
 
@@ -964,7 +1039,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.CursorTool, BitPdfCursorTool.Pan);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         Assert.AreEqual(BitPdfCursorTool.Pan, component.Instance.CurrentCursorTool);
         Assert.IsTrue(component.Find(".bit-pdv-surface").ClassList.Contains("bit-pdv-pan"));
@@ -979,7 +1054,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.ToolbarItems, BitPdfToolbarItems.All & ~BitPdfToolbarItems.Layout & ~BitPdfToolbarItems.CursorTool);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         // Only the zoom dropdown is left.
         Assert.AreEqual(1, component.FindAll("select.bit-pdv-select").Count);
@@ -994,7 +1069,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("cat concatenate cat.")));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.Search("cat"));
         // "cat", the "cat" inside "concatenate", and the trailing "cat".
@@ -1015,7 +1090,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("aaaa")));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.Search("aa"));
 
@@ -1031,7 +1106,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(6)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(6, component.Instance.PageCount));
+        component.WaitForPages(6);
 
         // "Page" appears once per page, on every page of the fixture.
         await component.InvokeAsync(() => component.Instance.Search("Page"));
@@ -1052,7 +1127,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(4)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.PageCount));
+        component.WaitForPages(4);
 
         await component.InvokeAsync(() => component.Instance.Search("Page"));
         component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.SearchMatchCount));
@@ -1081,7 +1156,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
         await component.InvokeAsync(() => component.Instance.Search("page"));
         component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.SearchMatchCount));
@@ -1102,7 +1177,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
         await component.InvokeAsync(() => component.Instance.Search("Page"));
         component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.SearchMatchCount));
@@ -1125,7 +1200,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.PageCount));
+        component.WaitForPages(4);
         Assert.IsFalse(component.Instance.IsPresenting);
 
         await component.InvokeAsync(() => component.Instance.EnterPresentationMode());
@@ -1151,7 +1226,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         await component.InvokeAsync(() => component.Instance.TogglePresentationMode());
         Assert.IsTrue(component.Instance.IsPresenting);
@@ -1274,7 +1349,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
         Assert.IsFalse(component.Instance.HasLayers);
         Assert.IsTrue(component.Find("button[aria-label='Layers']").HasAttribute("disabled"));
 
@@ -1336,7 +1411,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
         Assert.IsFalse(component.Instance.HasAttachments);
         Assert.IsTrue(component.Find("button[aria-label='Attachments']").HasAttribute("disabled"));
 
@@ -1357,7 +1432,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.CurrentPageChanged, EventCallback.Factory.Create<int>(this, v => bound = v));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+        component.WaitForPages(5);
 
         // Viewer to host.
         await component.InvokeAsync(() => component.Instance.NextPage());
@@ -1389,7 +1464,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.RotationChanged, EventCallback.Factory.Create<int>(this, v => boundRotation = v));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.ZoomIn());
         Assert.AreEqual(1.2, boundZoom, 0.001);
@@ -1419,7 +1494,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.ActualSize);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
         StringAssert.StartsWith(component.Find(".bit-pdv-page[data-page='1']").GetAttribute("style"),
                                 "width:300px;height:200px");
 
@@ -1442,7 +1517,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.CurrentPage, 3);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+        component.WaitForPages(5);
         Assert.AreEqual(3, component.Instance.CurrentPage);
 
         await component.InvokeAsync(() => component.Instance.NextPage());
@@ -1462,7 +1537,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.CurrentPageChanged, EventCallback.Factory.Create<int>(this, _ => { }));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(8, component.Instance.PageCount));
+        component.WaitForPages(8);
 
         Assert.AreEqual(4, component.Instance.CurrentPage);
     }
@@ -1477,7 +1552,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.CurrentPageChanged, EventCallback.Factory.Create<int>(this, _ => { }));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
         Assert.AreEqual(3, component.Instance.CurrentPage);
     }
@@ -1490,7 +1565,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
         Assert.IsFalse(component.Find(".bit-pdv").ClassList.Contains("bit-pdv-presenting"));
 
         await component.InvokeAsync(() => component.Instance.EnterPresentationMode());
@@ -1512,7 +1587,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(5)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+        component.WaitForPages(5);
         component.InvokeAsync(() => component.Instance.LastPage()).GetAwaiter().GetResult();
         component.InvokeAsync(() => component.Instance.RotateClockwise()).GetAwaiter().GetResult();
         Assert.AreEqual(5, component.Instance.CurrentPage);
@@ -1520,7 +1595,7 @@ public class BitPdfViewerTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3))));
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
         Assert.AreEqual(1, component.Instance.CurrentPage);
         Assert.AreEqual(0, component.Instance.Rotation);
     }
@@ -1533,7 +1608,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.Encrypted("open-sesame")).WithPassword("open-sesame"));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         Assert.IsTrue(component.Instance.IsEncrypted);
         // The document grants everything, so no capability is reported as withheld.
@@ -1557,7 +1632,7 @@ public class BitPdfViewerTests : BunitTestContext
         component.Find(".bit-pdv-password-input").Input("hunter2");
         component.Find(".bit-pdv-dialog-actions .bit-pdv-act").Click();
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
         Assert.AreEqual(0, component.FindAll(".bit-pdv-password").Count);
     }
 
@@ -1584,7 +1659,7 @@ public class BitPdfViewerTests : BunitTestContext
         component.Find(".bit-pdv-password-input").Input("hunter2");
         component.Find(".bit-pdv-dialog-actions .bit-pdv-act").Click();
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
     }
 
     [TestMethod]
@@ -1643,7 +1718,7 @@ public class BitPdfViewerTests : BunitTestContext
             });
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         Assert.AreEqual(1, asked);
         // The host took over the asking, so the built-in dialog never appears.
@@ -1688,7 +1763,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
         await component.InvokeAsync(() => component.Instance.SetScrollMode(BitPdfScrollMode.Horizontal));
         Assert.AreEqual(BitPdfScrollMode.Horizontal, component.Instance.CurrentScrollMode);
@@ -1727,7 +1802,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         var options = component.FindAll("select.bit-pdv-select")[0]
             .QuerySelectorAll("option").Select(o => o.GetAttribute("value")).ToList();
@@ -1747,7 +1822,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.Automatic);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
         Assert.AreEqual(BitPdfZoomMode.Automatic, component.Instance.ZoomMode);
 
         await component.InvokeAsync(() => component.Instance.SetZoomMode(BitPdfZoomMode.FitHeight));
@@ -1771,7 +1846,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.MaxZoom, 4);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         var presets = component.FindAll("select.bit-pdv-select")[0]
             .QuerySelectorAll("option")
@@ -1791,7 +1866,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("resume and resume")));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.Search("resume"));
         component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.SearchMatchCount));
@@ -1814,7 +1889,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("only this")));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.Search("nothing here"));
 
@@ -1830,7 +1905,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("Cat cat")));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         // The defaults every desktop find bar opens with.
         Assert.IsFalse(component.Instance.SearchMatchCase);
@@ -1860,7 +1935,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("cat cat")));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.Search("cat"));
         component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.SearchMatchCount));
@@ -1883,7 +1958,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         var picker = component.Find("input[type='file'].bit-pdv-file");
         Assert.AreEqual("Open file", picker.GetAttribute("aria-label"));
@@ -1893,6 +1968,66 @@ public class BitPdfViewerTests : BunitTestContext
             BitPdfToolbarItems.All & ~BitPdfToolbarItems.OpenFile));
 
         Assert.AreEqual(0, component.FindAll("input[type='file']").Count);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldOpenAPickedFile()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld(), "hello.pdf"));
+        });
+
+        component.WaitForPages(1);
+
+        // With no host handling OnFileOpened, the viewer opens the picked file itself.
+        component.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromBinary(TestPdf.MultiPage(3), "picked.pdf"));
+
+        component.WaitForPages(3);
+        Assert.IsTrue(component.Find(".bit-pdv-title").TextContent.Contains("picked.pdf"));
+        // The Source parameter is the host's and stays what the host wrote.
+        Assert.AreEqual("hello.pdf", component.Instance.Source?.FileName);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldHandAPickedFileToTheHostThatListens()
+    {
+        BitPdfSource? opened = null;
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld(), "hello.pdf"));
+            parameters.Add(p => p.OnFileOpened, EventCallback.Factory.Create<BitPdfSource>(this, s => opened = s));
+        });
+
+        component.WaitForPages(1);
+
+        component.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromBinary(TestPdf.MultiPage(3), "picked.pdf"));
+
+        // The host drives Source itself, so the viewer keeps the document it has.
+        component.WaitForAssertion(() => Assert.IsNotNull(opened));
+        Assert.AreEqual("picked.pdf", opened.FileName);
+        Assert.IsTrue(opened.IsBytes);
+        CollectionAssert.AreEqual(TestPdf.MultiPage(3), opened.Bytes);
+        Assert.AreEqual(1, component.Instance.PageCount);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldReportAPickedFileThatIsNotADocument()
+    {
+        var errors = new List<string>();
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<string>(this, errors.Add));
+        });
+
+        component.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("not a pdf", "notes.txt"));
+
+        // With no document on screen the failure takes its place.
+        component.WaitForAssertion(() => Assert.AreEqual(1, errors.Count));
+        Assert.AreEqual(1, component.FindAll(".bit-pdv-error").Count);
+        Assert.AreEqual(0, component.Instance.PageCount);
     }
 
     [TestMethod]
@@ -1906,7 +2041,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.OnPageRendered, EventCallback.Factory.Create<int>(this, n => rendered.Add(n)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.PageCount));
+        component.WaitForPages(4);
 
         // Only the page the viewer opens on is built up front; the rest are lazy.
         CollectionAssert.Contains(rendered, 1);
@@ -1925,7 +2060,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         // A well-formed fixture has nothing to complain about, but the list is always
         // there to read rather than only reaching the host through OnWarnings.
@@ -1943,7 +2078,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.SetRotation(100));
         Assert.AreEqual(90, component.Instance.Rotation);
@@ -2024,16 +2159,16 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
-        var region = component.Find(".bit-pdv-sr");
+        var region = component.Find(".bit-pdv-sr[role='status']");
         Assert.AreEqual("status", region.GetAttribute("role"));
         Assert.AreEqual("polite", region.GetAttribute("aria-live"));
 
         await component.InvokeAsync(() => component.Instance.GoToPage(2));
 
         component.WaitForAssertion(() =>
-            Assert.AreEqual("Page 2 of 3", component.Find(".bit-pdv-sr").TextContent.Trim()));
+            Assert.AreEqual("Page 2 of 3", component.Find(".bit-pdv-sr[role='status']").TextContent.Trim()));
     }
 
     [TestMethod]
@@ -2044,7 +2179,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         Assert.IsFalse(component.Instance.IsFullscreen);
         Assert.AreEqual("false", component.Find("button[aria-label='Enter fullscreen']").GetAttribute("aria-pressed"));
@@ -2064,7 +2199,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(5)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+        component.WaitForPages(5);
 
         await component.InvokeAsync(() => component.Instance.Print(2, 3));
 
@@ -2095,7 +2230,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(4)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.PageCount));
+        component.WaitForPages(4);
 
         await component.InvokeAsync(() => component.Instance.GoToPage(3));
         await component.InvokeAsync(() => component.Instance.PrintCurrentPage());
@@ -2113,12 +2248,12 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.OpenAsync(
             BitPdfSource.FromBytes(TestPdf.MultiPage(3), "opened.pdf")));
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
         // A host re-render that does not change Source must not close what the reader
         // (or the host's own code) opened.
@@ -2129,7 +2264,7 @@ public class BitPdfViewerTests : BunitTestContext
         // A host re-render that DOES change Source still wins.
         component.Render(parameters => parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(5))));
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+        component.WaitForPages(5);
     }
 
     [TestMethod]
@@ -2140,13 +2275,13 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.OpenAsync(null));
 
-        component.WaitForAssertion(() => Assert.AreEqual(0, component.Instance.PageCount));
+        component.WaitForPages(0);
         Assert.IsNull(component.Instance.Document);
-        Assert.IsTrue(component.Find(".bit-pdv").TextContent.Contains("No document loaded."));
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-pdv").TextContent.Contains("No document loaded.")));
     }
 
     [TestMethod]
@@ -2157,7 +2292,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithNestedOutline()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         var child = component.Instance.Outline[0].Children[0];
         Assert.IsNotNull(child.Destination);
@@ -2180,7 +2315,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithNamedDestination()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         await component.InvokeAsync(() => component.Instance.GoToNamedDestination("chapter2"));
         Assert.AreEqual(2, component.Instance.CurrentPage);
@@ -2212,7 +2347,7 @@ public class BitPdfViewerTests : BunitTestContext
                 Convert.ToBase64String(TestPdf.MultiPage(3)), "b64.pdf"));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
     }
 
     [TestMethod]
@@ -2223,7 +2358,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithPageLabels()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.PageCount));
+        component.WaitForPages(4);
 
         // The fixture labels its pages i, ii, 1, 2 - so the box shows the label, and
         // the plain page number goes beside it.
@@ -2263,7 +2398,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(5)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+        component.WaitForPages(5);
 
         component.Find("input.bit-pdv-page-input").Change("4");
 
@@ -2288,7 +2423,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.OnError, EventCallback.Factory.Create<string>(this, e => errors.Add(e)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         // The annotation is unusable, but the page - and the link annotation beside it -
         // still render, so one damaged annotation never costs the whole page.
@@ -2306,7 +2441,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithInternalLink()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         // The link's markup carries the destination's vertical position, so the click
         // handler can ask for that spot rather than the page's top edge.
@@ -2332,7 +2467,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.ToolbarItems, BitPdfToolbarItems.Navigation);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
         Assert.AreEqual(0, component.FindAll("input.bit-pdv-file").Count);
 
         component.Render(parameters => parameters.Add(p => p.AllowDropFile, true));
@@ -2355,7 +2490,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.AllowDropFile, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         var input = component.Find("input.bit-pdv-file");
         Assert.AreEqual("-1", input.GetAttribute("tabindex"));
@@ -2371,7 +2506,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.AllowDropFile, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         // The toolbar's picker is the one the drop handler fills; a second would make
         // "the first input in the viewer" ambiguous.
@@ -2388,7 +2523,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.EnableKeyboardShortcuts, false);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         ClickWhenEnabled(component, "button[aria-label='Document properties']");
         var dialog = component.Find("[role='dialog']");
@@ -2400,6 +2535,98 @@ public class BitPdfViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitPdfViewerRootShouldClaimTheEscapeOnlyWhileTheShortcutListenerActsOnIt()
+    {
+        // The shortcut listener forwards an Escape from anywhere in the root without preventing its default, so the
+        // root carries data-bit-esc (Utils.claimEscape) while that press closes something - and only then: with
+        // nothing open, the key is left to a dialog around the viewer.
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+        });
+
+        component.WaitForPages(2);
+        Assert.IsFalse(component.Find(".bit-pdv").HasAttribute("data-bit-esc"));
+
+        await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-search-input").Count));
+        Assert.AreEqual("claim", component.Find(".bit-pdv").GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-pdv-search-input").GetAttribute("data-bit-esc"));
+
+        await component.InvokeAsync(() => component.Instance.OnShortcut("escape"));
+        Assert.IsFalse(component.Find(".bit-pdv").HasAttribute("data-bit-esc"));
+
+        await component.InvokeAsync(() => component.Instance.EnterPresentationMode());
+        component.WaitForAssertion(() => Assert.AreEqual("claim", component.Find(".bit-pdv").GetAttribute("data-bit-esc")));
+
+        await component.InvokeAsync(() => component.Instance.OnShortcut("escape"));
+        Assert.IsFalse(component.Instance.IsPresenting);
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-pdv").HasAttribute("data-bit-esc")));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldLeaveTheEscapeToItsOwnHandlersWithoutTheShortcutListener()
+    {
+        // With the shortcuts off nothing on the root acts on the key, so the root claims nothing - while the find box
+        // and the properties dialog, whose own handlers close them, still claim theirs.
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+            parameters.Add(p => p.EnableKeyboardShortcuts, false);
+        });
+
+        component.WaitForPages(1);
+
+        await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-search-input").Count));
+        Assert.AreEqual("claim", component.Find(".bit-pdv-search-input").GetAttribute("data-bit-esc"));
+        Assert.IsFalse(component.Find(".bit-pdv").HasAttribute("data-bit-esc"));
+
+        await component.InvokeAsync(() => component.Instance.ToggleProperties());
+        Assert.AreEqual("claim", component.Find("[role='dialog']").GetAttribute("data-bit-esc"));
+        Assert.IsFalse(component.Find(".bit-pdv").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerPropertiesDialogShouldClaimTheEscapeThatClosesIt()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+        });
+
+        component.WaitForPages(1);
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+
+        await component.InvokeAsync(() => component.Instance.ToggleProperties());
+
+        var dialog = component.Find("[role='dialog']");
+        Assert.AreEqual("claim", dialog.GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-pdv").GetAttribute("data-bit-esc"));
+
+        dialog.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count));
+    }
+
+    [TestMethod]
+    public void BitPdfViewerPasswordDialogShouldClaimTheEscapeThatCancelsIt()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.Encrypted("hunter2")));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-password").Count));
+        Assert.AreEqual("claim", component.Find(".bit-pdv-password").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-pdv-password").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-pdv-password").Count));
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+    }
+
+    [TestMethod]
     public async Task BitPdfViewerShouldReadAndClearTheReaderSelection()
     {
         var component = RenderComponent<BitPdfViewer>(parameters =>
@@ -2407,7 +2634,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("quotable words")));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         // The selection lives in the browser, so the viewer asks for it rather than
         // keeping a copy - and an empty answer comes back as an empty string, never null.
@@ -2427,7 +2654,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         // The reader is already fullscreen (the browser said so).
         await component.InvokeAsync(() => component.Instance.OnFullscreenChanged(true));
@@ -2448,7 +2675,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("selectable words")));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         // The painted layer carries the same words as the selection layer above it, so
         // it must not be selectable - a copy would otherwise contain everything twice.
@@ -2469,7 +2696,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("standalone")));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         // The rule travels with the markup, so a fragment taken out of the viewer
         // through the public API copies the way it does inside it.
@@ -2492,7 +2719,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         Assert.IsTrue(component.Instance.Permissions.CanPrint);
         Assert.IsTrue(component.Instance.Permissions.CanCopy);
@@ -2513,7 +2740,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.RespectPermissions, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         Assert.IsFalse(component.Instance.Permissions.CanPrint);
         Assert.IsFalse(component.Instance.Permissions.CanCopy);
@@ -2541,7 +2768,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.RespectPermissions, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         // The default fixture grants every permission, so enforcing them changes nothing.
         component.WaitForAssertion(() => Assert.IsFalse(component.Find("button[aria-label='Print document']").HasAttribute("disabled")));
@@ -2556,7 +2783,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         ClickWhenEnabled(component, "button[aria-label='Document properties']");
 
@@ -2578,7 +2805,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.ActualSize);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
         Assert.AreEqual(1, component.Instance.Zoom, 0.0001);
 
         var bookmark = component.Instance.Outline[0];
@@ -2597,7 +2824,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
         component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-search-input").Count));
@@ -2622,7 +2849,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         await component.InvokeAsync(() => component.Instance.EnterPresentationMode());
         await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
@@ -2643,7 +2870,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Bookmarks);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         // The child points at page 2 and its parent at page 1: a click or key that
         // bubbled to the parent's handler as well would leave the viewer on page 1, so
@@ -2708,7 +2935,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
         int before = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count;
 
         // Presenting hides the toolbar, so the button that started it can no longer
@@ -2726,7 +2953,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
         component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-search-input").Count));
@@ -2752,19 +2979,27 @@ public class BitPdfViewerTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("[data-thumb]").Count));
 
+        // bUnit records the invocations grouped by identifier, not in call order, so the order is read at the moment the
+        // jump's scroll is sent: the matcher that sees that call notes which thumbnail held the focus then.
+        var scrolled = false;
+        object? focusedWhenScrolled = null;
+        Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.scrollToPage", _ =>
+        {
+            var focuses = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focusThumb"];
+            focusedWhenScrolled = focuses.Count > 0 ? focuses[^1].Arguments[1] : null;
+            scrolled = true;
+            return true;
+        }).SetVoidResult();
+
         component.Find("[data-thumb='1']").KeyDown(new KeyboardEventArgs { Key = "End" });
 
         // Focus lands on the new option before the jump renders and scrolls to its
         // page; a focus that waited would take the next key on the option just left.
-        component.WaitForAssertion(() =>
-        {
-            Assert.AreEqual(3, component.Instance.CurrentPage);
-            var calls = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
-            int focus = calls.LastIndexOf("BitBlazorUI.PdfViewer.focusThumb");
-            int scroll = calls.LastIndexOf("BitBlazorUI.PdfViewer.scrollToPage");
-            Assert.IsTrue(focus >= 0 && focus < scroll, $"focusThumb at {focus}, scrollToPage at {scroll}");
-        });
-        Assert.AreEqual(3, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focusThumb"].Last().Arguments[1]);
+        // The scroll is sent after the last render, and WaitForAssertion only checks again on a render, so it is polled.
+        Assert.IsTrue(System.Threading.SpinWait.SpinUntil(() => System.Threading.Volatile.Read(ref scrolled), TimeSpan.FromSeconds(10)),
+            "the jump scrolls to its page");
+        Assert.AreEqual(3, component.Instance.CurrentPage);
+        Assert.AreEqual(3, focusedWhenScrolled);
     }
 
     [TestMethod]
@@ -2786,7 +3021,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.CurrentPageChanged, EventCallback.Factory.Create<int>(this, Echo));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+        component.WaitForPages(5);
         int before = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.scrollToPage"].Count;
 
         // The reader scrolled to page 3: the surface is already there, and scrolling it
@@ -2817,7 +3052,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.ZoomChanged, EventCallback.Factory.Create<double>(this, Echo));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         // The fit computes a new factor and assigns it; the host sending that same
         // factor back is not the host asking for a custom zoom.
@@ -2835,7 +3070,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
         int restores = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.restoreZoomAnchor"].Count;
 
         await component.InvokeAsync(() => component.Instance.SetZoom(2));
@@ -2855,7 +3090,11 @@ public class BitPdfViewerTests : BunitTestContext
 
     // The viewport record is internal to the library, so its interop result is set up
     // through reflection rather than the generic Setup<T> a public type would allow.
-    private void SetupViewport(double width, double height)
+    private void SetupViewport(double width, double height) => SetupPendingViewport()(width, height);
+
+    // The measurement is left unanswered until the returned callback supplies it, which
+    // is what holds a fit in flight across whatever the test does meanwhile.
+    private Action<double, double> SetupPendingViewport()
     {
         var viewportType = typeof(BitPdfViewer).Assembly.GetType("Bit.BlazorUI.BitPdfViewerViewport", throwOnError: true)!;
         var setup = typeof(BunitJSInteropSetupExtensions).GetMethods()
@@ -2864,7 +3103,30 @@ public class BitPdfViewerTests : BunitTestContext
                     .SequenceEqual([typeof(BunitJSInterop), typeof(string), typeof(InvocationMatcher)]))
             .MakeGenericMethod(viewportType)
             .Invoke(null, [Context.JSInterop, "BitBlazorUI.PdfViewer.getViewport", (InvocationMatcher)(_ => true)])!;
-        setup.GetType().GetMethod("SetResult")!.Invoke(setup, [Activator.CreateInstance(viewportType, width, height)]);
+        return (width, height) => setup.GetType().GetMethod("SetResult")!.Invoke(setup, [Activator.CreateInstance(viewportType, width, height)]);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldNotLetAFitStillMeasuringOverwriteACustomZoom()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+        });
+
+        component.WaitForPages(2);
+
+        var answerViewport = SetupPendingViewport();
+
+        // The fit asks JS for the viewport and waits; the reader zooms in meanwhile.
+        var fit = component.InvokeAsync(() => component.Instance.SetZoomMode(BitPdfZoomMode.FitPage));
+        await component.InvokeAsync(() => component.Instance.SetZoom(2));
+
+        answerViewport(332, 332);
+        await fit;
+
+        Assert.AreEqual(BitPdfZoomMode.Custom, component.Instance.ZoomMode);
+        Assert.AreEqual(2, component.Instance.Zoom, 0.0001);
     }
 
     [TestMethod]
@@ -2875,7 +3137,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         // Presentation mode fits the page, so the viewport has to have a size for that
         // fit to move the zoom away from the reader's own.
@@ -2919,7 +3181,7 @@ public class BitPdfViewerTests : BunitTestContext
             parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.ActualSize);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
         // Page 2's box runs from y=100 to y=500, so y=450 is 50pt below its top edge
         // (not 50pt above it, as measuring from y=0 would have it).
@@ -3315,8 +3577,10 @@ internal static class TestPdf
             "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
             "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 4 0 R >>",
             Stream(content),
-            // The /Encrypt dictionary is never itself encrypted.
-            $"<< /Filter /Standard /V 1 /R 2 /Length 40 /P {p} /O <{Hex(o)}> /U <{Hex(u)}> >>",
+            // The /Encrypt dictionary is never itself encrypted. PDF syntax has one way of writing a number, so the
+            // usually negative /P is written invariantly: under ar-SA or fa-IR the current culture puts a direction
+            // mark before the minus sign, which no reader takes for part of the number.
+            FormattableString.Invariant($"<< /Filter /Standard /V 1 /R 2 /Length 40 /P {p} /O <{Hex(o)}> /U <{Hex(u)}> >>"),
         };
         return Build(bodies, rootObjNum: 1, trailerExtra: $" /Encrypt 5 0 R /ID [<{Hex(id0)}> <{Hex(id0)}>]");
     }

@@ -1,0 +1,89 @@
+﻿@page "/counter"
+@inherits BlexComponentBase
+@inject CounterStore Store
+@inject BlexHistory History
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p>
+    Reactive state, memoized computed values, and named actions &mdash; all generated from a few
+    annotated fields. This store is <code>[BlexStore(Persist = true)]</code>, so its value survives a
+    page reload (undo/redo writes back to storage too). Open the Redux DevTools panel to
+    time-travel &mdash; actions now stream in with their argument payloads.
+</p>
+
+<div class="card p-3 mb-3" style="max-width: 28rem;">
+    <p role="status" class="fs-4">Count: <strong>@Store.Count</strong></p>
+    <ul>
+        <li>DoubleCount (computed): <strong>@Store.DoubleCount</strong></li>
+        <li>IsEven (computed): <strong>@Store.IsEven</strong></li>
+        <li>Step: <strong>@Store.Step</strong></li>
+    </ul>
+
+    <div class="btn-group mb-2" role="group">
+        <button class="btn btn-primary" @onclick="Store.Increment">+ @Store.Step</button>
+        <button class="btn btn-outline-primary" @onclick="Store.Decrement">- @Store.Step</button>
+        <button class="btn btn-outline-secondary" @onclick="Store.Reset">Reset</button>
+    </div>
+
+    <div class="btn-group mb-2" role="group">
+        <button class="btn btn-outline-dark" @onclick="History.Undo" disabled="@(!History.CanUndo)"
+                title="@(History.NextUndoLabel is null ? null : $"Undo {History.NextUndoLabel}")">
+            Undo @(History.NextUndoLabel is null ? "" : $"({History.NextUndoLabel})")
+        </button>
+        <button class="btn btn-outline-dark" @onclick="History.Redo" disabled="@(!History.CanRedo)"
+                title="@(History.NextRedoLabel is null ? null : $"Redo {History.NextRedoLabel}")">
+            Redo @(History.NextRedoLabel is null ? "" : $"({History.NextRedoLabel})")
+        </button>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 mb-2">
+        <label class="form-label m-0">Step</label>
+        <button class="btn btn-sm btn-light" @onclick="() => Store.SetStep(1)">1</button>
+        <button class="btn btn-sm btn-light" @onclick="() => Store.SetStep(5)">5</button>
+        <button class="btn btn-sm btn-light" @onclick="() => Store.SetStep(10)">10</button>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-info" @onclick="ApplyPreset"
+                title="store.Batch(...) groups ad-hoc mutations into one named action">
+            Batch: count=100, step=10
+        </button>
+        <button class="btn btn-sm btn-outline-danger" @onclick="Store.ResetState"
+                title="BlexStoreBase.ResetState() returns to the initial registered state">
+            ResetState()
+        </button>
+    </div>
+</div>
+
+<p class="text-muted" style="max-width: 40rem;">
+    <strong>Batch</strong> is the <code>$patch</code>/<code>runInAction</code> equivalent: it groups
+    ad-hoc mutations made from <em>outside</em> the store's own actions into one named,
+    time-travelable entry with a single re-render. <strong>ResetState()</strong> is generated-free
+    &mdash; every store can return to the state it had when first registered, recorded as a normal
+    vetoable action.
+</p>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Subscribe(Store);
+        // Re-render when undo/redo availability changes so the buttons enable/disable.
+        History.Changed += OnHistoryChanged;
+    }
+
+    private void OnHistoryChanged() => StateHasChanged();
+
+    private void ApplyPreset()
+        => Store.Batch("Apply preset", () =>
+        {
+            Store.Count = 100;
+            Store.Step = 10;
+        });
+
+    protected override void Dispose(bool disposing)
+        // BlexHistory outlives this page; detach or every visit would leak a subscription.
+        => History.Changed -= OnHistoryChanged;
+}

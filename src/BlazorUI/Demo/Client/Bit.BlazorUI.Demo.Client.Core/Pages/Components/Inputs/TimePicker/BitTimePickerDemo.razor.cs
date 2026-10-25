@@ -34,6 +34,27 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "AriaDescription",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text tied to the TimePicker as its accessible description without being shown on the screen, which is what lets a field carry an instruction too long to put next to it. It is read after Description, so the two can be used together.",
+        },
+        new()
+        {
+            Name = "AutoAdvance",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Moves the focus on to the next time input once the one being typed into cannot take another digit - after two digits, or after one no second digit could extend (a 3 in the hour of a 24-hour picker).",
+        },
+        new()
+        {
+            Name = "AutoClose",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Closes the callout once the now button has set the whole time. The spin buttons and the time inputs change one part at a time, so they leave it open.",
+        },
+        new()
+        {
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
@@ -44,7 +65,7 @@ public partial class BitTimePickerDemo
             Name = "CalloutAriaLabel",
             Type = "string",
             DefaultValue = "Clock",
-            Description = "Aria label for time picker popup for screen reader users."
+            Description = "Aria label for time picker popup for screen reader users. A standalone picker with a Label is named by that label instead."
         },
         new()
         {
@@ -78,10 +99,31 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "ClearButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the clear button of the input, shown when ShowInputClearButton is set, using custom CSS classes for external icon libraries. Takes precedence over ClearButtonIconName when both are set.",
+        },
+        new()
+        {
+            Name = "ClearButtonIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon of the clear button of the input from the built-in Fluent UI icons.",
+        },
+        new()
+        {
             Name = "ClearButtonText",
             Type = "string",
             DefaultValue = "Clear",
             Description = "The text of the clear button, shown when ShowClearButton is set.",
+        },
+        new()
+        {
+            Name = "ClearButtonTitle",
+            Type = "string",
+            DefaultValue = "Clear the selected time",
+            Description = "The title of the clear button of the input (tooltip and aria-label), shown when ShowInputClearButton is set.",
         },
         new()
         {
@@ -113,7 +155,7 @@ public partial class BitTimePickerDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the TimePicker, which applies to the selected AM/PM button, the now and clear action buttons, and the focus indicator of the input.",
+            Description = "The general color of the TimePicker, which applies to the selected AM/PM button, the now and clear action buttons, and the focus indicator of the input. An explicit value wins over the --bit-TimePicker-* accent, on-color, hover, active and focus color variables; left unset, the TimePicker is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -215,6 +257,20 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The helper text of the TimePicker, rendered under the field. The input references it through its aria-describedby, so a screen reader reads it along with the picker.",
+        },
+        new()
+        {
+            Name = "DescriptionTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template for the helper text of the TimePicker, which replaces Description. It is tied to the picker as its accessible description in the same way.",
+        },
+        new()
+        {
             Name = "DisallowedTimeErrorMessage",
             Type = "string?",
             DefaultValue = "null",
@@ -245,6 +301,20 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The error message rendered under the field, which also marks the picker invalid. It is meant for a rejection the app itself knows about; a picker inside an EditForm already gets its messages from the cascading EditContext.",
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content of the error message, which replaces the plain ErrorMessage text and marks the picker invalid in the same way.",
+        },
+        new()
+        {
             Name = "HasBorder",
             Type = "bool",
             DefaultValue = "true",
@@ -262,7 +332,7 @@ public partial class BitTimePickerDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day, starting at the hour of MinTime, and at midnight where there is none, that every hour the buttons produce sits on. A time entered as text is not held to it.",
+            Description = "The step, in hours, the spin buttons and the arrow keys move the hour by. A step greater than 1 lays a grid over the day, starting at the hour of MinTime, and at midnight where there is none, that every hour they produce sits on. A time entered as text is not held to it.",
         },
         new()
         {
@@ -284,12 +354,12 @@ public partial class BitTimePickerDemo
         },
         new()
         {
-            Name = "IconLocation",
-            Type = "BitIconLocation",
+            Name = "IconPlacement",
+            Type = "BitPlacement",
             LinkType = LinkType.Link,
-            Href = "#icon-location-enum",
-            DefaultValue = "BitIconLocation.Right",
-            Description = "TimePicker icon location."
+            Href = "#placement-enum",
+            DefaultValue = "BitPlacement.End",
+            Description = "Determines the side of the input the TimePicker's icon is rendered on. Only Start and End are honoured; any other value leaves the icon on the end side. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one."
         },
         new()
         {
@@ -375,10 +445,24 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the TimePicker as invalid without an EditContext having said so, giving it the same look and the same aria-invalid attribute an invalid bound value does. Setting ErrorMessage implies it.",
+        },
+        new()
+        {
             Name = "InvalidErrorMessage",
             Type = "string?",
             DefaultValue = "null",
             Description = "The custom validation error message for the invalid value.",
+        },
+        new()
+        {
+            Name = "InvertMouseWheel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the direction the mouse wheel moves a time input in.",
         },
         new()
         {
@@ -427,7 +511,21 @@ public partial class BitTimePickerDemo
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour, starting at the minute of MinTime, and at the top of the hour where there is none, that every minute the buttons produce sits on - which is what turns it into a five-minute or quarter-hour picker. A time entered as text is not held to it.",
+            Description = "The step, in minutes, the spin buttons and the arrow keys move the minute by. A step greater than 1 lays a grid over the hour, starting at the minute of MinTime, and at the top of the hour where there is none, that every minute they produce sits on - which is what turns it into a five-minute or quarter-hour picker. A time entered as text is not held to it.",
+        },
+        new()
+        {
+            Name = "NoMouseWheel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables changing the time inputs with the mouse wheel. By default Shift+wheel over a focused time input moves it by its step; the wheel alone scrolls the page.",
+        },
+        new()
+        {
+            Name = "Now",
+            Type = "TimeSpan?",
+            DefaultValue = "null",
+            Description = "The current time of day the picker uses in place of the clock's, for the now button, DisablePast and DisableFuture. Mostly useful to pin \"now\" down in tests and demos.",
         },
         new()
         {
@@ -500,6 +598,20 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "Prefix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text displayed flush with the start of the field, before the input. It is not part of the value.",
+        },
+        new()
+        {
+            Name = "PrefixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content displayed at the start of the field, which replaces Prefix.",
+        },
+        new()
+        {
             Name = "Responsive",
             Type = "bool",
             DefaultValue = "false",
@@ -517,7 +629,7 @@ public partial class BitTimePickerDemo
             Name = "SecondStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in seconds, the spin buttons move the second by. A step greater than 1 lays a grid over the minute, starting at the second of MinTime, and at the top of the minute where there is none, that every second the buttons produce sits on. A time entered as text is not held to it.",
+            Description = "The step, in seconds, the spin buttons and the arrow keys move the second by. A step greater than 1 lays a grid over the minute, starting at the second of MinTime, and at the top of the minute where there is none, that every second they produce sits on. A time entered as text is not held to it.",
         },
         new()
         {
@@ -532,6 +644,13 @@ public partial class BitTimePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the BitTimePicker's close button should be shown or not."
+        },
+        new()
+        {
+            Name = "ShowInputClearButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows a clear button inside the field once a time is selected, so the value can be taken back without opening the callout. It is not rendered while the picker is read-only or standalone.",
         },
         new()
         {
@@ -552,7 +671,7 @@ public partial class BitTimePickerDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the TimePicker, which scales the input, the label, the time inputs and the spin buttons.",
+            Description = "The size of the TimePicker, which scales the input, the label, the time inputs and the spin buttons. An explicit value wins over the --bit-TimePicker-* size variables (height, font size, icon size, label and description font sizes, cell size, and the cell, separator, spin, meridiem and action font sizes); left unset, the TimePicker is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -581,12 +700,33 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "Suffix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text displayed flush with the end of the field, after the icon. It is not part of the value.",
+        },
+        new()
+        {
+            Name = "SuffixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content displayed at the end of the field, which replaces Suffix.",
+        },
+        new()
+        {
             Name = "TimeFormat",
             Type = "BitTimeFormat",
             DefaultValue = "BitTimeFormat.TwentyFourHours",
             Description = "The time format of the time-picker, 24H or 12H.",
             LinkType = LinkType.Link,
             Href = "#time-format-enum",
+        },
+        new()
+        {
+            Name = "TimeZone",
+            Type = "TimeZoneInfo?",
+            DefaultValue = "null",
+            Description = "The time zone the clock is read in for the now button, DisablePast and DisableFuture. Defaults to the local time zone - the server's, in a server-side rendered app.",
         },
         new()
         {
@@ -628,134 +768,11 @@ public partial class BitTimePickerDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "component-visibility-enum",
-            Name = "BitVisibility",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "Visible",
-                    Description = "Show content of the component.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Hidden",
-                    Description = "Hide content of the component,though the space it takes on the page remains.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Collapsed",
-                    Description = "Hide content of the component,though the space it takes on the page gone.",
-                    Value = "2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "icon-location-enum",
-            Name = "BitIconLocation",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "Left",
-                    Description = "Show the icon at the left side.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Right",
-                    Description = "Show the icon at the right side.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "time-format-enum",
-            Name = "BitTimeFormat",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "TwentyFourHours",
-                    Description="Show time pickers in 24 hours format.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "TwelveHours",
-                    Description="Show time pickers in 12 hours format.",
-                    Value="1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
-                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
-                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
-                new() { Name = "Info", Description = "Info general color.", Value = "3" },
-                new() { Name = "Success", Description = "Success general color.", Value = "4" },
-                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
-                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
-                new() { Name = "Error", Description = "Error general color.", Value = "7" },
-                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
-                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
-                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
-                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
-                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
-                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
-                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
-                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
-                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" }
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size TimePicker.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size TimePicker.", Value = "1" },
-                new() { Name = "Large", Description = "The large size TimePicker.", Value = "2" }
-            ]
-        },
-        new()
-        {
-            Id = "drop-direction-enum",
-            Name = "BitDropDirection",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "All",
-                    Description = "The direction determined automatically based on the available spaces in all directions.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Description = "Show the callout at the top or bottom side.",
-                    Value = "1",
-                }
-            ]
-        }
+        DemoSharedEnums.BitPlacement(),
+        DemoSharedEnums.BitTimeFormat(),
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitDropDirection()
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -803,6 +820,20 @@ public partial class BitTimePickerDemo
                 },
                 new()
                 {
+                    Name = "PrefixContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the prefix container of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the prefix text of the BitTimePicker."
+                },
+                new()
+                {
                     Name = "Input",
                     Type = "string?",
                     DefaultValue = "null",
@@ -814,6 +845,62 @@ public partial class BitTimePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the icon of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "SuffixContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the suffix container of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "Suffix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the suffix text of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "InputClearButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the clear button rendered inside the input of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "InputClearButtonIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the icon of the clear button rendered inside the input of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "ErrorMessageContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the container of the error message of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "ErrorMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the error message of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "DescriptionContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the container of the description (helper text) of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the description (helper text) of the BitTimePicker."
                 },
                 new()
                 {
@@ -1087,6 +1174,325 @@ public partial class BitTimePickerDemo
     ];
 
 
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-TimePicker-color",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Accent of the picker: the background of the selected AM/PM button and the text of the now and clear action buttons. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-on-color",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text color over that accent, which is what the selected AM/PM button is written in. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-hover-color",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Accent of the selected AM/PM button while it is hovered (pointer devices only). The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-active-color",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Accent of the selected AM/PM button while it is pressed. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-focus-color",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring drawn around the field and around every control of the callout. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-invalid-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Border and underline of an invalid field (the frame of an invalid Standalone picker), and the color of the ErrorMessage text. The focus ring keeps its own error color.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the input field.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-text-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of the input field.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-placeholder-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Text color of the placeholder.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-border-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Border of the input field, and the rule of the underlined variant.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-hover-border-color",
+            DefaultValue = "--bit-clr-brd-pri-hover / --bit-clr-brd-pri-active",
+            Description = "Border of the hovered and the pressed field. An invalid field keeps its error color.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-border-width",
+            DefaultValue = "--bit-shp-border-width",
+            Description = "Stroke of that border.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the input field.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-height",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Height of the input field. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-padding",
+            DefaultValue = "spacing(1)",
+            Description = "Inline padding of the input field.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-font-size",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the input field. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-icon-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the field icon and of the clear button inside the field.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-icon-size",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the field icon and of the clear button glyph. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-prefix-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text of the prefix addon.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-prefix-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of the prefix addon.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-suffix-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text of the suffix addon.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-suffix-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of the suffix addon.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-label-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the label.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-label-font-size",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the label. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-label-font-weight",
+            DefaultValue = "--bit-tpg-field-label-font-weight",
+            Description = "Weight of the label.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-required-color",
+            DefaultValue = "--bit-clr-req",
+            Description = "Color of the asterisk of a required picker.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-description-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the helper text.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-description-font-size",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of the helper text and of the error message. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text, icon and glyph color of a disabled picker.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-disabled-background",
+            DefaultValue = "--bit-clr-bg-dis",
+            Description = "Background of a disabled field.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-disabled-border-color",
+            DefaultValue = "--bit-clr-brd-dis",
+            Description = "Border of a disabled field.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-callout-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the popup.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-callout-radius",
+            DefaultValue = "--bit-shp-radius-popup",
+            Description = "Corner radius of the popup.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-callout-padding",
+            DefaultValue = "spacing(2)",
+            Description = "Padding inside the popup.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-callout-shadow",
+            DefaultValue = "--bit-shd-popup",
+            Description = "Elevation of the popup.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-overlay-background",
+            DefaultValue = "transparent",
+            Description = "The layer behind an open popup - a scrim for the Responsive sheet, for example.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-gap",
+            DefaultValue = "spacing(1)",
+            Description = "Space between the hour, the minute and the second groups.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-cell-size",
+            DefaultValue = "spacing(3.75)",
+            Description = "Width and height of a time input and of a spin button. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-cell-font-size",
+            DefaultValue = "--bit-tpg-fs-lg",
+            Description = "Text size of the time inputs. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-cell-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of the time inputs.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-cell-font-weight",
+            DefaultValue = "--bit-tpg-font-weight",
+            Description = "Weight of the time inputs, the separators and the AM/PM buttons.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-cell-radius",
+            DefaultValue = "--bit-shp-radius-button",
+            Description = "Corner radius of a spin button, of the AM/PM buttons and of the action buttons.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-separator-color",
+            DefaultValue = "inherited",
+            Description = "Color of the \":\" between the parts of the time.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-separator-font-size",
+            DefaultValue = "--bit-tpg-fs-xl",
+            Description = "Size of the \":\" between the parts of the time. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-spin-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Glyph color of a spin button.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-spin-font-size",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Glyph size of a spin button. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-spin-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background of a hovered spin button, action button or clear button.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-spin-active-background",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Background of a pressed spin button, action button or clear button.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-meridiem-font-size",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the AM/PM buttons. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TimePicker-action-font-size",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the now and clear action buttons. The Size parameter wins over it.",
+        },
+    ];
+
+
+
+    private readonly List<IBitComponentParams> timePickerParams =
+    [
+        new BitTimePickerParams
+        {
+            MinuteStep = 15,
+            ShowNowButton = true,
+            ShowClearButton = true,
+            ShowInputClearButton = true,
+            Placeholder = "Select a time...",
+            TimeFormat = BitTimeFormat.TwelveHours,
+        }
+    ];
 
     private bool isCalloutOpen;
     private readonly List<string> eventLogs = [];

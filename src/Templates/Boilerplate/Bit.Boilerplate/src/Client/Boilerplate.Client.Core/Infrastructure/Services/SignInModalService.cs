@@ -47,7 +47,7 @@ public partial class SignInModalService : IAsyncDisposable
         {
             Draggable = true,
             DragElementSelector = ".header-stack",
-            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => currentTcs.TrySetResult(false))
+            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, () => currentTcs.TrySetResult(false))
         };
 
         currentModalReference = await modalService.Show<SignInModal>(signInParameters, modalParameters);

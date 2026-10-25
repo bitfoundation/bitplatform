@@ -23,7 +23,7 @@
         }
         else if (adInitResult is not AdInitResult.Ready)
         {
-            <BitMessage Color="BitColor.Warning">@Localizer[nameof(AppStrings.UpgradeAdNotAvailableMessage)]</BitMessage>
+            <BitMessage Color="BitColor.Warning" AutoMultiline>@Localizer[nameof(AppStrings.UpgradeAdNotAvailableMessage)]</BitMessage>
         }
         else if (adIsShown is false)
         {
@@ -35,12 +35,12 @@
         {
             @if (watchResult is AdWatchResult.Rewarded)
             {
-                <BitMessage Color="BitColor.Success">@Localizer[nameof(AppStrings.UpgradeSuccessMessage)]</BitMessage>
+                <BitMessage Color="BitColor.Success" AutoMultiline>@Localizer[nameof(AppStrings.UpgradeSuccessMessage)]</BitMessage>
             }
 
             @if (watchResult is AdWatchResult.Failed)
             {
-                <BitMessage Color="BitColor.Error">@Localizer[nameof(AppStrings.UpgradeFailMessage)]</BitMessage>
+                <BitMessage Color="BitColor.Error" AutoMultiline>@Localizer[nameof(AppStrings.UpgradeFailMessage)]</BitMessage>
             }
         }
 

@@ -1,0 +1,92 @@
+﻿@page "/examples/handle-positions"
+
+<PageTitle>Handle Positions · Blow</PageTitle>
+
+<ExampleScaffold Title="Handle Positions"
+                 Summary="The built-in nodes put their handles wherever SourcePosition and TargetPosition say, with no custom template. Switch the flow between left-to-right and top-to-bottom: the handles move to the matching sides and the edges leave and enter accordingly.">
+    <Toolbar>
+        <label>direction:
+            <select @onchange="OnDirectionChange">
+                <option value="horizontal" selected>left to right</option>
+                <option value="vertical">top to bottom</option>
+            </select>
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Pick <strong>top to bottom</strong>: each target handle moves to the top of its node and each source handle to the bottom, the graph is laid out downwards, and the view refits.</li>
+        <li>Pick <strong>left to right</strong>: the handles go back to the left and right sides.</li>
+        <li><strong>Drag from a handle</strong> to connect nodes in either direction: new edges leave and enter on the current sides too.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>SourcePosition</code> and <code>TargetPosition</code> (<code>Bottom</code> and <code>Top</code> by default) pick the side of the built-in source and target handles. They are also where an edge is anchored when its node has no matching handle.</li>
+        <li>Smooth-step edges, like every edge type, leave a handle in the direction of its side, so the same four edges read across or down.</li>
+        <li>A handle that moves to another side changes no node's size, which is all the canvas's resize observer watches. <code>UpdateNodeInternals()</code> has every node read again; this page re-renders on the change anyway, which also re-reads them, but a change made from anywhere else - a component inside a node, a timer - would not.</li>
+        <li>The page moves the nodes too - top to bottom is the left-to-right layout turned on its side - and eases the view to them with <code>FitViewAsync(300)</code>.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+@code {
+    // Where each node sits in the left-to-right flow; top to bottom swaps every x for its y.
+    private static readonly Dictionary<string, BlowXYPosition> Across = new()
+    {
+        ["1"] = new(0, 120),
+        ["2"] = new(220, 40),
+        ["3"] = new(220, 200),
+        ["4"] = new(440, 120),
+    };
+
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input",  Label = "Input" },
+            new BlowNode { Id = "2",                  Label = "Process" },
+            new BlowNode { Id = "3",                  Label = "Review" },
+            new BlowNode { Id = "4", Type = "output", Label = "Output" },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4", Type = BlowEdgeType.SmoothStep },
+        ];
+
+        Arrange(horizontal: true);
+    }
+
+    private async Task OnDirectionChange(ChangeEventArgs e)
+    {
+        Arrange(horizontal: e.Value?.ToString() == "horizontal");
+
+        if (_flow is null) return;
+        // The handles moved to other sides without resizing anything, which the resize observer cannot see: said
+        // outright, rather than left to this page's re-render to happen to re-read them.
+        _flow.UpdateNodeInternals();
+        await _flow.FitViewAsync(300);
+    }
+
+    private void Arrange(bool horizontal)
+    {
+        foreach (var node in _nodes)
+        {
+            node.SourcePosition = horizontal ? BlowPosition.Right : BlowPosition.Bottom;
+            node.TargetPosition = horizontal ? BlowPosition.Left : BlowPosition.Top;
+
+            if (Across.TryGetValue(node.Id, out var p))
+                node.Position = horizontal ? p : new BlowXYPosition(p.Y, p.X);
+        }
+    }
+}

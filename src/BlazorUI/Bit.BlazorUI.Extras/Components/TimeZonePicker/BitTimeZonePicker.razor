@@ -1,0 +1,278 @@
+﻿@namespace Bit.BlazorUI
+@typeparam TValue
+@inherits BitInputBase<TValue>
+
+@* aria-owns is a list of ids, so one the page splatted on is kept beside the popup's rather than replaced by it or
+   removed by the null written while the popup is closed (see BitComponentBase.GetSplattedAttribute). *@
+<div @ref="RootElement"
+     @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     title="@Title"
+     dir="@Dir?.ToString().ToLower()"
+     aria-owns="@JoinTokenLists(GetSplattedAttribute("aria-owns"), IsCalloutShown ? _calloutId : null)">
+
+    @* A button with the combobox role is a labelable element, but a label tied to it through a for attribute would
+       forward its click to it and open the list, which a label of a native select never does: the label names the
+       field through aria-labelledby instead, and a click on it only moves the focus to the field. *@
+    @if (LabelTemplate is not null)
+    {
+        <label @onclick="HandleOnLabelClick" id="@_labelId" style="@Styles?.Label" class="bit-tzp-lbl @Classes?.Label">
+            @LabelTemplate
+        </label>
+    }
+    else if (Label.HasValue())
+    {
+        <label @onclick="HandleOnLabelClick" id="@_labelId" style="@Styles?.Label" class="bit-tzp-lbl @Classes?.Label">
+            @Label
+        </label>
+    }
+
+    @* The field is a select-only combobox: its name comes from the label, and its value is the time zone written
+       inside it. It is a native button, so the browser disables it, puts it in the tab order and clicks it on Enter
+       and Space, and it is the element InputElement points at and FocusAsync focuses. The attributes the page hands
+       InputHtmlAttributes - and the aria-invalid of a failed validation - are written onto it, since it is the
+       control the value of the field is read from. *@
+    <button @ref="InputElement"
+            @attributes="InputHtmlAttributes"
+            @onclick="HandleOnFieldClick"
+            @onkeydown="HandleOnFieldKeyDown"
+            @onfocus="HandleOnFieldFocus"
+            @onblur="HandleOnFieldBlur"
+            type="button"
+            id="@_fieldId"
+            role="combobox"
+            tabindex="@TabIndex"
+            disabled="@Disabled"
+            aria-disabled="@GetInputAriaDisabled(Disabled)"
+            aria-haspopup="listbox"
+            aria-expanded="@(IsCalloutShown ? "true" : "false")"
+            aria-controls="@(IsCalloutShown ? _listId : null)"
+            aria-activedescendant="@(IsCalloutShown && NoSearchBox && _list.ActiveIndex >= 0 ? GetOptionId(_list.ActiveIndex) : null)"
+            aria-label="@FieldAriaLabel"
+            aria-labelledby="@FieldLabelledBy"
+            aria-describedby="@AriaDescribedBy"
+            aria-invalid="@AriaInvalid"
+            aria-required="@(Required ? "true" : null)"
+            aria-readonly="@(ReadOnly ? "true" : null)"
+            title="@FieldTitle"
+            style="@Styles?.Field"
+            class="bit-tzp-fld @Classes?.Field">
+        <span style="@Styles?.Text" class="bit-tzp-tcn @Classes?.Text">
+            @{
+                var selected = SelectedTimeZone;
+                var rawText = selected is null ? GetRawText(CurrentValue) : null;
+            }
+            @if (ValueTemplate is not null)
+            {
+                @ValueTemplate(selected)
+            }
+            else if (selected is not null)
+            {
+                @* The parts are laid out apart, and a screen reader reads them run together unless something stands
+                   between them in the text: a separator only it reads. *@
+                @if (NoOffset is false)
+                {
+                    <span style="@Styles?.Offset" class="bit-tzp-ofs @Classes?.Offset">@GetOffsetText(selected)</span><span class="bit-tzp-sep">, </span>
+                }
+                <span class="bit-tzp-txt">@selected.Name</span>
+            }
+            else if (rawText.HasValue())
+            {
+                @* A value the list does not offer is still the value of the field, so it is shown as it was given rather
+                   than taken for an empty field. *@
+                <span class="bit-tzp-txt">@rawText</span>
+            }
+            else
+            {
+                <span class="bit-tzp-pls">@Placeholder</span>
+            }
+        </span>
+        <span aria-hidden="true" style="@Styles?.Caret" class="bit-tzp-car @Classes?.Caret"></span>
+    </button>
+
+    @if (HasErrorMessage)
+    {
+        @* What is wrong with the value is the first thing to read under the field, so the message sits above the
+           description rather than beside it. It carries no live role of its own: the region at the end of the
+           component is what announces it, so it is never read out twice. *@
+        <div id="@_errorId"
+             style="@Styles?.ErrorMessageContainer"
+             class="bit-tzp-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
+        </div>
+    }
+
+    @if (HasDescription)
+    {
+        @* A div rather than a span: a DescriptionTemplate is free to render block content, which is not valid inside a
+           span. *@
+        <div id="@_descriptionId"
+             style="@Styles?.DescriptionContainer"
+             class="bit-tzp-des @Classes?.DescriptionContainer">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                <span style="@Styles?.Description" class="@Classes?.Description">@Description</span>
+            }
+        </div>
+    }
+
+    @if (Name.HasValue())
+    {
+        @* The value is a selection rather than a text, so a plain HTML form is handed the IANA id of the time zone
+           through a hidden field of its own. *@
+        <input type="hidden" name="@Name" value="@CurrentValueAsString" />
+    }
+
+    @* The live region sits outside the callout on purpose: the content of a display:none callout is never announced,
+       so the result of a search made in it has to be reported from out here. *@
+    <div role="status" aria-live="polite" aria-atomic="true" class="bit-tzp-lvr">@_announcement</div>
+</div>
+
+<div @onclick="CloseCalloutAndRestoreFocus"
+     id="@_overlayId"
+     style="@GetOverlayStyles()"
+     class="bit-tzp-ovl @Classes?.Overlay"></div>
+
+@* A responsive panel is never display:none on a small screen - it only fades and slides out of view - so a closed one
+   is made inert, or the Tab key would still walk into it. The render that opens it clears that before the callout is
+   shown and its search box focused (see OnAfterRenderAsync). *@
+<div id="@_calloutId"
+     inert="@(Responsive && IsCalloutShown is false)"
+     style="@Styles?.Callout"
+     class="bit-tzp-cal @SizeClass @ColorClass @(Responsive ? "bit-tzp-res" : null) @(Dir is BitDir.Rtl ? "bit-rtl" : null) @Classes?.Callout">
+
+    @if (Responsive)
+    {
+        <div style="@Styles?.ResponsiveLabelContainer" class="bit-tzp-rlc @Classes?.ResponsiveLabelContainer">
+            @if (LabelTemplate is not null)
+            {
+                @LabelTemplate
+            }
+            else if (Label.HasValue())
+            {
+                <label style="@Styles?.ResponsiveLabel" class="bit-tzp-rlb @Classes?.ResponsiveLabel">@Label</label>
+            }
+        </div>
+    }
+
+    @if (NoSearchBox is false)
+    {
+        <div style="@Styles?.SearchBox" class="bit-tzp-sbx @Classes?.SearchBox">
+            <input @ref="_searchInputRef"
+                   @oninput="HandleOnSearchInput"
+                   @onkeydown="HandleOnSearchKeyDown"
+                   type="text"
+                   role="combobox"
+                   id="@_searchId"
+                   autocomplete="off"
+                   spellcheck="false"
+                   autocorrect="off"
+                   autocapitalize="off"
+                   value="@_list.SearchText"
+                   aria-autocomplete="list"
+                   aria-haspopup="listbox"
+                   aria-expanded="@(IsCalloutShown ? "true" : "false")"
+                   aria-controls="@(IsCalloutShown ? _listId : null)"
+                   aria-activedescendant="@(IsCalloutShown && _list.ActiveIndex >= 0 ? GetOptionId(_list.ActiveIndex) : null)"
+                   aria-label="@(SearchBoxAriaLabel ?? SearchBoxPlaceholder ?? "Search time zones")"
+                   class="bit-tzp-srch"
+                   placeholder="@(SearchBoxPlaceholder ?? "Search")" />
+        </div>
+    }
+
+    @if (Responsive)
+    {
+        @* After the search box in the document, though it is drawn in the header above it: the list is driven from its
+           search box, which is what a Tab from the field goes into and Shift+Tab goes back from, so the close button
+           is the next stop of the tab order rather than the one ahead of it. *@
+        <button @onclick="CloseCalloutAndRestoreFocus"
+                type="button"
+                title="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
+                aria-label="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
+                style="@Styles?.ResponsiveCloseButton"
+                class="bit-tzp-cls @Classes?.ResponsiveCloseButton">
+            @{
+                var responsiveCloseIcon = BitIconInfo.From(ResponsiveCloseIcon, ResponsiveCloseIconName ?? "Cancel");
+            }
+            <i aria-hidden="true"
+               style="@Styles?.ResponsiveCloseIcon"
+               class="@responsiveCloseIcon?.GetCssClasses() @Classes?.ResponsiveCloseIcon" />
+        </button>
+    }
+
+    <div id="@_scrollContainerId" style="@Styles?.ScrollContainer" class="bit-tzp-scn @Classes?.ScrollContainer">
+        <div id="@_listId"
+             role="listbox"
+             style="@Styles?.List"
+             class="bit-tzp-lst @Classes?.List"
+             aria-label="@ListAriaLabel"
+             aria-labelledby="@ListLabelledBy">
+            @if (_hasOpened)
+            {
+                var items = _list.View;
+
+                @for (var i = 0; i < items.Count; i++)
+                {
+                    var index = i;
+                    var zone = items[index];
+                    var isSelected = IsSelected(zone);
+                    var isActive = index == _list.ActiveIndex;
+                    var itemClass = $"bit-tzp-itm{(isSelected ? " bit-tzp-sel" : "")}{(isActive ? " bit-tzp-act" : "")}{(_list.IsLastPreferred(index) ? " bit-tzp-ilp" : "")}";
+                    <button @key="zone.Id"
+                            id="@GetOptionId(index)"
+                            @onclick="() => HandleOnTimeZoneSelect(zone)"
+                            type="button"
+                            role="option"
+                            tabindex="-1"
+                            title="@GetZoneText(zone)"
+                            aria-selected="@(isSelected ? "true" : "false")"
+                            style="@Styles?.Item"
+                            class="@itemClass @Classes?.Item">
+                        @if (ItemTemplate is not null)
+                        {
+                            @ItemTemplate(zone)
+                        }
+                        else
+                        {
+                            @if (NoOffset is false)
+                            {
+                                <span style="@Styles?.Offset" class="bit-tzp-ofs @Classes?.Offset">@GetOffsetText(zone)</span><span class="bit-tzp-sep">, </span>
+                            }
+                            <span style="@Styles?.ItemName" class="bit-tzp-inm @Classes?.ItemName">@zone.Name</span>@if (NoCountry is false && zone.CountryName.HasValue())
+                            {
+                                <span class="bit-tzp-sep">, </span><span style="@Styles?.ItemCountry" class="bit-tzp-icn @Classes?.ItemCountry">@zone.CountryName</span>
+                            }
+                        }
+                    </button>
+                }
+
+                @if (items.Count == 0)
+                {
+                    <div style="@Styles?.NoResults" class="bit-tzp-nor @Classes?.NoResults">
+                        @if (NoResultsTemplate is not null)
+                        {
+                            @NoResultsTemplate
+                        }
+                        else
+                        {
+                            @(NoResultsMessage ?? "No results found")
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

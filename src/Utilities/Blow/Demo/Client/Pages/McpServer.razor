@@ -1,0 +1,129 @@
+﻿@page "/mcp-server"
+
+@* Describes the MCP server this demo's host maps at /mcp. Its route differs from the endpoint's on
+   purpose: two literal endpoints on /mcp would make a GET of it ambiguous. *@
+
+<PageTitle>MCP server · Blow</PageTitle>
+
+<div class="bb-intro">
+    <h1>MCP server</h1>
+    <p class="bb-subtitle">
+        This site hosts a Model Context Protocol server at <code>/mcp</code>, so an AI agent writing node-editor and
+        diagram code with Bit.Blow reads the library itself - its compiled API documentation, its guide, its stylesheet,
+        the canvas and these demo pages - instead of guessing at an API it half remembers, or borrowing one from React
+        Flow. Every tool is read-only.
+    </p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect a client</h3>
+
+    <p>
+        The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else.
+    </p>
+
+    <pre class="bb-code">@ClientConfig</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Tools</h3>
+
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Tool</th><th>What it answers</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var tool in Tools)
+                {
+                    <tr>
+                        <td class="bb-table-key"><code>@tool.Name</code></td>
+                        <td>@((MarkupString)tool.Description)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        Called without its key, a reference tool - <code>GetBlowGuideSection</code>, <code>GetBlowApi</code>,
+        <code>GetBlowTheme</code>, <code>GetBlowSourceFile</code> - answers with the index of what there is, and
+        <code>InspectBlowFlow</code> with a sample flow, so no separate listing tool is needed.
+    </p>
+
+    <p>
+        The same material is exposed as <code>blow://</code> resources, for a client that attaches documentation up
+        front: the whole guide (<code>blow://guide</code>) or one section of it (<code>blow://guide/{heading}</code>,
+        with every top-level section also listed on its own), the API index and one type
+        (<code>blow://api</code>, <code>blow://api/{typeName}</code>), the theme (<code>blow://theme</code>), a sample
+        flow (<code>blow://sample-flow</code>) and any source file (<code>blow://source/{path}</code>). In a client that
+        supports completions, the resources' and prompts' arguments complete as you type - guide headings, type names,
+        source paths, render modes, and common features and symptoms.
+    </p>
+
+    <p>
+        Three prompts walk an agent through the common jobs in the right order: <code>add-blow-to-app</code> (for a
+        render mode), <code>implement-blow-feature</code> (for a feature you describe) and <code>debug-blow-flow</code>
+        (for a symptom you describe).
+    </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The same tools over plain HTTP</h3>
+
+    <p>
+        Every tool is also a <code>GET</code> under <code>/api/mcp/...</code>: open one in a browser tab to read
+        exactly what an agent is handed.
+    </p>
+
+    <ul class="bb-detail-list">
+        @foreach (var (href, text) in HttpExamples)
+        {
+            <li><a href="@href" target="_blank" rel="noopener">@text</a></li>
+        }
+    </ul>
+</section>
+
+@code {
+    private const string ClientConfig = """
+        // .mcp.json - the "mcpServers" shape most clients read; VS Code's .vscode/mcp.json
+        // takes the same entry under "servers" instead
+        {
+          "mcpServers": {
+            "blow": {
+              "type": "http",
+              "url": "https://blow.bitplatform.dev/mcp"
+            }
+          }
+        }
+        """;
+
+    // The server's tools, in the order an agent usually needs them. The one place to change when a tool is
+    // added, renamed or retired; the description is markup.
+    private static readonly (string Name, string Description)[] Tools =
+    [
+        ("SearchBlow",
+            "Everything at once - the guide, every public member, the setup guides, the theme, the stylesheet and the demo's pages and examples - each hit with the exact follow-up call."),
+        ("GetBlowSetupGuide",
+            "The complete wiring for one render mode: server, wasm, auto, standalone-wasm or hybrid - the stylesheet link and the canvas height included."),
+        ("GetBlowGuideSection",
+            "One section of the reference guide, or the index of sections."),
+        ("GetBlowApi",
+            "One public type with every parameter, property and method, its real default and its documentation - or the index of types."),
+        ("GetBlowTheme",
+            "The <code>--bit-blow-*</code> custom properties with their light and dark values and what each one paints - or one of them in full."),
+        ("InspectBlowFlow",
+            "What the real canvas makes of a flow's nodes and edges - the problems it reports, its bounds and sub-flows, and optionally a layout - or a sample flow, to see the format."),
+        ("GetBlowSourceFile",
+            "One demo or library file verbatim - every page and example here is a working flow - or the index of files."),
+    ];
+
+    private static readonly (string Href, string Text)[] HttpExamples =
+    [
+        ("/api/mcp/SearchBlow?query=custom%20node%20handles", "/api/mcp/SearchBlow?query=custom node handles"),
+        ("/api/mcp/GetBlowApi?typeName=BlowCanvas", "/api/mcp/GetBlowApi?typeName=BlowCanvas"),
+        ("/api/mcp/GetBlowTheme", "/api/mcp/GetBlowTheme"),
+        ("/api/mcp/InspectBlowFlow", "/api/mcp/InspectBlowFlow"),
+        ("/api/mcp/GetBlowSourceFile?path=Demo/Client/Pages/CustomNodes.razor", "/api/mcp/GetBlowSourceFile?path=Demo/Client/Pages/CustomNodes.razor"),
+    ];
+}

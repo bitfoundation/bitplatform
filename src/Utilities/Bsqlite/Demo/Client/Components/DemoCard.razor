@@ -1,0 +1,68 @@
+﻿@* A demo section: what it shows, what to try, the live thing, then the code behind it. It is the
+   site kit's .bb-card, so in the docs column it reads as a passage of the page and its
+   h3.bb-card-title feeds the "On this page" rail; the live part keeps a frame of its own (.bb-demo),
+   because it is a thing on the page rather than prose. *@
+<section class="bb-card">
+    @if (!string.IsNullOrEmpty(Step))
+    {
+        <span class="bb-overline bq-step">@Step</span>
+    }
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> @Title</h3>
+    @if (Description is not null)
+    {
+        <p class="bb-card-desc">@Description</p>
+    }
+    @if (Try is not null)
+    {
+        <div class="bb-note bq-try"><strong>Try</strong> @Try</div>
+    }
+    @if (ChildContent is not null)
+    {
+        <div class="bb-demo">
+            <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+            @ChildContent
+        </div>
+    }
+    @if (!string.IsNullOrWhiteSpace(Code))
+    {
+        <CodeBlock Title="@CodeTitle" Language="@Language" Code="@Code" Open="@CodeOpen" />
+    }
+    @Extra
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>Small uppercase kicker over the title, e.g. the step of a walkthrough.</summary>
+    [Parameter]
+    public string? Step { get; set; }
+
+    [Parameter]
+    public RenderFragment? Description { get; set; }
+
+    /// <summary>One concrete action the reader can take to see the behaviour.</summary>
+    [Parameter]
+    public RenderFragment? Try { get; set; }
+
+    /// <summary>The live demo.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>The snippet that produces what the demo just did.</summary>
+    [Parameter]
+    public string? Code { get; set; }
+
+    [Parameter]
+    public string CodeTitle { get; set; } = "Sample";
+
+    [Parameter]
+    public string Language { get; set; } = "csharp";
+
+    [Parameter]
+    public bool CodeOpen { get; set; } = true;
+
+    /// <summary>Anything that belongs after the snippet, such as extra code blocks.</summary>
+    [Parameter]
+    public RenderFragment? Extra { get; set; }
+}

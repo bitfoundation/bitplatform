@@ -1,0 +1,83 @@
+﻿@page "/counter"
+
+<PageTitle>Counter · BevTools</PageTitle>
+
+<div class="bb-intro">
+    <p class="bb-overline">Scenario · Rendering</p>
+    <h1>Counter</h1>
+    <p class="bb-subtitle">
+        The classic, and the baseline every other scenario is measured against: one click is one
+        <em>onclick → Counter.IncrementCount</em> event and one render of <code>Counter</code>, nothing else.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The counter</h3>
+    <p class="bb-card-desc">
+        The second button increments ten times from one event, calling <code>StateHasChanged</code> and awaiting
+        between the steps - ten renders that all trace back to a single click.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span><RendererStatus /></div>
+
+        <p role="status" class="demo-count">Current count: <strong>@currentCount</strong></p>
+
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+            <button type="button" class="btn btn-secondary" @onclick="IncrementTenTimes">Increment 10× with awaits (10 renders from one event)</button>
+        </div>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Timeline: one click, one render</h3>
+    <p class="bb-card-desc">
+        Open the <strong>Timeline</strong> and click <em>Click me</em>: the <em>onclick → Counter.IncrementCount</em>
+        event, the one batch it produced and the render of <code>Counter</code> inside it - no layout, header or
+        other page component renders with it. The ten-step button shows ten renders caused by the same event, and
+        <strong>Diagnostics</strong> calls it a <em>slow event handler</em>: a handler's duration spans every
+        <code>await</code> inside it, about 300 ms here.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Profiler: what did this one click cost?</h3>
+    <p class="bb-card-desc">
+        In the <strong>Profiler</strong>, press <em>Reset</em>, click once and tick <em>since reset</em>: one row, one
+        render. Compare with one keystroke on the <a href="products">Products</a> page.
+    </p>
+    <p class="bb-card-desc">
+        Visit a few pages and come back, then open <em>Renders per page</em> → <em>Show</em>: each page with its visits,
+        renders, render time and the three components that cost the most there. This page sits near the bottom; the
+        dashboard with its clock ticking sits near the top.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Components: where it is written</h3>
+    <p class="bb-card-desc">
+        Select <code>Counter</code> in the <strong>Components</strong> tab. <em>Type &amp; source</em> links
+        <code>Counter.razor</code>, and <em>Event handlers &amp; callbacks</em> lists both buttons -
+        <em>onclick → Counter.IncrementCount</em> and <em>Counter.IncrementTenTimes</em> - each with a link to the line
+        that handler is written on. The links open your editor (VS Code by default; <code>Ui.EditorUrlTemplate</code>
+        changes it) and come from the app's symbols; without them the location is inferred from the type name and
+        labelled so.
+    </p>
+</div>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount() => currentCount++;
+
+    private async Task IncrementTenTimes()
+    {
+        for (var i = 0; i < 10; i++)
+        {
+            currentCount++;
+            StateHasChanged();
+            await Task.Delay(30);
+        }
+    }
+}

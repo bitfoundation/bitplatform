@@ -105,6 +105,8 @@ csharp_new_line_before_open_brace = all
 
 **When to use**: Open this when you need to work across all platforms and projects simultaneously.
 
+**Created with `bit new`?** Then your project has no `.sln`: `bit new` removes it, since `Boilerplate.slnx` below is the same solution in the newer format.
+
 ---
 
 ### 2.2 `Boilerplate.Web.slnf`
@@ -221,7 +223,7 @@ These namespaces are **automatically imported** in every C# file, eliminating th
 
 Instead of this in each `.csproj`:
 ```xml
-<PackageReference Include="Bit.BlazorUI" Version="10.6.2" />
+<PackageReference Include="Bit.BlazorUI" Version="10.7.0" />
 ```
 
 You write this in `.csproj`:
@@ -231,7 +233,7 @@ You write this in `.csproj`:
 
 And the version is defined centrally in `Directory.Packages.props`:
 ```xml
-<PackageVersion Include="Bit.BlazorUI" Version="10.6.2" />
+<PackageVersion Include="Bit.BlazorUI" Version="10.7.0" />
 ```
 
 **Benefits**:
@@ -242,8 +244,8 @@ And the version is defined centrally in `Directory.Packages.props`:
 **Example packages included**:
 
 ```xml
-<PackageVersion Include="Bit.BlazorUI" Version="10.6.2" />
-<PackageVersion Include="Bit.Butil" Version="10.6.2" />
+<PackageVersion Include="Bit.BlazorUI" Version="10.7.0" />
+<PackageVersion Include="Bit.Butil" Version="10.7.0" />
 <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
 <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
 <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.21" />
@@ -298,7 +300,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 **Location**: [`/Bit.ResxTranslator.json`](/Bit.ResxTranslator.json)
 
-**Purpose**: Configuration for the **bit-resx** CLI tool that uses AI to automatically translate `.resx` resource files.
+**Purpose**: Configuration for **`bit translate`**, the bit CLI command that uses AI to automatically translate `.resx` resource files.
 
 **Configuration**:
 
@@ -318,7 +320,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
 **How it works**:
 
 1. You write strings in English in `AppStrings.resx`
-2. Run the `bit-resx` tool
+2. Run `bit translate`
 3. It automatically creates translated versions:
    - `AppStrings.nl.resx` (Dutch)
    - `AppStrings.fa.resx` (Persian)
@@ -331,20 +333,20 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 **AI Provider**: Uses OpenAI's GPT-4.1-mini model (or Azure OpenAI)
 
-**Learn more**: See [bit-resx documentation](https://github.com/bitfoundation/bitplatform/tree/develop/src/ResxTranslator)
+**Learn more**: See [bit translate documentation](https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Cli#bit-translate)
 
 **Installation and Usage**:
 
 ```bash
-# Run the translator (from the project root directory); dnx fetches it, nothing is installed
-dnx Bit.ResxTranslator
+# Run the translator anywhere in the project; dnx fetches the bit CLI, nothing is installed
+dnx Bit.Cli --version 10.7.0 -- translate
 ```
 
 **To add a new language**:
 1. Add its ISO code to `SupportedLanguages` (e.g., `"it"` for Italian)
 2. Update `CultureInfoManager.SupportedCultures` in the `Shared` project
 3. Update `.Client.Maui/Platforms/Android/MainActivity.cs` if needed
-4. Run `bit-resx` to generate the translation
+4. Run `bit translate` to generate the translation
 
 ---
 
@@ -434,7 +436,7 @@ dnx Bit.ResxTranslator
     "servers": {
         "bitplatform": {
             "type": "http",
-            "url": "https://bitplatform.dev/mcp?v=10.6.2"
+            "url": "https://bitplatform.dev/mcp?v=10.7.0"
         }
     }
 }
@@ -444,7 +446,7 @@ dnx Bit.ResxTranslator
 - **Model Context Protocol**: A standardized way to connect AI assistants (like GitHub Copilot) to external data sources and tools
 
 **Configured Servers**:
-- **bitplatform**: The bit platform documentation server. It exposes the bit BlazorUI tools (`SearchBitBlazorUI`, `GetBitBlazorUIComponent`, `GetBitBlazorUIComponentExamples`, ...), the Butil/Bswup/Bmotion/Brouter tools, the `AskGitHubRepository` tool for the third-party libraries this project builds on, the tools that read the source code of the bitfoundation/bitplatform repository itself rather than this project (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`, ...), and the Microsoft Docs tools - all answering from the shipped assemblies, documentation and source rather than from the model's memory
+- **bitplatform**: The bit platform documentation server. It exposes the bit BlazorUI tools (`SearchBitBlazorUI`, `GetBitBlazorUIComponent`, `GetBitBlazorUIComponentExamples`, ...), the Butil tools, the `AskGitHubRepository` tool for the third-party libraries this project builds on, the `GetBitPlatformReleases` tool that says whether a version is the newest bit platform release and returns the release notes of every newer one, the tools that read the source code of the bitfoundation/bitplatform repository itself rather than this project (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`, ...), and the Microsoft Docs tools - all answering from the shipped assemblies, documentation and source rather than from the model's memory. Every other bit library has an MCP server of its own, which `AGENTS.md` lists and the agent connects to by itself when it needs one
 - **aspire**: The .NET Aspire CLI's own MCP server, for inspecting the running application's resources, logs and traces
 - **playwright**: Browser automation, so the agent can drive and verify the running app
 
@@ -472,9 +474,8 @@ You can add additional MCP servers to extend Copilot's capabilities further. For
 {
     "dotnet.defaultSolution": "Boilerplate.Web.slnf",
     "dotnet.unitTests.runSettingsPath": "src/Tests/.runsettings",
-    "chat.tools.autoApprove": true,
+    "chat.permissions.default": "autopilot",
     "github.copilot.chat.codesearch.enabled": true,
-    "csharp.preview.improvedLaunchExperience": true,
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.patterns": {
         "*.resx": "$(capture).*.resx",
@@ -492,7 +493,7 @@ You can add additional MCP servers to extend Copilot's capabilities further. For
 - **File Nesting**: Groups related files together in the explorer
   - `Component.razor`, `Component.razor.cs`, `Component.razor.scss` nest under `Component.razor`
   - `AppStrings.resx`, `AppStrings.fa.resx`, `AppStrings.nl.resx` nest under `AppStrings.resx`
-- **GitHub Copilot**: Auto-approve tool usage, code search enabled
+- **GitHub Copilot**: Autopilot permission level for new chats, code search enabled
 
 #### 6.3.3 `.vscode/extensions.json`
 
@@ -514,19 +515,7 @@ You can add additional MCP servers to extend Copilot's capabilities further. For
 
 When you open the project in VS Code, you'll be prompted to install these extensions.
 
-#### 6.3.4 `.vscode/tasks.json`
-
-**Pre-configured Tasks**:
-
-- **`before-build`**: Runs TypeScript compilation and SCSS processing (runs automatically on folder open)
-- **`build`**: Builds the `Boilerplate.Server.Web` project
-- **`generate-resx-files`**: Generates C# code from `.resx` files
-- **`run`**: Starts the application
-- **`run-tests`**: Runs all tests
-
-**How to use**: Press `Ctrl+Shift+P` → `Tasks: Run Task` → Select a task
-
-#### 6.3.5 `.vscode/launch.json`
+#### 6.3.4 `.vscode/launch.json`
 
 **Debug Configurations**:
 
@@ -595,31 +584,26 @@ When you open the project in VS Code, you'll be prompted to install these extens
 
 **Contains**:
 - Welcome message
-- Template creation command (showing exactly how this project was generated)
+- The seeded accounts and their password, which is random for every project
 - Link to comprehensive documentation at [bitplatform.dev/templates](https://bitplatform.dev/templates/overview)
-- Information about the template version used
 
-**Example**:
+### 8.2 `bit.json`
 
-````markdown
-This project gets generated by bit-bp template v-10.6.2 using the following command
-```bash
-dotnet new bit-bp
-    --name Boilerplate
-    --database SqlServer
-    --filesStorage S3
-    --module Admin
-    --captcha reCaptcha
-    --sample
-    --sentry
-    --appInsights
-    --signalR
-    --offlineDb
-    --ads
-```
-````
+**Location**: [`/bit.json`](/bit.json)
 
-This is useful for remembering how the project was initially configured.
+**Purpose**: Records how the project was created, for the [bit CLI](https://www.nuget.org/packages/Bit.Cli) and for you: the template (`bit-bp`), its version, the project's name, and the value of every template option.
+
+**Who uses it**: `bit diff` and the `upgrade` skill read the version and the options to create the project again with the old and the new template version. An upgrade updates the version in it, and new options arrive through the diff like any other change.
+
+**Keep it**: the bit CLI may keep more of what it needs to know about the project here. Edit an option's value when you change the project in a way that matches another option, such as removing Aspire, so the next upgrade compares the right templates.
+
+### 8.3 `specs/`
+
+**Location**: [`/specs/`](/specs/README.md)
+
+**Purpose**: What the product does and why, kept next to the code: one spec per feature area with its requirements, acceptance criteria, decisions and open questions, plus one plan per larger change. [`specs/README.md`](/specs/README.md) describes both.
+
+**Who uses it**: the whole team, product people included, and every AI tool. `AGENTS.md` has the agents read a feature's spec before changing it and write the product decisions a conversation settles into it, and the `ai-dlc` skill keeps its plans there, so work can be resumed in another session or tool and reviewed with the code.
 
 ---
 
@@ -713,7 +697,10 @@ slnf
 
 **Purpose**: Configuration for **VS Code Dev Containers** and **GitHub Codespaces**.
 
-**What it does**: Allows you to develop inside a Docker container with all dependencies pre-installed, ensuring **consistent development environments** across all team members.
+**What it does**: Allows you to develop inside a Docker container, ensuring **consistent development environments** across all team members.
+The container starts from the .NET SDK image with Docker inside it, and when it's created, `bit setup` does the rest the way it does
+on any machine: Node.js, the Aspire CLI, the build tools, the development certificate, the packages, the build and Chromium for the UI tests.
+The `bit` command stays available in its terminal, for `bit doctor` and `bit translate`.
 
 **Benefits**:
 - No need to install .NET SDK, Node.js, or other tools locally
@@ -722,10 +709,10 @@ slnf
 - Isolated from your host system
 
 **How to use**:
-1. Install Docker Desktop and the "Dev Containers" extension in VS Code
+1. Install Docker (or Podman, with VS Code's `dev.containers.dockerPath` set to `podman`) and the "Dev Containers" extension in VS Code
 2. Open the project in VS Code
 3. Click "Reopen in Container" when prompted
-4. Wait for the container to build
+4. Wait for the container to build and for `bit setup` to finish; GitHub Codespaces prebuilds do both ahead of time
 5. Start developing!
 
 ---

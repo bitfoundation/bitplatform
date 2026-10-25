@@ -1,0 +1,530 @@
+﻿@page "/search"
+@using System.Diagnostics
+@using System.Globalization
+@implements IDisposable
+@inject IBaletteService Palette
+@inject BaletteOptions Options
+@inject BaletteRanker Ranker
+@inject BaletteHistory History
+@inject DemoState State
+
+<PageTitle>Search and ranking · Balette</PageTitle>
+
+<div class="bb-intro">
+    <h1>Search &amp; ranking</h1>
+    <p class="bb-subtitle">
+        Every keystroke runs two public pieces of the library: a matcher that scores each command and says which
+        characters to highlight, and a ranker that folds in priority and how often and how recently a command was used.
+        The lab below runs exactly those two over this app's registry, so the numbers are the ones the palette sorts by.
+    </p>
+</div>
+
+<PaletteBar />
+
+@* Records stored the way they are written - accents, Arabic-script letters, digits - to try the folding below on, in the
+   lab and in the palette. They exist only while this page is on screen. *@
+<BaletteCommands Commands="FoldingSamples" />
+
+<div class="bb-demo bb-page-wide">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Search lab</span></div>
+    <div class="bb-fields" role="toolbar" aria-label="Search lab">
+        <label class="bb-field demo-grow">
+            Query
+            @* Bound, not value + @oninput, so on Blazor Server a render answering an earlier key never overwrites the keys since. *@
+            <input type="text" @bind="_query" @bind:event="oninput" @bind:after="Run" placeholder="Type to search the registry…"
+                   aria-label="Query" autocomplete="off" spellcheck="false" />
+        </label>
+        <label class="bb-field">
+            Matcher
+            <select value="@_matcherName" @onchange="OnMatcherChanged" aria-label="Matcher">
+                <option value="fuzzy">Fuzzy, smart case</option>
+                <option value="ignore-case">Fuzzy, ignore case</option>
+                <option value="literal">Fuzzy, literal (no folding)</option>
+                <option value="substring">Substring</option>
+            </select>
+        </label>
+        <button type="button" class="btn btn-secondary" @onclick="() => Palette.OpenAsync(_query)">Open the palette with it</button>
+    </div>
+
+    @* What BaletteQuery.Parse made of the query: the terms every command has to match, with their operators. *@
+    <p class="bb-soft demo-small demo-terms">
+        <span><code>BaletteQuery.Parse</code>:</span>
+        @if (_parsed.Terms.Count == 0)
+        {
+            <span>no terms - every command matches, ordered by priority and frecency</span>
+        }
+        @for (var i = 0; i < _parsed.Terms.Count; i++)
+        {
+            var term = _parsed.Terms[i];
+            if (i > 0)
+            {
+                <span>@(_parsed.Terms[i - 1].Group == term.Group ? "or" : "and")</span>
+            }
+            <span class="bb-badge">@OperatorName(term.Operator) <code>@term.Text</code></span>
+        }
+    </p>
+
+    <div class="bb-scroll">
+        <table class="bb-table demo-lab">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Command</th>
+                    <th>Matched on</th>
+                    <th class="demo-num">Score</th>
+                    <th class="demo-num">Priority</th>
+                    <th class="demo-num">Frecency</th>
+                    <th class="demo-num">Rank</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (_results.Count == 0)
+                {
+                    <tr><td colspan="7" class="bb-muted">No command matches. The palette would retry allowing a typo, and still list the always-shown feedback row.</td></tr>
+                }
+                @foreach (var (match, index) in _results.Take(MaxRows).Select((m, i) => (m, i)))
+                {
+                    <tr>
+                        <td class="bb-soft">@(index + 1)</td>
+                        <td>
+                            @if (match.Path.Count > 0)
+                            {
+                                <span class="bb-soft">@string.Join(" › ", match.Path) › </span>
+                            }
+                            <BaletteHighlightedText Text="@match.Command.Title" Positions="@match.TitlePositions" />
+                            @if (match.Command.Subtitle is not null)
+                            {
+                                <div class="bb-soft demo-small"><BaletteHighlightedText Text="@match.Command.Subtitle" Positions="@match.SubtitlePositions" /></div>
+                            }
+                        </td>
+                        <td>@MatchedOn(match)</td>
+                        <td class="demo-num">@Format(match.Score)</td>
+                        <td class="demo-num">@match.Command.Priority</td>
+                        <td class="demo-num">@Format(match.Frecency)</td>
+                        <td class="demo-num"><strong>@Format(match.Rank)</strong></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="demo-statusbar" role="status">
+        <span><strong>@_candidates</strong> commands searched</span>
+        <span><strong>@_results.Count</strong> matched</span>
+        <span>matched and ranked in <strong>@_elapsed.TotalMilliseconds.ToString("0.00", CultureInfo.InvariantCulture) ms</strong></span>
+        @if (!History.IsLoaded)
+        {
+            <span>frecency loads once the page is interactive</span>
+        }
+    </div>
+</div>
+
+<section class="bb-card" id="operators">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Operators</h3>
+    <p>
+        A query is split on spaces and every term has to match (AND), each against whichever field scores it best. A term
+        can carry an fzf operator; the rest are fuzzy. <code>!</code> excludes a command when the title, subtitle, group or
+        keywords contain the term.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Query</th><th>Means</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var example in Examples)
+                {
+                    <tr>
+                        <td class="bb-table-key"><code>@example.Query</code></td>
+                        <td>@example.Meaning</td>
+                        <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick="() => SetQuery(example.Query)">Try</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Curly quotes work as well as straight ones, which some keyboards type, and a quote left open takes the rest of the
+        query while it is typed, so typing one never shows "no results" midway.
+    </p>
+</section>
+
+<section class="bb-card" id="folding">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Text as people type it</h3>
+    <p>
+        <code>BaletteFuzzyMatcher.Normalize</code> (on by default) matches what people type against what is stored. Every
+        mapping is one character to one, so the highlighting stays exact, and the operators follow the same rules. The
+        language names under <em>Preferences › Language</em> are written as their speakers write them, and while this page is
+        open the palette also lists a few <em>Folding samples</em> - <em>Café Central</em>, <em>كتاب</em>,
+        <em>Order 12</em>… - stored exactly as shown:
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Typed</th><th>Finds</th><th>Why</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var example in FoldingExamples)
+                {
+                    <tr>
+                        <td class="bb-table-key"><code dir="auto">@example.Query</code></td>
+                        <td dir="auto">@example.Finds</td>
+                        <td>@example.Why</td>
+                        <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick="() => SetQuery(example.Query)">Try</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-muted demo-small">Try puts the query in the lab at the top of the page; its <em>Open the palette with it</em> button runs it in the palette.</p>
+    <ul class="bb-detail-list">
+        <li>Latin letters lose their diacritics - unless the term types one itself, as in fzf: <code>café</code> means that
+            letter, so a term with an accent is matched as written.</li>
+        <li>The Arabic and Persian forms of yeh and kaf (<code>ي</code>/<code>ی</code>, <code>ك</code>/<code>ک</code>), alef
+            with hamza or madda, teh marbuta and heh are one letter: which one is stored depends on the keyboard it was
+            typed on.</li>
+        <li>Arabic-Indic and Persian digits are ASCII digits - <code>۱۲</code> finds "Order 12" - and fullwidth ASCII is
+            ASCII.</li>
+        <li><code>new BaletteFuzzyMatcher { Normalize = false }</code> matches literally, like fzf's <code>--literal</code>:
+            pick <em>Fuzzy, literal</em> in the lab and try the rows above again.</li>
+    </ul>
+</section>
+
+<section class="bb-card" id="typos">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Typos</h3>
+    <p>
+        A query that matches nothing is tried once more allowing a typo per term - a missing, extra, wrong or swapped letter
+        in a term of 4 to 7 characters, two from 8 on - so <code>settigns</code> finds <em>Settings</em>. Only a query that
+        found nothing is retried, so a query that works never gets noisier; the results are scored below every exact match,
+        announced, and marked "No exact matches. Showing close ones." (<code>BaletteStrings.ApproximateResults</code>), and
+        <code>BaletteMatch.IsApproximate</code> tells a template so. Turn it off with <code>options.TypoTolerance = false</code>
+        or <code>TypoTolerance="false"</code> on one palette.
+    </p>
+    <p>
+        The retry is the palette's, not the matcher's, so the lab above finds nothing for these - the palette does:
+    </p>
+    <div class="bb-try">
+        @foreach (var typo in Typos)
+        {
+            <button type="button" class="btn btn-secondary" @onclick="() => Palette.OpenAsync(typo)"><code>@typo</code> in the palette</button>
+        }
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How a score is made</h3>
+    <p>
+        The fuzzy matcher is fzf's algorithm: a dynamic programme that finds the best alignment of the term inside the text.
+        A query matches when its characters appear in order; among all such alignments it keeps the best one, and its
+        positions are the characters highlighted with <code>&lt;mark&gt;</code> - never splitting a letter from its accents or
+        an emoji from its other half.
+    </p>
+    <div class="bb-scroll demo-weights">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Score</th><th class="demo-num">Value</th><th>For</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>ScoreMatch</code></td><td class="demo-num">@BaletteFuzzyMatcher.ScoreMatch</td><td>Every matched character</td></tr>
+                <tr><td><code>ScoreGapStart</code> / <code>ScoreGapExtension</code></td><td class="demo-num">@BaletteFuzzyMatcher.ScoreGapStart / @BaletteFuzzyMatcher.ScoreGapExtension</td><td>Skipped characters; the first of a gap costs most</td></tr>
+                <tr><td><code>BonusBoundary</code></td><td class="demo-num">@BaletteFuzzyMatcher.BonusBoundary</td><td>A word start: <code>gs</code> finds <strong>G</strong>o to <strong>S</strong>ettings</td></tr>
+                <tr><td><code>BonusCamel</code></td><td class="demo-num">@BaletteFuzzyMatcher.BonusCamel</td><td>A camelCase hump or a letter-to-digit step: <code>fm</code> finds <strong>F</strong>uzzy<strong>M</strong>atcher</td></tr>
+                <tr><td><code>BonusNonWord</code></td><td class="demo-num">@BaletteFuzzyMatcher.BonusNonWord</td><td>Punctuation the query actually typed</td></tr>
+                <tr><td><code>BonusConsecutive</code></td><td class="demo-num">@BaletteFuzzyMatcher.BonusConsecutive</td><td>Characters that follow each other, carrying the bonus that started the run</td></tr>
+                <tr><td><code>BonusFirstCharMultiplier</code></td><td class="demo-num">@BaletteFuzzyMatcher.BonusFirstCharMultiplier</td><td>The first query character's bonus counts double</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Smart case: a term in lower case ignores case, a term with a capital letter respects it (<code>IgnoreCase = true</code>
+        turns that off). Ties go to the shorter text and the earlier match.
+    </p>
+    <p>
+        Each field's score is multiplied by its weight, so a hit in the title beats the same hit in a keyword,
+        which beats one in the subtitle. These are this app's weights, from <code>BaletteOptions.Weights</code>:
+    </p>
+    <div class="bb-scroll demo-weights">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Field</th><th class="demo-num">Weight</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Title</td><td class="demo-num">@Format(Options.Weights.Title)</td></tr>
+                <tr><td>Keywords</td><td class="demo-num">@Format(Options.Weights.Keyword)</td></tr>
+                <tr><td>Subtitle</td><td class="demo-num">@Format(Options.Weights.Subtitle)</td></tr>
+                <tr><td>Group</td><td class="demo-num">@Format(Options.Weights.Group)</td></tr>
+                <tr><td>A nested command's ancestors</td><td class="demo-num">@Format(Options.Weights.Path)</td></tr>
+                <tr><td>Description</td><td class="demo-num">@Format(Options.Weights.Description)</td></tr>
+                <tr><td>Tags</td><td class="demo-num">@Format(Options.Weights.Tag)</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <pre class="bb-code">options.Weights.Description = 0.6; // descriptions count for more</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Priority and frecency</h3>
+    <p>With a query, the match decides and the rest only nudges it:</p>
+    <pre class="bb-code">rank = score + priority × @Format(Options.PriorityWeight) + ln(1 + frecency) × @Format(Options.FrecencyWeight)</pre>
+    <p>
+        On the empty query there is nothing to match, so priority leads and frecency orders what is left
+        (<code>priority × 1000 + frecency</code>), inside each group. Only the best <code>MaxResults</code>
+        (@Options.MaxResults) rows are kept per query - pinned and recent commands are listed beyond it.
+    </p>
+    <p>
+        Frecency is Firefox's idea: the number of uses, capped at 20, times a weight for how long ago the last one was,
+        divided by 10. Run a command a few times from the palette and watch its row climb in the lab - the history is kept in
+        <code>localStorage</code>, so it survives a reload.
+    </p>
+    <div class="bb-scroll demo-weights">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Last used</th><th class="demo-num">Weight</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Within 4 hours</td><td class="demo-num">100</td></tr>
+                <tr><td>Within a day</td><td class="demo-num">70</td></tr>
+                <tr><td>Within three days</td><td class="demo-num">50</td></tr>
+                <tr><td>Within a week</td><td class="demo-num">30</td></tr>
+                <tr><td>Within a month</td><td class="demo-num">10</td></tr>
+                <tr><td>Longer ago</td><td class="demo-num">5</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> In the palette</h3>
+    <div class="demo-settings">
+        <label class="demo-setting">
+            <span>Highlight matched characters</span>
+            <input type="checkbox" checked="@State.HighlightMatches" @onchange="() => State.SetHighlightMatches(!State.HighlightMatches)" />
+        </label>
+        <label class="demo-setting">
+            <span>Keep group headings while searching (off: one flat ranked list)</span>
+            <input type="checkbox" checked="@State.GroupWhenSearching" @onchange="() => State.SetGroupWhenSearching(!State.GroupWhenSearching)" />
+        </label>
+    </div>
+    <p>
+        Nested commands are found from the root too (<code>SearchNestedCommands</code>, on by default), as in kbar:
+        <code>dark</code> lists <em>Theme › Dark</em> under Theme's group, and <code>theme dark</code> matches the ancestors'
+        titles as well. A root command and a nested one that match equally well are listed root first. Only registered and
+        declared commands are found - a lazy page's children do not exist until it opens - and only when every ancestor is
+        visible and enabled and none is a multi-select page, whose rows are choices rather than commands. Modes never include
+        them.
+    </p>
+    <div class="bb-try">
+        <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("theme dark")'><code>theme dark</code> in the palette</button>
+    </div>
+</section>
+
+<section class="bb-card" id="matcher">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A matcher of your own</h3>
+    <p>
+        <code>IBaletteMatcher</code> is one method - <code>Match(query, text)</code>, returning a <code>BaletteFieldMatch</code>
+        with a score and the positions to highlight - set through <code>options.Matcher</code>. Multi-term queries,
+        operators and field weights work with any matcher. <code>BaletteSubstringMatcher</code> is a ready-made
+        case-insensitive substring matcher, for data where fuzziness hurts more than it helps - pick <em>Substring</em> in the
+        lab to compare.
+    </p>
+    <pre class="bb-code">@MatcherExample</pre>
+    <p>
+        Matching can also be called directly - in a test, or in a tool that explains a search, the way the lab above and the
+        MCP server's <code>InspectBaletteSearch</code> do, with <code>BaletteRanker</code> (injectable, like the options)
+        ordering the matches as the palette does. <code>BaletteMatch</code> carries the <code>Score</code>, the
+        title's and subtitle's highlight positions, the <code>MatchedKeyword</code>, the <code>Path</code> of a nested
+        command, <code>IsApproximate</code> for a typo match, and whether it came from a source.
+    </p>
+    <div class="bb-note">
+        Matching runs over the fields of the command only; asynchronous sources opt into it with <code>ApplyMatcher</code>,
+        or keep their own order (see <a href="modes#sources">sources</a>).
+    </div>
+</section>
+
+@code {
+    private const int MaxRows = 15;
+
+    private static readonly (string Query, string Meaning)[] Examples =
+    [
+        ("rc", "Fuzzy: R and C in order, anywhere - word starts score highest."),
+        ("wrap word", "Two terms, both required, in any order."),
+        ("'export", "Exact: the substring itself, no gaps."),
+        ("^set", "Prefix: the field starts with it."),
+        ("project$", "Suffix: the field ends with it."),
+        ("show !minimap", "Negation: drops every command that contains the term."),
+        ("\"word wrap\"", "A quoted phrase: matched exactly, the space included."),
+        ("!\"show detail\" show", "A negated phrase: shows, except the one with that phrase. ^\"...\" and \"...\"$ anchor a phrase."),
+        ("^theme | ^lang", "Alternatives: a | on its own between two terms means either will do, as in fzf."),
+        ("francais", "Diacritics folded: finds Français on the Language page, from the root, with its path."),
+        ("settigns", "Nothing matches as typed - in the palette itself, a retry allowing a typo finds Settings."),
+        ("mcp", "Smart case, all lower case: case is ignored, so it matches MCP server."),
+        ("Mcp", "Smart case, with a capital: case now counts, so MCP server drops out."),
+    ];
+
+    private static readonly (string Query, string Finds, string Why)[] FoldingExamples =
+    [
+        ("cafe", "Café Central", "Latin letters lose their diacritics."),
+        ("lodz", "Łódź office", "Letters with a stroke too, as in fzf."),
+        ("turkce", "Türkçe", "Under Preferences › Language, found from the root."),
+        ("sao paulo", "São Paulo office", "Two terms, both folded."),
+        ("علی", "علي", "Typed with the Persian yeh (ی), stored with the Arabic one (ي)."),
+        ("فارسي", "فارسی", "The other way round: typed with the Arabic yeh, stored with the Persian one."),
+        ("کتاب", "كتاب", "Typed with the Persian kaf (ک), stored with the Arabic one (ك)."),
+        ("اسم", "إسم", "Alef with hamza or madda is plain alef."),
+        ("العربيه", "العربية", "Typed with heh (ه), stored with teh marbuta (ة)."),
+        ("۱۲", "Order 12", "Persian digits are ASCII digits."),
+        ("٣", "Step 3", "Arabic-Indic digits too."),
+        ("ｏｒｄｅｒ", "Order 12", "Fullwidth letters, which some input methods type, are ASCII."),
+    ];
+
+    // Registered by this page (BaletteCommands above) so every row of the folding table has something to find.
+    private static readonly BaletteCommand[] FoldingSamples =
+    [
+        FoldingSample("sample:cafe", "Café Central", "Stored with é"),
+        FoldingSample("sample:lodz", "Łódź office", "Stored with Ł, ó and ź"),
+        FoldingSample("sample:sao-paulo", "São Paulo office", "Stored with ã"),
+        FoldingSample("sample:ali", "علي", "Stored with the Arabic yeh"),
+        FoldingSample("sample:ketab", "كتاب", "Stored with the Arabic kaf"),
+        FoldingSample("sample:esm", "إسم", "Stored with alef with hamza below"),
+        FoldingSample("sample:order-12", "Order 12", "Stored with ASCII digits"),
+        FoldingSample("sample:step-3", "Step 3", "Stored with an ASCII digit"),
+    ];
+
+    private static BaletteCommand FoldingSample(string id, string title, string subtitle) =>
+        BaletteCmd.New(title)
+            .Id(id)
+            .Subtitle(subtitle)
+            .Group("Folding samples")
+            .Priority(BaletteCommandPriority.Low)
+            .ExcludeFromHistory()
+            .Handler(_ => Task.FromResult(BaletteCommandResult.Toast($"Found “{title}”", keepOpen: true)))
+            .Build();
+
+    private static readonly string[] Typos = ["settigns", "langauge", "shortcts"];
+
+    private const string MatcherExample = """
+        // The palette's matcher, for data where fuzziness hurts: plain substrings.
+        options.Matcher = BaletteSubstringMatcher.Default;
+
+        // Or fzf's --literal: no folding of diacritics and Arabic-script letters.
+        options.Matcher = new BaletteFuzzyMatcher { Normalize = false };
+
+        // Or your own: one method.
+        public sealed class PrefixMatcher : IBaletteMatcher
+        {
+            public BaletteFieldMatch Match(string query, string text)
+                => text.StartsWith(query, StringComparison.OrdinalIgnoreCase)
+                    ? new BaletteFieldMatch(true, 100 - text.Length, [.. Enumerable.Range(0, query.Length)])
+                    : BaletteFieldMatch.None;
+        }
+
+        // Called directly, for example in a test.
+        BaletteQuery query = BaletteQuery.Parse("^go | ^open settings"); // its Terms: text, operator, alternative group
+        BaletteMatch? match = BaletteFuzzyMatcher.Default.Match(command, "gs");
+        """;
+
+    private string _query = "rc";
+    private string _matcherName = "fuzzy";
+    private IBaletteMatcher _matcher = BaletteFuzzyMatcher.Default;
+    private BaletteQuery _parsed = BaletteQuery.Empty;
+    private List<BaletteMatch> _results = [];
+    private int _candidates;
+    private TimeSpan _elapsed;
+
+    protected override void OnInitialized()
+    {
+        Palette.CommandsChanged += OnChanged;
+        History.Changed += OnChanged;
+        Run();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // The history lives in localStorage, which is only reachable once the page runs in the browser.
+        if (firstRender && RendererInfo.IsInteractive && !History.IsLoaded)
+        {
+            await History.EnsureLoadedAsync();
+            Run();
+            StateHasChanged();
+        }
+    }
+
+    private void Run()
+    {
+        var started = Stopwatch.GetTimestamp();
+
+        // What the palette lists on its root page: commands without a parent that are currently visible - and, while
+        // typing, the nested ones it finds from the root too (SearchNestedCommands), except a multi-select page's rows.
+        // The query is parsed once, as the palette does, and every command is matched against the same terms.
+        _parsed = BaletteQuery.Parse(_query);
+        var typing = _parsed.Terms.Count > 0;
+        var candidates = Palette.Commands
+            .Where(c => c.IsVisible?.Invoke() != false)
+            .Where(c => c.Parent is null || (typing && Options.SearchNestedCommands && Palette.Find(c.Parent) is { MultiSelectChildren: false }))
+            .ToList();
+        var matches = new List<BaletteMatch>(candidates.Count);
+        foreach (var command in candidates)
+        {
+            if (_matcher.Match(command, _parsed, Options.Weights) is { } match)
+            {
+                matches.Add(match);
+            }
+        }
+
+        _results = Ranker.Rank(matches, typing, id => History.IsLoaded ? History.Frecency(id) : 0);
+        _elapsed = Stopwatch.GetElapsedTime(started);
+        _candidates = candidates.Count;
+    }
+
+    private void OnMatcherChanged(ChangeEventArgs e)
+    {
+        _matcherName = e.Value?.ToString() ?? "fuzzy";
+        _matcher = _matcherName switch
+        {
+            "ignore-case" => new BaletteFuzzyMatcher { IgnoreCase = true },
+            "literal" => new BaletteFuzzyMatcher { Normalize = false },
+            "substring" => BaletteSubstringMatcher.Default,
+            _ => BaletteFuzzyMatcher.Default,
+        };
+        Run();
+    }
+
+    private void SetQuery(string query)
+    {
+        _query = query;
+        Run();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        Run();
+        StateHasChanged();
+    });
+
+    private static string MatchedOn(BaletteMatch match) => match switch
+    {
+        { TitlePositions.Length: > 0 } => "title",
+        { SubtitlePositions.Length: > 0 } => "subtitle",
+        { MatchedKeyword: { } keyword } => $"keyword “{keyword}”",
+        _ when match.Score == 0 => "-",
+        { Path.Count: > 0 } => "its path, group, description or tag",
+        _ => "group, description or tag",
+    };
+
+    private static string OperatorName(BaletteQueryOperator op) => op switch
+    {
+        BaletteQueryOperator.Exact => "exact",
+        BaletteQueryOperator.Prefix => "prefix",
+        BaletteQueryOperator.Suffix => "suffix",
+        BaletteQueryOperator.Negate => "not",
+        _ => "fuzzy",
+    };
+
+    private static string Format(double value) => double.IsNegativeInfinity(value) ? "-∞" : value.ToString("0.##", CultureInfo.InvariantCulture);
+
+    public void Dispose()
+    {
+        Palette.CommandsChanged -= OnChanged;
+        History.Changed -= OnChanged;
+    }
+}

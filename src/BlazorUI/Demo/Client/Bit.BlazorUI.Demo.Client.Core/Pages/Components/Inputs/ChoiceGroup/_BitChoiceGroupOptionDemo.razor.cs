@@ -27,6 +27,8 @@ public partial class _BitChoiceGroupOptionDemo
     private ChoiceGroupValidationModel validationModel = new();
     private string? successMessage;
 
+    private BitChoiceGroup<BitChoiceGroupOption<string>, string>? focusRef;
+
 
     private void AddDynamicOption()
     {
@@ -55,4 +57,14 @@ public partial class _BitChoiceGroupOptionDemo
     {
         successMessage = string.Empty;
     }
+
+    private readonly BitChoiceGroupParams[] choiceGroupParams =
+    [
+        new()
+        {
+            Gap = "0.5rem",
+            FullWidth = true,
+            Variant = BitVariant.Outline,
+        }
+    ];
 }

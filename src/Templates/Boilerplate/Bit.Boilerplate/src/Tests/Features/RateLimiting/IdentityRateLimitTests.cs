@@ -26,7 +26,7 @@ public class IdentityRateLimitTests
     /// <summary>
     /// Driven through the app's own typed controller proxy, so the rejection arrives as the
     /// <see cref="TooManyRequestsException"/> a real client would handle rather than as a bare status code.
-    /// The e-mail is a fresh Guid that no account owns: the endpoint answers <c>UserNotFound</c> for it and
+    /// The e-mail is a fresh Guid that no account owns: the endpoint answers it like any other address and
     /// writes nothing, so this test cannot leave state behind in the shared development database.
     /// </summary>
     [TestMethod]
@@ -34,11 +34,10 @@ public class IdentityRateLimitTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         var served = 0;
 
@@ -47,6 +46,7 @@ public class IdentityRateLimitTests
             try
             {
                 await identityController.SendConfirmEmailToken(new() { Email = $"{Guid.NewGuid()}@example.com" }, TestContext.CancellationToken);
+                served++; // The endpoint's own answer for an unknown e-mail, the same as for any other address.
             }
             catch (TooManyRequestsException)
             {
@@ -54,10 +54,6 @@ public class IdentityRateLimitTests
                 // rather than the request never getting there.
                 Assert.IsGreaterThan(0, served, "The endpoint must serve some requests before throttling starts.");
                 return;
-            }
-            catch (BadRequestException)
-            {
-                served++; // UserNotFound - the endpoint's own answer for an unknown e-mail.
             }
         }
 
@@ -75,11 +71,10 @@ public class IdentityRateLimitTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var minimalApiSampleController = scope.ServiceProvider.GetRequiredService<IMinimalApiSampleController>();
+        await using var client = server.CreateAppClient();
+        var minimalApiSampleController = client.GetController<IMinimalApiSampleController>();
 
         for (var i = 0; i < BurstSize; i++)
         {

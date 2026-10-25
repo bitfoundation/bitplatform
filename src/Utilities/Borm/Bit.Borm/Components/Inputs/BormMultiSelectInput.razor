@@ -1,0 +1,135 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+@using System.Collections
+
+@* See BormRadioInput: the group is named by the rendered label when one exists, and inline
+   otherwise, so suppressing the visible label never leaves the group without an accessible name. *@
+@* See BormRadioInput on the tabindex: the group is what focus aims at, because no single
+   checkbox in it represents the field. *@
+@* Splat first: the schema's extra attributes land on the group, and everything below overrides them.
+   The id is the field's, so an error-summary link has an element to land on. *@
+<div @attributes="ExtraAttributes"
+     id="@Context.ElementId"
+     class="bit-borm-multiselect"
+     @ref="Element"
+     tabindex="-1"
+     role="group"
+     aria-labelledby="@(Field.ShowLabel ? Context.LabelId : null)"
+     aria-label="@AriaLabel"
+     aria-invalid="@AriaInvalid"
+     aria-describedby="@GroupDescribedBy">
+    @* Resolved once per render, not once per option: the set is derived by walking the stored value,
+       so asking for it inside the loop makes a list of 200 choices do 200 walks to render 200 boxes. *@
+    @{ var selected = Selected; var options = Context.Options; }
+    @for (var index = 0; index < options.Count; index++)
+    {
+        var opt = options[index];
+        var optionId = BormFieldContext.OptionId(Context.ElementId, index, opt.Value);
+        <label class="bit-borm-checkbox" for="@optionId">
+            <input type="checkbox"
+                   id="@optionId"
+                   name="@Context.InputName"
+                   value="@opt.Value"
+                   checked="@selected.Contains(opt.Value)"
+                   disabled="@(DisabledOrReadOnly || opt.Disabled)"
+                   @onchange="@(e => Toggle(opt.Value, e.Value is bool b && b))"
+                   @onblur="OnBlur" />
+            <span>@opt.Label</span>
+        </label>
+    }
+    @if (ReadOnlyPostedName is { } posted)
+    {
+        @foreach (var value in options.Where(o => selected.Contains(o.Value)))
+        {
+            <input type="hidden" name="@posted" value="@value.Value" />
+        }
+    }
+</div>
+@if (Context.IsRequired)
+{
+    @* A group cannot carry aria-required; GroupDescribedBy points here instead. *@
+    <span id="@RequiredHintId" class="bit-borm-sr-only">@Context.Text(BormMessageKeys.RequiredHint)</span>
+}
+
+@code {
+    protected override Task OnParametersSetAsync() => LoadOptionsAsync();
+
+    /// <summary>The underlying enum type when this field is backed by a [Flags] enum, otherwise null.</summary>
+    private Type? FlagsEnumType
+    {
+        get
+        {
+            if (Field.ValueType is not { } t) return null;
+            var underlying = Nullable.GetUnderlyingType(t) ?? t;
+            return underlying.IsEnum && underlying.IsDefined(typeof(FlagsAttribute), false) ? underlying : null;
+        }
+    }
+
+    /// <summary>
+    /// The currently selected option values. A [Flags] enum stores one combined value rather than a
+    /// collection, so it is decomposed back into the individual member names.
+    /// </summary>
+    private HashSet<string> Selected
+    {
+        get
+        {
+            var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var value = Context.Value;
+            if (value is null) return set;
+
+            if (FlagsEnumType is { } flags)
+            {
+                if (!Enum.IsDefined(flags, value) && value is not Enum) return set;
+                foreach (var name in Enum.GetNames(flags))
+                {
+                    var member = (Enum)Enum.Parse(flags, name);
+                    // Zero-valued members ("None") would otherwise report as always selected.
+                    if (BormEnumOptions.ToInt64(member) != 0 && ((Enum)value).HasFlag(member)) set.Add(name);
+                }
+                return set;
+            }
+
+            if (value is IEnumerable e and not string)
+            {
+                foreach (var item in e)
+                    if (item is not null) set.Add(BormValueConverter.ToInvariantString(item));
+            }
+            else
+            {
+                set.Add(BormValueConverter.ToInvariantString(value));
+            }
+            return set;
+        }
+    }
+
+    private Task Toggle(string value, bool isChecked)
+    {
+        var set = Selected;
+        if (isChecked) set.Add(value); else set.Remove(value);
+
+        if (FlagsEnumType is { } flags)
+        {
+            // Recombine the chosen members into the single value the property expects.
+            long combined = 0;
+            foreach (var name in set)
+                if (Enum.TryParse(flags, name, ignoreCase: true, out var member) && member is not null)
+                    combined |= BormEnumOptions.ToInt64(member);
+            return Context.SetValueAsync(Enum.ToObject(flags, combined));
+        }
+
+        // A plain list of strings, in the order the options are declared rather than the order they
+        // were clicked. Emitting the set's own order makes the stored value depend on the sequence of
+        // ticks: choose A then B and the model holds [A, B]; untick A and tick it again and it holds
+        // [B, A] — the same answer, but no longer equal to the baseline, so the form reports unsaved
+        // changes the user did not make. Anything the schema does not offer (a value loaded from
+        // storage that is no longer an option) keeps its place at the end rather than being dropped.
+        var ordered = new List<string>(set.Count);
+        foreach (var option in Context.Options)
+            if (set.Remove(option.Value)) ordered.Add(option.Value);
+        ordered.AddRange(set);
+
+        // The data accessor converts each element to the model's element type.
+        return Context.SetValueAsync(ordered);
+    }
+
+}

@@ -3,9 +3,6 @@
 
 ::deep {
     .app-menu-callout {
-        width: 20rem;
-        max-width: calc(100vw - 1rem);
-
         @include lt-sm {
             height: unset;
             box-shadow: none;
@@ -38,67 +35,45 @@
         }
     }
 
-    .time-zone-list {
+    .time-zone-row {
         width: 100%;
-        height: min(50vh, 25rem);
-
-        @include lt-sm {
-            height: calc(100vh - 9rem);
-            height: calc(100dvh - 9rem);
-        }
+        padding-inline-start: 8px;
     }
 
-    .time-zone-item {
-        height: 44px;
-        flex-shrink: 0;
-        align-items: center;
-        padding: 0 0.5rem;
-
-        .bit-acb-inn {
-            width: 100%;
-        }
-    }
-
-    .time-zone-item-text {
-        overflow: hidden;
-        direction: ltr;
-        text-align: start;
-        -webkit-line-clamp: 2;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        font-size: $bit-typography-body2-font-size;
-        line-height: 1.25rem;
-
-        &.selected {
-            font-weight: bold;
-        }
-    }
-
-    .time-zone-empty {
-        display: block;
-        padding: 1rem 0.5rem;
+    .time-zone-picker {
+        min-width: 0;
+        flex-grow: 1;
     }
 
     .push-blocked-hint {
-        display: block;
         padding: 0 0.5rem 0.25rem;
     }
 
+    .account-button {
+        .bit-acb-inn,
+        .bit-acb-con,
+        .bit-prs {
+            min-width: 0;
+        }
+
+        .bit-acb-con {
+            display: flex;
+        }
+    }
+
     .accent-color-switcher {
+        gap: 8px;
         width: 100%;
         padding: 0 8px;
-        --bit-acs-gap: 8px;
-        --bit-acs-size: 20px;
+    }
+
+    .accent-color-swatch {
+        width: 20px;
+        height: 20px;
     }
 
     .menu-icon {
         width: 32px;
         height: 32px;
-        display: flex;
-        border-radius: 50%;
-        align-items: center;
-        justify-content: center;
-        color: $bit-color-info-text;
-        background: $bit-color-info;
     }
 }

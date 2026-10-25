@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Everything the browser side of a <see cref="BitSwiper"/> is driven with.
@@ -48,6 +48,11 @@ internal class BitSwiperOptions
     /// The distance (in pixels) the pointer has to travel before a press turns into a drag.
     /// </summary>
     public int Threshold { get; set; }
+
+    /// <summary>
+    /// Whether the manual navigation wraps around, which keeps both next/prev buttons at the ends.
+    /// </summary>
+    public bool Rewind { get; set; }
 
     /// <summary>
     /// The number of items a single navigation moves.

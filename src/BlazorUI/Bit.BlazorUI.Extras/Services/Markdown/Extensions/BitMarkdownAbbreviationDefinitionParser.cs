@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Parses abbreviation definitions: <c>*[HTML]: HyperText Markup Language</c>, written anywhere in

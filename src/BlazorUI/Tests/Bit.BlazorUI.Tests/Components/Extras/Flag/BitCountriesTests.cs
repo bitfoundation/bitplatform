@@ -97,11 +97,22 @@ public class BitCountriesTests
     }
 
     [TestMethod]
-    public void BitCountriesShouldAnswerASharedDialingCodeWithTheFirstCountryCarryingIt()
+    public void BitCountriesShouldAnswerASharedDialingCodeWithTheCountryOwningIt()
     {
-        // Alphabetical, so Canada comes before the United States and Kazakhstan before Russia.
-        Assert.AreSame(BitCountries.Canada, BitCountries.FindByCode("1"));
-        Assert.AreSame(BitCountries.Kazakhstan, BitCountries.FindByCode("7"));
+        // The country carrying the higher Priority owns the code, whatever comes first alphabetically - the same
+        // answer BitPhoneInput gives for a number typed with the code.
+        Assert.AreSame(BitCountries.UnitedStates, BitCountries.FindByCode("1"));
+        Assert.AreSame(BitCountries.Russia, BitCountries.FindByCode("+7"));
+        Assert.AreSame(BitCountries.Reunion, BitCountries.FindByCode("262"));
+        Assert.AreSame(BitCountries.NorfolkIsland, BitCountries.FindByCode("672"));
+    }
+
+    [TestMethod]
+    public void BitCountriesShouldAnswerASharedDialingCodeNobodyOwnsWithTheFirstCountryCarryingIt()
+    {
+        // Without a priority to tell them apart, the first alphabetically keeps the code.
+        Assert.AreSame(BitCountries.Australia, BitCountries.FindByCode("61"));
+        Assert.AreSame(BitCountries.Norway, BitCountries.FindByCode("47"));
     }
 
     [TestMethod,

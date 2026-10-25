@@ -1,0 +1,35 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+
+@* One problem of the index: a section of the Problems page (its title feeds the page's "on this
+   page" rail), the symptom a developer would report, the steps through BevTools, and a link to the
+   page the problem lives on. *@
+
+<div class="bb-card demo-problem" id="@Id">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> @Title</h3>
+    <p class="bb-card-desc"><strong>Symptom:</strong> @Symptom</p>
+    <ol class="bb-detail-list">
+        @ChildContent
+    </ol>
+    @if (Href is not null)
+    {
+        <div class="bb-try">
+            <a class="btn btn-outline" href="@Href">Open @(PageName ?? DocsCatalog.FindByPath(Href)?.Title ?? Href) →</a>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>The anchor other pages link to (<c>problems#problem-1</c>).</summary>
+    [Parameter] public string? Id { get; set; }
+
+    [Parameter] public string Title { get; set; } = "";
+
+    [Parameter] public string Symptom { get; set; } = "";
+
+    [Parameter] public string? Href { get; set; }
+
+    /// <summary>What the link calls its page when the page is not in the docs catalog (the planted account page).</summary>
+    [Parameter] public string? PageName { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

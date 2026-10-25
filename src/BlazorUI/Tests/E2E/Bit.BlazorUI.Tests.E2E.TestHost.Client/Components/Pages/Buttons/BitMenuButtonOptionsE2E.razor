@@ -1,0 +1,257 @@
+﻿@page "/e2e/menu-button/options"
+
+<PageTitle>BitMenuButton E2E (options)</PageTitle>
+
+@* The option API of BitMenuButton: BitMenuButtonOption children that register themselves with the menu button, the
+   submenus written as options nested in an option. The sections, their ids and their data are those of the item-level
+   sections of /e2e/menu-button. DefaultSelectedItem takes an option instance the markup has no handle on before the
+   menu button initializes, so the Sticky "default" case is seeded with IsSelected here. *@
+<h1>BitMenuButton (options)</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitMenuButton Id="mnb-basic" Text="Actions" TItem="BitMenuButtonOption" OnClick="(BitMenuButtonOption? i) => _clicked = Name(i)">@BasicOptions</BitMenuButton>
+    <span id="basic-clicked">@_clicked</span>
+</E2ESection>
+
+<E2ESection Id="split" Title="Split">
+    <BitMenuButton Id="mnb-split" Split Text="Save" TItem="BitMenuButtonOption" OnClick="(BitMenuButtonOption? i) => _splitClicked = Name(i)">@BasicOptions</BitMenuButton>
+    <span id="split-clicked">@_splitClicked</span>
+</E2ESection>
+
+<E2ESection Id="sticky" Title="Sticky">
+    <BitMenuButton Id="mnb-sticky" Sticky TItem="BitMenuButtonOption" @bind-SelectedItem="_stickySelected" OnChange="(BitMenuButtonOption item) => _stickyChanges.Add(item.Key!)">@BasicOptions</BitMenuButton>
+    <span id="sticky-selected">@(_stickySelected?.Key ?? "null")</span>
+    <span id="sticky-changes">@string.Join(",", _stickyChanges)</span>
+    <BitMenuButton Id="mnb-sticky-default" Sticky TItem="BitMenuButtonOption">
+        <BitMenuButtonOption Key="add" Text="Add" />
+        <BitMenuButtonOption Key="edit" Text="Edit" IsSelected />
+        <BitMenuButtonOption Key="delete" Text="Delete" />
+    </BitMenuButton>
+    <BitMenuButton Id="mnb-sticky-isselected" Sticky TItem="BitMenuButtonOption">
+        <BitMenuButtonOption Key="add" Text="Add" />
+        <BitMenuButtonOption Key="edit" Text="Edit" />
+        <BitMenuButtonOption Key="delete" Text="Delete" IsSelected />
+    </BitMenuButton>
+    <BitMenuButton Id="mnb-split-sticky" Split Sticky TItem="BitMenuButtonOption" OnClick="(BitMenuButtonOption? i) => _splitStickyHeader = i?.Key ?? NoneText">
+        <BitMenuButtonOption Key="add" Text="Add" OnClick="() => _splitStickyActions++" />
+        <BitMenuButtonOption Key="edit" Text="Edit" OnClick="() => _splitStickyActions += 10" />
+    </BitMenuButton>
+    <span id="split-sticky-header">@_splitStickyHeader</span>
+    <span id="split-sticky-actions">@_splitStickyActions</span>
+</E2ESection>
+
+<E2ESection Id="icons" Title="Icons">
+    <BitMenuButton Id="mnb-icons" Text="Insert" IconName="@BitIconName.Add" TItem="BitMenuButtonOption">
+        <BitMenuButtonOption Key="add" Text="Add" IconName="@BitIconName.Add" />
+        <BitMenuButtonOption Key="edit" Text="Edit" IconName="@BitIconName.Edit" />
+        <BitMenuButtonOption Key="delete" Text="Delete" Icon="@BitIconInfo.Bi("trash")" />
+    </BitMenuButton>
+    <BitMenuButton Id="mnb-icononly" IconOnly AriaLabel="More actions" IconName="@BitIconName.More" TItem="BitMenuButtonOption">@BasicOptions</BitMenuButton>
+    <BitMenuButton Id="mnb-noicon" NoIcon Text="No icon" IconName="@BitIconName.Add" TItem="BitMenuButtonOption">@BasicOptions</BitMenuButton>
+    <BitMenuButton Id="mnb-ext-icon" Text="External" Icon="@BitIconInfo.Css("fa-solid fa-house")" TItem="BitMenuButtonOption">@BasicOptions</BitMenuButton>
+</E2ESection>
+
+<E2ESection Id="toggle" Title="Toggle">
+    <BitMenuButton Id="mnb-toggle" Split Toggle Text="Bold" TItem="BitMenuButtonOption" @bind-IsToggled="_isToggled" OnToggleChange="v => _toggleChanges.Add(v.ToString())">@BasicOptions</BitMenuButton>
+    <span id="toggle-value">@_isToggled</span>
+    <span id="toggle-changes">@string.Join(",", _toggleChanges)</span>
+    <BitMenuButton Id="mnb-toggle-default" Split Toggle DefaultIsToggled="true" Text="Italic" TItem="BitMenuButtonOption">@BasicOptions</BitMenuButton>
+</E2ESection>
+
+<E2ESection Id="checkable" Title="Checkable">
+    <BitMenuButton Id="mnb-check" Text="Format" TItem="BitMenuButtonOption" CloseOnItemClick="false">
+        <BitMenuButtonOption Key="bold" Text="Bold" Checkable @bind-IsChecked="_bold" />
+        <BitMenuButtonOption Key="italic" Text="Italic" Checkable @bind-IsChecked="_italic" />
+        <BitMenuButtonOption IsSeparator />
+        <BitMenuButtonOption Key="left" Text="Left" RadioGroup="align" @bind-IsChecked="_left" />
+        <BitMenuButtonOption Key="center" Text="Center" RadioGroup="align" @bind-IsChecked="_center" />
+        <BitMenuButtonOption Key="right" Text="Right" RadioGroup="align" @bind-IsChecked="_right" />
+    </BitMenuButton>
+    <span id="check-state">@CheckState</span>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitMenuButton Id="mnb-header-template" TItem="BitMenuButtonOption">
+        <HeaderTemplate><b class="tpl-header">Custom header</b></HeaderTemplate>
+        <Options>@BasicOptions</Options>
+    </BitMenuButton>
+    <BitMenuButton Id="mnb-item-template" Text="Item template" TItem="BitMenuButtonOption">
+        <ItemTemplate Context="item"><i class="tpl-item">@item?.Text</i></ItemTemplate>
+        <Options>@BasicOptions</Options>
+    </BitMenuButton>
+    <BitMenuButton Id="mnb-own-template" Text="Own template" TItem="BitMenuButtonOption">
+        <BitMenuButtonOption Key="custom" Text="Custom">
+            <Template Context="item"><span class="tpl-own">@item.Text template</span></Template>
+        </BitMenuButtonOption>
+        <BitMenuButtonOption Key="plain" Text="Plain" />
+    </BitMenuButton>
+</E2ESection>
+
+<E2ESection Id="binding" Title="Binding">
+    <BitMenuButton Id="mnb-open-bind" Text="Bound open" TItem="BitMenuButtonOption" @bind-IsOpen="_isOpen">@BasicOptions</BitMenuButton>
+    <span id="open-value">@_isOpen</span>
+    <button id="btn-open" type="button" @onclick="() => _isOpen = true">Open from the page</button>
+</E2ESection>
+
+<E2ESection Id="grouping" Title="Grouping">
+    <BitMenuButton Id="mnb-grouping" Text="Grouped" TItem="BitMenuButtonOption">
+        <BitMenuButtonOption IsHeader Text="Files" Title="File commands" />
+        <BitMenuButtonOption Key="new" Text="New" />
+        <BitMenuButtonOption Key="open" Text="Open" />
+        <BitMenuButtonOption IsSeparator />
+        <BitMenuButtonOption IsHeader Text="Edit" />
+        <BitMenuButtonOption Key="cut" Text="Cut" />
+    </BitMenuButton>
+</E2ESection>
+
+<E2ESection Id="details" Title="Item details">
+    <BitMenuButton Id="mnb-details" Text="Details" TItem="BitMenuButtonOption" OnClick="(BitMenuButtonOption? i) => _detailsClicked = i?.Key ?? HeaderText">
+        <BitMenuButtonOption Key="save" Text="Save" SecondaryText="Ctrl+S" Title="Save the document" />
+        <BitMenuButtonOption Key="locked" Text="Locked" IsDisabled />
+        <BitMenuButtonOption Key="named" Text="Named" AriaLabel="A named item" />
+    </BitMenuButton>
+    <span id="details-clicked">@_detailsClicked</span>
+    <BitMenuButton Id="mnb-disabled-interactive" Text="Disabled interactive" TItem="BitMenuButtonOption" DisabledInteractive>
+        <BitMenuButtonOption Key="a" Text="First" />
+        <BitMenuButtonOption Key="b" Text="Disabled" IsDisabled />
+        <BitMenuButtonOption Key="c" Text="Last" />
+    </BitMenuButton>
+</E2ESection>
+
+<E2ESection Id="links" Title="Links">
+    <BitMenuButton Id="mnb-links" Text="Links" TItem="BitMenuButtonOption">@LinkOptions</BitMenuButton>
+    <BitMenuButton Id="mnb-links-hint" Text="Links (own hint)" TItem="BitMenuButtonOption" NewTabHint="(new window)">@LinkOptions</BitMenuButton>
+    <BitMenuButton Id="mnb-links-nohint" Text="Links (no hint)" TItem="BitMenuButtonOption" NoNewTabHint>@LinkOptions</BitMenuButton>
+</E2ESection>
+
+<E2ESection Id="loading" Title="Loading">
+    <BitMenuButton Id="mnb-loading" Split Text="Save" IconName="@BitIconName.Save" TItem="BitMenuButtonOption" AutoLoading LoadingLabel="Saving..."
+                   OnClick="(BitMenuButtonOption? i) => LoadingClick()" @bind-IsLoading="_loadingValue">@BasicOptions</BitMenuButton>
+    <span id="loading-clicks">@_loadingClicks</span>
+    <span id="loading-value">@_loadingValue</span>
+    <button id="btn-release-loading" type="button" @onclick="() => _loadingTcs.TrySetResult()">Release</button>
+    <BitMenuButton Id="mnb-loading-plain" Text="Busy" TItem="BitMenuButtonOption" IsLoading LoadingLabel="Working...">@BasicOptions</BitMenuButton>
+    <BitMenuButton Id="mnb-loading-template" Text="Template" TItem="BitMenuButtonOption" IsLoading>
+        <LoadingTemplate><span class="tpl-loading">Please wait</span></LoadingTemplate>
+        <Options>@BasicOptions</Options>
+    </BitMenuButton>
+    <BitMenuButton Id="mnb-loading-reclickable" Split Text="Again" TItem="BitMenuButtonOption" IsLoading Reclickable OnClick="(BitMenuButtonOption? i) => _reclicks++">@BasicOptions</BitMenuButton>
+    <span id="reclicks">@_reclicks</span>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard">
+    <input id="kbd-before" aria-label="before" />
+    <BitMenuButton Id="mnb-keys" Text="Fruits" TItem="BitMenuButtonOption" OnClick="(BitMenuButtonOption? i) => _keysClicked = i?.Key ?? HeaderText">
+        <BitMenuButtonOption Key="apple" Text="Apple" />
+        <BitMenuButtonOption Key="banana" Text="Banana" />
+        <BitMenuButtonOption Key="blueberry" Text="Blueberry" />
+        <BitMenuButtonOption Key="cherry" Text="Cherry" />
+    </BitMenuButton>
+    <span id="keys-clicked">@_keysClicked</span>
+    <input id="kbd-after" aria-label="after" />
+</E2ESection>
+
+<E2ESection Id="submenu" Title="Submenu">
+    <BitMenuButton Id="mnb-submenu" Text="Insert" TItem="BitMenuButtonOption" OnClick="(BitMenuButtonOption? i) => _submenuClicked = i?.Key ?? HeaderText">
+        <BitMenuButtonOption Key="text" Text="Text box" />
+        <BitMenuButtonOption Key="share" Text="Share" IconName="@BitIconName.Share">
+            <BitMenuButtonOption Key="email" Text="Email" OnClick="() => _submenuClicked = EmailOwnText" />
+            <BitMenuButtonOption Key="link" Text="Link" />
+        </BitMenuButtonOption>
+        <BitMenuButtonOption Key="more" Text="More">
+            <BitMenuButtonOption Key="print" Text="Print">
+                <BitMenuButtonOption Key="pdf" Text="PDF" />
+            </BitMenuButtonOption>
+            <BitMenuButtonOption Key="export" Text="Export" />
+        </BitMenuButtonOption>
+    </BitMenuButton>
+    <span id="submenu-clicked">@_submenuClicked</span>
+</E2ESection>
+
+<E2ESection Id="item-styles" Title="Item Class &amp; Style">
+    <BitMenuButton Id="mnb-item-styles" Text="Styled items" TItem="BitMenuButtonOption">
+        <BitMenuButtonOption Key="classed" Text="Classed" Class="item-own-class" />
+        <BitMenuButtonOption Key="styled" Text="Styled" Style="color: rgb(255, 0, 255);" />
+    </BitMenuButton>
+</E2ESection>
+
+<E2ESection Id="dynamic" Title="Items at runtime">
+    <BitMenuButton Id="mnb-dynamic" Text="Dynamic" TItem="BitMenuButtonOption">
+        @foreach (var (key, text) in _dynamic)
+        {
+            <BitMenuButtonOption @key="key" Key="@key" Text="@text" />
+        }
+    </BitMenuButton>
+    <button id="btn-add-item" type="button" @onclick="AddItem">Add item</button>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <BitMenuButton Id="mnb-mounted" Text="Mounted" TItem="BitMenuButtonOption">@BasicOptions</BitMenuButton>
+    }
+    <button id="btn-unmount" type="button" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string HeaderText = "header";
+    private const string NoneText = "none";
+    private const string EmailOwnText = "email-own";
+
+    private string _clicked = "none";
+    private string _splitClicked = "none";
+    private BitMenuButtonOption? _stickySelected;
+    private readonly List<string> _stickyChanges = [];
+    private string _splitStickyHeader = "none";
+    private int _splitStickyActions;
+    private bool _isToggled;
+    private readonly List<string> _toggleChanges = [];
+    private bool _bold;
+    private bool _italic = true;
+    private bool _left = true;
+    private bool _center;
+    private bool _right;
+    private bool _isOpen;
+    private string _detailsClicked = "none";
+    private int _loadingClicks;
+    private bool _loadingValue;
+    private TaskCompletionSource _loadingTcs = new();
+    private int _reclicks;
+    private string _keysClicked = "none";
+    private string _submenuClicked = "none";
+    private List<(string Key, string Text)> _dynamic = [("a", "A")];
+    private int _dynamicCounter;
+    private bool _mounted = true;
+
+    private string CheckState => string.Join(",", new[] { (_bold, "bold"), (_italic, "italic"), (_left, "left"), (_center, "center"), (_right, "right") }
+                                                       .Where(s => s.Item1).Select(s => s.Item2));
+
+    private static string Name(BitMenuButtonOption? item) => item?.Text ?? HeaderText;
+
+    private async Task LoadingClick()
+    {
+        _loadingClicks++;
+        _loadingTcs = new();
+        await _loadingTcs.Task;
+    }
+
+    private void AddItem()
+    {
+        _dynamicCounter++;
+        _dynamic = [.. _dynamic, ($"n{_dynamicCounter}", $"New {_dynamicCounter}")];
+    }
+
+    private static readonly RenderFragment BasicOptions = @<text>
+        <BitMenuButtonOption Key="add" Text="Add" />
+        <BitMenuButtonOption Key="edit" Text="Edit" />
+        <BitMenuButtonOption Key="delete" Text="Delete" />
+    </text>;
+
+    private static readonly RenderFragment LinkOptions = @<text>
+        <BitMenuButtonOption Key="home" Text="Home" Href="/" Target="_blank" />
+        <BitMenuButtonOption Key="docs" Text="Docs" Href="https://example.com" Rel="BitLinkRels.NoFollow" />
+        <BitMenuButtonOption Key="self" Text="Self" Href="e2e/menu-button/options#links" />
+    </text>;
+}

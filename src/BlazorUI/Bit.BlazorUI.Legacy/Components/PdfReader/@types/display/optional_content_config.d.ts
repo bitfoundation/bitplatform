@@ -1,4 +1,4 @@
-declare class OptionalContentConfig {
+﻿declare class OptionalContentConfig {
     constructor(data: any, renderingIntent?: number);
     renderingIntent: number;
     name: any;

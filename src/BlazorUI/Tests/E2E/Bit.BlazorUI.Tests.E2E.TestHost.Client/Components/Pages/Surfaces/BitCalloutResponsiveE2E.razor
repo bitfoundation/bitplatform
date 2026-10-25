@@ -1,0 +1,44 @@
+﻿@page "/e2e/callout/responsive"
+
+<PageTitle>BitCallout responsive E2E</PageTitle>
+
+@* A responsive callout, configured through the query string (?mode=Panel&panel=End&rtl=true), at the top of the page so
+   a phone viewport reaches its anchor without a scroll - a scroll would close an ordinary callout. *@
+<E2ESection Id="responsive" Title="ResponsiveMode, PanelPlacement">
+    <BitCallout Id="res"
+                ResponsiveMode="ParseMode(Mode)"
+                PanelPlacement="ParsePlacement(Panel)"
+                Dir="@(Rtl ? BitDir.Rtl : null)"
+                ShowArrow
+                Gap="8"
+                MaxHeight="@(Capped ? "4rem" : null)"
+                OnDismiss="() => _dismissed++"
+                OnOpen="() => _opened++">
+        <Anchor><button id="res-trigger" type="button">Filters</button></Anchor>
+        <Content>
+            <div id="res-body" style="padding: 12px;">
+                <div>Filters</div>
+                <label><input id="res-active" type="checkbox" /> Active</label>
+                <div>Swipe to dismiss.</div>
+            </div>
+        </Content>
+    </BitCallout>
+    <span id="res-dismissed">@_dismissed</span>
+    <span id="res-opened">@_opened</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    [SupplyParameterFromQuery(Name = "mode")] public string? Mode { get; set; }
+    [SupplyParameterFromQuery(Name = "panel")] public string? Panel { get; set; }
+    [SupplyParameterFromQuery(Name = "rtl")] public bool Rtl { get; set; }
+    [SupplyParameterFromQuery(Name = "capped")] public bool Capped { get; set; }
+
+    private int _dismissed;
+    private int _opened;
+
+    private static BitResponsiveMode? ParseMode(string? value) => Enum.TryParse<BitResponsiveMode>(value, out var mode) ? mode : null;
+
+    private static BitPlacement? ParsePlacement(string? value) => Enum.TryParse<BitPlacement>(value, out var placement) ? placement : null;
+}

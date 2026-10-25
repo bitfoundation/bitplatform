@@ -1,0 +1,326 @@
+﻿@page "/api"
+
+<PageTitle>API reference · BbScanner</PageTitle>
+
+<div class="bb-intro">
+    <h1>API reference</h1>
+    <p class="bb-subtitle">
+        The whole public surface. Everything is nullable-annotated and documented in XML, so the same
+        text appears in IntelliSense.
+    </p>
+</div>
+
+<h2>The component</h2>
+
+@* Four-column tables of type names: the page gives up the "on this page" rail so the names keep
+   their lines instead of breaking letter by letter. *@
+<div class="bb-card bb-page-wide">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> &lt;BbScanner&gt; parameters</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>Type</th><th>Default</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key">Formats</td><td class="bb-mono bb-table-key">BbBarcodeFormat</td><td class="bb-mono bb-table-key">Common</td><td>Symbologies to look for. A flags enum.</td></tr>
+                <tr><td class="bb-table-key">Region</td><td class="bb-mono bb-table-key">BbScanRegion</td><td class="bb-mono bb-table-key">Full</td><td>Normalized sub-rectangle to search.</td></tr>
+                <tr><td class="bb-table-key">Options</td><td class="bb-mono bb-table-key">BbScannerOptions?</td><td class="bb-mono bb-table-key">null</td><td>Advanced tuning applied under Formats and Region.</td></tr>
+                <tr><td class="bb-table-key">TargetFrameRate</td><td class="bb-mono bb-table-key">int</td><td class="bb-mono bb-table-key">15</td><td>Frames a second to decode.</td></tr>
+                <tr><td class="bb-table-key">RequestedWidth / Height</td><td class="bb-mono bb-table-key">int</td><td class="bb-mono bb-table-key">1280 / 720</td><td>Camera constraints; the browser may negotiate otherwise.</td></tr>
+                <tr><td class="bb-table-key">MaxProcessingSize</td><td class="bb-mono bb-table-key">int</td><td class="bb-mono bb-table-key">640</td><td>Longest edge of the image the decoder sees.</td></tr>
+                <tr><td class="bb-table-key">Facing</td><td class="bb-mono bb-table-key">BbCameraFacing</td><td class="bb-mono bb-table-key">Rear</td><td>Preferred camera when no device id is given.</td></tr>
+                <tr><td class="bb-table-key">DeviceId</td><td class="bb-mono bb-table-key">string?</td><td class="bb-mono bb-table-key">null</td><td>A specific camera to open.</td></tr>
+                <tr><td class="bb-table-key">AutoStart</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Open the camera as soon as the component is ready.</td></tr>
+                <tr><td class="bb-table-key">DuplicateSuppressionWindow</td><td class="bb-mono bb-table-key">TimeSpan?</td><td class="bb-mono bb-table-key">null (2s)</td><td>How long an identical value stays suppressed. Set, it overrides <code>Options</code>; unset, <code>Options</code> decides, else 2 s.</td></tr>
+                <tr><td class="bb-table-key">MaxSymbolsPerFrame</td><td class="bb-mono bb-table-key">int</td><td class="bb-mono bb-table-key">1</td><td>The most symbols read from one frame or image; more reads every code in view, each reported and outlined on its own.</td></tr>
+                <tr><td class="bb-table-key">AfterScan</td><td class="bb-mono bb-table-key">BbAfterScan</td><td class="bb-mono bb-table-key">Continue</td><td>What happens after a reported scan: keep scanning, <code>Pause</code> (camera stays open) or <code>Stop</code> (camera released).</td></tr>
+                <tr><td class="bb-table-key">AcceptResult</td><td class="bb-mono bb-table-key">Func&lt;BbBarcodeResult, bool&gt;?</td><td class="bb-mono bb-table-key">null</td><td>Decides which results are reported; one it turns down is ignored as if it were not there.</td></tr>
+                <tr><td class="bb-table-key">Feedback</td><td class="bb-mono bb-table-key">BbScanFeedback</td><td class="bb-mono bb-table-key">None</td><td><code>Vibrate</code>, <code>Beep</code> or both on every reported scan, where the browser allows it.</td></tr>
+                <tr><td class="bb-table-key">ReleaseCameraWhenHidden</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">false</td><td>Close the camera while the page is hidden and reopen it when the page is shown again.</td></tr>
+                <tr><td class="bb-table-key">Texts</td><td class="bb-mono bb-table-key">BbScannerTexts?</td><td class="bb-mono bb-table-key">null (English)</td><td>Every label, status, notice, error message and announcement, for another language.</td></tr>
+                <tr><td class="bb-table-key">ShowControls</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Built-in control bar.</td></tr>
+                <tr><td class="bb-table-key">ShowStatusBar</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Built-in status bar.</td></tr>
+                <tr><td class="bb-table-key">ShowReticle</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Corner reticle over the scan region.</td></tr>
+                <tr><td class="bb-table-key">ShowMask</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Dim outside the scan region.</td></tr>
+                <tr><td class="bb-table-key">HighlightResults</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Outline a decoded symbol in place.</td></tr>
+                <tr><td class="bb-table-key">EnableFileScanning</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Offer still image scanning.</td></tr>
+                <tr><td class="bb-table-key">MaxImageFileSize</td><td class="bb-mono bb-table-key">long</td><td class="bb-mono bb-table-key">32 MB</td><td>The largest image file accepted, checked before it is decoded. Zero accepts any size.</td></tr>
+                <tr><td class="bb-table-key">Fill</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">false</td><td>Fill the parent instead of keeping the camera's aspect ratio.</td></tr>
+                <tr><td class="bb-table-key">AriaLabel</td><td class="bb-mono bb-table-key">string</td><td class="bb-mono bb-table-key">"Barcode scanner"</td><td>Accessible name for the region.</td></tr>
+                <tr><td class="bb-table-key">CssClass</td><td class="bb-mono bb-table-key">string?</td><td class="bb-mono bb-table-key">null</td><td>Extra classes on the root element.</td></tr>
+                <tr><td class="bb-table-key">Overlay</td><td class="bb-mono bb-table-key">RenderFragment&lt;BbScanner&gt;?</td><td class="bb-mono bb-table-key">null</td><td>Replaces the reticle; receives the scanner.</td></tr>
+                <tr><td class="bb-table-key">MessageTemplate</td><td class="bb-mono bb-table-key">RenderFragment&lt;string&gt;?</td><td class="bb-mono bb-table-key">null</td><td>Replaces status and error message rendering.</td></tr>
+                <tr><td class="bb-table-key">ControlsContent</td><td class="bb-mono bb-table-key">RenderFragment?</td><td class="bb-mono bb-table-key">null</td><td>Extra controls in the built-in bar.</td></tr>
+                <tr><td class="bb-table-key">ChildContent</td><td class="bb-mono bb-table-key">RenderFragment?</td><td class="bb-mono bb-table-key">null</td><td>Arbitrary content over the viewport.</td></tr>
+                <tr><td class="bb-table-key">@@attributes</td><td class="bb-mono bb-table-key">any</td><td class="bb-mono bb-table-key">-</td><td>Any other attribute is applied to the root element. A <code>class</code> or <code>style</code> given this way is merged with the component's own rather than replacing it.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> &lt;BbScanner&gt; events</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Event</th><th>Payload</th><th>Raised when</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key">OnScan</td><td class="bb-mono bb-table-key">BbBarcodeResult</td><td>A symbol is decoded, accepted by <code>AcceptResult</code> and passes duplicate suppression - from the camera, a picked or dropped image, once per symbol.</td></tr>
+                <tr><td class="bb-table-key">OnError</td><td class="bb-mono bb-table-key">BbScannerException</td><td>The scanner faults: the camera cannot start or is lost, the options are invalid, or the decoder fails frame after frame. A refused image from the built-in picker is a notice instead.</td></tr>
+                <tr><td class="bb-table-key">OnStatusChanged</td><td class="bb-mono bb-table-key">BbScannerStatus</td><td>The lifecycle state changes.</td></tr>
+                <tr><td class="bb-table-key">OnCameraChanged</td><td class="bb-mono bb-table-key">BbCameraInfo</td><td>A camera opens, with what was negotiated.</td></tr>
+                <tr><td class="bb-table-key">OnDiagnostics</td><td class="bb-mono bb-table-key">BbScanDiagnostics</td><td>At most twice a second, with the last frame's timings. Costs nothing when not subscribed.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> &lt;BbScanner&gt; methods</h3>
+    <p class="bb-card-desc">Called through a <code>@@ref</code> to the component.</p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Method</th><th>Returns</th><th>Does</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key">StartAsync(string? deviceId = null)</td><td class="bb-mono bb-table-key">Task</td><td>Opens the camera - the given one, else <code>DeviceId</code>, else by <code>Facing</code> - and starts decoding.</td></tr>
+                <tr><td class="bb-table-key">StopAsync()</td><td class="bb-mono bb-table-key">Task</td><td>Stops decoding and releases the camera.</td></tr>
+                <tr><td class="bb-table-key">Pause()</td><td class="bb-mono bb-table-key">void</td><td>Stops decoding, keeps the camera open.</td></tr>
+                <tr><td class="bb-table-key">Resume()</td><td class="bb-mono bb-table-key">void</td><td>Decodes again after <code>Pause</code>; the symbol in view is reported again unless the window is infinite.</td></tr>
+                <tr><td class="bb-table-key">ResetDuplicateFilter()</td><td class="bb-mono bb-table-key">void</td><td>Forgets the values already reported.</td></tr>
+                <tr><td class="bb-table-key">GetCamerasAsync()</td><td class="bb-mono bb-table-key">Task&lt;IReadOnlyList&lt;BbCameraDevice&gt;&gt;</td><td>Lists the cameras; labels are generic until permission has been granted once.</td></tr>
+                <tr><td class="bb-table-key">GetCameraPermissionAsync()</td><td class="bb-mono bb-table-key">Task&lt;BbCameraPermission&gt;</td><td>What a start would do, without asking the user.</td></tr>
+                <tr><td class="bb-table-key">SwitchCameraAsync(string deviceId)</td><td class="bb-mono bb-table-key">Task</td><td>Reopens on another camera without tearing the component down.</td></tr>
+                <tr><td class="bb-table-key">SetTorchAsync(bool on)</td><td class="bb-mono bb-table-key">Task&lt;bool&gt;</td><td>Turns the torch on or off; whether the browser accepted it.</td></tr>
+                <tr><td class="bb-table-key">SetZoomAsync(double zoom)</td><td class="bb-mono bb-table-key">Task&lt;bool&gt;</td><td>Sets the zoom, clamped to the camera's range; whether the browser accepted it.</td></tr>
+                <tr><td class="bb-table-key">OpenFilePickerAsync()</td><td class="bb-mono bb-table-key">Task</td><td>Opens the built-in file picker; results arrive through <code>OnScan</code>.</td></tr>
+                <tr><td class="bb-table-key">ScanImageAsync(Stream image, int maxSymbols = 16, CancellationToken = default)</td><td class="bb-mono bb-table-key">Task&lt;IReadOnlyList&lt;BbBarcodeResult&gt;&gt;</td><td>Scans an encoded image (PNG, JPEG, WebP...) in the browser; returns the symbols, throws <code>InvalidImage</code>.</td></tr>
+                <tr><td class="bb-table-key">ScanImageAsync(ReadOnlyMemory&lt;byte&gt; image, string? contentType = null, int maxSymbols = 16, CancellationToken = default)</td><td class="bb-mono bb-table-key">Task&lt;IReadOnlyList&lt;BbBarcodeResult&gt;&gt;</td><td>The same, from memory; a <code>contentType</code> that is not an image is refused.</td></tr>
+                <tr><td class="bb-table-key">ScanCurrentFrameAsync(int maxSymbols = 16)</td><td class="bb-mono bb-table-key">Task&lt;IReadOnlyList&lt;BbBarcodeResult&gt;&gt;</td><td>Reads the camera's current frame at full resolution; throws when the camera is not open.</td></tr>
+                <tr><td class="bb-table-key">DecodeImage(ReadOnlySpan&lt;byte&gt; pixels, int width, int height, BbPixelFormat format)</td><td class="bb-mono bb-table-key">BbBarcodeResult?</td><td>Decodes the first symbol in pixels the application has.</td></tr>
+                <tr><td class="bb-table-key">DecodeAllInImage(ReadOnlySpan&lt;byte&gt; pixels, int width, int height, BbPixelFormat format, int maxSymbols = 16)</td><td class="bb-mono bb-table-key">IReadOnlyList&lt;BbBarcodeResult&gt;</td><td>Decodes every symbol in those pixels.</td></tr>
+                <tr><td class="bb-table-key">DisposeAsync()</td><td class="bb-mono bb-table-key">ValueTask</td><td>Releases the camera and every buffer; Blazor calls it when the component leaves the page.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        The still image calls - <code>ScanImageAsync</code>, <code>ScanCurrentFrameAsync</code>, <code>DecodeImage</code>
+        and <code>DecodeAllInImage</code> - raise no events, search the whole image whatever the <code>Region</code>,
+        and use the still image tuning with this scanner's <code>Formats</code> and options.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> &lt;BbScanner&gt; properties</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Property</th><th>Type</th><th>Meaning</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key">Status</td><td class="bb-mono bb-table-key">BbScannerStatus</td><td>The current lifecycle state.</td></tr>
+                <tr><td class="bb-table-key">Camera</td><td class="bb-mono bb-table-key">BbCameraInfo?</td><td>What the browser negotiated for the open camera, or null.</td></tr>
+                <tr><td class="bb-table-key">Cameras</td><td class="bb-mono bb-table-key">IReadOnlyList&lt;BbCameraDevice&gt;</td><td>The cameras found by the last enumeration.</td></tr>
+                <tr><td class="bb-table-key">Diagnostics</td><td class="bb-mono bb-table-key">BbScanDiagnostics</td><td>Timings of the most recently decoded frame.</td></tr>
+                <tr><td class="bb-table-key">FramesDecoded</td><td class="bb-mono bb-table-key">long</td><td>Camera frames decoded since the scanner was created.</td></tr>
+                <tr><td class="bb-table-key">FramesWithSymbol</td><td class="bb-mono bb-table-key">long</td><td>Of those, how many held a symbol, before duplicate suppression.</td></tr>
+                <tr><td class="bb-table-key">IsTorchOn</td><td class="bb-mono bb-table-key">bool</td><td>Whether the torch is lit.</td></tr>
+                <tr><td class="bb-table-key">Zoom</td><td class="bb-mono bb-table-key">double</td><td>The current zoom, or zero without zoom support.</td></tr>
+                <tr><td class="bb-table-key">ProcessingSize</td><td class="bb-mono bb-table-key">(int Width, int Height)</td><td>The size frames are decoded at, after <code>MaxProcessingSize</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        <code>StartAsync</code> is safe to call at any time: a call that arrives while an earlier one
+        is still waiting for the permission prompt supersedes it, and the superseded request releases
+        its camera rather than leaving it running. The same holds for <code>StopAsync</code> and for
+        disposal, so navigating away mid-prompt never leaves the camera indicator lit.
+    </p>
+</div>
+
+<h2>The results and the options</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> BbBarcodeResult</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Meaning</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key">Text</td><td class="bb-mono bb-table-key">string</td><td>Decoded value after character set interpretation.</td></tr>
+                <tr><td class="bb-table-key">RawBytes</td><td class="bb-mono bb-table-key">ReadOnlyMemory&lt;byte&gt;</td><td>Payload bytes before interpretation.</td></tr>
+                <tr><td class="bb-table-key">Format</td><td class="bb-mono bb-table-key">BbBarcodeFormat</td><td>The symbology that produced the value.</td></tr>
+                <tr><td class="bb-table-key">Timestamp</td><td class="bb-mono bb-table-key">DateTimeOffset</td><td>When the frame was decoded.</td></tr>
+                <tr><td class="bb-table-key">Corners</td><td class="bb-mono bb-table-key">IReadOnlyList&lt;BbScanPoint&gt;</td><td>Where the symbol is, in frame pixels: a matrix code's four corners clockwise from its own top-left, or the two ends of the line that read a linear code.</td></tr>
+                <tr><td class="bb-table-key">BoundingBox</td><td class="bb-mono bb-table-key">BbScanRect</td><td>Axis aligned box around the corners.</td></tr>
+                <tr><td class="bb-table-key">FrameWidth / FrameHeight</td><td class="bb-mono bb-table-key">int</td><td>Size of the frame the value came from.</td></tr>
+                <tr><td class="bb-table-key">Metadata</td><td class="bb-mono bb-table-key">BbBarcodeResultMetadata?</td><td>Symbology specific extras, below; null when the symbology carries none.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> BbBarcodeResultMetadata</h3>
+    <p class="bb-card-desc">Every member is null when the symbology does not carry it.</p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Meaning</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key">SymbolVersion</td><td class="bb-mono bb-table-key">string?</td><td>The symbol's version or size: a QR version, a Data Matrix size, <code>M1</code> to <code>M4</code>, <code>Mode 2</code> to <code>Mode 5</code>, <code>Stacked</code>.</td></tr>
+                <tr><td class="bb-table-key">ErrorCorrectionLevel</td><td class="bb-mono bb-table-key">string?</td><td>For example <code>L</code>, <code>M</code>, <code>Q</code> or <code>H</code> for QR Code.</td></tr>
+                <tr><td class="bb-table-key">ErrorsCorrected</td><td class="bb-mono bb-table-key">int?</td><td>Codewords Reed-Solomon had to repair - a print quality signal.</td></tr>
+                <tr><td class="bb-table-key">Eci</td><td class="bb-mono bb-table-key">int?</td><td>The ECI character set the symbol declared.</td></tr>
+                <tr><td class="bb-table-key">IsGs1</td><td class="bb-mono bb-table-key">bool?</td><td>The symbol carries a GS1 application identifier stream.</td></tr>
+                <tr><td class="bb-table-key">StructuredAppendIndex / Count / Parity</td><td class="bb-mono bb-table-key">int?</td><td>Where this symbol sits in a message split across several, and the identifier that groups them.</td></tr>
+                <tr><td class="bb-table-key">Rows / Columns</td><td class="bb-mono bb-table-key">int?</td><td>PDF417 rows and data columns, or the size of the sampled matrix.</td></tr>
+                <tr><td class="bb-table-key">Extension</td><td class="bb-mono bb-table-key">string?</td><td>The digits of an EAN-2 or EAN-5 add-on beside an EAN or UPC symbol; <code>Text</code> holds the main symbol alone.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> BbScannerOptions</h3>
+    <pre class="bb-code">BbBarcodeFormat Formats                    = BbBarcodeFormat.Common
+BbScanRegion    Region                     = BbScanRegion.Full
+<span class="k">int</span>           MaxScanLines               = 15      <span class="c">// lines per orientation</span>
+<span class="k">int</span>           DownsampleFactor           = 1
+<span class="k">bool</span>          TryHarder                  = <span class="k">false</span>   <span class="c">// exhaustive detection, full rotation sweep</span>
+<span class="k">bool</span>          AllowInverted              = <span class="k">false</span>   <span class="c">// light on dark symbols</span>
+<span class="k">bool</span>          TryReversedRows            = <span class="k">true</span>    <span class="c">// linear symbols read right to left</span>
+<span class="k">bool</span>          TryVerticalLines           = <span class="k">true</span>    <span class="c">// columns and tilted lines, for rotated symbols</span>
+IReadOnlyCollection&lt;<span class="k">int</span>&gt; ItfLengths      = 6..20 even
+<span class="k">bool</span>          Code39CheckDigit           = <span class="k">false</span>   <span class="c">// require the modulo 43 check character</span>
+<span class="k">bool</span>          Code39ExtendedMode         = <span class="k">false</span>   <span class="c">// interpret Code 39 as full ASCII</span>
+<span class="k">bool</span>          CodabarStartStop           = <span class="k">false</span>   <span class="c">// keep Codabar's start and stop letters</span>
+<span class="k">bool</span>          RequireEanExtension        = <span class="k">false</span>   <span class="c">// hold EAN/UPC back until its add-on is read</span>
+TimeSpan      DuplicateSuppressionWindow = 2 seconds <span class="c">// Zero: every frame; InfiniteTimeSpan: once</span>
+
+BbScannerOptions.ForStillImages()   <span class="c">// 60 scan lines, TryHarder, AllowInverted, no suppression</span>
+options.Clone()                   <span class="c">// take a copy before editing a running scanner's options</span>
+options.Validate()                <span class="c">// throws on an out of range value</span></pre>
+    <p class="bb-card-desc">
+        ITF has no check character, so <code>ItfLengths</code> is the main defence against a
+        truncated symbol being reported as a shorter, structurally valid number. Narrow it to the
+        lengths your application actually uses; an empty collection accepts any even length.
+        Give a running scanner a new instance, or a <code>Clone()</code>, rather than editing the one it has:
+        a change to <code>Formats</code> or the options rebuilds its decoder without dropping the camera.
+    </p>
+</div>
+
+<h2>Supporting types</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Regions, points and rectangles</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Member</th><th>Meaning</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key">BbScanRegion(double X, double Y, double Width, double Height)</td><td>A part of the frame, each value a fraction from 0 to 1.</td></tr>
+                <tr><td class="bb-table-key">BbScanRegion.Full</td><td>The whole frame, the default.</td></tr>
+                <tr><td class="bb-table-key">BbScanRegion.CenteredSquare(double fraction)</td><td>A centred square of that fraction of the shorter edge, square in pixels on any camera.</td></tr>
+                <tr><td class="bb-table-key">KeepSquare</td><td>Narrows the region to the largest square it holds in a frame's pixels.</td></tr>
+                <tr><td class="bb-table-key">IsFull, Normalized(), ForFrame(width, height)</td><td>Whether it covers the frame; clamped into the unit square; as it applies to a frame of that size.</td></tr>
+                <tr><td class="bb-table-key">BbScanPoint(float X, float Y)</td><td>A point in frame pixels; <code>Distance(a, b)</code>.</td></tr>
+                <tr><td class="bb-table-key">BbScanRect(float X, float Y, float Width, float Height)</td><td>A box in frame pixels; <code>Right</code>, <code>Bottom</code>, <code>Center</code>, <code>FromPoints(points)</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Cameras, diagnostics, errors and texts</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Type</th><th>Members</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key">BbCameraDevice</td><td><code>DeviceId</code>, to open it; <code>Label</code>, its name - generic until permission has been granted once.</td></tr>
+                <tr><td class="bb-table-key">BbCameraInfo</td><td>What was negotiated: <code>DeviceId</code>, <code>Label</code>, <code>Width</code>, <code>Height</code>, <code>FrameRate</code>, <code>FacingMode</code> (<code>environment</code> or <code>user</code>), <code>SupportsTorch</code>, <code>TorchOn</code>, <code>SupportsZoom</code>, <code>ZoomMin</code>, <code>ZoomMax</code>, <code>ZoomStep</code>, <code>Zoom</code>.</td></tr>
+                <tr><td class="bb-table-key">BbScanDiagnostics</td><td>One frame: <code>Total</code>, and its split into <code>Grayscale</code>, <code>Binarize</code>, <code>Matrix</code> and <code>Linear</code>; <code>DecodedWidth</code> and <code>DecodedHeight</code>, after the region and downsampling; <code>RowsScanned</code>; <code>Decoded</code>; <code>EquivalentFramesPerSecond</code>.</td></tr>
+                <tr><td class="bb-table-key">BbScannerException</td><td>An <code>Exception</code> with a <code>Kind</code>, a <code>BbScannerErrorKind</code>; <code>FromBrowserError(exception)</code> classifies a <code>getUserMedia</code> rejection.</td></tr>
+                <tr><td class="bb-table-key">BbScannerTexts</td><td>Every text the scanner shows or announces, each an <code>init</code> property with an English default; <code>Default</code> is the English set. See <a href="customize">customisation</a>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Enums</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Enum</th><th>Members</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key">BbBarcodeFormat (flags)</td><td><code>QrCode</code>, <code>MicroQrCode</code>, <code>DataMatrix</code>, <code>Pdf417</code>, <code>Aztec</code>, <code>MaxiCode</code>, <code>Code128</code>, <code>Code39</code>, <code>Code93</code>, <code>Codabar</code>, <code>Ean13</code>, <code>Ean8</code>, <code>UpcA</code>, <code>UpcE</code>, <code>Itf</code>, <code>DataBar</code>, <code>DataBarLimited</code>, <code>DataBarExpanded</code>; the sets <code>AllMatrix</code>, <code>AllLinear</code> and <code>All</code>; <code>None</code>.</td></tr>
+                <tr><td class="bb-table-key">BbScannerStatus</td><td><code>Idle</code>, <code>Starting</code>, <code>Scanning</code>, <code>Paused</code>, <code>Stopped</code>, <code>Faulted</code> - see <a href="lifecycle">lifecycle</a>.</td></tr>
+                <tr><td class="bb-table-key">BbAfterScan</td><td><code>Continue</code>, <code>Pause</code>, <code>Stop</code>.</td></tr>
+                <tr><td class="bb-table-key">BbScanFeedback (flags)</td><td><code>None</code>, <code>Vibrate</code>, <code>Beep</code>.</td></tr>
+                <tr><td class="bb-table-key">BbCameraFacing</td><td><code>Any</code>, <code>Rear</code>, <code>Front</code>.</td></tr>
+                <tr><td class="bb-table-key">BbCameraPermission</td><td><code>Unknown</code>, <code>Prompt</code>, <code>Granted</code>, <code>Denied</code>.</td></tr>
+                <tr><td class="bb-table-key">BbScannerErrorKind</td><td><code>Unknown</code>, <code>PermissionDenied</code>, <code>NoCamera</code>, <code>CameraUnavailable</code>, <code>ConstraintsUnsatisfied</code>, <code>NotSupported</code>, <code>InvalidImage</code> - see <a href="errors">errors</a>.</td></tr>
+                <tr><td class="bb-table-key">BbPixelFormat</td><td><code>Rgba32</code> (a canvas's <code>getImageData</code>), <code>Bgra32</code>, <code>Rgb24</code>, <code>Gray8</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h2>The decoder</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Headless use</h3>
+    <p class="bb-card-desc">
+        The decoding pipeline has no dependency on Blazor or on a browser. It runs anywhere .NET
+        runs, which is what makes it testable and benchmarkable.
+    </p>
+    <pre class="bb-code"><span class="k">using var</span> decoder = <span class="k">new</span> BbBarcodeDecoder(<span class="k">new</span> BbScannerOptions
+{
+    Formats = BbBarcodeFormat.QrCode | BbBarcodeFormat.DataMatrix,
+    DuplicateSuppressionWindow = TimeSpan.Zero,
+});
+
+<span class="k">var</span> result = decoder.Decode(rgbaPixels, width, height, BbPixelFormat.Rgba32);
+<span class="k">if</span> (result <span class="k">is not null</span>)
+{
+    Console.WriteLine(<span class="s">$"{result.Format}: {result.Text}"</span>);
+    Console.WriteLine(<span class="s">$"took {decoder.LastFrame.Total.TotalMilliseconds:0.00} ms"</span>);
+}</pre>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>BbBarcodeDecoder member</th><th>Does</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key">new BbBarcodeDecoder(BbScannerOptions? options = null)</td><td>Builds the readers for <code>options.Formats</code>, once. Dispose it to return its pooled buffers.</td></tr>
+                <tr><td class="bb-table-key">Decode(pixels, width, height, format, suppressDuplicates = true)</td><td>The first symbol in packed pixels, or null.</td></tr>
+                <tr><td class="bb-table-key">DecodeAll(pixels, width, height, format, maxSymbols = 16, suppressDuplicates = true)</td><td>Every symbol, matrix symbols first.</td></tr>
+                <tr><td class="bb-table-key">Decode(in BbLuminanceView view, ...) / DecodeAll(in BbLuminanceView view, ...)</td><td>The same, from a frame that is already 8 bit grayscale.</td></tr>
+                <tr><td class="bb-table-key">LastFrame</td><td>The <code>BbScanDiagnostics</code> of the last call.</td></tr>
+                <tr><td class="bb-table-key">FramesDecoded, FramesWithSymbol</td><td>Counters since the decoder was created.</td></tr>
+                <tr><td class="bb-table-key">DuplicateSuppressionWindow, ResetDuplicateFilter()</td><td>Its own duplicate filter, changeable while running; pass <code>suppressDuplicates: false</code> to bypass it.</td></tr>
+                <tr><td class="bb-table-key">Options</td><td>The options it was created with.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        A decoder is not thread safe: give each thread its own. Every result carries the same
+        <code>BbBarcodeResult</code> the component reports.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building blocks</h3>
+    <p class="bb-card-desc">
+        Every reader implements <code>IBbRowDecoder</code> for a linear code or
+        <code>IBbMatrixDecoder</code> for a two dimensional one, and can be driven directly by a
+        pipeline of your own. <code>BbBarcodeDecoder</code> composes the built-in readers from
+        <code>Formats</code> and does not accept others.
+    </p>
+    <pre class="bb-code"><span class="k">public interface</span> IBbRowDecoder
+{
+    BbBarcodeFormat Formats { <span class="k">get</span>; }
+    BbSymbolDecodeResult? DecodeRow(<span class="k">int</span> rowNumber, BbBitRow row, BbBarcodeFormat enabledFormats);
+}
+
+<span class="k">public interface</span> IBbMatrixDecoder
+{
+    BbBarcodeFormat Formats { <span class="k">get</span>; }
+    BbSymbolDecodeResult? Decode(BbBitMatrix image, BbMatrixDecodeOptions options);
+}</pre>
+    <p class="bb-card-desc">
+        Binarisation follows the same shape: <code>IBbBinarizer</code> has one implementation tuned for
+        matrix codes, one for linear rows and a global histogram fallback, each usable on its own.
+    </p>
+</div>

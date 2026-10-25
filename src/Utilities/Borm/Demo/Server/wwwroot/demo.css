@@ -1,0 +1,367 @@
+﻿/* ============================================================================================
+   Borm demo - the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file draws only what is Borm's own: the library's forms on the site's theme, and
+   the few readouts the pages put next to them. It is written against the kit's --bb-* names, so it
+   follows the light/dark theme with no colour of its own for either.
+   ============================================================================================ */
+
+/* --------------------------------------------------------------------------------------------
+   1. Borm's theme, on the site's tokens
+
+   bit-borm.css declares every token on the form itself (see "Theming" in the README), with a dark
+   palette that follows the OS and a data-theme switch on top. This site has a theme switch of its
+   own - bit-theme on <html> - so the forms take their colours from the kit's tokens, which already
+   change with it: one rule covers both themes, and a form is never light on a dark page because
+   the OS happened to disagree with the toggle.
+
+   html:root raises the rule above the library's own (.bit-borm-form, and [data-theme] .bit-borm-form),
+   which is linked after this file. The tokens the two themes share and the site has no opinion on -
+   the field gap, the form's maximum width, the focus border that follows the accent - are left to
+   the library. Any element carrying the class gets the theme: a page that lays fields out itself
+   with <BormField> puts it on its own wrapper (see Pages/CompositionDemo.razor).
+
+   A form that also carries demo-stock-theme is left out, so it shows the library's own palette and
+   colour modes exactly as an app without a re-tint gets them (see Pages/ThemingDemo.razor).
+   -------------------------------------------------------------------------------------------- */
+
+html:root .bit-borm-form:not(.demo-stock-theme) {
+    color-scheme: light;
+    /* The library names system-ui; the site's own type stack is the same family on Windows and
+       macOS, and keeps a form's labels in step with the prose around it everywhere else. */
+    font-family: inherit;
+
+    --bit-borm-accent: var(--bb-primary);
+    --bit-borm-accent-contrast: var(--bb-primary-text);
+    --bit-borm-surface: var(--bb-surface);
+    --bit-borm-surface-muted: var(--bb-surface-sunken);
+    --bit-borm-surface-disabled: var(--bb-surface-2);
+    --bit-borm-border: var(--bb-border-strong);
+    --bit-borm-error: var(--bb-danger);
+    /* What the kit draws on its danger colour as on its primary one: white in light, near-black in dark. */
+    --bit-borm-error-contrast: var(--bb-primary-text);
+    --bit-borm-error-surface: var(--bb-danger-soft);
+    --bit-borm-warning: var(--bb-warning-text);
+    --bit-borm-text: var(--bb-text);
+    --bit-borm-muted: var(--bb-text-soft);
+    /* Fluent 2's control corner. */
+    --bit-borm-radius: var(--bb-radius);
+}
+
+/* The parts of a control the browser draws itself - the date picker, an open dropdown, the file
+   button - follow color-scheme rather than any token. */
+html:root[bit-theme="dark"] .bit-borm-form:not(.demo-stock-theme) {
+    color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------------------------
+   2. The library's controls keep the library's look
+
+   The kit styles bare form elements (app.css 7b and 26), because most demos render plain inputs.
+   Borm renders its own, fully styled, and a few of the kit's rules outrank the library's - an
+   element selector plus two pseudo-classes beats one class. Where the library says something, it
+   is put back here, with exactly the library's values; where it is silent, the kit's look stays.
+   -------------------------------------------------------------------------------------------- */
+
+/* The kit's line height and minimum height would make every field a few pixels taller than the
+   library draws it, and the tag box's entry field taller than the box around it. */
+html:root .bit-borm-input,
+html:root .bit-borm-tags__entry {
+    line-height: normal;
+}
+
+html:root .bit-borm-tags__entry {
+    min-height: 0;
+}
+
+/* Hover: the kit darkens a field's border under the pointer. Borm has no hover state for a field,
+   and the kit's rule also outranked its invalid and focus colours - an invalid field lost its red,
+   and a focused one its accent, while the mouse was over it. */
+html:root .bit-borm-input:hover:not(:disabled) {
+    border-color: var(--bit-borm-border);
+}
+
+html:root .bit-borm-input--invalid:hover:not(:disabled) {
+    border-color: var(--bit-borm-error);
+}
+
+html:root .bit-borm-input:focus-visible:hover {
+    border-color: var(--bit-borm-border-focus);
+}
+
+/* Focus: the kit's field focus is Fluent's thicker bottom stroke, paid for out of the bottom
+   padding. Borm's is a ring, with its padding unchanged - and the kit's padding is not Borm's, so
+   every field shrank as it took focus and moved everything below it. */
+html:root .bit-borm-input:focus-visible {
+    border-bottom-width: 1px;
+    padding-bottom: .55rem;
+}
+
+html:root .bit-borm-tags__entry:focus-visible {
+    border-bottom: none;
+    padding-bottom: .15rem;
+}
+
+/* A checkbox drawn as a switch: the kit sizes every checkbox to a 1rem square, which made the
+   switch a square too. The forced-colors branch is the library's own - the native tick box. */
+html:root .bit-borm-switch {
+    inline-size: 2.25rem;
+    block-size: 1.25rem;
+}
+
+@media (forced-colors: active) {
+    html:root .bit-borm-switch {
+        inline-size: auto;
+        block-size: auto;
+    }
+}
+
+/* AsSearch() hands the field the browser's own clear button, which the kit hides on every search
+   box for the sake of a uniform look. */
+html:root .bit-borm-input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: searchfield-cancel-button;
+}
+
+/* --------------------------------------------------------------------------------------------
+   3. Around the forms
+   -------------------------------------------------------------------------------------------- */
+
+/* A toolbar button with nothing to do looks like the kit's disabled one, but stays focusable: a page button that
+   switches itself off when pressed (Save & rebase, Forget the draft) is aria-disabled rather than disabled, which
+   dropped the focus of the user who pressed it to the page body - the library's own buttons do the same. */
+.btn[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: .45;
+}
+
+/* The landing page's comparison: three columns of prose and identifiers, which a phone squeezed into one word a line,
+   broken mid-word ("Visibl|eWhen") because the kit's cells may break anywhere. Its scroll region scrolls it instead. */
+.bb-compare {
+    min-width: 36rem;
+}
+
+/* What a valid submit handed the page: the kit's success note, with the model under it. */
+.demo-result strong {
+    color: var(--bb-success-text);
+}
+
+.demo-result pre {
+    margin: .5rem 0 0;
+    font-size: .8125rem;
+    line-height: 1.6;
+    color: var(--bb-text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* A live readout of the state or the model, next to or under the form that writes it. */
+.demo-readout {
+    margin: 1.25rem 0 0;
+}
+
+.demo-readout .bb-overline {
+    margin-bottom: .375rem;
+}
+
+.demo-readout pre {
+    margin: 0;
+    padding: .75rem 1rem;
+    overflow-x: auto;
+    background: var(--bb-code-bg);
+    color: var(--bb-code-fg);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    font-size: .8125rem;
+    line-height: 1.6;
+}
+
+/* A line of counters under a form. */
+.demo-status {
+    margin: 1.25rem 0 0;
+    font-size: var(--fl-font-size-200);
+    line-height: 1.7;
+    color: var(--bb-text-muted);
+}
+
+.demo-status strong {
+    color: var(--bb-text);
+}
+
+/* A remark about the sample, under it and set off from it. */
+.demo-footnote {
+    margin: 1.25rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--bb-border);
+    font-size: var(--fl-font-size-200);
+    line-height: 1.6;
+    color: var(--bb-text-muted);
+}
+
+/* A short instruction inside a sample's title bar, next to the switch it explains. */
+.demo-hint {
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-soft);
+}
+
+/* "View source": the kit's secondary button as the disclosure's summary, with a caret that turns. */
+.demo-source > summary {
+    list-style: none;
+}
+
+.demo-source > summary::-webkit-details-marker {
+    display: none;
+}
+
+.demo-source > summary::before {
+    content: "▸";
+    font-size: .8em;
+    color: var(--bb-text-soft);
+}
+
+.demo-source[open] > summary::before {
+    content: "▾";
+}
+
+/* --------------------------------------------------------------------------------------------
+   4. Samples
+   -------------------------------------------------------------------------------------------- */
+
+/* Field polish: the listing the form previews, written from the model on every keystroke. */
+.demo-listing {
+    padding: 1rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    color: var(--bb-text);
+    overflow-wrap: anywhere;
+}
+
+.demo-listing p {
+    margin: .375rem 0;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-muted);
+}
+
+.demo-listing__meta {
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text);
+}
+
+.demo-listing__state {
+    margin-top: .375rem;
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-soft);
+}
+
+.demo-listing__state--published {
+    color: var(--bb-success-text);
+}
+
+/* Composition: the page's own layout of the schema's fields, spaced the way the library spaces a
+   form body. */
+.demo-own-layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--bit-borm-gap);
+}
+
+.demo-two-up {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+    gap: var(--bit-borm-gap);
+    align-items: start;
+}
+
+.demo-own-layout > .bb-overline {
+    margin: .5rem 0 -.5rem;
+}
+
+.demo-own-layout > hr {
+    margin: .25rem 0;
+}
+
+.demo-own-layout .bit-borm-form__actions {
+    margin-top: .25rem;
+    align-items: center;
+}
+
+.demo-own-layout .bit-borm-form__actions > .bb-soft {
+    font-size: var(--fl-font-size-200);
+}
+
+/* The switch that breaks the options service, and the button that retries it. */
+.demo-service {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem 1rem;
+    margin-top: -.5rem;
+}
+
+.demo-failure {
+    margin: -.5rem 0 0;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-warning-text);
+}
+
+/* JSON Schema: the editor the form is built from. */
+.demo-json-editor {
+    display: block;
+    min-height: 28rem;
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+    line-height: 1.6;
+    tab-size: 2;
+}
+
+.demo-json-editor + .bb-toolbar {
+    margin: .75rem 0 0;
+}
+
+.demo-json-error {
+    margin: .75rem 0 0;
+}
+
+/* The landing page's hero: the form the sample above it describes, live inside the window frame. */
+.home-hero-live {
+    padding: 1.25rem;
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border);
+}
+
+.home-hero-live .bit-borm-form__title {
+    font-size: var(--fl-font-size-400);
+}
+
+.home-hero-sent {
+    margin: .75rem 0 0;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-success-text);
+}
+
+/* The expressions demo's console: the box takes the whole row, in the code face. */
+.expression-probe {
+    flex: 1 1 100%;
+}
+
+.expression-probe input {
+    font-family: var(--bb-mono);
+}
+
+/* Theming: the CSS the playground's settings come to, under the controls that set them. */
+.demo-theme-controls {
+    align-items: end;
+}
+
+.demo-theme-controls input[type="range"] {
+    inline-size: 9rem;
+}
+
+/* Blazor's own ValidationSummary in a form that provides an EditContext (the Blazor inputs demo). */
+.demo-validation-summary {
+    margin: 0;
+    padding-inline-start: 1.25rem;
+    color: var(--bit-borm-error);
+    font-size: var(--fl-font-size-200);
+}

@@ -1,0 +1,206 @@
+﻿@page "/e2e/element"
+
+<PageTitle>BitElement E2E</PageTitle>
+
+<h1>BitElement</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitElement Id="elm-default">The default element (div)</BitElement>
+    <BitElement Id="elm-h4" Element="h4">A heading (h4)</BitElement>
+    <BitElement Id="elm-p" Element="p">A paragraph with a <BitElement Id="elm-mark" Element="mark">highlighted</BitElement> word.</BitElement>
+    <BitElement Id="elm-blockquote" Element="blockquote">A quotation</BitElement>
+    <BitElement Id="elm-invalid" Element="not a tag name">An invalid tag name falls back to a div.</BitElement>
+    <BitElement Id="elm-invalid-symbol" Element="@("<script>")">A symbol falls back too.</BitElement>
+    <BitElement Id="elm-padded" Element=" section ">Trimmed</BitElement>
+</E2ESection>
+
+<E2ESection Id="attributes" Title="Attributes and events">
+    <BitElement Id="elm-anchor" Element="a" href="/e2e/element#attributes" target="_self" rel="noopener" data-e2e="anchor">An anchor</BitElement>
+    <BitElement Id="elm-button" Element="button" data-demo="counter" @onclick="() => _counter++">Clicked @_counter times</BitElement>
+    <BitElement Id="elm-input" Element="input" AriaLabel="Your text" placeholder="Type something" aria-describedby="typed-output" @oninput="e => _typed = e.Value?.ToString()" />
+    <BitElement Id="typed-output" role="status">You typed: @_typed</BitElement>
+    <BitElement Id="elm-own-id" HtmlAttributes="@(new Dictionary<string, object> { ["id"] = "splatted-id", ["aria-label"] = "Splatted label", ["tabindex"] = "3" })" AriaLabel="Own label" TabIndex="0">Parameters win</BitElement>
+    <BitElement HtmlAttributes="@(new Dictionary<string, object> { ["id"] = "elm-splat-id", ["tabindex"] = "2" })">Splatted id is used</BitElement>
+</E2ESection>
+
+<E2ESection Id="svg" Title="SVG and custom elements">
+    <BitElement Id="elm-svg" Element="svg" width="160" height="48" viewBox="0 0 160 48" role="img" AriaLabel="A gradient bar">
+        <BitElement Element="defs">
+            <BitElement Id="elm-gradient" Element="linearGradient" x1="0" y1="0" x2="1" y2="0">
+                <BitElement Element="stop" offset="0%" stop-color="rgb(255, 99, 71)" />
+                <BitElement Element="stop" offset="100%" stop-color="rgb(60, 179, 113)" />
+            </BitElement>
+        </BitElement>
+        <BitElement Id="elm-rect" Element="rect" width="160" height="48" rx="8" fill="url(#elm-gradient)" />
+    </BitElement>
+    <BitElement Id="elm-custom" Element="demo-badge">A custom element</BitElement>
+</E2ESection>
+
+<E2ESection Id="void" Title="Void elements">
+    <BitElement Id="elm-void-input" Element="input" placeholder="An input" AriaLabel="An input" />
+    <BitElement Id="elm-void-hr" Element="hr" />
+    <BitElement Id="elm-void-img" Element="img" src="samples/link-download.svg" alt="bit logo" width="64" />
+    <BitElement Id="elm-void-br" Element="br">Not rendered: a br holds no content.</BitElement>
+</E2ESection>
+
+<E2ESection Id="modifiers" Title="Event modifiers">
+    <div id="card" @onclick="() => _card++" style="padding: 8px; border: 1px solid gray;">
+        <BitElement Id="elm-stop" Element="button" StopPropagation @onclick="() => _inner++">Stops propagation</BitElement>
+        <BitElement Id="elm-bubble" Element="button" @onclick="() => _inner++">Bubbles up</BitElement>
+    </div>
+    <span id="card-clicks">@_card</span>
+    <span id="inner-clicks">@_inner</span>
+    <BitElement Id="elm-prevent" Element="a" href="/e2e/element/elsewhere" PreventDefault @onclick="() => _prevented++">An anchor that does not navigate</BitElement>
+    <span id="prevented-clicks">@_prevented</span>
+    <div id="dbl-card" @ondblclick="() => _doubled++" style="padding: 8px; border: 1px solid gray;">
+        <BitElement Id="elm-events" StopPropagationEvents="@(["dblclick"])" PreventDefaultEvents="@(["oncontextmenu"])"
+                    @ondblclick="() => _innerDouble++" @oncontextmenu="() => _innerContext++">Double-click stays here, right-click opens no menu</BitElement>
+    </div>
+    <span id="doubled">@_doubled</span>
+    <span id="inner-double">@_innerDouble</span>
+    <span id="inner-context">@_innerContext</span>
+    <BitElement Id="elm-no-handler" PreventDefaultEvents="@(["contextmenu"])">No handler, still prevented</BitElement>
+</E2ESection>
+
+<E2ESection Id="dynamic" Title="Dynamic element">
+    <BitElement Id="elm-dynamic" Element="@_element" placeholder="@_element" target="_self" href="/e2e/element#dynamic">@_element</BitElement>
+    <button id="btn-element-div" @onclick="@(() => _element = "div")">div</button>
+    <button id="btn-element-a" @onclick="@(() => _element = "a")">a</button>
+    <button id="btn-element-input" @onclick="@(() => _element = "input")">input</button>
+    <button id="btn-element-button" @onclick="@(() => _element = "button")">button</button>
+</E2ESection>
+
+<E2ESection Id="no-wrapper" Title="No wrapper">
+    <div id="wrapper-host"><BitElement Id="elm-wrapper" @ref="_wrapperElement" Element="mark" Class="wrapper-class" NoWrapper="_unwrapped">The same content, highlighted or bare.</BitElement></div>
+    <button id="btn-toggle-wrapper" @onclick="() => _unwrapped = !_unwrapped">Toggle wrapper</button>
+    <button id="btn-focus-unwrapped" @onclick="FocusUnwrapped">Focus unwrapped</button>
+    <span id="unwrapped-focus">@_unwrappedFocus</span>
+</E2ESection>
+
+<E2ESection Id="reference" Title="Element reference">
+    <BitElement Id="elm-focus-input" Element="input" @ref="_inputElement" placeholder="Focused by the button" AriaLabel="Focus target" />
+    <button id="btn-focus-input" @onclick="() => _inputElement.FocusAsync()">Focus the input</button>
+    <div id="scroller" style="height: 80px; overflow: auto; border: 1px solid gray;">
+        <div style="height: 400px;"></div>
+        <BitElement Id="elm-focus-box" TabIndex="0" @ref="_boxElement">A div, focusable because it has a TabIndex.</BitElement>
+    </div>
+    <button id="btn-focus-box-prevent" @onclick="() => _boxElement.FocusAsync(preventScroll: true)">Focus without scrolling</button>
+    <button id="btn-focus-box" @onclick="() => _boxElement.FocusAsync()">Focus with scrolling</button>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitElement Id="elm-dis-button" Element="button" Disabled @onclick="() => _disabledClicks++">A disabled button</BitElement>
+    <BitElement Id="elm-dis-input" Element="input" Disabled placeholder="A disabled input" AriaLabel="A disabled input" />
+    <BitElement Id="elm-dis-anchor" Element="a" href="/e2e/element/elsewhere" Disabled>A disabled anchor</BitElement>
+    <BitElement Id="elm-dis-anchor-role" Element="a" href="/e2e/element/elsewhere" role="button" Disabled>A disabled anchor with a role</BitElement>
+    <BitElement Id="elm-dis-placeholder" Element="a" Disabled>A placeholder anchor</BitElement>
+    <button id="before-disabled-div">before</button>
+    <BitElement Id="elm-dis-div" TabIndex="0" role="button" Disabled="_divDisabled"
+                @onclick="() => _disabledClicks++" @onkeydown="() => _disabledClicks++" @onpointerdown="() => _disabledClicks++" @onmouseover="() => _disabledHovers++">
+        A disabled div button <button id="inner-enabled" @onclick="() => _innerEnabledClicks++">inner</button>
+    </BitElement>
+    <button id="after-disabled-div">after</button>
+    <button id="btn-toggle-div-disabled" @onclick="() => _divDisabled = !_divDisabled">Toggle div disabled</button>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <span id="disabled-hovers">@_disabledHovers</span>
+    <span id="inner-enabled-clicks">@_innerEnabledClicks</span>
+    <img src="samples/link-download.svg" usemap="#e2e-map" width="64" height="64" alt="map" id="map-image" />
+    <map name="e2e-map">
+        <BitElement Id="elm-dis-area" Element="area" shape="rect" coords="0,0,64,64" href="/e2e/element/elsewhere" alt="A disabled area" Disabled />
+    </map>
+    <BitElement Id="elm-dis-fieldset" Element="fieldset" Disabled>
+        <BitElement Element="legend">A disabled fieldset</BitElement>
+        <input id="fieldset-input" aria-label="Fieldset input" />
+    </BitElement>
+</E2ESection>
+
+<E2ESection Id="visibility" Title="Visibility">
+    <BitElement Id="elm-hidden" Visibility="BitVisibility.Hidden">Hidden keeps its space.</BitElement>
+    <BitElement Id="elm-collapsed" Visibility="BitVisibility.Collapsed">Collapsed takes its space with it.</BitElement>
+    <div id="unwrapped-collapsed-host">[<BitElement NoWrapper Visibility="_unwrappedVisibility">Unwrapped content</BitElement>]</div>
+    <button id="btn-collapse-unwrapped" @onclick="() => _unwrappedVisibility = BitVisibility.Collapsed">Collapse</button>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <div id="toolbar-card" @onclick="() => _toolbarCard++" style="padding: 8px; border: 1px solid gray;">
+        <BitParams Parameters="_elementParams">
+            <BitElement Id="elm-params-1" @onclick="() => _toolbar++">Edit</BitElement>
+            <BitElement Id="elm-params-2" @onclick="() => _toolbar++">Share</BitElement>
+            <BitElement Id="elm-params-3" StopPropagation="false" @onclick="() => _toolbar++">Bubbles up</BitElement>
+        </BitParams>
+    </div>
+    <span id="toolbar-clicks">@_toolbar</span>
+    <span id="toolbar-card-clicks">@_toolbarCard</span>
+    <BitElement Id="elm-params-outside">Outside the cascade</BitElement>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitElement Id="elm-style" Style="color: rgb(255, 99, 71); font-weight: 700;">Styled</BitElement>
+    <BitElement Id="elm-class" Class="e2e-element-class">Classed</BitElement>
+    <BitElement Id="elm-merged" Class="own-class" Style="font-style: italic;" HtmlAttributes="@(new Dictionary<string, object> { ["class"] = "splat-class", ["style"] = "color: rgb(60, 179, 113)" })">Merged</BitElement>
+    <BitElement Id="elm-var" Element="button" Disabled Style="--bit-Element-disabled-opacity: 0.2;">Dimmed further</BitElement>
+    <BitElement Id="elm-var-fieldset" Element="fieldset" Disabled Style="--bit-Element-disabled-opacity: 1;">
+        <BitElement Id="elm-var-inner" Element="div" role="button" Disabled>Inside: the variable reaches it</BitElement>
+    </BitElement>
+    <BitElement Id="elm-opacity-fieldset" Element="fieldset" Disabled Style="opacity: 1;">
+        <BitElement Id="elm-opacity-inner" Element="div" role="button" Disabled>Inside: still dimmed</BitElement>
+    </BitElement>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitElement Id="elm-rtl" Dir="BitDir.Rtl">این یک المنت راست‌چین است.</BitElement>
+    <BitElement Id="elm-rtl-blockquote" Element="blockquote" Dir="BitDir.Rtl">یک نقل قول.</BitElement>
+    <div dir="rtl"><BitElement Id="elm-rtl-inherited">ارث‌بری</BitElement></div>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime">
+    <button id="btn-toggle-mounted" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitElement Id="elm-mounted" Element="section">Mounted</BitElement>
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _counter;
+    private string? _typed;
+    private int _card;
+    private int _inner;
+    private int _prevented;
+    private int _doubled;
+    private int _innerDouble;
+    private int _innerContext;
+    private string _element = "div";
+    private bool _unwrapped;
+    private string? _unwrappedFocus;
+    private BitElement _inputElement = default!;
+    private BitElement _boxElement = default!;
+    private BitElement _wrapperElement = default!;
+    private int _disabledClicks;
+    private int _disabledHovers;
+    private int _innerEnabledClicks;
+    private bool _divDisabled = true;
+    private BitVisibility _unwrappedVisibility = BitVisibility.Visible;
+    private int _toolbar;
+    private int _toolbarCard;
+    private bool _mounted = true;
+
+    private readonly BitElementParams[] _elementParams =
+    [
+        new()
+        {
+            Element = "button",
+            StopPropagation = true,
+        }
+    ];
+
+    private async Task FocusUnwrapped()
+    {
+        // FocusAsync of an element rendered without its wrapper has nothing to focus, and says so by doing nothing.
+        await _wrapperElement.FocusAsync();
+        _unwrappedFocus = "done";
+    }
+}

@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace Boilerplate.Client.Core.Components.Common;
 
 /// <summary>
@@ -29,8 +31,17 @@ public partial class AppInfoCard
     /// <summary>Optional device manufacturer/OEM; hidden when not provided.</summary>
     [Parameter] public string? Oem { get; set; }
 
+    [Parameter] public string? Signer { get; set; }
+
     /// <summary>Optional note/guidance rendered as an info message under the details.</summary>
     [Parameter] public RenderFragment? Note { get; set; }
+
+    private static readonly string? repositoryUrl = Metadata("SourceRepositoryUrl");
+    private static readonly string? commit = Metadata("SourceCommit");
+    private static readonly string? buildRunUrl = Metadata("BuildRunUrl");
+
+    private static string? Metadata(string key) =>
+        typeof(AppInfoCard).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == key)?.Value is { Length: > 0 } value ? value : null;
 
     private string Monogram => string.IsNullOrWhiteSpace(AppName) ? "?" : AppName.Trim()[..1].ToUpperInvariant();
 

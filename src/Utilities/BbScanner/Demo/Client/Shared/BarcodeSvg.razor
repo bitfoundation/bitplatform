@@ -1,0 +1,203 @@
+﻿@using System.Text
+@using Bit.BbScanner
+
+@*
+    Renders a generated symbol as inline SVG.
+
+    The demo needs real, scannable barcodes on screen so that a visitor can point a phone at the
+    page, and so that the file scanning page has something to load. Emitting SVG keeps that free
+    of any image encoder: the module grid becomes a single path, which stays crisp at any size.
+
+    The symbol sits on white "paper" in either theme: a scanner reads dark modules on a light
+    ground, and a symbol inverted along with the page would only decode with AllowInverted. The
+    frame and the caption around it follow the theme.
+*@
+
+<figure class="sample">
+    <div class="sample-paper">
+        <svg class="sample-svg"
+             viewBox="@_viewBox"
+             style="max-inline-size:@(Size)px;aspect-ratio:@_aspectRatio;"
+             shape-rendering="@(_hexagonal ? "geometricPrecision" : "crispEdges")"
+             role="img"
+             aria-label="@($"{Caption} barcode encoding {Value}")">
+            <rect width="100%" height="100%" fill="#ffffff" />
+            <path d="@_path" fill="#000000" fill-rule="evenodd" />
+        </svg>
+    </div>
+    @if (ShowCaption)
+    {
+        <figcaption class="sample-caption">
+            <strong>@Caption</strong>
+            <span class="sample-value">@Value</span>
+        </figcaption>
+    }
+</figure>
+
+@code {
+    private string _path = string.Empty;
+    private string _viewBox = "0 0 1 1";
+    private string _aspectRatio = "1 / 1";
+    private bool _hexagonal;
+
+    /// <summary>The symbology, which says how a module grid is drawn: MaxiCode's are hexagons round a bullseye.</summary>
+    [Parameter]
+    public BbBarcodeFormat Format { get; set; }
+
+    /// <summary>A two dimensional module grid to render.</summary>
+    [Parameter]
+    public BbBitMatrix? Matrix { get; set; }
+
+    /// <summary>A linear module array to render; true is a bar.</summary>
+    [Parameter]
+    public bool[]? Modules { get; set; }
+
+    /// <summary>Bar height in modules, for linear symbols.</summary>
+    [Parameter]
+    public int LinearHeight { get; set; } = 28;
+
+    /// <summary>Quiet zone width in modules.</summary>
+    [Parameter]
+    public int QuietZone { get; set; } = 4;
+
+    /// <summary>Widest the symbol is drawn, in CSS pixels. It shrinks to fit a narrower card.</summary>
+    [Parameter]
+    public int Size { get; set; } = 190;
+
+    /// <summary>Label shown under the symbol.</summary>
+    [Parameter]
+    public string Caption { get; set; } = string.Empty;
+
+    /// <summary>The encoded value, shown under the caption.</summary>
+    [Parameter]
+    public string Value { get; set; } = string.Empty;
+
+    /// <summary>Whether the caption and the value are shown under the symbol. The accessible name always carries both.</summary>
+    [Parameter]
+    public bool ShowCaption { get; set; } = true;
+
+    protected override void OnParametersSet()
+    {
+        _hexagonal = Format == BbBarcodeFormat.MaxiCode && Matrix is not null;
+        if (_hexagonal)
+        {
+            BuildMaxiCodePath(Matrix!);
+        }
+        else if (Matrix is not null)
+        {
+            BuildMatrixPath(Matrix);
+        }
+        else if (Modules is not null)
+        {
+            BuildLinearPath(Modules);
+        }
+    }
+
+    private void BuildMatrixPath(BbBitMatrix matrix)
+    {
+        var width = matrix.Width + (2 * QuietZone);
+        var height = matrix.Height + (2 * QuietZone);
+        _viewBox = $"0 0 {width} {height}";
+        _aspectRatio = $"{width} / {height}";
+
+        var path = new StringBuilder(matrix.Width * matrix.Height / 2);
+        for (var y = 0; y < matrix.Height; y++)
+        {
+            var x = 0;
+            while (x < matrix.Width)
+            {
+                if (!matrix[x, y])
+                {
+                    x++;
+                    continue;
+                }
+
+                // Merge horizontal runs into one rectangle: far fewer path commands, identical output.
+                var run = 1;
+                while (x + run < matrix.Width && matrix[x + run, y])
+                {
+                    run++;
+                }
+
+                path.Append('M').Append(x + QuietZone).Append(' ').Append(y + QuietZone)
+                    .Append('h').Append(run).Append("v1h-").Append(run).Append('z');
+                x += run;
+            }
+        }
+
+        _path = path.ToString();
+    }
+
+    /// <summary>
+    /// MaxiCode: 33 rows of 30 hexagons standing on a corner, every odd row half a module to the right and each row
+    /// 0.866 of a module below the last, and the bullseye's three rings round the place of the module at row 16,
+    /// column 14 - each ring a pair of circles, filled even-odd.
+    /// </summary>
+    private void BuildMaxiCodePath(BbBitMatrix matrix)
+    {
+        const double Pitch = 0.8660254;
+        const double Radius = 0.5773503 * 0.9;
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        var width = 30.5 + (2 * QuietZone);
+        var height = (32 * Pitch) + (2 * 0.5773503) + (2 * QuietZone);
+        _viewBox = string.Create(inv, $"0 0 {width:0.###} {height:0.###}");
+        _aspectRatio = string.Create(inv, $"{width:0.###} / {height:0.###}");
+
+        var path = new StringBuilder(matrix.Width * matrix.Height * 8);
+        var half = Radius * Pitch;
+        for (var row = 0; row < matrix.Height; row++)
+        {
+            for (var column = 0; column < matrix.Width; column++)
+            {
+                if (!matrix[column, row])
+                {
+                    continue;
+                }
+
+                var x = QuietZone + column + 0.5 + ((row & 1) == 1 ? 0.5 : 0);
+                var y = QuietZone + 0.5773503 + (row * Pitch);
+                path.Append(string.Create(inv,
+                    $"M{x:0.###} {y - Radius:0.###}L{x + half:0.###} {y - (Radius / 2):0.###}L{x + half:0.###} {y + (Radius / 2):0.###}L{x:0.###} {y + Radius:0.###}L{x - half:0.###} {y + (Radius / 2):0.###}L{x - half:0.###} {y - (Radius / 2):0.###}Z"));
+            }
+        }
+
+        var (cx, cy) = (QuietZone + 14.5, QuietZone + 0.5773503 + (16 * Pitch));
+        foreach (var r in new[] { 0.5774, 1.3359, 2.1058, 2.8644, 3.6229, 4.3814 })
+        {
+            path.Append(string.Create(inv, $"M{cx + r:0.####} {cy:0.####}A{r} {r} 0 1 0 {cx - r:0.####} {cy:0.####}A{r} {r} 0 1 0 {cx + r:0.####} {cy:0.####}Z"));
+        }
+
+        _path = path.ToString();
+    }
+
+    private void BuildLinearPath(bool[] modules)
+    {
+        var width = modules.Length + (2 * QuietZone);
+        var height = LinearHeight + (2 * QuietZone);
+        _viewBox = $"0 0 {width} {height}";
+        _aspectRatio = $"{width} / {height}";
+
+        var path = new StringBuilder(modules.Length);
+        var i = 0;
+        while (i < modules.Length)
+        {
+            if (!modules[i])
+            {
+                i++;
+                continue;
+            }
+
+            var run = 1;
+            while (i + run < modules.Length && modules[i + run])
+            {
+                run++;
+            }
+
+            path.Append('M').Append(i + QuietZone).Append(' ').Append(QuietZone)
+                .Append('h').Append(run).Append('v').Append(LinearHeight).Append("h-").Append(run).Append('z');
+            i += run;
+        }
+
+        _path = path.ToString();
+    }
+}

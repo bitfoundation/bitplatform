@@ -1,7 +1,7 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <BitSearchBox IsEnabled="IsEnabled"
+    <BitSearchBox Disabled="Disabled"
                   Immediate="Immediate"
                   Placeholder="@Placeholder"
                   @bind-Value="@TestModel.Value"
@@ -23,7 +23,7 @@
     [Parameter] public string? AriaLabel { get; set; }
     [Parameter] public string? DefaultValue { get; set; }
     [Parameter] public bool ShowIcon { get; set; }
-    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool Disabled { get; set; }
     [Parameter] public bool Immediate { get; set; }
     [Parameter] public string? AutoComplete { get; set; }
 

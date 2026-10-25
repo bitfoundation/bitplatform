@@ -1,10 +1,16 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitNav<TItem>
 {
     /// <summary>
-    /// The accent color of the nav.
+    /// The accent color of the nav: the background of the hovered and the selected item. A background,
+    /// foreground or border role tints the item, while a semantic role fills it and recolors its content.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Nav-*</c> hover, pressed and selected variables (and, for a semantic
+    /// role, over the icon and description colors of an accented item); left unset, the nav takes the
+    /// <see cref="BitColor.PrimaryBackground"/> accent unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Accent { get; set; }
 
@@ -14,6 +20,17 @@ public partial class BitNav<TItem>
     /// the user has expanded or collapsed in the meantime.
     /// </summary>
     [Parameter] public bool AllExpanded { get; set; }
+
+    /// <summary>
+    /// Keeps the order of the registered options in sync with the markup order of the options, at every level
+    /// of the tree, even when an option is added, removed or reordered conditionally after the first render (an
+    /// option that shows up later registers itself at the end of its list, no matter where in the markup it
+    /// sits, which leaves the arrow keys, Home, End and type-ahead moving between the items in another order
+    /// than the one they are rendered in). This is achieved by reading the DOM order of the options after each
+    /// change, so it adds a JS interop call per change and is opt-in. It only applies to the options; the Items
+    /// collection already keeps its own order.
+    /// </summary>
+    [Parameter] public bool AutoReorderOptions { get; set; }
 
     /// <summary>
     /// The icon for the chevron-down element of each nav item.
@@ -36,10 +53,12 @@ public partial class BitNav<TItem>
     /// <summary>
     /// Custom CSS classes for different parts of the nav.
     /// </summary>
-    [Parameter] public BitNavClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitNavClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The default aria-label of the expand/collapse button of an expanded item.
+    /// The default aria-label of the expand/collapse button of an expanded item: the chevron of a parent that
+    /// has a URL (a parent without one toggles on a click anywhere on it, so its chevron is decoration only),
+    /// or a group header in the Grouped render type.
     /// The CollapseAriaLabel of the item takes precedence over this value, and when neither is provided
     /// the text of the item is used, so the button is never left without an accessible name.
     /// </summary>
@@ -48,6 +67,10 @@ public partial class BitNav<TItem>
     /// <summary>
     /// The general color of the nav that is only used for colored parts like icons.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Nav-icon-color</c> and <c>--bit-Nav-indicator-color</c>; left unset, the
+    /// nav is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -57,7 +80,9 @@ public partial class BitNav<TItem>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
-    /// The default aria-label of the expand/collapse button of a collapsed item.
+    /// The default aria-label of the expand/collapse button of a collapsed item: the chevron of a parent that
+    /// has a URL (a parent without one toggles on a click anywhere on it, so its chevron is decoration only),
+    /// or a group header in the Grouped render type.
     /// The ExpandAriaLabel of the item takes precedence over this value, and when neither is provided
     /// the text of the item is used, so the button is never left without an accessible name.
     /// </summary>
@@ -92,7 +117,7 @@ public partial class BitNav<TItem>
     public bool IconOnly { get; set; }
 
     /// <summary>
-    /// The indentation padding in px for items without children (compensation space for chevron icon).
+    /// The width in px of the chevron, which the items without children keep as padding in its place so every text lines up.
     /// </summary>
     [Parameter] public int IndentPadding { get; set; } = 27;
 
@@ -112,6 +137,18 @@ public partial class BitNav<TItem>
     [Parameter] public IList<TItem> Items { get; set; } = [];
 
     /// <summary>
+    /// Used to render custom content at the end of every item, after its text and ahead of its badge, while the item
+    /// keeps its default content. The SuffixTemplate of an item takes precedence over it.
+    /// </summary>
+    /// <remarks>
+    /// It is rendered inside the anchor (or the button) each item is, so it holds content to look at - a counter, a
+    /// status, a shortcut - and never a control of its own. A group header in the Grouped render type, a separator
+    /// and an item whose template renders in the Replace mode do not render it, and the IconOnly nav, which is down
+    /// to the icons of its items, keeps their badges alone.
+    /// </remarks>
+    [Parameter] public RenderFragment<TItem>? ItemSuffixTemplate { get; set; }
+
+    /// <summary>
     /// Used to customize how content inside the item is rendered.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
@@ -122,7 +159,7 @@ public partial class BitNav<TItem>
     [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; }
 
     /// <summary>
-    /// Gets or sets a value representing the global URL matching behavior of the nav.
+    /// The URL matching behavior of the nav in the Automatic mode.
     /// The Match of an item takes precedence over this value, and when neither is provided the URL of an
     /// item has to match the current one exactly.
     /// </summary>
@@ -143,9 +180,33 @@ public partial class BitNav<TItem>
     [Parameter] public BitNavNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
-    /// Hides all collapse/expand buttons and remove their spaces at the start of each node.
+    /// Replaces the text the items opening a new tab are announced with, for translating it or for saying it
+    /// another way.
+    /// </summary>
+    /// <remarks>
+    /// A link opening a new tab takes the reader somewhere the back button no longer returns from, so one whose
+    /// target is <c>_blank</c> carries the sentence saying so - "<c>(opens in a new tab)</c>" unless this
+    /// replaces it - as visually hidden text after its content, or appended to its aria-label when it has one,
+    /// since an aria-label replaces the content rather than adding to it.
+    /// <br />
+    /// An empty value takes the announcement off, the same as <see cref="NoNewTabHint"/> does.
+    /// </remarks>
+    [Parameter] public string? NewTabHint { get; set; }
+
+    /// <summary>
+    /// Keeps every item expanded and hides the collapse/expand buttons together with the space they reserve at the start of each item.
     /// </summary>
     [Parameter] public bool NoCollapse { get; set; }
+
+    /// <summary>
+    /// Stops the items opening a new tab from announcing that they do.
+    /// </summary>
+    /// <remarks>
+    /// Only set this where the announcement would be made twice - on items whose own labels already say they open
+    /// a new tab, or under a heading that already says every one of them does. See <see cref="NewTabHint"/> for
+    /// what is being taken off.
+    /// </remarks>
+    [Parameter] public bool NoNewTabHint { get; set; }
 
     /// <summary>
     /// Callback invoked when an item is clicked.
@@ -153,7 +214,7 @@ public partial class BitNav<TItem>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// Callback invoked when a group header is clicked and Expanded or Collapse.
+    /// Callback invoked when an item (or a group header) is expanded or collapsed.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemToggle { get; set; }
 
@@ -192,6 +253,10 @@ public partial class BitNav<TItem>
     /// <summary>
     /// The size of the nav items.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Nav-*</c> size variables (font, icon, description and header sizes,
+    /// item and header heights); left unset, the nav is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -203,5 +268,5 @@ public partial class BitNav<TItem>
     /// <summary>
     /// Custom CSS styles for different parts of the BitNav component.
     /// </summary>
-    [Parameter] public BitNavClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitNavClassStyles? Styles { get; set; }
 }

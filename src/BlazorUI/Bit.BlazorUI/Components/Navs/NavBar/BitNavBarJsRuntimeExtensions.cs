@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 internal static class BitNavBarJsRuntimeExtensions
 {
@@ -7,6 +7,11 @@ internal static class BitNavBarJsRuntimeExtensions
     internal static ValueTask BitNavBarScrollSelectedItemIntoView(this IJSRuntime jsRuntime, string containerId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.NavBar.scrollItemIntoView", containerId, null);
+    }
+
+    internal static ValueTask BitNavBarSetupWheel(this IJSRuntime jsRuntime, string containerId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.NavBar.setupWheel", containerId);
     }
 
     internal static ValueTask BitNavBarScrollItemIntoView(this IJSRuntime jsRuntime, string containerId, ElementReference item)

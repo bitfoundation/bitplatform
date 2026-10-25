@@ -18,7 +18,7 @@ public partial class PushNotificationsToggleUITests : AppPageTest
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
 
-        await Page.GotoAsync(server.WebAppServerAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Page.GotoAsync(server.WebAppAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         var permission = await Page.EvaluateAsync<string>("() => Notification.permission");
         if (permission is not "denied")

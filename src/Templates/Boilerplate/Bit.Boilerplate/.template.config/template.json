@@ -40,10 +40,20 @@
                 "format": "yyyy-MM-dd"
             }
         },
+        "SeedPassword": {
+            "type": "generated",
+            "generator": "random",
+            "parameters": {
+                "low": 10000000,
+                "high": 99999999
+            },
+            "replaces": "12345678"
+        },
         "database": {
             "displayName": "Backend database",
             "type": "parameter",
             "datatype": "choice",
+            "replaces": "bit-option-database",
             "defaultValue": "Sqlite",
             "choices": [
                 {
@@ -73,6 +83,7 @@
             "displayName": "Files storage",
             "type": "parameter",
             "datatype": "choice",
+            "replaces": "bit-option-filesStorage",
             "defaultValue": "Local",
             "choices": [
                 {
@@ -98,6 +109,7 @@
             "displayName": "API deployment configuration",
             "type": "parameter",
             "datatype": "choice",
+            "replaces": "bit-option-api",
             "defaultValue": "Integrated",
             "choices": [
                 {
@@ -114,6 +126,7 @@
             "displayName": "CI-CD pipeline",
             "type": "parameter",
             "datatype": "choice",
+            "replaces": "bit-option-pipeline",
             "defaultValue": "GitHub",
             "choices": [
                 {
@@ -134,6 +147,7 @@
             "displayName": "Module",
             "type": "parameter",
             "datatype": "choice",
+            "replaces": "bit-option-module",
             "defaultValue": "None",
             "choices": [
                 {
@@ -154,6 +168,7 @@
             "displayName": "Multi-Tenant",
             "type": "parameter",
             "datatype": "bool",
+            "replaces": "bit-option-multitenant",
             "defaultValue": "true",
             "description": "Adds multi-tenant support"
         },
@@ -161,6 +176,7 @@
             "displayName": "Captcha",
             "type": "parameter",
             "datatype": "choice",
+            "replaces": "bit-option-captcha",
             "defaultValue": "None",
             "choices": [
                 {
@@ -177,6 +193,7 @@
             "displayName": "Add aspire?",
             "type": "parameter",
             "datatype": "bool",
+            "replaces": "bit-option-aspire",
             "defaultValue": "true",
             "description": "Adds aspire"
         },
@@ -184,6 +201,7 @@
             "displayName": "Add redis?",
             "type": "parameter",
             "datatype": "bool",
+            "replaces": "bit-option-redis",
             "defaultValue": "false",
             "description": "Adds redis"
         },
@@ -191,6 +209,7 @@
             "displayName": "Add push notification?",
             "type": "parameter",
             "datatype": "bool",
+            "replaces": "bit-option-notification",
             "defaultValue": "true",
             "description": "Adds push notification."
         },
@@ -198,6 +217,7 @@
             "displayName": "Sample",
             "type": "parameter",
             "datatype": "bool",
+            "replaces": "bit-option-sample",
             "defaultValue": "false",
             "description": "Adds todo page sample."
         },
@@ -205,18 +225,21 @@
             "displayName": "Add Sentry logging to project?",
             "type": "parameter",
             "datatype": "bool",
+            "replaces": "bit-option-sentry",
             "defaultValue": "false"
         },
         "appInsights": {
             "displayName": "Add Azure application insights to project?",
             "type": "parameter",
             "datatype": "bool",
+            "replaces": "bit-option-appInsights",
             "defaultValue": "false"
         },
         "signalR": {
             "displayName": "Add SignalR?",
             "type": "parameter",
             "datatype": "bool",
+            "replaces": "bit-option-signalR",
             "defaultValue": "false",
             "description": "Adds SignalR sample."
         },
@@ -224,6 +247,7 @@
             "displayName": "Add Offline db?",
             "type": "parameter",
             "datatype": "bool",
+            "replaces": "bit-option-offlineDb",
             "defaultValue": "false",
             "description": "Adds support for EF Core DbContext on the client side. If your app doesn't need offline data storage, we recommend not enabling this feature."
         },
@@ -231,6 +255,7 @@
             "displayName": "Add cloudflare CDN integration?",
             "type": "parameter",
             "datatype": "bool",
+            "replaces": "bit-option-cloudflare",
             "defaultValue": "true",
             "description": "Adds cloudflare CDN integration."
         },
@@ -238,6 +263,7 @@
             "displayName": "Add Ads?",
             "type": "parameter",
             "datatype": "bool",
+            "replaces": "bit-option-ads",
             "defaultValue": "false",
             "description": "Adds GoogleAds integration."
         },
@@ -245,13 +271,15 @@
             "displayName": "Use bit Brouter?",
             "type": "parameter",
             "datatype": "bool",
-            "defaultValue": "false",
+            "replaces": "bit-option-brouter",
+            "defaultValue": "true",
             "description": "Replaces the built-in Blazor Router with bit Brouter, bringing advanced routing features - nested routes, route guards, data loaders, keep-alive pages and view transitions - inspired by the routers of Vue.js, React and Angular."
         },
         "theme": {
             "displayName": "Theme",
             "type": "parameter",
             "datatype": "choice",
+            "replaces": "bit-option-theme",
             "defaultValue": "Fluent2",
             "choices": [
                 {
@@ -544,6 +572,105 @@
             },
             "replaces": "use-your-api-server-url-here.com"
         },
+        "devMcpRemoteUrl": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "normalizedServerUrl",
+                "steps": [
+                    {
+                        "regex": "^use-your-api-server-url-here\\.com$",
+                        "replacement": "none"
+                    },
+                    {
+                        "regex": "^(?!none$)(.+)$",
+                        "replacement": "https://$1/dev-mcp"
+                    }
+                ]
+            }
+        },
+        "devMcpWebUrl": {
+            "type": "generated",
+            "generator": "join",
+            "parameters": {
+                "symbols": [
+                    {
+                        "type": "const",
+                        "value": "http://localhost:"
+                    },
+                    {
+                        "type": "ref",
+                        "value": "serverWebPortGenerated"
+                    },
+                    {
+                        "type": "const",
+                        "value": "/dev-mcp"
+                    }
+                ]
+            }
+        },
+        "devMcpApiAndUrl": {
+            "type": "generated",
+            "generator": "join",
+            "parameters": {
+                "symbols": [
+                    {
+                        "type": "ref",
+                        "value": "api"
+                    },
+                    {
+                        "type": "const",
+                        "value": "|http://localhost:"
+                    },
+                    {
+                        "type": "ref",
+                        "value": "serveApiPortGenerated"
+                    },
+                    {
+                        "type": "const",
+                        "value": "/dev-mcp"
+                    }
+                ]
+            }
+        },
+        "devMcpApiUrl": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "devMcpApiAndUrl",
+                "steps": [
+                    {
+                        "regex": "^Standalone\\|",
+                        "replacement": ""
+                    },
+                    {
+                        "regex": "^[^|]*\\|.*$",
+                        "replacement": "none"
+                    }
+                ]
+            }
+        },
+        "devMcpLocalUrl": {
+            "type": "generated",
+            "generator": "coalesce",
+            "parameters": {
+                "sourceVariableName": "devMcpApiUrl",
+                "defaultValue": "none",
+                "fallbackVariableName": "devMcpWebUrl"
+            }
+        },
+        "devMcpUrl": {
+            "type": "generated",
+            "generator": "coalesce",
+            "parameters": {
+                "sourceVariableName": "devMcpRemoteUrl",
+                "defaultValue": "none",
+                "fallbackVariableName": "devMcpLocalUrl"
+            },
+            "replaces": "https://use-your-api-server-url-here.com/dev-mcp"
+        },
         "webAppUrl": {
             "displayName": "web app url",
             "type": "parameter",
@@ -575,26 +702,12 @@
             "displayName": "Include advanced automated tests?",
             "type": "parameter",
             "datatype": "bool",
+            "replaces": "bit-option-advancedTests",
             "defaultValue": "false",
             "description": "Includes advanced automated tests (e.g. the Blazor WebAssembly offline sync test) that add extra infrastructure not needed by a typical project."
         }
     },
     "postActions": [
-        {
-            "description": "restore project dependencies",
-            "manualInstructions": [
-                {
-                    "text": "Run 'dotnet restore'"
-                }
-            ],
-            "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
-            "args": {
-                "files": [
-                    "Boilerplate.Web.slnf"
-                ]
-            },
-            "continueOnError": true
-        },
         {
             "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
             "description": "Opens README.md in the editor",
@@ -621,6 +734,7 @@
                     "copyOnly": [
                         "**/*.svg",
                         "**/*.png",
+                        "**/*.woff2",
                         "**/*.sh"
                     ],
                     "exclude": [
@@ -745,6 +859,7 @@
                         "src/Tests/Features/ServerWeb/**",
                         "src/Tests/Features/DevMcp/**",
                         "src/Tests/Features/Versioning/**",
+                        "src/Tests/Features/Build/**",
                         "src/Tests/Features/Identity/OAuth/**",
                         "src/Tests/Features/Identity/AuthManagerRefreshCoordinationTests.cs",
                         "src/Tests/Features/Identity/AuthManagerTokenPersistenceTests.cs",
@@ -754,6 +869,8 @@
                         "src/Tests/Features/Identity/IStorageServiceContractTests.cs",
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
                         "src/Tests/Infrastructure/Components/BitSnackBarUtils.cs",
+                        "src/Tests/Infrastructure/Components/AppMenuUtils.cs",
+                        "src/Tests/Infrastructure/TestImageFactory.cs",
                         "src/Tests/Features/Todo/OfflineTodoTests.cs",
                         "src/Tests/Features/Urls/ODataQueryFilterTests.cs",
                         "src/Tests/Features/Diagnostics/TelemetryScopeTests.cs",
@@ -766,6 +883,7 @@
                         "src/Tests/Features/TemplateConfig/PwaManifestShortcutTests.cs",
                         "src/Tests/Features/TemplateConfig/ThemeColorLiteralTests.cs",
                         "src/Tests/Features/TemplateConfig/HeadContentUsageTests.cs",
+                        "src/Tests/Features/TemplateConfig/PlatformDirectiveTests.cs",
                         "src/Tests/Features/Culture/CultureCookieParsingTests.cs",
                         "src/Tests/Features/Culture/CultureUrlRedirectionTests.cs",
                         "src/Tests/Features/Culture/ResxParityTests.cs",
@@ -781,12 +899,19 @@
                         "src/Tests/Features/Identity/MagicLinkReplayTests.cs",
                         "src/Tests/Features/Identity/TwoFactorAuthTests.cs",
                         "src/Tests/Features/Identity/TwoFactorAmrClaimTests.cs",
+                        "src/Tests/Features/Identity/IdentityCodeHardeningTests.cs",
+                        "src/Tests/Features/Identity/UserEnumerationTests.cs",
+                        "src/Tests/Features/Identity/SignInAsAnotherUserUITests.cs",
+                        "src/Tests/Features/Identity/SignInWhileSignedInTests.cs",
+                        "src/Tests/Features/Identity/DeviceAccountsTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
                         "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs",
                         "src/Tests/Features/Identity/RefreshTokenRotationTests.cs",
                         "src/Tests/Features/Identity/ReturnUrlHardeningTests.cs",
                         "src/Tests/Features/Identity/OneTimeTokenTests.cs",
+                        "src/Tests/Features/Identity/UnconfirmedAccountPasswordTests.cs",
+                        "src/Tests/Features/Identity/ChangePasswordTests.cs",
                         "src/Tests/Features/Identity/AccountSelfServiceSecurityTests.cs",
                         "src/Tests/Features/Identity/TrustedSessionTests.cs",
                         "src/Tests/Features/Identity/IdentityEmailDeliveryTests.cs",
@@ -799,6 +924,7 @@
                         "src/Tests/Features/Identity/RoleAdministrationGuardTests.cs",
                         "src/Tests/Features/Identity/ConfirmPageTwoFactorTests.cs",
                         "src/Tests/Features/Identity/SignInPanelCredentialStateTests.cs",
+                        "src/Tests/Features/Identity/NotAuthorizedPageTests.cs",
                         "src/Tests/Features/Identity/WebAuthnEnrolmentElevationTests.cs",
                         "src/Tests/Features/Identity/WebAuthnElevatedAccessTests.cs",
                         "src/Tests/Features/Identity/TwoFactorSharedKeyExposureTests.cs",
@@ -840,6 +966,7 @@
                         "src/Tests/Features/Identity/RoleClaimGrantAllowListTests.cs",
                         "src/Tests/Features/Identity/WebAuthnCredentialOwnershipTests.cs",
                         "src/Tests/Features/Attachments/AttachmentReplacementTests.cs",
+                        "src/Tests/Features/Attachments/UploadFormatAllowListTests.cs",
                         "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
                         "src/Tests/Features/Products/ProductCultureSafetyTests.cs",
                         "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
@@ -898,6 +1025,7 @@
                     "exclude": [
                         "src/Tests/Features/SignalR/ProfileRealtimeUpdateUITests.cs",
                         "src/Tests/Features/SignalR/SignalRInfiniteRetryPolicyTests.cs",
+                        "src/Tests/Features/SignalR/SessionRevocationTests.cs",
                         "src/Tests/Features/Diagnostics/DiagnosticReportSourcesTests.cs",
                         "src/Tests/Features/Mcp/GetCurrentDateTimeMcpIntegrationTests.cs",
                         "src/Tests/Features/Chatbot/SystemPromptContractTests.cs",
@@ -916,8 +1044,15 @@
                         "src/Tests/Features/Chatbot/ChatbotMetricsTests.cs",
                         "src/Tests/Features/Chatbot/TestChatClient.cs",
                         "src/Tests/Features/Chatbot/SpeechHealthChecksTests.cs",
+                        "src/Tests/Features/Chatbot/ChatbotCostLimitsTests.cs",
                         "src/Tests/Features/SignalR/AzureSignalRHealthCheckTests.cs",
                         "src/Tests/Features/Attachments/AiChatImagesRetentionTests.cs"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests != true || signalR != true || redis != true)",
+                    "exclude": [
+                        "src/Tests/Features/SignalR/SignalRRedisBackplaneTests.cs"
                     ]
                 },
                 {
@@ -929,6 +1064,7 @@
                         "src/Tests/Features/PushNotification/PushSubscriptionsRetentionTests.cs",
                         "src/Tests/Features/PushNotification/PushNotificationsToggleUITests.cs",
                         "src/Tests/Features/PushNotification/PushNotificationHealthCheckTests.cs",
+                        "src/Tests/Features/PushNotification/PushEndpointAllowListTests.cs",
                         // Its subject is Diagnostic/SendTestPushNotification - the one anonymous POST that binds
                         // nothing but a route value, so a form body reaches AutoCsrfProtectionFilter intact.
                         "src/Tests/Features/Antiforgery/AntiforgeryFormPostTests.cs"
@@ -942,7 +1078,8 @@
                         "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
                         "src/Tests/Features/Caching/ProductImageCacheInvalidationTests.cs",
                         "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
-                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs"
+                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs",
+                        "src/Tests/Features/Tenants/CrossTenantReferenceTests.cs"
                     ]
                 },
                 {
@@ -974,6 +1111,7 @@
                         "src/Server/Boilerplate.Server.Api/Infrastructure/SignalR/**",
                         "src/Server/Boilerplate.Server.Api/Features/Chatbot/**",
                         "src/Server/Boilerplate.Server.Api/Features/Attachments/AiChatImagesRetentionJobRunner.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/Configurations/UserSessionConfiguration.cs",
                         "src/Server/Boilerplate.Server.Api/Infrastructure/Extensions/IClientProxyExtensions.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.*",
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanelCards/**",
@@ -1097,7 +1235,8 @@
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
-                        "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs"
+                        "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs",
+                        "src/Tests/Features/Identity/NotAuthorizedPageTests.cs"
                     ]
                 },
                 {

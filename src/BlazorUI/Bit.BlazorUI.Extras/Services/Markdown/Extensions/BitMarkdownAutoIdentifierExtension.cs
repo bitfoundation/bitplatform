@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Enables automatic heading <c>id</c> slugs, and optionally the permalink anchor that lets a

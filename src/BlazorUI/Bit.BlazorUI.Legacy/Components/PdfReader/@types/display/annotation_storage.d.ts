@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Key/value storage for annotation data in forms.
  */
 declare class AnnotationStorage {

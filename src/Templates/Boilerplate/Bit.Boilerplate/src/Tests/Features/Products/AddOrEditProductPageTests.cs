@@ -33,7 +33,7 @@ public class AddOrEditProductPageTests
     // Seeded tenant-admin of the fallback tenant; holds PRIVILEGED_ACCESS, a selected tenant and ProductCatalog_Manage,
     // which is exactly what ProductController and CategoryController demand. See UserConfiguration.
     private const string TenantAdminEmail = "store-admin@bitplatform.dev";
-    private const string Password = "123456";
+    private const string Password = "12345678";
 
     /// <summary>
     /// BP-518. Asserts the observable consequence - a rendered message - rather than the presence of a particular
@@ -112,20 +112,16 @@ public class AddOrEditProductPageTests
     }
 
     /// <summary>
-    /// BP-536, <b>found but not fixed</b>. Every <c>[MaxLength]</c> in the template passes
+    /// BP-536, <b>fixed</b>. Every <c>[MaxLength]</c> in the template passed
     /// <c>ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength)</c>, and that resx key holds .NET's
     /// message for a <i>misconfigured attribute</i> - "MaxLengthAttribute must have a Length value that is greater
     /// than zero..." - not for a value being too long. It has no <c>{0}</c>/<c>{1}</c> placeholders either, so neither
-    /// the field name nor the limit is shown. This ships and is reachable today in all ten cultures.
+    /// the field name nor the limit was shown, in all ten cultures.
     /// <para>
-    /// <b>Ignored because the fix is blocked, not because the assertion is wrong.</b> The correct key is the
-    /// framework's own <c>MaxLengthAttribute_ValidationError</c>, which does not exist in any of the ten .resx files,
-    /// and an attribute's <c>ErrorMessage</c> cannot use the <c>IStringLocalizer</c> literal indexer that AGENTS.md
-    /// mandates instead of new resx keys. <b>Unblocked by:</b> the maintainer deciding this is worth a resx addition
-    /// (or a different mechanism for validation-attribute messages). Delete the [Ignore] once it lands.
+    /// The fix is the framework's own <c>MaxLengthAttribute_ValidationError</c>, now in all ten .resx files.
     /// </para>
     /// </summary>
-    [TestMethod, Ignore("BP-536 is open: fixing it needs a new AppStrings key, which AGENTS.md forbids outside an explicit translation pass.")]
+    [TestMethod]
     public async Task ATooLongValue_Should_NotBeReportedAsAMisconfiguredAttribute()
     {
         await using var server = new AppTestServer();

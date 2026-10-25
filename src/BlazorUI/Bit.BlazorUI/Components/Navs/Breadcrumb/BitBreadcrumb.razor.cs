@@ -1,3 +1,4 @@
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 
@@ -6,7 +7,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Breadcrumbs should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy.
 /// </summary>
-public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
+public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     private bool _isCalloutOpen;
     private bool _optionsOrderDirty;
@@ -19,6 +20,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     private bool _resizeObserverRegistered;
     private bool _measureRequested;
     private bool _focusRevealedItems;
+    private bool _lastScrolls;
+    private bool _scrollToEndRequested;
     private uint _revealedOverflowIndex;
     private int _measurePasses;
     private uint _autoMaxDisplayedItems;
@@ -35,7 +38,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     private readonly List<TItem> _overflowItems = [];
     private ElementReference _calloutRef;
     private ElementReference _overflowButtonRef;
+    private ElementReference _itemContainerRef;
     private DotNetObjectReference<BitBreadcrumb<TItem>> _dotnetObj = default!;
+    // The resize observer gets a reference of its own: its unregistering disposes the reference it was handed, and
+    // the one above still has to answer the overflow callout (and a later observer) after collapsing is turned off.
+    private DotNetObjectReference<BitBreadcrumb<TItem>>? _resizeDotnetObj;
 
     private string _calloutId = default!;
     private string _overlayId = default!;
@@ -51,15 +58,39 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
 
 
+    /// <summary>
+    /// Gets or sets the cascading parameters for the breadcrumb component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple breadcrumb components through the <see cref="BitParams"/> component.
+    /// <br />
+    /// The cascaded values carry nothing about the item type, so one <see cref="BitBreadcrumbParams"/> fits every
+    /// breadcrumb under it whatever each of them is generic over.
+    /// </remarks>
+    [CascadingParameter(Name = BitBreadcrumbParams.ParamName)]
+    public BitBreadcrumbParams? CascadingParameters { get; set; }
+
+
+
     // The automatic collapsing is what keeps the trail on a single line, which is the very thing a wrapping
     // breadcrumb is asked not to do: a trail that may flow onto another line has no items that do not fit.
     private bool IsAutoCollapsing => AutoCollapse && Wrap is false;
+
+    // The same goes for the sideways scrolling, which a trail that may flow onto another line never needs.
+    private bool IsScrolling => Scrollable && Wrap is false;
+
+    // The collapsing alone cannot keep that single line once it is down to the one item it may not drop and
+    // that item is still wider than the room it has, so the last step gives up width and truncates instead.
+    private bool IsTruncatingLastItem => IsAutoCollapsing && _internalMaxDisplayedItems <= 1;
 
 
 
     /// <summary>
     /// Collapses the items that do not fit the width of the breadcrumb into the overflow menu, and brings
-    /// them back as the room for them returns, so the trail always stays on a single line.
+    /// them back as the room for them returns, so the trail always stays on a single line. Once only the last
+    /// item is left and it still does not fit, its text is truncated with an ellipsis and becomes its tooltip.
     /// <br />
     /// It measures the rendered items through JS interop and follows the size of the component with a
     /// resize observer, and it is off by default. MaxDisplayedItems, when it is set, still caps how many
@@ -95,6 +126,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// <br />
     /// The default value is <strong>null</strong>, which keeps the default foreground color of the theme.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Breadcrumb-*</c> color variables of the trail (text, selected, hover,
+    /// divider and focus colors); left unset, the trail keeps the theme's foreground colors unless those variables
+    /// say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -111,14 +147,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The custom template content to render divider icon.
     /// </summary>
-    [Parameter] public RenderFragment? DividerIconTemplate { get; set; }
+    [Parameter, Outranks(nameof(DividerText))] public RenderFragment? DividerIconTemplate { get; set; }
 
     /// <summary>
     /// A plain text divider (for example "/" or "›") to render in place of the default chevron icon.
     /// <br />
     /// It is ignored when the DividerIconTemplate is provided.
     /// </summary>
-    [Parameter] public string? DividerText { get; set; }
+    [Parameter, Outranks(nameof(DividerIcon))] public string? DividerText { get; set; }
 
     /// <summary>
     /// Makes the overflow button put the collapsed items back into the trail instead of opening them in a menu.
@@ -129,6 +165,13 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// readable. The next change of the items or of the collapsing settings starts the breadcrumb over as collapsed.
     /// </summary>
     [Parameter] public bool ExpandOverflow { get; set; }
+
+    /// <summary>
+    /// Where the icon of each item is rendered relative to its text: before it (the default) or after it.
+    /// <br />
+    /// An item that sets an IconPlacement of its own keeps it.
+    /// </summary>
+    [Parameter] public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// Collection of the items to render in the breadcrumb.
@@ -159,6 +202,30 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// Names and selectors of the custom input type properties.
     /// </summary>
     [Parameter] public BitBreadcrumbNameSelectors<TItem>? NameSelectors { get; set; }
+
+    /// <summary>
+    /// Replaces the text the items opening a new tab are announced with, for translating it or for saying it
+    /// another way.
+    /// </summary>
+    /// <remarks>
+    /// A link opening a new tab takes the reader somewhere the back button no longer returns from, so one whose
+    /// target is <c>_blank</c> carries the sentence saying so - "<c>(opens in a new tab)</c>" unless this
+    /// replaces it - as visually hidden text after its content, or appended to its aria-label when it has one,
+    /// since an aria-label replaces the content rather than adding to it.
+    /// <br />
+    /// An empty value takes the announcement off, the same as <see cref="NoNewTabHint"/> does.
+    /// </remarks>
+    [Parameter] public string? NewTabHint { get; set; }
+
+    /// <summary>
+    /// Stops the items opening a new tab from announcing that they do.
+    /// </summary>
+    /// <remarks>
+    /// Only set this where the announcement would be made twice - on items whose own labels already say they open
+    /// a new tab, or under a heading that already says every one of them does. See <see cref="NewTabHint"/> for
+    /// what is being taken off.
+    /// </remarks>
+    [Parameter] public bool NoNewTabHint { get; set; }
 
     /// <summary>
     /// Callback for when a breadcrumb item is clicked.
@@ -197,7 +264,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public string? OverflowIconName { get; set; }
 
     /// <summary>
-    /// The custom template content to render each overflow icon.
+    /// The custom template content to render the overflow icon.
     /// </summary>
     [Parameter] public RenderFragment? OverflowIconTemplate { get; set; }
 
@@ -207,16 +274,12 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment<TItem>? OverflowTemplate { get; set; }
 
     /// <summary>
-    /// Reverses the positions of the icon and the item text of the item content.
-    /// </summary>
-    [Parameter] public bool ReversedIcon { get; set; }
-
-    /// <summary>
     /// Lets a long breadcrumb trail scroll sideways inside its container instead of overflowing it.
     /// <br />
     /// It is what a trail whose every step is worth keeping in place asks for, rather than collapsing the
-    /// steps that do not fit or letting them flow onto another line. It has nothing to do while Wrap is on,
-    /// since a trail that may flow onto another line never runs out of room on one.
+    /// steps that do not fit or letting them flow onto another line. The trail is scrolled to its end whenever
+    /// its items change, so the current page (its last step) is the one in view. It has nothing to do while Wrap
+    /// is on, since a trail that may flow onto another line never runs out of room on one.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Scrollable { get; set; }
@@ -232,6 +295,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The size of the items of the breadcrumb.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Breadcrumb-*</c> size variables (font size, item height, divider
+    /// size, overflow row height and font size); left unset, the breadcrumb is medium unless those variables say
+    /// otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -277,7 +345,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [JSInvokable("OnResize")]
     public void _OnResize(ContentRect _)
     {
-        if (IsDisposed || IsAutoCollapsing is false) return;
+        if (IsDisposing || IsAutoCollapsing is false) return;
 
         _measurePasses = 0;
         _measureRequested = true;
@@ -307,7 +375,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     internal void UnregisterOptions(BitBreadcrumbOption option)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         _items.Remove((option as TItem)!);
         _optionsOrderDirty = true;
@@ -351,13 +419,17 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Breadcrumb-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(GetColorClass);
 
         ClassBuilder.Register(GetSizeClass);
 
         ClassBuilder.Register(() => Wrap ? "bit-brc-wrp" : null);
 
-        ClassBuilder.Register(() => Scrollable && Wrap is false ? "bit-brc-scr" : null);
+        ClassBuilder.Register(() => IsScrolling ? "bit-brc-scr" : null);
+
+        ClassBuilder.Register(() => IsTruncatingLastItem ? "bit-brc-trc" : null);
     }
 
     protected override void RegisterCssStyles()
@@ -380,6 +452,10 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     protected override void OnParametersSet()
     {
+        // The cascaded defaults go in first, so everything below (the collapsing settings above all) reads
+        // the values the breadcrumb actually ends up with.
+        CascadingParameters?.UpdateParameters(this);
+
         if (ChildContent is null && Options is null)
         {
             _items = Items is not null ? [.. Items] : [];
@@ -413,6 +489,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             RefreshItems();
         }
 
+        // A trail that just started to scroll starts at its end as well, the way it does when its items change.
+        if (IsScrolling && _lastScrolls is false)
+        {
+            _scrollToEndRequested = true;
+        }
+
+        _lastScrolls = IsScrolling;
+
         base.OnParametersSet();
     }
 
@@ -434,7 +518,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         // which happens as soon as everything fits the trail again (the items changed, the room grew, the
         // cap was raised, ...), the whole component gets disabled while the menu is open, or the button it
         // belongs to is turned into one that reveals the items in place instead.
-        if (_isCalloutOpen && (_overflowItems.Count == 0 || IsEnabled is false || ExpandOverflow))
+        if (_isCalloutOpen && (_overflowItems.Count == 0 || Disabled || ExpandOverflow))
         {
             await CloseCallout();
 
@@ -470,7 +554,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
                 try
                 {
-                    await _js.BitObserversRegisterResize(_Id, RootElement, _dotnetObj);
+                    _resizeDotnetObj = DotNetObjectReference.Create(this);
+                    await _js.BitObserversRegisterResize(_Id, RootElement, _resizeDotnetObj);
                 }
                 catch (JSDisconnectedException) { } // the circuit is gone, nothing to observe
                 catch (JSException) { } // without the observer the trail is measured on renders only
@@ -492,10 +577,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
             try
             {
-                await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
+                await _js.BitObserversUnregisterResize(_Id, RootElement, _resizeDotnetObj!); // created along with the registration
             }
             catch (JSDisconnectedException) { } // the circuit is gone, the observer went with it
             catch (JSException) { } // the element of the observer may already be gone with its parent
+
+            // Released here too, for the unregistering that never reached the script; releasing it twice is harmless.
+            _resizeDotnetObj?.Dispose();
+            _resizeDotnetObj = null;
         }
 
         // The overflow button is gone with the collapsing it undid, taking the focus it held with it, so a
@@ -506,6 +595,23 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             _focusRevealedItems = false;
 
             await FocusRevealedItem();
+        }
+
+        // A scrolling trail opened at its start would show the root and hide the page the user is on, so it is
+        // scrolled to its end instead: the current page is where a breadcrumb is read from.
+        if (_scrollToEndRequested)
+        {
+            _scrollToEndRequested = false;
+
+            if (IsScrolling)
+            {
+                try
+                {
+                    await _js.BitUtilsScrollToEnd(_itemContainerRef, horizontal: true, smooth: false);
+                }
+                catch (JSDisconnectedException) { } // the circuit is gone, nothing to scroll
+                catch (JSException) { } // a JS-side failure only leaves the trail where it is
+            }
         }
 
         if (_optionsOrderDirty)
@@ -530,8 +636,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleOnItemClick(TItem item)
     {
-        if (IsEnabled is false) return;
-        if (GetIsEnabled(item) is false) return;
+        if (Disabled) return;
+        if (GetIsDisabled(item)) return;
 
         if (OnItemClick.HasDelegate)
         {
@@ -571,7 +677,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     // activation reaches the button itself and has to close what it opened.
     private async Task HandleOnOverflowButtonClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (ExpandOverflow)
         {
@@ -593,7 +699,19 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             return;
         }
 
+        // A key that activated the button has asked for the focus to move onto the first item of the menu.
+        var focusFirstItem = _focusFirstItemOnOpen;
+
         await OpenCallout();
+
+        // Not every engine focuses a button it has just dispatched a click for - WebKit leaves the focus where
+        // it was - and a menu whose button never took the focus is a menu without its Escape key, since the key
+        // is answered on the button. Doing it here is what the engines that focus it have already done, so
+        // nothing moves for them. The button was just clicked, so it is not scrolled to.
+        if (focusFirstItem is false && _isCalloutOpen)
+        {
+            await _overflowButtonRef.FocusClickedSafelyAsync();
+        }
     }
 
     // The current page is a step to read rather than one to follow, so it renders as plain text when the
@@ -601,6 +719,13 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     private bool IsPlainText(TItem item)
     {
         return SelectedItemAsText && GetIsSelected(item);
+    }
+
+    // A disabled item that would have been a link stays one, without the address it cannot be followed to.
+    // The current page rendered as text is not a link at all, disabled or not.
+    private bool IsDisabledLink(TItem item)
+    {
+        return GetIsDisabled(item) && IsPlainText(item) is false && GetRawItemHref(item).HasValue();
     }
 
     // An item is rendered as a button when it has no Href but something to run on click, either the
@@ -625,6 +750,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         // A trail the user expanded is a trail they expanded as it was: once its items (or the settings
         // around them) change it is a different one, which starts collapsed the way it would have.
         _isOverflowExpanded = false;
+
+        _scrollToEndRequested = IsScrolling;
 
         if (IsAutoCollapsing)
         {
@@ -656,6 +783,10 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
         _internalMaxDisplayedItems = max;
         _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
+
+        // The measurements change the number of items the trail shows between renders, and whether its last
+        // step may truncate goes with that number.
+        ClassBuilder.Reset();
 
         SetItemsToShow();
     }
@@ -800,15 +931,20 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return MaxItemWidth.HasValue() ? $"--bit-brc-itm-max-width:{MaxItemWidth}" : null;
     }
 
-    // The callout is moved to the body by the JS positioning, so it is not a descendant of the root
-    // element and cannot inherit anything from it: the class and style hooks that drive the look of
-    // the items have to be repeated on it.
+    // The callout is rendered beside the root element rather than inside it, and while it is open it is
+    // relocated to the body. Callouts.ts carries what the consumer declared on the root into it, but never
+    // the component's own bit-brc-* classes, so the color and size classes that drive the look of the
+    // items are repeated on it.
     private string GetCalloutClasses()
     {
         return string.Join(' ', new[] { "bit-brc-cal", GetColorClass(), GetSizeClass(), Classes?.Callout }
                                     .Where(c => c.HasValue()));
     }
 
+    // The public --bit-Breadcrumb-* variables need nothing here: whether they are set on an ancestor, through
+    // a class, in Style or in Styles.Root, Callouts.ts carries them into the relocated callout, so they reach
+    // it like any inherited value and ONE Style on the component restyles the trail and the menu it opens
+    // together. The callout only writes the max item width of its rows, then Styles.Callout.
     private string GetCalloutStyles()
     {
         return string.Join(';', new[] { GetMaxItemWidthStyle(), Styles?.Callout }
@@ -876,14 +1012,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             }
         }
 
-        if (GetIsEnabled(item) is false)
+        if (GetIsDisabled(item))
         {
             classes.Add("bit-brc-dis");
         }
 
-        if (GetReversedIcon(item))
+        if (GetIconPosition(item) is BitPlacement.End)
         {
-            classes.Add("bit-brc-rvi");
+            classes.Add("bit-brc-eni");
         }
 
         return string.Join(" ", classes);
@@ -930,14 +1066,45 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     // either one keeps its address but renders none.
     private string? GetItemHref(TItem item)
     {
-        return GetIsEnabled(item) && IsPlainText(item) is false ? GetRawItemHref(item) : null;
+        return GetIsDisabled(item) is false && IsPlainText(item) is false ? GetRawItemHref(item) : null;
     }
 
     // Opening a link in another browsing context hands the opener over to it unless it is turned down,
-    // which the rel of the link does, the same way the other components of the library do it.
+    // which the rel of the link does, by the rule every anchor of the library shares (BitNewTabUtils).
     private string? GetItemRel(TItem item)
     {
-        return GetItemTarget(item) is "_blank" ? "noopener noreferrer" : null;
+        return BitNewTabUtils.AddNoOpener(GetRawItemRel(item), GetItemTarget(item));
+    }
+
+    // The new-tab sentence lands wherever the name of the link comes from - see BitNewTabUtils.PlaceHint. Only
+    // a link that can be followed is rendered as an anchor, so every one asking here opens what it says.
+    private BitNewTabHintPlacement GetItemNewTabHint(TItem item)
+    {
+        var hint = BitNewTabUtils.GetHint(GetItemTarget(item), NewTabHint, NoNewTabHint);
+
+        return BitNewTabUtils.PlaceHint(hint, GetItemAriaLabel(item), null, string.Empty);
+    }
+
+    private BitLinkRels? GetRawItemRel(TItem item)
+    {
+        if (item is BitBreadcrumbItem breadcrumbItem)
+        {
+            return breadcrumbItem.Rel;
+        }
+
+        if (item is BitBreadcrumbOption bitBreadcrumbOption)
+        {
+            return bitBreadcrumbOption.Rel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Rel.Selector is not null)
+        {
+            return NameSelectors.Rel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitLinkRels?>(NameSelectors.Rel.Name);
     }
 
     private string? GetRawItemHref(TItem item)
@@ -1028,15 +1195,18 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
-    // An item whose text a max width may be cutting off is unreadable unless the full text is somewhere,
-    // so the text becomes the tooltip of an item that carries none of its own.
-    private string? GetItemTitle(TItem item)
+    // An item whose text a max width, or the room of a trail that collapsed all it could, may be cutting off
+    // is unreadable unless the full text is somewhere, so the text becomes the tooltip of an item that carries
+    // none of its own. The rows of the overflow menu are only cut off by the max width.
+    private string? GetItemTitle(TItem item, bool isOverflowItem = false)
     {
         var title = GetRawItemTitle(item);
 
-        if (title.HasValue() || MaxItemWidth.HasValue() is false) return title;
+        if (title.HasValue()) return title;
 
-        return GetItemText(item);
+        if (MaxItemWidth.HasValue() || (isOverflowItem is false && IsTruncatingLastItem)) return GetItemText(item);
+
+        return title;
     }
 
     private string? GetRawItemTitle(TItem item)
@@ -1142,26 +1312,26 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return BitIconInfo.From(icon, iconName);
     }
 
-    private bool GetReversedIcon(TItem item)
+    private BitPlacement? GetIconPosition(TItem item)
     {
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
-            return breadcrumbItem.ReversedIcon ?? ReversedIcon;
+            return breadcrumbItem.IconPlacement ?? IconPlacement;
         }
 
         if (item is BitBreadcrumbOption bitBreadcrumbOption)
         {
-            return bitBreadcrumbOption.ReversedIcon ?? ReversedIcon;
+            return bitBreadcrumbOption.IconPlacement ?? IconPlacement;
         }
 
-        if (NameSelectors is null) return ReversedIcon;
+        if (NameSelectors is null) return IconPlacement;
 
-        if (NameSelectors.ReversedIcon.Selector is not null)
+        if (NameSelectors.IconPlacement.Selector is not null)
         {
-            return NameSelectors.ReversedIcon.Selector!(item) ?? ReversedIcon;
+            return NameSelectors.IconPlacement.Selector!(item) ?? IconPlacement;
         }
 
-        return item.GetValueFromProperty(NameSelectors.ReversedIcon.Name, ReversedIcon);
+        return item.GetValueFromProperty<BitPlacement?>(NameSelectors.IconPlacement.Name) ?? IconPlacement;
     }
 
     private bool GetIsSelected(TItem item)
@@ -1186,28 +1356,28 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty(NameSelectors.IsSelected.Name, false);
     }
 
-    private bool GetIsEnabled(TItem item)
+    private bool GetIsDisabled(TItem item)
     {
-        if (IsEnabled is false) return false;
+        if (Disabled) return true;
 
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
-            return breadcrumbItem.IsEnabled;
+            return breadcrumbItem.IsDisabled;
         }
 
         if (item is BitBreadcrumbOption bitBreadcrumbOption)
         {
-            return bitBreadcrumbOption.IsEnabled;
+            return bitBreadcrumbOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     private RenderFragment<TItem>? GetOverflowTemplate(TItem? item)
@@ -1260,7 +1430,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     private async Task OpenCallout()
     {
-        if (_isCalloutOpen || IsEnabled is false) return;
+        if (_isCalloutOpen || Disabled) return;
 
         _isCalloutOpen = true;
         await ToggleCallout();
@@ -1301,14 +1471,17 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
                 isCalloutOpen: _isCalloutOpen,
                 responsiveMode: BitResponsiveMode.None,
                 dropDirection: BitDropDirection.TopAndBottom,
-                isRtl: Dir is BitDir.Rtl,
+                isRtl: ExplicitRtl,
                 scrollContainerId: _scrollContainerId,
                 scrollOffset: 0,
                 headerId: "",
                 footerId: "",
                 setCalloutWidth: false,
                 fixedCalloutWidth: false,
-                maxWindowWidth: 0);
+                maxWindowWidth: 0,
+                // The anchor of the callout is the overflow button, but what the consumer declared is on the
+                // nav, which is the element carried into the callout while it is relocated.
+                rootId: _Id);
         }
         catch (JSDisconnectedException) { } // the circuit is gone, there is no callout left to move
         catch (JSException) { } // a JS-side failure must not escape into the render lifecycle
@@ -1318,7 +1491,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     {
         // Nothing of the menu applies to a button that reveals the items in place: it is activated the way
         // any other button is, and the trail it expands is walked with the Tab key like the rest of it.
-        if (IsEnabled is false || ExpandOverflow) return;
+        if (Disabled || ExpandOverflow) return;
 
         if (e.Key is "Escape")
         {
@@ -1343,7 +1516,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || _isCalloutOpen is false) return;
+        if (Disabled || _isCalloutOpen is false) return;
 
         switch (e.Key)
         {
@@ -1405,12 +1578,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     private async Task FocusOverflowButton()
     {
-        try
-        {
-            await _overflowButtonRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // the circuit is gone, nothing to focus
-        catch (JSException) { } // the button may already be gone with the items it collapsed
+        await _overflowButtonRef.FocusSafelyAsync();
     }
 
     private string GetItemKey(TItem item, string defaultKey)
@@ -1496,7 +1664,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             {
                 if (_resizeObserverRegistered)
                 {
-                    await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
+                    await _js.BitObserversUnregisterResize(_Id, RootElement, _resizeDotnetObj!); // created along with the registration
                 }
 
                 await _js.BitCalloutClearCallout(_calloutId);
@@ -1506,5 +1674,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
             _dotnetObj.Dispose();
         }
+
+        _resizeDotnetObj?.Dispose();
     }
 }

@@ -9,11 +9,14 @@
     var increaseSecondIcon = BitIconInfo.From(IncreaseSecondIcon, IncreaseSecondIconName ?? "ChevronDownSmall bit-ico-r180");
     var decreaseSecondIcon = BitIconInfo.From(DecreaseSecondIcon, DecreaseSecondIconName ?? "ChevronDownSmall");
     var closeIcon = BitIconInfo.From(CloseButtonIcon, CloseButtonIconName ?? "Cancel");
+    var clearIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel");
+    var describedBy = DescribedBy;
 }
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
+     data-bit-popup-style="@(GetPopupStyle(HasFocus, Styles?.Focused, Styles?.Root))"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
@@ -43,6 +46,17 @@
     {
         <div style="@Styles?.InputWrapper" class="bit-tpc-wrp @Classes?.InputWrapper" id="@_timePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
             <div style="@Styles?.InputContainer" class="bit-tpc-icn @Classes?.InputContainer">
+                @if (PrefixTemplate is not null)
+                {
+                    @PrefixTemplate
+                }
+                else if (Prefix.HasValue())
+                {
+                    <span id="@_prefixId" style="@Styles?.PrefixContainer" class="bit-tpc-pre @Classes?.PrefixContainer">
+                        <span style="@Styles?.Prefix" class="@Classes?.Prefix">@Prefix</span>
+                    </span>
+                }
+
                 <input @ref="InputElement" @attributes="InputHtmlAttributes"
                        @onfocus="@HandleOnFocus"
                        @oninput="@HandleOnChange"
@@ -59,14 +73,36 @@
                        aria-label="@AriaLabel"
                        placeholder="@Placeholder"
                        value="@CurrentValueAsString"
-                       disabled="@(IsEnabled is false)"
+                       disabled="@(Disabled)"
+                       aria-disabled="@GetInputAriaDisabled(Disabled)"
                        readonly="@(AllowTextInput is false || ReadOnly)"
                        aria-readonly="@(ReadOnly ? "true" : null)"
                        aria-expanded="@(IsOpen ? "true" : "false")"
                        aria-controls="@(IsOpen ? _calloutId : null)"
+                       aria-invalid="@(IsInvalid ? "true" : null)"
+                       aria-describedby="@describedBy"
                        aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                        style="@Styles?.Input"
                        class="bit-tpc-inp@(AllowTextInput ? " bit-tpc-ein" : null) @Classes?.Input" />
+
+                @*
+                    The clear button sits inside the field, so the click that presses it also lands on the
+                    field: it is stopped there, since taking the value back is not a request to open the
+                    popup that picks a new one.
+                *@
+                @if (ShowsInputClearButton)
+                {
+                    <button @onclick="HandleOnInputClearClick" @onclick:stopPropagation
+                            type="button"
+                            title="@ClearButtonTitle"
+                            aria-label="@ClearButtonTitle"
+                            style="@Styles?.InputClearButton"
+                            class="bit-tpc-clr @Classes?.InputClearButton"
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
+                        <i style="@Styles?.InputClearButtonIcon" class="@clearIcon?.GetCssClasses() @Classes?.InputClearButtonIcon" aria-hidden="true" />
+                    </button>
+                }
 
                 @if (IconTemplate is not null)
                 {
@@ -76,6 +112,17 @@
                 {
                     var icon = BitIconInfo.From(Icon, IconName ?? "Clock");
                     <i style="@Styles?.Icon" class="bit-tpc-ico @icon?.GetCssClasses() @Classes?.Icon" aria-hidden="true" />
+                }
+
+                @if (SuffixTemplate is not null)
+                {
+                    @SuffixTemplate
+                }
+                else if (Suffix.HasValue())
+                {
+                    <span id="@_suffixId" style="@Styles?.SuffixContainer" class="bit-tpc-suf @Classes?.SuffixContainer">
+                        <span style="@Styles?.Suffix" class="@Classes?.Suffix">@Suffix</span>
+                    </span>
                 }
             </div>
         </div>
@@ -96,14 +143,15 @@
                aria-label="@AriaLabel"
                class="bit-input-hidden"
                value="@CurrentValueAsString"
-               disabled="@(IsEnabled is false)"
+               disabled="@(Disabled)"
+               aria-disabled="@GetInputAriaDisabled(Disabled)"
                readonly="@(AllowTextInput is false || ReadOnly)" />
     }
 
     @if (Standalone is false)
     {
         <div @onclick="CloseCallout"
-             style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
+             style="@GetOverlayStyles()"
              id="@_overlayId"
              class="bit-tpc-ovl @Classes?.Overlay"></div>
     }
@@ -118,13 +166,18 @@
             of it off and the focus is held inside it; standalone it is a group of controls that is part of
             the page like any other, where role="dialog" would announce a dialog the user can never leave -
             and where a plain div would leave the label below naming nothing.
+            A standalone group is named by the visible label where there is one: the hour input carries an
+            aria-label of its own, which outranks the label pointing at it, so the group is the only place the
+            name of the field is still announced from.
         *@
         <div @onkeydown="HandleOnCalloutKeyDown"
              style="@Styles?.CalloutContainer"
              class="bit-tpc-cac @Classes?.CalloutContainer"
              role="@(Standalone ? "group" : "dialog")"
              aria-modal="@(Standalone ? null : "true")"
-             @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
+             @attributes="_calloutHtmlAttributes"
+             aria-label="@(StandaloneHasLabel ? null : CalloutAriaLabel)"
+             aria-labelledby="@(StandaloneHasLabel ? _labelId : null)">
 
             @if (CalloutHeaderTemplate is not null)
             {
@@ -133,24 +186,40 @@
                 </div>
             }
 
+            @*
+                The spin buttons are out of the tab order, as in the spin button pattern: the input beside each
+                pair is the spin button, and its arrow keys make the very move the pair makes. Tabbing through
+                them would only put two more stops around every part of the time.
+            *@
             <div style="@Styles?.TimeInputContainer" class="bit-tpc-tic @Classes?.TimeInputContainer">
                 <div style="@Styles?.HourInputContainer" class="bit-tpc-tpr @Classes?.HourInputContainer">
                     <button @onpointerup="HandleOnPointerUpOrOut"
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(true, TimeUnit.Hour)"
                             @onclick="e => HandleOnSpinClick(e, true, TimeUnit.Hour)"
+                            tabindex="-1"
                             type="button"
                             title="@IncreaseHourTitle"
                             aria-label="@IncreaseHourTitle"
                             style="@Styles?.IncreaseHourButton"
                             class="bit-tpc-tbt @Classes?.IncreaseHourButton"
-                            disabled="@(IsInteractive is false)">
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
                         <i style="@Styles?.IncreaseHourIcon" class="@increaseHourIcon?.GetCssClasses() @Classes?.IncreaseHourIcon" aria-hidden="true" />
                     </button>
+                    @*
+                        The required attribute sits on the hidden input of a standalone picker, so the part that is
+                        actually operated has to state it for itself. A standalone picker has no field to describe
+                        either, so the helper and error text are tied to the first of its inputs - the part the
+                        person operates.
+                    *@
                     <input @ref="_inputHourRef"
                            @bind="@_hourView"
                            @bind:event="oninput"
                            @onfocus="HandleOnHourFocus"
+                           @onblur="HandleOnTimeInputBlur"
+                           @onwheel="e => HandleOnTimeInputWheel(e, TimeUnit.Hour)"
+                           data-bit-wheel="@(IsWheelSpinEnabled ? "1" : null)"
                            @onkeydown="e => HandleOnTimeInputKeyDown(e, TimeUnit.Hour)"
                            id="@_hourInputId"
                            min="@(TimeFormat == BitTimeFormat.TwelveHours ? "1" : "0")"
@@ -160,20 +229,26 @@
                            readonly="@ReadOnly"
                            aria-label="@HourInputAriaLabel"
                            aria-readonly="@(ReadOnly ? "true" : null)"
+                           aria-invalid="@(Standalone && IsInvalid ? "true" : null)"
+                           aria-required="@(Standalone && Required ? "true" : null)"
+                           aria-describedby="@(Standalone ? describedBy : null)"
                            style="@Styles?.HourInput"
                            class="bit-tpc-tin @Classes?.HourInput"
                            autocomplete="@BitAutoCompleteValue.NewPassword"
-                           disabled="@(IsEnabled is false)" />
+                           disabled="@(Disabled)"
+                           aria-disabled="@(Disabled ? "true" : null)" />
                     <button @onpointerup="HandleOnPointerUpOrOut"
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Hour)"
                             @onclick="e => HandleOnSpinClick(e, false, TimeUnit.Hour)"
+                            tabindex="-1"
                             type="button"
                             title="@DecreaseHourTitle"
                             aria-label="@DecreaseHourTitle"
                             style="@Styles?.DecreaseHourButton"
                             class="bit-tpc-tbt @Classes?.DecreaseHourButton"
-                            disabled="@(IsInteractive is false)">
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
                         <i style="@Styles?.DecreaseHourIcon" class="@decreaseHourIcon?.GetCssClasses() @Classes?.DecreaseHourIcon" aria-hidden="true" />
                     </button>
                 </div>
@@ -183,18 +258,23 @@
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(true, TimeUnit.Minute)"
                             @onclick="e => HandleOnSpinClick(e, true, TimeUnit.Minute)"
+                            tabindex="-1"
                             type="button"
                             title="@IncreaseMinuteTitle"
                             aria-label="@IncreaseMinuteTitle"
                             style="@Styles?.IncreaseMinuteButton"
                             class="bit-tpc-tbt @Classes?.IncreaseMinuteButton"
-                            disabled="@(IsInteractive is false)">
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
                         <i style="@Styles?.IncreaseMinuteIcon" class="@increaseMinuteIcon?.GetCssClasses() @Classes?.IncreaseMinuteIcon" aria-hidden="true" />
                     </button>
                     <input @ref="_inputMinuteRef"
                            @bind="@_minuteView"
                            @bind:event="oninput"
                            @onfocus="HandleOnMinuteFocus"
+                           @onblur="HandleOnTimeInputBlur"
+                           @onwheel="e => HandleOnTimeInputWheel(e, TimeUnit.Minute)"
+                           data-bit-wheel="@(IsWheelSpinEnabled ? "1" : null)"
                            @onkeydown="e => HandleOnTimeInputKeyDown(e, TimeUnit.Minute)"
                            min="0"
                            max="59"
@@ -206,17 +286,20 @@
                            style="@Styles?.MinuteInput"
                            class="bit-tpc-tin @Classes?.MinuteInput"
                            autocomplete="@BitAutoCompleteValue.NewPassword"
-                           disabled="@(IsEnabled is false)" />
+                           disabled="@(Disabled)"
+                           aria-disabled="@(Disabled ? "true" : null)" />
                     <button @onpointerup="HandleOnPointerUpOrOut"
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Minute)"
                             @onclick="e => HandleOnSpinClick(e, false, TimeUnit.Minute)"
+                            tabindex="-1"
                             type="button"
                             title="@DecreaseMinuteTitle"
                             aria-label="@DecreaseMinuteTitle"
                             style="@Styles?.DecreaseMinuteButton"
                             class="bit-tpc-tbt @Classes?.DecreaseMinuteButton"
-                            disabled="@(IsInteractive is false)">
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
                         <i style="@Styles?.DecreaseMinuteIcon" class="@decreaseMinuteIcon?.GetCssClasses() @Classes?.DecreaseMinuteIcon" aria-hidden="true" />
                     </button>
                 </div>
@@ -228,18 +311,23 @@
                                 @onpointerout="HandleOnPointerUpOrOut"
                                 @onpointerdown="() => HandleOnPointerDown(true, TimeUnit.Second)"
                                 @onclick="e => HandleOnSpinClick(e, true, TimeUnit.Second)"
+                                tabindex="-1"
                                 type="button"
                                 title="@IncreaseSecondTitle"
                                 aria-label="@IncreaseSecondTitle"
                                 style="@Styles?.IncreaseSecondButton"
                                 class="bit-tpc-tbt @Classes?.IncreaseSecondButton"
-                                disabled="@(IsInteractive is false)">
+                                disabled="@(IsInteractive is false)"
+                                aria-disabled="@((IsInteractive is false) ? "true" : null)">
                             <i style="@Styles?.IncreaseSecondIcon" class="@increaseSecondIcon?.GetCssClasses() @Classes?.IncreaseSecondIcon" aria-hidden="true" />
                         </button>
                         <input @ref="_inputSecondRef"
                                @bind="@_secondView"
                                @bind:event="oninput"
                                @onfocus="HandleOnSecondFocus"
+                               @onblur="HandleOnTimeInputBlur"
+                               @onwheel="e => HandleOnTimeInputWheel(e, TimeUnit.Second)"
+                               data-bit-wheel="@(IsWheelSpinEnabled ? "1" : null)"
                                @onkeydown="e => HandleOnTimeInputKeyDown(e, TimeUnit.Second)"
                                min="0"
                                max="59"
@@ -251,17 +339,20 @@
                                style="@Styles?.SecondInput"
                                class="bit-tpc-tin @Classes?.SecondInput"
                                autocomplete="@BitAutoCompleteValue.NewPassword"
-                               disabled="@(IsEnabled is false)" />
+                               disabled="@(Disabled)"
+                               aria-disabled="@(Disabled ? "true" : null)" />
                         <button @onpointerup="HandleOnPointerUpOrOut"
                                 @onpointerout="HandleOnPointerUpOrOut"
                                 @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Second)"
                                 @onclick="e => HandleOnSpinClick(e, false, TimeUnit.Second)"
+                                tabindex="-1"
                                 type="button"
                                 title="@DecreaseSecondTitle"
                                 aria-label="@DecreaseSecondTitle"
                                 style="@Styles?.DecreaseSecondButton"
                                 class="bit-tpc-tbt @Classes?.DecreaseSecondButton"
-                                disabled="@(IsInteractive is false)">
+                                disabled="@(IsInteractive is false)"
+                                aria-disabled="@((IsInteractive is false) ? "true" : null)">
                             <i style="@Styles?.DecreaseSecondIcon" class="@decreaseSecondIcon?.GetCssClasses() @Classes?.DecreaseSecondIcon" aria-hidden="true" />
                         </button>
                     </div>
@@ -272,23 +363,25 @@
             {
                 var isAm = IsAm();
                 <div style="@Styles?.AmPmContainer" class="bit-tpc-tpr bit-tpc-am-pm @Classes?.AmPmContainer">
+                    @* No title: it would repeat the designator the button already spells out, which
+                       a screen reader then reads a second time as the description of the button. *@
                     <button @onclick="HandleOnAmClick"
                             type="button"
-                            title="@_culture.DateTimeFormat.AMDesignator"
                             aria-pressed="@(isAm is true ? "true" : "false")"
                             style="@Styles?.AmButton"
                             class="bit-tpc-tbt bit-tpc-bam @(isAm is true ? "bit-tpc-bns" : string.Empty) @Classes?.AmButton"
-                            disabled="@(IsInteractive is false)">
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
                         @_culture.DateTimeFormat.AMDesignator
                     </button>
 
                     <button @onclick="HandleOnPmClick"
                             type="button"
-                            title="@_culture.DateTimeFormat.PMDesignator"
                             aria-pressed="@(isAm is false ? "true" : "false")"
                             style="@Styles?.PmButton"
                             class="bit-tpc-tbt bit-tpc-bpm @(isAm is false ? "bit-tpc-bns" : string.Empty) @Classes?.PmButton"
-                            disabled="@(IsInteractive is false)">
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
                         @_culture.DateTimeFormat.PMDesignator
                     </button>
                 </div>
@@ -303,17 +396,20 @@
                                 type="button"
                                 style="@Styles?.NowButton"
                                 class="bit-tpc-abn @Classes?.NowButton"
-                                disabled="@(IsInteractive is false)">
+                                disabled="@(IsInteractive is false)"
+                                aria-disabled="@((IsInteractive is false) ? "true" : null)">
                             @NowButtonText
                         </button>
                     }
                     @if (ShowClearButton)
                     {
-                        <button @onclick="HandleOnClearClick"
+                        var clearDisabled = IsInteractive is false || HasValueToClear is false;
+                        <button @onclick="HandleOnCalloutClearClick"
                                 type="button"
                                 style="@Styles?.ClearButton"
                                 class="bit-tpc-abn @Classes?.ClearButton"
-                                disabled="@(IsInteractive is false || CurrentValue.HasValue is false)">
+                                disabled="@clearDisabled"
+                                aria-disabled="@(clearDisabled ? "true" : null)">
                             @ClearButtonText
                         </button>
                     }
@@ -326,13 +422,6 @@
                     @CalloutFooterTemplate
                 </div>
             }
-
-            @*
-                The time on the inputs, announced as a whole whenever any part of it changes: a screen
-                reader follows the input that was operated by itself, but the buttons that set the whole
-                time at once - now, clear, the meridiem - would otherwise change it silently.
-            *@
-            <div class="bit-tpc-lve" aria-live="polite" aria-atomic="true">@CurrentValueAsString</div>
 
             @if (ShowCloseButton && Standalone is false)
             {
@@ -347,4 +436,70 @@
             }
         </div>
     </div>
+
+    @*
+        The time the picker holds, announced as a whole whenever any part of it changes: a screen reader
+        follows the input that was operated by itself, but everything that sets the whole time at once -
+        the now, clear and meridiem buttons, the clear button of the field - would otherwise change it
+        silently. It sits on the root rather than inside the callout, which is hidden while the callout is
+        closed and moved to the end of the document while it is open: a region in either state announces
+        nothing.
+    *@
+    <div role="status" aria-live="polite" aria-atomic="true" class="bit-tpc-vhd">
+        @* The rejection wins over the time: the time says what the picker holds, this says what is wrong
+           with it. Text only, never ErrorMessageTemplate, which is arbitrary markup meant to be seen -
+           rendering it a second time here would duplicate its ids and its handlers. *@
+        @if (ErrorMessage.HasValue())
+        {
+            @ErrorMessage
+        }
+        else
+        {
+            @CurrentValueAsString
+        }
+    </div>
+
+    @if (HasErrorMessage)
+    {
+        @* What is wrong with the value is the first thing to read under the field, so it comes before the
+           helper text. It carries no live role of its own: the region above is what announces it, so it is
+           never read out twice. *@
+        <div id="@_errorId"
+             style="@Styles?.ErrorMessageContainer"
+             class="bit-tpc-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
+        </div>
+    }
+
+    @if (HasDescription)
+    {
+        @* Described by the field through aria-describedby, so it is read as part of the picker rather than
+           as text that only happens to sit under it. *@
+        <div id="@_descriptionId"
+             style="@Styles?.DescriptionContainer"
+             class="bit-tpc-des @Classes?.DescriptionContainer">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                <span style="@Styles?.Description" class="@Classes?.Description">@Description</span>
+            }
+        </div>
+    }
+
+    @if (AriaDescription.HasValue())
+    {
+        @* aria-describedby takes an id reference, so the text written for a screen reader alone has to be
+           in the document to be pointed at - out of sight, but not out of the accessibility tree. *@
+        <span id="@_ariaDescriptionId" class="bit-tpc-vhd">@AriaDescription</span>
+    }
 </div>

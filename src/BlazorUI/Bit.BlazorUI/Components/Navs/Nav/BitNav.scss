@@ -1,59 +1,221 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// bit-trim: owners BitNav _BitNavChild _BitNavItemContainer
+// The items of the nav and their containers are drawn by components of their own, styled here with the nav.
+
+// Public CSS variables, read off the root with a fallback and never declared here, so they inherit: a value set
+// on :root re-skins every nav, one set on an ancestor every nav below it, and one on the Style of an instance
+// that nav and the navs nested in it:
+//   --bit-Nav-color                  item text and chevron color                    (default: $clr-fg-pri)
+//   --bit-Nav-icon-color             item icon color                                (default: $clr-pri)
+//   --bit-Nav-description-color      item description color                         (default: $clr-fg-ter)
+//   --bit-Nav-disabled-color         everything a disabled item draws               (default: $clr-fg-dis)
+//   --bit-Nav-hover-background       background of a hovered item, the selected one aside (default: $clr-bg-pri-hover)
+//   --bit-Nav-hover-color            text and chevron color of a hovered item, the selected one aside (default: $clr-fg-pri)
+//   --bit-Nav-hover-icon-color       icon color of a hovered item, the selected one aside (default: --bit-Nav-icon-color)
+//   --bit-Nav-hover-description-color description color of a hovered item, the selected one aside (default: --bit-Nav-description-color)
+//   --bit-Nav-pressed-background     background of a pressed item, the selected one aside (default: $clr-bg-pri-active)
+//   --bit-Nav-pressed-color          text and chevron color of a pressed item, the selected one aside (default: --bit-Nav-hover-color; $clr-fg-pri on touch)
+//   --bit-Nav-pressed-icon-color     icon color of a pressed item, the selected one aside (default: --bit-Nav-hover-icon-color; --bit-Nav-icon-color on touch)
+//   --bit-Nav-pressed-description-color description color of a pressed item, the selected one aside (default: --bit-Nav-hover-description-color; --bit-Nav-description-color on touch)
+//   --bit-Nav-selected-background    background of the selected item                (default: $clr-bg-pri-active)
+//   --bit-Nav-selected-color         text and chevron color of the selected item    (default: $clr-fg-pri)
+//   --bit-Nav-selected-icon-color    icon color of the selected item                (default: --bit-Nav-icon-color)
+//   --bit-Nav-selected-description-color description color of the selected item   (default: --bit-Nav-description-color)
+//   --bit-Nav-selected-hover-background background of the selected item while hovered (default: --bit-Nav-selected-background with 8% of --bit-Nav-selected-color mixed in)
+//   --bit-Nav-selected-pressed-background background of the selected item while pressed (default: --bit-Nav-selected-hover-background with 8% of --bit-Nav-selected-hover-color mixed in)
+//   --bit-Nav-selected-hover-color   text and chevron color of the selected item while hovered or pressed (default: --bit-Nav-selected-color)
+//   --bit-Nav-selected-hover-icon-color icon color of the selected item while hovered or pressed (default: --bit-Nav-selected-icon-color)
+//   --bit-Nav-selected-hover-description-color description color of the selected item while hovered or pressed (default: --bit-Nav-selected-description-color)
+//   --bit-Nav-indicator-color        leading bar of the selected item               (default: $clr-pri)
+//   --bit-Nav-indicator-width        thickness of that bar, never under $shp-border-width-thick in forced colors (default: $shp-border-width-thick)
+//   --bit-Nav-item-radius            corner radius of an item                       (default: $shp-radius-control)
+//   --bit-Nav-item-min-height        smallest height of an item                     (default: spacing(6))
+//   --bit-Nav-item-padding           padding of an item                             (default: spacing(0.5))
+//   --bit-Nav-item-gap               room between two items                         (default: 0)
+//   --bit-Nav-font-size              item text size                                 (default: $tg-fs-sm)
+//   --bit-Nav-icon-size              item icon size                                 (default: $siz-icon-md)
+//   --bit-Nav-description-font-size  item description size                          (default: $tg-fs-xs)
+//   --bit-Nav-header-color           group header text color                        (default: $clr-fg-pri)
+//   --bit-Nav-header-font-size       group header text size                         (default: $tg-fs-lg)
+//   --bit-Nav-header-min-height      smallest height of a group header              (default: spacing(5.5))
+//   --bit-Nav-header-border-color    rule under a group header                      (default: $clr-brd-pri)
+//   --bit-Nav-header-hover-background background of a hovered group header, one holding the selection aside (default: $clr-bg-pri-hover)
+//   --bit-Nav-separator-color        separator color                                (default: $clr-brd-sec)
+//   --bit-Nav-badge-color            text color of an item badge                    (default: $clr-err-text)
+//   --bit-Nav-badge-background       fill of an item badge and dot                  (default: $clr-err)
+//   --bit-Nav-badge-font-size        text size of an item badge                     (default: $tg-fs-2xs)
+//   --bit-Nav-badge-height           height (and smallest width) of an item badge   (default: $siz-badge-md)
+//   --bit-Nav-badge-dot-size         diameter of an item dot                        (default: $siz-badge-dot-md)
+//
+// A parameter written on the nav wins over the variable that restyles what it sets: an explicit Color over the
+// icon and indicator colors, an explicit Accent over the hover, pressed and selected backgrounds and every color
+// drawn on them - the text, the chevron, the icon and the description - and an explicit Size over the font, icon,
+// description, header and badge sizes and the item and header heights. The variables restyle the default, not a choice -
+// which is why Color, Accent and Size publish nothing while they are left unset: a class that always carried the
+// default would be indistinguishable from one that was asked for.
+
+// The colors the parts of an item have at rest, which the hovered, pressed and selected ones fall back on.
+$nav-icon-color: var(--bit-Nav-icon-color, #{$clr-pri});
+$nav-description-color: var(--bit-Nav-description-color, #{$clr-fg-ter});
+
+// The hovered ones, which a press falls back on where the pointer can hover (see .bit-nav-ict).
+$nav-hover-color: var(--bit-Nav-hover-color, #{$clr-fg-pri});
+$nav-hover-icon-color: var(--bit-Nav-hover-icon-color, #{$nav-icon-color});
+$nav-hover-description-color: var(--bit-Nav-hover-description-color, #{$nav-description-color});
+
 // The accent fills the whole hovered or selected item, so everything drawn on top of it moves to the
 // accent's own colors at once. Each part had been given a color that reads on the page background
 // (the item text and the chevron the primary foreground, the icon the Color role, the description the
 // muted tertiary foreground), and none of those are meant to sit on a filled accent.
-@mixin accented-item-content {
-    .bit-nav-itm,
-    .bit-nav-cbt {
-        color: var(--bit-nav-clr-text);
-    }
+// A state (the hover, the press) passes $state: true and sets the variable each part is painted from rather than
+// its color, so the rules that declare the colors are the ones at rest - the parts' own rules and the selection's -
+// and a part the app paints through Classes keeps that paint under the pointer, instead of losing it to a state
+// that outranks the app's class. Each part unsets the variable on itself at rest (see .bit-nav-itm).
+// $color, $icon-color and $description-color are the state's public variables for those parts, so a theme that
+// gives the state a vivid fill can move all three with it; an explicit Accent publishes the private ones read
+// before them, and an explicit Color the icon's.
+@mixin accented-item-content($color, $icon-color, $description-color, $state: false) {
+    $text: var(--bit-nav-clr-text, #{$color});
+    $icon: var(--bit-nav-clr-icon, var(--bit-nav-clr, #{$icon-color}));
+    $des: var(--bit-nav-clr-des, #{$description-color});
 
-    .bit-nav-iic {
-        color: var(--bit-nav-clr-icon);
-    }
+    @if $state {
+        .bit-nav-itm,
+        .bit-nav-cbt {
+            --bit-nav-sfg: #{$text};
+        }
 
-    .bit-nav-des {
-        color: var(--bit-nav-clr-des);
+        .bit-nav-iic {
+            --bit-nav-sfg: #{$icon};
+        }
+
+        .bit-nav-des {
+            --bit-nav-sfg: #{$des};
+        }
+    } @else {
+        .bit-nav-itm,
+        .bit-nav-cbt {
+            color: var(--bit-nav-sfg, #{$text});
+        }
+
+        .bit-nav-iic {
+            color: var(--bit-nav-sfg, #{$icon});
+        }
+
+        .bit-nav-des {
+            color: var(--bit-nav-sfg, #{$des});
+        }
     }
 }
 
-.bit-nav {
-    color: $clr-fg-pri;
-    font-family: $tg-font-family;
+// The feedback the selection gives under the pointer: its own fill with a little of the color drawn on it mixed in,
+// which reads on any fill - a light one darkens, a vivid one under a light text lightens - so the selected item never
+// borrows the fill of an item that is not selected, which turned a vivid selection into the neutral hover grey.
+@function nav-selected-state-fill($on, $fill) {
+    @return color-mix(in srgb, #{$on} 8%, #{$fill});
+}
 
-    // The size tokens live on the root so a single class swaps the metrics of every part at once.
-    --bit-nav-item-font-size: #{$tg-fs-sm};
-    --bit-nav-item-min-height: #{spacing(6)};
-    --bit-nav-des-font-size: #{$tg-fs-xs};
-    --bit-nav-header-font-size: #{$tg-fs-lg};
-    --bit-nav-header-height: #{spacing(5.5)};
+// The colors of the selected item at rest, which its hovered and pressed ones fall back on.
+$nav-selected-background: var(--bit-Nav-selected-background, #{$clr-bg-pri-active});
+$nav-selected-color: var(--bit-Nav-selected-color, #{$clr-fg-pri});
 
-    ul {
-        margin: 0;
-        padding: 0;
-        list-style-type: none;
+// The hovered and pressed ones. The pressed fill is the hovered one with the same tint mixed in again, so a press is
+// felt over a hover and on a touch screen, where no hover applies, alike - and over a hover fill a theme set too.
+$nav-selected-hover-color: var(--bit-Nav-selected-hover-color, #{$nav-selected-color});
+$nav-selected-hover-icon-color: var(--bit-Nav-selected-hover-icon-color, var(--bit-Nav-selected-icon-color, #{$nav-icon-color}));
+$nav-selected-hover-description-color: var(--bit-Nav-selected-hover-description-color, var(--bit-Nav-selected-description-color, #{$nav-description-color}));
+$nav-selected-hover-background: var(--bit-Nav-selected-hover-background, #{nav-selected-state-fill($nav-selected-color, $nav-selected-background)});
+$nav-selected-pressed-background: var(--bit-Nav-selected-pressed-background, #{nav-selected-state-fill($nav-selected-hover-color, $nav-selected-hover-background)});
+
+// Where color-mix is not understood the selection keeps its fill under the pointer, the one a theme gives the state
+// aside - behind @supports, since a custom property keeps a value the browser cannot read and the fill reading it
+// would come out transparent.
+$nav-selected-hover-background-fallback: var(--bit-Nav-selected-hover-background, #{$nav-selected-background});
+$nav-selected-pressed-background-fallback: var(--bit-Nav-selected-pressed-background, #{$nav-selected-hover-background-fallback});
+
+// The hover and the press of the selected item (and of a collapsed branch that holds it): the fill moves to the
+// selected state's own, which an explicit Accent publishes ahead of the public variables as it does its selected fill
+// ($accent-fill, see .bit-nav-a#{$role}), and every part takes the selected state's colors rather than the ones every
+// other item gets under the pointer. The header of a collapsed group paints its text from the state color set on the
+// header itself (see .bit-nav-gcb.bit-nav-sca); the parts of an item reset it on themselves.
+@mixin selected-item-state($accent-fill, $fill, $fallback) {
+    --bit-nav-sbg: var(#{$accent-fill}, #{$fallback});
+    --bit-nav-sfg: var(--bit-nav-clr-text, #{$nav-selected-hover-color});
+
+    @supports (color: color-mix(in srgb, red, blue)) {
+        --bit-nav-sbg: var(#{$accent-fill}, #{$fill});
     }
 
-    li {
+    @include accented-item-content($nav-selected-hover-color, $nav-selected-hover-icon-color, $nav-selected-hover-description-color, $state: true);
+}
+
+@mixin disabled-item-content {
+    .bit-nav-itm,
+    .bit-nav-iic,
+    .bit-nav-des,
+    .bit-nav-cbt {
+        color: var(--bit-Nav-disabled-color, #{$clr-fg-dis});
+    }
+}
+
+$nav-private-properties: item-font-size, item-min-height, icon-size, des-font-size, header-font-size,
+                         header-min-height, chevron-size, badge-font-size, badge-height, badge-dot-size, clr, clr-text,
+                         clr-hover, clr-active, clr-sel-hover, clr-sel-active, clr-icon, clr-des;
+
+.bit-nav {
+    font-family: $tg-font-family;
+    color: var(--bit-Nav-color, #{$clr-fg-pri});
+
+    // The size tokens live on the root so a single class swaps the metrics of every part at once. They, and the
+    // colors the Color and Accent classes publish, start out unset on every root, so a nav never inherits another
+    // one's choice from an ancestor carrying those classes; the classes - declared further down at the same
+    // weight - still win on the root that carries them. Left unset, each sends the var() reading it on to the
+    // public variable and then to the default (the medium size, the primary Color, the PrimaryBackground Accent),
+    // which is what lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
+    @each $name in $nav-private-properties {
+        --bit-nav-#{$name}: initial;
+    }
+
+    // Only the nav's own lists (.bit-nav-lst) are laid out here: a template can render a list of its own
+    // inside an item, and a descendant selector would force it into the nav's column and gaps.
+    .bit-nav-lst {
+        margin: 0;
         padding: 0;
+        display: flex;
+        list-style-type: none;
+        flex-direction: column;
+        gap: var(--bit-Nav-item-gap, 0);
+
+        > li {
+            padding: 0;
+        }
+
+        // A nested list starts right below the item that owns it, so the gap between two items is put between
+        // that item and its first child too, which is what keeps the rhythm of a tree the same at every level.
+        > li > .bit-nav-lst {
+            margin-top: var(--bit-Nav-item-gap, 0);
+        }
     }
 
     &.bit-dis {
-        cursor: none;
+        cursor: default;
         pointer-events: none;
         background-color: transparent;
 
-        .bit-nav-itm,
-        .bit-nav-iic {
-            color: $clr-fg-dis;
+        @include disabled-item-content;
+
+        .bit-nav-gcb,
+        .bit-nav-ghd {
+            color: var(--bit-Nav-disabled-color, #{$clr-fg-dis});
         }
     }
 }
 
 .bit-nav-ftw {
     width: fit-content;
+    // Never wider than its container, so the items' ellipsis shows instead of the nav overflowing.
+    max-width: 100%;
 }
 
 .bit-nav-flw {
@@ -64,13 +226,12 @@
 .bit-nav-cbt {
     cursor: pointer;
     user-select: none;
-    color: $clr-fg-pri;
-    font-size: $tg-fs-xs;
+    font-size: var(--bit-nav-chevron-size, #{$tg-fs-xs});
     min-width: spacing(3.375);
     background-color: transparent;
 
     i {
-        transition: transform $mot-duration-short linear 0s;
+        transition: transform $mot-duration-short $mot-easing;
     }
 }
 
@@ -90,33 +251,71 @@
     display: flex;
     gap: spacing(1.25);
     align-items: center;
-    height: var(--bit-nav-header-height);
-    border-bottom: $siz-divider $shp-border-style $clr-brd-pri;
+    // A button does not inherit the font of the page, so the header would be set in the browser's own.
+    font-family: inherit;
+    color: var(--bit-Nav-header-color, #{$clr-fg-pri});
+    // The state background the hover and the press set (see accented-item-content), and the state color those of a
+    // header holding the selection set (see selected-item-state), unset at rest.
+    --bit-nav-sbg: initial;
+    --bit-nav-sfg: initial;
+    background-color: var(--bit-nav-sbg, transparent);
+    min-height: var(--bit-nav-header-min-height, var(--bit-Nav-header-min-height, #{spacing(5.5)}));
+    border-bottom: $siz-divider $shp-border-style var(--bit-Nav-header-border-color, #{$clr-brd-pri});
+    transition: background-color $mot-duration-short $mot-easing;
 
     .bit-nav-iit {
         gap: spacing(1.25);
+    }
+
+    // The header is a neutral surface rather than an item, so it takes the neutral hover of the page rather
+    // than the Accent, which a semantic role would turn into a vivid fill under text that does not follow it.
+    // A collapsed header holding the selection is drawn as the selected item instead, and so are its states,
+    // Accent included (see .bit-nav-sel, .bit-nav-sca).
+    @media (hover: hover) {
+        &:hover:not(:disabled, .bit-nav-gst) {
+            --bit-nav-sbg: var(--bit-Nav-header-hover-background, #{$clr-bg-pri-hover});
+        }
+    }
+
+    &:active:not(:disabled, .bit-nav-gst) {
+        --bit-nav-sbg: #{$clr-bg-pri-active};
     }
 
     &:focus-visible {
         @include focus-ring;
     }
 
-    &:disabled {
+    &:disabled,
+    &.bit-nav-dis {
         cursor: default;
-        color: $clr-fg-dis;
+        color: var(--bit-Nav-disabled-color, #{$clr-fg-dis});
 
         .bit-nav-ghd,
-        .bit-nav-iic {
-            color: $clr-fg-dis;
+        .bit-nav-iic,
+        .bit-nav-des {
+            color: var(--bit-Nav-disabled-color, #{$clr-fg-dis});
         }
     }
+}
+
+// The header of a group that cannot be toggled is its label, not a control, so it keeps none of the cues
+// of one: no pointer cursor and no hover.
+.bit-nav-gst {
+    cursor: default;
+    user-select: text;
+}
+
+// Text read by assistive technologies and drawn nowhere: the name of a static group header in the rail,
+// which hides its visible text, and the sentence saying that an item opens a new tab.
+.bit-nav-vhd {
+    @include visually-hidden;
 }
 
 .bit-nav-ghd {
     flex-grow: 1;
     display: flex;
     font-weight: $tg-fw-medium;
-    font-size: var(--bit-nav-header-font-size);
+    font-size: var(--bit-nav-header-font-size, var(--bit-Nav-header-font-size, #{$tg-fs-lg}));
 }
 
 .bit-nav-itg {
@@ -138,13 +337,20 @@
     cursor: pointer;
     flex-flow: column;
     gap: spacing(0.25);
-    padding: spacing(0.5);
     box-sizing: border-box;
     border-color: transparent;
-    min-height: var(--bit-nav-item-min-height);
-    border-radius: $shp-radius-control;
-    border-inline-start-width: spacing(0.375);
+    // The state background the hover and the press set (see accented-item-content), and the state color those of the
+    // selected item set (see selected-item-state), which its parts read only after resetting it on themselves; both
+    // unset at rest, so an item never takes them from an outer one.
+    --bit-nav-sbg: initial;
+    --bit-nav-sfg: initial;
+    background-color: var(--bit-nav-sbg, transparent);
     border-inline-start-style: $shp-border-style;
+    padding: var(--bit-Nav-item-padding, #{spacing(0.5)});
+    border-radius: var(--bit-Nav-item-radius, #{$shp-radius-control});
+    min-height: var(--bit-nav-item-min-height, var(--bit-Nav-item-min-height, #{spacing(6)}));
+    border-inline-start-width: var(--bit-Nav-indicator-width, #{$shp-border-width-thick});
+    transition: background-color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
 
     // The item resets every inherited style with `all: unset`, which also drops the native focus
     // indicator, so the themed one has to be put back explicitly.
@@ -154,17 +360,44 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-nav-clr-hover);
+            --bit-nav-sbg: var(--bit-nav-clr-hover, var(--bit-Nav-hover-background, #{$clr-bg-pri-hover}));
 
-            @include accented-item-content;
+            @include accented-item-content($nav-hover-color, $nav-hover-icon-color, $nav-hover-description-color, $state: true);
+        }
+    }
+
+    // Unlike the hover, the pressed state is not kept to the pointers that can hover: on a touch screen it is
+    // the one feedback a tap gets before the page changes. There no hover ever applies, so the pressed colors fall
+    // back on the ones at rest rather than on a hover's that a theme set for a fill the tap never shows.
+    &:active {
+        --bit-nav-sbg: var(--bit-nav-clr-active, var(--bit-Nav-pressed-background, #{$clr-bg-pri-active}));
+
+        @include accented-item-content(
+            var(--bit-Nav-pressed-color, #{$clr-fg-pri}),
+            var(--bit-Nav-pressed-icon-color, #{$nav-icon-color}),
+            var(--bit-Nav-pressed-description-color, #{$nav-description-color}),
+            $state: true);
+    }
+
+    // Where the pointer can hover, a press is a hover too, so the pressed colors fall back on the hovered ones the
+    // item is already drawn in. Declared after the rule above at the same weight, so it wins wherever it applies.
+    @media (hover: hover) {
+        &:active {
+            @include accented-item-content(
+                var(--bit-Nav-pressed-color, #{$nav-hover-color}),
+                var(--bit-Nav-pressed-icon-color, #{$nav-hover-icon-color}),
+                var(--bit-Nav-pressed-description-color, #{$nav-hover-description-color}),
+                $state: true);
         }
     }
 }
 
+// No gap between the chevron and the content: a childless item makes up for the chevron it lacks with
+// IndentPadding alone, and so does the description under a parent, so any room added here would push the
+// text of a parent out of line with the text of its siblings and with its own description.
 .bit-nav-mct {
     flex-grow: 1;
     display: flex;
-    gap: spacing(0.25);
 }
 
 .bit-nav-itm {
@@ -175,13 +408,79 @@
     overflow: hidden;
     font-weight: $tg-fw-regular;
     user-select: none;
-    color: $clr-fg-pri;
     align-items: center;
     white-space: nowrap;
     flex-flow: row nowrap;
     text-overflow: ellipsis;
-    font-size: var(--bit-nav-item-font-size);
+    // The state color the hover and the press of the item set (see accented-item-content), unset at rest so a part
+    // never takes it from an outer one; .bit-nav-cbt, .bit-nav-iic and .bit-nav-des do the same.
+    --bit-nav-sfg: initial;
+    color: var(--bit-nav-sfg, var(--bit-Nav-color, #{$clr-fg-pri}));
     letter-spacing: $tg-ctrl-letter-spacing;
+    font-size: var(--bit-nav-item-font-size, var(--bit-Nav-font-size, #{$tg-fs-sm}));
+    transition: color $mot-duration-short $mot-easing;
+}
+
+// The text is the one part of the row that gives up room: an item narrower than its label keeps its icon
+// whole and ends the label with an ellipsis, rather than clipping the label mid-letter at the item's edge.
+.bit-nav-itx {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+// The end of an item: its suffix template and its badge, kept whole at the far end of the row while the text before
+// it gives up its room to an ellipsis.
+.bit-nav-sfx {
+    // The containing block of the visually hidden .bit-nav-vhd inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
+    flex-shrink: 0;
+    display: inline-flex;
+    gap: spacing(0.5);
+    align-items: center;
+    margin-inline-start: auto;
+}
+
+// The badge keeps its own colors in every state of the item - hovered, pressed, selected - since it marks the item
+// rather than its state. Its height is the design system's badge height for the Size of the nav.
+.bit-nav-bdg {
+    display: inline-flex;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    min-width: var(--bit-nav-badge-height, var(--bit-Nav-badge-height, #{$siz-badge-md}));
+    height: var(--bit-nav-badge-height, var(--bit-Nav-badge-height, #{$siz-badge-md}));
+    padding: 0 spacing(0.75);
+    border-radius: $shp-radius-full;
+    font-weight: $tg-fw-semibold;
+    font-size: var(--bit-nav-badge-font-size, var(--bit-Nav-badge-font-size, #{$tg-fs-2xs}));
+    color: var(--bit-Nav-badge-color, #{$clr-err-text});
+    background-color: var(--bit-Nav-badge-background, #{$clr-err});
+}
+
+// The rail has no room left after the icon, so the badge is pinned to the corner of the item over it, where the rail
+// draws the attention a badge in the row would. The item says so with a class of its own (.bit-nav-icb) rather than
+// through the rail's class on the root, which would also reach a nav rendered inside an item template of the rail.
+.bit-nav-icb {
+    position: relative;
+
+    > .bit-nav-sfx {
+        margin: 0;
+        position: absolute;
+        top: spacing(0.5);
+        inset-inline-end: spacing(0.5);
+    }
+}
+
+// The dot only marks the item as needing attention, so it carries no text and stays perfectly round.
+.bit-nav-bdt {
+    padding: 0;
+    min-width: var(--bit-nav-badge-dot-size, var(--bit-Nav-badge-dot-size, #{$siz-badge-dot-md}));
+    width: var(--bit-nav-badge-dot-size, var(--bit-Nav-badge-dot-size, #{$siz-badge-dot-md}));
+    height: var(--bit-nav-badge-dot-size, var(--bit-Nav-badge-dot-size, #{$siz-badge-dot-md}));
 }
 
 .bit-nav-des {
@@ -190,13 +489,15 @@
     cursor: pointer;
     overflow: hidden;
     text-align: start;
-    color: $clr-fg-ter;
     white-space: nowrap;
     font-weight: $tg-fw-regular;
-    font-size: var(--bit-nav-des-font-size);
     background: transparent;
     text-overflow: ellipsis;
     padding-inline-start: spacing(2.75);
+    --bit-nav-sfg: initial;
+    color: var(--bit-nav-sfg, #{$nav-description-color});
+    font-size: var(--bit-nav-des-font-size, var(--bit-Nav-description-font-size, #{$tg-fs-xs}));
+    transition: color $mot-duration-short $mot-easing;
 }
 
 .bit-nav-itm,
@@ -209,6 +510,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    --bit-nav-sfg: initial;
+    color: var(--bit-nav-sfg, var(--bit-Nav-color, #{$clr-fg-pri}));
+    transition: color $mot-duration-short $mot-easing;
 
     &:focus-visible {
         @include focus-ring;
@@ -216,7 +520,12 @@
 }
 
 .bit-nav-iic {
-    color: var(--bit-nav-clr);
+    line-height: 1;
+    flex-shrink: 0;
+    --bit-nav-sfg: initial;
+    color: var(--bit-nav-sfg, var(--bit-nav-clr, #{$nav-icon-color}));
+    font-size: var(--bit-nav-icon-size, var(--bit-Nav-icon-size, #{$siz-icon-md}));
+    transition: color $mot-duration-short $mot-easing;
 }
 
 .bit-nav-ion {
@@ -227,7 +536,6 @@
 
     .bit-nav-itm {
         padding: spacing(2);
-        font-size: $tg-fs-md;
     }
 
     .bit-nav-itx {
@@ -244,90 +552,236 @@
     .bit-nav-iit {
         justify-content: center;
     }
-
-    .bit-nav-gcb .bit-nav-iic {
-        font-size: $tg-fs-md;
-    }
 }
 
-.bit-nav-sel {
-    border-color: var(--bit-nav-clr);
-    background-color: var(--bit-nav-clr-active);
+// A collapsed branch that holds the selected item is drawn as the selected one (.bit-nav-sca), so the reader
+// never loses track of where the current page is when the branch that leads to it is closed. It is only the
+// look that is borrowed: aria-current stays on the selected item alone.
+.bit-nav-sel,
+.bit-nav-sca {
+    border-color: var(--bit-nav-clr, var(--bit-Nav-indicator-color, #{$clr-pri}));
+    background-color: var(--bit-nav-sbg, var(--bit-nav-clr-active, var(--bit-Nav-selected-background, #{$clr-bg-pri-active})));
 
-    @include accented-item-content;
+    @include accented-item-content(
+        var(--bit-Nav-selected-color, #{$clr-fg-pri}),
+        var(--bit-Nav-selected-icon-color, #{$nav-icon-color}),
+        var(--bit-Nav-selected-description-color, #{$nav-description-color}));
 
     .bit-nav-itm {
         font-weight: $tg-fw-semibold;
     }
+
+    // The selection outlasts the pointer: hovered or pressed, the selected item gives its feedback on its own fill and
+    // in its own colors rather than taking the ones every other item gets, so the item just picked - which the pointer
+    // is still on right after the click - never looks unselected, and a collapsed branch holding it still answers the
+    // pointer that toggles it. The :not(:disabled) keeps a disabled group header out (a native button, which still
+    // matches :hover), and is what gives these selectors the weight of the header's own states (.bit-nav-gcb), which
+    // they win over by coming later; the states of an item (.bit-nav-ict) weigh less.
+    @media (hover: hover) {
+        &:hover:not(:disabled) {
+            @include selected-item-state(--bit-nav-clr-sel-hover, $nav-selected-hover-background, $nav-selected-hover-background-fallback);
+        }
+    }
+
+    &:active:not(:disabled) {
+        @include selected-item-state(--bit-nav-clr-sel-active, $nav-selected-pressed-background, $nav-selected-pressed-background-fallback);
+    }
+}
+
+// A collapsed group header that holds the selected item takes the same cue: the selected background, the
+// indicator color on the rule under it, and the selected text color for its text and chevron.
+.bit-nav-gcb.bit-nav-sca {
+    color: var(--bit-nav-sfg, var(--bit-nav-clr-text, var(--bit-Nav-selected-color, #{$clr-fg-pri})));
 }
 
 .bit-nav-dis {
+    cursor: default;
     pointer-events: none;
+
+    @include disabled-item-content;
+
+    // The badge keeps its own colors, so it is dimmed with the item rather than repainted in the disabled color. The
+    // path to it is spelled out, so a nav rendered inside an item template keeps its own badges as they are.
+    > .bit-nav-mct > .bit-nav-itm > .bit-nav-sfx > .bit-nav-bdg {
+        opacity: $opa-dis;
+    }
 
     .bit-nav-itm,
     .bit-nav-iic {
-        color: $clr-fg-dis;
         pointer-events: none;
     }
 }
 
 .bit-nav-sep {
     height: 0;
-    border: $shp-border-width $shp-border-style $clr-brd-sec;
+    border: none;
+    margin-block: spacing(0.5);
+    border-top: $siz-divider $shp-border-style var(--bit-Nav-separator-color, #{$clr-brd-sec});
 }
 
 
+// Published only by an explicit Size; an unset one is the medium nav, which the reads spell out after the public
+// variables.
 .bit-nav-sm {
     --bit-nav-item-font-size: #{$tg-fs-xs};
     --bit-nav-item-min-height: #{spacing(4.5)};
+    --bit-nav-icon-size: #{$siz-icon-sm};
     --bit-nav-des-font-size: #{$tg-fs-2xs};
     --bit-nav-header-font-size: #{$tg-fs-sm};
-    --bit-nav-header-height: #{spacing(4.5)};
+    --bit-nav-header-min-height: #{spacing(4.5)};
+    --bit-nav-chevron-size: #{$tg-fs-2xs};
+    --bit-nav-badge-font-size: #{$tg-fs-2xs};
+    --bit-nav-badge-height: #{$siz-badge-sm};
+    --bit-nav-badge-dot-size: #{$siz-badge-dot-sm};
 }
 
 .bit-nav-md {
     --bit-nav-item-font-size: #{$tg-fs-sm};
     --bit-nav-item-min-height: #{spacing(6)};
+    --bit-nav-icon-size: #{$siz-icon-md};
     --bit-nav-des-font-size: #{$tg-fs-xs};
     --bit-nav-header-font-size: #{$tg-fs-lg};
-    --bit-nav-header-height: #{spacing(5.5)};
+    --bit-nav-header-min-height: #{spacing(5.5)};
+    --bit-nav-chevron-size: #{$tg-fs-xs};
+    --bit-nav-badge-font-size: #{$tg-fs-2xs};
+    --bit-nav-badge-height: #{$siz-badge-md};
+    --bit-nav-badge-dot-size: #{$siz-badge-dot-md};
 }
 
 .bit-nav-lg {
     --bit-nav-item-font-size: #{$tg-fs-md};
     --bit-nav-item-min-height: #{spacing(7)};
+    --bit-nav-icon-size: #{$siz-icon-lg};
     --bit-nav-des-font-size: #{$tg-fs-sm};
     --bit-nav-header-font-size: #{$tg-fs-xl};
-    --bit-nav-header-height: #{spacing(6.5)};
+    --bit-nav-header-min-height: #{spacing(6.5)};
+    --bit-nav-chevron-size: #{$tg-fs-sm};
+    --bit-nav-badge-font-size: #{$tg-fs-xs};
+    --bit-nav-badge-height: #{$siz-badge-lg};
+    --bit-nav-badge-dot-size: #{$siz-badge-dot-lg};
 }
 
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by
+// an explicit Accent; an unset one is the PrimaryBackground accent, which the reads spell out after the public
+// variables.
 @each $role, $tokens in $bit-color-roles {
     .bit-nav-a#{$role} {
         --bit-nav-clr-text: #{role($tokens, on)};
         --bit-nav-clr-hover: #{role($tokens, hover)};
         --bit-nav-clr-active: #{role($tokens, active)};
+        // The hovered and pressed fills of the selected item, mixed off the selected one as the defaults are (see
+        // selected-item-state); where color-mix is not understood, the selected one itself.
+        --bit-nav-clr-sel-hover: #{role($tokens, active)};
+        --bit-nav-clr-sel-active: #{role($tokens, active)};
+
+        @supports (color: color-mix(in srgb, red, blue)) {
+            --bit-nav-clr-sel-hover: #{nav-selected-state-fill(role($tokens, on), role($tokens, active))};
+            --bit-nav-clr-sel-active: #{nav-selected-state-fill(role($tokens, on), nav-selected-state-fill(role($tokens, on), role($tokens, active)))};
+        }
 
         @if role($tokens, kind) == semantic {
             // A semantic accent covers the item with a vivid fill, so the icon and the description
             // follow the accent's on-color together with the text.
             --bit-nav-clr-icon: #{role($tokens, on)};
             --bit-nav-clr-des: #{role($tokens, on)};
-        }
-        @else {
-            // A surface accent only tints the item's background, so the icon stays on the Color role
-            // and the description stays muted, exactly as they are when the item is not selected.
-            --bit-nav-clr-icon: var(--bit-nav-clr);
-            --bit-nav-clr-des: #{$clr-fg-ter};
+        } @else {
+            // A surface accent only tints the item's background, so the icon and the description keep the colors
+            // they have at rest on it - published all the same, so they are read ahead of the hovered, pressed and
+            // selected variables the way the accent's text color is, which a theme sets for its own fill rather than
+            // for this one (see accented-item-content). The icon still follows an explicit Color.
+            --bit-nav-clr-icon: var(--bit-nav-clr, #{$nav-icon-color});
+            --bit-nav-clr-des: #{$nav-description-color};
         }
     }
 }
 
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by
+// an explicit Color; an unset one is the primary role, which the reads spell out after the public variables.
 @each $role, $tokens in $bit-color-roles {
     .bit-nav-#{$role} {
         --bit-nav-clr: #{role($tokens, main)};
+    }
+}
+
+
+// Windows High Contrast / forced-colors: the palette is reduced to the system pair, which discards the
+// backgrounds the selection and the hover are drawn with. The leading bar is what is left to mark the
+// selected item (and the collapsed branch that holds it), so it is painted in the system Highlight, and a
+// disabled item is drawn in GrayText, the one color this mode keeps for "not available".
+@media (forced-colors: active) {
+    // Every item reserves the bar's room with a transparent border, which this mode forces to a system color like any
+    // other, so every row would carry a bar and the selected one would differ by its color alone. The bar of an item
+    // that is not selected is drawn in Canvas instead - the item's own background here, so it vanishes - and keeps its
+    // width, so no content moves when the selection does. The selected item's rule follows at the same weight and wins.
+    // The bar being the one mark of the selection left in this mode, it is never thinner than the thick stroke: a nav
+    // whose --bit-Nav-indicator-width removes it, to mark the selection by its fill alone, would lose the selection
+    // along with the fill. A wider bar is kept, and every item takes the same width, so nothing moves either. A
+    // unitless 0 is no length inside max(), which then falls back on the medium border width the browsers draw.
+    .bit-nav-ict {
+        @include forced-hidden-border;
+        border-inline-start-width: max(var(--bit-Nav-indicator-width, #{$shp-border-width-thick}), #{$shp-border-width-thick});
+    }
+
+    .bit-nav-sel,
+    .bit-nav-sca {
+        border-color: Highlight;
+    }
+
+    // With the fills gone, what is drawn on a hovered, pressed or selected item is read straight off the canvas -
+    // and an Accent moves it to the role's on-color, Canvas for the primary role and the foreground ones, which
+    // Chromium draws over the Canvas backplate it puts behind every line of text: the item's label, icon and
+    // description would vanish the moment it is pointed at or picked. The colors the Accent publishes are set back
+    // to the ones the item has at rest, the system text color for the words and the icon's own role (LinkText
+    // unless a Color says otherwise). They are read ahead of the public state variables too, so a theme that pairs
+    // a state with the primary on-color is overruled in the same stroke. The rule follows the Accent classes at
+    // the same weight, on the root they are published on.
+    .bit-nav {
+        --bit-nav-clr-text: CanvasText;
+        --bit-nav-clr-des: CanvasText;
+        --bit-nav-clr-icon: var(--bit-nav-clr, #{$nav-icon-color});
+    }
+
+    // The fills themselves can survive the mode where they are a system color - a primary Accent fills the hovered,
+    // pressed and selected item with LinkText - and Firefox, which draws no backplate, would set the words above on
+    // it. Every item is painted on the canvas instead, and the bar carries the selection.
+    .bit-nav-ict,
+    .bit-nav-gcb,
+    .bit-nav-sel,
+    .bit-nav-sca {
+        background-color: Canvas;
+    }
+
+    // The badge's count is Canvas on a CanvasText fill, which the backplate would empty the same way.
+    .bit-nav-bdg {
+        forced-color-adjust: none;
+        color: Canvas;
+        background-color: CanvasText;
+    }
+
+    // A background role is the page's own color, Canvas here, which the icons would be drawn in - invisible in
+    // every engine. It is the system text color instead.
+    @each $role in $bit-background-color-roles {
+        .bit-nav-#{$role} {
+            --bit-nav-clr: CanvasText;
+        }
+    }
+
+    .bit-nav-dis,
+    .bit-nav.bit-dis,
+    .bit-nav-gcb:disabled {
+        .bit-nav-itm,
+        .bit-nav-iic,
+        .bit-nav-des,
+        .bit-nav-cbt,
+        .bit-nav-ghd {
+            color: GrayText;
+        }
+    }
+
+    // Every item of a disabled nav is a .bit-nav-dis too, so this one path covers both.
+    .bit-nav-dis > .bit-nav-mct > .bit-nav-itm > .bit-nav-sfx > .bit-nav-bdg {
+        background-color: GrayText;
     }
 }

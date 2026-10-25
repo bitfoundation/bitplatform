@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// How often a recurring event repeats. The step between two occurrences is this unit multiplied by

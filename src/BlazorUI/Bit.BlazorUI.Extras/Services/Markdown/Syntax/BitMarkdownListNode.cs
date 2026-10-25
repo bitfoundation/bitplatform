@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>An ordered or unordered list.</summary>
 public sealed class BitMarkdownListNode : BitMarkdownNode

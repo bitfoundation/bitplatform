@@ -1,5 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -7,7 +6,8 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <remarks>
 /// It renders a semantic <c>header</c> element and lays its content out in a horizontal line whose color, variant,
-/// size, alignment, wrapping, gutters and maximum width are all parameters. It can stay in the flow of the page or be
+/// size, alignment, wrapping, gutters and maximum width are all parameters, with an optional second row under it
+/// (<see cref="ExtensionContent"/>) for tabs or a search box. It can stay in the flow of the page or be
 /// pinned to the top of the viewport - <see cref="Fixed"/>, <see cref="Sticky"/>, revealing itself only while the page
 /// is scrolled up (<see cref="Reveal"/>), lifting itself off the content once the page is scrolled at all
 /// (<see cref="ElevateOnScroll"/>), or slid out of the way on demand (<see cref="Hidden"/>).
@@ -19,6 +19,7 @@ namespace Bit.BlazorUI;
 public partial class BitHeader : BitComponentBase
 {
     private bool _hidden;
+    private bool _extended;
     private bool _scrolled;
     private bool _slidable;
     private bool _settingUp;
@@ -28,6 +29,7 @@ public partial class BitHeader : BitComponentBase
     private DotNetObjectReference<BitHeader>? _dotnetObj;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+    [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
 
 
@@ -99,6 +101,9 @@ public partial class BitHeader : BitComponentBase
     /// and as the text and border color in the Outline and Text variants.
     /// <br />
     /// When not set, the header keeps the primary background and foreground colors of the current theme.
+    /// <br />
+    /// An explicit value wins over the <c>--bit-Header-*</c> color variables; left unset, the header keeps those theme
+    /// colors unless the variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -136,6 +141,20 @@ public partial class BitHeader : BitComponentBase
     public bool Elevated { get; set; }
 
     /// <summary>
+    /// Gets or sets the content of a second row rendered under the main row of the BitHeader, such as a row of
+    /// tabs, a search box or a breadcrumb.
+    /// </summary>
+    /// <remarks>
+    /// The row shares the surface of the header - its background, its border, its shadow and every scroll
+    /// behavior - and lines up with the main row: it takes the same inline gutter and the same
+    /// <see cref="MaxWidth"/>, and it has no block padding of its own, so a row of tabs sits right on the
+    /// bottom edge. Only the main row takes <see cref="Alignment"/>, <see cref="Gap"/> and <see cref="Wrap"/>;
+    /// this one is a plain horizontal line whose content brings its own layout. With this row present,
+    /// <see cref="Height"/> is a minimum height for the whole header rather than an exact one.
+    /// </remarks>
+    [Parameter] public RenderFragment? ExtensionContent { get; set; }
+
+    /// <summary>
     /// Renders the header with a fixed position at the top of the page.
     /// </summary>
     /// <remarks>
@@ -166,6 +185,11 @@ public partial class BitHeader : BitComponentBase
     /// <remarks>
     /// The height includes the paddings and the border of the header (the root element is a border-box).
     /// <br />
+    /// With no <see cref="ExtensionContent"/> it is the exact height of the header. With an
+    /// <see cref="ExtensionContent"/> row it becomes a minimum height instead: the main row grows into whatever
+    /// that row leaves, but the header grows past it rather than clipping either row when the two together
+    /// need more room.
+    /// <br />
     /// A header that really sits at the top of the screen - <see cref="Fixed"/>, or <see cref="Sticky"/>
     /// without an <see cref="Absolute"/> outranking it - adds the top safe area inset of the device on top of
     /// it, so the content of the header keeps the height that was asked for instead of losing part of it to
@@ -185,7 +209,9 @@ public partial class BitHeader : BitComponentBase
     /// workflow (a distraction free reading mode, a full screen media view) needs.
     /// <br />
     /// A hidden header is also marked <c>inert</c>, so nothing inside it can be clicked or reached with the keyboard
-    /// while it is out of the view. Unlike <see cref="BitComponentBase.Visibility"/>, which switches the header off at
+    /// while it is out of the view - and a focus left inside it drops to the body of the page, so an action that
+    /// hides the header from within it should move the focus somewhere meaningful first.
+    /// Unlike <see cref="BitComponentBase.Visibility"/>, which switches the header off at
     /// once, this slides it in and out and keeps the room it occupies in the layout.
     /// <br />
     /// It only slides over a <see cref="Fixed"/> or <see cref="Sticky"/> header; a header in the normal flow is
@@ -240,7 +266,8 @@ public partial class BitHeader : BitComponentBase
     /// The header is always revealed at the very top of the scrolling area.
     /// <br />
     /// Unlike <see cref="Hidden"/>, a header rolled up by the scroll stays reachable: it comes back as soon as
-    /// anything inside it takes the focus, so a keyboard user is never stranded on a control they cannot see.
+    /// anything inside it takes the focus, and it does not roll up again while it holds the keyboard focus, so a
+    /// keyboard user is never stranded on a control they cannot see.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Reveal { get; set; }
@@ -290,6 +317,10 @@ public partial class BitHeader : BitComponentBase
     /// <summary>
     /// The size of the BitHeader, which determines the paddings around its content.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Header-padding-block</c> and <c>--bit-Header-padding-inline</c>; left unset,
+    /// the header is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -303,8 +334,9 @@ public partial class BitHeader : BitComponentBase
     /// focused, so it costs a sighted user nothing.
     /// <br />
     /// The value is a plain href, so it points at the id of the main content of the page (for example
-    /// <c>#main</c>). Give that target a <c>tabindex="-1"</c> so the browser really moves the focus there
-    /// instead of only scrolling to it.
+    /// <c>#main</c>). A bare fragment like that is rendered as the address of the current page followed by it,
+    /// since the base href of the app would otherwise resolve it to another page, and activating the link scrolls
+    /// the target into view and moves the focus onto it. Any other href is rendered as it is.
     /// </remarks>
     [Parameter] public string? SkipLinkHref { get; set; }
 
@@ -403,6 +435,42 @@ public partial class BitHeader : BitComponentBase
 
 
     /// <summary>
+    /// Whether the skip link points at an element of this very page, which a bare "#id" names.
+    /// </summary>
+    private bool _IsFragmentSkipLink => SkipLinkHref is { Length: > 1 } href && href[0] == '#';
+
+    /// <summary>
+    /// The href of the skip link: for a bare "#id", the address of the current page, less any fragment it already
+    /// has, followed by that fragment, so the link still names this page where nothing handles its click (static
+    /// rendering); any other href as it is.
+    /// </summary>
+    private string? _SkipLinkHref
+    {
+        get
+        {
+            if (_IsFragmentSkipLink is false) return SkipLinkHref;
+
+            var uri = _navigationManager.Uri;
+            var hashIndex = uri.IndexOf('#');
+
+            return $"{(hashIndex < 0 ? uri : uri[..hashIndex])}{SkipLinkHref}";
+        }
+    }
+
+    /// <summary>
+    /// Scrolls the target of a fragment skip link into view and moves the focus onto it, so the next Tab carries on
+    /// from the content rather than from the header the link sits in.
+    /// </summary>
+    private async Task HandleSkipLinkClick()
+    {
+        if (_IsFragmentSkipLink is false) return;
+
+        await _js.BitUtilsScrollElementIntoView(Uri.UnescapeDataString(SkipLinkHref![1..]), true);
+    }
+
+
+
+    /// <summary>
     /// Called by the scroll script of the header when the scroll direction of the page flips.
     /// <br />
     /// <strong>This method is not intended to be called from application code.</strong>
@@ -412,7 +480,7 @@ public partial class BitHeader : BitComponentBase
     {
         // The script is disposed asynchronously, so a scroll of the very last frame can still land here
         // after the component is gone, where there is nothing left to re-render.
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         if (_hidden == hidden) return;
 
@@ -433,7 +501,7 @@ public partial class BitHeader : BitComponentBase
     [JSInvokable("OnScrollChange")]
     public async Task _OnScrollChange(bool scrolled)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         if (_scrolled == scrolled) return;
 
@@ -461,27 +529,9 @@ public partial class BitHeader : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-hdr-pri",
-            BitColor.Secondary => "bit-hdr-sec",
-            BitColor.Tertiary => "bit-hdr-ter",
-            BitColor.Info => "bit-hdr-inf",
-            BitColor.Success => "bit-hdr-suc",
-            BitColor.Warning => "bit-hdr-wrn",
-            BitColor.SevereWarning => "bit-hdr-swr",
-            BitColor.Error => "bit-hdr-err",
-            BitColor.PrimaryBackground => "bit-hdr-pbg",
-            BitColor.SecondaryBackground => "bit-hdr-sbg",
-            BitColor.TertiaryBackground => "bit-hdr-tbg",
-            BitColor.PrimaryForeground => "bit-hdr-pfg",
-            BitColor.SecondaryForeground => "bit-hdr-sfg",
-            BitColor.TertiaryForeground => "bit-hdr-tfg",
-            BitColor.PrimaryBorder => "bit-hdr-pbr",
-            BitColor.SecondaryBorder => "bit-hdr-sbr",
-            BitColor.TertiaryBorder => "bit-hdr-tbr",
-            _ => string.Empty
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-Header-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-hdr"));
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -491,13 +541,7 @@ public partial class BitHeader : BitComponentBase
             _ => "bit-hdr-fil"
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-hdr-sm",
-            BitSize.Medium => "bit-hdr-md",
-            BitSize.Large => "bit-hdr-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-hdr"));
 
         ClassBuilder.Register(() => Alignment switch
         {
@@ -560,11 +604,18 @@ public partial class BitHeader : BitComponentBase
         // header shorter than it was asked to be. Adding the inset to the height keeps the two apart: the
         // height is the header, the inset is the room the device asks for above it. env() resolves to
         // the 0px fallback wherever there is no inset, which leaves the plain height untouched.
-        StyleBuilder.Register(() => Height.HasValue
-                                    ? (IsPinned
-                                        ? $"height:calc({Height}px + env(safe-area-inset-top, 0px))"
-                                        : $"height:{Height}px")
-                                    : string.Empty);
+        // With a second row the height is only a floor, so the two rows together decide the total height
+        // rather than the extension row eating into the main one or overflowing the header.
+        StyleBuilder.Register(() =>
+        {
+            if (Height.HasValue is false) return string.Empty;
+
+            var property = _extended ? "min-height" : "height";
+
+            return IsPinned
+                    ? FormattableString.Invariant($"{property}:calc({Height}px + env(safe-area-inset-top, 0px))")
+                    : FormattableString.Invariant($"{property}:{Height}px");
+        });
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-hdr-gap:{Gap}" : string.Empty);
 
@@ -573,7 +624,6 @@ public partial class BitHeader : BitComponentBase
 
 
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitHeaderParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
@@ -587,6 +637,16 @@ public partial class BitHeader : BitComponentBase
             _slidable = true;
 
             ClassBuilder.Reset();
+        }
+
+        // Only whether there is a second row matters to the height, not the fragment itself, which is a new
+        // delegate on nearly every render of the parent - so the styles are reset only when that flips.
+        var extended = ExtensionContent is not null;
+        if (_extended != extended)
+        {
+            _extended = extended;
+
+            StyleBuilder.Reset();
         }
 
         base.OnParametersSet();

@@ -1286,6 +1286,21 @@ public class BitMarkdownEditorCommandsTests
     }
 
     [TestMethod]
+    public void IndentAndOutdentShouldKeepWalkingFromTheCellAWalkSelected()
+    {
+        // The walk selects the cell it lands on, so the next Tab (or Shift+Tab) has a selection to start from.
+        var forward = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, Table, TableCaret, TableCaret);
+        var next = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, forward.Text, forward.SelectionStart, forward.SelectionEnd);
+
+        Assert.IsTrue(next.Text.StartsWith("| Name | Age |", System.StringComparison.Ordinal), "the row was indented instead");
+        Assert.AreEqual(4, next.Text.TrimEnd('\n').Split('\n').Length, "walking past the last cell adds a row");
+
+        var back = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Outdent, forward.Text, forward.SelectionStart, forward.SelectionEnd);
+        Assert.AreEqual(Table, back.Text);
+        Assert.AreEqual("Ann", back.Text[back.SelectionStart..back.SelectionEnd]);
+    }
+
+    [TestMethod]
     public void IndentShouldStillIndentOutsideATable()
     {
         var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, "- item", 3, 3);

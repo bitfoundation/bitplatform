@@ -1,0 +1,204 @@
+﻿@namespace Bit.Blow
+@implements IBlowContext
+@implements IAsyncDisposable
+
+@* Single layout/measure pass for the whole render: every loop below reads the same geometry. *@
+@{ PrepareRender(); }
+
+@* Unnamed and not fixed, the canvas re-renders every subscriber on every render: what add-ons of an app's own
+   written against IBlowContext expect. The built-in parts take the fixed, named context instead, together with
+   the version numbers of what they draw, so a pan re-renders the background and minimap and no node or handle.
+   See BlowCascadingNames. *@
+<CascadingValue Value="(IBlowContext)this" IsFixed="false">
+<CascadingValue Name="@BlowCascadingNames.Context" Value="(IBlowContext)this" IsFixed="true">
+<CascadingValue Name="@BlowCascadingNames.ViewportVersion" Value="_viewportVersion">
+<CascadingValue Name="@BlowCascadingNames.GeometryVersion" Value="_geometryVersion">
+<CascadingValue Name="@BlowCascadingNames.GraphVersion" Value="_graphVersion">
+<CascadingValue Name="@BlowCascadingNames.ConnectionVersion" Value="_connectionVersion">
+    <div @attributes="AdditionalAttributes"
+         class="bit-blow @ColorModeClass @MotionClass @Class"
+         style="@Style"
+         tabindex="0"
+         role="application"
+         aria-label="@AriaLabel"
+         aria-describedby="@PaneDescribedBy"
+         @ref="_paneRef"
+         @onpointerdown="OnPanePointerDown"
+         @onpointerdown:stopPropagation="IsNested"
+         @onpointermove="PointerMoveHandler"
+         @onpointerup="OnPanePointerUp"
+         @onpointerup:stopPropagation="IsNested"
+         @onpointerleave="OnPanePointerUp"
+         @onpointercancel="OnPanePointerCancel"
+         @onpointercancel:stopPropagation="IsNested"
+         @onwheel="OnWheel"
+         @onwheel:stopPropagation="IsNested"
+         @onclick="OnPaneClickHandler"
+         @onclick:stopPropagation="IsNested"
+         @ondblclick="OnPaneDoubleClick"
+         @ondblclick:stopPropagation="IsNested"
+         @oncontextmenu="OnPaneContextMenuHandler"
+         @oncontextmenu:stopPropagation="IsNested"
+         @onmousemove="PaneMouseMoveHandler"
+         @onmouseenter="OnPaneMouseEnter"
+         @onmouseleave="OnPaneMouseLeave"
+         @onkeydown="OnKeyDown"
+         @onkeydown:stopPropagation="IsNested"
+         @onkeyup="OnKeyUp"
+         @onkeyup:stopPropagation="IsNested"
+         @onfocusout="PanKeyReleaseHandler">
+
+        <div class="bit-blow-viewport" @ref="_viewportRef" style="@ViewportStyle">
+
+            <svg class="bit-blow-edges" style="overflow:visible;">
+                <defs>
+                    @* One definition per distinct arrowhead the visible edges asked for. *@
+                    @foreach (var spec in _markerDefs.Values)
+                    {
+                        <marker id="@($"{_markerPrefix}-{spec.Key}")" viewBox="0 0 12 12" refX="9" refY="6"
+                                markerWidth="@Inv(spec.Width)" markerHeight="@Inv(spec.Height)"
+                                orient="auto-start-reverse">
+                            @if (spec.Type == BlowMarkerType.ArrowClosed)
+                            {
+                                <path d="M1,1 L9,6 L1,11 z" fill="@spec.Paint" stroke="@spec.Paint" stroke-width="1" style="@spec.FallbackStyle" />
+                            }
+                            else
+                            {
+                                <path d="M1,1 L9,6 L1,11" fill="none" stroke="@spec.Paint" stroke-width="1.5" style="@spec.FallbackStyle" />
+                            }
+                        </marker>
+                    }
+                </defs>
+
+                <BlowRenderGate Version="_layerVersion">
+                @foreach (var edge in _renderEdges)
+                {
+                    var ecb = CallbacksFor(edge);
+                    <BlowEdgeRenderer @key="edge.Id"
+                                  Edge="edge"
+                                  Context="GetEdgeContext(edge)"
+                                  Settings="_edgeSettings"
+                                  Callbacks="ecb" />
+                }
+                </BlowRenderGate>
+
+                @if (ShowConnectionLine)
+                {
+                    @if (ConnectionLineTemplate is not null)
+                    {
+                        @ConnectionLineTemplate(BuildConnectionLineContext())
+                    }
+                    else
+                    {
+                        <path class="bit-blow-connectionline @ConnectionLineClass" d="@ConnectionLinePath()"
+                              fill="none" stroke="var(--bit-blow-connection-stroke)" stroke-width="1.5"
+                              style="@ConnectionLineStyle" />
+                    }
+                }
+            </svg>
+
+            <BlowRenderGate Version="_layerVersion">
+            @foreach (var node in _renderNodes)
+            {
+                var ncb = CallbacksFor(node);
+                <BlowNodeRenderer @key="node.Id"
+                              Node="node"
+                              Settings="_nodeSettings"
+                              Callbacks="ncb" />
+            }
+            </BlowRenderGate>
+
+            @* Above the nodes, not in the edge layer under them: an edge ends on a handle, and the handle's hit area - at
+               least 12 screen pixels across - would cover the dot it is grabbed by. *@
+            <svg class="bit-blow-edge-reconnects" style="overflow:visible;">
+                @if (ElementsSelectable && EdgesReconnectable)
+                {
+                    @* The visible dot stays small; a separate transparent circle of
+                       ReconnectRadius screen pixels is what the pointer actually has to hit. *@
+                    @foreach (var edge in _renderEdges)
+                    {
+                        if (!edge.Selected || !edge.Reconnectable) continue;
+                        var ep = GetEdgeEndpoints(edge);
+                        <circle class="bit-blow-edge-reconnect-hit"
+                                cx="@Inv(ep.Source.X)" cy="@Inv(ep.Source.Y)" r="@Inv(ReconnectHitRadius)"
+                                @onpointerdown="@(e => StartReconnect(edge, BlowHandleType.Source, e))"
+                                @onpointerdown:stopPropagation="true" />
+                        <circle class="bit-blow-edge-reconnect"
+                                cx="@Inv(ep.Source.X)" cy="@Inv(ep.Source.Y)" r="@Inv(ReconnectDotRadius)" />
+                        <circle class="bit-blow-edge-reconnect-hit"
+                                cx="@Inv(ep.Target.X)" cy="@Inv(ep.Target.Y)" r="@Inv(ReconnectHitRadius)"
+                                @onpointerdown="@(e => StartReconnect(edge, BlowHandleType.Target, e))"
+                                @onpointerdown:stopPropagation="true" />
+                        <circle class="bit-blow-edge-reconnect"
+                                cx="@Inv(ep.Target.X)" cy="@Inv(ep.Target.Y)" r="@Inv(ReconnectDotRadius)" />
+                    }
+                }
+            </svg>
+
+            @if (_selecting)
+            {
+                <div class="bit-blow-selection" style="@SelectionStyle()"></div>
+            }
+
+            @* Alignment guides sit above the nodes, since the point is to see them against
+               the node that just snapped to them. *@
+            @foreach (var guide in _guides)
+            {
+                <div class="bit-blow-guide" style="@GuideStyle(guide)"></div>
+            }
+
+            @foreach (var portal in _viewportPortals.Values)
+            {
+                @portal
+            }
+        </div>
+
+        @if (EdgeLabelTemplate is not null)
+        {
+            <div class="bit-blow-edge-labels">
+                @foreach (var edge in _renderEdges)
+                {
+                    var ctx = GetEdgeContext(edge);
+                    var p = _viewport.FlowToScreen(new BlowXYPosition(ctx.Geometry.LabelX, ctx.Geometry.LabelY));
+                    <div @key="edge.Id" class="bit-blow-edge-label-html" style="left:@Inv(p.X)px;top:@Inv(p.Y)px;">
+                        @EdgeLabelTemplate(ctx)
+                    </div>
+                }
+            </div>
+        }
+
+        @ChildContent
+
+        @* Screen-reader announcements for changes that have no visual-only equivalent. *@
+        <div class="bit-blow-a11y-live" role="status" aria-live="polite" aria-atomic="true">@_liveMessage</div>
+
+        @* Keyboard instructions, read as the description of the flow, a node or an edge. Hidden from the page
+           and from a screen reader's reading order: they are only ever reached through aria-describedby. *@
+        @if (!string.IsNullOrEmpty(AriaLabels.PaneInstructions))
+        {
+            <div id="@DescriptionId("pane")" hidden>@AriaLabels.PaneInstructions</div>
+        }
+        @if (!string.IsNullOrEmpty(AriaLabels.NodeInstructions))
+        {
+            <div id="@DescriptionId("node")" hidden>@NodeInstructionsText</div>
+        }
+        @if (!string.IsNullOrEmpty(AriaLabels.EdgeInstructions))
+        {
+            <div id="@DescriptionId("edge")" hidden>@EdgeInstructionsText</div>
+        }
+
+        @if (!HideAttribution)
+        {
+            @* Pressing the link is not a press on the pane: it must not start a pan or clear the selection. *@
+            <a class="bit-blow-attribution bit-blow-attribution-@AttributionPositionClass"
+               href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Blow" target="_blank" rel="noopener noreferrer"
+               @onpointerdown:stopPropagation="true" @onclick:stopPropagation="true"
+               @ondblclick:stopPropagation="true">bit Blow</a>
+        }
+    </div>
+</CascadingValue>
+</CascadingValue>
+</CascadingValue>
+</CascadingValue>
+</CascadingValue>
+</CascadingValue>

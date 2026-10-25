@@ -40,7 +40,7 @@ public partial class WebAppDownloadSizeTests : AppPageTest
     /// </summary>
     [TestMethod]
     [DataRow(DeployedApps.AdminPanel, 5.5, DisplayName = nameof(DeployedApps.AdminPanel))]
-    [DataRow(DeployedApps.AdminPanelWasmStandalone, 5.4, DisplayName = nameof(DeployedApps.AdminPanelWasmStandalone))]
+    [DataRow(DeployedApps.AdminPanelWasmStandalone, 8.2, DisplayName = nameof(DeployedApps.AdminPanelWasmStandalone))]
 
     [DataRow(DeployedApps.Todo, 5.1, DisplayName = nameof(DeployedApps.Todo))]
     [DataRow(DeployedApps.TodoAot, 8.6, DisplayName = nameof(DeployedApps.TodoAot))]

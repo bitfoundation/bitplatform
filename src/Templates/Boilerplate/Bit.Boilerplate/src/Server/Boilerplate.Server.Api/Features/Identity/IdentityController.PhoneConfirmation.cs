@@ -11,11 +11,10 @@ public partial class IdentityController
     public async Task SendConfirmPhoneToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
-        var user = await userManager.FindByPhoneNumber(request.PhoneNumber!)
-            ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("PhoneNumber", request.PhoneNumber);
+        var user = await userManager.FindByPhoneNumber(request.PhoneNumber!);
 
-        if (await userManager.IsPhoneNumberConfirmedAsync(user))
-            throw new BadRequestException(Localizer[nameof(AppStrings.PhoneNumberAlreadyConfirmed)]).WithData("UserId", user.Id);
+        if (user is null || await userManager.IsPhoneNumberConfirmedAsync(user))
+            return;
 
         await SendConfirmPhoneToken(user, cancellationToken);
     }
@@ -25,7 +24,7 @@ public partial class IdentityController
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindByPhoneNumber(request.PhoneNumber!)
-            ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("PhoneNumber", request.PhoneNumber);
+            ?? throw new BadRequestException(nameof(AppStrings.ExpiredToken)).WithData("PhoneNumber", request.PhoneNumber);
 
         var expired = user.PhoneNumberTokenRequestedOn is null ||
                       (TimeProvider.GetUtcNow() - user.PhoneNumberTokenRequestedOn.Value) > AppSettings.Identity.PhoneNumberTokenLifetime;

@@ -1,0 +1,357 @@
+﻿@page "/performance"
+@using System.Diagnostics
+@using System.Numerics
+
+<PageTitle>Performance · Bink</PageTitle>
+
+<div class="bb-intro">
+    <h1>Performance</h1>
+    <p class="bb-subtitle">
+        Numbers measured here, in your browser, on this machine. Load a synthetic document and draw over it: the
+        canvas keeps responding because a redraw only touches the visible region, and drawing only redraws the
+        overlay. Every figure below is produced by running the real engine, not quoted from a specification.
+    </p>
+</div>
+
+<div class="bb-demo bink-editor bb-page-wide">
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Performance controls">
+        <label class="bink-field">
+            Strokes
+            <select value="@_strokeCount" @onchange="OnCountChanged" aria-label="Number of strokes">
+                <option value="500">500</option>
+                <option value="2000">2,000</option>
+                <option value="5000">5,000</option>
+                <option value="10000">10,000</option>
+            </select>
+        </label>
+        <label class="bink-field">
+            Points each
+            <select value="@_pointsPerStroke" @onchange="OnPointsChanged" aria-label="Points per stroke">
+                <option value="20">20</option>
+                <option value="60">60</option>
+                <option value="150">150</option>
+            </select>
+        </label>
+        <button type="button" class="btn btn-primary" disabled="@_busy" @onclick="GenerateAsync">Generate</button>
+        <button type="button" class="btn btn-secondary" disabled="@(_busy || _document.IsEmpty)" @onclick="MeasureAsync">Measure</button>
+        @if (_busy)
+        {
+            <span class="bink-hint" role="status"><span class="bb-spinner" aria-hidden="true"></span> @(_step ?? "working")...</span>
+        }
+        <span class="bb-spacer"></span>
+        <button type="button" class="btn btn-secondary bink-danger" disabled="@(_busy || _document.IsEmpty)" @onclick="Clear">Clear</button>
+    </div>
+
+    <div class="bink-surface">
+        <BinkCanvas @ref="_canvas"
+                   ViewportChanged="_status?.ViewportChanged ?? default"
+                   Document="_document"
+                   Height="420px"
+                   Brush="_brush"
+                   Tool="_tool"
+                   EnableTouchGestures="true"
+                   AriaLabel="Performance test canvas"
+                   DocumentChanged="() => StateHasChanged()"
+                   Ready="() => StateHasChanged()" />
+    </div>
+
+    <CanvasStatus @ref="_status" Canvas="_canvas" />
+</div>
+
+@if (_results.Count > 0)
+{
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Measurements</h3>
+        <p class="bb-card-desc">
+            Absolute numbers depend on the machine and the browser; what carries over is the ratio between them - the
+            visible region against the whole document, a click against a redraw.
+        </p>
+        <div class="bb-stats">
+            @foreach (Measurement m in _results)
+            {
+                <div class="bb-stat">
+                    <span class="bb-stat-label">@m.Name</span>
+                    <span class="bb-stat-value">@m.Value</span>
+                    <span class="bink-stat-detail">@m.Detail</span>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<div class="bb-note">
+    Drawing on a loaded document stays smooth because the live stroke is rendered on a separate overlay canvas:
+    the thousands of committed strokes are not touched until the pen lifts. Pointer input is batched once per
+    animation frame and never triggers a Blazor render. The status line says whether this page took the zero-copy
+    render path, which WebAssembly does.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What is being timed</h3>
+    <p class="bb-card-desc">
+        The document is built in one batch, so it raises a single change and the canvas redraws once. A redraw is a
+        recording of canvas commands; with <code>ClipBounds</code> set to the visible rectangle it records only the
+        elements whose bounds intersect it, which is what a pan or a committed stroke really costs. Moving every
+        stroke is one frame of dragging a selection of the whole page: each element gets a new transform and its points
+        are never touched, and undoing it puts the exact transforms back. The two SVG exports write the same file, once
+        as a string and once straight to a stream.
+    </p>
+    <pre class="bb-code"><span class="k">using</span> (_document.BeginBatch(<span class="s">"Generate"</span>))
+{
+    <span class="k">for</span> (<span class="k">int</span> i = 0; i &lt; _strokeCount; i++) _document.AddElement(CreateStroke(random), layer);
+}
+
+<span class="k">var</span> culled = <span class="k">new</span> BinkCanvasRenderContext(1 &lt;&lt; 16);
+BinkDocumentRenderer.Render(_document, culled, <span class="k">new</span> BinkRenderOptions { ClipBounds = visible });
+
+_document.ReplaceElements(_document.AllElements.Select(e =&gt; e.Translate(<span class="k">new</span> Vector2(12f, 0f))), <span class="s">"Move"</span>);
+BinkSvgExporter.Export(_document, stream);   <span class="c">// for a large drawing: no string the size of the file</span></pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Why it stays fast</h3>
+    <ul class="bb-detail-list">
+        <li><strong>Two canvases.</strong> Committed elements live on a document canvas, the live stroke and tool previews on an overlay; drawing redraws only the overlay.</li>
+        <li><strong>Input never re-renders Blazor.</strong> Samples arrive once per animation frame and go straight to the tool; processing a frame of 64 samples allocates nothing.</li>
+        <li><strong>Geometry is cached</strong> per stroke and brush, and an element's bounds never build its outline, so loading a document does not build every outline up front.</li>
+        <li><strong>Paths are sent once.</strong> The browser keeps every path it has drawn, and a redraw names it by a slot: about eight numbers an element instead of every coordinate, which is what keeps Blazor Server fast too.</li>
+        <li><strong>Edits are transforms.</strong> Moving, resizing and rotating change a matrix per element, and a long drag is folded into one replacement per element in history.</li>
+        <li><strong>Element lookup is constant time</strong>, each layer indexing its elements by id, so dragging thousands of selected strokes stays interactive.</li>
+    </ul>
+    <p class="bb-card-desc">
+        To keep a very large document responsive: keep the view meaningful (culling is what makes ten thousand strokes
+        interactive; a zoomed-out view of everything is the expensive case by definition), add many elements in one
+        <code>BeginBatch</code>, export large SVG to a stream, and raise <code>BinkDocumentLimits</code> deliberately
+        rather than by default.
+    </p>
+</div>
+
+@code {
+    private sealed record Measurement(string Name, string Value, string Detail);
+
+    private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
+    private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 1600, Height = 1000, Background = BinkColor.White });
+    private readonly BinkBrush _brush = new BinkPenBrush { Width = 3f, Color = BinkColor.Parse("#dc2626") };
+    private readonly IBinkTool _tool = new BinkDrawTool();
+    private readonly List<Measurement> _results = new();
+    private int _strokeCount = 2000;
+    private int _pointsPerStroke = 60;
+    private bool _busy;
+    private string? _step;
+
+    private void Clear()
+    {
+        _document.Clear();
+        _results.Clear();
+        _canvas?.Refresh();
+    }
+
+    /// <summary>
+    /// Shows the step about to run and lets the browser paint before it starts. WebAssembly runs on the page's
+    /// only thread, so without this the whole measurement would appear as one long freeze.
+    /// </summary>
+    private async Task StepAsync(string name)
+    {
+        _step = name;
+        StateHasChanged();
+        await Task.Delay(1);
+    }
+
+    private void OnCountChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int value)) _strokeCount = value;
+    }
+
+    private void OnPointsChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int value)) _pointsPerStroke = value;
+    }
+
+    private async Task GenerateAsync()
+    {
+        _busy = true;
+        _results.Clear();
+        await StepAsync("Building the document");
+
+        var stopwatch = Stopwatch.StartNew();
+        _document.Clear();
+        var random = new Random(20260908);
+        Guid layer = _document.Layers[0].Id;
+
+        // One batch: the document raises a single change and the canvas redraws once.
+        using (_document.BeginBatch("Generate"))
+        {
+            for (int i = 0; i < _strokeCount; i++)
+            {
+                _document.AddElement(CreateStroke(random), layer);
+            }
+        }
+        stopwatch.Stop();
+
+        _results.Add(new Measurement(
+            "Build document",
+            $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{_strokeCount:N0} strokes, {_document.TotalPointCount:N0} points, including geometry-free construction"));
+
+        _busy = false;
+        _canvas?.Refresh();
+        StateHasChanged();
+    }
+
+    private BinkStroke CreateStroke(Random random)
+    {
+        float cx = (float)random.NextDouble() * 1500f + 50f;
+        float cy = (float)random.NextDouble() * 900f + 50f;
+        float scale = 6f + (float)random.NextDouble() * 30f;
+        float phase = (float)random.NextDouble() * MathF.Tau;
+
+        var buffer = new BinkStrokePointBuffer(_pointsPerStroke);
+        for (int p = 0; p < _pointsPerStroke; p++)
+        {
+            float t = p / (float)_pointsPerStroke;
+            float angle = phase + t * MathF.Tau;
+            buffer.Add(new BinkPoint(
+                cx + MathF.Cos(angle) * scale * (1 + t),
+                cy + MathF.Sin(angle * 1.3f) * scale,
+                0.25f + 0.7f * MathF.Sin(t * MathF.PI),
+                p * 6f));
+        }
+        return new BinkStroke(buffer.ToStrokePoints(), _brush with { Color = new BinkColor((byte)random.Next(60, 200), (byte)random.Next(60, 200), (byte)random.Next(60, 200)) });
+    }
+
+    private async Task MeasureAsync()
+    {
+        _busy = true;
+
+        _results.RemoveAll(m => m.Name != "Build document");
+
+        await StepAsync("Generating geometry");
+        // Geometry generation: the cost of turning every stroke into a fillable outline once.
+        var stopwatch = Stopwatch.StartNew();
+        int vertices = 0;
+        foreach (BinkElement element in _document.AllElements)
+        {
+            if (element is BinkStroke stroke) vertices += stroke.Geometry.Path.VerbCount;
+        }
+        stopwatch.Stop();
+        _results.Add(new Measurement("Generate all geometry", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{vertices:N0} path segments, cached afterwards so redraws reuse them"));
+
+        await StepAsync("Recording a full redraw");
+        // A cached redraw: what every pan, zoom or committed stroke costs.
+        stopwatch.Restart();
+        var recorder = new BinkCanvasRenderContext(1 << 16);
+        BinkDocumentRenderer.Render(_document, recorder);
+        stopwatch.Stop();
+        _results.Add(new Measurement("Record a full redraw", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{recorder.Count:N0} canvas commands for the whole document"));
+
+        await StepAsync("Recording the visible region");
+        // The realistic case: only what is on screen.
+        BinkRect visible = _canvas?.CurrentViewport.VisibleRect(_canvas.ViewSize) ?? new BinkRect(0, 0, 800, 420);
+        stopwatch.Restart();
+        var culled = new BinkCanvasRenderContext(1 << 16);
+        BinkDocumentRenderer.Render(_document, culled, new BinkRenderOptions { ClipBounds = visible });
+        stopwatch.Stop();
+        _results.Add(new Measurement("Record the visible region", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{culled.Count:N0} commands, which is what a real redraw costs"));
+
+        await StepAsync("Hit testing");
+        // Hit testing, the cost of a click with the selection tool.
+        stopwatch.Restart();
+        int hits = 0;
+        for (int i = 0; i < 200; i++)
+        {
+            var point = new Vector2(i * 7f % 1600f, i * 13f % 1000f);
+            if (BinkDocumentQuery.HitTest(_document, point, 4f) is not null) hits++;
+        }
+        stopwatch.Stop();
+        _results.Add(new Measurement("Hit test", $"{stopwatch.Elapsed.TotalMilliseconds / 200d * 1000:0} us per click",
+            $"{hits} of 200 probes landed on a stroke"));
+
+        await StepAsync("Saving and loading");
+        // Serialization.
+        stopwatch.Restart();
+        byte[] saved = BinkSerializer.SerializeToUtf8Bytes(_document);
+        stopwatch.Stop();
+        double saveMs = stopwatch.Elapsed.TotalMilliseconds;
+
+        stopwatch.Restart();
+        BinkDocument reloaded = BinkSerializer.Deserialize(saved);
+        stopwatch.Stop();
+
+        _results.Add(new Measurement("Save", $"{saveMs:0} ms",
+            $"{saved.Length / 1024.0:N0} KB, {saved.Length / (double)Math.Max(_document.TotalPointCount, 1):0.0} bytes per point"));
+        _results.Add(new Measurement("Load", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{reloaded.ElementCount:N0} elements restored"));
+
+        await StepAsync("Moving every stroke");
+        // One frame of dragging a selection of everything: a new transform per element, never a rewrite of its
+        // points. The undo is what a drag of that size costs to take back.
+        if (_canvas is not null)
+        {
+            List<BinkElement> moved = [.. _document.AllElements.Select(e => e.Translate(new Vector2(12f, 0f)))];
+            stopwatch.Restart();
+            _document.ReplaceElements(moved, "Move");
+            stopwatch.Stop();
+            double moveMs = stopwatch.Elapsed.TotalMilliseconds;
+
+            stopwatch.Restart();
+            _canvas.History.Undo();
+            stopwatch.Stop();
+            // The measurement is not an edit anyone made: nothing of it is left to undo or redo.
+            _canvas.History.Clear();
+            _results.Add(new Measurement("Move every stroke", $"{moveMs:0} ms",
+                $"one frame of dragging {moved.Count:N0} strokes: a transform each, no point rewritten"));
+            _results.Add(new Measurement("Undo that move", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+                "puts back the exact transforms the history recorded"));
+        }
+
+        await StepAsync("Exporting SVG");
+        // SVG export, as a string and then straight to a stream. A string holds the whole file in memory while it is
+        // built; the stream overload writes as it goes.
+        long allocated = GC.GetAllocatedBytesForCurrentThread();
+        stopwatch.Restart();
+        string svg = BinkSvgExporter.Export(_document);
+        stopwatch.Stop();
+        long stringBytes = GC.GetAllocatedBytesForCurrentThread() - allocated;
+        _results.Add(new Measurement("Export SVG", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{svg.Length / 1024.0:N0} KB of vector paths, {stringBytes / 1048576.0:N0} MB allocated as a string"));
+        svg = string.Empty;
+
+        await StepAsync("Exporting SVG to a stream");
+        // A stream that only counts what reaches it, standing in for a file or a response body, so what is measured is
+        // the exporter's own memory rather than a buffer holding the output.
+        var sink = new CountingStream();
+        allocated = GC.GetAllocatedBytesForCurrentThread();
+        stopwatch.Restart();
+        BinkSvgExporter.Export(_document, sink);
+        stopwatch.Stop();
+        long streamBytes = GC.GetAllocatedBytesForCurrentThread() - allocated;
+        _results.Add(new Measurement("Export SVG to a stream", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{sink.Length / 1024.0:N0} KB written, {streamBytes / 1048576.0:N1} MB allocated: the file never exists as one string"));
+
+        _busy = false;
+        _step = null;
+        StateHasChanged();
+    }
+
+    /// <summary>A write-only stream that keeps nothing and counts the bytes written to it.</summary>
+    private sealed class CountingStream : Stream
+    {
+        private long _length;
+
+        public override bool CanRead => false;
+        public override bool CanSeek => false;
+        public override bool CanWrite => true;
+        public override long Length => _length;
+        public override long Position { get => _length; set => throw new NotSupportedException(); }
+        public override void Flush() { }
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => _length += count;
+        public override void Write(ReadOnlySpan<byte> buffer) => _length += buffer.Length;
+    }
+}

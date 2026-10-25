@@ -5,8 +5,7 @@
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()"
-     aria-label="@AriaLabel">
+     dir="@Dir?.ToString().ToLower()">
     <div @ref="_contentElement"
          id="@ContentId"
          role="@_role"
@@ -15,8 +14,8 @@
          hidden="@_hidden"
          inert="@_inert"
          tabindex="@_tabIndex"
-         aria-label="@AriaLabel"
-         aria-labelledby="@LabelledBy"
+         aria-label="@_ariaLabel"
+         aria-labelledby="@_ariaLabelledBy"
          @attributes="_contentAttributes">
         <div style="@Styles?.Wrapper" class="bit-col-wrp @Classes?.Wrapper">
             @if (_renderContent)

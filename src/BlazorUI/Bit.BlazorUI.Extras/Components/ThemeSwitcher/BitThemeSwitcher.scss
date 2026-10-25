@@ -62,3 +62,25 @@
         opacity: $opa-dis;
     }
 }
+
+// Windows High Contrast / forced-colors: the palette fills the primary role with LinkText under a Canvas glyph, two
+// system colors the mode keeps - but Chromium draws a Canvas backplate behind the icon glyph like any line of text,
+// so the sun or the crescent would be Canvas on Canvas and the color scheme button an empty circle. It is painted as
+// a native button instead, ButtonText on ButtonFace, which reads with the backplate and without it (Firefox draws
+// none), and a border of the same color gives it the edge a ButtonFace that matches the canvas would not. A disabled
+// one goes GrayText rather than leaning on the dimming, which would only weaken colors the user chose for clarity.
+@media (forced-colors: active) {
+    .bit-ths-csb {
+        color: ButtonText;
+        background-color: ButtonFace;
+        border: $shp-border-width $shp-border-style ButtonText;
+    }
+
+    .bit-ths.bit-dis {
+        .bit-ths-csb {
+            opacity: 1;
+            color: GrayText;
+            border-color: GrayText;
+        }
+    }
+}

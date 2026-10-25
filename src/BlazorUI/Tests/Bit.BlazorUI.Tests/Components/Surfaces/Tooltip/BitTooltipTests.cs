@@ -101,28 +101,81 @@ public class BitTooltipTests : BunitTestContext
 
 
 
-    [DataTestMethod]
-    [DataRow(BitTooltipPosition.Top, "bit-ttp-top")]
-    [DataRow(BitTooltipPosition.TopLeft, "bit-ttp-tlf")]
-    [DataRow(BitTooltipPosition.TopRight, "bit-ttp-trg")]
-    [DataRow(BitTooltipPosition.RightTop, "bit-ttp-rtp")]
-    [DataRow(BitTooltipPosition.Right, "bit-ttp-rgt")]
-    [DataRow(BitTooltipPosition.RightBottom, "bit-ttp-rbm")]
-    [DataRow(BitTooltipPosition.BottomRight, "bit-ttp-brg")]
-    [DataRow(BitTooltipPosition.Bottom, "bit-ttp-btm")]
-    [DataRow(BitTooltipPosition.BottomLeft, "bit-ttp-blf")]
-    [DataRow(BitTooltipPosition.LeftBottom, "bit-ttp-lbm")]
-    [DataRow(BitTooltipPosition.Left, "bit-ttp-lft")]
-    [DataRow(BitTooltipPosition.LeftTop, "bit-ttp-ltp")]
-    public void BitTooltipShouldRespectPosition(BitTooltipPosition position, string expectedClass)
+    // Every side crossed with every alignment. The two are handed to the stylesheet as they are - a class for the
+    // side and one for the alignment along the axis that side leaves free - so a logical value stays logical for
+    // the browser to read against the direction. The alignment of a tooltip beside its anchor runs top to bottom,
+    // so Start and End are its Top and Bottom there. A physical alignment only means anything on its own axis, so
+    // off it - like Center and the two combined values, which name no edge - it centers the tooltip.
+    [TestMethod]
+    [DataRow(BitPlacement.Top, BitPlacement.Center, "bit-ttp-top", "bit-ttp-ahc")]
+    [DataRow(BitPlacement.Top, BitPlacement.Start, "bit-ttp-top", "bit-ttp-ast")]
+    [DataRow(BitPlacement.Top, BitPlacement.End, "bit-ttp-top", "bit-ttp-aen")]
+    [DataRow(BitPlacement.Bottom, BitPlacement.Center, "bit-ttp-btm", "bit-ttp-ahc")]
+    [DataRow(BitPlacement.Bottom, BitPlacement.Start, "bit-ttp-btm", "bit-ttp-ast")]
+    [DataRow(BitPlacement.Bottom, BitPlacement.End, "bit-ttp-btm", "bit-ttp-aen")]
+    [DataRow(BitPlacement.Start, BitPlacement.Center, "bit-ttp-sta", "bit-ttp-avc")]
+    [DataRow(BitPlacement.Start, BitPlacement.Start, "bit-ttp-sta", "bit-ttp-atp")]
+    [DataRow(BitPlacement.Start, BitPlacement.End, "bit-ttp-sta", "bit-ttp-abm")]
+    [DataRow(BitPlacement.End, BitPlacement.Center, "bit-ttp-end", "bit-ttp-avc")]
+    [DataRow(BitPlacement.End, BitPlacement.Start, "bit-ttp-end", "bit-ttp-atp")]
+    [DataRow(BitPlacement.End, BitPlacement.End, "bit-ttp-end", "bit-ttp-abm")]
+    [DataRow(BitPlacement.Left, BitPlacement.Center, "bit-ttp-lft", "bit-ttp-avc")]
+    [DataRow(BitPlacement.Left, BitPlacement.Start, "bit-ttp-lft", "bit-ttp-atp")]
+    [DataRow(BitPlacement.Left, BitPlacement.End, "bit-ttp-lft", "bit-ttp-abm")]
+    [DataRow(BitPlacement.Right, BitPlacement.Center, "bit-ttp-rgt", "bit-ttp-avc")]
+    [DataRow(BitPlacement.Right, BitPlacement.Start, "bit-ttp-rgt", "bit-ttp-atp")]
+    [DataRow(BitPlacement.Right, BitPlacement.End, "bit-ttp-rgt", "bit-ttp-abm")]
+    [DataRow(BitPlacement.Top, BitPlacement.Left, "bit-ttp-top", "bit-ttp-alf")]
+    [DataRow(BitPlacement.Top, BitPlacement.Right, "bit-ttp-top", "bit-ttp-arg")]
+    [DataRow(BitPlacement.Bottom, BitPlacement.Left, "bit-ttp-btm", "bit-ttp-alf")]
+    [DataRow(BitPlacement.Bottom, BitPlacement.Right, "bit-ttp-btm", "bit-ttp-arg")]
+    [DataRow(BitPlacement.Left, BitPlacement.Top, "bit-ttp-lft", "bit-ttp-atp")]
+    [DataRow(BitPlacement.Left, BitPlacement.Bottom, "bit-ttp-lft", "bit-ttp-abm")]
+    [DataRow(BitPlacement.Right, BitPlacement.Top, "bit-ttp-rgt", "bit-ttp-atp")]
+    [DataRow(BitPlacement.Right, BitPlacement.Bottom, "bit-ttp-rgt", "bit-ttp-abm")]
+    [DataRow(BitPlacement.Start, BitPlacement.Top, "bit-ttp-sta", "bit-ttp-atp")]
+    [DataRow(BitPlacement.End, BitPlacement.Bottom, "bit-ttp-end", "bit-ttp-abm")]
+    [DataRow(BitPlacement.Top, BitPlacement.Top, "bit-ttp-top", "bit-ttp-ahc")]
+    [DataRow(BitPlacement.Top, BitPlacement.Bottom, "bit-ttp-top", "bit-ttp-ahc")]
+    [DataRow(BitPlacement.Bottom, BitPlacement.Bottom, "bit-ttp-btm", "bit-ttp-ahc")]
+    [DataRow(BitPlacement.Left, BitPlacement.Left, "bit-ttp-lft", "bit-ttp-avc")]
+    [DataRow(BitPlacement.Left, BitPlacement.Right, "bit-ttp-lft", "bit-ttp-avc")]
+    [DataRow(BitPlacement.Right, BitPlacement.Right, "bit-ttp-rgt", "bit-ttp-avc")]
+    [DataRow(BitPlacement.Start, BitPlacement.Left, "bit-ttp-sta", "bit-ttp-avc")]
+    [DataRow(BitPlacement.End, BitPlacement.Right, "bit-ttp-end", "bit-ttp-avc")]
+    [DataRow(BitPlacement.Top, BitPlacement.TopAndBottom, "bit-ttp-top", "bit-ttp-ahc")]
+    [DataRow(BitPlacement.Top, BitPlacement.StartAndEnd, "bit-ttp-top", "bit-ttp-ahc")]
+    [DataRow(BitPlacement.Start, BitPlacement.StartAndEnd, "bit-ttp-sta", "bit-ttp-avc")]
+    [DataRow(BitPlacement.Start, BitPlacement.TopAndBottom, "bit-ttp-sta", "bit-ttp-avc")]
+    public void BitTooltipShouldRespectSideAndAlignment(BitPlacement side, BitPlacement alignment, string sideClass, string alignmentClass)
     {
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.Position, position);
+            parameters.Add(p => p.Placement, side);
+            parameters.Add(p => p.Alignment, alignment);
         });
 
-        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains(expectedClass));
+        var wrapper = component.Find(".bit-ttp-wrp");
+
+        Assert.IsTrue(wrapper.ClassList.Contains(sideClass), sideClass);
+        Assert.IsTrue(wrapper.ClassList.Contains(alignmentClass), alignmentClass);
+    }
+
+    // The two sides that name no single edge are not meaningful for a tooltip, so they leave it where an
+    // unset Placement would put it rather than dropping the placement class altogether.
+    [TestMethod]
+    [DataRow(BitPlacement.TopAndBottom)]
+    [DataRow(BitPlacement.StartAndEnd)]
+    public void BitTooltipShouldFallBackToTheTopForACombinedSide(BitPlacement side)
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Placement, side);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-top"));
     }
 
     [TestMethod]
@@ -135,7 +188,7 @@ public class BitTooltipTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-top"));
 
-        component.Render(parameters => parameters.Add(p => p.Position, BitTooltipPosition.Bottom));
+        component.Render(parameters => parameters.Add(p => p.Placement, BitPlacement.Bottom));
 
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-btm"));
     }
@@ -156,7 +209,7 @@ public class BitTooltipTests : BunitTestContext
 
 
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitColor.Primary, "bit-ttp-pri")]
     [DataRow(BitColor.Secondary, "bit-ttp-sec")]
     [DataRow(BitColor.Tertiary, "bit-ttp-ter")]
@@ -185,7 +238,7 @@ public class BitTooltipTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-ttp").ClassList.Contains(expectedClass));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitSize.Small, "bit-ttp-sm")]
     [DataRow(BitSize.Medium, "bit-ttp-md")]
     [DataRow(BitSize.Large, "bit-ttp-lg")]
@@ -218,16 +271,17 @@ public class BitTooltipTests : BunitTestContext
     {
         var component = RenderComponent<BitTooltip>(parameters => parameters.Add(p => p.Text, "Tip"));
 
-        Assert.IsFalse(component.Find(".bit-ttp").ClassList.Contains("bit-ttp-itr"));
+        // Hoverable by default, which is what WCAG 1.4.13 asks of content shown on hover.
+        Assert.IsTrue(component.Find(".bit-ttp").ClassList.Contains("bit-ttp-itr"));
         Assert.IsFalse(component.Find(".bit-ttp").ClassList.Contains("bit-ttp-nan"));
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.Interactive, true);
+            parameters.Add(p => p.Interactive, false);
             parameters.Add(p => p.NoAnimation, true);
         });
 
-        Assert.IsTrue(component.Find(".bit-ttp").ClassList.Contains("bit-ttp-itr"));
+        Assert.IsFalse(component.Find(".bit-ttp").ClassList.Contains("bit-ttp-itr"));
         Assert.IsTrue(component.Find(".bit-ttp").ClassList.Contains("bit-ttp-nan"));
     }
 
@@ -495,8 +549,8 @@ public class BitTooltipTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Tip");
             // Long enough that the assertion below is not racing the delay it is there to prove: a
-            // short one could elapse between the trigger and the read on a loaded machine.
-            parameters.Add(p => p.ShowDelay, 1000);
+            // very short one could elapse between the trigger and the read on a loaded machine.
+            parameters.Add(p => p.ShowDelay, 200);
         });
 
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
@@ -514,13 +568,17 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.ShowDelay, 100);
+            // Long enough that the leave lands well inside it on a loaded machine too: a delay that runs out between
+            // the two events has its show either land before the leave (which proves nothing) or, already past its
+            // wait when the leave cancels it, land after it.
+            parameters.Add(p => p.ShowDelay, 200);
         });
 
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
         component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
 
-        await Task.Delay(250);
+        // Well past the delay: a show that was not cancelled would have landed by now.
+        await Task.Delay(500);
 
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
@@ -531,16 +589,104 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.HideDelay, 100);
+            // Long enough that the pointer comes back well inside it on a loaded machine too (see the pending show
+            // above).
+            parameters.Add(p => p.HideDelay, 200);
         });
 
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
         component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
 
-        await Task.Delay(250);
+        // Well past the delay: a hide that was not cancelled would have landed by now.
+        await Task.Delay(500);
 
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public async Task BitTooltipShouldNotShowWhenThePointerLeftOnceTheShowDelayHadRunOut()
+    {
+        // A delay can run out while its continuation still waits for the dispatcher - behind the very handler of the
+        // leave, here - and the leave then cancels a delay that is already over, which no longer stops it: the show it
+        // called off must not land anyway.
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowDelay, 1);
+        });
+
+        await component.InvokeAsync(() =>
+        {
+            component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+            System.Threading.Thread.Sleep(100);
+            component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
+        });
+
+        // Queued behind the continuation, so it has run by now.
+        await component.InvokeAsync(() => { });
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public async Task BitTooltipShouldNotHideWhenThePointerCameBackOnceTheHideDelayHadRunOut()
+    {
+        // The same as the show's: a hide whose delay ran out behind the handler of the enter that called it off.
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.HideDelay, 1);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+
+        await component.InvokeAsync(() =>
+        {
+            component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
+            System.Threading.Thread.Sleep(100);
+            component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+        });
+
+        await component.InvokeAsync(() => { });
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldWaitOutTheHideDelay()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.HideDelay, 200);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
+
+        // The grace the pointer gets to cross the gap into an interactive tooltip.
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.WaitForAssertion(
+            () => Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")),
+            TimeSpan.FromSeconds(5));
+    }
+
+    // The Hide method is the way to take the tooltip away at once, whatever delay it was configured with.
+    [TestMethod]
+    public async Task BitTooltipTheHideMethodShouldNotWaitOutTheHideDelay()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.HideDelay, 5000);
+        });
+
+        await component.InvokeAsync(() => component.Instance.Hide());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
 
     [TestMethod]
@@ -567,6 +713,29 @@ public class BitTooltipTests : BunitTestContext
             parameters.Add(p => p.Text, "Tip");
             parameters.Add(p => p.DefaultIsShown, true);
         });
+
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod,
+        DataRow(true, false, false, false),
+        DataRow(false, true, false, false),
+        DataRow(false, false, true, false),
+        DataRow(false, false, false, true)]
+    public void BitTooltipShouldNotBeDismissedByAModifiedEscape(bool shift, bool ctrl, bool alt, bool meta)
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.DefaultIsShown, true);
+        });
+
+        // An Escape with a modifier goes on to the surface around the tooltip, as the JS side leaves it.
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Escape", ShiftKey = shift, CtrlKey = ctrl, AltKey = alt, MetaKey = meta });
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
         component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Escape" });
 
@@ -610,7 +779,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Find(".bit-ttp").ClassList.Contains("bit-dis"));
@@ -633,7 +802,7 @@ public class BitTooltipTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
@@ -645,7 +814,7 @@ public class BitTooltipTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Tip");
             parameters.Add(p => p.DefaultIsShown, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
@@ -657,7 +826,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.InvokeAsync(() => component.Instance.Show());
@@ -969,7 +1138,7 @@ public class BitTooltipTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitTooltipRepeatedTriggersDuringADelayShouldNotThrow()
+    public void BitTooltipRepeatedTriggersDuringADelayShouldNotThrow()
     {
         var component = RenderComponent<BitTooltip>(p =>
         {
@@ -988,8 +1157,23 @@ public class BitTooltipTests : BunitTestContext
 
         component.WaitForAssertion(() =>
             Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")));
+    }
 
-        await Task.CompletedTask;
+    // A callback from the JS side that was on its way as the tooltip went lands on nothing.
+    [TestMethod]
+    public async Task BitTooltipCallbacksAfterDisposeShouldNotThrow()
+    {
+        var component = RenderComponent<BitTooltip>(p =>
+        {
+            p.Add(x => x.Text, "Tip");
+            p.Add(x => x.DefaultIsShown, true);
+            p.Add(x => x.ShowOnClick, true);
+        });
+
+        await component.Instance.DisposeAsync();
+
+        await component.Instance._OnEscape();
+        await component.Instance._OnOutsidePress();
     }
 
 
@@ -1094,7 +1278,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsNull(component.Find(".bit-ttp").GetAttribute("aria-describedby"));
@@ -1305,10 +1489,10 @@ public class BitTooltipTests : BunitTestContext
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
         // The pointer that was over the anchor is no longer counted, so the leave that follows it hides
@@ -1326,7 +1510,9 @@ public class BitTooltipTests : BunitTestContext
     {
         var component = RenderComponent<BitTooltipGroupTest>(parameters =>
         {
-            parameters.Add(p => p.ShowDelay, 60);
+            // Long enough that the assertion below is not racing the delay it is there to prove (see
+            // BitTooltipShouldWaitOutTheShowDelay).
+            parameters.Add(p => p.ShowDelay, 200);
             parameters.Add(p => p.HideDelay, 0);
         });
 
@@ -1334,8 +1520,9 @@ public class BitTooltipTests : BunitTestContext
 
         Assert.IsFalse(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
-        component.WaitForAssertion(() =>
-            Assert.IsTrue(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")));
+        component.WaitForAssertion(
+            () => Assert.IsTrue(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")),
+            TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -1475,56 +1662,37 @@ public class BitTooltipTests : BunitTestContext
 
 
 
-    [DataTestMethod]
-    [DataRow(BitTooltipPosition.Top, "bit-ttp-top")]
-    [DataRow(BitTooltipPosition.TopLeft, "bit-ttp-trg")]
-    [DataRow(BitTooltipPosition.TopRight, "bit-ttp-tlf")]
-    [DataRow(BitTooltipPosition.RightTop, "bit-ttp-ltp")]
-    [DataRow(BitTooltipPosition.Right, "bit-ttp-lft")]
-    [DataRow(BitTooltipPosition.RightBottom, "bit-ttp-lbm")]
-    [DataRow(BitTooltipPosition.BottomRight, "bit-ttp-blf")]
-    [DataRow(BitTooltipPosition.Bottom, "bit-ttp-btm")]
-    [DataRow(BitTooltipPosition.BottomLeft, "bit-ttp-brg")]
-    [DataRow(BitTooltipPosition.LeftBottom, "bit-ttp-rbm")]
-    [DataRow(BitTooltipPosition.Left, "bit-ttp-rgt")]
-    [DataRow(BitTooltipPosition.LeftTop, "bit-ttp-rtp")]
-    public void BitTooltipMirrorInRtlShouldSwapTheTwoSides(BitTooltipPosition position, string expectedClass)
-    {
-        var component = RenderComponent<BitTooltip>(parameters =>
-        {
-            parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.Position, position);
-            parameters.Add(p => p.Dir, BitDir.Rtl);
-            parameters.Add(p => p.MirrorInRtl, true);
-        });
-
-        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains(expectedClass));
-    }
-
+    // The direction is the stylesheet's to read (off :dir(), so a tooltip given none reads the way the page
+    // around it does), never resolved into a side of the screen here: a right-to-left tooltip, a left-to-right
+    // one and one given no direction at all carry the very same classes, logical values and physical ones alike.
     [TestMethod]
-    public void BitTooltipMirrorInRtlShouldLeaveALeftToRightTooltipAlone()
+    [DataRow(BitPlacement.Start, BitPlacement.Center)]
+    [DataRow(BitPlacement.End, BitPlacement.Top)]
+    [DataRow(BitPlacement.Top, BitPlacement.Start)]
+    [DataRow(BitPlacement.Bottom, BitPlacement.End)]
+    [DataRow(BitPlacement.Left, BitPlacement.Start)]
+    [DataRow(BitPlacement.Top, BitPlacement.Left)]
+    [DataRow(BitPlacement.Right, BitPlacement.Bottom)]
+    public void BitTooltipShouldLeaveTheDirectionToTheStylesheet(BitPlacement side, BitPlacement alignment)
     {
-        var component = RenderComponent<BitTooltip>(parameters =>
+        string Classes(BitDir? dir)
         {
-            parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.Position, BitTooltipPosition.Left);
-            parameters.Add(p => p.MirrorInRtl, true);
-        });
+            var component = RenderComponent<BitTooltip>(parameters =>
+            {
+                parameters.Add(p => p.Text, "Tip");
+                parameters.Add(p => p.Placement, side);
+                parameters.Add(p => p.Alignment, alignment);
+                parameters.Add(p => p.Dir, dir);
+            });
 
-        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-lft"));
-    }
+            return component.Find(".bit-ttp-wrp").ClassName;
+        }
 
-    [TestMethod]
-    public void BitTooltipInRtlShouldKeepItsPositionWithoutMirrorInRtl()
-    {
-        var component = RenderComponent<BitTooltip>(parameters =>
-        {
-            parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.Position, BitTooltipPosition.Left);
-            parameters.Add(p => p.Dir, BitDir.Rtl);
-        });
+        var unset = Classes(null);
 
-        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-lft"));
+        Assert.AreEqual(unset, Classes(BitDir.Ltr));
+        Assert.AreEqual(unset, Classes(BitDir.Rtl));
+        Assert.AreEqual(unset, Classes(BitDir.Auto));
     }
 
 
@@ -1588,6 +1756,25 @@ public class BitTooltipTests : BunitTestContext
         component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = " " });
 
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipShowOnClickShouldIgnoreAnAutoRepeatedKey()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.ShowOnHover, false);
+            parameters.Add(p => p.ShowOnFocus, false);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Enter" });
+
+        // A key held down is still the one press that opened it, not a second one that closes it again.
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Enter", Repeat = true });
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
 
     [TestMethod]
@@ -1660,6 +1847,110 @@ public class BitTooltipTests : BunitTestContext
 
         // The pointer resting on the anchor is asking for the tooltip in its own right, so the focus
         // leaving takes nothing away.
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipOpenedByAClickShouldStayWhenItsOwnTextIsPressed()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.ShowOnHover, false);
+            parameters.Add(p => p.ShowOnFocus, false);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", Mouse());
+
+        // Pressing the text of the tooltip takes the focus off the anchor to the body, with the pointer
+        // still on the component: that is not a click elsewhere.
+        component.Find(".bit-ttp-wrp").TriggerEvent("onpointerdown", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onfocusout", new FocusEventArgs());
+        component.Find(".bit-ttp-wrp").TriggerEvent("onpointerup", Mouse());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-clk"));
+    }
+
+    [TestMethod]
+    public void BitTooltipOpenedByAClickShouldBeDismissedByATabAwayWhileThePointerRestsOnIt()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.ShowOnHover, false);
+            parameters.Add(p => p.ShowOnFocus, false);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onpointerdown", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", Mouse());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // No press is under way, so the focus leaving is a Tab away: with ShowOnHover off, the pointer
+        // resting on the anchor holds nothing, and nothing else could dismiss the tooltip afterwards.
+        component.Find(".bit-ttp").TriggerEvent("onfocusout", new FocusEventArgs());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public async Task BitTooltipOpenedByAClickShouldBeDismissedByAPressOutside()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.ShowOnHover, false);
+            parameters.Add(p => p.ShowOnFocus, false);
+        });
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-clk"));
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", Mouse());
+
+        // Only a tooltip a press opened is marked for the JS side to watch the presses outside it.
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-clk"));
+
+        // Safari leaves a pressed button unfocused, so no focusout comes: the press outside is what the JS
+        // side reports instead.
+        await component.InvokeAsync(() => component.Instance._OnOutsidePress());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-clk"));
+    }
+
+    [TestMethod]
+    public async Task BitTooltipPressOutsideShouldLeaveAHoverTooltipAlone()
+    {
+        var component = RenderComponent<BitTooltip>(parameters => parameters.Add(p => p.Text, "Tip"));
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-clk"));
+
+        await component.InvokeAsync(() => component.Instance._OnOutsidePress());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    // The page owns a state that was handed over and never handed back, so a press outside changes nothing.
+    [TestMethod]
+    public async Task BitTooltipPressOutsideShouldLeaveAnExternallyControlledTooltipAlone()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.IsShown, true);
+            parameters.Add(p => p.ShowOnClick, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnOutsidePress());
+
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
 
@@ -1747,13 +2038,35 @@ public class BitTooltipTests : BunitTestContext
         });
 
         // A describedby on the container the anchor is wrapped in is read by nothing, so the same one is
-        // written onto the control the reader actually lands on.
+        // written onto the control the reader actually lands on - on the first render as part of the one
+        // call that also sets up the Escape listeners.
         var invocation = Context.JSInterop.Invocations
-                                .Single(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription");
+                                .Single(i => i.Identifier == "BitBlazorUI.Utils.setupTooltip");
 
         Assert.AreEqual("tip", invocation.Arguments[0]);
         Assert.AreEqual("tip-ttp", invocation.Arguments[1]);
         Assert.AreEqual("aria-describedby", invocation.Arguments[2]);
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription"));
+    }
+
+    [TestMethod]
+    public async Task BitTooltipShouldDisposeItsListenersUnderTheIdTheyWereSetUpWith()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Id, "tip");
+            parameters.Add(p => p.Text, "Tip");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Id, "renamed"));
+
+        await component.Instance.DisposeAsync();
+
+        // The JS side registered the listeners under the first id, so that is the one that takes them down.
+        var invocation = Context.JSInterop.Invocations
+                                .Single(i => i.Identifier == "BitBlazorUI.Utils.disposeTooltip");
+
+        Assert.AreEqual("tip", invocation.Arguments[0]);
     }
 
     [TestMethod]
@@ -1766,7 +2079,7 @@ public class BitTooltipTests : BunitTestContext
         });
 
         var invocation = Context.JSInterop.Invocations
-                                .Single(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription");
+                                .Single(i => i.Identifier == "BitBlazorUI.Utils.setupTooltip");
 
         Assert.AreEqual("aria-labelledby", invocation.Arguments[2]);
     }
@@ -1780,7 +2093,9 @@ public class BitTooltipTests : BunitTestContext
             parameters.Add(p => p.Relationship, BitTooltipRelationship.None);
         });
 
-        // Nothing was ever written, so there is nothing to take away either: the round trip is not made.
+        // Nothing is written, and nothing is taken away later either: no second round trip is made.
+        Assert.AreEqual(string.Empty, Context.JSInterop.Invocations
+                                             .Single(i => i.Identifier == "BitBlazorUI.Utils.setupTooltip").Arguments[2]);
         Assert.IsFalse(Context.JSInterop.Invocations
                               .Any(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription"));
     }
@@ -1799,13 +2114,13 @@ public class BitTooltipTests : BunitTestContext
             parameters.Add(p => p.Relationship, BitTooltipRelationship.None);
         });
 
-        var invocations = Context.JSInterop.Invocations
-                                 .Where(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription")
-                                 .ToArray();
+        Assert.AreEqual("aria-describedby", Context.JSInterop.Invocations
+                                                   .Single(i => i.Identifier == "BitBlazorUI.Utils.setupTooltip").Arguments[2]);
 
-        Assert.AreEqual(2, invocations.Length);
-        Assert.AreEqual("aria-describedby", invocations[0].Arguments[2]);
-        Assert.AreEqual(string.Empty, invocations[1].Arguments[2]);
+        var invocation = Context.JSInterop.Invocations
+                                .Single(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription");
+
+        Assert.AreEqual(string.Empty, invocation.Arguments[2]);
     }
 
     [TestMethod]
@@ -1821,6 +2136,8 @@ public class BitTooltipTests : BunitTestContext
         // The attribute is written from JavaScript, so a call per render would be a round trip per render
         // for something that changes with the relationship alone.
         Assert.AreEqual(1, Context.JSInterop.Invocations
+                                 .Count(i => i.Identifier == "BitBlazorUI.Utils.setupTooltip"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations
                                  .Count(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription"));
     }
 
@@ -1864,11 +2181,271 @@ public class BitTooltipTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Tip");
             parameters.Add(p => p.ShowOnClick, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Enter" });
 
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+
+
+    [TestMethod]
+    public async Task BitTooltipTheEscapeTheJsSideTakesShouldDismissIt()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.DefaultIsShown, true);
+        });
+
+        // Shown and dismissible is what the JS side reads to take the key on the spot, before it travels on.
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-esc"));
+
+        await component.InvokeAsync(component.Instance._OnEscape);
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public async Task BitTooltipNoDismissOnEscapeShouldLeaveTheKeyToOthers()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.NoDismissOnEscape, true);
+        });
+
+        // Not marked, so the JS side lets the key travel on to a dialog around the tooltip.
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-esc"));
+
+        await component.InvokeAsync(component.Instance._OnEscape);
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public async Task BitTooltipControlledExternallyShouldLeaveTheKeyToOthers()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.IsShown, true);
+        });
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").HasAttribute("data-bit-ttp-esc"));
+
+        await component.InvokeAsync(component.Instance._OnEscape);
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public async Task BitTooltipEscapeWhileHoveredShouldStayDismissedUntilThePointerComesBack()
+    {
+        var component = RenderComponent<BitTooltip>(parameters => parameters.Add(p => p.Text, "Tip"));
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // The focus is elsewhere on the page, so the key reaches the tooltip through the document listener.
+        await component.InvokeAsync(component.Instance._OnEscape);
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // The pointer leaving and coming back is asking for it again.
+        component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldDisposeItsJsRegistration()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Id, "tip");
+            parameters.Add(p => p.Text, "Tip");
+        });
+
+        Context.DisposeComponentsAsync().GetAwaiter().GetResult();
+
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Utils.disposeTooltip");
+
+        Assert.AreEqual("tip", invocation.Arguments[0]);
+    }
+
+
+
+    [TestMethod]
+    public void BitTooltipGroupShouldHandItsHideDelayToTheTooltipsThatHaveNone()
+    {
+        var component = RenderComponent<BitTooltipGroupTest>(parameters =>
+        {
+            parameters.Add(p => p.ShowDelay, 0);
+            // Long enough that the assertion right after the leave is not racing the delay it is there to prove.
+            parameters.Add(p => p.HideDelay, 200);
+        });
+
+        component.Find("#first").TriggerEvent("onpointerenter", Mouse());
+        component.Find("#first").TriggerEvent("onpointerleave", Mouse());
+
+        // The group's grace holds the tooltip while the pointer crosses into it.
+        Assert.IsTrue(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.WaitForAssertion(
+            () => Assert.IsFalse(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")),
+            TimeSpan.FromSeconds(5));
+
+        // The third names a hide delay of zero, which the group does not fill in over.
+        component.Find("#third").TriggerEvent("onpointerenter", Mouse());
+        component.Find("#third").TriggerEvent("onpointerleave", Mouse());
+
+        Assert.IsFalse(component.Find("#third .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    // Only the primary button focuses what it presses; the focus after any other one is the keyboard's.
+    [TestMethod]
+    public void BitTooltipShouldAnswerTheFocusThatFollowsASecondaryButtonPress()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnHover, false);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerdown", new PointerEventArgs { Button = 2 });
+        component.Find(".bit-ttp").TriggerEvent("onfocusin", new FocusEventArgs());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    // DefaultIsShown seeds a state the page only listens to, and the page hears about it.
+    [TestMethod]
+    public void BitTooltipDefaultIsShownShouldBeReportedThroughIsShownChanged()
+    {
+        bool? reported = null;
+
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.Add(p => p.IsShownChanged, EventCallback.Factory.Create<bool>(this, v => reported = v));
+        });
+
+        Assert.AreEqual(true, reported);
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // Bound through the callback, the triggers still drive it.
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(false, reported);
+    }
+
+    // A state bound both ways is the tooltip's to change, so the Hide method takes it away and reports it.
+    [TestMethod]
+    public async Task BitTooltipTheHideMethodShouldWorkOnATwoWayBoundTooltip()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.IsShown, true);
+            parameters.Add(p => p.IsShownChanged, EventCallback.Factory.Create<bool>(this, _ => { }));
+        });
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        await component.InvokeAsync(() => component.Instance.Hide());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldTakeWhatItDidNotSetFromTheCascadingParameters()
+    {
+        var component = RenderComponent<BitTooltipCascadingParamsTest>();
+
+        var root = component.Find("#cascaded");
+
+        foreach (var cls in new[] { "bit-ttp-pri", "bit-ttp-lg", "bit-ttp-flw", "bit-ttp-nan", "cascaded-root" })
+        {
+            Assert.IsTrue(root.ClassList.Contains(cls), cls);
+        }
+
+        Assert.IsFalse(root.ClassList.Contains("bit-ttp-itr"));
+
+        var style = root.GetAttribute("style")!;
+
+        foreach (var declaration in new[] { "margin: 1px;", "--bit-ttp-offset:16px", "--bit-ttp-arrow-size:20px", "--bit-ttp-max-width:12rem", "--bit-ttp-zindex:50" })
+        {
+            StringAssert.Contains(style, declaration);
+        }
+
+        Assert.AreEqual("cascaded-ttp", root.GetAttribute("aria-labelledby"));
+
+        var wrapper = root.QuerySelector(".bit-ttp-wrp")!;
+
+        Assert.IsTrue(wrapper.ClassList.Contains("bit-ttp-btm"));
+        Assert.IsFalse(wrapper.HasAttribute("data-bit-ttp-esc"));
+        Assert.IsNull(wrapper.QuerySelector(".bit-ttp-arw"));
+        Assert.IsTrue(root.QuerySelector(".bit-ttp-ctn")!.ClassList.Contains("cascaded-tooltip"));
+
+        // LazyRender came from the cascade before the content was first decided on.
+        Assert.AreEqual(string.Empty, root.QuerySelector(".bit-ttp-ctn")!.TextContent);
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldKeepWhatItSetItselfOverTheCascadingParameters()
+    {
+        var component = RenderComponent<BitTooltipCascadingParamsTest>();
+
+        var root = component.Find("#own");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-ttp-err"));
+        Assert.IsTrue(root.ClassList.Contains("bit-ttp-sm"));
+        Assert.IsTrue(root.ClassList.Contains("bit-ttp-itr"));
+        Assert.IsFalse(root.ClassList.Contains("bit-ttp-pri"));
+        Assert.IsFalse(root.ClassList.Contains("bit-ttp-lg"));
+
+        var style = root.GetAttribute("style")!;
+
+        StringAssert.Contains(style, "--bit-ttp-offset:4px");
+        Assert.IsFalse(style.Contains("--bit-ttp-offset:16px"));
+
+        Assert.AreEqual("own-ttp", root.GetAttribute("aria-describedby"));
+        Assert.IsNull(root.GetAttribute("aria-labelledby"));
+
+        var wrapper = root.QuerySelector(".bit-ttp-wrp")!;
+
+        Assert.IsTrue(wrapper.ClassList.Contains("bit-ttp-lft"));
+        Assert.IsNotNull(wrapper.QuerySelector(".bit-ttp-arw"));
+        Assert.AreEqual("Own", root.QuerySelector(".bit-ttp-ctn")!.TextContent);
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldTakeTheCascadedDelayUnlessAGroupSetsOne()
+    {
+        var component = RenderComponent<BitTooltipCascadingParamsTest>();
+
+        // The cascade's five seconds hold the first tooltip back.
+        component.Find("#cascaded").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsFalse(component.Find("#cascaded .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // The group around the third is nearer, so its fifth of a second is the one waited out - long enough that
+        // the read right after the enter is not racing it on a loaded machine.
+        component.Find("#grouped").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsFalse(component.Find("#grouped .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.WaitForAssertion(
+            () => Assert.IsTrue(component.Find("#grouped .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")),
+            TimeSpan.FromSeconds(3));
+
+        Assert.IsFalse(component.Find("#cascaded .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
 }

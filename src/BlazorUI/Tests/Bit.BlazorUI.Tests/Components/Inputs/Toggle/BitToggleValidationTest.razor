@@ -1,7 +1,7 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <BitToggle IsEnabled="IsEnabled"
+    <BitToggle Disabled="Disabled"
                @bind-Value="@TestModel.Value"
                Inline="IsInlineLabel"
                OnText="@OnText"
@@ -17,7 +17,7 @@
 </EditForm>
 
 @code {
-    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool Disabled { get; set; }
     [Parameter] public bool IsInlineLabel { get; set; }
     [Parameter] public string? OnText { get; set; }
     [Parameter] public string? OffText { get; set; }

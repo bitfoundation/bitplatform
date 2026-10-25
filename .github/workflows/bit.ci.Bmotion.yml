@@ -2,9 +2,10 @@ name: bit platform CI - Bmotion
 
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     paths:
-    - 'src/Bmotion/**'
+    - 'src/Utilities/Bmotion/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -40,30 +41,32 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: 24
 
     - name: dotnet workload restore
-      run:  cd src/Bmotion && dotnet workload restore
+      run:  cd src/Utilities/Bmotion && dotnet workload restore
 
     - name: InstallNodejsDependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Bmotion/Bit.Bmotion.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+      run: dotnet build src/Utilities/Bmotion/Bit.Bmotion.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
 
     - name: dotnet build
-      run: dotnet build src/Bmotion/Bit.Bmotion.slnx
+      run: dotnet build src/Utilities/Bmotion/Bit.Bmotion.slnx
 
     - name: dotnet test (C# engine + component tests)
       # Run from inside src so src/global.json's "test" runner setting applies
-      # (from the repo root the SDK falls back to the unsupported VSTest path).
-      run: cd src/Bmotion && dotnet test Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj -f net10.0 --no-build
+      # (from the repo root the SDK falls back to the unsupported VSTest path). Every target framework the
+      # library ships for: .NET 8, 9 and 10 each get their own run of the suite.
+      run: cd src/Utilities/Bmotion/Tests/Bit.Bmotion.Tests && dotnet test --no-build
 
     - name: dotnet test (MCP server)
-      run: cd src/Bmotion && dotnet test Tests/Bit.Bmotion.Tests.Mcp/Bit.Bmotion.Tests.Mcp.csproj -f net10.0 --no-build
+      run: cd src/Utilities/Bmotion/Tests/Bit.Bmotion.Tests.Mcp && dotnet test -f net10.0 --no-build
 
     - name: JS tests (bit-bmotion.js drag/scroll math)
       run: |
-        cd src/Bmotion/Tests/bit-bmotion-js
+        cd src/Utilities/Bmotion/Tests/bit-bmotion-js
         npm ci || npm install
         npm test
+

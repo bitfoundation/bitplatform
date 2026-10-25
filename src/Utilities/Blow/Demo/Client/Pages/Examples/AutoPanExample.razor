@@ -1,0 +1,125 @@
+﻿@page "/examples/auto-pan"
+
+<PageTitle>Auto Pan &amp; Pinch · Blow</PageTitle>
+
+<ExampleScaffold Title="Auto Pan &amp; Pinch"
+                 Summary="The view follows what you are doing: drag a node or a connection against the edge of the canvas and the viewport scrolls along, so a graph larger than the screen can still be edited; tab to a node out of sight and it pans into view. On a touch screen two fingers pinch to zoom.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_panOnDrag" @onchange="@(e => _panOnDrag = (bool)e.Value!)" /> Pan on node drag</label>
+        <label><input type="checkbox" checked="@_panOnConnect" @onchange="@(e => _panOnConnect = (bool)e.Value!)" /> Pan on connect</label>
+        <label>Speed @_speed.ToString("0")
+            <input type="range" min="4" max="40" step="2" value="@_speed"
+                   @oninput="@(e => _speed = ToDouble(e.Value, 15))" />
+        </label>
+        <label>Margin @_margin.ToString("0")
+            <input type="range" min="10" max="90" step="5" value="@_margin"
+                   @oninput="@(e => _margin = ToDouble(e.Value, 30))" />
+        </label>
+        <label><input type="checkbox" checked="@_panOnFocus" @onchange="@(e => _panOnFocus = (bool)e.Value!)" /> Pan to focused node</label>
+        <label>Focus pan @_focusDuration ms
+            <input type="range" min="0" max="1000" step="50" value="@_focusDuration" disabled="@(!_panOnFocus)"
+                   @oninput="@(e => _focusDuration = (int)ToDouble(e.Value, 200))" />
+        </label>
+        <label><input type="checkbox" checked="@_pinch" @onchange="@(e => _pinch = (bool)e.Value!)" /> Pinch to zoom</label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    FitViewOptions="_fit"
+                    AutoPanOnNodeDrag="_panOnDrag"
+                    AutoPanOnConnect="_panOnConnect"
+                    AutoPanSpeed="_speed"
+                    AutoPanMargin="_margin"
+                    AutoPanOnNodeFocus="_panOnFocus"
+                    AutoPanOnNodeFocusDuration="_focusDuration"
+                    ZoomOnPinch="_pinch"
+                    OnMove="@(vp => _viewport = vp)"
+                    OnViewportChanged="@(vp => _viewport = vp)"
+                    OnNodeDragStart="@(() => _gesture = Gesture.NodeDrag)"
+                    OnNodeDragStop="@(() => _gesture = Gesture.None)"
+                    OnConnectStart="@(() => _gesture = Gesture.Connect)"
+                    OnConnectEnd="@(() => _gesture = Gesture.None)">
+            <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="40" Color="var(--bit-blow-border)" />
+            @* The band where auto-pan kicks in, drawn while a gesture that can trigger it runs. Outside the zoomed layer,
+               so it is measured in screen pixels as the margin is, and under the nodes. *@
+            @if ((_gesture == Gesture.NodeDrag && _panOnDrag) || (_gesture == Gesture.Connect && _panOnConnect))
+            {
+                <div class="pan-margin" style="@MarginStyle" aria-hidden="true"></div>
+            }
+            <BlowControls />
+            @* Top-right: node 3 has the bottom-right corner. *@
+            <BlowMiniMap Pannable="true" Zoomable="true" Position="BlowPanelPosition.TopRight" />
+            <BlowPanel Anchor="BlowPanelPosition.TopLeft">
+                <div class="pan-readout">
+                    x @_viewport.X.ToString("0") · y @_viewport.Y.ToString("0") · zoom @_viewport.Zoom.ToString("0.00")
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag</strong> "Drag me to the edge" toward any side of the canvas and hold it there: once the pointer enters the dashed band, the view scrolls to follow - watch x and y in the readout and the frame in the minimap - and the node stays under the pointer.</li>
+        <li><strong>Drag from a handle</strong> toward the edge: the view follows a connection being drawn in the same way.</li>
+        <li>Raise <strong>Speed</strong> to scroll faster, and <strong>Margin</strong> to widen the band where auto-pan starts.</li>
+        <li>Untick <strong>Pan on node drag</strong> or <strong>Pan on connect</strong>: the view now stays still, and a node or a connection taken past the edge goes out of sight with the pointer.</li>
+        <li><strong>Click</strong> the canvas and press <strong>Tab</strong> until focus reaches "Tab to me", which starts out of sight beyond the bottom-right: the view pans just far enough to show it, over the <strong>Focus pan</strong> time (0 jumps). Untick <strong>Pan to focused node</strong> and focus goes there unseen.</li>
+        <li>On a touch screen, put <strong>two fingers</strong> on the canvas and pinch to zoom about the point between them; untick <strong>Pinch to zoom</strong> to stop it.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>AutoPanOnNodeDrag</code> and <code>AutoPanOnConnect</code> (both <code>true</code>) scroll the viewport while a node or a connection is dragged within <code>AutoPanMargin</code> screen pixels (30) of the pane's border.</li>
+        <li><code>AutoPanSpeed</code> (15) is the distance in screen pixels per step, about sixty steps a second, and it keeps going while the pointer is held still against the edge. The drag is tracked in flow coordinates, so what you hold stays under the pointer while the view moves.</li>
+        <li><code>AutoPanOnNodeFocus</code> (<code>true</code>) pans a node that receives keyboard focus into view - only as far as needed - over <code>AutoPanOnNodeFocusDuration</code> milliseconds (200).</li>
+        <li><code>ZoomOnPinch</code> (<code>true</code>) zooms about the midpoint between two fingers - the only way to zoom on a touch screen, which is why it is on by default.</li>
+        <li><code>OnMove</code> streams the <code>BlowViewport</code> while the view travels and <code>OnViewportChanged</code> reports where it settles; both feed the readout. <code>OnNodeDragStart</code>/<code>OnNodeDragStop</code> and <code>OnConnectStart</code>/<code>OnConnectEnd</code> show and hide the band.</li>
+        <li><code>FitViewOptions</code> with <code>Nodes</code> fits the first view to three of the four nodes, which leaves the fourth off screen for the Tab step.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .pan-readout { padding: 6px 10px; font-size: 12px; font-variant-numeric: tabular-nums; background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
+    .pan-margin { position: absolute; box-sizing: border-box; pointer-events: none; border: 1px dashed var(--bit-blow-node-selected); border-radius: 4px; }
+</style>
+
+@code {
+    private bool _panOnDrag = true;
+    private bool _panOnConnect = true;
+    private bool _panOnFocus = true;
+    private bool _pinch = true;
+    private Gesture _gesture;
+    private double _speed = 15;
+    private double _margin = 30;
+    private int _focusDuration = 200;
+    private BlowViewport _viewport = BlowViewport.Identity;
+    private BlowFitViewOptions _fit = new();
+
+    private readonly List<BlowNode> _nodes =
+    [
+        new() { Id = "1", Type = "input", Label = "Drag me to the edge", Position = new(0, 0), Width = 180 },
+        new() { Id = "2", Label = "Node 2", Position = new(60, 140) },
+        new() { Id = "3", Label = "Node 3", Position = new(260, 220) },
+        // Well beyond the first view, so tabbing to it shows auto-pan on focus.
+        new() { Id = "4", Type = "output", Label = "Tab to me", Position = new(760, 520) },
+    ];
+
+    private readonly List<BlowEdge> _edges =
+    [
+        new() { Id = "e1-2", Source = "1", Target = "2" },
+        new() { Id = "e2-3", Source = "2", Target = "3", Animated = true },
+        new() { Id = "e3-4", Source = "3", Target = "4" },
+    ];
+
+    protected override void OnInitialized()
+    {
+        _fit = new BlowFitViewOptions { Nodes = _nodes.Where(n => n.Id != "4").ToList() };
+    }
+
+    // The gesture under way, for the band: it shows only while auto-pan is on for that kind of drag.
+    private enum Gesture { None, NodeDrag, Connect }
+
+    private string MarginStyle => string.Create(System.Globalization.CultureInfo.InvariantCulture, $"inset:{_margin}px;");
+
+    private static double ToDouble(object? value, double fallback) =>
+        double.TryParse(value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : fallback;
+}

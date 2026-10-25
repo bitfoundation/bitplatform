@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -10,9 +10,12 @@ namespace Bit.BlazorUI;
 internal static class BitCssClasses
 {
     /// <summary>
-    /// The color class of a component, e.g. <c>bit-tpc-pri</c> for the primary color of a TimePicker.
+    /// The color class of a component, e.g. <c>bit-tpc-pri</c> for the primary color of a TimePicker. A color that
+    /// is not set has no class of its own, the same as a size: a class that always carried the primary color would
+    /// be indistinguishable from one that was asked for, and the stylesheet needs to tell the two apart so that the
+    /// component's public variables restyle the default and never an explicit choice.
     /// </summary>
-    /// <param name="color">The color, which falls back to the primary one when it is not set.</param>
+    /// <param name="color">The color.</param>
     /// <param name="prefix">The class prefix of the component, e.g. <c>bit-tpc</c>.</param>
     public static string Color(BitColor? color, string prefix)
     {
@@ -35,10 +38,10 @@ internal static class BitCssClasses
             BitColor.PrimaryBorder => "pbr",
             BitColor.SecondaryBorder => "sbr",
             BitColor.TertiaryBorder => "tbr",
-            _ => "pri"
+            _ => null
         };
 
-        return $"{prefix}-{suffix}";
+        return suffix is null ? string.Empty : $"{prefix}-{suffix}";
     }
 
     /// <summary>
@@ -70,6 +73,20 @@ internal static class BitCssClasses
 
         return culture.TextInfo.IsRightToLeft;
     }
+
+    /// <summary>
+    /// The direction a component knows it lays itself out in: the one it was given, or without one right to left
+    /// when its culture writes right to left - and null when neither says (no direction and a left-to-right culture,
+    /// which inherits the page's, or <see cref="BitDir.Auto"/>, which the content decides), so that it is read off
+    /// the element rather than taken for left to right (see <see cref="BitComponentBase.ExplicitRtl"/>).
+    /// </summary>
+    internal static bool? ExplicitRtl(BitDir? dir, CultureInfo culture) => dir switch
+    {
+        BitDir.Rtl => true,
+        BitDir.Ltr => false,
+        null when culture.TextInfo.IsRightToLeft => true,
+        _ => null
+    };
 
     /// <summary>
     /// The <c>bit-rtl</c> class a component needs only when its culture is what makes it right to left. A

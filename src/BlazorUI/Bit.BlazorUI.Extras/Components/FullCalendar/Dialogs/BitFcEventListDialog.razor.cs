@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
@@ -8,6 +8,7 @@ public partial class BitFcEventListDialog : IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
@@ -35,13 +36,22 @@ public partial class BitFcEventListDialog : IAsyncDisposable
         // Move focus into the dialog and trap Tab navigation once it has rendered; teardown in
         // DisposeAsync restores focus to the element that was focused before it opened.
         if (firstRender)
-            await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
+            await BitFcDialogInterop.SetupAsync(JS, _dialogRef, _dialogTitleId);
     }
+
+    // Whether Escape closes the dialog, the one rule OnDialogKeyDown and _EscapeClaim both go by: while the details
+    // overlay is open it owns the key, and claims it on its own dialog.
+    private bool _ClosesOnEscape => _showDetails is false;
+
+    // The Escape that closes the dialog, claimed on the dialog (see Utils.claimEscape) so a surface the calendar sits
+    // in does not close on the same press.
+    private string? _EscapeClaim => _ClosesOnEscape ? "claim" : null;
 
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
     {
-        // Escape is the standard way out of a modal. While the details overlay is open it owns the key.
-        if (e.Key is "Escape" or "Esc" && _showDetails is false)
+        // Escape is the standard way out of a modal. Only the plain key, the one the dialog claims: an Escape with
+        // a modifier is left to the surface the calendar sits in.
+        if (e.IsPlainEscape() && _ClosesOnEscape)
             await OnClose.InvokeAsync();
     }
 
@@ -58,6 +68,6 @@ public partial class BitFcEventListDialog : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
+        await BitFcDialogInterop.TeardownAsync(JS, _dialogTitleId);
     }
 }

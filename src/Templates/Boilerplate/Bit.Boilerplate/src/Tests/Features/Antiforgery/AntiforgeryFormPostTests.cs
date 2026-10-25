@@ -84,8 +84,9 @@ public partial class AntiforgeryFormPostTests
     }
 
     /// <summary>
-    /// The token pair a server-rendered form would embed, taken from the server's own <see cref="IAntiforgery"/> -
-    /// the same call <c>RazorComponentEndpointInvoker</c> makes while rendering a page.
+    /// The token pair a server-rendered form would embed, taken from the <see cref="IAntiforgery"/> of Server.Api - the
+    /// host the form posts to and validates it - by the same call <c>RazorComponentEndpointInvoker</c> makes while
+    /// rendering a page.
     /// <para>
     /// It cannot be read off a response instead, because this template renders no server-side form: there is no
     /// <c>@formname</c> and no <c>AntiforgeryToken</c> anywhere, so no page carries a request token in its HTML (the
@@ -95,9 +96,9 @@ public partial class AntiforgeryFormPostTests
     /// </summary>
     private static (string Cookie, string Token) MintFormToken(AppTestServer server)
     {
-        var antiforgery = server.WebApp.Services.GetRequiredService<IAntiforgery>();
+        var antiforgery = server.ApiApp.Services.GetRequiredService<IAntiforgery>();
 
-        var httpContext = new DefaultHttpContext { RequestServices = server.WebApp.Services };
+        var httpContext = new DefaultHttpContext { RequestServices = server.ApiApp.Services };
         var tokens = antiforgery.GetAndStoreTokens(httpContext);
 
         var cookie = httpContext.Response.Headers.SetCookie
@@ -113,16 +114,13 @@ public partial class AntiforgeryFormPostTests
     /// <summary>The cookies are this test's to send by hand, and a redirect is an answer of its own.</summary>
     private static HttpClient CreateClient(AppTestServer server)
     {
-        return new HttpClient(new HttpClientHandler { UseCookies = false, AllowAutoRedirect = false })
-        {
-            BaseAddress = server.WebAppServerAddress
-        };
+        return server.CreateRawHttpClient(new HttpClientHandler { UseCookies = false, AllowAutoRedirect = false });
     }
 
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 

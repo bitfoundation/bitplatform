@@ -1,4 +1,5 @@
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
@@ -10,15 +11,10 @@ public static class AppCertificateService
 {
     private const string ActiveCertificateName = "AppCertificate";
 
-    /// <summary>
-    /// The self-signed certificate this template ships with. Its private key is public, so anyone could mint a valid
-    /// token or decrypt the Data Protection key ring - it is a local development convenience and nothing else.
-    /// </summary>
-    private const string TestCertificateThumbprint = "1D549B7F8B0D52A54DE1C36948055B17C90063A2";
-
     private static X509Certificate2[]? allAppCerts;
     private static RsaSecurityKey? privateSecurityKey;
     private static RsaSecurityKey[]? publicSecurityKeys;
+    private static byte[]? securityTokenKey;
 
     /// <summary>
     /// The active certificate first, followed by any retired ones.
@@ -45,8 +41,8 @@ public static class AppCertificateService
 
         // Retired certificates are checked too: a retired default would still be trusted for validation, so its
         // public private key could still be used to mint tokens this server accepts.
-        if (AppEnvironment.IsDevelopment() is false && certs.Any(cert => cert.Thumbprint is TestCertificateThumbprint))
-            throw new InvalidOperationException("You are using the default self-signed certificate in non-development environment. Generate and use your own certificate using `openssl genrsa` and `openssl req` commands described in AppCertificate.md file.");
+        if (AppEnvironment.IsDevelopment() is false && certs.Any(cert => cert.Subject.Contains("OU=Development", StringComparison.Ordinal)))
+            throw new InvalidOperationException("You are using a development certificate in non-development environment. Generate and use your own certificate using `openssl genrsa` and `openssl req` commands described in AppCertificate.md file.");
 
         return allAppCerts = [.. certs];
     }
@@ -90,6 +86,11 @@ public static class AppCertificateService
     public static RsaSecurityKey[] GetPublicSecurityKeys(IConfiguration configuration)
     {
         return publicSecurityKeys ??= [.. GetAllAppCertificates(configuration).Select(cert => ToSecurityKey(cert, publicOnly: true))];
+    }
+
+    public static byte[] GetSecurityTokenKey(IConfiguration configuration)
+    {
+        return securityTokenKey ??= SHA256.HashData(GetPrivateSecurityKey(configuration).Rsa.SignData("Boilerplate.SecurityToken"u8.ToArray(), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1));
     }
 
     /// <summary>

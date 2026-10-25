@@ -1,0 +1,293 @@
+﻿@page "/options"
+@using System.Globalization
+@inject BaletteOptions Options
+@inject IBaletteService Palette
+
+<PageTitle>Options and security · Balette</PageTitle>
+
+<div class="bb-intro">
+    <h1>Options &amp; security</h1>
+    <p class="bb-subtitle">
+        Every option of <code>BaletteOptions</code>, with the value this site runs with next to the library's default; the
+        parameters that override them for one palette; the component's own methods and callbacks; and what the palette does
+        to keep text, links and history safe.
+    </p>
+</div>
+
+<PaletteBar />
+
+@* A link the palette must refuse, listed while this page is on screen - see the security section. *@
+<BaletteCommands Commands="SecurityCommands" />
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Search the options</span></div>
+    <p>
+        An inline palette over the table below, driven through the component itself rather than the service: a
+        <code>@@ref</code> to call <code>SetQueryAsync</code>, <code>OnQueryChanged</code> and <code>OnCommandExecuted</code>
+        to follow it, and a <code>DetailTemplate</code> for the active option. Choosing an option scrolls to its row.
+    </p>
+    <div class="bb-try">
+        @foreach (var query in FinderQueries)
+        {
+            <button type="button" class="btn btn-outline demo-chip" @onclick="() => _finder.SetQueryAsync(query)"><code>SetQueryAsync("@query")</code></button>
+        }
+    </div>
+    <div class="demo-options-finder">
+        <Balette @ref="_finder"
+                 Inline="true"
+                 IncludeRegisteredCommands="false"
+                 EnableHistory="false"
+                 Density="compact"
+                 ShowFooter="false"
+                 Placeholder="Search the options…"
+                 Style="--bit-balette-max-height: 300px; --bit-balette-detail-width: 38%"
+                 Commands="_optionCommands"
+                 DetailTemplate="_optionDetail"
+                 OnQueryChanged="query => _finderQuery = query"
+                 OnCommandExecuted="e => _finderLast = e.Command.Title" />
+    </div>
+    <p class="bb-muted demo-small" role="status">
+        <code>OnQueryChanged</code>: <strong>@(_finderQuery.Length == 0 ? "(empty)" : _finderQuery)</strong>
+        · <code>OnCommandExecuted</code>: <strong>@(_finderLast ?? "nothing yet")</strong>
+    </p>
+</div>
+
+<section class="bb-card" id="options">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Every option</h3>
+    <p>
+        Set in <code>AddBitBaletteServices(options =&gt; ...)</code>. The options are a singleton; numbers that must be
+        positive or not negative throw an <code>ArgumentOutOfRangeException</code> when set otherwise. Rows this site
+        changed are marked.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table demo-options">
+            <thead>
+                <tr><th>Option</th><th>This site</th><th>Default</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var option in AllOptions)
+                {
+                    var here = option.Read(Options);
+                    var standard = option.Read(Defaults);
+                    <tr id="opt-@option.Name" class="@(here != standard ? "demo-changed" : null)">
+                        <td class="bb-table-key"><code>@option.Name</code></td>
+                        <td>@(here != standard ? $"{here} ●" : here)</td>
+                        <td class="bb-soft">@standard</td>
+                        <td>
+                            @option.Effect
+                            @if (option.Href is not null)
+                            {
+                                <a href="@option.Href">See it →</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="bb-card" id="parameters">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> One palette's parameters</h3>
+    <p>
+        Most display options can be overridden for one palette with the parameter of the same name - an inline palette in
+        compact density next to a comfortable modal one, as on <a href="commands#settings">Registering commands</a>. The
+        component's parameters:
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Placeholder</code>, <code>Strings</code></td><td>The search box's placeholder, and every label and announcement (<a href="localization">localization</a>).</td></tr>
+                <tr><td class="bb-table-key"><code>Theme</code>, <code>Density</code></td><td><code>auto</code>, <code>light</code> or <code>dark</code>; <code>comfortable</code> or <code>compact</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>Class</code>, <code>Style</code>, <code>Unstyled</code></td><td>Extra classes and inline custom properties on the dialog, or no library styles at all (<a href="theming">theming</a>). Any other attribute lands on the dialog too.</td></tr>
+                <tr><td class="bb-table-key"><code>ItemTemplate</code>, <code>IconTemplate</code>, <code>GroupHeaderTemplate</code>, <code>EmptyTemplate</code>, <code>LoadingTemplate</code>, <code>HeaderTemplate</code>, <code>FooterTemplate</code>, <code>DetailTemplate</code></td><td>Replace a part of the palette (<a href="theming#templates">templates</a>).</td></tr>
+                <tr><td class="bb-table-key"><code>Loop</code>, <code>VimBindings</code>, <code>Virtualize</code>, <code>ShowFooter</code>, <code>ShowShortcuts</code>, <code>HighlightMatches</code>, <code>EnableHistory</code>, <code>GroupWhenSearching</code>, <code>SearchNestedCommands</code>, <code>TypoTolerance</code></td><td>Override the option of the same name; left unset, the option applies.</td></tr>
+                <tr><td class="bb-table-key"><code>ToggleShortcut</code></td><td>Overrides <code>options.ToggleShortcut</code> for this palette.</td></tr>
+                <tr><td class="bb-table-key"><code>DisablePointerSelection</code></td><td>Hovering a row no longer moves the selection.</td></tr>
+                <tr><td class="bb-table-key"><code>Inline</code>, <code>IncludeRegisteredCommands</code></td><td>A palette in the page rather than over it, and whether it lists the registry's commands, sources and modes or only its own.</td></tr>
+                <tr><td class="bb-table-key"><code>Commands</code>, child content</td><td>Commands of this palette alone: a list (re-read when it is a new collection), and <code>BaletteGroup</code>/<code>BaletteItem</code> markup.</td></tr>
+                <tr><td class="bb-table-key"><code>Open</code> / <code>OpenChanged</code></td><td>Two-way binding of the open state: <code>@@bind-Open</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>OnOpened</code>, <code>OnClosed</code>, <code>OnQueryChanged</code>, <code>OnCommandExecuted</code></td><td>Callbacks for this palette - the last with the command, its result and how long its handler took.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        The component also exposes <code>IsOpen</code>, <code>Query</code> and <code>ActiveCommand</code>, and
+        <code>OpenAsync</code>, <code>CloseAsync</code>, <code>ToggleAsync</code> and <code>SetQueryAsync</code> - the same
+        as the service's, for the code that holds a reference to it:
+    </p>
+    <pre class="bb-code">@ComponentExample</pre>
+</section>
+
+<section class="bb-card" id="security">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Security</h3>
+    <ul class="bb-detail-list">
+        <li><strong>Text is text.</strong> Titles, subtitles, descriptions, badges, queries and whatever an async source returns
+            are rendered as text by Razor, never as HTML. Icons are <code>RenderFragment</code>s you build, or a CSS class
+            name.</li>
+        <li><strong>Links are checked.</strong> A command's <code>Href</code> is followed only when it is relative or its scheme
+            is in <code>options.AllowedUrlSchemes</code> (here: <code>@string.Join(", ", Options.AllowedUrlSchemes.Order(StringComparer.Ordinal))</code>); a
+            <code>javascript:</code>, <code>data:</code> or <code>vbscript:</code> link - read the way a browser reads it,
+            tabs and control characters included - is refused and logged. Commands often carry API data, so this matters
+            most for sources.</li>
+        <li><strong>Errors are generic.</strong> A failed command shows <code>BaletteStrings.CommandFailed</code>, not the
+            exception's text, which can name a server, a table or a user (see <a href="pages#failures">failures</a>).</li>
+        <li><strong>History is ids only.</strong> Recents and pins store command ids, counts and times - never queries. A
+            source whose command ids embed personal data (an e-mail address) should set <code>ExcludeFromHistory</code>, or use
+            opaque ids - as this site's directory search does. Stored history is validated when it is read: entries a
+            hand-edited or corrupt <code>localStorage</code> holds are dropped.</li>
+        <li><strong>Visibility is not authorization.</strong> <code>VisibleWhen</code> and <code>Disabled</code> shape the UI;
+            the server must still check every action a handler asks it to perform.</li>
+        <li><strong>No inline script.</strong> The browser layer is a module imported from
+            <code>_content/Bit.Balette/bit-balette.js</code>, with no inline scripts and no <code>eval</code>:
+            <code>script-src 'self'</code> is enough.</li>
+    </ul>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">A link that is refused</span></div>
+        <p>
+            This page registers <em>Follow a javascript: link</em>, whose <code>Href</code> is
+            <code>@UnsafeHref</code> - the kind of value an API could hand a source. Its subtitle shows the address as plain
+            text, and choosing it runs nothing: the palette answers with its generic failure message and logs a warning,
+            naming the command and the scheme, to the browser's console.
+        </p>
+        <div class="bb-try">
+            <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("javascript link")'>Search "javascript link"</button>
+        </div>
+    </div>
+    <pre class="bb-code">@SecurityExample</pre>
+</section>
+
+@code {
+    private sealed record OptionInfo(string Name, Func<BaletteOptions, string> Read, string Effect, string? Href);
+
+    // A fresh instance: what an app that sets nothing gets.
+    private static readonly BaletteOptions Defaults = new();
+
+    private const string UnsafeHref = "javascript:alert('This never runs')";
+
+    // Not in AllowedUrlSchemes, so choosing it is refused and logged rather than followed.
+    private static readonly BaletteCommand[] SecurityCommands =
+    [
+        BaletteCmd.New("Follow a javascript: link").Group("This page").Keywords("unsafe", "href", "xss", "security")
+            .Subtitle(UnsafeHref)
+            .Description("An Href whose scheme BaletteOptions.AllowedUrlSchemes does not allow: refused, logged and reported, never followed.")
+            .Href(UnsafeHref)
+            .Build(),
+    ];
+
+    private static readonly string[] FinderQueries = ["history", "shortcut", "source", "^show", ""];
+
+    private static readonly OptionInfo[] AllOptions =
+    [
+        new("ToggleShortcut", o => o.ToggleShortcut?.ToString() ?? "none", "Opens and closes the palette; null for none. The palette's ToggleShortcut parameter overrides it.", "keyboard"),
+        new("AdditionalToggleShortcuts", o => Join(o.AdditionalToggleShortcuts), "More shortcuts that do the same.", "keyboard"),
+        new("SuppressShortcutsInEditableElements", o => Bool(o.SuppressShortcutsInEditableElements), "Plain keys pressed in an input, a text area or a content-editable element are typing, not shortcuts; chords with a modifier still fire.", "keyboard"),
+        new("SequenceTimeoutMs", o => Number(o.SequenceTimeoutMs), "How long a sequence (G I) waits for its next chord. Must be positive.", "keyboard#sequences"),
+        new("ShowSequenceHint", o => Bool(o.ShowSequenceHint), "Shows and announces a sequence in progress.", "keyboard#sequences"),
+        new("Loop", o => Bool(o.Loop), "Arrowing past the last row comes back to the first.", "keyboard"),
+        new("VimBindings", o => Bool(o.VimBindings), "Ctrl+J / Ctrl+K move inside the list; Ctrl+N / Ctrl+P always do.", "keyboard"),
+        new("DebounceMs", o => Number(o.DebounceMs), "Quiet time after the last keystroke before async sources are asked. Must not be negative.", "modes"),
+        new("SourceTimeoutMs", o => Number(o.SourceTimeoutMs), "How long a source may take before it counts as failed and gets a retry row; 0 waits for ever.", "modes#failures"),
+        new("Sources", o => o.Sources.Count == 0 ? "none" : string.Join(", ", o.Sources.Select(s => s.Name)), "Async sources asked in the default mode.", "modes#sources"),
+        new("Modes", o => o.Modes.Count == 0 ? "none" : string.Join(" ", o.Modes.Select(m => m.Prefix)), "Modes registered at startup.", "modes"),
+        new("ShowModeHints", o => Bool(o.ShowModeHints), "The Modes group on the empty query.", "modes"),
+        new("Commands", o => o.Commands.Count == 0 ? "none" : $"{o.Commands.Count} commands", "Commands registered at startup.", "commands"),
+        new("GroupOrder", o => o.GroupOrder.Count == 0 ? "empty" : string.Join(", ", o.GroupOrder), "Groups listed first on the empty query, in this order; the rest follow.", "commands"),
+        new("GroupWhenSearching", o => Bool(o.GroupWhenSearching), "Results keep their group headings while searching; false lists one flat ranked list.", "search"),
+        new("MaxResults", o => Number(o.MaxResults), "Rows kept per query, groups excluded; pinned and recent commands are listed beyond it. Must be positive.", "search"),
+        new("Matcher", o => o.Matcher.GetType().Name, "Scores and highlights every field: fuzzy by default, BaletteSubstringMatcher or your own.", "search#matcher"),
+        new("Weights", o => $"{Number(o.Weights.Title)} / {Number(o.Weights.Keyword)} / {Number(o.Weights.Subtitle)} / {Number(o.Weights.Group)} / {Number(o.Weights.Path)} / {Number(o.Weights.Description)} / {Number(o.Weights.Tag)}", "Field weights: title, keywords, subtitle, group, path, description, tags.", "search"),
+        new("PriorityWeight", o => Number(o.PriorityWeight), "How much a command's priority nudges its rank while searching.", "search"),
+        new("FrecencyWeight", o => Number(o.FrecencyWeight), "How much frecency - use, weighted by how recent - nudges it.", "search"),
+        new("SearchNestedCommands", o => Bool(o.SearchNestedCommands), "Nested commands are found from the root page, with their path.", "pages"),
+        new("TypoTolerance", o => Bool(o.TypoTolerance), "A query that found nothing is retried allowing a typo per term.", "search#typos"),
+        new("HighlightMatches", o => Bool(o.HighlightMatches), "Matched characters in titles and subtitles are marked.", "search"),
+        new("EnableHistory", o => Bool(o.EnableHistory), "Records recents, pins and frecency.", "pages#history"),
+        new("MaxRecents", o => Number(o.MaxRecents), "Recent commands listed on the empty query.", "pages#history"),
+        new("MaxHistoryEntries", o => Number(o.MaxHistoryEntries), "Commands the history keeps at most; pinned ones are never pruned.", "pages#history"),
+        new("HistoryStorageKey", o => o.HistoryStorageKey, "The localStorage key of the default history store.", "pages#history"),
+        new("CloseOnBackdropClick", o => Bool(o.CloseOnBackdropClick), "A click on the backdrop closes the palette.", null),
+        new("CloseOnNavigation", o => Bool(o.CloseOnNavigation), "The palette closes when the app navigates.", null),
+        new("ResetOnClose", o => Bool(o.ResetOnClose), "Closing clears the query and the pages; false reopens where it was left.", null),
+        new("ShowFooter", o => Bool(o.ShowFooter), "The hint bar under the list, where toasts show.", "theming"),
+        new("ShowShortcuts", o => Bool(o.ShowShortcuts), "Shortcut hints at the end of the rows.", "theming"),
+        new("Virtualize", o => Bool(o.Virtualize), "Renders only the visible rows; recommended above about 500.", "performance"),
+        new("RowHeight", o => Number(o.RowHeight), "A row's height in pixels while virtualized. Must be positive.", "performance"),
+        new("Density", o => o.Density, "comfortable or compact; exposed as data-density.", "theming#adapts"),
+        new("Theme", o => o.Theme, "auto follows the page; light or dark forces one.", "theming"),
+        new("Strings", o => o.Strings.GetType().Name, "Every label and announcement.", "localization"),
+        new("AllowedUrlSchemes", o => Join(o.AllowedUrlSchemes.Order(StringComparer.Ordinal)), "Schemes an Href may use; relative links always may.", "options#security"),
+    ];
+
+    private const string ComponentExample = """
+        <Balette @ref="_palette"
+                 @bind-Open="_paletteOpen"
+                 OnOpened="..." OnClosed="..."
+                 OnQueryChanged="query => _lastQuery = query"
+                 OnCommandExecuted="e => Log($"{e.Command.Id} -> {e.Result} in {e.Duration.TotalMilliseconds} ms")" />
+
+        @code {
+            private Balette _palette = default!;
+            private bool _paletteOpen;
+
+            private Task SearchFor(string text) => _palette.SetQueryAsync(text); // as if typed
+            private BaletteCommand? Highlighted => _palette.ActiveCommand;
+        }
+        """;
+
+    private const string SecurityExample = """
+        options.AllowedUrlSchemes.Add("vscode");     // let commands open vscode:// links
+        options.AllowedUrlSchemes.Remove("tel");
+
+        BaletteCmd.New(person.Name)
+            .Id($"person:{person.Id}")               // an opaque id, not the e-mail address
+            .ExcludeFromHistory()                    // or keep it out of the history altogether
+        """;
+
+    private Balette _finder = default!;
+    private string _finderQuery = string.Empty;
+    private string? _finderLast;
+    private List<BaletteCommand> _optionCommands = [];
+    private RenderFragment<BaletteCommand> _optionDetail = default!;
+
+    protected override void OnInitialized()
+    {
+        _optionCommands =
+        [
+            .. AllOptions.Select(option => BaletteCmd.New(option.Name)
+                .Id($"option:{option.Name}")
+                .Subtitle(option.Effect)
+                .Value(option.Read(Options))
+                .Data(option)
+                .Href($"options#opt-{option.Name}")
+                .Build()),
+        ];
+
+        _optionDetail = command =>
+            @<div class="demo-detail">
+                @if (command.Data is OptionInfo option)
+                {
+                    <div class="demo-detail-kind">BaletteOptions</div>
+                    <h3>@option.Name</h3>
+                    <p>@option.Effect</p>
+                    <dl>
+                        <dt>This site</dt><dd>@option.Read(Options)</dd>
+                        <dt>Default</dt><dd>@option.Read(Defaults)</dd>
+                    </dl>
+                }
+            </div>;
+    }
+
+    private static string Bool(bool value) => value ? "true" : "false";
+
+    private static string Number(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
+
+    private static string Join<T>(IEnumerable<T> items)
+    {
+        var text = string.Join(", ", items);
+        return text.Length == 0 ? "none" : text;
+    }
+}

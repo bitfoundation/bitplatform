@@ -7,11 +7,11 @@ public partial class CategoryDto
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Name))]
-    [MaxLength(64, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
+    [MaxLength(64, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_ValidationError))]
     public string? Name { get; set; }
 
     [Display(Name = nameof(AppStrings.Color))]
-    [MaxLength(16, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
+    [MaxLength(16, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_ValidationError))]
     public string? Color { get; set; } = "#FFFFFF";
 
     public int ProductsCount { get; set; }

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Mapbox GL JS provider for <see cref="BitMap{TMapProvider}"/>. Loads Mapbox GL JS from

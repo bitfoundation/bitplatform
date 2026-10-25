@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.RichTextEditor;
@@ -92,7 +93,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual("toolbar", component.Find(".bit-rte-tlb").GetAttribute("role"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void BitRichTextEditorShouldRenderOnlyValidAttributeNames(bool readOnly)
@@ -203,20 +204,24 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.MaxHeight, "20rem");
         });
 
-        var style = component.Find(".bit-rte-edt").GetAttribute("style");
-        StringAssert.Contains(style, "min-height:12rem");
-        StringAssert.Contains(style, "max-height:20rem");
+        // The sizes set the public variables on the instance, which both the surface and the source view read.
+        var style = component.Find(".bit-rte").GetAttribute("style");
+        StringAssert.Contains(style, "--bit-RichTextEditor-height:12rem");
+        StringAssert.Contains(style, "--bit-RichTextEditor-max-height:20rem");
+        Assert.IsNull(component.Find(".bit-rte-edt").GetAttribute("style"));
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldOmitMaxHeightWhenNotSet()
+    public void BitRichTextEditorShouldLeaveTheSizesToTheStylesheetWhenNotSet()
     {
         SetupJsInterop();
 
         var component = RenderComponent<BitRichTextEditor>();
 
-        // An unset MaxHeight must not leak an empty/invalid declaration into the style attribute.
-        Assert.IsFalse(component.Find(".bit-rte-edt").GetAttribute("style")!.Contains("max-height"));
+        // Unset sizes declare nothing, so a --bit-RichTextEditor-height set on :root or an ancestor applies.
+        var style = component.Find(".bit-rte").GetAttribute("style") ?? "";
+        Assert.IsFalse(style.Contains("--bit-RichTextEditor-height"));
+        Assert.IsFalse(style.Contains("--bit-RichTextEditor-max-height"));
     }
 
     [TestMethod]
@@ -267,17 +272,17 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var describedBy = component.Find(".bit-rte-edt").GetAttribute("aria-describedby");
         Assert.IsFalse(string.IsNullOrEmpty(describedBy));
-        Assert.AreEqual(describedBy, component.Find(".bit-rte-cnt").GetAttribute("id"));
+        Assert.AreEqual($"{component.Find(".bit-rte-cnt").GetAttribute("id")} {component.Find(".bit-rte-hint").Id}", describedBy);
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldNotDescribeTheSurfaceWithoutACountFooter()
+    public void BitRichTextEditorShouldDescribeTheSurfaceByTheHelpHintAloneWithoutAFooter()
     {
         SetupJsInterop();
 
         var component = RenderComponent<BitRichTextEditor>();
 
-        Assert.IsNull(component.Find(".bit-rte-edt").GetAttribute("aria-describedby"));
+        Assert.AreEqual(component.Find(".bit-rte-hint").Id, component.Find(".bit-rte-edt").GetAttribute("aria-describedby"));
     }
 
 
@@ -307,11 +312,11 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var component = RenderComponent<BitRichTextEditor>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Inline);
         });
 
-        // IsEnabled=false must lock editing exactly like ReadOnly; painting the disabled class
+        // Disabled=true must lock editing exactly like ReadOnly; painting the disabled class
         // while leaving the surface editable would let a "disabled" editor be typed into.
         var root = component.Find(".bit-rte");
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
@@ -330,10 +335,10 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var component = RenderComponent<BitRichTextEditor>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
-        // The bridge refuses paste/drop/typing on this flag, so it must reflect IsEnabled too and
+        // The bridge refuses paste/drop/typing on this flag, so it must reflect Disabled too and
         // not only the ReadOnly parameter.
         Assert.AreEqual(true, SetupOption(LastSetupOptions(), "ReadOnly"));
         Assert.AreEqual(0, component.FindAll(".bit-rte-src").Count);
@@ -526,6 +531,44 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitRichTextEditorCustomToolbarItemShouldReflectIsActiveAndKeepTheSelection()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Inline);
+            parameters.Add(p => p.ToolbarConfig, new BitRichTextEditorToolbarConfig
+            {
+                CustomItems =
+                [
+                    new() { Id = "callout", Label = "Callout", IsActive = s => s.Block == "blockquote", OnActivate = _ => Task.CompletedTask },
+                    new() { Id = "today", Label = "Today", OnActivate = _ => Task.CompletedTask }
+                ]
+            });
+        });
+
+        var callout = ButtonByLabel(component, "Callout");
+        Assert.AreEqual("false", callout.GetAttribute("aria-pressed"));
+        Assert.IsFalse(callout.ClassList.Contains("bit-rte-act"));
+        // A plain action has no pressed state to announce.
+        Assert.IsFalse(ButtonByLabel(component, "Today").HasAttribute("aria-pressed"));
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(new BitRichTextEditorSelectionState { Block = "blockquote" }));
+
+        callout = ButtonByLabel(component, "Callout");
+        Assert.AreEqual("true", callout.GetAttribute("aria-pressed"));
+        Assert.IsTrue(callout.ClassList.Contains("bit-rte-act"));
+        Assert.AreEqual("blockquote", component.Instance.SelectionState.Block);
+
+        // Pressing it must not take the focus and the selection out of the text, like every built-in button.
+        static string[] Prevented(AngleSharp.Dom.IElement e)
+            => e.Attributes.Select(a => a.Name).Where(n => n.Contains("preventdefault", StringComparison.OrdinalIgnoreCase)).ToArray();
+        Assert.AreNotEqual(0, Prevented(callout).Length);
+        CollectionAssert.AreEqual(Prevented(ButtonByLabel(component, "Bold")), Prevented(callout));
+    }
+
+    [TestMethod]
     public async Task BitRichTextEditorShouldReportAFailingCustomToolbarAction()
     {
         SetupJsInterop();
@@ -554,7 +597,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.IsNotNull(component.Find(".bit-rte-err"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("")]
     [DataRow("   ")]
     public void BitRichTextEditorShouldRejectABlankCustomItemId(string id)
@@ -682,6 +725,27 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitRichTextEditorShouldFallBackToThePlaceholderOptionsForValuesItDoesNotOffer()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.BlockFormat | BitRichTextEditorToolbar.Font);
+            parameters.Add(p => p.FontFamilies, new[] { "Georgia" });
+        });
+
+        // A list item's block, and a font inherited from the page, are values none of the options carry.
+        component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { Block = "li", FontName = "Segoe UI", FontSize = "13px" })).Wait();
+
+        var selects = component.FindAll(".bit-rte-sel");
+        Assert.AreEqual("p", selects[0].GetAttribute("value"));
+        Assert.AreEqual("", selects[1].GetAttribute("value"));
+        Assert.AreEqual("", selects[2].GetAttribute("value"));
+    }
+
+    [TestMethod]
     public void BitRichTextEditorShouldUseTheSuppliedFontOptions()
     {
         SetupJsInterop();
@@ -724,7 +788,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-rte-bar").Count);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("example.com", "https://example.com")]
     [DataRow("example.com/docs", "https://example.com/docs")]
     [DataRow("example.com:8443", "https://example.com:8443")]
@@ -752,7 +816,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual(expected, Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.createLink").Arguments[1]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("javascript:alert(1)")]
     [DataRow("//evil.example.com")]
     [DataRow("\\\\evil.example.com")]
@@ -829,7 +893,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual("A picture", invocation.Arguments[2]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("javascript:alert(1)")]
     [DataRow("ftp://example.com/a.png")]
     [DataRow("data:text/html;base64,AAAA")]
@@ -882,6 +946,30 @@ public class BitRichTextEditorTests : BunitTestContext
             component.Instance._ResolveImageUrl("a.png", "image/png", "AAAA"));
 
         Assert.AreEqual("data:image/png;base64,AAAA", url);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldShowAndAnnounceAnUploadWhileItRuns()
+    {
+        SetupJsInterop();
+
+        var upload = new TaskCompletionSource<string?>();
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+            parameters.Add(p => p.OnImageUpload, _ => upload.Task));
+
+        Assert.AreEqual(0, component.FindAll(".bit-rte-upl").Count);
+
+        var resolving = component.InvokeAsync(() => component.Instance._ResolveImageUrl("a.png", "image/png", "AAAA"));
+
+        component.WaitForAssertion(() => Assert.AreEqual("Uploading image…", component.Find(".bit-rte-upl").TextContent));
+        Assert.AreEqual("true", component.Find(".bit-rte-edt").GetAttribute("aria-busy"));
+        Assert.AreEqual("Uploading image…", component.Find(".bit-rte-ann").TextContent);
+
+        upload.SetResult("https://cdn.example.com/a.png");
+        Assert.AreEqual("https://cdn.example.com/a.png", await resolving);
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-rte-upl").Count));
+        Assert.IsFalse(component.Find(".bit-rte-edt").HasAttribute("aria-busy"));
     }
 
     [TestMethod]
@@ -948,6 +1036,66 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.IsNull(url);
         Assert.IsNotNull(error);
         Assert.AreEqual("file-too-large", error!.Code);
+        Assert.AreEqual("\"big.png\" exceeds the 10 MB limit.", error.Message);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorMaxImageSizeShouldLowerTheLimitOnBothSides()
+    {
+        SetupJsInterop();
+
+        BitRichTextEditorError? error = null;
+        var uploaded = false;
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.MaxImageSize, 512 * 1024);
+            parameters.Add(p => p.OnImageUpload, _ => { uploaded = true; return Task.FromResult<string?>("https://cdn/x.png"); });
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<BitRichTextEditorError>(this, e => error = e));
+        });
+
+        // The bridge is told the limit, so a file past it is refused before it is even read.
+        Assert.AreEqual(512L * 1024, SetupOption(LastSetupOptions(), "MaxImageBytes"));
+
+        var url = await component.InvokeAsync(() =>
+            component.Instance._ResolveImageUrl("photo.png", "image/png", new string('A', 4 * (600 * 1024 / 3))));
+
+        Assert.IsNull(url);
+        Assert.IsFalse(uploaded, "An image past the limit reached the upload handler.");
+        Assert.AreEqual("\"photo.png\" exceeds the 512 KB limit.", error!.Message);
+
+        // Zero or less is no limit to keep: the default comes back.
+        component.Render(parameters => parameters.Add(p => p.MaxImageSize, 0));
+        Assert.AreEqual(10L * 1024 * 1024, component.Instance.MaxImageSize);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorClientErrorsShouldBeLocalized()
+    {
+        SetupJsInterop();
+
+        BitRichTextEditorError? error = null;
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Localizer, new TestLocalizer(new()
+            {
+                ["image-too-large"] = "«{0}» supera el límite de {1}.",
+                ["too-many-images"] = "Solo {0} imágenes {9}.",
+            }));
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<BitRichTextEditorError>(this, e => error = e));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnClientError("file-too-large", "image-too-large", "\"{0}\" exceeds the {1} limit.", ["a.png", "10 MB"]));
+        Assert.AreEqual("file-too-large", error!.Code);
+        Assert.AreEqual("«a.png» supera el límite de 10 MB.", error.Message);
+        Assert.AreEqual("«a.png» supera el límite de 10 MB.", component.Find(".bit-rte-err").TextContent);
+
+        // A key the localizer does not know keeps the English template.
+        await component.InvokeAsync(() => component.Instance._OnClientError("invalid-url", "links-not-allowed", "Links are not allowed by the current policy.", []));
+        Assert.AreEqual("Links are not allowed by the current policy.", error.Message);
+
+        // A translation whose placeholders do not fit the values falls back to the English rather than throwing.
+        await component.InvokeAsync(() => component.Instance._OnClientError("too-many-files", "too-many-images", "Only {0} images can be inserted per drop.", ["20"]));
+        Assert.AreEqual("Only 20 images can be inserted per drop.", error.Message);
     }
 
     [TestMethod]
@@ -1042,7 +1190,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
     // ---------------------------------------------------------------- media embeds
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("https://www.youtube.com/watch?v=abc123", "youtube-nocookie.com/embed/abc123")]
     [DataRow("https://youtu.be/abc123", "youtube-nocookie.com/embed/abc123")]
     [DataRow("https://www.youtube.com/embed/abc123", "youtube-nocookie.com/embed/abc123")]
@@ -1066,7 +1214,7 @@ public class BitRichTextEditorTests : BunitTestContext
         StringAssert.Contains(html, expected);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("https://youtube.com.evil.test/watch?v=abc123", "media-not-allowed")]
     [DataRow("https://example.com/page", "media-not-allowed")]
     [DataRow("ftp://example.com/clip.mp4", "invalid-url")]
@@ -1136,7 +1284,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual(0, InvokeCount("BitBlazorUI.RichTextEditor.insertTable"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Insert row above", "addRowBefore")]
     [DataRow("Insert row below", "addRow")]
     [DataRow("Insert column before", "addColBefore")]
@@ -1370,7 +1518,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
     // ---------------------------------------------------------------- shortcuts
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("b", false, "bold")]
     [DataRow("i", false, "italic")]
     [DataRow("u", false, "underline")]
@@ -1707,7 +1855,7 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.OnError, EventCallback.Factory.Create<BitRichTextEditorError>(this, e => error = e));
         });
 
-        await component.InvokeAsync(() => component.Instance._OnClientError("file-too-large", "Too big."));
+        await component.InvokeAsync(() => component.Instance._OnClientError("file-too-large", "image-too-large", "Too big.", null));
 
         Assert.IsNotNull(error);
         Assert.AreEqual("file-too-large", error!.Code);
@@ -1912,7 +2060,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.IsNull(SetupOption(options, "Policy"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(-1, 0)]
     [DataRow(0, 0)]
     [DataRow(250, 250)]
@@ -1930,7 +2078,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual(expected, SetupOption(LastSetupOptions(), "Debounce"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(-5)]
     [DataRow(-1)]
     public void BitRichTextEditorShouldRejectANegativeMaxLength(int given)
@@ -2060,6 +2208,40 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitRichTextEditorShouldKeepAValueItCannotSanitizeOutOfTheEditorWithoutFailingTheParameterPass()
+    {
+        SetupJsInterop();
+
+        // The generated SetParametersAsync awaits the Value hook, so a bridge that is gone - the circuit, the interop
+        // itself, a call that timed out, a runtime disposed first - would otherwise fail the whole parameter pass of
+        // the page.
+        foreach (var exception in new Exception[]
+                 {
+                     new JSDisconnectedException("circuit gone"),
+                     new JSException("interop unavailable"),
+                     new TaskCanceledException("interop call timed out"),
+                     new ObjectDisposedException("JSRuntime")
+                 })
+        {
+            Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.sanitizeHtml", _ => true).SetException(exception);
+
+            string? bound = null;
+            var component = RenderComponent<BitRichTextEditor>(parameters =>
+            {
+                parameters.Add(p => p.ValueChanged, EventCallback.Factory.Create<string?>(this, v => bound = v));
+            });
+            var pushed = InvokeCount("BitBlazorUI.RichTextEditor.setHtml");
+
+            component.Render(parameters => parameters.Add(p => p.Value, "<p><script>alert(1)</script>dirty</p>"));
+
+            // Nothing unsanitized reaches the editor or the binding: the editor keeps its content and the page its value.
+            Assert.AreEqual(pushed, InvokeCount("BitBlazorUI.RichTextEditor.setHtml"), exception.GetType().Name);
+            Assert.IsNull(bound, exception.GetType().Name);
+            Assert.AreEqual("<p><script>alert(1)</script>dirty</p>", component.Instance.Value, exception.GetType().Name);
+        }
+    }
+
+    [TestMethod]
     public void BitRichTextEditorShouldSendTheLowercasedPolicyToTheBridge()
     {
         SetupJsInterop();
@@ -2166,7 +2348,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
     // ---------------------------------------------------------------- content facts
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false, false, true)]
     [DataRow(true, false, false)]
     [DataRow(false, true, false)]
@@ -2463,6 +2645,30 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitRichTextEditorMentionMenuShouldClaimTheEscapeThatDismissesIt()
+    {
+        SetupJsInterop();
+
+        // The search box carries data-bit-esc (Utils.claimEscape) while the suggestions are open, so a dialog around
+        // the editor stays open on the press that dismisses them.
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.OnMentionSearch, People("Ada"));
+        });
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+
+        await component.InvokeAsync(() => component.Instance._OnMentionTrigger());
+
+        var input = component.Find(".bit-rte-mention-menu input");
+        Assert.AreEqual("claim", input.GetAttribute("data-bit-esc"));
+
+        await input.KeyDownAsync(Key.Escape);
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+    }
+
+    [TestMethod]
     public async Task BitRichTextEditorShouldReportAFailingMentionLookup()
     {
         SetupJsInterop();
@@ -2613,7 +2819,7 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true, true)]
     [DataRow(false, false)]
     public void BitRichTextEditorShouldDisableTheSourceViewToggleWhenLocked(bool readOnly, bool isEnabled)
@@ -2624,7 +2830,7 @@ public class BitRichTextEditorTests : BunitTestContext
         {
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Source);
             parameters.Add(p => p.ReadOnly, readOnly);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         // Both ways of locking the editor keep source view out of reach, so the button must look
@@ -2679,7 +2885,7 @@ public class BitRichTextEditorTests : BunitTestContext
         // A disabled component takes no focus at all.
         var disabled = RenderComponent<BitRichTextEditor>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
         Assert.IsFalse(disabled.Find(".bit-rte-edt").HasAttribute("tabindex"));
     }
@@ -2888,7 +3094,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
     // ---------------------------------------------------------------- color
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Remove text color", "fore")]
     [DataRow("Remove highlight", "back")]
     public async Task BitRichTextEditorShouldClearTheColorOfTheSelection(string label, string kind)

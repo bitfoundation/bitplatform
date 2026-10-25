@@ -1,4 +1,4 @@
-declare class Cursor extends EmbedBlot {
+﻿declare class Cursor extends EmbedBlot {
     static blotName: string;
     static className: string;
     static tagName: string;

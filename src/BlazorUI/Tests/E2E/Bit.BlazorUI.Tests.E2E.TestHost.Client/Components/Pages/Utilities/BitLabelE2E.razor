@@ -1,0 +1,185 @@
+﻿@page "/e2e/label"
+
+<PageTitle>BitLabel E2E</PageTitle>
+
+<h1>BitLabel</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitLabel Id="lbl-basic">I'm a Label</BitLabel>
+    <BitLabel Id="lbl-disabled" Disabled For="disabled-input">I'm a disabled Label</BitLabel>
+    <input type="text" id="disabled-input" />
+</E2ESection>
+
+<E2ESection Id="for" Title="For and wrapping">
+    <BitLabel Id="lbl-for" For="for-input">A Label for an input</BitLabel>
+    <input type="text" id="for-input" />
+    <BitLabel Id="lbl-wrap"><input type="checkbox" id="wrap-checkbox" /> <span id="wrap-caption">A Label wrapping its own control</span></BitLabel>
+</E2ESection>
+
+<E2ESection Id="required" Title="Required and optional">
+    <BitLabel Id="lbl-required" For="required-input" Required>Email</BitLabel>
+    <input type="email" id="required-input" required />
+    <BitLabel Id="lbl-required-text" Required RequiredText="(required)">A word instead of the asterisk</BitLabel>
+    <BitLabel Id="lbl-required-template" Required>
+        <ChildContent>A custom required template</ChildContent>
+        <RequiredTemplate><b id="required-template-content">must</b></RequiredTemplate>
+    </BitLabel>
+    <BitLabel Id="lbl-required-disabled" Required Disabled>A disabled Label dims its mark too</BitLabel>
+    <BitLabel Id="lbl-optional" Optional>I'm an optional Label</BitLabel>
+    <BitLabel Id="lbl-optional-text" Optional OptionalText="- if you have one">Its own optional text</BitLabel>
+    <BitLabel Id="lbl-optional-template" Optional>
+        <ChildContent>A custom optional template</ChildContent>
+        <OptionalTemplate><i id="optional-template-content">maybe</i></OptionalTemplate>
+    </BitLabel>
+    <BitLabel Id="lbl-both" Required Optional>Both set</BitLabel>
+</E2ESection>
+
+<E2ESection Id="element" Title="Element">
+    <BitLabel Element="div" Id="lbl-group" For="ignored-input" Required>Favorite color</BitLabel>
+    <div role="radiogroup" id="radio-group" aria-labelledby="lbl-group">
+        <label><input type="radio" name="favorite-color" /> Red</label>
+        <label><input type="radio" name="favorite-color" /> Green</label>
+    </div>
+    <fieldset id="fieldset">
+        <BitLabel Element="legend" Id="lbl-legend" Optional>Delivery notes</BitLabel>
+        <label><input type="checkbox" /> Leave with a neighbour</label>
+    </fieldset>
+    <BitLabel Element="not a tag!" Id="lbl-invalid" For="invalid-input">Invalid tag falls back</BitLabel>
+    <input type="text" id="invalid-input" />
+    <BitLabel Element=" span " Id="lbl-span">Trimmed span</BitLabel>
+</E2ESection>
+
+<E2ESection Id="nowrap" Title="NoWrap and NoSelect">
+    <BitLabel Id="lbl-wrapping" Style="width:220px">A caption long enough to need more than one line at this width</BitLabel>
+    <BitLabel Id="lbl-nowrap" Style="width:220px" NoWrap Required>A caption long enough to need more than one line at this width</BitLabel>
+    <BitLabel Id="lbl-selectable"><input type="checkbox" /> <span id="selectable-caption">Selectable caption</span></BitLabel>
+    <BitLabel Id="lbl-noselect" NoSelect><input type="checkbox" /> <span id="noselect-caption">Unselectable caption</span></BitLabel>
+</E2ESection>
+
+<E2ESection Id="hiding" Title="Hiding">
+    <BitLabel Id="lbl-vh" VisuallyHidden For="vh-input">Search the documentation</BitLabel>
+    <input type="search" id="vh-input" placeholder="Search..." />
+    <BitLabel Id="lbl-vh-wrap" VisuallyHidden><input type="checkbox" id="vh-checkbox" /> Shown only while its checkbox has the focus</BitLabel>
+    <button id="after-vh">after</button>
+    <div>Visible: [ <BitLabel Id="lbl-visible" Visibility="BitVisibility.Visible">Visible Label</BitLabel> ]</div>
+    <div>Hidden: [ <BitLabel Id="lbl-hidden" Visibility="BitVisibility.Hidden">Hidden Label</BitLabel> ]</div>
+    <div>Collapsed: [ <BitLabel Id="lbl-collapsed" Visibility="BitVisibility.Collapsed">Collapsed Label</BitLabel> ]</div>
+    <BitLabel Id="lbl-visibility-runtime" Visibility="_visibility">Runtime visibility</BitLabel>
+    <button id="btn-visibility-hidden" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-visibility-collapsed" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <button id="btn-visibility-visible" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div id="css-container" style="--bit-Label-font-weight: 300; --bit-Label-required-color: rgb(10, 20, 30); --bit-Label-optional-color: rgb(40, 50, 60); --bit-Label-indicator-gap: 7px;">
+        <BitLabel Id="lbl-css-required" Required>Name</BitLabel>
+        <BitLabel Id="lbl-css-optional" Optional>Nickname</BitLabel>
+    </div>
+    <BitLabel Id="lbl-css-own" Style="--bit-Label-font-size: 21px; --bit-Label-color: rgb(1, 128, 2); --bit-Label-padding: 3px 5px; --bit-Label-line-height: 31px;">Set on one label</BitLabel>
+    <div style="--bit-Label-color: rgb(1, 128, 2); --bit-Label-font-size: 25px;">
+        <BitLabel Id="lbl-css-color-wins" Color="BitColor.Error" Size="BitSize.Small">Color and Size win</BitLabel>
+    </div>
+    <div style="--bit-tpg-field-label-font-weight: 700;">
+        <BitLabel Id="lbl-css-theme-weight">Theme weight</BitLabel>
+    </div>
+    <button id="before-focusable">before</button>
+    <div style="--bit-Label-focus-color: rgb(200, 0, 100);">
+        <BitLabel Id="lbl-focusable" TabIndex="0">A focusable caption</BitLabel>
+    </div>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="_labelParams">
+        <BitLabel Id="lbl-params-1">First name</BitLabel>
+        <BitLabel Id="lbl-params-2">Last name</BitLabel>
+        <BitLabel Id="lbl-params-3" Required="false" Optional>Middle name</BitLabel>
+        <BitLabel Id="lbl-params-4" Color="BitColor.Success">Own color</BitLabel>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="colors" Title="Color">
+    <div id="color-container" style="color: rgb(1, 2, 3);">
+        <BitLabel Id="lbl-color-none">Default</BitLabel>
+        <BitLabel Id="lbl-color-Primary" Color="BitColor.Primary">Primary</BitLabel>
+        <BitLabel Id="lbl-color-Secondary" Color="BitColor.Secondary">Secondary</BitLabel>
+        <BitLabel Id="lbl-color-Tertiary" Color="BitColor.Tertiary">Tertiary</BitLabel>
+        <BitLabel Id="lbl-color-Info" Color="BitColor.Info">Info</BitLabel>
+        <BitLabel Id="lbl-color-Success" Color="BitColor.Success">Success</BitLabel>
+        <BitLabel Id="lbl-color-Warning" Color="BitColor.Warning">Warning</BitLabel>
+        <BitLabel Id="lbl-color-SevereWarning" Color="BitColor.SevereWarning">SevereWarning</BitLabel>
+        <BitLabel Id="lbl-color-Error" Color="BitColor.Error" Required>Error</BitLabel>
+        <BitLabel Id="lbl-color-PrimaryBackground" Color="BitColor.PrimaryBackground">PrimaryBackground</BitLabel>
+        <BitLabel Id="lbl-color-SecondaryBackground" Color="BitColor.SecondaryBackground">SecondaryBackground</BitLabel>
+        <BitLabel Id="lbl-color-TertiaryBackground" Color="BitColor.TertiaryBackground">TertiaryBackground</BitLabel>
+        <BitLabel Id="lbl-color-PrimaryForeground" Color="BitColor.PrimaryForeground">PrimaryForeground</BitLabel>
+        <BitLabel Id="lbl-color-SecondaryForeground" Color="BitColor.SecondaryForeground">SecondaryForeground</BitLabel>
+        <BitLabel Id="lbl-color-TertiaryForeground" Color="BitColor.TertiaryForeground">TertiaryForeground</BitLabel>
+        <BitLabel Id="lbl-color-PrimaryBorder" Color="BitColor.PrimaryBorder">PrimaryBorder</BitLabel>
+        <BitLabel Id="lbl-color-SecondaryBorder" Color="BitColor.SecondaryBorder">SecondaryBorder</BitLabel>
+        <BitLabel Id="lbl-color-TertiaryBorder" Color="BitColor.TertiaryBorder">TertiaryBorder</BitLabel>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sizes" Title="Size">
+    <BitLabel Id="lbl-size-none">Unset</BitLabel>
+    <BitLabel Id="lbl-size-Small" Size="BitSize.Small" Required>Small</BitLabel>
+    <BitLabel Id="lbl-size-Medium" Size="BitSize.Medium" Required>Medium</BitLabel>
+    <BitLabel Id="lbl-size-Large" Size="BitSize.Large" Required>Large</BitLabel>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitLabel Id="lbl-style" Style="color: rgb(30, 144, 255); font-weight: 700">I'm a Label with Style</BitLabel>
+    <BitLabel Id="lbl-class" Class="e2e-label-class">I'm a Label with Class</BitLabel>
+    <BitLabel Id="lbl-styles" Required Styles="@(new() { Root = "font-style: italic", RequiredIndicator = "color: rgb(138, 43, 226); font-size: 19px" })">I'm a Label with Styles</BitLabel>
+    <BitLabel Id="lbl-classes" Optional Classes="@(new() { Root = "e2e-root-class", OptionalIndicator = "e2e-optional-class" })">I'm a Label with Classes</BitLabel>
+    <BitLabel Id="lbl-classes-required" Required Classes="@(new() { RequiredIndicator = "e2e-required-class" })">Required with class</BitLabel>
+    <BitLabel Id="lbl-attrs" AriaLabel="An aria name" data-e2e="splatted" title="A title">Attributes</BitLabel>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitLabel Id="lbl-rtl" Dir="BitDir.Rtl" Style="width: 300px">من یک برچسب هستم</BitLabel>
+    <BitLabel Id="lbl-rtl-required" Dir="BitDir.Rtl" Required>من یک برچسب الزامی هستم</BitLabel>
+    <div dir="rtl">
+        <BitLabel Id="lbl-rtl-inherited" Optional OptionalText="(اختیاری)">من یک برچسب اختیاری هستم</BitLabel>
+    </div>
+    <BitLabel Id="lbl-ltr-required" Required>Left to right</BitLabel>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    <BitLabel Id="lbl-runtime" Required="_required" Color="_color" Size="_size" Disabled="_disabled" NoWrap="_noWrap">@_text</BitLabel>
+    <button id="btn-toggle-required" @onclick="() => _required = !_required">Toggle required</button>
+    <button id="btn-set-color" @onclick="() => _color = BitColor.Error">Error color</button>
+    <button id="btn-set-size" @onclick="() => _size = BitSize.Large">Large size</button>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <button id="btn-toggle-nowrap" @onclick="() => _noWrap = !_noWrap">Toggle nowrap</button>
+    <button id="btn-set-text" @onclick="@(() => _text = "Changed text")">Change text</button>
+    <button id="btn-toggle-mounted" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitLabel Id="lbl-mounted" Required>Mounted label</BitLabel>
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private bool _required;
+    private BitColor? _color;
+    private BitSize? _size;
+    private bool _disabled;
+    private bool _noWrap;
+    private bool _mounted = true;
+    private string _text = "Runtime label";
+    private BitVisibility _visibility = BitVisibility.Visible;
+
+    private readonly BitLabelParams[] _labelParams =
+    [
+        new()
+        {
+            Required = true,
+            RequiredText = "(required)",
+            Color = BitColor.Primary,
+        }
+    ];
+}

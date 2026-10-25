@@ -13,6 +13,16 @@ public class BitNavNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> AriaLabel { get; set; } = new(nameof(BitNavItem.AriaLabel));
 
     /// <summary>
+    /// The Badge field name and selector of the custom input class (see <see cref="BitNavItem.Badge"/>).
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Badge { get; set; } = new(nameof(BitNavItem.Badge));
+
+    /// <summary>
+    /// The BadgeAriaLabel field name and selector of the custom input class (see <see cref="BitNavItem.BadgeAriaLabel"/>).
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> BadgeAriaLabel { get; set; } = new(nameof(BitNavItem.BadgeAriaLabel));
+
+    /// <summary>
     /// The Class field name and selector of the custom input class (see <see cref="BitNavItem.Class"/>).
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitNavItem.Class));
@@ -38,6 +48,11 @@ public class BitNavNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> Description { get; set; } = new(nameof(BitNavItem.Description));
 
     /// <summary>
+    /// The Dot field name and selector of the custom input class (see <see cref="BitNavItem.Dot"/>).
+    /// </summary>
+    public BitNameSelectorPair<TItem, bool?> Dot { get; set; } = new(nameof(BitNavItem.Dot));
+
+    /// <summary>
     /// The ExpandAriaLabel field name and selector of the custom input class (see <see cref="BitNavItem.ExpandAriaLabel"/>).
     /// </summary>
     public BitNameSelectorPair<TItem, string?> ExpandAriaLabel { get; set; } = new(nameof(BitNavItem.ExpandAriaLabel));
@@ -58,9 +73,9 @@ public class BitNavNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitNavItem.IconName));
 
     /// <summary>
-    /// The IsEnabled field name and selector of the custom input class (see <see cref="BitNavItem.IsEnabled"/>).
+    /// The IsDisabled field name and selector of the custom input class (see <see cref="BitNavItem.IsDisabled"/>).
     /// </summary>
-    public BitNameSelectorPair<TItem, bool?> IsEnabled { get; set; } = new(nameof(BitNavItem.IsEnabled));
+    public BitNameSelectorPair<TItem, bool?> IsDisabled { get; set; } = new(nameof(BitNavItem.IsDisabled));
 
     /// <summary>
     /// The IsExpanded field name and selector of the custom input class (see <see cref="BitNavItem.IsExpanded"/>).
@@ -83,9 +98,19 @@ public class BitNavNameSelectors<TItem>
     public BitNameSelectorPair<TItem, BitNavMatch?> Match { get; set; } = new(nameof(BitNavItem.Match));
 
     /// <summary>
+    /// The Rel field name and selector of the custom input class (see <see cref="BitNavItem.Rel"/>).
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitLinkRels?> Rel { get; set; } = new(nameof(BitNavItem.Rel));
+
+    /// <summary>
     /// The Style field name and selector of the custom input class (see <see cref="BitNavItem.Style"/>).
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Style { get; set; } = new(nameof(BitNavItem.Style));
+
+    /// <summary>
+    /// The SuffixTemplate field name and selector of the custom input class (see <see cref="BitNavItem.SuffixTemplate"/>).
+    /// </summary>
+    public BitNameSelectorPair<TItem, RenderFragment<TItem>?> SuffixTemplate { get; set; } = new(nameof(BitNavItem.SuffixTemplate));
 
     /// <summary>
     /// The Target field name and selector of the custom input class (see <see cref="BitNavItem.Target"/>).

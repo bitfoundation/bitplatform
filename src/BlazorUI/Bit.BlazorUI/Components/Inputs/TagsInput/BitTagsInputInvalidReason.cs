@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The reason a tag was rejected by <see cref="BitTagsInput"/>, reported through its OnInvalid callback.

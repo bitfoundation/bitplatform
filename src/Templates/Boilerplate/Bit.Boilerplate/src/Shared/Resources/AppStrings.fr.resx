@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute doit avoir une valeur Length supérieure à zéro. Utilisez MaxLength() sans paramètres pour indiquer que la chaîne ou le tableau peut avoir la longueur maximale autorisée.</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>Le champ {0} doit être de type chaîne ou tableau avec une longueur maximale de « {1} ».</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} doit être de type chaîne ou tableau avec une longueur minimale de « {1} ».</value>
   </data>
@@ -178,156 +181,6 @@
     <value>Impossible de se connecter au serveur.</value>
   </data>
   <!-- Bit.BlazorUI messages -->
-  <data name="DataGridEmptyText" xml:space="preserve">
-    <value>Aucun enregistrement à afficher.</value>
-  </data>
-  <data name="DataGridLoadingText" xml:space="preserve">
-    <value>Chargement…</value>
-  </data>
-  <data name="DataGridActionsText" xml:space="preserve">
-    <value>Actions</value>
-  </data>
-  <data name="DataGridAddRowText" xml:space="preserve">
-    <value>+ Ajouter</value>
-  </data>
-  <data name="DataGridClearFiltersText" xml:space="preserve">
-    <value>Effacer les filtres</value>
-  </data>
-  <data name="DataGridExportCsvText" xml:space="preserve">
-    <value>Exporter en CSV</value>
-  </data>
-  <data name="DataGridExportExcelText" xml:space="preserve">
-    <value>Exporter en Excel</value>
-  </data>
-  <data name="DataGridColumnsText" xml:space="preserve">
-    <value>Colonnes</value>
-  </data>
-  <data name="DataGridEditText" xml:space="preserve">
-    <value>Modifier</value>
-  </data>
-  <data name="DataGridDeleteText" xml:space="preserve">
-    <value>Supprimer</value>
-  </data>
-  <data name="DataGridSaveText" xml:space="preserve">
-    <value>Enregistrer</value>
-  </data>
-  <data name="DataGridCancelText" xml:space="preserve">
-    <value>Annuler</value>
-  </data>
-  <data name="DataGridSelectAllLabel" xml:space="preserve">
-    <value>Tout sélectionner</value>
-  </data>
-  <data name="DataGridSelectRowLabel" xml:space="preserve">
-    <value>Sélectionner la ligne</value>
-  </data>
-  <data name="DataGridSelectRowFormat" xml:space="preserve">
-    <value>Sélectionner la ligne : {0}</value>
-  </data>
-  <data name="DataGridFilterPlaceholder" xml:space="preserve">
-    <value>Filtrer…</value>
-  </data>
-  <data name="DataGridFilterByFormat" xml:space="preserve">
-    <value>Filtrer par {0}</value>
-  </data>
-  <data name="DataGridFilterAllText" xml:space="preserve">
-    <value>Tous</value>
-  </data>
-  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
-    <value>Opérateur de filtre pour {0}</value>
-  </data>
-  <data name="DataGridFilterOpContains" xml:space="preserve">
-    <value>Contient</value>
-  </data>
-  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
-    <value>Ne contient pas</value>
-  </data>
-  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
-    <value>Commence par</value>
-  </data>
-  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
-    <value>Se termine par</value>
-  </data>
-  <data name="DataGridBooleanTrueText" xml:space="preserve">
-    <value>Vrai</value>
-  </data>
-  <data name="DataGridBooleanFalseText" xml:space="preserve">
-    <value>Faux</value>
-  </data>
-  <data name="DataGridGroupByFormat" xml:space="preserve">
-    <value>Grouper par {0}</value>
-  </data>
-  <data name="DataGridUngroupByFormat" xml:space="preserve">
-    <value>Dégrouper par {0}</value>
-  </data>
-  <data name="DataGridExpandGroupFormat" xml:space="preserve">
-    <value>Développer le groupe {0} : {1}</value>
-  </data>
-  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
-    <value>Réduire le groupe {0} : {1}</value>
-  </data>
-  <data name="DataGridPagerRangeFormat" xml:space="preserve">
-    <value>{0}–{1} sur {2}</value>
-  </data>
-  <data name="DataGridPagerPageFormat" xml:space="preserve">
-    <value>Page {0} sur {1}</value>
-  </data>
-  <data name="DataGridPerPageFormat" xml:space="preserve">
-    <value>{0} / page</value>
-  </data>
-  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
-    <value>Lignes par page</value>
-  </data>
-  <data name="DataGridFirstPageLabel" xml:space="preserve">
-    <value>Première page</value>
-  </data>
-  <data name="DataGridPreviousPageLabel" xml:space="preserve">
-    <value>Page précédente</value>
-  </data>
-  <data name="DataGridNextPageLabel" xml:space="preserve">
-    <value>Page suivante</value>
-  </data>
-  <data name="DataGridLastPageLabel" xml:space="preserve">
-    <value>Dernière page</value>
-  </data>
-  <data name="DataGridEndOfResultsText" xml:space="preserve">
-    <value>- Fin des résultats -</value>
-  </data>
-  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
-    <value>Afficher/masquer les détails</value>
-  </data>
-  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
-    <value>Afficher/masquer les éléments enfants</value>
-  </data>
-  <data name="DataGridReorderRowTitle" xml:space="preserve">
-    <value>Faites glisser pour réorganiser, ou placez le focus et utilisez les touches fléchées pour déplacer cette ligne</value>
-  </data>
-  <data name="DataGridReorderRowLabel" xml:space="preserve">
-    <value>Réorganiser la ligne. Appuyez sur Flèche haut ou Flèche bas pour déplacer cette ligne.</value>
-  </data>
-  <data name="DataGridInvalidValueError" xml:space="preserve">
-    <value>Valeur non valide pour {0}.</value>
-  </data>
-  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
-    <value>Trié par {0}, croissant</value>
-  </data>
-  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
-    <value>Trié par {0}, décroissant</value>
-  </data>
-  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
-    <value>Tri par {0} supprimé</value>
-  </data>
-  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
-    <value>Filtre appliqué sur {0}</value>
-  </data>
-  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
-    <value>Filtre sur {0} effacé</value>
-  </data>
-  <data name="DataGridAnnouncementPage" xml:space="preserve">
-    <value>Page {0} sur {1}</value>
-  </data>
-  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
-    <value>Ligne supprimée</value>
-  </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
     <value>Actif</value>
@@ -518,6 +371,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="BirthDate" xml:space="preserve">
     <value>Date de naissance</value>
   </data>
+  <data name="BirthDateInFuture" xml:space="preserve">
+    <value>La date de naissance ne peut pas être dans le futur.</value>
+  </data>
   <data name="UserName" xml:space="preserve">
     <value>Nom d’utilisateur</value>
   </data>
@@ -541,12 +397,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="InvalidUserCredentials" xml:space="preserve">
     <value>Identifiants utilisateur non valides</value>
-  </data>
-  <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>Votre e-mail est déjà confirmé.</value>
-  </data>
-  <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>Votre numéro de téléphone est déjà confirmé.</value>
   </data>
   <data name="Title" xml:space="preserve">
     <value>Titre</value>
@@ -734,9 +584,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="OldPassword" xml:space="preserve">
     <value>Ancien mot de passe</value>
   </data>
-  <data name="No" xml:space="preserve">
-    <value>Non</value>
-  </data>
   <data name="NotReceivedEmailMessage" xml:space="preserve">
     <value>Vous n’avez pas reçu l’e-mail ?</value>
   </data>
@@ -835,9 +682,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="UploadNewImage" xml:space="preserve">
     <value>Glisser ou sélectionner une image</value>
-  </data>
-  <data name="Yes" xml:space="preserve">
-    <value>Oui</value>
   </data>
   <data name="SelectBirthDate" xml:space="preserve">
     <value>Sélectionner votre date de naissance</value>
@@ -1360,6 +1204,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
     <value>L'assistant n'a pas pu répondre. Réessayez.</value>
   </data>
+  <data name="AiChatTooManyRequests" xml:space="preserve">
+    <value>Vous discutez trop vite. Veuillez patienter une minute et réessayer.</value>
+  </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Laissez vos coordonnées et un conseiller vous recontactera.</value>
   </data>
@@ -1577,9 +1424,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="Users" xml:space="preserve">
     <value>Utilisateurs</value>
   </data>
-  <data name="UsersWithCount" xml:space="preserve">
-    <value>Utilisateurs {0}</value>
-  </data>
   <data name="Features" xml:space="preserve">
     <value>Fonctionnalités</value>
   </data>
@@ -1635,9 +1479,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="DeleteRole" xml:space="preserve">
     <value>Supprimer le groupe d'utilisateurs</value>
-  </data>
-  <data name="Sessions" xml:space="preserve">
-    <value>Sessions {0}</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
     <value>Supprimer l'utilisateur</value>
@@ -2209,5 +2050,50 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>Nous avons envoyé un code à {0} et {1}.</value>
+  </data>
+    <data name="EditImage" xml:space="preserve">
+    <value>Modifier l'image</value>
+  </data>
+    <data name="Crop" xml:space="preserve">
+    <value>Rogner</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>Appliquer le rognage</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>Faire pivoter à gauche</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>Faire pivoter à droite</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>Défaire</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>Rétablir</value>
+  </data>
+    <data name="ImageEditorCropHint" xml:space="preserve">
+    <value>Faites glisser sur l'image pour délimiter la partie à conserver.</value>
+  </data>
+    <data name="ImageEditorMoreFeatures" xml:space="preserve">
+    <value>Vous voulez ajouter plus de fonctions de retouche photo à votre projet ?</value>
+  </data>
+    <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
+    <value>Cette image ne peut pas être ouverte ici pour être modifiée. Vous pouvez quand même l'envoyer telle quelle.</value>
+  </data>
+    <data name="UploadImageAsIs" xml:space="preserve">
+    <value>Envoyer telle quelle</value>
+  </data>
+    <data name="ResetPasswordTwoFactorCodeRequired" xml:space="preserve">
+    <value>L’authentification à deux facteurs est activée pour ce compte. Saisissez un code de votre application d’authentification ou l’un de vos codes de récupération.</value>
+  </data>
+    <data name="AccountAlreadyExistsShortText" xml:space="preserve">
+    <value>Vous avez déjà un compte Boilerplate avec ce numéro de téléphone. Si vous venez d’essayer de vous inscrire, connectez-vous plutôt.</value>
+  </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>Ajouter un autre compte</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>Se déconnecter de tous les comptes de cet appareil</value>
   </data>
 </root>

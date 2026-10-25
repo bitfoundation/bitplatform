@@ -136,13 +136,6 @@ public static class IJSRuntimeExtensions
         await jsRuntime.InvokeVoid("cancelIdleWork", key);
     }
 
-    /// <summary>
-    /// Claims Ctrl/Cmd+K (and a bare "/") for the search input inside the element with the given id.
-    /// Registered from JS rather than through a Blazor key handler so the shortcut works no matter
-    /// where the focus currently is - which is the whole point of a global shortcut.
-    /// </summary>
-    public static async Task RegisterSearchShortcut(this IJSRuntime jsRuntime, string rootElementId)
-    {
-        await jsRuntime.InvokeVoid("registerSearchShortcut", rootElementId);
-    }
+    // The search shortcut used to be claimed from here. BitSearchBox.FocusShortcut now does it, so the
+    // site asks the control for it instead of wiring a listener of its own around it.
 }

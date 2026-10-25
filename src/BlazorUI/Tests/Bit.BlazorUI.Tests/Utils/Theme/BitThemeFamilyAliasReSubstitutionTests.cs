@@ -1,133 +1,664 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Utils.Theme;
 
 /// <summary>
-/// Contract and behavior for family alias re-substitution: when an inline theme override (a
-/// <see cref="BitThemeProvider"/> wrapper or <c>BitThemeManager.ApplyBitThemeAsync</c>, which share
-/// the same augmentation) re-values a token that a per-family radius or elevation falls back to,
-/// the family alias is re-declared - as its default <c>var()</c> reference - on the same element.
-/// Without this, the family tier (substituted at <c>:root</c> where <c>family-tokens.scss</c>
-/// defines it) would keep the document's corners and shadows inside the overridden subtree - and
-/// every component reads the family tier rather than the primitive behind it.
+/// Contract and behavior for family alias re-substitution under an inline theme overlay (a
+/// <see cref="BitThemeProvider"/> wrapper or <c>BitThemeManager.ApplyBitThemeAsync</c>). The family tier is
+/// declared on <c>:root</c>, and a custom property's <c>var()</c>s are substituted where it is declared, so
+/// the aliases an overlay's primitives feed have to be declared again on the overlay's element. What they
+/// are declared AS is the active theme's decision (Material's tooltip casts no shadow, Fluent's card has a
+/// depth of its own), so C# only names the groups the overlay re-values in the <c>bit-theme-overlay</c>
+/// attribute and every theme stylesheet re-declares its own aliases for each group on that element. These
+/// tests pin both halves: which groups an overlay names, and that every theme's overlay rules say exactly
+/// what its own blocks say.
 /// </summary>
 [TestClass]
 public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
 {
-    // The plain `--bit-x: var(--bit-y);` declarations of the family tier. The app-bar shadows
-    // (foreground-tinted expressions) and the snackbar elevation (a literal `none`) do not match,
-    // which is exactly the set the C# table leaves out: there is nothing to re-substitute for them.
-    private static readonly Regex FamilyDeclaration = new(
-        @"(--bit-(?:shp-radius|shd)-[a-z0-9-]+)\s*:\s*var\((--bit-[a-z0-9-]+)\)\s*;",
-        RegexOptions.Compiled);
+    /// <summary>The compiled bundles that carry theme scopes: the core stylesheet and the packaged presets.</summary>
+    private static readonly string[][] CompiledBundles =
+    [
+        ["Bit.BlazorUI", "wwwroot", "styles", "bit.blazorui.css"],
+        ["Bit.BlazorUI.Extras", "wwwroot", "styles", "bit.blazorui.fluent2.css"],
+        ["Bit.BlazorUI.Extras", "wwwroot", "styles", "bit.blazorui.material.css"],
+        ["Bit.BlazorUI.Extras", "wwwroot", "styles", "bit.blazorui.cupertino.css"],
+    ];
 
-    private static readonly Regex ReDeclaredAlias = new(
-        @"--bit-(?:shp-radius|shd)-[a-z0-9-]+:var\(--bit-[a-z0-9-]+\)",
-        RegexOptions.Compiled);
+    private static readonly string[] Roles = ["pri", "sec", "ter", "inf", "suc", "wrn", "swr", "err"];
 
-    private static (string Alias, string Target)[] ScssAliasPairs()
+    private static readonly string[] ControlRadii = ["--bit-shp-radius-button", "--bit-shp-radius-chip", "--bit-shp-radius-selection", "--bit-shp-radius-tab-indicator"];
+
+    /// <summary>The aliases each overlay group re-declares, as family-tokens.scss groups them.</summary>
+    private static readonly Dictionary<string, string[]> GroupAliases = BuildGroupAliases();
+
+    private static Dictionary<string, string[]> BuildGroupAliases()
     {
-        var scssPath = Path.Combine(AppContext.BaseDirectory, "theme-styles", "family-tokens.scss");
-        Assert.IsTrue(File.Exists(scssPath), $"Missing {scssPath}; ensure the library Styles folder is copied to output.");
+        var groups = new Dictionary<string, string[]>(StringComparer.Ordinal)
+        {
+            ["radius"] = ["--bit-shp-radius-control", "--bit-shp-radius-surface", "--bit-shp-radius-popup", "--bit-shp-radius-dialog", .. ControlRadii],
+            ["radius-control"] = ControlRadii,
+            ["shadow"] = ["--bit-shd-card", "--bit-shd-card-hover", "--bit-shd-popup", "--bit-shd-dialog", "--bit-shd-sheet", "--bit-shd-tooltip",
+                          "--bit-shd-snackbar", "--bit-shd-appbar-top", "--bit-shd-appbar-bottom"],
+            ["tooltip"] = ["--bit-clr-tooltip-bg", "--bit-clr-tooltip-fg"],
+            ["foreground"] = [.. Roles.Select(r => $"--bit-clr-{r}-fg")],
+            ["typography"] = ["--bit-tpg-dialog-title-font-size", "--bit-tpg-dialog-title-font-weight", "--bit-tpg-field-label-font-weight"],
+            ["motion"] = ["--bit-mot-duration", "--bit-mot-duration-short", "--bit-mot-duration-long", "--bit-mot-duration-factor",
+                          "--bit-mot-duration-spinner", "--bit-mot-easing-spinner", "--bit-mot-loop-factor"],
+        };
 
-        return FamilyDeclaration.Matches(File.ReadAllText(scssPath))
-            .Select(m => (Alias: m.Groups[1].Value, Target: m.Groups[2].Value))
-            .Distinct()
-            .ToArray();
+        foreach (var role in Roles)
+        {
+            groups[role] = [$"--bit-clr-{role}-fg", $"--bit-clr-{role}-tint"];
+        }
+
+        return groups;
     }
 
-    private string RenderProviderStyle(BitTheme theme)
+    private static readonly Regex Declaration = new(@"(--bit-[a-z0-9-]+)\s*:\s*([^;{}]+)", RegexOptions.Compiled);
+
+    // A theme block's own selectors: the document (`:root`, `:root[bit-theme=x]`) and the scoped twins
+    // (`:root [bit-theme]`, `:root [bit-theme=x]`), with the quotes the compiler may or may not keep dropped.
+    private static readonly Regex ThemeSelector = new(@"^:root(\[bit-theme=[a-z0-9-]+\])?$|^:root \[bit-theme(=[a-z0-9-]+)?\]$", RegexOptions.Compiled);
+
+    private static readonly Regex OverlayGroup = new(@"\[bit-theme-overlay~=([a-z-]+)\]", RegexOptions.Compiled);
+
+    /// <summary>The internal BitThemeMapper.FamilyAliasOverlayGroups table: each group with its inputs, in its order.</summary>
+    private static IReadOnlyList<KeyValuePair<string, string[]>> OverlayGroups()
     {
-        var cut = RenderComponent<BitThemeProvider>(parameters =>
+        var field = typeof(BitTheme).Assembly.GetType("Bit.BlazorUI.BitThemeMapper", throwOnError: true)!
+                                    .GetField("FamilyAliasOverlayGroups", BindingFlags.NonPublic | BindingFlags.Static)!;
+
+        return (IReadOnlyList<KeyValuePair<string, string[]>>)field.GetValue(null)!;
+    }
+
+    /// <summary>The group names of the internal BitThemeMapper.FamilyAliasOverlayGroups table, in its order.</summary>
+    private static string[] OverlayGroupNames() => [.. OverlayGroups().Select(g => g.Key)];
+
+    private static readonly Regex VarReference = new(@"var\((--bit-[a-z0-9-]+)", RegexOptions.Compiled);
+
+    // An entry of FAMILY_ALIAS_OVERLAY_GROUPS in BitTheme.ts: ['group', ['--input', ...]].
+    private static readonly Regex TypeScriptOverlayGroup = new(@"\[\s*'(?<group>[a-z-]+)'\s*,\s*\[(?<inputs>[^\]]*)\]\s*\]", RegexOptions.Compiled);
+
+    private sealed record CssRule(string[] Selectors, IReadOnlyList<KeyValuePair<string, string>> Declarations);
+
+    /// <summary>
+    /// The top-level style rules of a compiled bundle in source order - the rules inside an at-rule (the
+    /// forced-colors and phone blocks) are left out, as they apply only under their condition - each with
+    /// its selector list split and its quotes dropped.
+    /// </summary>
+    private static List<CssRule> TopLevelRules(string css)
+    {
+        var rules = new List<CssRule>();
+        var preludes = new Stack<string>();
+        var text = new StringBuilder();
+
+        foreach (var c in css)
+        {
+            if (c == '{')
+            {
+                // A statement ended by ';' ahead of the block (@charset, @import) is not part of its prelude.
+                preludes.Push(text.ToString().Split(';')[^1].Trim().TrimStart('\uFEFF'));
+                text.Clear();
+            }
+            else if (c == '}')
+            {
+                var prelude = preludes.Count > 0 ? preludes.Pop() : string.Empty;
+
+                if (preludes.Count == 0 && prelude.StartsWith('@') is false)
+                {
+                    rules.Add(new CssRule(
+                        [.. prelude.Replace("\"", string.Empty).Split(',').Select(s => Regex.Replace(s.Trim(), @"\s+", " "))],
+                        [.. Declaration.Matches(text.ToString()).Select(m => new KeyValuePair<string, string>(m.Groups[1].Value, m.Groups[2].Value.Trim()))]));
+                }
+
+                text.Clear();
+            }
+            else
+            {
+                text.Append(c);
+            }
+        }
+
+        return rules;
+    }
+
+    private static IEnumerable<(string Bundle, List<CssRule> Rules)> Bundles()
+    {
+        foreach (var segments in CompiledBundles)
+        {
+            var path = SourceFiles.GetPath(segments);
+
+            Assert.IsTrue(File.Exists(path), $"Missing {path}; it is compiled by the library's build, which building this test project runs.");
+
+            yield return (segments[^1], TopLevelRules(File.ReadAllText(path)));
+        }
+    }
+
+    /// <summary>The overlay selectors theme-overlay.scss derives from one selector of a theme block.</summary>
+    private static string[] OverlaySelectors(string themeSelector, string group)
+    {
+        var overlay = $"[bit-theme-overlay~={group}]";
+
+        // A named document selector steps aside for a nearer region of another theme, as a named twin does.
+        if (themeSelector.StartsWith(":root[", StringComparison.Ordinal)) return [$"{themeSelector} {overlay}{NearestRegionCondition(themeSelector[5..], overlay)}"];
+
+        if (themeSelector.StartsWith(":root [", StringComparison.Ordinal) is false) return [$"{themeSelector} {overlay}"];
+
+        var region = themeSelector[6..];
+
+        // The twin of a named region steps aside for every nearer region of another theme; the core's
+        // `[bit-theme]` twin is the fallback for any region and steps aside for none.
+        var nearest = region == "[bit-theme]" ? string.Empty : NearestRegionCondition(region, overlay);
+
+        return [$":root:root {region} {overlay}{nearest}", $":root:root {region}{overlay}"];
+    }
+
+    /// <summary>
+    /// theme-overlay.scss's theme-overlay-nearest, as the compiler writes it: the overlay element is not a region
+    /// of another theme, and the longest chain of alternating regions from <paramref name="region"/> down to it
+    /// ends in <paramref name="region"/> - not (A1 and not (A2 and not A3)), An being n alternations.
+    /// </summary>
+    private static string NearestRegionCondition(string region, string overlay, int depth = 3)
+    {
+        var other = $"[bit-theme]:not({region})";
+        string? nested = null;
+
+        for (var n = depth; n >= 1; n--)
+        {
+            var chain = region + string.Concat(Enumerable.Range(1, n).Select(i => i % 2 == 1 ? $" {other}" : $" {region}"));
+
+            nested = nested is null ? $"{chain} {overlay}" : $"{chain} {overlay}:not({nested})";
+        }
+
+        return $":where(:not({other}{overlay})):where(:not({nested}))";
+    }
+
+    /// <summary>The value the LAST rule in the bundle naming <paramref name="selector"/> declares <paramref name="alias"/> with, if any.</summary>
+    private static string? EffectiveValue(List<CssRule> rules, string selector, string alias)
+    {
+        string? value = null;
+
+        foreach (var rule in rules.Where(r => r.Selectors.Contains(selector, StringComparer.Ordinal)))
+        {
+            foreach (var (name, declared) in rule.Declarations)
+            {
+                if (name == alias) value = declared;
+            }
+        }
+
+        return value;
+    }
+
+    private IRenderedComponent<BitThemeProvider> RenderProvider(BitTheme theme)
+    {
+        return RenderComponent<BitThemeProvider>(parameters =>
         {
             parameters.Add(p => p.Theme, theme);
             parameters.AddChildContent("<span>content</span>");
         });
+    }
 
-        return cut.Find("div").GetAttribute("style") ?? string.Empty;
+    private string? RenderOverlay(BitTheme theme)
+    {
+        return RenderProvider(theme).Find("div").GetAttribute(BitThemeAttributeNames.ThemeOverlay);
     }
 
     [TestMethod]
-    public void ReSubstitutionCoversExactlyTheScssFamilyVocabulary()
+    public void EveryThemeReDeclaresItsOwnFamilyAliasesForAnOverlay()
     {
-        // Overriding the two roots of the family tier (the global radius and the callout shadow)
-        // must re-declare every plain var() alias family-tokens.scss defines - each pair present (an
-        // alias the C# table forgot, or one ordered ahead of the alias it chains from, fails here)
-        // and none extra (an alias the scss no longer declares fails the count).
-        var theme = new BitTheme();
-        theme.Shape.BorderRadius = "1rem";
-        theme.BoxShadow.Callout = "0 2px 4px #0003";
+        // For every family alias a theme block declares, under each of its selectors, the overlay rule that
+        // theme-overlay.scss derives from that selector for each group of the alias must declare the same
+        // value - compared as what the bundle ends up with for each selector, so a later theme overriding an
+        // earlier one (the Fluent depths over the core fallback) is checked as the override. A preset that
+        // declares a family alias without the overlay rule beside it fails here: an overlay would re-declare
+        // the core default in its place.
+        var checkedPairs = 0;
 
-        var style = RenderProviderStyle(theme);
-        var scssPairs = ScssAliasPairs();
-
-        Assert.IsTrue(scssPairs.Length > 0, "family-tokens.scss declares no plain var() family aliases.");
-
-        foreach (var (alias, target) in scssPairs)
+        foreach (var (bundle, rules) in Bundles())
         {
-            StringAssert.Contains(style, $"{alias}:var({target})",
-                $"Alias {alias} must be re-declared as var({target}) when its target is overridden.");
+            var themeRules = rules.Where(r => r.Selectors.All(ThemeSelector.IsMatch)).ToArray();
+
+            foreach (var rule in themeRules)
+            {
+                foreach (var selector in rule.Selectors)
+                {
+                    foreach (var (group, aliases) in GroupAliases)
+                    {
+                        foreach (var alias in aliases.Where(a => rule.Declarations.Any(d => d.Key == a)))
+                        {
+                            var expected = EffectiveValue([.. themeRules], selector, alias);
+
+                            foreach (var overlaySelector in OverlaySelectors(selector, group))
+                            {
+                                Assert.AreEqual(expected, EffectiveValue(rules, overlaySelector, alias),
+                                    $"{bundle}: '{selector}' declares {alias} as '{expected}', so '{overlaySelector}' must re-declare it so for an " +
+                                    $"overlay that re-values the {group} group - include the theme's {group} mixin in a theme-overlay rule.");
+                                checkedPairs++;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        Assert.AreEqual(scssPairs.Length, ReDeclaredAlias.Matches(style).Count,
-            "The provider re-declared a different number of family aliases than family-tokens.scss " +
-            "defines - the C# alias table and the scss have drifted apart.");
+        Assert.IsTrue(checkedPairs > 500, $"Only {checkedPairs} alias/selector pairs were checked; the bundles no longer look like theme stylesheets.");
     }
 
     [TestMethod]
-    public void OverridingTheControlRadiusReachesButtonsChipsAndCheckboxes()
+    public void TheOverlayGroupsAreExactlyTheOnesTheStylesheetsKeyOn()
     {
-        // The second link of the chain: the three control sub-families fall back to the control
-        // radius rather than to the global one, so they have to follow an override of it.
+        // The groups C# names are the ones the stylesheets select: a group no stylesheet re-declares anything
+        // for re-substitutes nothing, and one a stylesheet keys on but C# never writes is dead.
+        var keyed = Bundles()
+            .SelectMany(b => b.Rules)
+            .SelectMany(r => r.Selectors)
+            .SelectMany(s => OverlayGroup.Matches(s).Select(m => m.Groups[1].Value))
+            .ToHashSet(StringComparer.Ordinal);
+
+        CollectionAssert.AreEquivalent(
+            OverlayGroupNames().ToArray(),
+            keyed.ToArray());
+
+        CollectionAssert.AreEquivalent(GroupAliases.Keys.ToArray(), keyed.ToArray(),
+            "This test's own map of the aliases per group has drifted from the groups the stylesheets key on.");
+    }
+
+    [TestMethod]
+    public void TheCoreStylesheetReDeclaresExactlyTheGroupedAliasesForEachGroup()
+    {
+        // family-tokens.scss is the fallback every theme starts from: its rule for a group re-declares that
+        // group's aliases - all of them, and nothing else.
+        var (_, rules) = Bundles().First();
+
+        foreach (var (group, aliases) in GroupAliases)
+        {
+            // The motion aliases are built alike by every theme, so their one rule re-declares them at no weight.
+            var rule = rules.FirstOrDefault(r => r.Selectors.Contains($":root [bit-theme-overlay~={group}]", StringComparer.Ordinal) ||
+                                                 r.Selectors.Contains($":where(:root [bit-theme-overlay~={group}])", StringComparer.Ordinal));
+
+            Assert.IsNotNull(rule, $"The core stylesheet has no overlay rule for the {group} group.");
+            CollectionAssert.AreEquivalent(aliases, rule.Declarations.Select(d => d.Key).ToArray(), $"The core overlay rule for the {group} group.");
+        }
+    }
+
+    [TestMethod]
+    public void NoThemeDeclaresTheMotionAliasesOutsideTheRuleItsOverlaysShare()
+    {
+        // The motion group has no per-theme overlay rule for EveryThemeReDeclaresItsOwnFamilyAliasesForAnOverlay to pin:
+        // every theme builds the aliases alike, from the -full tokens a preset re-values, so the one core rule declaring
+        // them on :root, on every scoped region and on every motion overlay is all of them. That holds only while no
+        // theme declares an alias of its own: one that did would be the core recipe again under an overlay.
+        string[] shared = [":root", ":where(:root [bit-theme])", ":where(:root [bit-theme-overlay~=motion])"];
+        var checkedRules = 0;
+
+        foreach (var (bundle, rules) in Bundles())
+        {
+            foreach (var rule in rules.Where(r => r.Declarations.Any(d => GroupAliases["motion"].Contains(d.Key))))
+            {
+                // .bit-fam (ForceAnimation) substitutes them again too, from the same mixin, for the subtree it opts out.
+                if (rule.Selectors is [".bit-fam"]) continue;
+
+                CollectionAssert.AreEqual(shared, rule.Selectors,
+                    $"{bundle}: '{string.Join(", ", rule.Selectors)}' declares a motion alias; a theme re-values the -full tokens instead.");
+                CollectionAssert.AreEquivalent(GroupAliases["motion"], rule.Declarations.Select(d => d.Key).ToArray(), $"{bundle}: the motion alias rule.");
+                checkedRules++;
+            }
+        }
+
+        Assert.AreEqual(1, checkedRules, "The motion aliases are declared by one rule, in the core stylesheet.");
+    }
+
+    [TestMethod]
+    public void NoThemeReDeclaresAnAliasOutsideItsGroupForAnOverlay()
+    {
+        // The overlay rule of the document's theme matches inside a scoped region of another theme as well,
+        // and only the core rule's scoped twins outrank it there. So an alias a theme re-declares for a group
+        // has to be one the core rule re-declares for that group too: one it does not would carry the
+        // document theme's recipe into the region (Fluent dark's ring under a Cupertino snackbar).
+        var checkedRules = 0;
+
+        foreach (var (bundle, rules) in Bundles())
+        {
+            foreach (var rule in rules)
+            {
+                var groups = rule.Selectors.SelectMany(s => OverlayGroup.Matches(s).Select(m => m.Groups[1].Value)).Distinct().ToArray();
+
+                if (groups.Length == 0) continue;
+
+                foreach (var group in groups)
+                {
+                    foreach (var (alias, _) in rule.Declarations)
+                    {
+                        CollectionAssert.Contains(GroupAliases[group], alias,
+                            $"{bundle}: '{string.Join(", ", rule.Selectors)}' re-declares {alias} for the {group} group, which the core " +
+                            $"stylesheet's rule for that group does not - add it to the group's mixin in family-tokens.scss.");
+                    }
+                }
+
+                checkedRules++;
+            }
+        }
+
+        Assert.IsTrue(checkedRules > 20, $"Only {checkedRules} overlay rules were found; the bundles no longer look like theme stylesheets.");
+    }
+
+    [TestMethod]
+    public void ForcedColorsReachTheOverlayElement()
+    {
+        // Every theme re-declares its elevations on the overlay element, which would bring the shadows back in
+        // forced-colors mode unless the system-palette block covers that element too, from above them.
+        var css = File.ReadAllText(SourceFiles.GetPath(CompiledBundles[0]));
+
+        StringAssert.Contains(css, ":root:root:root:root [bit-theme-overlay]");
+    }
+
+    [TestMethod]
+    public void AnOverlayNamesTheGroupsItsVariablesFeed()
+    {
+        var cases = new (string What, Action<BitTheme> Set, string Expected)[]
+        {
+            ("the global radius", t => t.Shape.BorderRadius = "1rem", "radius"),
+            ("the control radius", t => t.Shape.Radius.Control = "0.75rem", "radius-control"),
+            ("the full radius", t => t.Shape.Radius.Full = "100rem", "radius-control"),
+            ("the callout shadow", t => t.BoxShadow.Callout = "0 2px 4px #0003", "shadow"),
+            ("the tertiary border", t => t.Color.Border.Tertiary = "#CCCCCC", "shadow"),
+            ("the border width", t => t.Shape.BorderWidth = "0.125rem", "shadow"),
+            ("the primary background", t => t.Color.Background.Primary = "#FFFFFF", "tooltip"),
+            ("the secondary background", t => t.Color.Background.Secondary = "#EEEEEE", "tooltip"),
+            ("the primary foreground", t => t.Color.Foreground.Primary = "#111111", "shadow tooltip foreground"),
+            ("the warning role", t => t.Color.Warning.Main = "#FFB900", "wrn"),
+            ("the primary role", t => t.Color.Primary.Main = "#0F6CBD", "pri"),
+            // Every step of both ramps, not only the ones the packaged presets build the type aliases from: an
+            // app's own preset may title a dialog in the 3xl step or caption a field in the medium weight.
+            ("the 2xs font size", t => t.Typography.FontSize.Xxs = "0.5rem", "typography"),
+            ("the xs font size", t => t.Typography.FontSize.Xs = "0.6875rem", "typography"),
+            ("the sm font size", t => t.Typography.FontSize.Sm = "0.9375rem", "typography"),
+            ("the md font size", t => t.Typography.FontSize.Md = "1.0625rem", "typography"),
+            ("the lg font size", t => t.Typography.FontSize.Lg = "1.25rem", "typography"),
+            ("the xl font size", t => t.Typography.FontSize.Xl = "1.5rem", "typography"),
+            ("the 2xl font size", t => t.Typography.FontSize.Xxl = "1.75rem", "typography"),
+            ("the 3xl font size", t => t.Typography.FontSize.Xxxl = "2rem", "typography"),
+            ("the 4xl font size", t => t.Typography.FontSize.Xxxxl = "2.5rem", "typography"),
+            ("the light weight", t => t.Typography.FontWeights.Light = "200", "typography"),
+            ("the regular weight", t => t.Typography.FontWeights.Regular = "300", "typography"),
+            ("the medium weight", t => t.Typography.FontWeights.Medium = "550", "typography"),
+            ("the semibold weight", t => t.Typography.FontWeights.SemiBold = "700", "typography"),
+            ("the bold weight", t => t.Typography.FontWeights.Bold = "800", "typography"),
+            ("the duration", t => t.Motion.Duration = "250ms", "motion"),
+            ("the duration factor", t => t.Motion.DurationFactor = "0.5", "motion"),
+            ("the spinner easing", t => t.Motion.EasingSpinner = "linear", "motion"),
+            ("the loop factor", t => t.Motion.LoopFactor = "2", "motion"),
+        };
+
+        foreach (var (what, set, expected) in cases)
+        {
+            var theme = new BitTheme();
+            set(theme);
+
+            Assert.AreEqual(expected, RenderOverlay(theme), $"An overlay of {what}.");
+        }
+    }
+
+    [TestMethod]
+    public void AnOverlayOfEveryInputNamesEveryGroupInTableOrder()
+    {
         var theme = new BitTheme();
+        theme.Shape.BorderRadius = "1rem";
         theme.Shape.Radius.Control = "0.75rem";
+        theme.BoxShadow.Callout = "0 2px 4px #0003";
+        theme.Color.Background.Secondary = "#EEEEEE";
+        theme.Color.Foreground.Primary = "#111111";
+        theme.Color.Primary.Main = "#0F6CBD";
+        theme.Color.Secondary.Main = "#FD7F36";
+        theme.Color.Tertiary.Main = "#424242";
+        theme.Color.Info.Main = "#6B737C";
+        theme.Color.Success.Main = "#228422";
+        theme.Color.Warning.Main = "#EDAE12";
+        theme.Color.SevereWarning.Main = "#CE4207";
+        theme.Color.Error.Main = "#D2393B";
+        theme.Typography.FontWeights.SemiBold = "700";
+        theme.Motion.DurationLong = "400ms";
 
-        var style = RenderProviderStyle(theme);
-
-        StringAssert.Contains(style, "--bit-shp-radius-control:0.75rem");
-        StringAssert.Contains(style, "--bit-shp-radius-button:var(--bit-shp-radius-control)");
-        StringAssert.Contains(style, "--bit-shp-radius-chip:var(--bit-shp-radius-control)");
-        StringAssert.Contains(style, "--bit-shp-radius-selection:var(--bit-shp-radius-control)");
-
-        // an untouched family must not be dragged along by a sparse overlay
-        Assert.IsFalse(style.Contains("--bit-shp-radius-surface", StringComparison.Ordinal),
-            $"Untouched families must not be re-declared by a sparse overlay. Actual: {style}");
+        Assert.AreEqual(string.Join(' ', OverlayGroupNames()), RenderOverlay(theme));
     }
 
     [TestMethod]
-    public void OverridingTheCalloutShadowLeavesTheNonAliasElevationsAlone()
+    public void AnOverlayOfNoFamilyInputCarriesNoMarker()
     {
         var theme = new BitTheme();
-        theme.BoxShadow.Callout = "0 2px 4px #0003";
+        theme.Typography.FontFamily = "Georgia, serif";
+        theme.Typography.FontWeight = "500";
+        theme.Typography.LineHeight = "1.5rem";
+        theme.Shape.Radius.Surface = "2rem";
+        theme.Motion.EasingStandard = "linear";
 
-        var style = RenderProviderStyle(theme);
-
-        StringAssert.Contains(style, "--bit-shd-card:var(--bit-shd-cal)");
-
-        // the snackbar is flat under Fluent and the app bars are tinted expressions, so neither is
-        // an alias of the callout shadow and neither may be re-declared as one.
-        Assert.IsFalse(style.Contains("--bit-shd-snackbar", StringComparison.Ordinal),
-            $"The snackbar elevation is not an alias of the callout shadow. Actual: {style}");
-        Assert.IsFalse(style.Contains("--bit-shd-appbar", StringComparison.Ordinal),
-            $"The app-bar shadows are not aliases of the callout shadow. Actual: {style}");
+        Assert.IsNull(RenderOverlay(theme));
     }
 
     [TestMethod]
-    public void ExplicitFamilyValueWinsOverReSubstitution()
+    public void TheFamilyAliasesAreLeftToTheStylesheetsRatherThanInlined()
     {
+        // Re-declaring them inline would fix them at the core default whatever the active theme decides; the
+        // provider writes only the primitives it was given.
+        var theme = new BitTheme();
+        theme.Shape.BorderRadius = "1rem";
+        theme.Shape.Radius.Control = "0.75rem";
+        theme.BoxShadow.Callout = "0 2px 4px #0003";
+        theme.Color.Background.Secondary = "#EEEEEE";
+        theme.Color.Foreground.Primary = "#111111";
+        theme.Color.Warning.Main = "#FFB900";
+
+        var style = RenderProvider(theme).Find("div").GetAttribute("style") ?? string.Empty;
+
+        foreach (var alias in GroupAliases.Values.SelectMany(a => a).Distinct().Where(a => a != "--bit-shp-radius-control"))
+        {
+            Assert.IsFalse(style.Contains($"{alias}:", StringComparison.Ordinal), $"{alias} must not be written inline. Actual: {style}");
+        }
+    }
+
+    [TestMethod]
+    public void ExplicitFamilyValueStaysInlineBesideTheMarker()
+    {
+        // An alias set on the theme is inline, and so outranks whatever a stylesheet re-declares for the group.
         var theme = new BitTheme();
         theme.Shape.BorderRadius = "1rem";
         theme.Shape.Radius.Surface = "2rem";
+        theme.Color.TooltipBackground = "#222222";
+        theme.Color.Background.Secondary = "#EEEEEE";
 
-        var style = RenderProviderStyle(theme);
+        var div = RenderProvider(theme).Find("div");
+        var style = div.GetAttribute("style") ?? string.Empty;
 
         StringAssert.Contains(style, "--bit-shp-radius-surface:2rem");
-        Assert.IsFalse(style.Contains("--bit-shp-radius-surface:var(", StringComparison.Ordinal),
-            $"An explicitly-set family alias must not be replaced by the re-substitution. Actual: {style}");
+        StringAssert.Contains(style, "--bit-clr-tooltip-bg:#222222");
+        Assert.AreEqual("radius tooltip", div.GetAttribute(BitThemeAttributeNames.ThemeOverlay));
+    }
+
+    [TestMethod]
+    public void ExplicitFieldLabelWeightStaysInlineBesideTheTypographyMarker()
+    {
+        // A caption weight set on the theme is inline, so it outranks the type aliases the stylesheets
+        // re-declare for an overlay of the semibold step it would otherwise be built from.
+        var theme = new BitTheme();
+        theme.Typography.FontWeights.SemiBold = "700";
+        theme.Typography.FieldLabel.FontWeight = "500";
+
+        var div = RenderProvider(theme).Find("div");
+        var style = div.GetAttribute("style") ?? string.Empty;
+
+        StringAssert.Contains(style, "--bit-tpg-fw-semibold:700");
+        StringAssert.Contains(style, "--bit-tpg-field-label-font-weight:500");
+        Assert.IsFalse(style.Contains("--bit-tpg-dialog-title-font-weight:", StringComparison.Ordinal), $"Only what the theme sets is inline. Actual: {style}");
+        Assert.AreEqual("typography", div.GetAttribute(BitThemeAttributeNames.ThemeOverlay));
+    }
+
+    [TestMethod]
+    public void ANestedProviderNamesWhatItInheritsAsWell()
+    {
+        // A nested provider writes the merge of its theme with its parent's, so it re-values (and names) both.
+        var outer = new BitTheme();
+        outer.BoxShadow.Callout = "0 2px 4px #0003";
+
+        var inner = new BitTheme();
+        inner.Shape.BorderRadius = "1rem";
+
+        var cut = RenderComponent<BitThemeProvider>(parameters =>
+        {
+            parameters.Add(p => p.Theme, outer);
+            parameters.AddChildContent<BitThemeProvider>(child =>
+            {
+                child.Add(p => p.Theme, inner);
+                child.AddChildContent("<span>content</span>");
+            });
+        });
+
+        var divs = cut.FindAll("div");
+
+        Assert.AreEqual("shadow", divs[0].GetAttribute(BitThemeAttributeNames.ThemeOverlay));
+        Assert.AreEqual("radius shadow", divs[1].GetAttribute(BitThemeAttributeNames.ThemeOverlay));
+    }
+
+    [TestMethod]
+    public void TheMarkerFollowsTheThemeAcrossRenders()
+    {
+        var theme = new BitTheme();
+        theme.BoxShadow.Callout = "0 2px 4px #0003";
+
+        var cut = RenderProvider(theme);
+
+        Assert.AreEqual("shadow", cut.Find("div").GetAttribute(BitThemeAttributeNames.ThemeOverlay));
+
+        var next = new BitTheme();
+        next.Typography.FontFamily = "Georgia, serif";
+
+        cut.Render(parameters => parameters.Add(p => p.Theme, next));
+
+        Assert.IsNull(cut.Find("div").GetAttribute(BitThemeAttributeNames.ThemeOverlay));
+    }
+
+    [TestMethod]
+    public async Task ApplyBitThemeAsyncHandsTheClientOnlyThePrimitives()
+    {
+        // The client script names the groups itself, from the keys it is given (so a theme applied from JS is
+        // marked as well): C# hands it the variables and the target, and no family alias among them.
+        var manager = new BitThemeManager(Services.GetRequiredService<IJSRuntime>());
+
+        var theme = new BitTheme();
+        theme.Color.Foreground.Primary = "#111111";
+
+        await manager.ApplyBitThemeAsync(theme);
+
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.applyTheme");
+        var variables = (IReadOnlyDictionary<string, string>)invocation.Arguments[0]!;
+
+        Assert.AreEqual(2, invocation.Arguments.Count, "applyTheme takes the variables and the target; it derives the groups itself.");
+        Assert.AreEqual("#111111", variables["--bit-clr-fg-pri"]);
+        Assert.IsFalse(GroupAliases.Values.SelectMany(a => a).Any(variables.ContainsKey),
+            "The family aliases are the stylesheets' to re-declare, not the overlay's.");
+    }
+
+    [TestMethod]
+    public void TheClientScriptNamesTheSameGroupsFromTheSameInputs()
+    {
+        // applyTheme derives the marker in the browser, a BitThemeProvider in C#: the two tables are one table.
+        var typeScript = TypeScriptOverlayGroup.Matches(SourceFiles.Read("Bit.BlazorUI", "Utils", "Theme", "BitTheme.ts"))
+            .Select(m => $"{m.Groups["group"].Value}: {string.Join(" ", m.Groups["inputs"].Value.Split(',').Select(i => i.Trim().Trim('\'')).Where(i => i.Length > 0))}")
+            .ToArray();
+
+        var cSharp = OverlayGroups().Select(g => $"{g.Key}: {string.Join(" ", g.Value)}").ToArray();
+
+        CollectionAssert.AreEqual(cSharp, typeScript,
+            "FAMILY_ALIAS_OVERLAY_GROUPS in BitTheme.ts has drifted from BitThemeMapper.FamilyAliasOverlayGroups. " +
+            $"C#: [{string.Join("; ", cSharp)}] TypeScript: [{string.Join("; ", typeScript)}]");
+    }
+
+    [TestMethod]
+    public void EveryTokenAnOverlayRuleReadsIsAnInputOfAGroupThatReDeclaresIt()
+    {
+        // An overlay re-declares an alias only for the groups whose inputs it re-values, so every theme token
+        // an overlay rule builds an alias from - any a theme can re-value inline - has to be an input of one of
+        // the groups that alias belongs to: one that is not leaves the alias at its ancestor's value under an
+        // overlay of that token (the core app bars, tinted with the text color, under an overlay of only it).
+        // What an alias reads from another alias the same rule re-declares is that alias's own business.
+        var theme = new BitTheme();
+        BitThemeTestGraph.FillStringLeavesWithSentinels(theme);
+        var reValuable = BitThemeUtilities.ToCssVariables(theme).Keys.ToHashSet(StringComparer.Ordinal);
+
+        var inputs = OverlayGroups().ToDictionary(g => g.Key, g => g.Value, StringComparer.Ordinal);
+        var checkedReads = 0;
+
+        foreach (var (bundle, rules) in Bundles())
+        {
+            foreach (var rule in rules)
+            {
+                var groups = rule.Selectors.SelectMany(s => OverlayGroup.Matches(s).Select(m => m.Groups[1].Value)).Distinct().ToArray();
+
+                if (groups.Length == 0) continue;
+
+                var declared = rule.Declarations.Select(d => d.Key).ToHashSet(StringComparer.Ordinal);
+
+                foreach (var (alias, value) in rule.Declarations)
+                {
+                    var feeding = GroupAliases.Where(g => g.Value.Contains(alias)).SelectMany(g => inputs[g.Key]).ToHashSet(StringComparer.Ordinal);
+
+                    foreach (var read in VarReference.Matches(value).Select(m => m.Groups[1].Value).Distinct())
+                    {
+                        if (declared.Contains(read) || reValuable.Contains(read) is false) continue;
+
+                        Assert.IsTrue(feeding.Contains(read),
+                            $"{bundle}: '{rule.Selectors[0]}' builds {alias} from {read}, which no group re-declaring {alias} " +
+                            "names as an input - add it to that group in BitThemeMapper.FamilyAliasOverlayGroups and BitTheme.ts.");
+                        checkedReads++;
+                    }
+                }
+            }
+        }
+
+        Assert.IsTrue(checkedReads > 50, $"Only {checkedReads} token reads were checked; the overlay rules no longer look like the family tier.");
+    }
+
+    [TestMethod]
+    public void EveryNamedOverlaySelectorStepsAsideForANearerRegion()
+    {
+        // Two scoped regions of different themes nested in one another meet at the same weight, so a named twin
+        // that did not step aside would hand an overlay in the inner region the outer theme's recipe whenever
+        // the outer theme's rule comes later (a dark header in a light section, a Fluent region in a Material one).
+        // The document's named selector steps aside too, so what decides is the nesting, never its lower weight.
+        var checkedTwins = 0;
+        var checkedDocuments = 0;
+
+        foreach (var (bundle, rules) in Bundles())
+        {
+            foreach (var selector in rules.SelectMany(r => r.Selectors))
+            {
+                var named = Regex.Match(selector, @"^(:root:root |:root)(\[bit-theme=[a-z0-9-]+\]) (\[bit-theme-overlay~=[a-z-]+\])");
+
+                if (named.Success is false) continue;
+
+                var (prefix, region, overlay) = (named.Groups[1].Value, named.Groups[2].Value, named.Groups[3].Value);
+
+                Assert.AreEqual(
+                    $"{prefix}{region} {overlay}{NearestRegionCondition(region, overlay)}",
+                    selector, $"{bundle}: a named overlay selector without the nearest-region condition of theme-overlay.scss.");
+
+                if (prefix == ":root") checkedDocuments++;
+                else checkedTwins++;
+            }
+        }
+
+        Assert.IsTrue(checkedTwins > 20, $"Only {checkedTwins} named scoped twins were found.");
+        Assert.IsTrue(checkedDocuments > 20, $"Only {checkedDocuments} named document selectors were found.");
     }
 }

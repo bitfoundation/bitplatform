@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <!--
+    A Blazor Web App's server project, hosting Bit.BlazorUI.Tests.Trimming.Hosted.Client - the shape the Boilerplate and
+    the websites publish - and the fixture for what a server's trimming does to its client's service worker. See
+    HostedAppTrimmingTests in Bit.BlazorUI.Tests.Trimming, the only thing that publishes it.
+
+    The client writes service-worker-assets.js during its own publish, inside this project's, and leaves the trimming to
+    this project: it lists the packages' full bundles and every vendored file. This project then trims against its own
+    assemblies and the client's, and serves the result - so what it serves is never what the client listed, and the
+    publish is right only if the manifest it ships says so.
+
+    Not in the solution, and not a test project, for the same reasons as Bit.BlazorUI.Tests.Trimming.Fixture.
+    -->
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <!-- Not a WebAssembly project, so the trimming is off by default here; the scenarios that want it say so. -->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazorUI.Tests.Trimming.Hosted.Client\Bit.BlazorUI.Tests.Trimming.Hosted.Client.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
+    </ItemGroup>
+
+    <!-- The packages reach this app as ProjectReferences, so the consumer-side targets NuGet would import are imported by
+         hand; they read the source tree's pieces and task build on their own. -->
+    <Import Project="..\..\Bit.BlazorUI\buildTransitive\Bit.BlazorUI.targets" />
+    <Import Project="..\..\Bit.BlazorUI.Extras\buildTransitive\Bit.BlazorUI.Extras.targets" />
+
+</Project>

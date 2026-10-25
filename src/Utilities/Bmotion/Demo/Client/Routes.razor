@@ -1,0 +1,38 @@
+@* Every page but the landing page renders inside the docs shell (Layout/DocsLayout.razor); the
+   landing, not-found and error pages opt out with @layout MainLayout. After a navigation the
+   page's own H1 takes focus, so a screen reader starts reading at the new page.
+
+   The engine inspector sits after the router rather than in a layout: it is the same component on
+   every page, so it is mounted once and keeps its open state across navigations. It is fixed to
+   the corner of the viewport, outside the site chrome. *@
+@inject NavigationManager Nav
+@implements IDisposable
+
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(Pages.NotFoundPage)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DocsLayout)" />
+        @* Not on arrival: <FocusOnNavigate> also fires on its first render, which here is the
+           moment the app turns interactive - seconds after the page appeared - and it would pull
+           focus away from wherever the reader had already tabbed to, the skip link included. It
+           joins the tree with the first navigation, and its first render then is that one. *@
+        @if (_navigated)
+        {
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        }
+    </Found>
+</Router>
+
+@* Live engine debug overlay - starts collapsed; click to expand. *@
+<BmotionInspector StartOpen="false" />
+
+@code {
+    private bool _navigated;
+
+    // Subscribed ahead of the router (a parent initializes before the children it renders), so the
+    // flag is already set when the router renders the page the navigation asked for.
+    protected override void OnInitialized() => Nav.LocationChanged += OnLocationChanged;
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) => _navigated = true;
+
+    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+}

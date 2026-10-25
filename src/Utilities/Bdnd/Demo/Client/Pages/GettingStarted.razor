@@ -1,0 +1,139 @@
+﻿@page "/getting-started"
+
+<PageTitle>Getting started · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Getting started</h1>
+    <p class="bb-subtitle">
+        One package and one service registration - then a <code>BdndProvider</code> around any interactively
+        rendered region, with draggables and drop targets inside it. You drag <em>data</em> of a <em>type</em>,
+        not a view, and the drag state lives in C#.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
+    <p class="bb-card-desc">
+        In a Blazor Web App with an interactive client, the package belongs in the <code>.Client</code> project,
+        next to the pages that drag.
+    </p>
+    <pre class="bb-code">dotnet add package Bit.Bdnd</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the service</h3>
+    <p class="bb-card-desc">
+        It registers <code>BdndInterop</code>, the scoped wrapper around the script module that every draggable and
+        drop target injects. The drag-and-drop manager itself is not a service: each <code>BdndProvider</code>
+        creates its own and shares it with the components inside it. In a Blazor Web App, register it in both
+        <code>Program.cs</code> files - the pages are prerendered on the server before they run in the browser.
+    </p>
+    <CodeBlock Language="csharp" Code="@RegisterCode" />
+    <p class="bb-card-desc">And the namespace, in <code>_Imports.razor</code>:</p>
+    <CodeBlock Code="@ImportsCode" />
+    <div class="bb-note">
+        There is no stylesheet to link and no script tag to add: the components import their module,
+        <code>_content/Bit.Bdnd/bit-bdnd.js</code>, themselves the first time they need it.
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A first drag and drop</h3>
+    <p class="bb-card-desc">
+        Wrap the region in a <code>BdndProvider</code> and declare sources and targets inside it. A draggable's
+        <code>Type</code> is what a target matches against its <code>Accept</code> list, and its <code>Item</code>
+        is what the target's <code>OnDrop</code> receives. Each one's child content gets the collected state -
+        <code>IsDragging</code> for a source, <code>IsOver</code> and <code>CanDrop</code> for a target - to
+        render from.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <FirstDrop />
+
+        <p class="demo-caption">
+            Drag a box with the mouse, press and hold one with a finger, or <kbd>Tab</kbd> to it and press
+            <kbd>Space</kbd>, an arrow key and <kbd>Space</kbd> again: the same markup takes all three.
+        </p>
+    </div>
+
+    <CodeBlock Code="@FirstDropCode" />
+
+    <div class="bb-note">
+        Three things make this work: the components sit inside one <code>BdndProvider</code>; the draggable's
+        <code>Type</code> is one of the types the target lists in <code>Accept</code>; and the page is interactive,
+        because a statically rendered page never wires up drag events.
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Core concepts</h3>
+    <p class="bb-card-desc">
+        Bdnd brings React DnD's data-driven model to Blazor as components rather than hooks.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Concept</th><th>In Bdnd</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key">Items and types</td>
+                    <td>You drag an item - any C# object - of a type, a string. A target accepts the types it lists in <code>Accept</code> or <code>AcceptTypes</code>; the item's .NET type does not take part.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Components</td>
+                    <td><code>BdndProvider</code>, <code>BdndDraggable</code>, <code>BdndDropTarget</code>, <code>BdndDragLayer</code> and <code>BdndDragHandle</code> - React DnD's provider, <code>useDrag</code>, <code>useDrop</code>, <code>useDragLayer</code> and a drag handle.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Collected state</td>
+                    <td>What a component's child content renders from: <code>IsDragging</code>, <code>IsOver</code>, <code>IsOverShallow</code>, <code>CanDrop</code>, the item and the offsets.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Monitor</td>
+                    <td><code>IBdndMonitor</code>, a read-only view of the live drag state, on every collected state and callback argument as <code>Monitor</code>.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Callbacks</td>
+                    <td><code>OnBegin</code> and <code>OnEnd</code> on a source; <code>OnHover</code>, <code>OnEnter</code>, <code>OnLeave</code> and <code>OnDrop</code> on a target; <code>OnDragStart</code> and <code>OnDragEnd</code> on the provider for every drag. A target can publish a result from <code>OnDrop</code>, which the source's <code>OnEnd</code> receives with <code>DidDrop</code>.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Input</td>
+                    <td>The browser's own HTML5 drag and drop for the mouse - so files, text and links dragged in from outside the browser drop too - pointer events for touch and pen, and the keyboard (<kbd>Space</kbd>, the arrow keys, <kbd>Space</kbd>) for everyone. Every input runs the same callbacks.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Styling hooks</td>
+                    <td>Hosts carry <code>data-bit-bdnd-dragging</code>, <code>data-bit-bdnd-can-drop</code>, <code>data-bit-bdnd-over</code>, <code>data-bit-bdnd-over-shallow</code> and <code>data-bit-bdnd-edge</code> while a drag is in progress, so a stylesheet can follow it. Bdnd ships no stylesheet of its own.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to go next</h3>
+    <div class="bb-try">
+        <a href="tutorial" class="btn btn-outline">Allow only legal moves →</a>
+        <a href="sortable/indicators" class="btn btn-outline">Reorder a list →</a>
+        <a href="drag-around/custom-layer" class="btn btn-outline">Draw your own preview →</a>
+        <a href="customize/handles" class="btn btn-outline">Drag by a handle →</a>
+        <a href="customize/pointer" class="btn btn-outline">Drag on a touch screen →</a>
+        <a href="accessibility/keyboard" class="btn btn-outline">Drag with the keyboard →</a>
+        <a href="other/native-files" class="btn btn-outline">Accept dropped files →</a>
+        <a href="other/drag-events" class="btn btn-outline">Watch every drag →</a>
+    </div>
+</div>
+
+@code {
+    // The snippets the page shows, coloured by CodeBlock.
+
+    private const string RegisterCode = """
+        // Program.cs - in every project that renders the components
+        builder.Services.AddBitBdndServices();
+        """;
+
+    private const string ImportsCode = "@using Bit.Bdnd";
+
+    // The live sample's own source, read at build time, so the code under the sample is the code that runs it.
+    private static readonly string FirstDropCode = DemoSources.Components["FirstDrop.razor"];
+}

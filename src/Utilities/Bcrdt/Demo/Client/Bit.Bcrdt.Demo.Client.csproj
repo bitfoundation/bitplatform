@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <!-- The host owns the launch profile: this project is never started on its own. -->
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <!-- Publishes this project's static web assets at the app root (not under _content/), the
+             way a Blazor Web App's client project is expected to contribute them. -->
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+        <!-- The WebAssembly SDK turns System.Diagnostics.Metrics off by default, which leaves every Meter inert; the
+             internals page listens to the library's meter in the browser, so it is turned back on. -->
+        <MetricsSupport>true</MetricsSupport>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+        <PackageReference Include="Bit.Minifier" Version="10.7.0" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Bcrdt\Bit.Bcrdt.csproj" />
+        <ProjectReference Include="..\..\Bit.Bcrdt.SignalR\Bit.Bcrdt.SignalR.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Bit.Bcrdt" />
+        <Using Include="Bit.Bcrdt.Blazor" />
+    </ItemGroup>
+
+    <!-- The code under each sample, for CodeSnippet to show. Only the text: the samples compile in their own project
+         (Demo\Samples), which keeps them in step with the library's API without shipping them to every visitor. -->
+    <ItemGroup>
+        <EmbeddedResource Include="..\Samples\*.razor;..\Samples\*.cs" Exclude="..\Samples\_Imports.razor" LogicalName="Samples/%(Filename)%(Extension)" />
+    </ItemGroup>
+
+</Project>

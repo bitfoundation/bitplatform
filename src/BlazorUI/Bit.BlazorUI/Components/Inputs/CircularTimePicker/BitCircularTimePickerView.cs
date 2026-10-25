@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The part of the time the clock of the <see cref="BitCircularTimePicker"/> is currently editing.

@@ -4,14 +4,14 @@
 {
     <BitCard FullWidth>
         <BitStack HorizontalAlign="BitAlignment.Center">
-            <BitStack Horizontal Class="carousel-stack">
+            <BitStack HorizontalSm="true" Class="carousel-stack">
                 <BitShimmer Height="230px" Width="50%" Background="BitColor.PrimaryBackground" />
                 <BitStack AutoHeight>
                     <br />
-                    <BitShimmer Height="5rem" Width="100%" Background="BitColor.PrimaryBackground" />
-                    <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
-                    <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
-                    <BitShimmer Height="2rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                    <BitShimmer Height="5rem" Background="BitColor.PrimaryBackground" />
+                    <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                    <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                    <BitShimmer Height="2rem" Background="BitColor.PrimaryBackground" />
                 </BitStack>
             </BitStack>
             <BitShimmer Height="1.5rem" Width="15rem" Background="BitColor.PrimaryBackground" />
@@ -44,8 +44,8 @@ else
             @foreach (var product in carouselProducts)
             {
                 <BitCarouselItem Style="width:100%">
-                    <BitLink Href="@product.PageUrl" NoUnderline Style="color:unset">
-                        <BitStack Horizontal Class="carousel-stack">
+                    <BitLink Href="@product.PageUrl" NoUnderline NoColor>
+                        <BitStack HorizontalSm="true" Class="carousel-stack">
                             <ProductImage Src="@GetProductImageUrl(product)" Alt="@product.PrimaryImageAltText" Width="50%" Class="carousel-image" />
                             <BitStack AutoHeight>
                                 <br />
@@ -55,7 +55,7 @@ else
                                 <div class="carousel-description">
                                     @((MarkupString)product.DescriptionHTML!)
                                 </div>
-                                <BitButton Color="BitColor.Tertiary">@Localizer[nameof(AppStrings.Buy)]</BitButton>
+                                <BitButton Color="BitColor.Tertiary" AriaHidden>@Localizer[nameof(AppStrings.Buy)]</BitButton>
                             </BitStack>
                         </BitStack>
                     </BitLink>

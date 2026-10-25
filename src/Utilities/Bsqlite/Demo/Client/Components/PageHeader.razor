@@ -1,0 +1,22 @@
+﻿@* Every demo page opens the same way - the site kit's .bb-intro: what part of the library it
+   exercises as the overline, its title as the page's one H1 (which FocusOnNavigate moves focus to),
+   and one paragraph of what to look for. It also owns the document title, so a bookmarked demo page
+   is named after the demo rather than after the site. *@
+<PageTitle>@Title · Bsqlite</PageTitle>
+
+<div class="bb-intro">
+    <p class="bb-overline">@Kicker</p>
+    <h1>@Title</h1>
+    <p class="bb-subtitle">@ChildContent</p>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Kicker { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

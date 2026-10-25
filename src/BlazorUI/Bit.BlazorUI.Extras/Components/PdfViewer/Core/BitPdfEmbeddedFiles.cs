@@ -85,10 +85,10 @@ internal static class BitPdfEmbeddedFiles
             return;
         }
 
-        BitPdfStream? stream = null;
+        BitPdfBaseStream? stream = null;
         foreach (string key in new[] { "UF", "F", "DOS", "Mac", "Unix" })
         {
-            if (xref.FetchIfRef(ef.Get(key)) is BitPdfStream s)
+            if (xref.FetchIfRef(ef.Get(key)) is BitPdfBaseStream s)
             {
                 stream = s;
                 break;
@@ -104,7 +104,7 @@ internal static class BitPdfEmbeddedFiles
         {
             content = BitPdfStreamDecoder.Decode(stream);
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             // A broken attachment must not cost the document its other ones.
             content = [];
@@ -118,7 +118,7 @@ internal static class BitPdfEmbeddedFiles
         {
             Name = string.IsNullOrWhiteSpace(name) ? "attachment" : name,
             Description = (xref.FetchIfRef(spec.Get("Desc")) as BitPdfString)?.AsText(),
-            MimeType = (stream.Dict.Get("Subtype") as BitPdfName)?.Value?.Replace("#2F", "/", StringComparison.Ordinal),
+            MimeType = (stream.Dict?.Get("Subtype") as BitPdfName)?.Value?.Replace("#2F", "/", StringComparison.Ordinal),
             PageNumber = pageNumber,
             Content = content,
         });

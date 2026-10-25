@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Why the <see cref="BitMarkdownEditor"/> refused to upload a pasted or dropped image.

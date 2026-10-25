@@ -1,0 +1,489 @@
+﻿@page "/e2e/toggle"
+
+<PageTitle>BitToggle E2E</PageTitle>
+
+<h1>BitToggle</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitToggle Id="tg-basic" Label="Basic" OnChange="v => { _basicChanges++; _basicLast = v; }" />
+    <span id="basic-change-count">@_basicChanges</span>
+    <span id="basic-last">@_basicLast</span>
+    <BitToggle Id="tg-default-on" Label="On by default" DefaultValue="true" />
+    <BitToggle Id="tg-disabled" Label="Disabled" Disabled />
+    <BitToggle Id="tg-disabled-on" Label="Disabled and on" Disabled Value="true" />
+</E2ESection>
+
+<E2ESection Id="texts" Title="Texts">
+    <BitToggle Id="tg-text" Label="Text" Text="This is a toggle!" />
+    <BitToggle Id="tg-onoff" Label="OnText and OffText" OnText="Toggle is On" OffText="Toggle is Off" />
+    <BitToggle Id="tg-ontext-only" Label="OnText only" OnText="Enabled" Text="Not enabled yet" />
+</E2ESection>
+
+<E2ESection Id="track-content" Title="Track content">
+    <BitToggle Id="tg-content" Label="Text content">
+        <OnContent>ON</OnContent>
+        <OffContent>OFF</OffContent>
+    </BitToggle>
+    <BitToggle Id="tg-content-one" Label="Only one side">
+        <OffContent>Click me</OffContent>
+    </BitToggle>
+    <BitToggle Id="tg-plain" Label="Plain" />
+</E2ESection>
+
+<E2ESection Id="knob-content" Title="Knob content">
+    <BitToggle Id="tg-icons" Label="Both states" OnIconName="@BitIconName.Accept" OffIconName="@BitIconName.Cancel" />
+    <BitToggle Id="tg-icon-on" Label="On state only" OnIconName="@BitIconName.CheckMark" DefaultValue="true" />
+    <BitToggle Id="tg-icon-disabled" Label="Disabled" OnIconName="@BitIconName.Accept" OffIconName="@BitIconName.Cancel" Disabled />
+    <BitToggle Id="tg-thumb-tpl" Label="Day / night">
+        <ThumbTemplate Context="isOn">
+            <span class="thumb-state">@(isOn ? "D" : "N")</span>
+        </ThumbTemplate>
+    </BitToggle>
+</E2ESection>
+
+<E2ESection Id="layout" Title="Label and layout">
+    <BitToggle Id="tg-place-top" Label="Top" LabelPlacement="BitPlacement.Top" />
+    <BitToggle Id="tg-place-bottom" Label="Bottom" LabelPlacement="BitPlacement.Bottom" />
+    <BitToggle Id="tg-place-start" Label="Start" LabelPlacement="BitPlacement.Start" />
+    <BitToggle Id="tg-place-end" Label="End" LabelPlacement="BitPlacement.End" />
+    <BitToggle Id="tg-default-layout" Label="Default" />
+    <BitToggle Id="tg-inline" Label="Inline" Inline />
+    <BitToggle Id="tg-reversed" Label="Reversed" Reversed />
+    <BitToggle Id="tg-reversed-inline" Label="Reversed and inline" Reversed Inline />
+    <BitToggle Id="tg-placement-wins" Label="Placement wins" Reversed Inline LabelPlacement="BitPlacement.Top" />
+    <div id="fw-panel" style="width: 400px;">
+        <BitToggle Id="tg-fullwidth" Label="This is a full-width toggle" FullWidth Inline />
+        <BitToggle Id="tg-fullwidth-reversed" Label="This is a reversed full-width toggle" Reversed FullWidth Inline />
+    </div>
+    <BitToggle Id="tg-label-tpl" @bind-Value="_labelTplValue">
+        <LabelTemplate>
+            <b id="label-tpl-content">This is custom Label</b>
+        </LabelTemplate>
+    </BitToggle>
+    <span id="label-tpl-value">@_labelTplValue</span>
+</E2ESection>
+
+<E2ESection Id="loading" Title="Loading">
+    <BitToggle Id="tg-loading" Label="Loading" Loading OnChange="_ => _loadingChanges++" />
+    <span id="loading-changes">@_loadingChanges</span>
+    <BitToggle Id="tg-loading-on" Label="Loading and on" Loading Value="true" />
+    <BitToggle Id="tg-loading-icons" Label="Loading with icons" Loading OnIconName="@BitIconName.Accept" OffIconName="@BitIconName.Cancel" />
+    <BitToggle Id="tg-loading-tpl" Label="Loading with a template" Loading>
+        <ThumbTemplate Context="isOn">
+            <span class="thumb-state">@(isOn ? "D" : "N")</span>
+        </ThumbTemplate>
+    </BitToggle>
+    <BitToggle Id="tg-save" Label="Save to the server" Loading="_isSaving" Value="_savedValue" OnChange="HandleSaveToggle" />
+    <span id="saved-value">@_savedValue</span>
+    <BitToggle Id="tg-autoloading" Label="Save (AutoLoading)" AutoLoading @bind-Value="_autoValue" OnChange="SaveTheToggle" />
+    <button id="btn-release" @onclick="Release">Release</button>
+    <span id="auto-value">@_autoValue</span>
+    <span id="auto-calls">@_autoCalls</span>
+    <span id="auto-saved">@_autoSaved</span>
+</E2ESection>
+
+<E2ESection Id="readonly-required" Title="Read-only and Required">
+    <BitToggle Id="tg-readonly" Label="Read-only toggle" ReadOnly @bind-Value="_readOnlyValue" Text="Locked" />
+    <button id="btn-readonly" @onclick="() => _readOnlyValue = !_readOnlyValue">Change it from here</button>
+    <span id="readonly-value">@_readOnlyValue</span>
+    <BitToggle Id="tg-required" Label="I accept the terms" Required />
+    <BitToggle Id="tg-required-disabled" Label="Disabled required" Required Disabled />
+</E2ESection>
+
+<E2ESection Id="binding" Title="Binding">
+    <BitToggle Id="tg-fixed" Label="Always on" Value="true" OnChanging="_ => _fixedChanging++" />
+    <span id="fixed-changing">@_fixedChanging</span>
+    <BitToggle Id="tg-oneway" Label="One-way" Value="_oneWay" />
+    <button id="btn-oneway" @onclick="() => _oneWay = !_oneWay">Toggle one-way</button>
+    <BitToggle Id="tg-twoway" Label="Two-way" @bind-Value="_twoWay" />
+    <button id="btn-twoway" @onclick="() => _twoWay = !_twoWay">Toggle two-way</button>
+    <span id="twoway-value">@_twoWay</span>
+
+    <button id="btn-method-flip" @onclick="() => _methodRef.ToggleAsync()">Flip it</button>
+    <button id="btn-method-on" @onclick="() => _methodRef.ToggleAsync(true)">Turn it on</button>
+    <button id="btn-method-off" @onclick="() => _methodRef.ToggleAsync(false)">Turn it off</button>
+    <BitToggle @ref="_methodRef" Id="tg-method" Label="Driven from code" ReadOnly Text="Read-only, still scriptable" OnChange="@(v => _methodLog += (v ? "T" : "F"))" />
+    <span id="method-log">@_methodLog</span>
+
+    <button id="btn-guarded-method" @onclick="() => _guardedMethodRef.ToggleAsync()">Flip the guarded one</button>
+    <BitToggle @ref="_guardedMethodRef" Id="tg-guarded-method" Label="Guarded from code" OnChanging="args => { args.Cancel = true; _guardedMethodCancels++; }" />
+    <span id="guarded-method-cancels">@_guardedMethodCancels</span>
+
+    <button id="btn-disabled-method" @onclick="() => _disabledMethodRef.ToggleAsync()">Flip the disabled one</button>
+    <BitToggle @ref="_disabledMethodRef" Id="tg-disabled-method" Label="Disabled from code" Disabled OnChange="_ => _disabledMethodChanges++" />
+    <span id="disabled-method-changes">@_disabledMethodChanges</span>
+
+    <button id="btn-loading-method" @onclick="() => _loadingMethodRef.ToggleAsync()">Flip the loading one</button>
+    <BitToggle @ref="_loadingMethodRef" Id="tg-loading-method" Label="Loading from code" Loading />
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <button id="btn-before-events">Before events</button>
+    <BitToggle Id="tg-events" Label="Flip me"
+               OnClick="LogClick"
+               OnChanging="LogChanging"
+               OnChange="LogChange"
+               OnFocus="() => _evFocus++"
+               OnFocusIn="() => _evFocusIn++"
+               OnFocusOut="() => _evFocusOut++"
+               OnBlur="() => _evBlur++" />
+    <button id="btn-after-events">After events</button>
+    <span id="ev-log">@_evLog</span>
+    <span id="ev-counts">@($"click={_evClick};changing={_evChanging};change={_evChange};focus={_evFocus};focusin={_evFocusIn};focusout={_evFocusOut};blur={_evBlur}")</span>
+
+    <BitToggle Id="tg-allow" Label="Allow the change" @bind-Value="_allowChange" />
+    <BitToggle Id="tg-guard" Label="Guarded toggle" @bind-Value="_guardValue" OnChanging="HandleGuardChanging" />
+    <span id="guard-cancelled">@_cancelled</span>
+    <span id="guard-value">@_guardValue</span>
+
+    <div id="clickable-box" style="padding: 8px; border: 1px dashed gray;" @onclick="() => _containerClicks++">
+        <BitToggle Id="tg-bubbles" Label="Bubbles up" />
+        <BitToggle Id="tg-stops" Label="Stops here" StopPropagation />
+    </div>
+    <span id="container-clicks">@_containerClicks</span>
+</E2ESection>
+
+<E2ESection Id="description" Title="Description">
+    <BitToggle Id="tg-desc" Label="Auto renew" Description="The subscription is renewed one day before it expires." @bind-Value="_descValue" />
+    <span id="desc-value">@_descValue</span>
+    <div style="width: 400px;">
+        <BitToggle Id="tg-desc-inline" FullWidth Inline Label="Offline mode" Description="Keep a copy of the last synced data on this device." />
+    </div>
+    <BitToggle Id="tg-desc-tpl" Label="Beta features">
+        <DescriptionTemplate>
+            Turning this on opts you into features that are still changing. <a id="desc-tpl-link" href="#description">Learn more</a>
+        </DescriptionTemplate>
+    </BitToggle>
+</E2ESection>
+
+<E2ESection Id="validation" Title="Validation">
+    <EditForm Model="_model" OnValidSubmit="ValidSubmit" OnInvalidSubmit="InvalidSubmit">
+        <DataAnnotationsValidator />
+        <BitToggle Id="tg-terms" Label="Terms and conditions" Text="I agree." @bind-Value="_model.TermsAgreement" />
+        <div id="terms-error">
+            <ValidationMessage For="@(() => _model.TermsAgreement)" />
+        </div>
+        <BitToggle Id="tg-novalidate" Label="Not validated" NoValidate @bind-Value="_model.Other" />
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="submit-result">@_submit</span>
+
+    <form id="plain-form">
+        <BitToggle Id="tg-named" Label="Notify" Name="notify"
+                   InputHtmlAttributes="@(new Dictionary<string, object> { ["data-carrier"] = "yes" })" />
+        <BitToggle Id="tg-named-disabled" Label="Disabled named" Name="locked" Value="true" Disabled />
+    </form>
+
+    <div style="width: 400px;">
+        <BitToggle Id="tg-2fa" FullWidth Inline
+                   Label="Two-factor authentication"
+                   Description="Ask for a code from your authenticator app at every sign-in."
+                   ErrorMessage="@(_twoFactor ? null : "Your organization requires two-factor authentication.")"
+                   @bind-Value="_twoFactor" />
+    </div>
+    <BitToggle Id="tg-invalid" Label="Marked invalid, explained elsewhere" Invalid />
+    <BitToggle Id="tg-error-tpl" Label="Public profile" OnText="Anyone can see it">
+        <ErrorMessageTemplate>
+            This conflicts with your <a id="error-tpl-link" href="#validation">privacy settings</a>.
+        </ErrorMessageTemplate>
+    </BitToggle>
+</E2ESection>
+
+<E2ESection Id="accessibility" Title="Accessibility">
+    <button id="btn-before-a11y">Before a11y</button>
+    <BitToggle Id="tg-a11y" Label="Focus me with Tab, flip me with Space" @bind-Value="_a11yValue" />
+    <span id="a11y-value">@_a11yValue</span>
+    <BitToggle Id="tg-title" Label="Hover over me" Title="The native tooltip of the toggle" />
+    <BitToggle Id="tg-tabindex" Label="Out of the tab order" TabIndex="-1" />
+    <BitToggle Id="tg-after-tabindex" Label="After the skipped one" />
+    <button id="btn-focus" @onclick="() => _focusRef.FocusAsync()">Focus the toggle</button>
+    <BitToggle @ref="_focusRef" Id="tg-focus-target" Label="Programmatic focus target" />
+    <BitToggle Id="tg-arialabel" AriaLabel="Dark mode" />
+    <BitToggle Id="tg-ariadesc" Label="Auto renew" AriaDescription="The subscription will be renewed one day before it expires." />
+    <div id="offline-mode-heading">Offline mode</div>
+    <div id="offline-mode-hint">Keep a copy of the last synced data on this device.</div>
+    <BitToggle Id="tg-labelledby" AriaLabelledby="offline-mode-heading" AriaDescribedby="offline-mode-hint" Text="Enabled" Label="Overridden label" />
+    <BitToggle Id="tg-controls" Label="Show advanced settings" AriaControls="advanced-settings-panel" @bind-Value="_advanced" />
+    <div id="advanced-settings-panel">@(_advanced ? "Advanced settings" : "")</div>
+    <BitToggle Id="tg-text-only" Text="Dark mode" />
+    <BitToggle Id="tg-notifications" Label="Notifications" OnText="Allowed" OffText="Blocked" />
+    <BitToggle Id="tg-onoff-only" OnText="On" OffText="Off" />
+    <button id="btn-before-disabled-focus">Before disabled</button>
+    <BitToggle Id="tg-dis-skipped" Label="Disabled" Disabled Title="Out of the tab order" />
+    <BitToggle Id="tg-dis-focus" Label="Disabled, still focusable" Disabled AllowDisabledFocus Title="Available on the Pro plan" OnChange="_ => _disFocusChanges++" />
+    <span id="dis-focus-changes">@_disFocusChanges</span>
+    <BitToggle Id="tg-role" Label="A checkbox, not a switch" Role="checkbox" />
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <div style="width: 400px;">
+        <BitParams Parameters="@_tgParams">
+            <BitToggle Id="tg-cascade-1" Label="Usage statistics" />
+            <BitToggle Id="tg-cascade-own" Label="Delete after export" OnText="Deleting" OffText="Keeping" />
+        </BitParams>
+        <BitToggle Id="tg-cascade-outside" Label="Outside the cascade" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="colors" Title="Color">
+    @foreach (var (color, suffix) in _colors)
+    {
+        <div class="color-row">
+            <BitToggle Id="@($"tg-color-{suffix}")" Color="color" Label="@color.ToString()" Value="true" />
+            <BitToggle Id="@($"tg-color-{suffix}-off")" Color="color" Label="@color.ToString()" />
+        </div>
+    }
+    <BitToggle Id="tg-color-default" Label="Default color" Value="true" />
+    <BitToggle Id="tg-color-wins" Color="BitColor.Error" Label="Color wins" Value="true" Style="--bit-Toggle-checked-background: rgb(1, 2, 3);" />
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External Icons">
+    <BitToggle Id="tg-ext-string" Label="Check / Xmark (string)" OnIcon="@("fa-solid fa-check")" OffIcon="@("fa-solid fa-xmark")" />
+    <BitToggle Id="tg-ext-fa" Label="Sun / Moon (BitIconInfo.Fa)" OnIcon="@BitIconInfo.Fa("solid sun")" OffIcon="@BitIconInfo.Fa("solid moon")" />
+    <BitToggle Id="tg-ext-bi" Label="Bell (BitIconInfo.Bi)" OnIcon="@BitIconInfo.Bi("bell-fill")" OffIcon="@BitIconInfo.Bi("bell-slash")" />
+    <BitToggle Id="tg-ext-css" Label="Css" OnIcon="@BitIconInfo.Css("my-on")" OffIcon="@BitIconInfo.Css("my-off")" />
+</E2ESection>
+
+<E2ESection Id="sizes" Title="Size">
+    <BitToggle Id="tg-size-sm" Size="BitSize.Small" Label="Small" Value="true" />
+    <BitToggle Id="tg-size-md" Size="BitSize.Medium" Label="Medium" Value="true" />
+    <BitToggle Id="tg-size-lg" Size="BitSize.Large" Label="Large" Value="true" />
+    <BitToggle Id="tg-size-default" Label="Default" Value="true" />
+    <BitToggle Id="tg-size-sm-icons" Size="BitSize.Small" Label="Small icons" Value="true" OnIconName="@BitIconName.Accept" OffIconName="@BitIconName.Cancel" />
+    <BitToggle Id="tg-size-lg-icons" Size="BitSize.Large" Label="Large icons" Value="true" OnIconName="@BitIconName.Accept" OffIconName="@BitIconName.Cancel" />
+    <BitToggle Id="tg-size-wins" Size="BitSize.Large" Label="Size wins" Value="true" Style="--bit-Toggle-track-width: 100px;" />
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitToggle Id="tg-style" Label="Styled toggle" Style="background-color: rgb(255, 106, 0); padding: 8px;" />
+    <BitToggle Id="tg-class" Label="Classed toggle" Class="custom-class" />
+    <BitToggle Id="tg-styles" Label="Styles" @bind-Value="_stylesValue" Text="State" Description="Desc"
+               Styles="@(new() { Root = "--bit-Toggle-track-background: rgb(211, 211, 211);", Checked = "--bit-Toggle-checked-background: rgb(46, 204, 113);", Thumb = "background: rgb(245, 245, 245);", Label = "color: rgb(0, 0, 255);", Description = "font-style: italic;", Container = "padding: 2px;", Button = "outline: 1px solid rgb(255, 0, 0);", Text = "letter-spacing: 3px;" })" />
+    <BitToggle Id="tg-classes" Label="Classes" @bind-Value="_classesValue" Text="State" Description="Desc" OnIconName="@BitIconName.Accept" OffIconName="@BitIconName.Cancel" ErrorMessage="Err"
+               Classes="@(new() { Root = "c-root", Thumb = "c-thumb", Button = "c-button", Checked = "c-checked", Label = "c-label", Description = "c-desc", Container = "c-container", Icon = "c-icon", Text = "c-text", ErrorMessageContainer = "c-erc", ErrorMessage = "c-erm" })" />
+    <BitToggle Id="tg-classes-content" Label="Each side of the track content"
+               Classes="@(new() { Content = "c-content", OnContent = "c-on", OffContent = "c-off" })"
+               Styles="@(new() { OnContent = "color: rgb(1, 1, 1);", OffContent = "color: rgb(2, 2, 2);", Content = "padding-inline: 10px;" })">
+        <OnContent>ON</OnContent>
+        <OffContent>OFF</OffContent>
+    </BitToggle>
+    <BitToggle Id="tg-classes-spinner" Label="Spinner" Loading Classes="@(new() { Spinner = "c-spinner" })" Styles="@(new() { Spinner = "opacity: 0.5;", Icon = "color: red;" })" />
+    <BitToggle Id="tg-styles-error" Label="Error styles" ErrorMessage="Bad" Styles="@(new() { ErrorMessageContainer = "padding: 4px;", ErrorMessage = "font-weight: 700;" })" />
+</E2ESection>
+
+<E2ESection Id="css-variables" Title="CSS variables">
+    <BitToggle Id="tg-var-geometry" Label="iOS-sized, elevated knob" Value="true"
+               Style="--bit-Toggle-track-width: 52px; --bit-Toggle-track-height: 32px; --bit-Toggle-thumb-size: 28px; --bit-Toggle-thumb-shadow: rgba(0, 0, 0, 0.3) 0px 2px 4px 0px;" />
+    <BitToggle Id="tg-var-square" Label="Square, no dip" Value="true"
+               Style="--bit-Toggle-track-radius: 4px; --bit-Toggle-thumb-radius: 2px; --bit-Toggle-transition-duration: 400ms; --bit-Toggle-thumb-active-scale: 1; --bit-Toggle-border-width: 3px;" />
+    <BitToggle Id="tg-var-palette" Label="Its own palette" Value="true" OnIconName="@BitIconName.Accept"
+               Style="--bit-Toggle-checked-background: rgb(102, 51, 153); --bit-Toggle-checked-thumb-color: rgb(255, 215, 0); --bit-Toggle-icon-color: rgb(102, 51, 153); --bit-Toggle-label-color: rgb(102, 51, 153);" />
+    <BitToggle Id="tg-var-off" Label="Off palette" Text="Text"
+               Style="--bit-Toggle-track-background: rgb(10, 20, 30); --bit-Toggle-track-border-color: rgb(40, 50, 60); --bit-Toggle-thumb-color: rgb(70, 80, 90); --bit-Toggle-text-color: rgb(100, 0, 0); --bit-Toggle-label-font-size: 22px; --bit-Toggle-text-font-size: 18px;" />
+    <BitToggle Id="tg-var-hover" Label="Hover palette"
+               Style="--bit-Toggle-hover-track-border-color: rgb(255, 0, 0); --bit-Toggle-hover-thumb-color: rgb(0, 255, 0); --bit-Toggle-hover-track-background: rgb(0, 0, 255);" />
+    <div id="var-ancestor" style="--bit-Toggle-checked-background: rgb(0, 100, 0); --bit-Toggle-label-font-weight: 400; --bit-Toggle-gap: 16px; --bit-Toggle-description-color: rgb(0, 128, 128); --bit-Toggle-error-color: rgb(128, 0, 128); --bit-Toggle-required-color: rgb(0, 0, 128); --bit-Toggle-content-color: rgb(9, 9, 9);">
+        <BitToggle Id="tg-var-anc-on" Label="Wi-Fi" Value="true" Description="Inherited description color" />
+        <BitToggle Id="tg-var-anc-err" Label="Bluetooth" ErrorMessage="Inherited error color" Required>
+            <OffContent>OFF</OffContent>
+        </BitToggle>
+    </div>
+    <div style="--bit-Toggle-disabled-color: rgb(200, 0, 0); --bit-Toggle-disabled-text-color: rgb(0, 0, 200);">
+        <BitToggle Id="tg-var-disabled" Label="Disabled vars" Disabled />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitToggle Id="tg-rtl" Label="این یک تاگل است" Dir="BitDir.Rtl" OnText="روشن" OffText="خاموش" />
+    <BitToggle Id="tg-rtl-start" Label="شروع" Dir="BitDir.Rtl" LabelPlacement="BitPlacement.Start" />
+    <div dir="rtl">
+        <BitToggle Id="tg-rtl-inherited" Label="از والد" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="base" Title="Base behaviours">
+    <BitToggle Id="tg-hidden" Label="Hidden" Visibility="BitVisibility.Hidden" />
+    <BitToggle Id="tg-collapsed" Label="Collapsed" Visibility="BitVisibility.Collapsed" />
+    <BitToggle Id="tg-html-attrs" Label="Html attributes" data-custom="abc" HtmlAttributes="@(new Dictionary<string, object> { ["data-extra"] = "xyz" })" />
+    <BitToggle Id="tg-handler-enabled" Label="Enabled with handler" @onclick="() => _enabledRootClicks++" />
+    <BitToggle Id="tg-handler-disabled" Label="Disabled with handler" Disabled="_handlerDisabled" @onclick="() => _disabledRootClicks++" />
+    <button id="btn-toggle-handler-disabled" @onclick="() => _handlerDisabled = !_handlerDisabled">Toggle disabled</button>
+    <span id="enabled-root-clicks">@_enabledRootClicks</span>
+    <span id="disabled-root-clicks">@_disabledRootClicks</span>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    @if (_showRuntime)
+    {
+        <BitToggle Id="tg-runtime" Label="@_runtimeLabel" Color="_runtimeColor" Disabled="_runtimeDisabled" Size="_runtimeSize" OnText="@_runtimeOnText" @bind-Value="_runtimeValue" />
+    }
+    <button id="btn-runtime-label" @onclick="@(() => _runtimeLabel = "Changed label")">Change label</button>
+    <button id="btn-runtime-color" @onclick="() => _runtimeColor = BitColor.Success">Set color</button>
+    <button id="btn-runtime-size" @onclick="() => _runtimeSize = BitSize.Large">Set size</button>
+    <button id="btn-runtime-ontext" @onclick="@(() => _runtimeOnText = "Now on")">Set on text</button>
+    <button id="btn-runtime-disable" @onclick="() => _runtimeDisabled = !_runtimeDisabled">Toggle disabled</button>
+    <button id="btn-runtime-value" @onclick="() => _runtimeValue = !_runtimeValue">Toggle value</button>
+    <button id="btn-runtime-unmount" @onclick="() => _showRuntime = !_showRuntime">Toggle mount</button>
+    <span id="runtime-value">@_runtimeValue</span>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Motion">
+    <BitToggle Id="tg-motion" Label="Animated" />
+    <BitToggle Id="tg-motion-forced" Label="Forced animation" ForceAnimation />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _basicChanges;
+    private bool _basicLast;
+    private bool _labelTplValue;
+
+    private int _loadingChanges;
+    private bool _isSaving;
+    private bool _savedValue;
+    private TaskCompletionSource? _saveGate;
+    private bool _autoValue;
+    private int _autoCalls;
+    private int _autoSaved;
+    private TaskCompletionSource? _autoGate;
+
+    private bool _readOnlyValue;
+
+    private int _fixedChanging;
+    private bool _oneWay;
+    private bool _twoWay;
+    private BitToggle _methodRef = default!;
+    private string _methodLog = string.Empty;
+    private BitToggle _guardedMethodRef = default!;
+    private int _guardedMethodCancels;
+    private BitToggle _disabledMethodRef = default!;
+    private int _disabledMethodChanges;
+    private BitToggle _loadingMethodRef = default!;
+
+    private string _evLog = string.Empty;
+    private int _evClick, _evChanging, _evChange, _evFocus, _evFocusIn, _evFocusOut, _evBlur;
+    private bool _allowChange;
+    private bool _guardValue;
+    private int _cancelled;
+    private int _containerClicks;
+
+    private bool _descValue;
+
+    private readonly ToggleModel _model = new();
+    private string _submit = "none";
+    private int _validSubmits;
+    private int _invalidSubmits;
+    private bool _twoFactor;
+
+    private bool _a11yValue;
+    private BitToggle _focusRef = default!;
+    private bool _advanced;
+    private int _disFocusChanges;
+
+    private bool _stylesValue;
+    private bool _classesValue;
+
+    private int _enabledRootClicks;
+    private int _disabledRootClicks;
+    private bool _handlerDisabled = true;
+
+    private bool _showRuntime = true;
+    private string _runtimeLabel = "Initial label";
+    private string? _runtimeOnText;
+    private BitColor? _runtimeColor;
+    private BitSize? _runtimeSize;
+    private bool _runtimeDisabled;
+    private bool _runtimeValue;
+
+    private readonly IBitComponentParams[] _tgParams =
+    [
+        new BitToggleParams { Inline = true, FullWidth = true, OnText = "On", OffText = "Off", LabelPlacement = BitPlacement.Start }
+    ];
+
+    private readonly (BitColor Color, string Suffix)[] _colors =
+    [
+        (BitColor.Primary, "pri"),
+        (BitColor.Secondary, "sec"),
+        (BitColor.Tertiary, "ter"),
+        (BitColor.Info, "inf"),
+        (BitColor.Success, "suc"),
+        (BitColor.Warning, "wrn"),
+        (BitColor.SevereWarning, "swr"),
+        (BitColor.Error, "err"),
+        (BitColor.PrimaryBackground, "pbg"),
+        (BitColor.SecondaryBackground, "sbg"),
+        (BitColor.TertiaryBackground, "tbg"),
+        (BitColor.PrimaryForeground, "pfg"),
+        (BitColor.SecondaryForeground, "sfg"),
+        (BitColor.TertiaryForeground, "tfg"),
+        (BitColor.PrimaryBorder, "pbr"),
+        (BitColor.SecondaryBorder, "sbr"),
+        (BitColor.TertiaryBorder, "tbr"),
+    ];
+
+    private async Task HandleSaveToggle(bool value)
+    {
+        _isSaving = true;
+        _saveGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        StateHasChanged();
+        await _saveGate.Task;
+        _savedValue = value;
+        _isSaving = false;
+    }
+
+    private async Task SaveTheToggle(bool value)
+    {
+        _autoCalls++;
+        _autoGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _autoGate.Task;
+        _autoSaved++;
+    }
+
+    private void Release()
+    {
+        _saveGate?.TrySetResult();
+        _autoGate?.TrySetResult();
+    }
+
+    private void AppendLog(string entry) => _evLog += _evLog.Length == 0 ? entry : $">{entry}";
+
+    private void LogClick()
+    {
+        _evClick++;
+        AppendLog("OnClick");
+    }
+
+    private void LogChanging(BitToggleChangeArgs args)
+    {
+        _evChanging++;
+        AppendLog($"OnChanging({args.Value})");
+    }
+
+    private void LogChange(bool value)
+    {
+        _evChange++;
+        AppendLog($"OnChange({value})");
+    }
+
+    private void HandleGuardChanging(BitToggleChangeArgs args)
+    {
+        if (_allowChange) return;
+
+        args.Cancel = true;
+        _cancelled++;
+    }
+
+    private void ValidSubmit() => _submit = $"valid:{++_validSubmits}";
+
+    private void InvalidSubmit() => _submit = $"invalid:{++_invalidSubmits}";
+
+    private sealed class ToggleModel
+    {
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the terms and conditions.")]
+        public bool TermsAgreement { get; set; }
+
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Never shown.")]
+        public bool Other { get; set; }
+    }
+}

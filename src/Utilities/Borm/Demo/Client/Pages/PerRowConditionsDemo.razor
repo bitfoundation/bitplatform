@@ -1,0 +1,129 @@
+﻿@page "/per-row-conditions"
+@implements IDisposable
+
+<PageTitle>Per-row conditions · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Per-row conditions</h1>
+    <p class="bb-subtitle">
+        A condition written on a repeater's item template means <em>this row</em>. Change one contact's
+        method and only that contact's fields switch — the rest of the list is untouched, and the row's
+        chosen field is the only one that has to be filled in. Paths are resolved against the object
+        that owns the field first, exactly as a computed value's dependencies are, so
+        <code>"Kind"</code> inside a row is that row's <code>Kind</code>.
+    </p>
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save sheet" ShowErrorSummary="true" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Saved ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+var schema = BormBuilder.For<ContactSheet>()
+    .Title("Contact sheet")
+    .Field(x => x.Name, f => f.Required().Placeholder("Q3 suppliers"))
+    .Array(x => x.Contacts, row => row
+            .Field(c => c.Kind, f => f
+                .AsRadio()
+                // A default on the item template reaches every row the user adds, not only the
+                // rows the form was created with - so a new contact starts on Email.
+                .Default("email")
+                .Options(("email", "Email"), ("phone", "Phone"), ("post", "Post")))
+
+            // "Kind" here is *this row's* Kind. Every row evaluates its own answer, so switching one
+            // contact to Phone does not reshape the others.
+            .Field(c => c.Email, f => f
+                .AsEmail()
+                .VisibleWhen("Kind", BormConditionOperator.Equals, "email")
+                .RequiredWhen("Kind", BormConditionOperator.Equals, "email")
+                .ClearOnHide())
+
+            .Field(c => c.Phone, f => f
+                .AsTel()
+                .VisibleWhen("Kind", BormConditionOperator.Equals, "phone")
+                .RequiredWhen("Kind", BormConditionOperator.Equals, "phone")
+                .ClearOnHide())
+
+            .Field(c => c.Address, f => f
+                .AsTextArea(2)
+                .VisibleWhen("Kind", BormConditionOperator.Equals, "post")
+                .RequiredWhen("Kind", BormConditionOperator.Equals, "post")
+                .ClearOnHide()),
+
+        f => f.Items(min: 1, message: "Add at least one contact.")
+              .SeedMinItems()                // open with the row the schema requires, not with an error
+              .Attr("itemNoun", "contact")   // "Add contact", "Remove contact 2" - not "Add item"
+              .Attr("duplicable", true))     // a Duplicate button per row: "add another one like that"
+    .Build();
+""";
+
+    private readonly ContactSheet _model = new();
+    private BormState _state = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<ContactSheet>()
+            .Title("Contact sheet")
+            .Field(x => x.Name, f => f.Required().Placeholder("Q3 suppliers"))
+            .Array(x => x.Contacts, row => row
+                    .Field(c => c.Kind, f => f
+                        .AsRadio()
+                        .Default("email")
+                        .Options(("email", "Email"), ("phone", "Phone"), ("post", "Post")))
+                    .Field(c => c.Email, f => f
+                        .AsEmail()
+                        .VisibleWhen("Kind", BormConditionOperator.Equals, "email")
+                        .RequiredWhen("Kind", BormConditionOperator.Equals, "email")
+                        .ClearOnHide())
+                    .Field(c => c.Phone, f => f
+                        .AsTel()
+                        .VisibleWhen("Kind", BormConditionOperator.Equals, "phone")
+                        .RequiredWhen("Kind", BormConditionOperator.Equals, "phone")
+                        .ClearOnHide())
+                    .Field(c => c.Address, f => f
+                        .AsTextArea(2)
+                        .VisibleWhen("Kind", BormConditionOperator.Equals, "post")
+                        .RequiredWhen("Kind", BormConditionOperator.Equals, "post")
+                        .ClearOnHide()),
+                f => f.Items(min: 1, message: "Add at least one contact.")
+                      .SeedMinItems()
+                      .Attr("itemNoun", "contact")
+                      .Attr("duplicable", true))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // The page created the state, so the page disposes it: an options load or async rule still in
+        // flight is cancelled instead of finishing against a form nobody is looking at.
+        _state.Dispose();
+    }
+}

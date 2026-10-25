@@ -1,0 +1,49 @@
+﻿@*
+    A member/description table in the site kit's bb-table, scrolling inside its own box on a narrow
+    screen. The member column wraps between the words of a signature, never inside one (demo.css).
+    The box is a named, focusable region, as the landing page's comparison table is: a box that
+    scrolls sideways has to be reachable from the keyboard to be scrolled from it.
+*@
+@if (!string.IsNullOrEmpty(Title))
+{
+    @* An h3: the table sits in a section whose title is the page's h2. *@
+    <h3 class="demo-api-title">@Title</h3>
+}
+<div class="bb-scroll" tabindex="0" role="region" aria-label="@(Title ?? $"{MemberHeader} reference")">
+    <table class="bb-table demo-api-table">
+        <thead>
+            <tr>
+                <th>@MemberHeader</th>
+                <th>@DescriptionHeader</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Rows)
+            {
+                <tr>
+                    <td><code>@((MarkupString)row.Member)</code></td>
+                    <td>@((MarkupString)row.Description)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    /// <summary>One documented member.</summary>
+    /// <param name="Member">Signature or name, rendered as code. HTML-encoded like the description (<c>List&amp;lt;T&amp;gt;</c>), so generics display as written.</param>
+    /// <param name="Description">Description; may contain inline HTML such as <c>&lt;code&gt;</c>.</param>
+    public sealed record Row(string Member, string Description);
+
+    /// <summary>Optional heading above the table.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Header for the first column.</summary>
+    [Parameter] public string MemberHeader { get; set; } = "Member";
+
+    /// <summary>Header for the second column.</summary>
+    [Parameter] public string DescriptionHeader { get; set; } = "Description";
+
+    /// <summary>The documented members.</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<Row> Rows { get; set; } = [];
+}

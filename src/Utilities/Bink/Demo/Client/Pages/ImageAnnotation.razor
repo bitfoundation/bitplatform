@@ -1,0 +1,451 @@
+﻿@page "/image-annotation"
+@using System.Numerics
+
+<PageTitle>Image annotation · Bink</PageTitle>
+
+<div class="bb-intro">
+    <h1>Image annotation</h1>
+    <p class="bb-subtitle">
+        Open a screenshot or photo, mark it up, and export a flattened image or an SVG that keeps the annotations
+        editable. The picture is an element in the document like any other, so annotations sit above it, move with the
+        selection tool and survive a round trip through the file format.
+    </p>
+</div>
+
+<div class="bb-demo bink-editor bb-page-wide">
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Annotation tools">
+        <label class="btn btn-secondary">
+            Open image
+            <InputFile OnChange="OnFileSelected" accept="image/*" class="bink-file-input" />
+        </label>
+        <button type="button" class="btn btn-secondary" @onclick="LoadSampleAsync">Use a sample</button>
+
+        <span class="bink-sep" aria-hidden="true"></span>
+
+        <div class="bb-segmented" role="group" aria-label="Tool">
+            @foreach ((string id, string label) in Tools)
+            {
+                <button type="button" aria-pressed="@(_toolId == id ? "true" : "false")"
+                        @onclick="() => SelectTool(id)">@label</button>
+            }
+        </div>
+
+        <span class="bink-sep" aria-hidden="true"></span>
+
+        <ColorSwatches Colors="Palette" Value="@_color" ValueChanged="SetColor" />
+
+        <span class="bb-spacer"></span>
+        <div class="bink-group" role="group" aria-label="History">
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is null || !_canvas.History.CanUndo)" @onclick="() => _canvas?.Undo()">Undo</button>
+            <button type="button" class="btn btn-secondary" disabled="@(_canvas is null || !_canvas.History.CanRedo)" @onclick="() => _canvas?.Redo()">Redo</button>
+        </div>
+    </div>
+
+    <div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Picture and export">
+        <button type="button" class="btn btn-secondary bink-danger" disabled="@(_canvas is null || _canvas.Selection.IsEmpty)"
+                @onclick="() => _canvas?.DeleteSelection()">Delete selected</button>
+        <button type="button" class="btn btn-secondary bink-danger" disabled="@(AnnotationCount == 0)" @onclick="ClearAnnotations">Clear annotations</button>
+        <span class="bink-hint"><strong>@AnnotationCount</strong> annotations</span>
+
+        <span class="bink-sep" aria-hidden="true"></span>
+
+        <div class="bink-group" role="group" aria-label="Picture">
+            <button type="button" class="btn btn-secondary" disabled="@(Picture is null)" aria-pressed="@(PictureHidden ? "true" : "false")"
+                    title="Hide the picture's layer to see the annotations alone" @onclick="TogglePicture">@(PictureHidden ? "Show picture" : "Hide picture")</button>
+            <button type="button" class="btn btn-secondary" disabled="@(Picture is null)" aria-pressed="@(Picture?.Crop is not null ? "true" : "false")"
+                    title="Crop a margin off every side; the pixels are kept, so it can be undone or removed later" @onclick="ToggleCrop">@(Picture?.Crop is not null ? "Remove crop" : "Crop edges")</button>
+        </div>
+
+        <span class="bb-spacer"></span>
+        <div class="bink-group" role="group" aria-label="Export">
+            <button type="button" class="btn btn-secondary" disabled="@_document.IsEmpty" @onclick="ExportPngAsync">Export PNG</button>
+            <button type="button" class="btn btn-secondary" disabled="@_document.IsEmpty" title="Far smaller than PNG for a photo, with no transparency" @onclick="() => ExportImageAsync(BinkImageFormat.Jpeg)">Export JPEG</button>
+            <button type="button" class="btn btn-secondary" disabled="@_document.IsEmpty" title="Smaller still; Safari has no WebP encoder" @onclick="() => ExportImageAsync(BinkImageFormat.Webp)">Export WebP</button>
+            <button type="button" class="btn btn-secondary" disabled="@_document.IsEmpty" @onclick="ExportSvgAsync">Export SVG</button>
+        </div>
+    </div>
+
+    <div class="bink-surface">
+        <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()"
+                   ViewportChanged="_status?.ViewportChanged ?? default"
+                   Document="_document"
+                   Height="560px"
+                   Tool="_tool"
+                   Brush="_brush"
+                   ShapeStyle="_shapeStyle"
+                   ActiveLayerId="_annotationLayer"
+                   EnableTouchGestures="true"
+                   AriaLabel="Image annotation canvas"
+                   DocumentChanged="() => StateHasChanged()"
+                   SelectionChanged="() => StateHasChanged()"
+                   Ready="OnReadyAsync" />
+    </div>
+
+    <CanvasStatus @ref="_status" Canvas="_canvas">
+        @if (ImageInfo is { } info)
+        {
+            <span>@info</span>
+        }
+    </CanvasStatus>
+</div>
+
+@if (_error is not null)
+{
+    <div class="bb-note bb-note-danger" role="alert">@_error</div>
+}
+
+<div class="bb-note">
+    The picture sits on its own locked layer, below the annotations, so annotating never moves it by accident and
+    the eraser cannot reach it. <strong>Eraser</strong> is a pixel mask: it hides the annotation ink under it, within
+    the annotations' layer, and is itself an element that undo takes away. Exported SVG references the picture and
+    keeps every arrow, box and note as vector geometry; the other exports flatten the whole thing at twice the
+    document's resolution.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Placing the picture</h3>
+    <p class="bb-card-desc">
+        The browser decodes the picture first, with <code>LoadImageAsync</code>, before any edit begins, so a file it
+        cannot read is refused with a message rather than placed as an invisible picture. Replacing the picture is two
+        edits - remove the old one, add the new - but to the person using it one action, so it is one undo step. A
+        locked layer keeps tools away, not code: the page adds the picture to it directly.
+    </p>
+    <pre class="bb-code">BinkImageSource ready = <span class="k">await</span> _canvas.LoadImageAsync(BinkImageSource.FromBytes(bytes, mediaType, 0, 0));
+BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, maxWidth: _document.Settings.Width - 40);
+
+<span class="k">using</span> (_canvas.History.BeginGroup(<span class="s">"Open image"</span>))
+{
+    _document.RemoveElements(previous);
+    _document.AddElement(placed <span class="k">with</span> { Description = <span class="s">"Annotated image: "</span> + name }, _imageLayer);   <span class="c">// the locked layer</span>
+}</pre>
+    <p class="bb-card-desc">
+        The decode comes before the group on purpose: a history group left open across a browser round trip would
+        disable undo until it closed. For a picture that needs no group, <code>AddImageAsync</code> does both steps at
+        once, as the whiteboard's <strong>Insert image</strong> does.
+    </p>
+    <p class="bb-card-desc">
+        A picture's source is a <code>data:</code>, <code>https:</code>, <code>http:</code> or <code>blob:</code> URI.
+        An embedded one must be a raster picture: SVG is refused unless allowed, because an SVG image is a document that
+        can reference other resources. <code>TryCreate</code> checks a URI from elsewhere without throwing, and a large
+        picture can be kept out of the saved document and referenced by URL instead.
+    </p>
+    <pre class="bb-code"><span class="k">if</span> (!BinkImageSource.TryCreate(uri, width, height, allowSvg: <span class="k">false</span>, <span class="k">out</span> BinkImageSource? source))
+{
+    <span class="c">// refuse it</span>
+}</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Layers, hiding and cropping</h3>
+    <p class="bb-card-desc">
+        The document has two layers: Image, locked, and Annotations above it, which is where new marks go
+        (<code>ActiveLayerId</code>). <strong>Hide picture</strong> hides the image layer to show the annotations
+        alone. <strong>Crop edges</strong> sets the picture's <code>Crop</code>, a rectangle in source pixels, and shrinks
+        its frame to match, so what stays visible stays where it was under the annotations. Cropping, like moving or
+        resizing, is a vector property: the pixels are never re-encoded, and removing the crop brings the margin back.
+    </p>
+    <pre class="bb-code">_document.UpdateLayer(_imageLayer, p =&gt; p <span class="k">with</span> { IsVisible = <span class="k">false</span> });
+
+_document.ReplaceElement(picture <span class="k">with</span>
+{
+    Crop = <span class="k">new</span> BinkRect(64, 40, 512, 320),   <span class="c">// in source pixels</span>
+    Rect = shownPart,
+});</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> PNG, JPEG, WebP or SVG</h3>
+    <p class="bb-card-desc">
+        The browser encodes the raster formats, on an offscreen canvas, so real fonts and every picture format it can
+        decode are included. JPEG and WebP are far smaller than PNG for a drawing over a photo; JPEG has no
+        transparency, so a transparent background exports as white, and Safari has no WebP encoder, so there the export
+        throws <code>NotSupportedException</code> rather than handing back a PNG under a WebP name. SVG keeps every
+        annotation editable, with the descriptions as <code>title</code> elements for screen readers.
+    </p>
+    <pre class="bb-code"><span class="k">var</span> options = <span class="k">new</span> BinkPngExportOptions { Region = BinkExportRegion.Content, Scale = 2f };
+
+<span class="k">await</span> _canvas.SavePngAsync(<span class="s">"annotated.png"</span>, options);
+<span class="k">await</span> _canvas.SaveImageAsync(<span class="s">"annotated.jpg"</span>, BinkImageFormat.Jpeg, options, quality: 0.85);
+<span class="k">byte</span>[] webp = <span class="k">await</span> _canvas.ExportImageAsync(BinkImageFormat.Webp, options, quality: 0.8);
+<span class="k">await</span> _canvas.SaveSvgAsync(<span class="s">"annotated.svg"</span>, <span class="k">new</span> BinkSvgExportOptions { IncludeElementDescriptions = <span class="k">true</span> });</pre>
+    <p class="bb-card-desc">
+        Every export takes a region - <code>Page</code>, <code>Content</code> (cropped to what is drawn, plus
+        <code>Padding</code>), <code>Selection</code> or <code>Custom</code> - and a <code>Background</code>, transparent
+        if wanted. <code>MaxPixels</code> makes an export fail rather than allocate more. The pure .NET
+        <code>BinkPngExporter</code>, which a server uses, also writes <code>PixelsPerMeter</code> into the file (11,811
+        is about 300 DPI) and takes a <code>Compression</code> level. <code>Scale</code> is independent of the screen: a
+        drawing made on a phone exports at the same resolution as one made on a desktop.
+    </p>
+</div>
+
+@code {
+    private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
+    private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 900, Height = 560, Background = BinkColor.Parse("#f8f9fb") });
+    private Guid _imageLayer;
+    private Guid _annotationLayer;
+    private string _toolId = "arrow";
+    private string _color = "#dc2626";
+    private IBinkTool _tool = new BinkShapeTool(BinkShapeKind.Arrow);
+    private BinkBrush _brush = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#dc2626") };
+    private BinkShapeStyle _shapeStyle = new() { StrokeColor = BinkColor.Parse("#dc2626"), StrokeWidth = 3f };
+    private string? _error;
+
+    /// <summary>Metadata key on the picture holding the name of the file it came from.</summary>
+    private const string FileNameKey = "file-name";
+
+    /// <summary>The share of each side "Crop edges" takes off.</summary>
+    private const float CropMargin = 0.1f;
+
+    private static readonly (string Id, string Label)[] Tools =
+    [
+        ("select", "Select"),
+        ("draw", "Pen"),
+        ("arrow", "Arrow"),
+        ("rect", "Box"),
+        ("ellipse", "Circle"),
+        ("highlight", "Highlight"),
+        ("text", "Text"),
+        ("eraser", "Eraser"),
+    ];
+
+    private static readonly string[] Palette = ["#dc2626", "#ea580c", "#16a34a", "#2563eb", "#111827"];
+
+    protected override void OnInitialized()
+    {
+        _document.UpdateLayer(_document.Layers[0].Id, p => p with { Name = "Image" });
+        _imageLayer = _document.Layers[0].Id;
+        _annotationLayer = _document.AddLayer("Annotations").Id;
+    }
+
+    // What the eraser leaves is a mask over the annotations, not an annotation of its own.
+    private int AnnotationCount
+        => _document.TryGetLayer(_annotationLayer, out BinkLayer? layer) ? layer.Elements.Count(e => e is not BinkStroke { IsEraser: true }) : 0;
+
+    /// <summary>The picture being annotated, read from the document so it stays true through undo and redo.</summary>
+    private BinkImageElement? Picture
+        => _document.TryGetLayer(_imageLayer, out BinkLayer? layer) ? layer.Elements.OfType<BinkImageElement>().FirstOrDefault() : null;
+
+    private bool PictureHidden => _document.TryGetLayer(_imageLayer, out BinkLayer? layer) && !layer.IsVisible;
+
+    // Read from the picture in the document rather than remembered when it was placed, so it stays true when undo
+    // or redo swaps the picture back.
+    private string? ImageInfo
+        => Picture is { } image
+            ? $"{image.Metadata?.GetValueOrDefault(FileNameKey) ?? "Picture"}: {image.Source.Width} by {image.Source.Height} pixels"
+              + (image.Crop is { } crop ? $", cropped to {crop.Width:0} by {crop.Height:0}" : null)
+            : null;
+
+    private async Task OnReadyAsync()
+    {
+        if (!_document.IsEmpty) return;
+        await LoadSampleAsync();
+        // The picture the page opens with is the starting point, not an edit: undo should not take it away.
+        _canvas?.History.Clear();
+        StateHasChanged();
+    }
+
+    private void ClearAnnotations()
+    {
+        if (!_document.TryGetLayer(_annotationLayer, out BinkLayer? layer)) return;
+        _document.RemoveElements(layer.Elements.Select(e => e.Id).ToArray());
+        _canvas?.Refresh();
+    }
+
+    private void SelectTool(string id)
+    {
+        _toolId = id;
+        BinkColor color = BinkColor.Parse(_color);
+        _shapeStyle = new BinkShapeStyle { StrokeColor = color, StrokeWidth = 3f };
+        _brush = new BinkPenBrush { Width = 4f, Color = color };
+        _tool = id switch
+        {
+            "select" => new BinkSelectTool(),
+            "draw" => new BinkDrawTool(),
+            "rect" => new BinkShapeTool(BinkShapeKind.Rectangle),
+            "ellipse" => new BinkShapeTool(BinkShapeKind.Ellipse),
+            "highlight" => new BinkShapeTool(BinkShapeKind.Highlight),
+            "text" => new BinkTextTool { Style = BinkTextStyle.Default with { FontSize = 18f, Color = color } },
+            // A mask, so it can hide part of anything on its layer, and nothing it erases is lost: undo takes the mask away.
+            "eraser" => new BinkEraserTool { Mode = BinkEraserMode.Pixel, Radius = 14f },
+            _ => new BinkShapeTool(BinkShapeKind.Arrow),
+        };
+    }
+
+    private void SetColor(string color)
+    {
+        _color = color;
+        SelectTool(_toolId);
+    }
+
+    private void TogglePicture()
+    {
+        bool hidden = PictureHidden;
+        _document.UpdateLayer(_imageLayer, p => p with { IsVisible = hidden });
+        _canvas?.Refresh();
+    }
+
+    /// <summary>
+    /// Crops a margin off every side of the picture, or removes the crop. The frame shrinks or grows with it, so the
+    /// part still shown stays exactly where it was under the annotations.
+    /// </summary>
+    private void ToggleCrop()
+    {
+        if (Picture is not { Source: { Width: > 0, Height: > 0 } source } picture) return;
+        BinkRect full = picture.Crop is { } crop ? Uncropped(picture.Rect, crop, source) : picture.Rect;
+        if (picture.Crop is not null)
+        {
+            _document.ReplaceElement(picture with { Crop = null, Rect = full });
+        }
+        else
+        {
+            var kept = new BinkRect(source.Width * CropMargin, source.Height * CropMargin, source.Width * (1 - 2 * CropMargin), source.Height * (1 - 2 * CropMargin));
+            var shown = new BinkRect(full.X + full.Width * CropMargin, full.Y + full.Height * CropMargin, full.Width * (1 - 2 * CropMargin), full.Height * (1 - 2 * CropMargin));
+            _document.ReplaceElement(picture with { Crop = kept, Rect = shown });
+        }
+        _canvas?.Refresh();
+    }
+
+    /// <summary>The frame the whole picture had, worked back from the part a crop shows.</summary>
+    private static BinkRect Uncropped(BinkRect shown, BinkRect crop, BinkImageSource source)
+    {
+        float scaleX = shown.Width / crop.Width;
+        float scaleY = shown.Height / crop.Height;
+        return new BinkRect(shown.X - crop.X * scaleX, shown.Y - crop.Y * scaleY, source.Width * scaleX, source.Height * scaleY);
+    }
+
+    private async Task OnFileSelected(InputFileChangeEventArgs args)
+    {
+        _error = null;
+        IBrowserFile file = args.File;
+        const long maxBytes = 12 * 1024 * 1024;
+        if (file.Size > maxBytes)
+        {
+            _error = $"That image is {file.Size / 1024 / 1024} MB. Please choose one under 12 MB.";
+            return;
+        }
+
+        try
+        {
+            using var buffer = new MemoryStream();
+            await using (Stream stream = file.OpenReadStream(maxBytes))
+            {
+                await stream.CopyToAsync(buffer);
+            }
+
+            string mediaType = string.IsNullOrWhiteSpace(file.ContentType) ? "image/png" : file.ContentType;
+            var source = BinkImageSource.FromBytes(buffer.ToArray(), mediaType, 0, 0);
+            await PlaceImageAsync(source, file.Name);
+        }
+        catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException)
+        {
+            _error = "That image could not be loaded: " + ex.Message;
+        }
+    }
+
+    private async Task LoadSampleAsync()
+    {
+        // A generated sample keeps the demo self-contained and shows that any PNG works.
+        byte[] png = CreateSampleImage(640, 400);
+        await PlaceImageAsync(BinkImageSource.FromBytes(png, "image/png", 640, 400), "sample.png");
+    }
+
+    private async Task PlaceImageAsync(BinkImageSource source, string name)
+    {
+        if (_canvas is null) return;
+
+        // The browser decodes the picture before the history group opens. A group left open across that round
+        // trip would disable undo until the decode finished, and a stroke drawn meanwhile would be folded into
+        // the "Open image" step.
+        BinkImageSource ready = await _canvas.LoadImageAsync(source);
+
+        // A file the browser cannot decode - not a picture at all, or a format it does not read - comes back without
+        // a size. Placing it would swap the picture for an invisible one.
+        if (ready.Width <= 0 || ready.Height <= 0)
+        {
+            _error = $"{name} could not be opened as a picture in this browser.";
+            return;
+        }
+        _error = null;
+
+        // Swapping the picture is two edits - remove the old one, add the new - but to the person using it it is one
+        // action, so it is one undo step.
+        BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, maxWidth: _document.Settings.Width - 40);
+        BinkRect page = _document.Settings.PageRect;
+        placed = placed with
+        {
+            Rect = placed.Rect.Offset(page.Center - placed.Rect.Center),
+            Description = "Annotated image: " + name,
+            Metadata = new Dictionary<string, string>(StringComparer.Ordinal) { [FileNameKey] = name },
+        };
+        using (_canvas.History.BeginGroup("Open image"))
+        {
+            var existing = _document.Layers.SelectMany(l => l.Elements).OfType<BinkImageElement>().Select(e => e.Id).ToList();
+            if (existing.Count > 0) _document.RemoveElements(existing);
+
+            // The image layer stays locked: a lock keeps tools away, not the application, so annotating cannot move
+            // the picture while the page can still replace it.
+            _document.AddElement(placed, _imageLayer);
+
+            // A picture opened while the image layer was hidden is meant to be seen.
+            if (PictureHidden) _document.UpdateLayer(_imageLayer, p => p with { IsVisible = true });
+        }
+
+        _canvas.Announce("Image added.");
+        _canvas.Refresh();
+
+        // On a phone the picture is wider than the view: show all of it rather than its left edge. A pinch, or Ctrl+0,
+        // still gives 100%.
+        BinkRect content = _document.ContentBounds;
+        if (content.Right > _canvas.ViewSize.X || content.Bottom > _canvas.ViewSize.Y)
+        {
+            _canvas.SetViewport(BinkViewport.Fit(content, _canvas.ViewSize, 8f, maxZoom: 1f));
+        }
+    }
+
+    private static byte[] CreateSampleImage(int width, int height)
+    {
+        byte[] rgba = new byte[width * height * 4];
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                // A soft gradient with a grid, standing in for a screenshot.
+                byte r = (byte)(210 - y * 60 / height);
+                byte g = (byte)(222 - y * 40 / height);
+                byte b = (byte)(240 - x * 30 / width);
+                bool grid = x % 64 == 0 || y % 64 == 0;
+                int o = (y * width + x) * 4;
+                rgba[o] = grid ? (byte)(r - 30) : r;
+                rgba[o + 1] = grid ? (byte)(g - 30) : g;
+                rgba[o + 2] = grid ? (byte)(b - 30) : b;
+                rgba[o + 3] = 255;
+            }
+        }
+        return BinkPngCodec.Encode(rgba, width, height);
+    }
+
+    private static readonly BinkPngExportOptions RasterOptions = new() { Region = BinkExportRegion.Content, Padding = 0f, Scale = 2f };
+
+    private Task ExportPngAsync()
+        => _canvas?.SavePngAsync("annotated.png", RasterOptions) ?? Task.CompletedTask;
+
+    private async Task ExportImageAsync(BinkImageFormat format)
+    {
+        if (_canvas is null) return;
+        _error = null;
+        try
+        {
+            string extension = format == BinkImageFormat.Jpeg ? "jpg" : "webp";
+            await _canvas.SaveImageAsync("annotated." + extension, format, RasterOptions, quality: format == BinkImageFormat.Jpeg ? 0.85 : 0.8);
+        }
+        catch (NotSupportedException)
+        {
+            // Safari has no WebP encoder; rather than a PNG under a WebP name, the canvas says so.
+            _error = $"This browser cannot encode {format} images. Export a PNG or a JPEG instead.";
+        }
+    }
+
+    private Task ExportSvgAsync()
+        => _canvas?.SaveSvgAsync("annotated.svg", new BinkSvgExportOptions { Region = BinkExportRegion.Content, Padding = 0f, IncludeElementDescriptions = true }) ?? Task.CompletedTask;
+}

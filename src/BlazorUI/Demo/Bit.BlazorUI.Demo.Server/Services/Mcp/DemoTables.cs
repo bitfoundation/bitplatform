@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Bit.BlazorUI.Demo.Client.Core.Models;
 
 namespace Bit.BlazorUI.Demo.Server.Services.Mcp;

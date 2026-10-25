@@ -1,4 +1,4 @@
-namespace BitBlazorUI.Legacy {
+﻿namespace BitBlazorUI.Legacy {
     interface BitChartConfiguration extends Chart.ChartConfiguration {
         canvasId: string;
     }

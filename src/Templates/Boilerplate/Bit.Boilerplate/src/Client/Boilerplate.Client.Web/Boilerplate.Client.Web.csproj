@@ -13,13 +13,10 @@
         <WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
         <WasmBuildNative Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">true</WasmBuildNative>
         <!--/-:msbuild-conditional:noEmit -->
-        <ResolveStaticWebAssetsInputsDependsOn>
-            BeforeBuildTasks;
-            $(ResolveStaticWebAssetsInputsDependsOn)
-        </ResolveStaticWebAssetsInputsDependsOn>
 
         <WasmApplicationEnvironmentName>$(Environment)</WasmApplicationEnvironmentName>
         <WasmEnableWebcil Condition="'$(Environment)' == 'Development'">false</WasmEnableWebcil>
+        <MetricsSupport>true</MetricsSupport>
     </PropertyGroup>
 
     <ItemGroup>
@@ -53,8 +50,17 @@
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+    <!-- Lazy loading can cause trouble in AOT builds, and next to the size of an AOT app it saves little. -->
+    <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' AND '$(PublishAot)' != 'true' ">
+        <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
+        <BlazorWebAssemblyLazyLoad Condition=" '$(Environment)' != 'Development' " Include="Bit.BevTools.wasm" />
+    </ItemGroup>
+
+    <Target Name="BeforeBuildTasks" BeforeTargets="ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <CallTarget Targets="BuildCssFiles" />
+        <ItemGroup>
+            <Content Include="**\*.razor.css" Exclude="@(Content);@(None);bin\**;obj\**" />
+        </ItemGroup>
     </Target>
 
     <Target Name="BuildCssFiles">

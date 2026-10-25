@@ -10,16 +10,37 @@
 :root[bit-theme="fluent-dark"],
 :root [bit-theme="fluent-dark"] {
     //spacing - base unit (length) times density (unitless); spacing() multiplies both.
+    //A token derived from the two - the insets below and the density-aware sizes of sizes.fluent.scss -
+    //is never computed here: a custom property is computed where it is declared and inherited as a
+    //length, so one declared on :root would hand every descendant the document's length, and a density
+    //or spacing unit re-valued lower in the tree (a BitThemeProvider, ApplyBitThemeAsync on the body, or
+    //plain CSS on any element) would never reach it. A preset declares only its unitless
+    //--<token>-steps, which inherit unchanged, and leaves the token itself `initial`; its alias in
+    //theme-variables.scss reads var(--<token>, calc(unit * density * var(--<token>-steps))) where a
+    //component uses it, against the density and the unit in effect there. A value set for the token
+    //itself - by a theme, by app CSS, or by a preset that wants an absolute length - wins over that
+    //fallback, and the `initial` keeps one set in an enclosing scope from leaking into this preset.
     --bit-spa-scaling-factor: 0.5rem;
     --bit-layout-density-scale: 1;
     //the base inset of a dialog surface - the one padding a design system decides for dialog
     //headers, bodies and footers (Fluent 24px, Material 24px, Cupertino alerts 20px).
-    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-spa-dialog-steps: 3; //24px
+    --bit-spa-dialog: initial;
+    //the inset of a card and of each of its parts, per size class.
+    --bit-spa-card-sm-steps: 1.5; //12px
+    --bit-spa-card-md-steps: 2; //16px
+    --bit-spa-card-lg-steps: 3; //24px
+    --bit-spa-card-sm: initial;
+    --bit-spa-card-md: initial;
+    --bit-spa-card-lg: initial;
     //layout - how a dialog/message-box footer lays out its action buttons. Fluent and Material run
     //them in a row hugging the trailing edge; Cupertino stacks them full-width and centred.
     --bit-layout-dialog-actions-direction: row;
     --bit-layout-dialog-actions-justify: flex-end;
     --bit-layout-dialog-actions-align: center;
+    //how a dialog's title and message are aligned - to the start under Fluent and Material,
+    //centred over Cupertino's alerts.
+    --bit-layout-dialog-text-align: start;
     //zindex - the layering contract, top to bottom:
     //  snackbar (1400) - notifications, above everything.
     //  callout  (1300) - floating popup surfaces (dropdown/date-picker callouts, panel content).
@@ -55,15 +76,26 @@
     --bit-shp-radius-2xl: 1rem; //16px
     --bit-shp-radius-full: 9999px;
 
+    //shape - the corners of the selection indicator of a tab strip (--bit-shp-radius-tab-indicator), which
+    //Fluent draws square, are declared with the control radii in family-tokens.scss: an inline overlay of the
+    //control radius re-declares them with the rest.
+
+    //shape - the corners of a linear progress track and its bar, which Fluent draws square.
+    --bit-shp-radius-progress: 0;
+
     //focus ring (a11y) - width is the visible thickness, offset is the gap between the element and the ring.
     --bit-shp-focus-ring-width: 0.125rem; //2px
     --bit-shp-focus-ring-offset: 0.125rem; //2px
 }
 
-//global focus shadow used by the focus-ring mixin and the .bit-css-shd-focus utility.
+//global focus shadow: the ring of every focused control that has not been given a focus color of its own - the default
+//focus-ring() call, every focus-ring-own() call while its component's color is unset, and the .bit-css-shd-focus utility.
 //Inner ring uses the page background (--bit-clr-bg-pri, not the focus-state background token) to create a separator between the element and the colored ring (WCAG 2.4.11/2.4.13).
-//The mixin sets --bit-focus-ring-color/--bit-focus-ring-offset locally on the focused element so per-call overrides apply.
-//In forced-colors (High Contrast) mode box-shadows are stripped entirely; the focus-ring mixin restores a real Highlight outline there instead.
+//The var()s below are substituted here rather than where the token is used, so a ring in a color of its own - a focus-ring()
+//call given a color or an offset, a focus-ring-own() call whose color is set - is composed on the element instead, from the
+//same recipe (focus-ring-layers in functions.scss). For the same reason BitThemeProvider and BitThemeManager.ApplyBitThemeAsync
+//re-declare this token wherever they re-value one of its inputs (BitThemeMapper.AugmentWithFocusRingReSubstitution).
+//In forced-colors (High Contrast) mode box-shadows are stripped entirely; the focus-ring mixins restore a real Highlight outline there instead.
 //
 //It is a composite of four other tokens, so - exactly as in semantic-tokens.scss and
 //family-tokens.scss - it carries a scoped-preset twin: a custom property's var() references are

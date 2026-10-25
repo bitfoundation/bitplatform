@@ -1,0 +1,129 @@
+﻿// The triggers the instrumentation pages press - the one script a page needs beyond the site kit
+// (theme.js and site.js, shared by every Utilities demo). A plain script rather than a module: the
+// pages call it by name through IJSRuntime.
+//
+// Each trigger does the thing the browser script instruments - throws, rejects, fetches, blocks the main
+// thread, writes to the console - exactly as app code would, so what the reader then sees on the Live
+// telemetry feed is what Belemetry records from a real app, not a simulation of it.
+
+window.blDemo = {
+    // Thrown from a timer so it reaches window.onerror as an uncaught error rather than being
+    // caught by the .NET interop call that triggered it.
+    throwError: function (message) {
+        setTimeout(function () { throw new TypeError(message || 'A deliberate error from the demo page'); }, 0);
+    },
+
+    // An error loop: the same TypeError from the same line, as a timer or a render loop would throw it. The script
+    // records it once per duplicate window (Errors.DuplicateWindow), not once per throw.
+    throwErrorLoop: function (message, count) {
+        for (let i = 0; i < (count || 20); i++) {
+            setTimeout(function () { throw new TypeError(message || 'A deliberate error loop from the demo page'); }, 0);
+        }
+    },
+
+    stats: function () {
+        return window.BitBelemetry ? window.BitBelemetry.getStats() : null;
+    },
+
+    rejectPromise: function (message) {
+        Promise.reject(new Error(message || 'A deliberate unhandled rejection from the demo page'));
+    },
+
+    // Plain fetch, no Blazor HttpClient: the script's fetch instrumentation records a client span
+    // and, for same-origin targets, adds a traceparent header the server answers with.
+    fetch: async function (url) {
+        const started = performance.now();
+        try {
+            const response = await fetch(url, { cache: 'no-store' });
+            const text = await response.text();
+            return { status: response.status, body: text.slice(0, 2000), ms: Math.round(performance.now() - started) };
+        } catch (e) {
+            return { status: 0, body: String(e), ms: Math.round(performance.now() - started) };
+        }
+    },
+
+    // A fetch the page gives up on, as a superseded search or a navigation would: aborted after `afterMs`, before the
+    // slow answer arrives. The span keeps error.type = AbortError but no error status - the app cancelled it, the
+    // dependency did not fail.
+    fetchAbort: async function (url, afterMs) {
+        const started = performance.now();
+        const controller = new AbortController();
+        const timer = setTimeout(function () { controller.abort(); }, afterMs || 300);
+        try {
+            const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+            return { status: response.status, body: await response.text(), ms: Math.round(performance.now() - started) };
+        } catch (e) {
+            return { status: 0, body: (e && e.name) || String(e), ms: Math.round(performance.now() - started) };
+        } finally {
+            clearTimeout(timer);
+        }
+    },
+
+    xhr: function (url) {
+        return new Promise(function (resolve) {
+            const started = performance.now();
+            const request = new XMLHttpRequest();
+            request.open('GET', url);
+            request.onloadend = function () {
+                resolve({ status: request.status, body: (request.responseText || '').slice(0, 2000), ms: Math.round(performance.now() - started) });
+            };
+            request.send();
+        });
+    },
+
+    // Blocks the main thread for longer than 50 ms, which is what the Long Tasks API reports.
+    longTask: function (ms) {
+        const end = performance.now() + (ms || 120);
+        while (performance.now() < end) { /* busy */ }
+    },
+
+    console: function (level, message) {
+        (console[level] || console.log).call(console, message);
+    },
+
+    // A layout shift for CLS: an element pushed into the flow above content the reader sees.
+    shift: function (id) {
+        const target = document.getElementById(id);
+        if (!target) return;
+        const spacer = document.createElement('div');
+        spacer.style.height = '48px';
+        target.prepend(spacer);
+        setTimeout(function () { spacer.remove(); }, 1500);
+    },
+
+    context: function () {
+        return window.BitBelemetry ? window.BitBelemetry.getContext() : null;
+    },
+
+    // A browser-side processor, as an app would add one: it tags every record with the release channel, and drops the
+    // clicks on one deliberately noisy button. addProcessor returns the function that removes it, kept here so the
+    // Processors page can take it out again - the module keeps it across client-side navigation until then.
+    addProcessor: function () {
+        if (!window.BitBelemetry || window.blDemo._removeProcessor) return !!window.blDemo._removeProcessor;
+        window.blDemo._removeProcessor = window.BitBelemetry.addProcessor(function (record) {
+            if (record.eventName === 'browser.user_interaction' && record.attributes['target.name'] === 'demo.processors.noise') return false;
+            record.attributes['app.release.channel'] = 'beta';
+        });
+        return true;
+    },
+
+    removeProcessor: function () {
+        if (window.blDemo._removeProcessor) window.blDemo._removeProcessor();
+        window.blDemo._removeProcessor = null;
+        return false;
+    },
+
+    hasProcessor: function () {
+        return !!window.blDemo._removeProcessor;
+    },
+
+    _removeProcessor: null,
+
+    // The Performance Timeline entry types this browser reports. The script measures a web vital or a long task only
+    // when its entry type is here, so the page can say which of its buttons record nothing in this browser.
+    entryTypes: function () {
+        return typeof PerformanceObserver !== 'undefined' && PerformanceObserver.supportedEntryTypes
+            ? Array.from(PerformanceObserver.supportedEntryTypes)
+            : [];
+    },
+};

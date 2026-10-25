@@ -1,0 +1,449 @@
+﻿@page "/e2e/infinite-scrolling"
+
+<PageTitle>BitInfiniteScrolling E2E</PageTitle>
+
+<h1>BitInfiniteScrolling</h1>
+
+<style>
+    .isc-box { height: 200px; border: 1px solid #ccc; }
+    .isc-item { padding: 8px; border-bottom: 1px solid #eee; height: 20px; }
+    .isc-h-box { width: 400px; border: 1px solid #ccc; }
+    .isc-h-item { flex: 0 0 auto; width: 80px; padding: 8px; border: 1px solid #eee; }
+</style>
+
+<p>Log: <span id="isc-log">@string.Join(",", _log)</span></p>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitInfiniteScrolling Id="isc-basic" TItem="int" ItemsProvider="LoadBasic" Class="isc-box">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+    <span id="basic-calls">@_basicCalls</span>
+    <span id="basic-last">@_basicLast</span>
+</E2ESection>
+
+<E2ESection Id="paged" Title="PageSize & states">
+    <BitInfiniteScrolling Id="isc-paged" TItem="int" ItemsProvider="LoadPagedTracked" PageSize="15" Class="isc-box" EndMessage="You have reached the end of the list.">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+    <span id="paged-last">@_pagedLast</span>
+    <span id="paged-calls">@_pagedCalls</span>
+    <BitInfiniteScrolling Id="isc-empty" TItem="int" ItemsProvider="LoadEmpty" Class="isc-box" EmptyMessage="Nothing to show here.">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+    <BitInfiniteScrolling Id="isc-empty-default" TItem="int" ItemsProvider="LoadEmpty" Class="isc-box">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+    <BitInfiniteScrolling Id="isc-no-end" TItem="int" ItemsProvider="LoadPaged" PageSize="15" Class="isc-box">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitInfiniteScrolling Id="isc-templates" TItem="int" ItemsProvider="LoadSlowPaged" PageSize="15" Class="isc-box">
+        <ItemTemplate Context="item">
+            <div class="isc-item tpl-item">Templated @item</div>
+        </ItemTemplate>
+        <LoadingTemplate>
+            <div class="tpl-loading">Fetching...</div>
+        </LoadingTemplate>
+        <EndTemplate>
+            <div class="tpl-end">--- The end ---</div>
+        </EndTemplate>
+    </BitInfiniteScrolling>
+    <button id="btn-release-slow" @onclick="ReleaseSlow">Release the slow page</button>
+    <BitInfiniteScrolling Id="isc-empty-template" TItem="int" ItemsProvider="LoadEmpty" Class="isc-box">
+        <ItemTemplate Context="item"><div class="isc-item">Item @item</div></ItemTemplate>
+        <EmptyTemplate><div class="tpl-empty">--- No item ---</div></EmptyTemplate>
+    </BitInfiniteScrolling>
+</E2ESection>
+
+<E2ESection Id="manual" Title="Manual">
+    <BitInfiniteScrolling Id="isc-manual" TItem="int" ItemsProvider="LoadManualTracked" Manual PageSize="10" Class="isc-box"
+                          LoadMoreText="Load more items" EndMessage="No more items to load.">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+    <span id="manual-calls">@_manualCalls</span>
+    <BitInfiniteScrolling Id="isc-autolimit" TItem="int" ItemsProvider="LoadAutoLimit" AutoLoadLimit="2" PageSize="10" Class="isc-box" EndMessage="No more items to load.">
+        <ItemTemplate Context="item"><div class="isc-item">Item @item</div></ItemTemplate>
+        <LoadMoreTemplate><b class="tpl-more">+ Show 10 more</b></LoadMoreTemplate>
+    </BitInfiniteScrolling>
+    <span id="autolimit-calls">@_autoLimitCalls</span>
+</E2ESection>
+
+<E2ESection Id="error" Title="Error handling">
+    <BitInfiniteScrolling Id="isc-error" TItem="int" ItemsProvider="LoadFaulty" PageSize="10" Class="isc-box"
+                          RetryText="Try again" ErrorMessage="Something went wrong while loading the items." EndMessage="No more items to load."
+                          OnError="@((Exception e) => Log($"error:{e.Message}"))">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+    <span id="faulty-calls">@_faultyCalls</span>
+    <BitInfiniteScrolling @ref="_errorTemplateRef" Id="isc-error-template" TItem="int" ItemsProvider="LoadFaultyTemplate" PageSize="10" Class="isc-box"
+                          ErrorMessage="Announced failure" EndMessage="No more items to load.">
+        <ItemTemplate Context="item"><div class="isc-item">Item @item</div></ItemTemplate>
+        <ErrorTemplate Context="error">
+            <div class="tpl-error"><span>@error.Message</span> <button class="tpl-retry" @onclick="() => _errorTemplateRef!.LoadMoreAsync()">Retry</button></div>
+        </ErrorTemplate>
+    </BitInfiniteScrolling>
+</E2ESection>
+
+<E2ESection Id="reversed" Title="Reversed">
+    <BitInfiniteScrolling Id="isc-reversed" TItem="ChatMessage" ItemsProvider="LoadMessages" Reversed Preload PageSize="10" Class="isc-box"
+                          ItemKey="@(m => m.Id)" LoadingMessage="Loading older messages..." EndMessage="This is the beginning of the conversation.">
+        <div class="isc-item msg" data-id="@context.Id">@context.Text <input class="note" aria-label="Note for @context.Text" /></div>
+    </BitInfiniteScrolling>
+</E2ESection>
+
+<E2ESection Id="horizontal" Title="Horizontal">
+    <BitInfiniteScrolling Id="isc-horizontal" TItem="int" ItemsProvider="LoadHorizontal" Horizontal PageSize="10" Class="isc-h-box" EndMessage="The end."
+                          LastElementWidth="12px">
+        <div class="isc-h-item">Item @context</div>
+    </BitInfiniteScrolling>
+</E2ESection>
+
+<E2ESection Id="scroller" Title="Scroller">
+    <div id="isc-outer" style="height:200px;overflow:auto;border:1px solid #ccc">
+        <div style="padding:4px">Header of the scroller</div>
+        <BitInfiniteScrolling Id="isc-scroller" TItem="int" ItemsProvider="LoadScroller" Preload ScrollerSelector="#isc-outer" RootMargin="150px"
+                              LastElementHeight="40px" LastElementClass="custom-last" LastElementStyle="background: rgb(1, 2, 3)" Threshold="0.5m" PageSize="10"
+                              EndMessage="No more items to load.">
+            <div class="isc-item">Item @context</div>
+        </BitInfiniteScrolling>
+    </div>
+    <span id="scroller-calls">@_scrollerCalls</span>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events & progress">
+    <BitInfiniteScrolling @ref="_progressRef" Id="isc-events" TItem="int" ItemsProvider="LoadCatalog" PageSize="10" Class="isc-box"
+                          OnEnd="@(() => Log("end"))" OnItemsLoaded="@((IReadOnlyList<int> page) => Log($"loaded:{page.Count}:{page.FirstOrDefault()}"))"
+                          EndMessage="No more items to load.">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+    <button id="btn-read-progress" @onclick="@(() => _progress = $"{_progressRef!.Items.Count}/{_progressRef.TotalCount}/{_progressRef.HasMore}")">Read progress</button>
+    <span id="progress">@_progress</span>
+</E2ESection>
+
+<E2ESection Id="members" Title="Public members">
+    <BitInfiniteScrolling @ref="_membersRef" Id="isc-members" TItem="int" ItemsProvider="LoadMembers" PageSize="10" MaxItems="20" Class="isc-box"
+                          EndMessage="No more items to load.">
+        <div class="isc-item" data-item="@context">Item @context</div>
+    </BitInfiniteScrolling>
+    <button id="btn-m-refresh" @onclick="() => _membersRef!.RefreshDataAsync()">RefreshDataAsync</button>
+    <button id="btn-m-append" @onclick="@(() => _membersRef!.AppendItemsAsync([1000, 1001]))">AppendItemsAsync</button>
+    <button id="btn-m-prepend" @onclick="@(() => _membersRef!.PrependItemsAsync([-2, -1]))">PrependItemsAsync</button>
+    <button id="btn-m-set" @onclick="@(() => _membersRef!.SetItemsAsync([7, 8, 9]))">SetItemsAsync</button>
+    <button id="btn-m-remove" @onclick="RemoveMember">RemoveItemAsync</button>
+    <button id="btn-m-top" @onclick="() => _membersRef!.ScrollToTopAsync()">ScrollToTopAsync</button>
+    <button id="btn-m-bottom" @onclick="() => _membersRef!.ScrollToBottomAsync()">ScrollToBottomAsync</button>
+    <button id="btn-m-offset" @onclick="() => _membersRef!.ScrollToOffsetAsync(100)">ScrollToOffsetAsync</button>
+    <button id="btn-m-read" @onclick="ReadMembers">Read</button>
+    <span id="members-state">@_membersState</span>
+    <span id="members-calls">@_membersCalls</span>
+    <span id="members-last">@_membersLast</span>
+</E2ESection>
+
+<E2ESection Id="reset" Title="ResetKey">
+    <button id="btn-filter-even" @onclick="@(() => _filter = "even")">Even</button>
+    <button id="btn-filter-odd" @onclick="@(() => _filter = "odd")">Odd</button>
+    <BitInfiniteScrolling Id="isc-reset" TItem="int" ItemsProvider="@(r => LoadFiltered(r, _filter))" ResetKey="_filter" PageSize="10" Class="isc-box"
+                          EndMessage="No more items to load.">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+</E2ESection>
+
+<E2ESection Id="loading" Title="Loading state">
+    <BitInfiniteScrolling @ref="_gatedRef" Id="isc-gated" TItem="int" ItemsProvider="LoadGated" PageSize="5" Manual Class="isc-box"
+                          LoadingMessage="Loading the page..." LoadedMessage="{0} more items loaded, {1} in total." EndMessage="All loaded.">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+    <button id="btn-release-gated" @onclick="ReleaseGated">Release the gated page</button>
+    <button id="btn-read-gated" @onclick="@(() => _gatedState = $"{_gatedRef!.IsLoading}/{_gatedRef.Items.Count}")">Read</button>
+    <span id="gated-state">@_gatedState</span>
+</E2ESection>
+
+<E2ESection Id="feed" Title="Accessibility">
+    <button id="before-feed">Before the feed</button>
+    <BitInfiniteScrolling Id="isc-feed" TItem="int" ItemsProvider="LoadFeed" Feed Manual PageSize="5" Class="isc-box"
+                          AriaLabel="Products" ItemAriaLabel="@(item => $"Product {item}")" LoadMoreText="Load more products"
+                          LoadedMessage="{0} more products loaded, {1} in total." EndMessage="All products are loaded.">
+        <div class="product"><b>Product @context</b> <input class="feed-input" aria-label="Input @context" /></div>
+    </BitInfiniteScrolling>
+    <button id="after-feed">After the feed</button>
+    <BitInfiniteScrolling Id="isc-named" TItem="int" ItemsProvider="LoadPaged" PageSize="15" Class="isc-box" AriaLabel="Named list" TabIndex="0">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="_params">
+        <BitInfiniteScrolling Id="isc-cas" TItem="int" ItemsProvider="LoadManual" Class="isc-box">
+            <div class="isc-item">Item @context</div>
+        </BitInfiniteScrolling>
+        <BitInfiniteScrolling Id="isc-cas-own" TItem="int" ItemsProvider="LoadManual" LoadMoreText="Show me more" Class="isc-box">
+            <div class="isc-item">Item @context</div>
+        </BitInfiniteScrolling>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <BitInfiniteScrolling Id="isc-styled" TItem="int" ItemsProvider="LoadSlowPaged2" PageSize="15" ItemKey="@(i => i)"
+                          Style="max-height:200px;border:3px solid rgb(1, 2, 3)" Class="isc-root-class"
+                          Classes="@(new() { Root = "c-root", Item = "c-item", LastElement = "c-last", Loading = "c-loading", Spinner = "c-spinner", End = "c-end", Button = "c-button" })"
+                          Styles="@(new() { Root = "padding-top: 2px", Item = "color: rgb(10, 20, 30)", LastElement = "margin-top: 3px", Loading = "color: rgb(40, 50, 60)",
+                                            Spinner = "border-top-color: rgb(255, 0, 0)", End = "color: rgb(70, 80, 90)" })"
+                          EndMessage="No more items to load.">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+    <button id="btn-release-slow2" @onclick="ReleaseSlow2">Release the styled page</button>
+    <BitInfiniteScrolling Id="isc-styled-empty" TItem="int" ItemsProvider="LoadEmpty" Class="isc-box"
+                          Classes="@(new() { Empty = "c-empty" })" Styles="@(new() { Empty = "color: rgb(5, 5, 5)" })">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+    <BitInfiniteScrolling Id="isc-styled-error" TItem="int" ItemsProvider="LoadAlwaysFails" Class="isc-box" Manual
+                          Classes="@(new() { Error = "c-error", Button = "c-button" })" Styles="@(new() { Error = "padding-top: 9px", Button = "padding-top: 11px" })">
+        <div class="isc-item">Item @context</div>
+    </BitInfiniteScrolling>
+    <div style="--bit-InfiniteScrolling-status-color: rgb(1, 1, 1); --bit-InfiniteScrolling-status-font-size: 21px; --bit-InfiniteScrolling-status-padding: 13px;
+                --bit-InfiniteScrolling-status-gap: 17px; --bit-InfiniteScrolling-status-text-align: right; --bit-InfiniteScrolling-error-color: rgb(2, 2, 2);
+                --bit-InfiniteScrolling-spinner-size: 33px; --bit-InfiniteScrolling-spinner-color: rgb(3, 3, 3); --bit-InfiniteScrolling-spinner-track-color: rgb(4, 4, 4);
+                --bit-InfiniteScrolling-button-color: rgb(5, 5, 5); --bit-InfiniteScrolling-button-hover-color: rgb(6, 6, 6);
+                --bit-InfiniteScrolling-button-background: rgb(7, 7, 7); --bit-InfiniteScrolling-button-hover-background: rgb(8, 8, 8);
+                --bit-InfiniteScrolling-button-radius: 9px; --bit-InfiniteScrolling-button-padding: 10px 12px; --bit-InfiniteScrolling-item-focus-color: rgb(0, 200, 0)">
+        <BitInfiniteScrolling Id="isc-vars-loading" TItem="int" ItemsProvider="LoadNever" Class="isc-box">
+            <div class="isc-item">Item @context</div>
+        </BitInfiniteScrolling>
+        <BitInfiniteScrolling Id="isc-vars-manual" TItem="int" ItemsProvider="LoadManual" Manual PageSize="10" Class="isc-box" EndMessage="End">
+            <div class="isc-item">Item @context</div>
+        </BitInfiniteScrolling>
+        <BitInfiniteScrolling Id="isc-vars-error" TItem="int" ItemsProvider="LoadAlwaysFails" Class="isc-box" Manual>
+            <div class="isc-item">Item @context</div>
+        </BitInfiniteScrolling>
+        <BitInfiniteScrolling Id="isc-vars-feed" TItem="int" ItemsProvider="LoadFeed" Feed Manual PageSize="5" Class="isc-box" AriaLabel="Vars feed">
+            <div class="product">Product @context</div>
+        </BitInfiniteScrolling>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitInfiniteScrolling Id="isc-rtl" Dir="BitDir.Rtl" TItem="int" ItemsProvider="LoadPaged" PageSize="15" Class="isc-box" EndMessage="به انتهای لیست رسیدید.">
+        <div class="isc-item">مورد @context</div>
+    </BitInfiniteScrolling>
+    <BitInfiniteScrolling Id="isc-rtl-h" Dir="BitDir.Rtl" TItem="int" ItemsProvider="LoadHorizontal" Horizontal PageSize="10" Class="isc-h-box" EndMessage="پایان">
+        <div class="isc-h-item">مورد @context</div>
+    </BitInfiniteScrolling>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitInfiniteScrolling Id="isc-mounted" TItem="int" ItemsProvider="LoadNever" Class="isc-box">
+            <div class="isc-item">Item @context</div>
+        </BitInfiniteScrolling>
+    }
+    <BitInfiniteScrolling Id="isc-preload" TItem="int" ItemsProvider="LoadPaged" Preload PageSize="15" Class="isc-box">
+        <div class="isc-item">Preloaded @context</div>
+    </BitInfiniteScrolling>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public record ChatMessage(int Id, string Text);
+
+    private readonly List<string> _log = [];
+    private int _basicCalls;
+    private string _basicLast = "-";
+    private int _pagedCalls;
+    private string _pagedLast = "-";
+    private int _manualCalls;
+    private int _autoLimitCalls;
+    private int _faultyCalls;
+    private bool _faultyFailed;
+    private bool _faultyTemplateFailed;
+    private int _scrollerCalls;
+    private int _membersCalls;
+    private string _membersLast = "-";
+    private string _membersState = "-";
+    private string _progress = "-";
+    private string _gatedState = "-";
+    private string _filter = "even";
+    private bool _mounted = true;
+    private TaskCompletionSource _slowGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private TaskCompletionSource _slowGate2 = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private TaskCompletionSource _gatedGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private BitInfiniteScrolling<int>? _errorTemplateRef;
+    private BitInfiniteScrolling<int>? _progressRef;
+    private BitInfiniteScrolling<int>? _membersRef;
+    private BitInfiniteScrolling<int>? _gatedRef;
+
+    private readonly BitInfiniteScrollingParams[] _params =
+    [
+        new() { Manual = true, PageSize = 10, LoadMoreText = "Cascaded more", EndMessage = "Cascaded end", LoadingMessage = "Cascaded loading" }
+    ];
+
+    private void Log(string entry) => _log.Add(entry);
+
+    private static IEnumerable<int> Range(int skip, int count, int total) => Enumerable.Range(skip, Math.Max(0, Math.Min(count, total - skip)));
+
+    private ValueTask<IEnumerable<int>> LoadBasic(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        _basicCalls++;
+        _basicLast = $"{r.Skip}:{r.Count}";
+        StateHasChanged();
+        return ValueTask.FromResult(Range(r.Skip, 20, 200));
+    }
+
+    private static ValueTask<IEnumerable<int>> LoadPaged(BitInfiniteScrollingItemsProviderRequest r) => ValueTask.FromResult(Range(r.Skip, r.Count, 40));
+
+    private ValueTask<IEnumerable<int>> LoadPagedTracked(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        _pagedCalls++;
+        _pagedLast = $"{r.Skip}:{r.Count}";
+        StateHasChanged();
+        return ValueTask.FromResult(Range(r.Skip, r.Count, 40));
+    }
+
+    private static ValueTask<IEnumerable<int>> LoadEmpty(BitInfiniteScrollingItemsProviderRequest r) => ValueTask.FromResult<IEnumerable<int>>([]);
+
+    private static async ValueTask<IEnumerable<int>> LoadNever(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        await Task.Delay(Timeout.Infinite, r.CancellationToken);
+        return [];
+    }
+
+    private async ValueTask<IEnumerable<int>> LoadSlowPaged(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        await _slowGate.Task;
+        return Range(r.Skip, r.Count, 30);
+    }
+
+    private void ReleaseSlow()
+    {
+        var gate = _slowGate;
+        _slowGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        gate.TrySetResult();
+    }
+
+    private async ValueTask<IEnumerable<int>> LoadSlowPaged2(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        await _slowGate2.Task;
+        return Range(r.Skip, r.Count, 30);
+    }
+
+    private void ReleaseSlow2()
+    {
+        var gate = _slowGate2;
+        _slowGate2 = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        gate.TrySetResult();
+    }
+
+    private static ValueTask<IEnumerable<int>> LoadManual(BitInfiniteScrollingItemsProviderRequest r) => ValueTask.FromResult(Range(r.Skip, r.Count, 30));
+
+    private ValueTask<IEnumerable<int>> LoadManualTracked(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        _manualCalls++;
+        StateHasChanged();
+        return ValueTask.FromResult(Range(r.Skip, r.Count, 30));
+    }
+
+    private ValueTask<IEnumerable<int>> LoadAutoLimit(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        _autoLimitCalls++;
+        StateHasChanged();
+        return ValueTask.FromResult(Range(r.Skip, r.Count, 50));
+    }
+
+    private ValueTask<IEnumerable<int>> LoadFaulty(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        _faultyCalls++;
+        StateHasChanged();
+        if (r.Skip == 10 && _faultyFailed is false)
+        {
+            _faultyFailed = true;
+            throw new InvalidOperationException("Server down");
+        }
+
+        return ValueTask.FromResult(Range(r.Skip, r.Count, 20));
+    }
+
+    private ValueTask<IEnumerable<int>> LoadFaultyTemplate(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        if (r.Skip == 10 && _faultyTemplateFailed is false)
+        {
+            _faultyTemplateFailed = true;
+            throw new InvalidOperationException("Template failure");
+        }
+
+        return ValueTask.FromResult(Range(r.Skip, r.Count, 20));
+    }
+
+    private static ValueTask<IEnumerable<int>> LoadAlwaysFails(BitInfiniteScrollingItemsProviderRequest r) => throw new InvalidOperationException("Always fails");
+
+    // The newest message is 39; each page goes 10 further back in time, and is returned oldest first.
+    private static ValueTask<IEnumerable<ChatMessage>> LoadMessages(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        var newest = 39 - r.Skip;
+        var page = Enumerable.Range(0, Math.Max(0, Math.Min(r.Count, newest + 1))).Select(i => newest - i).Reverse().Select(i => new ChatMessage(i, $"Message {i}"));
+        return ValueTask.FromResult(page);
+    }
+
+    private static ValueTask<IEnumerable<int>> LoadHorizontal(BitInfiniteScrollingItemsProviderRequest r) => ValueTask.FromResult(Range(r.Skip, r.Count, 40));
+
+    private ValueTask<IEnumerable<int>> LoadScroller(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        _scrollerCalls++;
+        StateHasChanged();
+        return ValueTask.FromResult(Range(r.Skip, r.Count, 40));
+    }
+
+    private static ValueTask<IEnumerable<int>> LoadCatalog(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        IEnumerable<int> result = new BitInfiniteScrollingItemsProviderResult<int>(Range(r.Skip, r.Count, 25), hasMore: r.Skip + r.Count < 25, totalCount: 25);
+        return ValueTask.FromResult(result);
+    }
+
+    private ValueTask<IEnumerable<int>> LoadMembers(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        _membersCalls++;
+        _membersLast = $"{r.Skip}:{r.Count}";
+        StateHasChanged();
+        return ValueTask.FromResult(Range(r.Skip, r.Count, 100));
+    }
+
+    private async Task RemoveMember()
+    {
+        var removed = await _membersRef!.RemoveItemAsync(0);
+        Log($"removed:{removed}");
+    }
+
+    private async Task ReadMembers()
+    {
+        var offset = await _membersRef!.GetScrollOffsetAsync();
+        _membersState = $"{_membersRef.Items.Count}/{_membersRef.HasMore}/{_membersRef.IsLoading}/{_membersRef.Error is null}/{Math.Round(offset)}";
+    }
+
+    private static ValueTask<IEnumerable<int>> LoadFiltered(BitInfiniteScrollingItemsProviderRequest r, string filter)
+    {
+        var source = Enumerable.Range(0, 60).Where(i => filter == "even" ? i % 2 == 0 : i % 2 == 1).ToArray();
+        return ValueTask.FromResult(source.Skip(r.Skip).Take(r.Count));
+    }
+
+    private async ValueTask<IEnumerable<int>> LoadGated(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        await _gatedGate.Task.WaitAsync(r.CancellationToken);
+        return Range(r.Skip, r.Count, 10);
+    }
+
+    private void ReleaseGated()
+    {
+        var gate = _gatedGate;
+        _gatedGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        gate.TrySetResult();
+    }
+
+    private static ValueTask<IEnumerable<int>> LoadFeed(BitInfiniteScrollingItemsProviderRequest r)
+    {
+        IEnumerable<int> result = new BitInfiniteScrollingItemsProviderResult<int>(Range(r.Skip, r.Count, 15), totalCount: null);
+        return ValueTask.FromResult(result);
+    }
+}

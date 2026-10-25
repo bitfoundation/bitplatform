@@ -48,19 +48,15 @@
 
                 <BitStack FillContent>
                     <BitTextField @bind-Value="changeModel.Email"
-                                  IsEnabled="isEmailUnavailable"
+                                  Disabled="isEmailUnavailable is false"
                                   Type="BitInputType.Email"
                                   Label="@Localizer[nameof(AppStrings.Email)]"
                                   Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.Email)" />
 
                     <BitOtpInput @bind-Value="changeModel.Token"
+                                 IsLoading="isWaiting"
                                  AutoFocus
-                                 Length="6"
-                                 NormalizeDigits
-                                 Size="BitSize.Large"
-                                 Type="BitInputType.Number"
-                                 InputMode="BitInputMode.Tel"
                                  OnFill="WrapHandled(ChangeEmail)"
                                  Label="@Localizer[nameof(AppStrings.EmailToken)]" />
                     <ValidationMessage For="@(() => changeModel.Token)" />

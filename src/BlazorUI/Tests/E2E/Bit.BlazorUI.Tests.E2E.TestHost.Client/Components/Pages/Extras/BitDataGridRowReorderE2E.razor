@@ -1,0 +1,55 @@
+﻿@page "/e2e/data-grid/row-reorder"
+
+@* BitDataGrid's row reordering: the drag handle column, a mouse drag (HTML5 drag and drop), a touch drag (pointer
+   events), the handle's ArrowUp/ArrowDown, OnRowReorder with the moved item and the indexes, and the pause while the
+   view is sorted; plus a touch drag of a column header. *@
+
+<PageTitle>BitDataGrid row reordering E2E</PageTitle>
+
+<h1>BitDataGrid row reordering</h1>
+
+<E2ESection Id="row-reorder" Title="Row reordering">
+    <BitDataGrid TItem="Product" Id="grid-row-reorder" Items="@_products" KeyField="p => p.Id" RowReorderable="true"
+                 OnRowReorder="OnReorder">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+    <p>reorders <span id="reorder-count">@_reorderCount</span> | <span id="reorder-log">@_reorderLog</span> | order <span id="reorder-order">@string.Join(",", _products.Select(p => p.Name))</span></p>
+</E2ESection>
+
+<E2ESection Id="touch-columns" Title="Touch column reordering">
+    <BitDataGrid TItem="Product" Id="grid-touch-columns" Items="@_products" Reorderable="true">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" />
+        <BitDataGridColumn Property="p => p.Stock" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public int Stock { get; set; }
+    }
+
+    private readonly List<Product> _products =
+    [
+        new() { Id = 1, Name = "Laptop", Stock = 5 },
+        new() { Id = 2, Name = "Novel", Stock = 120 },
+        new() { Id = 3, Name = "Jacket", Stock = 0 },
+        new() { Id = 4, Name = "Lamp", Stock = 30 },
+        new() { Id = 5, Name = "Drone", Stock = 8 },
+    ];
+
+    private int _reorderCount;
+    private string _reorderLog = "";
+
+    private void OnReorder(BitDataGridRowReorderEventArgs<Product> args)
+    {
+        _reorderCount++;
+        _reorderLog = $"{args.DraggedItem.Name}->{args.TargetItem.Name} {args.FromIndex}->{args.ToIndex}";
+    }
+}

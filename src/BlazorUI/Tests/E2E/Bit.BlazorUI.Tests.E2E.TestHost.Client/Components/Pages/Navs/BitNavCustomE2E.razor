@@ -1,0 +1,273 @@
+﻿@page "/e2e/nav/custom"
+
+<PageTitle>BitNav custom items E2E</PageTitle>
+
+@* BitNav over a custom item type whose members are all renamed, so every one of them is found through the
+   NameSelectors - some by Name, some by Selector. The automatic mode of custom items is on /e2e/nav/url. *@
+
+<E2ESection Id="basic" Title="Basic">
+    <BitNav Id="cnav-basic" Items="_basicItems" NameSelectors="_selectors" AriaLabel="Custom nav" Mode="BitNavMode.Manual" />
+</E2ESection>
+
+<E2ESection Id="width" Title="FitWidth and FullWidth">
+    <div id="cwidth-container" style="width: 600px;">
+        <BitNav Id="cnav-fit" Items="_fitItems" NameSelectors="_selectors" FitWidth />
+        <BitNav Id="cnav-full" Items="_fullItems" NameSelectors="_selectors" FullWidth />
+    </div>
+</E2ESection>
+
+<E2ESection Id="grouped" Title="Grouped and Separator">
+    <BitNav Id="cnav-grouped" Items="_groupedItems" NameSelectors="_selectors" RenderType="BitNavRenderType.Grouped" Mode="BitNavMode.Manual" />
+</E2ESection>
+
+<E2ESection Id="manual" Title="Manual mode">
+    <BitNav Id="cnav-default" Items="_defaultItems" NameSelectors="_selectors" Mode="BitNavMode.Manual" DefaultSelectedItem="_defaultItems[0].Nodes[1]" />
+    <BitNav Id="cnav-bound" Items="_boundItems" NameSelectors="_selectors" Mode="BitNavMode.Manual" @bind-SelectedItem="_boundSelected" />
+    <p>Bound: <span id="cbound-selected">@(_boundSelected?.Label ?? "none")</span></p>
+    <button id="cbtn-select-banana" @onclick="() => _boundSelected = _boundItems[0].Nodes[1]">Select Banana</button>
+</E2ESection>
+
+<E2ESection Id="icononly" Title="IconOnly">
+    <BitNav Id="cnav-icononly" Items="_iconOnlyItems" NameSelectors="_selectors" IconOnly Mode="BitNavMode.Manual" />
+</E2ESection>
+
+<E2ESection Id="expand" Title="Expand and Collapse">
+    <BitNav Id="cnav-single" Items="_singleItems" NameSelectors="_selectors" SingleExpand Mode="BitNavMode.Manual" />
+    <BitNav Id="cnav-all" Items="_allItems" NameSelectors="_selectors" AllExpanded Mode="BitNavMode.Manual" />
+    <BitNav Id="cnav-nocollapse" Items="_noCollapseItems" NameSelectors="_selectors" NoCollapse Mode="BitNavMode.Manual" />
+    <BitNav Id="cnav-no-member" Items="_noMemberItems" NameSelectors="_noMemberSelectors" Mode="BitNavMode.Manual" />
+</E2ESection>
+
+<E2ESection Id="chevron" Title="Chevron and Indentation">
+    <BitNav Id="cnav-reversed" Items="_reversedItems" NameSelectors="_selectors" ReversedChevron AllExpanded Mode="BitNavMode.Manual" />
+</E2ESection>
+
+<E2ESection Id="templates" Title="Custom templates">
+    <BitNav Id="cnav-templates" Items="_templateItems" NameSelectors="_selectors" Mode="BitNavMode.Manual">
+        <ItemTemplate Context="node">
+            <span class="cnav-item-template">Item template: @node.Label</span>
+        </ItemTemplate>
+    </BitNav>
+    <BitNav Id="cnav-header-template" Items="_headerTemplateItems" NameSelectors="_selectors" RenderType="BitNavRenderType.Grouped">
+        <HeaderTemplate Context="node">
+            <span class="cnav-header-template">Header template: @node.Label</span>
+        </HeaderTemplate>
+    </BitNav>
+    <BitNav Id="cnav-suffix" Items="_suffixItems" NameSelectors="_selectors" Mode="BitNavMode.Manual">
+        <ItemSuffixTemplate Context="node">
+            <span class="cnav-suffix">@node.Payload</span>
+        </ItemSuffixTemplate>
+    </BitNav>
+</E2ESection>
+
+<E2ESection Id="api" Title="Public API">
+    <button id="cbtn-expand-all" @onclick="() => _apiNav.ExpandAll()">ExpandAll</button>
+    <button id="cbtn-collapse-all" @onclick="() => _apiNav.CollapseAll()">CollapseAll</button>
+    <button id="cbtn-toggle" @onclick="() => _apiNav.ToggleItem(_apiItems[0])">Toggle first</button>
+    <button id="cbtn-select" @onclick="() => _apiNav.SelectItem(_apiItems[1])">Select second</button>
+    <button id="cbtn-focus" @onclick="() => _apiNav.FocusItem(_apiItems[0].Nodes[0])">Focus nested</button>
+    <BitNav @ref="_apiNav" Id="cnav-api" Items="_apiItems" NameSelectors="_selectors" Mode="BitNavMode.Manual" />
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitNav Id="cnav-events"
+            Items="_eventItems"
+            NameSelectors="_selectors"
+            Mode="BitNavMode.Manual"
+            OnItemClick="(Node node) => { _clicks++; _lastClicked = node.Label; }"
+            OnSelectItem="(Node node) => { _selects++; _lastSelected = node?.Label; }"
+            OnItemToggle="(Node node) => OnToggle(node)" />
+    <p>
+        <span id="cevent-clicks">@_clicks</span> <span id="cevent-last-clicked">@_lastClicked</span>
+        <span id="cevent-selects">@_selects</span> <span id="cevent-last-selected">@_lastSelected</span>
+        <span id="cevent-toggles">@_toggles</span> <span id="cevent-last-toggled">@_lastToggled</span>
+    </p>
+    <BitNav Id="cnav-reselectable" Items="_reselectItems" NameSelectors="_selectors" Mode="BitNavMode.Manual" Reselectable OnSelectItem="(Node node) => _reselects++" />
+    <p><span id="creselects">@_reselects</span></p>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="@([new BitNavParams { Color = BitColor.Warning, Size = BitSize.Small }])">
+        <BitNav Id="cnav-params" Items="_paramsItems" NameSelectors="_selectors" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="look" Title="Color, Accent, Size, Styles and Classes">
+    <BitNav Id="cnav-look"
+            Items="_lookItems"
+            NameSelectors="_selectors"
+            Mode="BitNavMode.Manual"
+            DefaultSelectedItem="_lookItems[0]"
+            Color="BitColor.Error"
+            Accent="BitColor.Info"
+            Size="BitSize.Large"
+            Style="border: 2px solid rgb(9, 8, 7);"
+            Class="custom-look"
+            Styles="@(new() { ItemText = "letter-spacing: 3px;" })"
+            Classes="@(new() { ItemIcon = "custom-look-icon" })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitNav Id="cnav-rtl" Dir="BitDir.Rtl" Items="_rtlItems" NameSelectors="_selectors" Mode="BitNavMode.Manual" FullWidth />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitNav Id="cnav-disabled" Items="_disabledItems" NameSelectors="_selectors" Disabled Mode="BitNavMode.Manual" OnItemClick="(Node node) => _disabledClicks++" />
+    <p><span id="cdisabled-clicks">@_disabledClicks</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Node
+    {
+        public string Label { get; set; } = "";
+        public string? Address { get; set; }
+        public string? Note { get; set; }
+        public string? Glyph { get; set; }
+        public BitIconInfo? Picture { get; set; }
+        public bool Open { get; set; }
+        public bool Off { get; set; }
+        public bool Divider { get; set; }
+        public List<Node> Nodes { get; set; } = [];
+        public string? Tip { get; set; }
+        public string? Window { get; set; }
+        public string? Counter { get; set; }
+        public string? CounterLabel { get; set; }
+        public bool Marker { get; set; }
+        public string? Name { get; set; }
+        public BitNavAriaCurrent Current { get; set; } = BitNavAriaCurrent.Page;
+        public string? OpenLabel { get; set; }
+        public string? CloseLabel { get; set; }
+        public bool Anchor { get; set; }
+        public string? Css { get; set; }
+        public string? Inline { get; set; }
+        public string? Identity { get; set; }
+        public object? Payload { get; set; }
+        public BitLinkRels? Relation { get; set; }
+        public RenderFragment<Node>? View { get; set; }
+        public BitNavItemTemplateRenderMode ViewMode { get; set; }
+        public RenderFragment<Node>? End { get; set; }
+    }
+
+    // Half the members are found by Name and half by Selector.
+    private readonly BitNavNameSelectors<Node> _selectors = new()
+    {
+        Text = { Name = nameof(Node.Label) },
+        Url = { Selector = n => n.Address },
+        Description = { Selector = n => n.Note },
+        IconName = { Name = nameof(Node.Glyph) },
+        Icon = { Selector = n => n.Picture },
+        IsExpanded = { Name = nameof(Node.Open) },
+        IsDisabled = { Selector = n => n.Off },
+        IsSeparator = { Name = nameof(Node.Divider) },
+        ChildItems = { Name = nameof(Node.Nodes) },
+        Title = { Selector = n => n.Tip },
+        Target = { Name = nameof(Node.Window) },
+        Badge = { Selector = n => n.Counter },
+        BadgeAriaLabel = { Name = nameof(Node.CounterLabel) },
+        Dot = { Selector = n => n.Marker },
+        AriaLabel = { Name = nameof(Node.Name) },
+        AriaCurrent = { Selector = n => n.Current },
+        ExpandAriaLabel = { Name = nameof(Node.OpenLabel) },
+        CollapseAriaLabel = { Selector = n => n.CloseLabel },
+        ForceAnchor = { Name = nameof(Node.Anchor) },
+        Class = { Selector = n => n.Css },
+        Style = { Name = nameof(Node.Inline) },
+        Key = { Selector = n => n.Identity },
+        Data = { Name = nameof(Node.Payload) },
+        Rel = { Selector = n => n.Relation },
+        Template = { Name = nameof(Node.View) },
+        TemplateRenderMode = { Selector = n => n.ViewMode },
+        SuffixTemplate = { Name = nameof(Node.End) },
+    };
+
+    private static Node N(string label, params Node[] nodes) => new() { Label = label, Nodes = [.. nodes] };
+
+    private static List<Node> Food() => [N("Fruits", N("Apple"), N("Banana")), N("Vegetables", N("Carrot")), N("Ice cream")];
+
+    private readonly List<Node> _basicItems =
+    [
+        new() { Label = "Home", Glyph = BitIconName.Home, Address = "/e2e/nav/url/home", Note = "Start here", Tip = "Home tip", Css = "home-class", Inline = "background-color: rgb(1, 2, 3);", Identity = "home" },
+        new() { Label = "Library", Glyph = BitIconName.Library, Open = true, Nodes = [N("Books"), N("Papers")] },
+        new() { Label = "Archived", Off = true, Address = "/e2e/nav/url/archived" },
+        new() { Divider = true },
+        new() { Label = "Reports", Address = "/e2e/nav/url/reports", OpenLabel = "Open reports", CloseLabel = "Close reports", Nodes = [N("Monthly")] },
+        new() { Label = "External", Address = "https://example.com/", Window = "_blank", Relation = BitLinkRels.NoReferrer },
+        new() { Label = "Anchor", Anchor = true },
+        new() { Label = "Inbox", Counter = "5", CounterLabel = "5 unread" },
+        new() { Label = "Alerts", Marker = true, CounterLabel = "New alerts" },
+        new() { Label = "Named", Name = "Custom name" },
+        new() { Label = "Stepped", Current = BitNavAriaCurrent.Step },
+        new() { Label = "Pictured", Picture = BitIconInfo.Css("my-picture") },
+    ];
+
+    private readonly List<Node> _fitItems = [N("Short"), N("A much longer item text")];
+    private readonly List<Node> _fullItems = [N("Short"), N("A much longer item text")];
+
+    private readonly List<Node> _groupedItems = [N("Group one", N("One a"), N("One b")), new() { Divider = true }, N("Group two", N("Two a"))];
+
+    private readonly List<Node> _defaultItems = Food();
+    private readonly List<Node> _boundItems = Food();
+    private Node? _boundSelected;
+
+    private readonly List<Node> _iconOnlyItems = [new() { Label = "Home", Glyph = BitIconName.Home }, new() { Label = "Mail", Glyph = BitIconName.Mail }];
+
+    private readonly List<Node> _singleItems = [N("Alpha", N("Alpha one")), N("Beta", N("Beta one"))];
+    private readonly List<Node> _allItems = [N("Alpha", N("Alpha one", N("Alpha deep"))), N("Beta", N("Beta one"))];
+    private readonly List<Node> _noCollapseItems = [N("Alpha", N("Alpha one")), N("Beta")];
+
+    // A custom item type with no member to keep the expansion state in: the nav keeps it itself.
+    public class Bare
+    {
+        public string Caption { get; set; } = "";
+        public List<Bare> Kids { get; set; } = [];
+    }
+
+    private readonly List<Bare> _noMemberItems = [new() { Caption = "Bare parent", Kids = [new() { Caption = "Bare child" }] }, new() { Caption = "Bare leaf" }];
+    private readonly BitNavNameSelectors<Bare> _noMemberSelectors = new()
+    {
+        Text = { Name = nameof(Bare.Caption) },
+        ChildItems = { Name = nameof(Bare.Kids) },
+    };
+
+    private readonly List<Node> _reversedItems = [N("Parent", N("Child")), N("Sibling")];
+
+    private readonly List<Node> _templateItems =
+    [
+        N("Plain"),
+        new() { Label = "Own view", View = n => @<span class="cnav-own-view">Own view: @n.Label</span> },
+        new() { Label = "Replaced view", ViewMode = BitNavItemTemplateRenderMode.Replace, View = n => @<div class="cnav-replaced-view">Replaced view: @n.Label</div> },
+    ];
+    private readonly List<Node> _headerTemplateItems = [N("Cars", N("Audi"))];
+    private readonly List<Node> _suffixItems =
+    [
+        new() { Label = "Shared suffix", Payload = "11" },
+        new() { Label = "Own suffix", Payload = "22", End = n => @<span class="cnav-own-suffix">own @n.Payload</span> },
+    ];
+
+    private BitNav<Node> _apiNav = default!;
+    private readonly List<Node> _apiItems = [N("Fruits", N("Apple")), N("Ice cream")];
+
+    private readonly List<Node> _eventItems = Food();
+    private int _clicks;
+    private string? _lastClicked;
+    private int _selects;
+    private string? _lastSelected;
+    private int _toggles;
+    private string? _lastToggled;
+
+    private void OnToggle(Node node)
+    {
+        _toggles++;
+        _lastToggled = node.Label + ":" + (node.Open ? "open" : "closed");
+    }
+    private readonly List<Node> _reselectItems = [N("Again"), N("Other")];
+    private int _reselects;
+
+    private readonly List<Node> _paramsItems = [new() { Label = "Home", Glyph = BitIconName.Home }];
+    private readonly List<Node> _lookItems = [new() { Label = "Home", Glyph = BitIconName.Home }, new() { Label = "Mail", Glyph = BitIconName.Mail }];
+    private readonly List<Node> _rtlItems = [N("Rtl parent", N("Rtl child")), N("Rtl sibling")];
+    private readonly List<Node> _disabledItems = [new() { Label = "Link", Address = "/e2e/nav/url/x" }, N("Button")];
+    private int _disabledClicks;
+}

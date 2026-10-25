@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
 
 public partial class BitAccordionListDemo
 {
@@ -18,7 +18,7 @@ public partial class BitAccordionListDemo
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the background of all the accordion items.",
+            Description = "The color kind of the background of all the accordion items. An explicit value wins over --bit-Accordion-background and the header shade variables; left unset, the items take the default fill unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -27,7 +27,7 @@ public partial class BitAccordionListDemo
             Name = "Border",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the border of all the accordion items.",
+            Description = "The color kind of the border of all the accordion items. An explicit value wins over --bit-Accordion-border-color and, in a Joined list, over --bit-AccordionList-divider-color; left unset, the items take the default border color unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -119,12 +119,12 @@ public partial class BitAccordionListDemo
         },
         new()
         {
-            Name = "ExpanderIconPosition",
-            Type = "BitIconPosition?",
+            Name = "ExpanderIconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The side of the header the expander icon of all the items sits on. The default value is End.",
+            Description = "The side of the header the expander icon of all the items sits on. The default value is End. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon at the end.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -152,7 +152,7 @@ public partial class BitAccordionListDemo
             Name = "Gap",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The space (gap) in pixels between the accordion items.",
+            Description = "The space (gap) in pixels between the accordion items, overriding the --bit-AccordionList-gap CSS variable. Ignored while Joined is on.",
         },
         new()
         {
@@ -170,6 +170,13 @@ public partial class BitAccordionListDemo
         },
         new()
         {
+            Name = "HiddenUntilFound",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hands the collapsed panels to the browser as hidden=\"until-found\", so find-in-page and fragment navigation reach into them and expand the item around the match. The expansion goes through the list (single-expand mode, MaxExpanded, OnToggling with the Reveal reason). Disabled and read-only items are not offered, and LazyContent and UnmountOnCollapse are ignored while it is on.",
+        },
+        new()
+        {
             Name = "HideExpanderIcon",
             Type = "bool",
             DefaultValue = "false",
@@ -183,6 +190,13 @@ public partial class BitAccordionListDemo
             Description = "The collection of items to render in the AccordionList.",
             LinkType = LinkType.Link,
             Href = "#accordion-list-item",
+        },
+        new()
+        {
+            Name = "Joined",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Joins the items into one surface: no gap between them, a single shared line where two of them meet, and rounded corners only at the two ends of the list. Gap is ignored while it is on.",
         },
         new()
         {
@@ -226,7 +240,7 @@ public partial class BitAccordionListDemo
             Name = "Navigable",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Moves the focus between the headers of the items with the ArrowUp, ArrowDown, Home and End keys, in addition to the Tab key. The navigation wraps around at both ends of the list, skips the disabled items, and leaves the same keys pressed inside a panel to whatever the panel holds.",
+            Description = "Moves the focus between the headers of the items with the ArrowUp, ArrowDown, Home and End keys, in addition to the Tab key. The navigation wraps around at both ends of the list, skips the disabled items, and leaves the same keys pressed inside a panel, or with a modifier, alone.",
         },
         new()
         {
@@ -307,14 +321,14 @@ public partial class BitAccordionListDemo
             Name = "ScrollIntoViewOnExpand",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Brings the item that has just been expanded into view, moving it as little as the browser can - so nothing happens to one that is already in view - and instantly rather than smoothly for a reader who has asked for less motion. It covers every way a panel opens: a click, one of the public methods, and the bound keys.",
+            Description = "Brings the item that has just been expanded into view, moving it as little as the browser can - so nothing happens to one that is already in view - and instantly rather than smoothly for a reader who has asked for less motion. It covers every way a panel opens: a click, one of the public methods, and the bound keys. The item is brought into view as it opens and again at its full height once the opening transition ends, unless the reader has scrolled, pressed a key or touched the page in the meantime.",
         },
         new()
         {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of all the accordion items, which drives the padding of the headers and of the contents and the size of the titles. The default value is Medium.",
+            Description = "The size of all the accordion items, which drives the padding of the headers and of the contents and the size of the titles. An explicit value wins over the --bit-Accordion-* size variables; left unset, the items are medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -339,7 +353,7 @@ public partial class BitAccordionListDemo
             Name = "TransitionDuration",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The duration of the expand/collapse transition of every item in milliseconds, overriding the duration the theme provides.",
+            Description = "The duration of the expand/collapse transition of every item in milliseconds, overriding the duration the theme provides. Reduced motion collapses it unless ForceAnimation is set.",
         },
         new()
         {
@@ -368,13 +382,13 @@ public partial class BitAccordionListDemo
         {
             Name = "Expand",
             Type = "Task",
-            Description = "Expands the item with the provided key. In single-expand mode the currently expanded item is collapsed along the way. Not turned away by IsEnabled, ReadOnly or Collapsible.",
+            Description = "Expands the item with the provided key. In single-expand mode the currently expanded item is collapsed along the way. Not turned away by Disabled, ReadOnly or Collapsible.",
         },
         new()
         {
             Name = "Collapse",
             Type = "Task",
-            Description = "Collapses the item with the provided key. Not turned away by IsEnabled, ReadOnly or Collapsible.",
+            Description = "Collapses the item with the provided key. Not turned away by Disabled, ReadOnly or Collapsible.",
         },
         new()
         {
@@ -431,7 +445,7 @@ public partial class BitAccordionListDemo
                 new() { Name = "HideExpanderIcon", Type = "bool?", DefaultValue = "null", Description = "Removes the expander icon from the header of the item, overriding the value of the AccordionList." },
                 new() { Name = "Icon", Type = "BitIconInfo?", DefaultValue = "null", Description = "The icon to display at the start of the header of the item using custom CSS classes for external icon libraries. Takes precedence over IconName." },
                 new() { Name = "IconName", Type = "string?", DefaultValue = "null", Description = "The name of the icon to display at the start of the header of the item from the built-in Fluent UI icons." },
-                new() { Name = "IsEnabled", Type = "bool", DefaultValue = "true", Description = "Whether or not the item is enabled." },
+                new() { Name = "IsDisabled", Type = "bool", DefaultValue = "false", Description = "Whether or not the item is disabled." },
                 new() { Name = "IsExpanded", Type = "bool", DefaultValue = "false", Description = "Determines whether the item is expanded. This value is also assigned by the component during interactions." },
                 new() { Name = "Key", Type = "string?", DefaultValue = "null", Description = "A unique value to use as the key of the item. A key that is not given is generated from the position of the item." },
                 new() { Name = "OnClick", Type = "Action<BitAccordionListItem>?", DefaultValue = "null", Description = "The click event handler of the header of the item." },
@@ -463,7 +477,7 @@ public partial class BitAccordionListDemo
                 new() { Name = "HideExpanderIcon", Type = "bool?", DefaultValue = "null", Description = "Removes the expander icon from the header of the option, overriding the value of the AccordionList." },
                 new() { Name = "Icon", Type = "BitIconInfo?", DefaultValue = "null", Description = "The icon to display at the start of the header of the option using custom CSS classes for external icon libraries. Takes precedence over IconName." },
                 new() { Name = "IconName", Type = "string?", DefaultValue = "null", Description = "The name of the icon to display at the start of the header of the option from the built-in Fluent UI icons." },
-                new() { Name = "IsEnabled", Type = "bool", DefaultValue = "true", Description = "Whether or not the option is enabled." },
+                new() { Name = "IsDisabled", Type = "bool", DefaultValue = "false", Description = "Whether or not the option is disabled." },
                 new() { Name = "IsExpanded", Type = "bool", DefaultValue = "false", Description = "Determines whether the option is initially expanded." },
                 new() { Name = "Key", Type = "string?", DefaultValue = "null", Description = "A unique value to use as the key of the option. A key that is not given is generated by the list, unique among the options." },
                 new() { Name = "OnClick", Type = "EventCallback<BitAccordionListOption>", DefaultValue = "", Description = "The click event handler of the header of the option." },
@@ -494,7 +508,7 @@ public partial class BitAccordionListDemo
                 new() { Name = "HideExpanderIcon", Type = "BitNameSelectorPair<TItem, bool?>", DefaultValue = "new(nameof(BitAccordionListItem.HideExpanderIcon))", Description = "HideExpanderIcon field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
                 new() { Name = "Icon", Type = "BitNameSelectorPair<TItem, BitIconInfo?>", DefaultValue = "new(nameof(BitAccordionListItem.Icon))", Description = "Icon field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
                 new() { Name = "IconName", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitAccordionListItem.IconName))", Description = "IconName field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
-                new() { Name = "IsEnabled", Type = "BitNameSelectorPair<TItem, bool>", DefaultValue = "new(nameof(BitAccordionListItem.IsEnabled))", Description = "IsEnabled field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "IsDisabled", Type = "BitNameSelectorPair<TItem, bool>", DefaultValue = "new(nameof(BitAccordionListItem.IsDisabled))", Description = "IsDisabled field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
                 new() { Name = "IsExpanded", Type = "BitNameSelectorPair<TItem, bool>", DefaultValue = "new(nameof(BitAccordionListItem.IsExpanded))", Description = "IsExpanded field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
                 new() { Name = "Key", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitAccordionListItem.Key))", Description = "Key field name and selector of the custom input class. An item that carries no key of its own is given a generated one, kept beside it rather than written into it.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
                 new() { Name = "OnClick", Type = "BitNameSelectorPair<TItem, Action<TItem>?>", DefaultValue = "new(nameof(BitAccordionListItem.OnClick))", Description = "OnClick field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
@@ -524,7 +538,7 @@ public partial class BitAccordionListDemo
                 new() { Name = "Item", Type = "TItem", Description = "The item that is about to expand or collapse." },
                 new() { Name = "Key", Type = "string?", Description = "The key of the item that is about to expand or collapse." },
                 new() { Name = "IsExpanding", Type = "bool", Description = "The state the item is about to move to: true while it is expanding, false while it is collapsing." },
-                new() { Name = "Reason", Type = "BitAccordionToggleReason", Description = "What made the item expand or collapse: a click on its header, or a call to one of the public methods.", LinkType = LinkType.Link, Href = "#accordion-toggle-reason-enum" },
+                new() { Name = "Reason", Type = "BitAccordionToggleReason", Description = "What made the item expand or collapse: a click on its header, a call to one of the public methods, or a find-in-page reveal.", LinkType = LinkType.Link, Href = "#accordion-toggle-reason-enum" },
                 new() { Name = "Cancel", Type = "bool", DefaultValue = "false", Description = "Set to true to cancel the expansion or the collapse and leave the item as it is." },
             ]
         },
@@ -547,6 +561,7 @@ public partial class BitAccordionListDemo
                 new() { Name = "ItemExpanderIconWrapper", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the expander icon wrapper of each accordion item of the BitAccordionList." },
                 new() { Name = "ItemExpanderIcon", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the expander icon of each accordion item of the BitAccordionList." },
                 new() { Name = "ItemExpandedIcon", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the expander icon of each accordion item of the BitAccordionList in the expanded state." },
+                new() { Name = "ItemSpinner", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the spinner that stands in the expander's slot of an item while an awaited OnToggling is deciding about it." },
                 new() { Name = "ItemActions", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the actions of each accordion item, rendered beside the header." },
                 new() { Name = "ItemContentContainer", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the content container of each accordion item of the BitAccordionList." },
                 new() { Name = "ItemContentWrapper", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the content wrapper of each accordion item, which clips the content while it collapses." },
@@ -555,32 +570,26 @@ public partial class BitAccordionListDemo
         }
     ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums =
+    private readonly List<ComponentCssVariable> componentCssVariables =
     [
         new()
         {
-            Id = "color-kind-enum",
-            Name = "BitColorKind",
-            Description = "Defines the color kinds available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Description = "The primary color kind.", Value = "0" },
-                new() { Name = "Secondary", Description = "The secondary color kind.", Value = "1" },
-                new() { Name = "Tertiary", Description = "The tertiary color kind.", Value = "2" },
-                new() { Name = "Transparent", Description = "The transparent color kind.", Value = "3" },
-            ]
+            Name = "--bit-AccordionList-gap",
+            DefaultValue = "spacing(1)",
+            Description = "Space between the items. The Gap parameter wins over it, and a Joined list has none.",
         },
         new()
         {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new() { Name = "Start", Description = "Icon renders before the content.", Value = "0" },
-                new() { Name = "End", Description = "Icon renders after the content (default).", Value = "1" },
-            ]
+            Name = "--bit-AccordionList-divider-color",
+            DefaultValue = "The items' border color (--bit-clr-brd-pri with NoBorder)",
+            Description = "Line between two items of a Joined list. The Border parameter wins over it.",
         },
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        DemoSharedEnums.BitColorKind(),
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "accordion-toggle-reason-enum",
@@ -590,19 +599,9 @@ public partial class BitAccordionListDemo
             [
                 new() { Name = "Click", Description = "The header of the item was clicked, or activated by the Enter or the Space key.", Value = "0" },
                 new() { Name = "Method", Description = "One of the Expand, Collapse, Toggle, ExpandAll and CollapseAll methods was called.", Value = "1" },
+                new() { Name = "Reveal", Description = "Find-in-page or a fragment navigation landed inside the collapsed panel of a HiddenUntilFound list.", Value = "2" },
             ]
         },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" },
-            ]
-        },
+        DemoSharedEnums.BitSize(),
     ];
 }

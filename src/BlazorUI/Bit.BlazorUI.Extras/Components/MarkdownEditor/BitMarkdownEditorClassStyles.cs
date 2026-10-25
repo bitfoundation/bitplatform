@@ -36,6 +36,11 @@ public class BitMarkdownEditorClassStyles
     public string? Preview { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the description of the BitMarkdownEditor.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the status bar of the BitMarkdownEditor.
     /// </summary>
     public string? StatusBar { get; set; }

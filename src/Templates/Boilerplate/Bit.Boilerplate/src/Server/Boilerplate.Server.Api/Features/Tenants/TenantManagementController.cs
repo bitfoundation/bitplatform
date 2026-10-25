@@ -73,16 +73,16 @@ public partial class TenantManagementController : AppControllerBase, ITenantMana
     private async Task KickOutTenantUsers(Guid tenantId, CancellationToken cancellationToken)
     {
         //#if (signalR == true)
-        var userSessionConnectionIds = await DbContext.UserSessions.Where(us => us.TenantId == tenantId && us.SignalRConnectionId != null)
-                                                                   .Select(us => us.SignalRConnectionId!)
-                                                                   .ToListAsync(cancellationToken);
+        var userSessions = await DbContext.UserSessions.Where(us => us.TenantId == tenantId && us.SignalRConnectionId != null)
+                                                       .Select(us => new { us.Id, us.SignalRConnectionId })
+                                                       .ToListAsync(cancellationToken);
         //#endif
 
         await DbContext.UserSessions.Where(us => us.TenantId == tenantId).ExecuteDeleteAsync(cancellationToken);
 
         //#if (signalR == true)
         // Check out AppHub's comments for more info.
-        await appHubContext.Clients.Clients(userSessionConnectionIds).Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
+        await appHubContext.Clients.PublishSessionRevoked(userSessions.Select(us => (us.Id, us.SignalRConnectionId!)), cancellationToken);
         //#endif
     }
 

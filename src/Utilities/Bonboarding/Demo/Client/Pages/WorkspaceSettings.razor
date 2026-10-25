@@ -1,0 +1,72 @@
+﻿@page "/workspace/settings"
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Workspace settings · Bonboarding</PageTitle>
+
+<div class="bb-intro">
+    <h1>Workspace settings</h1>
+    <p class="bb-subtitle">
+        The second half of the multi-page tour lives here: its "Now on the settings page" and "API keys" steps point at
+        the profile and API keys panels below. Starting the tour from this page works just as well: the engine navigates
+        backwards to the first step's route.
+    </p>
+</div>
+
+<div class="bb-note">
+    Visiting this page also ticks "Review your API keys" off the <a href="guidance">guidance page</a>'s checklist, with
+    <code>SetChecklistItemAsync</code> - an application can complete a checklist item from anywhere, whether the checklist
+    is on screen or not.
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Settings</h3>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the multi-page tour</button>
+            <a class="btn btn-secondary" href="workspace">Back to the workspace</a>
+        </div>
+
+        <div class="demo-settings">
+            <div class="demo-panel" data-bonboarding-anchor="profile">
+                <p class="demo-panel-title">Profile</p>
+                <label class="bb-field">
+                    Display name
+                    <input type="text" value="Alex Morgan" />
+                </label>
+            </div>
+
+            <div class="demo-panel" data-bonboarding-anchor="api-keys">
+                <p class="demo-panel-title">API keys</p>
+                <p>Two active keys.</p>
+                <div class="bb-scroll">
+                    <table class="bb-table">
+                        <thead>
+                            <tr><th>Name</th><th>Created</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>ci-pipeline</td><td>3 months ago</td></tr>
+                            <tr><td>local-dev</td><td>11 days ago</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="demo-panel" data-bonboarding-anchor="danger">
+                <p class="demo-panel-title">Danger zone</p>
+                <p>Deleting a workspace cannot be undone.</p>
+                <button type="button" class="btn btn-secondary">Delete workspace</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private Task StartAsync() => BonboardingService.StartAsync(WorkspaceTour.Create());
+
+    // After the first render rather than in OnInitializedAsync, which also runs while prerendering, where the store
+    // cannot be written to.
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => firstRender ? BonboardingService.SetChecklistItemAsync(Guidance.ChecklistId, "api-keys") : Task.CompletedTask;
+}

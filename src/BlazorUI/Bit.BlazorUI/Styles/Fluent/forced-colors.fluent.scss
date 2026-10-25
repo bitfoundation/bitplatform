@@ -1,4 +1,4 @@
-// Windows High Contrast / forced-colors: preserve readability with system palette.
+﻿// Windows High Contrast / forced-colors: preserve readability with system palette.
 //
 // Selector specificity is deliberate: a bare `:root` here is (0,1,0), which LOSES to the
 // (0,2,0) `:root[bit-theme="…"]` palette selectors whenever the document pins a preset - the
@@ -6,10 +6,14 @@
 // to (0,3,0) so it wins over any packaged (or similarly-specific app) palette block, while inline
 // theme overrides (an explicit runtime choice) still take precedence as inline style always does.
 // The `[bit-theme]` twin covers scoped-preset elements, whose OWN palette declarations would
-// otherwise beat these values arriving only by inheritance from :root.
+// otherwise beat these values arriving only by inheritance from :root. The `[bit-theme-overlay]` one
+// covers the element of an inline theme overlay, on which every theme re-declares its family aliases
+// (theme-overlay.scss) from up to (0,4,0) - in a bundle linked after this one, for the Extras presets -
+// so it carries one more :root than those.
 @media (forced-colors: active) {
     :root:root:root,
-    :root:root:root [bit-theme] {
+    :root:root:root [bit-theme],
+    :root:root:root:root [bit-theme-overlay] {
         --bit-clr-fg-pri: CanvasText;
         --bit-clr-fg-sec: CanvasText;
         --bit-clr-fg-ter: CanvasText;
@@ -18,6 +22,14 @@
         --bit-clr-bg-ter: Canvas;
         --bit-clr-brd-pri: CanvasText;
         --bit-clr-brd-sec: CanvasText;
+        // The primary role and its on-color are a pair no token can make legible as a FILL. Chromium draws a Canvas
+        // backplate behind every line of text (and icon glyph) left to the forced palette, so an on-color has to stand
+        // out from Canvas; Firefox draws none, so it has to stand out from the fill as well - which leaves the fill no
+        // system color but one as dark or as light as Canvas. And --bit-clr-pri is not only a fill: it is the color
+        // of every link, accent, rule and ring of the library, where Canvas would be the page's own color. So the
+        // pair stays the one a contrast theme gives a link, and a part that fills itself with a role under its
+        // on-color is painted in its own forced-colors block - as a native button (ButtonText on ButtonFace) or as a
+        // plain surface (CanvasText on Canvas). BitForcedColorsBrowserTests reads every such part in each engine.
         --bit-clr-pri: LinkText;
         --bit-clr-pri-hover: LinkText;
         --bit-clr-pri-active: LinkText;
@@ -26,6 +38,25 @@
         --bit-clr-suc: CanvasText;
         --bit-clr-wrn: CanvasText;
 
+        // The role foregrounds follow the mains remapped above. Their default is a color-mix() of the
+        // role and the foreground (family-tokens.scss), and a mix of two system colors is no longer a
+        // system color - LinkText shaded towards CanvasText would be neither - so each is named here.
+        --bit-clr-pri-fg: LinkText;
+        --bit-clr-err-fg: CanvasText;
+        --bit-clr-suc-fg: CanvasText;
+        --bit-clr-wrn-fg: CanvasText;
+
+        // The role tints are a translucent wash of a role, which is no system color, and a forced palette
+        // has no tints at all: a tinted surface of any role is the plain canvas.
+        --bit-clr-pri-tint: Canvas;
+        --bit-clr-sec-tint: Canvas;
+        --bit-clr-ter-tint: Canvas;
+        --bit-clr-inf-tint: Canvas;
+        --bit-clr-suc-tint: Canvas;
+        --bit-clr-wrn-tint: Canvas;
+        --bit-clr-swr-tint: Canvas;
+        --bit-clr-err-tint: Canvas;
+
         // Elevation is meaningless against a two-color system palette, so every shadow token is
         // flattened. The per-family ones have to be named individually rather than left to follow
         // --bit-shd-cal: they are aliases only in the fallback tier (family-tokens.scss) - every
@@ -33,6 +64,7 @@
         --bit-shd-cal: none;
         --bit-shd-cal2: none;
         --bit-shd-card: none;
+        --bit-shd-card-hover: none;
         --bit-shd-popup: none;
         --bit-shd-dialog: none;
         --bit-shd-sheet: none;
@@ -85,8 +117,8 @@
         --bit-shp-brd-width: 0.125rem;
 
         //A stronger focus indicator for the elevated-contrast cohort: 3px instead of the default
-        //2px ring, offset a step further from the element. These flow through --bit-shd-focus-ring
-        //(which reads both tokens) to every focus-ring() call, so the whole library reacts. Focus
+        //2px ring, offset a step further from the element. Both --bit-shd-focus-ring and the ring a
+        //colored focus-ring() call composes itself read these tokens, so the whole library reacts. Focus
         //visibility is unambiguously good to strengthen here - unlike disabled/muted colors, whose
         //meaning depends on staying subdued - so it is safe to promote wholesale.
         --bit-shp-focus-ring-width: 0.1875rem;

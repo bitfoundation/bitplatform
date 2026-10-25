@@ -1,0 +1,92 @@
+﻿@page "/examples/alignment-guides"
+
+<PageTitle>Alignment Guides · Blow</PageTitle>
+
+<ExampleScaffold Title="Alignment Guides"
+                 Summary="The smart guides of a drawing tool: with SnapToGuides on, a dragged node clicks into line with the nodes around it - by an edge or its centre, on each axis - and a thin guide shows what it matched. GuideDistance sets how close is close enough and GuideColor paints the line.">
+    <Toolbar>
+        <label>
+            <input type="checkbox" @bind="_guides" /> Alignment guides
+        </label>
+        <label>
+            Distance
+            <input type="range" min="0" max="20" step="1" value="@_distance"
+                   @oninput="@(e => SetDistance(e.Value))" />
+            <span class="guide-distance">@_distance px</span>
+        </label>
+        <label>
+            Guide colour
+            <select @bind="_color">
+                <option value="#f43f5e">Rose #f43f5e (default)</option>
+                <option value="var(--bit-blow-node-selected)">Selection accent</option>
+                <option value="#16a34a">Green #16a34a</option>
+            </select>
+        </label>
+        <label>
+            <input type="checkbox" @bind="_grid" /> Snap to grid
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes"
+                    Edges="_edges"
+                    SnapToGuides="_guides"
+                    GuideDistance="_distance"
+                    GuideColor="@_color"
+                    SnapToGrid="_grid"
+                    SnapGridX="20"
+                    SnapGridY="20"
+                    FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="20" Color="var(--bit-blow-border-subtle)" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag</strong> "Drag me" toward Anchor: when its left edge, centre or right edge comes within the distance of one of Anchor's, it clicks into line and a vertical guide joins the two. The same happens on the other axis with tops, middles and bottoms.</li>
+        <li>Line it up with two nodes at once - Small's top and Tall's left edge, say: each axis snaps to its own neighbour and each draws its own guide.</li>
+        <li>Drag <strong>Distance</strong> up to snap from further away, or to 0 to turn snapping off. Zoom in or out first: the distance is the same on screen at any zoom.</li>
+        <li>Pick a <strong>Guide colour</strong> and drag again to see the line in it.</li>
+        <li>Tick <strong>Snap to grid</strong>: on an axis with no guide in reach the node lands on the 20-unit grid, while an axis that found a guide follows the guide.</li>
+        <li>Untick <strong>Alignment guides</strong> and the node moves freely again.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>SnapToGuides</code> (<code>false</code>) tests the dragged node against every visible node not moving with it; each axis offers three lines - leading edge, centre, trailing edge - and the nearest match on each axis wins. A dragged selection moves as one block.</li>
+        <li><code>GuideDistance</code> (6) is in screen pixels, so the snap feels equally forgiving however far you have zoomed.</li>
+        <li><code>GuideColor</code> (<code>"#f43f5e"</code>) is any CSS colour, a custom property included; the guide is drawn one screen pixel thick at any zoom.</li>
+        <li><code>SnapToGrid</code> with <code>SnapGridX</code> and <code>SnapGridY</code> (15 by default, 20 here to match the background) snaps the axes a guide did not claim.</li>
+        <li>The matching itself is public as <code>BlowAlignment.Snap(moving, candidates, tolerance)</code>, for tools of your own.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .guide-distance { display: inline-block; min-width: 3.5rem; text-align: right; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private bool _guides = true;
+    private bool _grid;
+    private double _distance = 6;
+    private string _color = "#f43f5e";
+
+    protected override void OnInitialized()
+    {
+        // Deliberately different sizes, so edge-to-edge and centre-to-centre alignments are
+        // visibly different things rather than the same line twice.
+        _nodes =
+        [
+            new BlowNode { Id = "a", Label = "Anchor", Position = new(80, 60), Width = 200, Height = 60 },
+            new BlowNode { Id = "b", Label = "Small", Position = new(360, 200), Width = 100, Height = 40 },
+            new BlowNode { Id = "c", Label = "Tall", Position = new(120, 260), Width = 140, Height = 120 },
+            new BlowNode { Id = "d", Label = "Drag me", Position = new(400, 380), Width = 140, Height = 60 },
+        ];
+
+        _edges = [new BlowEdge { Id = "e", Source = "a", Target = "d" }];
+    }
+
+    private void SetDistance(object? raw)
+    {
+        if (double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var value))
+            _distance = value;
+    }
+}

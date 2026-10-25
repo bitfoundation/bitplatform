@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
@@ -9,13 +9,13 @@ public partial class _BitChartLocalizationDemo
     private BitChartOptions CultureOptions() => new()
     {
         Culture = CultureInfo.GetCultureInfo(_culture),
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
     };
 
     private readonly BitChartOptions _currency = new()
     {
         Culture = CultureInfo.GetCultureInfo("en-US"),
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
         Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Ticks = new BitChartTickOptions { Format = "C0" } } }
     };
 
@@ -24,14 +24,14 @@ public partial class _BitChartLocalizationDemo
     private BitChartOptions DateOptions() => new()
     {
         Culture = CultureInfo.GetCultureInfo(_dateCulture),
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
         Scales = { ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Time } }
     };
 
     private readonly BitChartOptions _wide = new()
     {
         Culture = CultureInfo.GetCultureInfo("ja-JP"),
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
         Scales =
         {
             ["y"] = new BitChartScaleOptions
@@ -62,7 +62,7 @@ public partial class _BitChartLocalizationDemo
         Plugins = new BitChartPluginOptions
         {
             Title = new BitChartTitleOptions { Display = true, Text = "فروش فصلی" },
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom }
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom }
         },
         Scales = { ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category, Reverse = true } }
     };
@@ -75,6 +75,16 @@ public partial class _BitChartLocalizationDemo
             new BitChartDataset { Label = "Revenue", Data = BitChartSampleData.V(12500.5, 19300.25, 14100, 22800.75, 18250, 25400, 20900),
                 BackgroundColor = "#36a2eb", BorderColor = "#36a2eb", Tension = 0.3 }
         }
+    };
+
+    private readonly BitChartTexts _persianTexts = new()
+    {
+        RoleDescription = "نمودار",
+        LegendAriaLabel = "راهنمای نمودار",
+        PositionFormat = "{0} از {1}",
+        SeriesPositionFormat = "سری {0} از {1}",
+        DatasetLabelFormat = "مجموعه {0}",
+        Series = "سری"
     };
 
     private BitChartData Persian() => new()
@@ -95,7 +105,7 @@ private string _culture = ""de-DE"";
 private BitChartOptions CultureOptions() => new()
 {
     Culture = CultureInfo.GetCultureInfo(_culture),
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };";
 
     private readonly string currencyRazorCode = @"<BitChart Type=""BitChartType.Line"" Data=""Revenue()"" Options=""_currency"" />";
@@ -103,18 +113,34 @@ private BitChartOptions CultureOptions() => new()
 private readonly BitChartOptions _currency = new()
 {
     Culture = CultureInfo.GetCultureInfo(""en-US""),
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
     Scales = { [""y""] = new BitChartScaleOptions { Id = ""y"", Ticks = new BitChartTickOptions { Format = ""C0"" } } }
 };";
 
-    private readonly string rtlRazorCode = @"<BitChart Dir=""BitDir.Rtl"" Type=""BitChartType.Bar"" Data=""Persian()"" Options=""_rtl"" />";
+    private readonly string rtlRazorCode = @"
+<BitChart Dir=""BitDir.Rtl""
+          Type=""BitChartType.Bar""
+          Data=""Persian()""
+          Options=""_rtl""
+          Texts=""_persianTexts""
+          NavigationHint=""با کلیدهای جهت‌نما میان فصل‌ها و سری‌ها حرکت کنید."" />";
     private readonly string rtlCsharpCode = @"
+private readonly BitChartTexts _persianTexts = new()
+{
+    RoleDescription = ""نمودار"",
+    LegendAriaLabel = ""راهنمای نمودار"",
+    PositionFormat = ""{0} از {1}"",
+    SeriesPositionFormat = ""سری {0} از {1}"",
+    DatasetLabelFormat = ""مجموعه {0}"",
+    Series = ""سری""
+};
+
 private readonly BitChartOptions _rtl = new()
 {
     Plugins = new BitChartPluginOptions
     {
         Title = new BitChartTitleOptions { Display = true, Text = ""فروش فصلی"" },
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom }
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom }
     },
     Scales = { [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Category, Reverse = true } }
 };
@@ -137,7 +163,7 @@ private string _dateCulture = ""fr-FR"";
 private BitChartOptions DateOptions() => new()
 {
     Culture = CultureInfo.GetCultureInfo(_dateCulture),
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
     Scales = { [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Time } }
 };";
 
@@ -146,7 +172,7 @@ private BitChartOptions DateOptions() => new()
 private readonly BitChartOptions _wide = new()
 {
     Culture = CultureInfo.GetCultureInfo(""ja-JP""),
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
     Scales =
     {
         [""y""] = new BitChartScaleOptions

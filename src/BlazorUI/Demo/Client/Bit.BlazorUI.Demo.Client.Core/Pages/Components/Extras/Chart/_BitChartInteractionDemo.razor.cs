@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
 public partial class _BitChartInteractionDemo
 {
@@ -7,19 +7,19 @@ public partial class _BitChartInteractionDemo
 
     private readonly BitChartOptions _default = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
     };
 
     private readonly BitChartOptions _intersect = new()
     {
         Interaction = new BitChartInteractionOptions { Intersect = true },
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
     };
 
     private BitChartOptions ModeOptions() => new()
     {
         Interaction = new BitChartInteractionOptions { Mode = _mode },
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
     };
 
     private BitChartData Series() => new()
@@ -48,6 +48,15 @@ public partial class _BitChartInteractionDemo
 
     private void ToggleEmpty() => _hasData = !_hasData;
 
+    private bool _loading;
+
+    private async Task Reload()
+    {
+        _loading = true;
+        await Task.Delay(1500);
+        _loading = false;
+    }
+
     private BitChartData EmptyDemoData() => _hasData ? BitChartSampleData.Revenue() : new BitChartData();
 
 
@@ -56,7 +65,7 @@ public partial class _BitChartInteractionDemo
 // Intersect is false by default, so no extra configuration is needed.
 private readonly BitChartOptions _default = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };
 
 private BitChartData Series() => new()
@@ -76,7 +85,7 @@ private BitChartData Series() => new()
 private readonly BitChartOptions _intersect = new()
 {
     Interaction = new BitChartInteractionOptions { Intersect = true },
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };";
 
     private readonly string modesRazorCode = @"<select @bind=""_mode"">
@@ -92,16 +101,30 @@ private BitChartInteractionMode _mode = BitChartInteractionMode.Index;
 private BitChartOptions ModeOptions() => new()
 {
     Interaction = new BitChartInteractionOptions { Mode = _mode },
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };";
 
-    private readonly string emptyRazorCode = @"<BitButton Variant=""BitVariant.Outline"" OnClick=""ToggleEmpty"">Clear the data</BitButton>
+    private readonly string emptyRazorCode = @"
+<BitButton Variant=""BitVariant.Outline"" OnClick=""Reload"" Disabled=""_loading"">Reload</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""ToggleEmpty"">@(_hasData ? ""Clear the data"" : ""Restore the data"")</BitButton>
 
-<BitChart Type=""BitChartType.Bar"" Data=""EmptyDemoData()"" NoDataText=""No results for this filter"" />";
+<BitChart Type=""BitChartType.Bar""
+          Data=""EmptyDemoData()""
+          IsLoading=""_loading""
+          LoadingLabel=""Fetching revenue...""
+          NoDataText=""No results for this filter"" />";
     private readonly string emptyCsharpCode = @"
 private bool _hasData = true;
+private bool _loading;
 
 private void ToggleEmpty() => _hasData = !_hasData;
+
+private async Task Reload()
+{
+    _loading = true;
+    await Task.Delay(1500); // stands in for fetching the data
+    _loading = false;
+}
 
 private BitChartData EmptyDemoData() => _hasData ? Revenue() : new BitChartData();";
 
@@ -110,7 +133,7 @@ private BitChartData EmptyDemoData() => _hasData ? Revenue() : new BitChartData(
     private readonly BitChartOptions _linkedOptions = new()
     {
         Interaction = new BitChartInteractionOptions { Mode = BitChartInteractionMode.Index },
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
     };
 
     /// <summary>Both charts report through here; a null context means the pointer has left.</summary>
@@ -129,7 +152,7 @@ private string? _linked;
 private readonly BitChartOptions _linkedOptions = new()
 {
     Interaction = new BitChartInteractionOptions { Mode = BitChartInteractionMode.Index },
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };
 
 // Both charts report through here; a null context means the pointer has left.

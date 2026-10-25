@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Tells the browser which action label (or icon) to present for the enter key of a virtual keyboard.

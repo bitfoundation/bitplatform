@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Result of <see cref="BitMap{TMapProvider}.Locate(BitMapGeolocationOptions?)"/>.

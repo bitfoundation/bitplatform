@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
@@ -10,7 +10,7 @@
     // BitComponentBase.GetSplattedAttribute) instead of being overwritten with the parameter's null. The
     // hyphenated aria-* names cannot reach the parameters they mirror - Blazor matches an attribute to a
     // parameter by name, and AriaLabel is not aria-label - so writing one by hand is a real thing to do.
-    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaLabel = ResolveAriaLabel();
     var ariaHidden = AriaHidden || GetSplattedAttribute("aria-hidden") is "true";
     // aria-describedby is a list of ids, so the author's are kept beside the component's rather than replaced.
     var describedBy = string.Join(' ', new[] { GetSplattedAttribute("aria-describedby"), descriptionId }.Where(id => id.HasValue()));
@@ -26,22 +26,27 @@
     var headerButtonType = (Split && ButtonType.HasValue) ? ButtonType.Value.GetValue() : "button";
     // The association only matters for a header or an item that submits or resets, but it is written wherever
     // the page asked for it rather than guessed at from the button type the component happens to have resolved.
-    var formId = FormId ?? GetSplattedAttribute("form");
+    var formId = ResolvedFormId;
     // A menu button hidden from assistive technologies must not be reachable by Tab either, or a keyboard user
     // lands on a control a screen reader has nothing to say about (WCAG 4.1.2). The native disabled attribute is
     // not there to do it here - a disabled button kept interactive does not carry one - so the tab order of both
     // halves is written out rather than left to the browser.
-    var tabIndex = (ariaHidden is false && (IsEnabled || DisabledInteractive)) ? 0 : -1;
+    var tabIndex = (ariaHidden is false && (Disabled is false || DisabledInteractive)) ? "0" : "-1";
     // Autofocus follows the same rule as the tab order: a menu button hidden from assistive technologies, or a
     // disabled one that is not kept focusable, must not pull the focus on the first render - a hand-written
     // autofocus included.
     var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null)
                         && ariaHidden is false
-                        && (IsEnabled || DisabledInteractive);
+                        && (Disabled is false || DisabledInteractive);
+    // Kept for the focus call of the first render (see OnAfterRenderAsync), so the two can never disagree.
+    _autoFocus = autoFocus;
+    // A disabled menu button kept interactive stays focusable, so aria-disabled carries its state alone.
+    var nativeDisabled = Disabled && DisabledInteractive is false;
 }
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
+     data-bit-popup-style="@(GetPopupStyle(Toggle && Split && IsToggled, Styles?.Toggled, JoinStyles(Styles?.Root, IsOpen ? Styles?.Opened : null)))"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
     <button @ref="_operatorButtonRef"
@@ -54,10 +59,10 @@
             type="@headerButtonType"
             autofocus="@autoFocus"
             tabindex="@tabIndex"
-            disabled="@(IsEnabled is false && DisabledInteractive is false)"
+            disabled="@nativeDisabled"
             aria-label="@ariaLabel"
             aria-hidden="@(ariaHidden ? "true" : null)"
-            aria-disabled="@(IsEnabled ? null : "true")"
+            aria-disabled="@(Disabled ? "true" : null)"
             aria-busy="@(IsLoading ? "true" : null)"
             aria-describedby="@describedByValue"
             aria-haspopup="@(Split ? null : "menu")"
@@ -149,12 +154,12 @@
                 id="@(_Id + "-chb")"
                 title="@ChevronDownTitle"
                 tabindex="@tabIndex"
-                disabled="@(IsEnabled is false && DisabledInteractive is false)"
+                disabled="@nativeDisabled"
                 aria-haspopup="menu"
                 aria-controls="@_menuId"
                 aria-label="@chevronLabel"
                 aria-hidden="@(ariaHidden ? "true" : null)"
-                aria-disabled="@(IsEnabled ? null : "true")"
+                aria-disabled="@(Disabled ? "true" : null)"
                 aria-describedby="@describedByValue"
                 aria-expanded="@IsOpen.ToString().ToLower()"
                 style="@Styles?.ChevronDownButton"

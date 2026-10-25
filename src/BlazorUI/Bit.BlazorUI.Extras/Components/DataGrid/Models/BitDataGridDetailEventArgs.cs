@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Arguments passed to <c>OnDetailToggle</c> when a row's master-detail content is expanded or collapsed.

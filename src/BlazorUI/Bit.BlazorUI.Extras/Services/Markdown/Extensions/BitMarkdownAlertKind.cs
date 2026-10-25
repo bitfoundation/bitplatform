@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>The five GitHub alert kinds, in the order GitHub documents them.</summary>
 public enum BitMarkdownAlertKind

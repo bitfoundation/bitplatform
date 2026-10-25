@@ -9,11 +9,9 @@
         <PackageReference Include="Microsoft.AspNetCore.Authorization" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="Microsoft.Extensions.Localization" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
-        <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
         <PackageReference Include="Riok.Mapperly" PrivateAssets="all" ExcludeAssets="runtime">
           <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -53,6 +51,18 @@
         </EmbeddedResource>
         <EmbeddedResource Update="Resources\IdentityStrings.*.resx">
             <DependentUpon>Resources\IdentityStrings.resx</DependentUpon>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\BitBlazorUIStrings.resx">
+            <Generator>MSBuild:Compile</Generator>
+            <LastGenOutput>Resources\BitBlazorUIStrings.Designer.cs</LastGenOutput>
+            <StronglyTypedFileName>$(IntermediateOutputPath)\BitBlazorUIStrings.Designer.cs</StronglyTypedFileName>
+            <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+            <StronglyTypedNamespace>Boilerplate.Shared.Resources</StronglyTypedNamespace>
+            <StronglyTypedClassName>BitBlazorUIStrings</StronglyTypedClassName>
+            <PublicClass>true</PublicClass>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\BitBlazorUIStrings.*.resx">
+            <DependentUpon>Resources\BitBlazorUIStrings.resx</DependentUpon>
         </EmbeddedResource>
     </ItemGroup>
 

@@ -1,0 +1,17 @@
+﻿@page "/e2e/swiper/touch"
+
+<PageTitle>BitSwiper touch E2E</PageTitle>
+
+@* A swiper alone on a phone-sized page, for the touch tests. *@
+<div style="width: 360px">
+    <BitSwiper Id="touch" AnimationDuration="0.1">
+        @for (var i = 1; i <= 10; i++)
+        {
+            var index = i;
+            <BitSwiperItem><div style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; background: #ddd; border: 1px solid #fff; box-sizing: border-box">I@(index)</div></BitSwiperItem>
+        }
+    </BitSwiper>
+</div>
+<div style="height: 1500px">Room to scroll the page.</div>
+
+<E2EStatus />

@@ -1,0 +1,72 @@
+﻿@page "/regression/swiper-behaviour"
+
+<PageTitle>BitSwiper Behaviour</PageTitle>
+
+@* A swiper is scrolled in the browser - by a mouse drag, by its buttons, by the keys - and reports the item it comes
+   to stand on back through OnChange. Each one shows one 300px item at a time out of six and snaps to the start of an
+   item, so every resting place is a multiple of 300px; the animation is kept short so a test does not wait on it.
+   The same swiper is laid out right to left twice - by its own Dir and by a box around it - where the next item
+   sits on the left. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitSwiper Behaviour</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+@foreach (var probe in _probes)
+{
+    var state = _states[probe];
+
+    <div data-probe="@probe" dir="@(probe == "inherited" ? "rtl" : null)" style="margin-bottom: 24px;">
+        <button class="before" type="button">Before @probe</button>
+        <div style="width: 300px;">
+            <BitSwiper Dir="@(probe == "own" ? BitDir.Rtl : null)"
+                       VisibleItemsCount="1"
+                       SnapAlign="BitScrollSnapAlign.Start"
+                       AnimationDuration="0.15"
+                       AriaLabel="@($"Swiper {probe}")"
+                       OnChange="i => { state.Index = i; state.Changes++; }"
+                       OnReachEnd="() => state.ReachedEnd++"
+                       OnReachStart="() => state.ReachedStart++">
+                @for (var i = 0; i < 6; i++)
+                {
+                    var number = i;
+                    <BitSwiperItem>
+                        <div class="slide" data-slide="@number" style="height: 80px; display: flex; align-items: center; justify-content: center; background: @(number % 2 == 0 ? "#dde" : "#edd");">
+                            Slide @number
+                        </div>
+                    </BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+        <p class="report" style="font-family: monospace;">
+            index: <span class="index">@state.Index</span>
+            changes: <span class="changes">@state.Changes</span>
+            reached-end: <span class="reached-end">@state.ReachedEnd</span>
+            reached-start: <span class="reached-start">@state.ReachedStart</span>
+        </p>
+    </div>
+}
+
+@code {
+    private sealed class ProbeState
+    {
+        public int Index { get; set; }
+        public int Changes { get; set; }
+        public int ReachedEnd { get; set; }
+        public int ReachedStart { get; set; }
+    }
+
+    private static readonly string[] _probes = ["ltr", "own", "inherited"];
+
+    private readonly Dictionary<string, ProbeState> _states = _probes.ToDictionary(p => p, _ => new ProbeState());
+
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

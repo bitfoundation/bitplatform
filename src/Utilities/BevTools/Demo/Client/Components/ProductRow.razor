@@ -1,0 +1,34 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+
+<tr class="product-row @(Highlight ? "highlight" : "")">
+    <td>@Product.Name</td>
+    <td>@Product.Category</td>
+    <td>@Product.Price.ToString("C")</td>
+    <td class="@(Product.Stock == 0 ? "demo-sold-out" : "")">@(Product.Stock == 0 ? "sold out" : Product.Stock.ToString())</td>
+    <td class="bb-nowrap">@Product.Rating ★</td>
+    <td class="bb-table-action"><button type="button" class="btn btn-secondary demo-btn-sm" @onclick="() => OnAdd.InvokeAsync(Product)" disabled="@(Product.Stock == 0)">Add</button></td>
+</tr>
+
+@code {
+    private Product? _renderedProduct;
+    private bool _renderedHighlight;
+
+    [Parameter, EditorRequired] public Product Product { get; set; } = default!;
+
+    [Parameter] public bool Highlight { get; set; }
+
+    [Parameter] public EventCallback<Product> OnAdd { get; set; }
+
+    /// <summary>The fix the Products page can switch on: skip a render when the row would show exactly what it shows.</summary>
+    [Parameter] public bool SkipUnchanged { get; set; }
+
+    // Intentional while SkipUnchanged is off: every parent render re-renders all rows even when nothing changed.
+    // Product is a record, so Equals compares its values: a search that returns the same product again is unchanged.
+    protected override bool ShouldRender() => !SkipUnchanged || !Equals(Product, _renderedProduct) || Highlight != _renderedHighlight;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        _renderedProduct = Product;
+        _renderedHighlight = Highlight;
+    }
+}

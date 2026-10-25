@@ -1,11 +1,10 @@
 ﻿using System.Globalization;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
 /// <summary>
 /// A component for displaying icons that enhance visual communication and user experience.
-/// Supports both built-in Fluent UI icons and external icon libraries.
+/// Supports the built-in Fabric MDL2 icon set and any external icon library.
 /// </summary>
 public partial class BitIcon : BitComponentBase
 {
@@ -68,6 +67,21 @@ public partial class BitIcon : BitComponentBase
     public string? AnimationDelay { get; set; }
 
     /// <summary>
+    /// How many times the <see cref="Animation"/> plays before it stops. Left unset, it loops for as
+    /// long as the icon is on the page.
+    /// </summary>
+    /// <remarks>
+    /// A spinner loops for as long as the work it stands for, but an animation that only calls for
+    /// attention - a bell that shakes, an arrow that bounces - has made its point after a few cycles,
+    /// and one that never stops is moving content a reader cannot pause (WCAG 2.2.2). The icon returns
+    /// to rest once the count is reached. <see cref="BitIconAnimation.Beat"/> and
+    /// <see cref="BitIconAnimation.Fade"/> run out and back as two iterations, so give those an even
+    /// count to end where they started.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public int? AnimationIterationCount { get; set; }
+
+    /// <summary>
     /// The content rendered inside the icon element, for an icon set that is neither a font nor a
     /// class - an inline svg, an image, a ligature of your own.
     /// </summary>
@@ -91,8 +105,16 @@ public partial class BitIcon : BitComponentBase
 
     /// <summary>
     /// Specifies the color theme of the icon.
-    /// Default value is <see cref="BitColor.Primary"/>.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Icon-*</c> color variables; left unset, the icon is primary unless
+    /// those variables say otherwise. They restyle that default: one set on <c>:root</c> re-colors every icon
+    /// given no Color, and one set on the <see cref="BitComponentBase.Style"/> of an icon re-colors that icon
+    /// alone. Set to <c>currentColor</c>, <c>--bit-Icon-color</c> makes a <see cref="BitVariant.Text"/> icon follow the
+    /// color of the text it sits in, the way a glyph of a font does - a Text icon only, since a
+    /// <see cref="BitVariant.Fill"/> one would paint its box in its own glyph color and show as a blank square,
+    /// so scope that value to the Text icons rather than to an ancestor holding icons of every variant.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -143,13 +165,13 @@ public partial class BitIcon : BitComponentBase
     /// <remarks>
     /// Use this property for external icon libraries such as FontAwesome, Bootstrap Icons, Material
     /// Icons or Material Symbols.
-    /// For built-in Fluent UI icons, use the <see cref="IconName"/> property instead.
+    /// For a glyph of the built-in Fabric MDL2 set, use the <see cref="IconName"/> property instead.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitIconInfo? Icon { get; set; }
 
     /// <summary>
-    /// Specifies the name of the icon from the built-in Fluent UI icon library.
+    /// Specifies the name of the icon in the built-in Fabric MDL2 icon set.
     /// This property is ignored when <see cref="Icon"/> is set.
     /// </summary>
     /// <remarks>
@@ -226,8 +248,11 @@ public partial class BitIcon : BitComponentBase
 
     /// <summary>
     /// Specifies the size of the icon.
-    /// Default value is <see cref="BitSize.Medium"/>.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Icon-size</c>; left unset, the icon is medium unless that variable says
+    /// otherwise. <see cref="FontSize"/>, an inline size of the instance's own, wins over both.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -239,6 +264,13 @@ public partial class BitIcon : BitComponentBase
     /// rather than skipped. Prefer <see cref="BitComponentBase.AriaLabel"/> when the name is meant to
     /// be read but not shown, and a <see cref="BitTooltip"/> when the text is meant to be seen - a
     /// native tooltip never appears for a keyboard or a touch user.
+    /// <br />
+    /// An icon given a <see cref="BitComponentBase.TabIndex"/> of zero or more is a tab stop, so it is never
+    /// hidden, and it needs a name to be announced by. Given none, it falls back to the name of its glyph
+    /// where there is one - an <see cref="IconName"/>, a ligature, a set that writes the name apart from its
+    /// classes - but a glyph named by a class list alone (<see cref="BitIconInfo.Css"/>,
+    /// <see cref="BitIconInfo.Fa"/>) or drawn from <see cref="ChildContent"/> has none, and is a stop with
+    /// nothing to read out until it is given a Title or an <see cref="BitComponentBase.AriaLabel"/>.
     /// </remarks>
     [Parameter] public string? Title { get; set; }
 
@@ -253,7 +285,7 @@ public partial class BitIcon : BitComponentBase
 
     protected override string RootElementClass => "bit-ico";
 
-    // The name an unnamed interactive icon falls back to is meant to be read out, so only a name a
+    // The name an unnamed icon the focus lands on falls back to is meant to be read out, so only a name a
     // reader would recognize is used: the name the author wrote, the ligature a ligature-based set
     // names its glyph with, or the icon's own name when its set writes the name and the classes apart.
     // BitIconInfo.Css and BitIconInfo.Fa put the whole class list in Name - "fa-solid fa-heart" is a
@@ -296,37 +328,13 @@ public partial class BitIcon : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-ico-pri",
-            BitColor.Secondary => "bit-ico-sec",
-            BitColor.Tertiary => "bit-ico-ter",
-            BitColor.Info => "bit-ico-inf",
-            BitColor.Success => "bit-ico-suc",
-            BitColor.Warning => "bit-ico-wrn",
-            BitColor.SevereWarning => "bit-ico-swr",
-            BitColor.Error => "bit-ico-err",
-            BitColor.PrimaryBackground => "bit-ico-pbg",
-            BitColor.SecondaryBackground => "bit-ico-sbg",
-            BitColor.TertiaryBackground => "bit-ico-tbg",
-            BitColor.PrimaryForeground => "bit-ico-pfg",
-            BitColor.SecondaryForeground => "bit-ico-sfg",
-            BitColor.TertiaryForeground => "bit-ico-tfg",
-            BitColor.PrimaryBorder => "bit-ico-pbr",
-            BitColor.SecondaryBorder => "bit-ico-sbr",
-            BitColor.TertiaryBorder => "bit-ico-tbr",
-            _ => "bit-ico-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-Icon-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-ico"));
 
         ClassBuilder.Register(() => _icon?.GetCssClasses());
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-ico-sm",
-            BitSize.Medium => "bit-ico-md",
-            BitSize.Large => "bit-ico-lg",
-            _ => "bit-ico-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-ico"));
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -385,6 +393,8 @@ public partial class BitIcon : BitComponentBase
 
         ClassBuilder.Register(() => AnimationDelay.HasValue() ? "bit-ico-dly" : string.Empty);
 
+        ClassBuilder.Register(() => AnimationIterationCount.HasValue ? "bit-ico-itr" : string.Empty);
+
         ClassBuilder.Register(() => OnClick.HasDelegate ? "bit-ico-int" : string.Empty);
     }
 
@@ -399,9 +409,12 @@ public partial class BitIcon : BitComponentBase
         StyleBuilder.Register(() => AnimationDuration.HasValue() ? $"--bit-ico-anm-dur:{AnimationDuration}" : string.Empty);
 
         StyleBuilder.Register(() => AnimationDelay.HasValue() ? $"--bit-ico-anm-dly:{AnimationDelay}" : string.Empty);
+
+        // A negative count is not a count, and CSS drops the whole declaration for one - which would leave the
+        // animation looping, the opposite of what was asked for - so it is read as no cycle at all.
+        StyleBuilder.Register(() => AnimationIterationCount.HasValue ? $"--bit-ico-anm-itr:{Math.Max(0, AnimationIterationCount.Value).ToString(CultureInfo.InvariantCulture)}" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitIconParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
@@ -412,7 +425,7 @@ public partial class BitIcon : BitComponentBase
         // An icon that has stopped answering - disabled, or handed a handler no longer there - has
         // nothing left to activate, so a Space it was already holding is forgotten rather than left
         // latched for the release that comes after.
-        if (IsEnabled is false || OnClick.HasDelegate is false)
+        if (Disabled || OnClick.HasDelegate is false)
         {
             _spacePressed = false;
         }
@@ -476,7 +489,7 @@ public partial class BitIcon : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
     }
@@ -489,7 +502,7 @@ public partial class BitIcon : BitComponentBase
     /// </summary>
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The release is what activates the icon, so the press is remembered rather than acted on: a
         // Space released here that was never pressed here - the pointer moved the focus onto the icon
@@ -508,7 +521,7 @@ public partial class BitIcon : BitComponentBase
 
     private async Task HandleOnKeyUp(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (IsSpace(e) is false) return;
 

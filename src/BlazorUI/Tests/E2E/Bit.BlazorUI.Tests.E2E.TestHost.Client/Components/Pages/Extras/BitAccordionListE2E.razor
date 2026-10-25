@@ -1,0 +1,490 @@
+﻿@page "/e2e/accordion-list"
+
+<PageTitle>BitAccordionList E2E</PageTitle>
+
+<h1>BitAccordionList</h1>
+
+@* Every event of the lists is appended here as list:event:title, in the order it was raised. *@
+<p>Log: <span id="acl-log">@string.Join(",", _log)</span> <button id="btn-clear-log" @onclick="() => _log.Clear()">Clear log</button></p>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitAccordionList Id="acl-basic" Items="@L("acl-basic", BasicItems)" TItem="BitAccordionListItem" />
+</E2ESection>
+
+<E2ESection Id="multiple" Title="Multiple">
+    <BitAccordionList Id="acl-multiple" Multiple Items="@L("acl-multiple", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-max" Multiple MaxExpanded="2" Items="@L("acl-max", BasicItems)" TItem="BitAccordionListItem"
+                      OnCollapse="@((BitAccordionListItem i) => Log($"max:collapse:{i.Title}"))" />
+    <BitAccordionList Id="acl-max-single" MaxExpanded="2" Items="@L("acl-max-single", BasicItems)" TItem="BitAccordionListItem" />
+</E2ESection>
+
+<E2ESection Id="defaults" Title="DefaultExpanded & Collapsible">
+    <BitAccordionList Id="acl-default-key" DefaultExpandedKey="users" Items="@L("acl-default-key", KeyedItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-default-keys" Multiple DefaultExpandedKeys="@(["general", "advanced"])" Items="@L("acl-default-keys", KeyedItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-default-max" Multiple MaxExpanded="1" DefaultExpandedKeys="@(["general", "advanced"])" Items="@L("acl-default-max", KeyedItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-not-collapsible" Collapsible="false" DefaultExpandedKey="general" Items="@L("acl-not-collapsible", KeyedItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-item-expanded" Items="@L("acl-item-expanded", ItemExpandedItems)" TItem="BitAccordionListItem" />
+</E2ESection>
+
+<E2ESection Id="icons" Title="Icons">
+    <BitAccordionList Id="acl-icon-items" Items="@L("acl-icon-items", IconItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-icon-swap" ExpanderIconName="@BitIconName.Add" ExpandedExpanderIconName="@BitIconName.Remove" Items="@L("acl-icon-swap", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-icon-start" ExpanderIconPlacement="BitPlacement.Start" Items="@L("acl-icon-start", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-icon-hide" HideExpanderIcon Items="@L("acl-icon-hide", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-icon-norotate" NoExpanderRotation Items="@L("acl-icon-norotate", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-icon-external" ExpanderIcon="@BitIconInfo.Fa("solid angle-down")" ExpandedExpanderIcon="@BitIconInfo.Bi("chevron-up")"
+                      ExpanderIconName="@BitIconName.Add" Items="@L("acl-icon-external", ExternalIconItems)" TItem="BitAccordionListItem" />
+</E2ESection>
+
+<E2ESection Id="actions" Title="Actions">
+    <BitAccordionList Id="acl-actions" Items="@L("acl-actions", ActionItems)" TItem="BitAccordionListItem">
+        <ActionsTemplate Context="item">
+            <button class="acl-action" @onclick="() => _actioned = item.Title">More about @item.Title</button>
+        </ActionsTemplate>
+    </BitAccordionList>
+    <span id="acl-actioned">@_actioned</span>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitAccordionList Id="acl-header-body" Items="@L("acl-header-body", TemplateItems)" TItem="BitAccordionListItem">
+        <HeaderTemplate Context="item">
+            <b class="acl-custom-header">@item.Title (custom)</b>
+        </HeaderTemplate>
+        <BodyTemplate Context="item">
+            <span class="acl-custom-body">Body of @item.Title</span>
+        </BodyTemplate>
+    </BitAccordionList>
+    <BitAccordionList Id="acl-title-expander" Items="@L("acl-title-expander", BasicItems)" TItem="BitAccordionListItem">
+        <TitleTemplate Context="item">
+            <span class="acl-custom-title">[@item.Title]</span>
+        </TitleTemplate>
+        <ExpanderTemplate Context="item">
+            <span class="acl-custom-expander">v</span>
+        </ExpanderTemplate>
+    </BitAccordionList>
+</E2ESection>
+
+<E2ESection Id="states" Title="Disabled & Read-only">
+    <BitAccordionList Id="acl-states" Multiple DefaultExpandedKeys="@(["locked"])" Items="@L("acl-states", StateItems)" TItem="BitAccordionListItem"
+                      OnItemClick="@((BitAccordionListItem i) => Log($"states:click:{i.Key}"))" />
+    <button id="btn-toggle-disabled" @onclick="() => _listDisabled = !_listDisabled">Toggle the list's Disabled</button>
+    <BitAccordionList Id="acl-disabled" Disabled="_listDisabled" Items="@L("acl-disabled", BasicItems)" TItem="BitAccordionListItem"
+                      OnItemClick="@((BitAccordionListItem i) => Log($"disabled:click:{i.Title}"))"
+                      HtmlAttributes="@(new() { ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _rootClicks++) })" />
+    <span id="acl-root-clicks">@_rootClicks</span>
+    <BitAccordionList Id="acl-readonly" ReadOnly DefaultExpandedKey="general" Items="@L("acl-readonly", KeyedItems)" TItem="BitAccordionListItem"
+                      OnItemClick="@((BitAccordionListItem i) => Log($"readonly:click:{i.Key}"))" />
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitAccordionList Id="acl-events" Items="@L("acl-events", EventItems)" TItem="BitAccordionListItem"
+                      OnExpand="@((BitAccordionListItem i) => Log($"ev:expand:{i.Title}"))"
+                      OnCollapse="@((BitAccordionListItem i) => Log($"ev:collapse:{i.Title}"))"
+                      OnToggle="@((BitAccordionListItem i) => Log($"ev:toggle:{i.Title}"))"
+                      OnItemClick="@((BitAccordionListItem i) => Log($"ev:click:{i.Title}"))" />
+</E2ESection>
+
+<E2ESection Id="toggling" Title="Cancelling a toggle">
+    <label><input id="chk-lock" type="checkbox" @onchange="e => _lockToggling = (bool)e.Value!" /> Refuse every toggle</label>
+    <label><input id="chk-slow" type="checkbox" @onchange="e => _slowToggling = (bool)e.Value!" /> Wait for the release</label>
+    <button id="btn-release-toggling" @onclick="() => _togglingGate.TrySetResult()">Release</button>
+    <BitAccordionList @ref="_togglingRef" Id="acl-toggling" OnToggling="HandleOnToggling" Items="@L("acl-toggling", KeyedItems)" TItem="BitAccordionListItem"
+                      OnToggle="@((BitAccordionListItem i) => Log($"tg:toggle:{i.Key}"))" />
+    <button id="btn-toggling-method" @onclick="@(() => _togglingRef!.Expand("advanced"))">Expand advanced (method)</button>
+    <span id="acl-toggling-report">@_togglingReport</span>
+</E2ESection>
+
+<E2ESection Id="binding" Title="Binding & methods">
+    <button id="btn-bind-general" @onclick="@(() => _boundKey = "general")">Bind general</button>
+    <button id="btn-bind-advanced" @onclick="@(() => _boundKey = "advanced")">Bind advanced</button>
+    <button id="btn-bind-null" @onclick="@(() => _boundKey = null)">Bind none</button>
+    <BitAccordionList Id="acl-bind-key" @bind-ExpandedKey="_boundKey" Items="@L("acl-bind-key", KeyedItems)" TItem="BitAccordionListItem" />
+    <span id="acl-bound-key">@(_boundKey ?? "null")</span>
+
+    <BitAccordionList @ref="_methodsRef" Id="acl-methods" Multiple @bind-ExpandedKeys="_boundKeys" Items="@L("acl-methods", MethodItems)" TItem="BitAccordionListItem" />
+    <span id="acl-bound-keys">@string.Join("|", _boundKeys)</span>
+    <button id="btn-expand-all" @onclick="() => _methodsRef!.ExpandAll()">ExpandAll</button>
+    <button id="btn-collapse-all" @onclick="() => _methodsRef!.CollapseAll()">CollapseAll</button>
+    <button id="btn-toggle-users" @onclick="@(() => _methodsRef!.Toggle("users"))">Toggle users</button>
+    <button id="btn-expand-general" @onclick="@(() => _methodsRef!.Expand("general"))">Expand general</button>
+    <button id="btn-collapse-general" @onclick="@(() => _methodsRef!.Collapse("general"))">Collapse general</button>
+    <button id="btn-expand-disabled" @onclick="@(() => _methodsRef!.Expand("off"))">Expand the disabled one</button>
+    <button id="btn-focus-advanced" @onclick="@(() => _methodsRef!.FocusItem("advanced"))">FocusItem advanced</button>
+    <button id="btn-focus-first" @onclick="() => _methodsRef!.FocusAsync()">FocusAsync</button>
+    <button id="btn-read-state" @onclick="ReadMethodsState">Read state</button>
+    <button id="btn-set-keys" @onclick="@(() => _boundKeys = ["advanced"])">Set the bound keys</button>
+    <span id="acl-methods-state">@_methodsState</span>
+    <button id="btn-expand-all-single" @onclick="() => _bindKeyRef!.ExpandAll()">ExpandAll on a single list</button>
+    <BitAccordionList @ref="_bindKeyRef" Id="acl-single-methods" Items="@L("acl-single-methods", KeyedItems)" TItem="BitAccordionListItem" />
+</E2ESection>
+
+<E2ESection Id="content" Title="Content rendering">
+    <BitAccordionList Id="acl-eager" Items="_eager" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-lazy" Multiple LazyContent Items="_lazy" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-unmount" Multiple UnmountOnCollapse Items="_unmount" TItem="BitAccordionListItem" />
+</E2ESection>
+
+<E2ESection Id="transition" Title="MaxHeight & Transition">
+    <div style="width:400px">
+        <BitAccordionList Id="acl-maxheight" MaxHeight="100px" DefaultExpandedKey="long-1" Items="@L("acl-maxheight", LongItems)" TItem="BitAccordionListItem" />
+    </div>
+    <BitAccordionList Id="acl-dur-0" TransitionDuration="0" Items="@L("acl-dur-0", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-dur-1500" TransitionDuration="1500" Items="@L("acl-dur-1500", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-dur-forced" ForceAnimation TransitionDuration="400" Items="@L("acl-dur-forced", BasicItems)" TItem="BitAccordionListItem" />
+</E2ESection>
+
+<E2ESection Id="find" Title="Find & print">
+    <BitAccordionList Id="acl-find" HiddenUntilFound ExpandOnPrint Items="@L("acl-find", FaqItems)" TItem="BitAccordionListItem"
+                      OnToggling="@((BitAccordionListToggleArgs<BitAccordionListItem> a) => Log($"find:{a.Reason}:{a.Key}:{a.IsExpanding}"))" />
+    <BitAccordionList Id="acl-find-lazy" HiddenUntilFound LazyContent UnmountOnCollapse Items="_hufLazy" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-print" ExpandOnPrint Items="@L("acl-print", BasicItems)" TItem="BitAccordionListItem" />
+</E2ESection>
+
+<E2ESection Id="scroll" Title="Scroll into view">
+    <div id="acl-scroll-box" style="height:200px;overflow:auto;border:1px solid #ccc">
+        <BitAccordionList Id="acl-scroll" ScrollIntoViewOnExpand Items="@L("acl-scroll", ScrollItems)" TItem="BitAccordionListItem" />
+    </div>
+    <div id="acl-scroll-instant-box" style="height:200px;overflow:auto;border:1px solid #ccc">
+        <BitAccordionList Id="acl-scroll-instant" ScrollIntoViewOnExpand TransitionDuration="0" Items="@L("acl-scroll-instant", ScrollItems)" TItem="BitAccordionListItem" />
+    </div>
+    <div id="acl-noscroll-box" style="height:200px;overflow:auto;border:1px solid #ccc">
+        <BitAccordionList Id="acl-noscroll" Items="@L("acl-noscroll", ScrollItems)" TItem="BitAccordionListItem" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="joined" Title="Joined, Gap & NoBorder">
+    <BitAccordionList Id="acl-joined" Joined Gap="40" Items="@L("acl-joined", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-joined-noborder" Joined NoBorder Items="@L("acl-joined-noborder", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-gap" Gap="16" NoBorder Items="@L("acl-gap", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-default-gap" Items="@L("acl-default-gap", BasicItems)" TItem="BitAccordionListItem" />
+</E2ESection>
+
+<E2ESection Id="empty" Title="Empty content">
+    <button id="btn-toggle-empty" @onclick="() => _showEmptyItems = !_showEmptyItems">Toggle the items</button>
+    <BitAccordionList Id="acl-empty" Items="@(_showEmptyItems ? L("acl-empty", BasicItems) : _none)" TItem="BitAccordionListItem">
+        <EmptyContent>
+            <span id="acl-empty-content">There is nothing to show here yet.</span>
+        </EmptyContent>
+    </BitAccordionList>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility & keyboard">
+    <BitAccordionList Id="acl-a11y" Multiple HeadingLevel="2" NoContentRegion AriaLabel="Application settings" Items="@L("acl-a11y", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-heading-clamp" HeadingLevel="9" Items="@L("acl-heading-clamp", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-labelledby" Items="@L("acl-labelledby", AriaItems)" TItem="BitAccordionListItem"
+                      HtmlAttributes="@(new() { ["aria-labelledby"] = "acl-external-label" })" />
+    <span id="acl-external-label">Labelled from outside</span>
+    <BitAccordionList Id="acl-nav" Items="@L("acl-nav", NavItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-noloop" NoNavigationLoop Items="@L("acl-noloop", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-nonav" Navigable="false" Items="@L("acl-nonav", BasicItems)" TItem="BitAccordionListItem" />
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="_listParams">
+        <BitAccordionList Id="acl-cas" Items="@L("acl-cas", BasicItems)" TItem="BitAccordionListItem" />
+        <BitAccordionList Id="acl-cas-own" Joined="false" Multiple="false" Items="@L("acl-cas-own", BasicItems)" TItem="BitAccordionListItem" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    @foreach (var kind in Kinds)
+    {
+        <BitAccordionList Id="@($"acl-bg-{kind.ToString().ToLowerInvariant()}")" Background="kind" Items="@L($"{kind}-bg", BasicItems)" TItem="BitAccordionListItem" />
+        <BitAccordionList Id="@($"acl-brd-{kind.ToString().ToLowerInvariant()}")" Border="kind" Items="@L($"{kind}-brd", BasicItems)" TItem="BitAccordionListItem" />
+    }
+    <BitAccordionList Id="acl-flush" Joined NoBorder Background="BitColorKind.Transparent" Items="@L("acl-flush", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-joined-border" Joined Border="BitColorKind.Tertiary" Style="--bit-AccordionList-divider-color: rgb(255, 0, 0)" Items="@L("acl-joined-border", BasicItems)" TItem="BitAccordionListItem" />
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitAccordionList Id="acl-size-small" Size="BitSize.Small" Items="@L("acl-size-small", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-size-medium" Size="BitSize.Medium" Items="@L("acl-size-medium", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-size-large" Size="BitSize.Large" Items="@L("acl-size-large", BasicItems)" TItem="BitAccordionListItem" />
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <BitAccordionList Id="acl-style" Gap="8" Style="border: 2px solid rgb(1, 2, 3); padding: 6px" Class="acl-root-class" Items="@L("acl-style", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-styles" DefaultExpandedKey="general" ActionsTemplate="StylesActions" Items="@L("acl-styles", StyleItems)" TItem="BitAccordionListItem"
+                      Styles="@(new() { Root = "padding-top: 3px", Item = "margin-top: 4px", ItemExpanded = "outline: 2px solid rgb(0, 0, 255)", ItemHeaderWrapper = "padding-right: 5px",
+                                        ItemHeading = "padding-left: 6px", ItemHeader = "background-color: rgb(200, 200, 200)", ItemIcon = "color: rgb(10, 20, 30)",
+                                        ItemHeaderContent = "padding-left: 7px", ItemTitle = "color: rgb(255, 99, 71)", ItemDescription = "color: rgb(40, 50, 60)",
+                                        ItemExpanderIconWrapper = "padding-left: 8px", ItemExpanderIcon = "color: rgb(70, 80, 90)", ItemExpandedIcon = "font-size: 25px",
+                                        ItemActions = "padding-left: 9px", ItemContentContainer = "border-top: 1px solid rgb(1, 1, 1)", ItemContentWrapper = "padding-left: 10px",
+                                        ItemContent = "color: rgb(11, 12, 13)" })" />
+    <BitAccordionList Id="acl-classes" DefaultExpandedKey="general" ActionsTemplate="ClassesActions" Items="@L("acl-classes", StyleItems)" TItem="BitAccordionListItem"
+                      Classes="@(new() { Root = "c-root", Item = "c-item", ItemExpanded = "c-expanded", ItemHeaderWrapper = "c-hwr", ItemHeading = "c-hed",
+                                         ItemHeader = "c-hdr", ItemIcon = "c-ico", ItemHeaderContent = "c-hcn", ItemTitle = "c-ttl", ItemDescription = "c-des",
+                                         ItemExpanderIconWrapper = "c-eiw", ItemExpanderIcon = "c-eic", ItemExpandedIcon = "c-exi", ItemActions = "c-act",
+                                         ItemContentContainer = "c-cnt", ItemContentWrapper = "c-cwr", ItemContent = "c-con" })" />
+    <BitAccordionList Id="acl-spinner" OnToggling="HoldToggling" Items="@L("acl-spinner", BasicItems)" TItem="BitAccordionListItem"
+                      Classes="@(new() { ItemSpinner = "c-spn" })" Styles="@(new() { ItemSpinner = "border-top-color: rgb(255, 0, 255)" })" />
+    <button id="btn-release-hold" @onclick="() => _holdGate.TrySetResult()">Release the held toggle</button>
+    <div id="acl-vars-host" style="--bit-AccordionList-gap: 22px; --bit-Accordion-radius: 0px; --bit-Accordion-title-color: rgb(0, 128, 0); --bit-Accordion-border-color: rgb(0, 0, 200);">
+        <BitAccordionList Id="acl-vars" Items="@L("acl-vars", BasicItems)" TItem="BitAccordionListItem" />
+        <BitAccordionList Id="acl-vars-gap" Gap="3" Items="@L("acl-vars-gap", BasicItems)" TItem="BitAccordionListItem" />
+    </div>
+    <BitAccordionList Id="acl-divider" Joined Style="--bit-AccordionList-divider-color: rgb(250, 0, 0)" Items="@L("acl-divider", BasicItems)" TItem="BitAccordionListItem" />
+    <BitAccordionList Id="acl-divider-noborder" Joined NoBorder Style="--bit-AccordionList-divider-color: rgb(0, 250, 0)" Items="@L("acl-divider-noborder", BasicItems)" TItem="BitAccordionListItem" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAccordionList Id="acl-rtl" Dir="BitDir.Rtl" Items="@L("acl-rtl", RtlItems)" TItem="BitAccordionListItem" />
+    <div dir="rtl">
+        <BitAccordionList Id="acl-rtl-inherited" Items="@L("acl-rtl-inherited", RtlItems)" TItem="BitAccordionListItem" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-add-item" @onclick="AddItem">Add an item</button>
+    <button id="btn-remove-item" @onclick="RemoveItem">Remove the first item</button>
+    <button id="btn-toggle-multiple" @onclick="() => _dynamicMultiple = !_dynamicMultiple">Toggle Multiple</button>
+    <BitAccordionList Id="acl-dynamic" Multiple="_dynamicMultiple" DefaultExpandedKeys="@(["d1", "d2"])" Items="_dynamicItems" TItem="BitAccordionListItem" />
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitAccordionList Id="acl-mounted" HiddenUntilFound ScrollIntoViewOnExpand DefaultExpandedKey="general" Items="@L("acl-mounted", KeyedItems)" TItem="BitAccordionListItem" />
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitColorKind[] Kinds = [BitColorKind.Primary, BitColorKind.Secondary, BitColorKind.Tertiary, BitColorKind.Transparent];
+
+    private readonly List<BitAccordionListItem> _basic = BasicItems();
+    private readonly List<BitAccordionListItem> _keyed = KeyedItems();
+    private readonly List<BitAccordionListItem> _itemExpanded = ItemExpandedItems();
+    private readonly List<BitAccordionListItem> _methodItems = MethodItems();
+    private readonly List<BitAccordionListItem> _iconItems = IconItems();
+    private readonly List<BitAccordionListItem> _externalIconItems = ExternalIconItems();
+    private readonly List<BitAccordionListItem> _templateItems = TemplateItems();
+    private readonly List<BitAccordionListItem> _stateItems = StateItems();
+    private readonly List<BitAccordionListItem> _longItems = LongItems();
+    private readonly List<BitAccordionListItem> _faqItems = FaqItems();
+    private readonly List<BitAccordionListItem> _scrollItems = ScrollItems();
+    private readonly List<BitAccordionListItem> _ariaItems = AriaItems();
+    private readonly List<BitAccordionListItem> _navItems = NavItems();
+    private readonly List<BitAccordionListItem> _styleItems = StyleItems();
+    private readonly List<BitAccordionListItem> _rtlItems = RtlItems();
+    private readonly List<BitAccordionListItem> _none = [];
+    private readonly List<BitAccordionListItem> _eager = [new() { Key = "eager", Title = "Eager", Body = Body("eager-body", "Rendered up front") }];
+    private readonly List<BitAccordionListItem> _lazy = [new() { Key = "lazy", Title = "Lazy", Body = Body("lazy-body", "Rendered on first open") }];
+    private readonly List<BitAccordionListItem> _unmount = [new() { Key = "unmount", Title = "Unmount", Body = InputBody("unmount-input") }];
+    private readonly List<BitAccordionListItem> _hufLazy = [new() { Key = "huf-lazy", Title = "Lazy but searchable", Body = Body("huf-lazy-body", "In the DOM anyway") }];
+    private List<BitAccordionListItem> _actionItems = [];
+    private List<BitAccordionListItem> _eventItems = [];
+
+    private readonly List<string> _log = [];
+    private string _actioned = "-";
+    private bool _listDisabled = true;
+    private int _rootClicks;
+    private bool _lockToggling;
+    private bool _slowToggling;
+    private TaskCompletionSource _togglingGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private TaskCompletionSource _holdGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private string _togglingReport = "-";
+    private BitAccordionList<BitAccordionListItem>? _togglingRef;
+    private string? _boundKey = "users";
+    private IEnumerable<string> _boundKeys = [];
+    private BitAccordionList<BitAccordionListItem>? _methodsRef;
+    private BitAccordionList<BitAccordionListItem>? _bindKeyRef;
+    private string _methodsState = "-";
+    private bool _showEmptyItems;
+    private bool _dynamicMultiple = true;
+    private bool _mounted = true;
+    private int _added;
+    private List<BitAccordionListItem> _dynamicItems = [];
+
+    private readonly BitAccordionListParams[] _listParams =
+    [
+        new() { Joined = true, Multiple = true, ExpanderIconName = BitIconName.Add, ExpandedExpanderIconName = BitIconName.Remove, HeadingLevel = 4 }
+    ];
+
+    protected override void OnInitialized()
+    {
+        _actionItems = ActionItems();
+        _eventItems = EventItems();
+        _dynamicItems =
+        [
+            new() { Key = "d1", Title = "Dynamic one", Body = Body("d1-body", "One") },
+            new() { Key = "d2", Title = "Dynamic two", Body = Body("d2-body", "Two") },
+            new() { Key = "d3", Title = "Dynamic three", Body = Body("d3-body", "Three") },
+        ];
+    }
+
+    private void Log(string entry) => _log.Add(entry);
+
+    // Every list gets item instances of its own: the list writes the expanded state back onto its items, so two lists
+    // sharing the same instances would share that state.
+    private readonly Dictionary<string, List<BitAccordionListItem>> _lists = [];
+
+    private List<BitAccordionListItem> L(string id, Func<List<BitAccordionListItem>> create)
+        => _lists.TryGetValue(id, out var items) ? items : _lists[id] = create();
+
+    private void SetOwnAction() => _actioned = "own";
+
+    private static RenderFragment<BitAccordionListItem> StylesActions => i => @<span class="acl-styles-act">a</span>;
+
+    private static RenderFragment<BitAccordionListItem> ClassesActions => i => @<span class="acl-classes-act">a</span>;
+
+    private static RenderFragment<BitAccordionListItem> Body(string cls, string text) => item => @<span class="@cls">@text</span>;
+
+    private static RenderFragment<BitAccordionListItem> InputBody(string cls) => item => @<input class="@cls" />;
+
+    private static List<BitAccordionListItem> BasicItems() =>
+    [
+        new() { Title = "General settings", Description = "The general settings", Body = Body("body-general", "General body") },
+        new() { Title = "Users", Description = "You are not an owner", Body = Body("body-users", "Users body") },
+        new() { Title = "Advanced settings", Description = "Filtering is off", Body = Body("body-advanced", "Advanced body") },
+    ];
+
+    private static List<BitAccordionListItem> KeyedItems() =>
+    [
+        new() { Key = "general", Title = "General settings", Description = "The general settings", Body = Body("body-general", "General body") },
+        new() { Key = "users", Title = "Users", Description = "You are not an owner", Body = Body("body-users", "Users body") },
+        new() { Key = "advanced", Title = "Advanced settings", Description = "Filtering is off", Body = Body("body-advanced", "Advanced body") },
+    ];
+
+    private static List<BitAccordionListItem> ItemExpandedItems() =>
+    [
+        new() { Key = "a", Title = "A", Body = Body("body-a", "A") },
+        new() { Key = "b", Title = "B", IsExpanded = true, Body = Body("body-b", "B") },
+    ];
+
+    private static List<BitAccordionListItem> MethodItems() =>
+    [
+        new() { Key = "general", Title = "General settings", Body = Body("body-general", "General body") },
+        new() { Key = "users", Title = "Users", Body = Body("body-users", "Users body") },
+        new() { Key = "off", Title = "Turned off", IsDisabled = true, Body = Body("body-off", "Off body") },
+        new() { Key = "advanced", Title = "Advanced settings", Body = Body("body-advanced", "Advanced body") },
+    ];
+
+    private static List<BitAccordionListItem> IconItems() =>
+    [
+        new() { Title = "General settings", IconName = BitIconName.Settings, ExpanderIconName = BitIconName.ChevronDownSmall, Body = Body("body-general", "General") },
+        new() { Title = "Users", IconName = BitIconName.Contact, ExpanderIconName = BitIconName.Add, ExpandedExpanderIconName = BitIconName.Remove, Body = Body("body-users", "Users") },
+        new() { Title = "Advanced settings", IconName = BitIconName.Ringer, HideExpanderIcon = true, Body = Body("body-advanced", "Advanced") },
+    ];
+
+    private static List<BitAccordionListItem> ExternalIconItems() =>
+    [
+        new() { Title = "Fa", Icon = BitIconInfo.Fa("solid gear"), Body = Body("body-fa", "Fa") },
+        new() { Title = "Bi", Icon = BitIconInfo.Bi("person"), ExpanderIcon = BitIconInfo.Bi("plus"), Body = Body("body-bi", "Bi") },
+    ];
+
+    private List<BitAccordionListItem> ActionItems() =>
+    [
+        new() { Title = "General settings", Body = Body("body-general", "General") },
+        new() { Title = "Users", Body = Body("body-users", "Users"), Actions = item => @<button class="acl-own-action" @onclick="SetOwnAction">Own action</button> },
+    ];
+
+    private static List<BitAccordionListItem> TemplateItems() =>
+    [
+        new() { Title = "General settings" },
+        new() { Title = "Users", Body = Body("acl-own-body", "Own body wins"), HeaderTemplate = item => @<i class="acl-own-header">Own header</i> },
+        new() { Title = "Advanced settings", TitleTemplate = item => @<u>ignored under a HeaderTemplate</u> },
+    ];
+
+    private static List<BitAccordionListItem> StateItems() =>
+    [
+        new() { Key = "normal", Title = "General settings", Body = Body("body-normal", "Normal") },
+        new() { Key = "disabled", Title = "Users", IsDisabled = true, Body = Body("body-disabled", "Disabled") },
+        new() { Key = "locked", Title = "Advanced settings", ReadOnly = true, Body = Body("body-locked", "Locked") },
+    ];
+
+    private List<BitAccordionListItem> EventItems() =>
+    [
+        new() { Title = "One", Body = Body("body-one", "One"), OnClick = i => Log($"ev:item-click:{i.Title}") },
+        new() { Title = "Two", Body = Body("body-two", "Two"), OnClick = i => Log($"ev:item-click:{i.Title}") },
+    ];
+
+    private static List<BitAccordionListItem> LongItems()
+    {
+        var text = string.Join(" ", Enumerable.Repeat("A sentence long enough to fill a few lines of the panel.", 30));
+        return
+        [
+            new() { Key = "long-1", Title = "A long panel", Body = Body("body-long-1", text) },
+            new() { Key = "long-2", Title = "Another long panel", Body = Body("body-long-2", text) },
+        ];
+    }
+
+    private static List<BitAccordionListItem> FaqItems() =>
+    [
+        new() { Key = "password", Title = "How do I reset my password?", Body = item => @<span>Open Settings, choose Security and pick <span id="faq-reset-target">Reset password</span>.</span> },
+        new() { Key = "refund", Title = "Can I get a refund?", Body = item => @<span>Refunds are issued within <span id="faq-refund-target">14 days</span>.</span> },
+        new() { Key = "invoice", Title = "Where is my invoice?", IsDisabled = true, Body = item => @<span id="faq-invoice-target">Every invoice is listed under Billing.</span> },
+    ];
+
+    private static List<BitAccordionListItem> ScrollItems() =>
+    [
+        new() { Key = "s1", Title = "First section", Body = Body("body-s1", string.Join(" ", Enumerable.Repeat("First.", 40))) },
+        new() { Key = "s2", Title = "Second section", Body = Body("body-s2", string.Join(" ", Enumerable.Repeat("Second.", 40))) },
+        new() { Key = "s3", Title = "Third section", Body = Body("body-s3", string.Join(" ", Enumerable.Repeat("Third.", 40))) },
+        new() { Key = "s4", Title = "Fourth section", Body = Body("body-s4", string.Join(" ", Enumerable.Repeat("Fourth.", 120))) },
+        new() { Key = "s5", Title = "Fifth section", Body = Body("body-s5", string.Join(" ", Enumerable.Repeat("Fifth.", 120))) },
+    ];
+
+    private static List<BitAccordionListItem> AriaItems() =>
+    [
+        new() { Title = "Titled", Body = Body("body-titled", "Titled") },
+        new() { HeaderAriaLabel = "Settings by icon", IconName = BitIconName.Settings, Body = Body("body-icon-only", "Icon only") },
+    ];
+
+    private static List<BitAccordionListItem> NavItems() =>
+    [
+        new() { Key = "n1", Title = "First", Body = item => @<input class="nav-input" /> },
+        new() { Key = "n2", Title = "Second (disabled)", IsDisabled = true },
+        new() { Key = "n3", Title = "Third", Body = Body("body-n3", "Third") },
+        new() { Key = "n4", Title = "Fourth", Body = Body("body-n4", "Fourth") },
+    ];
+
+    private static List<BitAccordionListItem> StyleItems() =>
+    [
+        new() { Key = "general", Title = "General settings", Description = "Described", IconName = BitIconName.Settings, Body = Body("body-general", "General"),
+                Class = "acl-item-class", Style = "margin-left: 12px" },
+        new() { Key = "users", Title = "Users", Description = "Described", IconName = BitIconName.Contact, Body = Body("body-users", "Users") },
+    ];
+
+    private static List<BitAccordionListItem> RtlItems() =>
+    [
+        new() { Title = "تنظیمات عمومی", Description = "تنظیمات کلی", IconName = BitIconName.Settings, Body = Body("body-rtl-1", "لورم ایپسوم") },
+        new() { Title = "کاربران", Description = "شما مالک نیستید", Body = Body("body-rtl-2", "لورم ایپسوم") },
+    ];
+
+    private async Task HandleOnToggling(BitAccordionListToggleArgs<BitAccordionListItem> args)
+    {
+        _togglingReport = $"{args.Key}:{(args.IsExpanding ? "expanding" : "collapsing")}:{args.Reason}";
+        Log($"tg:toggling:{args.Key}:{args.IsExpanding}:{args.Reason}");
+
+        if (_slowToggling)
+        {
+            StateHasChanged();
+            await _togglingGate.Task;
+            _togglingGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+
+        args.Cancel = _lockToggling;
+    }
+
+    private async Task HoldToggling(BitAccordionListToggleArgs<BitAccordionListItem> args)
+    {
+        await _holdGate.Task;
+        _holdGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+
+    private void ReadMethodsState()
+    {
+        _methodsState = $"{string.Join("|", _methodsRef!.GetExpandedKeys())};users={_methodsRef.IsExpanded("users")};none={_methodsRef.IsExpanded(null)}";
+    }
+
+    private void AddItem()
+    {
+        _added++;
+        _dynamicItems = [.. _dynamicItems, new() { Key = $"n{_added}", Title = $"New {_added}", Body = Body($"new-{_added}-body", $"New {_added}") }];
+    }
+
+    private void RemoveItem()
+    {
+        _dynamicItems = [.. _dynamicItems.Skip(1)];
+    }
+}

@@ -18,6 +18,19 @@ public partial class BitPersona : BitComponentBase
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the persona component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple persona components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitPersonaParams.ParamName)]
+    public BitPersonaParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// The title of the action button (tooltip).
     /// </summary>
     [Parameter] public string ActionButtonTitle { get; set; } = "Edit image";
@@ -78,6 +91,11 @@ public partial class BitPersona : BitComponentBase
     /// <remarks>
     /// The color is picked by a stable hash of <see cref="CoinColorSeed"/>, or - when that is not set - of
     /// <see cref="ImageInitials"/> or <see cref="PrimaryText"/>, so the same person always gets the same color.
+    /// <br />
+    /// The picked color counts as a choice, the same as an explicit <see cref="CoinColor"/>: it wins over the
+    /// <c>--bit-Persona-coin-background</c>, <c>--bit-Persona-coin-color</c> and <c>--bit-Persona-ring-color</c>
+    /// variables, since telling people apart by color is what turning this on asked for and one variable set on
+    /// <c>:root</c> would otherwise paint every one of them the same.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool AutoCoinColor { get; set; }
@@ -96,11 +114,16 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitPersona component.
     /// </summary>
-    [Parameter] public BitPersonaClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitPersonaClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The background color when the user's initials are displayed.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Persona-coin-background</c>, <c>--bit-Persona-coin-color</c> and
+    /// <c>--bit-Persona-ring-color</c> variables; left unset (and with <see cref="AutoCoinColor"/> off), the coin is
+    /// Info unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? CoinColor { get; set; }
 
@@ -421,8 +444,10 @@ public partial class BitPersona : BitComponentBase
     /// The relationship the <see cref="Href"/> link bears to the current document (maps to the anchor's rel attribute).
     /// </summary>
     /// <remarks>
-    /// When it is not set and <see cref="Target"/> is <c>_blank</c>, <c>rel="noopener"</c> is added of its own
-    /// accord, which is what keeps the page the coin opens from reaching back into the one it was opened from.
+    /// When <see cref="Target"/> is <c>_blank</c>, <c>noopener</c> is added to whatever this says, which is what
+    /// keeps the page the coin opens from reaching back into the one it was opened from - unless this already
+    /// says what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>).
     /// It is ignored for an empty or hash-only <see cref="Href"/>.
     /// </remarks>
     [Parameter]
@@ -449,11 +474,20 @@ public partial class BitPersona : BitComponentBase
     /// The outline of the coin: a circle, a rounded square or a sharp one. The default is a circle.
     /// </summary>
     /// <remarks>
+    /// Only <see cref="BitShape.Pill"/>, <see cref="BitShape.Rounded"/> and <see cref="BitShape.Square"/> mean
+    /// anything here. The coin is square, so a fully rounded one is the circle a picture of a person is shown
+    /// in - which is why the default is <see cref="BitShape.Pill"/> and not a shape named after the circle it
+    /// draws. <see cref="BitShape.Circle"/> would ask the coin for proportions it already has, and leaves it
+    /// as it is.
+    /// <br />
     /// This supersedes <see cref="Squared"/>, which is the same thing said with a flag and can only reach
-    /// <see cref="BitPersonaShape.Rounded"/>. When both are set, this one wins.
+    /// <see cref="BitShape.Rounded"/>. When both are set, this one wins.
+    /// <br />
+    /// An explicit value wins over <c>--bit-Persona-coin-radius</c>; left unset (and with <see cref="Squared"/>
+    /// off), the coin is a circle unless that variable says otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitPersonaShape? Shape { get; set; }
+    public BitShape? Shape { get; set; }
 
     /// <summary>
     /// If true renders the initials while the image is loading. This only applies when an imageUrl is provided.
@@ -477,6 +511,20 @@ public partial class BitPersona : BitComponentBase
     [Parameter] public bool ShowOverflowTooltip { get; set; } = true;
 
     /// <summary>
+    /// Puts the built-in glyph of each status in the presence dot - a check for Online, a clock for Away, a cross for
+    /// Offline - so the statuses are told apart by shape as well as by color.
+    /// </summary>
+    /// <remarks>
+    /// Online, Away and Busy are otherwise three discs that differ only in color, which is no difference at all to
+    /// a reader who cannot tell red from green. A glyph given by <see cref="PresenceIcons"/>,
+    /// <see cref="PresenceIconNames"/>, <see cref="PresenceIcon"/> or <see cref="PresenceIconName"/> takes
+    /// precedence, and like those the glyphs are only drawn on coins of 40px and up. The glyphs of Online, Away
+    /// and Offline ship with the core package; those of Blocked, OutOfOffice and Unknown are named from the
+    /// Bit.BlazorUI.Icons set, which an app has to reference for them to be drawn.
+    /// </remarks>
+    [Parameter] public bool ShowDefaultPresenceIcons { get; set; }
+
+    /// <summary>
     /// Shows the secondary text at every size, including the small ones that normally leave no room for it.
     /// </summary>
     /// <remarks>
@@ -489,6 +537,11 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// Decides the size of the control.
     /// </summary>
+    /// <remarks>
+    /// A value given by the markup or by a <see cref="BitPersonaParams"/> ancestor - <see cref="BitPersonaSize.Size48"/>
+    /// included - wins over the <c>--bit-Persona-gap</c>, <c>--bit-Persona-ring-gap</c> and
+    /// <c>--bit-Persona-ring-width</c> variables, which restyle only a persona that leaves it unset.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitPersonaSize Size { get; set; } = BitPersonaSize.Size48;
 
@@ -496,8 +549,9 @@ public partial class BitPersona : BitComponentBase
     /// If true, renders the coin with a rounded square shape instead of the default circular shape.
     /// </summary>
     /// <remarks>
-    /// This is the shorthand for <see cref="BitPersonaShape.Rounded"/>. Set <see cref="Shape"/> instead to
+    /// This is the shorthand for <see cref="BitShape.Rounded"/>. Set <see cref="Shape"/> instead to
     /// reach the sharp square as well; a <see cref="Shape"/> of its own takes precedence over this.
+    /// Like an explicit <see cref="Shape"/>, it wins over <c>--bit-Persona-coin-radius</c>.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Squared { get; set; }
@@ -505,14 +559,15 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitPersona component.
     /// </summary>
-    [Parameter] public BitPersonaClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitPersonaClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The browsing context the <see cref="Href"/> link opens in (maps to the anchor's target attribute).
     /// </summary>
     /// <remarks>
-    /// Setting it to <c>_blank</c> also adds <c>rel="noopener"</c> unless a <see cref="Rel"/> of its own says
-    /// otherwise.
+    /// Setting it to <c>_blank</c> also adds <c>noopener</c> to the rel unless <see cref="Rel"/> already says
+    /// what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>).
     /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
@@ -554,6 +609,16 @@ public partial class BitPersona : BitComponentBase
     /// </remarks>
     [Parameter] public string? UnknownIconName { get; set; }
 
+    /// <summary>
+    /// Stacks the coin over the details and centers both, instead of laying them out side by side.
+    /// </summary>
+    /// <remarks>
+    /// This is the layout of a profile card or of a member tile in a call grid. Combined with
+    /// <see cref="Reversed"/> it puts the details over the coin.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Vertical { get; set; }
+
 
 
     protected override string RootElementClass => "bit-prs";
@@ -566,6 +631,11 @@ public partial class BitPersona : BitComponentBase
 
         ClassBuilder.Register(() => Reversed ? "bit-prs-rvs" : string.Empty);
 
+        ClassBuilder.Register(() => Vertical ? "bit-prs-vrt" : string.Empty);
+
+        // The size class lays out every part of the persona, so an unset Size still renders one - Size48's. What
+        // it publishes for the gap and the active ring is handed over as a choice only by bit-prs-ssz, which an
+        // explicit Size alone adds: the public --bit-Persona-* variables restyle the default and never a choice.
         ClassBuilder.Register(() => Size switch
         {
             BitPersonaSize.Size8 => "bit-prs-s8",
@@ -580,19 +650,25 @@ public partial class BitPersona : BitComponentBase
             _ => string.Empty
         });
 
+        ClassBuilder.Register(() => HasExplicitSize ? "bit-prs-ssz" : string.Empty);
+
         ClassBuilder.Register(() => HasClickableCoin ? "bit-prs-iac" : string.Empty);
 
         ClassBuilder.Register(() => HasImage ? "bit-prs-him" : string.Empty);
 
+        // CoinColor (or the color AutoCoinColor picks) and Shape (or Squared) publish nothing while they are unset,
+        // which is what lets the stylesheet tell a default from a choice: the public --bit-Persona-coin-* variables
+        // restyle the default and never an explicit value.
         ClassBuilder.Register(() => Size is BitPersonaSize.Size8 ? string.Empty
                                   : CoinColor is not null ? GetCoinColorClass(CoinColor.Value)
                                   : AutoCoinColor ? GetAutoCoinColorClass()
-                                  : "bit-prs-inf");
+                                  : string.Empty);
 
-        ClassBuilder.Register(() => GetShape() switch
+        ClassBuilder.Register(() => (Shape ?? (Squared ? BitShape.Rounded : (BitShape?)null)) switch
         {
-            BitPersonaShape.Rounded => "bit-prs-sqr",
-            BitPersonaShape.Square => "bit-prs-sqr bit-prs-sqs",
+            BitShape.Pill => "bit-prs-cir",
+            BitShape.Rounded => "bit-prs-sqr",
+            BitShape.Square => "bit-prs-sqr bit-prs-sqs",
             _ => string.Empty
         });
 
@@ -613,12 +689,28 @@ public partial class BitPersona : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        // Size48 given where it used to be left unset (or the other way round) leaves Size unchanged, so the
+        // ResetClassBuilder of Size does not fire; whether it was given is what bit-prs-ssz says.
+        if (_hasExplicitSize != HasExplicitSize)
+        {
+            _hasExplicitSize = HasExplicitSize;
+
+            ClassBuilder.Reset();
+        }
+
+        base.OnParametersSet();
+    }
+
 
 
     /// <summary>
     /// The shape actually in force, which <see cref="Squared"/> can only ever ask for the rounded square of.
     /// </summary>
-    private BitPersonaShape GetShape() => Shape ?? (Squared ? BitPersonaShape.Rounded : BitPersonaShape.Circular);
+    private BitShape GetShape() => Shape ?? (Squared ? BitShape.Rounded : BitShape.Pill);
 
     private string? GetPresentationClass()
     {
@@ -644,7 +736,7 @@ public partial class BitPersona : BitComponentBase
         string? inset = null;
         // The dot keeps the same share of the coin a size class gives it, so a custom coin size stays in proportion.
         var presentationSize = CoinSize.Value / 4D;
-        if (GetShape() is not BitPersonaShape.Circular)
+        if (GetShape() is BitShape.Rounded or BitShape.Square)
         {
             // Retuned as the knob the stylesheet reads rather than as a side of its own, so the nudge follows
             // the dot to whichever corner the writing direction and Reversed between them put it in.
@@ -681,8 +773,33 @@ public partial class BitPersona : BitComponentBase
 
         // The single-status pair is what a persona that only ever shows one status reaches for instead of
         // declaring a map of all eight, so it answers only where the map had nothing to say.
-        return BitIconInfo.From(PresenceIcon, PresenceIconName);
+        var single = BitIconInfo.From(PresenceIcon, PresenceIconName);
+        if (single is not null || ShowDefaultPresenceIcons is false) return single;
+
+        var defaultName = GetDefaultPresenceIconName(Presence);
+
+        return defaultName is null ? null : BitIconInfo.Bit(defaultName);
     }
+
+    /// <summary>
+    /// The glyph <see cref="ShowDefaultPresenceIcons"/> puts in the dot of each status.
+    /// </summary>
+    /// <remarks>
+    /// Dnd has none because it already draws a bar of its own at every size, and Busy is left the plain disc: the one
+    /// filled status with nothing on it, which is what sets it apart from the rest. The three glyphs the core icon
+    /// subset carries are taken from it, so the statuses that most need a shape cue keep one in an app without
+    /// Bit.BlazorUI.Icons.
+    /// </remarks>
+    private static string? GetDefaultPresenceIconName(BitPersonaPresence presence) => presence switch
+    {
+        BitPersonaPresence.Online => "Accept",
+        BitPersonaPresence.Away => "Clock",
+        BitPersonaPresence.Offline => "Cancel",
+        BitPersonaPresence.Blocked => "Blocked2",
+        BitPersonaPresence.OutOfOffice => "Airplane",
+        BitPersonaPresence.Unknown => "Help",
+        _ => null
+    };
 
     /// <summary>
     /// What the presence dot is called - its tooltip when one was given, and its accessible name either way.
@@ -726,27 +843,7 @@ public partial class BitPersona : BitComponentBase
         };
     }
 
-    private static string GetCoinColorClass(BitColor color) => color switch
-    {
-        BitColor.Primary => "bit-prs-pri",
-        BitColor.Secondary => "bit-prs-sec",
-        BitColor.Tertiary => "bit-prs-ter",
-        BitColor.Info => "bit-prs-inf",
-        BitColor.Success => "bit-prs-suc",
-        BitColor.Warning => "bit-prs-wrn",
-        BitColor.SevereWarning => "bit-prs-swr",
-        BitColor.Error => "bit-prs-err",
-        BitColor.PrimaryBackground => "bit-prs-pbg",
-        BitColor.SecondaryBackground => "bit-prs-sbg",
-        BitColor.TertiaryBackground => "bit-prs-tbg",
-        BitColor.PrimaryForeground => "bit-prs-pfg",
-        BitColor.SecondaryForeground => "bit-prs-sfg",
-        BitColor.TertiaryForeground => "bit-prs-tfg",
-        BitColor.PrimaryBorder => "bit-prs-pbr",
-        BitColor.SecondaryBorder => "bit-prs-sbr",
-        BitColor.TertiaryBorder => "bit-prs-tbr",
-        _ => "bit-prs-inf"
-    };
+    private static string GetCoinColorClass(BitColor color) => BitCssClasses.Color(color, "bit-prs");
 
     /// <summary>
     /// The colors a hashed coin is picked from when the caller names none: the accent and the semantic
@@ -822,11 +919,16 @@ public partial class BitPersona : BitComponentBase
         };
     }
 
-    private string GetInitials()
+    // The initials, and whether their order is left to the stylesheet: a pair a Dir that names no direction would
+    // write back to front in a right-to-left layout (see CalculateInitials), which only the browser knows the
+    // persona is laid out in. Initials passed in by hand are shown as they were written, in every direction.
+    private (string Initials, bool FollowsDirection) GetInitials()
     {
-        if (ImageInitials.HasValue()) return ImageInitials!;
+        if (ImageInitials.HasValue()) return (ImageInitials!, false);
 
-        return CalculateInitials(PrimaryText, Dir == BitDir.Rtl, AllowPhoneInitials);
+        var initials = CalculateInitials(PrimaryText, ExplicitRtl, AllowPhoneInitials, out var followsDirection);
+
+        return (initials, followsDirection);
     }
 
     /// <summary>
@@ -841,8 +943,10 @@ public partial class BitPersona : BitComponentBase
     /// rest of the industry settled on: two words give first and last, three skip the middle one, and anything
     /// else gives the first alone.
     /// </remarks>
-    private static string CalculateInitials(string? text, bool isRtl, bool allowPhoneInitials)
+    private static string CalculateInitials(string? text, bool? isRtl, bool allowPhoneInitials, out bool followsDirection)
     {
+        followsDirection = false;
+
         if (text.HasNoValue()) return string.Empty;
 
         var source = text!.Trim();
@@ -879,9 +983,14 @@ public partial class BitPersona : BitComponentBase
         // but only for initials that are themselves left-to-right, which the bidi algorithm lays out left
         // to right wherever they sit. Initials taken from a right-to-left name are already laid out from
         // the right, and reversing those would undo the very order it is here to produce.
-        var reverse = isRtl && IsRtlText(first) is false && IsRtlText(second) is false;
+        // A direction Dir does not name is the page's or the content's, which only the browser knows: such a pair
+        // is left in reading order and handed to the stylesheet, which lays it out from the right wherever the
+        // persona reads right to left (bit-prs-rev).
+        var ltrPair = IsRtlText(first) is false && IsRtlText(second) is false;
 
-        return reverse ? $"{second}{first}" : $"{first}{second}";
+        followsDirection = isRtl is null && ltrPair;
+
+        return isRtl is true && ltrPair ? $"{second}{first}" : $"{first}{second}";
     }
 
     /// <summary>
@@ -1003,7 +1112,13 @@ public partial class BitPersona : BitComponentBase
         // draws itself. Everything about the element as a control - the pointer, the focus ring, the overlay
         // it reveals - is hung off the first, so a coin filled by a template is as reachable as any other;
         // everything about how the coin looks stays on the second, which a template has taken over.
-        string?[] classes = ["bit-prs-cne", CoinTemplate is null ? "bit-prs-imc" : null, GetCoinClass(), Classes?.ImageContainer];
+        // bit-prs-cph marks a coin that is showing a picture, which has no use for the edge a filled coin draws
+        // in its own color around the initials: around a photo it is a hairline of an unrelated color.
+        string?[] classes = ["bit-prs-cne",
+                             CoinTemplate is null ? "bit-prs-imc" : null,
+                             ShowsPicture ? "bit-prs-cph" : null,
+                             GetCoinClass(),
+                             Classes?.ImageContainer];
 
         return string.Join(' ', classes.Where(c => c.HasValue()));
     }
@@ -1013,6 +1128,13 @@ public partial class BitPersona : BitComponentBase
         var style = $"{GetCoinSizeStyle()}{Styles?.ImageContainer?.Trim(';')}";
         return style.HasValue() ? style : null;
     }
+
+    // Size keeps its Size48 default so that it stays a plain value, which leaves telling a default from a choice to
+    // whether anything gave it one: the markup on this render, or a BitPersonaParams ancestor (whose value counts as
+    // set, and is applied only where the markup gave none).
+    private bool HasExplicitSize => HasNotBeenSet(nameof(Size)) is false || CascadingParameters?.Size is not null;
+
+    private bool _hasExplicitSize;
 
     private string? GetCoinSizeStyle()
     {
@@ -1045,6 +1167,12 @@ public partial class BitPersona : BitComponentBase
     private bool HasImage => ImageUrl.HasValue() || ImageSrcSet.HasValue();
 
     /// <summary>
+    /// Whether the coin is showing a picture right now: one was given, nothing has taken its place, and it has not
+    /// failed to load.
+    /// </summary>
+    private bool ShowsPicture => HasImage && Unknown is false && CoinTemplate is null && _hasError is false;
+
+    /// <summary>
     /// Whether the persona has no visible text of its own, in which case the coin is the whole of it and has
     /// to carry a name for anyone who cannot see it.
     /// </summary>
@@ -1074,7 +1202,10 @@ public partial class BitPersona : BitComponentBase
 
             if (ImageOverlayText.HasNoValue()) return false;
 
-            return OnImageClick.HasDelegate || HasNotBeenSet(nameof(ImageOverlayText)) is false;
+            // A text handed down by a BitParams ancestor is named by the caller just the same.
+            return OnImageClick.HasDelegate
+                || HasNotBeenSet(nameof(ImageOverlayText)) is false
+                || CascadingParameters?.ImageOverlayText.HasValue() is true;
         }
     }
 
@@ -1171,9 +1302,15 @@ public partial class BitPersona : BitComponentBase
     /// announce is worse than no role at all: it makes everything inside the persona presentational and then
     /// has nothing of its own to put in their place.
     /// </para>
+    /// <para>
+    /// A role the page splatted on is the one kept: the role is written after the splatted attributes, so the null
+    /// of an unnamed persona would otherwise remove it, and a role of its own would replace it.
+    /// </para>
     /// </remarks>
     private string? GetRootRole()
     {
+        if (GetSplattedAttribute("role") is { } splattedRole) return splattedRole;
+
         if (GetRootAriaLabel().HasNoValue()) return null;
 
         return IsCoinOnly ? "img" : "group";
@@ -1182,11 +1319,16 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// The name of a persona that shows nothing but its coin. The presence dot is folded into it rather than
     /// left to name itself: role="img" on the coin makes everything inside it presentational, so a nested
-    /// label would never be read.
+    /// label would never be read. An aria-label the page splatted on comes right after the AriaLabel, since the
+    /// null this is for a persona showing its details would otherwise remove it.
     /// </summary>
     private string? GetRootAriaLabel()
     {
         if (AriaLabel.HasValue()) return AriaLabel;
+
+        var splattedAriaLabel = GetSplattedAttribute("aria-label");
+
+        if (splattedAriaLabel.HasValue()) return splattedAriaLabel;
 
         if (IsCoinOnly is false) return null;
 
@@ -1198,14 +1340,14 @@ public partial class BitPersona : BitComponentBase
 
     private async Task HandleActionClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnActionClick.InvokeAsync(e);
     }
 
     private async Task HandleImageClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnImageClick.InvokeAsync(e);
     }
@@ -1244,21 +1386,10 @@ public partial class BitPersona : BitComponentBase
         StateHasChanged();
     }
 
-    private void OnSetHrefAndRel()
+    internal void OnSetHrefAndRel()
     {
-        if (Href.HasNoValue() || Href!.StartsWith('#'))
-        {
-            _rel = null;
-            return;
-        }
-
-        if (Rel.HasValue)
-        {
-            _rel = BitLinkRelUtils.GetRels(Rel.Value);
-            return;
-        }
-
-        // protects against reverse-tabnabbing when opening the link in a new browsing context
-        _rel = Target == "_blank" ? "noopener" : null;
+        // protects against reverse-tabnabbing when opening the link in a new browsing context, on top of
+        // whatever rel it was given - a NoFollow alone is about crawling and says nothing about the opener.
+        _rel = BitNewTabUtils.ResolveRel(Href, Rel, Target);
     }
 }

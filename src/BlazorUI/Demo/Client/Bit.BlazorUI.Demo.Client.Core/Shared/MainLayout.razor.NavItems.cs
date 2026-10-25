@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Shared;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class MainLayout
 {
@@ -7,7 +7,10 @@ public partial class MainLayout
     [
         new() { Text = "Overview", Url = "/overview" },
         new() { Text = "Getting started", Url = "/getting-started" },
-        // Right after Getting started: connecting an agent to the MCP server is the second thing an
+        // Right after Getting started, which summarizes it and links here: how a published app downloads
+        // only the css and js it uses - the publish-time trimming and the lazy scripts.
+        new() { Text = "Trimming", Url = "/trimming", Description = "BundleSize, LazyScripts, Publish" },
+        // Next to the setup pages: connecting an agent to the MCP server is one of the first things an
         // app does, and the page is a working client rather than a description of one.
         new() { Text = "MCP server", Url = "/mcp-server", Description = "AI, Agent, Copilot, Cursor, Claude, Tools" },
         // The searchable index of the whole library. It used to share a route with Overview, which
@@ -37,11 +40,11 @@ public partial class MainLayout
                 new() { Text = "FileInput", Url = "/components/fileinput", AdditionalUrls = ["/components/file-input"] },
                 new() { Text = "FileUpload", Url = "/components/fileupload", AdditionalUrls = ["/components/file-upload"] },
                 new() { Text = "NumberField", Url = "/components/numberfield", AdditionalUrls = ["/components/numerictextfield", "/components/numeric-text-field", "/components/spinbutton", "/components/spin-button"], Description = "NumberInput" },
-                new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = ["/components/otp-input"] },
-                new() { Text = "Rating", Url = "/components/rating" },
+                new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = ["/components/otp-input"], Description = "PinInput, VerificationCode, OneTimePassword" },
+                new() { Text = "Rating", Url = "/components/rating", Description = "Rate, Stars", Data = "Review, Score, Feedback" },
                 new() { Text = "SearchBox", Url = "/components/searchbox", AdditionalUrls = ["/components/search-box"], Data = "AutoComplete" },
                 new() { Text = "Slider", Url = "/components/slider", Description = "Range" },
-                new() { Text = "TagsInput", Url = "/components/tagsinput", AdditionalUrls = ["/components/tags-input"] },
+                new() { Text = "TagsInput", Url = "/components/tagsinput", AdditionalUrls = ["/components/tags-input"], Description = "Chips, Tokens", Data = "TagBox, TokenInput, ChipInput, TagField, Keywords, Labels, Recipients, Multiple" },
                 new() { Text = "TextField", Url = "/components/textfield", AdditionalUrls = ["/components/text-field"], Description = "TextInput" },
                 new() { Text = "Toggle", Url = "/components/toggle", Description = "Switch" },
                 new()
@@ -50,7 +53,7 @@ public partial class MainLayout
                     ChildItems =
                     [
                         new() { Text = "CircularTimePicker", Url = "/components/circulartimepicker", AdditionalUrls = ["/components/circular-time-picker"] },
-                        new() { Text = "ColorPicker", Url = "/components/colorpicker", AdditionalUrls = ["/components/color-picker"] },
+                        new() { Text = "ColorPicker", Url = "/components/colorpicker", AdditionalUrls = ["/components/color-picker"], Description = "ColorPalette, Swatch", Data = "Hex, RGB, HSL, HSV, Alpha, Transparency, Eyedropper, Contrast" },
                         new() { Text = "DatePicker", Url = "/components/datepicker", AdditionalUrls = ["/components/date-picker"] },
                         new() { Text = "DateRangePicker", Url = "/components/daterangepicker", AdditionalUrls = ["/components/date-range-picker"] },
                         new() { Text = "TimePicker", Url = "/components/timepicker", AdditionalUrls = ["/components/time-picker"] },
@@ -146,13 +149,13 @@ public partial class MainLayout
                 new() { Text = "Image", Url = "/components/image", Description = "Img, Picture", Data = "Photo, Figure, Thumbnail, Lazy, Srcset, AspectRatio, Placeholder, Fallback" },
                 new() { Text = "Label",  Url = "/components/label" },
                 new() { Text = "Link", Url = "/components/link", Description = "Anchor" },
-                new() { Text = "MediaQuery", Url = "/components/mediaquery" },
+                new() { Text = "MediaQuery", Url = "/components/mediaquery", Description = "Breakpoint, Responsive", Data = "matchMedia, Hidden, Show, Hide, useMediaQuery" },
                 new() { Text = "Overlay", Url = "/components/overlay", Description = "Backdrop, Scrim", Data = "Mask, Dim, BlockUI, ClickCatcher" },
                 new() { Text = "Params", Url = "/components/params" },
-                new() { Text = "PullToRefresh", Url = "/components/pulltorefresh" },
+                new() { Text = "PullToRefresh", Url = "/components/pulltorefresh", Description = "RefreshView, Refresher" },
                 new() { Text = "Separator", Url = "/components/separator", Description = "Divider" },
-                new() { Text = "Sticky", Url = "/components/sticky" },
-                new() { Text = "SwipeTrap", Url = "/components/swipetrap" },
+                new() { Text = "Sticky", Url = "/components/sticky", Description = "Affix", Data = "Pin, Pinned, Sticky header, Frozen header, Frozen column, position sticky, Stuck, Scroll padding" },
+                new() { Text = "SwipeTrap", Url = "/components/swipetrap", Description = "Gesture, Swipeable", Data = "Swipe, Drag, Pan, Flick, Touch, Pointer, SwipeArea, Hammer" },
                 new() { Text = "Text", Url = "/components/text", Description = "Typography", Data = "Heading, Title, Paragraph, Caption, Truncate, Ellipsis, LineClamp, Clamp, Weight, Bold, Italic, Underline, Uppercase" },
             ],
         },
@@ -163,21 +166,23 @@ public partial class MainLayout
             [
                 new() { Text = "AccordionList", Url = "/components/accordionlist", Description = "Expander, Accordion" },
                 new() { Text = "AppShell", Url = "/components/appshell" },
-                new() { Text = "Chart", Url = "/components/chart" },
+                new() { Text = "Chart", Url = "/components/chart", Description = "Graph, Plot", Data = "Line chart, Bar chart, Column chart, Area chart, Pie chart, Doughnut, Donut, Polar area, Radar, Spider, Scatter, Bubble, Mixed, Combo, Sparkline, Gauge, Waterfall, Error bars, Trendline, Annotations, Zoom, Chart.js" },
+                new() { Text = "CountryPicker", Url = "/components/countrypicker", Description = "CountrySelector, CountrySelect", Data = "Country, Nationality, Country of residence, Billing country, Flag, ISO code" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
                 new() { Text = "Flag", Url = "/components/flag", Description = "Country, CountryFlag" },
-                new() { Text = "FullCalendar", Url = "/components/fullcalendar", Description = "Scheduler" },
-                new() { Text = "InfiniteScrolling", Url = "/components/infinitescrolling" },
-                new() { Text = "Map", Url = "/components/map" },
-                new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor" },
+                new() { Text = "FullCalendar", Url = "/components/fullcalendar", Description = "Scheduler, EventCalendar, Planner" },
+                new() { Text = "InfiniteScrolling", Url = "/components/infinitescrolling", Description = "InfiniteScroll, LoadMore", Data = "Endless scroll, Infinite list, Lazy loading, Feed, Chat, Paging" },
+                new() { Text = "Map", Url = "/components/map", Description = "GeoMap, Maps", Data = "Leaflet, MapLibre, Mapbox, OpenLayers, ArcGIS, Azure Maps, Cesium, Globe, Markers, Pins, Clustering, GeoJSON, Tiles, Location, Geolocation, GIS" },
+                new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor", Data = "Markdown, Text editor, Rich text, Comment box, Notes, Preview, Toolbar" },
                 new() { Text = "MarkdownViewer", Url = "/components/markdownviewer", Description = "MdViewer, MD" },
-                new() { Text = "MessageBox", Url = "/components/messagebox", Description = "Confirm, Alert, MsgBox" },
+                new() { Text = "MessageBox", Url = "/components/messagebox", Description = "Confirm, Alert, MsgBox", Data = "Confirmation dialog, Alert dialog, Yes No, Ok Cancel, Are you sure, Question" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
-                new() { Text = "PdfViewer", Url = "/components/pdfviewer", Description = "PdfReader, Pdf", AdditionalUrls = ["/components/pdfreader"] },
+                new() { Text = "PdfViewer", Url = "/components/pdfviewer", Description = "PdfReader, Pdf", Data = "PDF, Document viewer, Preview, Print, Thumbnails, Bookmarks, Find in document, Attachments, Fullscreen, Presentation", AdditionalUrls = ["/components/pdfreader"] },
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },
-                new() { Text = "RichTextEditor", Url = "/components/richtexteditor" },
+                new() { Text = "RichTextEditor", Url = "/components/richtexteditor", Description = "WysiwygEditor, HtmlEditor", Data = "WYSIWYG, Rich text, HTML editor, Text editor, Content editor, Comment box, Formatting, Toolbar, Mentions" },
                 new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "ShinyText, Skeleton, Loading, AI" },
+                new() { Text = "TimeZonePicker", Url = "/components/timezonepicker", Description = "TimeZoneSelector, TimeZoneSelect, TzPicker", Data = "Time zone, Timezone, UTC offset, GMT offset, IANA, Olson, Windows time zone, TimeZoneInfo, Daylight saving time, DST, Detect time zone" },
                 new() { Text = "Virtualize", Url = "/components/virtualize", Description = "VirtualScroll, Windowing" },
             ]
         },

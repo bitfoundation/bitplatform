@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.PhoneInput;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.PhoneInput;
 
 public partial class BitPhoneInputDemo
 {
@@ -17,6 +17,24 @@ public partial class BitPhoneInputDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Shows the pattern the number is currently formatted with as the placeholder of the number input, filling in only when no Placeholder of its own is given.",
+        },
+        new()
+        {
+            Name = "Background",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "The color kind of the fill of the phone input. An explicit value wins over --bit-PhoneInput-background; left unset, the fill is the primary kind unless it says otherwise.",
+            LinkType = LinkType.Link,
+            Href = "#color-kind-enum",
+        },
+        new()
+        {
+            Name = "Border",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "The color kind of the frame of the phone input, winning over the main color of Color (which keeps the focus ring). An explicit value wins over --bit-PhoneInput-border-color and --bit-PhoneInput-hover-border-color; left unset, the frame is the primary border unless an explicit Color or those variables say otherwise.",
+            LinkType = LinkType.Link,
+            Href = "#color-kind-enum",
         },
         new()
         {
@@ -57,10 +75,17 @@ public partial class BitPhoneInputDemo
         },
         new()
         {
+            Name = "ClearedAnnouncement",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "What a screen reader announces once the number has been emptied, in place of the default \"Cleared\". An empty string keeps the clearing from being announced.",
+        },
+        new()
+        {
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the phone input.",
+            Description = "The general color of the phone input: the frame takes its main color and the focus ring its focus color. An explicit value wins over --bit-PhoneInput-focus-color and the --bit-PhoneInput-* border colors (an explicit Border still wins the frame); left unset, the field is primary unless those variables say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -133,7 +158,7 @@ public partial class BitPhoneInputDemo
             Name = "DropdownAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The aria-label of the country dropdown button.",
+            Description = "The accessible name of the country selector (\"Country\" by default), which the name of the selected country is appended to (\"Country: Germany\"). It also names the country list. Set it to translate the selector for a screen reader.",
         },
         new()
         {
@@ -208,6 +233,8 @@ public partial class BitPhoneInputDemo
             Type = "BitInputMode?",
             DefaultValue = "null",
             Description = "Sets the inputmode html attribute of the number input, which decides the on-screen keyboard it asks for.",
+            LinkType = LinkType.Link,
+            Href = "#input-mode-enum",
         },
         new()
         {
@@ -229,6 +256,13 @@ public partial class BitPhoneInputDemo
             Type = "RenderFragment<BitCountry>?",
             DefaultValue = "null",
             Description = "The custom template for each country of the dropdown list.",
+        },
+        new()
+        {
+            Name = "KeepNationalPrefix",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the national (trunk) prefix - the 0 of \"07911 123456\" in the UK, the 1 in North America, the 8 in Russia - in the Value. By default it is dropped, so the Value is valid E.164 (+447911123456); the input keeps showing it either way. The significant leading 0 of Italy, San Marino, the Vatican, Côte d'Ivoire, the Republic of the Congo, Benin and Gabon is always kept.",
         },
         new()
         {
@@ -293,7 +327,7 @@ public partial class BitPhoneInputDemo
             Name = "NoDropdown",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the country dropdown, so the country of the phone input can only be set through its parameters.",
+            Description = "Removes the country dropdown, so the country of the phone input can only be set through its parameters: a number typed with the dialing code of another country is kept whole instead of moving it.",
         },
         new()
         {
@@ -314,7 +348,7 @@ public partial class BitPhoneInputDemo
             Name = "NoResultsMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The message to show when the search result of the country dropdown is empty.",
+            Description = "The message to show, and to announce to a screen reader, when the search result of the country dropdown is empty.",
         },
         new()
         {
@@ -390,6 +424,7 @@ public partial class BitPhoneInputDemo
         {
             Name = "OnEscape",
             Type = "EventCallback<KeyboardEventArgs>",
+            DefaultValue = "",
             Description = "The callback that is invoked when the Escape key is pressed in the number input.",
         },
         new()
@@ -494,6 +529,13 @@ public partial class BitPhoneInputDemo
         },
         new()
         {
+            Name = "SearchResultsAnnouncement",
+            Type = "Func<int, string?>?",
+            DefaultValue = "null",
+            Description = "What a screen reader announces for the number of countries a search term leaves in the list, in place of the default \"1 country found\" / \"{count} countries found\". An empty result announces NoResultsMessage instead, and returning null keeps a count from being announced.",
+        },
+        new()
+        {
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
@@ -504,7 +546,7 @@ public partial class BitPhoneInputDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the phone input.",
+            Description = "The size of the phone input. An explicit value wins over the --bit-PhoneInput-* size variables (minimum height, font sizes, paddings, flag size, row height); left unset, the field is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -536,7 +578,7 @@ public partial class BitPhoneInputDemo
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The tooltip (title attribute) of the phone input.",
+            Description = "The tooltip (title attribute) of the phone input, written on the root and on the number input so it reaches a keyboard as well as a pointer.",
         },
         new()
         {
@@ -605,46 +647,111 @@ public partial class BitPhoneInputDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitColorKind(),
+        DemoSharedEnums.BitDropDirection(),
+        DemoSharedEnums.BitInputMode(),
+        DemoSharedEnums.BitSize(),
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
         new()
         {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Value = "0" },
-                new() { Name = "Secondary", Value = "1" },
-                new() { Name = "Tertiary", Value = "2" },
-                new() { Name = "Info", Value = "3" },
-                new() { Name = "Success", Value = "4" },
-                new() { Name = "Warning", Value = "5" },
-                new() { Name = "SevereWarning", Value = "6" },
-                new() { Name = "Error", Value = "7" },
-            ]
+            Name = "FullNumber",
+            Type = "string?",
+            Description = "The full phone number in the E.164 form (\"+[code][number]\"), the same as the bound Value.",
         },
         new()
         {
-            Id = "drop-direction-enum",
-            Name = "BitDropDirection",
-            Description = "Determines the allowed drop directions of a callout.",
-            Items =
-            [
-                new() { Name = "All", Value = "0" },
-                new() { Name = "TopAndBottom", Value = "1" },
-            ]
+            Name = "InputElement",
+            Type = "ElementReference",
+            Description = "The ElementReference to the number input of the BitPhoneInput.",
         },
         new()
         {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Small", Value = "0" },
-                new() { Name = "Medium", Value = "1" },
-                new() { Name = "Large", Value = "2" },
-            ]
-        }
+            Name = "OpenAsync",
+            Type = "Task",
+            Description = "Opens the country list. It does nothing while the field is disabled, read-only or has no dropdown.",
+        },
+        new()
+        {
+            Name = "CloseAsync",
+            Type = "Task",
+            Description = "Closes the country list.",
+        },
+        new()
+        {
+            Name = "SelectCountryAsync",
+            Type = "Task",
+            Description = "Selects the given country exactly as picking it in the list would, so the same events fire.",
+        },
+        new()
+        {
+            Name = "SetNumberAsync",
+            Type = "Task",
+            Description = "Sets the local number the way typing it would: it is laid out over the current pattern, and a number carrying an international prefix ('+' or '00') selects the country that owns its dialing code.",
+        },
+        new()
+        {
+            Name = "ClearAsync",
+            Type = "Task",
+            Description = "Clears the number, keeping the selected country, and raises OnClear when there was something to clear.",
+        },
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to the number input of the BitPhoneInput.",
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new() { Name = "--bit-PhoneInput-background", DefaultValue = "--bit-clr-bg-pri", Description = "Fill of the field. The Background parameter wins over it." },
+        new() { Name = "--bit-PhoneInput-color", DefaultValue = "--bit-clr-fg-pri", Description = "Text of the number." },
+        new() { Name = "--bit-PhoneInput-placeholder-color", DefaultValue = "--bit-clr-fg-sec", Description = "Placeholder of the number input, of the country selector and of the search box." },
+        new() { Name = "--bit-PhoneInput-border-color", DefaultValue = "--bit-clr-brd-pri", Description = "Frame at rest. The Border and Color parameters win over it." },
+        new() { Name = "--bit-PhoneInput-hover-border-color", DefaultValue = "--bit-clr-brd-pri-hover", Description = "Frame under a pointer, on devices that can hover. The Border and Color parameters win over it." },
+        new() { Name = "--bit-PhoneInput-border-width", DefaultValue = "--bit-shp-brd-width", Description = "Thickness of the frame and of the rule between the selector and the number." },
+        new() { Name = "--bit-PhoneInput-radius", DefaultValue = "--bit-shp-radius-control", Description = "Corner radius of the frame." },
+        new() { Name = "--bit-PhoneInput-min-height", DefaultValue = "--bit-siz-ctrl-md", Description = "Smallest height of the frame. The Size parameter wins over it." },
+        new() { Name = "--bit-PhoneInput-font-size", DefaultValue = "--bit-tpg-fs-sm", Description = "Text size of the field and of the country list. The Size parameter wins over it." },
+        new() { Name = "--bit-PhoneInput-padding", DefaultValue = "0 --bit-siz-ctrl-pad-x-md", Description = "Padding of the number input. The Size parameter wins over it." },
+        new() { Name = "--bit-PhoneInput-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Focused frame and focus ring, and the keyboard cues of the selector, the clear button and the active row of the list. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too." },
+        new() { Name = "--bit-PhoneInput-invalid-color", DefaultValue = "--bit-clr-err / --bit-clr-err-focus", Description = "Frame, focus ring and error message of a rejected value." },
+        new() { Name = "--bit-PhoneInput-disabled-color", DefaultValue = "--bit-clr-fg-dis", Description = "Text and glyphs when disabled." },
+        new() { Name = "--bit-PhoneInput-disabled-background", DefaultValue = "--bit-clr-bg-dis", Description = "Fill when disabled." },
+        new() { Name = "--bit-PhoneInput-disabled-border-color", DefaultValue = "--bit-clr-brd-dis", Description = "Frame when disabled." },
+        new() { Name = "--bit-PhoneInput-dropdown-background", DefaultValue = "transparent", Description = "Fill of the country selector." },
+        new() { Name = "--bit-PhoneInput-dropdown-hover-background", DefaultValue = "--bit-clr-bg-pri-hover", Description = "Fill of the country selector under a pointer." },
+        new() { Name = "--bit-PhoneInput-dropdown-color", DefaultValue = "--bit-clr-fg-pri", Description = "The dialing code in the country selector." },
+        new() { Name = "--bit-PhoneInput-dropdown-padding", DefaultValue = "0 --bit-siz-ctrl-pad-x-md", Description = "Padding of the country selector. The Size parameter wins over it." },
+        new() { Name = "--bit-PhoneInput-separator-color", DefaultValue = "--bit-clr-brd-pri", Description = "Rule between the country selector and the number." },
+        new() { Name = "--bit-PhoneInput-caret-color", DefaultValue = "--bit-clr-fg-sec", Description = "The caret of the country selector." },
+        new() { Name = "--bit-PhoneInput-flag-size", DefaultValue = "--bit-siz-icon-md", Description = "Flags of the selector and of the list. The Size parameter wins over it." },
+        new() { Name = "--bit-PhoneInput-flag-radius", DefaultValue = "--bit-shp-radius-none", Description = "Corner radius of a flag." },
+        new() { Name = "--bit-PhoneInput-button-color", DefaultValue = "--bit-clr-fg-sec", Description = "Glyph of the clear button." },
+        new() { Name = "--bit-PhoneInput-button-hover-background", DefaultValue = "--bit-clr-bg-pri-hover", Description = "Fill of the clear button under a pointer." },
+        new() { Name = "--bit-PhoneInput-label-color", DefaultValue = "--bit-clr-fg-pri", Description = "Label text." },
+        new() { Name = "--bit-PhoneInput-label-font-size", DefaultValue = "--bit-PhoneInput-font-size", Description = "Label text size. The Size parameter wins over it." },
+        new() { Name = "--bit-PhoneInput-label-font-weight", DefaultValue = "--bit-tpg-field-label-font-weight", Description = "Label weight." },
+        new() { Name = "--bit-PhoneInput-required-color", DefaultValue = "--bit-clr-req", Description = "The asterisk of a Required field." },
+        new() { Name = "--bit-PhoneInput-description-color", DefaultValue = "--bit-clr-fg-sec", Description = "Description text." },
+        new() { Name = "--bit-PhoneInput-footer-font-size", DefaultValue = "--bit-tpg-fs-2xs", Description = "Text size of the description and of the error message." },
+        new() { Name = "--bit-PhoneInput-callout-background", DefaultValue = "--bit-clr-bg-pri", Description = "The surface of the country list." },
+        new() { Name = "--bit-PhoneInput-callout-border-color", DefaultValue = "--bit-clr-brd-pri", Description = "Border of the country list, and the rules under its search box and under the preferred countries." },
+        new() { Name = "--bit-PhoneInput-callout-radius", DefaultValue = "--bit-shp-radius-popup", Description = "Corner radius of the country list." },
+        new() { Name = "--bit-PhoneInput-callout-shadow", DefaultValue = "--bit-shd-popup (--bit-shd-sheet for the responsive panel)", Description = "Elevation of the country list." },
+        new() { Name = "--bit-PhoneInput-callout-max-height", DefaultValue = "--bit-siz-popup-max-height", Description = "Tallest the scrolling list grows. The MaxHeight parameter wins over it." },
+        new() { Name = "--bit-PhoneInput-responsive-width", DefaultValue = "spacing(34)", Description = "Width of the side panel a Responsive field opens on a small screen." },
+        new() { Name = "--bit-PhoneInput-overlay-background", DefaultValue = "transparent", Description = "The layer behind an open list; give it a color for a modal-style scrim." },
+        new() { Name = "--bit-PhoneInput-item-height", DefaultValue = "--bit-siz-item-md", Description = "Smallest height of a row of the list. The Size parameter wins over it." },
+        new() { Name = "--bit-PhoneInput-item-color", DefaultValue = "--bit-clr-fg-pri", Description = "Country name of a row, and the text of the search box." },
+        new() { Name = "--bit-PhoneInput-item-code-color", DefaultValue = "--bit-clr-fg-sec", Description = "Dialing code of a row." },
+        new() { Name = "--bit-PhoneInput-item-hover-background", DefaultValue = "--bit-clr-bg-pri-hover", Description = "Row under the pointer, and the row the arrow keys are on." },
+        new() { Name = "--bit-PhoneInput-item-selected-background", DefaultValue = "--bit-clr-bg-sec", Description = "The selected row." },
+        new() { Name = "--bit-PhoneInput-item-selected-color", DefaultValue = "--bit-PhoneInput-item-color", Description = "Text of the selected row." },
     ];
 
 
@@ -688,6 +795,24 @@ public partial class BitPhoneInputDemo
         BitCountries.UnitedStates,
         BitCountries.UnitedKingdom,
         BitCountries.Germany,
+    ];
+    private readonly List<BitCountry> germanCountries =
+    [
+        new("Deutschland", "49", "DE", "DEU"),
+        new("Österreich", "43", "AT", "AUT"),
+        new("Schweiz", "41", "CH", "CHE"),
+        new("Frankreich", "33", "FR", "FRA"),
+        new("Italien", "39", "IT", "ITA"),
+    ];
+    private readonly BitPhoneInputParams[] phoneInputParams =
+    [
+        new()
+        {
+            DefaultCountry = BitCountries.Germany,
+            PreferredCountries = [BitCountries.Germany, BitCountries.Austria, BitCountries.Switzerland],
+            ShowClearButton = true,
+            Placeholder = "Enter your number",
+        }
     ];
 
 
@@ -777,13 +902,19 @@ private readonly List<BitCountry> preferredCountries =
 
 <BitPhoneInput DropdownPlaceholder=""Country"" Placeholder=""Enter your number"" />
 
+<BitPhoneInput FlagUrlSelector=""GetFlagUrl"" DefaultCountry=""BitCountries.Switzerland"" Placeholder=""Enter your number"" />
+
 <BitPhoneInput NoDropdown DefaultCountry=""BitCountries.Japan"" Placeholder=""Enter your number"" />";
+    private readonly string example7CsharpCode = @"
+// Any url will do: this one asks a public flag CDN for a 24px png of the country.
+private static string? GetFlagUrl(BitCountry country)
+    => $""https://flagcdn.com/24x18/{country.Iso2.ToLowerInvariant()}.png"";";
 
     private readonly string example8RazorCode = @"
 <BitPhoneInput ShowClearButton
                DefaultCountry=""BitCountries.Italy""
                Placeholder=""Enter your number""
-               OnClear=""() => clearedAt = DateTime.Now.ToLongTimeString()"" />
+               OnClear='() => clearedAt = DateTimeOffset.Now.ToString(""T"")' />
 
 <div>Last cleared at: @clearedAt</div>";
     private readonly string example8CsharpCode = @"
@@ -795,14 +926,20 @@ private string? clearedAt;";
 <BitPhoneInput MaxLength=""10"" DefaultCountry=""BitCountries.Netherlands"" Placeholder=""At most 10 characters"" />";
 
     private readonly string example10RazorCode = @"
-<BitPhoneInput FullWidth DefaultCountry=""BitCountries.Italy"" Placeholder=""Enter your number"" />";
+<BitPhoneInput NoBorder DefaultCountry=""BitCountries.Sweden"" Placeholder=""NoBorder"" />
+
+<BitPhoneInput Underlined DefaultCountry=""BitCountries.Sweden"" Placeholder=""Underlined"" />
+
+<BitPhoneInput FullWidth DefaultCountry=""BitCountries.Sweden"" Placeholder=""FullWidth"" />
+
+<BitPhoneInput Background=""BitColorKind.Primary"" DefaultCountry=""BitCountries.Sweden"" Placeholder=""Background Primary"" />
+<BitPhoneInput Background=""BitColorKind.Secondary"" DefaultCountry=""BitCountries.Sweden"" Placeholder=""Background Secondary"" />
+<BitPhoneInput Background=""BitColorKind.Tertiary"" DefaultCountry=""BitCountries.Sweden"" Placeholder=""Background Tertiary"" />
+<BitPhoneInput Background=""BitColorKind.Transparent"" DefaultCountry=""BitCountries.Sweden"" Placeholder=""Background Transparent"" />
+<BitPhoneInput Border=""BitColorKind.Tertiary"" DefaultCountry=""BitCountries.Sweden"" Placeholder=""Border Tertiary"" />
+<BitPhoneInput Border=""BitColorKind.Transparent"" Background=""BitColorKind.Secondary"" DefaultCountry=""BitCountries.Sweden"" Placeholder=""Border Transparent"" />";
 
     private readonly string example11RazorCode = @"
-<BitPhoneInput NoBorder DefaultCountry=""BitCountries.Sweden"" Placeholder=""No border"" />
-
-<BitPhoneInput Underlined DefaultCountry=""BitCountries.Sweden"" Placeholder=""Underlined"" />";
-
-    private readonly string example12RazorCode = @"
 <BitPhoneInput Immediate
                DefaultCountry=""BitCountries.UnitedStates""
                Placeholder=""Enter your number""
@@ -822,12 +959,12 @@ private string? clearedAt;";
                Placeholder=""Enter your number""
                @bind-Value=""throttledNumber"" />
 <div>Value: [@throttledNumber]</div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private string? immediateNumber;
 private string? debouncedNumber;
 private string? throttledNumber;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitPhoneInput @bind-Value=""bindingValue""
                @bind-Number=""bindingNumber""
                @bind-Country=""bindingCountry""
@@ -841,12 +978,12 @@ private string? throttledNumber;";
 <div>Value (full number): @bindingValue</div>
 <div>Number (local): @bindingNumber</div>
 <div>Country: @bindingCountry?.Name</div>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private string? bindingValue;
 private string? bindingNumber;
 private BitCountry? bindingCountry = BitCountries.Germany;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitPhoneInput Mask=""(###) ###-####""
                Immediate
                DefaultCountry=""BitCountries.UnitedStates""
@@ -865,7 +1002,7 @@ private BitCountry? bindingCountry = BitCountries.Germany;";
                MaskSelector=""GetMask""
                Immediate
                DefaultCountry=""BitCountries.UnitedStates"" />";
-    private readonly string example14CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private string? maskedValue;
 private string? maskSelectorValue;
 
@@ -877,7 +1014,7 @@ private static string? GetMask(BitCountry? country) => country?.Iso2 switch
     _ => null
 };";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitPhoneInput Invalid Label=""Invalid"" DefaultCountry=""BitCountries.Spain"" Value=""+34123"" />
 
 <BitPhoneInput Label=""Phone number""
@@ -897,8 +1034,13 @@ private static string? GetMask(BitCountry? country) => country?.Iso2 switch
     <ValidationMessage For=""() => validationModel.Phone"" />
     <br />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
-    private readonly string example15CsharpCode = @"
+</EditForm>
+
+@if (validationSubmitted)
+{
+    <div>Submitted: @validationModel.Phone</div>
+}";
+    private readonly string example14CsharpCode = @"
 public class BitPhoneInputValidationModel
 {
     [Required(ErrorMessage = ""Enter a phone number."")]
@@ -909,18 +1051,28 @@ public class BitPhoneInputValidationModel
 private bool validationSubmitted;
 private readonly BitPhoneInputValidationModel validationModel = new();";
 
-    private readonly string example16RazorCode = @"
-<BitPhoneInput IsEnabled=""false"" DefaultCountry=""BitCountries.Spain"" Value=""+341234567"" />
+    private readonly string example15RazorCode = @"
+<BitPhoneInput Disabled DefaultCountry=""BitCountries.Spain"" Value=""+341234567"" />
 
 <BitPhoneInput ReadOnly DefaultCountry=""BitCountries.Spain"" Value=""+341234567"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example16RazorCode = @"
+<BitPhoneInput MaxHeight=""200""
+               DropDirection=""BitDropDirection.All""
+               DefaultCountry=""BitCountries.Norway""
+               Placeholder=""Enter your number"" />
+
+<BitPhoneInput NoWrapNavigation
+               NoSearchBox
+               DefaultCountry=""BitCountries.Norway""
+               Placeholder=""Enter your number"" />
+
 <BitPhoneInput Responsive
-               Label=""Phone number""
+               Label=""Responsive""
                DefaultCountry=""BitCountries.Brazil""
                Placeholder=""Enter your number"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitPhoneInput Label=""Phone number""
                DefaultCountry=""BitCountries.Portugal""
                Placeholder=""Enter your number"">
@@ -936,7 +1088,7 @@ private readonly BitPhoneInputValidationModel validationModel = new();";
     </NoResultsTemplate>
 </BitPhoneInput>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitPhoneInput DefaultCountry=""BitCountries.UnitedStates""
                Placeholder=""Enter your number""
                OnCountryChange=""c => changedCountry = c""
@@ -951,14 +1103,14 @@ private readonly BitPhoneInputValidationModel validationModel = new();";
 <div>Search text: @searchedText</div>
 <div>Callout: @calloutState</div>
 <div>Enter pressed: @enterPressed</div>";
-    private readonly string example19CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private BitCountry? changedCountry;
 private string? changedValue;
 private string? searchedText;
 private string calloutState = ""closed"";
 private int enterPressed;";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitPhoneInput @ref=""controlledInput""
                @bind-IsOpen=""isCalloutOpen""
                DefaultCountry=""BitCountries.Australia""
@@ -973,19 +1125,11 @@ private int enterPressed;";
 </BitStack>
 
 <div>IsOpen: @isCalloutOpen</div>";
-    private readonly string example20CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private bool isCalloutOpen;
 private BitPhoneInput controlledInput = default!;";
 
-    private readonly string example21RazorCode = @"
-<BitPhoneInput FlagUrlSelector=""GetFlagUrl""
-               DefaultCountry=""BitCountries.Switzerland""
-               Placeholder=""Enter your number"" />";
-    private readonly string example21CsharpCode = @"
-private static string? GetFlagUrl(BitCountry country)
-    => $""https://flagcdn.com/24x18/{country.Iso2.ToLowerInvariant()}.png"";";
-
-    private readonly string example22RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitPhoneInput Name=""phone""
                CountryName=""phoneCountry""
                Label=""Phone number""
@@ -997,14 +1141,14 @@ private static string? GetFlagUrl(BitCountry country)
 
 <div>Posted as phone: @submissionValue</div>
 <div>Posted as phoneCountry: @submissionCountry?.Iso2</div>";
-    private readonly string example22CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private string? submissionValue;
 
 // Country is bound here, so it is the field that carries the initial selection: a bound
 // Country is the one the component reads, and DefaultCountry only fills in for a missing one.
 private BitCountry? submissionCountry = BitCountries.Canada;";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitPhoneInput Label=""Mobile number""
                AutoComplete=""tel""
                EnterKeyHint=""send""
@@ -1012,18 +1156,49 @@ private BitCountry? submissionCountry = BitCountries.Canada;";
                DefaultCountry=""BitCountries.Ireland""
                Placeholder=""Enter your number"" />";
 
+    private readonly string example22RazorCode = @"
+<BitPhoneInput Label=""Telefonnummer""
+               Countries=""germanCountries""
+               DefaultCountry=""germanCountries[0]""
+               Placeholder=""Nummer eingeben""
+               DropdownAriaLabel=""Land""
+               SearchBoxPlaceholder=""Suchen""
+               SearchBoxAriaLabel=""Land suchen""
+               NoResultsMessage=""Kein Land gefunden""
+               SearchResultsAnnouncement=""@(count => count == 1 ? ""1 Land gefunden"" : $""{count} Länder gefunden"")""
+               ShowClearButton
+               ClearButtonAriaLabel=""Nummer löschen"" />";
+    private readonly string example22CsharpCode = @"
+private readonly List<BitCountry> germanCountries =
+[
+    new(""Deutschland"", ""49"", ""DE"", ""DEU""),
+    new(""Österreich"", ""43"", ""AT"", ""AUT""),
+    new(""Schweiz"", ""41"", ""CH"", ""CHE""),
+    new(""Frankreich"", ""33"", ""FR"", ""FRA""),
+    new(""Italien"", ""39"", ""IT"", ""ITA""),
+];";
+
+    private readonly string example23RazorCode = @"
+<BitParams Parameters=""@phoneInputParams"">
+    <BitPhoneInput Label=""Takes the market, the list order and the clear button"" />
+    <BitPhoneInput Label=""So does this one"" />
+    <BitPhoneInput Label=""Its own DefaultCountry, the cascaded rest"" DefaultCountry=""BitCountries.France"" />
+</BitParams>
+
+<BitPhoneInput Label=""Outside the cascade"" />";
+    private readonly string example23CsharpCode = @"
+private readonly BitPhoneInputParams[] phoneInputParams =
+[
+    new()
+    {
+        DefaultCountry = BitCountries.Germany,
+        PreferredCountries = [BitCountries.Germany, BitCountries.Austria, BitCountries.Switzerland],
+        ShowClearButton = true,
+        Placeholder = ""Enter your number"",
+    }
+];";
+
     private readonly string example24RazorCode = @"
-<BitPhoneInput MaxHeight=""200""
-               DropDirection=""BitDropDirection.All""
-               DefaultCountry=""BitCountries.Norway""
-               Placeholder=""Enter your number"" />
-
-<BitPhoneInput NoWrapNavigation
-               NoSearchBox
-               DefaultCountry=""BitCountries.Norway""
-               Placeholder=""Enter your number"" />";
-
-    private readonly string example25RazorCode = @"
 <BitPhoneInput Color=""BitColor.Primary"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Primary"" />
 <BitPhoneInput Color=""BitColor.Secondary"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Secondary"" />
 <BitPhoneInput Color=""BitColor.Tertiary"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Tertiary"" />
@@ -1031,9 +1206,11 @@ private BitCountry? submissionCountry = BitCountries.Canada;";
 <BitPhoneInput Color=""BitColor.Success"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Success"" />
 <BitPhoneInput Color=""BitColor.Warning"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Warning"" />
 <BitPhoneInput Color=""BitColor.SevereWarning"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""SevereWarning"" />
-<BitPhoneInput Color=""BitColor.Error"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Error"" />";
+<BitPhoneInput Color=""BitColor.Error"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Error"" />
+<BitPhoneInput Color=""BitColor.PrimaryForeground"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""PrimaryForeground"" />
+<BitPhoneInput Color=""BitColor.TertiaryBorder"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""TertiaryBorder"" />";
 
-    private readonly string example26RazorCode = @"
+    private readonly string example25RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitPhoneInput ShowClearButton
@@ -1041,19 +1218,47 @@ private BitCountry? submissionCountry = BitCountries.Canada;";
                DefaultCountry=""BitCountries.Mexico""
                Placeholder=""Enter your number"" />";
 
-    private readonly string example27RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitPhoneInput Size=""BitSize.Small"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Small"" />
 <BitPhoneInput Size=""BitSize.Medium"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Medium"" />
 <BitPhoneInput Size=""BitSize.Large"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Large"" />";
 
-    private readonly string example28RazorCode = @"
+    private readonly string example27RazorCode = @"
+<BitPhoneInput DefaultCountry=""BitCountries.Netherlands""
+               Placeholder=""Enter your number""
+               Style=""--bit-PhoneInput-radius: 1.5rem;
+                      --bit-PhoneInput-focus-color: #7c4dff;
+                      --bit-PhoneInput-item-selected-background: #ede7f6;
+                      --bit-PhoneInput-item-selected-color: #311b92;
+                      --bit-PhoneInput-callout-radius: 1rem;"" />
+
+<div class=""phi-brand-scope"">
+    <BitPhoneInput DefaultCountry=""BitCountries.Netherlands"" Placeholder=""Enter your number"" />
+</div>
+
 <BitPhoneInput DefaultCountry=""BitCountries.Netherlands""
                Placeholder=""Enter your number""
                Style=""width: 300px;""
                Class=""custom-class""
                Styles=""@(new() { FieldGroup = ""border-color: blueviolet;"", ItemCode = ""color: blueviolet;"" })""
                Classes=""@(new() { Input = ""custom-input"" })"" />";
-    private const string example28ScssCode = @"
+    private const string example27ScssCode = @"
+// The public custom properties are inherited, so one scope re-skins every field inside it, and the
+// country list each one opens, without a rule naming a part of the component.
+.phi-brand-scope {
+    --bit-PhoneInput-radius: 0;
+    --bit-PhoneInput-border-width: 2px;
+    --bit-PhoneInput-border-color: #00796b;
+    --bit-PhoneInput-hover-border-color: #26a69a;
+    --bit-PhoneInput-focus-color: #00796b;
+    --bit-PhoneInput-dropdown-background: #e0f2f1;
+    --bit-PhoneInput-dropdown-color: #004d40;
+    --bit-PhoneInput-separator-color: #00796b;
+    --bit-PhoneInput-callout-radius: 0;
+    --bit-PhoneInput-item-selected-background: #e0f2f1;
+    --bit-PhoneInput-item-selected-color: #004d40;
+}
+
 ::deep .custom-class {
     border-radius: 1rem;
     background: linear-gradient(90deg, rgba(138, 43, 226, 0.08), transparent);
@@ -1063,12 +1268,12 @@ private BitCountry? submissionCountry = BitCountries.Canada;";
     color: blueviolet;
     font-weight: bold;
 }";
-    private readonly DemoCodeFile[] example28CodeFiles =
+    private readonly DemoCodeFile[] example27CodeFiles =
     [
-        new("BitPhoneInputDemo.razor.scss", example28ScssCode),
+        new("BitPhoneInputDemo.razor.scss", example27ScssCode),
     ];
 
-    private readonly string example29RazorCode = @"
+    private readonly string example28RazorCode = @"
 <div dir=""rtl"">
     <BitPhoneInput Dir=""BitDir.Rtl"" DefaultCountry=""BitCountries.Iran"" Placeholder=""شماره خود را وارد کنید"" />
 </div>";

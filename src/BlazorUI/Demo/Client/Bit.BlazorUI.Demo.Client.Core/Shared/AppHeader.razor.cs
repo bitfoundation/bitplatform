@@ -6,9 +6,11 @@ public partial class AppHeader
 {
     /// <summary>
     /// The theme BitThemeSwitcher shows until it can read the applied one back, which takes JS interop and
-    /// therefore a first interactive render.
+    /// therefore a first interactive render: the site default, Fluent 2. The visitor's own choice is not
+    /// known before then - it lives in localStorage only, because the prerendered markup is cached by the
+    /// CDN and served to everyone, so the server must not render one visitor's theme (see App.razor).
     /// </summary>
-    private string? _initialTheme;
+    private static readonly string _initialTheme = BitThemePresets.Fluent2;
 
     /// <summary>
     /// The design systems the picker offers: the library's four, in the library's own order, differing from
@@ -67,12 +69,6 @@ public partial class AppHeader
     [Parameter] public bool IsHomePage { get; set; }
     [Parameter] public EventCallback OnToggleNavPanel { get; set; }
 
-    /// <summary>
-    /// The persisted theme preference (the bit-theme-preference cookie), cascaded by the server host
-    /// while prerendering; null everywhere else.
-    /// </summary>
-    [CascadingParameter(Name = "PersistedTheme")] public string? PersistedTheme { get; set; }
-
 
     protected override async Task OnInitAsync()
     {
@@ -80,22 +76,6 @@ public partial class AppHeader
 
         SetCurrentPath();
         NavigationManager.LocationChanged += OnLocationChanged;
-
-        // Prerendering has no JS runtime to ask, so the server reads the persisted theme from its
-        // cookie and cascades it here; the value is then persisted into the prerendered state so the
-        // interactive client comes up with the same selection instead of flashing another one first.
-        // Nothing persisted (a first visit, or a visitor following the OS) means the site default,
-        // which is Fluent 2 - without it the picker would show the first offered item until hydration.
-        // Resolved through the same helper the host page splats onto <html> (see App.razor) rather
-        // than compared as a raw string: it trims, lower-cases and validates the token, so a cookie
-        // reading " System " or a tampered value lands on whatever the document is painting instead
-        // of leaving the picker on a second, different selection. No bit-theme attribute comes back
-        // exactly when the OS is being followed or the stored value was unusable.
-        var persisted = await PrerenderStateService.GetValue("AppHeader.Theme", () => Task.FromResult(PersistedTheme));
-        var rootTheme = BitThemeSsr.BuildRootThemeAttributeMap(persisted);
-        _initialTheme = rootTheme.TryGetValue(BitThemeAttributeNames.Theme, out var theme) && theme is string themeName
-                        ? themeName
-                        : BitThemePresets.Fluent2;
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Tuning knobs for <see cref="BitThemeFactory.CreateLightThemeFromSeed(string, BitThemeSeedOptions?)"/>

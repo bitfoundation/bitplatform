@@ -1,4 +1,5 @@
-using System.Globalization;
+﻿using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -7,7 +8,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 public static class BitDataGridDataProcessor
 {
-    public static IReadOnlyList<TItem> Filter<TItem>(
+    public static IReadOnlyList<TItem> Filter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IEnumerable<TItem> source,
         IReadOnlyList<BitDataGridFilterDescriptor> filters,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
@@ -32,7 +33,7 @@ public static class BitDataGridDataProcessor
     /// <see cref="Filter"/>, for pipelines that decide row by row rather than over a flat sequence
     /// (the tree grid, which must keep a non-matching row whose descendants match).
     /// </summary>
-    public static bool MatchesFilters<TItem>(
+    public static bool MatchesFilters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         TItem item,
         IReadOnlyList<BitDataGridFilterDescriptor> filters,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
@@ -50,7 +51,7 @@ public static class BitDataGridDataProcessor
     /// Whether a single row matches the quick-search term - the per-row form of <see cref="Search"/>.
     /// A blank term matches every row; a term with no searchable column to read matches none.
     /// </summary>
-    public static bool MatchesSearch<TItem>(
+    public static bool MatchesSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         TItem item,
         string? term,
         IReadOnlyList<BitDataGridColumn<TItem>> columns)
@@ -74,7 +75,7 @@ public static class BitDataGridDataProcessor
     /// read matches none - the same contract <see cref="BitDataGridQueryableProcessor.ApplySearch"/>
     /// applies over an <see cref="IQueryable{T}"/> source.
     /// </summary>
-    public static IReadOnlyList<TItem> Search<TItem>(
+    public static IReadOnlyList<TItem> Search<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IEnumerable<TItem> source,
         string? term,
         IReadOnlyList<BitDataGridColumn<TItem>> columns)
@@ -105,7 +106,7 @@ public static class BitDataGridDataProcessor
         return result;
     }
 
-    public static IReadOnlyList<TItem> Sort<TItem>(
+    public static IReadOnlyList<TItem> Sort<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IReadOnlyList<TItem> source,
         IReadOnlyList<BitDataGridSortDescriptor> sorts,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
@@ -139,7 +140,7 @@ public static class BitDataGridDataProcessor
         return ordered?.ToList() ?? source;
     }
 
-    public static List<BitDataGridGroup<TItem>> Group<TItem>(
+    public static List<BitDataGridGroup<TItem>> Group<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IReadOnlyList<TItem> source,
         IReadOnlyList<BitDataGridGroupDescriptor> groups,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
@@ -158,7 +159,7 @@ public static class BitDataGridDataProcessor
         return BuildGroups(source, valid, columns, 0, string.Empty);
     }
 
-    private static List<BitDataGridGroup<TItem>> BuildGroups<TItem>(
+    private static List<BitDataGridGroup<TItem>> BuildGroups<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IReadOnlyList<TItem> source,
         IReadOnlyList<BitDataGridGroupDescriptor> groups,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns,
@@ -222,7 +223,7 @@ public static class BitDataGridDataProcessor
         return result;
     }
 
-    public static List<BitDataGridAggregateResult> Aggregate<TItem>(
+    public static List<BitDataGridAggregateResult> Aggregate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IReadOnlyList<TItem> source,
         IEnumerable<BitDataGridColumn<TItem>> columns)
     {
@@ -250,7 +251,7 @@ public static class BitDataGridDataProcessor
         return results;
     }
 
-    private static object? ComputeAggregate<TItem>(IReadOnlyList<TItem> source, BitDataGridColumn<TItem> column)
+    private static object? ComputeAggregate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(IReadOnlyList<TItem> source, BitDataGridColumn<TItem> column)
     {
         var accessor = column.Accessor!;
         switch (column.Aggregate)
@@ -306,6 +307,23 @@ public static class BitDataGridDataProcessor
                 return value is null || string.IsNullOrEmpty(value.ToString());
             case BitDataGridFilterOperator.IsNotEmpty:
                 return value is not null && !string.IsNullOrEmpty(value.ToString());
+            case BitDataGridFilterOperator.In:
+            case BitDataGridFilterOperator.NotIn:
+            {
+                // A set operand is a list of equality criteria OR-ed together; each member goes through
+                // the same Equals path as a single value, so it is coerced and day-compared identically.
+                if (!TryGetSetMembers(filter.Value, out var members) || members.Count == 0) return true;
+                var any = false;
+                foreach (var member in members)
+                {
+                    if (Matches(value, new BitDataGridFilterDescriptor { ColumnId = filter.ColumnId, Operator = BitDataGridFilterOperator.Equals, Value = member }))
+                    {
+                        any = true;
+                        break;
+                    }
+                }
+                return filter.Operator is BitDataGridFilterOperator.In ? any : !any;
+            }
         }
 
         // An empty or whitespace-only string filter value carries no criteria, so treat it like an
@@ -392,6 +410,23 @@ public static class BitDataGridDataProcessor
             BitDataGridFilterOperator.EndsWith => text.EndsWith(term, StringComparison.OrdinalIgnoreCase),
             _ => true
         };
+    }
+
+    /// <summary>
+    /// Reads the members of a set operand (<see cref="BitDataGridFilterOperator.In"/> /
+    /// <see cref="BitDataGridFilterOperator.NotIn"/>): any enumerable other than a string. Blank string
+    /// members are dropped - like a blank single value, they carry no criterion.
+    /// </summary>
+    internal static bool TryGetSetMembers(object? value, out List<object?> members)
+    {
+        members = [];
+        if (value is null or string || value is not System.Collections.IEnumerable items) return false;
+        foreach (var item in items)
+        {
+            if (item is string s && string.IsNullOrWhiteSpace(s)) continue;
+            members.Add(item);
+        }
+        return true;
     }
 
     // Returns true (via <paramref name="equal"/>) when a DateTime/DateTimeOffset row value falls on the

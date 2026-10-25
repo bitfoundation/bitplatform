@@ -44,7 +44,14 @@ public partial class BitScrollablePaneDemo
             Name = "AutoHideScrollbar",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the Modern scrollbar of the pane out of sight until the pointer is over it or something in it holds the focus.",
+            Description = "Keeps the Modern scrollbar of the pane out of sight until the pane is pointed at, holds a focus the keyboard gave it, or has just been scrolled.",
+        },
+        new()
+        {
+            Name = "AutoHideDelay",
+            Type = "int",
+            DefaultValue = "800",
+            Description = "How long (in milliseconds) the AutoHideScrollbar scrollbar lingers after the pane was last pointed at, focused or scrolled. 0 hides it as soon as the pointer or the focus leaves.",
         },
         new()
         {
@@ -69,6 +76,13 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
+            Name = "ExpandOnPrint",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prints the whole of the content instead of the part the pane is showing: the height, the height caps and the clipping are lifted for the print stylesheet only.",
+        },
+        new()
+        {
             Name = "DragScroll",
             Type = "bool",
             DefaultValue = "false",
@@ -86,7 +100,7 @@ public partial class BitScrollablePaneDemo
             Name = "FadeSize",
             Type = "string?",
             DefaultValue = "null",
-            Description = "How far the Fade reaches into the pane, as any CSS length. It defaults to 2rem.",
+            Description = "How far the Fade reaches into the pane, as any CSS length. It defaults to 2rem and wins over an inherited --bit-ScrollablePane-fade-size.",
         },
         new()
         {
@@ -114,7 +128,7 @@ public partial class BitScrollablePaneDemo
             Name = "Focusable",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Puts the pane itself in the tab order, so a pane holding nothing focusable can still be scrolled with the keyboard.",
+            Description = "Puts the pane itself in the tab order, so a pane holding nothing focusable can still be scrolled with the keyboard. It adds no tab stop to a NoScroll pane.",
         },
         new()
         {
@@ -214,7 +228,7 @@ public partial class BitScrollablePaneDemo
             Name = "Modern",
             Type = "bool",
             DefaultValue= "false",
-            Description = "Enables a modern style for the scrollbar of the pane, drawn in the colors of the theme instead of by the operating system.",
+            Description = "Draws the scrollbar of the pane in the colors of the theme instead of by the operating system, restyled through the --bit-ScrollablePane-scrollbar-* variables. Forced colors mode keeps the system scrollbar.",
         },
         new()
         {
@@ -344,7 +358,7 @@ public partial class BitScrollablePaneDemo
             Name = "Role",
             Type = "string?",
             DefaultValue= "null",
-            Description = "The ARIA role of the pane. A pane renders none of its own; set it to region or group, along with AriaLabel, where the pane is a part of the page in its own right.",
+            Description = "The ARIA role of the pane. An unnamed pane has none; a pane named with AriaLabel or aria-labelledby defaults to region. An empty string renders no role at all, keeping a named pane out of the landmarks.",
         },
         new()
         {
@@ -417,6 +431,58 @@ public partial class BitScrollablePaneDemo
         }
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-ScrollablePane-scrollbar-size",
+            DefaultValue = "spacing(0.75), 6px",
+            Description = "Thickness of the Modern scrollbar. Not applied in Firefox, which draws its thin standard bar.",
+        },
+        new()
+        {
+            Name = "--bit-ScrollablePane-scrollbar-thumb-color",
+            DefaultValue = "--bit-clr-fg-ter",
+            Description = "Modern thumb at rest.",
+        },
+        new()
+        {
+            Name = "--bit-ScrollablePane-scrollbar-thumb-hover-color",
+            DefaultValue = "--bit-clr-fg-ter-hover",
+            Description = "Modern thumb under the pointer. Not applied in Firefox.",
+        },
+        new()
+        {
+            Name = "--bit-ScrollablePane-scrollbar-thumb-active-color",
+            DefaultValue = "--bit-clr-fg-ter-active",
+            Description = "Modern thumb while it is dragged. Not applied in Firefox.",
+        },
+        new()
+        {
+            Name = "--bit-ScrollablePane-scrollbar-thumb-radius",
+            DefaultValue = "--bit-shp-radius-full",
+            Description = "Corner of the Modern thumb. Not applied in Firefox.",
+        },
+        new()
+        {
+            Name = "--bit-ScrollablePane-scrollbar-track-color",
+            DefaultValue = "transparent",
+            Description = "Modern track. Hidden with the thumb while AutoHideScrollbar keeps the bar out of sight.",
+        },
+        new()
+        {
+            Name = "--bit-ScrollablePane-fade-size",
+            DefaultValue = "spacing(4), 2rem",
+            Description = "How far the Fade reaches into the pane. The FadeSize parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ScrollablePane-focus-color",
+            DefaultValue = "--bit-shd-focus-ring",
+            Description = "Focus ring color of a pane put in the tab order by Focusable or TabIndex. Unset, the pane draws the library's own --bit-shd-focus-ring.",
+        },
+    ];
+
     private readonly List<ComponentParameter> componentPublicMembers =
     [
         new()
@@ -455,7 +521,7 @@ public partial class BitScrollablePaneDemo
         {
             Name = "ScrollToElement",
             Type = "ValueTask ScrollToElement(string elementId, double offset = 0, bool? smooth = null, BitScrollAlignment alignment = BitScrollAlignment.Start)",
-            Description = "Brings an element inside the pane into view by scrolling the pane itself, leaving every scrolling ancestor of it alone.",
+            Description = "Brings an element inside the pane into view by scrolling the pane itself, leaving every scrolling ancestor of it alone. An overload takes an ElementReference (from @ref) in place of the id.",
             LinkType = LinkType.Link,
             Href = "#scroll-alignment-enum",
         },
@@ -870,18 +936,22 @@ public partial class BitScrollablePaneDemo
     private int maxHeightLines = 2;
 
     private bool noScroll;
-    private double overflowItemsCount = 6;
     private BitOverflow overflow;
 
     private BitOverscroll overscroll = BitOverscroll.Contain;
 
-    private double gutterItemsCount = 6;
-    private BitScrollbarGutter gutter;
+    private BitScrollbarWidth scrollbarWidth;
+    private BitScrollbarGutter gutter = BitScrollbarGutter.Stable;
+    private bool scrollbarColored;
+    private bool scrollbarOverflowing;
 
     private bool autoHideScrollbar = true;
+    private double autoHideDelay = 800;
 
     private bool fade = true;
     private double fadeSize = 2;
+
+    private bool focusable = true;
 
     private double scrollThrottle;
     private string scrollState = "-";
@@ -984,13 +1054,25 @@ public partial class BitScrollablePaneDemo
         StateHasChanged();
     }
 
-    private bool focusable = true;
-
     private bool snapStop = true;
     private BitScrollSnap snap = BitScrollSnap.Mandatory;
     private BitScrollSnapAlign snapAlign = BitScrollSnapAlign.Start;
+    private BitScrollablePane? carouselPane;
+    private BitScrollOffset? carouselOffset;
 
     private bool dragScroll = true;
     private bool dragMomentum = true;
     private bool horizontalWheel = true;
+
+    private readonly List<IBitComponentParams> scrollablePaneParams =
+    [
+        new BitScrollablePaneParams
+        {
+            Height = "10rem",
+            Modern = true,
+            AutoHideScrollbar = true,
+            Fade = true,
+            Overscroll = BitOverscroll.Contain,
+        }
+    ];
 }

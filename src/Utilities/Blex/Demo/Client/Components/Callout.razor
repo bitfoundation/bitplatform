@@ -1,0 +1,46 @@
+﻿@*
+    An aside in the prose, drawn as the site kit's bb-note (Fluent 2's MessageBar): the tone picks the
+    note's color, and the optional title is its bold lead-in.
+*@
+<div class="@NoteClass" role="note">
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <strong class="demo-note-title">@Title</strong>
+    }
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>Visual tone of the callout.</summary>
+    public enum CalloutKind
+    {
+        /// <summary>Neutral supporting information.</summary>
+        Note,
+
+        /// <summary>A recommended practice.</summary>
+        Tip,
+
+        /// <summary>Something that will bite if ignored.</summary>
+        Warning,
+
+        /// <summary>A behaviour that is easy to get wrong.</summary>
+        Gotcha,
+    }
+
+    /// <summary>Which tone to render.</summary>
+    [Parameter] public CalloutKind Kind { get; set; } = CalloutKind.Note;
+
+    /// <summary>Optional bold lead-in line.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>The callout body.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string NoteClass => Kind switch
+    {
+        CalloutKind.Tip => "bb-note bb-note-success",
+        CalloutKind.Warning => "bb-note bb-note-warn",
+        CalloutKind.Gotcha => "bb-note bb-note-danger",
+        _ => "bb-note",
+    };
+}

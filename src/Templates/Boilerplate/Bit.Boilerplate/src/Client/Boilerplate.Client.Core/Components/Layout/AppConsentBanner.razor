@@ -5,19 +5,16 @@
 {
     @* Modeless: consent gates the scripts, not the app.
        Styles rather than a scoped stylesheet - the panel renders outside this component's CSS scope, so ::deep
-       reaches none of it. pointer-events keeps the root from swallowing clicks meant for the page behind it, and
-       height:auto stops the default height cutting off the buttons. *@
+       reaches none of it. *@
     <BitPanel @bind-IsOpen="isOpen"
               Modeless
-              Position="BitPanelPosition.Bottom"
-              Styles="@(new()
-                        {
-                            Root = "pointer-events:none",
-                            Container = $"pointer-events:auto;height:auto;max-height:60vh;border-top:1px solid var({BitCss.Var.Color.Border.Secondary.Main})"
-                        })">
-        <BitStack Gap="0.5rem" Style="padding:1.25rem clamp(1rem, 4vw, 2rem);max-width:64rem;margin-inline:auto">
+              Placement="BitPlacement.Bottom"
+              TitleAriaId="consent-banner-title"
+              Style="--bit-Panel-border-width:1px"
+              Styles="@(new() { Container = "max-height:60vh" })">
+        <BitStack Gap="0.5rem" Padding="1.25rem clamp(1rem, 4vw, 2rem)" Style="max-width:64rem;margin-inline:auto">
 
-            <BitText Typography="BitTypography.Subtitle1">@Localizer[nameof(AppStrings.ConsentBannerTitle)]</BitText>
+            <BitText Id="consent-banner-title" Typography="BitTypography.Subtitle1">@Localizer[nameof(AppStrings.ConsentBannerTitle)]</BitText>
 
             <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
                 @Localizer[nameof(AppStrings.ConsentBannerMessage)]

@@ -1,4 +1,4 @@
-declare type TextHighlighterOptions = {
+﻿declare type TextHighlighterOptions = {
     findController: PDFFindController;
     /**
      * - The application event bus.

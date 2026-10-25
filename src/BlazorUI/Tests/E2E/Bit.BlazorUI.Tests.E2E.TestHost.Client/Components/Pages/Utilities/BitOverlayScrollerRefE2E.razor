@@ -1,0 +1,45 @@
+﻿@page "/e2e/overlay/scroller-ref"
+
+@* An Overlay that opens on its very first render (DefaultIsOpen) and holds a scroller named by ScrollerElement: the
+   @ref of that scroller is only captured by the render the Overlay opens in, so the reference it is handed then
+   points at no element yet. It is on a page of its own, since it holds a scroller from the first render on. *@
+
+<PageTitle>BitOverlay ScrollerElement E2E</PageTitle>
+
+<style>
+    .e2e-ovl-ref-box {
+        width: 300px;
+        height: 150px;
+        overflow: auto;
+        border: 1px solid green;
+    }
+
+    .e2e-ovl-ref-box > p {
+        margin: 0;
+        height: 30px;
+    }
+</style>
+
+<E2ESection Id="scroller-ref" Title="DefaultIsOpen with AutoToggleScroll and a ScrollerElement captured by the same render">
+    <button id="btn-rerender" @onclick="() => _renders++">Re-render the page</button>
+    <button id="btn-close" @onclick="() => _overlay.Close()">Close()</button>
+    <span id="renders">@_renders</span>
+    <span id="opened">@_opened</span>
+    <div id="ref-box" class="e2e-ovl-ref-box" @ref="_box">
+        @for (var i = 1; i <= 20; i++)
+        {
+            <p>Line @i</p>
+        }
+    </div>
+    <BitOverlay @ref="_overlay" Id="ovl-ref-initial" DefaultIsOpen="true" AutoToggleScroll ScrollerElement="_box"
+                OnOpen="() => _opened++" Style="inset: auto; width: 0; height: 0; pointer-events: none;" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private ElementReference _box;
+    private BitOverlay _overlay = default!;
+    private int _renders;
+    private int _opened;
+}

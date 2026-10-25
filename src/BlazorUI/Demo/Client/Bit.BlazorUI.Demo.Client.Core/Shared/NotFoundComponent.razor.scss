@@ -27,7 +27,9 @@
     }
 }
 
-.not-found-text {
+// A BitText, whose root does not carry this file's scope attribute - so ::deep, reached through the
+// .not-found div written here.
+::deep .not-found-text {
     max-width: rem2(460px);
 }
 

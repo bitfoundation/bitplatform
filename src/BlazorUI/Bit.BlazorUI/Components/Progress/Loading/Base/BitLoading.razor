@@ -9,8 +9,11 @@
    there is none, the visually hidden fallback below - is what a screen reader announces. The
    attribute splat comes first, which means every attribute written after it wins outright - and one
    written as null takes the splat's own value off the element - so the role, the politeness, the
-   direction and the accessible name each resolve a passed-through attribute of their own. *@
-<div @ref="This!.RootElement" @attributes="This?.HtmlAttributes"
+   direction and the accessible name each resolve a passed-through attribute of their own. Every
+   element of a loader is a span, so that one written inside a paragraph, a button or a label - the
+   places an inline loader goes - is still valid markup, which a prerendered div would not be: the
+   HTML parser closes an open paragraph at a div and moves the rest of the sentence out of it. *@
+<span @ref="This!.RootElement" @attributes="This?.HtmlAttributes"
      id="@This?._Id"
      style="@This?.StyleBuilder.Value"
      class="@This?.ClassBuilder.Value"
@@ -30,9 +33,9 @@
         }
         else if (This?.Label is not null)
         {
-            <label style="@This?.Styles?.Label" class="bit-ldn-lbl @This?.Classes?.Label">
+            <span style="@This?.Styles?.Label" class="bit-ldn-lbl @This?.Classes?.Label">
                 @This?.Label
-            </label>
+            </span>
         }
         else if (This?._ScreenReaderText is not null)
         {
@@ -41,4 +44,4 @@
         }
         @ChildContent
     }
-</div>
+</span>

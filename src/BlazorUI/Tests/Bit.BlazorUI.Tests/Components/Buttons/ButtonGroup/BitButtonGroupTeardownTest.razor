@@ -1,0 +1,56 @@
+﻿@using Bit.BlazorUI
+
+@* The groups go away together with their options, the way they do when the page hosting them is left; ShowFirst
+   removes the toggled option alone from groups that stay, the way a filtered list of options does. *@
+@if (Show)
+{
+    <BitButtonGroup TItem="BitButtonGroupOption" Toggle="true" @bind-ToggleKey="ToggleKey">
+        @if (ShowFirst)
+        {
+            <BitButtonGroupOption Text="A" Key="a" />
+        }
+        <BitButtonGroupOption Text="B" Key="b" />
+    </BitButtonGroup>
+
+    <BitButtonGroup TItem="BitButtonGroupOption" SelectionMode="BitSelectionMode.Multiple" @bind-ToggleKeys="ToggleKeys">
+        @if (ShowFirst)
+        {
+            <BitButtonGroupOption Text="A" Key="a" />
+        }
+        <BitButtonGroupOption Text="B" Key="b" />
+    </BitButtonGroup>
+}
+
+@code {
+    [Parameter] public bool Show { get; set; } = true;
+
+    [Parameter] public bool ShowFirst { get; set; } = true;
+
+    public string? ToggleKey
+    {
+        get => _toggleKey;
+        set
+        {
+            _toggleKey = value;
+            ToggleKeyChanges.Add(value);
+        }
+    }
+
+    public IEnumerable<string>? ToggleKeys
+    {
+        get => _toggleKeys;
+        set
+        {
+            _toggleKeys = value;
+            ToggleKeysChanges.Add(value);
+        }
+    }
+
+    public List<string?> ToggleKeyChanges { get; } = [];
+
+    public List<IEnumerable<string>?> ToggleKeysChanges { get; } = [];
+
+    private string? _toggleKey = "a";
+
+    private IEnumerable<string>? _toggleKeys = ["a"];
+}

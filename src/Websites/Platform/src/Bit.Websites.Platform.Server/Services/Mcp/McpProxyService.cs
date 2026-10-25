@@ -12,10 +12,13 @@ namespace Bit.Websites.Platform.Server.Services.Mcp;
 /// <summary>
 /// Backs this site's /mcp endpoint by fanning it out to the MCP servers below: the documentation servers
 /// of the bit platform libraries plus the third party ones the team relies on. A single connection to
-/// bitplatform.dev/mcp therefore exposes the tools of all of them at once. An upstream is either an http
+/// bitplatform.dev/mcp therefore exposes the tools of all of them at once, though of the bit libraries only BlazorUI's
+/// and Butil's unless it asks for every library. An upstream is either an http
 /// server - deployed, or one <see cref="McpVersionsService"/> runs on loopback for a released version -
 /// or a local stdio process this site spawns and keeps alive. An upstream may be narrowed down to a subset
 /// of its tools, and such a tool is then exposed under a name and a description written here.
+/// <see cref="McpFeedbackTool"/> and <see cref="McpReleasesTool"/> are the tools no upstream provides: they are merged
+/// into the list and answered by this site.
 /// </summary>
 public partial class McpProxyService : IAsyncDisposable
 {
@@ -24,9 +27,10 @@ public partial class McpProxyService : IAsyncDisposable
     [AutoInject] private IOptionsMonitor<AppSettings> appSettings = default!;
     [AutoInject] private CodebaseMemoryCli codebaseMemory = default!;
     [AutoInject] private McpVersions versions = default!;
+    [AutoInject] private McpReleasesTool releasesTool = default!;
 
     /// <summary>
-    /// The description DeepWiki gives its ask_question tool says no more than that it answers questions about a
+    /// The description DeepWiki gives its ask_wiki_question tool says no more than that it answers questions about a
     /// GitHub repository, which leaves the agent to guess whether a repository worth asking exists at all. Naming
     /// the third party repositories the bit platform team relies on, and what each one is the right source for, turns
     /// it into a tool an agent reaches for on its own instead of one it only uses when it is told to. The template's
@@ -41,15 +45,15 @@ public partial class McpProxyService : IAsyncDisposable
         - ZiggyCreatures/FusionCache: hybrid caching, L2 cache backplane, distributed locking, OpenTelemetry integration and cache factory configuration.
         - keycloak/keycloak: Keycloak and realm configuration.
         - microsoft/agent-framework: agent creation, multi agent orchestration, workflows, tools and function calling, MCP, A2A communication, memory and context, and provider integrations.
-        Do not ask it about the bit platform libraries themselves: BlazorUI, Bmotion, Butil, Bswup and Brouter each have
-        their own dedicated tools on this server, and those are written from the library rather than inferred from it.
+        Do not ask it about the bit platform libraries themselves: BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Butil, Bswup, Brouter and Belemetry each have
+        their own dedicated tools, BlazorUI's and Butil's on this server and every other library's on its own server at https://<name>.bitplatform.dev/mcp, and those are written from the library rather than inferred from it.
         """;
 
     /// <summary>
     /// Ends the description of every CodebaseMemory tool: an agent may also have a codebase-memory server of its
     /// own, which answers about its own project.
     /// </summary>
-    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository at the release this connection asked for (the v query of this endpoint, the newest release when it names none), never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites and the build time projects, and none of the bit libraries: BlazorUI, Bmotion, Brouter, Butil and Bswup each answer for themselves through their own tools on this server, so a question about a component, a theme, an animation, routing or the service worker goes to those rather than to a search here.";
+    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository at the release this connection asked for (the v query of this endpoint, the newest release when it names none or one not served yet, as the server instructions say), never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites, the build time projects and two bit libraries, Besql (src/Besql) and BlazorES2019 (src/Toolings/BlazorES2019), but none of the other bit libraries: BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil, Bswup and Belemetry each answer for themselves through their own tools, BlazorUI's and Butil's on this server and every other library's on its own server at https://<name>.bitplatform.dev/mcp, so a question about a component, a theme, an animation, a drawing canvas, a command palette, a barcode scanner, drag and drop, a browser database, a node-based editor, a schema-driven form, real-time collaboration, a sortable list, a product tour, state management, image processing, an EF Core database in the browser, routing, the service worker or telemetry goes to those rather than to a search here.";
 
     /// <summary>
     /// Every tool of this upstream takes a project argument naming the index to answer from, a deployment
@@ -65,7 +69,7 @@ public partial class McpProxyService : IAsyncDisposable
     private static readonly ExposedTool[] codebaseMemoryTools =
     [
         new("search_graph", "FindBitPlatformSymbols", $"Finds classes, methods, routes and other symbols by keywords (query) or by a regex over their names (name_pattern), returning the qualified names GetBitPlatformSymbolSource takes. Page with offset while has_more is true. {bitPlatformSourceScope}"),
-        new("search_code", "SearchBitPlatformCode", $"Greps for a text, or a regex with regex set, and returns the matches grouped by their enclosing method or class, with signatures and line numbers. The one to use for literal or non-code text; narrow it with file_pattern or path_filter. {bitPlatformSourceScope}"),
+        new("search_code", "SearchBitPlatformCode", $"Greps for a text, or a regex with regex set, and returns the matches grouped by their enclosing method or class, with signatures and line numbers. The one to use for literal or non-code text; narrow it with file_pattern or path_filter. It matches case-sensitively; for any case, set regex and start the pattern with (?i). {bitPlatformSourceScope}"),
         new("get_code_snippet", "GetBitPlatformSymbolSource", $"Returns the full source of one class, method or other symbol, addressed by a qualified name FindBitPlatformSymbols or SearchBitPlatformCode returned. A short name answers with candidates when it is ambiguous. {bitPlatformSourceScope}")
     ];
 
@@ -88,11 +92,17 @@ public partial class McpProxyService : IAsyncDisposable
     private readonly Upstream[] sharedUpstreams =
     [
         new("MicrosoftLearn", new("https://learn.microsoft.com/api/mcp")),
-        // Only ask_question is exposed: it answers against the whole repository by itself, while the
+        // Only ask_wiki_question is exposed: it answers against the whole repository by itself, while the
         // read_wiki_structure and read_wiki_contents tools of the same server dump the generated wiki
         // of a repository, which is a slower and far more token hungry way to reach the same answer.
         // Renamed, as a developer may have DeepWiki's own server installed next to this one.
-        new("DeepWiki", new("https://mcp.deepwiki.com/mcp"), [new("ask_question", "AskGitHubRepository", askQuestionDescription)])
+        new("DeepWiki", new("https://mcp.deepwiki.com/mcp"), [new("ask_wiki_question", "AskGitHubRepository", askQuestionDescription)])
+    ];
+
+    private readonly Upstream[] deployedLibraryUpstreams =
+    [
+        .. new[] { "Bmotion", "Bswup", "Brouter", "Bmage", "Bink", "Balette", "BbScanner", "Bdnd", "BlazeDb", "Blow", "Borm", "Bcrdt", "Bonboarding", "Bortable", "Blex", "Bsqlite", "Belemetry" }
+            .Select(library => new Upstream($"bit{library}", new($"https://{library.ToLowerInvariant()}.bitplatform.dev/mcp")))
     ];
 
     /// <summary>
@@ -113,12 +123,27 @@ public partial class McpProxyService : IAsyncDisposable
     /// </summary>
     private Upstream? codebaseMemoryUpstream;
 
-    public async ValueTask<IReadOnlyList<Tool>> ListTools(string? requestedVersion, CancellationToken cancellationToken)
-        => (await ToolsOf(versions.Resolve(requestedVersion), cancellationToken)).Tools;
+    public async ValueTask<IReadOnlyList<Tool>> ListTools(string? requestedVersion, bool everyLibrary, CancellationToken cancellationToken)
+    {
+        var toolSet = await ToolsOf(versions.Resolve(requestedVersion), cancellationToken);
 
-    public async ValueTask<CallToolResult> CallTool(string? requestedVersion, CallToolRequestParams request, CancellationToken cancellationToken)
+        return everyLibrary ? toolSet.Tools : toolSet.DefaultTools;
+    }
+
+    /// <summary>
+    /// Answers one tool call. <paramref name="requestServices"/> belongs to the request being served and is
+    /// what the feedback tool is resolved from: it reaches the team's chat through scoped services, unlike
+    /// the proxying this singleton does for every other tool.
+    /// </summary>
+    public async ValueTask<CallToolResult> CallTool(string? requestedVersion, IServiceProvider requestServices, CallToolRequestParams request, CancellationToken cancellationToken)
     {
         var version = versions.Resolve(requestedVersion);
+
+        if (request.Name is McpFeedbackTool.ToolName)
+            return await requestServices.GetRequiredService<McpFeedbackTool>().Call(request, version, cancellationToken);
+
+        if (request.Name is McpReleasesTool.ToolName)
+            return await releasesTool.Call(request, requestedVersion, cancellationToken);
 
         if ((await ToolsOf(version, cancellationToken)).UpstreamPerToolName.TryGetValue(request.Name, out var upstream) is false)
             throw new McpException($"Unknown tool: '{request.Name}'.");
@@ -194,15 +219,15 @@ public partial class McpProxyService : IAsyncDisposable
 
             // A release whose sites restarted comes back as a new record on new ports, so the sessions held
             // against the old ones are dropped. The shared ones, and the one stdio process, stay.
-            foreach (var stale in entry.Upstreams.Where(upstream => upstream.Url is not null && sharedUpstreams.Contains(upstream) is false))
+            foreach (var stale in entry.Upstreams.Where(upstream => upstream.Url is not null && sharedUpstreams.Contains(upstream) is false && deployedLibraryUpstreams.Contains(upstream) is false))
             {
                 _ = Disconnect(stale);
             }
 
             entry.Version = version;
             entry.Upstreams = version is null
-                ? sharedUpstreams
-                : [.. sharedUpstreams, .. version.DocumentationEndpoints.Select(site => new Upstream(site.Key, site.Value)), CodebaseMemoryUpstream()];
+                ? [.. sharedUpstreams, .. deployedLibraryUpstreams]
+                : [.. sharedUpstreams, .. deployedLibraryUpstreams, .. version.DocumentationEndpoints.Select(site => new Upstream(site.Key, site.Value)), CodebaseMemoryUpstream()];
 
             return entry.Upstreams;
         }
@@ -259,6 +284,9 @@ public partial class McpProxyService : IAsyncDisposable
     /// The index prefixes every qualified name with its project name and answers with absolute paths: details of
     /// this machine that callers do not need, as a qualified name resolves without that prefix too. Tool names are
     /// renamed in errors only, since an answer can quote source code that mentions them.
+    /// A documentation server links the repository at develop, a branch that keeps moving after the release it was
+    /// built from: the release's tag never moves, so every such link is pointed at it here - one place, for every
+    /// release and every library, rather than in each server, which cannot know which tag it is being served as.
     /// </summary>
     private static string AdaptResultText(Upstream upstream, McpVersion? version, string text, bool isError)
     {
@@ -270,8 +298,31 @@ public partial class McpProxyService : IAsyncDisposable
             text = text.Replace($"{worktreeRoot}/", null, StringComparison.OrdinalIgnoreCase);
         }
 
+        // The ordinal scan is vectorized and rules most answers out before the regex is run at all.
+        if (version is not null && version.DocumentationEndpoints.ContainsKey(upstream.Name) && text.Contains("develop", StringComparison.Ordinal))
+        {
+            text = DevelopBranchLinkRegex().Replace(text, link => PinToTag(link, version.Tag));
+        }
+
         return isError ? RenameTools(upstream, text) : text;
     }
+
+    /// <summary>
+    /// An edit link becomes a blob one, since a tag cannot be edited; raw.githubusercontent's refs/heads/ prefix is
+    /// dropped, since a tag is not a head.
+    /// </summary>
+    private static string PinToTag(Match link, string tag)
+        => link.Groups["view"].Success
+            ? $"https://github.com/bitfoundation/bitplatform/{(link.Groups["view"].Value is "edit" ? "blob" : link.Groups["view"].Value)}/{tag}"
+            : $"https://raw.githubusercontent.com/bitfoundation/bitplatform/{tag}";
+
+    /// <summary>
+    /// Every form of a link at develop: a file or folder view (with or without a path after it, so the bare
+    /// /tree/develop of a project's root too), its edit, raw, blame and history views, and a raw file. A longer
+    /// branch name that only starts with develop is left alone.
+    /// </summary>
+    [GeneratedRegex(@"https://(?:github\.com/bitfoundation/bitplatform/(?<view>blob|tree|edit|raw|blame|commits)/|raw\.githubusercontent\.com/bitfoundation/bitplatform/)(?:refs/heads/)?develop(?![\w.-])")]
+    private static partial Regex DevelopBranchLinkRegex();
 
     private async ValueTask<ToolSet> ToolsOf(McpVersion? version, CancellationToken cancellationToken)
     {
@@ -287,27 +338,35 @@ public partial class McpProxyService : IAsyncDisposable
 
             var toolsPerUpstream = await Task.WhenAll(UpstreamsOf(version).Select(async upstream => (upstream, tools: await ListTools(upstream, version, cancellationToken))));
 
-            List<Tool> mergedTools = [];
+            // This site's own tools lead the list; the upstreams fill in the rest behind it.
+            List<Tool> mergedTools = [McpFeedbackTool.Definition, McpReleasesTool.Definition];
+            List<Tool> defaultTools = [.. mergedTools];
             Dictionary<string, Upstream> mergedUpstreamPerToolName = new(StringComparer.Ordinal);
 
             foreach (var (upstream, upstreamTools) in toolsPerUpstream)
             {
                 foreach (var tool in upstreamTools ?? [])
                 {
-                    if (mergedUpstreamPerToolName.TryAdd(tool.Name, upstream) is false)
+                    if (tool.Name is McpFeedbackTool.ToolName or McpReleasesTool.ToolName || mergedUpstreamPerToolName.TryAdd(tool.Name, upstream) is false)
                     {
                         // Tool names are the only address an MCP client has, so two servers claiming the same
                         // name cannot both be exposed. The first one wins and the clash is reported.
                         logger.LogWarning("The {ToolName} tool of the {McpServerName} MCP server is not exposed because {OtherMcpServerName} already provides a tool with that name.",
-                            tool.Name, upstream.Name, mergedUpstreamPerToolName[tool.Name].Name);
+                            tool.Name, upstream.Name, mergedUpstreamPerToolName.GetValueOrDefault(tool.Name)?.Name ?? "this site");
                         continue;
                     }
 
                     mergedTools.Add(tool);
+
+                    if (deployedLibraryUpstreams.Contains(upstream) is false)
+                    {
+                        defaultTools.Add(tool);
+                    }
                 }
             }
 
             toolSet.Tools = [.. mergedTools];
+            toolSet.DefaultTools = [.. defaultTools];
             toolSet.UpstreamPerToolName = mergedUpstreamPerToolName;
             toolSet.Generation = versions.Generation;
             toolSet.ExpiresAt = DateTimeOffset.UtcNow + (toolsPerUpstream.Any(t => t.tools is null) ? failedToolsCacheLifetime : toolsCacheLifetime);
@@ -465,7 +524,7 @@ public partial class McpProxyService : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var upstream in sharedUpstreams.Concat(upstreamsPerVersion.Values.SelectMany(entry => entry.Upstreams)).Distinct())
+        foreach (var upstream in sharedUpstreams.Concat(deployedLibraryUpstreams).Concat(upstreamsPerVersion.Values.SelectMany(entry => entry.Upstreams)).Distinct())
         {
             await Disconnect(upstream);
         }
@@ -487,6 +546,8 @@ public partial class McpProxyService : IAsyncDisposable
     private sealed class ToolSet
     {
         public Tool[] Tools { get; set; } = [];
+
+        public Tool[] DefaultTools { get; set; } = [];
 
         public Dictionary<string, Upstream> UpstreamPerToolName { get; set; } = new(StringComparer.Ordinal);
 

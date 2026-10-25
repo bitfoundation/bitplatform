@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Extract file name from the Content-Disposition HTTP response header.
  *
  * @param {string} contentDisposition

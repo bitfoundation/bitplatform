@@ -1,4 +1,4 @@
-using Microsoft.JSInterop;
+﻿using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
 
@@ -12,7 +12,7 @@ internal static class BitFcTimeGridScrollInterop
     {
         try
         {
-            return await js.InvokeAsync<bool>(
+            return await js.InvokeScriptAsync<bool>(
                 "BitBlazorUI.FullCalendar.scrollToHour",
                 cancellationToken,
                 elementId,

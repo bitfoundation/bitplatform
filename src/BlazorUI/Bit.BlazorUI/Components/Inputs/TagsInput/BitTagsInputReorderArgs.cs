@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Arguments of the OnReorder callback of <see cref="BitTagsInput"/>, describing a tag that was moved

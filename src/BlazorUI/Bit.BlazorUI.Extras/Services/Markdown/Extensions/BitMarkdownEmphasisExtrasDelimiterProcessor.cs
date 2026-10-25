@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Delimiter processor for the three emphasis flavors that are not part of CommonMark or GFM but

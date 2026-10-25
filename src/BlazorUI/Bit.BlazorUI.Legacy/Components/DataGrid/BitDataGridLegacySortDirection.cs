@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
 /// Describes the direction in which a <see cref="BitDataGridLegacy{TGridItem}"/> column is sorted.

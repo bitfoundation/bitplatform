@@ -22,23 +22,31 @@
             @if (_ShowSlideButtons)
             {
                 var prevIcon = BitIconInfo.From(PreviousIcon, PreviousIconName ?? (_isVertical ? "ChevronUp" : "ChevronLeft"));
+                var prevDisabled = Disabled || _slideAtStart || _slideHasOverflow is false;
                 <button type="button"
-                        disabled="@(IsEnabled is false || _slideAtStart || _slideHasOverflow is false)"
+                        disabled="@prevDisabled"
+                        aria-disabled="@(prevDisabled ? "true" : null)"
                         style="@Styles?.SlideButton"
                         aria-label="@(PreviousAriaLabel ?? "Previous")"
                         @onclick="() => Slide(false)"
                         class="bit-pvt-sbt bit-pvt-spv @Classes?.SlideButton">
-                    <i aria-hidden="true" class="@prevIcon?.GetCssClasses()" />
+                    <i aria-hidden="true" class="@prevIcon?.GetCssClasses() @_SlideIconMirrorClass" />
                 </button>
             }
 
             @* The arrow, Home, End, Enter, Space and Delete keys of the tabs pattern are all handled
                on the tablist, so a single handler covers every item that bubbles its keydown here.
                Their default action is suppressed by UpdatePreventedKeys, on a listener of the browser's
-               own, since Blazor's preventDefault directive cannot be decided per key. *@
+               own, since Blazor's preventDefault directive cannot be decided per key.
+               tabindex="-1" keeps the tablist itself out of the tab order: a header that scrolls (the
+               Slide overflow) is a scroll container, which Firefox gives a tab stop of its own ahead of
+               the selected tab, and the tabs pattern promises one stop for the whole header. The click
+               focus the same tabindex would give the tablist's own padding is turned away by the script
+               half (setupKeys), so the focus never rests on the header without a tab. *@
             <div @ref="_headerRef"
                  @onkeydown="HandleOnKeyDown"
                  id="@_HeaderId"
+                 tabindex="-1"
                  role="tablist"
                  aria-label="@AriaLabel"
                  aria-labelledby="@AriaLabelledBy"
@@ -46,42 +54,47 @@
                  style="@Styles?.Header"
                  class="bit-pvt-hct @Classes?.Header">
                 @ChildContent
-
-                @if (OverflowBehavior is BitPivotOverflowBehavior.Menu)
-                {
-                    var moreIcon = BitIconInfo.From(OverflowIcon, OverflowIconName ?? "More");
-                    @* Its keys are its own: the tablist around it would otherwise take the Enter or
-                       the Space that opens the menu as an activation of the focused tab. *@
-                    <button @ref="_moreRef"
-                            type="button"
-                            id="@_MoreId"
-                            disabled="@(IsEnabled is false)"
-                            style="display:none;@Styles?.OverflowButton"
-                            aria-haspopup="menu"
-                            aria-label="@(OverflowAriaLabel ?? "More")"
-                            aria-controls="@_MenuId"
-                            aria-expanded="@(_isMenuOpen ? "true" : "false")"
-                            @onclick="ToggleMenu"
-                            @onkeydown="HandleMoreKeyDown"
-                            @onkeydown:stopPropagation="true"
-                            class="bit-pvti bit-pvt-mor @(_IsSelectedOverflowed ? "bit-pvt-mor-sel" : null) @Classes?.OverflowButton">
-                        <span>
-                            <i aria-hidden="true" class="@moreIcon?.GetCssClasses()" />
-                        </span>
-                    </button>
-                }
             </div>
+
+            @if (OverflowBehavior is BitPivotOverflowBehavior.Menu)
+            {
+                var moreIcon = BitIconInfo.From(OverflowIcon, OverflowIconName ?? "More");
+                @* Beside the tablist rather than inside it: a tablist owns tabs and nothing else, so a
+                   menu button among them would be an element assistive technologies cannot place. It
+                   is drawn like one of the items and shown by the JS half only while something is
+                   folded away. *@
+                <button @ref="_moreRef"
+                        type="button"
+                        id="@_MoreId"
+                        disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)"
+                        style="display:none;@Styles?.OverflowButton"
+                        aria-haspopup="menu"
+                        aria-label="@(OverflowAriaLabel ?? "More")"
+                        aria-controls="@_MenuId"
+                        aria-expanded="@(_isMenuOpen ? "true" : "false")"
+                        data-bit-esc="@EscapeClaim"
+                        @onclick="ToggleMenu"
+                        @onkeydown="HandleMoreKeyDown"
+                        class="bit-pvti bit-pvt-mor @(_IsSelectedOverflowed ? "bit-pvt-mor-sel" : null) @Classes?.OverflowButton">
+                    <span>
+                        <i aria-hidden="true" class="@moreIcon?.GetCssClasses()" />
+                    </span>
+                </button>
+            }
 
             @if (_ShowSlideButtons)
             {
                 var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? (_isVertical ? "ChevronDown" : "ChevronRight"));
+                var nextDisabled = Disabled || _slideAtEnd || _slideHasOverflow is false;
                 <button type="button"
-                        disabled="@(IsEnabled is false || _slideAtEnd || _slideHasOverflow is false)"
+                        disabled="@nextDisabled"
+                        aria-disabled="@(nextDisabled ? "true" : null)"
                         style="@Styles?.SlideButton"
                         aria-label="@(NextAriaLabel ?? "Next")"
                         @onclick="() => Slide(true)"
                         class="bit-pvt-sbt bit-pvt-snx @Classes?.SlideButton">
-                    <i aria-hidden="true" class="@nextIcon?.GetCssClasses()" />
+                    <i aria-hidden="true" class="@nextIcon?.GetCssClasses() @_SlideIconMirrorClass" />
                 </button>
             }
 
@@ -91,7 +104,8 @@
                 @* Outside the tablist on purpose: it asks for a new tab rather than being one, so it keeps
                    its own natural place in the tab order instead of taking one of the arrow keys. *@
                 <button type="button"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)"
                         title="@(AddTitle ?? "Add")"
                         style="@Styles?.AddButton"
                         aria-label="@(AddAriaLabel ?? "Add")"
@@ -111,7 +125,10 @@
 
                 @* The menu takes the focus on itself and points at the item it is on with an
                    aria-activedescendant, which the WAI-ARIA menu pattern offers as the alternative to
-                   moving the real focus from one of its items to the next. *@
+                   moving the real focus from one of its items to the next.
+                   data-bit-esc claims the Escape HandleMenuKeyDown (and HandleMoreKeyDown on the button
+                   above) closes the open menu with (see Utils.claimEscape), so a dialog around the pivot
+                   waits for the next press rather than closing on the same one. *@
                 <div @ref="_menuRef"
                      style="display:@(_isMenuOpen ? "block" : "none");@Styles?.OverflowCallout"
                      id="@_MenuId"
@@ -119,6 +136,7 @@
                      tabindex="-1"
                      aria-label="@(OverflowAriaLabel ?? "More")"
                      aria-activedescendant="@_ActiveMenuItemId"
+                     data-bit-esc="@EscapeClaim"
                      @onkeydown="HandleMenuKeyDown"
                      class="bit-pvt-mnc @Classes?.OverflowCallout">
                     @for (var i = 0; i < _overflowItems.Count; i++)
@@ -133,8 +151,8 @@
                                 tabindex="-1"
                                 role="menuitemradio"
                                 title="@item.Title"
-                                disabled="@(item.IsEnabled is false)"
-                                aria-disabled="@(item.IsEnabled ? null : "true")"
+                                disabled="@(item.Disabled)"
+                                aria-disabled="@(item.Disabled ? "true" : null)"
                                 aria-checked="@(item.IsSelected ? "true" : "false")"
                                 style="@Styles?.OverflowItem"
                                 @onclick="() => SelectFromMenu(item)"
@@ -201,8 +219,10 @@
         }
         else
         {
-            <div role="tabpanel"
-                 tabindex="0"
+            @* With nothing selected (every tab disabled or hidden) there is no tab to label the panel, and an
+               unnamed, empty tab stop is worse than none, so the element stays only for the layout. *@
+            <div role="@(_selectedItem is null ? null : "tabpanel")"
+                 tabindex="@(_selectedItem is null ? null : "0")"
                  id="@(_selectedItem is null ? null : GetItemPanelId(_selectedItem))"
                  aria-labelledby="@(_selectedItem?._Id)"
                  style="@GetItemStyle(_selectedItem)"

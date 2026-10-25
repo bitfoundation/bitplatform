@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Optional helpers to populate semantic color steps from a single main color (OKLCH-based).

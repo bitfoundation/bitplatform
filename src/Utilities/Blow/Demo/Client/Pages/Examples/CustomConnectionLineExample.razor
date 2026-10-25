@@ -1,0 +1,93 @@
+﻿@page "/examples/custom-connection-line"
+
+<PageTitle>Custom Connection Line · Blow</PageTitle>
+
+<ExampleScaffold Title="Custom Connection Line"
+                 Summary="The line drawn while you connect can be restyled with ConnectionLineStyle and ConnectionLineClass, or drawn entirely by you with a ConnectionLineTemplate - here a dashed gradient with a dot at the pointer that turns green over a handle that would accept the connection.">
+    <Toolbar>
+        <label>
+            Line
+            <select @bind="_look">
+                <option value="template">Custom template</option>
+                <option value="styled">Default, restyled</option>
+                <option value="default">Default</option>
+            </select>
+        </label>
+        <label>
+            Shape
+            <select @bind="_shape">
+                <option value="@BlowEdgeType.Bezier">Bezier</option>
+                <option value="@BlowEdgeType.SmoothStep">Smooth step</option>
+                <option value="@BlowEdgeType.Step">Step</option>
+                <option value="@BlowEdgeType.Straight">Straight</option>
+            </select>
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    ConnectionLineType="_shape"
+                    ConnectionLineStyle="@(_look == "styled" ? "stroke:#f59e0b;stroke-width:3" : null)"
+                    ConnectionLineClass="@(_look == "styled" ? "ccl-marching" : null)"
+                    ConnectionLineTemplate="@(_look == "template" ? GradientLine : null)">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag</strong> from the handle under "Drag from here" (or from any node's bottom handle) and move around: the line follows the pointer.</li>
+        <li>Bring the pointer near the top handle of Node B or Node C: with the custom template, the gradient's far end and the dot at the pointer turn green, because releasing there would connect.</li>
+        <li>Switch <strong>Line</strong> to <em>Default, restyled</em> for the built-in line in a thicker amber stroke with marching dashes, or to <em>Default</em> for the line as it comes.</li>
+        <li>Change <strong>Shape</strong> to draw the line as a bezier, smooth step, step or straight line - whichever line is shown.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>ConnectionLineTemplate</code> is a <code>RenderFragment&lt;BlowConnectionLineContext&gt;</code> drawn inside the canvas's SVG, in flow coordinates, instead of the built-in line. Here it is a page field handed over only while <em>Custom template</em> is picked; null brings the built-in line back.</li>
+        <li>The context carries <code>FromNode</code>, <code>FromHandle</code>, <code>FromHandleType</code>, the start point <code>From</code> and its side <code>FromPosition</code>, the pointer <code>To</code> and the side <code>ToPosition</code> the line arrives from, and <code>IsValid</code> - true when releasing now would connect, including within <code>ConnectionRadius</code> of a handle that would accept it.</li>
+        <li><code>BlowEdgePath.Compute(type, ...)</code> turns those points and sides into an SVG path, the same geometry edges use; the template passes it the <strong>Shape</strong>. The gradient uses <code>gradientUnits="userSpaceOnUse"</code> so it always runs from the handle to the pointer.</li>
+        <li>For the built-in line, <code>ConnectionLineType</code> (default <code>Bezier</code>) picks the shape, <code>ConnectionLineStyle</code> adds an inline style - <code>stroke:#f59e0b;stroke-width:3</code> here - and <code>ConnectionLineClass</code> a class of your stylesheet, this page's <code>ccl-marching</code>. All three are ignored while a template draws the line.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    /* The class ConnectionLineClass puts on the built-in line: dashes that march towards the pointer. */
+    .ccl-marching { stroke-dasharray: 6 4; animation: ccl-march .5s linear infinite; }
+    @@keyframes ccl-march { from { stroke-dashoffset: 10; } to { stroke-dashoffset: 0; } }
+    @@media (prefers-reduced-motion: reduce) { .ccl-marching { animation: none; } }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private string _look = "template";
+    private BlowEdgeType _shape = BlowEdgeType.Bezier;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Drag from here", Position = new(120, 40), Width = 160 },
+            new BlowNode { Id = "2", Label = "Node B", Position = new(80, 220) },
+            new BlowNode { Id = "3", Label = "Node C", Position = new(320, 220) },
+        ];
+    }
+
+    // A property rather than markup inside <ConnectionLineTemplate>, so the toolbar can take it away again.
+    // userSpaceOnUse pins the gradient to the line's own ends, so it always runs from the handle to the
+    // pointer whichever way the line is drawn.
+    private RenderFragment<BlowConnectionLineContext> GradientLine => c => @<g>
+            <defs>
+                <linearGradient id="ccl-gradient" gradientUnits="userSpaceOnUse"
+                                x1="@Inv(c.From.X)" y1="@Inv(c.From.Y)" x2="@Inv(c.To.X)" y2="@Inv(c.To.Y)">
+                    <stop offset="0%" stop-color="#6366f1" />
+                    <stop offset="100%" stop-color="@(c.IsValid ? "#16a34a" : "#ec4899")" />
+                </linearGradient>
+            </defs>
+            <path d="@LinePath(c)" fill="none" stroke="url(#ccl-gradient)" stroke-width="2" stroke-dasharray="6 4" />
+            <circle cx="@Inv(c.To.X)" cy="@Inv(c.To.Y)" r="5"
+                    fill="@(c.IsValid ? "#16a34a" : "#6366f1")" stroke="#fff" stroke-width="1.5" />
+        </g>;
+
+    private string LinePath(BlowConnectionLineContext c) =>
+        BlowEdgePath.Compute(_shape, c.From.X, c.From.Y, c.FromPosition, c.To.X, c.To.Y, c.ToPosition).Path;
+
+    private static string Inv(double v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}

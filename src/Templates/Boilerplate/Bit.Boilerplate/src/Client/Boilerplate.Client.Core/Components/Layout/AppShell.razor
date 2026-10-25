@@ -1,7 +1,7 @@
 @*+:cnd:noEmit*@
 @inherits AppComponentBase
 
-<BitAppShell PersistScroll>
+<BitAppShell PersistScroll ScrollPadding="5rem 0 4rem">
     <main class="@GetMainCssClass()">
         <div class="main-container">
             @if (IsIdentityPage is not true)
@@ -11,7 +11,6 @@
                              IconNavUrl="/"
                              Class="nav-panel"
                              Items="NavPanelItems"
-                             Accent="BitColor.SecondaryBackground"
                              IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg">
                     <Footer>
                         <BitStack Class="footer-stack">
@@ -49,7 +48,7 @@
                                                      IconName="@BitIconName.Org"
                                                      Href="@PageUrls.ManageMyTenants"
                                                      Title="@Localizer[nameof(AppStrings.CurrentTenant)]"
-                                                     Styles="@(new() { Content = "overflow:hidden;white-space:nowrap;text-overflow:ellipsis" })">
+                                                     NoWrap>
                                         <BitText Typography="BitTypography.Caption2">
                                             @(string.IsNullOrWhiteSpace(CurrentTenant.Title) ? CurrentTenant.Name : CurrentTenant.Title)
                                         </BitText>
@@ -57,7 +56,7 @@
                                 }
                                 @*#endif*@
                                 <BitActionButton Class="app-version" OnClick="WrapHandled(UpdateApp)">
-                                    <BitText Typography="BitTypography.Caption2">@TelemetryContext.AppVersion</BitText>
+                                    <BitText Class="app-latin-digits" Typography="BitTypography.Caption2">@TelemetryContext.AppVersion</BitText>
                                 </BitActionButton>
                             }
                         </BitStack>

@@ -24,11 +24,11 @@ public class BitSwipeTrapTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitSwipeTrapShouldRespectIsEnabled(bool isEnabled)
+    public void BitSwipeTrapShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitSwipeTrap>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-stp");
@@ -168,7 +168,7 @@ public class BitSwipeTrapTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, "swipe area");
         });
 
-        component.MarkupMatches(@"<div aria-label=""swipe area"" class=""bit-stp"" id:ignore></div>");
+        component.MarkupMatches(@"<div role=""group"" aria-label=""swipe area"" class=""bit-stp"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -252,6 +252,7 @@ public class BitSwipeTrapTests : BunitTestContext
         Assert.AreEqual(BitSwipeOrientation.None, invocation.Arguments[6]); // orientationLock
         Assert.AreEqual(false, invocation.Arguments[7]);       // touchOnly
         Assert.IsNull(invocation.Arguments[8]);                // skipSelector
+        Assert.AreEqual(false, invocation.Arguments[9]);       // keyboardTrigger
     }
 
     [TestMethod]
@@ -268,6 +269,7 @@ public class BitSwipeTrapTests : BunitTestContext
             parameters.Add(p => p.OrientationLock, BitSwipeOrientation.Horizontal);
             parameters.Add(p => p.TouchOnly, true);
             parameters.Add(p => p.SkipSelector, ".no-swipe");
+            parameters.Add(p => p.KeyboardTrigger, true);
         });
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.SwipeTrap.setup");
@@ -279,6 +281,7 @@ public class BitSwipeTrapTests : BunitTestContext
         Assert.AreEqual(BitSwipeOrientation.Horizontal, invocation.Arguments[6]);
         Assert.AreEqual(true, invocation.Arguments[7]);
         Assert.AreEqual(".no-swipe", invocation.Arguments[8]);
+        Assert.AreEqual(true, invocation.Arguments[9]);
     }
 
     [TestMethod]
@@ -323,6 +326,39 @@ public class BitSwipeTrapTests : BunitTestContext
 
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
         Assert.AreEqual(1, setups.Count);
+    }
+
+    [TestMethod]
+    public void BitSwipeTrapShouldNotReSetupJsWhileItsSetupIsPending()
+    {
+        var setup = Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.setup", _ => true);
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.dispose");
+
+        var component = RenderComponent<BitSwipeTrap>();
+
+        component.Render();
+        component.Render();
+
+        setup.SetVoidResult();
+
+        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
+        var disposes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.dispose").ToList();
+        Assert.AreEqual(1, setups.Count);
+        Assert.AreEqual(0, disposes.Count);
+    }
+
+    [TestMethod]
+    public void BitSwipeTrapShouldReSetupJsAfterAFailedSetup()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.setup", _ => true).SetException(new JSDisconnectedException("Disconnected"));
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.dispose");
+
+        var component = RenderComponent<BitSwipeTrap>();
+
+        component.Render();
+
+        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
+        Assert.AreEqual(2, setups.Count);
     }
 
     [TestMethod]
@@ -449,15 +485,15 @@ public class BitSwipeTrapTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(10, 2, BitSwipeDirection.Right),
-        DataRow(-5, 1, BitSwipeDirection.Left),
-        DataRow(2, 9, BitSwipeDirection.Bottom),
-        DataRow(3, -7, BitSwipeDirection.Top),
-        DataRow(5, 5, BitSwipeDirection.Right),
-        DataRow(-5, -5, BitSwipeDirection.Left),
-        DataRow(5, -5, BitSwipeDirection.Right),
-        DataRow(-5, 5, BitSwipeDirection.Left)]
-    public async Task BitSwipeTrapShouldInvokeOnTrigger(int diffX, int diffY, BitSwipeDirection expectedDirection)
+        DataRow(10, 2, BitPlacement.Right),
+        DataRow(-5, 1, BitPlacement.Left),
+        DataRow(2, 9, BitPlacement.Bottom),
+        DataRow(3, -7, BitPlacement.Top),
+        DataRow(5, 5, BitPlacement.Right),
+        DataRow(-5, -5, BitPlacement.Left),
+        DataRow(5, -5, BitPlacement.Right),
+        DataRow(-5, 5, BitPlacement.Left)]
+    public async Task BitSwipeTrapShouldInvokeOnTrigger(int diffX, int diffY, BitPlacement expectedDirection)
     {
         BitSwipeTrapTriggerArgs? triggerArgs = null;
 
@@ -539,9 +575,9 @@ public class BitSwipeTrapTests : BunitTestContext
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.SwipeTrap.setup");
 
-        Assert.AreEqual(10, invocation.Arguments.Count);
+        Assert.AreEqual(11, invocation.Arguments.Count);
         Assert.AreEqual(component.Instance.UniqueId.ToString(), invocation.Arguments[0]);
-        Assert.IsInstanceOfType<DotNetObjectReference<BitSwipeTrap>>(invocation.Arguments[9]);
+        Assert.IsInstanceOfType<DotNetObjectReference<BitSwipeTrap>>(invocation.Arguments[10]);
     }
 
     [TestMethod]
@@ -615,5 +651,194 @@ public class BitSwipeTrapTests : BunitTestContext
 
         var disposes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.dispose").ToList();
         Assert.AreEqual(1, disposes.Count);
+    }
+
+    [TestMethod]
+    public void BitSwipeTrapShouldReSetupJsOnKeyboardTriggerChange()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.dispose");
+
+        var component = RenderComponent<BitSwipeTrap>();
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.KeyboardTrigger, true);
+        });
+
+        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
+        Assert.AreEqual(2, setups.Count);
+        Assert.AreEqual(false, setups[0].Arguments[9]);
+        Assert.AreEqual(true, setups[1].Arguments[9]);
+    }
+
+    [TestMethod]
+    public void BitSwipeTrapShouldNotBeFocusableOrHaveARoleByDefault()
+    {
+        var root = RenderComponent<BitSwipeTrap>().Find(".bit-stp");
+
+        Assert.IsFalse(root.HasAttribute("role"));
+        Assert.IsFalse(root.HasAttribute("tabindex"));
+        Assert.IsFalse(root.HasAttribute("aria-keyshortcuts"));
+    }
+
+    [TestMethod]
+    public void BitSwipeTrapShouldRespectTabIndex()
+    {
+        var component = RenderComponent<BitSwipeTrap>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "-1");
+        });
+
+        Assert.AreEqual("-1", component.Find(".bit-stp").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitSwipeTrapShouldKeepTheSplattedNamingAttributes()
+    {
+        // A null the component writes after the splat would remove the attribute the page wrote itself.
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitSwipeTrap>(0);
+                builder.AddAttribute(1, "aria-label", "splatted name");
+                builder.AddAttribute(2, "role", "region");
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-stp");
+        Assert.AreEqual("splatted name", root.GetAttribute("aria-label"));
+        Assert.AreEqual("region", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitSwipeTrapShouldBeAGroupWhenLabelledBy()
+    {
+        // ARIA prohibits naming an element with no role, so a named trap is a group.
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitSwipeTrap>(0);
+                builder.AddAttribute(1, "aria-labelledby", "title");
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual("group", component.Find(".bit-stp").GetAttribute("role"));
+    }
+
+    [TestMethod,
+        DataRow(null, "ArrowLeft ArrowRight ArrowUp ArrowDown"),
+        DataRow(BitSwipeOrientation.None, "ArrowLeft ArrowRight ArrowUp ArrowDown"),
+        DataRow(BitSwipeOrientation.Auto, "ArrowLeft ArrowRight ArrowUp ArrowDown"),
+        DataRow(BitSwipeOrientation.Horizontal, "ArrowLeft ArrowRight"),
+        DataRow(BitSwipeOrientation.Vertical, "ArrowUp ArrowDown")]
+    public void BitSwipeTrapKeyboardTriggerShouldMakeItAReachableGroup(BitSwipeOrientation? orientationLock, string keyShortcuts)
+    {
+        var component = RenderComponent<BitSwipeTrap>(parameters =>
+        {
+            parameters.Add(p => p.KeyboardTrigger, true);
+            parameters.Add(p => p.OrientationLock, orientationLock);
+        });
+
+        var root = component.Find(".bit-stp");
+        Assert.AreEqual("0", root.GetAttribute("tabindex"));
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.AreEqual(keyShortcuts, root.GetAttribute("aria-keyshortcuts"));
+    }
+
+    [TestMethod]
+    public void BitSwipeTrapKeyboardTriggerShouldKeepAGivenTabIndex()
+    {
+        var component = RenderComponent<BitSwipeTrap>(parameters =>
+        {
+            parameters.Add(p => p.KeyboardTrigger, true);
+            parameters.Add(p => p.TabIndex, "-1");
+        });
+
+        Assert.AreEqual("-1", component.Find(".bit-stp").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitSwipeTrapKeyboardTriggerShouldLeaveTheTabOrderWhenDisabled()
+    {
+        var component = RenderComponent<BitSwipeTrap>(parameters =>
+        {
+            parameters.Add(p => p.KeyboardTrigger, true);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        var root = component.Find(".bit-stp");
+        Assert.IsFalse(root.HasAttribute("tabindex"));
+        Assert.IsFalse(root.HasAttribute("aria-keyshortcuts"));
+    }
+
+    [TestMethod,
+        DataRow("right", BitPlacement.Right),
+        DataRow("left", BitPlacement.Left),
+        DataRow("top", BitPlacement.Top),
+        DataRow("bottom", BitPlacement.Bottom)]
+    public async Task BitSwipeTrapShouldInvokeOnTriggerForAKey(string name, BitPlacement direction)
+    {
+        BitSwipeTrapTriggerArgs? triggerArgs = null;
+
+        var component = RenderComponent<BitSwipeTrap>(parameters =>
+        {
+            parameters.Add(p => p.KeyboardTrigger, true);
+            parameters.Add(p => p.OnTrigger, (BitSwipeTrapTriggerArgs args) => triggerArgs = args);
+        });
+
+        await component.Instance._OnKeyTrigger(name);
+
+        Assert.IsNotNull(triggerArgs);
+        Assert.AreEqual(direction, triggerArgs!.Direction);
+        Assert.AreEqual("keyboard", triggerArgs.PointerType);
+        Assert.AreEqual(0, triggerArgs.DiffX);
+        Assert.AreEqual(0, triggerArgs.DiffY);
+        Assert.AreEqual(0, triggerArgs.Duration);
+    }
+
+    [TestMethod,
+        DataRow(false, true),
+        DataRow(true, false)]
+    public async Task BitSwipeTrapShouldNotInvokeOnTriggerForAKeyItDoesNotAnswerTo(bool keyboardTrigger, bool isEnabled)
+    {
+        var triggered = false;
+
+        var component = RenderComponent<BitSwipeTrap>(parameters =>
+        {
+            parameters.Add(p => p.KeyboardTrigger, keyboardTrigger);
+            parameters.Add(p => p.Disabled, isEnabled is false);
+            parameters.Add(p => p.OnTrigger, (BitSwipeTrapTriggerArgs args) => triggered = true);
+        });
+
+        await component.Instance._OnKeyTrigger("right");
+
+        Assert.IsFalse(triggered);
+    }
+
+    [TestMethod,
+        DataRow("start"),
+        DataRow("Right"),
+        DataRow("5"),
+        DataRow("")]
+    public async Task BitSwipeTrapShouldNotInvokeOnTriggerForAnUnknownKeyDirection(string name)
+    {
+        var triggered = false;
+
+        var component = RenderComponent<BitSwipeTrap>(parameters =>
+        {
+            parameters.Add(p => p.KeyboardTrigger, true);
+            parameters.Add(p => p.OnTrigger, (BitSwipeTrapTriggerArgs args) => triggered = true);
+        });
+
+        await component.Instance._OnKeyTrigger(name);
+
+        Assert.IsFalse(triggered);
     }
 }

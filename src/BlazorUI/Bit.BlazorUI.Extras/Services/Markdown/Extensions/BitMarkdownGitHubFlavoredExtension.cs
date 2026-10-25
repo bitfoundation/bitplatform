@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The GitHub Flavored Markdown bundle: the four extensions of the GFM spec - pipe tables,

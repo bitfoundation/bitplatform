@@ -29,7 +29,7 @@ internal sealed class BitPdfSeparationColorSpace : BitPdfColorSpace
         return comps;
     }
 
-    public static BitPdfSeparationColorSpace Build(List<object?> arr, IBitPdfXRef xref, BitPdfDict? resources)
+    public static BitPdfSeparationColorSpace Build(List<object?> arr, IBitPdfXRef xref, BitPdfDict? resources, BitPdfResolveScope scope)
     {
         // [/Separation name alt tint]  or  [/DeviceN [names] alt tint]
         bool isDeviceN = (xref.FetchIfRef(arr[0]) as BitPdfName)?.Value == "DeviceN";
@@ -46,7 +46,9 @@ internal sealed class BitPdfSeparationColorSpace : BitPdfColorSpace
         {
             isNone = (xref.FetchIfRef(arr.Count > 1 ? arr[1] : null) as BitPdfName)?.Value == "None";
         }
-        var alternate = Create(arr.Count > 2 ? arr[2] : null, xref, resources);
+        // The alternate resolves within the same scope, so a Separation that is its own
+        // alternate ends in DeviceGray instead of recursing forever.
+        var alternate = Create(arr.Count > 2 ? arr[2] : null, xref, resources, scope);
         var tint = BitPdfFunction.Create(arr.Count > 3 ? arr[3] : null, xref);
         return new BitPdfSeparationColorSpace(alternate, tint, components, isNone);
     }

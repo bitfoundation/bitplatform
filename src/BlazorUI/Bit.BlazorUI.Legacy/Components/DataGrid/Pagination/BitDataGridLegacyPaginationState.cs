@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
 /// Holds state to represent pagination in a <see cref="BitDataGridLegacy{TGridItem}"/>.

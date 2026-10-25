@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // Slash command menu. Markdown shortcuts are handled in the JS bridge; the slash trigger is
 // detected there and surfaced here so the menu and command list live in C#.
@@ -51,7 +51,7 @@ public partial class BitRichTextEditor
         if (string.IsNullOrEmpty(term)) return SlashCommands;
         // Match the localized label first, then the English keywords, so a command is still
         // reachable by the word people know it by ("todo", "hr") and not only by its display name.
-        return SlashCommands.Where(c => Label(c.Key, c.Label).Contains(term, StringComparison.OrdinalIgnoreCase)
+        return SlashCommands.Where(c => Loc(c.Key, c.Label).Contains(term, StringComparison.OrdinalIgnoreCase)
                                      || c.Keywords.Contains(term, StringComparison.OrdinalIgnoreCase));
     }
 
@@ -95,8 +95,11 @@ public partial class BitRichTextEditor
                 }
                 break;
 
-            case "Escape":
+            // Only the plain key, the one the box claims (data-bit-esc): an Escape with a modifier is the
+            // surrounding surface's.
+            case "Escape" when e.IsPlainEscape():
                 CloseSlash();
+                RequestEditorFocus();
                 break;
         }
     }
@@ -117,6 +120,7 @@ public partial class BitRichTextEditor
         _slashFilter = "";
         _slashIndex = 0;
         await _js.BitRichTextEditorApplySlashCommand(_editorRef, command);
+        RequestEditorFocus();
     }
 
     // Focuses the filter input on the render that follows opening the menu. Called from the main
@@ -127,9 +131,9 @@ public partial class BitRichTextEditor
         _focusSlashPending = false;
         try
         {
-            await _slashInputRef.FocusAsync();
-            // Suppress native browser handling of the menu's navigation keys (Arrow/Enter/Escape)
-            // on this input while leaving normal typing intact.
+            await _slashInputRef.FocusSafelyAsync();
+            // Suppress native browser handling of the menu's navigation keys (Arrow/Enter) on this
+            // input while leaving normal typing intact. Escape's is prevented by its claim (data-bit-esc).
             await _js.BitRichTextEditorBindSlashKeys(_slashInputRef);
         }
         catch (JSDisconnectedException) { } // circuit gone; nothing to focus

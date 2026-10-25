@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <Import Project="../../Bit.Build.props" />
+    <Import Project="../Bit.BlazorUI.PackageValidation.props" />
+    <Import Project="../Bit.BlazorUI.TrimAnalysis.props" />
 
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
@@ -8,10 +10,6 @@
         <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
         <RootNamespace>Bit.BlazorUI</RootNamespace>
         <WarningLevel>0</WarningLevel>
-        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net10.0'">
-            BeforeBuildTasks;
-            $(ResolveStaticWebAssetsInputsDependsOn)
-        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,17 +20,39 @@
         <ScssFiles Include="**\*.scss" />
     </ItemGroup>
 
-        <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net10.0'">
-        <CallTarget Targets="InstallNodejsDependencies"/>
-        <CallTarget Targets="BuildCss"/>
+    <!-- What the core package's publish-time trimming reads of this one when an app turns BitBlazorUITrimIcons on (see
+         Bit.BlazorUI's buildTransitive\Bit.BlazorUI.targets): the targets naming the glyphs, and the glyphs themselves. -->
+    <ItemGroup>
+        <None Include="buildTransitive\Bit.BlazorUI.Icons.targets" Pack="true" PackagePath="buildTransitive\;build\" />
+    </ItemGroup>
+
+    <!-- How this package's pieces are written and packed, shared by the packages that have any. -->
+    <Import Project="..\Bit.BlazorUI.Build\Bit.BlazorUI.Assets.targets" />
+
+    <Target Name="BeforeBuildTasks" DependsOnTargets="InstallNodejsDependencies;BuildCss" />
+
+    <Target Name="IncludeGeneratedAssets" BeforeTargets="ResolveProjectStaticWebAssets" DependsOnTargets="BeforeBuildTasksOnce" Condition=" '$(DesignTimeBuild)' != 'true' ">
+        <ItemGroup>
+            <Content Include="wwwroot\styles\*.css" Exclude="@(Content);@(None)" />
+        </ItemGroup>
     </Target>
 
-    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
-        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    <Target Name="BeforeBuildTasksOnce">
+        <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="BeforeBuildTasks" RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained" />
     </Target>
 
-    <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.icons.css">
-        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.icons.scss:wwwroot/styles/bit.blazorui.icons.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <Target Name="BeforeBuildTasksOnCrossTargeting" BeforeTargets="DispatchToInnerBuilds" DependsOnTargets="BeforeBuildTasks" Condition=" '$(IsCrossTargetingBuild)' == 'true' AND '$(DesignTimeBuild)' != 'true' " />
+
+    <!-- A CI build installs exactly what package-lock.json pins (npm ci), so the tools a package is built with are the
+         ones reviewed; a local build keeps npm install, which also takes in a package.json edited by hand. -->
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
+        <Exec Condition=" '$(CI)' == 'true' " Command="npm ci" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(CI)' != 'true' " Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <!-- The stylesheet, and beside it its glyph rules one by one, which the publish-time trimming keeps a subset of. -->
+    <Target Name="BuildCss" Inputs="@(ScssFiles);@(BitAssetsScript)" Outputs="wwwroot/styles/bit.blazorui.icons.css;$(BaseIntermediateOutputPath)bit-assets\styles.json">
+        <Exec Command="node &quot;@(BitAssetsScript->'%(FullPath)')&quot; styles --package $(PackageId) --out $(BaseIntermediateOutputPath)bit-assets --icons Styles/bit.blazorui.icons.scss=styles/bit.blazorui.icons.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
     <ItemGroup>

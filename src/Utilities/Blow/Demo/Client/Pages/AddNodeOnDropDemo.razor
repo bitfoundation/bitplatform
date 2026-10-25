@@ -1,0 +1,121 @@
+﻿@page "/add-node-on-drop"
+
+<PageTitle>Add Node on Edge Drop · Blow</PageTitle>
+
+<div class="bb-intro">
+    <h1>Add Node on Edge Drop</h1>
+    <p class="bb-subtitle">
+        A connection dropped on empty space becomes a new node, already connected, right where you let go. The
+        canvas's <code>OnConnectEnd</code> reports how every connection gesture ended - its
+        <code>BlowConnectEndInfo</code> says which handle it started from, where it was released, and whether it was
+        a real drop of a new connection - which is all the page needs to decide.
+    </p>
+</div>
+
+<div class="bb-demo blow-demo bb-page-wide">
+    <div class="bb-demo-bar example-toolbar">
+        <button class="btn btn-secondary" @onclick="Reset">Reset</button>
+        <span class="bb-muted">@_nodes.Count nodes · @_edges.Count edges · last drop: @_lastDrop</span>
+    </div>
+    <div class="demo-canvas">
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" FitViewOptions="new BlowFitViewOptions { MaxZoom = 1 }"
+                    OnConnectEnd="OnConnectEnd">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </div>
+</div>
+
+<DemoCode />
+
+<DemoNotes>
+    <TryIt>
+        <li><strong>Drag from the bottom handle</strong> of the first node and release on the empty pane: a new node appears with its top handle where you let go, joined to the first by an animated edge.</li>
+        <li><strong>Drag from the top handle</strong> of a node you spawned - a target handle - into empty space: this time the new node goes upstream, with its bottom handle at the drop point, feeding the node you dragged from.</li>
+        <li>Release on a handle that accepts the connection, such as a free top handle: it connects as usual and nothing is added.</li>
+        <li>Release on a handle that refuses it, such as another node's bottom handle (two sources): nothing is added, and the line above the canvas names the reason.</li>
+        <li><strong>Click</strong> a handle without dragging, or press <strong>Escape</strong> during a drag: the gesture is cancelled and nothing is added.</li>
+        <li><strong>Click</strong> an edge to select it and drag one of the dots at its ends onto the empty pane: that is a reconnect, not a new connection, so no node is added and the edge stays as it was.</li>
+        <li>Press <strong>Reset</strong> to start again from the single node.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>OnConnectEnd</code> is raised whenever a connection gesture ends, whether it made an edge or not, with a <code>BlowConnectEndInfo</code>.</li>
+        <li><code>IsValid</code> is true when the gesture connected - released on a handle that accepts it, or within <code>ConnectionRadius</code> (20 screen pixels) of one. The canvas has already added that edge itself.</li>
+        <li><code>IsDropped</code> is true only when the pointer was released after a real drag - not for a click on a handle, a click-to-connect, Escape, or a pointer the browser cancelled. <code>IsReconnect</code> is true when the gesture moved the end of an existing edge.</li>
+        <li><code>Rejection</code> (a <code>BlowConnectionRejection</code>) is why a handle refused the drop - <code>SameHandleType</code>, <code>Duplicate</code>, <code>RejectedByRule</code> and so on - and <code>None</code> when the drop landed on empty space. So "dropped on empty space" is <code>IsDropped</code>, not <code>IsValid</code>, not <code>IsReconnect</code>, and no rejection.</li>
+        <li><code>Start</code> (a <code>BlowConnectionStartInfo</code>) names the <code>NodeId</code>, <code>HandleId</code> and <code>HandleType</code> the drag came from: a source handle spawns a node downstream, a target handle one upstream. <code>FlowPosition</code> is the drop point in flow coordinates (<code>ClientX</code>/<code>ClientY</code> on screen).</li>
+        <li>The new node is given an explicit <code>Width</code> and <code>Height</code> (<code>BlowNode.DefaultWidth</code> &times; <code>DefaultHeight</code>, 150 &times; 40), so the page knows where its handles are before the browser has measured it. The new edge carries the start handle's id in <code>SourceHandle</code> or <code>TargetHandle</code>.</li>
+        <li><code>FitViewOptions</code> with <code>MaxZoom = 1</code> keeps <code>FitViewOnInit</code> from blowing the lone starting node up to the canvas's maximum zoom.</li>
+    </HowItWorks>
+</DemoNotes>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _id;
+    private string _lastDrop = "-";
+
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
+    {
+        _id = 1;
+        _nodes = [ new BlowNode { Id = "1", Type = "input", Label = "Drag my handle to empty space", Position = new(180, 40), Width = 240 } ];
+        _edges = [];
+        _lastDrop = "-";
+        _flow?.Refresh(remeasure: true);
+    }
+
+    private void OnConnectEnd(BlowConnectEndInfo info)
+    {
+        if (info.IsValid)
+        {
+            _lastDrop = info.IsReconnect ? "edge reconnected" : "connected to a handle";
+            return;
+        }
+
+        // A click on a handle, Escape, a cancelled pointer and an existing edge's end let go of
+        // all end here too; only a new connection dragged out and dropped spawns a node.
+        if (!info.IsDropped || info.IsReconnect)
+        {
+            _lastDrop = "cancelled - nothing added";
+            return;
+        }
+
+        // Let go on or near a handle that turned the connection down: the user was aiming at that handle, not at
+        // the empty pane, so a node appearing there would be a surprise.
+        if (info.Rejection != BlowConnectionRejection.None)
+        {
+            _lastDrop = $"refused by a handle ({info.Rejection}) - nothing added";
+            return;
+        }
+
+        _id++;
+        var id = _id.ToString();
+        var start = info.Start;
+
+        // From a target handle the new node is upstream: it feeds the start node, so the edge
+        // runs new -> start and the new node's source handle (bottom) lands on the drop point.
+        // From a source handle it is downstream, with its target handle (top) there instead.
+        var fromTarget = start.HandleType == BlowHandleType.Target;
+        // Sized explicitly, so the arithmetic above is where its handles really are: a default node is drawn only as
+        // wide as its label needs, not BlowNode.DefaultWidth.
+        _nodes.Add(new BlowNode
+        {
+            Id = id,
+            Label = $"Node {id}",
+            Width = BlowNode.DefaultWidth,
+            Height = BlowNode.DefaultHeight,
+            Position = new(
+                info.FlowPosition.X - BlowNode.DefaultWidth / 2,
+                fromTarget ? info.FlowPosition.Y - BlowNode.DefaultHeight : info.FlowPosition.Y),
+        });
+        _edges.Add(fromTarget
+            ? new BlowEdge { Id = $"e{id}-{start.NodeId}", Source = id, Target = start.NodeId, TargetHandle = start.HandleId, Animated = true }
+            : new BlowEdge { Id = $"e{start.NodeId}-{id}", Source = start.NodeId, SourceHandle = start.HandleId, Target = id, Animated = true });
+        _lastDrop = $"spawned node {id} at ({info.FlowPosition.X:0}, {info.FlowPosition.Y:0})";
+        _flow?.Refresh(remeasure: true);
+    }
+}

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Tooltip text/styling callbacks, mirroring Chart.js <c>tooltip.callbacks</c>. Any callback

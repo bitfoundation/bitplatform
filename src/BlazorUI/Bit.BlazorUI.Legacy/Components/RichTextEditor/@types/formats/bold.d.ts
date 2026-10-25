@@ -1,4 +1,4 @@
-declare class Bold extends Inline {
+﻿declare class Bold extends Inline {
     static blotName: string;
     static tagName: string[];
     static create(): HTMLElement;

@@ -1,5 +1,4 @@
-@import '../media-queries.scss';
-
+﻿@import '../media-queries.scss';
 :root,
 :root[bit-theme="light"],
 :root [bit-theme="light"],
@@ -51,6 +50,8 @@
     // control typography - tracking and case of button/tag/tab labels. Fluent leaves both alone.
     --bit-tpg-ctrl-letter-spacing: normal;
     --bit-tpg-ctrl-text-transform: none;
+    // The dialog title and the field caption are aliases of the steps above, declared with the rest of
+    // the family tier (family-tokens.scss) so every scoped region and inline overlay re-declares them.
     // h1..h6 - the Fluent 2 title ramp (Large Title 40/52, Title 1 32/40, Title 2 28/36, Title 3
     // 24/32, Subtitle 1 20/28, Subtitle 2 16/22), all semibold like every Fluent title, so that the
     // six heading levels cover the range an application page actually uses: H1 is a page title, not

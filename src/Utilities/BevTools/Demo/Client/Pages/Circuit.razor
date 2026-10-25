@@ -1,0 +1,134 @@
+﻿@page "/circuit"
+@inject IJSRuntime JS
+
+<PageTitle>Circuit · BevTools</PageTitle>
+
+<div class="bb-intro">
+    <p class="bb-overline">Scenario · Blazor Server</p>
+    <h1>Circuit</h1>
+    <p class="bb-subtitle">
+        Circuit problems: blocking the circuit's single thread, dropping its connection, and killing the circuit with
+        an unhandled exception. BevTools → Circuit and the Timeline show the circuit's events, the time each inbound
+        message took, and the reconnect state reported by the browser.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> The circuit</h3>
+    @if (RendererInfo.Name != "Server")
+    {
+        <div class="bb-note bb-note-warn">
+            This page is running on the <strong>@RendererInfo.Name</strong> renderer. Circuit scenarios only apply to
+            Interactive Server; under Interactive Auto the app switches to WebAssembly once the runtime is cached. Open
+            the site in a fresh private window (or clear site data) to get a Server circuit, then come back here.
+        </div>
+    }
+    else
+    {
+        <p class="bb-card-desc">
+            Each user of a Blazor Server app has one circuit, and it processes one message at a time: while a handler
+            blocks, nothing else for that user is handled. The last button ends the circuit for good: Blazor shows its
+            error bar rather than the reconnect dialog, because a circuit that failed is not coming back.
+        </p>
+    }
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span><RendererStatus /></div>
+
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary" @onclick="Block">Block the circuit for 800 ms (Thread.Sleep in a handler)</button>
+            <button type="button" class="btn btn-secondary" @onclick="BlockRepeatedly">Block 5× in a row</button>
+            <button type="button" class="btn btn-secondary" @onclick="DropConnection">Drop the connection (as a network hiccup would)</button>
+            <button type="button" class="btn demo-btn-danger" @onclick="Kill">Unhandled exception in a background task (terminates the circuit)</button>
+        </div>
+        <p class="bb-muted">Blocked: @_blocked times. Renderer: @RendererInfo.Name, interactive: @RendererInfo.IsInteractive.</p>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Blocking: slow inbound messages</h3>
+    <p class="bb-card-desc">
+        Block the circuit. The <strong>Timeline</strong> shows a <em>Slow inbound message</em>, the
+        <strong>Circuit</strong> panel the maximum inbound processing time, and <strong>Diagnostics</strong> a
+        <em>slow event handler</em>. Block it three times within a minute and Diagnostics adds <em>3 inbound messages
+        blocked the circuit for ≥ 100 ms each</em>. The fix: never block in a handler - await the work instead.
+    </p>
+    <p class="bb-card-desc">
+        <em>Block 5× in a row</em> shows where the circuit's own timing stops: only the first block is part of the
+        click's inbound message, because the handler awaits after it; the other four run in continuations, which no
+        inbound message contains - a message that arrives meanwhile, such as the browser acknowledging a render, waits
+        for them, and that wait is what its time shows. The slow event handler's duration spans all five.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The Circuit panel and the server process</h3>
+    <ul class="bb-detail-list">
+        <li><strong>Circuit</strong> (Server only): this circuit's connection, age, disconnects, inbound messages with their average and maximum time, the browser's reconnect state, and what the browser received - bytes and render batches, the largest one, and <em>traffic ↗</em> to Network → WebSockets. Below it every circuit of the process, with its lifecycle counters only, and this circuit's events.</li>
+        <li><strong>Runtime → Server process</strong>, shared by every circuit: the thread pool and its queue, lock contention, the working set, processors and the GC mode, next to the managed heap and collections.</li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Dropping: a connection that comes back</h3>
+    <p class="bb-card-desc">
+        <em>Drop the connection</em> closes the circuit's WebSocket from the browser, as a network hiccup, a laptop that
+        slept or a proxy that cuts idle sockets would; the circuit itself stays on the server. Blazor shows its reconnect
+        dialog and reconnects in a moment. The <strong>Circuit</strong> panel then counts the disconnect,
+        <strong>Browser</strong> shows the reconnect state and how many reconnects there were, the <strong>Timeline</strong>
+        has the circuit's <em>Connection down</em> and <em>Connection restored</em> with Blazor's own reconnect states in between (<em>Reconnect show</em>, <em>retrying</em>, <em>hide</em>), and <strong>Network → WebSockets</strong> shows
+        the old socket closed and a new one carrying the circuit. Drop it twice within two minutes and
+        <strong>Diagnostics</strong> reports <em>circuit instability</em>.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Killing: the circuit's last moments</h3>
+    <p class="bb-card-desc">
+        Each circuit has a BevTools session of its own, and the panel renders over that circuit, so when the circuit
+        dies the panel stops where it was. Open the <strong>companion window</strong> (⧉ in the panel header) first,
+        then kill the circuit: the companion reads the page itself, so <strong>Network → WebSockets</strong> shows the
+        circuit's last message, a <code>JS.Error</code>, and its socket closing, and the status line says the runtime
+        is disconnected. Reload for a new circuit and a new session.
+    </p>
+    <div class="bb-try">
+        <a href="problems#problem-9" class="btn btn-outline">Problem 9 →</a>
+    </div>
+</div>
+
+@code {
+    private int _blocked;
+
+    private void Block()
+    {
+        // Intentional problem: synchronous blocking inside the circuit. Nothing else for this user is processed meanwhile.
+        Thread.Sleep(800);
+        _blocked++;
+    }
+
+    private async Task BlockRepeatedly()
+    {
+        for (var i = 0; i < 5; i++)
+        {
+            Thread.Sleep(300);
+            _blocked++;
+            StateHasChanged();
+            await Task.Delay(50);
+        }
+    }
+
+    // Fire-and-forget: the socket closes a moment after the call returns (wwwroot/js/connection.js).
+    private async Task DropConnection() => await JS.InvokeVoidAsync("bitDemoConnection.drop");
+
+    private void Kill()
+    {
+        // Background work reports its failure to the renderer with DispatchExceptionAsync. With no ErrorBoundary around
+        // the page that is fatal for the circuit; BevTools captures the logged error first. (A throw inside InvokeAsync
+        // would only fault the discarded task and nothing would happen.)
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(100);
+            await DispatchExceptionAsync(new InvalidOperationException("Simulated unhandled exception dispatched to the circuit."));
+        });
+    }
+}

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Resolves runs of a delimiter character (e.g. <c>*</c>, <c>_</c>, <c>~</c>) into

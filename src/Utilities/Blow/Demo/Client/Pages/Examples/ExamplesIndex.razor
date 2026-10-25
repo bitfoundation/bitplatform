@@ -1,0 +1,29 @@
+﻿@page "/examples"
+@using Bit.Blow.Demo.Client.Examples
+
+<PageTitle>All Examples · Blow</PageTitle>
+
+<div class="bb-intro">
+    <h1>All Examples</h1>
+    <p class="bb-subtitle">
+        @ExampleCatalog.All.Count working pages, grouped by topic. Most are ports of the official
+        <a href="https://github.com/xyflow/xyflow/tree/main/examples/react" target="_blank" rel="noopener">React Flow examples</a>,
+        so a React Flow user can open the same example on both sides; the rest show what Blow adds on top - typed ports,
+        validation, runs, localization and more. Each card opens a self-contained page about one feature, and
+        <strong>View code</strong> on that page shows its whole source.
+    </p>
+</div>
+
+@foreach (var group in ExampleCatalog.Grouped())
+{
+    <h2 @key="group.Key">@group.Key</h2>
+    <div class="bb-grid">
+        @foreach (var ex in group)
+        {
+            <a class="bb-card example-card" href="examples/@ex.Route" @key="ex.Route">
+                <span class="example-card__title">@ex.Title</span>
+                <span class="example-card__summary">@ex.Summary</span>
+            </a>
+        }
+    </div>
+}

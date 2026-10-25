@@ -9,12 +9,19 @@
 <div class="page-container">
     <BitText Typography="BitTypography.H3" Element="h1" Gutter>Project structure</BitText>
     <br />
+    <section class="section-card ai-card">
+        <div class="section-card-txt">
+            Using GitHub Copilot, Claude or a similar AI assistant? You can skip reading this.
+            The same documentation is in your project for the AI too, so just ask it to run the project, change it, or explain any part of it to you.
+        </div>
+    </section>
+    <br />
 
     <section class="section-card">
         <div class="section-card-txt">
             To explore the structure of your project, start by creating a new project using the following command in the command line:
             <br />
-            <CodeBox>dotnet new bit-bp --name MyFirstProject</CodeBox>
+            <CodeBox>bit new MyFirstProject</CodeBox>
         </div>
         <div class="row-section-container">
             <div>
@@ -187,4 +194,4 @@
     </section>
 </div>
 
-<NavigationButtons Prev="Getting started" PrevUrl="/templates/getting-started" Next="Create project" NextUrl="/templates/create-project" />
+<NavigationButtons Prev="Create project" PrevUrl="/templates/create-project" Next="Run project" NextUrl="/templates/run-project" />

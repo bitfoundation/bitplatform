@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="TargetFrameworks">
+
+    <Import Project="../../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <!-- Always single-targeted, whatever a build passes down: a publish that narrows every project with
+             -p:TargetFrameworks=net10.0 would otherwise retarget an analyzer that only ever runs inside the
+             compiler. TreatAsLocalProperty above is what lets this win. -->
+        <TargetFrameworks></TargetFrameworks>
+        <!-- Roslyn source generator. It is not a package of its own: Bit.BlazeDb.csproj packs this assembly into
+             the Bit.BlazeDb package under analyzers/dotnet/cs, so installing the engine brings the generator. -->
+        <IsRoslynComponent>true</IsRoslynComponent>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <IsPackable>false</IsPackable>
+        <!-- netstandard2.0 has no nullable annotations in the BCL; keep nullable on for our own code
+             but don't warn about the BCL's unannotated surface. -->
+        <NoWarn>$(NoWarn);nullable</NoWarn>
+        <IsAotCompatible>false</IsAotCompatible>
+        <Description>The Roslyn source generator for Bit.BlazeDb: turns [BlazeDbTable] types into table descriptors with binary row and key serializers, key extractors and typed index definitions, with no runtime reflection.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- 4.8 keeps the generator loadable by every SDK/IDE Roslyn from .NET 8 tooling onwards. -->
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Release tracking for the diagnostics this generator reports (RS2008). -->
+        <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+        <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+    </ItemGroup>
+
+</Project>

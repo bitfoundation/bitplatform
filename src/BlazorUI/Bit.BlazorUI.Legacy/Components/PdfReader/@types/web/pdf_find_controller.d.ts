@@ -1,4 +1,4 @@
-declare type PDFFindControllerOptions = {
+﻿declare type PDFFindControllerOptions = {
     /**
      * - The navigation/linking service.
      */

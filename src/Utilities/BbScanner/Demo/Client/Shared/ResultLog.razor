@@ -1,0 +1,120 @@
+﻿@*
+    A rolling log of decoded results, showing everything the library reports so that the demo
+    doubles as documentation of the result type.
+*@
+
+<section class="result-log">
+    <div class="bb-toolbar result-log-head">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Results</h3>
+        <span class="bb-spacer"></span>
+        <span class="bb-badge">@Results.Count total</span>
+        <button class="btn btn-secondary" type="button" @onclick="Clear" disabled="@(Results.Count == 0)">Clear</button>
+    </div>
+
+    @if (Results.Count == 0)
+    {
+        <div class="bb-empty">Nothing scanned yet. Point the camera at a barcode, or use the sample codes.</div>
+    }
+    else
+    {
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Format</th>
+                        <th>Value</th>
+                        <th>Position</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in Results)
+                    {
+                        <tr data-testid="result-row">
+                            <td class="bb-nowrap">@entry.Timestamp.ToLocalTime().ToString("HH:mm:ss")</td>
+                            <td><span class="bb-badge" data-testid="result-format">@entry.Format</span></td>
+                            <td class="bb-mono result-value" data-testid="result-value">@entry.Text</td>
+                            <td class="bb-mono bb-nowrap">@Describe(entry.BoundingBox)</td>
+                            <td>@Describe(entry.Metadata)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="bb-card-desc">
+            Each row is one <code>BbBarcodeResult</code>. <em>Position</em> is its <code>BoundingBox</code> in the
+            pixels of the frame it was read from: left, top · width×height. <em>Details</em> is its
+            <code>Metadata</code>, where the symbology carries any: the symbol version, the error correction
+            level (EC), how many codewords were repaired - a print quality signal - the ECI character set, GS1
+            data, a structured append part, the symbol's size and an EAN or UPC add-on.
+        </p>
+    }
+</section>
+
+@code {
+    /// <summary>The results to display, newest first.</summary>
+    [Parameter]
+    public IReadOnlyList<BbBarcodeResult> Results { get; set; } = [];
+
+    /// <summary>Raised when the user clears the log.</summary>
+    [Parameter]
+    public EventCallback OnClear { get; set; }
+
+    private Task Clear() => OnClear.InvokeAsync();
+
+    private static string Describe(BbScanRect box) =>
+        box.Width <= 0 ? "-" : $"{box.X:0}, {box.Y:0} · {box.Width:0}×{box.Height:0}";
+
+    private static string Describe(BbBarcodeResultMetadata? metadata)
+    {
+        if (metadata is null)
+        {
+            return "-";
+        }
+
+        var parts = new List<string>(8);
+
+        if (metadata.SymbolVersion is not null)
+        {
+            parts.Add($"version {metadata.SymbolVersion}");
+        }
+
+        if (metadata.ErrorCorrectionLevel is not null)
+        {
+            parts.Add($"EC {metadata.ErrorCorrectionLevel}");
+        }
+
+        if (metadata.ErrorsCorrected is > 0)
+        {
+            parts.Add($"{metadata.ErrorsCorrected} corrected");
+        }
+
+        if (metadata.Eci is not null)
+        {
+            parts.Add($"ECI {metadata.Eci}");
+        }
+
+        if (metadata.IsGs1 == true)
+        {
+            parts.Add("GS1");
+        }
+
+        if (metadata.StructuredAppendIndex is not null)
+        {
+            parts.Add($"part {metadata.StructuredAppendIndex + 1} of {metadata.StructuredAppendCount}");
+        }
+
+        if (metadata.Rows is not null && metadata.Columns is not null)
+        {
+            parts.Add($"{metadata.Rows} rows × {metadata.Columns} columns");
+        }
+
+        if (metadata.Extension is not null)
+        {
+            parts.Add($"add-on {metadata.Extension}");
+        }
+
+        return parts.Count == 0 ? "-" : string.Join(" · ", parts);
+    }
+}

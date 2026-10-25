@@ -1,0 +1,153 @@
+﻿@page "/fluent-validation"
+@implements IDisposable
+@inject global::FluentValidation.IValidator<JobApplication> Validator
+
+<PageTitle>FluentValidation · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>FluentValidation</h1>
+    <p class="bb-subtitle">
+        Reuse the <code>AbstractValidator&lt;T&gt;</code> your application already has. <code>UseFluentValidation()</code>,
+        from the separate <code>Bit.Borm.FluentValidation</code> package, runs it against the bound model and puts each
+        failure on the field its property path names - <code>Address.City</code>, <code>Lines[0].Product</code> - cross-field
+        rules included. Every rule on this form comes from the validator below; the schema adds none of its own.
+    </p>
+</div>
+
+<div class="bb-note">
+    Submit the empty form to see the validator's messages under their fields. Then enter 5 or more years of experience
+    and a short motivation: the motivation rule only applies to senior candidates (<code>.When(x =&gt; x.YearsExperience &gt;= 5)</code>),
+    so it appears only then - and goes again once the text is long enough.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Apply" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Application received ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Worth knowing</h3>
+    <ul class="bb-detail-list">
+        <li>
+            <strong>Two ways to hand it the validator.</strong> Pass one, as this page does, or register validators in DI and
+            call <code>state.UseFluentValidation()</code> with no argument: the <code>IValidator&lt;TModel&gt;</code> for the
+            bound model is resolved from the state's service provider. <code>throwIfMissing: true</code> catches a forgotten
+            registration during development.
+        </li>
+        <li>
+            <strong>Hidden fields are left alone.</strong> A validator sees the whole model and knows nothing about the form's
+            conditions, so a failure on a field the schema is currently hiding is dropped - otherwise a rule on an abandoned
+            branch would refuse the submit and point at a control that is not on the page.
+        </li>
+        <li>
+            <strong>It composes.</strong> <code>UseFluentValidation()</code>, <code>UseDataAnnotations()</code> and the schema's
+            own rules all run, and a complaint two layers word identically is read once - see
+            <a href="data-annotations">DataAnnotations &amp; IValidatableObject</a>. <code>BormExternalValidator.CombineWith(...)</code>
+            does the same for a hand-written external validator.
+        </li>
+    </ul>
+    <pre class="bb-code">dotnet add package Bit.Borm.FluentValidation</pre>
+</div>
+
+@code {
+    private const string Source =
+"""
+@page "/fluent-validation"
+@inject IValidator<JobApplication> Validator     @* registered in Program.cs *@
+
+<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Apply" />
+
+@code {
+    private readonly JobApplication _model = new();
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<JobApplication>()
+            .Title("Job application")
+            .Field(x => x.FirstName, f => f.Label("First name"))
+            .Field(x => x.LastName, f => f.Label("Last name"))
+            .Field(x => x.Email)
+            .Field(x => x.YearsExperience, f => f.Label("Years of experience"))
+            .Field(x => x.DesiredSalary, f => f.Label("Desired salary"))
+            .Field(x => x.Motivation, f => f.AsTextArea(4).Label("Why do you want this role?"))
+            .Build();
+
+        // Validation comes entirely from the FluentValidation validator. With validators registered
+        // in DI, .UseFluentValidation() with no argument resolves IValidator<JobApplication> itself.
+        _state = new BormState(schema, new BormModelDataAccessor(_model))
+            .UseFluentValidation(Validator);
+    }
+
+    public void Dispose() => _state.Dispose();
+}
+
+// Forms/JobApplicationValidator.cs - an ordinary FluentValidation validator, unaware of Borm.
+public class JobApplicationValidator : AbstractValidator<JobApplication>
+{
+    public JobApplicationValidator()
+    {
+        RuleFor(x => x.FirstName).NotEmpty().MaximumLength(40);
+        RuleFor(x => x.LastName).NotEmpty().MaximumLength(40);
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.YearsExperience).InclusiveBetween(0, 60);
+
+        RuleFor(x => x.DesiredSalary)
+            .GreaterThan(0)
+            .LessThanOrEqualTo(500_000).WithMessage("Let's keep it realistic (≤ 500,000).");
+
+        // Cross-field rule: senior candidates must explain their motivation.
+        RuleFor(x => x.Motivation)
+            .NotEmpty()
+            .MinimumLength(20)
+            .When(x => x.YearsExperience >= 5)
+            .WithMessage("Candidates with 5+ years should write at least 20 characters.");
+    }
+}
+
+// Program.cs
+builder.Services.AddScoped<IValidator<JobApplication>, JobApplicationValidator>();
+""";
+
+    private readonly JobApplication _model = new();
+    private BormState _state = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<JobApplication>()
+            .Title("Job application")
+            .Field(x => x.FirstName, f => f.Label("First name"))
+            .Field(x => x.LastName, f => f.Label("Last name"))
+            .Field(x => x.Email)
+            .Field(x => x.YearsExperience, f => f.Label("Years of experience"))
+            .Field(x => x.DesiredSalary, f => f.Label("Desired salary"))
+            .Field(x => x.Motivation, f => f.AsTextArea(4).Label("Why do you want this role?"))
+            .Build();
+
+        // Validation comes entirely from the FluentValidation validator.
+        _state = new BormState(schema, new BormModelDataAccessor(_model))
+            .UseFluentValidation(Validator);
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    // The page created the state, so the page disposes it.
+    public void Dispose() => _state.Dispose();
+}

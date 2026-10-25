@@ -1,0 +1,45 @@
+﻿@*
+    The title block every documentation page opens with: its <PageTitle>, the section it belongs to,
+    its one H1 and the lead under it, in the site kit's bb-intro markup. The body follows as the
+    page's own content, with no wrapper element of its own - the docs column styles its DIRECT
+    children (the bb-card sections, the prose), so a wrapper would hide them from those rules. The
+    shell around it - nav panel, breadcrumb, pager, rail - is Layout/DocsLayout.razor's, driven by
+    DocsCatalog.
+*@
+<PageTitle>@Title · @SiteInfo.Name</PageTitle>
+
+<div class="bb-intro">
+    @if (_section is not null)
+    {
+        <p class="bb-overline">@_section</p>
+    }
+    <h1>@Title</h1>
+    @if (!string.IsNullOrEmpty(Lead))
+    {
+        <p class="bb-subtitle">@Lead</p>
+    }
+</div>
+
+@ChildContent
+
+@code {
+    private string? _section;
+
+    /// <summary>Route of this page (without a leading slash), which locates it in <see cref="DocsCatalog"/>.</summary>
+    [Parameter, EditorRequired] public string Href { get; set; } = "";
+
+    /// <summary>Page heading.</summary>
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    /// <summary>Introductory paragraph under the heading.</summary>
+    [Parameter] public string? Lead { get; set; }
+
+    /// <summary>Page body: its bb-card sections.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        var page = DocsCatalog.FindByPath(Href);
+        _section = page is null ? null : DocsCatalog.SectionOf(page);
+    }
+}

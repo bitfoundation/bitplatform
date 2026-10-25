@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <!-- The host owns the launch profile: this project is never started on its own. -->
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <!-- Publishes this project's static web assets at the app root (not under _content/), the
+             way a Blazor Web App's client project is expected to contribute them. -->
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <!-- The runtime's own exception messages are part of what this site teaches: the dispatcher, the OnError
+             sink and the persistence page all show them. WebAssembly trims them to resource keys by default
+             ("Arg_ParamName_Name", "DeserializeUnableToConvertValue"), which reads as a bug rather than an error. -->
+        <UseSystemResourceKeys>false</UseSystemResourceKeys>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+        <PackageReference Include="Bit.Minifier" Version="10.7.0" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Blex\Bit.Blex.csproj" />
+        <!-- The Bit.Blex package carries the generator as an analyzer; inside the repo it is the analyzer project. -->
+        <ProjectReference Include="..\..\Bit.Blex.Generators\Bit.Blex.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+</Project>

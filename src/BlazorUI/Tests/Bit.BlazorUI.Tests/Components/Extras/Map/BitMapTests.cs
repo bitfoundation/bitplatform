@@ -50,17 +50,6 @@ public class BitMapTests : BunitTestContext
     private const string GET_VIEW = "BitBlazorUI.BitMapLeaflet.getView";
     private const string PROJECT = "BitBlazorUI.BitMapLeaflet.project";
 
-    [TestInitialize]
-    public void ResetAssetCache()
-    {
-        // BitMap dedupes script / stylesheet loads process-wide so the same provider URL
-        // isn't re-requested when multiple maps mount in quick succession. Tests that
-        // assert on initScripts/initStylesheets invocations need to reset that cache so
-        // each test starts from a clean state.
-        BitMap<BitLeafletMapProvider>.ResetAssetLoadCacheForTesting();
-        BitMap<TestMapProviderA>.ResetAssetLoadCacheForTesting();
-    }
-
     /// <summary>
     /// Sets up the two capability probes a mount makes, so the map reaches its Ready state.
     /// <para>
@@ -116,13 +105,16 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMapShouldDedupeAssetLoadsAcrossMounts()
+    public void BitMapShouldRequestAssetsOnEveryMount()
     {
+        // Dedup belongs to the JS side, which caches per document. A .NET-side cache would
+        // be process-wide, and on Blazor Server one process serves many documents: the
+        // second document would be told its provider scripts were already injected and fail
+        // on a global that was never defined there. So every mount asks.
         Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
         Context.JSInterop.SetupVoid(INIT_SCRIPTS);
         Context.JSInterop.SetupVoid(INIT);
 
-        // First mount: stylesheets + scripts must be requested.
         RenderComponent<BitMap<BitLeafletMapProvider>>();
         var firstStylesheetCalls = Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_STYLESHEETS);
         var firstScriptCalls = Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_SCRIPTS);
@@ -130,15 +122,14 @@ public class BitMapTests : BunitTestContext
         Assert.IsTrue(firstStylesheetCalls >= 1, "First mount should request stylesheets");
         Assert.IsTrue(firstScriptCalls >= 1, "First mount should request scripts");
 
-        // Second mount: cache should kick in and skip redundant load round-trips.
         RenderComponent<BitMap<BitLeafletMapProvider>>();
 
-        Assert.AreEqual(firstStylesheetCalls,
+        Assert.AreEqual(firstStylesheetCalls * 2,
             Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_STYLESHEETS),
-            "Second mount must not re-request already-loaded stylesheets");
-        Assert.AreEqual(firstScriptCalls,
+            "Second mount must request stylesheets again");
+        Assert.AreEqual(firstScriptCalls * 2,
             Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_SCRIPTS),
-            "Second mount must not re-request already-loaded scripts");
+            "Second mount must request scripts again");
     }
 
     [TestMethod]
@@ -532,6 +523,57 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMapShouldDoNothingWhenAMethodIsCalledBeforeItIsReady()
+    {
+        // The map loads on its own schedule, and a page's click or lifecycle method can always run ahead of it - or, as
+        // here, the map never gets there at all. A call made then must not throw: from an event handler of a Blazor
+        // Server page an exception tears the whole circuit down.
+        Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
+        Context.JSInterop.SetupVoid(INIT_SCRIPTS);
+        Context.JSInterop.SetupVoid(INIT, _ => true).SetException(new Microsoft.JSInterop.JSException("boom"));
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+        var map = component.Instance;
+        Assert.IsFalse(map.IsReady);
+        var invocations = Context.JSInterop.Invocations.Count;
+
+        await map.SetView(new BitMapLatLng(1, 2), 5);
+        await map.FlyTo(new BitMapLatLng(1, 2));
+        await map.SetZoom(4);
+        await map.ZoomIn();
+        await map.PanBy(10, 10);
+        await map.FitBounds(new BitMapLatLngBounds(new BitMapLatLng(0, 0), new BitMapLatLng(1, 1)));
+        await map.FitBoundsToMarkers();
+        await map.AddMarker(new BitMapMarker { Id = "m", Position = new BitMapLatLng(1, 2) });
+        await map.SetMarkerPosition("m", new BitMapLatLng(3, 4));
+        await map.OpenPopup("m");
+        await map.OpenMarkerPopup("m");
+        await map.RemoveMarker("m");
+        await map.ClearMarkers();
+        await map.SyncMarkers([]);
+        await map.AddPolyline("l", [new BitMapLatLng(0, 0), new BitMapLatLng(1, 1)]);
+        await map.SetLayerVisible("l", false);
+        await map.SetLayerStyle("l", null);
+        await map.RemoveLayer("l");
+        await map.ClearVectorLayers();
+        await map.SetTileOverlayVisible("o", false);
+        await map.SetTileOverlayOpacity("o", 0.5);
+        await map.RemoveTileOverlay("o");
+        await map.ClearTileOverlays();
+        Assert.IsNull(await map.Locate());
+        Assert.IsFalse(await map.CloseMarkerPopup());
+        Assert.IsFalse(await map.RequestFullscreen());
+
+        Assert.AreEqual(invocations, Context.JSInterop.Invocations.Count, "Nothing reaches the browser before the map is ready");
+        Assert.IsEmpty(map.MarkerIds);
+
+        // Only the read with no answer throws, and a call that is wrong whenever it is made still says so.
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await map.GetView());
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await map.AddMarker(null!));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await map.SetZoom(double.NaN));
+    }
+
+    [TestMethod]
     public void BitMapShouldReportFailedStateWhenTheProviderScriptCannotBeLoaded()
     {
         // A CDN outage must surface as the component's error state. Letting it propagate out of
@@ -597,6 +639,70 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMapShouldHandTheKeyboardSettingsToTheChrome()
+    {
+        // The chrome pans and zooms from the keyboard on the backends whose own handler never sees the focused
+        // canvas, so it has to honour the provider's KeyboardNavigation and the map's reduced-motion settings.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        var options = (Dictionary<string, object?>)Context.JSInterop.Invocations.Single(i => i.Identifier == CHROME_ATTACH).Arguments[4]!;
+        Assert.AreEqual(true, options["keyboardNavigation"]);
+        Assert.AreEqual(true, options["respectReducedMotion"]);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Provider, new BitLeafletMapProvider { KeyboardNavigation = false });
+            parameters.Add(p => p.ForceAnimation, true);
+        });
+
+        var attaches = Context.JSInterop.Invocations.Where(i => i.Identifier == CHROME_ATTACH).ToList();
+        Assert.AreEqual(2, attaches.Count, "A change to either setting re-attaches the chrome");
+        options = (Dictionary<string, object?>)attaches[1].Arguments[4]!;
+        Assert.AreEqual(false, options["keyboardNavigation"]);
+        Assert.AreEqual(false, options["respectReducedMotion"], "ForceAnimation opts the keyboard moves back into animating");
+    }
+
+    // The popup's auto-pan favours its start edge when it cannot fit, so the chrome is handed the direction Dir names and
+    // reads the one the map is laid out in only when Dir names none (#13592).
+    [TestMethod]
+    public void BitMapShouldHandTheDirectionToTheChrome()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        var options = (Dictionary<string, object?>)Context.JSInterop.Invocations.Single(i => i.Identifier == CHROME_ATTACH).Arguments[4]!;
+        Assert.IsNull(options["explicitRtl"], "An unset Dir leaves the direction to the page");
+
+        component.Render(parameters => parameters.Add(p => p.Dir, BitDir.Rtl));
+
+        var attaches = Context.JSInterop.Invocations.Where(i => i.Identifier == CHROME_ATTACH).ToList();
+        Assert.AreEqual(2, attaches.Count, "A change of Dir re-attaches the chrome");
+        Assert.AreEqual(true, ((Dictionary<string, object?>)attaches[1].Arguments[4]!)["explicitRtl"]);
+
+        component.Render(parameters => parameters.Add(p => p.Dir, BitDir.Auto));
+
+        attaches = Context.JSInterop.Invocations.Where(i => i.Identifier == CHROME_ATTACH).ToList();
+        Assert.AreEqual(3, attaches.Count);
+        Assert.IsNull(((Dictionary<string, object?>)attaches[2].Arguments[4]!)["explicitRtl"], "Auto takes the direction of the content");
+    }
+
+    [TestMethod]
+    public void BitMapShouldTranslateTheRoleDescription()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.RoleDescription, "نقشه تعاملی");
+        });
+
+        Assert.AreEqual("نقشه تعاملی", component.Find(".bit-map-canvas").GetAttribute("aria-roledescription"));
+    }
+
+    [TestMethod]
     public async Task BitMapShouldDetachChromeOnDisposal()
     {
         // The chrome owns observers and DOM listeners of its own. They have to come off before
@@ -645,11 +751,12 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMapShouldShareTheAssetCacheAcrossProviderTypes()
+    public void BitMapShouldAskForTheSameUrlFromEveryProviderType()
     {
-        // The cache lives on a non-generic type on purpose: static state inside
-        // BitMap<TMapProvider> is per closed generic, so two maps over different provider types
-        // that share a script URL would each pay their own interop round-trip.
+        // Two provider types sharing a script URL both ask for it, each with the URL itself as
+        // the request. That is what lets the JS side collapse them: it keys its cache on the URL
+        // list and scans what the document already holds, so nothing about the dedup depends on
+        // which closed generic asked, or on a .NET static outliving the document.
         Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
         Context.JSInterop.SetupVoid(INIT_SCRIPTS);
         Context.JSInterop.SetupVoid("BitBlazorUI.SharedAssetProviderA.init");
@@ -659,13 +766,18 @@ public class BitMapTests : BunitTestContext
         Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(false);
 
         RenderComponent<BitMap<SharedAssetProviderA>>();
-        var afterFirst = Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_SCRIPTS);
-
         RenderComponent<BitMap<SharedAssetProviderB>>();
 
-        Assert.AreEqual(1, afterFirst);
-        Assert.AreEqual(afterFirst, Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_SCRIPTS),
-            "A second provider type sharing the same script URL must not re-request it");
+        var scriptCalls = Context.JSInterop.Invocations.Where(i => i.Identifier == INIT_SCRIPTS).ToList();
+
+        Assert.AreEqual(2, scriptCalls.Count, "Each provider type must request its scripts");
+        CollectionAssert.AreEqual(
+            new[] { "https://cdn.example.com/shared-map.js" },
+            ((IEnumerable<string>)scriptCalls[0].Arguments[0]!).ToArray());
+        CollectionAssert.AreEqual(
+            ((IEnumerable<string>)scriptCalls[0].Arguments[0]!).ToArray(),
+            ((IEnumerable<string>)scriptCalls[1].Arguments[0]!).ToArray(),
+            "Both must ask under the same URL, which is the key the JS side dedupes on");
     }
 
     [TestMethod]
@@ -679,12 +791,16 @@ public class BitMapTests : BunitTestContext
             parameters.Add(p => p.KeyboardInstructions, "Arrows pan, plus/minus zoom, Escape leaves.");
         });
 
+        // One named region, and it is the focusable canvas: a second one wrapped around it would be a
+        // duplicate landmark, and a name on the plain root div is one ARIA prohibits.
         var root = component.Find(".bit-map");
-        Assert.AreEqual("region", root.GetAttribute("role"));
-        Assert.AreEqual("interactive map", root.GetAttribute("aria-roledescription"));
-        Assert.AreEqual("Map of Berlin", root.GetAttribute("aria-label"));
+        Assert.IsNull(root.GetAttribute("role"));
+        Assert.IsNull(root.GetAttribute("aria-label"));
+        Assert.IsNull(root.GetAttribute("aria-roledescription"));
 
         var canvas = component.Find(".bit-map-canvas");
+        Assert.AreEqual("region", canvas.GetAttribute("role"));
+        Assert.AreEqual("interactive map", canvas.GetAttribute("aria-roledescription"));
         Assert.AreEqual("0", canvas.GetAttribute("tabindex"));
         Assert.AreEqual("Map of Berlin", canvas.GetAttribute("aria-label"));
 
@@ -877,6 +993,73 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual("square", style["lineCap"]);
         Assert.AreEqual("bevel", style["lineJoin"]);
         Assert.AreEqual(false, style["fill"]);
+    }
+
+    // A color is handed to the script as written - a theme variable included - and resolved there, on the map's probe;
+    // a missing one is null, which is what makes the script take the theme's --bit-Map-* color instead.
+    [TestMethod]
+    public async Task BitMapShouldSendTheColorsOfMarkersAndShapesAsWritten()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(ADD_MARKER);
+        Context.JSInterop.SetupVoid(ADD_POLYLINE);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(1, 2), Color = "var(--bit-clr-sec)" });
+        await component.Instance.AddMarker(new BitMapMarker { Id = "b", Position = new(1, 2) });
+        await component.Instance.AddPolyline("themed", [new(0, 0), new(1, 1)], new BitMapVectorPathStyle { Weight = 5 });
+        await component.Instance.AddPolyline("red", [new(0, 0), new(1, 1)], new BitMapVectorPathStyle { Color = "red" });
+
+        var markers = Context.JSInterop.Invocations.Where(i => i.Identifier == ADD_MARKER)
+            .Select(i => (Dictionary<string, object?>)i.Arguments[2]!).ToList();
+        var styles = Context.JSInterop.Invocations.Where(i => i.Identifier == ADD_POLYLINE)
+            .Select(i => (Dictionary<string, object?>)i.Arguments[3]!).ToList();
+
+        Assert.AreEqual("var(--bit-clr-sec)", markers[0]["color"]);
+        Assert.IsNull(markers[1]["color"]);
+        Assert.IsNull(styles[0]["color"]);
+        Assert.AreEqual("red", styles[1]["color"]);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldRedrawWhatFollowsTheThemeWhenTheThemeChanges()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(ADD_MARKER);
+        Context.JSInterop.SetupVoid(ADD_POLYLINE);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "themed", Position = new(1, 2) });
+        await component.Instance.AddMarker(new BitMapMarker { Id = "variable", Position = new(1, 2), Color = "var(--bit-clr-sec)" });
+        await component.Instance.AddMarker(new BitMapMarker { Id = "red", Position = new(1, 2), Color = "red" });
+        await component.Instance.AddMarker(new BitMapMarker { Id = "icon", Position = new(1, 2), IconUrl = "pin.png" });
+        await component.Instance.AddPolyline("themed", [new(0, 0), new(1, 1)]);
+        await component.Instance.AddPolyline("weighted", [new(0, 0), new(1, 1)], new BitMapVectorPathStyle { Weight = 5 });
+        await component.Instance.AddPolyline("red", [new(0, 0), new(1, 1)], new BitMapVectorPathStyle { Color = "red" });
+        await component.Instance.AddPolyline("fill", [new(0, 0), new(1, 1)], new BitMapVectorPathStyle { Color = "red", FillColor = "var(--bit-clr-pri)" });
+
+        var markersBefore = Context.JSInterop.Invocations.Count(i => i.Identifier == ADD_MARKER);
+        var polylinesBefore = Context.JSInterop.Invocations.Count(i => i.Identifier == ADD_POLYLINE);
+
+        await component.Instance._OnThemeChanged();
+
+        var markers = Context.JSInterop.Invocations.Where(i => i.Identifier == ADD_MARKER).Skip(markersBefore)
+            .Select(i => (string)i.Arguments[1]!).ToList();
+        var polylines = Context.JSInterop.Invocations.Where(i => i.Identifier == ADD_POLYLINE).Skip(polylinesBefore)
+            .Select(i => (string)i.Arguments[1]!).ToList();
+
+        CollectionAssert.AreEquivalent(new[] { "themed", "variable" }, markers);
+        CollectionAssert.AreEquivalent(new[] { "themed", "weighted", "fill" }, polylines);
+    }
+
+    [TestMethod]
+    public void BitMapMarkersShouldDifferByColor()
+    {
+        var plain = new BitMapMarker { Id = "a", Position = new(1, 2) };
+
+        Assert.AreNotEqual(plain, plain with { Color = "red" }, "A recolored marker must be redrawn by the Markers reconciliation.");
     }
 
     [TestMethod]
@@ -1456,6 +1639,23 @@ public class BitMapTests : BunitTestContext
         var expand = Context.JSInterop.Invocations.Single(i => i.Identifier == CLUSTER_EXPAND);
         Assert.AreEqual(24, expand.Arguments[2]);
         Assert.AreEqual(true, expand.Arguments[3]);
+        Assert.AreEqual(true, expand.Arguments[4], "Without a reduced-motion preference the zoom into a bubble animates.");
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldJumpIntoAClusterUnderReducedMotion()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(true);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.Clustering, new BitMapClustering());
+        });
+
+        await component.Instance._OnMarkerClick(CLUSTER_ID);
+
+        Assert.AreEqual(false, Context.JSInterop.Invocations.Single(i => i.Identifier == CLUSTER_EXPAND).Arguments[4]);
     }
 
     [TestMethod]
@@ -2156,7 +2356,7 @@ public class BitMapTests : BunitTestContext
             Position = new(0, 0),
             TooltipText = "Plain text",
             TooltipPermanent = true,
-            TooltipDirection = BitMapTooltipDirection.Right,
+            TooltipPlacement = BitPlacement.Right,
         });
 
         var payload = (Dictionary<string, object?>)Context.JSInterop.Invocations
@@ -2269,6 +2469,50 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMapPopupShouldClaimTheEscapeThatClosesIt()
+    {
+        // The popup is a dialog of its own: the Escape that closes it is claimed on it, so a dialog the map sits in
+        // stays open for the next press.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0) });
+        await component.Instance._OnMarkerClick("a");
+
+        Assert.AreEqual("claim", component.Find(".bit-map-popup").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-map-popup").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsNull(component.Instance.OpenPopupMarker);
+        Assert.AreEqual(0, component.FindAll(".bit-map-popup").Count);
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count, "with the popup closed nothing in the map claims the key");
+    }
+
+    [TestMethod]
+    public async Task BitMapPopupShouldStayOpenOnAModifiedEscape()
+    {
+        // Only the plain key is claimed, so only the plain key acts: one with a modifier is the surrounding surface's.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0) });
+        await component.Instance._OnMarkerClick("a");
+
+        component.Find(".bit-map-popup").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape", CtrlKey = true });
+
+        Assert.AreEqual("a", component.Instance.OpenPopupMarker?.Id);
+        Assert.AreEqual(1, component.FindAll(".bit-map-popup").Count);
+    }
+
+    [TestMethod]
     public async Task BitMapShouldCloseThePopupWhenItsMarkerIsRemoved()
     {
         // A popup for a marker that is no longer on the map would hang in space.
@@ -2356,6 +2600,7 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(anchorsBefore + 1, anchors.Count, "The popup has to follow its marker");
         Assert.AreEqual(10d, anchors[^1].Arguments[2]);
         Assert.AreEqual(20d, anchors[^1].Arguments[3]);
+        Assert.AreEqual(false, anchors[^1].Arguments[4], "Auto-pan is spent as the popup opens, not re-armed by every move");
     }
 
     [TestMethod]
@@ -2472,6 +2717,63 @@ public class BitMapTests : BunitTestContext
         component.Find(".bit-map-marker-table-action").Click();
 
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.BitMapLeaflet.openMarkerPopup"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)]
+    public async Task BitMapCloseMarkerPopupShouldReportWhetherAPopupWasOpen(bool wasOpen)
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<bool>("BitBlazorUI.BitMapLeaflet.closeMarkerPopup", _ => true).SetResult(wasOpen);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        var closed = await component.Instance.CloseMarkerPopup();
+
+        Assert.AreEqual(wasOpen, closed);
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.BitMapLeaflet.closeMarkerPopup"));
+    }
+
+    [TestMethod]
+    public async Task BitMapCloseMarkerPopupShouldReportAFailingProviderAsNothingClosed()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<bool>("BitBlazorUI.BitMapLeaflet.closeMarkerPopup", _ => true).SetException(new Microsoft.JSInterop.JSException("boom"));
+
+        var errors = new List<BitMapInteropErrorArgs>();
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.OnInteropError,
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<BitMapInteropErrorArgs>(this, e => errors.Add(e)));
+        });
+
+        Assert.IsFalse(await component.Instance.CloseMarkerPopup());
+        Assert.AreEqual(nameof(BitMap<BitLeafletMapProvider>.CloseMarkerPopup), errors.Single().Context);
+    }
+
+    // A screen reader entering the region while the map is being built waits for it rather than reading a half-built one.
+    [TestMethod]
+    public void BitMapShouldMarkTheCanvasBusyOnlyWhileLoading()
+    {
+        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL, _ => true).SetResult(true);
+        Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(false);
+        var init = Context.JSInterop.SetupVoid(INIT, _ => true);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        Assert.AreEqual(BitMapLoadState.Loading, component.Instance.LoadState);
+        Assert.AreEqual("true", component.Find(".bit-map-canvas").GetAttribute("aria-busy"));
+
+        init.SetVoidResult();
+
+        // The rest of the mount resumes on the renderer's dispatcher, which sets LoadState a moment before it renders the
+        // markup without aria-busy - so the markup is waited for together with the state, not read once the state is seen.
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(BitMapLoadState.Ready, component.Instance.LoadState);
+            Assert.IsFalse(component.Find(".bit-map-canvas").HasAttribute("aria-busy"));
+        });
     }
 
     // ---------------------------------------------------------------- geographic helpers
@@ -2709,6 +3011,28 @@ public class BitMapTests : BunitTestContext
         var call = Context.JSInterop.Invocations.Single(i => i.Identifier == FIT_BOUNDS_TO_MARKERS);
         Assert.AreEqual(16, call.Arguments[1]);
         Assert.AreEqual(9d, call.Arguments[2]);
+    }
+
+    // A fit is a camera move like any other: under reduced motion it jumps, unless the move is marked essential.
+    [TestMethod,
+        DataRow(false, false, false, true),
+        DataRow(true, false, false, false),
+        DataRow(true, true, false, true),
+        DataRow(false, false, true, false)]
+    public async Task BitMapFitBoundsShouldHonourReducedMotion(bool reduced, bool essential, bool jump, bool animates)
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(reduced);
+        Context.JSInterop.SetupVoid(FIT_BOUNDS);
+        Context.JSInterop.SetupVoid(FIT_BOUNDS_TO_MARKERS);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance.FitBounds(new BitMapLatLngBounds(new(0, 0), new(10, 10)), animate: jump is false, essential: essential);
+        await component.Instance.FitBoundsToMarkers(animate: jump is false, essential: essential);
+
+        Assert.AreEqual(animates, Context.JSInterop.Invocations.Single(i => i.Identifier == FIT_BOUNDS).Arguments[7]);
+        Assert.AreEqual(animates, Context.JSInterop.Invocations.Single(i => i.Identifier == FIT_BOUNDS_TO_MARKERS).Arguments[3]);
     }
 
     [TestMethod]
@@ -2967,9 +3291,16 @@ public class BitMapTests : BunitTestContext
             parameters.Add(p => p.Clustering, new BitMapClustering());
         });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == B_ADD_MARKER),
+        // No add on B only means something once B was actually initialized and the clustering layer was re-pointed at it.
+        // The recorded invocations are grouped by identifier rather than kept in call order, so it is the last configure
+        // naming B, and the last snapshot holding the marker, that show the swap handed the set over.
+        var invocations = Context.JSInterop.Invocations;
+        Assert.AreEqual(1, invocations.Count(i => i.Identifier == B_INIT), "the swap has to reach provider B");
+        Assert.AreEqual(0, invocations.Count(i => i.Identifier == B_ADD_MARKER),
             "the clustering layer owns what the provider draws");
-        Assert.IsTrue(Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_SET_MARKERS) > 0);
+        Assert.AreEqual("TestProviderB", invocations.Last(i => i.Identifier == CLUSTER_CONFIGURE).Arguments[1],
+            "the clustering layer is re-pointed at B");
+        CollectionAssert.AreEqual(new[] { "x" }, (string[])invocations.Last(i => i.Identifier == CLUSTER_SET_MARKERS).Arguments[1]!);
     }
 
     // ---------------------------------------------------------------- provider swap
@@ -3131,6 +3462,124 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == CHROME_CANCEL_WAIT_VISIBLE));
     }
 
+    // ---------------------------------------------------------------- view announcements
+
+    [TestMethod]
+    public async Task BitMapShouldNotAnnounceAViewChangeUnlessAskedTo()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+
+        // The live region is always there, so a later announcement has a region to land in, but it stays empty.
+        Assert.AreEqual(string.Empty, component.Find(".bit-map-live").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldAnnounceASettledViewInTheBuiltInWording()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceViewChanges, true);
+        });
+
+        await component.Instance._OnViewChanged(ViewPayload(12.34567, -5.5, 5.4));
+
+        // Four decimals of the centre and a whole zoom level, in the page's own number format.
+        Assert.AreEqual($"Map centred at {12.34567:F4}, {-5.5:F4}, zoom level {5.4:F0}.", component.Find(".bit-map-live").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldNudgeARepeatedAnnouncementSoItIsSpokenAgain()
+    {
+        // A screen reader ignores a live region whose text did not change, so the same view twice is announced
+        // through a trailing zero-width space - a change of text, not of what is spoken.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceViewChanges, true);
+            parameters.Add(p => p.ViewAnnouncementThrottle, TimeSpan.Zero);
+            parameters.Add<Func<BitMapViewState, string>?>(p => p.ViewAnnouncementFormatter, v => $"zoom {v.Zoom:F0}");
+        });
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        Assert.AreEqual("zoom 5", component.Find(".bit-map-live").TextContent);
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        Assert.AreEqual("zoom 5​", component.Find(".bit-map-live").TextContent);
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        Assert.AreEqual("zoom 5", component.Find(".bit-map-live").TextContent, "the nudge alternates rather than piling up");
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldHoldBackAViewInsideTheThrottleWindow()
+    {
+        SetupSuccessfulMount();
+
+        var formatted = new List<double>();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceViewChanges, true);
+            parameters.Add(p => p.ViewAnnouncementThrottle, TimeSpan.FromHours(1));
+            parameters.Add<Func<BitMapViewState, string>?>(p => p.ViewAnnouncementFormatter, v =>
+            {
+                formatted.Add(v.Zoom);
+                return $"zoom {v.Zoom:F0}";
+            });
+        });
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 6));
+
+        // The second view is kept for the end of the window rather than spoken over the first or dropped.
+        Assert.AreEqual("zoom 5", component.Find(".bit-map-live").TextContent);
+        CollectionAssert.AreEqual(new[] { 5d }, formatted);
+
+        // Disposal takes the held-back announcement with it rather than leaving a timer behind.
+        await component.Instance.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldSpeakTheLastHeldBackViewOnTheRenderersDispatcher()
+    {
+        // The trailing announcement ends in the consumer's formatter and a render, so it runs on the renderer's
+        // dispatcher rather than on a thread-pool thread (Task.Run), which could render concurrently.
+        SetupSuccessfulMount();
+
+        var formatted = new List<(double Zoom, bool OnDispatcher)>();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceViewChanges, true);
+            // The window is real time measured from the first view, and the two after it have to land inside it: with a
+            // window of 100 ms, a runner stalled that long between the calls closed it early, so the second view was
+            // spoken too, or the third one was spoken at once from the test thread rather than held back.
+            parameters.Add(p => p.ViewAnnouncementThrottle, TimeSpan.FromSeconds(1));
+            parameters.Add<Func<BitMapViewState, string>?>(p => p.ViewAnnouncementFormatter, v =>
+            {
+                formatted.Add((v.Zoom, Renderer.Dispatcher.CheckAccess()));
+                return $"zoom {v.Zoom:F0}";
+            });
+        });
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 6));
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 7));
+
+        component.WaitForAssertion(() => Assert.AreEqual("zoom 7", component.Find(".bit-map-live").TextContent), TimeSpan.FromSeconds(10));
+
+        // The view superseded inside the window is never spoken; the last one is, from the dispatcher.
+        CollectionAssert.AreEqual(new[] { 5d, 7d }, formatted.Select(f => f.Zoom).ToArray());
+        Assert.IsTrue(formatted[^1].OnDispatcher);
+    }
+
     /// <summary>A popup body with no content of its own, for tests that only care about the shell.</summary>
     private static readonly Microsoft.AspNetCore.Components.RenderFragment<BitMapMarker> EmptyPopupTemplate =
         _ => builder => builder.AddContent(0, string.Empty);
@@ -3149,6 +3598,175 @@ public class BitMapTests : BunitTestContext
               }
             }
             """));
+
+    [TestMethod]
+    public async Task BitMapShouldAskTheChromeToPanAnOpeningPopupIntoView()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(1, 2) });
+        await component.Instance.OpenPopup("a");
+
+        var anchor = Context.JSInterop.Invocations.Last(i => i.Identifier == TRACK_ANCHOR);
+        Assert.AreEqual(true, anchor.Arguments[4], "PopupAutoPan is on by default");
+        Assert.AreEqual(true, anchor.Arguments[5], "the pan animates without a reduced-motion preference");
+
+        await component.Instance.ClosePopup();
+        component.Render(parameters => parameters.Add(p => p.PopupAutoPan, false));
+        await component.Instance.OpenPopup("a");
+
+        Assert.AreEqual(false, Context.JSInterop.Invocations.Last(i => i.Identifier == TRACK_ANCHOR).Arguments[4]);
+    }
+
+    [TestMethod]
+    public void BitMapShouldPutItsTabIndexOnTheCanvas()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+        Assert.AreEqual("0", component.Find(".bit-map-canvas").GetAttribute("tabindex"));
+
+        // -1 takes a decorative map out of the tab order while leaving it focusable from code.
+        component.Render(parameters => parameters.Add(p => p.TabIndex, "-1"));
+        Assert.AreEqual("-1", component.Find(".bit-map-canvas").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldApplyClassesAndStylesToEachPart()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.CooperativeGestures, true);
+            parameters.Add(p => p.MarkerListMode, BitMapMarkerListMode.Visible);
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+            parameters.Add(p => p.ChildContent, (Microsoft.AspNetCore.Components.RenderFragment)(b => b.AddContent(0, "overlay")));
+            parameters.Add(p => p.Classes, new BitMapClassStyles
+            {
+                Root = "c-root", Canvas = "c-canvas", Overlay = "c-overlay", Instructions = "c-help", GestureHint = "c-hint",
+                Popup = "c-popup", PopupCloseButton = "c-close", PopupBody = "c-body", MarkerList = "c-list", MarkerListButton = "c-btn",
+            });
+            parameters.Add(p => p.Styles, new BitMapClassStyles
+            {
+                Root = "--s-root: 1", Canvas = "--s-canvas: 1", Popup = "--s-popup: 1", MarkerListButton = "--s-btn: 1",
+            });
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0) });
+        await component.Instance._OnMarkerClick("a");
+
+        var root = component.Find(".bit-map");
+        Assert.IsTrue(root.ClassList.Contains("c-root"));
+        StringAssert.Contains(root.GetAttribute("style"), "--s-root: 1");
+
+        Assert.IsTrue(component.Find(".bit-map-canvas").ClassList.Contains("c-canvas"));
+        StringAssert.Contains(component.Find(".bit-map-canvas").GetAttribute("style"), "--s-canvas: 1");
+        Assert.IsTrue(component.Find(".bit-map-overlay").ClassList.Contains("c-overlay"));
+        Assert.IsTrue(component.Find(".bit-map > .bit-map-help").ClassList.Contains("c-help"));
+        Assert.IsTrue(component.Find(".bit-map-gesture-hint").ClassList.Contains("c-hint"));
+        Assert.IsTrue(component.Find(".bit-map-popup").ClassList.Contains("c-popup"));
+        StringAssert.Contains(component.Find(".bit-map-popup").GetAttribute("style"), "--s-popup: 1");
+        Assert.IsTrue(component.Find(".bit-map-popup-close").ClassList.Contains("c-close"));
+        Assert.IsTrue(component.Find(".bit-map-popup-body").ClassList.Contains("c-body"));
+        Assert.IsTrue(component.Find(".bit-map-marker-list").ClassList.Contains("c-list"));
+        Assert.IsTrue(component.Find(".bit-map-marker-table-action").ClassList.Contains("c-btn"));
+        StringAssert.Contains(component.Find(".bit-map-marker-table-action").GetAttribute("style"), "--s-btn: 1");
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldMakeADisabledMapInert()
+    {
+        // A disabled map takes neither the focus nor the pointer: inert on the canvas reaches the provider's markers
+        // and controls inside it too, which a tabindex on the canvas alone would not.
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(SET_VIEW);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.MarkerListMode, BitMapMarkerListMode.Visible);
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0), Alt = "A" });
+
+        var root = component.Find(".bit-map");
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        Assert.IsTrue(component.Find(".bit-map-canvas").HasAttribute("inert"));
+
+        var button = component.Find(".bit-map-marker-table-action");
+        Assert.IsTrue(button.HasAttribute("disabled"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
+
+        Assert.IsFalse(component.Find(".bit-map").ClassList.Contains("bit-dis"));
+        Assert.IsFalse(component.Find(".bit-map-canvas").HasAttribute("inert"));
+        Assert.IsFalse(component.Find(".bit-map-marker-table-action").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldStillFlyUnderReducedMotionWhenForceAnimationIsSet()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(true);
+        Context.JSInterop.SetupVoid(FLY_TO);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.ForceAnimation, true);
+        });
+
+        await component.Instance.FlyTo(new(10, 20), 8);
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == FLY_TO));
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldHonourReducedMotionTurnedOnAfterTheFirstRender()
+    {
+        // The preference is read once whatever RespectReducedMotion is at mount, so turning it on later still works.
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(true);
+        Context.JSInterop.SetupVoid(SET_VIEW);
+        Context.JSInterop.SetupVoid(FLY_TO);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.RespectReducedMotion, false);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.RespectReducedMotion, true));
+
+        await component.Instance.FlyTo(new(10, 20), 8);
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == FLY_TO));
+    }
+
+    [TestMethod]
+    public void BitMapShouldLeaveTheClusterColorsToTheThemeByDefault()
+    {
+        // Null colors make the clustering layer read the --bit-Map-cluster-* variables off the probe, so the bubbles
+        // follow the theme and the scheme.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.Clustering, new BitMapClustering());
+        });
+
+        var options = (Dictionary<string, object?>)Context.JSInterop.Invocations.Single(i => i.Identifier == CLUSTER_CONFIGURE).Arguments[2]!;
+        Assert.IsNull(options["color"]);
+        Assert.IsNull(options["textColor"]);
+
+        var probe = component.Find(".bit-map > .bit-map-probe");
+        Assert.AreEqual("true", probe.GetAttribute("aria-hidden"));
+    }
+
 
     private sealed class WebGlTestProvider : BitMapProviderBase
     {

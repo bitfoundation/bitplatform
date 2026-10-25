@@ -34,15 +34,15 @@ public partial class CultureCookieCacheabilityTests
 
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfiguration: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
                 configuration["ResponseCaching:EnableOutputCaching"] = "true";
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
             }).Start(TestContext.CancellationToken);
 
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         using var response = await GetPage(visitorHttpClient, "/");
 
@@ -71,15 +71,15 @@ public partial class CultureCookieCacheabilityTests
 
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfiguration: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
                 configuration["ResponseCaching:EnableOutputCaching"] = "false";
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "false";
             }).Start(TestContext.CancellationToken);
 
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         using var response = await GetPage(visitorHttpClient, "/");
 

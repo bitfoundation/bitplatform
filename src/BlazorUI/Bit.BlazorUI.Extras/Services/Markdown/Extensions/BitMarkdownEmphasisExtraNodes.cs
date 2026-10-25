@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Subscript text (<c>H~2~O</c>), rendered as <c>&lt;sub&gt;</c>.</summary>
 public sealed class BitMarkdownSubscriptNode : BitMarkdownNode

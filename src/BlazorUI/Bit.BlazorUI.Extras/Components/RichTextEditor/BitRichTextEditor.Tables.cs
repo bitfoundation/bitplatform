@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // Table insertion and structural editing.
 public partial class BitRichTextEditor
@@ -31,18 +31,27 @@ public partial class BitRichTextEditor
         ClearInlineError();
     }
 
+    private async Task CloseTableInput()
+    {
+        if (_showTableInput) await ToggleTableInput();
+        RequestEditorFocus();
+    }
+
     private async Task ApplyTableAsync()
     {
         await InsertTableAsync(_tableRows, _tableCols, _tableHeader);
         // InsertTableAsync surfaces its own error for an out-of-range size, so only close the
         // panel when nothing is being reported.
-        if (_inlineError is null) _showTableInput = false;
+        if (_inlineError is null)
+        {
+            _showTableInput = false;
+            RequestEditorFocus();
+        }
     }
 
     private async Task OnTableKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter") await ApplyTableAsync();
-        else if (e.Key == "Escape") await ToggleTableInput();
     }
 
     private async Task InsertTableAsync(int rows, int cols, bool header = false)
@@ -53,7 +62,7 @@ public partial class BitRichTextEditor
         if (rows < 1 || rows > MaxTableDimension || cols < 1 || cols > MaxTableDimension)
         {
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-table",
-                string.Format(Label("invalid-table", "Tables must be between 1 and {0} rows/columns."), MaxTableDimension)));
+                string.Format(Loc("invalid-table", "Tables must be between 1 and {0} rows/columns."), MaxTableDimension)));
             return;
         }
         ClearInlineError();

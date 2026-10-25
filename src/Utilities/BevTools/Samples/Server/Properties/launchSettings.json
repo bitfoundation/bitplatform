@@ -1,0 +1,13 @@
+﻿{
+    "profiles": {
+        "Bit.BevTools.Samples.Server": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "applicationUrl": "https://localhost:7491;http://localhost:5491",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    }
+}

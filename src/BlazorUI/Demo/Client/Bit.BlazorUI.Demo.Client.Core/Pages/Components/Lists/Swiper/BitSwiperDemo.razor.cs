@@ -9,7 +9,7 @@ public partial class BitSwiperDemo
             Name = "Accent",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "Specifies the accent color kind of the component, which colors the dot of the current page. Color takes precedence over it when both are set.",
+            Description = "Specifies the accent color kind of the component, which colors the dot of the current page. Color takes precedence over it when both are set. An explicit value wins over the --bit-Swiper-dot-current-* variables; left unset, the current dot is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -18,14 +18,14 @@ public partial class BitSwiperDemo
             Name = "AnimationDuration",
             Type = "double",
             DefaultValue = "0.5",
-            Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5). A value of 0 moves the items at once."
+            Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5). A value of 0 moves the items at once. Reduced motion collapses it unless ForceAnimation is set."
         },
         new()
         {
             Name = "AutoPlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables/disables the auto scrolling of the items."
+            Description = "Enables/disables the auto scrolling of the items. It pauses while hovered, focused or in a hidden tab, and starts paused under prefers-reduced-motion unless ForceAnimation is set."
         },
         new()
         {
@@ -62,7 +62,7 @@ public partial class BitSwiperDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the swiper, applied to the dot of the current page and the next/prev and play/pause buttons.",
+            Description = "The general color of the swiper, applied to the dot of the current page, the next/prev and play/pause buttons and the focus indicators. An explicit value wins over the --bit-Swiper-* focus, button and current-dot color variables; left unset, the swiper keeps its defaults unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -120,7 +120,7 @@ public partial class BitSwiperDemo
             Name = "ItemAriaLabelFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The accessible label of an item of the swiper, as a composite format string whose {0} is the 1 based position of the item and whose {1} is the number of items (\"{0} of {1}\" by default)."
+            Description = "The accessible label of an item of the swiper, as a composite format string whose {0} is the 1 based position of the item and whose {1} is the number of items (\"{0} of {1}\" by default). Used for items without their own AriaLabel, and announced when the swiper moves to the item."
         },
         new()
         {
@@ -170,6 +170,20 @@ public partial class BitSwiperDemo
         },
         new()
         {
+            Name = "OnReachEnd",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "The event that will be called each time the swiper is moved to its end, not when a resize or removed items put it there, and once per set of items for a swiper everything fits in, which is where more items are loaded."
+        },
+        new()
+        {
+            Name = "OnReachStart",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "The event that will be called each time the swiper is moved back to its start (not for the start it is first laid out on, nor when a resize or a change of its items puts it there)."
+        },
+        new()
+        {
             Name = "PauseButtonAriaLabel",
             Type = "string",
             DefaultValue = "Stop automatic slide show",
@@ -206,6 +220,13 @@ public partial class BitSwiperDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Pauses the auto scrolling while the pointer is over the swiper."
+        },
+        new()
+        {
+            Name = "Peek",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The room (any CSS length, for example 2rem) kept at both ends of the swiper, which the neighboring items peek into. VisibleItemsCount fits its items between the two, and the items settle against it. Each end is capped at a quarter of the swiper."
         },
         new()
         {
@@ -259,6 +280,13 @@ public partial class BitSwiperDemo
         },
         new()
         {
+            Name = "Rewind",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Wraps the manual navigation around: moving on from the end goes back to the start and the other way around. It covers the next/prev buttons (which then stay visible at both ends), the arrow keys and GoNext/GoPrev; the wheel and dragging still stop at the ends."
+        },
+        new()
+        {
             Name = "ScrollItemsCount",
             Type = "int",
             DefaultValue = "1",
@@ -290,18 +318,18 @@ public partial class BitSwiperDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the dots and of the next/prev buttons of the swiper.",
+            Description = "The size of the dots and of the next/prev buttons of the swiper. An explicit value wins over --bit-Swiper-dot-size and --bit-Swiper-button-size; left unset, the swiper is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
         new()
         {
-            Name = "Snap",
-            Type = "BitSwiperSnap?",
+            Name = "SnapAlign",
+            Type = "BitScrollSnapAlign?",
             DefaultValue = "null",
             Description = "Settles the swiper on an item instead of leaving it wherever the scrolling ran out, and chooses where that item comes to rest.",
             LinkType = LinkType.Link,
-            Href = "#snap-enum",
+            Href = "#scroll-snap-align-enum",
         },
         new()
         {
@@ -451,67 +479,40 @@ public partial class BitSwiperDemo
     [
         new()
         {
-            Id = "snap-enum",
-            Name = "BitSwiperSnap",
+            Id = "scroll-snap-align-enum",
+            Name = "BitScrollSnapAlign",
             Description = "The place an item of a BitSwiper comes to rest at when the swiper snaps.",
             Items =
             [
-                new() { Name = "Start", Description = "The item settles with its leading edge at the start of the swiper.", Value = "0" },
-                new() { Name = "Center", Description = "The item settles in the middle of the swiper.", Value = "1" },
-                new() { Name = "End", Description = "The item settles with its trailing edge at the end of the swiper.", Value = "2" },
+                new()
+                {
+                    Name = "None",
+                    Value = "0",
+                    Description = "The children carry no snap position of their own."
+                },
+                new()
+                {
+                    Name = "Start",
+                    Value = "1",
+                    Description = "Each child comes to rest at the start of the pane."
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "2",
+                    Description = "Each child comes to rest in the middle of the pane."
+                },
+                new()
+                {
+                    Name = "End",
+                    Value = "3",
+                    Description = "Each child comes to rest at the end of the pane."
+                }
             ]
         },
-        new()
-        {
-            Id = "color-kind-enum",
-            Name = "BitColorKind",
-            Description = "Defines the color kinds available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Description = "The primary color kind.", Value = "0" },
-                new() { Name = "Secondary", Description = "The secondary color kind.", Value = "1" },
-                new() { Name = "Tertiary", Description = "The tertiary color kind.", Value = "2" },
-                new() { Name = "Transparent", Description = "The transparent color kind.", Value = "3" },
-            ]
-        },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
-                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
-                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
-                new() { Name = "Info", Description = "Info general color.", Value = "3" },
-                new() { Name = "Success", Description = "Success general color.", Value = "4" },
-                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
-                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
-                new() { Name = "Error", Description = "Error general color.", Value = "7" },
-                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
-                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
-                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
-                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
-                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
-                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
-                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
-                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
-                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" },
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" },
-            ]
-        },
+        DemoSharedEnums.BitColorKind(),
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitSize(),
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -628,7 +629,49 @@ public partial class BitSwiperDemo
 
 
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new() { Name = "--bit-Swiper-gap", DefaultValue = "0", Description = "Space between the items. The Gap parameter wins over it, and VisibleItemsCount takes it into account." },
+        new() { Name = "--bit-Swiper-peek", DefaultValue = "0", Description = "Room at both ends of the swiper the neighboring items peek into. The Peek parameter wins over it." },
+        new() { Name = "--bit-Swiper-vertical-height", DefaultValue = "25 spacing units", Description = "Height of a vertical swiper that was not given one through Style or a class." },
+        new() { Name = "--bit-Swiper-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Color of every keyboard focus indicator: the root, the buttons and the dots. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too." },
+        new() { Name = "--bit-Swiper-button-color", DefaultValue = "--bit-clr-fg-pri", Description = "Glyph color of the next/prev and play/pause buttons, and the text of templated dots. The Color parameter wins over it." },
+        new() { Name = "--bit-Swiper-button-hover-color", DefaultValue = "--bit-clr-fg-pri-hover", Description = "Glyph color of those buttons on hover. The Color parameter wins over it." },
+        new() { Name = "--bit-Swiper-button-background", DefaultValue = "transparent", Description = "Background of the next/prev strips, for buttons that have to stand out over busy items." },
+        new() { Name = "--bit-Swiper-button-hover-background", DefaultValue = "The rest background", Description = "Background of the next/prev strips on hover." },
+        new() { Name = "--bit-Swiper-button-opacity", DefaultValue = "0.7", Description = "Opacity of the buttons at rest; hover and focus bring them to 1. Keep it high enough for a 3:1 contrast." },
+        new() { Name = "--bit-Swiper-button-width", DefaultValue = "10%", Description = "Width of the next/prev strips (their height on a vertical swiper), never below the 24px pointer target." },
+        new() { Name = "--bit-Swiper-button-size", DefaultValue = "spacing(3)", Description = "Glyph size of the next/prev buttons. The Size parameter wins over it." },
+        new() { Name = "--bit-Swiper-dot-size", DefaultValue = "spacing(1.25)", Description = "Diameter of a dot. Its hit area never drops below the 24px WCAG target. The Size parameter wins over it." },
+        new() { Name = "--bit-Swiper-dot-current-width", DefaultValue = "The dot size", Description = "Width of the current dot; a larger value turns it into a pill." },
+        new() { Name = "--bit-Swiper-dot-radius", DefaultValue = "The full radius", Description = "Corner radius of a dot." },
+        new() { Name = "--bit-Swiper-dot-gap", DefaultValue = "What keeps a 24px target per dot", Description = "Space between the dots. A smaller value lets their hit areas overlap." },
+        new() { Name = "--bit-Swiper-dot-color", DefaultValue = "The primary border color", Description = "Fill of a dot, which keeps a 3:1 contrast against the background by default." },
+        new() { Name = "--bit-Swiper-dot-hover-color", DefaultValue = "The primary border hover color", Description = "Fill of a dot on hover." },
+        new() { Name = "--bit-Swiper-dot-current-color", DefaultValue = "--bit-clr-pri", Description = "Fill of the current dot (text color of a templated one). The Color and Accent parameters win over it." },
+        new() { Name = "--bit-Swiper-dot-current-hover-color", DefaultValue = "--bit-clr-pri-hover", Description = "Fill of the current dot on hover. The Color and Accent parameters win over it." },
+        new() { Name = "--bit-Swiper-dots-margin", DefaultValue = "1.25 spacing units", Description = "Space between the items and the row of dots." },
+    ];
+
+
+
+    private readonly BitSwiperParams[] swiperParams =
+    [
+        new()
+        {
+            ShowDots = true,
+            Rewind = true,
+            Gap = "0.5rem",
+            VisibleItemsCount = 4,
+            SnapAlign = BitScrollSnapAlign.Start,
+            ScrollItemsCount = 2,
+        }
+    ];
+
+    private BitScrollSnapAlign snap = BitScrollSnapAlign.Center;
     private int number = 1;
+    private int loadedCount = 8;
+    private bool isLoading;
     private int currentIndex;
     private BitSwiper swiper = default!;
 
@@ -642,470 +685,22 @@ public partial class BitSwiperDemo
 
     private async Task GoToEnd() => await swiper.GoToEnd();
 
-
-
-    private const string itemStyle = @"<style>
-    .item {
-        width: 250px;
-        height: 150px;
-        position: relative;
-    }
-
-    .number {
-        top: 0;
-        left: 0;
-        color: #D7D7D7;
-        padding: 0.75rem;
-        position: absolute;
-        font-size: 0.75rem;
-        white-space: nowrap;
-    }
-
-    .image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-</style>";
-
-    private const string boxStyle = @"<style>
-    .box-item {
-        display: flex;
-        height: 5rem;
-        align-items: center;
-        justify-content: center;
-        border-radius: 0.25rem;
-        color: white;
-        background-color: #0078d4;
-    }
-</style>";
-
-    private const string cardStyle = @"<style>
-    .card-item {
-        display: flex;
-        height: 6rem;
-        align-items: center;
-        justify-content: center;
-        border-radius: 0.25rem;
-        border: 1px solid #d1d1d1;
-        background-color: #f3f2f1;
-    }
-</style>";
-
-
-    private readonly string example1RazorCode = itemStyle + @"
-
-
-<BitSwiper AriaLabel=""Landscape photos"">
-    @for (int i = 1; i <= 32; i++)
+    private async Task LoadMore()
     {
-        var index = i;
-        var imageIndex = (index - 1) % 4 + 1;
-        <BitSwiperItem Class=""item"">
-            <div class=""number"">Item @index</div>
-            <img class=""image"" alt=""Landscape @index"" src=""img@(imageIndex).jpg"" />
-        </BitSwiperItem>
-    }
-</BitSwiper>";
+        // the swiper does not wait for the handler, so a second arrival can come in while a page is on its way
+        if (isLoading || loadedCount >= 40) return;
 
-    private readonly string example2RazorCode = itemStyle + @"
+        isLoading = true;
 
-
-<BitSwiper ScrollItemsCount=""2"">
-    @for (int i = 1; i <= 32; i++)
-    {
-        var index = i;
-        var imageIndex = (index - 1) % 4 + 1;
-        <BitSwiperItem Class=""item"">
-            <div class=""number"">Item @index</div>
-            <img class=""image"" alt=""Landscape @index"" src=""img@(imageIndex).jpg"" />
-        </BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example3RazorCode = itemStyle + @"
-
-
-<BitSwiper HideNextPrev ScrollItemsCount=""2"">
-    @for (int i = 1; i <= 32; i++)
-    {
-        var index = i;
-        var imageIndex = (index - 1) % 4 + 1;
-        <BitSwiperItem Class=""item"">
-            <div class=""number"">Item @index</div>
-            <img class=""image"" alt=""Landscape @index"" src=""img@(imageIndex).jpg"" />
-        </BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example4RazorCode = boxStyle + @"
-
-
-<BitSwiper Snap=""BitSwiperSnap.Start"" Gap=""0.5rem"" VisibleItemsCount=""3"">
-    @for (int i = 1; i <= 12; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitSwiper Snap=""BitSwiperSnap.Center"" Gap=""0.5rem"" VisibleItemsCount=""3"">
-    @for (int i = 1; i <= 12; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitSwiper Snap=""BitSwiperSnap.End"" Gap=""0.5rem"" VisibleItemsCount=""3"">
-    @for (int i = 1; i <= 12; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example5RazorCode = cardStyle + @"
-
-
-<BitSwiper VisibleItemsCount=""4"" ScrollItemsCount=""2"" Gap=""0.5rem"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""card-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitSwiper VisibleItemsCount=""1"" VisibleItemsCountSm=""2"" VisibleItemsCountMd=""3"" VisibleItemsCountLg=""5""
-           Gap=""0.5rem"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""card-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example6RazorCode = boxStyle + @"
-
-
-<BitSwiper Gap=""1.5rem"" VisibleItemsCount=""4"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example7RazorCode = boxStyle + @"
-
-
-<BitSwiper Vertical Style=""height: 200px"" Gap=""0.5rem"" Snap=""BitSwiperSnap.Start"" AriaLabel=""Vertical items"">
-    @for (int i = 1; i <= 12; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example8RazorCode = boxStyle + @"
-
-
-<BitSwiper ShowDots Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitSwiper ShowDots Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
-    <DotTemplate Context=""index""><span>@(index + 1)</span></DotTemplate>
-    <ChildContent>
-        @for (int i = 1; i <= 16; i++)
+        try
         {
-            var index = i;
-            <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
+            await Task.Delay(300); // fetching the next page of items
+
+            loadedCount += 8;
         }
-    </ChildContent>
-</BitSwiper>";
-
-    private readonly string example9RazorCode = boxStyle + @"
-
-
-<BitSwiper AutoPlay AutoPlayInterval=""2000"" Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
+        finally
+        {
+            isLoading = false;
+        }
     }
-</BitSwiper>
-
-<BitSwiper AutoPlay AutoPlayInterval=""1500"" ShowDots ShowPlayPause StopOnInteraction
-           Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example10RazorCode = boxStyle + @"
-
-
-<BitSwiper Wheel NoDrag Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitSwiper ShowScrollbar HideNextPrev Gap=""0.5rem"" VisibleItemsCount=""4"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example11RazorCode = boxStyle + @"
-
-
-<BitSwiper AnimationDuration=""1.5"" Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitSwiper AnimationDuration=""0"" Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example12RazorCode = boxStyle + @"
-
-
-<BitSwiper DefaultItem=""7"" Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example13RazorCode = boxStyle + @"
-
-
-<BitSwiper @ref=""swiper"" HideNextPrev Gap=""0.5rem"" VisibleItemsCount=""4""
-           Snap=""BitSwiperSnap.Start"" OnChange=""v => currentIndex = v"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitButton OnClick=""GoPrev"">&lt; Prev</BitButton>
-<BitButton OnClick=""GoNext"">Next &gt;</BitButton>
-
-<BitButton OnClick=""GoTo"">GoTo</BitButton>
-<BitNumberField @bind-Value=""number"" Min=""1"" Max=""16"" Mode=""BitSpinButtonMode.Compact"" />
-
-<BitButton OnClick=""GoToStart"">Start</BitButton>
-<BitButton OnClick=""GoToEnd"">End</BitButton>
-
-<div>Current item: @(currentIndex + 1)</div>";
-    private readonly string example13CsharpCode = @"
-private int number = 1;
-private int currentIndex;
-private BitSwiper swiper = default!;
-
-private async Task GoNext() => await swiper.GoNext();
-
-private async Task GoPrev() => await swiper.GoPrev();
-
-private async Task GoTo() => await swiper.GoTo(number);
-
-private async Task GoToStart() => await swiper.GoToStart();
-
-private async Task GoToEnd() => await swiper.GoToEnd();";
-
-    private readonly string example14RazorCode = itemStyle + @"
-
-
-<BitSwiper AutoPlay
-           ShowDots
-           ShowPlayPause
-           Gap=""0.5rem""
-           VisibleItemsCount=""3""
-           Snap=""BitSwiperSnap.Start""
-           AriaLabel=""Landscape photos""
-           ItemAriaLabelFormat=""Photo {0} of {1}""
-           DotAriaLabel=""Photo group""
-           DotsAriaLabel=""Choose a group of photos to display""
-           NextAriaLabel=""Next photo""
-           PrevAriaLabel=""Previous photo""
-           PlayButtonAriaLabel=""Start the photo slide show""
-           PauseButtonAriaLabel=""Stop the photo slide show"">
-    @for (int i = 1; i <= 12; i++)
-    {
-        var index = i;
-        var imageIndex = (index - 1) % 4 + 1;
-        <BitSwiperItem AriaLabel=""@(index == 1 ? ""Aurora over a frozen lake"" : null)"">
-            <img class=""image"" alt=""Landscape @index"" src=""img@(imageIndex).jpg"" />
-        </BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example15RazorCode = cardStyle + @"
-
-
-<BitSwiper ShowDots Color=""BitColor.Primary"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 6; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""card-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitSwiper ShowDots Color=""BitColor.Success"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 6; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""card-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitSwiper ShowDots Color=""BitColor.Warning"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 6; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""card-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitSwiper ShowDots Color=""BitColor.Error"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 6; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""card-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitSwiper ShowDots Accent=""BitColorKind.Secondary"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 6; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""card-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitSwiper ShowDots Accent=""BitColorKind.Tertiary"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 6; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""card-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example16RazorCode = itemStyle + @"
-
-
-<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-
-<BitSwiper NextIcon=""@BitIconInfo.Fa(""solid chevron-right"")"" PrevIcon=""@BitIconInfo.Fa(""solid chevron-left"")"">
-    @for (int i = 1; i <= 8; i++)
-    {
-        var index = i;
-        var imageIndex = (index - 1) % 4 + 1;
-        <BitSwiperItem Class=""item"">
-            <div class=""number"">Item @index</div>
-            <img class=""image"" alt=""Landscape @index"" src=""img@(imageIndex).jpg"" />
-        </BitSwiperItem>
-    }
-</BitSwiper>
-
-
-<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
-
-<BitSwiper NextIcon=""@BitIconInfo.Bi(""arrow-right"")"" PrevIcon=""@BitIconInfo.Bi(""arrow-left"")"">
-    @for (int i = 1; i <= 8; i++)
-    {
-        var index = i;
-        var imageIndex = (index - 1) % 4 + 1;
-        <BitSwiperItem Class=""item"">
-            <div class=""number"">Item @index</div>
-            <img class=""image"" alt=""Landscape @index"" src=""img@(imageIndex).jpg"" />
-        </BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example17RazorCode = cardStyle + @"
-
-
-<BitSwiper ShowDots Size=""BitSize.Small"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 6; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""card-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitSwiper ShowDots Size=""BitSize.Medium"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 6; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""card-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>
-
-<BitSwiper ShowDots Size=""BitSize.Large"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 6; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""card-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example18RazorCode = boxStyle + @"
-
-<style>
-    .custom-item {
-        border-radius: 0.5rem;
-        outline: 2px solid mediumpurple;
-        outline-offset: -2px;
-    }
-</style>
-
-
-<BitSwiper ShowDots
-           Gap=""0.5rem""
-           VisibleItemsCount=""4""
-           Snap=""BitSwiperSnap.Start""
-           Style=""padding: 0.5rem; border-radius: 0.5rem; background: rgba(128,128,128,0.15)""
-           Classes=""@(new() { CurrentItem = ""custom-item"" })""
-           Styles=""@(new() { Buttons = ""color: white; background-color: rgba(0,0,0,0.35); width: 2.5rem;"",
-                             CurrentDot = ""background-color: mediumpurple;"" })"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
-    }
-</BitSwiper>";
-
-    private readonly string example19RazorCode = boxStyle + @"
-
-
-<BitSwiper Dir=""BitDir.Rtl"" ShowDots Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
-    @for (int i = 1; i <= 16; i++)
-    {
-        var index = i;
-        <BitSwiperItem><div class=""box-item"">مورد @index</div></BitSwiperItem>
-    }
-</BitSwiper>";
 }

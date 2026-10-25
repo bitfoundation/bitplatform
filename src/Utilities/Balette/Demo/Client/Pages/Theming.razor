@@ -1,0 +1,490 @@
+﻿@page "/theming"
+@implements IDisposable
+@inject IBaletteService Palette
+@inject DemoState State
+
+<PageTitle>Theming and templates · Balette</PageTitle>
+
+<div class="bb-intro">
+    <h1>Theming &amp; templates</h1>
+    <p class="bb-subtitle">
+        The default look is a set of CSS custom properties, so restyling the palette means overriding variables - on
+        <code>:root</code>, on the dialog, or inline through the component's <code>Style</code> - with no selectors to fight.
+        Past that, every part of a row and of the dialog can be replaced with a template, or the styles left out entirely.
+        The controls below restyle the palette this site is using.
+    </p>
+</div>
+
+<PaletteBar />
+
+<div class="bb-demo">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">This site's palette</span>
+        <button type="button" class="btn btn-secondary" @onclick="State.ResetPresentation">Reset</button>
+        <button type="button" class="btn btn-primary" @onclick="() => Palette.OpenAsync()">Open the palette</button>
+    </div>
+
+    <div class="bb-fields" role="toolbar" aria-label="Site and palette theme">
+        <div class="bb-field">
+            Site
+            <div class="bb-segmented" role="group" aria-label="Site theme">
+                @foreach (var theme in SiteThemes)
+                {
+                    <button type="button" aria-pressed="@(State.Theme == theme ? "true" : "false")"
+                            @onclick="() => State.SetThemeAsync(theme)">@Capitalize(theme)</button>
+                }
+            </div>
+        </div>
+        <div class="bb-field">
+            Palette
+            <div class="bb-segmented" role="group" aria-label="Palette theme">
+                @foreach (var (value, label) in PaletteThemes)
+                {
+                    <button type="button" aria-pressed="@(State.PaletteTheme == value ? "true" : "false")"
+                            @onclick="() => State.SetPaletteTheme(value)">@label</button>
+                }
+            </div>
+        </div>
+        <div class="bb-field">
+            Density
+            <div class="bb-segmented" role="group" aria-label="Palette density">
+                @foreach (var (value, label) in Densities)
+                {
+                    <button type="button" aria-pressed="@(State.Density == value ? "true" : "false")"
+                            @onclick="() => State.SetDensity(value)">@label</button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="bb-fields" role="toolbar" aria-label="Palette tokens">
+        <div class="bb-field">
+            Accent
+            <div class="demo-swatches">
+                @foreach (var (value, label) in Accents)
+                {
+                    <button type="button" class="demo-swatch @(value is null ? "demo-swatch-default" : null)" title="@label" aria-label="@label"
+                            aria-pressed="@(State.Accent == value ? "true" : "false")"
+                            style="@(value is null ? null : $"background:{value}")" @onclick="() => State.SetAccent(value)"></button>
+                }
+            </div>
+        </div>
+        <label class="bb-field">
+            Width
+            <select value="@(State.Width?.ToString() ?? "")" @onchange="OnWidthChanged" aria-label="Palette width">
+                <option value="">Default</option>
+                <option value="560">560 px</option>
+                <option value="760">760 px</option>
+                <option value="1040">1040 px</option>
+            </select>
+        </label>
+        <label class="bb-field">
+            Radius
+            <select value="@(State.Radius?.ToString() ?? "")" @onchange="OnRadiusChanged" aria-label="Palette corner radius">
+                <option value="">Default</option>
+                <option value="0">0 px</option>
+                <option value="6">6 px</option>
+                <option value="24">24 px</option>
+            </select>
+        </label>
+        <label class="bb-check">
+            <input type="checkbox" checked="@State.ShowDetail" @onchange="() => State.SetShowDetail(!State.ShowDetail)" />
+            Detail pane
+        </label>
+        <label class="bb-check">
+            <input type="checkbox" checked="@State.ShowFooter" @onchange="() => State.SetShowFooter(!State.ShowFooter)" />
+            Footer
+        </label>
+        <label class="bb-check">
+            <input type="checkbox" checked="@State.ShowShortcuts" @onchange="() => State.SetShowShortcuts(!State.ShowShortcuts)" />
+            Shortcut hints
+        </label>
+    </div>
+
+    <p class="bb-soft demo-small">What the palette host hands its palette right now:</p>
+    <pre class="bb-code demo-output">&lt;Balette Theme="@(State.PaletteTheme ?? "(follows the page)")"
+         Density="@(State.Density ?? "(comfortable, from the options)")"
+         Style="@(State.PaletteStyle ?? "(none)")"
+         DetailTemplate="@(State.ShowDetail ? "_detailPane" : "null")"
+         ShowFooter="@(State.ShowFooter ? "true" : "false")"
+         ShowShortcuts="@(State.ShowShortcuts ? "true" : "false")" /&gt;</pre>
+</div>
+
+<div class="bb-note">
+    The library follows <code>prefers-color-scheme</code>, or <code>&lt;html data-theme&gt;</code> when an app sets one.
+    This site's theme is the <code>bit-theme</code> attribute its own toggle sets instead, so its <code>demo.css</code>
+    points the palette's custom properties at that attribute - in the brand's blue - exactly the way the tokens below are
+    meant to be overridden. The palette's <code>Theme</code> parameter (<code>auto</code>, <code>light</code> or
+    <code>dark</code>; <code>options.Theme</code> by default) wins over the page for the palette alone, for an app that
+    wants a dark palette over a light page.
+</div>
+
+<section class="bb-card" id="tokens">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The tokens</h3>
+    <p>
+        Every visual is a custom property on <code>:root</code>, so the trigger and the shortcut hints outside the dialog share
+        them with it. The library's light defaults are below; every colour has a dark value too, and every text colour pair of
+        the default light and dark themes meets WCAG AA (4.5:1), on the active row and the footer as well.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Custom property</th><th>Light default</th><th>Controls</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>--bit-balette-width</code></td><td><code>640px</code> (<code>920px</code> with a detail pane)</td><td>The dialog's width; it never exceeds the viewport</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-max-height</code></td><td><code>min(70vh, 560px)</code></td><td>How tall the list may grow</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-top</code></td><td><code>12vh</code></td><td>How far down the dialog opens</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-radius</code></td><td><code>14px</code></td><td>The dialog's corners</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-row-height</code></td><td><code>44px</code></td><td>A row's minimum height; while <code>Virtualize</code> is on, <code>options.RowHeight</code> sets it</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-gap</code></td><td><code>8px</code></td><td>The list's padding</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-font</code> / <code>-font-size</code> / <code>-mono</code></td><td>system stacks, <code>14px</code></td><td>The type, and key caps and code</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-z</code></td><td><code>1000</code></td><td>Stacking order</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-bg</code> / <code>-bg-elevated</code></td><td><code>#ffffff</code> / <code>#f6f7f9</code></td><td>The dialog, and the detail pane and footer</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-fg</code> / <code>-fg-muted</code> / <code>-fg-subtle</code></td><td><code>#111318</code> / <code>#5f6673</code> / <code>#6b7280</code></td><td>Titles; subtitles and hints; the quietest text</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-border</code></td><td><code>rgba(17, 19, 24, .08)</code></td><td>Dividers</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-accent</code> / <code>-accent-fg</code></td><td><code>#4f46e5</code> / white</td><td>Toggles that are on, checked rows, badges, the mode chip, the spinner</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-accent-soft</code></td><td><code>rgba(79, 70, 229, .10)</code></td><td>Behind badges, the mode chip and checked boxes</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-active-bg</code></td><td><code>rgba(17, 19, 24, .06)</code></td><td>The active row</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-danger</code> / <code>-danger-soft</code></td><td><code>#c81e1e</code></td><td>Destructive commands, errors, a failed source</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-mark-bg</code></td><td><code>rgba(79, 70, 229, .18)</code></td><td>Highlighted matched characters</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-kbd-bg</code> / <code>-kbd-fg</code> / <code>-kbd-border</code></td><td><code>#f3f4f6</code></td><td>Key caps</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-backdrop</code> / <code>-backdrop-blur</code></td><td><code>rgba(17, 19, 24, .45)</code> / <code>2px</code></td><td>The page behind the open dialog</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-shadow</code> / <code>-scrollbar</code></td><td>-</td><td>The dialog's shadow, the list's scrollbar</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-input-height</code> / <code>-input-font-size</code></td><td><code>56px</code> / <code>16px</code></td><td>The search box</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-item-radius</code> / <code>-item-padding</code> / <code>-item-gap</code></td><td><code>8px</code> / <code>6px 10px</code> / <code>12px</code></td><td>Rows</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-heading-font-size</code> / <code>-footer-height</code> / <code>-detail-width</code></td><td><code>11px</code> / <code>40px</code> / <code>40%</code></td><td>Group headings, the footer, the detail pane</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-duration</code></td><td><code>140ms</code></td><td>The pop-in</td></tr>
+                <tr><td class="bb-table-key"><code>--bit-balette-heading-fg</code> / <code>-focus-ring</code> / <code>-toggle-knob</code></td><td>unset</td><td>Optional: group headings (else <code>-fg-muted</code>), focus outlines (else the accent), the switch's knob (else white)</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <pre class="bb-code">@TokensExample</pre>
+    <p>
+        The MCP server's <code>GetBaletteThemeVariables</code> lists every one with its light and dark value, read from the
+        stylesheet itself (see <a href="mcp-server">MCP server</a>).
+    </p>
+</section>
+
+<section class="bb-card" id="adapts">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What the palette adapts to</h3>
+    <ul class="bb-detail-list">
+        <li><strong>Light and dark.</strong> <code>prefers-color-scheme</code>, <code>&lt;html data-theme="light|dark"&gt;</code>,
+            or the palette's own <code>Theme</code> parameter - the controls above.</li>
+        <li><strong>Density.</strong> <code>Density="compact"</code> (or <code>options.Density</code>) tightens rows, the search
+            box and the footer for a dense application or an inline palette; <code>comfortable</code> is the default. The
+            value is exposed as <code>data-density</code>, so a stylesheet can define more.</li>
+        <li><strong>Reduced motion.</strong> Under <code>prefers-reduced-motion</code> the dialog's pop-in and the switches'
+            transitions are dropped, and the spinner slows down.</li>
+        <li><strong>Small screens.</strong> Below 640 px the dialog fills the screen and hides the footer's hints and the
+            detail pane.</li>
+        <li><strong>More contrast.</strong> Under <code>prefers-contrast: more</code> borders are drawn stronger, the active row
+            is outlined, and highlighted characters are underlined as well as tinted.</li>
+        <li><strong>Forced colours.</strong> In Windows High Contrast, backgrounds and shadows disappear, so the active row is
+            outlined in the system <code>Highlight</code> colour, the dialog gets a border, and checkboxes, switches and
+            highlights are drawn in system colours.</li>
+        <li><strong>Right to left.</strong> Every rule uses logical properties, so <code>dir="rtl"</code> lays the palette out
+            from the right: the footer's last hint, the detail pane's border and the switch's knob follow, arrows and
+            chevrons are mirrored, and user text isolates its own direction (<code>dir="auto"</code>), so an English title in
+            a Persian UI keeps its punctuation where it belongs. Key caps always read left to right, as on the keys.</li>
+    </ul>
+    <div class="bb-try">
+        <button type="button" class="btn btn-secondary" @onclick="ToggleDirection">@(_rtl ? "Back to left to right" : "Lay the page out right to left")</button>
+    </div>
+    <p class="bb-muted demo-small">
+        The button sets the site's language, as the palette's <em>Language</em> command does - <a href="localization">Localization</a>
+        goes further.
+    </p>
+</section>
+
+<section class="bb-card" id="templates">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Templates</h3>
+    <p>
+        The detail pane on the right of this site's palette is a <code>DetailTemplate</code> in
+        <code>Components/AppPalette.razor</code>; it shows the <code>Person</code> record a people row carries as
+        <code>Data</code>. The other parts are replaced the same way:
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>Receives</th><th>Replaces</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>ItemTemplate</code></td><td><code>BaletteItemContext</code>: the row, and whether it is active, checked, pinned or confirming, and <code>IsMac</code></td><td>A row's content (the row element, its role, ARIA state, data attributes and clicks stay the library's)</td></tr>
+                <tr><td class="bb-table-key"><code>IconTemplate</code></td><td><code>BaletteCommand</code></td><td>Every row's icon</td></tr>
+                <tr><td class="bb-table-key"><code>DetailTemplate</code></td><td>the active <code>BaletteCommand</code></td><td>Adds a preview pane for the active row, Raycast style</td></tr>
+                <tr><td class="bb-table-key"><code>GroupHeaderTemplate</code></td><td>the heading</td><td>A group heading</td></tr>
+                <tr><td class="bb-table-key"><code>EmptyTemplate</code></td><td>the query</td><td>"No results"</td></tr>
+                <tr><td class="bb-table-key"><code>LoadingTemplate</code></td><td>-</td><td>The loading state of a lazy page</td></tr>
+                <tr><td class="bb-table-key"><code>HeaderTemplate</code> / <code>FooterTemplate</code></td><td><code>BaletteStateContext</code>: query, mode, breadcrumbs, result count, active command, loading, selection, toast, <code>IsMac</code></td><td>Content above the input / the hint bar</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        The palette below sets all of them but the detail pane, over a list of its own (<code>IncludeRegisteredCommands="false"</code>,
+        inline). Type <code>zz</code> for the empty state, open <em>The archive…</em> for the loading state, and pick a file
+        for the footer's toast. <code>IconTemplate</code> draws the icons while the rows are the library's; untick the box to
+        see them, as an <code>ItemTemplate</code> replaces the whole content of a row, icon included.
+    </p>
+    <label class="bb-check">
+        <input type="checkbox" checked="@_customRows" @onchange="() => _customRows = !_customRows" />
+        Replace each row's content with <code>ItemTemplate</code>
+    </label>
+    <div class="demo-inline-palette demo-templated">
+        <Balette Inline="true"
+                 IncludeRegisteredCommands="false"
+                 EnableHistory="false"
+                 Commands="_files"
+                 Placeholder="Search files…"
+                 Style="--bit-balette-max-height: 280px"
+                 ItemTemplate="@(_customRows ? _itemTemplate : null)"
+                 IconTemplate="_iconTemplate"
+                 GroupHeaderTemplate="_groupHeaderTemplate"
+                 EmptyTemplate="_emptyTemplate"
+                 LoadingTemplate="_loadingTemplate"
+                 HeaderTemplate="_headerTemplate"
+                 FooterTemplate="_footerTemplate" />
+    </div>
+    <pre class="bb-code">@ItemTemplateExample</pre>
+    <p>
+        <code>BaletteHighlightedText</code> renders a text with the matched positions marked, for templates that want the
+        highlighting back, and <code>BaletteShortcutHint</code> a shortcut in the platform's symbols. A
+        <code>FooterTemplate</code> that shows <code>Toast</code> should give it no live role of its own: the palette's live
+        regions announce it already.
+    </p>
+</section>
+
+<section class="bb-card" id="unstyled">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Unstyled</h3>
+    <p>
+        <code>Unstyled="true"</code> drops the <code>bit-balette-dialog</code> class every rule in the stylesheet is scoped to,
+        so what is left is bare, accessible markup to style from scratch - without the stylesheet at all, if you like. The
+        palette below is one, styled by a dozen rules in this site's <code>demo.css</code>:
+    </p>
+    <div class="demo-unstyled-host">
+        <Balette Inline="true"
+                 Unstyled="true"
+                 Class="demo-unstyled"
+                 IncludeRegisteredCommands="false"
+                 EnableHistory="false"
+                 ShowFooter="false"
+                 Placeholder="Search the pantry…"
+                 Commands="_pantry" />
+    </div>
+    <pre class="bb-code">@UnstyledExample</pre>
+    <p>
+        The structure stays addressable through stable <code>data-balette</code> attributes: <code>dialog</code>
+        (<code>inline</code> for an inline palette), <code>root</code>, <code>main</code>, <code>header</code>,
+        <code>breadcrumbs</code>, <code>crumb</code>, <code>mode</code>, <code>input-row</code>, <code>input</code>,
+        <code>spinner</code>, <code>selected-count</code>, <code>close</code>, <code>notice</code>, <code>list</code>,
+        <code>group</code>, <code>group-heading</code>, <code>item</code>, <code>path</code>, <code>label</code>,
+        <code>mark</code>, <code>badge</code>, <code>shortcut</code>, <code>empty</code>, <code>loading</code>,
+        <code>error</code>, <code>retry</code>, <code>prompt</code>, <code>prompt-error</code>, <code>footer</code>,
+        <code>toast</code>, <code>status</code>, <code>alert</code>, <code>detail</code>, and <code>trigger</code> on the
+        trigger button.
+    </p>
+    <p>
+        A row's state is on the row: <code>data-active</code>, <code>data-checked</code>, <code>data-disabled</code>,
+        <code>data-destructive</code>, <code>data-confirming</code>, <code>data-running</code>, <code>data-error</code>,
+        <code>data-kind</code> and <code>data-value</code> (the command's id). The dialog carries <code>data-open</code>,
+        <code>data-busy</code>, <code>data-density</code>, <code>data-theme</code>, <code>data-multiselect</code> and
+        <code>data-ready</code> - set once its browser layer listens for keys. They are also the stable hooks for tests.
+    </p>
+</section>
+
+@code {
+    private static readonly string[] SiteThemes = ["auto", "light", "dark"];
+
+    private static readonly (string? Value, string Label)[] PaletteThemes = [(null, "Follows the page"), ("light", "Light"), ("dark", "Dark")];
+
+    private static readonly (string? Value, string Label)[] Densities = [(null, "Comfortable"), ("compact", "Compact")];
+
+    private static readonly (string? Value, string Label)[] Accents =
+    [
+        // The site's own accent: demo.css re-tints the library's indigo to the bit brand blue.
+        (null, "Default blue"),
+        ("#0d9488", "Teal"),
+        ("#db2777", "Pink"),
+        ("#ea580c", "Orange"),
+        ("#16a34a", "Green"),
+    ];
+
+    private const string TokensExample = """
+        /* app.css - after the library's stylesheet */
+        :root {
+            --bit-balette-accent: #0d9488;
+            --bit-balette-width: 760px;
+            --bit-balette-radius: 8px;
+        }
+
+        :root[data-theme="dark"] {
+            --bit-balette-accent: #2dd4bf;
+        }
+
+        /* An app with a theme switch of its own points the dark values at it instead -
+           this site's demo.css does it for <html bit-theme="dark">. */
+        :root[bit-theme="dark"] {
+            --bit-balette-accent: #4fa3f4;
+        }
+        """;
+
+    private const string ItemTemplateExample = """
+        <Balette Inline="true" IncludeRegisteredCommands="false" Commands="_files">
+            <ItemTemplate>
+                @{ var file = context.Row.Command; }
+                <span class="file-row">
+                    <span class="file-ext">@Extension(file.Title)</span>
+                    <BaletteHighlightedText Text="@file.Title" Positions="@context.Row.Match!.TitlePositions" />
+                    <small>@file.Subtitle</small>
+                    @if (context.IsActive)
+                    {
+                        <kbd>Enter</kbd>
+                    }
+                </span>
+            </ItemTemplate>
+            <GroupHeaderTemplate>⌁ @context</GroupHeaderTemplate>
+            <EmptyTemplate><p role="status">No file matches “@context”.</p></EmptyTemplate>
+            <LoadingTemplate><p role="status">Opening the archive…</p></LoadingTemplate>
+            <HeaderTemplate>@context.ResultCount files</HeaderTemplate>
+            <FooterTemplate>@(context.Toast ?? context.ActiveCommand?.Subtitle)</FooterTemplate>
+        </Balette>
+        """;
+
+    private const string UnstyledExample = """
+        <Balette Unstyled="true" Class="my-palette" />
+
+        .my-palette [data-balette="item"][data-active] { background: CanvasText; color: Canvas; }
+        .my-palette [data-balette="item"][data-disabled] { opacity: .5; }
+        .my-palette [data-balette="group-heading"] { font-size: .75rem; text-transform: uppercase; }
+        .my-palette [data-balette="mark"] { background: none; text-decoration: underline; }
+        """;
+
+    private static readonly (string Name, string Folder, string Size)[] RecentFiles =
+    [
+        ("Program.cs", "src/Server", "4 KB"),
+        ("App.razor", "src/Client", "2 KB"),
+        ("README.md", "/", "11 KB"),
+        ("appsettings.json", "src/Server", "1 KB"),
+        ("site.css", "src/Client/wwwroot", "7 KB"),
+    ];
+
+    private static readonly (string Name, string Folder, string Size)[] ArchivedFiles =
+    [
+        ("Startup.cs", "archive/2023", "6 KB"),
+        ("web.config", "archive/2023", "2 KB"),
+        ("bundleconfig.json", "archive/2022", "1 KB"),
+    ];
+
+    private bool _customRows = true;
+    private bool _rtl;
+    private List<BaletteCommand> _files = [];
+    private List<BaletteCommand> _pantry = [];
+
+    private RenderFragment<BaletteItemContext> _itemTemplate = default!;
+    private RenderFragment<BaletteCommand> _iconTemplate = default!;
+    private RenderFragment<string> _groupHeaderTemplate = default!;
+    private RenderFragment<string> _emptyTemplate = default!;
+    private RenderFragment _loadingTemplate = default!;
+    private RenderFragment<BaletteStateContext> _headerTemplate = default!;
+    private RenderFragment<BaletteStateContext> _footerTemplate = default!;
+
+    protected override void OnInitialized()
+    {
+        State.Changed += Refresh;
+        _rtl = State.Language is "فارسی" or "العربية";
+
+        _files =
+        [
+            .. RecentFiles.Select(f => FileCommand(f.Name, f.Folder, f.Size, "Recent files")),
+            BaletteCmd.New("The archive…").Group("Folders").Subtitle("Loads for a second")
+                .Children(async (_, ct) =>
+                {
+                    // Long enough to see the LoadingTemplate.
+                    await Task.Delay(1000, ct);
+                    return ArchivedFiles.Select(f => FileCommand(f.Name, f.Folder, f.Size, null)).ToList();
+                }, placeholder: "Search the archive…")
+                .Build(),
+        ];
+
+        _pantry =
+        [
+            BaletteCmd.New("Apples").Group("Fruit").Subtitle("6 left").Handler(_ => Task.FromResult(BaletteCommandResult.KeepOpen)),
+            BaletteCmd.New("Bananas").Group("Fruit").Subtitle("Ripe").Handler(_ => Task.FromResult(BaletteCommandResult.KeepOpen)),
+            BaletteCmd.New("Cherries").Group("Fruit").Disabled(true, "Out of season"),
+            BaletteCmd.New("Carrots").Group("Vegetables").Subtitle("1 kg").Handler(_ => Task.FromResult(BaletteCommandResult.KeepOpen)),
+            BaletteCmd.New("Leeks").Group("Vegetables").Subtitle("3").Handler(_ => Task.FromResult(BaletteCommandResult.KeepOpen)),
+            BaletteCmd.New("Throw out the leftovers").Group("Vegetables").Destructive("Throw them all out?")
+                .Handler(_ => Task.FromResult(BaletteCommandResult.KeepOpen)),
+        ];
+
+        // Templates are RenderFragments like any other: these are fields so the row template can be switched off.
+        _itemTemplate = context =>
+            @<span class="demo-tpl-row">
+                <span class="demo-tpl-ext" aria-hidden="true">@Extension(context.Row.Command)</span>
+                <span class="demo-tpl-text">
+                    <span class="demo-tpl-title"><BaletteHighlightedText Text="@context.Row.Command.Title" Positions="@context.Row.Match?.TitlePositions" /></span>
+                    <span class="demo-tpl-sub">@context.Row.Command.Subtitle</span>
+                </span>
+                @if (context.IsActive)
+                {
+                    <kbd class="demo-tpl-go" aria-hidden="true">@(context.IsMac ? "↩" : "Enter")</kbd>
+                }
+            </span>;
+        // The icon slot is a small square: the extension's initial, coloured by the extension.
+        _iconTemplate = command => @<span class="demo-tpl-icon" data-ext="@Extension(command)">@(Extension(command)[..1])</span>;
+        _groupHeaderTemplate = heading => @<span class="demo-tpl-group">⌁ @heading</span>;
+        _emptyTemplate = query => @<p class="demo-tpl-state" role="status">No file matches “@query”. Try <code>json</code>.</p>;
+        _loadingTemplate = @<p class="demo-tpl-state" role="status">Opening the archive…</p>;
+        _headerTemplate = state =>
+            @<div class="demo-tpl-header">
+                @(state.Breadcrumbs.Count > 0 ? string.Join(" › ", state.Breadcrumbs) : "All files")
+                · @(state.IsLoading ? "loading…" : state.ResultCount == 1 ? "1 file" : $"{state.ResultCount} files")
+            </div>;
+        _footerTemplate = state =>
+            @<div class="demo-tpl-footer">
+                @if (state.Toast is not null)
+                {
+                    <span>@state.Toast</span>
+                }
+                else if (state.ActiveCommand is { } active)
+                {
+                    <span>@(active.Data as string ?? active.Subtitle)</span>
+                }
+            </div>;
+    }
+
+    private static BaletteCommand FileCommand(string name, string folder, string size, string? group) =>
+        BaletteCmd.New(name)
+            .Group(group)
+            .Subtitle(folder)
+            .Data($"{folder}/{name} · {size}")
+            .Handler(_ => Task.FromResult(BaletteCommandResult.Toast($"Opened {name}", keepOpen: true)))
+            .Build();
+
+    private static string Extension(BaletteCommand command)
+    {
+        if (command.Children is not null || command.ChildrenProvider is not null)
+        {
+            return "dir";
+        }
+
+        var dot = command.Title.LastIndexOf('.');
+        return dot < 0 ? "txt" : command.Title[(dot + 1)..];
+    }
+
+    private async Task ToggleDirection()
+    {
+        _rtl = !_rtl;
+        await State.SetLanguageAsync(_rtl ? "فارسی" : "English", _rtl);
+    }
+
+    private void OnWidthChanged(ChangeEventArgs e) => State.SetWidth(int.TryParse(e.Value?.ToString(), out var width) ? width : null);
+
+    private void OnRadiusChanged(ChangeEventArgs e) => State.SetRadius(int.TryParse(e.Value?.ToString(), out var radius) ? radius : null);
+
+    private static string Capitalize(string s) => char.ToUpperInvariant(s[0]) + s[1..];
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => State.Changed -= Refresh;
+}

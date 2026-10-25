@@ -58,7 +58,7 @@ public sealed class BitAccentColorSsrTests
         StringAssert.Contains(body, $"'{BitAccentColorNames.StyleElementId}'", StringComparison.Ordinal);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("#8764B8", "bit-accent=\"8764b8\"", DisplayName = "A #-prefixed hex is stripped and lower-cased"),
         DataRow("8764b8", "bit-accent=\"8764b8\"", DisplayName = "A bare hex token passes through"),
         DataRow("  #CA5010  ", "bit-accent=\"ca5010\"", DisplayName = "Whitespace is trimmed"),
@@ -76,7 +76,7 @@ public sealed class BitAccentColorSsrTests
         Assert.AreEqual(expected, BitAccentColorSsr.BuildRootAccentAttributes(persisted));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("#8764B8", DisplayName = "Stored accent"),
         DataRow(null, DisplayName = "No stored accent"),
         DataRow("garbage", DisplayName = "Tampered accent")]

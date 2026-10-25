@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
 /// A callback that provides data for a <see cref="BitDataGridLegacy{TGridItem}"/>.

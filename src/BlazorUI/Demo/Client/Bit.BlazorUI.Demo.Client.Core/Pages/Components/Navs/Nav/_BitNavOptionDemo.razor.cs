@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Nav;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Nav;
 
 public partial class _BitNavOptionDemo
 {
@@ -21,6 +21,11 @@ public partial class _BitNavOptionDemo
     private async Task CollapseFastFoodsApiOption() { if (apiNavRef is not null && fastFoodsOption is not null) await apiNavRef.CollapseItem(fastFoodsOption); }
     private async Task SelectIceCreamApiOption() { if (apiNavRef is not null && iceCreamOption is not null) await apiNavRef.SelectItem(iceCreamOption); }
     private async Task FocusVeggieBurgerApiOption() { if (apiNavRef is not null && veggieBurgerOption is not null) await apiNavRef.FocusItem(veggieBurgerOption); }
+
+    private readonly BitNavParams[] navParams =
+    [
+        new() { Mode = BitNavMode.Manual, FitWidth = true, IconOnly = true }
+    ];
 
     private static readonly BitIconInfo fontAwesomeHomeIcon = BitIconInfo.Css("fa-solid fa-house");
     private static readonly BitIconInfo fontAwesomeCodeIcon = BitIconInfo.Fa("solid code");

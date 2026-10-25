@@ -1,0 +1,286 @@
+﻿@namespace Bit.Borm
+@inject IBormFieldRendererRegistry Registry
+
+@if (State.IsVisible(Field, Path))
+{
+    @if (Field.Type == BormFieldType.Hidden)
+    {
+        @Control
+        @* A hidden field has nothing to look at, but a message about it — a server rejecting the record
+           id it carries — still has to be readable somewhere. Without this it blocked the submit with
+           nothing on the page saying why. The list renders nothing at all while there is nothing to say. *@
+        <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" Language="@State.Language" />
+    }
+    else if (Field.Type == BormFieldType.Static)
+    {
+        @* Presentational content binds to no value, so it gets no label, no messages and no field
+           wrapper — only the grid placement that lets it span a row. *@
+        <div class="bit-borm-field bit-borm-field--static" style="@GridStyle">
+            @Control
+        </div>
+    }
+    else if (Field.Type == BormFieldType.Object)
+    {
+        @* aria-describedby, so the group's explanation — and anything wrong with the group as a whole —
+           is announced when focus enters it. Rendering the help text without pointing at it leaves it
+           visible but silent. The id is what an error-summary link to the group lands on. *@
+        <fieldset class="bit-borm-group @(Context.HasError && Context.ShowMessages ? "bit-borm-group--invalid" : "")"
+                  id="@Context.ElementId" style="@GridStyle" disabled="@State.IsDisabled(Field, Path)"
+                  aria-describedby="@Context.DescribedBy">
+            @if (Context.State.LabelOf(Field, Path) is { Length: > 0 } legend)
+            {
+                <legend class="bit-borm-group__legend">@legend</legend>
+            }
+            @if (!string.IsNullOrEmpty(Context.HelpText))
+            {
+                <p class="bit-borm-help" id="@Context.HelpId">@Context.HelpText</p>
+            }
+            @* A message about the object as a whole — "this address cannot be delivered to", from a server
+               or a model-level validator — belongs to no single child. It used to be recorded and never
+               drawn: the submit failed and nothing on the page said why. *@
+            <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" Language="@State.Language" />
+            <div class="bit-borm-group__body @(ChildColumns > 1 ? "bit-borm-grid" : "")" style="@ChildGridStyle">
+                <BormFieldList State="State" Items="ChildItems" />
+            </div>
+        </fieldset>
+    }
+    else if (Field.Type == BormFieldType.Array)
+    {
+        <BormArrayFieldView State="State" Field="Field" Path="@Path" />
+    }
+    else if (Field.Type == BormFieldType.Checkbox)
+    {
+        @* A checkbox labels itself, so it gets no separate <label> — that would announce twice. *@
+        <div class="bit-borm-field bit-borm-field--checkbox @InvalidClass" style="@GridStyle">
+            @Control
+            @if (!string.IsNullOrEmpty(Context.HelpText))
+            {
+                <p class="bit-borm-help" id="@Context.HelpId">@Context.HelpText</p>
+            }
+            <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" Language="@State.Language" />
+        </div>
+    }
+    else
+    {
+        <div class="bit-borm-field @InvalidClass" style="@GridStyle">
+            @* Radio and multi-select groups are labelled through aria-labelledby, not `for`, because
+               there is no single control to point at. A field that opts out of a visible label still
+               carries one: the input picks it up as aria-label, so the control is never anonymous. *@
+            @if (!Field.ShowLabel)
+            {
+                @* nothing visible — see BormInputBase.AriaLabel *@
+            }
+            else if (IsGroupInput)
+            {
+                <span class="bit-borm-label" id="@Context.LabelId">
+                    @LabelText
+                    @if (Context.IsRequired)
+                    {
+                        <span class="bit-borm-required" aria-hidden="true">*</span>
+                    }
+                </span>
+            }
+            else
+            {
+                <label class="bit-borm-label" id="@Context.LabelId" for="@Context.ElementId">
+                    @LabelText
+                    @if (Context.IsRequired)
+                    {
+                        <span class="bit-borm-required" aria-hidden="true">*</span>
+                    }
+                </label>
+            }
+            @Control
+            @if (!string.IsNullOrEmpty(Context.HelpText))
+            {
+                <p class="bit-borm-help" id="@Context.HelpId">@Context.HelpText</p>
+            }
+            <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" Language="@State.Language" />
+        </div>
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public BormState State { get; set; } = default!;
+    [Parameter, EditorRequired] public BormFieldDefinition Field { get; set; } = default!;
+    [Parameter, EditorRequired] public string Path { get; set; } = default!;
+
+    private BormFieldContext _context = default!;
+    private RenderFragment? _control;
+    private RenderSignature _signature;
+    private bool _hasRendered;
+
+    /// <summary>
+    /// The context is rebuilt only when the field it describes changes, not on every render — it is
+    /// handed to the control, and a fresh instance per render would churn its parameters.
+    /// </summary>
+    private BormFieldContext Context => _context;
+
+    /// <summary>
+    /// The control the registry names for the field. Opened directly rather than through a DynamicComponent, whose
+    /// type is set by name: the registry's types are annotated as components, so a trimmer keeps what one needs.
+    /// </summary>
+    private RenderFragment Control => _control ??= builder =>
+    {
+        builder.OpenComponent(0, Registry.Resolve(Field));
+        builder.AddComponentParameter(1, nameof(BormInputBase.Context), _context);
+        builder.CloseComponent();
+    };
+
+    protected override void OnParametersSet()
+    {
+        // The id prefix is part of what the context derived, so a form given a new one rebuilds its
+        // contexts rather than leaving labels pointing at ids that no longer exist.
+        if (_context is not null && ReferenceEquals(_context.Field, Field) && _context.Path == Path
+            && ReferenceEquals(_context.State, State)
+            && _context.IdPrefix == BormFieldContext.SafePrefix(State.IdPrefix))
+            return;
+
+        var isFirstContext = _context is null;
+
+        _context = new BormFieldContext(State, Field, Path);
+
+        if (isFirstContext && !Field.IsContainer)
+        {
+            // Prime the signature for the render that is about to happen. ShouldRender is not called
+            // for a component's first render, so without this the first change anywhere on the form
+            // would re-render every field just to establish a baseline.
+            _signature = Capture();
+            _hasRendered = true;
+        }
+        else
+        {
+            // The field or the path changed under a component Blazor is reusing — the row that moved up
+            // when a repeater deleted the one above it. Priming the signature here would tell
+            // ShouldRender that nothing had changed and suppress the one render that applies the new
+            // path, leaving the row rendering (and writing to) the index it used to have.
+            _hasRendered = false;
+        }
+    }
+
+    /// <summary>
+    /// Skips re-rendering when nothing this field displays has changed. A form re-renders as a whole
+    /// whenever any value changes, so without this every keystroke would re-diff every control; with
+    /// it, only the fields whose own state moved are touched.
+    /// </summary>
+    /// <remarks>
+    /// Container fields always render — their cost is a wrapper element, and their children make the
+    /// same decision for themselves. A renderer that reads values other than its own field's can opt
+    /// out with <c>Attr("alwaysRender", true)</c>.
+    /// </remarks>
+    protected override bool ShouldRender()
+    {
+        if (Field.IsContainer || AlwaysRender) return true;
+
+        var signature = Capture();
+        if (_hasRendered && signature.Equals(_signature)) return false;
+
+        _signature = signature;
+        _hasRendered = true;
+        return true;
+    }
+
+    private bool AlwaysRender
+        => (Field.Attributes.TryGetValue("alwaysRender", out var v) && v is true)
+           // A review reads every other answer, none of which its own signature can see.
+           || (Field.IsPresentational && Field.Attributes.TryGetValue("review", out var review) && review is true);
+
+    private RenderSignature Capture() => new(
+        State.IsVisible(Field, Path),
+        State.IsDisabled(Field, Path),
+        Context.IsReadOnly,
+        State.IsRequired(Field, Path),
+        Context.ShowMessages,
+        Context.Value,
+        State.MessagesFor(Path),
+        State.IsLoadingOptions(Path),
+        Context.OptionsFailed,
+        Context.Options.Count,
+        // Only for a field whose choices are loaded. The count alone cannot see a cache that was
+        // dropped and needs fetching again when the list it replaced was empty too — a city list that
+        // is empty until a country is chosen looked unchanged when the country arrived, so the select
+        // never re-rendered and never asked for its cities. The version moves on every load, landing
+        // and invalidation, which is what makes the control ask.
+        Field.OptionsProvider is null ? 0 : State.OptionsVersion,
+        Context.IsValidating,
+        // The label, help and options are read out in the form's language: a page that switches it
+        // re-renders the view, and every field has to follow, not only the ones whose value moved.
+        State.TextLanguage);
+
+    /// <summary>
+    /// Everything the rendered output of one field depends on. Messages are compared by reference:
+    /// the state replaces the list whenever a field revalidates, so a new list means new content.
+    /// </summary>
+    private readonly record struct RenderSignature(
+        bool Visible,
+        bool Disabled,
+        bool ReadOnly,
+        bool Required,
+        bool ShowMessages,
+        object? Value,
+        IReadOnlyList<BormValidationMessage> Messages,
+        bool LoadingOptions,
+        bool OptionsFailed,
+        int OptionCount,
+        int OptionsVersion,
+        bool Validating,
+        string Culture)
+    {
+        public bool Equals(RenderSignature other)
+            => Visible == other.Visible
+               && Disabled == other.Disabled
+               && ReadOnly == other.ReadOnly
+               && Required == other.Required
+               && ShowMessages == other.ShowMessages
+               && LoadingOptions == other.LoadingOptions
+               && OptionsFailed == other.OptionsFailed
+               && OptionCount == other.OptionCount
+               && OptionsVersion == other.OptionsVersion
+               && Validating == other.Validating
+               && string.Equals(Culture, other.Culture, StringComparison.Ordinal)
+               && ReferenceEquals(Messages, other.Messages)
+               && ValuesMatch(Value, other.Value);
+
+        public override int GetHashCode() => HashCode.Combine(Visible, Disabled, ReadOnly, Required, ShowMessages, OptionCount);
+
+        /// <summary>
+        /// Compares two field values. Mutable references (a list a multi-select rebuilt in place, say)
+        /// are treated as changed unless they are the same instance *and* value-equal, so an edit is
+        /// never missed.
+        /// </summary>
+        private static bool ValuesMatch(object? a, object? b)
+        {
+            if (ReferenceEquals(a, b)) return a is null || a is string || a.GetType().IsValueType;
+            return a is not null && b is not null && a.Equals(b);
+        }
+    }
+
+    /// <summary>This object's children, each with the path it binds to.</summary>
+    private IEnumerable<(BormFieldDefinition Field, string Path)> ChildItems
+        => Field.Children.OrderBy(c => c.Order).Select(c => (c, BormPath.Combine(Path, c.Name)));
+
+    private string LabelText => Context.Label;
+
+    /// <summary>
+    /// Whether the field renders a set of controls rather than one, so its label is a <c>&lt;span&gt;</c>
+    /// the group points <c>aria-labelledby</c> at rather than a <c>&lt;label for&gt;</c>. A tag list
+    /// belongs here for a reason the other two do not have: the box a tag is typed into disappears once
+    /// the list is full or the form is read-only, so a <c>for</c> attribute aimed at it would be left
+    /// pointing at nothing.
+    /// </summary>
+    private bool IsGroupInput => Field.Type is BormFieldType.Radio or BormFieldType.MultiSelect
+        or BormFieldType.Tags or BormFieldType.Signature;
+
+    private string InvalidClass => Context.HasError && Context.ShowMessages ? "bit-borm-field--invalid" : "";
+
+    /// <summary>Column span for a field inside a grid layout; null when it spans a single column.</summary>
+    private string? GridStyle => Field.ColumnSpan is { } span && span > 1
+        ? $"grid-column: span {span};"
+        : null;
+
+    private int ChildColumns
+        => Field.Attributes.TryGetValue("columns", out var raw) && raw is int cols ? cols : 1;
+
+    private string? ChildGridStyle
+        => ChildColumns > 1 ? $"grid-template-columns: repeat({ChildColumns}, minmax(0, 1fr));" : null;
+}

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// An allowlist sanitization policy. Only the listed tags, attributes, and URI schemes are

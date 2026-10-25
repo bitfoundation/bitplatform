@@ -71,7 +71,10 @@ public partial class SignInPanel
                 // panel is in its password/magic-link layout, so anything left here would be invisible to the
                 // user and would still make the next submit an OTP sign-in: the server picks the credential
                 // type from this field alone (IdentityController.SignIn -> isOtpSignIn).
-                model.Otp = null;
+                if (requiresTwoFactor is false)
+                {
+                    model.Otp = null;
+                }
             }
         }
 
@@ -134,7 +137,7 @@ public partial class SignInPanel
                 if (requiresTwoFactor is false)
                 {
                     successfulSignIn = true;
-                    await AuthManager.StoreTokens(response!, model.RememberMe);
+                    await AuthManager.CompleteSignIn(response!, model.RememberMe);
                 }
             }
             else
@@ -157,7 +160,7 @@ public partial class SignInPanel
                         ? await identityController.ConfirmEmail(new() { Token = model.Otp, Email = model.Email }, CurrentCancellationToken)
                         : await identityController.ConfirmPhone(new() { Token = model.Otp, PhoneNumber = model.PhoneNumber }, CurrentCancellationToken);
 
-                    await AuthManager.StoreTokens(signInResponse, model.RememberMe);
+                    await AuthManager.CompleteSignIn(signInResponse, model.RememberMe);
                 }
 
                 if (requiresTwoFactor is false)

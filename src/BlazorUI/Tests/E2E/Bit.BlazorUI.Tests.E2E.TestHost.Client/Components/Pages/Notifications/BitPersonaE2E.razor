@@ -1,0 +1,388 @@
+﻿@page "/e2e/persona"
+
+<PageTitle>BitPersona E2E</PageTitle>
+
+<style>
+    .prs-row { display: flex; flex-wrap: wrap; gap: 24px 32px; align-items: flex-start; }
+    .prs-ext::before { content: "*"; }
+</style>
+
+<E2ESection Id="basic" Title="Basic">
+    <div class="prs-row">
+        <BitPersona Id="basic-image" PrimaryText="Xafan Salina" SecondaryText="Software Engineer" Size="BitPersonaSize.Size72" ImageUrl="@Img" OnImageLoad="() => _basicLoads++" />
+        <BitPersona Id="basic-initials" PrimaryText="Saleh Khafan" SecondaryText="Developer" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="basic-phone" PrimaryText="+1 (555) 016 7788" SecondaryText="No initials" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="basic-empty" Size="BitPersonaSize.Size72" />
+    </div>
+    <span id="basic-loads">@_basicLoads</span>
+</E2ESection>
+
+<E2ESection Id="presence" Title="Presence">
+    <button id="btn-default-icons" @onclick="() => _showDefaultIcons = !_showDefaultIcons">Toggle default icons</button>
+    <div class="prs-row">
+        @foreach (var presence in _presences)
+        {
+            <BitPersona Id="@($"pre-{presence}")" PrimaryText="Xafan Salina" SecondaryText="@presence.ToString()" Presence="presence" Size="BitPersonaSize.Size56" ShowDefaultPresenceIcons="_showDefaultIcons" />
+        }
+        <BitPersona Id="pre-small" PrimaryText="Xafan Salina" Presence="BitPersonaPresence.Online" Size="BitPersonaSize.Size32" ShowDefaultPresenceIcons />
+        <BitPersona Id="pre-icon-names" PrimaryText="Xafan Salina" Presence="BitPersonaPresence.Online" PresenceIconNames="_iconNames" Size="BitPersonaSize.Size100" />
+        <BitPersona Id="pre-icon-name" PrimaryText="Xafan Salina" Presence="BitPersonaPresence.OutOfOffice" PresenceIconName="@BitIconName.Airplane" Size="BitPersonaSize.Size100" />
+        <BitPersona Id="pre-titles" PrimaryText="Xafan Salina" Presence="BitPersonaPresence.Dnd" PresenceTitles="_presenceTitles" Size="BitPersonaSize.Size100" />
+        <BitPersona Id="pre-title" PrimaryText="Xafan Salina" Presence="BitPersonaPresence.Away" PresenceTitle="Back at 3" Size="BitPersonaSize.Size100" />
+        <BitPersona Id="pre-runtime" PrimaryText="Xafan Salina" Presence="_runtimePresence" Size="BitPersonaSize.Size56" />
+    </div>
+    <button id="btn-presence-busy" @onclick="() => _runtimePresence = BitPersonaPresence.Busy">Busy</button>
+</E2ESection>
+
+<E2ESection Id="initials" Title="Initials">
+    <div class="prs-row">
+        <BitPersona Id="ini-two" PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="ini-three" PrimaryText="Ted Alan Randall" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="ini-aside" PrimaryText="Elvia Atkins (Contoso)" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="ini-email" PrimaryText="carlos.slattery@contoso.com" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="ini-phone" AllowPhoneInitials PrimaryText="+1 (555) 016 7788" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="ini-image-initials" PrimaryText="Saleh Khafan" ImageInitials="SK!" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="ini-four" PrimaryText="Saleh Khafan" ImageInitials="SKHN" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="ini-no-name" ImageInitials="AB" Size="BitPersonaSize.Size72" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="icon-unknown" Title="Icon and Unknown">
+    <div class="prs-row">
+        <BitPersona Id="icon-group" PrimaryText="Design Team" CoinIconName="@BitIconName.Group" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="unknown" PrimaryText="Unknown" Size="BitPersonaSize.Size72" Unknown ImageUrl="@Img" />
+        <BitPersona Id="unknown-custom" PrimaryText="Unresolved" Size="BitPersonaSize.Size72" UnknownIconName="@BitIconName.StatusErrorFull" Unknown />
+    </div>
+</E2ESection>
+
+<E2ESection Id="shape-variant" Title="Shape and Variant">
+    <div class="prs-row">
+        <BitPersona Id="shape-default" PrimaryText="Saleh Khafan" Presence="BitPersonaPresence.Online" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="shape-pill" Shape="BitShape.Pill" PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="shape-rounded" Shape="BitShape.Rounded" PrimaryText="Saleh Khafan" Presence="BitPersonaPresence.Online" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="shape-square" Shape="BitShape.Square" PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="shape-squared" Squared PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="var-fill" PrimaryText="Saleh Xafan" Size="BitPersonaSize.Size72" CoinVariant="BitVariant.Fill" />
+        <BitPersona Id="var-outline" PrimaryText="Saleh Xafan" Size="BitPersonaSize.Size72" CoinVariant="BitVariant.Outline" />
+        <BitPersona Id="var-text" PrimaryText="Saleh Xafan" Size="BitPersonaSize.Size72" CoinVariant="BitVariant.Text" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="active" Title="Active">
+    <div class="prs-row">
+        <BitPersona Id="act-none" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="act-ring" Active PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="act-shadow" Active ActiveAppearance="BitPersonaActiveAppearance.Shadow" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="act-ringshadow" Active ActiveAppearance="BitPersonaActiveAppearance.RingShadow" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="act-inactive" Inactive PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="act-runtime" Active="_runtimeActive" Inactive="!_runtimeActive" PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size72" />
+    </div>
+    <button id="btn-activate" @onclick="() => _runtimeActive = !_runtimeActive">Toggle active</button>
+</E2ESection>
+
+<E2ESection Id="action" Title="Action">
+    <div class="prs-row">
+        <BitPersona Id="action-btn" PrimaryText="Xafan Salina" SecondaryText="Engineer" TertiaryText="In a meeting" OptionalText="Available at 4" Size="BitPersonaSize.Size120"
+                    Presence="BitPersonaPresence.Online" OnActionClick="HandleActionClick" ActionIconName="@BitIconName.CloudUpload" ImageUrl="@Img" />
+        <BitPersona Id="action-title" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size100" OnActionClick="HandleActionClick" ActionButtonTitle="Upload photo" />
+        <BitPersona Id="image-click" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size120" ImageOverlayText="Change photo" OnImageClick="HandleImageClick" ImageUrl="@Img" />
+        <BitPersona Id="image-click-initials" PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size120" ImageOverlayText="Add photo" OnImageClick="HandleImageClick" />
+        <BitPersona Id="image-click-empty" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size120" ImageOverlayText="" OnImageClick="HandleImageClick" ImageUrl="@Img" />
+        <BitPersona Id="action-template" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size120" OnActionClick="HandleActionClick" ImageUrl="@Img">
+            <ActionTemplate><button id="tpl-action" @onclick="() => _templateActionClicks++">Upload</button></ActionTemplate>
+        </BitPersona>
+        <BitPersona Id="action-coin-only" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" HidePersonaDetails OnActionClick="HandleActionClick" />
+    </div>
+    <span id="action-clicks">@_actionClicks</span>
+    <span id="action-last-button">@_lastActionButton</span>
+    <span id="image-clicks">@_imageClicks</span>
+    <span id="template-action-clicks">@_templateActionClicks</span>
+</E2ESection>
+
+<E2ESection Id="link" Title="Link">
+    <div class="prs-row">
+        <BitPersona Id="link-self" Href="/e2e/persona#link-target" PrimaryText="Xafan Salina" Presence="BitPersonaPresence.Online" Size="BitPersonaSize.Size72" ImageUrl="@Img" />
+        <BitPersona Id="link-blank" Href="https://example.invalid/profile" Target="_blank" PrimaryText="bit platform" CoinIconName="@BitIconName.Globe" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="link-rel" Href="https://example.invalid/profile" Target="_blank" Rel="BitLinkRels.NoFollow" PrimaryText="bit platform" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="link-veil" Href="#link-target" ImageOverlayText="View profile" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" ImageUrl="@Img" />
+        <BitPersona Id="link-hidden-details" Href="#link-target" HidePersonaDetails PrimaryText="Xafan Salina" ImageOverlayText="View profile" Size="BitPersonaSize.Size72" />
+    </div>
+    <span id="link-target">target</span>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div class="prs-row">
+        <BitPersona Id="dis-plain" PrimaryText="Xafan Salina" SecondaryText="Engineer" Presence="BitPersonaPresence.Online" Size="BitPersonaSize.Size72" Disabled="_disabled"
+                    @onclick="() => _rootClicks++" @onkeydown="() => _rootKeys++" @onmouseover="() => _rootHovers++" />
+        <BitPersona Id="dis-click" PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size72" OnImageClick="HandleImageClick" OnActionClick="HandleActionClick" Disabled="_disabled" />
+        <BitPersona Id="dis-link" Href="#link-target" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" Disabled="_disabled" ImageUrl="@Img" />
+    </div>
+    <span id="root-clicks">@_rootClicks</span>
+    <span id="root-keys">@_rootKeys</span>
+    <span id="root-hovers">@_rootHovers</span>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+</E2ESection>
+
+<E2ESection Id="image" Title="Image">
+    <div class="prs-row">
+        <BitPersona Id="img-lazy" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" ImageLoading="BitImageLoading.Lazy" ImageUrl="@Img" />
+        <BitPersona Id="img-eager" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" ImageLoading="BitImageLoading.Eager" ImageAttributes="@(new() { { "draggable", "false" }, { "decoding", "async" } })" ImageUrl="@Img" />
+        <BitPersona Id="img-alt" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" ImageAlt="Xafan smiling" ImageUrl="@Img" ImageSizes="72px" ImageSrcSet="@($"{Img72} 72w, {Img} 96w")" />
+        <BitPersona Id="img-srcset-only" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" ImageSizes="72px" ImageSrcSet="@($"{Img72} 72w, {Img} 96w")" />
+        @if (_showFadeIn)
+        {
+            <BitPersona Id="img-fade" ImageFadeIn PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" ImageUrl="@Img" />
+        }
+        <BitPersona Id="img-runtime" PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size72" ImageUrl="@_runtimeImage" OnImageLoad="() => _runtimeLoads++" />
+    </div>
+    <button id="btn-fade" @onclick="() => _showFadeIn = !_showFadeIn">Toggle fade in</button>
+    <button id="btn-set-image" @onclick="() => _runtimeImage = Img">Set image</button>
+    <span id="runtime-loads">@_runtimeLoads</span>
+</E2ESection>
+
+<E2ESection Id="image-error" Title="Image that 404s">
+    <button id="btn-broken" @onclick="() => _showBroken = true">Show broken images</button>
+    @if (_showBroken)
+    {
+        <div class="prs-row">
+            <BitPersona Id="err-plain" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" OnImageError="() => _imageErrors++" ImageUrl="samples/missing-persona.png" />
+            <BitPersona Id="err-until" PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size72" ShowInitialsUntilImageLoads ImageUrl="samples/missing-persona-2.png" />
+            <BitPersona Id="err-no-name" Size="BitPersonaSize.Size72" ImageUrl="samples/missing-persona-3.png" />
+        </div>
+    }
+    <span id="image-errors">@_imageErrors</span>
+</E2ESection>
+
+<E2ESection Id="until-loads" Title="Initials until the image loads">
+    <div class="prs-row">
+        <BitPersona Id="until-loads-ok" PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size72" ShowInitialsUntilImageLoads ImageUrl="@Img" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <div class="prs-row">
+        <BitPersona Id="tpl" Size="BitPersonaSize.Size100" ImageUrl="@Img" OnImageClick="HandleImageClick">
+            <PrimaryTextTemplate><b id="tpl-primary">Xafan Salina</b></PrimaryTextTemplate>
+            <SecondaryTextTemplate><i id="tpl-secondary">Software Engineer</i></SecondaryTextTemplate>
+            <TertiaryTextTemplate><u id="tpl-tertiary">In a meeting</u></TertiaryTextTemplate>
+            <OptionalTextTemplate><s id="tpl-optional">Available at 7</s></OptionalTextTemplate>
+            <ImageOverlayTemplate><span id="tpl-overlay">Edit!</span></ImageOverlayTemplate>
+        </BitPersona>
+        <BitPersona Id="tpl-coin" Size="BitPersonaSize.Size100" PrimaryText="Xafan Salina" Presence="BitPersonaPresence.Online" CoinVariant="BitVariant.Text">
+            <CoinTemplate><img id="tpl-coin-img" src="@Img" width="100" height="100" /></CoinTemplate>
+        </BitPersona>
+    </div>
+</E2ESection>
+
+<E2ESection Id="auto-color" Title="AutoCoinColor">
+    <div class="prs-row">
+        <BitPersona Id="auto-1" AutoCoinColor PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="auto-2" AutoCoinColor PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="auto-3" AutoCoinColor PrimaryText="Ted Randall" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="auto-seed-1" AutoCoinColor CoinColorSeed="u-1024" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="auto-seed-2" AutoCoinColor CoinColorSeed="u-1024" PrimaryText="X. Salina" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="auto-palette-1" AutoCoinColor AutoCoinColors="_coinColors" PrimaryText="Carlos Slattery" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="auto-palette-2" AutoCoinColor AutoCoinColors="_coinColors" PrimaryText="Elvia Atkins" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="auto-explicit" AutoCoinColor CoinColor="BitColor.Success" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="auto-empty" AutoCoinColor Size="BitPersonaSize.Size72" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="layout" Title="Layout">
+    <div class="prs-row">
+        <BitPersona Id="lay-default" PrimaryText="Xafan Salina" SecondaryText="Default" Presence="BitPersonaPresence.Online" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="lay-reversed" Reversed PrimaryText="Xafan Salina" SecondaryText="Reversed" Presence="BitPersonaPresence.Online" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="lay-vertical" Vertical PrimaryText="Xafan Salina" SecondaryText="Vertical" Presence="BitPersonaPresence.Online" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="lay-vertical-reversed" Vertical Reversed PrimaryText="Saleh Khafan" SecondaryText="Vertical, Reversed" Presence="BitPersonaPresence.Away" Size="BitPersonaSize.Size72" />
+    </div>
+    <div style="width: 256px; padding: 8px; border: 1px solid #ccc;" id="fw-box">
+        <BitPersona Id="lay-full" FullWidth PrimaryText="Xafan Salina Abdollahzadeh Yusefnejad Longname" SecondaryText="Principal Software Engineer, Developer Experience" Size="BitPersonaSize.Size48" />
+    </div>
+    <div style="width: 256px; padding: 8px; border: 1px solid #ccc;">
+        <BitPersona Id="lay-no-tooltip" FullWidth ShowOverflowTooltip="false" PrimaryText="Xafan Salina Abdollahzadeh Yusefnejad Longname" SecondaryText="No tooltip" Size="BitPersonaSize.Size48" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="cascade" Title="Cascading parameters">
+    <BitParams Parameters="@_personaParams">
+        <BitPersona Id="cas-1" PrimaryText="Xafan Salina" SecondaryText="Engineer" Presence="BitPersonaPresence.Online" />
+        <BitPersona Id="cas-2" PrimaryText="Saleh Khafan" SecondaryText="Developer" Presence="BitPersonaPresence.Away" />
+        <BitPersona Id="cas-3" PrimaryText="Ted Randall" SecondaryText="Own size" Presence="BitPersonaPresence.Busy" Size="BitPersonaSize.Size72" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <div class="prs-row">
+        @foreach (var color in _colors)
+        {
+            <BitPersona Id="@($"clr-{color}")" PrimaryText="@color.ToString()" CoinColor="color" />
+            <BitPersona Id="@($"clr-otl-{color}")" PrimaryText="@color.ToString()" CoinColor="color" CoinVariant="BitVariant.Outline" />
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External Icons">
+    <div class="prs-row">
+        <BitPersona Id="ext-action" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size100" OnActionClick="HandleActionClick" ActionIcon="@BitIconInfo.Fa("solid camera")" />
+        <BitPersona Id="ext-coin" PrimaryText="Design Team" Size="BitPersonaSize.Size72" CoinIcon="@BitIconInfo.Css("prs-ext custom-glyph")" />
+        <BitPersona Id="ext-presence" PrimaryText="Xafan Salina" Presence="BitPersonaPresence.Online" PresenceIcons="_icons" Size="BitPersonaSize.Size100" />
+        <BitPersona Id="ext-presence-single" PrimaryText="Xafan Salina" Presence="BitPersonaPresence.Busy" PresenceIcon="@BitIconInfo.Bi("dash-circle")" Size="BitPersonaSize.Size100" />
+        <BitPersona Id="ext-unknown" PrimaryText="Unresolved" Size="BitPersonaSize.Size72" UnknownIcon="@BitIconInfo.Fa("solid user-secret")" Unknown />
+    </div>
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <button id="btn-hide-details" @onclick="() => _hideDetails = !_hideDetails">Toggle details</button>
+    <div class="prs-row">
+        @foreach (var size in _sizes)
+        {
+            <BitPersona Id="@($"size-{size}")" PrimaryText="Xafan Salina" SecondaryText="Secondary" TertiaryText="Tertiary" OptionalText="Optional" Size="size" HidePersonaDetails="_hideDetails" Presence="BitPersonaPresence.Online" />
+        }
+        <BitPersona Id="size-coin150" CoinSize="150" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size120" Presence="BitPersonaPresence.Online" />
+        <BitPersona Id="size-coin150-rounded" CoinSize="150" Shape="BitShape.Rounded" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size120" Presence="BitPersonaPresence.Online" />
+        <BitPersona Id="size-show-secondary" PrimaryText="Xafan Salina" SecondaryText="Shown" Size="BitPersonaSize.Size24" ShowSecondaryText />
+        <BitPersona Id="size-coin-only" PrimaryText="Xafan Salina" Size="BitPersonaSize.Size72" HidePersonaDetails Presence="BitPersonaPresence.Online" />
+        <BitPersona Id="size-unset" PrimaryText="Xafan Salina" SecondaryText="Unset size" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <div class="prs-row">
+        <BitPersona Id="sc-style" PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size72" Style="padding: 16px; background: rgb(128, 128, 128);" />
+        <BitPersona Id="sc-class" PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size72" Class="custom-class" />
+        <BitPersona Id="sc-styles" PrimaryText="Saleh Khafan" SecondaryText="S" TertiaryText="T" OptionalText="O" Size="BitPersonaSize.Size120" Presence="BitPersonaPresence.Online" ShowDefaultPresenceIcons
+                    OnImageClick="HandleImageClick" OnActionClick="HandleActionClick"
+                    Styles="@(new() { Root = "margin-top: 3px;", CoinContainer = "margin-left: 2px;", PresentationIcon = "color: rgb(0, 0, 255);", ImageContainer = "background-color: rgb(0, 255, 144);", Initials = "letter-spacing: 3px;", ImageOverlay = "padding-top: 4px;", ImageOverlayText = "font-style: italic;", ActionButton = "margin-bottom: 1px;", ActionButtonIcon = "color: rgb(255, 0, 0);", Presence = "border-color: rgb(182, 255, 0);", DetailsContainer = "padding-left: 5px;", PrimaryTextContainer = "color: rgb(234, 25, 25);", SecondaryTextContainer = "color: rgb(1, 2, 3);", TertiaryTextContainer = "color: rgb(4, 5, 6);", OptionalTextContainer = "color: rgb(7, 8, 9);" })" />
+        <BitPersona Id="sc-classes" PrimaryText="Saleh Khafan" SecondaryText="S" TertiaryText="T" OptionalText="O" Size="BitPersonaSize.Size120" Presence="BitPersonaPresence.Online" ShowDefaultPresenceIcons
+                    OnImageClick="HandleImageClick" OnActionClick="HandleActionClick"
+                    Classes="@(new() { Root = "c-root", CoinContainer = "c-cin", PresentationIcon = "c-pic", ImageContainer = "c-imc", Initials = "c-ini", ImageOverlay = "c-imo", ImageOverlayText = "c-imt", ActionButton = "c-abt", ActionButtonIcon = "c-aic", Presence = "c-pre", DetailsContainer = "c-det", PrimaryTextContainer = "c-ptx", SecondaryTextContainer = "c-stx", TertiaryTextContainer = "c-ttx", OptionalTextContainer = "c-otx" })" />
+        <BitPersona Id="sc-icons" PrimaryText="Group" CoinIconName="@BitIconName.Group" Size="BitPersonaSize.Size72" Styles="@(new() { CoinIcon = "color: rgb(10, 20, 30);" })" Classes="@(new() { CoinIcon = "c-cic" })" />
+        <BitPersona Id="sc-unknown" PrimaryText="Unknown" Unknown Size="BitPersonaSize.Size72" Styles="@(new() { UnknownIcon = "color: rgb(40, 50, 60);" })" Classes="@(new() { UnknownIcon = "c-unk" })" />
+        <BitPersona Id="sc-image" PrimaryText="Image" ImageUrl="@Img" Size="BitPersonaSize.Size72" Styles="@(new() { Image = "opacity: 0.5;" })" Classes="@(new() { Image = "c-img" })" />
+        <BitPersona Id="sc-small" PrimaryText="Small" Presence="BitPersonaPresence.Away" Size="BitPersonaSize.Size8" Styles="@(new() { Presentation = "margin-right: 6px;" })" Classes="@(new() { Presentation = "c-prs" })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="prs-row">
+        <BitPersona Id="rtl-latin" Dir="BitDir.Rtl" PrimaryText="Saleh Khafan" Presence="BitPersonaPresence.Online" Size="BitPersonaSize.Size56" />
+        <BitPersona Id="rtl-persian" Dir="BitDir.Rtl" PrimaryText="صالح یوسف نژاد" Presence="BitPersonaPresence.Online" Size="BitPersonaSize.Size56" />
+        <div dir="rtl">
+            <BitPersona Id="rtl-inherited" PrimaryText="Saleh Khafan" Presence="BitPersonaPresence.Online" Size="BitPersonaSize.Size56" />
+        </div>
+        <BitPersona Id="ltr-latin" PrimaryText="Saleh Khafan" Presence="BitPersonaPresence.Online" Size="BitPersonaSize.Size56" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div class="prs-row" style="--bit-Persona-coin-background: rgb(122, 46, 142); --bit-Persona-coin-color: rgb(255, 255, 255); --bit-Persona-coin-radius: 12px; --bit-Persona-gap: 24px; --bit-Persona-primary-font-weight: 600; --bit-Persona-primary-color: rgb(10, 10, 10); --bit-Persona-secondary-color: rgb(122, 46, 142); --bit-Persona-presence-out-of-office-color: rgb(180, 0, 158); --bit-Persona-presence-icon-color: rgb(255, 255, 254); --bit-Persona-presence-border-color: rgb(1, 1, 1); --bit-Persona-ring-color: rgb(0, 0, 200); --bit-Persona-ring-width: 5px; --bit-Persona-ring-gap: 3px; --bit-Persona-ring-gap-color: rgb(200, 0, 0); --bit-Persona-inactive-opacity: 0.5; --bit-Persona-inactive-scale: 0.5; --bit-Persona-overlay-background: rgb(0, 100, 0); --bit-Persona-overlay-color: rgb(255, 255, 0); --bit-Persona-action-background: rgb(50, 50, 50); --bit-Persona-action-color: rgb(250, 250, 250); --bit-Persona-action-hover-background: rgb(90, 90, 90); --bit-Persona-focus-color: rgb(255, 0, 255); --bit-Persona-disabled-color: rgb(150, 150, 150); --bit-Persona-active-shadow: rgb(0, 0, 0) 0px 0px 9px 0px;">
+        <BitPersona Id="cv-coin" PrimaryText="Saleh Khafan" SecondaryText="Out of office" Presence="BitPersonaPresence.OutOfOffice" PresenceIconName="@BitIconName.Airplane" />
+        <BitPersona Id="cv-explicit" PrimaryText="Saleh Khafan" CoinColor="BitColor.Error" Shape="BitShape.Square" Size="BitPersonaSize.Size72" />
+        <BitPersona Id="cv-ring" Active PrimaryText="Ted Randall" />
+        <BitPersona Id="cv-shadow" Active ActiveAppearance="BitPersonaActiveAppearance.Shadow" PrimaryText="Ted Randall" />
+        <BitPersona Id="cv-inactive" Inactive PrimaryText="Ted Randall" />
+        <BitPersona Id="cv-overlay" PrimaryText="Ted Randall" OnImageClick="HandleImageClick" OnActionClick="HandleActionClick" Size="BitPersonaSize.Size100" />
+        <BitPersona Id="cv-disabled" PrimaryText="Ted Randall" SecondaryText="Disabled" Disabled />
+    </div>
+    <div style="background-color: rgb(240, 240, 200); --bit-Persona-surface-color: rgb(240, 240, 200);">
+        <BitPersona Id="cv-surface" PrimaryText="Saleh Khafan" Size="BitPersonaSize.Size56" Presence="BitPersonaPresence.Offline" Active />
+    </div>
+    <div style="--bit-Persona-presence-online-color: rgb(0, 1, 2); --bit-Persona-presence-away-color: rgb(0, 1, 3); --bit-Persona-presence-busy-color: rgb(0, 1, 4); --bit-Persona-presence-dnd-color: rgb(0, 1, 5); --bit-Persona-presence-unknown-color: rgb(0, 1, 6); --bit-Persona-presence-offline-color: rgb(0, 1, 7); --bit-Persona-presence-blocked-color: rgb(0, 1, 8);" class="prs-row">
+        @foreach (var presence in _presences)
+        {
+            <BitPersona Id="@($"cv-pre-{presence}")" PrimaryText="P" Presence="presence" Size="BitPersonaSize.Size56" />
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="base" Title="Base parameters">
+    <div class="prs-row">
+        <BitPersona Id="vis-hidden" PrimaryText="Hidden" Visibility="BitVisibility.Hidden" />
+        <BitPersona Id="vis-collapsed" PrimaryText="Collapsed" Visibility="BitVisibility.Collapsed" />
+        <BitPersona Id="aria" PrimaryText="Named" AriaLabel="Profile of Named" HtmlAttributes="@(new() { ["data-test"] = "prs-attr" })" />
+        <BitPersona Id="role" PrimaryText="Role" HtmlAttributes="@(new() { ["role"] = "listitem" })" AriaLabel="Item" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="unmount" Title="Unmount">
+    @if (_showUnmount)
+    {
+        <div id="unmount-host" class="prs-row">
+            <BitPersona PrimaryText="A B" ImageUrl="@Img" OnImageClick="HandleImageClick" OnActionClick="HandleActionClick" Presence="BitPersonaPresence.Online" />
+            <BitPersona PrimaryText="C D" Href="#unmount" ImageFadeIn ImageUrl="@Img" />
+        </div>
+    }
+    <button id="btn-unmount" @onclick="() => _showUnmount = !_showUnmount">Toggle</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string Img = "samples/persona-sample.png";
+    private const string Img72 = "samples/persona-sample-72.png";
+
+    private int _basicLoads;
+    private bool _showDefaultIcons;
+    private BitPersonaPresence _runtimePresence = BitPersonaPresence.Online;
+    private bool _runtimeActive;
+    private int _actionClicks;
+    private long _lastActionButton = -1;
+    private int _imageClicks;
+    private int _templateActionClicks;
+    private bool _disabled = true;
+    private int _rootClicks;
+    private int _rootKeys;
+    private int _rootHovers;
+    private bool _showFadeIn;
+    private string? _runtimeImage;
+    private int _runtimeLoads;
+    private bool _showBroken;
+    private int _imageErrors;
+    private bool _hideDetails;
+    private bool _showUnmount = true;
+
+    private readonly BitPersonaPresence[] _presences =
+    [
+        BitPersonaPresence.Offline, BitPersonaPresence.Online, BitPersonaPresence.Away, BitPersonaPresence.Dnd,
+        BitPersonaPresence.Blocked, BitPersonaPresence.Busy, BitPersonaPresence.OutOfOffice, BitPersonaPresence.Unknown
+    ];
+
+    private readonly BitPersonaSize[] _sizes =
+    [
+        BitPersonaSize.Size8, BitPersonaSize.Size24, BitPersonaSize.Size32, BitPersonaSize.Size40, BitPersonaSize.Size48,
+        BitPersonaSize.Size56, BitPersonaSize.Size72, BitPersonaSize.Size100, BitPersonaSize.Size120
+    ];
+
+    private readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly Dictionary<BitPersonaPresence, string> _iconNames = new() { [BitPersonaPresence.Online] = BitIconName.SkypeCheck };
+    private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new() { [BitPersonaPresence.Dnd] = "Focusing" };
+    private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new() { [BitPersonaPresence.Online] = BitIconInfo.Bi("check-circle-fill") };
+    private readonly BitColor[] _coinColors = [BitColor.Tertiary, BitColor.SevereWarning];
+
+    private readonly BitPersonaParams[] _personaParams =
+    [
+        new()
+        {
+            Size = BitPersonaSize.Size40,
+            AutoCoinColor = true,
+            Shape = BitShape.Rounded,
+            ShowDefaultPresenceIcons = true,
+            PresenceTitles = new() { [BitPersonaPresence.Online] = "Available", [BitPersonaPresence.Away] = "Be right back" },
+        }
+    ];
+
+    private void HandleActionClick(MouseEventArgs e)
+    {
+        _actionClicks++;
+        _lastActionButton = e.Button;
+    }
+
+    private void HandleImageClick() => _imageClicks++;
+}

@@ -1,4 +1,4 @@
-declare class Table extends Module {
+﻿declare class Table extends Module {
     static register(): void;
     constructor(...args: ConstructorParameters<typeof Module>);
     balanceTables(): void;

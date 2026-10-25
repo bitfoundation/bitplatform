@@ -1,4 +1,4 @@
-declare const globalRegistry: Registry;
+﻿declare const globalRegistry: Registry;
 /**
  * Options for initializing a Quill instance
  */

@@ -23,14 +23,16 @@ public enum BitImageFit
     Center,
 
     /// <summary>
-    /// The image will be centered horizontally and vertically within the frame and maintains its
-    /// aspect ratio, scaled down where needed so that all of it fits inside the frame.
+    /// The image is centered in the frame and keeps its aspect ratio. One larger than the frame is scaled
+    /// down until all of it fits; one smaller keeps its natural size. The axis it is scaled along is the one
+    /// <see cref="BitImageCover"/> names.
     /// </summary>
     CenterContain,
 
     /// <summary>
-    /// The image will be centered horizontally and vertically within the frame and maintains its
-    /// aspect ratio, scaled up where needed so that it covers the frame and the overflow is cropped.
+    /// The image is centered in the frame and keeps its aspect ratio. One larger than the frame is scaled
+    /// down until it just covers it, and the overflow is cropped; one smaller keeps its natural size - it is
+    /// never enlarged. The axis it is scaled along is the one <see cref="BitImageCover"/> names.
     /// </summary>
     CenterCover,
 

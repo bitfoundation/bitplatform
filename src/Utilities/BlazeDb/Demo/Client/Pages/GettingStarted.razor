@@ -1,0 +1,236 @@
+﻿@page "/getting-started"
+
+<PageTitle>Getting started · BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Getting started" Title="From package to query in five minutes"
+            Lead="Install one package, declare a table as an annotated partial class, open a database over the storage you want and query it with typed primitives. Everything below is the README's own setup, and every other page of this site runs it against a real database in this tab." />
+
+<Section Title="Install">
+    <p>
+        <code>Bit.BlazeDb</code> is the engine, the source generator and the browser backends in one package;
+        the EF Core provider is a second, optional one.
+    </p>
+    <CodeBlock Language="bash" Code="@InstallSnippet" />
+    <p>
+        The package carries the source generator that turns a <code>[BlazeDbTable]</code> class into a table as an
+        analyzer, so it adds nothing to the application's output. Reference the package directly from every
+        project that declares table types: analyzers do not flow transitively, so a project that gets the engine
+        only through another project compiles the attributes but generates nothing - and <code>TodoItem.Table</code>
+        then does not exist.
+    </p>
+    <CodeBlock Title="_Imports.razor or a global using" Code="@UsingsSnippet" />
+    <Callout Tone="info" Title="Requirements.">
+        .NET 8, 9 or 10 (the EF Core provider targets EF Core 8, 9 and 10 respectively), and Blazor WebAssembly -
+        standalone, or a Blazor Web App's <code>.Client</code> project - for the browser backends. The engine itself
+        has no browser dependency: it runs in any .NET process with the file or in-memory backend.
+    </Callout>
+</Section>
+
+<Section Title="Declare a table, open a database, query it"
+         Lead="A table is a partial class with a key and the indexes you query by. The generator emits its descriptor - TodoItem.Table - and a typed handle for every index under TodoItem.Indexes.">
+    <CodeBlock Title="Quick start" Code="@QuickStartSnippet" />
+    <Callout Tone="warn" Title="Rows are live objects.">
+        A read hands back the instance the table holds, so <code>Update</code> takes a <em>new</em> instance (as
+        above): the table retracts the old index entries through the values of the row it currently holds, and refuses
+        an instance whose indexed values were changed in place. To write a row changed in place, hand the table the
+        values it had with <code>UpdateInPlace(row, previousValues)</code> or <code>DeleteInPlace(key, previousValues)</code>.
+    </Callout>
+    <Callout Tone="info" Title="Null values are indexed like any other.">
+        A lookup with a null key returns the rows whose value is null, an ordered index lists them first (last when walked
+        descending), and a bounded <code>Range</code> excludes them. A single-property unique index allows any number of
+        nulls; a compound one, like <code>CategoryDone</code> made unique, compares the whole tuple, nulls included.
+    </Callout>
+    <div class="bb-try">
+        <a href="schema" class="btn btn-outline">What the generator emits →</a>
+        <a href="writes" class="btn btn-outline">Every write, and what it promises →</a>
+        <a href="todos" class="btn btn-outline">The same calls driving a live app →</a>
+    </div>
+</Section>
+
+<Section Title="Open it once per tab"
+         Lead="On Blazor WebAssembly the database lives in the tab, in managed memory, persisted to OPFS. Register a singleton that opens it on first use rather than opening one per component.">
+    <CodeBlock Title="AppDatabase.cs" Code="@ServiceSnippet" />
+    <p>
+        The database does not own its storage: dispose the storage after the database, which is what releases the
+        writer lock for the next tab. <code>CreateAsync</code> throws <code>BlazeDbDatabaseLockedException</code>
+        when another tab already holds it - open a read-only replica there instead, or fall back to
+        <code>BlazeDbInMemoryStorage</code> the way this site does (<a href="tabs">replicas, live</a>). There is no script
+        tag to add: each browser backend imports its ES module from <code>_content/Bit.BlazeDb/</code> the first time it is
+        used.
+    </p>
+    <Callout Tone="warn" Title="In a Blazor Web App, mind prerendering.">
+        A prerendered component runs on the server first, where there is no OPFS, no IndexedDB and no Web Locks.
+        Turn prerendering off for the pages that use the database - this site uses
+        <code>new InteractiveWebAssemblyRenderMode(prerender: false)</code> for the whole app - or open the database
+        only once the component runs in the browser. Blazor Server, MAUI and the desktop persist through
+        <code>BlazeDbFileStorage</code> instead: <a href="hosting">every hosting model, and the threading model behind them</a>.
+    </Callout>
+</Section>
+
+<Section Title="How a read and a write travel"
+         Lead="Reads stop at the first layer. Only writes continue past it, and never on your thread.">
+    <div class="bd-diagram" role="img" aria-label="A write goes from your component to the in-memory row store and indexes, into the transaction buffer, then on a background loop to the log, snapshot and manifest files, through the four-method storage interface to OPFS, IndexedDB, a directory or memory.">
+        <div class="bd-dg-row">
+            <div class="bd-dg-box">
+                <div class="bd-dg-title"><Icon Name="code" Size="14" /> Your component</div>
+                <div class="bd-dg-note">todos.Insert(row)</div>
+            </div>
+        </div>
+        <div class="bd-dg-arrow">synchronous</div>
+        <div class="bd-dg-row">
+            <div class="bd-dg-box bd-dg-mem">
+                <div class="bd-dg-title"><Icon Name="database" Size="14" /> Row store</div>
+                <div class="bd-dg-note">Dictionary&lt;TKey, TRow&gt; of live objects</div>
+            </div>
+            <div class="bd-dg-box bd-dg-mem">
+                <div class="bd-dg-title"><Icon Name="index" Size="14" /> Hash indexes</div>
+                <div class="bd-dg-note">O(1) equality buckets</div>
+            </div>
+            <div class="bd-dg-box bd-dg-mem">
+                <div class="bd-dg-title"><Icon Name="sort" Size="14" /> Ordered indexes</div>
+                <div class="bd-dg-note">O(log n) range scans</div>
+            </div>
+        </div>
+        <div class="bd-dg-arrow">recorded, still synchronous</div>
+        <div class="bd-dg-row">
+            <div class="bd-dg-box">
+                <div class="bd-dg-title"><Icon Name="txn" Size="14" /> Transaction buffer</div>
+                <div class="bd-dg-note">Undo log + WAL records, atomic on Commit()</div>
+            </div>
+        </div>
+        <div class="bd-dg-arrow">background loop, every FlushInterval</div>
+        <div class="bd-dg-row">
+            <div class="bd-dg-box bd-dg-io">
+                <div class="bd-dg-title"><Icon Name="file" Size="14" /> wal-N.blz</div>
+                <div class="bd-dg-note">Append-only, CRC per record</div>
+            </div>
+            <div class="bd-dg-box bd-dg-io">
+                <div class="bd-dg-title"><Icon Name="layers" Size="14" /> snapshot-N.blz</div>
+                <div class="bd-dg-note">Full image written at checkpoint</div>
+            </div>
+            <div class="bd-dg-box bd-dg-io">
+                <div class="bd-dg-title"><Icon Name="key" Size="14" /> manifest.blz</div>
+                <div class="bd-dg-note">Points at the newest valid snapshot</div>
+            </div>
+        </div>
+        <div class="bd-dg-arrow">IBlazeDbStorage - four async methods</div>
+        <div class="bd-dg-row">
+            <div class="bd-dg-box bd-dg-io">
+                <div class="bd-dg-title"><Icon Name="disk" Size="14" /> BlazeDbOpfsStorage</div>
+                <div class="bd-dg-note">Browser, private origin file system</div>
+            </div>
+            <div class="bd-dg-box bd-dg-io">
+                <div class="bd-dg-title"><Icon Name="disk" Size="14" /> BlazeDbIndexedDbStorage</div>
+                <div class="bd-dg-note">Browser, where OPFS cannot be written</div>
+            </div>
+            <div class="bd-dg-box bd-dg-io">
+                <div class="bd-dg-title"><Icon Name="disk" Size="14" /> BlazeDbFileStorage</div>
+                <div class="bd-dg-note">Desktop and server hosts</div>
+            </div>
+            <div class="bd-dg-box bd-dg-io">
+                <div class="bd-dg-title"><Icon Name="cpu" Size="14" /> BlazeDbInMemoryStorage</div>
+                <div class="bd-dg-note">Tests and crash simulation</div>
+            </div>
+        </div>
+    </div>
+    <div class="bb-try">
+        <a href="durability" class="btn btn-outline">Crash it on purpose →</a>
+        <a href="storage" class="btn btn-outline">Trace the engine's I/O →</a>
+    </div>
+</Section>
+
+<Section Title="Where to go next">
+    <div class="bb-grid">
+        @foreach (var section in DocsCatalog.Sections.Skip(1))
+        {
+            <div class="bb-card">
+                <p class="bb-overline">@section.Title</p>
+                <ul class="bb-link-list">
+                    @foreach (var entry in section.Pages)
+                    {
+                        <li><a href="@entry.Url.TrimStart('/')" title="@entry.Description">@entry.Title</a></li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+</Section>
+
+@code {
+    private const string InstallSnippet = """
+        # the engine, the source generator and the browser backends
+        dotnet add package Bit.BlazeDb
+
+        # the EF Core provider - UseBlazeDb()
+        dotnet add package Bit.BlazeDb.EntityFrameworkCore
+        """;
+
+    private const string UsingsSnippet = """
+        global using Bit.BlazeDb;
+        global using Bit.BlazeDb.Browser;   // the browser backends
+        global using Bit.BlazeDb.Storage;   // IBlazeDbStorage, the file and in-memory backends, encryption
+        global using Bit.BlazeDb.Querying;  // BlazeDbQuery, BlazeDbBound
+        """;
+
+    private const string QuickStartSnippet = """
+        [BlazeDbTable("todos")]
+        [BlazeDbCompoundIndex("CategoryDone", nameof(Category), nameof(Done))]
+        public partial class TodoItem
+        {
+            [BlazeDbKey] public Guid Id { get; set; }
+            [BlazeDbIndex(Unique = true)] public string Slug { get; set; } = "";
+            public string Title { get; set; } = "";
+            public string? Category { get; set; }
+            [BlazeDbIndex] public bool Done { get; set; }
+            [BlazeDbOrderedIndex] public DateTime CreatedAt { get; set; }
+        }
+
+        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
+        {
+            Storage = await BlazeDbOpfsStorage.CreateAsync("mydb"), // or BlazeDbFileStorage / BlazeDbInMemoryStorage / null
+        }.AddTable(TodoItem.Table));
+
+        var todos = db.GetTable(TodoItem.Table);
+
+        var id = Guid.NewGuid();
+        todos.Insert(new TodoItem { Id = id, Slug = "hello", Title = "hello", CreatedAt = DateTime.UtcNow });
+        var one = todos.Get(id);                                  // O(1), no I/O
+        var open = todos.Lookup(TodoItem.Indexes.Done, false);    // hash index
+        var latest = todos.OrderBy(TodoItem.Indexes.CreatedAt, descending: true);
+        var range = todos.Range(TodoItem.Indexes.CreatedAt, from, to);
+        var both = todos.Lookup(TodoItem.Indexes.CategoryDone, ("work", false)); // one compound lookup
+
+        using (var txn = db.BeginTransaction())
+        {
+            todos.Update(new TodoItem { Id = id, Slug = "hello", Title = "hello", Done = true, CreatedAt = one!.CreatedAt });
+            txn.Commit();
+        }
+
+        await db.FlushAsync(); // force durability now (otherwise flushed in the background)
+        """;
+
+    private const string ServiceSnippet = """
+        public sealed class AppDatabase : IAsyncDisposable
+        {
+            private Task<BlazeDbDatabase>? _opening;
+            private BlazeDbOpfsStorage? _storage;
+
+            public Task<BlazeDbDatabase> GetAsync() => _opening ??= OpenAsync();
+
+            private async Task<BlazeDbDatabase> OpenAsync()
+            {
+                _storage = await BlazeDbOpfsStorage.CreateAsync("app"); // takes this tab's writer lock
+                return await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = _storage }.AddTable(TodoItem.Table));
+            }
+
+            public async ValueTask DisposeAsync()
+            {
+                if (_opening is not null) await (await _opening).DisposeAsync(); // flushes what is still pending
+                _storage?.Dispose();                                             // and only then releases the lock
+            }
+        }
+
+        // Program.cs
+        builder.Services.AddSingleton<AppDatabase>();
+        """;
+}

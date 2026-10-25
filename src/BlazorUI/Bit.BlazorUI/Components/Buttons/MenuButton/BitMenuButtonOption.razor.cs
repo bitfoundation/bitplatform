@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitMenuButtonOption : IDisposable
 {
@@ -81,9 +81,9 @@ public partial class BitMenuButtonOption : IDisposable
     [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
     /// <summary>
-    /// Whether or not the option is enabled.
+    /// Whether or not the option is disabled.
     /// </summary>
-    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool IsDisabled { get; set; }
 
     /// <summary>
     /// If true, the option renders as the label of the group of options that follow it, instead of as a
@@ -123,6 +123,17 @@ public partial class BitMenuButtonOption : IDisposable
     /// <see cref="Checkable"/> where both are set.
     /// </remarks>
     [Parameter] public string? RadioGroup { get; set; }
+
+    /// <summary>
+    /// The relationship of the link of the option to the current document, rendered as the rel attribute of its anchor.
+    /// </summary>
+    /// <remarks>
+    /// A link opening a new tab (<see cref="Target"/> of <c>_blank</c>) gets <c>noopener</c> added to whatever this
+    /// says, unless it already says what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>). Nothing adds <c>noreferrer</c> on its
+    /// own: ask for it here where the page the link leads to must not learn which page it was followed from.
+    /// </remarks>
+    [Parameter] public BitLinkRels? Rel { get; set; }
 
     /// <summary>
     /// The trailing text of the option, shown at its far end and read after its label - a keyboard shortcut,

@@ -214,12 +214,13 @@ In [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplat
 {
     "ConnectionStrings": {
         "mssqldb": "Data Source=(localdb)\\mssqllocaldb; Initial Catalog=BoilerplateDb;...",
-        "s3": "Endpoint=http://localhost:9000;AccessKey=rustfsadmin;SecretKey=P@ssw0rd;",
+        "s3": "Endpoint=http://localhost:9000;BucketName=files;AccessKey=rustfsadmin;SecretKey=P@ssw0rd;",
         "smtp": "Endpoint=smtp://smtp.ethereal.email:587;UserName=..."
     },
     "AI": {
         "ChatOptions": {
-            "Temperature": 0
+            "Temperature": 0,
+            "MaxOutputTokens": 2000
         },
         "OpenAI": {
             "ChatModel": "gpt-4.1-mini",
@@ -384,11 +385,22 @@ public partial class ServerApiSettings : ServerSharedSettings
 These are registered in service configuration:
 
 ```csharp
+services.AddSingleton<IValidateOptions<ServerApiSettings>, ServerApiSettingsValidator>();
 services.AddOptions<ServerApiSettings>()
     .Bind(configuration)
-    .ValidateDataAnnotations()
     .ValidateOnStart();
 ```
+
+Each settings class has a validator next to it that the options source generator writes at build time, so the data annotations and the `Validate()` override are checked without reflection:
+
+```csharp
+[OptionsValidator]
+public partial class ServerApiSettingsValidator : IValidateOptions<ServerApiSettings>
+{
+}
+```
+
+A nested settings object is validated only when its property has `[ValidateObjectMembers]` (`[ValidateEnumeratedItems]` for a collection). The build warns (SYSLIB1212) when a nested type has validation attributes but its property is missing it.
 
 Then injected where needed:
 

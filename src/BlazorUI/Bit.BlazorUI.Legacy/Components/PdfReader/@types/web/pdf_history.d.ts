@@ -1,4 +1,4 @@
-declare type PDFHistoryOptions = {
+﻿declare type PDFHistoryOptions = {
     /**
      * - The navigation/linking service.
      */

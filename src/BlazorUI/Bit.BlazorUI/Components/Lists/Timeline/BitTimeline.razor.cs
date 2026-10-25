@@ -1,3 +1,4 @@
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Bit.BlazorUI;
@@ -5,10 +6,23 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The Timeline component organizes and displays events or data chronologically in a linear fashion, often featuring points or segments representing individual items with associated details or actions.
 /// </summary>
-public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
+public partial class BitTimeline<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     private List<TItem> _items = [];
     private IEnumerable<TItem> _oldItems = default!;
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the timeline component.
+    /// </summary>
+    /// <remarks>
+    /// The intended use is to allow shared configuration or settings to be applied to multiple timeline components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitTimelineParams.ParamName)]
+    public BitTimelineParams? CascadingParameters { get; set; }
 
 
 
@@ -26,11 +40,16 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Custom CSS classes for different parts of the BitTimeline.
     /// </summary>
-    [Parameter] public BitTimelineClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitTimelineClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the timeline.
     /// </summary>
+    /// <remarks>
+    /// An explicit value (or the Color of an item) wins over the <c>--bit-Timeline-*</c> dot color variables (dot
+    /// background, dot border color, icon color); left unset, the timeline is primary unless those variables say
+    /// otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -40,7 +59,18 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment<TItem>? DotTemplate { get; set; }
 
     /// <summary>
-    /// Defines whether to render timeline children horizontally.
+    /// Where the dot of each item sits along its item, with the contents of the item aligned to it: at its middle
+    /// (Center, the default), at its Start (the top in a vertical timeline) or at its End (the bottom in a vertical timeline).
+    /// Start pins the dot to the first line of an item whose contents run over several lines.
+    /// </summary>
+    /// <remarks>
+    /// Only Center, Start and End are honoured; every other value renders the default Center.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitPlacement? DotAlignment { get; set; }
+
+    /// <summary>
+    /// Renders the timeline horizontally.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Horizontal { get; set; }
@@ -59,8 +89,26 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The way the connecting line of the timeline is painted, which the items can override one by one.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitLineStyle.Solid"/>, <see cref="BitLineStyle.Dashed"/> and
+    /// <see cref="BitLineStyle.Dotted"/> mean anything here; the connector is a hairline, which leaves
+    /// <see cref="BitLineStyle.Double"/> no room for the gap between its two strokes, so it is drawn solid.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitTimelineLineVariant? LineVariant { get; set; }
+    public BitLineStyle? LineStyle { get; set; }
+
+    /// <summary>
+    /// Where the connecting line runs: through the middle of the timeline (Center, the default), with the primary
+    /// contents of the items on one side of it and the secondary contents on the other, or along its Start edge
+    /// (the top in a horizontal timeline) or its End edge (the bottom in a horizontal timeline), with the contents
+    /// of each item stacked on one side of it, as in an activity feed.
+    /// Reversed and Alternate only apply to the centered line.
+    /// </summary>
+    /// <remarks>
+    /// Only Center, Start and End are honoured; every other value renders the default Center.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitPlacement? LinePlacement { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -68,7 +116,8 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitTimelineNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
-    /// The callback that is called when an item is clicked.
+    /// The callback that is called when an item is clicked. A clickable item is rendered as a button, whose contents
+    /// are read as its name, so its templates should hold no links or controls of their own.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
@@ -78,7 +127,8 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
-    /// Renders the items in the reverse order, so the last item of the list is rendered first.
+    /// Renders the items in the reverse order, so the last item of the list is painted first.
+    /// The reading and the focus order keep the order of the list.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool ReverseOrder { get; set; }
@@ -90,15 +140,19 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     public bool Reversed { get; set; }
 
     /// <summary>
-    /// The size of timeline, Possible values: Small | Medium | Large
+    /// The size of the timeline, which sets the size of the dots and of the text.
     /// </summary>
+    /// <remarks>
+    /// An explicit value (or the Size of an item) wins over <c>--bit-Timeline-font-size</c> and
+    /// <c>--bit-Timeline-dot-size</c>; left unset, the timeline is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitTimeline.
     /// </summary>
-    [Parameter] public BitTimelineClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitTimelineClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Truncates the connecting line of the timeline at the first dot, the last dot, or both of them.
@@ -127,7 +181,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     {
         // The options unregister while they are being disposed, which also happens when the timeline
         // itself goes away, so a re-render is only requested while the timeline is still alive.
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         _items.Remove((option as TItem)!);
 
@@ -142,24 +196,24 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-tln-pri",
-            BitColor.Secondary => "bit-tln-sec",
-            BitColor.Tertiary => "bit-tln-ter",
-            BitColor.Info => "bit-tln-inf",
-            BitColor.Success => "bit-tln-suc",
-            BitColor.Warning => "bit-tln-wrn",
-            BitColor.SevereWarning => "bit-tln-swr",
-            BitColor.Error => "bit-tln-err",
-            _ => "bit-tln-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-Timeline-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-tln"));
 
         ClassBuilder.Register(() => Horizontal ? "bit-tln-hrz" : string.Empty);
 
         ClassBuilder.Register(() => Reversed ? "bit-tln-rvs" : string.Empty);
 
         ClassBuilder.Register(() => Alternate ? "bit-tln-alt" : string.Empty);
+
+        // The centered dot is what the stylesheet paints on its own, so only the other two carry a class,
+        // and every value the dot does not honour carries none, which falls back to the centered dot.
+        ClassBuilder.Register(() => DotAlignment switch
+        {
+            BitPlacement.Start => "bit-tln-das",
+            BitPlacement.End => "bit-tln-dae",
+            _ => string.Empty
+        });
 
         ClassBuilder.Register(() => ReverseOrder ? "bit-tln-rvo" : string.Empty);
 
@@ -174,21 +228,24 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             _ => string.Empty
         });
 
-        // A solid line is what the stylesheet paints on its own, so only the broken ones carry a class.
-        ClassBuilder.Register(() => LineVariant switch
+        // The centered line is what the stylesheet paints on its own, so only the other two carry a class,
+        // and every value the line does not honour carries none, which falls back to the centered line.
+        ClassBuilder.Register(() => LinePlacement switch
         {
-            BitTimelineLineVariant.Dashed => "bit-tln-ldd",
-            BitTimelineLineVariant.Dotted => "bit-tln-ldt",
+            BitPlacement.Start => "bit-tln-lps",
+            BitPlacement.End => "bit-tln-lpe",
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
+        // A solid line is what the stylesheet paints on its own, so only the broken ones carry a class.
+        ClassBuilder.Register(() => LineStyle switch
         {
-            BitSize.Small => "bit-tln-sm",
-            BitSize.Medium => "bit-tln-md",
-            BitSize.Large => "bit-tln-lg",
-            _ => "bit-tln-md"
+            BitLineStyle.Dashed => "bit-tln-ldd",
+            BitLineStyle.Dotted => "bit-tln-ldt",
+            _ => string.Empty
         });
+
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-tln"));
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -204,8 +261,15 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    // The script that keeps Space on a clickable item from scrolling the page is called by nothing: with the lazy scripts on
+    // (BitBlazorUIScripts), the timeline is what loads it - once an item of it is clickable, which is when the item renders
+    // the bit-tln-btn the script acts on (see _BitTimelineItem); a read-only timeline downloads nothing.
+    internal ValueTask EnsureItemKeysScriptAsync() => _js.EnsureScriptAsync("Bit.BlazorUI", "Timelines");
+
     protected override Task OnParametersSetAsync()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         // Note: no Items.Any() guard here, so a transition from a populated collection to an empty one
         // still runs the comparison and clears _items instead of leaving the previous items rendered.
         if (ChildContent is null && Options is null)
@@ -224,7 +288,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         }
 
         // Options render their items themselves and Blazor skips re-rendering them when only the
-        // timeline's own parameters (Styles, IsEnabled, ...) change, so push a re-render to each one.
+        // timeline's own parameters (Styles, Disabled, ...) change, so push a re-render to each one.
         RefreshOptions();
 
         return base.OnParametersSetAsync();
@@ -291,6 +355,15 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
                 BitColor.Warning => " bit-tln-iwr",
                 BitColor.SevereWarning => " bit-tln-isw",
                 BitColor.Error => " bit-tln-ier",
+                BitColor.PrimaryBackground => " bit-tln-ipbg",
+                BitColor.SecondaryBackground => " bit-tln-isbg",
+                BitColor.TertiaryBackground => " bit-tln-itbg",
+                BitColor.PrimaryForeground => " bit-tln-ipfg",
+                BitColor.SecondaryForeground => " bit-tln-isfg",
+                BitColor.TertiaryForeground => " bit-tln-itfg",
+                BitColor.PrimaryBorder => " bit-tln-ipbr",
+                BitColor.SecondaryBorder => " bit-tln-isbr",
+                BitColor.TertiaryBorder => " bit-tln-itbr",
                 _ => " bit-tln-ipr"
             });
         }
@@ -319,13 +392,13 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             });
         }
 
-        var lineVariant = GetLineVariant(item);
-        if (lineVariant is not null)
+        var lineStyle = GetLineStyle(item);
+        if (lineStyle is not null)
         {
-            className.Append(lineVariant switch
+            className.Append(lineStyle switch
             {
-                BitTimelineLineVariant.Dashed => " bit-tln-ild",
-                BitTimelineLineVariant.Dotted => " bit-tln-ilt",
+                BitLineStyle.Dashed => " bit-tln-ild",
+                BitLineStyle.Dotted => " bit-tln-ilt",
                 // Unlike the timeline-level solid line, an explicitly solid item needs a class of its own
                 // to win over a dashed or a dotted timeline.
                 _ => " bit-tln-ils"
@@ -338,7 +411,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             className.Append(' ').Append(@class);
         }
 
-        if (GetIsEnabled(item) is false)
+        if (GetIsDisabled(item))
         {
             className.Append(" bit-tln-ids");
         }
@@ -388,7 +461,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     {
         // The item renders as a div, where the disabled attribute is ineffective, so gate the handler
         // with the combined enabled state (timeline-level and item-level) to match the rendered state.
-        if (IsEnabled is false || GetIsEnabled(item) is false) return;
+        if (Disabled || GetIsDisabled(item)) return;
 
         await OnItemClick.InvokeAsync(item);
 
@@ -511,28 +584,28 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
     }
 
-    internal bool GetIsEnabled(TItem? item)
+    internal bool GetIsDisabled(TItem? item)
     {
-        if (item is null) return false;
+        if (item is null) return true;
 
         if (item is BitTimelineItem timelineItem)
         {
-            return timelineItem.IsEnabled;
+            return timelineItem.IsDisabled;
         }
 
         if (item is BitTimelineOption timelineOption)
         {
-            return timelineOption.IsEnabled;
+            return timelineOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     // Joins the style of the item with the one of the Styles object, so an item that carries neither of
@@ -864,27 +937,27 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<BitVariant?>(NameSelectors.Variant.Name, null);
     }
 
-    private BitTimelineLineVariant? GetLineVariant(TItem? item)
+    private BitLineStyle? GetLineStyle(TItem? item)
     {
         if (item is null) return null;
 
         if (item is BitTimelineItem timelineItem)
         {
-            return timelineItem.LineVariant;
+            return timelineItem.LineStyle;
         }
 
         if (item is BitTimelineOption timelineOption)
         {
-            return timelineOption.LineVariant;
+            return timelineOption.LineStyle;
         }
 
         if (NameSelectors is null) return null;
 
-        if (NameSelectors.LineVariant.Selector is not null)
+        if (NameSelectors.LineStyle.Selector is not null)
         {
-            return NameSelectors.LineVariant.Selector!(item);
+            return NameSelectors.LineStyle.Selector!(item);
         }
 
-        return item.GetValueFromProperty<BitTimelineLineVariant?>(NameSelectors.LineVariant.Name, null);
+        return item.GetValueFromProperty<BitLineStyle?>(NameSelectors.LineStyle.Name, null);
     }
 }

@@ -1,7 +1,7 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// Defines the mode in which navigation is handled by the nav component.
+/// Defines whether the selection of the component follows the current URL or is driven by the app.
 /// </summary>
 public enum BitNavMode
 {

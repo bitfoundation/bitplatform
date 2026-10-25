@@ -1,0 +1,269 @@
+﻿using Microsoft.JSInterop;
+
+namespace Bit.Balette.Demo.Client.Services;
+
+/// <summary>
+/// The application state the demo's commands act on - a theme, three preferences, a project with labels and an
+/// activity log - and the way the layout's palette is presented. It is scoped, so the layout, every page and every
+/// command handler share one instance: a value changed from the palette shows on the page, and one changed on the
+/// page shows in the palette the next time it renders.
+/// </summary>
+public sealed class DemoState
+{
+    private readonly IJSRuntime _js;
+    private readonly List<string> _log = [];
+
+    public DemoState(IJSRuntime js)
+    {
+        _js = js;
+    }
+
+    /// <summary>Raised after any value changed. The layout re-registers its commands on it, so toggles show their new state.</summary>
+    public event Action? Changed;
+
+    /// <summary>
+    /// The site theme as the reader chose it: <c>auto</c> follows the operating system, <c>light</c> and <c>dark</c>
+    /// pin one. The site kit applies it as <c>&lt;html bit-theme="light|dark"&gt;</c>, which the site and - through
+    /// demo.css - the palette both follow; the header's toggle changes it too, and <see cref="FollowSiteTheme"/> hears it.
+    /// </summary>
+    public string Theme { get; private set; } = "auto";
+
+    public bool WordWrap { get; private set; } = true;
+
+    public bool Notifications { get; private set; }
+
+    public bool ShowMinimap { get; private set; } = true;
+
+    public string ProjectName { get; private set; } = "Acme Dashboard";
+
+    /// <summary>The interface language the Language command shows; a right-to-left one sets <c>dir="rtl"</c> on the page.</summary>
+    public string Language { get; private set; } = "English";
+
+    public IReadOnlyList<string> Labels { get; private set; } = ["bug"];
+
+    /// <summary>Newest first, capped at 30 entries.</summary>
+    public IReadOnlyList<string> Log => _log;
+
+    // ---- Presentation of the layout's palette ------------------------------------------------------------------
+
+    /// <summary>The palette's own Theme parameter. Null follows the page; a value wins over it.</summary>
+    public string? PaletteTheme { get; private set; }
+
+    /// <summary>An accent colour poured into the palette's custom properties, or null for the stylesheet's.</summary>
+    public string? Accent { get; private set; }
+
+    /// <summary>The dialog width in pixels, or null for the stylesheet's (640, or 920 with the detail pane).</summary>
+    public int? Width { get; private set; }
+
+    /// <summary>The corner radius in pixels, or null for the stylesheet's.</summary>
+    public int? Radius { get; private set; }
+
+    public bool ShowDetail { get; private set; } = true;
+
+    public bool ShowFooter { get; private set; } = true;
+
+    public bool HighlightMatches { get; private set; } = true;
+
+    public bool GroupWhenSearching { get; private set; } = true;
+
+    public bool Virtualize { get; private set; }
+
+    /// <summary>The palette's Density parameter: null for the options' (<c>comfortable</c>), or <c>compact</c>.</summary>
+    public string? Density { get; private set; }
+
+    /// <summary>The palette's ShowShortcuts parameter: the key caps at the end of a row.</summary>
+    public bool ShowShortcuts { get; private set; } = true;
+
+    /// <summary>
+    /// The palette's Style parameter: inline custom properties on the dialog, which win over every rule in the
+    /// stylesheet. The soft accent and the highlight are derived from the accent so one choice recolours all three.
+    /// </summary>
+    public string? PaletteStyle
+    {
+        get
+        {
+            var parts = new List<string>(5);
+            if (Accent is not null)
+            {
+                parts.Add($"--bit-balette-accent:{Accent}");
+                parts.Add($"--bit-balette-accent-soft:color-mix(in srgb, {Accent} 14%, transparent)");
+                parts.Add($"--bit-balette-mark-bg:color-mix(in srgb, {Accent} 26%, transparent)");
+            }
+
+            if (Width is { } width)
+            {
+                parts.Add($"--bit-balette-width:{width}px");
+            }
+
+            if (Radius is { } radius)
+            {
+                parts.Add($"--bit-balette-radius:{radius}px");
+            }
+
+            return parts.Count == 0 ? null : string.Join(';', parts);
+        }
+    }
+
+    // ---- Theme ---------------------------------------------------------------------------------------------------
+
+    public async Task SetThemeAsync(string theme)
+    {
+        try
+        {
+            // demo.js hands the choice to the site kit's theme.js, which repaints the page and remembers it, and
+            // answers with what is in effect now.
+            Theme = await _js.InvokeAsync<string>("baletteDemo.setThemeMode", theme);
+        }
+        catch (Exception ex) when (ex is JSException or InvalidOperationException or JSDisconnectedException)
+        {
+            // Not interactive yet, or the script is missing: the choice is remembered for this visit only.
+            Theme = theme;
+        }
+
+        Record($"Theme set to {theme}");
+    }
+
+    // ---- Clipboard -----------------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// Writes <paramref name="text"/> to the clipboard, and answers whether the browser let it: a write is allowed only
+    /// shortly after a key press or a click, and a browser may refuse it even then.
+    /// </summary>
+    public async Task<bool> CopyToClipboardAsync(string text)
+    {
+        try
+        {
+            return await _js.InvokeAsync<bool>("baletteDemo.copyText", text);
+        }
+        catch (Exception ex) when (ex is JSException or InvalidOperationException or JSDisconnectedException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// The site theme changed without this state being asked - the header's toggle, the OS, or the theme theme.js
+    /// applied from storage before the first paint, reported once the palette is interactive - so a reload does not
+    /// show "auto" in the palette while the page is dark.
+    /// </summary>
+    public void FollowSiteTheme(string theme)
+    {
+        if (theme is not ("auto" or "light" or "dark") || theme == Theme) return;
+
+        Theme = theme;
+        Changed?.Invoke();
+    }
+
+    // ---- Preferences ---------------------------------------------------------------------------------------------
+
+    public void ToggleWordWrap()
+    {
+        WordWrap = !WordWrap;
+        Record($"Word wrap {(WordWrap ? "on" : "off")}");
+    }
+
+    public void ToggleNotifications()
+    {
+        Notifications = !Notifications;
+        Record($"Notifications {(Notifications ? "on" : "off")}");
+    }
+
+    public void ToggleMinimap()
+    {
+        ShowMinimap = !ShowMinimap;
+        Record($"Minimap {(ShowMinimap ? "shown" : "hidden")}");
+    }
+
+    public async Task ResetPreferencesAsync()
+    {
+        WordWrap = true;
+        Notifications = false;
+        ShowMinimap = true;
+        await SetThemeAsync("auto");
+    }
+
+    public async Task SetLanguageAsync(string language, bool rtl)
+    {
+        Language = language;
+        try
+        {
+            await _js.InvokeVoidAsync("document.documentElement.setAttribute", "dir", rtl ? "rtl" : "ltr");
+        }
+        catch (JSException)
+        {
+            // The page is gone; the language is still recorded.
+        }
+
+        Record($"Language: {language}");
+    }
+
+    public void Rename(string name)
+    {
+        ProjectName = name;
+        Record($"Project renamed to “{name}”");
+    }
+
+    public void SetLabels(IEnumerable<string> labels)
+    {
+        Labels = [.. labels];
+        Record(Labels.Count == 0 ? "Labels cleared" : $"Labels: {string.Join(", ", Labels)}");
+    }
+
+    // ---- Palette presentation ------------------------------------------------------------------------------------
+
+    public void SetPaletteTheme(string? theme) => Set(() => PaletteTheme = theme);
+
+    public void SetAccent(string? accent) => Set(() => Accent = accent);
+
+    public void SetWidth(int? width) => Set(() => Width = width);
+
+    public void SetRadius(int? radius) => Set(() => Radius = radius);
+
+    public void SetShowDetail(bool value) => Set(() => ShowDetail = value);
+
+    public void SetShowFooter(bool value) => Set(() => ShowFooter = value);
+
+    public void SetHighlightMatches(bool value) => Set(() => HighlightMatches = value);
+
+    public void SetGroupWhenSearching(bool value) => Set(() => GroupWhenSearching = value);
+
+    public void SetVirtualize(bool value) => Set(() => Virtualize = value);
+
+    public void SetDensity(string? density) => Set(() => Density = density);
+
+    public void SetShowShortcuts(bool value) => Set(() => ShowShortcuts = value);
+
+    public void ResetPresentation() => Set(() =>
+    {
+        PaletteTheme = null;
+        Accent = null;
+        Width = null;
+        Radius = null;
+        ShowDetail = true;
+        ShowFooter = true;
+        HighlightMatches = true;
+        GroupWhenSearching = true;
+        Virtualize = false;
+        Density = null;
+        ShowShortcuts = true;
+    });
+
+    // ---- Activity log --------------------------------------------------------------------------------------------
+
+    public void Record(string message)
+    {
+        _log.Insert(0, $"{DateTime.Now:HH:mm:ss}  {message}");
+        if (_log.Count > 30)
+        {
+            _log.RemoveAt(_log.Count - 1);
+        }
+
+        Changed?.Invoke();
+    }
+
+    private void Set(Action change)
+    {
+        change();
+        Changed?.Invoke();
+    }
+}

@@ -200,15 +200,11 @@ public class BitNavBarTests : BunitTestContext
     [DataRow(BitColor.Primary, "bit-nbr-pri")]
     [DataRow(BitColor.Secondary, "bit-nbr-sec")]
     [DataRow(BitColor.Error, "bit-nbr-err")]
-    [DataRow(null, "bit-nbr-pri")]
-    public void BitNavBarShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitNavBarShouldRespectColor(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitNavBar<BitNavBarOption>>(parameters =>
         {
-            if (color.HasValue)
-            {
-                parameters.Add(p => p.Color, color.Value);
-            }
+            parameters.Add(p => p.Color, color);
         });
 
         Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains(expectedClass));
@@ -239,18 +235,35 @@ public class BitNavBarTests : BunitTestContext
     [DataRow(BitSize.Small, "bit-nbr-sm")]
     [DataRow(BitSize.Medium, "bit-nbr-md")]
     [DataRow(BitSize.Large, "bit-nbr-lg")]
-    [DataRow(null, "bit-nbr-md")]
-    public void BitNavBarShouldRespectSize(BitSize? size, string expectedClass)
+    public void BitNavBarShouldRespectSize(BitSize size, string expectedClass)
     {
         var component = RenderComponent<BitNavBar<BitNavBarOption>>(parameters =>
         {
-            if (size.HasValue)
-            {
-                parameters.Add(p => p.Size, size.Value);
-            }
+            parameters.Add(p => p.Size, size);
         });
 
         Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitNavBar<BitNavBarOption>>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-NavBar-* variables restyle the default while
+        // an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-nbr");
+        var published = new[]
+        {
+            "bit-nbr-pri", "bit-nbr-sec", "bit-nbr-ter", "bit-nbr-inf", "bit-nbr-suc", "bit-nbr-wrn", "bit-nbr-swr", "bit-nbr-err",
+            "bit-nbr-pbg", "bit-nbr-sbg", "bit-nbr-tbg", "bit-nbr-pfg", "bit-nbr-sfg", "bit-nbr-tfg", "bit-nbr-pbr", "bit-nbr-sbr", "bit-nbr-tbr",
+            "bit-nbr-sm", "bit-nbr-md", "bit-nbr-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
 
@@ -394,15 +407,117 @@ public class BitNavBarTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow("https://bitplatform.dev", "_blank", "noopener noreferrer")]
-    [DataRow("//bitplatform.dev", "_blank", "noopener noreferrer")]
-    [DataRow("/home", "_blank", null)]
+    [DataRow("https://bitplatform.dev", "_blank", "noopener")]
+    [DataRow("//bitplatform.dev", "_blank", "noopener")]
+    [DataRow("/home", "_blank", "noopener")]
+    [DataRow("/home", "_Blank", "noopener")]
+    [DataRow("https://bitplatform.dev", "_self", null)]
     [DataRow("https://bitplatform.dev", null, null)]
-    public void BitNavBarShouldProtectAnExternalTargetOnly(string url, string? target, string? expectedRel)
+    public void BitNavBarShouldOnlyHardenALinkOpeningANewTab(string url, string? target, string? expectedRel)
     {
+        // The rule every anchor of the library shares: noopener on a new tab whatever its origin, and nothing on
+        // a target that opens no new browsing context - the referrer is the app's to withhold, not the navbar's.
         var component = RenderNavBar([new() { Text = "Home", Url = url, Target = target }]);
 
         Assert.AreEqual(expectedRel, component.Find(".bit-nbr-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    [DataRow(BitLinkRels.NoFollow, "nofollow noopener")]
+    [DataRow(BitLinkRels.NoReferrer, "noreferrer")]
+    [DataRow(BitLinkRels.Opener, "opener")]
+    public void BitNavBarShouldRenderTheRelOfAnItem(BitLinkRels rel, string expectedRel)
+    {
+        var component = RenderNavBar([new() { Text = "Home", Url = "https://bitplatform.dev", Target = "_blank", Rel = rel }]);
+
+        Assert.AreEqual(expectedRel, component.Find(".bit-nbr-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldAnnounceAnItemOpeningANewTab()
+    {
+        var component = RenderNavBar([new() { Text = "Docs", Url = "https://bitplatform.dev", Target = "_blank" },
+                                      new() { Text = "Home", Url = "/home" }]);
+
+        var items = component.FindAll(".bit-nbr-itm");
+
+        Assert.AreEqual("(opens in a new tab)", items[0].QuerySelector(".bit-nbr-vhd")?.TextContent);
+        Assert.IsNull(items[1].QuerySelector(".bit-nbr-vhd"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldAppendTheNewTabHintToTheLabelOfAnIconOnlyItem()
+    {
+        // An icon-only item is named by an aria-label, which replaces the content, so the sentence goes there.
+        var component = RenderNavBar([new() { Text = "Docs", IconName = "Info", Url = "https://bitplatform.dev", Target = "_blank" }],
+                                     p => p.Add(c => c.IconOnly, true));
+
+        var item = component.Find(".bit-nbr-itm");
+
+        Assert.AreEqual("Docs (opens in a new tab)", item.GetAttribute("aria-label"));
+        Assert.IsNull(item.QuerySelector(".bit-nbr-vhd"));
+    }
+
+    [TestMethod]
+    public void BitNavBarNewTabHintShouldRewordOrRemoveTheAnnouncement()
+    {
+        BitNavBarItem[] items = [new() { Text = "Docs", Url = "https://bitplatform.dev", Target = "_blank" }];
+
+        Assert.AreEqual("(new window)", RenderNavBar(items, p => p.Add(c => c.NewTabHint, "(new window)")).Find(".bit-nbr-vhd").TextContent);
+        Assert.IsEmpty(RenderNavBar(items, p => p.Add(c => c.NewTabHint, "")).FindAll(".bit-nbr-vhd"));
+
+        var suppressed = RenderNavBar(items, p => p.Add(c => c.NoNewTabHint, true));
+        Assert.IsEmpty(suppressed.FindAll(".bit-nbr-vhd"));
+        Assert.AreEqual("noopener", suppressed.Find(".bit-nbr-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldNotAnnounceADisabledItemAsOpeningANewTab()
+    {
+        var component = RenderNavBar([new() { Text = "Docs", Url = "https://bitplatform.dev", Target = "_blank", IsDisabled = true }]);
+
+        Assert.IsEmpty(component.FindAll(".bit-nbr-vhd"));
+    }
+
+    [TestMethod]
+    public void BitNavBarParamsShouldCascadeTheNewTabHint()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [new BitNavBarParams { NewTabHint = "(new window)" }]);
+            parameters.AddChildContent<BitNavBar<BitNavBarItem>>(navBar =>
+            {
+                navBar.Add(p => p.Items, [new() { Text = "Docs", Url = "https://bitplatform.dev", Target = "_blank" }]);
+            });
+        });
+
+        Assert.AreEqual("(new window)", component.Find(".bit-nbr-vhd").TextContent);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldReadTheRelOfACustomItemThroughTheNameSelectors()
+    {
+        var component = RenderComponent<BitNavBar<BitNavBarRelItem>>(p =>
+        {
+            p.Add(c => c.Items, [new() { Caption = "Docs", Link = "https://bitplatform.dev", Window = "_blank", Relation = BitLinkRels.External }]);
+            p.Add(c => c.NameSelectors, new()
+            {
+                Text = { Selector = i => i.Caption },
+                Url = { Selector = i => i.Link },
+                Target = { Selector = i => i.Window },
+                Rel = { Selector = i => i.Relation }
+            });
+        });
+
+        Assert.AreEqual("external noopener", component.Find(".bit-nbr-itm").GetAttribute("rel"));
+    }
+
+    public class BitNavBarRelItem
+    {
+        public string? Caption { get; set; }
+        public string? Link { get; set; }
+        public string? Window { get; set; }
+        public BitLinkRels? Relation { get; set; }
     }
 
 
@@ -411,31 +526,51 @@ public class BitNavBarTests : BunitTestContext
     public void BitNavBarShouldDisableASingleItem()
     {
         var items = UrlItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderNavBar(items);
 
         var disabled = component.FindAll(".bit-nbr-itm")[1];
 
-        // A disabled item is not only greyed out: it loses its link, its tab stop and its keyboard stop.
-        Assert.AreEqual("BUTTON", disabled.TagName);
+        // A disabled item is not only greyed out: it loses its link, its tab stop and its keyboard stop. It
+        // stays the anchor it was, announced as a dimmed link rather than turned into another kind of control.
+        Assert.AreEqual("A", disabled.TagName);
         Assert.IsTrue(disabled.ClassList.Contains("bit-nbr-dis"));
+        Assert.IsFalse(disabled.HasAttribute("href"));
+        Assert.AreEqual("link", disabled.GetAttribute("role"));
         Assert.AreEqual("true", disabled.GetAttribute("aria-disabled"));
-        Assert.AreEqual("-1", disabled.GetAttribute("tabindex"));
+        Assert.IsFalse(disabled.HasAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldDisableAButtonItemNatively()
+    {
+        var items = BasicItems();
+        items[1].IsDisabled = true;
+
+        var component = RenderNavBar(items);
+
+        var disabled = component.FindAll(".bit-nbr-itm")[1];
+
+        // An item without a URL is a button: disabled natively, with the aria-disabled every disabled native control repeats.
+        Assert.AreEqual("BUTTON", disabled.TagName);
         Assert.IsTrue(disabled.HasAttribute("disabled"));
+        Assert.AreEqual("true", disabled.GetAttribute("aria-disabled"));
+        Assert.IsFalse(disabled.HasAttribute("tabindex"));
     }
 
     [TestMethod]
     public void BitNavBarShouldDisableEveryItemWhenTheNavBarIsDisabled()
     {
-        var component = RenderNavBar(UrlItems(), p => p.Add(c => c.IsEnabled, false));
+        var component = RenderNavBar(UrlItems(), p => p.Add(c => c.Disabled, true));
 
         Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains("bit-dis"));
 
         foreach (var item in component.FindAll(".bit-nbr-itm"))
         {
-            Assert.AreEqual("BUTTON", item.TagName);
-            Assert.AreEqual("-1", item.GetAttribute("tabindex"));
+            Assert.AreEqual("A", item.TagName);
+            Assert.IsFalse(item.HasAttribute("href"));
+            Assert.IsFalse(item.HasAttribute("tabindex"));
             Assert.AreEqual("true", item.GetAttribute("aria-disabled"));
         }
     }
@@ -444,7 +579,7 @@ public class BitNavBarTests : BunitTestContext
     public void BitNavBarShouldNotSelectADisabledItemOnClick()
     {
         var items = BasicItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
         var clicked = 0;
 
         var component = RenderNavBar(items, p =>
@@ -466,7 +601,7 @@ public class BitNavBarTests : BunitTestContext
 
         var component = RenderNavBar(BasicItems(), p =>
         {
-            p.Add(c => c.IsEnabled, false);
+            p.Add(c => c.Disabled, true);
             p.Add(c => c.Mode, BitNavMode.Manual);
             p.Add(c => c.OnItemClick, (BitNavBarItem _) => clicked++);
         });
@@ -1021,6 +1156,292 @@ public class BitNavBarTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavBarShouldSelectTheDefaultSelectedKeyOfTheItemsApi()
+    {
+        var items = BasicItems();
+        items[2].Key = "profile";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.DefaultSelectedKey, "profile");
+        });
+
+        Assert.AreEqual("Profile", SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldSelectTheDefaultSelectedKeyOfAnOption()
+    {
+        // No option exists to be referenced by DefaultSelectedItem while the navbar initializes, so the key is
+        // what the options API sets its default selection with.
+        var component = RenderComponent<BitNavBar<BitNavBarOption>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitNavMode.Manual);
+            parameters.Add(p => p.DefaultSelectedKey, "settings");
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitNavBarOption>(0);
+                builder.AddAttribute(1, nameof(BitNavBarOption.Text), "Home");
+                builder.AddAttribute(2, nameof(BitNavBarOption.Key), "home");
+                builder.CloseComponent();
+                builder.OpenComponent<BitNavBarOption>(3);
+                builder.AddAttribute(4, nameof(BitNavBarOption.Text), "Settings");
+                builder.AddAttribute(5, nameof(BitNavBarOption.Key), "settings");
+                builder.CloseComponent();
+            }));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual("Settings", SelectedText(component)));
+        Assert.AreEqual("page", component.FindAll(".bit-nbr-itm")[1].GetAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldPreferTheDefaultSelectedItemOverTheDefaultSelectedKey()
+    {
+        var items = BasicItems();
+        items[2].Key = "profile";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.DefaultSelectedItem, items[1]);
+            p.Add(c => c.DefaultSelectedKey, "profile");
+        });
+
+        Assert.AreEqual("Products", SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldIgnoreTheDefaultSelectedKeyInTheAutomaticMode()
+    {
+        var items = BasicItems();
+        items[2].Key = "profile";
+
+        var component = RenderNavBar(items, p => p.Add(c => c.DefaultSelectedKey, "profile"));
+
+        Assert.IsNull(SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldSelectTheItemOfTheSelectedKey()
+    {
+        var items = BasicItems();
+        items[2].Key = "profile";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, "profile");
+        });
+
+        Assert.AreEqual("Profile", SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldReportTheKeyOfAClickedItem()
+    {
+        var items = BasicItems();
+        items[0].Key = "home";
+        items[1].Key = "products";
+
+        string? reported = "unset";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, "home");
+            p.Add(c => c.SelectedKeyChanged, (string? key) => reported = key);
+        });
+
+        component.FindAll(".bit-nbr-itm")[1].Click();
+
+        Assert.AreEqual("products", reported);
+        Assert.AreEqual("Products", SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldHoldTheSelectionOfAOneWaySelectedKey()
+    {
+        // A key that cannot be written back holds the selection, as a one-way SelectedItem does: moving the
+        // item alone would leave the key naming another one.
+        var items = BasicItems();
+        items[0].Key = "home";
+        items[1].Key = "products";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, "home");
+        });
+
+        component.FindAll(".bit-nbr-itm")[1].Click();
+
+        Assert.AreEqual("Home", SelectedText(component));
+        Assert.AreEqual("home", component.Instance.SelectedKey);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldWriteTheSelectedKeyBackBeforeOnSelectItem()
+    {
+        var items = BasicItems();
+        items[0].Key = "home";
+        items[1].Key = "products";
+
+        string? key = "home";
+        string? keyInCallback = null;
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, key);
+            p.Add(c => c.SelectedKeyChanged, (string? k) => key = k);
+            p.Add(c => c.OnSelectItem, (BitNavBarItem? _) => keyInCallback = key);
+        });
+
+        component.FindAll(".bit-nbr-itm")[1].Click();
+
+        Assert.AreEqual("products", keyInCallback);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldFollowAChangedSelectedKey()
+    {
+        var items = BasicItems();
+        items[0].Key = "home";
+        items[2].Key = "profile";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, "home");
+        });
+
+        component.Render(p => p.Add(c => c.SelectedKey, "profile"));
+
+        Assert.AreEqual("Profile", SelectedText(component));
+
+        // A null key clears the selection, the way a null SelectedItem does.
+        component.Render(p => p.Add(c => c.SelectedKey, (string?)null));
+
+        Assert.IsNull(SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldApplyASelectedKeyOnceAnItemCarriesIt()
+    {
+        var items = BasicItems();
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, "later");
+        });
+
+        Assert.IsNull(SelectedText(component));
+
+        List<BitNavBarItem> updated = [.. items, new() { Text = "Later", Key = "later" }];
+
+        component.Render(p => p.Add(c => c.Items, updated));
+
+        Assert.AreEqual("Later", SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldBindTheSelectedKeyOfTheOptions()
+    {
+        // No option exists to be referenced by SelectedItem before the options render, so the key is what the
+        // options API binds its selection with.
+        var component = RenderComponent<BitNavBarSelectedKeyTest>(p => p.Add(c => c.Key, "settings"));
+
+        component.WaitForAssertion(() => Assert.AreEqual("Settings", SelectedText(component)));
+
+        component.FindAll(".bit-nbr-itm")[0].Click();
+
+        Assert.AreEqual("home", component.Instance.Key);
+        Assert.AreEqual("Home", SelectedText(component));
+
+        component.Render(p => p.Add(c => c.Key, "products"));
+
+        component.WaitForAssertion(() => Assert.AreEqual("Products", SelectedText(component)));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldIgnoreTheDefaultsWhileTheSelectedKeyIsBound()
+    {
+        var items = BasicItems();
+        items[0].Key = "home";
+        items[2].Key = "profile";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectedKey, "home");
+            p.Add(c => c.DefaultSelectedKey, "profile");
+            p.Add(c => c.DefaultSelectedItem, items[1]);
+        });
+
+        Assert.AreEqual("Home", SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldReportTheKeyTheUrlSelectsInTheAutomaticMode()
+    {
+        Navigate("/products");
+
+        var items = UrlItems();
+        items[1].Key = "products";
+
+        string? reported = null;
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.SelectedKey, "home");
+            p.Add(c => c.SelectedKeyChanged, (string? key) => reported = key);
+        });
+
+        // The URL owns the selection here, so the key written from outside is answered with the matched one.
+        component.WaitForAssertion(() => Assert.AreEqual("products", reported));
+        Assert.AreEqual("Products", SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldReportTheFirstUrlMatchOnceWhenReselectable()
+    {
+        // The first render matches the URL twice (while initializing and once the items are in); only a
+        // navigation re-selects the current item, so the second match is not reported as a selection.
+        Navigate("/products");
+
+        var selects = 0;
+
+        RenderNavBar(UrlItems(), p =>
+        {
+            p.Add(c => c.Reselectable, true);
+            p.Add(c => c.OnSelectItem, (BitNavBarItem _) => selects++);
+        });
+
+        Assert.AreEqual(1, selects);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldReportANavigationBackToTheCurrentItemWhenReselectable()
+    {
+        Navigate("/products");
+
+        var selects = 0;
+
+        var component = RenderNavBar(UrlItems(), p =>
+        {
+            p.Add(c => c.Reselectable, true);
+            p.Add(c => c.OnSelectItem, (BitNavBarItem _) => selects++);
+        });
+
+        Navigate("/products");
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, selects));
+    }
+
+    [TestMethod]
     public void BitNavBarShouldBindTheSelectedItemBothWays()
     {
         var items = BasicItems();
@@ -1150,6 +1571,21 @@ public class BitNavBarTests : BunitTestContext
         AssertFocused(component, expected);
     }
 
+    // A Dir that names no direction leaves it to the page (unset) or to the content (Auto), which is read off the
+    // element: the keys follow the direction the component is actually laid out in.
+    [TestMethod]
+    [DataRow(null, "ArrowRight", 2, 1)]
+    [DataRow(BitDir.Auto, "ArrowLeft", 0, 1)]
+    public void BitNavBarShouldFlipTheHorizontalArrowsInAResolvedRtl(BitDir? dir, string key, int from, int expected)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderNavBar(BasicItems(), p => p.Add(c => c.Dir, dir));
+
+        PressKeyOn(component, from, key);
+
+        AssertFocused(component, expected);
+    }
+
     [TestMethod]
     public void BitNavBarShouldStopAtBothEndsOfTheBar()
     {
@@ -1191,7 +1627,7 @@ public class BitNavBarTests : BunitTestContext
     public void BitNavBarShouldWrapOntoAnEnabledItemOnly()
     {
         var items = BasicItems();
-        items[2].IsEnabled = false;
+        items[2].IsDisabled = true;
 
         var component = RenderNavBar(items, p => p.Add(c => c.WrapNavigation, true));
 
@@ -1206,7 +1642,7 @@ public class BitNavBarTests : BunitTestContext
         // A disabled item renders as a native disabled button, which takes no focus at all, so walking onto
         // one would leave the focus where it was while the navbar believes it has moved.
         var items = BasicItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderNavBar(items);
 
@@ -1218,7 +1654,7 @@ public class BitNavBarTests : BunitTestContext
     [TestMethod]
     public void BitNavBarShouldNotHandleTheArrowKeysWhileDisabled()
     {
-        var component = RenderNavBar(BasicItems(), p => p.Add(c => c.IsEnabled, false));
+        var component = RenderNavBar(BasicItems(), p => p.Add(c => c.Disabled, true));
 
         component.FindAll(".bit-nbr-itm")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
 
@@ -1303,7 +1739,7 @@ public class BitNavBarTests : BunitTestContext
     public void BitNavBarShouldKeepTheSingleTabStopOffADisabledFocusedItem()
     {
         var items = BasicItems();
-        items[0].IsEnabled = false;
+        items[0].IsDisabled = true;
 
         var component = RenderNavBar(items, p =>
         {
@@ -1318,7 +1754,7 @@ public class BitNavBarTests : BunitTestContext
 
         var rendered = component.FindAll(".bit-nbr-itm");
 
-        Assert.AreEqual("-1", rendered[0].GetAttribute("tabindex"));
+        Assert.IsFalse(rendered[0].HasAttribute("tabindex"));
         Assert.AreEqual("0", rendered[1].GetAttribute("tabindex"));
     }
 
@@ -1555,7 +1991,7 @@ public class BitNavBarTests : BunitTestContext
                 SelectedIcon = { Selector = i => i.SelectedGlyphInfo },
                 SelectedIconName = { Selector = i => i.SelectedGlyph },
                 Dot = { Selector = i => i.Marker },
-                IsEnabled = { Selector = i => i.Disabled is false },
+                IsDisabled = { Selector = i => i.Disabled },
                 Class = { Selector = i => i.CssClass },
                 Style = { Selector = i => i.CssStyle },
                 Title = { Selector = i => i.Tooltip },
@@ -1581,7 +2017,8 @@ public class BitNavBarTests : BunitTestContext
         Assert.AreEqual("7", component.Find(".bit-nbr-bdg").TextContent);
 
         Assert.IsTrue(rendered[2].ClassList.Contains("bit-nbr-dis"));
-        Assert.AreEqual("Products (7 new products)", rendered[1].GetAttribute("aria-label"));
+        // It opens a new tab as well, which is said after everything else its name is made of.
+        Assert.AreEqual("Products (7 new products) (opens in a new tab)", rendered[1].GetAttribute("aria-label"));
         Assert.AreEqual("Your profile", rendered[2].GetAttribute("aria-label"));
         Assert.AreEqual(1, component.FindAll(".bit-nbr-bdt").Count);
     }
@@ -1694,6 +2131,235 @@ public class BitNavBarTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(true, false, 1)]
+    [DataRow(true, true, 0)]
+    [DataRow(false, false, 0)]
+    public void BitNavBarShouldSetUpTheWheelOnceForAHorizontalScrollingBar(bool scrollable, bool vertical, int expectedCalls)
+    {
+        // The scrollbar of a horizontal Scrollable bar is hidden, so the mouse wheel is what scrolls it on a
+        // desktop; a rail scrolls down its own length, which the wheel already does natively.
+        var component = RenderNavBar(BasicItems(), p =>
+        {
+            p.Add(c => c.Scrollable, scrollable);
+            p.Add(c => c.Vertical, vertical);
+        });
+
+        component.Render();
+
+        var calls = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.NavBar.setupWheel").ToList();
+
+        Assert.AreEqual(expectedCalls, calls.Count);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldLeaveTheLandmarkRoleToTheNavElement()
+    {
+        // The nav element is the navigation landmark by itself, so no redundant role is repeated on it.
+        var component = RenderNavBar(BasicItems());
+
+        Assert.IsFalse(component.Find("nav.bit-nbr").HasAttribute("role"));
+    }
+
+
+
+    [TestMethod]
+    public void BitNavBarParamsShouldHaveCorrectParamName()
+    {
+        var expectedName = $"{nameof(BitParams)}.{nameof(BitNavBar<object>)}";
+
+        Assert.AreEqual(expectedName, BitNavBarParams.ParamName);
+    }
+
+    [TestMethod]
+    public void BitNavBarParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitNavBarParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitNavBarParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldApplyCascadingParametersFromBitParams()
+    {
+        var @params = new BitNavBarParams
+        {
+            Alignment = BitAlignment.Center,
+            Color = BitColor.Success,
+            Filled = true,
+            FitWidth = true,
+            FlipIndicator = true,
+            IconOnly = true,
+            Indicator = BitNavBarIndicator.Line,
+            Justified = true,
+            SafeArea = true,
+            Scrollable = true,
+            Size = BitSize.Large,
+            Vertical = true,
+            Classes = new() { Root = "cascaded-root" },
+            Styles = new() { Root = "margin:1px" },
+            AriaLabel = "Cascaded navigation",
+        };
+
+        var component = RenderInBitParams(@params, BasicItems());
+
+        var root = component.Find(".bit-nbr");
+
+        foreach (var cssClass in new[] { "bit-nbr-ctr", "bit-nbr-suc", "bit-nbr-fil", "bit-nbr-ftw", "bit-nbr-fli", "bit-nbr-ion", "bit-nbr-lin",
+                                         "bit-nbr-jst", "bit-nbr-sfa", "bit-nbr-scr", "bit-nbr-lg", "bit-nbr-vrt", "cascaded-root" })
+        {
+            Assert.IsTrue(root.ClassList.Contains(cssClass), cssClass);
+        }
+
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.AreEqual("Cascaded navigation", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavBarParamsShouldSetTheBehaviorParameters()
+    {
+        var @params = new BitNavBarParams
+        {
+            AutoReorderOptions = true,
+            HideUnselectedText = true,
+            InlineText = true,
+            ItemTemplateRenderMode = BitNavItemTemplateRenderMode.Replace,
+            Match = BitNavMatch.Prefix,
+            Mode = BitNavMode.Manual,
+            Reselectable = true,
+            SelectOnFocus = true,
+            SingleTabStop = true,
+            WrapNavigation = true,
+            FullWidth = true,
+        };
+
+        var component = RenderInBitParams(@params, BasicItems());
+
+        var navBar = component.FindComponent<BitNavBar<BitNavBarItem>>().Instance;
+
+        Assert.IsTrue(navBar.AutoReorderOptions);
+        Assert.IsTrue(navBar.HideUnselectedText);
+        Assert.IsTrue(navBar.InlineText);
+        Assert.AreEqual(BitNavItemTemplateRenderMode.Replace, navBar.ItemTemplateRenderMode);
+        Assert.AreEqual(BitNavMatch.Prefix, navBar.Match);
+        Assert.AreEqual(BitNavMode.Manual, navBar.Mode);
+        Assert.IsTrue(navBar.Reselectable);
+        Assert.IsTrue(navBar.SelectOnFocus);
+        Assert.IsTrue(navBar.SingleTabStop);
+        Assert.IsTrue(navBar.WrapNavigation);
+        Assert.IsTrue(navBar.FullWidth);
+
+        var root = component.Find(".bit-nbr");
+        Assert.IsTrue(root.ClassList.Contains("bit-nbr-hut"));
+        Assert.IsTrue(root.ClassList.Contains("bit-nbr-inl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-nbr-flw"));
+    }
+
+    [TestMethod]
+    public void BitNavBarOwnParametersShouldOverrideCascadingParameters()
+    {
+        var @params = new BitNavBarParams { Color = BitColor.Success, Size = BitSize.Large, IconOnly = true };
+
+        var component = RenderInBitParams(@params, BasicItems(), (builder, seq) =>
+        {
+            builder.AddAttribute(seq, nameof(BitNavBar<BitNavBarItem>.Color), BitColor.Error);
+            builder.AddAttribute(seq + 1, nameof(BitNavBar<BitNavBarItem>.IconOnly), false);
+        });
+
+        var root = component.Find(".bit-nbr");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-nbr-err"));
+        Assert.IsFalse(root.ClassList.Contains("bit-nbr-suc"));
+        Assert.IsFalse(root.ClassList.Contains("bit-nbr-ion"));
+        // What the navbar left unset still comes from the cascade.
+        Assert.IsTrue(root.ClassList.Contains("bit-nbr-lg"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldReadACascadedModeBeforeItsFirstSelection()
+    {
+        // The initial selection is decided while the navbar initializes, so a cascaded Manual mode has to be in
+        // by then for the DefaultSelectedItem to be honored instead of the URL being matched.
+        var items = BasicItems();
+
+        var component = RenderInBitParams(new BitNavBarParams { Mode = BitNavMode.Manual }, items, (builder, seq) =>
+        {
+            builder.AddAttribute(seq, nameof(BitNavBar<BitNavBarItem>.DefaultSelectedItem), items[1]);
+        });
+
+        Assert.AreEqual("Products", SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldNotRematchTheUrlWhenTheCascadeIsReappliedUnchanged()
+    {
+        // The cascade is re-applied on every parameter set; a re-match on each one would re-fire the selection
+        // callback of a Reselectable navbar on every render of its parent.
+        Navigate("/products/42");
+
+        var selects = 0;
+        var @params = new BitNavBarParams { Match = BitNavMatch.Prefix, Reselectable = true };
+
+        var component = RenderInBitParams(@params, UrlItems(), (builder, seq) =>
+        {
+            builder.AddAttribute(seq, nameof(BitNavBar<BitNavBarItem>.OnSelectItem),
+                EventCallback.Factory.Create<BitNavBarItem>(this, (BitNavBarItem _) => selects++));
+        });
+
+        Assert.AreEqual("Products", component.Find(".bit-nbr-sel").TextContent.Trim());
+        Assert.AreEqual(1, selects);
+
+        component.Render();
+        component.Render();
+
+        Assert.AreEqual(1, selects);
+    }
+
+    [TestMethod]
+    public void BitNavBarParamsShouldApplyToTheOptionsApiToo()
+    {
+        // The params object is not generic, so the one object reaches a navbar of options as well.
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitNavBarParams { Color = BitColor.Warning, Vertical = true } });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitNavBar<BitNavBarOption>>(0);
+                builder.AddAttribute(1, nameof(BitNavBar<BitNavBarOption>.ChildContent), (RenderFragment)(b =>
+                {
+                    b.OpenComponent<BitNavBarOption>(0);
+                    b.AddAttribute(1, nameof(BitNavBarOption.Text), "Home");
+                    b.CloseComponent();
+                }));
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-nbr");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-nbr-wrn"));
+        Assert.IsTrue(root.ClassList.Contains("bit-nbr-vrt"));
+        Assert.AreEqual(1, component.FindAll(".bit-nbr-itm").Count);
+    }
+
+    private IRenderedComponent<BitParams> RenderInBitParams(BitNavBarParams @params,
+                                                            IList<BitNavBarItem> items,
+                                                            Action<Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder, int>? addAttributes = null)
+    {
+        return RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitNavBar<BitNavBarItem>>(0);
+                builder.AddAttribute(1, nameof(BitNavBar<BitNavBarItem>.Items), items);
+                addAttributes?.Invoke(builder, 2);
+                builder.CloseComponent();
+            });
+        });
+    }
+
+    [TestMethod]
     public void BitNavBarShouldKeepTheKeyboardWorkingAfterAnOptionIsRemoved()
     {
         // An option that is removed takes its element registration with it, so the keyboard walks the
@@ -1758,7 +2424,7 @@ public class BitNavBarTests : BunitTestContext
             <span class=""bit-nbr-icc "">
                 <i aria-hidden=""true"" class=""bit-nbr-ico bit-icon bit-icon--Home ""></i>
             </span>
-            <span class=""bit-nbr-txt ""><span class=""bit-nbr-txc"">Home</span></span>
+            <span class=""bit-nbr-txt "" data-content=""Home""><span class=""bit-nbr-txc"">Home</span></span>
         </button>
     </li>
     <li class=""bit-nbr-lit "">
@@ -1766,13 +2432,26 @@ public class BitNavBarTests : BunitTestContext
             <span class=""bit-nbr-icc "">
                 <i aria-hidden=""true"" class=""bit-nbr-ico bit-icon bit-icon--ProductVariant ""></i>
             </span>
-            <span class=""bit-nbr-txt ""><span class=""bit-nbr-txc"">Products</span></span>
+            <span class=""bit-nbr-txt "" data-content=""Products""><span class=""bit-nbr-txc"">Products</span></span>
         </button>
     </li>
 </ul>");
     }
 
 
+
+    [TestMethod]
+    public void BitNavBarShouldHandTheTextOverForItsReservedBoldCopy()
+    {
+        // The stylesheet lays an invisible bold copy of the text out of data-content, which is what keeps an
+        // item the same width as the selection turns its text bolder.
+        var component = RenderNavBar(BasicItems());
+
+        var texts = component.FindAll(".bit-nbr-txt");
+
+        Assert.AreEqual("Home", texts[0].GetAttribute("data-content"));
+        Assert.AreEqual("Home", texts[0].TextContent);
+    }
 
     [TestMethod]
     public void BitNavBarShouldRenderItsItemsAsAList()
@@ -2030,6 +2709,20 @@ public class BitNavBarTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(true, "bit-nbr-fli")]
+    [DataRow(false, "")]
+    public void BitNavBarShouldRespectFlipIndicator(bool flipIndicator, string expectedClass)
+    {
+        var component = RenderNavBar(BasicItems(), p =>
+        {
+            p.Add(c => c.Indicator, BitNavBarIndicator.Line);
+            p.Add(c => c.FlipIndicator, flipIndicator);
+        });
+
+        AssertRootClass(component, expectedClass, "bit-nbr-fli");
+    }
+
+    [TestMethod]
     [DataRow(null)]
     [DataRow(BitNavBarIndicator.None)]
     public void BitNavBarShouldRenderNoIndicatorClassWithoutAnIndicator(BitNavBarIndicator? indicator)
@@ -2140,7 +2833,7 @@ public class BitNavBarTests : BunitTestContext
     {
         var component = RenderNavBar(BasicItems(), p =>
         {
-            p.Add(c => c.IsEnabled, false);
+            p.Add(c => c.Disabled, true);
             p.Add(c => c.Mode, BitNavMode.Manual);
             p.Add(c => c.SelectOnFocus, true);
         });
@@ -2154,7 +2847,7 @@ public class BitNavBarTests : BunitTestContext
     public void BitNavBarShouldNotSelectADisabledItemOnFocus()
     {
         var items = BasicItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderNavBar(items, p =>
         {
@@ -2410,5 +3103,20 @@ public class BitNavBarTests : BunitTestContext
 
         Assert.AreEqual(expectedCallCount, focused.Count);
         focused[^1].Arguments[0].ShouldBeElementReferenceTo(component.FindAll(".bit-nbr-itm")[expectedIndex]);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitNavBar<BitNavBarItem>>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-nbr");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
     }
 }

@@ -1,0 +1,460 @@
+﻿@page "/e2e/markdown-editor"
+
+<PageTitle>BitMarkdownEditor E2E</PageTitle>
+
+<h1>BitMarkdownEditor</h1>
+
+<E2ESection Id="binding" Title="Two-way Value">
+    <button id="btn-set-value" @onclick="SetBoundValue">Set value</button>
+    <button id="btn-clear-value" @onclick="() => _boundValue = null">Clear value</button>
+    <textarea id="page-input" @bind="_boundValue" @bind:event="oninput"></textarea>
+    <BitMarkdownEditor Id="mde-bind" @bind-Value="_boundValue" OnChange="v => { _changeCount++; _lastChange = v; }" />
+    <div>Value: <pre id="bind-value">@_boundValue</pre></div>
+    <div>OnChange: <span id="change-count">@_changeCount</span> <pre id="last-change">@_lastChange</pre></div>
+</E2ESection>
+
+<E2ESection Id="default-value" Title="DefaultValue">
+    <BitMarkdownEditor Id="mde-default" DefaultValue="# Default heading" OnChange="v => _defaultChange = v" />
+    <pre id="default-change">@_defaultChange</pre>
+</E2ESection>
+
+<E2ESection Id="mode" Title="Mode">
+    <button id="btn-mode-edit" @onclick="() => _mode = BitMarkdownEditorMode.Edit">Edit</button>
+    <button id="btn-mode-split" @onclick="() => _mode = BitMarkdownEditorMode.Split">Split</button>
+    <button id="btn-mode-preview" @onclick="() => _mode = BitMarkdownEditorMode.Preview">Preview</button>
+    <span id="mode-value">@_mode</span>
+    <BitMarkdownEditor Id="mde-mode" @bind-Mode="_mode" DefaultValue="@ModeMarkdown" />
+    <div style="width: 400px;">
+        <BitMarkdownEditor Id="mde-narrow" DefaultValue="# Narrow" />
+    </div>
+    <BitMarkdownEditor Id="mde-mode-oneway" Mode="BitMarkdownEditorMode.Preview" DefaultValue="# One way" />
+</E2ESection>
+
+<E2ESection Id="sync-scroll" Title="Sync scroll">
+    <BitMarkdownEditor Id="mde-sync" DefaultValue="@LongMarkdown" Height="12rem" />
+    <BitMarkdownEditor Id="mde-nosync" DefaultValue="@LongMarkdown" Height="12rem" SyncScroll="false" />
+</E2ESection>
+
+<E2ESection Id="fullscreen" Title="Height and FullScreen">
+    <button id="btn-fullscreen" @onclick="() => _fullScreen = !_fullScreen">Toggle full screen</button>
+    <span id="fullscreen-value">@_fullScreen</span>
+    <BitMarkdownEditor Id="mde-fullscreen" @bind-FullScreen="_fullScreen" Height="10rem" MinHeight="6rem" MaxHeight="20rem" Resizable />
+    <BitMarkdownEditor Id="mde-autoheight" AutoHeight StickyToolbar MinHeight="5rem" MaxHeight="15rem" Mode="BitMarkdownEditorMode.Edit" />
+    <div style="height: 900px;"></div>
+</E2ESection>
+
+<E2ESection Id="toolbar-default" Title="Default toolbar">
+    <BitMarkdownEditor Id="mde-cmd" @bind-Value="_cmdValue" Mode="BitMarkdownEditorMode.Edit" />
+    <pre id="cmd-value">@_cmdValue</pre>
+</E2ESection>
+
+<E2ESection Id="toolbar-custom" Title="Custom toolbar">
+    <button id="btn-custom-readonly" @onclick="() => _customReadOnly = !_customReadOnly">Toggle read-only</button>
+    <span id="custom-readonly">@_customReadOnly</span>
+    <BitMarkdownEditor Id="mde-custom" @bind-Value="_customValue" Toolbar="_customToolbar" ReadOnly="_customReadOnly" Height="8rem" />
+    <pre id="custom-value">@_customValue</pre>
+    <div>Status: <span id="toolbar-status">@_toolbarStatus</span></div>
+    <BitMarkdownEditor Id="mde-nochrome" ShowToolbar="false" ShowStatusBar="false" Height="8rem" />
+</E2ESection>
+
+<E2ESection Id="api" Title="Public members">
+    <button id="btn-run-h1" @onclick="() => RunAsync(BitMarkdownEditorCommand.Heading1)">Run H1</button>
+    <button id="btn-run-bold" @onclick="() => RunAsync(BitMarkdownEditorCommand.Bold)">Run Bold</button>
+    <button id="btn-run-duplicate" @onclick="() => RunAsync(BitMarkdownEditorCommand.DuplicateLine)">Run DuplicateLine</button>
+    <button id="btn-insert" @onclick="InsertAsync">Insert</button>
+    <button id="btn-undo" disabled="@(_apiRef?.CanUndo is not true)" @onclick="UndoAsync">Undo</button>
+    <button id="btn-redo" disabled="@(_apiRef?.CanRedo is not true)" @onclick="RedoAsync">Redo</button>
+    <button id="btn-get-value" @onclick="GetValueAsync">GetValue</button>
+    <button id="btn-get-selection" @onclick="GetSelectionAsync">GetSelection</button>
+    <button id="btn-set-selection" @onclick="SetSelectionAsync">SetSelection</button>
+    <button id="btn-replace" @onclick="ReplaceAsync">Replace</button>
+    <button id="btn-replace-first" @onclick="ReplaceFirstAsync">Replace first</button>
+    <button id="btn-find-next" @onclick="FindNextAsync">FindNext</button>
+    <button id="btn-find-previous" @onclick="FindPreviousAsync">FindPrevious</button>
+    <button id="btn-focus" @onclick="FocusAsync">Focus</button>
+    <button id="btn-blur" @onclick="BlurAsync">Blur</button>
+    <span id="can-undo">@(_apiRef?.CanUndo)</span>
+    <span id="can-redo">@(_apiRef?.CanRedo)</span>
+    <BitMarkdownEditor @ref="_apiRef" Id="mde-api" ShowToolbar="false" DefaultValue="hello world" Mode="BitMarkdownEditorMode.Edit" OnChange="_ => InvokeAsync(StateHasChanged)" OnFocus="() => _apiFocus++" OnBlur="() => _apiBlur++" />
+    <pre id="api-result">@_apiResult</pre>
+    <div>Focus: <span id="api-focus">@_apiFocus</span> Blur: <span id="api-blur">@_apiBlur</span></div>
+</E2ESection>
+
+<E2ESection Id="preview" Title="Preview">
+    <BitMarkdownEditor Id="mde-preview-basic" DefaultValue="@PreviewMarkdown" PreviewPipeline="BitMarkdownPipelines.Basic" />
+    <BitMarkdownEditor Id="mde-preview-github" DefaultValue="@PreviewMarkdown" />
+    <BitMarkdownEditor Id="mde-preview-template" DefaultValue="@PreviewMarkdown" DebounceTime="800">
+        <PreviewTemplate>
+            <pre class="raw-preview">@context</pre>
+        </PreviewTemplate>
+    </BitMarkdownEditor>
+    <BitMarkdownEditor Id="mde-preview-empty" />
+</E2ESection>
+
+<E2ESection Id="editing" Title="Editing options">
+    <BitMarkdownEditor Id="mde-editing"
+                       @bind-Value="_editingValue"
+                       Placeholder="Type a ( here"
+                       Mode="BitMarkdownEditorMode.Edit"
+                       Height="8rem"
+                       SpellCheck="false"
+                       AutoClosePairs
+                       TabIndents="false"
+                       ChangeDebounceTime="400" />
+    <pre id="editing-value">@_editingValue</pre>
+    <button id="after-editing">After editing</button>
+    <BitMarkdownEditor Id="mde-indent" @bind-Value="_indentValue" Mode="BitMarkdownEditorMode.Edit" Height="8rem" AutoPair="false" IndentUnit="@("    ")" />
+    <pre id="indent-value">@_indentValue</pre>
+    <button id="after-indent">After indent</button>
+</E2ESection>
+
+<E2ESection Id="styles-md" Title="Markdown spelling">
+    <BitMarkdownEditor Id="mde-spelling"
+                       @bind-Value="_spellingValue"
+                       BoldStyle="BitMarkdownEditorEmphasisStyle.Underscore"
+                       ItalicStyle="BitMarkdownEditorEmphasisStyle.Underscore"
+                       BulletStyle="BitMarkdownEditorBulletStyle.Asterisk"
+                       TableColumns="4"
+                       TableRows="3"
+                       Mode="BitMarkdownEditorMode.Edit"
+                       Height="8rem" />
+    <pre id="spelling-value">@_spellingValue</pre>
+    <BitMarkdownEditor Id="mde-plus" @bind-Value="_plusValue" BulletStyle="BitMarkdownEditorBulletStyle.Plus" Mode="BitMarkdownEditorMode.Edit" Height="6rem" />
+    <pre id="plus-value">@_plusValue</pre>
+</E2ESection>
+
+<E2ESection Id="readonly" Title="ReadOnly">
+    <BitMarkdownEditor Id="mde-readonly" ReadOnly @bind-Value="_readOnlyValue" Height="8rem" />
+    <pre id="readonly-value">@_readOnlyValue</pre>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="disabled-value">@_disabled</span>
+    <BitMarkdownEditor Id="mde-disabled" Disabled="_disabled" DefaultValue="# Disabled" Height="6rem" Label="Disabled editor"
+                       @onclick="() => _disabledClicks++" @onkeydown="() => _disabledKeys++" @onmouseover="() => _disabledHovers++" />
+    <div>Clicks: <span id="disabled-clicks">@_disabledClicks</span> Keys: <span id="disabled-keys">@_disabledKeys</span> Hovers: <span id="disabled-hovers">@_disabledHovers</span></div>
+</E2ESection>
+
+<E2ESection Id="find" Title="Find and replace">
+    <BitMarkdownEditor Id="mde-find" @bind-Value="_findValue" Mode="BitMarkdownEditorMode.Edit" Height="8rem" />
+    <pre id="find-value">@_findValue</pre>
+    <BitMarkdownEditor Id="mde-find-readonly" ReadOnly DefaultValue="find me, find me" Mode="BitMarkdownEditorMode.Edit" Height="6rem" />
+</E2ESection>
+
+<E2ESection Id="table-tools" Title="Table tools">
+    <BitMarkdownEditor Id="mde-table" @bind-Value="_tableValue" Mode="BitMarkdownEditorMode.Edit" />
+    <pre id="table-value">@_tableValue</pre>
+</E2ESection>
+
+<E2ESection Id="image-upload" Title="Image upload">
+    <BitMarkdownEditor Id="mde-image"
+                       @bind-Value="_imageValue"
+                       OnImageUpload="UploadImageAsync"
+                       OnImageRejected="HandleImageRejected"
+                       AcceptedImageTypes="image/png,image/jpeg"
+                       MaxImageSize="2000"
+                       Mode="BitMarkdownEditorMode.Edit" />
+    <pre id="image-value">@_imageValue</pre>
+    <div>Uploads: <span id="uploads">@_uploads</span> Last upload: <span id="last-upload">@_lastUpload</span></div>
+    <div>Rejections: <span id="rejections">@_rejections</span> Last: <span id="last-rejection">@_lastRejection</span></div>
+    <button id="btn-release-upload" @onclick="() => _uploadGate?.TrySetResult()">Release upload</button>
+    <BitMarkdownEditor Id="mde-image-max" MaxLength="20" DefaultValue="0123456789" OnImageUpload="UploadImageAsync"
+                       OnImageRejected="HandleMaxRejected" Mode="BitMarkdownEditorMode.Edit" />
+    <div>Length rejections: <span id="max-rejections">@_maxRejections</span> <span id="last-max-rejection">@_lastMaxRejection</span></div>
+    <BitMarkdownEditor Id="mde-paste" @bind-Value="_pasteValue" Mode="BitMarkdownEditorMode.Edit" />
+    <pre id="paste-value">@_pasteValue</pre>
+</E2ESection>
+
+<E2ESection Id="status-bar" Title="Status bar">
+    <BitMarkdownEditor Id="mde-status"
+                       ShowReadingTime
+                       ShowCursorPosition
+                       WordsPerMinute="2"
+                       MaxLength="30"
+                       Mode="BitMarkdownEditorMode.Edit"
+                       Height="8rem"
+                       DefaultValue="one two three four five" />
+    <BitMarkdownEditor Id="mde-count" Mode="BitMarkdownEditorMode.Edit" Height="6rem" DefaultValue="@CountMarkdown" />
+</E2ESection>
+
+<E2ESection Id="localization" Title="Localization">
+    <BitMarkdownEditor Id="mde-french" Texts="_frenchTexts" DefaultValue="un deux trois" ShowReadingTime />
+</E2ESection>
+
+<E2ESection Id="form" Title="Forms and accessibility">
+    <EditForm id="release-form" EditContext="_editContext" OnValidSubmit="() => _validSubmits++" novalidate>
+        <DataAnnotationsValidator />
+        <BitMarkdownEditor Id="mde-form"
+                           @bind-Value="_formModel.ReleaseNotes"
+                           Label="Release notes"
+                           Required
+                           Description="Markdown is supported."
+                           Name="releaseNotes"
+                           Height="8rem"
+                           OnFocus="() => _formFocus++"
+                           OnBlur="() => _formBlur++"
+                           OnSubmit="v => { _submits++; _submitted = v; }" />
+        <ValidationMessage For="() => _formModel.ReleaseNotes" />
+        <button id="btn-submit" type="submit">Publish</button>
+    </EditForm>
+    <div>Focus: <span id="form-focus">@_formFocus</span> Blur: <span id="form-blur">@_formBlur</span></div>
+    <div>Submits: <span id="form-submits">@_submits</span> <pre id="form-submitted">@_submitted</pre> Valid: <span id="form-valid-submits">@_validSubmits</span></div>
+    <BitMarkdownEditor Id="mde-label-template" Height="6rem" AriaLabel="Custom aria">
+        <LabelTemplate><b class="lbl-tpl">Templated label</b></LabelTemplate>
+        <DescriptionTemplate><i class="des-tpl">Templated description</i></DescriptionTemplate>
+    </BitMarkdownEditor>
+    <BitMarkdownEditor Id="mde-autofocus-host" Height="6rem" Mode="BitMarkdownEditorMode.Edit" />
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="_editorParams">
+        <BitMarkdownEditor Id="mde-cascaded" />
+        <BitMarkdownEditor Id="mde-cascaded-own" Placeholder="My own placeholder" ShowStatusBar="true" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitMarkdownEditor Id="mde-style" Style="border-color: rgb(165, 42, 42); margin-top: 7px;" Class="custom-class" Height="8rem" />
+    <BitMarkdownEditor Id="mde-styles"
+                       Label="Styled label"
+                       Description="Styled description"
+                       Classes="@(new() { Root = "c-root", Label = "c-label", Toolbar = "c-toolbar", ToolbarButton = "c-button", TextArea = "c-textarea", Preview = "c-preview", Description = "c-description", StatusBar = "c-status" })"
+                       Styles="@(new() { Root = "outline: 3px solid rgb(1, 1, 1);", Label = "color: rgb(2, 2, 2);", Toolbar = "background: rgb(3, 3, 3);", ToolbarButton = "color: rgb(4, 4, 4);", TextArea = "color: rgb(5, 5, 5);", Preview = "color: rgb(6, 6, 6);", Description = "color: rgb(7, 7, 7);", StatusBar = "color: rgb(8, 8, 8);" })"
+                       Height="8rem" />
+    <div id="mde-vars-host" style="@CssVariablesStyle">
+        <BitMarkdownEditor Id="mde-vars" Label="Variables" DefaultValue="Some text" />
+    </div>
+    <BitMarkdownEditor Id="mde-vars-default" Label="Variables" DefaultValue="Some text" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitMarkdownEditor Id="mde-rtl" Dir="BitDir.Rtl" DefaultValue="# سلام" />
+    <div dir="rtl">
+        <BitMarkdownEditor Id="mde-rtl-inherited" DefaultValue="# سلام" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="dialog" Title="Inside a dialog">
+    <button id="btn-open-dialog" @onclick="() => _dialogOpen = true">Open dialog</button>
+    <span id="dialog-open">@_dialogOpen</span>
+    <BitDialog @bind-IsOpen="_dialogOpen" Title="Editor dialog">
+        <Body>
+            <BitMarkdownEditor Id="mde-dialog" DefaultValue="text in a dialog" Mode="BitMarkdownEditorMode.Edit" Height="6rem" />
+        </Body>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="autosave" Title="Auto save">
+    <button id="btn-clear-draft" @onclick="ClearDraftAsync">Clear draft</button>
+    <BitMarkdownEditor @ref="_autoSaveRef" Id="mde-autosave" AutoSaveId="e2e-agent20-mde-draft" OnDraftRestored="v => { _draftRestored++; _draft = v; }" Mode="BitMarkdownEditorMode.Edit" Height="6rem" />
+    <div>Restored: <span id="draft-restored">@_draftRestored</span> <pre id="draft-value">@_draft</pre></div>
+</E2ESection>
+
+<E2ESection Id="unmount" Title="Unmount">
+    <button id="btn-toggle-mount" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+    <span id="mounted">@_mounted</span>
+    @if (_mounted)
+    {
+        <BitMarkdownEditor Id="mde-unmount" DefaultValue="unmount me" @bind-FullScreen="_unmountFullScreen" />
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string ModeMarkdown = "# Mode heading\n\nSome **bold** text.";
+    private const string PreviewMarkdown = "~~strike~~ and https://bitplatform.dev\n\n| a | b |\n| - | - |\n| 1 | 2 |";
+    private const string CountMarkdown = "日本語 and 😀 emoji";
+    private static readonly string LongMarkdown = string.Join("\n\n", Enumerable.Range(1, 60).Select(i => $"Paragraph {i} with some text."));
+
+    private const string CssVariablesStyle = "--bit-MarkdownEditor-color: rgb(11, 12, 13); --bit-MarkdownEditor-background: rgb(250, 240, 230); --bit-MarkdownEditor-border-color: rgb(1, 2, 3); --bit-MarkdownEditor-border-width: 4px; --bit-MarkdownEditor-border-radius: 13px; --bit-MarkdownEditor-divider-color: rgb(4, 5, 6); --bit-MarkdownEditor-height: 150px; --bit-MarkdownEditor-font-family: Georgia, serif; --bit-MarkdownEditor-font-size: 19px; --bit-MarkdownEditor-line-height: 2; --bit-MarkdownEditor-padding: 17px; --bit-MarkdownEditor-label-color: rgb(7, 8, 9); --bit-MarkdownEditor-label-font-size: 21px; --bit-MarkdownEditor-label-font-weight: 800; --bit-MarkdownEditor-label-letter-spacing: 2px; --bit-MarkdownEditor-preview-padding: 23px; --bit-MarkdownEditor-preview-background: rgb(10, 20, 30); --bit-MarkdownEditor-toolbar-background: rgb(40, 50, 60); --bit-MarkdownEditor-button-size: 41px; --bit-MarkdownEditor-button-color: rgb(70, 80, 90); --bit-MarkdownEditor-button-radius: 9px; --bit-MarkdownEditor-statusbar-color: rgb(100, 110, 120); --bit-MarkdownEditor-statusbar-background: rgb(130, 140, 150);";
+
+    private string? _boundValue = "Initial **bound** value";
+    private int _changeCount;
+    private string? _lastChange;
+    private string? _defaultChange;
+    private BitMarkdownEditorMode _mode = BitMarkdownEditorMode.Split;
+    private bool _fullScreen;
+    private string? _cmdValue = "";
+    private string? _customValue = "custom";
+    private bool _customReadOnly;
+    private string? _toolbarStatus;
+    private IReadOnlyList<BitMarkdownEditorToolbarItem> _customToolbar = [];
+    private BitMarkdownEditor? _apiRef;
+    private string? _apiResult;
+    private int _apiFocus;
+    private int _apiBlur;
+    private string? _editingValue = "";
+    private string? _indentValue = "- item";
+    private string? _spellingValue = "";
+    private string? _plusValue = "";
+    private string? _readOnlyValue = "# Read-only\n\nselect me";
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private int _disabledKeys;
+    private int _disabledHovers;
+    private string? _findValue = "The markdown editor finds every Markdown word in this markdown document.";
+    private string? _tableValue = "| Name | Value |\n| ---- | ----- |\n| a    | 1     |\n| b    | 2     |";
+    private string? _imageValue = "";
+    private int _uploads;
+    private string? _lastUpload;
+    private int _rejections;
+    private string? _lastRejection;
+    private TaskCompletionSource? _uploadGate;
+    private int _maxRejections;
+    private string? _lastMaxRejection;
+    private string? _pasteValue = "";
+    private int _formFocus;
+    private int _formBlur;
+    private int _submits;
+    private string? _submitted;
+    private int _validSubmits;
+    private bool _dialogOpen;
+    private BitMarkdownEditor? _autoSaveRef;
+    private int _draftRestored;
+    private string? _draft;
+    private bool _mounted = true;
+    private bool _unmountFullScreen;
+
+    private readonly BitMarkdownEditorTexts _frenchTexts = new()
+    {
+        ToolbarAriaLabel = "Mise en forme Markdown",
+        EditorAriaLabel = "Éditeur Markdown",
+        PreviewAriaLabel = "Aperçu Markdown",
+        ToolbarBold = "Gras",
+        ToolbarItalic = "Italique",
+        WordsFormat = "{0} mots",
+        CharsFormat = "{0} caractères",
+        ReadingTimeFormat = "{0} min de lecture",
+        ModeSplit = "Partagé",
+        PreviewEmptyText = "Rien à afficher.",
+    };
+
+    private readonly BitMarkdownEditorParams[] _editorParams =
+    [
+        new()
+        {
+            Placeholder = "Cascaded placeholder",
+            Height = "9rem",
+            ShowStatusBar = false,
+            Classes = new() { Toolbar = "cascaded-toolbar" },
+        }
+    ];
+
+    private sealed class ReleaseModel
+    {
+        [Required, MinLength(20, ErrorMessage = "Write at least 20 characters.")]
+        public string? ReleaseNotes { get; set; }
+    }
+
+    private readonly ReleaseModel _formModel = new();
+    private EditContext _editContext = default!;
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(_formModel);
+
+        _customToolbar =
+        [
+            new() { Name = "bold", Title = "Bold", Command = BitMarkdownEditorCommand.Bold, Icon = BitMarkdownEditorToolbar.Icons.Bold, Shortcut = "Ctrl+B" },
+            new() { Name = "sup", Title = "Superscript", Command = BitMarkdownEditorCommand.Superscript, IconName = BitIconName.Up },
+            new() { Name = "lowered", Title = "", Text = "Sub", Command = BitMarkdownEditorCommand.Subscript },
+            BitMarkdownEditorToolbarItem.Separator,
+            new()
+            {
+                Name = "lines", Title = "Lines", Type = BitMarkdownEditorToolbarItemType.Dropdown, Icon = BitMarkdownEditorToolbar.Icons.Heading,
+                Children =
+                [
+                    new() { Name = "moveup", Title = "Move line up", Text = "Move line up", Command = BitMarkdownEditorCommand.MoveLineUp },
+                    new() { Name = "movedown", Title = "Move line down", Text = "Move line down", Command = BitMarkdownEditorCommand.MoveLineDown },
+                    BitMarkdownEditorToolbarItem.Separator,
+                    new() { Name = "deleteline", Title = "Delete line", Text = "Delete line", Command = BitMarkdownEditorCommand.DeleteLine },
+                ]
+            },
+            new() { Name = "stamp", Title = "Insert stamp", Text = "Stamp", Type = BitMarkdownEditorToolbarItemType.Custom, Shortcut = "Ctrl+Shift+K", OnClick = InsertStampAsync },
+            new() { Name = "count", Title = "Count words", Type = BitMarkdownEditorToolbarItemType.Custom, IconName = BitIconName.NumberSymbol, Shortcut = "F2", AlwaysEnabled = true, OnClick = CountWordsAsync },
+        ];
+    }
+
+    private void SetBoundValue() => _boundValue = "# Set from the page";
+
+    private async Task InsertStampAsync(BitMarkdownEditor editor)
+    {
+        await editor.Insert("[STAMP]");
+        _toolbarStatus = "stamped";
+    }
+
+    private async Task CountWordsAsync(BitMarkdownEditor editor)
+    {
+        var value = await editor.GetValue();
+        _toolbarStatus = $"words:{value.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length}";
+    }
+
+    private async Task RunAsync(BitMarkdownEditorCommand command) => await _apiRef!.Run(command);
+
+    private async Task InsertAsync() => await _apiRef!.Insert("<INS>");
+
+    private async Task UndoAsync() => await _apiRef!.Undo();
+
+    private async Task RedoAsync() => await _apiRef!.Redo();
+
+    private async Task GetValueAsync() => _apiResult = "value:" + await _apiRef!.GetValue();
+
+    private async Task GetSelectionAsync()
+    {
+        var selection = await _apiRef!.GetSelection();
+        _apiResult = $"selection:{selection.Start}-{selection.End}:{selection.Text}:{selection.IsEmpty}";
+    }
+
+    private async Task SetSelectionAsync() => await _apiRef!.SetSelection(0, 5);
+
+    private async Task ReplaceAsync() => _apiResult = "replaced:" + await _apiRef!.Replace("o", "0");
+
+    private async Task ReplaceFirstAsync() => _apiResult = "replaced:" + await _apiRef!.Replace("O", "Q", all: false, matchCase: false);
+
+    private async Task FindNextAsync()
+    {
+        var result = await _apiRef!.FindNext("O");
+        _apiResult = $"find:{result.Index}/{result.Count}:{result.HasMatches}";
+    }
+
+    private async Task FindPreviousAsync()
+    {
+        var result = await _apiRef!.FindPrevious("o", matchCase: true);
+        _apiResult = $"find:{result.Index}/{result.Count}:{result.HasMatches}";
+    }
+
+    private async Task FocusAsync() => await _apiRef!.Focus();
+
+    private async Task BlurAsync() => await _apiRef!.Blur();
+
+    private async Task<string?> UploadImageAsync(BitMarkdownEditorImageUploadInfo info)
+    {
+        if (info.FileName.StartsWith("slow", StringComparison.Ordinal))
+        {
+            _uploadGate = new TaskCompletionSource();
+            await _uploadGate.Task;
+        }
+
+        _uploads++;
+        _lastUpload = $"{info.FileName}|{info.ContentType}|{info.Data.Length}";
+        await InvokeAsync(StateHasChanged);
+
+        return info.FileName.StartsWith("cancel", StringComparison.Ordinal) ? null : "/samples/mdv-sample.png";
+    }
+
+    private void HandleImageRejected(BitMarkdownEditorImageRejection rejection)
+    {
+        _rejections++;
+        _lastRejection = $"{rejection.FileName}|{rejection.ContentType}|{rejection.Size}|{rejection.Reason}";
+    }
+
+    private void HandleMaxRejected(BitMarkdownEditorImageRejection rejection)
+    {
+        _maxRejections++;
+        _lastMaxRejection = rejection.Reason.ToString();
+    }
+
+    private async Task ClearDraftAsync() => await _autoSaveRef!.ClearDraft();
+}

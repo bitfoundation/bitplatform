@@ -21,12 +21,12 @@ public partial class AppleAppSiteAssociationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        await using var client = server.CreateAppClient();
+        var httpClient = client.HttpClient;
 
-        var appleAppSiteAssociationUrl = new Uri(server.WebAppServerAddress, "/.well-known/apple-app-site-association");
+        var appleAppSiteAssociationUrl = new Uri(server.WebAppAddress, "/.well-known/apple-app-site-association");
 
         using var response = await httpClient.GetAsync(appleAppSiteAssociationUrl, TestContext.CancellationToken);
 

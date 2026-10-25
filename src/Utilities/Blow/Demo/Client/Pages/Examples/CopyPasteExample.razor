@@ -1,0 +1,207 @@
+﻿@page "/examples/copy-paste"
+
+<PageTitle>Copy & Paste · Blow</PageTitle>
+
+<ExampleScaffold Title="Copy & Paste"
+                 Summary="Copy, cut, paste and duplicate a selection with the keyboard or from code. Ids stay unique across repeated pastes, edges are rewired to the copies, an edge leaving the selection stays behind, and a copied child lands inside its copied parent. The same work is available without a canvas through BlowClipboard.">
+    <Toolbar>
+        <button class="btn btn-secondary" @onclick="Copy">Copy</button>
+        <button class="btn btn-secondary" @onclick="Cut">Cut</button>
+        <button class="btn btn-primary" disabled="@(_flow is null || !_flow.CanPaste)" @onclick="Paste">Paste</button>
+        <button class="btn btn-secondary" @onclick="Duplicate">Duplicate</button>
+        <button class="btn btn-secondary" @onclick="Stamp">Duplicate with own ids</button>
+        <label>
+            Paste offset
+            <select @bind="_offset">
+                <option value="default">24, 24 (default)</option>
+                <option value="none">0, 0 (on top)</option>
+                <option value="right">320, 0 (to the right)</option>
+            </select>
+        </label>
+        <span class="cp-status" role="status">@_status</span>
+    </Toolbar>
+    <ChildContent>
+        @* Ctrl/Cmd+C raises no callback of its own, so the toolbar listens for the key coming up
+           to bring its status and the Paste button up to date after a keyboard shortcut. *@
+        <div class="cp-shell" @onkeyup="OnKeyUp">
+            <BlowCanvas @ref="_flow"
+                        Nodes="_nodes"
+                        Edges="_edges"
+                        ClipboardShortcutsEnabled="true"
+                        SelectionOnDrag="true"
+                        PanActivationKey=" "
+                        PasteOffset="Offset"
+                        OnPaste="OnPaste"
+                        OnNodesDelete="@(nodes => _lastDeleted = nodes.Count)"
+                        FitViewOnInit="true">
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+                <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                    <div class="cp-hint">Drag the background to select · hold Space to pan</div>
+                </BlowPanel>
+            </BlowCanvas>
+        </div>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag across the background</strong> to select with a box (hold <strong>Space</strong> while dragging to pan instead), or <strong>click</strong> a node and <strong>Shift+click</strong> more.</li>
+        <li>Select Inside A and Inside B, then press <strong>Ctrl/Cmd+C</strong> and <strong>Ctrl/Cmd+V</strong>, or use <strong>Copy</strong> and <strong>Paste</strong>: the copies come with the edge between them but not the one out to Outside, and stay selected so you can drag them away. Paste again for another copy; the status lists the new ids.</li>
+        <li>Select the Group and copy it: its children come along and land inside the copied group.</li>
+        <li><strong>Ctrl/Cmd+X</strong> or <strong>Cut</strong> copies and deletes; <strong>Ctrl/Cmd+D</strong> or <strong>Duplicate</strong> copies and pastes in one go and leaves what you copied before on the clipboard.</li>
+        <li>Pick a <strong>Paste offset</strong> and paste: on top, the copy hides its original, which is why the default shifts it.</li>
+        <li><strong>Duplicate with own ids</strong> copies the selection below itself with ids of the page's own making, such as <code>in-v1</code>.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>ClipboardShortcutsEnabled</code> (off by default, so a flow does not take those keys from the page around it) binds <strong>Ctrl/Cmd+C</strong>, <strong>X</strong>, <strong>V</strong> and <strong>D</strong>. While focus is in a text field the keys copy text as usual.</li>
+        <li>The buttons call <code>Copy()</code>, <code>CutAsync()</code>, <code>PasteAsync()</code> and <code>DuplicateSelectionAsync()</code>; <code>CanPaste</code> says whether there is anything to paste, and <code>OnPaste</code> reports the <code>BlowFragment</code> that was added. The clipboard is the canvas's own, in memory: a browser does not let a component read the system clipboard, which would carry no graph anyway.</li>
+        <li>Copying takes the selected nodes and every edge between two of them, selected or not. A paste mints fresh ids - <code>{id}-copy</code>, then <code>{id}-copy-2</code> and so on - rewires edges and parents to the copies, offsets everything by <code>PasteOffset</code> (24, 24 by default) and makes the copies the selection. A child copied without its parent becomes a root where it was on screen.</li>
+        <li><code>Copy()</code> with nothing selected hands back what the clipboard already holds, so the page checks for a selection before reporting a copy. Cut deletes with the usual rules: <code>Deletable</code> and <code>OnBeforeDelete</code> apply, and <code>OnNodesDelete</code> reports it.</li>
+        <li>Duplicate with own ids uses the pure helpers, which need no canvas: <code>BlowClipboard.Copy(nodes, edges)</code> takes the fragment, and <code>BlowClipboard.Paste(fragment, options)</code> makes the copies with a <code>BlowPasteOptions</code> - the <code>Offset</code>, the <code>ExistingIds</code> to avoid, an <code>IdFactory</code> that receives the original id and an attempt number, and <code>Select</code>. The page then adds them with <code>AddNodes</code> and <code>AddEdges</code>.</li>
+        <li><code>SelectionOnDrag</code> makes a drag on the background draw a selection box, and <code>PanActivationKey</code> (Space, the default) is held to pan instead.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .cp-shell { height: 100%; }
+    .cp-status { font-size: 12px; color: var(--bb-text-muted); margin-left: 0.5rem; }
+    .cp-hint {
+        padding: 6px 10px;
+        font-size: 11px;
+        background: var(--bit-blow-surface);
+        color: var(--bit-blow-text);
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 6px;
+    }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private string _status = "Nothing copied yet.";
+    private string _offset = "default";
+    private int _stamps;
+    private int? _lastDeleted;
+
+    private BlowXYPosition Offset => _offset switch
+    {
+        "none" => BlowXYPosition.Zero,
+        "right" => new(320, 0),
+        _ => new(24, 24),
+    };
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            // A group with two children, to show that a copied child follows its copied parent.
+            new BlowNode { Id = "group", Type = "group", Label = "Group", Position = new(40, 40), Width = 260, Height = 180 },
+            new BlowNode { Id = "in", ParentId = "group", Label = "Inside A", Position = new(30, 50), Width = 110 },
+            new BlowNode { Id = "in2", ParentId = "group", Label = "Inside B", Position = new(30, 110), Width = 110 },
+
+            new BlowNode { Id = "out", Label = "Outside", Position = new(380, 110), Width = 120 },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e-in", Source = "in", Target = "in2" },
+            // This one leaves the group: copying just the group's nodes must not bring it along.
+            new BlowEdge { Id = "e-out", Source = "in2", Target = "out" },
+        ];
+    }
+
+    // Copy() with nothing selected hands back what the clipboard already held, so the selection
+    // has to be checked first - otherwise an empty copy would report the previous one again.
+    private bool HasSelection => _nodes.Any(n => n.Selected);
+
+    private void Copy()
+    {
+        if (_flow is null) return;
+        if (!HasSelection)
+        {
+            _status = "Select something first.";
+            return;
+        }
+
+        var fragment = _flow.Copy();
+        _status = $"Copied {fragment.Nodes.Count} node(s) and {fragment.Edges.Count} edge(s).";
+    }
+
+    private async Task Cut()
+    {
+        if (_flow is null) return;
+        if (!HasSelection)
+        {
+            _status = "Select something first.";
+            return;
+        }
+
+        var fragment = await _flow.CutAsync();
+        _lastDeleted = null;
+        _status = $"Cut {fragment.Nodes.Count} node(s).";
+    }
+
+    // By the time the key comes up the canvas has done its part. Copying again is harmless - the
+    // selection is unchanged - and the only way to learn what Ctrl+C actually copied. A cut shows
+    // up as the deletion it ends in, recorded by OnNodesDelete during the key press.
+    private void OnKeyUp(KeyboardEventArgs e)
+    {
+        var deleted = _lastDeleted;
+        _lastDeleted = null;
+        if (_flow is null || !(e.CtrlKey || e.MetaKey)) return;
+
+        switch (e.Key)
+        {
+            case "c" or "C" when HasSelection:
+                var fragment = _flow.Copy();
+                _status = $"Copied {fragment.Nodes.Count} node(s) and {fragment.Edges.Count} edge(s).";
+                break;
+            case "x" or "X" when deleted is { } count:
+                _status = $"Cut {count} node(s).";
+                break;
+        }
+    }
+
+    private async Task Paste()
+    {
+        if (_flow is not null) await _flow.PasteAsync();
+    }
+
+    private async Task Duplicate()
+    {
+        if (_flow is null) return;
+        var fragment = await _flow.DuplicateSelectionAsync();
+        if (fragment.IsEmpty) _status = "Select something first.";
+    }
+
+    private async Task Stamp()
+    {
+        if (_flow is null) return;
+        var selected = _nodes.Where(n => n.Selected).ToList();
+        if (selected.Count == 0)
+        {
+            _status = "Select something first.";
+            return;
+        }
+
+        // The pure helpers, as a server or a test would use them: take a fragment, then make a fresh copy of it with
+        // ids of this page's own scheme, placed below the original.
+        var stamp = ++_stamps;
+        var fragment = BlowClipboard.Copy(selected, _edges);
+        var copy = BlowClipboard.Paste(fragment, new BlowPasteOptions
+        {
+            Offset = new(0, 240),
+            ExistingIds = _nodes.Select(n => n.Id).Concat(_edges.Select(e => e.Id)),
+            IdFactory = (id, attempt) => attempt == 0 ? $"{id}-v{stamp}" : $"{id}-v{stamp}-{attempt + 1}",
+            Select = true,
+        });
+
+        // Only the copies are selected afterwards, as after a paste.
+        await _flow.SelectAsync();
+        _flow.AddNodes(copy.Nodes.ToArray());
+        _flow.AddEdges(copy.Edges.ToArray());
+        _status = $"Stamped {string.Join(", ", copy.Nodes.Select(n => n.Id))}.";
+    }
+
+    private void OnPaste(BlowFragment fragment) =>
+        _status = $"Pasted {string.Join(", ", fragment.Nodes.Select(n => n.Id))} and {fragment.Edges.Count} edge(s).";
+}

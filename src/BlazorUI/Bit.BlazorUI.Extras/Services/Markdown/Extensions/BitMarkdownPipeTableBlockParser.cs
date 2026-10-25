@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
@@ -26,7 +26,7 @@ public sealed partial class BitMarkdownPipeTableBlockParser : BitMarkdownBlockPa
         var delims = SplitRow(lines[i + 1]);
         if (header.Count == 0 || delims.Count != header.Count) return false;
 
-        var alignments = new List<BitMarkdownColumnAlignment>();
+        var alignments = new List<BitTextAlign?>();
         foreach (var d in delims)
         {
             string t = d.Trim();
@@ -34,10 +34,10 @@ public sealed partial class BitMarkdownPipeTableBlockParser : BitMarkdownBlockPa
             bool l = t.StartsWith(':'), r = t.EndsWith(':');
             alignments.Add((l, r) switch
             {
-                (true, true) => BitMarkdownColumnAlignment.Center,
-                (true, false) => BitMarkdownColumnAlignment.Left,
-                (false, true) => BitMarkdownColumnAlignment.Right,
-                _ => BitMarkdownColumnAlignment.None
+                (true, true) => BitTextAlign.Center,
+                (true, false) => BitTextAlign.Left,
+                (false, true) => BitTextAlign.Right,
+                _ => null
             });
         }
 

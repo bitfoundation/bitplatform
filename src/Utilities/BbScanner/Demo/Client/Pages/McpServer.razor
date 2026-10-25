@@ -1,0 +1,112 @@
+﻿@page "/mcp-server"
+
+@* Describes the MCP server this demo's host maps at /mcp. Its route differs from the endpoint's on
+   purpose: two literal endpoints on /mcp would make a GET of it ambiguous. *@
+
+<PageTitle>MCP server · BbScanner</PageTitle>
+
+<div class="bb-intro">
+    <h1>MCP server</h1>
+    <p class="bb-subtitle">
+        This site hosts a Model Context Protocol server at <code>/mcp</code>, so an AI agent writing scanning code
+        with Bit.BbScanner reads the library itself - its compiled API documentation, its guide, its symbology flags
+        and option defaults, its decoder and these demo pages - instead of guessing at an API it half remembers.
+        Every tool is read-only.
+    </p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect a client</h3>
+
+    <p>
+        The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else.
+    </p>
+
+    <pre class="bb-code">@ClientConfig</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Tools</h3>
+
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Tool</th><th>What it answers</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var tool in Tools)
+                {
+                    <tr>
+                        <td class="bb-table-key"><code>@tool.Name</code></td>
+                        <td>@((MarkupString)tool.Description)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        The guide, the API, the symbologies and the sources are also exposed as <code>bbscanner://</code> resources, and
+        three prompts - <code>add-bbscanner-to-app</code>, <code>implement-bbscanner-feature</code> and
+        <code>debug-bbscanner</code> - walk an agent through the common jobs in the right order.
+    </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The same tools over plain HTTP</h3>
+
+    <p>
+        Every tool is also a <code>GET</code> under <code>/api/mcp/...</code>: open one in a browser tab to read
+        exactly what an agent is handed.
+    </p>
+
+    <ul class="bb-detail-list">
+        @foreach (var (href, text) in HttpExamples)
+        {
+            <li><a href="@href" target="_blank" rel="noopener">@text</a></li>
+        }
+    </ul>
+</section>
+
+@code {
+    private const string ClientConfig = """
+        // .mcp.json (Claude Code, VS Code, and anything else reading this shape)
+        {
+          "mcpServers": {
+            "bbscanner": {
+              "type": "http",
+              "url": "https://bbscanner.bitplatform.dev/mcp"
+            }
+          }
+        }
+        """;
+
+    // The server's tools, in the order an agent usually needs them. The one place to change when a tool is
+    // added, renamed or retired; the description is markup.
+    private static readonly (string Name, string Description)[] Tools =
+    [
+        ("SearchBbScanner",
+            "Everything at once - the guide, every public member, the symbologies, the setup guides, the stylesheet and the demo sources - each hit with the exact follow-up call."),
+        ("GetBbScannerSetupGuide",
+            "The complete wiring for one render mode: wasm, standalone-wasm, auto, server or hybrid."),
+        ("GetBbScannerGuideSection",
+            "One section of the reference guide, or the index of sections."),
+        ("GetBbScannerApi",
+            "One public type with every parameter, property and method, its real default and its documentation - or the index of types."),
+        ("GetBbScannerFormats",
+            "The symbologies with their flags, what of each is read, whether the pipeline reads it, and the options that steer it with their real defaults."),
+        ("InspectBbScannerSymbol",
+            "Renders a symbol, rotated and blurred if asked, decodes it with the library and returns the <code>BbBarcodeResult</code> it produced."),
+        ("GetBbScannerSourceFile",
+            "One demo or library file verbatim - every page here is a working scanner - or the index of files."),
+    ];
+
+    private static readonly (string Href, string Text)[] HttpExamples =
+    [
+        ("/api/mcp/SearchBbScanner?query=scan%20image%20file", "/api/mcp/SearchBbScanner?query=scan image file"),
+        ("/api/mcp/GetBbScannerApi?typeName=BbScanner", "/api/mcp/GetBbScannerApi?typeName=BbScanner"),
+        ("/api/mcp/GetBbScannerFormats?format=Ean13", "/api/mcp/GetBbScannerFormats?format=Ean13"),
+        ("/api/mcp/InspectBbScannerSymbol?format=QrCode&rotation=30", "/api/mcp/InspectBbScannerSymbol?format=QrCode&rotation=30"),
+        ("/api/mcp/GetBbScannerSourceFile?path=Demo/Client/Pages/Scan.razor", "/api/mcp/GetBbScannerSourceFile?path=Demo/Client/Pages/Scan.razor"),
+    ];
+}

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Enables abbreviations: <c>*[HTML]: HyperText Markup Language</c> declares a term once, and

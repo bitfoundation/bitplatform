@@ -1,0 +1,32 @@
+﻿@page "/e2e/color-picker/setup"
+
+<PageTitle>BitColorPicker setup E2E</PageTitle>
+
+<h1>BitColorPicker first-render setups</h1>
+
+@* The setups that act on the first render - a focus taken - each on a page of its own, so none of them takes the
+   focus in the tests of the main page. *@
+<E2ESection Id="setup" Title="@Mode">
+    @switch (Mode)
+    {
+        case "palette":
+            <BitColorPicker AutoFocus ShowSaturationArea="false" ShowHueSlider="false" Presets="_presets" @bind-Value="_value" />
+            break;
+        case "disabled":
+            <BitColorPicker AutoFocus Disabled @bind-Value="_value" />
+            break;
+        default:
+            <BitColorPicker AutoFocus ShowInputs @bind-Value="_value" />
+            break;
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly string[] _presets = ["#D13438", "#107C10", "#0078D4"];
+
+    private string? _value = "#107C10";
+
+    [SupplyParameterFromQuery] public string? Mode { get; set; }
+}

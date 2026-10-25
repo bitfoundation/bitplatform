@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -71,11 +72,11 @@ public class BitElementTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitElementShouldRespectIsEnabled(bool isEnabled)
+    public void BitElementShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitElement>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         if (isEnabled)
@@ -102,12 +103,14 @@ public class BitElementTests : BunitTestContext
         var component = RenderComponent<BitElement>(parameters =>
         {
             parameters.Add(p => p.Element, element);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var el = component.Find(element);
 
         Assert.IsTrue(el.HasAttribute("disabled"));
+        // The disabled attribute already announces the state on these tags, but aria-disabled is written on every tag
+        // alike, so a selector or a test that matches a disabled element by it keeps matching whatever the tag.
         Assert.AreEqual("true", el.GetAttribute("aria-disabled"));
         // The browser takes an element it disables itself out of the tab order, so nothing has to be forced here.
         Assert.IsFalse(el.HasAttribute("tabindex"));
@@ -123,7 +126,7 @@ public class BitElementTests : BunitTestContext
         var component = RenderComponent<BitElement>(parameters =>
         {
             parameters.Add(p => p.Element, element);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var el = component.Find(element);
@@ -156,7 +159,193 @@ public class BitElementTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitElementShouldRespectIsEnabledChangingAfterRender()
+    public void BitElementShouldKeepTheLinkRoleOfADisabledAnchor()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        // An anchor without an href is a generic element to assistive technologies, which aria-disabled means nothing
+        // on, so the role is what keeps it announced as a disabled link rather than as plain text.
+        Assert.AreEqual("link", component.FindAll(".bit-elm")[6].GetAttribute("role"));
+        // An enabled anchor is a link of itself and needs no role, and a disabled area keeps its href and so its role.
+        Assert.IsFalse(component.FindAll(".bit-elm")[5].HasAttribute("role"));
+        Assert.IsFalse(component.FindAll(".bit-elm")[8].HasAttribute("role"));
+    }
+
+    [TestMethod,
+         DataRow(0),
+         DataRow(1)
+    ]
+    public void BitElementShouldDropTheClickHandlerOfADisabledElement(int index)
+    {
+        var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        // A screen reader activates what it announces by dispatching a click on it, which the pointer-events of the
+        // disabled class do not stop, so a disabled element must have no click handler left to run.
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => component.FindAll(".bit-elm")[index].Click());
+        Assert.AreEqual(0, component.Instance.Clicks);
+    }
+
+    [TestMethod]
+    public void BitElementShouldDropTheActivationHandlersOfADisabledElement()
+    {
+        var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        var element = component.Find(".activated");
+
+        // A form element the browser disables is out of reach of the pointer and the keyboard both, so none of the
+        // handlers an element is activated through is left on a disabled element of any other tag either.
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => element.DoubleClick());
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => element.ContextMenu());
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => element.MouseDown());
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => element.PointerDown());
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => element.KeyDown(Key.Enter));
+        Assert.AreEqual(0, component.Instance.Activations);
+    }
+
+    [TestMethod]
+    public void BitElementShouldKeepTheHoverHandlersOfADisabledElement()
+    {
+        var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        // A hover activates nothing, so a disabled element keeps what it does on one (a tooltip, a highlight).
+        component.Find(".activated").MouseOver();
+
+        Assert.AreEqual(1, component.Instance.Hovers);
+    }
+
+    [TestMethod]
+    public void BitElementShouldNotRunTheKeyHandlerOfADisabledElementForAKeyBubblingUpFromItsContent()
+    {
+        var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        component.Find(".inner-key").KeyDown(Key.Enter);
+
+        Assert.AreEqual(1, component.Instance.InnerKeys);
+        Assert.AreEqual(0, component.Instance.Activations);
+    }
+
+    [TestMethod]
+    public void BitElementShouldRunTheActivationHandlersOfAnElementEnabledAfterRender()
+    {
+        var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Disabled, false);
+        });
+
+        var element = component.Find(".activated");
+        element.DoubleClick();
+        element.ContextMenu();
+        element.MouseDown();
+        element.PointerDown();
+        element.KeyDown(Key.Enter);
+
+        Assert.AreEqual(5, component.Instance.Activations);
+    }
+
+    [TestMethod]
+    public void BitElementShouldNotRunTheClickHandlerOfADisabledElementForAClickBubblingUpFromItsContent()
+    {
+        var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        component.Find(".inner").Click();
+
+        Assert.AreEqual(1, component.Instance.InnerClicks);
+        Assert.AreEqual(0, component.Instance.Clicks);
+    }
+
+    [TestMethod]
+    public void BitElementShouldRunTheClickHandlerOfAnElementEnabledAfterRender()
+    {
+        var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Disabled, false);
+        });
+
+        component.FindAll(".bit-elm")[0].Click();
+        component.FindAll(".bit-elm")[1].Click();
+        component.Find(".inner").Click();
+
+        Assert.AreEqual(3, component.Instance.Clicks);
+        Assert.AreEqual(1, component.Instance.InnerClicks);
+    }
+
+    [TestMethod]
+    public void BitElementShouldNotGiveTheLinkRoleToADisabledAnchorWithoutAnHref()
+    {
+        // An anchor written without an href is a placeholder rather than a link, so disabling it makes it no link either.
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.Element, "a");
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        var element = component.Find("a");
+
+        Assert.IsFalse(element.HasAttribute("role"));
+        Assert.AreEqual("true", element.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldKeepASplattedAriaDisabledOfANativelyDisabledElement()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        var element = component.FindAll(".bit-elm")[13];
+
+        Assert.IsTrue(element.HasAttribute("disabled"));
+        Assert.AreEqual("true", element.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldKeepASplattedRoleOfADisabledAnchor()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        Assert.AreEqual("menuitem", component.FindAll(".bit-elm")[11].GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldDropTheLinkRoleOfAnAnchorEnabledAfterRender()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        Assert.AreEqual("link", component.FindAll(".bit-elm")[12].GetAttribute("role"));
+        Assert.IsFalse(component.FindAll(".bit-elm")[12].HasAttribute("href"));
+
+        component.Render(parameters => parameters.Add(p => p.LinkEnabled, true));
+
+        var element = component.FindAll(".bit-elm")[12];
+        Assert.IsFalse(element.HasAttribute("role"));
+        Assert.AreEqual("https://bitplatform.dev/", element.GetAttribute("href"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitElement>();
 
@@ -164,7 +353,7 @@ public class BitElementTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@"<div class=""bit-elm bit-dis"" tabindex=""-1"" aria-disabled=""true"" id:ignore></div>");
@@ -568,12 +757,25 @@ public class BitElementTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitElementShouldKeepASplattedDisabledAttributeOfAnEnabledElement()
+    public void BitElementShouldTreatALowercaseDisabledAttributeAsTheDisabledParameter()
     {
         var component = RenderComponent<BitElementHtmlAttributesTest>();
 
         var element = component.FindAll(".bit-elm")[3];
 
+        Assert.IsTrue(element.HasAttribute("disabled"));
+        Assert.AreEqual("true", element.GetAttribute("aria-disabled"));
+        Assert.IsTrue(element.ClassList.Contains("bit-dis"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldKeepASplattedDisabledAttributeOfAnEnabledElement()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        var element = component.FindAll(".bit-elm")[16];
+
+        Assert.IsFalse(component.FindComponents<BitElement>()[16].Instance.Disabled);
         Assert.IsTrue(element.HasAttribute("disabled"));
         Assert.IsFalse(element.HasAttribute("aria-disabled"));
         Assert.IsFalse(element.ClassList.Contains("bit-dis"));
@@ -713,7 +915,7 @@ public class BitElementTests : BunitTestContext
         {
             parameters.Add(p => p.Element, "a");
             parameters.Add(p => p.TabIndex, "3");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         // The tab stop of the parameter is the one thing that would still reach a disabled element of a tag the
@@ -728,7 +930,7 @@ public class BitElementTests : BunitTestContext
         {
             parameters.Add(p => p.Element, "button");
             parameters.Add(p => p.TabIndex, "3");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var el = component.Find("button");
@@ -943,18 +1145,46 @@ public class BitElementTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitElementShouldRemoveTheHrefOfADisabledImageMapArea()
+    public void BitElementShouldKeepTheHrefOfADisabledImageMapAreaAndPreventItsClicks()
     {
         var component = RenderComponent<BitElementHtmlAttributesTest>();
 
         var element = component.FindAll(".bit-elm")[8];
 
-        // An area is the other tag that is a hyperlink of its own, and it has no box for the pointer events of the
-        // disabled class to turn off, so the href it is followed through is all there is to take away from it.
+        // An area without an href may carry no role and vanishes from assistive technologies, so a disabled one keeps
+        // its href - which is what keeps it announced as a disabled link - and is kept from being followed instead by
+        // the default action of its click (the pointer, the enter key, a screen reader) and of its auxiliary click.
         Assert.AreEqual("AREA", element.TagName);
-        Assert.IsFalse(element.HasAttribute("href"));
+        Assert.AreEqual("https://bitplatform.dev/", element.GetAttribute("href"));
         Assert.AreEqual("true", element.GetAttribute("aria-disabled"));
         Assert.AreEqual("-1", element.GetAttribute("tabindex"));
+        Assert.IsFalse(element.HasAttribute("role"));
+        StringAssert.Contains(element.OuterHtml, "onclick:preventdefault");
+        StringAssert.Contains(element.OuterHtml, "onauxclick:preventdefault");
+    }
+
+    [TestMethod]
+    public void BitElementShouldNotPreventTheClicksOfAnEnabledImageMapArea()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        var element = component.FindAll(".bit-elm")[7];
+
+        Assert.IsFalse(element.OuterHtml.Contains("onclick:preventdefault"));
+        Assert.IsFalse(element.OuterHtml.Contains("onauxclick:preventdefault"));
+    }
+
+    [TestMethod,
+        DataRow(14),
+        DataRow(15)
+    ]
+    public void BitElementShouldGiveTheLinkRoleToADisabledAnchorWhoseSplattedRoleIsEmpty(int index)
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        // A role written as an empty value, or as a true that is written with no value at all, names no role, so it
+        // must not stand in for the link role an anchor losing its href is given back.
+        Assert.AreEqual("link", component.FindAll(".bit-elm")[index].GetAttribute("role"));
     }
 
     [TestMethod]
@@ -1098,7 +1328,7 @@ public class BitElementTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitElementShouldNotRenderChildContentInsideAVoidElementWhileWrapped()
+    public void BitElementShouldRenderTheContentOfAVoidElementWhileUnwrapped()
     {
         var component = RenderComponent<BitElement>(parameters =>
         {

@@ -1,4 +1,4 @@
-declare class ColorPicker {
+﻿declare class ColorPicker {
     static "__#24@#l10nColor": null;
     static get _keyboardManager(): any;
     constructor({ editor, uiManager }: {

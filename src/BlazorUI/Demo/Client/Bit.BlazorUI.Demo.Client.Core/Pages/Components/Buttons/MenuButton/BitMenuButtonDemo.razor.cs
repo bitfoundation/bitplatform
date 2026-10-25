@@ -39,7 +39,7 @@ public partial class BitMenuButtonDemo
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The background color kind of the callout.",
+            Description = "The background color kind of the callout. An explicit value wins over --bit-MenuButton-callout-background; left unset, the callout takes the primary background unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -48,7 +48,7 @@ public partial class BitMenuButtonDemo
             Name = "ButtonType",
             Type = "BitButtonType?",
             DefaultValue = "null",
-            Description = "The value of the type attribute of the menu button.",
+            Description = "The value of the type attribute of the items, and of the main half of a split menu button when it is set. Left unset, the items are submit buttons inside an EditForm and plain buttons elsewhere; a submit or reset item acts on the form the menu button sits in, although its open menu is moved out of it to the body.",
             LinkType = LinkType.Link,
             Href = "#button-type-enum"
         },
@@ -126,7 +126,7 @@ public partial class BitMenuButtonDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the menu button.",
+            Description = "The general color of the menu button. An explicit value wins over the --bit-MenuButton-* color variables, the toggled ones and the item focus and check mark colors included; left unset, the menu button is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -280,10 +280,24 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "NewTabHint",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Replaces the visually hidden \"(opens in a new tab)\" an item whose Target is _blank is announced with, e.g. to translate it. An empty value removes it.",
+        },
+        new()
+        {
             Name = "NoIcon",
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, the icon of the header button is hidden.",
+        },
+        new()
+        {
+            Name = "NoNewTabHint",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the items whose Target is _blank from announcing that they open a new tab - only for where a visible label or heading already says so.",
         },
         new()
         {
@@ -343,7 +357,7 @@ public partial class BitMenuButtonDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the menu button.",
+            Description = "The size of the menu button. An explicit value wins over the --bit-MenuButton-* size variables, the item ones included; left unset, the menu button is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -428,20 +442,20 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "--bit-MenuButton-color",
-            DefaultValue = "The Color role's on-color (Fill) or main color (Outline, Text)",
-            Description = "Text and icon color of both halves of the button at rest.",
+            DefaultValue = "--bit-clr-pri-text (Fill) or --bit-clr-pri (Outline, Text)",
+            Description = "Text and icon color of both halves of the button at rest. The Color parameter wins over it. Shared by the three variants: --bit-MenuButton-fill-color, --bit-MenuButton-outline-color and --bit-MenuButton-text-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-MenuButton-background",
-            DefaultValue = "The Color role's main color (Fill), transparent (Outline, Text)",
-            Description = "Background of the button at rest.",
+            DefaultValue = "--bit-clr-pri (Fill), transparent (Outline, Text)",
+            Description = "Background of the button at rest. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-MenuButton-fill-background, --bit-MenuButton-outline-background and --bit-MenuButton-text-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-MenuButton-border-color",
             DefaultValue = "The background, or transparent for the Text variant",
-            Description = "Border color of the button.",
+            Description = "Border color of the button. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-MenuButton-fill-border-color, --bit-MenuButton-outline-border-color and --bit-MenuButton-text-border-color are read ahead of it.",
         },
         new()
         {
@@ -458,86 +472,248 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "--bit-MenuButton-hover-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "Text and icon color of the hovered half (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text and icon color of the hovered half (pointer devices only). The Color parameter wins over it. Shared by the three variants: --bit-MenuButton-fill-hover-color, --bit-MenuButton-outline-hover-color and --bit-MenuButton-text-hover-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-MenuButton-hover-background",
-            DefaultValue = "The Color role's hover color",
-            Description = "Background of the hovered half (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Background of the hovered half (pointer devices only). The Color parameter wins over it. Shared by the three variants: --bit-MenuButton-fill-hover-background, --bit-MenuButton-outline-hover-background and --bit-MenuButton-text-hover-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-MenuButton-active-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "Text and icon color of the pressed half, and of the chevron while the menu is open.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text and icon color of the pressed half, and of the chevron while the menu is open. The Color parameter wins over it. Shared by the three variants: --bit-MenuButton-fill-active-color, --bit-MenuButton-outline-active-color and --bit-MenuButton-text-active-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-MenuButton-active-background",
-            DefaultValue = "The Color role's active color",
-            Description = "Background of the pressed half, and of the chevron while the menu is open.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Background of the pressed half, and of the chevron while the menu is open. The Color parameter wins over it. Shared by the three variants: --bit-MenuButton-fill-active-background, --bit-MenuButton-outline-active-background and --bit-MenuButton-text-active-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-MenuButton-toggled-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "Text and icon color of the header button while it is toggled.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text and icon color of the header button while it is toggled. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-MenuButton-toggled-background",
-            DefaultValue = "The Color role's dark color",
-            Description = "Background of the header button while it is toggled.",
+            DefaultValue = "--bit-clr-pri-dark",
+            Description = "Background of the header button while it is toggled. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-MenuButton-toggled-hover-background",
-            DefaultValue = "The Color role's dark-hover color",
-            Description = "Background of the toggled header button on hover (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-dark-hover",
+            Description = "Background of the toggled header button on hover (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-MenuButton-toggled-active-background",
-            DefaultValue = "The Color role's dark-active color",
-            Description = "Background of the toggled header button while it is pressed.",
+            DefaultValue = "--bit-clr-pri-dark-active",
+            Description = "Background of the toggled header button while it is pressed. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-MenuButton-disabled-color",
-            DefaultValue = "The Color role's disabled text color",
-            Description = "Text and icon color when the menu button is disabled.",
+            DefaultValue = "--bit-clr-pri-dis-text",
+            Description = "Text and icon color when the menu button is disabled, and of the divider between the two halves then. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-MenuButton-disabled-background",
-            DefaultValue = "The Color role's disabled color (Fill), transparent (Outline, Text)",
-            Description = "Background when the menu button is disabled.",
+            DefaultValue = "--bit-clr-pri-dis (Fill), transparent (Outline, Text)",
+            Description = "Background when the menu button is disabled. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-MenuButton-fill-disabled-background, --bit-MenuButton-outline-disabled-background and --bit-MenuButton-text-disabled-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-MenuButton-disabled-border-color",
             DefaultValue = "The disabled background",
-            Description = "Border color when the menu button is disabled.",
+            Description = "Border color when the menu button is disabled. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-MenuButton-fill-disabled-border-color, --bit-MenuButton-outline-disabled-border-color and --bit-MenuButton-text-disabled-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-fill-color",
+            DefaultValue = "--bit-MenuButton-color",
+            Description = "Text and icon color of both halves at rest of a Fill menu button alone, read ahead of --bit-MenuButton-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-fill-background",
+            DefaultValue = "--bit-MenuButton-background",
+            Description = "Background at rest of a Fill menu button alone, read ahead of --bit-MenuButton-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-fill-border-color",
+            DefaultValue = "--bit-MenuButton-border-color",
+            Description = "Border color of a Fill menu button alone, read ahead of --bit-MenuButton-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-fill-hover-color",
+            DefaultValue = "--bit-MenuButton-hover-color",
+            Description = "Text and icon color of the hovered half (pointer devices only) of a Fill menu button alone, read ahead of --bit-MenuButton-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-fill-hover-background",
+            DefaultValue = "--bit-MenuButton-hover-background",
+            Description = "Background of the hovered half (pointer devices only) of a Fill menu button alone, read ahead of --bit-MenuButton-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-fill-active-color",
+            DefaultValue = "--bit-MenuButton-active-color",
+            Description = "Text and icon color of a pressed half, and of the chevron while the menu is open, of a Fill menu button alone, read ahead of --bit-MenuButton-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-fill-active-background",
+            DefaultValue = "--bit-MenuButton-active-background",
+            Description = "Background of a pressed half, and of the chevron while the menu is open, of a Fill menu button alone, read ahead of --bit-MenuButton-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-fill-disabled-background",
+            DefaultValue = "--bit-MenuButton-disabled-background",
+            Description = "Background when disabled of a Fill menu button alone, read ahead of --bit-MenuButton-disabled-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-fill-disabled-border-color",
+            DefaultValue = "--bit-MenuButton-disabled-border-color",
+            Description = "Border color when disabled of a Fill menu button alone, read ahead of --bit-MenuButton-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-outline-color",
+            DefaultValue = "--bit-MenuButton-color",
+            Description = "Text and icon color of both halves at rest of an Outline menu button alone, read ahead of --bit-MenuButton-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-outline-background",
+            DefaultValue = "--bit-MenuButton-background",
+            Description = "Background at rest of an Outline menu button alone, read ahead of --bit-MenuButton-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-outline-border-color",
+            DefaultValue = "--bit-MenuButton-border-color",
+            Description = "Border color of an Outline menu button alone, read ahead of --bit-MenuButton-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-outline-hover-color",
+            DefaultValue = "--bit-MenuButton-hover-color",
+            Description = "Text and icon color of the hovered half (pointer devices only) of an Outline menu button alone, read ahead of --bit-MenuButton-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-outline-hover-background",
+            DefaultValue = "--bit-MenuButton-hover-background",
+            Description = "Background of the hovered half (pointer devices only) of an Outline menu button alone, read ahead of --bit-MenuButton-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-outline-active-color",
+            DefaultValue = "--bit-MenuButton-active-color",
+            Description = "Text and icon color of a pressed half, and of the chevron while the menu is open, of an Outline menu button alone, read ahead of --bit-MenuButton-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-outline-active-background",
+            DefaultValue = "--bit-MenuButton-active-background",
+            Description = "Background of a pressed half, and of the chevron while the menu is open, of an Outline menu button alone, read ahead of --bit-MenuButton-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-outline-disabled-background",
+            DefaultValue = "--bit-MenuButton-disabled-background",
+            Description = "Background when disabled of an Outline menu button alone, read ahead of --bit-MenuButton-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-outline-disabled-border-color",
+            DefaultValue = "--bit-MenuButton-disabled-border-color",
+            Description = "Border color when disabled of an Outline menu button alone, read ahead of --bit-MenuButton-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-text-color",
+            DefaultValue = "--bit-MenuButton-color",
+            Description = "Text and icon color of both halves at rest of a Text menu button alone, read ahead of --bit-MenuButton-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-text-background",
+            DefaultValue = "--bit-MenuButton-background",
+            Description = "Background at rest of a Text menu button alone, read ahead of --bit-MenuButton-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-text-border-color",
+            DefaultValue = "--bit-MenuButton-border-color",
+            Description = "Border color of a Text menu button alone, read ahead of --bit-MenuButton-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-text-hover-color",
+            DefaultValue = "--bit-MenuButton-hover-color",
+            Description = "Text and icon color of the hovered half (pointer devices only) of a Text menu button alone, read ahead of --bit-MenuButton-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-text-hover-background",
+            DefaultValue = "--bit-MenuButton-hover-background",
+            Description = "Background of the hovered half (pointer devices only) of a Text menu button alone, read ahead of --bit-MenuButton-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-text-active-color",
+            DefaultValue = "--bit-MenuButton-active-color",
+            Description = "Text and icon color of a pressed half, and of the chevron while the menu is open, of a Text menu button alone, read ahead of --bit-MenuButton-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-text-active-background",
+            DefaultValue = "--bit-MenuButton-active-background",
+            Description = "Background of a pressed half, and of the chevron while the menu is open, of a Text menu button alone, read ahead of --bit-MenuButton-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-text-disabled-background",
+            DefaultValue = "--bit-MenuButton-disabled-background",
+            Description = "Background when disabled of a Text menu button alone, read ahead of --bit-MenuButton-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-text-disabled-border-color",
+            DefaultValue = "--bit-MenuButton-disabled-border-color",
+            Description = "Border color when disabled of a Text menu button alone, read ahead of --bit-MenuButton-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
         },
         new()
         {
             Name = "--bit-MenuButton-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Focus ring color of the button.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Focus ring color of the button. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {
             Name = "--bit-MenuButton-min-height",
-            DefaultValue = "--bit-siz-ctrl-sm/md/lg per Size",
-            Description = "Smallest height of the button, the width of the chevron half unless that is set on its own, and the width of an IconOnly header. It is a floor, so the button still grows with a taller icon or a wrapped label.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Smallest height of the button, the width of the chevron half unless that is set on its own, and the width of an IconOnly header. It is a floor, so the button still grows with a taller icon or a wrapped label. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-MenuButton-padding",
-            DefaultValue = "Per Size, from the control padding tokens",
-            Description = "Padding of each half of the button. The chevron half drops the side padding, since it is a square.",
+            DefaultValue = "--bit-siz-ctrl-pad-y-md --bit-siz-ctrl-pad-x-sm",
+            Description = "Padding of each half of the button. The chevron half drops the side padding, since it is a square. The Size parameter wins over it.",
         },
         new()
         {
@@ -548,32 +724,50 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "--bit-MenuButton-font-size",
-            DefaultValue = "--bit-tpg-fs-xs/sm/md per Size",
-            Description = "Text size of the button and of the items, which inherit it from the callout.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the button and of the items, which inherit it from the callout. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-MenuButton-icon-size",
-            DefaultValue = "--bit-siz-icon-sm/md/lg per Size",
-            Description = "Size of every glyph the component draws: the header icon, the chevron, the spinner, an item icon and a check mark.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of every glyph the component draws: the header icon, the chevron, the spinner, an item icon and a check mark. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-MenuButton-chevron-width",
             DefaultValue = "The min-height of the button",
-            Description = "Width of the chevron half of a split button.",
+            Description = "Width of the chevron half of a split button. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-MenuButton-divider-color",
-            DefaultValue = "The text color (Fill) or the border color (Outline, Text)",
-            Description = "The hairline between the two halves of a split button.",
+            DefaultValue = "--bit-MenuButton-color, then --bit-clr-pri-text (Fill); --bit-MenuButton-border-color, then --bit-clr-pri (Outline); --bit-clr-pri (Text)",
+            Description = "The hairline between the two halves of a split button. The Color parameter wins over it, and a disabled menu button draws it in the disabled color. Shared by the three variants: --bit-MenuButton-fill-divider-color, --bit-MenuButton-outline-divider-color and --bit-MenuButton-text-divider-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-fill-divider-color",
+            DefaultValue = "--bit-MenuButton-divider-color",
+            Description = "The hairline between the two halves of a Fill menu button alone, read ahead of --bit-MenuButton-divider-color so a theme can set this variant apart from the other two. The Color parameter wins over it, and a disabled menu button draws it in the disabled color.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-outline-divider-color",
+            DefaultValue = "--bit-MenuButton-divider-color",
+            Description = "The hairline between the two halves of an Outline menu button alone, read ahead of --bit-MenuButton-divider-color so a theme can set this variant apart from the other two. The Color parameter wins over it, and a disabled menu button draws it in the disabled color.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-text-divider-color",
+            DefaultValue = "--bit-MenuButton-divider-color",
+            Description = "The hairline between the two halves of a Text menu button alone, read ahead of --bit-MenuButton-divider-color so a theme can set this variant apart from the other two. The Color parameter wins over it, and a disabled menu button draws it in the disabled color.",
         },
         new()
         {
             Name = "--bit-MenuButton-callout-background",
-            DefaultValue = "--bit-clr-bg-pri, or the surface of the Background kind",
-            Description = "Background of the callout, and of every submenu opened from inside it.",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the callout, and of every submenu opened from inside it. The Background parameter wins over it.",
         },
         new()
         {
@@ -620,14 +814,14 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "--bit-MenuButton-item-min-height",
-            DefaultValue = "--bit-siz-item-sm/md/lg per Size",
-            Description = "Smallest height of an item.",
+            DefaultValue = "--bit-siz-item-md",
+            Description = "Smallest height of an item. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-MenuButton-item-padding",
-            DefaultValue = "Per Size, from the control padding tokens",
-            Description = "Padding of an item, and of a group header.",
+            DefaultValue = "--bit-siz-ctrl-pad-y-md --bit-siz-ctrl-pad-x-sm",
+            Description = "Padding of an item, and of a group header. The Size parameter wins over it.",
         },
         new()
         {
@@ -656,8 +850,8 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "--bit-MenuButton-item-checked-color",
-            DefaultValue = "The Color role's main color",
-            Description = "The mark of a checked item: the check mark of a check item, the bullet of a single-choice one.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "The mark of a checked item: the check mark of a check item, the bullet of a single-choice one. The Color parameter wins over it.",
         },
         new()
         {
@@ -668,8 +862,8 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "--bit-MenuButton-item-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Focus ring of the item the keyboard navigation is on. It is drawn inside the item, since the callout clips what overflows it.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Focus ring of the item the keyboard navigation is on. It is drawn inside the item, since the callout clips what overflows it. The Color parameter wins over it.",
         },
         new()
         {
@@ -759,10 +953,10 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the item is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the item is disabled.",
                },
                new()
                {
@@ -805,6 +999,15 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Turns the item into a single-choice item: it is announced as a radio button inside the menu, carries its IsChecked state as a bullet, and checking it clears every other item of the menu button that names the same group. It outranks Checkable where both are set.",
+               },
+               new()
+               {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   DefaultValue = "null",
+                   Description = "The rel attribute of the link of the item. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -923,10 +1126,10 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the option is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the option is disabled.",
                },
                new()
                {
@@ -969,6 +1172,15 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Turns the option into a single-choice option: it is announced as a radio button inside the menu, carries its IsChecked state as a bullet, and checking it clears every other option of the menu button that names the same group. It outranks Checkable where both are set.",
+               },
+               new()
+               {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   DefaultValue = "null",
+                   Description = "The rel attribute of the link of the option. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -1277,10 +1489,10 @@ public partial class BitMenuButtonDemo
                 },
                 new()
                 {
-                    Name = "IsEnabled",
+                    Name = "IsDisabled",
                     Type = "BitNameSelectorPair<TItem, bool>",
-                    DefaultValue = "new(nameof(BitMenuButtonItem.IsEnabled))",
-                    Description = "IsEnabled field name and selector of the custom input class.",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.IsDisabled))",
+                    Description = "IsDisabled field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -1337,6 +1549,15 @@ public partial class BitMenuButtonDemo
                     Description = "RadioGroup field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "Rel",
+                    Type = "BitNameSelectorPair<TItem, BitLinkRels?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.Rel))",
+                    Description = "The Rel field name and selector of the custom input class.",
+                    LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -1447,251 +1668,12 @@ public partial class BitMenuButtonDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "color-kind-enum",
-            Name = "BitColorKind",
-            Description = "Defines the color kinds available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Primary",
-                    Description = "The primary color kind.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Secondary",
-                    Description = "The secondary color kind.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Tertiary",
-                    Description = "The tertiary color kind.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Transparent",
-                    Description = "The transparent color kind.",
-                    Value = "3",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "button-type-enum",
-            Name = "BitButtonType",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Button",
-                    Description="The button is a clickable button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Submit",
-                    Description="The button is a submit button (submits form-data).",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Reset",
-                    Description="The button is a reset button (resets the form-data to its initial values).",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="Info Primary general color.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
-                },
-                new()
-                {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
-                },
-                new()
-                {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
-                },
-                new()
-                {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
-                },
-                new()
-                {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
-                },
-                new()
-                {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
-                },
-                new()
-                {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
-                },
-                new()
-                {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
-                },
-                new()
-                {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
-                },
-                new()
-                {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "drop-direction-enum",
-            Name = "BitDropDirection",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "All",
-                    Description = "The callout is positioned in all directions.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Description = "The callout is positioned in the top and bottom directions.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Small",
-                    Description="The small size.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The medium size.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The large size.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new()
-                {
-                    Name= "Fill",
-                    Description="Fill styled variant.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Outline",
-                    Description="Outline styled variant.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Text",
-                    Description="Text styled variant.",
-                    Value="2",
-                }
-            ]
-        },
+        DemoSharedEnums.BitColorKind(),
+        DemoSharedEnums.BitButtonType(),
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitDropDirection(),
+        DemoSharedEnums.BitLinkRels(),
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitVariant(),
     ];
 }

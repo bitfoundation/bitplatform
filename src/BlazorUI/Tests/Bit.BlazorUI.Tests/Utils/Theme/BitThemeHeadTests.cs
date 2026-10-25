@@ -38,6 +38,120 @@ public class BitThemeHeadTests : BunitTestContext
             "The client can re-resolve to a theme the cookie never mentioned; the tag has to follow it.");
     }
 
+    private static readonly Dictionary<string, string> PairColors = new(StringComparer.Ordinal)
+    {
+        [BitThemePresets.Fluent2Light] = "#eeeee1",
+        [BitThemePresets.Fluent2Dark] = "#111111",
+        [BitThemePresets.MaterialLight] = "#eeeee2",
+        [BitThemePresets.MaterialDark] = "#222222",
+    };
+
+    [TestMethod]
+    public void BitThemeHeadShouldPaintAThemeSavedUnderAnotherPairAsTheDeclaredPairsTheme()
+    {
+        // #13686: the visitor pinned Fluent 2's dark theme (the "dark" marker beside it), the app has since
+        // switched to Material. The document paints material-dark, so the chrome has to be painted for it too.
+        var component = RenderComponent<BitThemeHead>(parameters => parameters
+            .Add(p => p.PersistedPreference, BitThemePresets.Fluent2Dark)
+            .Add(p => p.PersistedThemePair, BitThemePresets.Dark)
+            .Add(p => p.LightTheme, BitThemePresets.MaterialLight)
+            .Add(p => p.DarkTheme, BitThemePresets.MaterialDark)
+            .Add(p => p.ThemeColors, PairColors));
+
+        StringAssert.Contains(component.Markup, "content=\"#222222\"", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void BitThemeHeadShouldPaintAStoredThemeThePageNoLongerOffersAsThePairsTheme()
+    {
+        // #13686, a theme saved before the scheme marker existed: the page lists what it ships, Fluent 2 is not
+        // among it, so the document paints material-dark - and the chrome has to be painted for it, not for the
+        // fluent2-dark nothing styles any more.
+        var component = RenderComponent<BitThemeHead>(parameters => parameters
+            .Add(p => p.PersistedPreference, BitThemePresets.Fluent2Dark)
+            .Add(p => p.LightTheme, BitThemePresets.MaterialLight)
+            .Add(p => p.DarkTheme, BitThemePresets.MaterialDark)
+            .Add(p => p.AvailableThemes, [BitThemePresets.MaterialLight, BitThemePresets.MaterialDark])
+            .Add(p => p.ThemeColors, PairColors));
+
+        StringAssert.Contains(component.Markup, "content=\"#222222\"", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void BitThemeHeadShouldSetAsideAStoredPairThePageNoLongerOffers()
+    {
+        // The visitor picked Material, and the page has since stopped shipping it: the document paints the
+        // declared Fluent 2 pair's dark theme, so the chrome - and the pair the correction script falls back
+        // on - is Fluent 2's.
+        var component = RenderComponent<BitThemeHead>(parameters => parameters
+            .Add(p => p.PersistedPreference, BitThemePresets.MaterialDark)
+            .Add(p => p.LightTheme, BitThemePresets.Fluent2Light)
+            .Add(p => p.DarkTheme, BitThemePresets.Fluent2Dark)
+            .Add(p => p.PersistedThemePair, $"{BitThemePresets.MaterialLight} {BitThemePresets.MaterialDark}")
+            .Add(p => p.AvailableThemes, [BitThemePresets.Fluent2Light, BitThemePresets.Fluent2Dark])
+            .Add(p => p.ThemeColors, PairColors));
+
+        StringAssert.Contains(component.Markup, "content=\"#111111\"", StringComparison.Ordinal);
+        StringAssert.Contains(component.Markup, "c=/dark$/.test(t)?'#111111':'#eeeee1';", StringComparison.Ordinal,
+            "The correction script's scheme fallback must be the declared pair's, not the set-aside one's.");
+    }
+
+    [TestMethod]
+    public void BitThemeHeadShouldReadItsSetupFromTheOptionsTheRootAttributesAreBuiltFrom()
+    {
+        // One instance for both halves: the head reads the pair and the offered themes off it, so a host page
+        // cannot list them on the attributes and forget them here.
+        var options = new BitThemeSsrOptions
+        {
+            LightTheme = BitThemePresets.MaterialLight,
+            DarkTheme = BitThemePresets.MaterialDark,
+            AvailableThemes = [BitThemePresets.MaterialLight, BitThemePresets.MaterialDark],
+        };
+        var attributes = BitThemeSsr.BuildRootThemeAttributeMap(BitThemePresets.Fluent2Dark, options);
+
+        var component = RenderComponent<BitThemeHead>(parameters => parameters
+            .Add(p => p.PersistedPreference, BitThemePresets.Fluent2Dark)
+            .Add(p => p.Options, options)
+            .Add(p => p.ThemeColors, PairColors));
+
+        Assert.AreEqual(BitThemePresets.MaterialDark, attributes[BitThemeAttributeNames.Theme]);
+        StringAssert.Contains(component.Markup, "content=\"#222222\"", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void BitThemeHeadShouldLetAParameterWinOverTheOptions()
+    {
+        var component = RenderComponent<BitThemeHead>(parameters => parameters
+            .Add(p => p.PersistedPreference, BitThemePresets.Dark)
+            .Add(p => p.Options, new BitThemeSsrOptions
+            {
+                LightTheme = BitThemePresets.MaterialLight,
+                DarkTheme = BitThemePresets.MaterialDark,
+                AvailableThemes = [BitThemePresets.MaterialLight, BitThemePresets.MaterialDark],
+            })
+            .Add(p => p.LightTheme, BitThemePresets.Fluent2Light)
+            .Add(p => p.DarkTheme, BitThemePresets.Fluent2Dark)
+            .Add(p => p.ThemeColors, PairColors));
+
+        // "dark" is offered by neither list, and goes to the dark theme of the pair the parameters name.
+        StringAssert.Contains(component.Markup, "content=\"#111111\"", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void BitThemeHeadShouldPaintTheChromeForTheVisitorsStoredPair()
+    {
+        // The visitor picked Material (BitThemeManager.SetThemePairAsync) while following the OS; the page
+        // still declares Fluent 2. The tag's guess for the OS is the visitor's dark theme.
+        var component = RenderComponent<BitThemeHead>(parameters => parameters
+            .Add(p => p.PersistedPreference, BitThemePresets.System)
+            .Add(p => p.LightTheme, BitThemePresets.Fluent2Light)
+            .Add(p => p.DarkTheme, BitThemePresets.Fluent2Dark)
+            .Add(p => p.PersistedThemePair, $"{BitThemePresets.MaterialLight} {BitThemePresets.MaterialDark}")
+            .Add(p => p.ThemeColors, PairColors));
+
+        StringAssert.Contains(component.Markup, "content=\"#222222\"", StringComparison.Ordinal);
+    }
+
     [TestMethod]
     public void BitThemeHeadShouldCorrectTheTagWhenTheClientResolvesAThemeTheCookieDidNot()
     {

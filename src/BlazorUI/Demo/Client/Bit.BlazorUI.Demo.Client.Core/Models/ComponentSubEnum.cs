@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Models;
+﻿using System.Collections.Generic;
+
+namespace Bit.BlazorUI.Demo.Client.Core.Models;
 
 public class ComponentSubEnum
 {

@@ -1,0 +1,228 @@
+﻿@page "/e2e/date-range-picker/look"
+@using System.Globalization
+
+@* How BitDateRangePicker looks: every Color and Size, the appearance parameters (Underlined, HasBorder, IconPlacement,
+   the icons, DropDirection), the public --bit-DateRangePicker-* variables, Style/Class and Styles/Classes, the
+   right-to-left layout (Dir and an inherited dir), the BitParams cascade and reduced motion. "Today" is June 12, 2024. *@
+
+<PageTitle>BitDateRangePicker look E2E</PageTitle>
+
+<h1>BitDateRangePicker - look</h1>
+
+<E2ESection Id="l-colors" Title="Color">
+    <BitDateRangePicker Id="drp-color-none" Culture="_en" Today="_today" Value="_range" />
+    @foreach (var color in _colors)
+    {
+        <BitDateRangePicker Id="@($"drp-color-{color}")" Color="color" Culture="_en" Today="_today" Value="_range" />
+    }
+</E2ESection>
+
+<E2ESection Id="l-sizes" Title="Size">
+    <BitDateRangePicker Id="drp-size-none" Label="Unset" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-size-Small" Label="Small" Size="BitSize.Small" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-size-Medium" Label="Medium" Size="BitSize.Medium" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-size-Large" Label="Large" Size="BitSize.Large" Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="l-drop" Title="DropDirection">
+    <div style="width: 300px;">
+        <BitDateRangePicker Id="drp-drop-all" DropDirection="BitDropDirection.All" Culture="_en" Today="_today" />
+    </div>
+    <div style="width: 300px;">
+        <BitDateRangePicker Id="drp-drop-tb" Culture="_en" Today="_today" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="l-appearance" Title="Underlined, HasBorder, IconPlacement and icons">
+    <BitDateRangePicker Id="drp-underlined" Underlined Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-noborder" HasBorder="false" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-iconstart" IconPlacement="BitPlacement.Start" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-iconname" IconName="Airplane" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-icon-ext" Icon="@BitIconInfo.Css("e2e-ext-icon")" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-nav-icons"
+                        ShowClearButton
+                        ShowCloseButton
+                        Value="_range"
+                        PrevMonthNavIcon="@BitIconInfo.Css("e2e-prev-month")"
+                        NextMonthNavIcon="@BitIconInfo.Css("e2e-next-month")"
+                        GoToTodayIcon="@BitIconInfo.Css("e2e-today")"
+                        PrevYearNavIcon="@BitIconInfo.Css("e2e-prev-year")"
+                        NextYearNavIcon="@BitIconInfo.Css("e2e-next-year")"
+                        PrevYearRangeNavIcon="@BitIconInfo.Css("e2e-prev-range")"
+                        NextYearRangeNavIcon="@BitIconInfo.Css("e2e-next-range")"
+                        ClearButtonIcon="@BitIconInfo.Css("e2e-clear")"
+                        CloseButtonIcon="@BitIconInfo.Css("e2e-close")"
+                        Culture="_en"
+                        Today="_today" />
+    <BitDateRangePicker Id="drp-nav-iconnames"
+                        ShowClearButton
+                        ShowCloseButton
+                        Value="_range"
+                        PrevMonthNavIconName="ChevronLeft"
+                        NextMonthNavIconName="ChevronRight"
+                        GoToTodayIconName="Home"
+                        PrevYearNavIconName="Back"
+                        NextYearNavIconName="Forward"
+                        PrevYearRangeNavIconName="Rewind"
+                        NextYearRangeNavIconName="FastForward"
+                        ClearButtonIconName="Delete"
+                        CloseButtonIconName="ChromeClose"
+                        Culture="_en"
+                        Today="_today" />
+    <BitDateRangePicker Id="drp-time-icons"
+                        ShowTimePicker
+                        ShowTimePickerAsOverlay
+                        ShowTimePickerIcon="@BitIconInfo.Css("e2e-show-time")"
+                        HideTimePickerIcon="@BitIconInfo.Css("e2e-hide-time")"
+                        StartTimeIncreaseHourIcon="@BitIconInfo.Css("e2e-s-inc-hour")"
+                        StartTimeDecreaseHourIcon="@BitIconInfo.Css("e2e-s-dec-hour")"
+                        StartTimeIncreaseMinuteIcon="@BitIconInfo.Css("e2e-s-inc-minute")"
+                        StartTimeDecreaseMinuteIcon="@BitIconInfo.Css("e2e-s-dec-minute")"
+                        EndTimeIncreaseHourIcon="@BitIconInfo.Css("e2e-e-inc-hour")"
+                        EndTimeDecreaseHourIcon="@BitIconInfo.Css("e2e-e-dec-hour")"
+                        EndTimeIncreaseMinuteIcon="@BitIconInfo.Css("e2e-e-inc-minute")"
+                        EndTimeDecreaseMinuteIcon="@BitIconInfo.Css("e2e-e-dec-minute")"
+                        Culture="_en"
+                        Today="_today" />
+    <BitDateRangePicker Id="drp-time-iconnames"
+                        ShowTimePicker
+                        ShowTimePickerAsOverlay
+                        ShowTimePickerIconName="Stopwatch"
+                        HideTimePickerIconName="Calendar"
+                        StartTimeIncreaseHourIconName="CaretUp8"
+                        StartTimeDecreaseHourIconName="CaretDown8"
+                        StartTimeIncreaseMinuteIconName="CaretUpSolid8"
+                        StartTimeDecreaseMinuteIconName="CaretDownSolid8"
+                        EndTimeIncreaseHourIconName="ChevronUp"
+                        EndTimeDecreaseHourIconName="ChevronDown"
+                        EndTimeIncreaseMinuteIconName="ChevronUpSmall"
+                        EndTimeDecreaseMinuteIconName="ChevronDownSmall"
+                        Culture="_en"
+                        Today="_today" />
+</E2ESection>
+
+<E2ESection Id="l-cssvars" Title="CSS variables">
+    <div id="vars-host" style="--bit-DateRangePicker-input-radius: 13px; --bit-DateRangePicker-input-border-color: rgb(1, 2, 3); --bit-DateRangePicker-icon-color: rgb(4, 5, 6); --bit-DateRangePicker-label-color: rgb(7, 8, 9); --bit-DateRangePicker-input-height: 44px; --bit-DateRangePicker-callout-radius: 11px; --bit-DateRangePicker-callout-background: rgb(250, 240, 230); --bit-DateRangePicker-color: rgb(10, 20, 30); --bit-DateRangePicker-text-color: rgb(200, 210, 220); --bit-DateRangePicker-range-background: rgb(40, 50, 60); --bit-DateRangePicker-range-radius: 5px; --bit-DateRangePicker-week-number-background: rgb(70, 80, 90);">
+        <BitDateRangePicker Id="drp-vars" Label="From an ancestor" ShowWeekNumbers Culture="_en" Today="_today" Value="_range" />
+        <BitDateRangePicker Id="drp-vars-color" Label="Color and Size win" Color="BitColor.Error" Size="BitSize.Large" Culture="_en" Today="_today" Value="_range" />
+    </div>
+    <BitDateRangePicker Id="drp-vars-style"
+                        Style="--bit-DateRangePicker-range-background: rgb(1, 100, 1); --bit-DateRangePicker-input-background: rgb(255, 250, 200);"
+                        Culture="_en"
+                        Today="_today"
+                        Value="_range" />
+    <BitDateRangePicker Id="drp-vars-callout" Styles="@(new() { Callout = "--bit-DateRangePicker-day-size: 40px;" })" Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="l-styles" Title="Style, Class, Styles and Classes">
+    <BitDateRangePicker Id="drp-styles"
+                        Label="Styled"
+                        Value="_range"
+                        Presets="_presets"
+                        Culture="_en"
+                        Today="_today"
+                        Styles="@(new() { Root = "margin-inline: 3px;",
+                                          Focused = "background-color: rgb(255, 0, 255);",
+                                          Label = "color: rgb(11, 22, 33);",
+                                          Input = "letter-spacing: 2px;",
+                                          InputContainer = "background-color: rgb(240, 255, 240);",
+                                          Callout = "border: 2px solid rgb(9, 9, 9);",
+                                          DayButton = "font-style: italic;",
+                                          TodayDayButton = "text-transform: uppercase;",
+                                          StartAndEndSelectionDays = "outline: 3px solid rgb(0, 128, 0);",
+                                          SelectedDayButtons = "text-decoration-line: underline;",
+                                          PresetButton = "letter-spacing: 3px;",
+                                          PrevMonthNavButton = "opacity: 0.5;" })" />
+    <BitDateRangePicker Id="drp-classes"
+                        Label="Classed"
+                        Value="_range"
+                        Presets="_presets"
+                        HighlightedDates="_highlightedDates"
+                        Culture="_en"
+                        Today="_today"
+                        Classes="@(new() { Root = "e2e-c-root",
+                                           Focused = "e2e-c-focused",
+                                           Label = "e2e-c-label",
+                                           Input = "e2e-c-input",
+                                           InputContainer = "e2e-c-container",
+                                           Icon = "e2e-c-icon",
+                                           Overlay = "e2e-c-overlay",
+                                           Callout = "e2e-c-callout",
+                                           PresetsContainer = "e2e-c-presets",
+                                           PresetButton = "e2e-c-preset",
+                                           SelectedPresetButton = "e2e-c-preset-selected",
+                                           DayButton = "e2e-c-day",
+                                           TodayDayButton = "e2e-c-today",
+                                           StartDayButton = "e2e-c-start",
+                                           EndDayButton = "e2e-c-end",
+                                           StartAndEndSelectionDays = "e2e-c-ends",
+                                           SelectedDayButtons = "e2e-c-between",
+                                           HighlightedDayButton = "e2e-c-highlighted",
+                                           PrevMonthNavButton = "e2e-c-prev",
+                                           NextMonthNavButton = "e2e-c-next",
+                                           DayPickerMonth = "e2e-c-month",
+                                           WeekDayHeader = "e2e-c-dayname",
+                                           YearMonthPickerWrapper = "e2e-c-ym",
+                                           MonthButton = "e2e-c-monthbtn" })" />
+</E2ESection>
+
+<E2ESection Id="l-rtl" Title="Right to left">
+    <BitDateRangePicker Id="drp-rtl" Dir="BitDir.Rtl" Culture="_en" Today="_today" />
+    <div dir="rtl">
+        <BitDateRangePicker Id="drp-rtl-inherited" Culture="_en" Today="_today" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="l-cascade" Title="BitParams cascade">
+    <BitParams Parameters="_cascade">
+        <BitDateRangePicker Id="drp-casc-1" Today="_today" />
+        <BitDateRangePicker Id="drp-casc-2" Placeholder="Own" MonthCount="1" Presets="@(Array.Empty<BitDateRangePickerPreset>())" Today="_today" />
+    </BitParams>
+    <BitDateRangePicker Id="drp-casc-out" Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="l-motion" Title="Reduced motion and ForceAnimation">
+    <BitDateRangePicker Id="drp-motion" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-motion-force" ForceAnimation Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+
+    private static DateTimeOffset Local(int year, int month, int day, int hour = 0, int minute = 0)
+    {
+        var dateTime = new DateTime(year, month, day, hour, minute, 0);
+        return new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
+    }
+
+    private readonly DateTimeOffset _today = Local(2024, 6, 12, 10, 30);
+    private readonly DateTimeOffset[] _highlightedDates = [Local(2024, 6, 5)];
+    private readonly BitDateRangePickerValue _range = new() { StartDate = Local(2024, 6, 10), EndDate = Local(2024, 6, 14, 23, 59) };
+
+    private readonly BitDateRangePickerPreset[] _presets =
+    [
+        new() { Text = "First half", Value = new() { StartDate = Local(2024, 6, 10), EndDate = Local(2024, 6, 14, 23, 59) } },
+        new() { Text = "Second half", Value = new() { StartDate = Local(2024, 6, 17), EndDate = Local(2024, 6, 21, 23, 59) } },
+    ];
+
+    private readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly List<IBitComponentParams> _cascade =
+    [
+        new BitDateRangePickerParams
+        {
+            Culture = CultureInfo.GetCultureInfo("en-US"),
+            MonthCount = 2,
+            Placeholder = "From the cascade",
+            Presets = [new() { Text = "Cascaded preset", Value = new() { StartDate = Local(2024, 6, 3), EndDate = Local(2024, 6, 4) } }]
+        }
+    ];
+}

@@ -35,11 +35,13 @@ public static partial class Program
         TaskScheduler.UnobservedTaskException += (_, e) => { LogException(e.Exception, reportedBy: nameof(TaskScheduler.UnobservedTaskException), app); e.SetObserved(); };
 
         //#if (api == "Integrated")
+        //#if (database != "Sqlite")
         if (builder.Environment.IsDevelopment())
+        //#endif
         {
             await using var scope = app.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await dbContext.Database.EnsureCreatedAsync(); // It's recommended to start using ef-core migrations.
+            await dbContext.Database.MigrateAsync();
         }
         //#endif
 

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Represents a single item (panel) of the <see cref="BitAccordionList{TItem}"/> component provided as a child component.
@@ -98,9 +98,9 @@ public partial class BitAccordionListOption : ComponentBase, IAsyncDisposable
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the option is enabled.
+    /// Whether or not the option is disabled.
     /// </summary>
-    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool IsDisabled { get; set; }
 
     /// <summary>
     /// Determines whether the option is initially expanded.

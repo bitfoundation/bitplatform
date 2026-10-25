@@ -1,6 +1,13 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
+$acs-private-properties: clr;
+
 .bit-acs {
+    // What the component writes into an inline style starts out unset on every root, so an instance nested in
+    // another one never takes the outer one's value for its own; the inline declaration still wins on its element.
+    @each $name in $acs-private-properties {
+        --bit-acs-#{$name}: initial;
+    }
     --bit-acs-size: #{rem2(24px)};
     --bit-acs-gap: #{rem2(10px)};
     // What the neutral ("Default") swatch paints: the seed blue of the active packaged preset - the

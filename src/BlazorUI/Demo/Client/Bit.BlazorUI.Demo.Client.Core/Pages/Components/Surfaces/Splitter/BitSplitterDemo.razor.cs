@@ -36,7 +36,7 @@ public partial class BitSplitterDemo
             Name = "Collapsed",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the panel that folds - the first one, or the second where CollapseSecondPanel says so - is currently collapsed. It can be bound, so a collapse the user carries out on the gutter is reported back to the page. A collapsed panel keeps its content in the DOM and is folded down to CollapsedSize, ignoring the minimum size it would otherwise hold, while the panel left standing takes the whole splitter.",
+            Description = "Whether the panel that folds is collapsed; bindable. A collapsed panel keeps its content in the DOM, drops to CollapsedSize past its minimum, and is made inert when that size is 0. Expanding restores the previous split.",
         },
         new()
         {
@@ -50,21 +50,28 @@ public partial class BitSplitterDemo
             Name = "Collapsible",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lets a panel be collapsed - the first one, or the second where CollapseSecondPanel says so: pressing Enter on the gutter folds it away and opens it again, so does Ctrl with an arrow key and the control ShowCollapseButton draws, dragging the gutter close enough to that panel's own edge of the splitter snaps it shut, and Collapse/Expand/ToggleCollapse do the same from code.",
+            Description = "Lets the reader fold a panel away from the gutter: Enter, Ctrl + arrow, the collapse button, or a drag that snaps it shut at its edge.",
         },
         new()
         {
             Name = "CollapseSecondPanel",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Folds the second panel away rather than the first one, which is what an inspector, a properties pane or a preview sitting at the far end of the splitter needs. It moves what Collapsible offers to the other side of the gutter and nothing else: Collapsed, CollapsedSize, SnapSize, the keys, the collapse control and the Collapse/Expand/ToggleCollapse methods all go on meaning the one panel that folds, and Percent still describes the first panel.",
+            Description = "Folds the second panel instead of the first - an inspector or a preview at the far end. Everything collapse-related follows it; Percent still describes the first panel.",
+        },
+        new()
+        {
+            Name = "DefaultPercent",
+            Type = "double?",
+            DefaultValue = "null",
+            Description = "The share of the splitter, 0 to 100, the first panel starts at and is reset to, while the reader stays free to move it. Wins over the panel sizes; Percent wins over it.",
         },
         new()
         {
             Name = "DragStep",
             Type = "int",
             DefaultValue = "0",
-            Description = "The grid, in pixels, a drag of the gutter moves the split along: the first panel comes to rest on a multiple of this rather than wherever the pointer happens to be. The keyboard is held to the same multiples. The default of 0 is no grid at all.",
+            Description = "A pixel grid the split lands on, for the pointer and the keyboard alike. 0 is no grid.",
         },
         new()
         {
@@ -103,21 +110,21 @@ public partial class BitSplitterDemo
             Name = "FirstPanelMaxSize",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The max size of first panel in pixels.",
+            Description = "The max size of the first panel in pixels.",
         },
         new()
         {
             Name = "FirstPanelMinSize",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The min size of first panel in pixels.",
+            Description = "The min size of the first panel in pixels.",
         },
         new()
         {
             Name = "GutterHitSize",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The smallest strip, in pixels, a pointer has to land in to take hold of the gutter. A gutter drawn narrower than this still answers a press that lands within the strip, which reaches past what is drawn evenly on both sides without taking any room from the panels. The default is 24, the target size WCAG asks for, and 44 wherever the pointer is a coarse one.",
+            Description = "The smallest strip, in pixels, a press takes hold of the gutter in; it reaches past a thinner gutter without taking room from the panels. Unset, 24 (the WCAG target size), and 44 for a coarse pointer.",
         },
         new()
         {
@@ -156,14 +163,14 @@ public partial class BitSplitterDemo
             Name = "KeyboardStep",
             Type = "int",
             DefaultValue = "10",
-            Description = "How far, in pixels, one press of an arrow key on the gutter moves the split. Page Up and Page Down, and an arrow key held with Shift, move it ten of these steps at a time; Home and End take it all the way to the smallest and the largest size the panels allow.",
+            Description = "How far, in pixels, an arrow key moves the gutter. Shift + arrow, Page Up and Page Down move ten steps; Home and End go to the limits.",
         },
         new()
         {
             Name = "LazyResize",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Moves a line rather than the panels while the gutter is being dragged, and puts the panels where it was left only once the drag is over. It is what makes a panel holding a table of thousands of rows, an editor or a chart draggable: the cost of the drag becomes a single layout at its end.",
+            Description = "Drags a line instead of the panels and lays them out once, on release - for content too heavy to lay out on every frame.",
         },
         new()
         {
@@ -221,7 +228,7 @@ public partial class BitSplitterDemo
             Name = "PersistKey",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The key the splitter remembers its position under, so that a reader who has moved the gutter finds it where they left it the next time the page is opened. Both the position and whether the first panel was folded away are kept, and what is restored is offered to the component the way a drag is. The key has to be unique to the splitter within the origin.",
+            Description = "The storage key the position and the fold are remembered under, and restored from on the next visit. Unique per splitter within the origin.",
         },
         new()
         {
@@ -263,28 +270,28 @@ public partial class BitSplitterDemo
             Name = "SecondPanelMaxSize",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The max size of second panel in pixels.",
+            Description = "The max size of the second panel in pixels.",
         },
         new()
         {
             Name = "SecondPanelMinSize",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The min size of second panel in pixels.",
+            Description = "The min size of the second panel in pixels.",
         },
         new()
         {
             Name = "ShowCollapseButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Draws a control on the gutter that folds the collapsible panel away and brings it back, so that a reader working with the pointer can see that the panel folds at all. Only a Collapsible splitter has one. It is the pointer's way to what the gutter already does from the keyboard, so it stays out of the tab order and out of the accessibility tree.",
+            Description = "Draws a fold/unfold button on the gutter of a Collapsible splitter. It is kept out of the tab order, since the gutter's keys do the same.",
         },
         new()
         {
             Name = "SnapSize",
             Type = "int",
             DefaultValue = "0",
-            Description = "How small, in pixels, a drag has to leave the panel that folds for it to snap shut instead of staying open. Only a Collapsible splitter snaps at all. The default of 0 leaves the splitter to work it out from the minimum size of the panel: half of it, or a twentieth of the splitter where there is no minimum.",
+            Description = "How close, in pixels, to its edge a drag must leave the folding panel for it to snap shut. 0 uses half its minimum size, or a twentieth of the splitter without one.",
         },
         new()
         {
@@ -334,13 +341,13 @@ public partial class BitSplitterDemo
         {
             Name = "GetPercent",
             Type = "ValueTask<double?>",
-            Description = "Reads the share of the splitter the first panel takes up at this moment, as a percentage, measured off the panels themselves rather than read back from Percent. It is the only way to a split nobody has moved yet, which Percent does not hold until the first drag. A splitter whose JavaScript side is not up, and one laid out in a box with no room in it, answer null.",
+            Description = "Measures the first panel's current share of the splitter - including a split nobody has moved yet, which Percent does not hold. Null before the splitter is set up or when it has no room.",
         },
         new()
         {
             Name = "ResetSize",
             Type = "Task",
-            Description = "Clears Percent and hands the layout back to FirstPanelSize and SecondPanelSize - which is what a double-click on the gutter does.",
+            Description = "Clears Percent and hands the layout back to DefaultPercent, FirstPanelSize and SecondPanelSize - which is what a double-click on the gutter does. A Percent the page binds one way is not reset.",
         },
         new()
         {
@@ -442,14 +449,14 @@ public partial class BitSplitterDemo
                     Name = "CollapseButton",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "The custom CSS class/style for the control on the gutter that folds the first panel of the BitSplitter away and brings it back."
+                    Description = "The custom CSS class/style for the collapse button on the gutter of the BitSplitter."
                 },
                 new()
                 {
                     Name = "CollapseButtonIcon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "The custom CSS class/style for the icon of the control on the gutter that folds the first panel of the BitSplitter away and brings it back."
+                    Description = "The custom CSS class/style for the icon of the collapse button of the BitSplitter."
                 },
                 new()
                 {
@@ -528,509 +535,125 @@ public partial class BitSplitterDemo
 
 
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Splitter-gutter-size",
+            DefaultValue = "spacing(1.25)",
+            Description = "Thickness of the gutter. GutterSize wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-gutter-hit-size",
+            DefaultValue = "spacing(3), spacing(5.5) for a coarse pointer",
+            Description = "The smallest strip a press takes hold of the gutter in, reaching past a thinner gutter without taking room from the panels. GutterHitSize wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-gutter-background",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "The gutter at rest, and while it cannot be moved.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-gutter-hover-background",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "The gutter under the pointer.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-gutter-active-background",
+            DefaultValue = "The hover background",
+            Description = "The gutter while it is being dragged.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-gutter-indicator-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "The default grip drawn on the gutter - what keeps a gutter at rest at 3:1 against its surroundings.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-gutter-icon-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "The icon GutterIcon or GutterIconName draws on the gutter.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-gutter-icon-size",
+            DefaultValue = "--bit-tg-fs-xs",
+            Description = "Size of the icon drawn on the gutter.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-preview-background",
+            DefaultValue = "--bit-clr-pri",
+            Description = "The line a LazyResize drag moves in place of the panels.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-collapse-button-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "The chevron of the collapse button.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-collapse-button-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "The collapse button at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-collapse-button-border-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "The outline of the collapse button at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-collapse-button-hover-color",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "The chevron of the collapse button under the pointer.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-collapse-button-hover-background",
+            DefaultValue = "--bit-clr-pri",
+            Description = "The collapse button and its outline under the pointer.",
+        },
+        new()
+        {
+            Name = "--bit-Splitter-collapse-button-radius",
+            DefaultValue = "--bit-shp-radius-full",
+            Description = "Corner radius of the collapse button.",
+        },
+    ];
+
+
+
     private double? percent = 30;
     private double PercentValue { get => percent ?? 50; set => percent = value; }
     private bool isCollapsed;
     private double dragStep = 50;
+    private bool lazyResize;
+    private double? a11yPercent = 30;
     private double gutterSize = 10;
     private bool allowCollapse = true;
     private string resizeLog = "No resize yet.";
     private string collapseLog = "Nothing has been folded yet.";
+    private double? evenPercent;
     private double? measured;
     private BitSplitter splitterRef = default!;
 
-
-
-    private readonly string example1RazorCode = @"
-<BitSplitter Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">
-            First panel
-            <br /><br />
-            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-        </div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">
-            Second panel
-            <br /><br />
-            Each word carried meaning, each pause brought understanding. The spaces here are open for growth.
-        </div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example2RazorCode = @"
-<BitSplitter Vertical Style=""height:250px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">
-            First panel
-            <br /><br />
-            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-        </div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">
-            Second panel
-            <br /><br />
-            Each word carried meaning, each pause brought understanding. The spaces here are open for growth.
-        </div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example3RazorCode = @"
-<BitSplitter FirstPanelSize=""150"" Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">A first panel that starts at 150px</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">A second panel that takes the rest</div>
-    </SecondPanel>
-</BitSplitter>
-
-<BitSplitter SecondPanelSize=""150"" Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">A first panel that takes the rest</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">A second panel that starts at 150px</div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example4RazorCode = @"
-<BitSplitter FirstPanelSize=""200"" FirstPanelMinSize=""120"" FirstPanelMaxSize=""320"" SecondPanelMinSize=""100""
-             Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">Never narrower than 120px, never wider than 320px.</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Never narrower than 100px, whatever the first panel does.</div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example5RazorCode = @"
-<BitSlider Label=""@($""Percent: {PercentValue:F0}%"")"" @bind-Value=""PercentValue"" Min=""0"" Max=""100"" />
-
-<BitSplitter @bind-Percent=""percent"" FirstPanelMinSize=""60"" SecondPanelMinSize=""60""
-             Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">First panel</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>";
-    private readonly string example5CsharpCode = @"
-private double? percent = 30;
-private double PercentValue { get => percent ?? 50; set => percent = value; }";
-
-    private readonly string example6RazorCode = @"
-<BitSlider Label=""@($""Drag step: {dragStep:F0}px"")"" @bind-Value=""dragStep"" Max=""100"" Step=""10"" />
-
-<BitSplitter DragStep=""@((int)dragStep)"" Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">A panel that stops every @dragStep pixels</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>";
-    private readonly string example6CsharpCode = @"
-private double dragStep = 50;";
-
-    private readonly string example7RazorCode = @"
-<BitSplitter LazyResize FirstPanelMinSize=""80"" SecondPanelMinSize=""80""
-             Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">Drag the gutter: the line moves first, the panels follow when you let go.</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example8RazorCode = @"
-<BitSplitter KeyboardStep=""50"" FirstPanelMinSize=""80"" SecondPanelMinSize=""80""
-             Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">One arrow key moves the gutter 50px.</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Shift, Page Up and Page Down move it 500px.</div>
-    </SecondPanel>
-</BitSplitter>
-
-<BitSplitter NoResetOnDoubleClick FirstPanelSize=""150""
-             Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">Double-clicking the gutter</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">leaves this splitter where the reader put it.</div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example9RazorCode = @"
-<BitSplitter Collapsible CollapsedSize=""8"" @bind-Collapsed=""isCollapsed"" FirstPanelSize=""180"" FirstPanelMinSize=""120""
-             Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">A panel that can be folded away</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Collapsed: @isCollapsed</div>
-    </SecondPanel>
-</BitSplitter>
-
-<BitSplitter Collapsible CollapsedSize=""8"" SnapSize=""40"" FirstPanelSize=""180"" FirstPanelMinSize=""120""
-             Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">Drag the gutter to the first 40px to fold this away.</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>
-
-<BitSplitter Collapsible CollapseSecondPanel ShowCollapseButton CollapsedSize=""8"" SecondPanelSize=""180""
-             SecondPanelMinSize=""120"" FirstPanelMinSize=""100""
-             Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">A document that takes the whole splitter once the inspector is away</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">An inspector that folds to the right</div>
-    </SecondPanel>
-</BitSplitter>";
-    private readonly string example9CsharpCode = @"
-private bool isCollapsed;";
-
-    private readonly string example10RazorCode = @"
-<BitSplitter Collapsible ShowCollapseButton CollapsedSize=""8"" FirstPanelSize=""180"" FirstPanelMinSize=""120""
-             Style=""height:180px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">Press the chevron to fold this away.</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>
-
-<BitSplitter Vertical Collapsible ShowCollapseButton CollapsedSize=""8"" FirstPanelSize=""70""
-             Style=""height:220px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">A stacked splitter folds upwards.</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>
-
-<BitSplitter Collapsible ShowCollapseButton GutterSize=""16"" CollapsedSize=""8"" FirstPanelSize=""180""
-             CollapseIconName=""@BitIconName.ClosePane"" ExpandIconName=""@BitIconName.OpenPane""
-             Style=""height:180px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">Icons of the page's own choosing</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">CollapseIconName and ExpandIconName</div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example11RazorCode = @"
-<BitToggle Label=""Allow the panel to be folded away"" @bind-Value=""allowCollapse"" />
-
-<BitSplitter Collapsible CollapsedSize=""8"" FirstPanelSize=""180"" FirstPanelMinSize=""120""
-             OnCollapsing=""@(args => { args.Cancel = args.IsCollapsing && allowCollapse is false;
-                                       collapseLog = $""{args.Reason} asked to {(args.IsCollapsing ? ""collapse"" : ""expand"")}: {(args.Cancel ? ""refused"" : ""allowed"")}""; })""
-             Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">A panel that folds away only with permission</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>
-
-<div>@collapseLog</div>";
-    private readonly string example11CsharpCode = @"
-private bool allowCollapse = true;
-private string collapseLog = ""Nothing has been folded yet."";";
-
-    private readonly string example12RazorCode = @"
-<BitStack Horizontal Wrap Gap=""0.5rem"">
-    <BitButton OnClick=""@(() => splitterRef.SetPercent(25))"">25%</BitButton>
-    <BitButton OnClick=""@(() => splitterRef.SetPercent(50))"">50%</BitButton>
-    <BitButton OnClick=""@(() => splitterRef.SetPercent(75))"">75%</BitButton>
-    <BitButton OnClick=""@(() => splitterRef.ToggleCollapse())"">Toggle collapse</BitButton>
-    <BitButton OnClick=""@(() => splitterRef.ResetSize())"">Reset</BitButton>
-    <BitButton OnClick=""@(() => splitterRef.FocusAsync())"">Focus the gutter</BitButton>
-    <BitButton OnClick=""@(async () => measured = await splitterRef.GetPercent())"">Measure</BitButton>
-</BitStack>
-
-<BitSplitter @ref=""splitterRef"" Collapsible CollapsedSize=""8"" FirstPanelSize=""180""
-             Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">First panel</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>
-
-<div>@(measured is null ? ""Nothing has been measured yet."" : $""The first panel takes up {measured:F1}% of the splitter."")</div>";
-    private readonly string example12CsharpCode = @"
-private double? measured;
-private BitSplitter splitterRef = default!;";
-
-    private readonly string example13RazorCode = @"
-<BitSplitter FirstPanelMinSize=""60"" SecondPanelMinSize=""60""
-             Collapsible CollapsedSize=""8""
-             OnResizeStart=""@(p => resizeLog = $""Started at {p:F1}%"")""
-             OnResize=""@(p => resizeLog = $""Resizing: {p:F1}%"")""
-             OnResizeEnd=""@(p => resizeLog = $""Ended at {p:F1}%"")""
-             OnResizeCancel=""@(p => resizeLog = $""Cancelled, back at {p:F1}%"")""
-             OnCollapsedChange=""@(c => resizeLog = c ? ""Collapsed"" : ""Expanded"")""
-             OnGutterDoubleClick=""@(() => resizeLog = ""The gutter was double-clicked"")""
-             Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">First panel</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>
-
-<div>@resizeLog</div>";
-    private readonly string example13CsharpCode = @"
-private string resizeLog = ""No resize yet."";";
-
-    private readonly string example14RazorCode = @"
-<BitSplitter PersistKey=""demo-splitter"" Collapsible CollapsedSize=""8"" FirstPanelSize=""150""
-             Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">A panel that is where you left it</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example15RazorCode = @"
-<BitSplitter ReadOnly FirstPanelSize=""150"" Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">Read-only</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">The gutter stays where it is.</div>
-    </SecondPanel>
-</BitSplitter>
-
-<BitSplitter IsEnabled=""false"" FirstPanelSize=""150"" Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">Disabled</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">The whole splitter is dimmed.</div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example16RazorCode = @"
-<BitSplitter Style=""height:250px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">The first panel of the outer splitter</div>
-    </FirstPanel>
-    <SecondPanel>
-        <BitSplitter Vertical AriaLabel=""Resize the panels"">
-            <FirstPanel>
-                <div style=""padding:0.5rem"">The first panel of the nested splitter</div>
-            </FirstPanel>
-            <SecondPanel>
-                <div style=""padding:0.5rem"">The second panel of the nested splitter</div>
-            </SecondPanel>
-        </BitSplitter>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example17RazorCode = @"
-<BitSlider Label=""@($""Gutter size: {gutterSize:F0}px"")"" @bind-Value=""gutterSize"" Max=""50"" />
-
-<BitSplitter GutterSize=""@((int)gutterSize)"" Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">First panel</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>";
-    private readonly string example17CsharpCode = @"
-private double gutterSize = 10;";
-
-    private readonly string example18RazorCode = @"
-<BitSplitter GutterSize=""16"" GutterIconName=""@BitIconName.GripperDotsVertical""
-             Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">First panel</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example19RazorCode = @"
-<BitSplitter GutterSize=""14"" Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <GutterTemplate>
-        <div style=""display:flex;flex-direction:column;gap:2px"">
-            <div style=""width:4px;height:4px;border-radius:50%;background:var(--bit-clr-fg-sec)""></div>
-            <div style=""width:4px;height:4px;border-radius:50%;background:var(--bit-clr-fg-sec)""></div>
-            <div style=""width:4px;height:4px;border-radius:50%;background:var(--bit-clr-fg-sec)""></div>
-        </div>
-    </GutterTemplate>
-    <FirstPanel>
-        <div style=""padding:0.5rem"">First panel</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example20RazorCode = @"
-<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-
-<BitSplitter GutterSize=""16"" GutterIcon=""@(""fa-solid fa-arrows-left-right"")""
-             Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">First panel</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">""fa-solid fa-arrows-left-right""</div>
-    </SecondPanel>
-</BitSplitter>
-
-<BitSplitter GutterSize=""16"" GutterIcon=""@BitIconInfo.Css(""fa-solid fa-grip-vertical"")""
-             Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">First panel</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">BitIconInfo.Css(""fa-solid fa-grip-vertical"")</div>
-    </SecondPanel>
-</BitSplitter>
-
-<BitSplitter GutterSize=""16"" GutterIcon=""@BitIconInfo.Fa(""solid grip-lines-vertical"")""
-             Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">First panel</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">BitIconInfo.Fa(""solid grip-lines-vertical"")</div>
-    </SecondPanel>
-</BitSplitter>
-
-
-<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
-
-<BitSplitter GutterSize=""16"" GutterIcon=""@(""bi bi-grip-vertical"")""
-             Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">First panel</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">GutterIcon=@@(""bi bi-grip-vertical"")</div>
-    </SecondPanel>
-</BitSplitter>
-
-<BitSplitter GutterSize=""16"" GutterIcon=""@BitIconInfo.Bi(""arrow-left-right"")""
-             Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">First panel</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">BitIconInfo.Bi(""arrow-left-right"")</div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example21RazorCode = @"
-<style>
-    .custom-splitter {
-        height: 150px;
-        border-radius: 0.5rem;
-        border: 2px solid mediumpurple;
-        box-shadow: mediumpurple 0 0 0.5rem;
-        background: var(--bit-clr-bg-pri);
-    }
-
-    .custom-first-panel {
-        background: color-mix(in srgb, mediumpurple 15%, var(--bit-clr-bg-pri));
-    }
-
-    .custom-second-panel {
-        background: var(--bit-clr-bg-pri);
-    }
-
-    .custom-gutter {
-        background: mediumpurple;
-    }
-
-    .custom-gutter-indicator {
-        background: white;
-    }
-</style>
-
-<BitSplitter Style=""height:150px;background:var(--bit-clr-bg-pri);border:2px dashed var(--bit-clr-pri);border-radius:0.5rem""
-             AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">A splitter with a Style of its own</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>
-
-<BitSplitter Class=""custom-splitter"" AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">A splitter with a Class of its own</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">Second panel</div>
-    </SecondPanel>
-</BitSplitter>
-
-<BitSplitter GutterSize=""10""
-             Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)""
-             Styles=""@(new() { FirstPanel = ""background:color-mix(in srgb, var(--bit-clr-pri) 12%, var(--bit-clr-bg-pri))"",
-                               SecondPanel = ""background:var(--bit-clr-bg-pri)"",
-                               Gutter = ""background:var(--bit-clr-pri)"",
-                               GutterIndicator = ""background:var(--bit-clr-pri-text)"" })""
-             AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">Panels and gutter painted</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">through the Styles slots</div>
-    </SecondPanel>
-</BitSplitter>
-
-<BitSplitter GutterSize=""10""
-             Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)""
-             Classes=""@(new() { FirstPanel = ""custom-first-panel"",
-                                SecondPanel = ""custom-second-panel"",
-                                Gutter = ""custom-gutter"",
-                                GutterIndicator = ""custom-gutter-indicator"" })""
-             AriaLabel=""Resize the panels"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">Panels and gutter painted</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">through the Classes slots</div>
-    </SecondPanel>
-</BitSplitter>";
-
-    private readonly string example22RazorCode = @"
-<BitSplitter Dir=""BitDir.Rtl"" FirstPanelSize=""150"" Style=""height:200px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""تغییر اندازه پنل‌ها"">
-    <FirstPanel>
-        <div style=""padding:0.5rem"">پنل اول</div>
-    </FirstPanel>
-    <SecondPanel>
-        <div style=""padding:0.5rem"">پنل دوم</div>
-    </SecondPanel>
-</BitSplitter>";
+    private readonly BitSplitterParams[] splitterParams =
+    [
+        new()
+        {
+            GutterSize = 12,
+            Collapsible = true,
+            ShowCollapseButton = true,
+            CollapsedSize = 8,
+            FirstPanelSize = 160,
+        }
+    ];
 }

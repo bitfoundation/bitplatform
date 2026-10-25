@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 
 namespace Bit.BlazorUI;
@@ -9,6 +9,12 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitChart
 {
+    /// <summary>
+    /// The background a raster export is painted on by default: the surface the chart sits on, so the picture keeps
+    /// the contrast it has on the page - a chart exported from a dark theme is light text on dark, not on white.
+    /// </summary>
+    public const string SurfaceBackground = "var(--bit-Chart-surface-color, var(--bit-clr-bg-pri))";
+
     /// <summary>
     /// Downloads the chart as a standalone <c>.svg</c> file. The theme tokens the chart references are
     /// resolved into the exported file so it looks the same outside the app.
@@ -33,9 +39,12 @@ public partial class BitChart
     /// </summary>
     /// <param name="fileName">File name to save as; defaults to <c>chart.png</c>.</param>
     /// <param name="scale">Pixel ratio; 2 (the default) produces a crisp image on high-density displays.</param>
-    /// <param name="backgroundColor">Background painted behind the chart; PNG is transparent without it.</param>
+    /// <param name="backgroundColor">
+    /// Background painted behind the chart: any CSS color, a <c>var()</c> included. Defaults to
+    /// <see cref="SurfaceBackground"/>; pass null for a transparent PNG.
+    /// </param>
     /// <returns>True when the file was produced.</returns>
-    public async Task<bool> ExportPngAsync(string? fileName = null, double scale = 2, string? backgroundColor = "#ffffff")
+    public async Task<bool> ExportPngAsync(string? fileName = null, double scale = 2, string? backgroundColor = SurfaceBackground)
     {
         try
         {
@@ -50,7 +59,8 @@ public partial class BitChart
     /// <summary>
     /// Returns the chart as standalone SVG markup instead of downloading it - for embedding it in a
     /// report, mailing it, or storing it - with the theme tokens it references resolved into the markup
-    /// so it looks the same outside the app.
+    /// so it looks the same outside the app. The markup is read back from the browser in chunks, so a chart of any
+    /// size arrives whole, past the message size limit of a Blazor Server circuit.
     /// </summary>
     /// <param name="backgroundColor">Optional background painted behind the chart (SVG is transparent by default).</param>
     /// <returns>The SVG markup, or null when the chart has not been rendered in a browser yet.</returns>
@@ -68,14 +78,19 @@ public partial class BitChart
 
     /// <summary>
     /// Returns the chart as a rasterized <c>data:</c> URL - the same picture <see cref="ExportPngAsync"/>
-    /// downloads - ready to drop into an <c>img</c> src or a PDF. Mirrors Chart.js's <c>toBase64Image</c>.
+    /// downloads - ready to drop into an <c>img</c> src or a PDF. Mirrors Chart.js's <c>toBase64Image</c>. The data URL
+    /// is read back from the browser in chunks, so a picture of any size arrives whole, past the message size limit of a
+    /// Blazor Server circuit.
     /// </summary>
     /// <param name="mimeType">Image type to encode; <c>image/png</c> by default (<c>image/jpeg</c> and <c>image/webp</c> also work).</param>
     /// <param name="scale">Pixel ratio; 2 (the default) produces a crisp image on high-density displays.</param>
-    /// <param name="backgroundColor">Background painted behind the chart; PNG is transparent without it.</param>
+    /// <param name="backgroundColor">
+    /// Background painted behind the chart: any CSS color, a <c>var()</c> included. Defaults to
+    /// <see cref="SurfaceBackground"/>; pass null for a transparent PNG.
+    /// </param>
     /// <returns>The data URL, or null when the chart has not been rendered in a browser yet.</returns>
     public async Task<string?> ToBase64ImageAsync(string mimeType = "image/png", double scale = 2,
-        string? backgroundColor = "#ffffff")
+        string? backgroundColor = SurfaceBackground)
     {
         try
         {
@@ -105,36 +120,50 @@ public partial class BitChart
 
     /// <summary>
     /// Renders the chart's data as CSV. Value datasets become one row per series with a column per
-    /// label; point datasets (scatter/bubble) become one row per point.
+    /// label; point datasets (scatter/bubble) become one row per point. The headers and the names of
+    /// unlabeled datasets come from <see cref="Texts"/>, the X and Y headers from the axis titles when
+    /// the axes show one - the same as the screen-reader table.
     /// </summary>
     public string ToCsv()
     {
         var data = _config.Data;
         var culture = Culture;
+        var texts = ActiveTexts;
         var sb = new StringBuilder();
 
         if (HasPointData)
         {
-            sb.AppendLine("Series,X,Y,R");
-            foreach (var ds in data.Datasets)
+            // The radius column is there only for bubble data, as it is in the table.
+            bool radius = HasRadiusData;
+            sb.Append(CsvText(texts.Series)).Append(',')
+              .Append(CsvText(PointHeader(x: true, texts.X))).Append(',')
+              .Append(CsvText(PointHeader(x: false, texts.Y)));
+            if (radius) sb.Append(',').Append(CsvText(texts.Radius));
+            sb.AppendLine();
+            for (int di = 0; di < data.Datasets.Count; di++)
             {
+                var ds = data.Datasets[di];
                 if (ds.Points is not { } pts) continue;
                 foreach (var p in pts)
-                    sb.Append(CsvText(ds.Label ?? "Series")).Append(',')
+                {
+                    sb.Append(CsvText(DatasetName(ds, di))).Append(',')
                       .Append(Csv(p.X.ToString(culture))).Append(',')
-                      .Append(Csv(p.Y.ToString(culture))).Append(',')
-                      .AppendLine(p.R is { } r ? Csv(r.ToString(culture)) : "");
+                      .Append(Csv(p.Y.ToString(culture)));
+                    if (radius) sb.Append(',').Append(p.R is { } r ? Csv(r.ToString(culture)) : "");
+                    sb.AppendLine();
+                }
             }
             return sb.ToString();
         }
 
-        sb.Append("Series");
+        sb.Append(CsvText(texts.Series));
         foreach (var label in data.Labels) sb.Append(',').Append(CsvText(label));
         sb.AppendLine();
 
-        foreach (var ds in data.Datasets)
+        for (int di = 0; di < data.Datasets.Count; di++)
         {
-            sb.Append(CsvText(ds.Label ?? "Series"));
+            var ds = data.Datasets[di];
+            sb.Append(CsvText(DatasetName(ds, di)));
             if (ds.RangeData is { } ranges)
             {
                 foreach (var r in ranges)

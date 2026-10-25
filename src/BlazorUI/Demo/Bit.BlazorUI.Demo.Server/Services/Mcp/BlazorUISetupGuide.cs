@@ -214,6 +214,10 @@ public static class BlazorUISetupGuide
                .AppendLine("<head>")
                .AppendLine("    @((MarkupString)BitThemeSsr.InlineHeadScript)")
                .AppendLine("```").AppendLine();
+        builder.AppendLine("Reading the cookie makes the markup differ per visitor, so do it only where the response is not")
+               .AppendLine("served from a shared cache (a CDN, output caching): there one visitor's theme would be cached and")
+               .AppendLine("painted for everyone after them. Such an app passes `null` instead, drops `bit-theme-persist-cookie`,")
+               .AppendLine("and leaves the choice to localStorage, which the inline head script still reads before first paint.").AppendLine();
         builder.AppendLine("`GetBitBlazorUIThemingGuide(section: \"Server-side rendering\")` has the whole of it.").AppendLine();
     }
 

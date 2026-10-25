@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>A single list item containing nested blocks.</summary>
 public sealed class BitMarkdownListItemNode : BitMarkdownNode

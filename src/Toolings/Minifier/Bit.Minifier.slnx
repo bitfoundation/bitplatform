@@ -1,0 +1,11 @@
+﻿<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Bit.Minifier/Bit.Minifier.csproj" />
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj" />
+    <Project Path="Tests/Bit.Minifier.Tests.Friend/Bit.Minifier.Tests.Friend.csproj" />
+    <Project Path="Tests/Bit.Minifier.Tests.Library/Bit.Minifier.Tests.Library.csproj" />
+  </Folder>
+</Solution>

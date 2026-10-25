@@ -1,0 +1,142 @@
+﻿@page "/wizard"
+
+<PageTitle>Multi-step wizard · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Multi-step wizard</h1>
+    <p class="bb-subtitle">
+        <code>Step(id, s =&gt; s.Title(...).Fields(...))</code> groups fields into steps, and <code>BormView</code> renders a
+        stepper with Back and Next. Each step validates before advancing, and steps can be shown conditionally — the
+        company step here only appears for business accounts. The fields are declared once, as on any form; the steps
+        only say which of them go where.
+    </p>
+</div>
+
+<div class="bb-note">
+    Press Next on an empty step: it stays put and shows what is missing. Choose <em>Business</em> and a
+    <em>Company</em> step appears, numbered in its place. Walk to the last step and then click back through the
+    stepper. Every step you have already been past stays clickable in <em>both</em> directions — it was validated
+    on the way through, so making you press Next through the rest just to fix one answer would be busywork. A step
+    you have never reached stays inert. Enter in a text box moves to the next step, as Next does, rather than
+    submitting a form the user is halfway through.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView Definition="_schema" Model="_model" OnValidSubmit="HandleSubmit" SubmitText="Finish" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>All done ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Worth knowing</h3>
+    <ul class="bb-detail-list">
+        <li>
+            <strong>A hidden step is hidden in every sense.</strong> Its fields are not rendered, not validated on submit, and
+            never the reason a form refuses to submit. If a condition hides the step the user is standing on, the wizard
+            moves to the nearest visible one rather than stranding them.
+        </li>
+        <li>
+            <strong>Focus follows the step.</strong> Changing step moves focus to the new step's content, so the change is not
+            invisible to a keyboard or screen-reader user. A failed submit's error summary links to the step each error is on.
+        </li>
+        <li>
+            <strong>Its words and its links are yours.</strong> <code>BackText</code>, <code>NextText</code> and
+            <code>SubmitText</code> relabel the buttons, <code>StepperLabel</code> names the stepper for assistive technology,
+            and <code>AllowStepNavigation="false"</code> turns the stepper's links off.
+        </li>
+        <li>
+            <strong>Driving it from code.</strong> <code>NextStepAsync()</code>, <code>PreviousStep()</code>, <code>GoToStep(i)</code>,
+            <code>VisibleSteps</code>, <code>CurrentStepNumber</code>, <code>FurthestStepIndex</code> and
+            <code>IsStepReachable(i)</code> on the state are what a stepper of your own is built from.
+        </li>
+        <li>
+            <strong>Other ways to show the same steps.</strong> <code>StepLayout(BormStepLayout.Tabs)</code>, <code>Accordion</code>
+            or <code>Sections</code> let the user move around freely, and a review step reads every answer back - see
+            <a href="tabs-review">tabs, sections &amp; review</a>. A step's condition can also be an expression,
+            <code>.VisibleWhen("{AccountKind} = 'Business'")</code>, and in JSON Schema steps travel as <code>x-steps</code>.
+        </li>
+    </ul>
+</div>
+
+@code {
+    private const string Source =
+"""
+@page "/wizard"
+
+<BormView Definition="_schema" Model="_model" OnValidSubmit="HandleSubmit" SubmitText="Finish" />
+
+@code {
+    private readonly AccountSignup _model = new();
+    private BormDefinition _schema = default!;
+
+    protected override void OnInitialized()
+    {
+        _schema = BormBuilder.For<AccountSignup>()
+            .Title("Account setup")
+            .Field(x => x.FullName, f => f.Required().MinLength(2))
+            .Field(x => x.Email, f => f.Required().Email())
+            .Field(x => x.AccountKind, f => f.AsRadio().Label("Account type"))
+            .Field(x => x.CompanyName, f => f.Label("Company name").Required("Required for business accounts."))
+            .Field(x => x.VatNumber, f => f.Label("VAT number"))
+            .Field(x => x.AcceptTerms, f => f.Required("Please accept the terms."))
+            .Step("contact", s => s.Title("Contact").Fields("FullName", "Email"))
+            .Step("type", s => s.Title("Account type").Fields("AccountKind"))
+            // Only for business accounts. While hidden, the step's fields are neither shown nor
+            // validated, and the steps after it renumber themselves.
+            .Step("company", s => s.Title("Company")
+                .Fields("CompanyName", "VatNumber")
+                .VisibleWhen("AccountKind", BormConditionOperator.Equals, "Business"))
+            .Step("confirm", s => s.Title("Confirm").Fields("AcceptTerms"))
+            .Build();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}
+""";
+
+    private readonly AccountSignup _model = new();
+    private BormDefinition _schema = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        _schema = BormBuilder.For<AccountSignup>()
+            .Title("Account setup")
+            .Field(x => x.FullName, f => f.Required().MinLength(2))
+            .Field(x => x.Email, f => f.Required().Email())
+            .Field(x => x.AccountKind, f => f.AsRadio().Label("Account type"))
+            .Field(x => x.CompanyName, f => f.Label("Company name").Required("Required for business accounts."))
+            .Field(x => x.VatNumber, f => f.Label("VAT number"))
+            .Field(x => x.AcceptTerms, f => f.Required("Please accept the terms."))
+            .Step("contact", s => s.Title("Contact").Fields("FullName", "Email"))
+            .Step("type", s => s.Title("Account type").Fields("AccountKind"))
+            // Only for business accounts. While hidden, the step's fields are neither shown nor
+            // validated, and the steps after it renumber themselves.
+            .Step("company", s => s.Title("Company")
+                .Fields("CompanyName", "VatNumber")
+                .VisibleWhen("AccountKind", BormConditionOperator.Equals, "Business"))
+            .Step("confirm", s => s.Title("Confirm").Fields("AcceptTerms"))
+            .Build();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}

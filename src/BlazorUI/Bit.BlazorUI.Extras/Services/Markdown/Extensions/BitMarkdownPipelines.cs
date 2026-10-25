@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Ready-made, cached pipelines for common configurations.</summary>
 public static class BitMarkdownPipelines

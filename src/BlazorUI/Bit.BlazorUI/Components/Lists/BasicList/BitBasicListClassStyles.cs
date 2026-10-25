@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitBasicListClassStyles
 {
@@ -11,6 +11,12 @@ public class BitBasicListClassStyles
     /// Custom CSS classes/styles for the header container of the list.
     /// </summary>
     public string? Header { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the element holding the rows of the list, which is where a grid or a
+    /// gap between the rows is laid out.
+    /// </summary>
+    public string? Items { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the footer container of the list.

@@ -1,4 +1,4 @@
-@import 'abstracts/_functions.scss';
+﻿@import 'abstracts/_functions.scss';
 @import 'abstracts/_media-queries.scss';
 @import 'abstracts/_bit-css-variables.scss';
 @import 'abstracts/_docs.scss';
@@ -54,18 +54,21 @@
 // the demonstration. Everywhere else, on the marketing and guide pages whose motion is a handful of
 // 200ms hovers, the setting is ignored rather than leaving the site feeling broken.
 //
-// The mechanics: the library collapses its --bit-mot-* tokens under the query below, and its own
-// .bit-fam class (BitComponentBase.ForceAnimation) points them back at the untouched -full values.
-// This restores them at :root, which this stylesheet can do because it is linked after the library's;
-// the demo pages then opt back IN to the reduction through .demo-reduced-motion.
+// The mechanics: under the query below the library declares its --bit-mot-*-reduced tokens on :root,
+// and every plain --bit-mot-* token reads the reduced value from them while they are set and the
+// untouched -full one otherwise - on :root and wherever it is substituted again (a scoped preset, a
+// theme overlay, and the .bit-fam class of BitComponentBase.ForceAnimation, which withdraws them).
+// This withdraws them at :root, which this stylesheet can do because it is linked after the
+// library's; the demo pages then opt back IN to the reduction through .demo-reduced-motion.
 @media (prefers-reduced-motion: reduce) {
     :root {
-        --bit-mot-duration: var(--bit-mot-duration-full, 200ms);
-        --bit-mot-duration-short: var(--bit-mot-duration-short-full, 100ms);
-        --bit-mot-duration-long: var(--bit-mot-duration-long-full, 300ms);
-        --bit-mot-duration-spinner: var(--bit-mot-duration-spinner-full, 1.3s);
-        --bit-mot-easing-spinner: var(--bit-mot-easing-spinner-full, cubic-bezier(0.53, 0.21, 0.29, 0.67));
-        --bit-mot-loop-factor: var(--bit-mot-loop-factor-full, 1);
+        --bit-mot-duration-reduced: initial;
+        --bit-mot-duration-short-reduced: initial;
+        --bit-mot-duration-long-reduced: initial;
+        --bit-mot-duration-factor-reduced: initial;
+        --bit-mot-duration-spinner-reduced: initial;
+        --bit-mot-easing-spinner-reduced: initial;
+        --bit-mot-loop-factor-reduced: initial;
 
         // The bar's own height, which the sticky pivot bar under it offsets itself by. It holds a
         // single BitToggle on a doc surface, so it is that toggle's switch track plus the surface's
@@ -74,22 +77,36 @@
         // Cupertino 31px where Fluent draws it 20px - and a literal tuned to Fluent leaves the pivot
         // bar pinned *inside* this one on the other two presets. The floor keeps the row tall enough
         // for the label beside a switch a preset draws shorter than its own text - and stands in for
-        // the track entirely under a custom theme that ships no --bit-siz-switch-h-md, which would
-        // otherwise leave the max() invalid at computed-value time and this whole variable unusable.
-        --demo-motion-bar-height: calc(max(var(--bit-siz-switch-h-md, #{rem2(24px)}), #{rem2(24px)}) + #{$doc-space-2xs} * 2 + #{rem2(2px)});
+        // the track entirely under a custom theme that ships no switch geometry, which would otherwise
+        // leave the max() invalid at computed-value time and this whole variable unusable. The track
+        // is read the way the library's alias reads it - the token if one is set, else its steps of the
+        // spacing unit - each input guarded.
+        --demo-motion-bar-height: calc(max(var(--bit-siz-switch-h-md, calc(var(--bit-spa-scaling-factor, #{rem2(8px)}) * var(--bit-layout-density-scale, 1) * var(--bit-siz-switch-h-md-steps, 3))), #{rem2(24px)}) + #{$doc-space-2xs} * 2 + #{rem2(2px)});
     }
 
-    // A component demo page with its ForceAnimation toggle off: exactly the library's own reduced
-    // values, re-applied to this subtree. Mirrors the block in Styles/Fluent/motion.fluent.scss -
-    // 0.01ms rather than 0ms, because a zero-duration transition never fires transitionend, and the
-    // looping tokens calmed rather than collapsed, because a near-zero loop renders as flicker.
+    // A component demo page with its ForceAnimation toggle off: exactly the library's own reduction,
+    // re-applied to this subtree. Mirrors Styles/Fluent/motion.fluent.scss - 0.01ms rather than 0ms,
+    // because a zero-duration transition never fires transitionend, and the looping tokens calmed
+    // rather than collapsed, because a near-zero loop renders as flicker. The plain tokens are
+    // substituted again here, as the library's .bit-fam does, because what this element inherits was
+    // already substituted unreduced at :root; a scoped preset or a theme overlay inside the page
+    // reads the reduction off this element by itself.
     .demo-reduced-motion {
-        --bit-mot-duration: 0.01ms;
-        --bit-mot-duration-short: 0.01ms;
-        --bit-mot-duration-long: 0.01ms;
-        --bit-mot-duration-spinner: 4s;
-        --bit-mot-easing-spinner: linear;
-        --bit-mot-loop-factor: 3;
+        --bit-mot-duration-reduced: 0.01ms;
+        --bit-mot-duration-short-reduced: 0.01ms;
+        --bit-mot-duration-long-reduced: 0.01ms;
+        --bit-mot-duration-factor-reduced: 0;
+        --bit-mot-duration-spinner-reduced: 4s;
+        --bit-mot-easing-spinner-reduced: linear;
+        --bit-mot-loop-factor-reduced: 3;
+
+        --bit-mot-duration: var(--bit-mot-duration-reduced, var(--bit-mot-duration-full));
+        --bit-mot-duration-short: var(--bit-mot-duration-short-reduced, var(--bit-mot-duration-short-full));
+        --bit-mot-duration-long: var(--bit-mot-duration-long-reduced, var(--bit-mot-duration-long-full));
+        --bit-mot-duration-factor: var(--bit-mot-duration-factor-reduced, var(--bit-mot-duration-factor-full));
+        --bit-mot-duration-spinner: var(--bit-mot-duration-spinner-reduced, var(--bit-mot-duration-spinner-full));
+        --bit-mot-easing-spinner: var(--bit-mot-easing-spinner-reduced, var(--bit-mot-easing-spinner-full));
+        --bit-mot-loop-factor: var(--bit-mot-loop-factor-reduced, var(--bit-mot-loop-factor-full));
     }
 }
 
@@ -415,6 +432,18 @@ code {
     }
 }
 
+// A type or member name is one long word with no break opportunity in it, and the prose names parameters run
+// together (<b>MinTime</b>/<b>MaxTime</b>), so a line of the docs would otherwise run past the edge of a phone's
+// screen and scroll the whole page or the preview. Only a word wider than its line is broken; nothing that fits is
+// laid out any differently. Inline code anywhere in the docs chrome, and in a live preview the blocks of prose
+// written above its components - only those holding no component at all, since what a component renders (a
+// BitMarkdownViewer's code, a BitText's word) is laid out there exactly as it would be in an app. A highlighted
+// block in a <pre> does not wrap, so the first rule only ever reaches inline code.
+code:not(:where(.example-container *)),
+.example-container > :is(div, p):not(:has([class*="bit-"])) {
+    overflow-wrap: break-word;
+}
+
 
 // ── Syntax highlighting ───────────────────────────────────────────────────────────────────────
 // Prism ships one palette, tuned for a dark background. The vendored stylesheet does carry a light
@@ -522,14 +551,17 @@ code {
 //
 // The tab row is read as a raw custom property rather than through an alias in
 // _bit-css-variables.scss, because it needs the same guard --demo-motion-bar-height documents and an
-// alias cannot carry one: a theme that ships no --bit-siz-tab would otherwise make this calc()
+// alias cannot carry one: a theme that ships no tab height would otherwise make this calc()
 // invalid at computed-value time and take the whole variable with it, leaving every anchor on a
-// multi-API page to scroll under the sticky header at 0 clearance.
+// multi-API page to scroll under the sticky header at 0 clearance. It is read the way the library's
+// alias reads it - the token if one is set, else its steps of the spacing unit - each input guarded.
+$demo-tab-height: var(--bit-siz-tab, calc(var(--bit-spa-scaling-factor, #{rem2(8px)}) * var(--bit-layout-density-scale, 1) * var(--bit-siz-tab-steps, 5.5)));
+
 .doc-main:has(.pivot-sticky-header) {
-    --demo-section-scroll-margin: calc(max(#{rem2(120px)}, var(--demo-pivot-sticky-top) + #{$bit-env-inset-top}) + var(--bit-siz-tab, #{rem2(44px)}) + #{rem2(8px)} + #{$doc-space-2xs});
+    --demo-section-scroll-margin: calc(max(#{rem2(120px)}, var(--demo-pivot-sticky-top) + #{$bit-env-inset-top}) + #{$demo-tab-height} + #{rem2(8px)} + #{$doc-space-2xs});
 
     .bit-ios & {
-        --demo-section-scroll-margin: calc(max(#{rem2(120px)}, var(--demo-pivot-sticky-top) + env(safe-area-inset-top)) + var(--bit-siz-tab, #{rem2(44px)}) + #{rem2(8px)} + #{$doc-space-2xs});
+        --demo-section-scroll-margin: calc(max(#{rem2(120px)}, var(--demo-pivot-sticky-top) + env(safe-area-inset-top)) + #{$demo-tab-height} + #{rem2(8px)} + #{$doc-space-2xs});
     }
 }
 

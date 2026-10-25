@@ -1,4 +1,4 @@
-namespace BitBlazorUI.Legacy {
+﻿namespace BitBlazorUI.Legacy {
     export class MarkdownViewer {
         public static checkScriptLoaded(script: string) {
             return window.marked !== undefined;

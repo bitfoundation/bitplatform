@@ -1,4 +1,4 @@
-using Bit.BlazorUI.Demo.Client.Web.Shared.Services;
+﻿using Bit.BlazorUI.Demo.Client.Web.Shared.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

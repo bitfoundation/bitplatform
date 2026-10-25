@@ -1,0 +1,104 @@
+﻿@page "/examples/stress"
+
+<PageTitle>Stress · Blow</PageTitle>
+
+<ExampleScaffold Title="Stress"
+                 Summary="A grid of up to 900 nodes and 870 edges. With OnlyRenderVisibleElements on, the canvas renders only what is near the visible area, so panning, zooming and dragging stay responsive however large the graph grows; the panel counts the nodes it keeps on the page.">
+    <Toolbar>
+        <label>grid:
+            <select @onchange="OnSizeChange">
+                <option value="10">10 × 10 (100)</option>
+                <option value="20" selected>20 × 20 (400)</option>
+                <option value="30">30 × 30 (900)</option>
+            </select>
+        </label>
+        <label><input type="checkbox" checked="@_cull" @onchange="e => _cull = (bool)e.Value!" /> only render visible</label>
+        <span class="bb-muted">@_nodes.Count nodes, @_edges.Count edges</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    OnlyRenderVisibleElements="_cull" MinZoom="0.05">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+            <BlowPanel Anchor="BlowPanelPosition.TopLeft">
+                @* Follows the viewport without re-rendering this page - which would re-render every node with it - and
+                   Select keeps it to one render per change of the count rather than one per frame of a pan. *@
+                <BlowViewportView Select="@(v => RenderedCount(v))" Context="viewport">
+                    <div class="stress-count">@RenderedCount(viewport) of @_nodes.Count nodes on the page</div>
+                </BlowViewportView>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Pick a <strong>grid</strong> size: the graph is rebuilt with 100, 400 or 900 nodes. Press the control bar's fit button to see all of it.</li>
+        <li><strong>Zoom in</strong> on a corner with the wheel: the panel's count drops to the nodes near the view. <strong>Pan</strong>, and the nodes ahead are rendered as they come close.</li>
+        <li>Untick <strong>only render visible</strong>: every node is on the page again, whatever the view. On the 900-node grid, drag a node and pan with it ticked and unticked to feel the difference.</li>
+        <li><strong>Zoom out</strong> - as far as 5% - to take in the whole grid at once.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>OnlyRenderVisibleElements</code> renders only the nodes and edges that meet the visible area plus a 20% margin on each side, so a short pan uncovers no gap. A node that has not been measured yet is rendered once regardless, so it can be sized.</li>
+        <li>Edges are culled by their end points, padded by the furthest their path can stray, so an edge crossing the view is kept even when neither of its nodes is.</li>
+        <li><code>MinZoom="0.05"</code> lets the view zoom out far enough for the largest grid; the default stops at 0.2.</li>
+        <li>Every node has an explicit <code>Width</code> and <code>Height</code> (60 × 36), so its size is known before the browser has measured it.</li>
+        <li>The count comes from a <code>BlowViewportView</code> in a <code>BlowPanel</code>: it follows the viewport, and its <code>Select</code> re-renders it only when the count changes. The count is the page's own: the nodes that meet the pane grown by the same 20% margin.</li>
+        <li>The minimap draws every node whether culling is on or not; on a very large graph, consider leaving it out.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .stress-count { padding: 4px 8px; font-size: 12px; color: var(--bit-blow-text); background: var(--bit-blow-surface-translucent); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
+</style>
+
+@code {
+    private const double NodeWidth = 60;
+    private const double NodeHeight = 36;
+
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private bool _cull = true;
+    private int _size = 20;
+
+    protected override void OnInitialized() => Build();
+
+    private void OnSizeChange(ChangeEventArgs e)
+    {
+        _size = int.Parse(e.Value?.ToString() ?? "20");
+        Build();
+    }
+
+    private void Build()
+    {
+        _nodes = [];
+        _edges = [];
+        for (var x = 0; x < _size; x++)
+        {
+            for (var y = 0; y < _size; y++)
+            {
+                var id = $"{x}-{y}";
+                _nodes.Add(new BlowNode { Id = id, Label = id, Position = new(x * 90, y * 60), Width = NodeWidth, Height = NodeHeight });
+                if (y > 0)
+                    _edges.Add(new BlowEdge { Id = $"e{x}-{y}", Source = $"{x}-{y - 1}", Target = id });
+            }
+        }
+    }
+
+    // The nodes culling keeps on the page: those meeting the pane grown by a fifth of its size on every side, the
+    // margin the canvas renders beyond what is visible. Every node here is a root of a known size, so its box is its
+    // Position and the fixed size.
+    private int RenderedCount(BlowViewport viewport)
+    {
+        if (!_cull || _flow is null || _flow.PaneSize.IsEmpty) return _nodes.Count;
+
+        var width = _flow.PaneSize.Width / viewport.Zoom;
+        var height = _flow.PaneSize.Height / viewport.Zoom;
+        var left = -viewport.X / viewport.Zoom - width * 0.2;
+        var top = -viewport.Y / viewport.Zoom - height * 0.2;
+        var right = left + width * 1.4;
+        var bottom = top + height * 1.4;
+
+        return _nodes.Count(n => n.Position.X < right && n.Position.X + NodeWidth > left
+                              && n.Position.Y < bottom && n.Position.Y + NodeHeight > top);
+    }
+}

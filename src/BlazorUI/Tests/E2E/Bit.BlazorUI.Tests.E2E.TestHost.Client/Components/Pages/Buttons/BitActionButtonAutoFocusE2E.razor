@@ -1,0 +1,13 @@
+﻿@page "/e2e/action-button/autofocus"
+
+<PageTitle>BitActionButton AutoFocus E2E</PageTitle>
+
+@* AutoFocus acts on the first render only, so it gets a page of its own where nothing else asks for the focus. *@
+<E2ESection Id="autofocus" Title="AutoFocus">
+    <input id="autofocus-before" aria-label="before" />
+    <BitActionButton Id="autofocus-hidden" AutoFocus AriaHidden>Hidden from AT</BitActionButton>
+    <BitActionButton Id="autofocus-disabled" AutoFocus Disabled>Disabled</BitActionButton>
+    <BitActionButton Id="autofocus-btn" AutoFocus IconName="@BitIconName.Flag">Focused on load</BitActionButton>
+</E2ESection>
+
+<E2EStatus />

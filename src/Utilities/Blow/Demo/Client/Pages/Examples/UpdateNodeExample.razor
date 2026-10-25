@@ -1,0 +1,103 @@
+﻿@page "/examples/update-node"
+
+<PageTitle>Update Node · Blow</PageTitle>
+
+<ExampleScaffold Title="Update Node"
+                 Summary="Change a node from outside the canvas - its label, colour, position and interaction flags - by setting properties on the BlowNode and letting the page re-render, as React Flow's updateNode example does. Duplicate copies the node, with everything set on it, through BlowNode.Clone.">
+    <Toolbar>
+        <label>label: <input value="@_label" @oninput="e => SetLabel(e.Value?.ToString())" /></label>
+        <label>bg:
+            <select @onchange="e => SetColor(e.Value?.ToString())">
+                @* Tints mixed into the node's own fill, so each one reads in both colour modes. *@
+                <option value="var(--bit-blow-node-bg)">default</option>
+                <option value="color-mix(in srgb, #3b82f6 22%, var(--bit-blow-node-bg))">blue</option>
+                <option value="color-mix(in srgb, #22c55e 22%, var(--bit-blow-node-bg))">green</option>
+                <option value="color-mix(in srgb, #ef4444 22%, var(--bit-blow-node-bg))">red</option>
+            </select>
+        </label>
+        <button class="btn btn-secondary" @onclick="MoveRandom">Move randomly</button>
+        <button class="btn btn-secondary" @onclick="Duplicate">Duplicate</button>
+        <label><input type="checkbox" checked="@_target.Draggable" @onchange="e => _target.Draggable = (bool)e.Value!" /> draggable</label>
+        <label><input type="checkbox" checked="@_target.Selectable" @onchange="SetSelectable" /> selectable</label>
+        <label><input type="checkbox" checked="@_target.Connectable" @onchange="e => _target.Connectable = (bool)e.Value!" /> connectable</label>
+        <label><input type="checkbox" checked="@_target.Focusable" @onchange="e => _target.Focusable = (bool)e.Value!" /> focusable</label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Type a label</strong>: node 1 is relabelled as you type, and grows or shrinks to fit.</li>
+        <li><strong>Pick a bg</strong> colour: node 1's background changes.</li>
+        <li>Press <strong>Move randomly</strong>: node 1 jumps somewhere else and the view follows it.</li>
+        <li>Press <strong>Duplicate</strong>: a copy of node 1 appears beside it, with its label, colour and flags as they are now. Copies are independent: the toolbar goes on changing node 1 only.</li>
+        <li>Untick <strong>draggable</strong>: node 1 no longer moves, by pointer or arrow keys, and loses the grab cursor - but can still be selected and connected.</li>
+        <li>Untick <strong>selectable</strong>: clicks, <strong>Shift+drag</strong> boxes and <strong>Ctrl+A</strong> pass node 1 by - but it can still be dragged.</li>
+        <li>Untick <strong>connectable</strong>: no connection can start from or end on node 1's handles.</li>
+        <li>Untick <strong>focusable</strong>, click the background and press <strong>Tab</strong>: focus moves through the edges and the other nodes but skips node 1.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>BlowNode</code> is a mutable class: the toolbar sets <code>Label</code>, <code>Style</code> and <code>Position</code> on the node in the list, and the canvas draws the change on the render that follows. A node without an explicit size is measured again when its content changes.</li>
+        <li><code>FitViewAsync(300)</code> eases the view to the graph after the move, so the node never leaves the screen.</li>
+        <li><code>Clone(newId)</code> copies every property of the node under a new id - label, style, size, flags; <code>Data</code> is shared by reference rather than copied. The page offsets the copy's <code>Position</code> and clears <code>Selected</code> before adding it to the list.</li>
+        <li><code>Draggable</code>, <code>Selectable</code>, <code>Connectable</code> and <code>Focusable</code> are all on by default. Each turns one kind of interaction off for this node alone; <code>NodesDraggable</code>, <code>NodesConnectable</code>, <code>ElementsSelectable</code> and <code>NodesFocusable</code> on the canvas do the same for every node.</li>
+        <li>A node that is already selected stays selected when it stops being selectable, so the page clears <code>Selected</code> as it unticks the box.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowNode _target = default!;
+    private string _label = "Node";
+    private int _copies;
+
+    protected override void OnInitialized()
+    {
+        _target = new BlowNode { Id = "1", Label = _label, Position = new(250, 120), Style = "background:var(--bit-blow-node-bg);" };
+        _nodes =
+        [
+            _target,
+            new BlowNode { Id = "2", Type = "output", Label = "Output", Position = new(250, 260) },
+        ];
+        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Animated = true } ];
+    }
+
+    private void SetLabel(string? value)
+    {
+        _label = value ?? "";
+        _target.Label = _label;
+    }
+
+    private void SetColor(string? color) => _target.Style = $"background:{color};";
+
+    private void SetSelectable(ChangeEventArgs e)
+    {
+        _target.Selectable = (bool)e.Value!;
+
+        // The flag stops new selections; one already made would stay until something cleared it.
+        if (!_target.Selectable) _target.Selected = false;
+    }
+
+    private async Task MoveRandom()
+    {
+        _target.Position = new(Random.Shared.Next(20, 450), Random.Shared.Next(20, 250));
+
+        // Followed, so the node does not leave the view it was fitted to.
+        if (_flow is not null) await _flow.FitViewAsync(300);
+    }
+
+    private void Duplicate()
+    {
+        _copies++;
+
+        // Everything set on node 1 comes with it; the copy only needs an id, a place of its own and no selection.
+        var copy = _target.Clone($"1-copy-{_copies}");
+        copy.Position = new(_target.Position.X + 30 * _copies, _target.Position.Y + 30 * _copies);
+        copy.Selected = false;
+        _nodes.Add(copy);
+    }
+}

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A single mark drawn on the track of a <see cref="BitSlider"/>, optionally carrying a label under it.
@@ -33,7 +33,9 @@ public class BitSliderMark
     public double Value { get; set; }
 
     /// <summary>
-    /// The text rendered under the mark. A mark without a label is drawn as a plain tick.
+    /// The text rendered under the mark. A mark without one is drawn as a plain tick, unless the slider's
+    /// <c>ShowMarkLabels</c> is on - which labels it with its own value - or a <c>MarkLabelTemplate</c> is
+    /// supplying the content of every label.
     /// </summary>
     public string? Label { get; set; }
 

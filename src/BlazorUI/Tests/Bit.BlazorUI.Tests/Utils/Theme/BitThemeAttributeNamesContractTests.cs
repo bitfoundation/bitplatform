@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -22,7 +21,7 @@ public sealed class BitThemeAttributeNamesContractTests
     [TestMethod]
     public void ThemeTypeScriptConstantsMatchTheirCSharpDefinitions()
     {
-        var constants = ReadConstants("BitTheme.ts");
+        var constants = ReadConstants("Bit.BlazorUI", "Utils", "Theme", "BitTheme.ts");
 
         var expected = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -33,14 +32,18 @@ public sealed class BitThemeAttributeNamesContractTests
             ["ATTR_THEME_PERSIST_COOKIE"] = BitThemeAttributeNames.ThemePersistCookie,
             ["ATTR_THEME_DARK"] = BitThemeAttributeNames.ThemeDark,
             ["ATTR_THEME_LIGHT"] = BitThemeAttributeNames.ThemeLight,
+            ["ATTR_THEME_AVAILABLE"] = BitThemeAttributeNames.ThemeAvailable,
             ["ATTR_THEME_VIEW_TRANSITION"] = BitThemeAttributeNames.ThemeViewTransition,
             ["ATTR_THEME_COLOR_META"] = BitThemeAttributeNames.ThemeColorMeta,
+            ["ATTR_THEME_OVERLAY"] = BitThemeAttributeNames.ThemeOverlay,
             // Not an attribute but the custom property the theme-color sync falls back to. It is
             // documented in C# (and by the demo / template host pages that name their own), so a
             // change to the client's default has to be a deliberate change to both.
             ["THEME_COLOR_VARIABLE"] = BitThemeAttributeNames.ThemeColorVariable,
             ["STORAGE_KEY"] = BitThemeAttributeNames.ThemeStorageKey,
             ["COOKIE_NAME"] = BitThemeCookie.PreferenceCookieName,
+            ["PAIR_STORAGE_KEY"] = BitThemeAttributeNames.ThemePairStorageKey,
+            ["PAIR_COOKIE_NAME"] = BitThemeCookie.PairCookieName,
         };
 
         foreach (var (name, value) in expected)
@@ -52,13 +55,10 @@ public sealed class BitThemeAttributeNamesContractTests
         }
     }
 
-    private static Dictionary<string, string> ReadConstants(string fileName)
+    private static Dictionary<string, string> ReadConstants(params string[] segments)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "ts-sources", fileName);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure {fileName} is copied to output (see Bit.BlazorUI.Tests.csproj).");
-
         var constants = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (Match match in ConstDeclaration.Matches(File.ReadAllText(path)))
+        foreach (Match match in ConstDeclaration.Matches(SourceFiles.Read(segments)))
         {
             constants[match.Groups["name"].Value] = match.Groups["value"].Value.Trim('\'');
         }

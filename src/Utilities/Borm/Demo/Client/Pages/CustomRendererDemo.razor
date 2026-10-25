@@ -1,0 +1,166 @@
+﻿@page "/custom-renderer"
+
+<PageTitle>Custom renderer · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Custom renderer</h1>
+    <p class="bb-subtitle">
+        Every control is drawn by a component looked up in a registry, and the registry is yours to add to. The
+        <em>rating</em> field below is a star-rating component registered under the key <code>"rating"</code> and
+        asked for with <code>CustomRenderer("rating")</code>. Only the drawing changes: the value, its rule, the
+        label, the error message, focus after a failed submit and the error summary all work exactly as they do for
+        a built-in control.
+    </p>
+</div>
+
+<div class="bb-note">
+    Submit without a rating: the field's own <code>Must</code> rule refuses it, and focus lands on the first star.
+    The stars are a radio group, so the arrow keys choose and Tab leaves - try it from the keyboard. Pick a rating
+    and the message goes the moment the value is written.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView Definition="_schema" Data="_data" OnValidSubmit="HandleSubmit" SubmitText="Send feedback" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Thanks ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What a renderer is handed</h3>
+    <p class="bb-card-desc">
+        A renderer inherits <code>BormInputBase</code>. It never reads or writes the model itself: it reads the field's
+        value from its context and writes through it, so conditions, computed values, dirty tracking and validation all
+        see the change.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Member</th><th>What it is for</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Field</code></td><td>The field's definition: its label, options, rules and the <code>Attributes</code> the schema gave it (<code>Attr("max", 5)</code> arrives here).</td></tr>
+                <tr><td class="bb-table-key"><code>Context.Value</code>, <code>Context.StringValue</code></td><td>The current value, as it is and as text.</td></tr>
+                <tr><td class="bb-table-key"><code>Context.SetValueAsync(value)</code></td><td>Writes a typed value. <code>Context.SetFromStringAsync(text)</code> converts text the way the built-in boxes do, and reports what the model cannot hold.</td></tr>
+                <tr><td class="bb-table-key"><code>Context.ElementId</code>, <code>Context.LabelId</code></td><td>The ids the label and the error summary point at, so put <code>ElementId</code> on your control.</td></tr>
+                <tr><td class="bb-table-key"><code>AriaRequired</code>, <code>AriaInvalid</code>, <code>DescribedBy</code>, <code>AriaLabel</code></td><td>The accessibility wiring, ready to put on the control: required, invalid once the user should see it, the help and message ids, and a name when the label is hidden.</td></tr>
+                <tr><td class="bb-table-key"><code>Disabled</code>, <code>ReadOnly</code>, <code>DisabledOrReadOnly</code></td><td>Whether a condition, the form or a containing group has locked the field.</td></tr>
+                <tr><td class="bb-table-key"><code>CssClass</code></td><td>The built-in controls' class, with <code>--invalid</code> when the field shows an error.</td></tr>
+                <tr><td class="bb-table-key"><code>Element</code>, <code>FocusAsync()</code></td><td>What "go to the first error" and the summary's links focus. Override <code>FocusAsync</code> when the element to focus is inside another component.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Registering it - or replacing a built-in control</h3>
+    <p class="bb-card-desc">
+        <code>AddBorm</code> takes a callback that configures the registry. <code>RegisterCustom</code> adds a control under a
+        key a field asks for by name; <code>Register</code> replaces the control drawn for a whole field type, everywhere -
+        a date picker from your component library for every <code>Date</code> field, say. Calling <code>AddBorm</code> again
+        configures the same registry, so a module can add its renderers after the application has added its own.
+    </p>
+    <pre class="bb-code">builder.Services.AddBorm(registry =&gt; registry
+    .RegisterCustom&lt;StarRatingInput&gt;(<span class="s">"rating"</span>)        <span class="c">// asked for with f.CustomRenderer("rating")</span>
+    .Register&lt;MyDatePicker&gt;(BormFieldType.Date));      <span class="c">// every Date field, without asking</span></pre>
+    <p class="bb-card-desc">
+        A field that asks for a key nobody registered throws with a message naming the key, rather than quietly
+        falling back to a text box. In JSON Schema the key travels as <code>"x-renderer": "rating"</code>. To use
+        Blazor's own <code>InputText</code> or a component library's inputs inside a renderer, see
+        <a href="blazor-inputs">Blazor's own inputs</a>.
+    </p>
+</div>
+
+@code {
+    private const string Source =
+"""
+@page "/custom-renderer"
+
+<BormView Definition="_schema" Data="_data" OnValidSubmit="HandleSubmit" SubmitText="Send feedback" />
+
+@code {
+    private BormDefinition _schema = default!;
+    private readonly Dictionary<string, object?> _data = new();
+
+    protected override void OnInitialized()
+    {
+        _schema = BormBuilder.Create()
+            .Title("Leave feedback")
+            .Field("rating", BormFieldType.Custom, f => f
+                .Label("How would you rate us?")
+                .CustomRenderer("rating")
+                .Attr("max", 5)
+                .Must(v => v is int i && i >= 1, "Please pick a rating."))
+            .Text("comment", f => f.AsTextArea(3).Label("Comments").Placeholder("Optional"))
+            .Build();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(_data,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}
+
+// Program.cs - the renderer is registered against the key the field asks for:
+//   builder.Services.AddBorm(registry => registry.RegisterCustom<StarRatingInput>("rating"));
+
+@* Renderers/StarRatingInput.razor - the essentials. Each star is a real radio button (hidden from sight,
+   not from the keyboard), so the group is one tab stop and the arrow keys choose, as in any radio group. *@
+@inherits BormInputBase
+
+<div id="@Context.ElementId" role="radiogroup" @ref="Element" tabindex="-1"
+     aria-labelledby="@(Field.ShowLabel ? Context.LabelId : null)" aria-label="@AriaLabel"
+     aria-required="@AriaRequired" aria-invalid="@AriaInvalid" aria-describedby="@DescribedBy">
+    @for (var n = 1; n <= Max; n++)
+    {
+        var star = n;
+        <label class="star @(star <= Current ? "star--on" : "")">
+            <input type="radio" name="@_group" value="@star" checked="@(star == Current)"
+                   disabled="@DisabledOrReadOnly" @onchange="@(() => Context.SetValueAsync(star))" />
+            <span aria-hidden="true">@(star <= Current ? "★" : "☆")</span>
+            <span class="star__name">@(star == 1 ? "1 star" : $"{star} stars")</span>
+        </label>
+    }
+</div>
+
+@code {
+    private readonly string _group = "star-rating-" + Guid.NewGuid().ToString("N");
+
+    // .Attr("max", 5) on the field arrives in Field.Attributes.
+    private int Max => Field.Attributes.TryGetValue("max", out var m) && m is int i ? i : 5;
+    private int Current => Context.Value is int v ? v : 0;
+}
+""";
+
+    private BormDefinition _schema = default!;
+    private readonly Dictionary<string, object?> _data = new();
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        _schema = BormBuilder.Create()
+            .Title("Leave feedback")
+            .Field("rating", BormFieldType.Custom, f => f
+                .Label("How would you rate us?")
+                .CustomRenderer("rating")
+                .Attr("max", 5)
+                .Must(v => v is int i && i >= 1, "Please pick a rating."))
+            .Text("comment", f => f.AsTextArea(3).Label("Comments").Placeholder("Optional"))
+            .Build();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_data,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}

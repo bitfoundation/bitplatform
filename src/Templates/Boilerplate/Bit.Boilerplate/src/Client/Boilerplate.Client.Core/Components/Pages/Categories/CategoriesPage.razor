@@ -16,29 +16,23 @@
 <section>
     <BitStack>
         <BitStack Horizontal FitHeight>
-            <BitButton ReversedIcon
+            <BitButton IconPlacement="BitPlacement.End"
                        OnClick="CreateCategory"
                        IconName="@BitIconName.Add">
                 @Localizer[nameof(AppStrings.AddCategory)]
             </BitButton>
-            @if (isLoading)
-            {
-                <BitSlickBarsLoading CustomSize="32" />
-            }
         </BitStack>
         <BitStack Gap="0" FillContent>
             <div class="grid-container">
                 <BitDataGrid @ref="dataGrid"
                              TItem="CategoryDto"
                              Class="categories-grid"
+                             AriaLabel="@Localizer[nameof(AppStrings.Categories)]"
                              OnRead="LoadCategories"
-                             Loading="isLoading"
-                             Pageable Filterable Resizable Reorderable
-                             ShowToolbar ShowColumnChooser ShowCsvExport ShowExcelExport
-                             PageSize="10"
-                             Strings="DataGridStrings">
+                             Loading="isLoading">
                     <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Name)]"
-                                       Property="c => c.Name" />
+                                       Property="c => c.Name"
+                                       RowHeader />
 
                     <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Products)]"
                                        Property="c => c.ProductsCount"
@@ -46,6 +40,7 @@
                                        Filterable="false" />
 
                     <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Color)]"
+                                       ExportValue="c => c.Color"
                                        Width="90px"
                                        Sortable="false"
                                        Filterable="false">
@@ -55,7 +50,7 @@
                     </BitDataGridColumn>
 
                     <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Action)]"
-                                       Align="BitDataGridColumnAlign.Center"
+                                       Align="BitTextAlign.Center"
                                        Width="110px"
                                        Sortable="false"
                                        Filterable="false">
@@ -63,11 +58,13 @@
                             <BitButton Variant="BitVariant.Text"
                                        IconName="@BitIconName.Edit"
                                        Title="@Localizer[(nameof(AppStrings.Edit))]"
+                                       AriaLabel="@Localizer[(nameof(AppStrings.Edit))]"
                                        OnClick="WrapHandled(() => EditCategory(category))" />
                             <BitButton Color="BitColor.Error"
                                        Variant="BitVariant.Text"
                                        IconName="@BitIconName.Delete"
                                        Title="@Localizer[(nameof(AppStrings.Delete))]"
+                                       AriaLabel="@Localizer[(nameof(AppStrings.Delete))]"
                                        OnClick="WrapHandled(() => { isDeleteDialogOpen = true; deletingCategory = category; })" />
                         </Template>
                     </BitDataGridColumn>
@@ -79,8 +76,6 @@
 
 <BitDialog OnOk="WrapHandled(DeleteCategory)"
            @bind-IsOpen="isDeleteDialogOpen"
-           OkText="@Localizer[nameof(AppStrings.Yes)]"
-           CancelText="@Localizer[nameof(AppStrings.No)]"
            Title="@Localizer[nameof(AppStrings.DeleteCategory)]"
            Message="@Localizer[nameof(AppStrings.AreYouSureWannaDeleteCategory), deletingCategory?.Name ?? ""]" />
 

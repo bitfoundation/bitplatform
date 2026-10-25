@@ -9,7 +9,7 @@ public partial class BitButtonDemo
             Name = "AllowDisabledFocus",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Keeps the disabled button focusable and discoverable by screen readers, rendering aria-disabled instead of the native disabled attribute when IsEnabled is false, preserving a consistent tab order. Set it to false to render the native disabled attribute and remove the button from the tab order.",
+            Description = "Keeps the disabled button focusable and discoverable by screen readers, rendering aria-disabled instead of the native disabled attribute when Disabled is true, preserving a consistent tab order. Set it to false to render the native disabled attribute and remove the button from the tab order.",
         },
         new()
         {
@@ -69,7 +69,7 @@ public partial class BitButtonDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the button.",
+            Description = "The general color of the button. An explicit value wins over the --bit-Button-* color variables (the disabled and focus colors included); left unset, the button is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -122,7 +122,7 @@ public partial class BitButtonDemo
             DefaultValue = "null",
             Description = "Specifies the position of the floating button.",
             LinkType = LinkType.Link,
-            Href = "#button-position"
+            Href = "#position-enum"
         },
         new()
         {
@@ -172,12 +172,12 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Gets or sets the position of the icon relative to the component's content.",
+            Description = "Gets or sets the position of the icon relative to the component's content. The default value is Start. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -209,12 +209,12 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "LoadingLabelPosition",
-            Type = "BitLabelPosition",
-            DefaultValue = "BitLabelPosition.End",
-            Description = "The position of the loading Label in regards to the spinner icon.",
+            Name = "LoadingLabelPlacement",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.End",
+            Description = "The position of the loading Label in regards to the spinner icon. Only Top, Bottom, Start and End are honoured; any other value falls back to the default.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -258,14 +258,14 @@ public partial class BitButtonDemo
             DefaultValue = "null",
             Description = "Sets the rel attribute for link-rendered buttons when Href is a non-anchor URL; ignored for empty or hash-only hrefs.",
             LinkType = LinkType.Link,
-            Href = "#link-rels",
+            Href = "#link-rels-enum",
         },
         new()
         {
             Name = "Rounded",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the button with fully rounded (pill shaped) corners, and an icon-only one as a circle. It sets what --bit-Button-radius falls back to, so a radius of your own still wins.",
+            Description = "Renders the button with fully rounded (pill shaped) corners, and an icon-only one as a circle. It wins over --bit-Button-radius, which restyles the default corner and not a rounded one.",
         },
         new()
         {
@@ -286,7 +286,7 @@ public partial class BitButtonDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Sets the preset size for typography and padding of the button.",
+            Description = "Sets the preset size for typography and padding of the button. An explicit value wins over the --bit-Button-* size variables (padding, min-height, gap, font, icon and spinner sizes); left unset, the button is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -311,7 +311,7 @@ public partial class BitButtonDemo
             Name = "Target",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter). When set to _blank and no Rel is provided, rel=\"noopener\" gets added automatically for security.",
+            Description = "Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter). When set to _blank and no opener-related Rel is provided, noopener is added to the rel automatically for security.",
         },
         new()
         {
@@ -438,459 +438,13 @@ public partial class BitButtonDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new()
-                {
-                    Name= "Fill",
-                    Description="Fill styled variant.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Outline",
-                    Description="Outline styled variant.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Text",
-                    Description="Text styled variant.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="Info Primary general color.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
-                },
-                new()
-                {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
-                },
-                new()
-                {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
-                },
-                new()
-                {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
-                },
-                new()
-                {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
-                },
-                new()
-                {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
-                },
-                new()
-                {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
-                },
-                new()
-                {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
-                },
-                new()
-                {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
-                },
-                new()
-                {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Small",
-                    Description="The small size button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The medium size button.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The large size button.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "button-type-enum",
-            Name = "BitButtonType",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Button",
-                    Description="The button is a clickable button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Submit",
-                    Description="The button is a submit button (submits form-data).",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Reset",
-                    Description="The button is a reset button (resets the form-data to its initial values).",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Description = "Icon renders before the content (default).",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "Icon renders after the content.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label shows on the top of the button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label shows on the end of the button.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label shows on the bottom of the button.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label shows on the start of the button.",
-                    Value="3",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "link-rels",
-            Name = "BitLinkRels",
-            Description = "The rel attribute defines the relationship between a linked resource and the current document.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Alternate",
-                    Value = "1",
-                    Description = "Provides a link to an alternate representation of the document. (i.e. print page, translated or mirror)"
-                },
-                new()
-                {
-                    Name = "Author",
-                    Value = "2",
-                    Description = "Provides a link to the author of the document."
-                },
-                new()
-                {
-                    Name = "Bookmark",
-                    Value = "4",
-                    Description = "Permanent URL used for bookmarking."
-                },
-                new()
-                {
-                    Name = "External",
-                    Value = "8",
-                    Description = "Indicates that the referenced document is not part of the same site as the current document."
-                },
-                new()
-                {
-                    Name = "Help",
-                    Value = "16",
-                    Description = "Provides a link to a help document."
-                },
-                new()
-                {
-                    Name = "License",
-                    Value = "32",
-                    Description = "Provides a link to licensing information for the document."
-                },
-                new()
-                {
-                    Name = "Next",
-                    Value = "64",
-                    Description = "Provides a link to the next document in the series."
-                },
-                new()
-                {
-                    Name = "NoFollow",
-                    Value = "128",
-                    Description = @"Links to an unendorsed document, like a paid link. (""NoFollow"" is used by Google, to specify that the Google search spider should not follow that link)"
-                },
-                new()
-                {
-                    Name = "NoOpener",
-                    Value = "256",
-                    Description = "Requires that any browsing context created by following the hyperlink must not have an opener browsing context."
-                },
-                new()
-                {
-                    Name = "NoReferrer",
-                    Value = "512",
-                    Description = "Makes the referrer unknown. No referrer header will be included when the user clicks the hyperlink."
-                },
-                new()
-                {
-                    Name = "Prev",
-                    Value = "1024",
-                    Description = "The previous document in a selection."
-                },
-                new()
-                {
-                    Name = "Search",
-                    Value = "2048",
-                    Description = "Links to a search tool for the document."
-                },
-                new()
-                {
-                    Name = "Tag",
-                    Value = "4096",
-                    Description = "A tag (keyword) for the current document."
-                },
-                new()
-                {
-                    Name = "Me",
-                    Value = "8192",
-                    Description = "Indicates that the linked document represents the person who owns the current content. (used for identity verification)"
-                },
-                new()
-                {
-                    Name = "Opener",
-                    Value = "16384",
-                    Description = "Requires that any browsing context created by following the hyperlink keeps its opener browsing context. (reverses the implicit noopener modern browsers apply to _blank targets)"
-                },
-                new()
-                {
-                    Name = "PrivacyPolicy",
-                    Value = "32768",
-                    Description = "Links to the privacy policy that applies to the current document. (rendered as privacy-policy)"
-                },
-                new()
-                {
-                    Name = "Sponsored",
-                    Value = "65536",
-                    Description = "Marks the link as an advertisement or paid placement, so search engines do not count it as an organic endorsement."
-                },
-                new()
-                {
-                    Name = "TermsOfService",
-                    Value = "131072",
-                    Description = "Links to the terms of service that apply to the current document. (rendered as terms-of-service)"
-                },
-                new()
-                {
-                    Name = "Ugc",
-                    Value = "262144",
-                    Description = "Marks the link as user-generated content, like forum posts or comments, for search engines."
-                }
-            ]
-        },
-        new()
-        {
-            Id = "button-position",
-            Name = "BitPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "TopLeft",
-                    Value = "0"
-                },
-                new()
-                {
-                    Name = "TopCenter",
-                    Value = "1"
-                },
-                new()
-                {
-                    Name = "TopRight",
-                    Value = "2"
-                },
-                new()
-                {
-                    Name = "TopStart",
-                    Value = "3"
-                },
-                new()
-                {
-                    Name = "TopEnd",
-                    Value = "4"
-                },
-                new()
-                {
-                    Name = "CenterLeft",
-                    Value = "5"
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "6"
-                },
-                new()
-                {
-                    Name = "CenterRight",
-                    Value = "7"
-                },
-                new()
-                {
-                    Name = "CenterStart",
-                    Value = "8"
-                },
-                new()
-                {
-                    Name = "CenterEnd",
-                    Value = "9"
-                },
-                new()
-                {
-                    Name = "BottomLeft",
-                    Value = "10"
-                },
-                new()
-                {
-                    Name = "BottomCenter",
-                    Value = "11"
-                },
-                new()
-                {
-                    Name = "BottomRight",
-                    Value = "12"
-                },
-                new()
-                {
-                    Name = "BottomStart",
-                    Value = "13"
-                },
-                new()
-                {
-                    Name = "BottomEnd",
-                    Value = "14"
-                }
-            ]
-        },
+        DemoSharedEnums.BitVariant(),
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitButtonType(),
+        DemoSharedEnums.BitPlacement(),
+        DemoSharedEnums.BitLinkRels(),
+        DemoSharedEnums.BitPosition(),
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -908,86 +462,302 @@ public partial class BitButtonDemo
         new()
         {
             Name = "--bit-Button-color",
-            DefaultValue = "Per variant: the role's on-color when filled, its main color otherwise",
-            Description = "Foreground (text and icon) in the rest state. FixedColor holds this color through hover and press as well.",
+            DefaultValue = "Per variant: --bit-clr-pri-text when filled, --bit-clr-pri otherwise",
+            Description = "Foreground (text and icon) in the rest state. FixedColor holds this color of a Fill button through hover and press as well; an Outline or Text button with FixedColor wears its hover color instead. The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-color, --bit-Button-outline-color and --bit-Button-text-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-background",
-            DefaultValue = "The role's main color when filled, transparent otherwise",
-            Description = "Background in the rest state.",
+            DefaultValue = "--bit-clr-pri when filled, transparent otherwise",
+            Description = "Background in the rest state. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-Button-fill-background, --bit-Button-outline-background and --bit-Button-text-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-border-color",
-            DefaultValue = "The role's main color when filled or outlined, transparent otherwise",
-            Description = "Border color in the rest state. The border is drawn on every variant, so a Text button can take one without changing its size.",
+            DefaultValue = "--bit-clr-pri when filled or outlined, transparent otherwise",
+            Description = "Border color in the rest state. The border is drawn on every variant, so a Text button can take one without changing its size. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Button-fill-border-color, --bit-Button-outline-border-color and --bit-Button-text-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-hover-color",
-            DefaultValue = "The role's on-color, and the rest color for the Fill variant",
-            Description = "Foreground while hovered (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-text, and the rest color for the Fill variant",
+            Description = "Foreground while hovered (pointer devices only), and the one an Outline or Text button with FixedColor wears in every state. The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-hover-color, --bit-Button-outline-hover-color and --bit-Button-text-hover-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-hover-background",
-            DefaultValue = "The role's hover color",
-            Description = "Background while hovered (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Background while hovered (pointer devices only). The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-hover-background, --bit-Button-outline-hover-background and --bit-Button-text-hover-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-hover-border-color",
             DefaultValue = "The rest border color, and the hover background for the Fill variant",
-            Description = "Border color while hovered (pointer devices only).",
+            Description = "Border color while hovered (pointer devices only). The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Button-fill-hover-border-color, --bit-Button-outline-hover-border-color and --bit-Button-text-hover-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-active-color",
             DefaultValue = "As the hover foreground",
-            Description = "Foreground while pressed.",
+            Description = "Foreground while pressed. The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-active-color, --bit-Button-outline-active-color and --bit-Button-text-active-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-active-background",
-            DefaultValue = "The role's active color",
-            Description = "Background while pressed.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Background while pressed. The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-active-background, --bit-Button-outline-active-background and --bit-Button-text-active-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-active-border-color",
             DefaultValue = "As the hover border color",
-            Description = "Border color while pressed.",
+            Description = "Border color while pressed. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Button-fill-active-border-color, --bit-Button-outline-active-border-color and --bit-Button-text-active-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-disabled-color",
-            DefaultValue = "The role's disabled text color",
-            Description = "Foreground when disabled. It also draws the focus ring of a disabled button that AllowDisabledFocus keeps in the tab order.",
+            DefaultValue = "--bit-clr-pri-dis-text",
+            Description = "Foreground when disabled. It also draws the focus ring of a disabled button that AllowDisabledFocus keeps in the tab order. The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-disabled-color, --bit-Button-outline-disabled-color and --bit-Button-text-disabled-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-disabled-background",
-            DefaultValue = "The role's disabled color when filled, transparent otherwise",
-            Description = "Background when disabled.",
+            DefaultValue = "--bit-clr-pri-dis when filled, transparent otherwise",
+            Description = "Background when disabled. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-Button-fill-disabled-background, --bit-Button-outline-disabled-background and --bit-Button-text-disabled-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-disabled-border-color",
             DefaultValue = "As the disabled background",
-            Description = "Border color when disabled.",
+            Description = "Border color when disabled. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Button-fill-disabled-border-color, --bit-Button-outline-disabled-border-color and --bit-Button-text-disabled-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-color",
+            DefaultValue = "--bit-Button-color",
+            Description = "Foreground (text and icon) in the rest state of a Fill button alone, read ahead of --bit-Button-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-background",
+            DefaultValue = "--bit-Button-background",
+            Description = "Background in the rest state of a Fill button alone, read ahead of --bit-Button-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-border-color",
+            DefaultValue = "--bit-Button-border-color",
+            Description = "Border color in the rest state of a Fill button alone, read ahead of --bit-Button-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-hover-color",
+            DefaultValue = "--bit-Button-hover-color",
+            Description = "Foreground while hovered (pointer devices only) of a Fill button alone, read ahead of --bit-Button-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-hover-background",
+            DefaultValue = "--bit-Button-hover-background",
+            Description = "Background while hovered (pointer devices only) of a Fill button alone, read ahead of --bit-Button-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-hover-border-color",
+            DefaultValue = "--bit-Button-hover-border-color",
+            Description = "Border color while hovered (pointer devices only) of a Fill button alone, read ahead of --bit-Button-hover-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-active-color",
+            DefaultValue = "--bit-Button-active-color",
+            Description = "Foreground while pressed of a Fill button alone, read ahead of --bit-Button-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-active-background",
+            DefaultValue = "--bit-Button-active-background",
+            Description = "Background while pressed of a Fill button alone, read ahead of --bit-Button-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-active-border-color",
+            DefaultValue = "--bit-Button-active-border-color",
+            Description = "Border color while pressed of a Fill button alone, read ahead of --bit-Button-active-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-disabled-color",
+            DefaultValue = "--bit-Button-disabled-color",
+            Description = "Foreground when disabled of a Fill button alone, read ahead of --bit-Button-disabled-color so a theme can set this variant apart from the other two. It also draws the focus ring of such a button while AllowDisabledFocus keeps it in the tab order. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-disabled-background",
+            DefaultValue = "--bit-Button-disabled-background",
+            Description = "Background when disabled of a Fill button alone, read ahead of --bit-Button-disabled-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-disabled-border-color",
+            DefaultValue = "--bit-Button-disabled-border-color",
+            Description = "Border color when disabled of a Fill button alone, read ahead of --bit-Button-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-color",
+            DefaultValue = "--bit-Button-color",
+            Description = "Foreground (text and icon) in the rest state of an Outline button alone, read ahead of --bit-Button-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-background",
+            DefaultValue = "--bit-Button-background",
+            Description = "Background in the rest state of an Outline button alone, read ahead of --bit-Button-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-border-color",
+            DefaultValue = "--bit-Button-border-color",
+            Description = "Border color in the rest state of an Outline button alone, read ahead of --bit-Button-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-hover-color",
+            DefaultValue = "--bit-Button-hover-color",
+            Description = "Foreground while hovered (pointer devices only) of an Outline button alone, and the one it wears in every state with FixedColor, read ahead of --bit-Button-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-hover-background",
+            DefaultValue = "--bit-Button-hover-background",
+            Description = "Background while hovered (pointer devices only) of an Outline button alone, read ahead of --bit-Button-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-hover-border-color",
+            DefaultValue = "--bit-Button-hover-border-color",
+            Description = "Border color while hovered (pointer devices only) of an Outline button alone, read ahead of --bit-Button-hover-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-active-color",
+            DefaultValue = "--bit-Button-active-color",
+            Description = "Foreground while pressed of an Outline button alone, read ahead of --bit-Button-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-active-background",
+            DefaultValue = "--bit-Button-active-background",
+            Description = "Background while pressed of an Outline button alone, read ahead of --bit-Button-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-active-border-color",
+            DefaultValue = "--bit-Button-active-border-color",
+            Description = "Border color while pressed of an Outline button alone, read ahead of --bit-Button-active-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-disabled-color",
+            DefaultValue = "--bit-Button-disabled-color",
+            Description = "Foreground when disabled of an Outline button alone, read ahead of --bit-Button-disabled-color so a theme can set this variant apart from the other two. It also draws the focus ring of such a button while AllowDisabledFocus keeps it in the tab order. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-disabled-background",
+            DefaultValue = "--bit-Button-disabled-background",
+            Description = "Background when disabled of an Outline button alone, read ahead of --bit-Button-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-disabled-border-color",
+            DefaultValue = "--bit-Button-disabled-border-color",
+            Description = "Border color when disabled of an Outline button alone, read ahead of --bit-Button-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-color",
+            DefaultValue = "--bit-Button-color",
+            Description = "Foreground (text and icon) in the rest state of a Text button alone, read ahead of --bit-Button-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-background",
+            DefaultValue = "--bit-Button-background",
+            Description = "Background in the rest state of a Text button alone, read ahead of --bit-Button-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-border-color",
+            DefaultValue = "--bit-Button-border-color",
+            Description = "Border color in the rest state of a Text button alone, read ahead of --bit-Button-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-hover-color",
+            DefaultValue = "--bit-Button-hover-color",
+            Description = "Foreground while hovered (pointer devices only) of a Text button alone, and the one it wears in every state with FixedColor, read ahead of --bit-Button-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-hover-background",
+            DefaultValue = "--bit-Button-hover-background",
+            Description = "Background while hovered (pointer devices only) of a Text button alone, read ahead of --bit-Button-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-hover-border-color",
+            DefaultValue = "--bit-Button-hover-border-color",
+            Description = "Border color while hovered (pointer devices only) of a Text button alone, read ahead of --bit-Button-hover-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-active-color",
+            DefaultValue = "--bit-Button-active-color",
+            Description = "Foreground while pressed of a Text button alone, read ahead of --bit-Button-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-active-background",
+            DefaultValue = "--bit-Button-active-background",
+            Description = "Background while pressed of a Text button alone, read ahead of --bit-Button-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-active-border-color",
+            DefaultValue = "--bit-Button-active-border-color",
+            Description = "Border color while pressed of a Text button alone, read ahead of --bit-Button-active-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-disabled-color",
+            DefaultValue = "--bit-Button-disabled-color",
+            Description = "Foreground when disabled of a Text button alone, read ahead of --bit-Button-disabled-color so a theme can set this variant apart from the other two. It also draws the focus ring of such a button while AllowDisabledFocus keeps it in the tab order. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-disabled-background",
+            DefaultValue = "--bit-Button-disabled-background",
+            Description = "Background when disabled of a Text button alone, read ahead of --bit-Button-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-disabled-border-color",
+            DefaultValue = "--bit-Button-disabled-border-color",
+            Description = "Border color when disabled of a Text button alone, read ahead of --bit-Button-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
         },
         new()
         {
             Name = "--bit-Button-focus-color",
-            DefaultValue = "The role's focus color",
-            Description = "Color of the focus ring drawn around the button on keyboard focus.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the focus ring drawn around the button on keyboard focus. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {
             Name = "--bit-Button-radius",
             DefaultValue = "--bit-shp-radius-button",
-            Description = "Corner radius of the box, which the focus ring follows. Rounded moves the default to --bit-shp-radius-full.",
+            Description = "Corner radius of the box, which the focus ring follows. The Rounded parameter wins over it.",
         },
         new()
         {
@@ -1004,8 +774,8 @@ public partial class BitButtonDemo
         new()
         {
             Name = "--bit-Button-padding",
-            DefaultValue = "Per size, from --bit-siz-ctrl-pad-*",
-            Description = "Padding of the box. An icon-only button takes its vertical padding on all four sides instead.",
+            DefaultValue = "--bit-siz-ctrl-pad-y-md --bit-siz-ctrl-pad-x-md",
+            Description = "Padding of the box. An icon-only button takes its vertical padding on all four sides instead. The Size parameter wins over it.",
         },
         new()
         {
@@ -1016,26 +786,26 @@ public partial class BitButtonDemo
         new()
         {
             Name = "--bit-Button-min-height",
-            DefaultValue = "Per size, from --bit-siz-ctrl-*",
-            Description = "Smallest height of the box, and the smallest width of an icon-only one. It is a floor, not a height: the box still grows with a wrapped label or a secondary line.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Smallest height of the box, and the smallest width of an icon-only one. It is a floor, not a height: the box still grows with a wrapped label or a secondary line. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-gap",
-            DefaultValue = "Per size: 0.25rem for Small, 0.5rem otherwise",
-            Description = "Room between the icon and the text, and between the loading spinner and its label.",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the icon and the text, and between the loading spinner and its label. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-font-size",
-            DefaultValue = "Per size, from the type ramp",
-            Description = "Size of the primary text.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Size of the primary text. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-secondary-font-size",
-            DefaultValue = "One ramp step below the primary text",
-            Description = "Size of the secondary text.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Size of the secondary text, one ramp step below the primary text by default. The Size parameter wins over it.",
         },
         new()
         {
@@ -1064,14 +834,14 @@ public partial class BitButtonDemo
         new()
         {
             Name = "--bit-Button-icon-size",
-            DefaultValue = "Per size, from --bit-siz-icon-*",
-            Description = "Size of the icon, for a glyph and an IconUrl image alike.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the icon, for a glyph and an IconUrl image alike. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-spinner-size",
-            DefaultValue = "As the icon size",
-            Description = "Diameter of the loading spinner.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Diameter of the loading spinner, the icon's size by default. The Size parameter wins over it.",
         },
         new()
         {

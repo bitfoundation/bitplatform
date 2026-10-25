@@ -1,4 +1,3 @@
-using OtpNet;
 using Boilerplate.Tests.Infrastructure.Components;
 using Boilerplate.Tests.E2E.Infrastructure.Services;
 
@@ -62,7 +61,7 @@ public partial class OperationsHangfireButtonTests : AppTestBase
         await SubmitCredentials(page, configuration["GlobalAdminEmail"]!, configuration["GlobalAdminPassword"]!);
 
         // TfaPanel submits on its own once all six digits are in.
-        await BitOtpInputUtils.FillOtpInputs(page, new Totp(Base32Encoding.ToBytes(authenticatorKey)).ComputeTotp());
+        await BitOtpInputUtils.FillOtpInputs(page, GlobalAdmin.TwoFactorCode(authenticatorKey));
 
         await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
 

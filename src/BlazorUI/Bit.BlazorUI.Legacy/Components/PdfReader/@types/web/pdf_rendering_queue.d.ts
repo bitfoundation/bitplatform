@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Controls rendering of the views for pages and thumbnails.
  */
 declare class PDFRenderingQueue {

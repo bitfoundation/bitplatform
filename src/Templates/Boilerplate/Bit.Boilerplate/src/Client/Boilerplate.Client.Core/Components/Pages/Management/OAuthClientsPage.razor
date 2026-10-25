@@ -18,7 +18,7 @@
             <BitSpacer />
             <BitButton AutoLoading IconOnly
                        IconName="@BitIconName.Refresh"
-                       IsEnabled="isLoading is false"
+                       Disabled="isLoading"
                        OnClick="WrapHandled(LoadClients)"
                        Title="@Localizer[nameof(AppStrings.Refresh)]"
                        AriaLabel="@Localizer[nameof(AppStrings.Refresh)]" />
@@ -30,7 +30,7 @@
         }
         else if (clients.Count is 0)
         {
-            <BitStack HorizontalAlign="BitAlignment.Center" Gap="0.5rem" Class="empty-state">
+            <BitStack HorizontalAlign="BitAlignment.Center" Gap="0.5rem" Padding="3rem 1rem" Self="BitAlignment.Center" Class="empty-state">
                 <BitIcon IconName="@BitIconName.PlugDisconnected" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
                 <BitText Typography="BitTypography.Subtitle1">@Localizer[nameof(AppStrings.OAuthClientsEmptyTitle)]</BitText>
                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
@@ -65,13 +65,13 @@
                                 </BitStack>
                             </BitStack>
 
-                            <BitText Typography="BitTypography.Caption1" Class="client-id" Title="@client.ClientId">
+                            <BitText Typography="BitTypography.Caption1" NoWrap Monospace Dir="BitDir.Ltr" title="@client.ClientId">
                                 @client.ClientId
                             </BitText>
 
                             @if (client.RedirectUris.Any())
                             {
-                                <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground" Class="client-id">
+                                <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground" NoWrap Monospace Dir="BitDir.Ltr">
                                     @Localizer[nameof(AppStrings.OAuthClientRedirectUris)] @string.Join(" · ", client.RedirectUris)
                                 </BitText>
                             }
@@ -81,7 +81,7 @@
 
                                 <BitButton Variant="BitVariant.Outline"
                                            Color="BitColor.Warning"
-                                           IsEnabled="@(client.ActiveGrants > 0)"
+                                           Disabled="@(client.ActiveGrants is 0)"
                                            IsLoading="@(busyClientId == client.ClientId && busyAction is Busy.Revoking)"
                                            OnClick="WrapHandled(() => AskToRevokeGrants(client))">
                                     @Localizer[nameof(AppStrings.OAuthClientRevokeAccess)]

@@ -1,4 +1,4 @@
-declare type PageViewportParameters = {
+﻿declare type PageViewportParameters = {
     /**
      * - The xMin, yMin, xMax and
      * yMax coordinates.

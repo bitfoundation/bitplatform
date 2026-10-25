@@ -16,10 +16,10 @@ public class AttachmentMetadataStrippingTests
     public async Task UploadingAPictureWithExif_Should_StoreNeitherKindWithIt()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var httpClient = client.HttpClient;
 
         var uploaded = JpegWithExif();
 
@@ -47,25 +47,33 @@ public class AttachmentMetadataStrippingTests
     }
 
     /// <summary>
-    /// Stripping means re-encoding, so the one thing the <c>*Original</c> kind must still keep is the format it arrived
-    /// in - <c>GetAttachment</c> serves it as <c>application/octet-stream</c> and nothing records what it was.
+    /// A phone photo's pixels are stored sideways with an EXIF tag that says how to turn them, so stripping the EXIF
+    /// must not leave the picture lying on its side. Its ICC profile stays, or a wide-gamut photo loses its colors.
     /// </summary>
     [TestMethod]
-    public async Task StrippingTheOriginal_Should_LeaveItInTheFormatItWasUploadedIn()
+    public async Task StrippingAPhonePhoto_Should_KeepItUpright_AndKeepItsColorProfile()
     {
         await using var server = await StartServer();
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+        var httpClient = client.HttpClient;
+
+        var uploaded = SidewaysJpegWithColorProfile();
+
+        using (var check = new MagickImage(uploaded))
+        {
+            Assert.AreEqual(Orientation.RightTop, check.Orientation, "The fixture must actually be sideways, otherwise this test passes without checking anything.");
+        }
 
         try
         {
-            await Upload(httpClient, JpegWithExif());
+            await Upload(httpClient, uploaded);
 
             using var original = new MagickImage(await Download(httpClient, userId, AttachmentKind.UserProfileImageOriginal));
 
-            Assert.AreEqual(MagickFormat.Jpeg, original.Format, "The original kind must not be silently converted to the resized kind's format.");
+            Assert.AreEqual((300u, 600u), (original.Width, original.Height), "The original was stored lying on its side.");
+            Assert.IsNotNull(original.GetColorProfile(), "The original lost its ICC profile.");
         }
         finally
         {
@@ -77,19 +85,33 @@ public class AttachmentMetadataStrippingTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 
     /// <summary>512px so it clears the 256px floor the small kind enforces, as a JPEG because that is what a camera produces.</summary>
     private static byte[] JpegWithExif()
     {
-        using var image = new MagickImage(MagickColors.Teal, 512, 512);
+        using var image = TestImageFactory.Solid(MagickColors.Teal, 512, 512);
 
         var exif = new ExifProfile();
         exif.SetValue(ExifTag.Software, "boilerplate-test");
         exif.SetValue(ExifTag.GPSLatitudeRef, "N");
         image.SetProfile(exif);
+
+        return image.ToByteArray(MagickFormat.Jpeg);
+    }
+
+    /// <summary>600 x 300 pixels with EXIF orientation 6 (turn 90 degrees clockwise), so it shows as 300 x 600.</summary>
+    private static byte[] SidewaysJpegWithColorProfile()
+    {
+        using var image = TestImageFactory.Solid(MagickColors.Teal, 600, 300);
+
+        var exif = new ExifProfile();
+        exif.SetValue(ExifTag.Orientation, (ushort)6);
+        image.SetProfile(exif);
+        image.Orientation = Orientation.RightTop;
+        image.SetProfile(ColorProfiles.AdobeRGB1998);
 
         return image.ToByteArray(MagickFormat.Jpeg);
     }

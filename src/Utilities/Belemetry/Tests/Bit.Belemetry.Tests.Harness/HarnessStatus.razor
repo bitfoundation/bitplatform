@@ -1,0 +1,23 @@
+﻿@* data-interactive only flips after the first interactive render, so a test can wait for it before driving anything
+   that needs event handlers; data-bridge flips once <BelemetryInitializer /> connected the script to .NET. *@
+<p id="status"
+   data-interactive="@(_interactive ? "true" : "false")"
+   data-bridge="@(BridgeReady ? "true" : "false")"
+   data-renderer="@RendererName"
+   data-platform="@HarnessRuntime.Platform">
+    @RendererName | @(_interactive ? "interactive" : "static") | @HarnessRuntime.Platform | bridge @(BridgeReady ? "ready" : "pending")
+</p>
+
+@code {
+    private bool _interactive;
+
+    [Parameter] public bool BridgeReady { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _interactive = true;
+        StateHasChanged();
+    }
+}

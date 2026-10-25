@@ -1,0 +1,342 @@
+﻿@page "/e2e/flag"
+
+<PageTitle>BitFlag E2E</PageTitle>
+
+<h1>BitFlag</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitFlag Id="flag-basic" Country="BitCountries.Iran" />
+    <BitFlag Id="flag-basic-height" Height="2rem" Country="BitCountries.Brazil" />
+</E2ESection>
+
+<E2ESection Id="naming" Title="Naming the country">
+    <BitFlag Id="flag-iso2" AutoTitle Iso2="nl" />
+    <BitFlag Id="flag-iso3" AutoTitle Iso3="NLD" />
+    <BitFlag Id="flag-code" AutoTitle Code="+31" />
+    <BitFlag Id="flag-name" AutoTitle Name="Netherlands" />
+    <BitFlag Id="flag-holland" AutoTitle Name="Holland" />
+    <BitFlag Id="flag-czechia" AutoTitle Name="Czechia" />
+    <BitFlag Id="flag-curacao" AutoTitle Name="Curaçao" />
+    <BitFlag Id="flag-uk" AutoTitle Iso2="UK" />
+    <BitFlag Id="flag-plus1" AutoTitle Code="+1" />
+    <BitFlag Id="flag-first-wins" AutoTitle Iso2="nl" Iso3="DEU" Code="+81" Name="Brazil" />
+    <BitFlag Id="flag-iso3-wins" AutoTitle Iso3="DEU" Code="+81" Name="Brazil" />
+    <BitFlag Id="flag-country-wins" AutoTitle Country="BitCountries.Japan" Iso2="nl" />
+    <BitFlag Id="flag-unknown" Iso2="zz" />
+</E2ESection>
+
+<E2ESection Id="shapes" Title="Shape & grayscale">
+    <BitFlag Id="flag-plain" Height="2rem" Country="BitCountries.Japan" />
+    <BitFlag Id="flag-rounded" Rounded Height="2rem" Country="BitCountries.Japan" />
+    <BitFlag Id="flag-circular" Circular Height="2rem" Country="BitCountries.Japan" />
+    <BitFlag Id="flag-bordered" Bordered Height="2rem" Country="BitCountries.Japan" />
+    <BitFlag Id="flag-shadow" Shadow Height="2rem" Country="BitCountries.Japan" />
+    <BitFlag Id="flag-combo" Circular Bordered Shadow Height="2rem" Country="BitCountries.Japan" />
+    <BitFlag Id="flag-grayscale" Grayscale Rounded Height="2rem" Country="BitCountries.Brazil" />
+</E2ESection>
+
+<E2ESection Id="emoji" Title="Emoji">
+    <BitFlag Id="flag-emoji" Emoji Country="BitCountries.Iran" />
+    <BitFlag Id="flag-emoji-height" Emoji Height="3rem" Country="BitCountries.Brazil" />
+    <BitFlag Id="flag-emoji-sct" Emoji Height="3rem" Iso2="GB-SCT" />
+    <BitFlag Id="flag-emoji-shaped" Emoji Circular Bordered Height="3rem" Country="BitCountries.Brazil" />
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <span id="ext-label">Flag named elsewhere</span>
+    <BitFlag Id="flag-decorative" Country="BitCountries.Canada" />
+    <BitFlag Id="flag-autoalt" AutoAlt Country="BitCountries.Canada" />
+    <BitFlag Id="flag-alt" Alt="Ships to Canada" Country="BitCountries.Canada" />
+    <BitFlag Id="flag-autotitle" AutoAlt AutoTitle Country="BitCountries.Canada" />
+    <BitFlag Id="flag-title" Title="Custom title" AutoTitle Country="BitCountries.Canada" />
+    <BitFlag Id="flag-emoji-named" Emoji AutoAlt Height="1.5rem" Country="BitCountries.Canada" />
+    <BitFlag Id="flag-emoji-unnamed" Emoji Height="1.5rem" Country="BitCountries.Canada" />
+    <BitFlag Id="flag-arialabel" AriaLabel="Aria named" Country="BitCountries.Canada" />
+    <BitFlag Id="flag-labelledby" Country="BitCountries.Canada" HtmlAttributes="@(new() { ["aria-labelledby"] = "ext-label" })" />
+    <BitFlag Id="flag-unknown-fallback-unnamed" Iso2="zz">
+        <FallbackTemplate>?</FallbackTemplate>
+    </BitFlag>
+</E2ESection>
+
+<E2ESection Id="image-sets" Title="Image sets">
+    @* The sets ship in Bit.BlazorUI.Assets, which the host does not reference: rendered on demand, so the page
+       makes no failing request until a test has routed or expects them. *@
+    <button id="btn-show-sets" @onclick="() => _showSets = true">Show image sets</button>
+    @if (_showSets)
+    {
+        <BitFlag Id="flag-set-flat" ImageSet="BitFlagImageSet.Flat" Height="3rem" Country="BitCountries.Brazil" />
+        <BitFlag Id="flag-set-shiny" ImageSet="BitFlagImageSet.Shiny" Height="3rem" Country="BitCountries.Brazil" />
+        <BitFlag Id="flag-set-size16" ImageSet="BitFlagImageSet.Flat" ImageSize="BitFlagImageSize.Size16" Height="3rem" Country="BitCountries.Brazil" />
+        <BitFlag Id="flag-set-size24" ImageSet="BitFlagImageSet.Flat" ImageSize="BitFlagImageSize.Size24" Height="3rem" Country="BitCountries.Brazil" />
+        <BitFlag Id="flag-set-size32" ImageSet="BitFlagImageSet.Flat" ImageSize="BitFlagImageSize.Size32" Height="3rem" Country="BitCountries.Brazil" />
+        <BitFlag Id="flag-set-size48" ImageSet="BitFlagImageSet.Flat" ImageSize="BitFlagImageSize.Size48" Height="3rem" Country="BitCountries.Brazil" />
+        <BitFlag Id="flag-set-size64" ImageSet="BitFlagImageSet.Flat" ImageSize="BitFlagImageSize.Size64" Height="3rem" Country="BitCountries.Brazil" />
+        <BitFlag Id="flag-set-shaped" ImageSet="BitFlagImageSet.Flat" Rounded Bordered Height="3rem" Country="BitCountries.Brazil" />
+        <CascadingValue Value="BitFlagImageSet.Shiny">
+            <BitFlag Id="flag-set-cascaded" Height="2rem" Country="BitCountries.Iran" />
+            <BitFlag Id="flag-set-cascaded-own" Height="2rem" ImageSet="BitFlagImageSet.Flat" Country="BitCountries.Japan" />
+        </CascadingValue>
+    }
+</E2ESection>
+
+<E2ESection Id="src" Title="Src, SrcPattern & FallbackTemplate">
+    <BitFlag Id="flag-src" Height="2rem" Src="@JapanSvg" Country="BitCountries.Japan" />
+    <BitFlag Id="flag-pattern-ca" Height="2rem" SrcPattern="samples/flags/{iso2}.svg" Country="BitCountries.Canada" />
+    <BitFlag Id="flag-pattern-de" Height="2rem" SrcPattern="samples/flags/{iso2}.svg" Country="BitCountries.Germany" />
+    <BitFlag Id="flag-pattern-upper" Height="2rem" SrcPattern="samples/flags/{ISO3}.svg" Country="BitCountries.Japan" />
+    <BitFlag Id="flag-pattern-eu" Height="2rem" AutoAlt SrcPattern="samples/flags/{iso2}.svg" Country="_europeanUnion" />
+    <BitFlag Id="flag-pattern-eu-iso3" Height="2rem" SrcPattern="samples/flags/{ISO3}.svg" Country="_europeanUnion">
+        <FallbackTemplate><span class="eu-fallback">EU</span></FallbackTemplate>
+    </BitFlag>
+    <BitFlag Id="flag-fallback-unknown" Iso2="zz" Bordered Height="1.5rem">
+        <FallbackTemplate><span class="unknown-fallback">?</span></FallbackTemplate>
+    </BitFlag>
+    <button id="btn-show-failing" @onclick="() => _showFailing = true">Show failing images</button>
+    @if (_showFailing)
+    {
+        <BitFlag Id="flag-failed-src" Height="2rem" Bordered Src="/not-a-real-flag.png" Country="BitCountries.Japan"
+                 OnError="() => _failedSrcErrors++" />
+        <BitFlag Id="flag-failed-nocountry" Height="1.5rem" Bordered Src="/not-a-real-flag.png"
+                 OnError="() => _failedNoCountryErrors++">
+            <FallbackTemplate><span class="error-fallback">!</span></FallbackTemplate>
+        </BitFlag>
+        <BitFlag Id="flag-failed-set" Height="2rem" ImageSet="BitFlagImageSet.Flat" Country="BitCountries.Japan"
+                 OnError="() => _failedSetErrors++" />
+        <span id="failed-src-errors">@_failedSrcErrors</span>
+        <span id="failed-nocountry-errors">@_failedNoCountryErrors</span>
+        <span id="failed-set-errors">@_failedSetErrors</span>
+    }
+</E2ESection>
+
+<E2ESection Id="aspect" Title="Aspect ratio & fit">
+    <BitFlag Id="flag-asp-none" Bordered Height="2rem" Src="@NetherlandsSvg" Country="BitCountries.Netherlands" />
+    <BitFlag Id="flag-asp-32" Bordered Height="2rem" AspectRatio="3/2" Src="@NetherlandsSvg" Country="BitCountries.Netherlands" />
+    <BitFlag Id="flag-asp-43" Bordered Height="2rem" AspectRatio="4/3" Src="@NetherlandsSvg" Country="BitCountries.Netherlands" />
+    <BitFlag Id="flag-asp-width" Bordered Width="4rem" AspectRatio="2" Src="@NetherlandsSvg" Country="BitCountries.Netherlands" />
+    <BitFlag Id="flag-asp-pkg-1" Bordered Height="2rem" AspectRatio="1" Country="BitCountries.Brazil" />
+    <BitFlag Id="flag-asp-pkg-2" Bordered Height="2rem" AspectRatio="2" Country="BitCountries.Brazil" />
+    <BitFlag Id="flag-wh" Width="4rem" Height="2rem" Country="BitCountries.Italy" />
+    @foreach (var fit in Fits)
+    {
+        <BitFlag Id="@($"flag-fit-{fit.ToString().ToLowerInvariant()}")" Bordered Height="2rem" Fit="fit"
+                 Src="@NetherlandsSvg" Country="BitCountries.Netherlands" />
+    }
+</E2ESection>
+
+<E2ESection Id="loading-events" Title="Loading & events">
+    <BitFlag Id="flag-lazy" Country="BitCountries.Portugal" />
+    <BitFlag Id="flag-eager" Loading="BitImageLoading.Eager" Country="BitCountries.Portugal"
+             ImageAttributes="@(new() { ["referrerpolicy"] = "no-referrer", ["data-img"] = "yes" })" />
+    <BitFlag Id="flag-img-overrides" Country="BitCountries.Portugal"
+             ImageAttributes="@(new() { ["draggable"] = "true", ["decoding"] = "sync" })" />
+    <button id="btn-render-load" @onclick="RenderLoadFlag">Render the load flag</button>
+    @if (_loadRenders > 0)
+    {
+        <BitFlag @key="_loadRenders" Id="flag-onload" Loading="BitImageLoading.Eager" Country="BitCountries.Portugal"
+                 OnLoad="() => _loadCount++" />
+    }
+    <span id="load-count">@_loadCount</span>
+</E2ESection>
+
+<E2ESection Id="click" Title="OnClick & Disabled">
+    @foreach (var country in ClickableCountries)
+    {
+        <BitFlag Id="@($"flag-click-{country.Iso2.ToLowerInvariant()}")"
+                 AutoTitle Bordered Rounded Height="2rem"
+                 Country="country"
+                 Grayscale="@(_selected != country)"
+                 aria-pressed="@(_selected == country ? "true" : "false")"
+                 OnClick="e => Select(country, e)" />
+    }
+    <BitFlag @ref="_focusRef" Id="flag-click-named" Alt="Pick Japan" Country="BitCountries.Japan"
+             OnClick="e => Select(BitCountries.Japan, e)" />
+    <BitFlag Id="flag-click-small" Country="BitCountries.Spain" OnClick="e => Select(BitCountries.Spain, e)" />
+    <BitFlag Id="flag-click-disabled" AutoAlt Bordered Rounded Grayscale Height="2rem"
+             Disabled="_clickDisabled"
+             Title="Not shipped to Portugal yet"
+             Country="BitCountries.Portugal"
+             OnClick="e => Select(BitCountries.Portugal, e)" />
+    @* A flag with no OnClick of its own whose page handlers are splatted: they run while it is enabled - its onclick
+       and onkeydown too, which the flag writes no handler of its own over - and are dropped while it is disabled. *@
+    <BitFlag Id="flag-page-handler" Disabled="_pageHandlerDisabled" Country="BitCountries.Greece"
+             HtmlAttributes="@(new() { ["onpointerdown"] = EventCallback.Factory.Create<PointerEventArgs>(this, () => _pageClicks++), ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _pageOnClicks++), ["ondblclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _pageDblClicks++), ["onkeydown"] = EventCallback.Factory.Create<KeyboardEventArgs>(this, () => _pageKeys++), ["onmouseover"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _pageHovers++), ["tabindex"] = "-1" })" />
+    <BitFlag Id="flag-click-tabindex" TabIndex="-1" Country="BitCountries.Italy" OnClick="e => Select(BitCountries.Italy, e)" />
+    <BitFlag Id="flag-focusable" TabIndex="0" Country="BitCountries.Italy" />
+    <button id="btn-toggle-disabled" @onclick="() => _clickDisabled = !_clickDisabled">Toggle disabled</button>
+    <button id="btn-toggle-page-handler" @onclick="() => _pageHandlerDisabled = !_pageHandlerDisabled">Toggle page handler flag</button>
+    <button id="btn-focus" @onclick="FocusFlag">Focus the named flag</button>
+    <div style="height: 4px;"></div>
+    <span id="selected">@(_selected?.Name ?? "(none)")</span>
+    <span id="click-count">@_clickCount</span>
+    <span id="last-detail">@_lastDetail</span>
+    <span id="last-shift">@_lastShift</span>
+    <span id="page-clicks">@_pageClicks</span>
+    <span id="page-keys">@_pageKeys</span>
+    <span id="page-onclicks">@_pageOnClicks</span>
+    <span id="page-dblclicks">@_pageDblClicks</span>
+    <span id="page-hovers">@_pageHovers</span>
+</E2ESection>
+
+<E2ESection Id="all" Title="All countries">
+    <span id="all-count">@BitCountries.All.Length</span>
+    <div id="all-flags" style="height: 120px; overflow: auto;">
+        @foreach (var country in BitCountries.All)
+        {
+            <div>
+                <BitFlag Bordered Country="country" />
+                <span>@country.Name (@country.Iso2)</span>
+            </div>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="_flagParams">
+        <BitFlag Id="flag-params-ca" Country="BitCountries.Canada" />
+        <BitFlag Id="flag-params-own" Rounded="false" Height="1.5rem" Country="BitCountries.Brazil" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitFlag Id="flag-size-sm" Size="BitSize.Small" Bordered Country="BitCountries.Italy" />
+    <BitFlag Id="flag-size-md" Size="BitSize.Medium" Bordered Country="BitCountries.Italy" />
+    <BitFlag Id="flag-size-lg" Size="BitSize.Large" Bordered Country="BitCountries.Italy" />
+    <BitFlag Id="flag-size-height-wins" Size="BitSize.Small" Height="40px" Country="BitCountries.Italy" />
+    <BitFlag Id="flag-size-width" Width="24px" Country="BitCountries.Italy" />
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style & Class">
+    <BitFlag Id="flag-style" Style="width:3rem;height:2rem;border:2px solid rgb(30, 144, 255)" Country="BitCountries.Spain" />
+    <BitFlag Id="flag-class" Class="custom-class" Country="BitCountries.Spain" />
+    <BitFlag Id="flag-styles" Country="BitCountries.Spain"
+             Styles="@(new() { Root = "width:3rem;height:2rem", Image = "object-fit:contain" })" />
+    <BitFlag Id="flag-classes" Height="2rem" Iso2="zz"
+             Classes="@(new() { Root = "custom-root", Fallback = "custom-fallback" })"
+             Styles="@(new() { Fallback = "color: rgb(255, 0, 0)" })">
+        <FallbackTemplate>?</FallbackTemplate>
+    </BitFlag>
+    <BitFlag Id="flag-classes-img" Country="BitCountries.Spain" Classes="@(new() { Image = "custom-image" })" />
+    <BitFlag Id="flag-classes-emoji" Emoji Country="BitCountries.Spain"
+             Classes="@(new() { Emoji = "custom-emoji" })" Styles="@(new() { Emoji = "color: rgb(0, 128, 0)" })" />
+    <BitFlag Id="flag-vars" Rounded Bordered Shadow Height="2rem" Country="BitCountries.Spain"
+             Style="--bit-Flag-radius: 6px; --bit-Flag-border-width: 3px; --bit-Flag-border-color: rgb(220, 20, 60); --bit-Flag-shadow: 0 0 0 5px rgb(0, 0, 255)" />
+    <div id="vars-container" style="--bit-Flag-size: 2rem; --bit-Flag-grayscale-filter: grayscale(1) opacity(0.4); --bit-Flag-hover-opacity: 0.5; --bit-Flag-active-opacity: 0.25; --bit-Flag-focus-color: rgb(255, 0, 0); --bit-Flag-emoji-font-family: monospace;">
+        <BitFlag Id="flag-var-size" Country="BitCountries.Spain" />
+        <BitFlag Id="flag-var-gray" Grayscale Country="BitCountries.Portugal" />
+        <BitFlag Id="flag-var-click" Country="BitCountries.France" OnClick="() => { }" />
+        <BitFlag Id="flag-var-emoji" Emoji Country="BitCountries.France" />
+        <BitFlag Id="flag-var-sized" Size="BitSize.Small" Country="BitCountries.France" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div dir="rtl" id="rtl-row" style="display: flex; gap: 8px;">
+        <BitFlag Id="flag-rtl" Dir="BitDir.Rtl" Bordered Height="2rem" AutoTitle Country="BitCountries.Iran" />
+        <BitFlag Id="flag-rtl-inherited" Bordered Height="2rem" Country="BitCountries.SaudiArabia" />
+        <span id="rtl-text">ایران</span>
+    </div>
+    <BitFlag Id="flag-ltr" Dir="BitDir.Ltr" Height="2rem" Country="BitCountries.Iran" />
+</E2ESection>
+
+<E2ESection Id="base" Title="Base parameters">
+    <BitFlag Id="flag-hidden" Visibility="BitVisibility.Hidden" Country="BitCountries.Italy" />
+    <BitFlag Id="flag-collapsed" Visibility="BitVisibility.Collapsed" Country="BitCountries.Italy" />
+    <BitFlag Id="flag-attrs" Country="BitCountries.Italy" HtmlAttributes="@(new() { ["data-test"] = "flag-data" })" />
+    <BitFlag Id="flag-runtime" AutoTitle AutoAlt Emoji="_runtimeEmoji" Rounded="_runtimeRounded" Height="2rem" Iso2="@_runtimeIso2" />
+    <button id="btn-runtime-country" @onclick="@(() => _runtimeIso2 = _runtimeIso2 == "de" ? "fr" : "de")">Change country</button>
+    <button id="btn-runtime-emoji" @onclick="() => _runtimeEmoji = !_runtimeEmoji">Toggle emoji</button>
+    <button id="btn-runtime-rounded" @onclick="() => _runtimeRounded = !_runtimeRounded">Toggle rounded</button>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Reduced motion">
+    <BitFlag Id="flag-motion" Country="BitCountries.Italy" OnClick="() => { }" />
+    <BitFlag Id="flag-motion-forced" ForceAnimation Country="BitCountries.Italy" OnClick="() => { }" />
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitFlag Id="flag-unmount-click" Country="BitCountries.Italy" OnClick="() => { }" />
+        <BitFlag Id="flag-unmount-emoji" Emoji Country="BitCountries.Italy" />
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string JapanSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 600' width='900' height='600'%3E%3Crect width='900' height='600' fill='%23fff'/%3E%3Ccircle cx='450' cy='300' r='180' fill='%23bc002d'/%3E%3C/svg%3E";
+
+    private const string NetherlandsSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 600' width='900' height='600'%3E%3Crect width='900' height='600' fill='%231e4785'/%3E%3Crect width='900' height='400' fill='%23fff'/%3E%3Crect width='900' height='200' fill='%23ae1c28'/%3E%3C/svg%3E";
+
+    private static readonly BitCountry _europeanUnion = new("European Union", "", "EU", "");
+
+    private static readonly BitCountry[] ClickableCountries = [BitCountries.France, BitCountries.Germany];
+
+    private static readonly BitImageFit[] Fits =
+    [
+        BitImageFit.None, BitImageFit.Center, BitImageFit.Contain, BitImageFit.Cover,
+        BitImageFit.Fill, BitImageFit.ScaleDown, BitImageFit.CenterContain, BitImageFit.CenterCover
+    ];
+
+    private readonly BitFlagParams[] _flagParams =
+    [
+        new()
+        {
+            Height = "2rem",
+            Rounded = true,
+            Bordered = true,
+            AutoAlt = true,
+            AutoTitle = true,
+            Class = "params-class"
+        }
+    ];
+
+    private bool _showSets;
+    private bool _showFailing;
+    private int _failedSrcErrors;
+    private int _failedNoCountryErrors;
+    private int _failedSetErrors;
+
+    private int _loadRenders;
+    private int _loadCount;
+
+    private BitCountry? _selected;
+    private int _clickCount;
+    private long _lastDetail = -1;
+    private bool _lastShift;
+    private int _pageClicks;
+    private int _pageKeys;
+    private int _pageOnClicks;
+    private int _pageDblClicks;
+    private int _pageHovers;
+    private bool _clickDisabled = true;
+    private bool _pageHandlerDisabled = true;
+    private BitFlag? _focusRef;
+
+    private string _runtimeIso2 = "de";
+    private bool _runtimeEmoji;
+    private bool _runtimeRounded;
+
+    private bool _mounted = true;
+
+    private void RenderLoadFlag()
+    {
+        _loadCount = 0;
+        _loadRenders++;
+    }
+
+    private void Select(BitCountry country, MouseEventArgs e)
+    {
+        _selected = country;
+        _clickCount++;
+        _lastDetail = e.Detail;
+        _lastShift = e.ShiftKey;
+    }
+
+    private async Task FocusFlag()
+    {
+        if (_focusRef is not null) await _focusRef.FocusAsync();
+    }
+}

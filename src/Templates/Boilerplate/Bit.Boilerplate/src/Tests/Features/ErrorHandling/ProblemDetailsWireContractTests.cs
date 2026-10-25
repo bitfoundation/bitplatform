@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Boilerplate.Tests.Features.ErrorHandling;
 
@@ -15,8 +16,8 @@ namespace Boilerplate.Tests.Features.ErrorHandling;
 /// collision check) shipped on 100% of error responses and nothing noticed, because nothing pinned the format.
 /// </para>
 /// <para>
-/// The requests below are deliberately issued with a bare <see cref="HttpClient"/> rather than the DI one: the client
-/// pipeline turns an error response into a typed exception, which is exactly the layer that hides this.
+/// The requests below are deliberately issued with a raw HttpClient (See <see cref="AppTestServer.CreateRawHttpClient"/>)
+/// rather than the app's: the client pipeline turns an error response into a typed exception, which is exactly the layer that hides this.
 /// </para>
 /// </summary>
 [TestClass, TestCategory("IntegrationTest")]
@@ -31,7 +32,7 @@ public class ProblemDetailsWireContractTests
     public async Task AKnownExceptionResponse_Should_CarryEveryMemberExactlyOnce()
     {
         await using var server = await StartServer();
-        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var httpClient = server.CreateRawHttpClient();
 
         // Anonymous, and nothing is stored under a random attachment id, so this is a deterministic ResourceNotFoundException.
         using var response = await httpClient.GetAsync($"api/v1/Attachment/GetAttachment/{Guid.NewGuid()}/UserProfileImageSmall", TestContext.CancellationToken);
@@ -58,7 +59,7 @@ public class ProblemDetailsWireContractTests
     public async Task AValidationFailureResponse_Should_CarryExactlyOnePopulatedPayload()
     {
         await using var server = await StartServer();
-        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var httpClient = server.CreateRawHttpClient();
 
         // Neither a password nor an otp: SignInRequestDto.Validate rejects it, so InvalidModelStateResponseFactory
         // throws a ResourceValidationException. A JSON content type also satisfies AutoCsrfProtectionFilter.
@@ -76,6 +77,23 @@ public class ProblemDetailsWireContractTests
         Assert.IsTrue(problemDetails.TryGetProperty("payload", out var payload), $"A validation failure must carry its payload. Body: {body}");
         Assert.IsGreaterThan(0, payload.GetProperty("details").GetArrayLength(),
             $"The payload must hold the real field-level errors, not an empty placeholder. Body: {body}");
+    }
+
+    [TestMethod]
+    public async Task ARequestBodyOverTheLimit_Should_Answer413()
+    {
+        await using var server = new AppTestServer();
+        await server.Build(configureTestApiAppServices: services => services.Configure<KestrelServerOptions>(options => options.Limits.MaxRequestBodySize = 1024))
+            .Start(TestContext.CancellationToken);
+        using var httpClient = server.CreateRawHttpClient();
+
+        using var content = new StringContent($$"""{"userName":"{{new string('a', 2048)}}"}""", Encoding.UTF8, "application/json");
+        using var response = await httpClient.PostAsync("api/v1/Identity/SignIn", content, TestContext.CancellationToken);
+
+        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.RequestEntityTooLarge, response.StatusCode, $"Unexpected status. Body: {body}");
+        Assert.AreEqual(413, JsonDocument.Parse(body).RootElement.GetProperty("status").GetInt32(), $"Body: {body}");
     }
 
 
@@ -120,7 +138,7 @@ public class ProblemDetailsWireContractTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 

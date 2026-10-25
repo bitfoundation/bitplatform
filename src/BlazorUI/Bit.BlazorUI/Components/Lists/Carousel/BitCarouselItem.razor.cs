@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -122,6 +122,15 @@ public partial class BitCarouselItem : BitComponentBase
     // items to render again when it gains or loses one of them.
     internal void Refresh()
     {
+        StateHasChanged();
+    }
+
+    // The item and current item parts of the carousel's Classes and Styles are part of this item's own strings.
+    internal void RefreshClassStyles()
+    {
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
+
         StateHasChanged();
     }
 

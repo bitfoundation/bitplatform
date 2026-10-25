@@ -1,0 +1,70 @@
+﻿@page "/e2e/image/errors"
+
+<PageTitle>BitImage errors E2E</PageTitle>
+
+<h1>BitImage errors</h1>
+
+@* Every image here points at a file the host does not have, so the browser logs a 404 for each. They are only rendered
+   once the button below is pressed, so the page itself loads without an error (the host's own test visits every page),
+   and the tests that press it are the ones whose subject is that error. *@
+<button id="btn-show" @onclick="() => _shown = true">Show the broken images</button>
+
+@if (_shown)
+{
+    <E2ESection Id="error-section" Title="ErrorTemplate">
+        <BitImage Id="img-error" Width="120" Height="60" Alt="A missing picture" Src="samples/no-such-image.png"
+                  OnError="() => _errors++" OnLoadingStateChange="s => _states = Append(_states, s)">
+            <ErrorTemplate><div id="error-template">Could not load the picture</div></ErrorTemplate>
+        </BitImage>
+        <span id="errors">@_errors</span>
+        <span id="states">@_states</span>
+    </E2ESection>
+
+    <E2ESection Id="fallback" Title="FallbackSrc">
+        <BitImage Id="img-fallback" Width="120" Alt="Falls back" Src="samples/no-such-image-2.png" FallbackSrc="samples/image-square.svg"
+                  OnError="() => _fallbackErrors++" OnLoad="() => _fallbackLoads++" OnLoadingStateChange="s => _fallbackStates = Append(_fallbackStates, s)" />
+        <span id="fallback-errors">@_fallbackErrors</span>
+        <span id="fallback-loads">@_fallbackLoads</span>
+        <span id="fallback-states">@_fallbackStates</span>
+        <BitImage Id="img-fallback-only" Width="120" Alt="Only a fallback" FallbackSrc="samples/image-square.svg" />
+        <BitImage Id="img-fallback-broken" Width="120" Height="60" Alt="Both broken" Src="samples/no-such-image-3.png" FallbackSrc="samples/no-such-fallback.png"
+                  OnError="() => _brokenErrors++" OnLoadingStateChange="s => _brokenStates = Append(_brokenStates, s)" />
+        <span id="broken-errors">@_brokenErrors</span>
+        <span id="broken-states">@_brokenStates</span>
+    </E2ESection>
+
+    <E2ESection Id="hidden-alt" Title="A failed image keeps its alt">
+        <BitImage Id="img-failed-alt" Width="120" Height="60" Alt="Monthly sales chart" Src="samples/no-such-chart.png" />
+        <BitImage Id="img-start-visible-failed" Width="120" Height="60" StartVisible Alt="Starts visible, then fails" Src="samples/no-such-image-4.png" />
+    </E2ESection>
+
+    <E2ESection Id="params" Title="Cascaded fallback">
+        <BitParams Parameters="_imageParams">
+            <BitImage Id="img-params-fallback" Alt="Cascaded fallback" Src="samples/no-such-image-5.png" />
+        </BitParams>
+    </E2ESection>
+}
+
+<E2EStatus />
+
+@code {
+    private bool _shown;
+    private int _errors;
+    private string _states = "";
+    private int _fallbackErrors;
+    private int _fallbackLoads;
+    private string _fallbackStates = "";
+    private int _brokenErrors;
+    private string _brokenStates = "";
+
+    private readonly BitImageParams[] _imageParams =
+    [
+        new()
+        {
+            Width = "64px",
+            FallbackSrc = "samples/image-square.svg",
+        }
+    ];
+
+    private static string Append(string log, BitImageState state) => $"{log}>{state}";
+}

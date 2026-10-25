@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 internal static class BitOtpInputJsRuntimeExtensions
 {
@@ -10,6 +10,11 @@ internal static class BitOtpInputJsRuntimeExtensions
     internal static ValueTask BitOtpInputBlur(this IJSRuntime jsRuntime, ElementReference root)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.OtpInput.blur", root);
+    }
+
+    internal static ValueTask BitOtpInputSubmit(this IJSRuntime jsRuntime, ElementReference root)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.OtpInput.submit", root);
     }
 
     internal static ValueTask BitOtpInputDispose(this IJSRuntime jsRuntime, string id)

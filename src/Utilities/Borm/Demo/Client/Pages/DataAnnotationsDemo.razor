@@ -1,0 +1,171 @@
+﻿@page "/data-annotations"
+@implements IDisposable
+@using Bit.Borm.Demo.Client.Forms
+@using FluentValidation
+
+<PageTitle>DataAnnotations &amp; IValidatableObject · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>DataAnnotations &amp; IValidatableObject</h1>
+    <p class="bb-subtitle">
+        The schema generator already reads the attributes it can turn into field rules, so
+        <code>[Required]</code> and <code>[Range]</code> need nothing extra. What no attribute can
+        express is a rule that reads more than one property — check out after check in, guests within
+        the room's capacity — and in .NET that is <code>IValidatableObject</code>.
+        <code>UseDataAnnotations()</code> runs it, exactly as <code>UseFluentValidation()</code> runs a
+        FluentValidation validator — and the two <em>compose</em>, so a model that carries both gets
+        both. The rule about single spaces in the guest's name is a FluentValidation rule sitting
+        alongside the model's own; a complaint the two layers would word identically on the same field
+        is still read once.
+    </p>
+</div>
+
+<div class="bb-note">
+    Try each of these, then submit:
+    <ol class="bb-detail-list">
+        <li>Choose a <em>Single</em> room for three guests - the complaint lands under <em>both</em> fields the rule names.</li>
+        <li>Move the check-out date to before the check-in date - a rule naming one member lands on that field alone.</li>
+        <li>Make the stay longer than 28 nights - a rule naming no member at all is about the booking as a whole, so it
+            is listed in the error summary at the top, with no field to link to, rather than under any one box.</li>
+        <li>Type two spaces in the guest's name - that one comes from the FluentValidation validator beside the model.</li>
+    </ol>
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Book the room" ShowErrorSummary="true" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Booked ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+public class RoomBooking : IValidatableObject
+{
+    [Required, Display(Name = "Guest name")] public string GuestName { get; set; } = "";
+    [Required, EmailAddress]                 public string Email     { get; set; } = "";
+    public DateOnly CheckIn  { get; set; }
+    public DateOnly CheckOut { get; set; }
+    [Range(1, 8)] public int Guests { get; set; } = 1;
+    public string RoomType { get; set; } = "single";
+
+    // The rules that need more than one property — which is precisely what an attribute cannot see.
+    public IEnumerable<ValidationResult> Validate(ValidationContext ctx)
+    {
+        if (CheckOut <= CheckIn)
+            yield return new("Check out must be after check in.", [nameof(CheckOut)]);
+
+        if (CheckIn < DateOnly.FromDateTime(DateTime.Today))
+            yield return new("Check in cannot be in the past.", [nameof(CheckIn)]);
+
+        var capacity = RoomType switch { "single" => 1, "double" => 2, _ => 4 };
+        if (Guests > capacity)
+            // Naming two members puts the same complaint under both, so whichever one the user is
+            // looking at explains itself.
+            yield return new($"A {RoomType} room sleeps {capacity}.", [nameof(Guests), nameof(RoomType)]);
+
+        // Naming no member at all is a statement about the booking as a whole, and lands on the form.
+        if ((CheckOut.DayNumber - CheckIn.DayNumber) > 28)
+            yield return new("Stays longer than 28 nights have to be booked by phone.");
+    }
+}
+
+// BormBuilder.For<T>() reads the same attributes the generator does ([Required], [Range],
+// [EmailAddress], [Display]), so they are field rules already; the builder only adds what the
+// attributes cannot say - the room types and two columns.
+var schema = BormBuilder.For<RoomBooking>()
+    .Title("Room booking")
+    .Columns(2)
+    .Field(x => x.GuestName)
+    .Field(x => x.Email)
+    .Field(x => x.CheckIn)
+    .Field(x => x.CheckOut)
+    .Field(x => x.RoomType, f => f
+        .AsRadio()
+        .Options(("single", "Single (sleeps 1)"), ("double", "Double (sleeps 2)"), ("suite", "Suite (sleeps 4)")))
+    .Field(x => x.Guests, f => f.Help("Try more guests than the room sleeps."))
+    .Build();
+
+// Only the cross-property layer is added - running Validator over the properties again would put two
+// differently-worded copies of "required" under the same box. Pass includePropertyAttributes: true
+// when the schema came from somewhere that never saw them (a JSON Schema document rendered over a
+// typed model).
+var state = new BormState(schema, new BormModelDataAccessor(model))
+    // The two integrations combine rather than replace each other, so a model whose rules are split
+    // across both layers gets both. Either order works.
+    .UseDataAnnotations()
+    .UseFluentValidation(new RoomBookingValidator());
+
+public sealed class RoomBookingValidator : AbstractValidator<RoomBooking>
+{
+    public RoomBookingValidator()
+        => RuleFor(x => x.GuestName)
+            .Must(name => !name.Contains("  "))
+            .WithMessage("Please use single spaces in the guest's name.");
+}
+""";
+
+    private readonly RoomBooking _model = new();
+    private BormState _state = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<RoomBooking>()
+            .Title("Room booking")
+            .Columns(2)
+            .Field(x => x.GuestName)
+            .Field(x => x.Email)
+            .Field(x => x.CheckIn)
+            .Field(x => x.CheckOut)
+            .Field(x => x.RoomType, f => f
+                .AsRadio()
+                .Options(("single", "Single (sleeps 1)"), ("double", "Double (sleeps 2)"), ("suite", "Suite (sleeps 4)")))
+            .Field(x => x.Guests, f => f.Help("Try more guests than the room sleeps."))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model))
+            .UseDataAnnotations()
+            .UseFluentValidation(new RoomBookingValidator());
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // The page created the state, so the page disposes it: an options load or async rule still in
+        // flight is cancelled instead of finishing against a form nobody is looking at.
+        _state.Dispose();
+    }
+
+    /// <summary>
+    /// A FluentValidation rule sitting alongside the model's own IValidatableObject, to show the two
+    /// integrations composing rather than the second one quietly replacing the first.
+    /// </summary>
+    private sealed class RoomBookingValidator : AbstractValidator<RoomBooking>
+    {
+        public RoomBookingValidator()
+            => RuleFor(x => x.GuestName)
+                .Must(name => !name.Contains("  ", StringComparison.Ordinal))
+                .WithMessage("Please use single spaces in the guest's name.");
+    }
+}

@@ -1,0 +1,85 @@
+﻿@page "/examples/use-connection"
+
+<PageTitle>Use Connection · Blow</PageTitle>
+
+<ExampleScaffold Title="Use Connection"
+                 Summary="OnConnectionChange reports the connection being drawn on every move - where it started, where the pointer is, whether letting go would connect and, if not, why the nearest handle refuses - and null once it ends. It is React Flow's useConnection, for hints or panels that follow the drag.">
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnConnectionChange="OnConnectionChange">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <Footer>
+        @* Under the canvas: as a panel in its corner, the live state sat on Node C. *@
+        @if (_conn is null)
+        {
+            <div class="uc-title">No connection in progress</div>
+            <div class="uc-muted">
+                @(_updates == 0 ? "Start dragging from a handle." : $"The last one ended after {_updates} update(s), with a final null.")
+            </div>
+        }
+        else
+        {
+            <div class="uc-title">Connection in progress · update @_updates</div>
+            <dl class="uc-grid">
+                <div><dt>FromNode / FromHandle</dt><dd>@_conn.FromNode / @(_conn.FromHandle ?? "(unnamed)")</dd></div>
+                <div><dt>FromHandleType</dt><dd>@_conn.FromHandleType</dd></div>
+                <div><dt>From / FromPosition</dt><dd>@Point(_conn.From) · @_conn.FromPosition</dd></div>
+                <div><dt>To / ToPosition</dt><dd>@Point(_conn.To) · @_conn.ToPosition</dd></div>
+                <div><dt>IsValid</dt><dd class="@(_conn.IsValid ? "uc-yes" : null)">@(_conn.IsValid ? "yes - let go to connect" : "no")</dd></div>
+                <div><dt>Rejection</dt><dd>@(_conn.Rejection == BlowConnectionRejection.None ? "None" : $"{_conn.Rejection}: {BlowAriaLabels.Default.ConnectionRejected(_conn.Rejection)}")</dd></div>
+            </dl>
+        }
+    </Footer>
+    <TryIt>
+        <li><strong>Drag</strong> from the handle under "Drag from here" and move around: the panel under the canvas updates on every move, with the pointer position in flow coordinates.</li>
+        <li>Bring the pointer near the top handle of Node B or Node C: <strong>IsValid</strong> turns to yes before you are exactly on it, because a release that close would snap to it.</li>
+        <li>Bring it near Node B's <strong>bottom</strong> handle instead: <strong>Rejection</strong> says <em>SameHandleType</em> - a source cannot be joined to a source. Connect to Node B once and approach its top handle again for <em>Duplicate</em>.</li>
+        <li><strong>Let go</strong> or press <strong>Escape</strong>: the canvas sends a final null, and the panel says how many updates the gesture took. Drag from a target handle (the top of B or C) to see <strong>FromHandleType</strong> change.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>OnConnectionChange</code> is an <code>EventCallback&lt;BlowConnectionLineContext?&gt;</code>: raised when a connection starts, on every pointer move while it is drawn, and once with <code>null</code> when it ends, however it ends.</li>
+        <li><code>FromNode</code>, <code>FromHandle</code> and <code>FromHandleType</code> name the handle the drag started at; <code>From</code> is its anchor and <code>FromPosition</code> its side. <code>To</code> is the pointer, in flow coordinates, and <code>ToPosition</code> the side the line arrives on - the opposite of <code>FromPosition</code>, for drawing a path.</li>
+        <li><code>IsValid</code> is true when releasing now would connect: the pointer is over a handle that accepts the connection, or within <code>ConnectionRadius</code> (20 screen pixels) of one.</li>
+        <li><code>Rejection</code> is the <code>BlowConnectionRejection</code> of the handle the line ends at - the one under the pointer, or the nearest within snapping distance - and <code>None</code> when it would accept, or when no handle is near. The sentence beside it is <code>BlowAriaLabels.Default.ConnectionRejected</code>, what a screen reader hears when such a drop is refused.</li>
+        <li>The same context is what a <code>ConnectionLineTemplate</code> draws from (see Custom Connection Line). Each update re-renders this page, so keep the handler light.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .uc-title { font-weight: 600; margin-bottom: 4px; }
+    .uc-muted { color: var(--bb-text-soft); }
+    .uc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 2px 16px; margin: 0; }
+    .uc-grid dt { display: inline; color: var(--bb-text-soft); }
+    .uc-grid dt::after { content: ": "; }
+    .uc-grid dd { display: inline; margin: 0; font-family: var(--bb-mono); }
+    /* The footer is outside the canvas, so it takes the site's colours rather than the canvas's. */
+    .uc-yes { color: var(--bb-success); font-weight: 600; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowConnectionLineContext? _conn;
+    private int _updates;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Drag from here", Position = new(120, 40), Width = 160 },
+            new BlowNode { Id = "2", Label = "Node B", Position = new(80, 220) },
+            new BlowNode { Id = "3", Label = "Node C", Position = new(320, 220) },
+        ];
+    }
+
+    private void OnConnectionChange(BlowConnectionLineContext? c)
+    {
+        // The first update of a gesture comes after a null (or none at all), so the count starts again there.
+        if (c is not null) _updates = _conn is null ? 1 : _updates + 1;
+        _conn = c;
+    }
+
+    private static string Point(BlowXYPosition p) => $"({p.X:0}, {p.Y:0})";
+}

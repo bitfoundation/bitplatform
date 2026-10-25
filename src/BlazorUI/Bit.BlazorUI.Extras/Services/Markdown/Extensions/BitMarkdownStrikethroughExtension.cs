@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Enables <c>~~strikethrough~~</c> (GFM).</summary>
 public sealed class BitMarkdownStrikethroughExtension : IBitMarkdownExtension

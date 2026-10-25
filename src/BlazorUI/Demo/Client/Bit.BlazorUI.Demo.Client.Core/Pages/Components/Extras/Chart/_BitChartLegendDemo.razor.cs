@@ -1,17 +1,18 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
 public partial class _BitChartLegendDemo
 {
-    private BitChartPosition _position = BitChartPosition.Top;
-    private BitChartAlign _align = BitChartAlign.Center;
+    private BitPlacement _position = BitPlacement.Top;
+    private BitPlacement _align = BitPlacement.Center;
     private bool _usePointStyle;
     private bool _reverse;
+    private bool _highlight = true;
 
     private readonly BitChartOptions _titled = new()
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Title = "Product lines" }
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom, Title = "Product lines" }
         }
     };
 
@@ -19,7 +20,7 @@ public partial class _BitChartLegendDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
         }
     };
 
@@ -29,7 +30,7 @@ public partial class _BitChartLegendDemo
         {
             Legend = new BitChartLegendOptions
             {
-                Position = _position, Align = _align, Reverse = _reverse,
+                Placement = _position, Align = _align, Reverse = _reverse, HighlightOnHover = _highlight,
                 Labels = new BitChartLegendLabelOptions { UsePointStyle = _usePointStyle }
             }
         }
@@ -58,17 +59,19 @@ public partial class _BitChartLegendDemo
 
 
     private readonly string liveRazorCode = @"@* Bind controls to legend options; the chart recomputes on each change. *@
-<select @bind=""_position"">...Top/Bottom/Left/Right...</select>
+<select @bind=""_position"">...Top/Bottom/Left/Right/Start/End...</select>
 <select @bind=""_align"">...Start/Center/End...</select>
 <input type=""checkbox"" @bind=""_usePointStyle"" /> Point style
 <input type=""checkbox"" @bind=""_reverse"" /> Reverse
+<input type=""checkbox"" @bind=""_highlight"" /> Highlight on hover
 
 <BitChart Type=""BitChartType.Line"" Data=""MultiSeries()"" Options=""Live()"" />";
     private readonly string liveCsharpCode = @"
-private BitChartPosition _position = BitChartPosition.Top;
-private BitChartAlign _align = BitChartAlign.Center;
+private BitPlacement _position = BitPlacement.Top;
+private BitPlacement _align = BitPlacement.Center;
 private bool _usePointStyle;
 private bool _reverse;
+private bool _highlight = true;
 
 private BitChartOptions Live() => new()
 {
@@ -76,7 +79,7 @@ private BitChartOptions Live() => new()
     {
         Legend = new BitChartLegendOptions
         {
-            Position = _position, Align = _align, Reverse = _reverse,
+            Placement = _position, Align = _align, Reverse = _reverse, HighlightOnHover = _highlight,
             Labels = new BitChartLegendLabelOptions { UsePointStyle = _usePointStyle }
         }
     }
@@ -99,7 +102,7 @@ private readonly BitChartOptions _titled = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Title = ""Product lines"" }
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom, Title = ""Product lines"" }
     }
 };
 // Revenue(): 3 datasets (Product A/B/C) over Jan..Jul";
@@ -110,7 +113,7 @@ private readonly BitChartOptions _pointStyle = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
     }
 };
 
@@ -130,7 +133,7 @@ private BitChartData Markers() => new()
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Right, MaxHeight = 120 }
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.End, MaxHeight = 120 }
         }
     };
 
@@ -154,7 +157,7 @@ private readonly BitChartOptions _capped = new()
     Plugins = new BitChartPluginOptions
     {
         // Past 120px the legend scrolls instead of pushing the plot out of the way.
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Right, MaxHeight = 120 }
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.End, MaxHeight = 120 }
     }
 };
 

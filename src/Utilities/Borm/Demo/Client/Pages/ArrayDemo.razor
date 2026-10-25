@@ -1,0 +1,175 @@
+﻿@page "/array"
+@implements IDisposable
+
+<PageTitle>Array / repeater · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Array / repeater</h1>
+    <p class="bb-subtitle">
+        Array fields render a repeating editor with add, remove and reorder. Each item is a nested
+        object validated like any other field, and its errors travel with it when rows move. The
+        <em>Total</em> below is a <strong>computed field</strong>: the schema derives it from the lines,
+        so no page code keeps it in sync.
+    </p>
+</div>
+
+<div class="bb-note">
+    Add a few lines and type quantities and prices: each line's total and the invoice total follow. Move a line up or
+    down, or remove it - its values, its errors and whether it was touched travel with it. Try it with the keyboard:
+    adding a line puts the caret in it; removing one moves the caret to the line that took its place — rather than
+    dropping it on the page body, which is where a button that deletes itself normally leaves you. An invoice needs at
+    least one line (<code>Items(min: 1)</code>), so the last one cannot be removed; on a repeater that can be emptied,
+    the caret goes to the add button.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">Live form</span>
+        <label class="bb-check">
+            <input type="checkbox" checked="@_locked" @onchange="@(e => _locked = e.Value is bool b && b)" />
+            <span>Lock the invoice (<code>Disabled</code>)</span>
+        </label>
+    </div>
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save invoice"
+              ShowErrorSummary="true" Disabled="_locked" />
+    <p class="demo-footnote">
+        <code>Disabled</code> makes the form inoperable — every control and button, the repeater's
+        buttons included. It is deliberately not the same as <code>ReadOnly</code>, which keeps the
+        fields focusable and readable for a review screen.
+    </p>
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Saved ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The other shapes of a list</h3>
+    <ul class="bb-detail-list">
+        <li>
+            <strong>A list of plain values</strong> - with no model, <code>ArrayOf("phones", BormFieldType.Tel, f =&gt; f.Items(max: 3))</code>
+            gives each value a row of its own; <code>UniqueItems()</code> refuses two rows that hold the same thing. For short
+            words, <a href="combobox-tags">tags</a> are the better shape.
+        </li>
+        <li>
+            <strong>Options on the list</strong> - <code>Items(min, max)</code> bounds the row count, <code>SeedMinItems()</code>
+            opens with the rows the minimum asks for, <code>Attr("duplicable", true)</code> adds a Duplicate button to each row,
+            <code>Attr("reorderable", false)</code> takes the up and down buttons away, and <code>PageSize(n)</code> shows a
+            <a href="undo-long-lists">long list</a> a page at a time.
+        </li>
+        <li>
+            <strong>Rows that think for themselves</strong> - a condition, a computed value or a cascading list on the row template
+            reads <em>that row</em>: see <a href="per-row-conditions">per-row conditions</a>.
+        </li>
+        <li>
+            <strong>From code</strong> - <code>AddArrayItem</code>, <code>InsertArrayItem</code>, <code>DuplicateArrayItem</code>,
+            <code>RemoveArrayItem</code>, <code>MoveArrayItem</code>, <code>SwapArrayItems</code> and <code>ClearArrayItems</code>
+            on the state, with each row's messages and touched state following it - see <a href="state-api">editing an existing record</a>.
+            A <code>T[]</code> property works too: it is replaced with a resized copy.
+        </li>
+    </ul>
+</div>
+
+@code {
+    private const string Source =
+"""
+@page "/array"
+@implements IDisposable
+
+<label><input type="checkbox" @bind="_locked" /> Lock the invoice</label>
+
+@* Disabled: every control and button, the repeater's included - a save in flight, a locked record. *@
+<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save invoice"
+          ShowErrorSummary="true" Disabled="_locked" />
+
+@code {
+    private readonly Invoice _model = new();
+    private BormState _state = default!;
+    private bool _locked;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<Invoice>()
+            .Title("New invoice")
+            .Field(x => x.Customer, f => f.Required().Autocomplete("organization"))
+            .Array(x => x.Lines, line => line
+                    .Field(l => l.Description, f => f.Required())
+                    .Field(l => l.Quantity, f => f.Range(1, 9999))
+                    .Field(l => l.UnitPrice, f => f.Range(0, 1_000_000).Step(0.01))
+                    // Each line's total is derived from its own quantity and price: "Quantity" is
+                    // named relative to the row, so the one formula works on every row.
+                    .Computed(l => l.LineTotal, l => l.Quantity * l.UnitPrice,
+                              dependsOn: ["Quantity", "UnitPrice"]),
+                // The list itself: at least one row, and buttons that say "Add line" and
+                // "Remove line 2" rather than "Add item".
+                f => f.Items(min: 1, message: "Add at least one line.").Attr("itemNoun", "line"))
+            // ...and the invoice total from every line. Recomputed whenever anything under Lines changes.
+            .Computed(x => x.Total, m => m.Lines.Sum(l => l.Quantity * l.UnitPrice),
+                      dependsOn: [nameof(Invoice.Lines)])
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // The page created the state, so the page disposes it: an options load or async rule still in
+        // flight is cancelled instead of finishing against a form nobody is looking at.
+        _state.Dispose();
+    }
+}
+""";
+
+    private readonly Invoice _model = new();
+    private BormState _state = default!;
+    private bool _submitted;
+    private bool _locked;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<Invoice>()
+            .Title("New invoice")
+            .Field(x => x.Customer, f => f.Required().Autocomplete("organization"))
+            .Array(x => x.Lines, line => line
+                    .Field(l => l.Description, f => f.Required())
+                    .Field(l => l.Quantity, f => f.Range(1, 9999))
+                    .Field(l => l.UnitPrice, f => f.Range(0, 1_000_000).Step(0.01))
+                    .Computed(l => l.LineTotal, l => l.Quantity * l.UnitPrice,
+                              dependsOn: ["Quantity", "UnitPrice"]),
+                f => f.Items(min: 1, message: "Add at least one line.").Attr("itemNoun", "line"))
+            .Computed(x => x.Total, m => m.Lines.Sum(l => l.Quantity * l.UnitPrice),
+                      dependsOn: [nameof(Invoice.Lines)])
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // The page created the state, so the page disposes it: an options load or async rule still in
+        // flight is cancelled instead of finishing against a form nobody is looking at.
+        _state.Dispose();
+    }
+}

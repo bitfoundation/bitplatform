@@ -1,0 +1,634 @@
+﻿@page "/e2e/search-box"
+
+<PageTitle>BitSearchBox E2E</PageTitle>
+
+<style>
+    .my-sb-icon::before { content: "S"; }
+    .my-sb-clear::before { content: "x"; }
+    .my-sb-go::before { content: ">"; }
+    .e2e-sb-box { width: 500px; }
+</style>
+
+<h1>BitSearchBox</h1>
+
+@* ---------- Basic ---------- *@
+
+<E2ESection Id="basic" Title="Basic">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-basic" Placeholder="Search" @bind-Value="_basicValue" />
+        <span id="basic-value">[@_basicValue]</span>
+        <BitSearchBox Id="sb-readonly" Placeholder="ReadOnly" ReadOnly DefaultValue="Read only value" OnChange="v => _readOnlyChanges++" />
+        <span id="readonly-changes">@_readOnlyChanges</span>
+        <BitSearchBox Id="sb-required" Label="Required" Placeholder="Required" Required />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div class="e2e-sb-box">
+        <button id="before-disabled" type="button">before</button>
+        <BitSearchBox Id="sb-disabled" Label="Disabled" Disabled="_disabled" DefaultValue="locked" ShowSearchButton
+                      OnClick="() => _disabledClicks++" OnSearch="v => _disabledSearches++" HtmlAttributes="_disabledRootAttributes" />
+        <button id="after-disabled" type="button">after</button>
+        <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">toggle disabled</button>
+        <span id="disabled-clicks">@_disabledClicks</span>
+        <span id="disabled-searches">@_disabledSearches</span>
+        <span id="disabled-root-clicks">@_disabledRootClicks</span>
+        <span id="disabled-root-hovers">@_disabledRootHovers</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="base" Title="Id, Class, Style, HtmlAttributes, Visibility, re-render">
+    <BitSearchBox Id="sb-base" Placeholder="Base" Class="my-root-class" Style="margin-top: 7px;" HtmlAttributes="@(new() { ["data-test"] = "base-attr" })"
+                  InputHtmlAttributes="@(new() { ["data-input-attr"] = "yes" })" Name="q" TabIndex="-1" />
+    <BitSearchBox Id="sb-visibility" Placeholder="Visibility" Visibility="_visibility" />
+    <button id="btn-vis-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">visible</button>
+    <button id="btn-vis-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">hidden</button>
+    <button id="btn-vis-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">collapsed</button>
+    <BitSearchBox Id="sb-rerender" Placeholder="@_dynPlaceholder" Label="@_dynLabel" ShowSearchButton="_dynSearchButton" />
+    <button id="btn-change-params" type="button" @onclick="ChangeParams">change params</button>
+</E2ESection>
+
+@* ---------- Label and description ---------- *@
+
+<E2ESection Id="label" Title="Label and description">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-label" Label="Search products" Placeholder="e.g. keyboard" />
+        <BitSearchBox Id="sb-label-template" Placeholder="e.g. keyboard">
+            <LabelTemplate><span class="tpl-label">Advanced search</span></LabelTemplate>
+        </BitSearchBox>
+        <BitSearchBox Id="sb-desc" Label="Search the docs" Description="Searches component names, parameters and guides." />
+        <BitSearchBox Id="sb-desc-template" Label="Search orders" AriaDescription="Results update as you type.">
+            <DescriptionTemplate><span class="tpl-desc">Order number, customer name or email.</span></DescriptionTemplate>
+        </BitSearchBox>
+        <BitSearchBox Id="sb-arialabel" AriaLabel="Search the site" Label="Visible label" />
+    </div>
+</E2ESection>
+
+@* ---------- Variants and background ---------- *@
+
+<E2ESection Id="variants" Title="Variants">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-default-look" Placeholder="Default" />
+        <BitSearchBox Id="sb-underlined" Placeholder="Underlined" Underlined />
+        <BitSearchBox Id="sb-noborder" Placeholder="NoBorder" NoBorder />
+        @foreach (var kind in _kinds)
+        {
+            <BitSearchBox Id="@($"sb-bg-{kind.ToString().ToLowerInvariant()}")" Placeholder="@kind.ToString()" Background="kind" NoBorder />
+        }
+    </div>
+</E2ESection>
+
+@* ---------- Icon ---------- *@
+
+<E2ESection Id="icon" Title="Icon">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-fixedicon" Placeholder="FixedIcon" FixedIcon />
+        <BitSearchBox Id="sb-noanim" Placeholder="DisableAnimation" DisableAnimation />
+        <BitSearchBox Id="sb-customicon" Placeholder="Custom icon" IconName="@BitIconName.Filter" />
+        <BitSearchBox Id="sb-hideicon" Placeholder="HideIcon" HideIcon />
+    </div>
+</E2ESection>
+
+@* ---------- Search button ---------- *@
+
+<E2ESection Id="search-button" Title="Search button">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-searchbtn" Placeholder="Search" ShowSearchButton @bind-Value="_searchBtnValue" OnSearch="v => { _searchBtnSearch = v; _searchBtnCount++; }" />
+        <span id="searchbtn-value">[@_searchBtnValue]</span>
+        <span id="searchbtn-search">[@_searchBtnSearch]</span>
+        <span id="searchbtn-count">@_searchBtnCount</span>
+        <BitSearchBox Id="sb-searchbtn-text" Placeholder="SearchButtonText" ShowSearchButton SearchButtonText="Search" />
+        <BitSearchBox Id="sb-searchbtn-loading" Placeholder="Loading" ShowSearchButton Loading="_loading" DefaultValue="term" />
+        <button id="btn-toggle-loading" type="button" @onclick="() => _loading = !_loading">toggle loading</button>
+        <BitSearchBox Id="sb-searchbtn-loading-label" Placeholder="Loading label" Loading LoadingAriaLabel="Looking it up" />
+        <BitSearchBox Id="sb-searchbtn-icon" Placeholder="Icon" ShowSearchButton SearchButtonIconName="@BitIconName.PageListFilter" />
+        <BitSearchBox Id="sb-searchbtn-template" Placeholder="Template" ShowSearchButton>
+            <SearchButtonTemplate><span class="tpl-go">GO</span></SearchButtonTemplate>
+        </BitSearchBox>
+        <BitSearchBox Id="sb-searchbtn-aria" Placeholder="Aria" ShowSearchButton SearchButtonAriaLabel="جستجو" />
+    </div>
+</E2ESection>
+
+@* ---------- Clear button ---------- *@
+
+<E2ESection Id="clear" Title="Clear button">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-clear" Placeholder="Clear" @bind-Value="_clearValue" OnClear="() => _clearCount++" />
+        <span id="clear-value">[@(_clearValue ?? "null")]</span>
+        <span id="clear-count">@_clearCount</span>
+        <BitSearchBox Id="sb-clear-firstkey" Placeholder="First key" />
+        <BitSearchBox Id="sb-hideclear" Placeholder="HideClearButton" HideClearButton DefaultValue="kept" />
+        <BitSearchBox Id="sb-clear-template" Placeholder="Template" DefaultValue="x">
+            <ClearButtonTemplate><span class="tpl-clear">CLR</span></ClearButtonTemplate>
+        </BitSearchBox>
+        <BitSearchBox Id="sb-clear-aria" Placeholder="Aria" ClearButtonAriaLabel="پاک کردن" DefaultValue="x" />
+        <BitSearchBox Id="sb-noclearesc" Placeholder="NoClearOnEscape" NoClearOnEscape DefaultValue="stays" />
+        <BitSearchBox Id="sb-escape" Placeholder="Escape" @bind-Value="_escapeValue" OnEscape="() => _escapeCount++" OnClear="() => _escapeClears++" />
+        <span id="escape-value">[@(_escapeValue ?? "null")]</span>
+        <span id="escape-count">@_escapeCount</span>
+        <span id="escape-clears">@_escapeClears</span>
+        <BitSearchBox Id="sb-oneway" Placeholder="One-way" Value="fixed" />
+
+        <button id="btn-open-dialog" type="button" @onclick="() => _dialogOpen = true">open dialog</button>
+        <span id="dialog-open">@_dialogOpen</span>
+        <BitDialog Id="sb-dialog-host" @bind-IsOpen="_dialogOpen" Title="Dialog" Message="A search box in a dialog" AutoFocusSelector=".bit-srb-inp">
+            <BitSearchBox Id="sb-dialog" Immediate SuggestItems="_fruits" MinSuggestTriggerChars="1" @bind-Value="_dialogValue" />
+            <span id="dialog-value">[@(_dialogValue ?? "null")]</span>
+        </BitDialog>
+    </div>
+</E2ESection>
+
+@* ---------- Prefix and suffix ---------- *@
+
+<E2ESection Id="affixes" Title="Prefix and suffix">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-prefix" Placeholder="Prefix" Prefix="https://" HideIcon @bind-Value="_prefixValue" />
+        <span id="prefix-value">[@_prefixValue]</span>
+        <BitSearchBox Id="sb-suffix" Placeholder="Suffix" Suffix=".com" HideIcon />
+        <BitSearchBox Id="sb-affix-templates" Placeholder="Templates" HideIcon>
+            <PrefixTemplate><span class="tpl-prefix">PRE</span></PrefixTemplate>
+            <SuffixTemplate><span class="tpl-suffix">SUF</span></SuffixTemplate>
+        </BitSearchBox>
+    </div>
+</E2ESection>
+
+@* ---------- Input behavior ---------- *@
+
+<E2ESection Id="behavior" Title="Input behavior">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-maxlength" MaxLength="10" @bind-Value="_maxLengthValue" />
+        <span id="maxlength-value">[@_maxLengthValue]</span>
+        <BitSearchBox Id="sb-trim" Immediate Trim @bind-Value="_trimValue" />
+        <span id="trim-value">[@_trimValue]</span>
+        <BitSearchBox Id="sb-inputmode" InputMode="BitInputMode.Search" />
+        <BitSearchBox Id="sb-enterkeyhint" EnterKeyHint="BitEnterKeyHint.Go" />
+        @foreach (var hint in _enterKeyHints)
+        {
+            <BitSearchBox Id="@($"sb-ekh-{hint.ToString().ToLowerInvariant()}")" EnterKeyHint="hint" />
+        }
+        <BitSearchBox Id="sb-spell" SpellCheck="false" AutoCorrect="false" AutoCapitalize="none" AutoComplete="on" />
+        <BitSearchBox Id="sb-selectfocus" SelectTextOnFocus DefaultValue="Click me to select this term" />
+    </div>
+    <div id="fullwidth-box" style="display: flex; gap: 16px; width: 480px;">
+        <BitSearchBox Id="sb-fullwidth" FullWidth Placeholder="FullWidth" />
+        <button type="button">Go</button>
+    </div>
+    <div id="notfullwidth-box" style="display: flex; gap: 16px; width: 480px;">
+        <BitSearchBox Id="sb-notfullwidth" Placeholder="Not FullWidth" />
+        <button type="button">Go</button>
+    </div>
+</E2ESection>
+
+@* ---------- Binding ---------- *@
+
+<E2ESection Id="binding" Title="Binding">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-twoway" @bind-Value="_twoWayValue" />
+        <span id="twoway-value">[@_twoWayValue]</span>
+        <button id="btn-set-twoway" type="button" @onclick="@(() => _twoWayValue = "from page")">set two-way</button>
+        <BitSearchBox Id="sb-immediate" Immediate @bind-Value="_immediateValue" @bind-Value:after="() => _immediateCount++" />
+        <span id="immediate-value">[@_immediateValue]</span>
+        <span id="immediate-count">@_immediateCount</span>
+        <BitSearchBox Id="sb-debounce" Immediate DebounceTime="700" @bind-Value="_debounceValue" @bind-Value:after="() => _debounceCount++" />
+        <span id="debounce-value">[@_debounceValue]</span>
+        <span id="debounce-count">@_debounceCount</span>
+        <BitSearchBox Id="sb-throttle" Immediate ThrottleTime="1500" @bind-Value="_throttleValue" @bind-Value:after="ThrottleCommitted" />
+        <span id="throttle-value">[@_throttleValue]</span>
+        <span id="throttle-count">@_throttleCount</span>
+        <span id="throttle-first">[@_throttleFirst]</span>
+        <BitSearchBox Id="sb-onchange" Immediate OnChange="v => { _onChangeValue = v; _onChangeCount++; }" />
+        <span id="onchange-value">[@_onChangeValue]</span>
+        <span id="onchange-count">@_onChangeCount</span>
+        <BitSearchBox Id="sb-default" DefaultValue="bit BlazorUI" OnChange="v => _defaultChanged = v" />
+        <span id="default-value">[@_defaultChanged]</span>
+    </div>
+</E2ESection>
+
+@* ---------- Events ---------- *@
+
+<E2ESection Id="events" Title="Events">
+    <BitSearchBox Id="sb-events" Immediate
+                  OnClick="() => _clickCount++"
+                  OnFocus="() => _focusCount++"
+                  OnFocusIn="() => _focusInCount++"
+                  OnFocusOut="() => _focusOutCount++"
+                  OnKeyDown="e => _lastKeyDown = e.Key"
+                  OnKeyUp="() => _keyUpCount++"
+                  OnEscape="() => _evEscapeCount++"
+                  OnClear="() => _evClearCount++"
+                  OnSearch="v => { _evSearchCount++; _evSearch = v; }" />
+    <span id="ev-click">@_clickCount</span>
+    <span id="ev-focus">@_focusCount</span>
+    <span id="ev-focusin">@_focusInCount</span>
+    <span id="ev-focusout">@_focusOutCount</span>
+    <span id="ev-last-keydown">@_lastKeyDown</span>
+    <span id="ev-keyup">@_keyUpCount</span>
+    <span id="ev-escape">@_evEscapeCount</span>
+    <span id="ev-clear">@_evClearCount</span>
+    <span id="ev-search">@_evSearchCount</span>
+    <span id="ev-search-value">[@_evSearch]</span>
+</E2ESection>
+
+@* ---------- Suggestions ---------- *@
+
+<E2ESection Id="suggest" Title="Suggestions">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-suggest" Immediate SuggestItems="_fruits" @bind-Value="_suggestValue"
+                      OnSuggestItemSelect="v => { _suggestSelected = v; _suggestSelectCount++; }"
+                      OnSearch="v => _suggestSearch = v"
+                      OnSuggestItemsToggle="v => { _suggestOpen = v; _suggestToggles++; }" />
+        <span id="suggest-value">[@_suggestValue]</span>
+        <span id="suggest-selected">[@_suggestSelected]</span>
+        <span id="suggest-select-count">@_suggestSelectCount</span>
+        <span id="suggest-search">[@_suggestSearch]</span>
+        <span id="suggest-open">@_suggestOpen</span>
+        <span id="suggest-toggles">@_suggestToggles</span>
+        <BitSearchBox Id="sb-suggest-filter" Immediate SuggestItems="_fruits" SuggestFilterFunction="StartsWith" />
+        <BitSearchBox Id="sb-suggest-diacritics" Immediate SuggestIgnoreDiacritics HighlightSuggestItems MinSuggestTriggerChars="2" SuggestItems="_accented" />
+        <BitSearchBox Id="sb-suggest-min" Immediate DebounceTime="300" MaxSuggestCount="3" MinSuggestTriggerChars="1" SuggestItems="_fruits" />
+        <BitSearchBox Id="sb-suggest-provider" Immediate SuggestItemsProvider="LoadItems" LoadingText="Searching..." MinSuggestTriggerChars="1"
+                      OnSuggestItemSelect="v => _providerSelected = v" />
+        <span id="provider-terms">@string.Join(",", _providerTerms)</span>
+        <span id="provider-cancelled">@_providerCancelled</span>
+        <span id="provider-cancelled-on-arrival">@_providerCancelledOnArrival</span>
+        <span id="provider-selected">[@_providerSelected]</span>
+        <BitSearchBox Id="sb-suggest-modeless" Immediate Modeless FixedCalloutWidth MinSuggestTriggerChars="1" SuggestItems="_longItems" />
+        <div style="width: 240px;">
+            <BitSearchBox Id="sb-suggest-wide" Immediate MinSuggestTriggerChars="1" SuggestItems="_longItems" />
+        </div>
+        <BitSearchBox Id="sb-highlight" Immediate HighlightSuggestItems MinSuggestTriggerChars="1" SuggestItems="_fruits" />
+        <BitSearchBox Id="sb-item-template" Immediate MinSuggestTriggerChars="1" SuggestItems="_fruits">
+            <SuggestItemTemplate Context="item"><span class="tpl-item">* @item</span></SuggestItemTemplate>
+        </BitSearchBox>
+        <BitSearchBox Id="sb-noresults" Immediate MinSuggestTriggerChars="1" NoResultsText="No matching item found." SuggestItems="_fruits" />
+        <BitSearchBox Id="sb-noresults-template" Immediate MinSuggestTriggerChars="1" SuggestItems="_fruits">
+            <NoResultsTemplate><span class="tpl-noresults">Nothing here</span></NoResultsTemplate>
+        </BitSearchBox>
+        <BitSearchBox Id="sb-failed" Immediate MinSuggestTriggerChars="1" SuggestFailedText="Suggestions are unavailable right now."
+                      SuggestItemsProvider="LoadItemsThatFail" OnSuggestFailed="ex => _failure = ex.Message" />
+        <span id="failure">[@_failure]</span>
+        <BitSearchBox Id="sb-failed-template" Immediate MinSuggestTriggerChars="1" SuggestItemsProvider="LoadItemsThatFail">
+            <SuggestFailedTemplate><span class="tpl-failed">Offline</span></SuggestFailedTemplate>
+        </BitSearchBox>
+        <BitSearchBox Id="sb-mintext" Immediate MinSuggestTriggerChars="3" MinSuggestTriggerCharsText="Type {0} more character(s) to search" SuggestItems="_fruits" />
+        <BitSearchBox Id="sb-loading-template" Immediate MinSuggestTriggerChars="1" SuggestItemsProvider="LoadItemsSlowly">
+            <LoadingTemplate><span class="tpl-loading">Hold on</span></LoadingTemplate>
+        </BitSearchBox>
+        <BitSearchBox Id="sb-header-footer" Immediate MinSuggestTriggerChars="1" SuggestItems="_fruits">
+            <CalloutHeaderTemplate><span class="tpl-header">Top matches</span></CalloutHeaderTemplate>
+            <CalloutFooterTemplate><span class="tpl-footer">See all results</span></CalloutFooterTemplate>
+        </BitSearchBox>
+        <BitSearchBox Id="sb-autoselect" Immediate AutoSelectSuggestItem MinSuggestTriggerChars="1" SuggestItems="_fruits" @bind-Value="_autoSelectValue" />
+        <span id="autoselect-value">[@_autoSelectValue]</span>
+        <BitSearchBox Id="sb-autofill" Immediate AutoFillSuggestItem MinSuggestTriggerChars="1" SuggestItems="_fruits" @bind-Value="_autoFillValue" />
+        <span id="autofill-value">[@_autoFillValue]</span>
+        <BitSearchBox Id="sb-onfocus" Immediate ShowSuggestItemsOnFocus MinSuggestTriggerChars="0" SuggestItems="_recent" />
+        <BitSearchBox Id="sb-announce" Immediate MinSuggestTriggerChars="2" SuggestItems="_fruits" AnnouncementProvider="Announce" />
+        <BitSearchBox Id="sb-nowrap" Immediate NoWrapNavigation MinSuggestTriggerChars="1" SuggestItems="_fruits" />
+        <BitSearchBox Id="sb-suggest-readonly" ReadOnly MinSuggestTriggerChars="0" ShowSuggestItemsOnFocus SuggestItems="_fruits" DefaultValue="Apple" />
+        <BitSearchBox Id="sb-suggest-arialabel" Immediate MinSuggestTriggerChars="1" SuggestItems="_fruits" SuggestItemsAriaLabel="Matching fruits" />
+    </div>
+</E2ESection>
+
+@* ---------- Keyboard shortcut ---------- *@
+
+<E2ESection Id="shortcut" Title="Focus shortcut">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-shortcut" Placeholder="Alt+K" FocusShortcut="Alt+K" />
+        <BitSearchBox Id="sb-shortcut-bare" Placeholder="/" FocusShortcut="/" SelectTextOnFocus DefaultValue="previous term" />
+        <input id="other-input" type="text" />
+        <BitSearchBox Id="sb-shortcut-dyn" Placeholder="dynamic" FocusShortcut="@_dynShortcut" />
+        <button id="btn-change-shortcut" type="button" @onclick="@(() => _dynShortcut = "Alt+J")">change shortcut</button>
+    </div>
+</E2ESection>
+
+@* ---------- Programmatic control ---------- *@
+
+<E2ESection Id="api" Title="Programmatic control">
+    <div class="e2e-sb-box">
+        <BitSearchBox @ref="_apiRef" Id="sb-api" Immediate MinSuggestTriggerChars="0" DefaultValue="Apple" SuggestItems="_fruits"
+                      OnSuggestItemsToggle="v => { _apiOpen = v; _apiIsOpenInToggle = _apiRef?.IsSuggestItemsOpen ?? false; }" OnClear="() => _apiClears++" />
+        <span id="api-isopen-toggle">@_apiIsOpenInToggle</span>
+        <span id="api-open">@_apiOpen</span>
+        <span id="api-clears">@_apiClears</span>
+        <span id="api-isopen">@_apiIsOpenRead</span>
+        <button id="btn-api-focus" type="button" @onclick="ApiFocus">Focus</button>
+        <button id="btn-api-clear" type="button" @onclick="ApiClear">Clear</button>
+        <button id="btn-api-show" type="button" @onclick="ApiShow">Show</button>
+        <button id="btn-api-hide" type="button" @onclick="ApiHide">Hide</button>
+        <button id="btn-api-read" type="button" @onclick="() => _apiIsOpenRead = _apiRef?.IsSuggestItemsOpen ?? false">Read IsSuggestItemsOpen</button>
+    </div>
+</E2ESection>
+
+@* ---------- Validation ---------- *@
+
+<E2ESection Id="validation" Title="Validation">
+    <div class="e2e-sb-box">
+        <EditForm Model="_model">
+            <DataAnnotationsValidator />
+            <BitSearchBox Id="sb-form" Immediate Label="Search term" @bind-Value="_model.Text" />
+            <ValidationMessage For="() => _model.Text" />
+            <BitSearchBox Id="sb-form-novalidate" Immediate NoValidate @bind-Value="_model.Other" />
+        </EditForm>
+        <BitSearchBox Id="sb-errmsg" Immediate Label="Search orders" ErrorMessage="@_errorMessage" OnChange="HandleErrorChange" Description="At least 3 characters" />
+    </div>
+</E2ESection>
+
+@* ---------- Cascading parameters ---------- *@
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <div class="e2e-sb-box">
+        <BitParams Parameters="_searchBoxParams">
+            <BitSearchBox Id="sb-casc-1" Placeholder="Products" SuggestItems="_fruits" />
+            <BitSearchBox Id="sb-casc-own" Underlined="false" Placeholder="Own Underlined" SuggestItems="_fruits" />
+        </BitParams>
+        <BitSearchBox Id="sb-casc-outside" Placeholder="Outside" SuggestItems="_fruits" />
+    </div>
+</E2ESection>
+
+@* ---------- Color, external icons, size ---------- *@
+
+<E2ESection Id="color" Title="Color">
+    <div class="e2e-sb-box">
+        @foreach (var color in _colors)
+        {
+            <BitSearchBox Id="@($"sb-clr-{color.ToString().ToLowerInvariant()}")" Placeholder="@color.ToString()" Color="color" FixedIcon ShowSearchButton />
+        }
+        <BitSearchBox Id="sb-clr-none" Placeholder="No color" FixedIcon ShowSearchButton />
+    </div>
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External icons">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-ext-css" Icon="@BitIconInfo.Css("my-sb-icon")" />
+        <BitSearchBox Id="sb-ext-fa" Icon="@BitIconInfo.Fa("solid house")" />
+        <BitSearchBox Id="sb-ext-bi" Icon="@BitIconInfo.Bi("gear-fill")" />
+        <BitSearchBox Id="sb-ext-buttons" ShowSearchButton SearchButtonIcon="@BitIconInfo.Css("my-sb-go")" ClearButtonIcon="@BitIconInfo.Css("my-sb-clear")" DefaultValue="x" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <div class="e2e-sb-box">
+        @foreach (var size in _sizes)
+        {
+            <BitSearchBox Id="@($"sb-size-{size.ToString().ToLowerInvariant()}")" Placeholder="@size.ToString()" Size="size" ShowSearchButton Immediate MinSuggestTriggerChars="1" SuggestItems="_fruits" />
+        }
+    </div>
+</E2ESection>
+
+@* ---------- Style and Class ---------- *@
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-style" Style="box-shadow: rgb(30, 144, 255) 0px 0px 16px; margin-inline: 16px;" />
+        <BitSearchBox Id="sb-class" Class="custom-class" />
+        <BitSearchBox Id="sb-styles" Styles="@(new() { Root = "margin-inline: 16px;", Input = "padding-left: 9px;", Focused = "--focused-background: rgb(10, 20, 30);", InputContainer = "background: var(--focused-background, rgb(200, 200, 200));" })" />
+        <BitSearchBox Id="sb-classes" FixedIcon DefaultValue="x" Classes="@(new() { Root = "custom-root", Icon = "custom-icon", Focused = "custom-focused", ClearButton = "custom-clear", IconWrapper = "custom-icon-wrapper", InputContainer = "custom-input-container" })" />
+        <BitSearchBox Id="sb-callout-classes" Immediate HighlightSuggestItems MinSuggestTriggerChars="1" SuggestItems="_fruits"
+                      Classes="@(new() { Callout = "custom-callout", SuggestItemButton = "custom-suggest-item", SuggestItemHighlight = "custom-highlight" })"
+                      Styles="@(new() { Callout = "--bit-SearchBox-callout-background: rgb(250, 240, 230);" })" />
+        <BitSearchBox Id="sb-cssvar-style" Immediate MinSuggestTriggerChars="1" SuggestItems="_fruits" FixedIcon
+                      Style="--bit-SearchBox-radius: 20px; --bit-SearchBox-height: 44px; --bit-SearchBox-icon-color: rgb(109, 40, 217); --bit-SearchBox-border-color: rgb(221, 214, 254); --bit-SearchBox-item-color: rgb(1, 2, 3);" />
+        <div id="cssvar-scope" style="--bit-SearchBox-background: rgb(4, 5, 6); --bit-SearchBox-callout-background: rgb(7, 8, 9);">
+            <BitSearchBox Id="sb-cssvar-ancestor" Immediate MinSuggestTriggerChars="1" SuggestItems="_fruits" />
+            <BitSearchBox Id="sb-cssvar-explicit" Background="BitColorKind.Secondary" Size="BitSize.Small" />
+        </div>
+    </div>
+</E2ESection>
+
+@* ---------- RTL ---------- *@
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="e2e-sb-box">
+        <BitSearchBox Id="sb-ltr" FixedIcon ShowSearchButton Prefix="P" />
+        <BitSearchBox Id="sb-rtl" Dir="BitDir.Rtl" FixedIcon ShowSearchButton Prefix="P" Immediate MinSuggestTriggerChars="1" SuggestItems="_fruits" />
+        <div dir="rtl">
+            <BitSearchBox Id="sb-rtl-inherited" FixedIcon ShowSearchButton Prefix="P" />
+        </div>
+    </div>
+</E2ESection>
+
+@* ---------- Reduced motion ---------- *@
+
+<E2ESection Id="motion" Title="Reduced motion">
+    <BitSearchBox Id="sb-motion" />
+    <BitSearchBox Id="sb-motion-force" ForceAnimation />
+</E2ESection>
+
+@* ---------- Unmount ---------- *@
+
+<E2ESection Id="unmount" Title="Unmount">
+    <button id="btn-toggle-mount" type="button" @onclick="() => _mounted = !_mounted">toggle mount</button>
+    <span id="mounted">@_mounted</span>
+    @if (_mounted)
+    {
+        <BitSearchBox Id="sb-mount" Immediate MinSuggestTriggerChars="1" SuggestItems="_fruits" FocusShortcut="Alt+M" />
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitColorKind[] _kinds = [BitColorKind.Primary, BitColorKind.Secondary, BitColorKind.Tertiary, BitColorKind.Transparent];
+    private static readonly BitSize[] _sizes = [BitSize.Small, BitSize.Medium, BitSize.Large];
+    private static readonly BitEnterKeyHint[] _enterKeyHints = [BitEnterKeyHint.Enter, BitEnterKeyHint.Done, BitEnterKeyHint.Go, BitEnterKeyHint.Next, BitEnterKeyHint.Previous, BitEnterKeyHint.Search, BitEnterKeyHint.Send];
+    private static readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground, BitColor.TertiaryForeground,
+        BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly List<string> _fruits = ["Apple", "Red Apple", "Blue Apple", "Green Apple", "Banana", "Orange", "Grape", "Broccoli", "Carrot", "Lettuce"];
+    private readonly List<string> _accented = ["José Álvarez", "Jürgen Müller", "Renée Fauré", "Zoë Brontë", "Søren Kierkegaard"];
+    private readonly List<string> _recent = ["bit BlazorUI", "Blazor components", "Fluent UI"];
+    private readonly List<string> _longItems = ["A very long suggestion that is much wider than the search box it belongs to", "Another long suggestion of the same kind"];
+    private readonly List<string> _products = ["Product 1", "Product 2", "Product 3", "Promotion", "Prototype", "Gadget"];
+
+    private string? _basicValue;
+    private int _readOnlyChanges;
+
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private int _disabledSearches;
+    private int _disabledRootClicks;
+    private int _disabledRootHovers;
+    private Dictionary<string, object> _disabledRootAttributes = [];
+
+    private BitVisibility _visibility;
+    private string _dynPlaceholder = "First placeholder";
+    private string? _dynLabel;
+    private bool _dynSearchButton;
+
+    private string? _searchBtnValue;
+    private string? _searchBtnSearch;
+    private int _searchBtnCount;
+    private bool _loading;
+
+    private string? _clearValue = "something";
+    private int _clearCount;
+    private string? _escapeValue = "term";
+    private int _escapeCount;
+    private int _escapeClears;
+    private bool _dialogOpen;
+    private string? _dialogValue;
+
+    private string? _prefixValue;
+    private string? _maxLengthValue;
+    private string? _trimValue;
+
+    private string? _twoWayValue = "two-way";
+    private string? _immediateValue;
+    private int _immediateCount;
+    private string? _debounceValue;
+    private int _debounceCount;
+    private string? _throttleValue;
+    private int _throttleCount;
+    private string? _throttleFirst;
+    private string? _onChangeValue;
+    private int _onChangeCount;
+    private string? _defaultChanged;
+
+    private int _clickCount;
+    private int _focusCount;
+    private int _focusInCount;
+    private int _focusOutCount;
+    private string? _lastKeyDown;
+    private int _keyUpCount;
+    private int _evEscapeCount;
+    private int _evClearCount;
+    private int _evSearchCount;
+    private string? _evSearch;
+
+    private string? _suggestValue;
+    private string? _suggestSelected;
+    private int _suggestSelectCount;
+    private string? _suggestSearch;
+    private bool _suggestOpen;
+    private int _suggestToggles;
+    private readonly List<string> _providerTerms = [];
+    private int _providerCancelled;
+    private int _providerCancelledOnArrival;
+    private string? _providerSelected;
+    private string? _failure;
+    private string? _autoSelectValue;
+    private string? _autoFillValue;
+
+    private string? _dynShortcut = "Alt+H";
+
+    private BitSearchBox? _apiRef;
+    private bool _apiOpen;
+    private int _apiClears;
+    private bool _apiIsOpenRead;
+    private bool _apiIsOpenInToggle;
+
+    private readonly FormModel _model = new();
+    private string? _errorMessage;
+
+    private readonly BitSearchBoxParams[] _searchBoxParams =
+    [
+        new() { Immediate = true, FixedIcon = true, FullWidth = true, Size = BitSize.Small, HighlightSuggestItems = true, Underlined = true, MinSuggestTriggerChars = 1, NoResultsText = "No matching item found.", SuggestItemsAriaLabel = "Matching items" }
+    ];
+
+    private bool _mounted = true;
+
+    protected override void OnInitialized()
+    {
+        _disabledRootAttributes = new()
+        {
+            ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledRootClicks++),
+            ["onmouseover"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledRootHovers++)
+        };
+    }
+
+    private void ChangeParams()
+    {
+        _dynPlaceholder = "Second placeholder";
+        _dynLabel = "Added label";
+        _dynSearchButton = true;
+    }
+
+    private void ThrottleCommitted()
+    {
+        _throttleCount++;
+        _throttleFirst ??= _throttleValue;
+    }
+
+    private static bool StartsWith(string? term, string? item) =>
+        string.IsNullOrEmpty(term) is false && string.IsNullOrEmpty(item) is false && item.StartsWith(term, StringComparison.OrdinalIgnoreCase);
+
+    private async ValueTask<IEnumerable<string>> LoadItems(BitSearchBoxSuggestItemsProviderRequest request)
+    {
+        _providerTerms.Add(request.SearchTerm ?? string.Empty);
+        if (request.CancellationToken.IsCancellationRequested) _providerCancelledOnArrival++;
+        await InvokeAsync(StateHasChanged);
+        try
+        {
+            await Task.Delay(400, request.CancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            _providerCancelled++;
+            await InvokeAsync(StateHasChanged);
+            throw;
+        }
+
+        return _products.Where(p => p.Contains(request.SearchTerm ?? string.Empty, StringComparison.OrdinalIgnoreCase)).Take(request.Take);
+    }
+
+    private static async ValueTask<IEnumerable<string>> LoadItemsThatFail(BitSearchBoxSuggestItemsProviderRequest request)
+    {
+        await Task.Delay(200, request.CancellationToken);
+
+        throw new InvalidOperationException("The suggestions endpoint is unreachable.");
+    }
+
+    private async ValueTask<IEnumerable<string>> LoadItemsSlowly(BitSearchBoxSuggestItemsProviderRequest request)
+    {
+        await Task.Delay(1500, request.CancellationToken);
+
+        return _fruits.Where(f => f.Contains(request.SearchTerm ?? string.Empty, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string? Announce(BitSearchBoxAnnouncementArgs args) => args switch
+    {
+        { SearchTerm: null or "" } => null,
+        { IsSearchTermTooShort: true } => $"Keep typing ({args.MinSuggestTriggerChars})",
+        _ => $"{args.SuggestItems.Count} results for {args.SearchTerm}"
+    };
+
+    private void HandleErrorChange(string? value)
+    {
+        _errorMessage = string.IsNullOrEmpty(value) || value.Length >= 3 ? null : "Type at least 3 characters.";
+    }
+
+    private async Task ApiFocus()
+    {
+        if (_apiRef is not null) await _apiRef.FocusAsync();
+    }
+
+    private async Task ApiClear()
+    {
+        if (_apiRef is not null) await _apiRef.Clear();
+    }
+
+    private async Task ApiShow()
+    {
+        if (_apiRef is not null) await _apiRef.ShowSuggestItems();
+    }
+
+    private async Task ApiHide()
+    {
+        if (_apiRef is not null) await _apiRef.HideSuggestItems();
+    }
+
+    private sealed class FormModel
+    {
+        [StringLength(6, MinimumLength = 2, ErrorMessage = "Text must be between 2 and 6 chars.")]
+        public string? Text { get; set; }
+
+        [StringLength(1, ErrorMessage = "Other is too long.")]
+        public string? Other { get; set; }
+    }
+}

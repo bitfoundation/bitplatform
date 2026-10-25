@@ -1,0 +1,152 @@
+﻿@page "/e2e/nav-bar/url"
+@page "/e2e/nav-bar/url/{*Path}"
+
+<PageTitle>BitNavBar URL E2E</PageTitle>
+
+@* The automatic mode of BitNavBar: every bar here selects the item matching the current URL, and the links below
+   navigate inside this very page (the route takes any path under it), so the bars see every navigation. *@
+
+<E2ESection Id="links" Title="Links">
+    <p>Path: <span id="current-path">/@(Path ?? "")</span></p>
+    <a id="go-root" href="e2e/nav-bar/url">root</a>
+    <a id="go-home" href="e2e/nav-bar/url/home">home</a>
+    <a id="go-home-upper" href="e2e/nav-bar/url/HOME/?tab=1#top">HOME/?tab=1#top</a>
+    <a id="go-search" href="e2e/nav-bar/url/search">search</a>
+    <a id="go-search-deep" href="e2e/nav-bar/url/search/a/b">search/a/b</a>
+    <a id="go-searches" href="e2e/nav-bar/url/searches">searches</a>
+    <a id="go-docs-one" href="e2e/nav-bar/url/docs/one">docs/one</a>
+    <a id="go-docs-deep" href="e2e/nav-bar/url/docs/one/two">docs/one/two</a>
+    <a id="go-post-7" href="e2e/nav-bar/url/post/7">post/7</a>
+    <a id="go-post-x" href="e2e/nav-bar/url/post/x">post/x</a>
+    <a id="go-profile" href="e2e/nav-bar/url/profile">profile</a>
+    <a id="go-me" href="e2e/nav-bar/url/me">me</a>
+    <a id="go-nowhere" href="e2e/nav-bar/url/nowhere">nowhere</a>
+</E2ESection>
+
+<E2ESection Id="exact" Title="Exact (the default)">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-exact"
+                   TItem="BitNavBarItem"
+                   Items="_exactItems"
+                   @bind-SelectedKey="_exactKey"
+                   OnSelectItem="(BitNavBarItem item) => { _exactSelects++; _exactSelected = item?.Text; }"
+                   OnItemClick="(BitNavBarItem item) => _exactClicked = item.Text" />
+    </div>
+    <p>
+        Selects: <span id="exact-select-count">@_exactSelects</span>,
+        selected: <span id="exact-selected">@(_exactSelected ?? "none")</span>,
+        key: <span id="exact-key">@(_exactKey ?? "none")</span>,
+        clicked: <span id="exact-clicked">@_exactClicked</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="matching" Title="Prefix, Wildcard, Regex, an item's Match and AdditionalUrls">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-prefix" Items="_prefixItems" Match="BitNavMatch.Prefix" />
+        <BitNavBar Id="nbr-wildcard" Items="_wildcardItems" Match="BitNavMatch.Wildcard" />
+        <BitNavBar Id="nbr-regex" Items="_regexItems" Match="BitNavMatch.Regex" />
+        <BitNavBar Id="nbr-item-match" Items="_itemMatchItems" />
+        <BitNavBar Id="nbr-additional" Items="_additionalItems" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="reselectable" Title="Reselectable in the automatic mode">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-auto-reselectable" Items="_reselectableItems" Reselectable OnSelectItem="(BitNavBarItem item) => _reselects++" />
+    </div>
+    <p>Reselects: <span id="auto-reselect-count">@_reselects</span></p>
+</E2ESection>
+
+<E2ESection Id="switches" Title="Mode and Match changed at runtime">
+    <button id="btn-to-automatic" @onclick="() => _switchMode = BitNavMode.Automatic">To automatic</button>
+    <button id="btn-to-prefix" @onclick="() => _switchMatch = BitNavMatch.Prefix">To prefix</button>
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-mode-switch" Items="_modeSwitchItems" Mode="_switchMode" DefaultSelectedItem="_modeSwitchItems[0]" />
+        <BitNavBar Id="nbr-match-switch" Items="_matchSwitchItems" Match="_switchMatch" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="options-auto" Title="Options in the automatic mode">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-options-auto" TItem="BitNavBarOption" OnSelectItem="(BitNavBarOption option) => _optionSelected = option?.Text">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" Url="/e2e/nav-bar/url/home" />
+            <BitNavBarOption Text="Search" IconName="@BitIconName.Search" Url="/e2e/nav-bar/url/search" Match="BitNavMatch.Prefix" />
+            <BitNavBarOption Text="Posts" IconName="@BitIconName.Page" Url="^/e2e/nav-bar/url/post/\d+$" Match="BitNavMatch.Regex" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" Url="/e2e/nav-bar/url/profile" AdditionalUrls="@(["/e2e/nav-bar/url/me"])" />
+        </BitNavBar>
+    </div>
+    <p>Option selected: <span id="option-selected">@_optionSelected</span></p>
+</E2ESection>
+
+<E2ESection Id="custom-auto" Title="Custom items in the automatic mode">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-custom-auto" Items="_customItems" NameSelectors="_customSelectors" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    [Parameter] public string? Path { get; set; }
+
+    private static BitNavBarItem Link(string text, string url, string? key = null) => new() { Text = text, Url = url, IconName = BitIconName.Page, Key = key };
+
+    private readonly List<BitNavBarItem> _exactItems =
+    [
+        Link("Root", "/e2e/nav-bar/url", "root"),
+        Link("Home", "/e2e/nav-bar/url/home", "home"),
+        Link("Search", "e2e/nav-bar/url/search", "search"),
+        Link("Profile", "/e2e/nav-bar/url/profile", "profile"),
+    ];
+    private int _exactSelects;
+    private string? _exactSelected;
+    private string? _exactKey;
+    private string? _exactClicked;
+
+    private readonly List<BitNavBarItem> _prefixItems = [Link("Search", "/e2e/nav-bar/url/search"), Link("Docs", "/e2e/nav-bar/url/docs/")];
+    private readonly List<BitNavBarItem> _wildcardItems = [Link("One doc", "/e2e/nav-bar/url/docs/*"), Link("Any search", "/e2e/nav-bar/url/search/**"), Link("Post", "/e2e/nav-bar/url/post/?")];
+    private readonly List<BitNavBarItem> _regexItems = [Link("Numbered post", @"^/e2e/nav-bar/url/post/\d+$"), Link("Named post", "^/e2e/nav-bar/url/post/[a-z]+$")];
+    private readonly List<BitNavBarItem> _itemMatchItems =
+    [
+        Link("Home", "/e2e/nav-bar/url/home"),
+        new() { Text = "Search area", Url = "/e2e/nav-bar/url/search", Match = BitNavMatch.Prefix, IconName = BitIconName.Search },
+    ];
+    private readonly List<BitNavBarItem> _additionalItems =
+    [
+        Link("Home", "/e2e/nav-bar/url/home"),
+        new() { Text = "Profile", Url = "/e2e/nav-bar/url/profile", AdditionalUrls = ["/e2e/nav-bar/url/me"], IconName = BitIconName.Contact },
+    ];
+
+    private readonly List<BitNavBarItem> _reselectableItems = [Link("Home", "/e2e/nav-bar/url/home"), Link("Search", "/e2e/nav-bar/url/search")];
+    private int _reselects;
+
+    private BitNavMode _switchMode = BitNavMode.Manual;
+    private BitNavMatch _switchMatch = BitNavMatch.Exact;
+    private readonly List<BitNavBarItem> _modeSwitchItems = [Link("Manual pick", "/e2e/nav-bar/url/manual"), Link("Search", "/e2e/nav-bar/url/search")];
+    private readonly List<BitNavBarItem> _matchSwitchItems = [Link("Home", "/e2e/nav-bar/url/home"), Link("Search", "/e2e/nav-bar/url/search")];
+
+    private string? _optionSelected;
+
+    public class Destination
+    {
+        public string Caption { get; set; } = "";
+        public string? Route { get; set; }
+        public string[]? Aliases { get; set; }
+        public BitNavMatch? Rule { get; set; }
+    }
+
+    private readonly List<Destination> _customItems =
+    [
+        new() { Caption = "Home", Route = "/e2e/nav-bar/url/home" },
+        new() { Caption = "Search", Route = "/e2e/nav-bar/url/search", Rule = BitNavMatch.Prefix },
+        new() { Caption = "Profile", Route = "/e2e/nav-bar/url/profile", Aliases = ["/e2e/nav-bar/url/me"] },
+    ];
+
+    private readonly BitNavBarNameSelectors<Destination> _customSelectors = new()
+    {
+        Text = { Name = nameof(Destination.Caption) },
+        Url = { Selector = d => d.Route },
+        AdditionalUrls = { Name = nameof(Destination.Aliases) },
+        Match = { Selector = d => d.Rule },
+    };
+}

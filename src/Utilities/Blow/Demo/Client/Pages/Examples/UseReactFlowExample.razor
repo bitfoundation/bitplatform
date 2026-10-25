@@ -1,0 +1,203 @@
+﻿@page "/examples/use-reactflow"
+
+<PageTitle>Use Flow API · Blow</PageTitle>
+
+<ExampleScaffold Title="Use Flow API"
+                 Summary="Capture the canvas in a component reference and drive it from your own controls through its imperative API - the counterpart of React Flow's useReactFlow hook. Each button is a call or two on the BlowCanvas reference, and the log under the canvas shows what each call returned.">
+    <Toolbar>
+        <button class="btn btn-secondary" @onclick="ZoomIn">Zoom in</button>
+        <button class="btn btn-secondary" @onclick="ZoomOut">Zoom out</button>
+        <button class="btn btn-secondary" @onclick="Fit">Fit view</button>
+        <button class="btn btn-primary" @onclick="AddNode">Add node</button>
+        <button class="btn btn-secondary" @onclick="DeleteSelected">Delete selected</button>
+        <button class="btn btn-secondary" @onclick="Snapshot">Snapshot</button>
+        <label>
+            Id
+            <input class="urf-id" list="urf-ids" @bind="_lookupId" />
+        </label>
+        <datalist id="urf-ids">
+            @foreach (var node in _nodes)
+            {
+                <option value="@node.Id">@node.Label</option>
+            }
+            @foreach (var edge in _edges)
+            {
+                <option value="@edge.Id">edge</option>
+            }
+        </datalist>
+        <button class="btn btn-secondary" @onclick="LookUp">Look up</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </ChildContent>
+    <Footer>
+        @* Under the canvas: a log over it would grow across the nodes the Add button puts in the middle of the view. *@
+        <section class="urf-log" aria-label="Calls made">
+            @if (_log.Count == 0)
+            {
+                <p class="urf-empty">Press a button: each call it makes, and what came back, is listed here.</p>
+            }
+            <ol>
+                @foreach (var entry in _log)
+                {
+                    <li><code>@entry.Call</code> <span class="urf-result">@entry.Result</span></li>
+                }
+            </ol>
+        </section>
+    </Footer>
+    <TryIt>
+        <li><strong>Zoom in</strong> and <strong>Zoom out</strong> zoom one step about the middle of the view; the log reads the zoom back. Press either a few times to see it stop at the limits.</li>
+        <li><strong>Fit view</strong> brings the whole graph into view and logs the viewport it ended on.</li>
+        <li><strong>Add node</strong> puts a node in the middle of what you are looking at. Select one node first and the new one is connected to it.</li>
+        <li><strong>Click</strong> or <strong>Shift+drag</strong> to select nodes and edges, then <strong>Delete selected</strong> removes them, the edges of a removed node with it.</li>
+        <li><strong>Snapshot</strong> copies the graph and the viewport and logs what the copy holds; drag a node afterwards and take another to compare.</li>
+        <li>Type or pick an id in <strong>Id</strong> (a node such as <code>2</code>, or an edge such as <code>e1-2</code>) and press <strong>Look up</strong>: the view glides to it and the log describes it. An id that is in neither list logs that nothing was found.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>@@ref</code> captures the <code>BlowCanvas</code> into a field once it has rendered. It is null before that, so every handler checks it first; <code>OnInit</code> hands over the same reference once the canvas has rendered and measured, for code that has to run as soon as it can.</li>
+        <li><code>ZoomIn()</code> and <code>ZoomOut()</code> multiply or divide the zoom by 1.2 about the centre of the pane, clamped to <code>MinZoom</code> and <code>MaxZoom</code> (0.2 and 2.5). <code>GetZoom()</code> reads the zoom back straight away: the calls apply at once.</li>
+        <li><code>FitView()</code> pans and zooms so the graph fills the pane with a 10% margin. <code>GetViewport()</code> returns the resulting <code>BlowViewport</code>: <code>X</code>, <code>Y</code> and <code>Zoom</code>, where screen = flow &times; zoom + (x, y).</li>
+        <li>Add node turns the middle of the pane into flow coordinates with <code>GetViewport().ScreenToFlow(...)</code> over <code>PaneSize</code>, then calls <code>AddNodes(node)</code> and, with one node selected, <code>AddEdges(edge)</code>. Both append to the bound lists and raise <code>NodesChanged</code> and <code>EdgesChanged</code>.</li>
+        <li><code>DeleteElementsAsync(nodes, edges)</code> removes what it is given together with the edges and child nodes that go with a removed node. It skips anything with <code>Deletable = false</code>, and <code>OnBeforeDelete</code> can veto it, as it can a <strong>Delete</strong> key press.</li>
+        <li><code>ToObject()</code> returns a <code>BlowSnapshot</code> of <code>Nodes</code>, <code>Edges</code> and <code>Viewport</code> as deep copies, so it keeps describing the graph as it was; <code>ToObject(deep: false)</code> hands back the live instances.</li>
+        <li><code>GetNode(id)</code> and <code>GetEdge(id)</code> look an element up by id through the canvas's own index and return null for an id they do not know. Look up then centres on it with <code>SetCenterAsync(x, y, zoom, durationMs)</code>, which eases the view there over 300 ms.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .urf-id { width: 6rem; }
+    .urf-log { font-size: 12px; line-height: 1.5; }
+    .urf-log ol { margin: 0; padding-left: 18px; }
+    .urf-empty { margin: 0; color: var(--bb-text-soft); }
+    .urf-result { color: var(--bb-text-soft); }
+</style>
+
+@code {
+    private sealed record LogEntry(string Call, string Result);
+
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private readonly List<LogEntry> _log = [];
+    private string _lookupId = "e1-2";
+    private int _id = 3;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(150, 0) },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(0, 130) },
+            new BlowNode { Id = "3", Type = "output", Label = "Node 3", Position = new(300, 130) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+        ];
+    }
+
+    private void ZoomIn()
+    {
+        if (_flow is null) return;
+        _flow.ZoomIn();
+        Log("ZoomIn()", $"GetZoom() is now {_flow.GetZoom():0.00}");
+    }
+
+    private void ZoomOut()
+    {
+        if (_flow is null) return;
+        _flow.ZoomOut();
+        Log("ZoomOut()", $"GetZoom() is now {_flow.GetZoom():0.00}");
+    }
+
+    private void Fit()
+    {
+        if (_flow is null) return;
+        _flow.FitView();
+        var viewport = _flow.GetViewport();
+        Log("FitView()", $"GetViewport() is x {viewport.X:0}, y {viewport.Y:0}, zoom {viewport.Zoom:0.00}");
+    }
+
+    private void AddNode()
+    {
+        if (_flow is null) return;
+
+        // The middle of the pane in flow coordinates, nudged a little for each node so repeated adds do not stack
+        // exactly on top of one another.
+        var pane = _flow.PaneSize;
+        var centre = _flow.GetViewport().ScreenToFlow(pane.Width / 2, pane.Height / 2);
+        var nudge = (_id % 5) * 16;
+
+        _id++;
+        var node = new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(centre.X - 75 + nudge, centre.Y - 20 + nudge) };
+        _flow.AddNodes(node);
+
+        var selected = _nodes.Where(n => n.Selected).ToList();
+        if (selected.Count == 1)
+        {
+            _flow.AddEdges(new BlowEdge { Id = $"e{selected[0].Id}-{node.Id}", Source = selected[0].Id, Target = node.Id });
+            Log($"AddNodes(node {node.Id}); AddEdges(edge)", $"Node {node.Id} added in the middle of the view, connected from {selected[0].Label}");
+        }
+        else
+        {
+            Log($"AddNodes(node {node.Id})", $"Node {node.Id} added in the middle of the view; select one node first to have it connected");
+        }
+    }
+
+    private async Task DeleteSelected()
+    {
+        if (_flow is null) return;
+        var nodes = _nodes.Where(n => n.Selected).ToList();
+        var edges = _edges.Where(e => e.Selected).ToList();
+        if (nodes.Count == 0 && edges.Count == 0)
+        {
+            Log("DeleteElementsAsync(...)", "not called: nothing is selected");
+            return;
+        }
+
+        int nodesBefore = _nodes.Count, edgesBefore = _edges.Count;
+        await _flow.DeleteElementsAsync(nodes, edges);
+        Log("DeleteElementsAsync(nodes, edges)", $"removed {nodesBefore - _nodes.Count} node(s) and {edgesBefore - _edges.Count} edge(s)");
+    }
+
+    private void Snapshot()
+    {
+        if (_flow is null) return;
+        var snapshot = _flow.ToObject();
+        Log("ToObject()", $"{snapshot.Nodes.Count} nodes, {snapshot.Edges.Count} edges, viewport zoom {snapshot.Viewport.Zoom:0.00}");
+    }
+
+    private async Task LookUp()
+    {
+        if (_flow is null) return;
+        var id = _lookupId.Trim();
+
+        if (_flow.GetNode(id) is { } node)
+        {
+            var rect = node.GetRect();
+            Log($"GetNode(\"{id}\")", $"{node.Label}, a {node.Type} node at ({node.Position.X:0}, {node.Position.Y:0})");
+            await _flow.SetCenterAsync(rect.X + rect.Width / 2, rect.Y + rect.Height / 2, null, 300);
+        }
+        else if (_flow.GetEdge(id) is { } edge)
+        {
+            Log($"GetEdge(\"{id}\")", $"from {_flow.GetNode(edge.Source)?.Label ?? edge.Source} to {_flow.GetNode(edge.Target)?.Label ?? edge.Target}");
+            if (_flow.GetNode(edge.Source)?.GetRect() is { } a && _flow.GetNode(edge.Target)?.GetRect() is { } b)
+                await _flow.SetCenterAsync((a.X + a.Width / 2 + b.X + b.Width / 2) / 2, (a.Y + a.Height / 2 + b.Y + b.Height / 2) / 2, null, 300);
+        }
+        else
+        {
+            Log($"GetNode(\"{id}\"), GetEdge(\"{id}\")", "both returned null: no node or edge has that id");
+        }
+    }
+
+    private void Log(string call, string result)
+    {
+        _log.Insert(0, new LogEntry(call, result));
+        if (_log.Count > 30) _log.RemoveAt(_log.Count - 1);
+    }
+}

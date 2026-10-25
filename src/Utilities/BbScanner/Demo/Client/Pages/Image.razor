@@ -1,0 +1,274 @@
+﻿@page "/image"
+
+<PageTitle>Image scanning · BbScanner</PageTitle>
+
+<div class="bb-intro">
+    <h1>Image and file scanning</h1>
+    <p class="bb-subtitle">
+        The same decoder reads a still image. Nothing about the pipeline changes; only the tuning
+        does, because a one-shot decode can afford to be exhaustive. None of it opens the camera, so
+        a page that only scans images (<code>AutoStart="false"</code>, as here) never asks for camera
+        permission.
+    </p>
+</div>
+
+<div class="bb-demo bb-page-wide">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">Live</span>
+        <span class="bb-soft">No camera needed</span>
+    </div>
+
+    <div class="scan-sample">
+        <div class="scan-layout">
+            <div class="scan-view">
+                <BbScanner @ref="_scanner"
+                           AutoStart="false"
+                           ShowStatusBar="true"
+                           Formats="BbBarcodeFormat.All"
+                           EnableFileScanning="true"
+                           MaxImageFileSize="_maxFileSize"
+                           MaxSymbolsPerFrame="@(_everySymbol ? 16 : 1)"
+                           OnScan="HandleScan"
+                           OnError="e => _error = e" />
+
+                @if (_error is not null)
+                {
+                    <div class="bb-note bb-note-warn"><strong>@_error.Kind</strong> — @_error.Message</div>
+                }
+            </div>
+
+            <div class="scan-panels">
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Pick or drop an image</h3>
+                    <p class="bb-card-desc">
+                        The component ships a hidden file input and the plumbing to read it: the
+                        <em>Scan image</em> button in its control bar, or <em>Choose an image</em> here, which
+                        calls <code>OpenFilePickerAsync</code>. Dragging an image file onto the scanner does the
+                        same. Results arrive through <code>OnScan</code>; "No barcode found" or a refused file is
+                        shown as a notice on the scanner rather than raised as an error.
+                    </p>
+                    <div class="bb-toolbar">
+                        <button class="btn btn-primary" type="button" @onclick="OpenPicker">Choose an image</button>
+                        <button class="btn btn-secondary" type="button" @onclick="() => _results.Clear()" disabled="@(_results.Count == 0)">Clear</button>
+                    </div>
+                    <label class="bb-check">
+                        <input type="checkbox" id="every-symbol" @bind="_everySymbol" />
+                        Read every symbol in the image (<code>MaxSymbolsPerFrame="16"</code>)
+                    </label>
+                    <label class="bb-field">
+                        <span>Largest file accepted</span>
+                        <select id="max-file-size" value="@_maxFileSize" @onchange="OnMaxFileSizeChanged">
+                            <option value="1048576">1 MB</option>
+                            <option value="33554432">32 MB (default)</option>
+                            <option value="0">Any size (0)</option>
+                        </select>
+                        <small>
+                            <code>MaxImageFileSize</code>: a larger file is refused before it is decoded. Whatever
+                            this says, an image that declares more than about 268 megapixels is refused too, a file
+                            that is not an image is refused, and anything over 1600 pixels is scaled down first.
+                        </small>
+                    </label>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Blazor's InputFile</h3>
+                    <p class="bb-card-desc">
+                        An image the application already holds - from <code>InputFile</code>, an upload, a
+                        download - goes to <code>ScanImageAsync</code>, which decodes it in the browser like a
+                        picked file, under the same size limit, and returns every symbol in it (up to
+                        <code>maxSymbols</code>, 16 by default) instead of raising <code>OnScan</code>. A refused or
+                        unreadable image throws an <code>InvalidImage</code> error, shown under the scanner.
+                    </p>
+                    <InputFile id="scan-image-input" accept="image/*" OnChange="ScanUploadAsync" />
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Pixels the application has</h3>
+                    <p class="bb-card-desc">
+                        These skip image files entirely: each renders symbols into a pixel buffer, as a canvas
+                        or a generated image would give them, and hands it to the scanner with the scanner's
+                        symbologies and options. <code>DecodeImage</code> returns the first symbol it finds;
+                        <code>DecodeAllInImage</code> returns every one, here a QR Code and a Data Matrix side by
+                        side.
+                    </p>
+                    <div class="bb-toolbar">
+                        <button class="btn btn-secondary" type="button" @onclick="DecodeGeneratedImage">Decode a generated image</button>
+                        <button class="btn btn-secondary" type="button" @onclick="DecodeGeneratedSheet">Decode every symbol in a generated sheet</button>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <ResultLog Results="_results" OnClear="() => _results.Clear()" />
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Four ways in</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>The image comes from</th><th>Call</th><th>Results</th><th>A refused image</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key">The user, through the scanner</td><td>The <em>Scan image</em> button, dropping a file on the scanner, or <code>OpenFilePickerAsync</code> from your own button</td><td>Raised through <code>OnScan</code>, outlined and announced</td><td>Shown as a notice for a few seconds</td></tr>
+                <tr><td class="bb-table-key">An encoded file you hold</td><td><code>ScanImageAsync(stream)</code> or <code>ScanImageAsync(bytes, contentType)</code> - PNG, JPEG, WebP, anything the browser decodes</td><td>Returned, no events</td><td>Throws <code>BbScannerException</code>, kind <code>InvalidImage</code></td></tr>
+                <tr><td class="bb-table-key">Pixels you hold</td><td><code>DecodeImage</code> for the first symbol, <code>DecodeAllInImage</code> for all of them, from RGBA, BGRA, RGB or gray pixels</td><td>Returned, no events</td><td>-</td></tr>
+                <tr><td class="bb-table-key">The running camera</td><td><code>ScanCurrentFrameAsync</code>, the current frame at full resolution - see <a href="camera">camera</a></td><td>Returned, no events</td><td>-</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Why still images differ</h3>
+    <p class="bb-card-desc">
+        A camera gets another chance in fifty milliseconds, so a live frame should give up
+        early. A file gets one chance, so every still image - picked, dropped, scanned or captured - is
+        decoded with the trade-offs of <code>BbScannerOptions.ForStillImages()</code>: at least 60 scan
+        lines instead of 15, <code>TryHarder</code> for the exhaustive detector path and a sweep of linear
+        symbols round every ten degrees, <code>AllowInverted</code> for light-on-dark symbols, the whole
+        image rather than the <code>Region</code>, and no duplicate suppression. The scanner's
+        <code>Formats</code> and its other options still apply. The same preset serves the headless decoder:
+    </p>
+    <pre class="bb-code"><span class="k">var</span> options = BbScannerOptions.ForStillImages();
+options.Formats = BbBarcodeFormat.QrCode;
+
+<span class="k">using var</span> decoder = <span class="k">new</span> BbBarcodeDecoder(options);
+<span class="k">var</span> result = decoder.Decode(pixels, width, height, BbPixelFormat.Rgba32);</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Large photographs</h3>
+    <p class="bb-card-desc">
+        A twelve megapixel photo carries no more barcode detail than a two megapixel one,
+        so the component asks the browser to scale anything larger than 1600 pixels on its
+        longest edge before it crosses into managed code. That alone is the difference
+        between a snappy decode and a visible pause on a phone. A photo is turned upright by its
+        EXIF orientation first, and a transparent image is read as if printed on white, which is what
+        a code generator's PNG means.
+    </p>
+</div>
+
+@code {
+    /// <summary>
+    /// Decodes a buffer the page owns, through <see cref="BbScanner.DecodeImage"/>. No
+    /// camera and no file picker are involved.
+    /// </summary>
+    private void DecodeGeneratedImage()
+    {
+        _error = null;
+
+        var sample = SampleCatalog.All.First(s => s.Format == BbBarcodeFormat.QrCode);
+        using var image = Bit.BbScanner.TestKit.SyntheticImage.FromMatrix(sample.Matrix!, scale: 6);
+
+        // Expand to the packed RGBA an application would normally get from a canvas.
+        var rgba = new byte[image.Width * image.Height * 4];
+        for (var i = 0; i < image.Width * image.Height; i++)
+        {
+            rgba[(i * 4) + 0] = image.Pixels[i];
+            rgba[(i * 4) + 1] = image.Pixels[i];
+            rgba[(i * 4) + 2] = image.Pixels[i];
+            rgba[(i * 4) + 3] = 255;
+        }
+
+        var result = _scanner?.DecodeImage(
+            rgba, image.Width, image.Height, BbPixelFormat.Rgba32);
+
+        if (result is not null)
+        {
+            _results.Insert(0, result);
+        }
+        else
+        {
+            _error = new BbScannerException(BbScannerErrorKind.Unknown, "The generated image did not decode.");
+        }
+    }
+
+    /// <summary>
+    /// Decodes a buffer holding two symbols side by side through <see cref="BbScanner.DecodeAllInImage"/>,
+    /// which returns every symbol rather than the first.
+    /// </summary>
+    private void DecodeGeneratedSheet()
+    {
+        _error = null;
+
+        var qr = SampleCatalog.All.First(s => s.Format == BbBarcodeFormat.QrCode);
+        var dataMatrix = SampleCatalog.All.First(s => s.Format == BbBarcodeFormat.DataMatrix);
+        using var left = Bit.BbScanner.TestKit.SyntheticImage.FromMatrix(qr.Matrix!, scale: 6);
+        using var right = Bit.BbScanner.TestKit.SyntheticImage.FromMatrix(dataMatrix.Matrix!, scale: 6);
+        using var sheet = BbLuminanceBuffer.Rent(left.Width + right.Width, Math.Max(left.Height, right.Height));
+        sheet.Pixels.Fill(255);
+        Bit.BbScanner.TestKit.ImageTransforms.Paste(left, sheet, 0, 0);
+        Bit.BbScanner.TestKit.ImageTransforms.Paste(right, sheet, left.Width, 0);
+
+        var rgba = Bit.BbScanner.TestKit.ImageTransforms.ToRgba(sheet, tint: false);
+        var results = _scanner?.DecodeAllInImage(rgba, sheet.Width, sheet.Height, BbPixelFormat.Rgba32) ?? [];
+
+        if (results.Count == 0)
+        {
+            _error = new BbScannerException(BbScannerErrorKind.Unknown, "The generated sheet did not decode.");
+        }
+
+        _results.InsertRange(0, results);
+    }
+
+    private void OnMaxFileSizeChanged(ChangeEventArgs args)
+    {
+        if (long.TryParse(args.Value?.ToString(), out var bytes))
+        {
+            _maxFileSize = bytes;
+        }
+    }
+
+    /// <summary>
+    /// Scans a file chosen through Blazor's own <see cref="InputFile"/>, through
+    /// <see cref="BbScanner.ScanImageAsync(Stream, int, CancellationToken)"/>.
+    /// </summary>
+    private async Task ScanUploadAsync(InputFileChangeEventArgs args)
+    {
+        _error = null;
+        if (_scanner is null)
+        {
+            return;
+        }
+
+        try
+        {
+            // Zero is no limit to the scanner, but no bytes at all to OpenReadStream.
+            var limit = _scanner.MaxImageFileSize > 0 ? _scanner.MaxImageFileSize : long.MaxValue;
+            await using var stream = args.File.OpenReadStream(limit);
+            var results = await _scanner.ScanImageAsync(stream);
+            if (results.Count == 0)
+            {
+                _error = new BbScannerException(BbScannerErrorKind.Unknown, $"No barcode found in {args.File.Name}.");
+            }
+
+            _results.InsertRange(0, results);
+        }
+        catch (BbScannerException ex)
+        {
+            _error = ex;
+        }
+        catch (IOException ex)
+        {
+            // InputFile's own size limit, which is the scanner's.
+            _error = new BbScannerException(BbScannerErrorKind.InvalidImage, ex.Message, ex);
+        }
+    }
+
+    private readonly List<BbBarcodeResult> _results = [];
+    private BbScanner? _scanner;
+    private BbScannerException? _error;
+    private bool _everySymbol;
+    private long _maxFileSize = 32 * 1024 * 1024;
+
+    private Task OpenPicker() => _scanner is null ? Task.CompletedTask : _scanner.OpenFilePickerAsync();
+
+    private void HandleScan(BbBarcodeResult result)
+    {
+        _error = null;
+        _results.Insert(0, result);
+        StateHasChanged();
+    }
+}

@@ -15,6 +15,19 @@
     align-items: center;
     min-width: rem2(176px);
     flex-direction: column;
+    justify-content: center;
+}
+
+.orders {
+    padding: 1rem;
+    position: relative;
+    border: 1px solid gray;
+}
+
+.order-list {
+    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
 }
 
 // The classes the Style & Class example hands to the components themselves. They are written as
@@ -24,14 +37,8 @@
     padding: 1rem;
     border-radius: 8px;
     background-color: darkslateblue;
-
-    .bit-ldn-rng-chl {
-        border-top-color: gold;
-    }
-
-    .bit-ldn-lbl {
-        color: gold;
-    }
+    --bit-Loading-color: gold;
+    --bit-Loading-label-color: gold;
 }
 
 ::deep .custom-root {

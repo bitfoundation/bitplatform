@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <Import Project="../../Bit.Build.props" />
+    <Import Project="../Bit.BlazorUI.PackageValidation.props" />
+    <Import Project="../Bit.BlazorUI.TrimAnalysis.props" />
 
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
@@ -8,10 +10,6 @@
         <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net10.0'">
-            BeforeBuildTasks;
-            $(ResolveStaticWebAssetsInputsDependsOn)
-        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -36,13 +34,25 @@
         <ScssFiles Include="**\*.scss" />
     </ItemGroup>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net10.0'">
-        <CallTarget Targets="InstallNodejsDependencies" />
-        <CallTarget Targets="BuildCss" />
+    <Target Name="BeforeBuildTasks" DependsOnTargets="InstallNodejsDependencies;BuildCss" />
+
+    <Target Name="IncludeGeneratedAssets" BeforeTargets="ResolveProjectStaticWebAssets" DependsOnTargets="BeforeBuildTasksOnce" Condition=" '$(DesignTimeBuild)' != 'true' ">
+        <ItemGroup>
+            <Content Include="wwwroot\styles\*.css*" Exclude="@(Content);@(None)" />
+        </ItemGroup>
     </Target>
 
-    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
-        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    <Target Name="BeforeBuildTasksOnce">
+        <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="BeforeBuildTasks" RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained" />
+    </Target>
+
+    <Target Name="BeforeBuildTasksOnCrossTargeting" BeforeTargets="DispatchToInnerBuilds" DependsOnTargets="BeforeBuildTasks" Condition=" '$(IsCrossTargetingBuild)' == 'true' AND '$(DesignTimeBuild)' != 'true' " />
+
+    <!-- A CI build installs exactly what package-lock.json pins (npm ci), so the tools a package is built with are the
+         ones reviewed; a local build keeps npm install, which also takes in a package.json edited by hand. -->
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
+        <Exec Condition=" '$(CI)' == 'true' " Command="npm ci" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(CI)' != 'true' " Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
     <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.assets.css">

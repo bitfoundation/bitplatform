@@ -14,7 +14,6 @@
                     }
 
                     <BitPhoneInput @bind-Value="sendModel.PhoneNumber"
-                                   DefaultCountry="@BitCountries.Current" FullWidth
                                    Label="@Localizer[nameof(AppStrings.NewPhoneNumber)]"
                                    Placeholder="@Localizer[nameof(AppStrings.NewPhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => sendModel.PhoneNumber)" />
@@ -48,19 +47,14 @@
 
                 <BitStack FillContent>
                     <BitPhoneInput @bind-Value="changeModel.PhoneNumber"
-                                   IsEnabled="isPhoneNumberUnavailable"
-                                   DefaultCountry="@BitCountries.Current" FullWidth
+                                   Disabled="isPhoneNumberUnavailable is false"
                                    Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                    Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.PhoneNumber)" />
 
                     <BitOtpInput @bind-Value="changeModel.Token"
+                                 IsLoading="isWaiting"
                                  AutoFocus
-                                 Length="6"
-                                 NormalizeDigits
-                                 Size="BitSize.Large"
-                                 Type="BitInputType.Number"
-                                 InputMode="BitInputMode.Tel"
                                  OnFill="WrapHandled(ChangePhoneNumber)"
                                  Label="@Localizer[nameof(AppStrings.PhoneToken)]" />
                     <ValidationMessage For="@(() => changeModel.Token)" />

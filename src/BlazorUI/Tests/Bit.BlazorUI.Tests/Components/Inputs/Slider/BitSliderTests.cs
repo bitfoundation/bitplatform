@@ -1,8 +1,10 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -80,11 +82,11 @@ public class BitSliderTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitSliderShouldRespectIsEnabled(bool isEnabled)
+    public void BitSliderShouldRespectDisabled(bool isEnabled)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var slider = com.Find(".bit-sld");
@@ -183,7 +185,6 @@ public class BitSliderTests : BunitTestContext
     #region Color, size and thumb label classes
 
     [TestMethod,
-        DataRow(null, "bit-sld-pri"),
         DataRow(BitColor.Primary, "bit-sld-pri"),
         DataRow(BitColor.Secondary, "bit-sld-sec"),
         DataRow(BitColor.Tertiary, "bit-sld-ter"),
@@ -202,7 +203,7 @@ public class BitSliderTests : BunitTestContext
         DataRow(BitColor.SecondaryBorder, "bit-sld-sbr"),
         DataRow(BitColor.TertiaryBorder, "bit-sld-tbr")
     ]
-    public void BitSliderShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitSliderShouldRespectColor(BitColor color, string expectedClass)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
@@ -213,12 +214,11 @@ public class BitSliderTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(null, "bit-sld-md"),
         DataRow(BitSize.Small, "bit-sld-sm"),
         DataRow(BitSize.Medium, "bit-sld-md"),
         DataRow(BitSize.Large, "bit-sld-lg")
     ]
-    public void BitSliderShouldRespectSize(BitSize? size, string expectedClass)
+    public void BitSliderShouldRespectSize(BitSize size, string expectedClass)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
@@ -226,6 +226,27 @@ public class BitSliderTests : BunitTestContext
         });
 
         Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var com = RenderComponent<BitSlider>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Slider-* variables restyle the default while
+        // an explicit value - which does publish its class - wins over them.
+        var root = com.Find(".bit-sld");
+        var published = new[]
+        {
+            "bit-sld-pri", "bit-sld-sec", "bit-sld-ter", "bit-sld-inf", "bit-sld-suc", "bit-sld-wrn", "bit-sld-swr", "bit-sld-err",
+            "bit-sld-pbg", "bit-sld-sbg", "bit-sld-tbg", "bit-sld-pfg", "bit-sld-sfg", "bit-sld-tfg", "bit-sld-pbr", "bit-sld-sbr", "bit-sld-tbr",
+            "bit-sld-sm", "bit-sld-md", "bit-sld-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod,
@@ -537,7 +558,8 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ValueFormat, "0 %");
         });
 
-        Assert.AreEqual("69 %", com.Find(".bit-sld-vlb").TextContent.Trim());
+        // The format is applied in the reader's culture, whose percent sign is not always "%" (fa-IR, ar-SA).
+        Assert.AreEqual(0.69D.ToString("0 %", CultureInfo.CurrentCulture), com.Find(".bit-sld-vlb").TextContent.Trim());
     }
 
     [TestMethod]
@@ -551,6 +573,159 @@ public class BitSliderTests : BunitTestContext
         });
 
         Assert.AreEqual("Step 3", com.Find(".bit-sld-vlb").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldHoldOpenTheWidthOfTheLongestValueLabel()
+    {
+        // A label that grows with the number it carries would resize the track it stands beside, moving the
+        // rail out from under the very thumb being dragged. The two ends of the scale are the longest a
+        // numeric label normally reads, so their width is what the label holds open.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, -5D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.Value, 7D);
+        });
+
+        // "100" is three characters, one more than "-5".
+        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:3ch");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldMeasureTheReservedWidthOnTheFormattedText()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Value, 450D);
+            parameters.Add(p => p.GetValueText, (double v) => $"{v:0} kg");
+        });
+
+        // "1000 kg" - the reservation follows the text that is actually drawn, not the bare number.
+        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:7ch");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldMeasureTheReservedWidthOverEveryValueAGetValueTextReads()
+    {
+        // A numeric label is longest at one end of the scale or the other, but text built by hand promises
+        // nothing of the kind: here the widest word sits in the middle, and reserving only the ends would
+        // leave the label - and the track beside it - growing as the thumb passes over it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.Value, 0D);
+            parameters.Add(p => p.GetValueText, (double v) => new[] { "Low", "Fair", "Excellent", "Fine", "Top" }[(int)v]);
+        });
+
+        // "Excellent" is nine characters; the two ends read three.
+        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:9ch");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldMeasureTheLastValueAStepReaches()
+    {
+        // A range that is not a whole number of steps stops short of Max on its last step - here 9, on a scale
+        // to 10 stepping by 3 - and that value is as pickable as any other, so it is measured too.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.Step, 3D);
+            parameters.Add(p => p.Value, 0D);
+            parameters.Add(p => p.GetValueText, (double v) => v == 9 ? "Very high" : $"{v:0}");
+        });
+
+        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:9ch");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotWalkAScaleTooFineToMeasure()
+    {
+        // A scale with more values than anyone would label one by one is measured at its ends and one step in
+        // from each, rather than walked from one end to the other.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Value, 0D);
+            parameters.Add(p => p.GetValueText, (double v) => v == 500 ? "the middle of it" : $"{v:0}");
+        });
+
+        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:4ch");
+    }
+
+    [TestMethod,
+        DataRow(0D, 1D, 0.25D, 4),   // "0" and "1" at the ends, "0.25" between them
+        DataRow(-1D, 1D, 0.5D, 4),   // "-1" and "1" at the ends, "-0.5" between them
+        DataRow(0D, 100D, 0.25D, 5), // too fine to walk, and "99.75" one step in from the far end
+        DataRow(0D, 4D, 1D, 1)       // a whole-numbered scale reads no wider than its ends
+    ]
+    public void BitSliderShouldMeasureTheFractionalValuesOfANumericScale(double min, double max, double step, int chars)
+    {
+        // A numeric label is not longest at the ends of the scale when the step is fractional: the decimals
+        // only appear between them, and reserving the ends alone would leave the track resizing mid-drag.
+        // The labels are written in the thread's culture, which under fa-IR and ar-SA puts an invisible bidi mark before
+        // the minus sign: it takes no room, so the counts are the same in all of them.
+        var originalCulture = CultureInfo.CurrentCulture;
+        try
+        {
+            foreach (var culture in new[] { CultureInfo.InvariantCulture, CultureInfo.GetCultureInfo("fa-IR"), CultureInfo.GetCultureInfo("ar-SA") })
+            {
+                CultureInfo.CurrentCulture = culture;
+
+                var com = RenderComponent<BitSlider>(parameters =>
+                {
+                    parameters.Add(p => p.Min, min);
+                    parameters.Add(p => p.Max, max);
+                    parameters.Add(p => p.Step, step);
+                    parameters.Add(p => p.Value, min);
+                });
+
+                StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), $"--bit-sld-vlb-min:{chars}ch", culture.Name);
+            }
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLetTheCallersValueLabelStyleWinOverTheReservedWidth()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, 3D);
+            parameters.Add(p => p.Styles, new BitSliderClassStyles { ValueLabel = "color: tomato;" });
+        });
+
+        var style = com.Find(".bit-sld-vlb").GetAttribute("style");
+
+        // The reservation is written first, so anything the caller sets lands after it and wins.
+        StringAssert.StartsWith(style, "--bit-sld-vlb-min:");
+        StringAssert.Contains(style, "color: tomato;");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldReserveTheSameWidthOnBothEndsOfARange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.LowerValue, 2D);
+            parameters.Add(p => p.UpperValue, 700D);
+        });
+
+        var labels = com.FindAll(".bit-sld-vlb");
+
+        Assert.AreEqual(2, labels.Count);
+        StringAssert.Contains(labels[0].GetAttribute("style"), "--bit-sld-vlb-min:4ch");
+        StringAssert.Contains(labels[1].GetAttribute("style"), "--bit-sld-vlb-min:4ch");
     }
 
     [TestMethod]
@@ -795,7 +970,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DefaultValue, 2D);
         });
 
@@ -929,7 +1104,7 @@ public class BitSliderTests : BunitTestContext
         var focusedIn = 0;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnFocusIn, () => focusedIn++);
         });
 
@@ -1793,6 +1968,181 @@ public class BitSliderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSliderShouldNotGenerateMarksForAMarkStepAlone()
+    {
+        // An interval only spaces the marks something else asks for. Marks are also what RestrictToMarks
+        // snaps to, so a MarkStep set on its own must not turn a freely stepping slider into a snapping one.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.Step, 1D);
+            parameters.Add(p => p.MarkStep, 25D);
+            parameters.Add(p => p.RestrictToMarks, true);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-sld-mrk").Count);
+
+        com.Find(".bit-sld-inp").Input("37");
+
+        Assert.AreEqual(37, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldGenerateMarksForShowMarkLabelsAlone()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.ShowMarkLabels, true);
+        });
+
+        Assert.AreEqual(5, com.FindAll(".bit-sld-mrk").Count);
+        Assert.AreEqual(5, com.FindAll(".bit-sld-mlb").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLabelAnUnlabelledExplicitMarkWithItsValue()
+    {
+        var marks = new List<BitSliderMark>
+        {
+            new(0),
+            new(2, "Halfway") { Class = "own", Style = "color: tomato;" },
+            new(4)
+        };
+
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.ShowMarkLabels, true);
+            parameters.Add(p => p.ValueFormat, "0.0");
+            parameters.Add(p => p.Marks, marks);
+        });
+
+        var labels = com.FindAll(".bit-sld-mlb");
+
+        Assert.AreEqual(3, labels.Count);
+
+        // A label is written in the reader's culture, as the value label is ("0,0" under de-DE).
+        Assert.AreEqual(0D.ToString("0.0", CultureInfo.CurrentCulture), labels[0].TextContent.Trim());
+
+        // A mark that brought a label of its own keeps it, together with its class and its style.
+        Assert.AreEqual("Halfway", labels[1].TextContent.Trim());
+        Assert.IsTrue(labels[1].ClassList.Contains("own"));
+        StringAssert.Contains(labels[1].GetAttribute("style"), "color: tomato;");
+
+        Assert.AreEqual(4D.ToString("0.0", CultureInfo.CurrentCulture), labels[^1].TextContent.Trim());
+
+        // The list belongs to the caller - it may well be a static one shared by several sliders - so the
+        // labelling happens on copies and never writes back into it.
+        Assert.IsNull(marks[0].Label);
+        Assert.IsNull(marks[^1].Label);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldGenerateMarksForAMarkLabelTemplateAlone()
+    {
+        // A template to label the marks with has no other purpose either, so it asks for them too.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 3D);
+            parameters.Add(p => p.MarkLabelTemplate, (BitSliderMark m) => $"<i>#{m.Value}</i>");
+        });
+
+        Assert.AreEqual(4, com.FindAll(".bit-sld-mrk").Count);
+        Assert.AreEqual(4, com.FindAll(".bit-sld-mlb").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotReserveAMarkLabelRowForATemplateWithNoMarks()
+    {
+        // A template with nothing to label - no marks given, or none inside Min..Max - leaves no empty row
+        // holding open the room under the track.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.Marks, new List<BitSliderMark> { new(10), new(-3) });
+            parameters.Add(p => p.MarkLabelTemplate, (BitSliderMark m) => $"<i>#{m.Value}</i>");
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-sld-mrk").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-sld-mks").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLabelEveryMarkWithTheMarkLabelTemplate()
+    {
+        // A template labels every mark, including the ones carrying no label of their own, and it is handed
+        // the mark rather than the bare value - so it can read both.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(2, "Halfway"), new BitSliderMark(4)]);
+            parameters.Add(p => p.MarkLabelTemplate,
+                           (BitSliderMark m) => $"<span class='custom-mark-label'>{m.Value}:{m.Label}</span>");
+        });
+
+        var labels = com.FindAll(".bit-sld-mlb .custom-mark-label");
+
+        Assert.AreEqual(3, labels.Count);
+        Assert.AreEqual("0:", labels[0].TextContent.Trim());
+
+        // It wins over the label the mark brought with it.
+        Assert.AreEqual("2:Halfway", labels[1].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPreferTheMarkLabelTemplateOverTheGeneratedNumbers()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 2D);
+            parameters.Add(p => p.ShowMarkLabels, true);
+            parameters.Add(p => p.MarkLabelTemplate, (BitSliderMark m) => $"<i>#{m.Value}</i>");
+        });
+
+        var labels = com.FindAll(".bit-sld-mlb");
+
+        Assert.AreEqual(3, labels.Count);
+        Assert.AreEqual("#0", labels[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldKeepTheMarkLabelsOutOfTheAccessibilityTree()
+    {
+        // The marks are decoration: the value they stand for is announced by the thumb itself, and a row of
+        // them read out one by one would be noise in front of it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 2D);
+            parameters.Add(p => p.ShowMarkLabels, true);
+        });
+
+        foreach (var mark in com.FindAll(".bit-sld-mrk"))
+        {
+            Assert.AreEqual("true", mark.GetAttribute("aria-hidden"));
+        }
+
+        foreach (var label in com.FindAll(".bit-sld-mlb"))
+        {
+            Assert.AreEqual("true", label.GetAttribute("aria-hidden"));
+        }
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLeaveTheExplicitMarksUnlabelledWithoutShowMarkLabels()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(4)]);
+        });
+
+        Assert.AreEqual(2, com.FindAll(".bit-sld-mrk").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-sld-mlb").Count);
+    }
+
+    [TestMethod]
     public void BitSliderShouldCapTheNumberOfGeneratedMarks()
     {
         // A mark per step of a very fine slider would be thousands of elements nobody can tell apart.
@@ -1854,7 +2204,8 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ValueFormat, "0.0");
         });
 
-        Assert.AreEqual("0.0", com.FindAll(".bit-sld-mlb")[0].TextContent.Trim());
+        // The value is written in the reader's culture, and so is the mark label ("0,0" under de-DE).
+        Assert.AreEqual(0D.ToString("0.0", CultureInfo.CurrentCulture), com.FindAll(".bit-sld-mlb")[0].TextContent.Trim());
     }
 
     [TestMethod]
@@ -2815,7 +3166,7 @@ public class BitSliderTests : BunitTestContext
         {
             parameters.Add(p => p.IsRanged, true);
             parameters.Add(p => p.DraggableTrack, true);
-            parameters.Add(p => p.IsEnabled, enabled);
+            parameters.Add(p => p.Disabled, enabled is false);
             parameters.Add(p => p.ReadOnly, readOnly);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 6D);
@@ -3013,6 +3364,126 @@ public class BitSliderTests : BunitTestContext
 
         Assert.IsTrue(bar.ClassList.Contains("custom-bar"));
         StringAssert.Contains(bar.GetAttribute("style"), "opacity:0.5");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldHandTheFocusBackWhenABandDragEnds()
+    {
+        // Pressing the band focuses it, as pressing any input does, and the band is the one input of the
+        // three that is deliberately outside the accessibility tree. Left there, the focus would go on moving
+        // the whole range on every arrow key with nothing to announce it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        var bar = com.Find(".bit-sld-inp-bar");
+
+        bar.PointerDown();
+        bar.Input("50");
+        bar.Change("50");
+
+        Assert.AreEqual(1, CountFocusCalls());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldHandTheFocusBackFromABandPressThatMovedNothing()
+    {
+        // A press that moves the band nowhere fires no change at all, so the pointer is what the focus comes
+        // back on.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+        });
+
+        var bar = com.Find(".bit-sld-inp-bar");
+
+        bar.PointerDown();
+        bar.PointerUp();
+
+        Assert.AreEqual(1, CountFocusCalls());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldHandTheFocusBackFromACancelledBandPress()
+    {
+        // A touch on the band that turns into a scroll is taken over by the browser: a pointercancel, with
+        // neither a pointerup nor a change behind it. The focus must not be left on the hidden band.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+        });
+
+        var bar = com.Find(".bit-sld-inp-bar");
+
+        bar.PointerDown();
+        bar.TriggerEvent("onpointercancel", new PointerEventArgs());
+
+        Assert.AreEqual(1, CountFocusCalls());
+
+        // The press is over, so a later pointerup has nothing left to hand back.
+        bar.PointerUp();
+
+        Assert.AreEqual(1, CountFocusCalls());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldHandTheFocusBackOnlyOncePerBandPress()
+    {
+        // The pointer and the change are the two ends of one gesture, so whichever arrives first hands the
+        // focus back and the other finds nothing left to do.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        var bar = com.Find(".bit-sld-inp-bar");
+
+        bar.PointerDown();
+        bar.Input("50");
+        bar.PointerUp();
+        bar.Change("50");
+
+        Assert.AreEqual(1, CountFocusCalls());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotTakeTheFocusWithoutABandPress()
+    {
+        // Nothing but a press on the band puts the focus anywhere it has to be taken back from, so a thumb
+        // being dragged is left holding it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("30");
+        com.Find(".bit-sld-inp-lwr").Change("30");
+
+        Assert.AreEqual(0, CountFocusCalls());
+    }
+
+    private int CountFocusCalls()
+    {
+        return Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase));
     }
 
     #endregion
@@ -3243,6 +3714,29 @@ public class BitSliderTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitSliderShouldKeepTheValueLabelsOutOfTheAccessibilityTree(bool ranged)
+    {
+        // The thumb beside a value label already announces the very number the label reads, so a reader given
+        // both would say it twice - and on a range, four times over two thumbs.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.ShowValue, true);
+            parameters.Add(p => p.DefaultValue, 4D);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+        });
+
+        var labels = com.FindAll(".bit-sld-vlb");
+
+        Assert.AreEqual(ranged ? 2 : 1, labels.Count);
+        Assert.IsTrue(labels.All(l => l.GetAttribute("aria-hidden") == "true"));
+    }
+
+    [TestMethod,
         DataRow(false, null),
         DataRow(true, "vertical")
     ]
@@ -3346,6 +3840,144 @@ public class BitSliderTests : BunitTestContext
         });
 
         Assert.AreEqual("3", com.Find(".bit-sld-inp").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldDescribeItselfWithTheAriaDescription()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Budget");
+            parameters.Add(p => p.AriaDescription, "In thousands of euros.");
+        });
+
+        var description = com.Find(".bit-sld-dsc");
+
+        Assert.AreEqual("In thousands of euros.", description.TextContent);
+        Assert.AreEqual(description.Id, com.Find(".bit-sld-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPointBothThumbsOfARangeAtTheSameDescription()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.AriaDescription, "The band to include.");
+        });
+
+        var id = com.Find(".bit-sld-dsc").Id;
+
+        Assert.AreEqual(id, com.Find(".bit-sld-inp-lwr").GetAttribute("aria-describedby"));
+        Assert.AreEqual(id, com.Find(".bit-sld-inp-upr").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotRenderADescriptionWhenThereIsNone()
+    {
+        var com = RenderComponent<BitSlider>();
+
+        Assert.AreEqual(0, com.FindAll(".bit-sld-dsc").Count);
+        Assert.IsNull(com.Find(".bit-sld-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldKeepADescriptionTheCallerPointedTheInputAt()
+    {
+        // A validation message or a hint the caller has associated with the field by hand must survive the one
+        // the slider adds, since aria-describedby takes a list of ids rather than a single one.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.AriaDescription, "In thousands.");
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-describedby", "external-hint" } });
+        });
+
+        Assert.AreEqual($"external-hint {com.Find(".bit-sld-dsc").Id}", com.Find(".bit-sld-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldKeepTheCallersDescriptionWhenItAddsNoneOfItsOwn()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-describedby", "external-hint" } });
+        });
+
+        Assert.AreEqual("external-hint", com.Find(".bit-sld-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldGroupTheTwoThumbsOfARange()
+    {
+        // The WAI-ARIA multi-thumb pattern asks for the two sliders to be wrapped in a named group, so that
+        // what the pair selects together has a word of its own.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Label, "Price range");
+        });
+
+        var root = com.Find(".bit-sld");
+
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.AreEqual(com.Find(".bit-sld-lbl").Id, root.GetAttribute("aria-labelledby"));
+        Assert.IsNull(root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNameTheGroupAfterItsAriaLabel()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Label, "Price range");
+            parameters.Add(p => p.AriaLabel, "Price, in euros");
+        });
+
+        var root = com.Find(".bit-sld");
+
+        Assert.AreEqual("Price, in euros", root.GetAttribute("aria-label"));
+        Assert.IsNull(root.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLetAHandWrittenNameWinOverTheGroupOne()
+    {
+        // The group attributes are merged into the splatted ones rather than written over them, so a role or a
+        // name put on the slider by hand still reaches the root - and nothing else it carries is lost.
+        var com = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitSlider>(0);
+            builder.AddAttribute(1, nameof(BitSlider.IsRanged), true);
+            builder.AddAttribute(2, nameof(BitSlider.Label), "Price");
+            builder.AddAttribute(3, "aria-label", "written by hand");
+            builder.AddAttribute(4, "data-probe", "yes");
+            builder.CloseComponent();
+        });
+
+        var root = com.Find(".bit-sld");
+
+        Assert.AreEqual("written by hand", root.GetAttribute("aria-label"));
+        Assert.IsNull(root.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.AreEqual("yes", root.GetAttribute("data-probe"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotGroupASingleThumb()
+    {
+        // One control needs no group around it, and an extra one is one more thing to step through.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Volume");
+            parameters.Add(p => p.AriaLabel, "Volume, in percent");
+        });
+
+        var root = com.Find(".bit-sld");
+
+        Assert.IsNull(root.GetAttribute("role"));
+        Assert.IsNull(root.GetAttribute("aria-label"));
+        Assert.IsNull(root.GetAttribute("aria-labelledby"));
     }
 
     #endregion
@@ -3575,6 +4207,33 @@ public class BitSliderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSliderShouldMarkARequiredSliderOnItsLabel()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Days");
+            parameters.Add(p => p.Required, true);
+        });
+
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-sld-req"));
+        Assert.AreEqual("true", com.Find(".bit-sld-inp").GetAttribute("aria-required"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotMarkADisabledSliderAsRequired()
+    {
+        // A control that cannot be filled in is not one the reader is being asked to fill in.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Days");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        Assert.IsFalse(com.Find(".bit-sld").ClassList.Contains("bit-sld-req"));
+    }
+
+    [TestMethod]
     public void BitSliderShouldNotValidateWhenNoValidateIsSet()
     {
         // The value of the fixture starts outside the range its model asks for, so the submit below leaves an
@@ -3589,6 +4248,172 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual(1, com.Instance.InvalidCount);
         Assert.IsFalse(com.Find(".bit-sld").ClassList.Contains("bit-inv"));
         Assert.IsNull(com.Find(".bit-sld-inp").GetAttribute("aria-invalid"));
+    }
+
+    #endregion
+    #region Disabled contract, focus and base parameters
+
+    [TestMethod,
+        DataRow(false, true),
+        DataRow(false, false),
+        DataRow(true, true),
+        DataRow(true, false)
+    ]
+    public void BitSliderShouldPairTheDisabledAttributesOfItsInputs(bool ranged, bool disabled)
+    {
+        // A native control rendered disabled writes disabled and aria-disabled both, so :disabled and
+        // [aria-disabled="true"] each find it - every thumb of a range alike - and the root says so once.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.Disabled, disabled);
+        });
+
+        Assert.AreEqual(disabled, com.Find(".bit-sld").ClassList.Contains("bit-dis"));
+
+        var inputs = com.FindAll(".bit-sld-inp");
+
+        Assert.AreEqual(ranged ? 2 : 1, inputs.Count);
+
+        foreach (var input in inputs)
+        {
+            Assert.AreEqual(disabled, input.HasAttribute("disabled"));
+            Assert.AreEqual(disabled ? "true" : null, input.GetAttribute("aria-disabled"));
+        }
+    }
+
+    [TestMethod]
+    public void BitSliderShouldKeepThePagesAriaDisabledOnTheInputWhileEnabled()
+    {
+        // The input writes its own aria-disabled after the splat of the InputHtmlAttributes, so the value the page
+        // wrote there is carried over rather than overwritten with the parameter's null.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-disabled", "true" } });
+        });
+
+        var input = com.Find(".bit-sld-inp");
+
+        Assert.IsFalse(input.HasAttribute("disabled"));
+        Assert.AreEqual("true", input.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod,
+        DataRow(true, 0),
+        DataRow(false, 1)
+    ]
+    public void BitSliderShouldDropTheSplattedActivationHandlersWhileDisabled(bool disabled, int expected)
+    {
+        // A screen reader activates what it announces by dispatching a click, which pointer-events: none does not
+        // stop, so a disabled slider drops the page's handlers of the activating events (see
+        // BitComponentBase.DisabledAwareHtmlAttributes) rather than running them for a state it announces as unavailable.
+        var clicks = 0;
+
+        var com = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitSlider>(0);
+            builder.AddAttribute(1, nameof(BitSlider.Disabled), disabled);
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
+            builder.CloseComponent();
+        });
+
+        try
+        {
+            com.Find(".bit-sld").Click();
+        }
+        catch (MissingEventHandlerException) { }
+
+        Assert.AreEqual(expected, clicks);
+    }
+
+    [TestMethod]
+    public async Task BitSliderFocusAsyncShouldLandOnTheLowerThumb()
+    {
+        // FocusAsync is pointed at the input that carries the value of a plain slider, and at the lower one of a
+        // ranged slider, which is the first of its two tab stops - and FocusUpperAsync at the other one.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+        });
+
+        Assert.AreEqual(com.Instance.SliderInputElement.Id, com.Instance.InputElement.Id);
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync().AsTask());
+
+        var focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        Assert.AreEqual(1, focuses.Count);
+        Assert.AreEqual(com.Instance.SliderInputElement.Id, ((ElementReference)focuses[0].Arguments[0]!).Id);
+
+        await com.InvokeAsync(() => com.Instance.FocusUpperAsync().AsTask());
+
+        focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        Assert.AreEqual(2, focuses.Count);
+        Assert.AreEqual(com.Instance.UpperSliderInputElement.Id, ((ElementReference)focuses[1].Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRenderTheBaseParametersOnItsRoot()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Id, "slider-id");
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { { "data-test", "slider" } });
+        });
+
+        var root = com.Find(".bit-sld");
+
+        Assert.AreEqual("slider-id", root.Id);
+        Assert.AreEqual("slider", root.GetAttribute("data-test"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldAnnounceTheOrientationOfBothThumbsOfAVerticalRange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.IsVertical, true);
+        });
+
+        foreach (var input in com.FindAll(".bit-sld-inp"))
+        {
+            Assert.AreEqual("vertical", input.GetAttribute("aria-orientation"));
+        }
+
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-sld-rgd-vrt"));
+    }
+
+    [TestMethod]
+    public void BitSliderReadOnlyRangeShouldRefuseAChangeOfEitherThumb()
+    {
+        var changed = 0;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+            parameters.Add(p => p.OnRangeChange, (BitSliderRangeValue _) => changed++);
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("4");
+        com.Find(".bit-sld-inp-upr").Input("8");
+
+        Assert.AreEqual(0, changed);
+        Assert.AreEqual(2, com.Instance.LowerValue);
+        Assert.AreEqual(6, com.Instance.UpperValue);
+
+        // Both inputs are pinned at their own value, and still announce that they are read-only.
+        foreach (var input in com.FindAll(".bit-sld-inp"))
+        {
+            Assert.AreEqual(input.GetAttribute("value"), input.GetAttribute("min"));
+            Assert.AreEqual(input.GetAttribute("value"), input.GetAttribute("max"));
+            Assert.AreEqual("true", input.GetAttribute("aria-readonly"));
+        }
     }
 
     #endregion

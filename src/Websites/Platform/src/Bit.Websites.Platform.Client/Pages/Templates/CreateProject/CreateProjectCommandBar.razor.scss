@@ -1,0 +1,15 @@
+@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+.command-bar {
+    padding: rem2(8px);
+    border-radius: rem2(6px);
+    background-color: $bit-color-background-primary;
+    box-shadow: $bit-box-shadow-callout;
+
+    ::deep .code-box-content {
+        margin-bottom: 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+}

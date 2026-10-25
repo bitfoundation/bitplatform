@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Globalization;
 using Boilerplate.Server.Shared;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Authorization;
@@ -48,11 +49,10 @@ public static class WebApplicationExtensions
             });
 
             // The detailed report of the health checks page: behind its feature and never cached, as it carries each
-            // failure's exception. Always 200, since the status is in the body and the client throws on a 503.
+            // failure's exception.
             HealthCheckOptions healthzOptions = new()
             {
                 Predicate = _ => true,
-                ResultStatusCodes = { [HealthStatus.Unhealthy] = StatusCodes.Status200OK },
                 ResponseWriter = WriteHealthReport
             };
 
@@ -129,6 +129,30 @@ public static class WebApplicationExtensions
                 options.RequestCultureProviders.Insert(1, new RouteDataRequestCultureProvider() { Options = options });
                 app.UseRequestLocalization(options);
             }
+
+            return app;
+        }
+
+        /// <summary>
+        /// Stamps every response with a Request-Id header, so one can find its logs by it, and so the client's
+        /// ExceptionDelegatingHandler can tell an error written by this app - a problem details json, or a plain
+        /// localized message such as AttachmentController's image validation errors - apart from one written by
+        /// something in front of it (a stopped IIS site, a reverse proxy or a CDN), whatever its status code.
+        /// Written from Response.OnStarting for the same reason UseSecurityHeaders explains: UseExceptionHandler's
+        /// HttpResponse.Clear() drops anything written eagerly, and the output cache never replays this header.
+        /// </summary>
+        public WebApplication UseRequestIdHeader()
+        {
+            app.Use(async (context, next) =>
+            {
+                context.Response.OnStarting(() =>
+                {
+                    context.Response.Headers[HeaderNames.RequestId] = context.TraceIdentifier;
+                    return Task.CompletedTask;
+                });
+
+                await next.Invoke();
+            });
 
             return app;
         }
@@ -210,7 +234,7 @@ public static class WebApplicationExtensions
                     headers["Cross-Origin-Resource-Policy"] = "cross-origin";
 
                     // 8. Content-Security-Policy (CSP)
-                    headers.ContentSecurityPolicy = csp;
+                    headers.Append("Content-Security-Policy", csp);
                     // For a stricter, app-wide CSP that also works in all Interactive Blazor rendering modes,
                     // check out the ContentSecurityPolicy.razor component in Client.Core
 

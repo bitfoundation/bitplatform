@@ -22,6 +22,41 @@ variables:
 
 jobs:
 
+- job: test
+  displayName: 'test'
+
+  pool:
+    vmImage: 'ubuntu-24.04'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --version 10.7.0 --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
+
+  - script: bit setup --yes
+    displayName: 'Prepare this machine and build with bit setup'
+
+  - task: Bash@3
+    name: test
+    displayName: 'Test'
+    inputs:
+      targetType: 'inline'
+      script: 'cd src/Tests && dotnet test'
+
+  - task: PublishPipelineArtifact@1
+    displayName: 'Upload Tests Artifact'
+    condition: failed()
+    inputs:
+      targetPath: 'src/Tests/TestResults'
+      artifactName: 'tests-artifact'
+
 - job: build_api_blazor
   displayName: 'build api + blazor web'
 
@@ -35,24 +70,21 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@1
-    inputs:
-      versionSpec: '24.x'
-    displayName: 'Install Node.js'
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --version 10.7.0 --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
 
-  - task: Bash@3
-    displayName: 'Install wasm'
-    inputs:
-      targetType: 'inline'
-      script: cd src && dotnet workload install wasm-tools
+  - script: bit setup --no-build --yes
+    displayName: 'Prepare this machine with bit setup'
 
   - script: |
-      dnx Bit.ResxTranslator
+      bit translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
     failOnStderr: true
-    displayName: Use Bit.ResxTranslator
+    displayName: Translate .resx files
 
   - task: FileTransform@2
     displayName: Update appsettings.json
@@ -60,12 +92,6 @@ jobs:
       folderPath: './'
       enableXmlTransform: false
       jsonTargetFiles: 'src/**/appsettings*json'
-
-  - script: |
-      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-      dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-    failOnStderr: true
-    displayName: Generate CSS/JS files
 
   - task: Bash@3
     displayName: 'Publish'
@@ -79,9 +105,24 @@ jobs:
       targetPath: 'server'
       artifact: 'server-bundle'
       publishLocation: 'pipeline'
+#if (api == "Integrated" && database != "Sqlite" && database != "Other")
+
+  - task: Bash@3
+    displayName: 'Create the database migrations bundle'
+    inputs:
+      targetType: 'inline'
+      script: 'dnx dotnet-ef@10.0.13 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose'
+
+  - task: PublishPipelineArtifact@1
+    displayName: Upload migrations bundle
+    inputs:
+      targetPath: 'efbundle'
+      artifact: 'migrations-bundle'
+      publishLocation: 'pipeline'
+#endif
 
 - job: deploy_api_blazor
-  dependsOn: build_api_blazor
+  dependsOn: [build_api_blazor, test]
   displayName: 'deploy api + blazor'
 
   pool:
@@ -105,8 +146,29 @@ jobs:
       folderPath: './'
       enableXmlTransform: false
       jsonTargetFiles: 'appsettings.json'
+#if (api == "Integrated" && database != "Sqlite" && database != "Other")
 
-  - task: AzureRmWebAppDeployment@4
+  - task: DownloadPipelineArtifact@2
+    displayName: Retrieve migrations bundle
+    inputs:
+      artifact: 'migrations-bundle'
+      path: ./
+
+  - script: chmod +x efbundle && ./efbundle && rm efbundle
+    env:
+#if (database == "SqlServer")
+      ConnectionStrings__mssqldb: $(DATABASE_CONNECTION_STRING)
+#endif
+#if (database == "PostgreSQL")
+      ConnectionStrings__postgresdb: $(DATABASE_CONNECTION_STRING)
+#endif
+#if (database == "MySql")
+      ConnectionStrings__mysqldb: $(DATABASE_CONNECTION_STRING)
+#endif
+    displayName: Apply database migrations
+#endif
+
+  - task: AzureRmWebAppDeployment@5
     displayName: 'Deploy to App Service'
     inputs:
       ConnectionType: 'AzureRM'
@@ -114,6 +176,7 @@ jobs:
       appType: 'webAppLinux'
       WebAppName: '$(APP_SERVICE_NAME)'
       packageForLinux: '.'
+      DeploymentTypeLinux: 'zipDeploy'
 
 #if (cloudflare == true)
   - task: Bash@3
@@ -140,18 +203,21 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@1
-    inputs:
-      versionSpec: '24.x'
-    displayName: 'Install Node.js'
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --version 10.7.0 --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
+
+  - script: bit setup --platforms windows --no-build --yes
+    displayName: 'Prepare this machine with bit setup'
 
   - script: |
-      dnx Bit.ResxTranslator
+      bit translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
     failOnStderr: true
-    displayName: Use Bit.ResxTranslator
+    displayName: Translate .resx files
 
   - task: FileTransform@2
     displayName: Update appsettings.json
@@ -161,19 +227,37 @@ jobs:
       jsonTargetFiles: 'src/**/appsettings*json'
 
   - task: Bash@3
-    displayName: 'Generate CSS/JS files'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"'
-
-  - task: Bash@3
     displayName: 'Publish'
     inputs:
       targetType: 'inline'
       script: |
         cd src/Client/Boilerplate.Client.Windows
         dotnet publish Boilerplate.Client.Windows.csproj -c Release -o ./publish-result -r win-x86 -p:Version="$(APP_VERSION)" --self-contained
-        dnx vpk@1.2.0 -- pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
+
+  - task: Bash@3
+    displayName: 'Pack'
+    condition: and(succeeded(), eq(variables['CODE_SIGNING_ACCOUNT'], ''))
+    inputs:
+      targetType: 'inline'
+      script: |
+        cd src/Client/Boilerplate.Client.Windows
+        dnx vpk@1.3.39-g8d2844f -- pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
+
+  - task: AzureCLI@3
+    displayName: 'Pack and sign with Artifact Signing'
+    condition: and(succeeded(), ne(variables['CODE_SIGNING_ACCOUNT'], ''))
+    inputs:
+      azureSubscription: '$(AZURE_SUBSCRIPTION)'
+      scriptType: 'pscore'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        # vpk signs through Azure's signing library, whose DefaultAzureCredential tries managed identity, Visual Studio,
+        # VS Code and others before the Azure CLI. On an agent they only cost time or could sign in as someone else, so only
+        # this task's az login is left.
+        @{ Endpoint = '$(CODE_SIGNING_ENDPOINT)'; CodeSigningAccountName = '$(CODE_SIGNING_ACCOUNT)'; CertificateProfileName = '$(CODE_SIGNING_CERTIFICATE_PROFILE)'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content '$(Agent.TempDirectory)/code-signing.json'
+        $env:VPK_AZURE_TRUSTED_SIGN_FILE = '$(Agent.TempDirectory)/code-signing.json'
+        cd src/Client/Boilerplate.Client.Windows
+        dnx vpk@1.3.39-g8d2844f -- pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload artifact
@@ -195,22 +279,13 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@1
-    inputs:
-      versionSpec: '24.x'
-    displayName: 'Install Node.js'
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --version 10.7.0 --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
 
-  - task: Bash@3
-    displayName: 'Install maui'
-    inputs:
-      targetType: 'inline'
-      script: cd src && dotnet workload install maui-android
-
-  - task: Bash@3
-    displayName: 'Install Android Sdk platform tools'
-    inputs:
-      targetType: 'inline'
-      script: '${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"'
+  - script: bit setup --platforms android --no-build --yes
+    displayName: 'Prepare this machine with bit setup'
 
   - task: DownloadSecureFile@1
     displayName: Download Boilerplate keystore file
@@ -224,12 +299,12 @@ jobs:
     displayName: Copy keystore to app project folder
 
   - script: |
-      dnx Bit.ResxTranslator
+      bit translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
     failOnStderr: true
-    displayName: Use Bit.ResxTranslator
+    displayName: Translate .resx files
 
   - task: FileTransform@2
     displayName: Update appsettings.json
@@ -238,11 +313,6 @@ jobs:
       enableXmlTransform: false
       jsonTargetFiles: 'src/**/appsettings*json'
   
-  - script: |
-      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-      dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-    failOnStderr: true
-    displayName: Generate CSS/JS files
 
   - task: Bash@3
     displayName: 'Publish aab'

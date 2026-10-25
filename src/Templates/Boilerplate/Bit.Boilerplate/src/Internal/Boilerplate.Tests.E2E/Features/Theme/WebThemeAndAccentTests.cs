@@ -10,7 +10,7 @@ public partial class WebThemeAndAccentTests : ThemeAndAccentTestsBase
     [TestMethod]
     [DataRow(App.Sales, true, DisplayName = "Sales (prerendered), dark system")]
     [DataRow(App.Todo, false, DisplayName = "Todo (prerendered), light system")]
-    [DataRow(App.AdminPanel, true, DisplayName = "AdminPanel (prerendered, bit Brouter), dark system")]
+    [DataRow(App.AdminPanel, true, DisplayName = "AdminPanel (prerendered), dark system")]
     [DataRow(App.AdminPanelWasmStandalone, false, DisplayName = "AdminPanelWasmStandalone (not prerendered), light system")]
     [DataRow(App.TodoAot, true, DisplayName = "TodoAot (not prerendered), dark system")]
     public async Task Theme_Should_FollowTheSystem_ThenKeepWhatTheUserPicked_AndSoShouldTheAccent(App app, bool systemIsDark)

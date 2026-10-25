@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 namespace Boilerplate.Tests.Features.Configuration;
 
 /// <summary>
-/// <c>AddOptions&lt;T&gt;().ValidateDataAnnotations().ValidateOnStart()</c> is registered for every settings type, but
+/// <c>AddOptions&lt;T&gt;().ValidateOnStart()</c> with an <c>[OptionsValidator]</c> validator is registered for every settings type, but
 /// <c>ValidateOnStart</c> is only ever executed by <c>Microsoft.Extensions.Hosting</c>'s <c>IHost</c> - and three of the
 /// four client hosts (MAUI, Windows Forms and standalone WebAssembly) build their service provider directly. On those,
 /// nothing ran the guards unless the injected instance itself came from the options pipeline. These tests pin both

@@ -1,4 +1,4 @@
-declare class CodeBlockContainer extends Container {
+﻿declare class CodeBlockContainer extends Container {
     static create(value: string): Element;
     code(index: number, length: number): string;
     html(index: number, length: number): string;

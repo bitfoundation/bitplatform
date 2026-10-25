@@ -14,9 +14,12 @@ public partial class ProductsPercentageWidget
         Type = BitChartType.Pie,
         Options = new BitChartOptions
         {
+            AspectRatio = 1.1,
+            Culture = CultureInfo.CurrentCulture,
             Plugins = new BitChartPluginOptions
             {
-                Legend = new BitChartLegendOptions { Position = BitChartPosition.Right }
+                Legend = new BitChartLegendOptions { Placement = BitPlacement.Right },
+                Tooltip = new() { LabelFormatter = (_, value) => (value / 100).ToString("P1", CultureInfo.CurrentCulture) }
             }
         }
     };
@@ -73,9 +76,9 @@ public partial class ProductsPercentageWidget
     //#if (signalR == true)
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(disposing);
-
         unsubscribe?.Invoke();
+
+        await base.DisposeAsync(disposing);
     }
     //#endif
 }

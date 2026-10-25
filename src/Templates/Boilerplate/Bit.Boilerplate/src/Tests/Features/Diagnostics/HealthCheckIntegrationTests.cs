@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Boilerplate.Shared.Features.Diagnostic;
+using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 //#if (cloudflare == true)
 using System.Text;
 using System.Text.Json.Nodes;
@@ -39,10 +40,10 @@ public partial class HealthCheckIntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        await using var client = server.CreateAppClient();
+        var httpClient = client.HttpClient;
 
         using var response = await httpClient.GetAsync("alive", TestContext.CancellationToken);
 
@@ -54,50 +55,51 @@ public partial class HealthCheckIntegrationTests
     }
 
     /// <summary>
-    /// <c>/healthz</c> needs <see cref="AppFeatures.System.Operations_View"/>, is never cached, and answers 200 even
-    /// when a check is Unhealthy.
+    /// <c>/healthz</c> needs <see cref="AppFeatures.System.Operations_View"/>, is never cached, and answers 503 when a
+    /// check is Unhealthy, with the report in the body all the same.
     /// </summary>
     [TestMethod]
     public async Task DetailedReport_Should_NeedTheFeature_AndDescribeEveryCheck()
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.AddHealthChecks().AddCheck("failing", () => HealthCheckResult.Unhealthy("Down on purpose", new InvalidOperationException("The test broke it")));
-        }).Start(TestContext.CancellationToken);
+        // The api's health report is the one under test.
+        await server.Build(
+            configureTestApiAppServices: services => services.AddHealthChecks().AddCheck("failing", () => HealthCheckResult.Unhealthy("Down on purpose", new InvalidOperationException("The test broke it"))))
+            .Start(TestContext.CancellationToken);
 
-        using (var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
-        using (var anonymousResponse = await anonymousClient.GetAsync("healthz", TestContext.CancellationToken))
+        var healthzUrl = new Uri(server.ApiAppAddress, "healthz");
+
+        using (var anonymousClient = server.CreateRawHttpClient())
+        using (var anonymousResponse = await anonymousClient.GetAsync(healthzUrl, TestContext.CancellationToken))
         {
             Assert.AreEqual(HttpStatusCode.Unauthorized, anonymousResponse.StatusCode, "An anonymous caller must not read the report.");
         }
 
-        await using (var userScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var userClient = server.CreateAppClient())
         {
-            await TestAccountUtils.CreateAndSignIn(server, userScope, TestContext.CancellationToken);
+            await TestAccountUtils.CreateAndSignIn(userClient, TestContext.CancellationToken);
 
             await Assert.ThrowsExactlyAsync<ForbiddenException>(
-                () => userScope.ServiceProvider.GetRequiredService<HttpClient>().GetAsync("healthz", TestContext.CancellationToken),
+                () => userClient.HttpClient.GetAsync(healthzUrl, TestContext.CancellationToken),
                 "A signed-in user without the feature must not read the report.");
         }
 
-        await using var adminScope = server.WebApp.Services.CreateAsyncScope();
-        await adminScope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        await using var adminClient = server.CreateAppClient();
+        await adminClient.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        using var response = await adminScope.ServiceProvider.GetRequiredService<HttpClient>().GetAsync("healthz", TestContext.CancellationToken);
+        using var response = await GetReport(adminClient.HttpClient, healthzUrl);
 
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "An Unhealthy report still answers 200.");
+        Assert.AreEqual(HttpStatusCode.ServiceUnavailable, response.StatusCode, "An Unhealthy report answers 503, the way /health does.");
         Assert.IsNotNull(response.Headers.CacheControl);
         Assert.IsTrue(response.Headers.CacheControl.NoStore, "The report must not be cached anywhere.");
 
         var report = await response.Content.ReadFromJsonAsync(
-            adminScope.ServiceProvider.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>(), TestContext.CancellationToken);
+            adminClient.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>(), TestContext.CancellationToken);
 
         Assert.IsNotNull(report);
         Assert.AreEqual(HealthCheckStatus.Unhealthy, report.Status);
@@ -116,6 +118,14 @@ public partial class HealthCheckIntegrationTests
         Assert.IsTrue(smtp.Data.ContainsKey("CheckedAt"), "A cached check says when it really ran.");
     }
 
+    private async Task<HttpResponseMessage> GetReport(HttpClient httpClient, Uri url)
+    {
+        using HttpRequestMessage request = new(HttpMethod.Get, url);
+        request.Options.Set(new HttpRequestOptionsKey<HttpStatusCode[]>(RequestOptionNames.AllowedStatusCodes), [HttpStatusCode.ServiceUnavailable]);
+
+        return await httpClient.SendAsync(request, TestContext.CancellationToken);
+    }
+
     /// <summary>
     /// <c>/healthz/v1</c> is the same report under the api version the controllers carry, behind the same feature.
     /// </summary>
@@ -124,27 +134,27 @@ public partial class HealthCheckIntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        using (var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
-        using (var anonymousResponse = await anonymousClient.GetAsync("healthz/v1", TestContext.CancellationToken))
+        var healthzUrl = new Uri(server.ApiAppAddress, "healthz/v1");
+
+        using (var anonymousClient = server.CreateRawHttpClient())
+        using (var anonymousResponse = await anonymousClient.GetAsync(healthzUrl, TestContext.CancellationToken))
         {
             Assert.AreEqual(HttpStatusCode.Unauthorized, anonymousResponse.StatusCode, "The versioned path must not be a way around the feature.");
         }
 
-        await using var adminScope = server.WebApp.Services.CreateAsyncScope();
-        await adminScope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        await using var adminClient = server.CreateAppClient();
+        await adminClient.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        using var response = await adminScope.ServiceProvider.GetRequiredService<HttpClient>().GetAsync("healthz/v1", TestContext.CancellationToken);
-
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        using var response = await GetReport(adminClient.HttpClient, healthzUrl);
 
         var report = await response.Content.ReadFromJsonAsync(
-            adminScope.ServiceProvider.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>(), TestContext.CancellationToken);
+            adminClient.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>(), TestContext.CancellationToken);
 
         Assert.IsNotNull(report);
         Assert.Contains("live", report.Entries["binStorage"].Tags);
@@ -160,7 +170,7 @@ public partial class HealthCheckIntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices(), configuration =>
+        await server.Build(configureTestConfiguration: configuration =>
         {
             configuration["Authentication:Keycloak:KeycloakUrl"] = "http://keycloak.invalid/";
             configuration["Authentication:Keycloak:Realm"] = "dev";
@@ -185,7 +195,7 @@ public partial class HealthCheckIntegrationTests
             //#endif
         }).Start(TestContext.CancellationToken);
 
-        var registrations = server.WebApp.Services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations;
+        var registrations = server.ApiApp.Services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations;
 
         string[] localChecks = ["binStorage", "AppDbContext", "hangfire", "appCertificate", "StackExchange.Redis_redis-persistent"];
 
@@ -242,6 +252,23 @@ public partial class HealthCheckIntegrationTests
     [TestMethod]
     public async Task UnconfiguredDependencies_Should_ReportDegraded_OutsideDevelopment()
     {
+        //#if (api == "Standalone")
+        //#if (IsInsideProjectTemplate)
+        /*
+        //#endif
+        // The checks are Server.Api's (See AddServerApiHealthChecks), and so is the appsettings.json they are built with.
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = Environments.Production,
+            ApplicationName = typeof(Server.Api.Program).Assembly.GetName().Name,
+            ContentRootPath = AppTestServer.ProjectDirectoryOf(typeof(Server.Api.Program).Assembly.GetName().Name!)
+        });
+
+        builder.Configuration.AddSharedConfigurations();
+        //#if (IsInsideProjectTemplate)
+        */
+        //#endif
+        //#else
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
             EnvironmentName = Environments.Production,
@@ -249,6 +276,7 @@ public partial class HealthCheckIntegrationTests
         });
 
         builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
+        //#endif
 
         string[] expectedChecks =
         [
@@ -283,7 +311,18 @@ public partial class HealthCheckIntegrationTests
             builder.Configuration[key] = "";
         }
 
+        //#if (api == "Standalone")
+        //#if (IsInsideProjectTemplate)
+        /*
+        //#endif
+        builder.Services.AddSharedProjectServices(builder.Configuration);
+        Server.Api.Program.AddServerApiProjectServices(builder);
+        //#if (IsInsideProjectTemplate)
+        */
+        //#endif
+        //#else
         builder.AddServerWebProjectServices();
+        //#endif
 
         await using var serviceProvider = builder.Services.BuildServiceProvider();
         var registrations = serviceProvider.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations;
@@ -328,14 +367,12 @@ public partial class HealthCheckIntegrationTests
 
         await using var server = new AppTestServer();
 
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient));
-        },
-        configuration => configuration["AI:OpenAI:ChatApiKey"] = "fake-key-never-used-by-this-test").Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services => services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient)),
+            configureTestConfiguration: configuration => configuration["AI:OpenAI:ChatApiKey"] = "fake-key-never-used-by-this-test")
+            .Start(TestContext.CancellationToken);
 
-        var healthCheckService = server.WebApp.Services.GetRequiredService<HealthCheckService>();
+        var healthCheckService = server.ApiApp.Services.GetRequiredService<HealthCheckService>();
 
         async Task<HealthReportEntry> CheckAIChat() => (await healthCheckService.CheckHealthAsync(r => r.Name is "aiChat", TestContext.CancellationToken)).Entries["aiChat"];
 
@@ -348,7 +385,7 @@ public partial class HealthCheckIntegrationTests
         Assert.Contains(m => m.Role == ChatRole.User, chatClient.LastMessages, "The agent must actually send a message.");
 
         chatClient.Failure = new HttpRequestException("insufficient_quota");
-        server.WebApp.Services.GetRequiredService<CachedHealthCheck.ResultsStore>().Clear(); // As if the cache period had passed.
+        server.ApiApp.Services.GetRequiredService<CachedHealthCheck.ResultsStore>().Clear(); // As if the cache period had passed.
 
         Assert.AreEqual(HealthStatus.Degraded, (await CheckAIChat()).Status);
         Assert.AreEqual(HealthStatus.Degraded, (await CheckAIChat()).Status);
@@ -381,14 +418,12 @@ public partial class HealthCheckIntegrationTests
 
         await using var server = new AppTestServer();
 
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.Replace(ServiceDescriptor.Singleton(embeddingGenerator));
-        },
-        configuration => configuration["AI:OpenAI:EmbeddingApiKey"] = "fake-key-never-used-by-this-test").Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services => services.Replace(ServiceDescriptor.Singleton(embeddingGenerator)),
+            configureTestConfiguration: configuration => configuration["AI:OpenAI:EmbeddingApiKey"] = "fake-key-never-used-by-this-test")
+            .Start(TestContext.CancellationToken);
 
-        var report = await server.WebApp.Services.GetRequiredService<HealthCheckService>().CheckHealthAsync(r => r.Name is "aiEmbedding", TestContext.CancellationToken);
+        var report = await server.ApiApp.Services.GetRequiredService<HealthCheckService>().CheckHealthAsync(r => r.Name is "aiEmbedding", TestContext.CancellationToken);
 
         Assert.AreEqual(expectedStatus, report.Entries["aiEmbedding"].Status);
         Assert.IsNotNull(embeddedValues);
@@ -444,17 +479,16 @@ public partial class HealthCheckIntegrationTests
         });
 
         await using var server = new AppTestServer();
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.AddHttpClient<ResponseCacheService>().ConfigurePrimaryHttpMessageHandler(() => handler);
-        }, configuration =>
-        {
-            configuration["Cloudflare:ApiToken"] = "not-a-real-token";
-            configuration["Cloudflare:ZoneIds:0"] = "test-zone";
-        }).Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services => services.AddHttpClient<ResponseCacheService>().ConfigurePrimaryHttpMessageHandler(() => handler),
+            configureTestConfiguration: configuration =>
+            {
+                configuration["Cloudflare:ApiToken"] = "not-a-real-token";
+                configuration["Cloudflare:ZoneIds:0"] = "test-zone";
+            })
+            .Start(TestContext.CancellationToken);
 
-        var report = await server.WebApp.Services.GetRequiredService<HealthCheckService>().CheckHealthAsync(r => r.Name is "cloudflare", TestContext.CancellationToken);
+        var report = await server.ApiApp.Services.GetRequiredService<HealthCheckService>().CheckHealthAsync(r => r.Name is "cloudflare", TestContext.CancellationToken);
 
         Assert.AreEqual(expectedStatus, report.Entries["cloudflare"].Status, report.Entries["cloudflare"].Exception?.Message);
         Assert.IsNotEmpty(purgedTags);

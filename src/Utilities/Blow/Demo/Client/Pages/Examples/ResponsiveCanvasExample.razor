@@ -1,0 +1,97 @@
+﻿@page "/examples/responsive-canvas"
+
+<PageTitle>Responsive Canvas · Blow</PageTitle>
+
+<ExampleScaffold Title="Responsive Canvas"
+                 Summary="The canvas watches its own container and every node for size changes, so a resized pane or a node whose content grows keeps hit-testing, edge anchors and the minimap right with no code of yours. The viewport is controlled from the page's own state at the same time.">
+    <Toolbar>
+        <button class="btn btn-secondary" @onclick="@(() => Resize(-120))">Narrower</button>
+        <button class="btn btn-secondary" @onclick="@(() => Resize(120))">Wider</button>
+        <button class="btn btn-secondary" @onclick="GrowNode">Grow node content</button>
+        <button class="btn btn-secondary" @onclick="Center">Recenter viewport</button>
+        @* Requested: the container is capped at the width of the column it sits in. *@
+        <span class="bb-muted">Requested width: @_width px</span>
+    </Toolbar>
+    <ChildContent>
+        @* The canvas fills this box, and the box is what the buttons resize: the canvas is never told, it notices. *@
+        <div style="@($"width:{_width}px;max-width:100%;height:100%;")">
+            <BlowCanvas Nodes="_nodes"
+                        Edges="_edges"
+                        Viewport="_viewport"
+                        OnViewportChanged="@(vp => _viewport = vp)">
+                <NodeTemplate Context="node">
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="resp-node">
+                        <strong>@node.Label</strong>
+                        @if (node.Id == "grow")
+                        {
+                            @foreach (var line in Enumerable.Range(0, _lines))
+                            {
+                                <div class="resp-line">line @(line + 1)</div>
+                            }
+                        }
+                    </div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                </NodeTemplate>
+                <ChildContent>
+                    <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                    <BlowControls />
+                    <BlowMiniMap Pannable="true" />
+                    <BlowPanel Anchor="BlowPanelPosition.TopLeft">
+                        <div class="resp-readout">
+                            viewport x @_viewport.X.ToString("0") · y @_viewport.Y.ToString("0")
+                            · zoom @_viewport.Zoom.ToString("0.00")
+                        </div>
+                    </BlowPanel>
+                </ChildContent>
+            </BlowCanvas>
+        </div>
+    </ChildContent>
+    <TryIt>
+        <li>Press <strong>Narrower</strong> and <strong>Wider</strong> to resize the box the canvas sits in, 120 pixels at a time: the control bar and the minimap keep to their corners, and the minimap's window shrinks or grows with the visible area. The width is capped at the page column, which is why the requested width can run ahead of what you see.</li>
+        <li>Resize the browser window: the canvas follows the same way.</li>
+        <li>Press <strong>Grow node content</strong> to add a line to the middle node, up to six before it starts again from one: the node grows, its bottom handle moves down with it, and the animated edge leaving it follows - as does its shape on the minimap.</li>
+        <li><strong>Drag the background</strong> or <strong>scroll</strong>: the readout in the corner follows, because the viewport lives in the page's own field. <strong>Recenter viewport</strong> writes that field back to where it started.</li>
+        <li><strong>Drag a node</strong> after any resize: it still lands under the pointer, because the canvas's idea of where the pane is on screen is kept up to date.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>A <code>BlowCanvas</code> fills its container. A <code>ResizeObserver</code> in the browser layer watches the pane, so when the box changes size the canvas re-reads its bounds - which pointer hit-testing, <code>ScreenToFlowPosition</code>, <code>PaneSize</code> and the minimap's window all depend on.</li>
+        <li>Every node is observed too. A node with no explicit <code>Width</code> and <code>Height</code> sizes to its content and is re-measured whenever that changes - with its handles - so the edges anchored to it follow. <code>Measured</code> holds the size it was last measured at.</li>
+        <li>What the browser cannot report is a handle that moved without anything resizing - switched to another side, say. After such a change call <code>UpdateNodeInternals()</code>.</li>
+        <li><code>Viewport</code> is bound to a field that <code>OnViewportChanged</code> keeps up to date, so the panel's readout always shows the current pan and zoom; writing the field moves the view.</li>
+        <li><code>NodeTemplate</code> draws the nodes, with a <code>BlowHandle</code> at the top and at the bottom; <code>BlowPanel</code> pins the readout to the top-left corner.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .resp-node { padding: 2px; text-align: left; }
+    .resp-line { font-size: 11px; color: var(--bit-blow-text-muted); }
+    .resp-readout { padding: 6px 10px; font-size: 12px; font-variant-numeric: tabular-nums; background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
+</style>
+
+@code {
+    private int _width = 720;
+    private int _lines = 1;
+    private BlowViewport _viewport = new(60, 40, 1);
+
+    private readonly List<BlowNode> _nodes =
+    [
+        new() { Id = "start", Label = "Start", Position = new(40, 20) },
+        new() { Id = "grow", Label = "Growing node", Position = new(40, 150) },
+        new() { Id = "end", Label = "End", Position = new(280, 300) },
+    ];
+
+    private readonly List<BlowEdge> _edges =
+    [
+        new() { Id = "e1", Source = "start", Target = "grow" },
+        new() { Id = "e2", Source = "grow", Target = "end", Animated = true },
+    ];
+
+    private void Resize(int delta) => _width = Math.Clamp(_width + delta, 320, 1200);
+
+    // The node has no explicit height, so adding lines changes its measured size. The
+    // ResizeObserver notices and the edge anchored to its bottom handle follows.
+    private void GrowNode() => _lines = _lines >= 6 ? 1 : _lines + 1;
+
+    private void Center() => _viewport = new BlowViewport(60, 40, 1);
+}

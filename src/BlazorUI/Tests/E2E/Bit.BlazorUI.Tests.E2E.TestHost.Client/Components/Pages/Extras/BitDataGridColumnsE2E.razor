@@ -1,0 +1,116 @@
+﻿@page "/e2e/data-grid/columns"
+
+@* BitDataGrid's column layout: resizing (dragging the header edge, double-click and the keyboard, MinWidth/MaxWidth,
+   right to left, the auto-fit API), reordering (dragging a header, Ctrl+Arrow, a column that opts out), the column
+   chooser (hiding, moving, Escape), Frozen/FrozenEnd columns, header Group banners, ColSpan and Visible. *@
+
+<PageTitle>BitDataGrid columns E2E</PageTitle>
+
+<h1>BitDataGrid column layout</h1>
+
+<E2ESection Id="resize" Title="Resizing">
+    <button id="btn-autofit-name" type="button" @onclick="AutoFitName">AutoFitColumnAsync(Name)</button>
+    <button id="btn-autofit-all" type="button" @onclick="() => _resizeGrid.AutoFitAllColumnsAsync()">AutoFitAllColumnsAsync</button>
+    <BitDataGrid @ref="_resizeGrid" TItem="Product" Id="grid-resize" Items="@_products" Resizable="true">
+        <BitDataGridColumn Property="p => p.Id" Width="80px" />
+        <BitDataGridColumn Property="p => p.Name" Width="160px" MinWidth="100" MaxWidth="300" />
+        <BitDataGridColumn Property="p => p.Category" Width="140px" Resizable="false" />
+        <BitDataGridColumn Property="p => p.Supplier" Width="400px" />
+        <BitDataGridColumn Property="p => p.Description" Width="60px" />
+    </BitDataGrid>
+    <BitDataGrid TItem="Product" Id="grid-resize-rtl" Items="@_products" Resizable="true" Dir="BitDir.Rtl">
+        <BitDataGridColumn Property="p => p.Id" Width="80px" />
+        <BitDataGridColumn Property="p => p.Name" Width="160px" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="reorder" Title="Reordering">
+    <BitDataGrid TItem="Product" Id="grid-reorder" Items="@_products" Reorderable="true">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" />
+        <BitDataGridColumn Property="p => p.Category" />
+        <BitDataGridColumn Property="p => p.Supplier" Reorderable="false" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="chooser" Title="Column chooser">
+    <BitDataGrid TItem="Product" Id="grid-chooser" Items="@_products" ShowColumnChooser="true" Reorderable="true">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" />
+        <BitDataGridColumn Property="p => p.Category" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="frozen" Title="Frozen columns">
+    <div style="width: 520px;">
+        <BitDataGrid TItem="Product" Id="grid-frozen" Items="@_products" Height="260px">
+            <BitDataGridColumn Property="p => p.Id" Width="80px" Frozen="true" />
+            <BitDataGridColumn Property="p => p.Name" Width="200px" />
+            <BitDataGridColumn Property="p => p.Category" Width="200px" />
+            <BitDataGridColumn Property="p => p.Supplier" Width="200px" />
+            <BitDataGridColumn Property="p => p.Stock" Width="200px" />
+            <BitDataGridColumn Property="p => p.Rating" Width="100px" FrozenEnd="true" />
+        </BitDataGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="header-groups" Title="Header group banners">
+    <BitDataGrid TItem="Product" Id="grid-header-groups" Items="@_products">
+        <BitDataGridColumn Property="p => p.Id" Width="80px" />
+        <BitDataGridColumn Property="p => p.Name" Width="150px" Group="Identity" />
+        <BitDataGridColumn Property="p => p.Category" Width="150px" Group="Identity" />
+        <BitDataGridColumn Property="p => p.Supplier" Width="150px" Group="Commercials" />
+        <BitDataGridColumn Property="p => p.Stock" Width="100px" Group="Commercials" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="colspan" Title="Column spanning">
+    <BitDataGrid TItem="Product" Id="grid-colspan" Items="@_products" CellNavigation="true">
+        <BitDataGridColumn Property="p => p.Id" Width="80px" />
+        <BitDataGridColumn Property="p => p.Name" Width="150px" ColSpan="@(p => p.Discontinued ? 2 : 1)">
+            <Template Context="p">@(p.Discontinued ? $"{p.Name} - discontinued" : p.Name)</Template>
+        </BitDataGridColumn>
+        <BitDataGridColumn Property="p => p.Category" Width="150px" />
+        <BitDataGridColumn Property="p => p.Stock" Width="100px" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="visible" Title="Visible">
+    <button id="btn-toggle-category" type="button" @onclick="() => _categoryVisible = !_categoryVisible">Toggle Category</button>
+    <BitDataGrid TItem="Product" Id="grid-visible" Items="@_products">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" />
+        <BitDataGridColumn Property="p => p.Category" Visible="_categoryVisible" />
+        <BitDataGridColumn Property="p => p.Supplier" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Category { get; set; } = "";
+        public string Supplier { get; set; } = "";
+        public int Stock { get; set; }
+        public int Rating { get; set; }
+        public bool Discontinued { get; set; }
+        public string Description { get; set; } = "A description far longer than its column";
+    }
+
+    private readonly List<Product> _products =
+    [
+        new() { Id = 1, Name = "Laptop", Category = "Electronics", Supplier = "Acme", Stock = 5, Rating = 4 },
+        new() { Id = 2, Name = "Novel", Category = "Books", Supplier = "Globex", Stock = 120, Rating = 3 },
+        new() { Id = 3, Name = "Jacket", Category = "Clothing", Supplier = "Initech", Stock = 0, Rating = 2, Discontinued = true },
+        new() { Id = 4, Name = "Lamp", Category = "Home", Supplier = "Acme", Stock = 30, Rating = 4 },
+        new() { Id = 5, Name = "Drone", Category = "Toys", Supplier = "Globex", Stock = 8, Rating = 5 },
+    ];
+
+    private BitDataGrid<Product> _resizeGrid = default!;
+    private bool _categoryVisible = true;
+
+    private Task AutoFitName() => _resizeGrid.AutoFitColumnAsync("Name");
+}

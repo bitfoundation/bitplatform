@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -16,12 +17,13 @@ namespace Bit.BlazorUI.Tests.Performance;
 /// The browser is picked from environment variables, which the Microsoft.Testing.Platform runner passes through
 /// where it does not pass runsettings: <c>BROWSER</c> (<c>chromium</c> by default, <c>edge</c>, <c>firefox</c> or
 /// <c>webkit</c>) and <c>HEADED=1</c> to watch the run.
+/// <c>TEST_HOST_URL</c> moves the test host off <c>http://localhost:5280</c>, for a machine where another checkout's
+/// host already holds that port - a host found answering there is reused rather than started.
 /// </remarks>
 public abstract class PerformanceTestBase
 {
     private static Process? _hostProcess;
     private static readonly object _lock = new();
-    private static int _testCount;
     private static bool _isHostStarted;
     private static readonly HttpClient _sharedHttpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
 
@@ -30,7 +32,9 @@ public abstract class PerformanceTestBase
     private static IBrowser? _browser;
     private IBrowserContext? _context;
 
-    protected const string BaseUrl = "http://localhost:5280";
+    protected static readonly string BaseUrl = Environment.GetEnvironmentVariable("TEST_HOST_URL") is { Length: > 0 } url
+                                                    ? url.TrimEnd('/')
+                                                    : "http://localhost:5280";
     protected const int DefaultTimeout = 30000;
 
     protected IPage Page { get; private set; } = null!;
@@ -68,9 +72,11 @@ public abstract class PerformanceTestBase
     [TestInitialize]
     public async Task TestInitializeBase()
     {
+        // The host and the browser are started by the first test and kept for the whole run (BrowserTestRun stops
+        // them once it is over). Stopping them whenever no test happened to be running - between any two tests of a
+        // sequential run - had every test start its own `dotnet run` and browser, racing the port of the last one.
         lock (_lock)
         {
-            _testCount++;
             if (!_isHostStarted)
             {
                 StartTestHost();
@@ -103,34 +109,67 @@ public abstract class PerformanceTestBase
     {
         if (_context is not null)
         {
-            await _context.CloseAsync();
-            _context = null;
-        }
-
-        bool isLastTest;
-        lock (_lock)
-        {
-            _testCount--;
-            isLastTest = _testCount == 0;
-            // Stop host when no more tests are running
-            if (isLastTest)
+            try
             {
-                StopTestHost();
+                await _context.CloseAsync();
+            }
+            catch (PlaywrightException)
+            {
+                // Firefox's driver can fail to tear down a context that opened popups ("removeBrowserContext ...
+                // _maybeDontRestoreTabs"), and a browser left in that state fails to close every context after
+                // it. The test itself has already passed or failed on its own, so the browser is dropped and the
+                // next test launches a fresh one instead of inheriting the failure.
+                await DiscardBrowser();
+            }
+            finally
+            {
+                _context = null;
             }
         }
+    }
 
-        if (isLastTest is false) return;
-
+    /// <summary>
+    /// Closes the browser and stops the test host the run started, once every test of it is done.
+    /// </summary>
+    internal static async Task ShutdownAsync()
+    {
         await _browserLock.WaitAsync();
         try
         {
             if (_browser is not null) await _browser.CloseAsync();
-            _playwright?.Dispose();
-            _browser = null;
-            _playwright = null;
+        }
+        catch (PlaywrightException)
+        {
+            // already unusable; the driver reaps it with the Playwright instance
         }
         finally
         {
+            _playwright?.Dispose();
+            _browser = null;
+            _playwright = null;
+            _browserLock.Release();
+        }
+
+        lock (_lock)
+        {
+            StopTestHost();
+        }
+    }
+
+    private static async Task DiscardBrowser()
+    {
+        await _browserLock.WaitAsync();
+        try
+        {
+            if (_browser is not null) await _browser.CloseAsync();
+        }
+        catch (PlaywrightException)
+        {
+            // already unusable; the driver reaps it with the Playwright instance
+        }
+        finally
+        {
+            _browser = null;
             _browserLock.Release();
         }
     }
@@ -192,6 +231,16 @@ public abstract class PerformanceTestBase
 
         _hostProcess = Process.Start(startInfo);
 
+        // The host's output is read as it is written, for as long as it runs. A redirected stream nobody reads fills
+        // its pipe, the console logger then blocks on writing, and every request of the host blocks on logging - so a
+        // host kept for the whole run stops answering after a few hundred requests. Only the tail is kept, for the
+        // message below.
+        var hostOutput = new HostOutputTail();
+        _hostProcess!.OutputDataReceived += (_, e) => hostOutput.Add(e.Data);
+        _hostProcess.ErrorDataReceived += (_, e) => hostOutput.Add(e.Data);
+        _hostProcess.BeginOutputReadLine();
+        _hostProcess.BeginErrorReadLine();
+
         // 'dotnet run' performs an implicit build on first invocation, which can take
         // longer than 30s on a clean machine or in CI, so allow up to 2 minutes.
         var maxWait = TimeSpan.FromSeconds(120);
@@ -203,13 +252,11 @@ public abstract class PerformanceTestBase
         {
             if (_hostProcess is not null && _hostProcess.HasExited)
             {
-                var stderr = _hostProcess.StandardError.ReadToEnd();
-                var stdout = _hostProcess.StandardOutput.ReadToEnd();
+                _hostProcess.WaitForExit(); // flushes the asynchronous readers
                 throw new InvalidOperationException(
                     $"Test host process exited before it could serve requests. " +
                     $"ExitCode={_hostProcess.ExitCode}.{Environment.NewLine}" +
-                    $"STDERR:{Environment.NewLine}{stderr}{Environment.NewLine}" +
-                    $"STDOUT:{Environment.NewLine}{stdout}");
+                    $"OUTPUT:{Environment.NewLine}{hostOutput}");
             }
 
             try
@@ -434,6 +481,32 @@ public abstract class PerformanceTestBase
         if (actual > threshold)
         {
             Assert.Fail($"{metricName}: {actual:F2} exceeded threshold of {threshold:F2}");
+        }
+    }
+
+    // The last lines the host wrote, for the message of a host that exited before it could serve.
+    private sealed class HostOutputTail
+    {
+        private const int MaxLines = 200;
+        private readonly Queue<string> _lines = new();
+
+        public void Add(string? line)
+        {
+            if (line is null) return;
+
+            lock (_lines)
+            {
+                _lines.Enqueue(line);
+                if (_lines.Count > MaxLines) _lines.Dequeue();
+            }
+        }
+
+        public override string ToString()
+        {
+            lock (_lines)
+            {
+                return string.Join(Environment.NewLine, _lines);
+            }
         }
     }
 }

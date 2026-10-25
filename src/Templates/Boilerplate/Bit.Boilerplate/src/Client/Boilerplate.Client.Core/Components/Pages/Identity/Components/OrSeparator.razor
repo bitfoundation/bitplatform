@@ -2,10 +2,10 @@
 
 @if (IsInModal)
 {
-    <BitSeparator Border="BitColorKind.Secondary" Background="BitColorKind.Primary">@Localizer[nameof(AppStrings.Or)]</BitSeparator>
+    <BitSeparator Border="BitColorKind.Secondary">@Localizer[nameof(AppStrings.Or)]</BitSeparator>
 }
 else
 {
-    <BitSeparator Border="BitColorKind.Tertiary" Background="BitColorKind.Secondary" Class="lg-sep">@Localizer[nameof(AppStrings.Or)]</BitSeparator>
-    <BitSeparator Border="BitColorKind.Secondary" Background="BitColorKind.Primary" Class="sm-sep">@Localizer[nameof(AppStrings.Or)]</BitSeparator>
+    <BitSeparator Border="BitColorKind.Tertiary" Class="lg-sep">@Localizer[nameof(AppStrings.Or)]</BitSeparator>
+    <BitSeparator Border="BitColorKind.Secondary" Class="sm-sep">@Localizer[nameof(AppStrings.Or)]</BitSeparator>
 }

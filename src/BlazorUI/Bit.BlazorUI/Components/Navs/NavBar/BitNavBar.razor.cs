@@ -1,3 +1,4 @@
+﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
@@ -6,23 +7,43 @@ namespace Bit.BlazorUI;
 /// A bar of navigation links to the main areas of an app, the way a mobile app puts its top-level
 /// destinations along the bottom of the screen or a rail puts them down its side.
 /// </summary>
-public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
+public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     internal List<TItem> _items = [];
 
     private string? _containerId;
     private bool _selectionDirty;
     private bool _scrollToSelectedItem;
+    private bool _wheelIsSetUp;
+    private bool _defaultSelectedKeyPending;
+    private bool _selectedKeyPending;
+    private bool _selectedKeyStale;
     private TItem? _focusedItem;
     private IList<TItem>? _oldItems;
     private bool _optionsOrderDirty;
     private readonly Dictionary<TItem, ElementReference> _itemElements = [];
+    private BitNavCurrentUrlMatcher<TItem>? _currentUrlMatcher;
+    // The item an option of the interactive first render was selected as, before the render that reports it.
+    private TItem? _unreportedSelection;
 
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the navbar component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple navbar components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitNavBarParams.ParamName)]
+    public BitNavBarParams? CascadingParameters { get; set; }
 
 
 
@@ -44,17 +65,29 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
 
 
-    internal void RegisterOption(BitNavBarOption option)
+    internal async Task RegisterOption(BitNavBarOption option)
     {
-        _items.Add((option as TItem)!);
+        var item = (option as TItem)!;
+
+        _items.Add(item);
         _selectionDirty = true;
         _optionsOrderDirty = true;
         StateHasChanged();
+
+        // The options of the first render register during the very render a prerender (or a static SSR page)
+        // sends as HTML, and neither of those ever gets to the after-render pass that resolves the selection
+        // waiting for them, so there the option that selection is waiting for is selected as it registers instead.
+        // The interactive render that replaces a prerendered one does the same, so it shows the selection the
+        // prerender showed rather than taking it away for the round trip its after-render pass waits for.
+        // Every other option is left to that pass, which handles a whole batch of them at once.
+        if (IsRendered) return;
+
+        await SelectRegisteringOption(item);
     }
 
     internal void UnregisterOption(BitNavBarOption option)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         var item = (option as TItem)!;
 
@@ -136,7 +169,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     // keeps the registration that child has just made.
     internal void UnregisterItemElement(TItem item, ElementReference element)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         if (_itemElements.TryGetValue(item, out var registered) && registered.Id != element.Id) return;
 
@@ -168,8 +201,8 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         // Only the manual mode owns its selection: in the automatic mode the current URL is what selects an
         // item, and a selection made here would be undone by the very next match anyway.
         if (Mode is not BitNavMode.Manual) return;
-        if (IsEnabled is false) return;
-        if (GetIsEnabled(item) is false) return;
+        if (Disabled) return;
+        if (GetIsDisabled(item)) return;
 
         await SetSelectedItem(item);
     }
@@ -209,6 +242,8 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             _ => string.Empty
         });
 
+        ClassBuilder.Register(() => FlipIndicator ? "bit-nbr-fli" : string.Empty);
+
         // Baseline and Stretch describe how an item sits across the bar rather than how the items are
         // distributed along it, so neither one carries a distribution of its own here.
         ClassBuilder.Register(() => Alignment switch
@@ -222,13 +257,9 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-nbr-sm",
-            BitSize.Medium => "bit-nbr-md",
-            BitSize.Large => "bit-nbr-lg",
-            _ => "bit-nbr-md"
-        });
+        // Size and Color publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-NavBar-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-nbr"));
 
         ClassBuilder.Register(() => Color switch
         {
@@ -249,7 +280,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             BitColor.PrimaryBorder => "bit-nbr-pbr",
             BitColor.SecondaryBorder => "bit-nbr-sbr",
             BitColor.TertiaryBorder => "bit-nbr-tbr",
-            _ => "bit-nbr-pri",
+            _ => string.Empty,
         });
 
         ClassBuilder.Register(() => Filled ? "bit-nbr-fil" : string.Empty);
@@ -262,6 +293,10 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     protected override async Task OnInitializedAsync()
     {
+        // The cascade is applied here as well as in OnParametersSet, because this method already reads the
+        // Mode it would otherwise only get after the first render.
+        CascadingParameters?.UpdateParameters(this);
+
         _containerId = $"BitNavBar-{UniqueId}-container";
 
         SyncItems();
@@ -273,13 +308,21 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
         if (Mode == BitNavMode.Automatic)
         {
-            await SetSelectedItemByCurrentUrl();
+            await SetSelectedItemByCurrentUrl(isPrerender: _js.IsRuntimeInvalid());
         }
         else
         {
-            if (DefaultSelectedItem is not null && SelectedItemHasBeenSet is false)
+            if (DefaultSelectedItem is not null && IsSelectionBound() is false)
             {
                 await AssignSelectedItem(DefaultSelectedItem);
+            }
+            else if (DefaultSelectedKey.HasValue() && IsSelectionBound() is false)
+            {
+                // The options register themselves only as they render, after this point, so the key is kept
+                // pending and applied as soon as an item carrying it is there.
+                _defaultSelectedKeyPending = true;
+
+                await ApplyDefaultSelectedKey();
             }
         }
 
@@ -288,6 +331,8 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         // The Items collection is re-read here rather than only when the parameter is assigned a new
         // instance, so a collection that is mutated in place (an item appended to the same list) is
         // picked up as well.
@@ -308,11 +353,30 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         base.OnParametersSet();
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        // Run once every parameter of the set is in, since the Items and the NameSelectors a key is looked up
+        // through may be assigned after the SelectedKey itself.
+        await ApplySelectedKey();
+        await SyncSelectedKey();
+
+        await base.OnParametersSetAsync();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // What the script does on the arrow keys it does as it loads, called by nothing: with the lazy scripts on
+        // (BitBlazorUIScripts), the bar loads it before anything else of it is called.
+        if (firstRender) await _js.EnsureScriptAsync("Bit.BlazorUI", "BitNavBar");
+
         // The order is recovered before the match runs, so the item that wins a tie between two options
         // pointing at the same URL is the one that comes first in the markup.
         await ReorderOptionsByDomOrder();
+
+        await ApplyDefaultSelectedKey();
+
+        // Options register as they render, so a SelectedKey naming one of them is only found from here on.
+        await ApplySelectedKey();
 
         // Each option flags a selection recompute as it registers instead of matching immediately, so
         // registering n options collapses into a single match pass here rather than one O(n) pass each.
@@ -320,10 +384,20 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         {
             _selectionDirty = false;
 
+            var unreported = _unreportedSelection;
+            _unreportedSelection = null;
+
             // A selection that actually moves pushes the render to the options it moved between itself, so
             // a pass that changes nothing leaves the options (and the element references they hand over)
             // exactly as they are.
-            await InvokeAsync(SetSelectedItemByCurrentUrl);
+            await InvokeAsync(() => SetSelectedItemByCurrentUrl());
+
+            // The selection the first render already showed is reported here, where a match of the whole batch
+            // would have reported it - unless that match moved it on, which reported the item it moved to.
+            if (unreported is not null && IsSelected(unreported))
+            {
+                await OnSelectItem.InvokeAsync(unreported);
+            }
         }
 
         // A navbar that scrolls has to bring its selected item into view as the selection moves, since the
@@ -334,7 +408,11 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             _scrollToSelectedItem = true;
         }
 
+        await SyncSelectedKey();
+
         await ScrollSelectedItemIntoView();
+
+        await SetupWheel();
 
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -343,8 +421,8 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     internal async Task HandleOnClick(TItem item)
     {
-        if (IsEnabled is false) return;
-        if (GetIsEnabled(item) is false) return;
+        if (Disabled) return;
+        if (GetIsDisabled(item)) return;
 
         // The selection is read before the click is handled: the manual mode selects the clicked item right
         // here, and asking afterwards would report every freshly clicked item as the already-selected one
@@ -376,7 +454,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     // swallowing the Tab that follows an arrow key.
     internal async Task HandleOnKeyDown(TItem source, KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (e.CtrlKey || e.AltKey || e.MetaKey) return;
 
         // The focus event of the item that received the key has already run, so the focused item is known;
@@ -387,18 +465,19 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         if (items.Count == 0) return;
 
         var index = _focusedItem is null ? -1 : items.FindIndex(i => AreEqual(i, _focusedItem));
-        var isRtl = (Dir ?? CascadingDir) == BitDir.Rtl;
 
         // Both axes move along the bar, whichever way it is laid out: the pair that matches the orientation
         // is the expected one, and the other pair is what a reader of a bar or a rail reaches for anyway.
         switch (e.Key)
         {
+            // The direction the bar is laid out in, a page's or a content's included, read only for the keys that
+            // act on it since one Dir does not name costs a round trip.
             case "ArrowRight":
-                await FocusItemAt(items, index + (isRtl ? -1 : 1));
+                await FocusItemAt(items, index + (await IsRtlArrowAsync(_js, e.Key) ? -1 : 1));
                 return;
 
             case "ArrowLeft":
-                await FocusItemAt(items, index + (isRtl ? 1 : -1));
+                await FocusItemAt(items, index + (await IsRtlArrowAsync(_js, e.Key) ? 1 : -1));
                 return;
 
             case "ArrowDown":
@@ -422,9 +501,11 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     // The tab index of an item. By default the navbar is a set of links that Tab reaches one by one, which
     // is how a navigation landmark behaves; SingleTabStop turns it into the roving tab index of a toolbar,
     // where the whole bar is a single stop and the arrow keys move inside it.
-    internal string? GetItemTabIndex(TItem item, bool isEnabled)
+    // A disabled item carries none at all: it is a native disabled button or an anchor without an href, neither
+    // of which is focusable, and a tabindex of -1 would make the anchor focusable by a click again.
+    internal string? GetItemTabIndex(TItem item, bool isDisabled)
     {
-        if (isEnabled is false) return "-1";
+        if (isDisabled) return null;
 
         if (SingleTabStop is false) return null;
 
@@ -458,7 +539,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
                                     .Where(s => s.HasValue()));
     }
 
-    internal string GetItemCssClass(TItem item, bool isEnabled)
+    internal string GetItemCssClass(TItem item, bool isDisabled)
     {
         return string.Join(' ', new[]
         {
@@ -467,7 +548,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             GetClass(item),
             IsSelected(item) ? "bit-nbr-sel" : null,
             IsSelected(item) ? Classes?.SelectedItem : null,
-            isEnabled ? null : "bit-nbr-dis"
+            isDisabled ? "bit-nbr-dis" : null
         }.Where(c => c.HasValue()));
     }
 
@@ -516,6 +597,48 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         catch (JSException) { } // a failure on the JS side leaves the scroll position as it is, which is not fatal
     }
 
+    // Selects the item the DefaultSelectedKey names, once: the first time an item with that key is among the
+    // items. Only the options API ever gets here with the item still missing, since options register as they
+    // render; a selection made in the meantime (a click) takes the place of the default for good.
+    private async Task ApplyDefaultSelectedKey()
+    {
+        if (_defaultSelectedKeyPending is false) return;
+
+        if (SelectedItem is not null || Mode is not BitNavMode.Manual)
+        {
+            _defaultSelectedKeyPending = false;
+            return;
+        }
+
+        var item = _items.FirstOrDefault(i => GetKey(i) == DefaultSelectedKey);
+        if (item is null) return;
+
+        _defaultSelectedKeyPending = false;
+
+        // A successful assignment refreshes the options itself (OnSetSelectedItem).
+        if (await AssignSelectedItem(item) is false) return;
+
+        StateHasChanged();
+    }
+
+    // A horizontal scrolling navbar hides its scrollbar, so the JS side turns a vertical mouse wheel into a
+    // horizontal scroll of the list. The listener is installed once, the first time the navbar scrolls, and
+    // checks the mode at the time of each event, so a navbar that stops scrolling needs no teardown.
+    private async Task SetupWheel()
+    {
+        if (_wheelIsSetUp) return;
+        if (Scrollable is false || Vertical) return;
+
+        _wheelIsSetUp = true;
+
+        try
+        {
+            await _js.BitNavBarSetupWheel(_containerId!);
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone (the reader navigated away), nothing to set up
+        catch (JSException) { } // without the wheel the bar still scrolls by touch, keyboard and selection
+    }
+
     // Brings the item the selection has just landed on into the scrolled area of the navbar.
     private async Task ScrollSelectedItemIntoView()
     {
@@ -542,7 +665,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     // which takes no focus at all, and an item whose template replaced it renders no element of the
     // navbar's at all, so walking onto either would leave the focus where it was while the navbar believes
     // it has moved.
-    private List<TItem> GetFocusableItems() => [.. _items.Where(i => GetIsEnabled(i) && GetReplacedTemplate(i) is null)];
+    private List<TItem> GetFocusableItems() => [.. _items.Where(i => GetIsDisabled(i) is false && GetReplacedTemplate(i) is null)];
 
     // The single stop of the roving tab index is the item the focus was last on, and the selected one
     // before the bar has ever been focused, so Tab returns to where the reader left it either way. A navbar
@@ -588,13 +711,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
         if (_itemElements.TryGetValue(item, out var element) is false) return;
 
-        try
-        {
-            await element.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (JSException) { } // the focus call itself failed, which is nothing to tear the navbar down for
-        catch (InvalidOperationException) { } // the element is no longer in the DOM
+        await element.FocusSafelyAsync();
     }
 
     private void OnSetSelectedItem()
@@ -602,7 +719,67 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         // The selection moved, so a scrolling navbar brings the item it landed on into view after the render.
         _scrollToSelectedItem = true;
 
+        // The key follows the item once the parameters are all in: a SelectedItem assigned by the parent is
+        // assigned before the NameSelectors its key is read through, when both arrive in the same set.
+        _selectedKeyStale = true;
+
         RefreshOptions();
+    }
+
+    // A key that the selection already carries is the navbar writing its own key back; any other one was
+    // written from outside and is applied to the selection once the items (and the options) are there.
+    private void OnSetSelectedKey()
+    {
+        _selectedKeyPending = SelectedKey != GetSelectedItemKey();
+    }
+
+    private string? GetSelectedItemKey() => SelectedItem is null ? null : GetKey(SelectedItem);
+
+    private bool IsSelectionBound() => SelectedItemHasBeenSet || SelectedKeyHasBeenSet;
+
+    // Selects the item the SelectedKey names. A key no item carries yet stays pending, since the options
+    // register only as they render; a selection made in the meantime (a click) writes its own key over it.
+    // The automatic mode owns its selection, so a key written there is answered with the one it selected.
+    private async Task ApplySelectedKey()
+    {
+        if (_selectedKeyPending is false) return;
+
+        if (Mode is not BitNavMode.Manual)
+        {
+            _selectedKeyPending = false;
+            _selectedKeyStale = true;
+            return;
+        }
+
+        TItem? item = null;
+
+        if (SelectedKey is not null)
+        {
+            item = _items.FirstOrDefault(i => GetKey(i) == SelectedKey);
+            if (item is null) return;
+        }
+
+        _selectedKeyPending = false;
+
+        if (IsSelected(item)) return;
+
+        if (await AssignSelectedItem(item) is false) return;
+
+        StateHasChanged();
+    }
+
+    // Writes the key of the selected item back to SelectedKey, after the selection moved by any means.
+    private async Task SyncSelectedKey()
+    {
+        if (_selectedKeyStale is false) return;
+
+        _selectedKeyStale = false;
+
+        var key = GetSelectedItemKey();
+
+        if (key == SelectedKey) return;
+
+        await AssignSelectedKey(key);
     }
 
     private void RefreshOptions()
@@ -625,7 +802,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         // binding and the callback it invokes) is dispatched onto it rather than run right here.
         _ = InvokeAsync(async () =>
         {
-            await SetSelectedItemByCurrentUrl();
+            await SetSelectedItemByCurrentUrl(isNavigation: true);
 
             // The dispatch and the match itself both give the component a chance to be disposed in the
             // meantime (the navigation that raised the event is what takes it off the page, after all),
@@ -637,29 +814,94 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         });
     }
 
-    private async Task SetSelectedItemByCurrentUrl()
+    // Only a navigation can re-select the item that is already selected (a Reselectable navbar reports the
+    // destination the reader went back to): every other match - the one of the first render, the ones after
+    // the items or the matching rules changed - is the navbar re-checking where it already is, and reporting
+    // that as a selection would fire OnSelectItem for nothing the reader did. A prerender selects without the
+    // callback altogether: it is only drawing the page, and the interactive render that replaces it reports the
+    // selection itself, where a handler is free to call JavaScript or navigate.
+    private async Task SetSelectedItemByCurrentUrl(bool isNavigation = false, bool isPrerender = false)
     {
         if (IsDisposed) return;
         if (Mode is not BitNavMode.Automatic) return;
 
-        var (currentUrl, currentPath) = BitNavUrlMatcher.GetCurrentUrl(_navigationManager);
-        var baseUri = _navigationManager.BaseUri;
+        var currentItem = _items.FirstOrDefault(IsCurrentUrlItem);
 
-        var currentItem = _items.FirstOrDefault(item =>
+        if (isNavigation is false && IsSelected(currentItem)) return;
+
+        if (isPrerender)
         {
-            var match = GetMatch(item) ?? Match ?? BitNavMatch.Exact;
-
-            if (IsMatch(GetUrl(item), match)) return true;
-
-            return GetAdditionalUrls(item)?.Any(u => IsMatch(u, match)) is true;
-        });
-
-        await SetSelectedItem(currentItem);
-
-        bool IsMatch(string? itemUrl, BitNavMatch match)
-        {
-            return BitNavUrlMatcher.IsMatch(itemUrl, match, currentUrl, currentPath, baseUri);
+            await AssignPrerenderedSelection(currentItem);
         }
+        else
+        {
+            await SetSelectedItem(currentItem);
+        }
+    }
+
+    private async Task AssignPrerenderedSelection(TItem? item)
+    {
+        // A SelectedKey bound one way holds the selection, as it does in SetSelectedItem.
+        if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
+
+        if (await AssignSelectedItem(item) is false) return;
+
+        await SyncSelectedKey();
+
+        RefreshOptions();
+        StateHasChanged();
+    }
+
+    // Whether an item points at the page the app currently sits on (see BitNavCurrentUrlMatcher).
+    private bool IsCurrentUrlItem(TItem item)
+    {
+        _currentUrlMatcher ??= new(_navigationManager, GetUrl, GetAdditionalUrls, i => GetMatch(i) ?? Match ?? BitNavMatch.Exact);
+
+        return _currentUrlMatcher.IsCurrent(item);
+    }
+
+    // Selects an option of a prerender as it registers, when it is the one the selection is waiting for: the one
+    // pointing at the current URL in the automatic mode, the one carrying the pending SelectedKey or
+    // DefaultSelectedKey in the manual one. Only such an option runs the lookup, which keeps the first render
+    // from scanning every option once per option. The options of the first render register in their markup
+    // order, so the first of them to match is the one the lookup over the whole bar would have picked as well.
+    // The URL match selects without OnSelectItem: a prerender is only drawing the page, and the interactive render
+    // reports the selection after its own first render (see OnAfterRenderAsync), where a handler is free to call
+    // JavaScript or navigate.
+    private async Task SelectRegisteringOption(TItem item)
+    {
+        if (Mode is BitNavMode.Automatic)
+        {
+            if (IsCurrentUrlItem(item) is false) return;
+
+            var previous = SelectedItem;
+
+            await SetSelectedItemByCurrentUrl(isPrerender: true);
+
+            // A prerender is only drawing the page; the interactive render that replaces it is the one that
+            // reports, and only a selection that actually moved (a bound selection may hold it where it is).
+            if (_js.IsRuntimeInvalid() is false && IsSelected(previous) is false)
+            {
+                _unreportedSelection = SelectedItem;
+            }
+
+            return;
+        }
+
+        var key = GetKey(item);
+        if (key is null) return;
+
+        if (_selectedKeyPending && key == SelectedKey)
+        {
+            await ApplySelectedKey();
+        }
+        else if (_defaultSelectedKeyPending && key == DefaultSelectedKey)
+        {
+            await ApplyDefaultSelectedKey();
+        }
+
+        // The key follows the item once it is selected, so a bound SelectedKey learns the default as well.
+        await SyncSelectedKey();
     }
 
     // Reads the Items collection into the list the navbar renders from. The content of the collection is
@@ -690,7 +932,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     // Both the mode and the matching behavior can change after the navbar is rendered, and either one
     // changes which item the current URL points at, so the match is re-run once the change is in.
-    private void OnUrlMatchingChanged()
+    internal void OnUrlMatchingChanged()
     {
         if (Mode is not BitNavMode.Automatic) return;
 
@@ -701,7 +943,15 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     {
         if (IsSelected(item) && Reselectable is false) return;
 
+        // A SelectedKey bound one way holds the selection the same way a one-way SelectedItem does: moving the
+        // item without being able to write the key back would leave the two naming different items.
+        if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
+
         if (await AssignSelectedItem(item) is false) return;
+
+        // The key is written back before the callback runs, so a handler reading a bound key sees the new one,
+        // just as it sees the new item through SelectedItemChanged.
+        await SyncSelectedKey();
 
         await OnSelectItem.InvokeAsync(item);
 

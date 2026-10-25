@@ -51,6 +51,19 @@ public partial class CultureInfoManager
                                 .FirstOrDefault(c => string.Equals(c.Name, cultureName, StringComparison.InvariantCultureIgnoreCase));
     }
 
+    /// <summary>
+    /// The forms <paramref name="url"/> takes under each supported culture. Every page answers to both <c>/about</c> and
+    /// <c>/en-US/about</c> (the <c>{culture?}</c> segment of its route), and a full page load - a refresh, a deep link,
+    /// the first visit - always lands on the latter, so whatever marks the current page by comparing urls (the nav
+    /// panel, the nav bar) has to know these forms too. Empty when the app is not multilingual.
+    /// </summary>
+    public static string[] GetCultureUrls(string url)
+    {
+        if (InvariantGlobalization) return [];
+
+        return [.. SupportedCultures.Select(sc => $"/{sc.Culture.Name}{url}")];
+    }
+
     public static void SetCurrentCulture(string? cultureName)
     {
         var cultureInfo = GetCultureInfo(cultureName) ?? DefaultCulture;

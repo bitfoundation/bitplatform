@@ -248,6 +248,41 @@ $clr-swr-dis-text: var(--bit-clr-swr-dis-text);
 $clr-err-dis: var(--bit-clr-err-dis);
 $clr-err-dis-text: var(--bit-clr-err-dis-text);
 
+//foreground - each accent role's color when it is read as text or an icon on the page's own surfaces
+//(an outlined or text-only variant that drops the role's fill) instead of being filled behind its
+//on-color (-text). A role's main color is picked to fill a surface, so it is often too light (or, in a
+//dark scheme, too dark) to be read on the page directly. The palette-agnostic default lives once in
+//family-tokens.scss; a preset (in its own :root[bit-theme="..."] block) or BitTheme.Color.<Role>.Foreground
+//retunes it without selecting any component class.
+$clr-pri-fg: var(--bit-clr-pri-fg);
+$clr-sec-fg: var(--bit-clr-sec-fg);
+$clr-ter-fg: var(--bit-clr-ter-fg);
+$clr-inf-fg: var(--bit-clr-inf-fg);
+$clr-suc-fg: var(--bit-clr-suc-fg);
+$clr-wrn-fg: var(--bit-clr-wrn-fg);
+$clr-swr-fg: var(--bit-clr-swr-fg);
+$clr-err-fg: var(--bit-clr-err-fg);
+
+//tint - each accent role laid over a surface as a faint, translucent wash instead of a fill: the surface of
+//a tinted (soft) variant, whose text reads the role foreground above. The palette-agnostic default lives
+//once in family-tokens.scss; a preset (in its own :root[bit-theme="..."] block) or
+//BitTheme.Color.<Role>.Tint retunes it without selecting any component class.
+$clr-pri-tint: var(--bit-clr-pri-tint);
+$clr-sec-tint: var(--bit-clr-sec-tint);
+$clr-ter-tint: var(--bit-clr-ter-tint);
+$clr-inf-tint: var(--bit-clr-inf-tint);
+$clr-suc-tint: var(--bit-clr-suc-tint);
+$clr-wrn-tint: var(--bit-clr-wrn-tint);
+$clr-swr-tint: var(--bit-clr-swr-tint);
+$clr-err-tint: var(--bit-clr-err-tint);
+
+//tooltip - the fill and the text of the tooltip surface, the one popup whose colors design systems disagree on
+//(Fluent lifts a light surface with a shadow, Material paints its plain tooltip in the inverse surface with none).
+//The palette-agnostic default lives once in family-tokens.scss; a preset (in its own :root[bit-theme="..."]
+//block) or BitTheme.Color.TooltipBackground / TooltipForeground retunes it without selecting any component class.
+$clr-tooltip-bg: var(--bit-clr-tooltip-bg);
+$clr-tooltip-fg: var(--bit-clr-tooltip-fg);
+
 //focus (a11y) - per-role focus indicator color, plus shape/shadow tokens consumed by the focus-ring mixin.
 $clr-pri-focus: var(--bit-clr-pri-focus);
 $clr-sec-focus: var(--bit-clr-sec-focus);
@@ -302,6 +337,8 @@ $box-shadow-callout2: var(--bit-shd-cal2);
 //or wants hairlines instead of shadows (Cupertino) retunes one token per family. Components consume
 //these instead of the callout primitive.
 $box-shadow-card: var(--bit-shd-card);
+//the elevation a card that reacts to the pointer lifts to while it is hovered.
+$box-shadow-card-hover: var(--bit-shd-card-hover);
 $box-shadow-popup: var(--bit-shd-popup);
 $box-shadow-dialog: var(--bit-shd-dialog);
 $box-shadow-sheet: var(--bit-shd-sheet);
@@ -347,8 +384,19 @@ $box-shadow-24: var(--bit-shd-24);
 
 //spacing
 $spacing-scaling-factor: var(--bit-spa-scaling-factor);
+//The insets below and the density-aware sizes further down are computed HERE, where a component uses
+//them, rather than on :root: a custom property is computed where it is declared, so one :root computed
+//would reach every descendant as the document's length, and a density or spacing unit re-valued on an
+//element (a BitThemeProvider, ApplyBitThemeAsync on the body, plain CSS) would resize nothing under it.
+//The presets declare each as a unitless --<token>-steps, which inherits unchanged, and leave the token
+//itself `initial`; a value set for the token - by a BitTheme, by app CSS, or by a preset that wants an
+//absolute length - is read first and wins.
 //the base inset of a dialog surface (header/body/footer padding).
-$spa-dialog: var(--bit-spa-dialog);
+$spa-dialog: var(--bit-spa-dialog, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-spa-dialog-steps)));
+//the inset of a card and of each of its parts, per size class (Fluent 2 8/12/16px, Material 16dp).
+$spa-card-sm: var(--bit-spa-card-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-spa-card-sm-steps)));
+$spa-card-md: var(--bit-spa-card-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-spa-card-md-steps)));
+$spa-card-lg: var(--bit-spa-card-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-spa-card-lg-steps)));
 
 //layout
 //density is a unitless multiplier over the spacing unit; the fallback of 1 keeps the base rhythm
@@ -361,6 +409,9 @@ $layout-dialog-actions-justify: var(--bit-layout-dialog-actions-justify);
 //how those buttons are aligned across the footer: centered under Fluent and Material, stretched
 //under Cupertino - which is what runs the stacked alert actions full width.
 $layout-dialog-actions-align: var(--bit-layout-dialog-actions-align);
+//how a dialog's title and message sit across it: start-aligned under Fluent and Material, centred
+//under Cupertino, whose alerts centre their text above the stacked actions.
+$layout-dialog-text-align: var(--bit-layout-dialog-text-align);
 
 //z-index
 $zindex-snackbar: var(--bit-zin-snackbar);
@@ -399,10 +450,12 @@ $shp-radius-full: var(--bit-shp-radius-full);
 //  surface - cards, accordions, messages, images, list rows
 //  popup   - callouts, menus, dropdown lists, tooltips, snackbars
 //  dialog  - dialogs and modals
+//  sheet   - the inner corners of panels and other edge-anchored sheets (square unless a preset rounds them)
 $shp-radius-control: var(--bit-shp-radius-control);
 $shp-radius-surface: var(--bit-shp-radius-surface);
 $shp-radius-popup: var(--bit-shp-radius-popup);
 $shp-radius-dialog: var(--bit-shp-radius-dialog);
+$shp-radius-sheet: var(--bit-shp-radius-sheet);
 
 //shape - per control sub-family radius. A button, a chip and a selection box are controls too, so
 //all three fall back to $shp-radius-control; a design system that shapes them apart from a plain
@@ -416,26 +469,42 @@ $shp-radius-button: var(--bit-shp-radius-button);
 $shp-radius-chip: var(--bit-shp-radius-chip);
 $shp-radius-selection: var(--bit-shp-radius-selection);
 
+//shape - the corners of the selection indicator of a tab strip (BitPivot): square under Fluent, a capsule
+//under Fluent 2, rounded on the edge facing the label under Material. Two tokens rather than one shorthand,
+//since the edge facing the label is the top one under a horizontal header but the inline-end one beside a
+//vertical header: -tab-indicator rounds the corners facing the label, -tab-indicator-base the ones on the
+//edge the indicator stands on, and follows the first unless a design system shapes the two apart.
+$shp-radius-tab-indicator: var(--bit-shp-radius-tab-indicator);
+$shp-radius-tab-indicator-base: var(--bit-shp-radius-tab-indicator-base, var(--bit-shp-radius-tab-indicator));
+
+//shape - the corners of a linear progress track and its bar (BitProgress, the progress of a BitFileUpload
+//item): square under Fluent, 4px under Fluent 2, full under Material and Cupertino. A token of its own
+//rather than a point on the scale, since a preset that rounded --bit-shp-radius-none would round
+//everything else that means "square".
+$shp-radius-progress: var(--bit-shp-radius-progress);
+
 /*---- Size ----*/
 //The dimensions every design system decides once and every component repeats: control heights,
 //icon glyph sizes, selection-indicator (checkbox box / radio ring) sizes, the spinner stroke and
 //the maximum height of a popup list. The heights and indicator sizes are density-aware by default
-//(multiples of the spacing unit); a preset may set absolute lengths instead.
-$siz-ctrl-sm: var(--bit-siz-ctrl-sm);
-$siz-ctrl-md: var(--bit-siz-ctrl-md);
-$siz-ctrl-lg: var(--bit-siz-ctrl-lg);
-$siz-ctrl-pad-x-sm: var(--bit-siz-ctrl-pad-x-sm);
-$siz-ctrl-pad-x-md: var(--bit-siz-ctrl-pad-x-md);
-$siz-ctrl-pad-x-lg: var(--bit-siz-ctrl-pad-x-lg);
-$siz-ctrl-pad-y-sm: var(--bit-siz-ctrl-pad-y-sm);
-$siz-ctrl-pad-y-md: var(--bit-siz-ctrl-pad-y-md);
-$siz-ctrl-pad-y-lg: var(--bit-siz-ctrl-pad-y-lg);
-$siz-ctrl-min-width: var(--bit-siz-ctrl-min-width);
-$siz-item-sm: var(--bit-siz-item-sm);
-$siz-item-md: var(--bit-siz-item-md);
-$siz-item-lg: var(--bit-siz-item-lg);
-$siz-tab: var(--bit-siz-tab);
+//(steps of the spacing unit, computed where they are used - see the note on the spacing aliases); a
+//preset may set one as an absolute length instead, which opts it out of density.
+$siz-ctrl-sm: var(--bit-siz-ctrl-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-sm-steps)));
+$siz-ctrl-md: var(--bit-siz-ctrl-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-md-steps)));
+$siz-ctrl-lg: var(--bit-siz-ctrl-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-lg-steps)));
+$siz-ctrl-pad-x-sm: var(--bit-siz-ctrl-pad-x-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-pad-x-sm-steps)));
+$siz-ctrl-pad-x-md: var(--bit-siz-ctrl-pad-x-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-pad-x-md-steps)));
+$siz-ctrl-pad-x-lg: var(--bit-siz-ctrl-pad-x-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-pad-x-lg-steps)));
+$siz-ctrl-pad-y-sm: var(--bit-siz-ctrl-pad-y-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-pad-y-sm-steps)));
+$siz-ctrl-pad-y-md: var(--bit-siz-ctrl-pad-y-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-pad-y-md-steps)));
+$siz-ctrl-pad-y-lg: var(--bit-siz-ctrl-pad-y-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-pad-y-lg-steps)));
+$siz-ctrl-min-width: var(--bit-siz-ctrl-min-width, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-min-width-steps)));
+$siz-item-sm: var(--bit-siz-item-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-item-sm-steps)));
+$siz-item-md: var(--bit-siz-item-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-item-md-steps)));
+$siz-item-lg: var(--bit-siz-item-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-item-lg-steps)));
+$siz-tab: var(--bit-siz-tab, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-tab-steps)));
 $siz-tab-indicator: var(--bit-siz-tab-indicator);
+$siz-tab-divider: var(--bit-siz-tab-divider);
 $siz-divider: var(--bit-siz-divider);
 $siz-track-sm: var(--bit-siz-track-sm);
 $siz-track-md: var(--bit-siz-track-md);
@@ -443,29 +512,41 @@ $siz-track-lg: var(--bit-siz-track-lg);
 $siz-icon-sm: var(--bit-siz-icon-sm);
 $siz-icon-md: var(--bit-siz-icon-md);
 $siz-icon-lg: var(--bit-siz-icon-lg);
-$siz-sel-sm: var(--bit-siz-sel-sm);
-$siz-sel-md: var(--bit-siz-sel-md);
-$siz-sel-lg: var(--bit-siz-sel-lg);
+$siz-sel-sm: var(--bit-siz-sel-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-sel-sm-steps)));
+$siz-sel-md: var(--bit-siz-sel-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-sel-md-steps)));
+$siz-sel-lg: var(--bit-siz-sel-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-sel-lg-steps)));
 //the switch (BitToggle) geometry per size class: the track it slides in and the knob that slides.
 //Every design system draws its own switch - Fluent's 40x20 pill with a 12px knob, Material's 52x32
 //with a 24dp handle, the 51x31 UISwitch with its 27pt thumb - and the inset that keeps the knob
 //off the track edge is derived from the two, so a preset only sets these three per size.
-$siz-switch-w-sm: var(--bit-siz-switch-w-sm);
-$siz-switch-w-md: var(--bit-siz-switch-w-md);
-$siz-switch-w-lg: var(--bit-siz-switch-w-lg);
-$siz-switch-h-sm: var(--bit-siz-switch-h-sm);
-$siz-switch-h-md: var(--bit-siz-switch-h-md);
-$siz-switch-h-lg: var(--bit-siz-switch-h-lg);
-$siz-switch-thumb-sm: var(--bit-siz-switch-thumb-sm);
-$siz-switch-thumb-md: var(--bit-siz-switch-thumb-md);
-$siz-switch-thumb-lg: var(--bit-siz-switch-thumb-lg);
+$siz-switch-w-sm: var(--bit-siz-switch-w-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-switch-w-sm-steps)));
+$siz-switch-w-md: var(--bit-siz-switch-w-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-switch-w-md-steps)));
+$siz-switch-w-lg: var(--bit-siz-switch-w-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-switch-w-lg-steps)));
+$siz-switch-h-sm: var(--bit-siz-switch-h-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-switch-h-sm-steps)));
+$siz-switch-h-md: var(--bit-siz-switch-h-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-switch-h-md-steps)));
+$siz-switch-h-lg: var(--bit-siz-switch-h-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-switch-h-lg-steps)));
+$siz-switch-thumb-sm: var(--bit-siz-switch-thumb-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-switch-thumb-sm-steps)));
+$siz-switch-thumb-md: var(--bit-siz-switch-thumb-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-switch-thumb-md-steps)));
+$siz-switch-thumb-lg: var(--bit-siz-switch-thumb-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-switch-thumb-lg-steps)));
 //the draggable handle of a slider per size class (Material's 20dp handle, the 28pt UISlider knob).
-$siz-slider-thumb-sm: var(--bit-siz-slider-thumb-sm);
-$siz-slider-thumb-md: var(--bit-siz-slider-thumb-md);
-$siz-slider-thumb-lg: var(--bit-siz-slider-thumb-lg);
+$siz-slider-thumb-sm: var(--bit-siz-slider-thumb-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-slider-thumb-sm-steps)));
+$siz-slider-thumb-md: var(--bit-siz-slider-thumb-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-slider-thumb-md-steps)));
+$siz-slider-thumb-lg: var(--bit-siz-slider-thumb-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-slider-thumb-lg-steps)));
+//the height of a badge per size class, which is also the diameter of a single-digit counter, and the
+//diameter of a dot badge (Fluent 2's 16/20/24px counters, Material's 16dp large and 6dp small badge).
+$siz-badge-sm: var(--bit-siz-badge-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-badge-sm-steps)));
+$siz-badge-md: var(--bit-siz-badge-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-badge-md-steps)));
+$siz-badge-lg: var(--bit-siz-badge-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-badge-lg-steps)));
+$siz-badge-dot-sm: var(--bit-siz-badge-dot-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-badge-dot-sm-steps)));
+$siz-badge-dot-md: var(--bit-siz-badge-dot-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-badge-dot-md-steps)));
+$siz-badge-dot-lg: var(--bit-siz-badge-dot-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-badge-dot-lg-steps)));
+//the height of a chip (BitTag) per size class, inside its rule (Fluent 2's 20/24/32px tags, Material's 32dp chip).
+$siz-chip-sm: var(--bit-siz-chip-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-chip-sm-steps)));
+$siz-chip-md: var(--bit-siz-chip-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-chip-md-steps)));
+$siz-chip-lg: var(--bit-siz-chip-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-chip-lg-steps)));
 $siz-spinner-stroke: var(--bit-siz-spinner-stroke);
-$siz-popup-max-height: var(--bit-siz-popup-max-height);
-$siz-dialog-max-width: var(--bit-siz-dialog-max-width);
+$siz-popup-max-height: var(--bit-siz-popup-max-height, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-popup-max-height-steps)));
+$siz-dialog-max-width: var(--bit-siz-dialog-max-width, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-dialog-max-width-steps)));
 
 /*---- Opacity ----*/
 //The alpha of an element that is disabled but must keep its own colors (an image, a color swatch).
@@ -481,6 +562,22 @@ $box-shadow-focus-ring: var(--bit-shd-focus-ring);
 $mot-duration: var(--bit-mot-duration);
 $mot-duration-short: var(--bit-mot-duration-short);
 $mot-duration-long: var(--bit-mot-duration-long);
+//The unreduced durations: never collapsed by prefers-reduced-motion. Only for motion that stays
+//meaningful under the preference - a change of color, not a movement (BitModal's refusal ring) - or
+//for the default of a duration the page can set, which mot-scaled-duration collapses through the factor
+//below instead (BitAccordion's transition). Each falls back to its plain token, for a consumer theme
+//that declares only the plain ones by hand.
+$mot-duration-full: var(--bit-mot-duration-full, var(--bit-mot-duration));
+$mot-duration-short-full: var(--bit-mot-duration-short-full, var(--bit-mot-duration-short));
+$mot-duration-long-full: var(--bit-mot-duration-long-full, var(--bit-mot-duration-long));
+//A duration the PAGE sets on a component (a public --bit-<Component>-*-duration variable, a duration
+//parameter written inline) is none of the tokens above, so it is scaled by this factor instead - 1
+//normally, 0 under prefers-reduced-motion, 1 again wherever the tokens are restored (.bit-fam, an app's
+//:root). A component never multiplies by it by hand: it reads the duration through mot-scaled-duration
+//(and a delay through mot-scaled-delay) from functions.scss, and writes no reduced-motion query or
+//.bit-fam restore of its own. The fallback of 1 keeps a consumer-defined theme that never sets the
+//token at the page's pace.
+$mot-duration-factor: var(--bit-mot-duration-factor, 1);
 $mot-easing: var(--bit-mot-easing);
 //Entry (decelerate) and exit (accelerate) curves for popups, callouts and sheets. Standard easing
 //is for state transitions on an element that stays; these are for elements arriving and leaving.
@@ -506,6 +603,11 @@ $mot-easing-spinner: var(--bit-mot-easing-spinner);
 //the loop factor multiplies literal durations inside calc(), so it carries a fallback of 1 to keep
 //those animations valid for consumer-defined themes that never set the token.
 $mot-loop-factor: var(--bit-mot-loop-factor, 1);
+//The unreduced looping tokens, which the reduced-motion query never calms - for the same narrow uses
+//as the unreduced durations above, with the same fallback to the plain token.
+$mot-duration-spinner-full: var(--bit-mot-duration-spinner-full, var(--bit-mot-duration-spinner));
+$mot-easing-spinner-full: var(--bit-mot-easing-spinner-full, var(--bit-mot-easing-spinner));
+$mot-loop-factor-full: var(--bit-mot-loop-factor-full, var(--bit-mot-loop-factor, 1));
 
 /*---- Typography ----*/
 $tg-font-family: var(--bit-tpg-font-family);
@@ -548,6 +650,17 @@ $tg-fw-bold: var(--bit-tpg-fw-bold);
 // nav item). Fluent leaves both alone; Material 2 upper-cases buttons and tracks labels at 0.1px.
 $tg-ctrl-letter-spacing: var(--bit-tpg-ctrl-letter-spacing);
 $tg-ctrl-text-transform: var(--bit-tpg-ctrl-text-transform);
+
+// dialog typography - the title of a dialog, which every design system sizes apart from its heading
+// ramp (Fluent and Fluent 2: 20px semibold; Material: headline-small 24px regular; Cupertino: the 17px
+// semibold alert headline).
+$tg-dialog-title-font-size: var(--bit-tpg-dialog-title-font-size);
+$tg-dialog-title-font-weight: var(--bit-tpg-dialog-title-font-weight);
+
+// field-label typography - the weight of the caption that names a form field (BitLabel and the label an
+// input renders above itself), which design systems decide apart from the control-label weight: Fluent
+// sets it semibold, while Fluent 2, Material and Cupertino caption a field in their regular weight.
+$tg-field-label-font-weight: var(--bit-tpg-field-label-font-weight);
 
 // h1
 $tg-h1-margin: var(--bit-tpg-h1-margin);

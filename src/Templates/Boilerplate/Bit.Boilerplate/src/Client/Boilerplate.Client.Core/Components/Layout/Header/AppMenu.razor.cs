@@ -32,11 +32,8 @@ public partial class AppMenu
     private bool isOpen;
     private bool showCultures;
     private bool isSignOutConfirmOpen;
+    private DeviceAccountDto[] otherAccounts = [];
     private BitChoiceGroupItem<string>[] cultures = default!;
-    private bool showTimeZones;
-    private string? currentTimeZoneId;
-    private string? timeZoneSearchText;
-    private TimeZoneOption[] timeZones = [];
     //#if (signalR == true || notification == true)
     private bool notificationsEnabled;
     //#endif
@@ -52,21 +49,10 @@ public partial class AppMenu
 
     private bool ShowMainMenu =>
         showCultures is false
-        && showTimeZones is false
         //#if (multitenant == true)
         && showTenants is false
         //#endif
         ;
-
-    private sealed record TimeZoneOption(string Id, string Text);
-
-    private TimeZoneOption[] FilteredTimeZones =>
-        string.IsNullOrWhiteSpace(timeZoneSearchText)
-            ? timeZones
-            : [.. timeZones.Where(tz => tz.Text.Contains(timeZoneSearchText, StringComparison.OrdinalIgnoreCase))];
-
-    private bool IsCurrentTimeZone(TimeZoneOption timeZone) =>
-        string.Equals(timeZone.Id, currentTimeZoneId, StringComparison.OrdinalIgnoreCase);
 
 
     private string? ProfileImageUrl => CurrentUser?.GetProfileImageUrl(AbsoluteServerAddress);
@@ -218,62 +204,9 @@ public partial class AppMenu
     }
     //#endif
 
-    private async Task ShowTimeZones()
+    private async Task OnTimeZoneChanged(string? timeZoneId)
     {
-        showTimeZones = true;
-        timeZoneSearchText = null;
-
-        var currentTimeZone = await TimeZoneService.GetCurrentTimeZone();
-        var currentTimeZoneText = GetTimeZoneDisplayText(currentTimeZone);
-        var systemTimeZones = TimeZoneInfo.GetSystemTimeZones();
-
-        currentTimeZoneId = systemTimeZones.FirstOrDefault(tz => string.Equals(tz.Id, currentTimeZone.Id, StringComparison.OrdinalIgnoreCase))?.Id
-                            ?? systemTimeZones.FirstOrDefault(tz => string.Equals(GetTimeZoneDisplayText(tz), currentTimeZoneText, StringComparison.OrdinalIgnoreCase))?.Id
-                            ?? currentTimeZone.Id;
-
-        // Rebuilt on every open rather than cached, because the current zone leads the list and changes with it.
-        // Android's tzdata carries the IANA links as ids of their own ("Iran" beside "Asia/Tehran"), and both render
-        // the same text, so rows that read alike are dropped - after the ordering, which keeps the current zone's one.
-        timeZones = [.. systemTimeZones
-            .OrderByDescending(tz => string.Equals(tz.Id, currentTimeZoneId, StringComparison.OrdinalIgnoreCase))
-            .ThenBy(tz => tz.BaseUtcOffset)
-            .ThenBy(tz => tz.Id, StringComparer.OrdinalIgnoreCase)
-            .Select(tz => new TimeZoneOption(tz.Id, GetTimeZoneDisplayText(tz)))
-            .DistinctBy(tz => tz.Text, StringComparer.OrdinalIgnoreCase)];
-    }
-
-    /// <summary>
-    /// Normalizes the three wordings the runtimes produce - "(UTC+03:30) Tehran" on Windows, "(UTC+03:30) Asia/Tehran"
-    /// in the browser, the bare "Asia/Tehran" on Android/iOS - to the first, keeping the offset so the list stays
-    /// searchable by it. The IANA area is dropped and underscores become spaces ("Asia/Tehran" reads as "Tehran"),
-    /// but only when the name IS the zone's own id, so a real display name containing a slash is never cut in half.
-    /// </summary>
-    private static string GetTimeZoneDisplayText(TimeZoneInfo timeZone)
-    {
-        var displayName = timeZone.DisplayName;
-
-        var offsetEndIndex = displayName.StartsWith('(') ? displayName.IndexOf(')', StringComparison.Ordinal) : -1;
-
-        var offset = timeZone.BaseUtcOffset;
-        var offsetText = offsetEndIndex is -1
-            ? $"(UTC{(offset < TimeSpan.Zero ? '-' : '+')}{offset:hh\\:mm})"
-            : displayName[..(offsetEndIndex + 1)];
-
-        var place = offsetEndIndex is -1 ? displayName : displayName[(offsetEndIndex + 1)..].TrimStart();
-
-        if (place == timeZone.Id && place.IndexOf('/', StringComparison.Ordinal) is int areaSeparatorIndex and not -1)
-        {
-            place = place[(areaSeparatorIndex + 1)..].Replace('_', ' ');
-        }
-
-        return $"{offsetText} {place}";
-    }
-
-    private async Task OnTimeZoneChanged(string timeZoneId)
-    {
-        if (timeZoneId == currentTimeZoneId) return;
-
-        currentTimeZoneId = timeZoneId;
+        if (string.IsNullOrEmpty(timeZoneId) || BitTimeZones.Find(timeZoneId) == BitTimeZones.Find(TimeZoneService.CurrentTimeZone)) return;
 
         await TimeZoneService.ChangeTimeZone(timeZoneId);
     }
@@ -337,6 +270,8 @@ public partial class AppMenu
     /// </summary>
     private async Task OnDropMenuOpen()
     {
+        otherAccounts = await AuthManager.GetOtherAccounts();
+
         //#if (signalR == true || notification == true)
         await RefreshNotificationsState();
         //#endif
@@ -356,7 +291,6 @@ public partial class AppMenu
     private void OnDropMenuDismiss()
     {
         showCultures = false;
-        showTimeZones = false;
         //#if (multitenant == true)
         showTenants = false;
         //#endif
@@ -376,17 +310,33 @@ public partial class AppMenu
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(disposing);
-
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
         //#if (multitenant == true)
         AuthManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
         //#endif
+
+        await base.DisposeAsync(disposing);
     }
 
     private async Task ModalSignIn()
     {
         CloseMenu();
         await signInModalService.SignIn();
+    }
+
+    private async Task SwitchAccount(DeviceAccountDto account)
+    {
+        CloseMenu();
+        await AuthManager.SwitchAccount(account.User.Id);
+    }
+
+    private async Task AddAccount()
+    {
+        CloseMenu();
+
+        if (await signInModalService.SignIn())
+        {
+            PubSubService.Publish(ClientAppMessages.SOFT_RESTART);
+        }
     }
 }

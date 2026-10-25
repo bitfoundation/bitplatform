@@ -1,0 +1,240 @@
+﻿@page "/composition"
+@implements IDisposable
+@inject DemoDirectory Directory
+
+<PageTitle>Groups, custom layout &amp; resilience · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Groups, custom layout &amp; resilience</h1>
+    <p class="bb-subtitle">
+        Three things a form needs once it stops being a demo. Fields that cluster into named
+        <code>&lt;fieldset&gt;</code>s a screen reader announces; a layout the page owns, built from
+        <code>&lt;BormField&gt;</code>; and a dropdown whose service is allowed to fall over
+        without taking the page with it. Every field also has its own undo, because
+        <code>Reset()</code> is far too blunt when the user changed their mind about one answer.
+    </p>
+</div>
+
+<div class="bb-note">
+    On the right: tick <em>Break the component service</em> and choose a team - the dropdown says the options could
+    not be loaded, and the page logs why. Untick it (or press <em>Retry</em>) and the components arrive. Type a
+    subject, then press <em>Undo subject</em> to put back just that answer; the counter beside it follows
+    <code>DirtyFields</code>. <em>Raise ticket</em> on an empty form validates the fields where the page put them.
+</div>
+
+<div class="bb-split bb-page-wide">
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Grouped, rendered whole</span></div>
+        <p class="bb-card-desc">
+            <code>[Display(GroupName = "…")]</code> — or <code>f.Group("…")</code> — clusters a run of
+            fields into one labelled fieldset.
+        </p>
+        @* The same schema is rendered twice on this page, so each copy gets an id prefix of its own —
+           otherwise both would render borm_ReporterName, and a label in one would point at the other. *@
+        <BormView State="_grouped" ShowSubmitButton="false" IdPrefix="grouped_" />
+    </div>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">The same schema, the page's layout</span></div>
+        <p class="bb-card-desc">
+            Placed one field at a time, interleaved with the page's own markup. Labels, validation,
+            conditions and the <code>aria-*</code> wiring all still come from the schema.
+        </p>
+
+        @* The theme's custom properties are declared on .bit-borm-form - the element BormView renders -
+           so a layout of the page's own carries the class to dress its fields the same way. *@
+        <div class="bit-borm-form demo-own-layout">
+            <div class="demo-two-up">
+                <BormField State="_custom" Name="ReporterName" />
+                <BormField State="_custom" Name="ReporterEmail" />
+            </div>
+
+            <p class="bb-overline">Routing</p>
+            <BormField State="_custom" Name="Team" />
+
+            <BormField State="_custom" Name="Component" />
+
+            <div class="demo-service">
+                <button type="button" class="bit-borm-btn bit-borm-btn--sm" @onclick="RetryComponents">Retry</button>
+                <label class="bb-check">
+                    <input type="checkbox" checked="@_breakTheService" @onchange="ToggleService" />
+                    Break the component service
+                </label>
+            </div>
+            @if (_lastFailure is not null)
+            {
+                <p class="demo-failure">
+                    Logged by the page's <code>OnOptionsLoadFailed</code> handler on <code>state.OptionsLoadFailed</code>: @_lastFailure
+                </p>
+            }
+
+            <hr />
+
+            @* AsSearch(): the same string value, but the browser gives it a clear affordance, a search key
+               on the on-screen keyboard and history from previous searches. *@
+            <BormField State="_custom" Name="RelatedTicket" />
+            <BormField State="_custom" Name="Subject" />
+            <BormField State="_custom" Name="Details" />
+
+            <div class="bit-borm-form__actions">
+                <button type="button" class="bit-borm-btn bit-borm-btn--primary" @onclick="Submit">Raise ticket</button>
+                @* aria-disabled, not disabled: it switches itself off when pressed, and a disabled button drops the focus of
+                   the user who pressed it to the page body. ResetField on a clean field changes nothing. *@
+                <button type="button" class="bit-borm-btn" aria-disabled="@(_custom.IsDirty("Subject") ? null : "true")" @onclick='() => _custom.ResetField("Subject")'>
+                    Undo subject
+                </button>
+                <span class="bb-soft">
+                    @(_custom.IsFormDirty ? $"{_custom.DirtyFields.Count} unsaved change(s)" : "No unsaved changes")
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Raised ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+// 1. Named groups. A run of consecutive fields sharing a Group name becomes one <fieldset> with a
+//    <legend>, so a screen reader announces "Who you are" as focus enters the first control in it.
+//    [Display(GroupName = "Who you are")] on the model does the same thing.
+var schema = BormBuilder.For<SupportTicket>()
+    .Field(x => x.ReporterName,  f => f.Required().Group("Who you are"))
+    .Field(x => x.ReporterEmail, f => f.AsEmail().Required().Group("Who you are"))
+    .Field(x => x.Team,      f => f.Group("Where it belongs").Options(Teams))
+    .Field(x => x.Component, f => f.Group("Where it belongs")
+        // 2. A lookup that is allowed to fail. A provider that throws does not take the page down:
+        //    the failure is recorded (state.OptionsError(path)), raised as OptionsLoadFailed, and
+        //    "Options could not be loaded" is shown in place of the choices - and
+        //    state.InvalidateOptions(path) asks again.
+        .OptionsFrom(async ctx => await components.ForTeamAsync(ctx.Value("Team") as string, ctx.CancellationToken),
+                     value: c => c, label: c => c,
+                     dependsOn: nameof(SupportTicket.Team)))
+    // AsSearch(): the same string, but a search box - a clear button, a search key on a phone's
+    // keyboard, and the browser's history of earlier searches.
+    .Field(x => x.RelatedTicket, f => f.AsSearch().Suggest("SUP-1201", "SUP-1233"))
+    // A counter drops the maxlength attribute, so a pasted subject keeps every character and the
+    // count turns red instead of the answer being silently truncated.
+    .Field(x => x.Subject, f => f.Required().MaxLength(80).CharacterCount().UpdateOnInput())
+    .Field(x => x.Details, f => f.AsTextArea(4))
+    .Build();
+
+var state = new BormState(schema, new BormModelDataAccessor(model));
+state.OptionsLoadFailed += (path, ex) => logger.LogWarning(ex, "Options for {Path} failed", path);
+
+// 3. The page owns the layout. BormField places one field wherever you want it while the
+//    schema keeps the label, the rules, the conditions and the accessibility wiring. The theme's
+//    custom properties live on .bit-borm-form, so the page's own wrapper carries the class.
+//    A name the schema does not have renders nothing - right for a schema chosen at run time;
+//    ThrowIfMissing="true" turns a typo in a fixed layout into an exception instead.
+//    BormErrorSummary State="state" and BormValidationMessages are there for a layout that
+//    wants the summary or a message list of its own.
+<div class="bit-borm-form">
+    <div style="display:grid;grid-template-columns:1fr 1fr;">
+        <BormField State="state" Name="ReporterName" />
+        <BormField State="state" Name="ReporterEmail" />
+    </div>
+    <BormField State="state" Name="Subject" ThrowIfMissing="true" />
+    <button type="button" @onclick="() => state.SubmitAsync(Save)">Raise ticket</button>
+</div>
+
+// 4. Per-field undo, and dirtiness that is a comparison rather than a flag: typing a character and
+//    deleting it again leaves the field clean, so this button switches itself off - aria-disabled, so the focus
+//    stays on it when it does.
+<button aria-disabled="@(state.IsDirty("Subject") ? null : "true")" @onclick='() => state.ResetField("Subject")'>Undo subject</button>
+""";
+
+    private readonly SupportTicket _groupedModel = new();
+    private readonly SupportTicket _customModel = new();
+    private BormState _grouped = default!;
+    private BormState _custom = default!;
+
+    private bool _breakTheService;
+    private string? _lastFailure;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        // Only the right-hand form has the switch that breaks the service and the Retry that recovers from it.
+        _grouped = new BormState(Schema(breakable: false), new BormModelDataAccessor(_groupedModel));
+        _custom = new BormState(Schema(breakable: true), new BormModelDataAccessor(_customModel)) { IdPrefix = "custom_" };
+
+        _grouped.StateChanged += OnStateChanged;
+        _custom.StateChanged += OnStateChanged;
+        _custom.OptionsLoadFailed += OnOptionsLoadFailed;
+    }
+
+    private BormDefinition Schema(bool breakable) => BormBuilder.For<SupportTicket>()
+        .Title("Raise a ticket")
+        .Field(x => x.ReporterName, f => f.Required())
+        .Field(x => x.ReporterEmail, f => f.AsEmail().Required())
+        .Field(x => x.Team, f => f
+            .Options([.. DemoDirectory.Teams])
+            .Placeholder("Pick a team"))
+        .Field(x => x.Component, f => f
+            .OptionsFrom(
+                load: async ctx => await Directory.GetComponentsAsync(
+                    ctx.Value(nameof(SupportTicket.Team)) as string, breakable && _breakTheService, ctx.CancellationToken),
+                value: c => c,
+                label: c => c,
+                dependsOn: nameof(SupportTicket.Team))
+            .Help("Loaded once a team is chosen."))
+        .Field(x => x.RelatedTicket, f => f
+            .AsSearch()
+            .Placeholder("SUP-1234")
+            .Suggest("SUP-1201", "SUP-1233", "SUP-1240"))
+        // No maxlength attribute: the counter is non-destructive, so pasting a long subject keeps every
+        // character and turns the count red instead of silently truncating it.
+        .Field(x => x.Subject, f => f.Required().MaxLength(80).CharacterCount().UpdateOnInput())
+        .Field(x => x.Details, f => f.AsTextArea(4))
+        .Build();
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private void OnOptionsLoadFailed(string path, Exception ex)
+    {
+        _lastFailure = $"{path} — {ex.Message}";
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleService(ChangeEventArgs e)
+    {
+        _breakTheService = e.Value is bool b && b;
+        _lastFailure = null;
+        RetryComponents();
+    }
+
+    private void RetryComponents() => _custom.InvalidateOptions(nameof(SupportTicket.Component));
+
+    private async Task Submit()
+    {
+        var valid = await _custom.SubmitAsync();
+        _submitted = valid;
+        if (valid)
+        {
+            _json = System.Text.Json.JsonSerializer.Serialize(_customModel,
+                new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            // The values just saved are the new baseline, so the "unsaved changes" counter goes quiet.
+            _custom.AcceptChanges();
+        }
+    }
+
+    public void Dispose()
+    {
+        _grouped.StateChanged -= OnStateChanged;
+        _custom.StateChanged -= OnStateChanged;
+        _custom.OptionsLoadFailed -= OnOptionsLoadFailed;
+        _grouped.Dispose();
+        _custom.Dispose();
+    }
+}

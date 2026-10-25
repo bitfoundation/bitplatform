@@ -1,4 +1,4 @@
-/**
+﻿/**
  * This class aims to provide some methods:
  *  - to reorder elements in the DOM with respect to the visual order;
  *  - to create a link, using aria-owns, between spans in the textLayer and

@@ -1,0 +1,73 @@
+﻿@page "/sortable/cancel-on-drop-outside"
+
+<PageTitle>Sortable - Cancel on Drop Outside · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Sortable - Cancel on Drop Outside</h1>
+    <p class="bb-subtitle">
+        Like the simple sortable, but the order is only committed if you drop <em>on the list</em>.
+        Drop a card anywhere else and it snaps back to where it started. This uses
+        <code>OnEnd</code> with its <code>DidDrop</code> to detect a drop outside. The list
+        itself is a drop target too, so a drop in the gap between two cards still counts. A keyboard drag
+        cancelled with <kbd>Escape</kbd> ends the same way, with <code>DidDrop</code> false, and the card goes back
+        too.
+    </p>
+</div>
+
+<div class="bb-demo">
+    <BdndProvider>
+        <BdndDropTarget TItem="SortableCard.DragItem" Accept="@ItemTypes.Card" style="max-width:24rem;">
+            @foreach (var (card, index) in _cards.Select((c, i) => (c, i)))
+            {
+                <SortableCard Card="card" Index="index" OnMove="Move"
+                              OnDragBegin="OnBegin" OnDragEnd="OnEnd" @key="card.Id" />
+            }
+        </BdndDropTarget>
+    </BdndProvider>
+
+    <p class="demo-caption sortable-order">Order: @string.Join(", ", _cards.Select(c => c.Text))</p>
+</div>
+
+<DemoCode />
+
+@code {
+    private readonly List<SortableCard.CardModel> _cards =
+    [
+        new(1, "Alpha"),
+        new(2, "Bravo"),
+        new(3, "Charlie"),
+        new(4, "Delta"),
+        new(5, "Echo"),
+    ];
+
+    private SortableCard.CardModel? _dragged;
+    private int _originalIndex;
+
+    private void OnBegin(int index)
+    {
+        _originalIndex = index;
+        _dragged = _cards[index];
+    }
+
+    private void Move((int From, int To) move)
+    {
+        var (from, to) = move;
+        if (from < 0 || from >= _cards.Count || to < 0 || to >= _cards.Count) return;
+        var card = _cards[from];
+        _cards.RemoveAt(from);
+        _cards.Insert(to, card);
+    }
+
+    private void OnEnd(bool didDrop)
+    {
+        if (didDrop || _dragged is null) return;
+        // dropped outside the list -> revert to original position
+        var current = _cards.IndexOf(_dragged);
+        if (current >= 0 && current != _originalIndex)
+        {
+            _cards.RemoveAt(current);
+            _cards.Insert(_originalIndex, _dragged);
+        }
+        _dragged = null;
+    }
+}

@@ -1,3 +1,4 @@
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Bit.BlazorUI;
@@ -9,11 +10,30 @@ namespace Bit.BlazorUI;
 /// from anywhere on the screen with the browser's eyedropper.
 /// </summary>
 /// <remarks>
+/// <para>
 /// The value is read and written in whichever CSS notation it arrives in - hexadecimal, <c>rgb()</c>,
 /// <c>hsl()</c>, a named color - unless a <see cref="Format"/> pins it to one, and the whole picker is
-/// operable from the keyboard.
+/// operable from the keyboard. Hexadecimal in three, four, six or eight digits, <c>rgb()</c> and <c>rgba()</c>,
+/// <c>hsl()</c> and <c>hsla()</c>, <c>hwb()</c>, <c>lab()</c> and <c>lch()</c>, <c>oklab()</c> and <c>oklch()</c>,
+/// <c>color(srgb ...)</c>, a CSS color keyword such as "tomato", and <c>transparent</c> are all understood, in both
+/// the comma-separated and the modern space-separated syntax - as are <c>hsv()</c> and <c>hsva()</c>, which are not
+/// CSS notations but the model the picker itself is built on. A null or unrecognized value shows white and is left
+/// as it is, so a required picker bound to nothing stays invalid until a color is actually picked.
+/// </para>
+/// <para>
+/// It takes part in an EditForm like every other input: the value is validated through the cascading EditContext,
+/// and the base <see cref="BitInputBase{TValue}.OnChange"/> reports the new value whenever it moves, a step of a drag
+/// included, beside the <see cref="OnColorChange"/> and <see cref="OnChangeEnd"/> that carry the color in every
+/// notation.
+/// </para>
+/// <para>
+/// A read-only picker still shows its color at full contrast, but nothing about it can be changed. Every control
+/// stays in the tab order and keeps its colors, since a read-only picker exists to be read: the widgets that hold a
+/// value declare <c>aria-readonly</c> or the native <c>readonly</c>, and the buttons that would change the color
+/// declare <c>aria-disabled</c>. Only a disabled picker leaves the interaction altogether.
+/// </para>
 /// </remarks>
-public partial class BitColorPicker : BitComponentBase
+public partial class BitColorPicker : BitInputBase<string?>
 {
     private bool _dragged;
     // Whether the picker is part-way through publishing a color it has just moved to, in which case the
@@ -33,20 +53,43 @@ public partial class BitColorPicker : BitComponentBase
     private string? _abortControllerId;
     private bool _eyeDropperChecked;
     private bool _eyeDropperSupported;
+    // Whether the drag listeners are attached to a gradient that is still on the page. The gradient is
+    // optional, and Blazor removes the element when it goes, which takes the listeners with it.
+    private bool _pointerRegistered;
     private BitColorFormat? _formatEmitted;
+    private BitColorFormat? _formatParam;
+    private bool _formatParamRead;
     private string? _contrastParam;
     private BitInternalColor? _contrastColor;
     private readonly BitInternalColor _color = new();
+    private static readonly BitColorPickerTexts _defaultTexts = new();
     private BitColorFormat _format = BitColorFormat.Rgb;
     private ElementReference _saturationPickerRef;
     private ElementReference _hexInputRef;
+    private ElementReference _hueInputRef;
+    private ElementReference _alphaSliderRef;
     private ElementReference _alphaInputRef;
+    private ElementReference _eyeDropperRef;
+    private ElementReference _inputsModeSwitchRef;
     private readonly ElementReference[] _channelInputRefs = new ElementReference[3];
     private DotNetObjectReference<BitColorPicker>? _dotnetObj;
 
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the color picker component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple color picker components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitColorPickerParams.ParamName)]
+    public BitColorPickerParams? CascadingParameters { get; set; }
 
 
 
@@ -61,35 +104,32 @@ public partial class BitColorPicker : BitComponentBase
     [Parameter, TwoWayBound] public double Alpha { get; set; } = 1;
 
     /// <summary>
-    /// Whether the saturation-brightness area takes the focus on the first render.
+    /// Whether the picker takes the focus on the first render, landing on the saturation-brightness area - or,
+    /// on a picker built without it, on whichever of its controls comes first.
     /// </summary>
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitColorPicker.
     /// </summary>
-    [Parameter] public BitColorPickerClassStyles? Classes { get; set; }
-
-    /// <summary>
-    /// CSS-compatible string to describe the color.
-    /// </summary>
-    /// <remarks>
-    /// Hexadecimal in three, four, six or eight digits, <c>rgb()</c> and <c>rgba()</c>, <c>hsl()</c> and
-    /// <c>hsla()</c>, <c>hsv()</c>, a CSS color keyword such as "tomato", and <c>transparent</c> are all
-    /// understood, in both the comma-separated and the modern space-separated syntax. Unless a
-    /// <see cref="Format"/> says otherwise the picker answers in the same notation it was given.
-    /// </remarks>
-    [Parameter, TwoWayBound] public string Color { get; set; } = "rgb(255,255,255)";
+    [Parameter, ResetClassBuilder] public BitColorPickerClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The color the contrast readout measures the picked color against - the background it is going to be
-    /// read on. It accepts any of the notations <see cref="Color"/> does, and defaults to white.
+    /// read on. It accepts any of the notations the <see cref="BitInputBase{TValue}.Value"/> does, and defaults to white.
     /// </summary>
     /// <remarks>
     /// A semi-transparent picked color is composited onto this one before the ratio is taken, since that is
     /// what the eye will actually see. Only rendered where <see cref="ShowContrast"/> asks for it.
     /// </remarks>
     [Parameter] public string? ContrastColor { get; set; }
+
+    /// <summary>
+    /// The set of channels the text fields start in, for a picker whose <see cref="InputsMode"/> is not
+    /// bound. It is read once, while the picker initializes, so the inputs mode switch - and anything else
+    /// that moves the mode afterwards - keeps what it moved to.
+    /// </summary>
+    [Parameter] public BitColorInputsMode? DefaultInputsMode { get; set; }
 
     /// <summary>
     /// Gets or sets the icon of the eye dropper button using custom CSS classes for external icon libraries.
@@ -110,7 +150,7 @@ public partial class BitColorPicker : BitComponentBase
 
     /// <summary>
     /// The CSS notation the color value is written in. When left unset the picker answers in the same
-    /// notation the <see cref="Color"/> arrived in, so a hexadecimal binding stays hexadecimal and an
+    /// notation the <see cref="BitInputBase{TValue}.Value"/> arrived in, so a hexadecimal binding stays hexadecimal and an
     /// <c>rgb()</c> one stays <c>rgb()</c>.
     /// </summary>
     [Parameter] public BitColorFormat? Format { get; set; }
@@ -123,7 +163,9 @@ public partial class BitColorPicker : BitComponentBase
     /// <remarks>
     /// This is how the color is typed, not how it is published - a picker edited in HSL still answers in
     /// whatever <see cref="Format"/> says. It only takes effect where <see cref="ShowInputs"/> renders the
-    /// fields at all, and <see cref="ShowInputsModeSwitch"/> lets the user move it themselves.
+    /// fields at all, and <see cref="ShowInputsModeSwitch"/> lets the user move it themselves - which is
+    /// why a mode that is only a starting point belongs in <see cref="DefaultInputsMode"/>, set one way and
+    /// left alone, rather than in an unbound value of this one, which every re-render would put back.
     /// </remarks>
     [Parameter, TwoWayBound] public BitColorInputsMode InputsMode { get; set; }
 
@@ -153,9 +195,14 @@ public partial class BitColorPicker : BitComponentBase
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Callback for when the value changed. It fires on every step of a drag.
+    /// Callback for when the color changed, carrying it in every notation along with its alpha. It fires on
+    /// every step of a drag.
     /// </summary>
-    [Parameter] public EventCallback<BitColorChangeEventArgs> OnChange { get; set; }
+    /// <remarks>
+    /// The base <see cref="BitInputBase{TValue}.OnChange"/> reports the same moves with the value alone; this one
+    /// also reports a move of the alpha that the value's notation has no room for.
+    /// </remarks>
+    [Parameter] public EventCallback<BitColorChangeEventArgs> OnColorChange { get; set; }
 
     /// <summary>
     /// Callback for when the user finishes changing the value: the drag ends, the slider is released, a
@@ -163,13 +210,13 @@ public partial class BitColorPicker : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is the callback to hang expensive work off - saving, recoloring a document, a network call -
-    /// since <see cref="OnChange"/> fires for every frame of a drag while this one fires once at the end of it.
+    /// since <see cref="OnColorChange"/> fires for every frame of a drag while this one fires once at the end of it.
     /// </remarks>
     [Parameter] public EventCallback<BitColorChangeEventArgs> OnChangeEnd { get; set; }
 
     /// <summary>
     /// The colors offered as a row of one-click swatches under the picker, in any of the notations the
-    /// <see cref="Color"/> parameter accepts.
+    /// <see cref="BitInputBase{TValue}.Value"/> parameter accepts.
     /// </summary>
     /// <remarks>
     /// A swatch that carries its own alpha - an <c>rgba()</c> or an eight-digit hex - applies that alpha too,
@@ -183,12 +230,6 @@ public partial class BitColorPicker : BitComponentBase
     /// read in columns - a hue per column, a shade per row - in the arrangement it was written in.
     /// </summary>
     [Parameter] public int? PresetsPerRow { get; set; }
-
-    /// <summary>
-    /// Makes the color picker read-only: the value is still shown at full contrast, but nothing about it
-    /// can be changed.
-    /// </summary>
-    [Parameter, ResetClassBuilder] public bool ReadOnly { get; set; }
 
     /// <summary>
     /// Whether to show a slider for editing alpha value.
@@ -216,6 +257,13 @@ public partial class BitColorPicker : BitComponentBase
     [Parameter] public bool ShowEyeDropper { get; set; }
 
     /// <summary>
+    /// Whether to show the hue slider. It is on by default, since the hue is what the saturation-brightness
+    /// area is a shade of; turning it off pins the picker to one hue, which is what a tint picker for a brand
+    /// color is.
+    /// </summary>
+    [Parameter] public bool ShowHueSlider { get; set; } = true;
+
+    /// <summary>
     /// Whether to show the hexadecimal and Red-Green-Blue text fields, which is how an exact color is
     /// entered or read off without hunting for it on the gradient.
     /// </summary>
@@ -234,14 +282,42 @@ public partial class BitColorPicker : BitComponentBase
     [Parameter] public bool ShowPreview { get; set; }
 
     /// <summary>
+    /// Whether to show the saturation-brightness area, the gradient the shade is dragged out of. It is on by
+    /// default, since it is what makes the panel a picker rather than a list.
+    /// </summary>
+    /// <remarks>
+    /// Turning it off is what makes a palette picker: a row of <see cref="Presets"/>, or the text fields, with
+    /// none of the gradient above them. The color the picker is on is unaffected either way - the area is a way
+    /// of choosing it, not where it is kept - and whichever control is left first takes the focus in its place.
+    /// </remarks>
+    [Parameter] public bool ShowSaturationArea { get; set; } = true;
+
+    /// <summary>
     /// The size of the color picker.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ColorPicker-*</c> size variables (width, font and caption sizes,
+    /// saturation height, thumb, track, button, icon, preview and swatch sizes); left unset, the picker is medium
+    /// unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder] public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitColorPicker.
     /// </summary>
-    [Parameter] public BitColorPickerClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitColorPickerClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Every piece of text the picker writes for itself: the accessible names of its controls, the captions
+    /// of its fields, and the sentences it announces the color with.
+    /// </summary>
+    /// <remarks>
+    /// A color picker is mostly gradient, so nearly everything it tells a screen reader is text it writes
+    /// rather than text a consumer hands it - which makes this the parameter that translates it. An unset
+    /// property keeps its English default, and the object cascades through <see cref="BitColorPickerParams"/>,
+    /// so an application usually sets it once rather than per picker.
+    /// </remarks>
+    [Parameter] public BitColorPickerTexts? Texts { get; set; }
 
 
 
@@ -293,6 +369,67 @@ public partial class BitColorPicker : BitComponentBase
     /// </summary>
     public string ColorDescription => _color.ColorDescription;
 
+    /// <summary>
+    /// Moves the focus to the picker, landing on the saturation-brightness area - the one control that
+    /// announces the whole color, and the element <see cref="AutoFocus"/> targets on the first render.
+    /// </summary>
+    /// <remarks>
+    /// This is what a picker revealed rather than rendered - opened in a popover, switched to in a tab,
+    /// added to a list - is focused with, since AutoFocus only fires once. A picker built without that area -
+    /// see <see cref="ShowSaturationArea"/> - hands the focus to whichever of its controls comes first
+    /// instead, so a palette picker is focused the same way. A disabled picker is not in the tab order and is
+    /// left alone; a read-only one is, and takes the focus like any other. The value travels through a hidden
+    /// input nobody is meant to land on, so this is what the focus goes to in its place.
+    /// </remarks>
+    public override ValueTask FocusAsync() => Disabled ? ValueTask.CompletedTask : FocusFirstAsync(false);
+
+    /// <inheritdoc cref="FocusAsync()"/>
+    /// <param name="preventScroll">Whether the browser should leave the page where it is rather than scroll the
+    /// focused control into view.</param>
+    public override ValueTask FocusAsync(bool preventScroll) => Disabled ? ValueTask.CompletedTask : FocusFirstAsync(preventScroll);
+
+    /// <summary>
+    /// Moves the focus to the first control the picker actually renders, in the order they are rendered in.
+    /// Every part above the text fields is optional, so the area a picker is normally focused at is not
+    /// always there to be focused.
+    /// </summary>
+    private ValueTask FocusFirstAsync(bool preventScroll)
+    {
+        if (ShowSaturationArea) return _saturationPickerRef.FocusAsync(preventScroll);
+
+        // Everything below carries the native disabled attribute on a picker with nowhere to report a change
+        // to, and a disabled element cannot take the focus. The inputs mode switch is the exception: it moves
+        // which numbers the color is read as rather than the color, so it is enabled wherever the picker is.
+        if (_IsInputDisabled is false)
+        {
+            if (ShowHueSlider) return _hueInputRef.FocusAsync(preventScroll);
+
+            if (ShowAlphaSlider) return _alphaSliderRef.FocusAsync(preventScroll);
+
+            if (_ShowEyeDropper) return _eyeDropperRef.FocusAsync(preventScroll);
+
+            if (ShowInputs)
+            {
+                // The alpha field is not a case of its own: it is only rendered beside the alpha slider,
+                // which would have taken the focus above.
+                if (_ShowHexField) return _hexInputRef.FocusAsync(preventScroll);
+
+                if (_ChannelFields.Length > 0) return _channelInputRefs[0].FocusAsync(preventScroll);
+            }
+        }
+
+        if (ShowInputs && ShowInputsModeSwitch) return _inputsModeSwitchRef.FocusAsync(preventScroll);
+
+        // The palette is the last part of the panel, and it is entered at the swatch the picker is already
+        // on - the same one a Tab would land on.
+        if (_IsInputDisabled is false && _presetRefs.Length > 0)
+        {
+            return _presetRefs[Math.Clamp(_PresetTabStop, 0, _presetRefs.Length - 1)].FocusAsync(preventScroll);
+        }
+
+        return ValueTask.CompletedTask;
+    }
+
 
 
     [JSInvokable(nameof(HandlePointerMove))]
@@ -318,13 +455,11 @@ public partial class BitColorPicker : BitComponentBase
 
         ClassBuilder.Register(() => ReadOnly ? "bit-clp-rdl" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-clp-sm",
-            BitSize.Medium => "bit-clp-md",
-            BitSize.Large => "bit-clp-lg",
-            _ => "bit-clp-md"
-        });
+        ClassBuilder.Register(() => _IsRequired ? "bit-clp-req" : string.Empty);
+
+        // Size publishes nothing while it is unset, which is what lets the stylesheet tell a default from a choice:
+        // the public --bit-ColorPicker-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-clp"));
     }
 
     protected override void RegisterCssStyles()
@@ -332,8 +467,29 @@ public partial class BitColorPicker : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        // The cascade is read here as well as in OnParametersSet, since DefaultInputsMode is only acted on
+        // while the picker initializes and a cascaded one applied there alone would arrive one lifecycle
+        // step after the mode it is the default for has already been settled.
+        CascadingParameters?.UpdateParameters(this);
+
+        SetDefaultValue();
+
+        if (InputsModeHasBeenSet is false && DefaultInputsMode.HasValue)
+        {
+            await AssignInputsMode(DefaultInputsMode.Value);
+        }
+
+        await base.OnInitializedAsync();
+    }
+
     protected override void OnParametersSet()
     {
+        // Applied before anything is read off the parameters, so a Format, an InputsMode or a palette that
+        // arrives through the cascade is in place by the time the color is parsed against it.
+        CascadingParameters?.UpdateParameters(this);
+
         var first = _initialized is false;
 
         // A parameter is only re-applied when it actually differs from the value this instance last
@@ -341,7 +497,10 @@ public partial class BitColorPicker : BitComponentBase
         // out do not get re-parsed as if the consumer had pushed a new color in. While the picker is
         // half-way through publishing one, that comparison cannot be made at all: see _publishing.
         var alphaChanged = _publishing is false && AlphaHasBeenSet && (first || Alpha != _alphaParam);
-        var colorChanged = _publishing is false && ColorHasBeenSet && (first || Color != _colorParam);
+        // A DefaultValue is a color pushed in like a bound one, but only ever on the first pass: after that, the
+        // value of an unbound picker is the one it wrote itself.
+        var colorChanged = _publishing is false && (first ? (ValueHasBeenSet || DefaultValueHasBeenSet)
+                                                          : (ValueHasBeenSet && Value != _colorParam));
 
         if (alphaChanged)
         {
@@ -350,11 +509,11 @@ public partial class BitColorPicker : BitComponentBase
 
         if (colorChanged)
         {
-            _colorParam = Color;
+            _colorParam = Value;
 
-            // An unrecognized string leaves the picker on white rather than throwing, the same white it
-            // starts on, so a half-typed color bound from a text field cannot break the page.
-            _color.Parse(Color, (alphaChanged || first) ? Alpha : _color.A);
+            // An unrecognized string - or none at all - leaves the picker on white rather than throwing, the same
+            // white it starts on, so a half-typed color bound from a text field cannot break the page.
+            _color.Parse(Value, (alphaChanged || first) ? Alpha : _color.A);
         }
         else if (alphaChanged)
         {
@@ -363,16 +522,18 @@ public partial class BitColorPicker : BitComponentBase
 
         _format = Format ?? BitInternalColor.DetectFormat(_colorParam) ?? BitColorFormat.Rgb;
 
-        // With nothing bound to them, the Color and Alpha parameters still report what the picker is on, so
+        // With nothing bound to them, the Value and Alpha parameters still report what the picker is on, so
         // that a @ref'd or uncontrolled picker can be read without a binding - and so that the color is
-        // written in the requested Format from the very first render.
-        if (ColorHasBeenSet is false)
+        // written in the requested Format from the very first render. A bound value is the consumer's and is
+        // never rewritten here: a null one stays null, which is what keeps a required picker invalid until a
+        // color has been picked.
+        if (ValueHasBeenSet is false)
         {
             var formatted = _color.ToString(_format);
 
-            if (Color != formatted)
+            if (Value != formatted)
             {
-                Color = formatted;
+                Value = formatted;
                 _colorParam = formatted;
             }
         }
@@ -391,6 +552,14 @@ public partial class BitColorPicker : BitComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
+        // Only a Format the app switched asks for the value to be rewritten. With none set, the notation is read off
+        // the value itself, so a color pushed in from outside in another notation moves it too - and rewriting that
+        // value would hand the consumer back a string it never wrote ("tomato" as rgb(), "#0f8" as #00FF88).
+        var formatSwitched = _formatParamRead && Format != _formatParam;
+
+        _formatParam = Format;
+        _formatParamRead = true;
+
         // A Format switched at runtime rewrites the value that is already bound, rather than leaving it in
         // the old notation until the user happens to touch the picker again.
         if (_formatEmitted != _format)
@@ -399,7 +568,9 @@ public partial class BitColorPicker : BitComponentBase
 
             _formatEmitted = _format;
 
-            if (emitted is not null)
+            // A bound value that holds no color has nothing to rewrite: the white the picker shows in its place is
+            // not a color anyone picked, and writing it back would satisfy a required picker on its own.
+            if (emitted is not null && formatSwitched && (ValueHasBeenSet is false || Value.HasValue()))
             {
                 await ChangeAsync(notifyChange: false);
             }
@@ -421,21 +592,43 @@ public partial class BitColorPicker : BitComponentBase
             _presetKeysRegistered = false;
         }
 
-        if (firstRender is false && presetsToRegister is false && (_eyeDropperChecked || ShowEyeDropper is false)) return;
+        // The drag listeners belong to the gradient rather than to the picker, and the gradient is one of the
+        // parts a picker can be built without. Gone with it is the element they were attached to, so they are
+        // released here rather than waiting for the whole picker to go.
+        if (ShowSaturationArea is false && _pointerRegistered)
+        {
+            _pointerRegistered = false;
+
+            await ReleasePointerAsync();
+        }
+
+        // And registered on the render the gradient appears on rather than on the first render, so a palette
+        // picker that is later given its gradient back is dragged like any other.
+        var pointerToRegister = ShowSaturationArea && _pointerRegistered is false;
+
+        if (firstRender is false && pointerToRegister is false && presetsToRegister is false && (_eyeDropperChecked || ShowEyeDropper is false)) return;
 
         try
         {
-            if (firstRender)
+            if (pointerToRegister)
             {
+                _pointerRegistered = true;
+
+                // A fresh reference every time, because releasing the listeners releases this one with them:
+                // the JavaScript side disposes the object it was given along with the controller holding it,
+                // so a picker that gets its gradient back cannot be registered with the same one again.
                 _dotnetObj = DotNetObjectReference.Create(this);
 
                 _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, _saturationPickerRef, nameof(HandlePointerMove), nameof(HandlePointerUp));
+            }
 
+            if (firstRender)
+            {
                 // The autofocus attribute is only honored for elements that are in the initial document, so
                 // a picker rendered into a page that is already up has to ask for the focus itself.
-                if (AutoFocus && IsEnabled)
+                if (AutoFocus && Disabled is false)
                 {
-                    await _saturationPickerRef.FocusAsync();
+                    await FocusFirstAsync(false);
                 }
             }
 
@@ -467,44 +660,66 @@ public partial class BitColorPicker : BitComponentBase
 
 
     /// <summary>
-    /// Whether a gesture is allowed to move the color. A one-way bound Color has nowhere to report a change
+    /// Whether a color the picker moved to would have anywhere to go. A Value bound one way, with no callback
+    /// beside it, is a value the consumer owns and the picker cannot write back to.
+    /// </summary>
+    private bool _HasNowhereToReport => ValueHasBeenSet
+                                     && ValueChanged.HasDelegate is false
+                                     && OnChange.HasDelegate is false
+                                     && OnColorChange.HasDelegate is false
+                                     && OnChangeEnd.HasDelegate is false;
+
+    /// <summary>
+    /// Whether the picker asks for a value: a disabled or read-only one asks for nothing, since nobody can give
+    /// it one.
+    /// </summary>
+    private bool _IsRequired => Required && Disabled is false && ReadOnly is false;
+
+    /// <summary>
+    /// Whether a gesture is allowed to move the color. A one-way bound Value has nowhere to report a change
     /// to, so the picker becomes a display of that value instead of pretending to accept edits.
     /// </summary>
-    private bool _IsInteractive => IsEnabled
-                                && ReadOnly is false
-                                && (ColorHasBeenSet is false || ColorChanged.HasDelegate || OnChange.HasDelegate || OnChangeEnd.HasDelegate);
+    private bool _IsInteractive => Disabled is false && ReadOnly is false && _HasNowhereToReport is false;
 
     /// <summary>
-    /// Only the disabled picker leaves the tab order. A read-only one is still showing a color, and the
-    /// saturation area is the only element that announces it, so taking it out of the tab order would put
-    /// that color out of reach of a keyboard or a screen reader. The gestures are refused in the handlers
-    /// instead.
+    /// Whether the picker is showing a color it will not let anyone change, while still being a picker.
     /// </summary>
-    private string _TabIndex => IsEnabled ? (TabIndex ?? "0") : "-1";
+    /// <remarks>
+    /// This is the state the controls declare rather than leave: <c>aria-readonly</c> on the widgets that
+    /// hold a value, the native <c>readonly</c> on the text fields, <c>aria-disabled</c> on the buttons that
+    /// would change the color. All of them keep their place in the tab order, because the color is the thing
+    /// a read-only picker is there to show and the controls are what announce it.
+    /// </remarks>
+    private bool _IsReadOnly => Disabled is false && ReadOnly;
 
     /// <summary>
-    /// The accessible name of the picker as a whole. An explicit AriaLabel wins; otherwise the color itself
-    /// is spelled out, since a gradient carries no text a screen reader could read instead.
+    /// Only the disabled picker leaves the tab order. A read-only one is still showing a color, and its
+    /// controls are what announce that color, so taking them out of the tab order would put it out of reach
+    /// of a keyboard or a screen reader. They declare the read-only state instead, and refuse the gesture in
+    /// the handlers.
+    /// </summary>
+    private string _TabIndex => Disabled ? "-1" : (TabIndex ?? "0");
+
+    /// <summary>
+    /// The accessible name of a picker that is named by nothing else (see <see cref="GetRootName"/>): the color
+    /// itself spelled out, since a gradient carries no text a screen reader could read instead.
     /// </summary>
     /// <remarks>
     /// The color is both named and spelled out in channels. The name is what actually tells someone which
     /// color the picker has landed on - "Red 77 Green 127 Blue 179" is three numbers nobody can picture -
     /// while the channels are what they need once they are adjusting it rather than reading it.
     /// </remarks>
-    private string _AriaLabel
+    private string _ColorAriaLabel
     {
         get
         {
-            if (AriaLabel.HasValue()) return AriaLabel!;
+            var texts = _Texts;
 
-            var label = FormattableString.Invariant($"Color picker, {_color.ColorDescription}, Red {_color.R} Green {_color.G} Blue {_color.B}");
-
-            if (ShowAlphaSlider)
-            {
-                label += FormattableString.Invariant($" and Alpha {Math.Round(_color.A * 100)}%");
-            }
-
-            return label + " selected.";
+            return ShowAlphaSlider
+                ? string.Format(CultureInfo.InvariantCulture, texts.PickerLabelWithAlphaFormat,
+                                _color.ColorDescription, _color.R, _color.G, _color.B, Math.Round(_color.A * 100))
+                : string.Format(CultureInfo.InvariantCulture, texts.PickerLabelFormat,
+                                _color.ColorDescription, _color.R, _color.G, _color.B);
         }
     }
 
@@ -519,7 +734,8 @@ public partial class BitColorPicker : BitComponentBase
         {
             var (_, saturation, value) = _color.Hsv;
 
-            return FormattableString.Invariant($"{_color.ColorDescription}, Saturation {Math.Round(saturation * 100)}%, Brightness {Math.Round(value * 100)}%, {_color.Hex}");
+            return string.Format(CultureInfo.InvariantCulture, _Texts.SaturationValueFormat,
+                                 _color.ColorDescription, Math.Round(saturation * 100), Math.Round(value * 100), _color.Hex);
         }
     }
 
@@ -560,7 +776,17 @@ public partial class BitColorPicker : BitComponentBase
     /// What the hue slider announces. A bare number would be read as a position on an unnamed scale, so the
     /// unit the scale is actually in - degrees around the color wheel - is spelled out with it.
     /// </summary>
-    private string _HueValueText => FormattableString.Invariant($"Hue {Math.Round(_color.Hsv.Hue)} degrees");
+    private string _HueValueText
+    {
+        get
+        {
+            var hue = _color.Hsv.Hue;
+
+            return string.Format(CultureInfo.InvariantCulture, _Texts.HueValueFormat, Math.Round(hue), BitInternalColor.HueDescription(hue));
+        }
+    }
+
+    private string _AlphaValueText => string.Format(CultureInfo.InvariantCulture, _Texts.AlphaValueFormat, _AlphaPercentValue);
 
     private string _AlphaValue => _color.A.ToString(CultureInfo.InvariantCulture);
 
@@ -569,27 +795,38 @@ public partial class BitColorPicker : BitComponentBase
     private bool _ShowEyeDropper => ShowEyeDropper && _eyeDropperSupported;
 
     /// <summary>
-    /// Whether every control on the picker refuses the gesture at the element rather than in its handler.
-    /// A native range moves its own thumb, and a text field keeps whatever was typed into it, before any
-    /// handler is reached - so a picker that is not going to accept the change has to stop it there, or be
-    /// left showing a value it is not on. The disabled and the read-only picker are covered by the state
-    /// they are in; the one-way bound one is not, since it looks like an ordinary picker and only has
-    /// nowhere to report a change to.
+    /// Whether the controls carry the native <c>disabled</c> attribute, which is what takes them out of the
+    /// interaction and out of the tab order.
     /// </summary>
-    private bool _IsInputDisabled => _IsInteractive is false;
+    /// <remarks>
+    /// Two pickers are not there to be operated at all. The disabled one says so, and looks it. The one whose
+    /// Value is bound one way with no callback beside it does not: it looks like an ordinary picker and only
+    /// has nowhere to report a change to, and a native range moves its own thumb - and a text field keeps
+    /// what was typed into it - before any handler is reached, so it would be left showing a value it is not
+    /// on. A read-only picker is neither: it is still showing a color to be read, so it keeps its controls
+    /// focusable and puts back whatever a key moved (see <see cref="RestoreInputAsync"/>).
+    /// </remarks>
+    private bool _IsInputDisabled => Disabled || _HasNowhereToReport;
 
     private string _HexValue => ShowAlphaSlider ? _color.HexAlpha : _color.Hex;
 
     /// <summary>
     /// The three channel fields of the inputs row, each carrying the index the change handler switches on,
-    /// the id and caption it is labelled with, its current value and the top of its range. Which three they
-    /// are is what <see cref="InputsMode"/> decides; the hexadecimal field is rendered on its own since it
-    /// is a text field rather than a number one.
+    /// the name its element id is built from, the caption and tooltip it is labelled with, its current value
+    /// and the top of its range. Which three they are is what <see cref="InputsMode"/> decides; the
+    /// hexadecimal field is rendered on its own since it is a text field rather than a number one.
     /// </summary>
-    private (int Index, string Name, string Title, string Value, int Max)[] _ChannelFields
+    /// <remarks>
+    /// The name is not the caption: the id has to stay the same in every language - it is what ties the
+    /// label to its input, and what keys the field across a change of mode - while the caption and the
+    /// tooltip are both translated, since "R" is as much an English word for red as "Red" is.
+    /// </remarks>
+    private (int Index, string Name, string Caption, string Title, string Value, int Max)[] _ChannelFields
     {
         get
         {
+            var texts = _Texts;
+
             switch (InputsMode)
             {
                 case BitColorInputsMode.Hex:
@@ -601,9 +838,9 @@ public partial class BitColorPicker : BitComponentBase
 
                         return
                         [
-                            (0, "h", "Hue", Rounded(hue), 360),
-                            (1, "s", "Saturation", Percent(saturation), 100),
-                            (2, "l", "Lightness", Percent(lightness), 100)
+                            (0, "h", texts.HueFieldLabel, texts.HueLabel, Rounded(hue), 360),
+                            (1, "s", texts.SaturationFieldLabel, texts.SaturationLabel, Percent(saturation), 100),
+                            (2, "l", texts.LightnessFieldLabel, texts.LightnessLabel, Percent(lightness), 100)
                         ];
                     }
 
@@ -613,34 +850,75 @@ public partial class BitColorPicker : BitComponentBase
 
                         return
                         [
-                            (0, "h", "Hue", Rounded(hue), 360),
-                            (1, "s", "Saturation", Percent(saturation), 100),
-                            (2, "v", "Brightness", Percent(value), 100)
+                            (0, "h", texts.HueFieldLabel, texts.HueLabel, Rounded(hue), 360),
+                            (1, "s", texts.SaturationFieldLabel, texts.SaturationLabel, Percent(saturation), 100),
+                            (2, "v", texts.BrightnessFieldLabel, texts.BrightnessLabel, Percent(value), 100)
                         ];
                     }
 
                 default:
                     return
                     [
-                        (0, "r", "Red", _color.R.ToString(CultureInfo.InvariantCulture), 255),
-                        (1, "g", "Green", _color.G.ToString(CultureInfo.InvariantCulture), 255),
-                        (2, "b", "Blue", _color.B.ToString(CultureInfo.InvariantCulture), 255)
+                        (0, "r", texts.RedFieldLabel, texts.RedLabel, _color.R.ToString(CultureInfo.InvariantCulture), 255),
+                        (1, "g", texts.GreenFieldLabel, texts.GreenLabel, _color.G.ToString(CultureInfo.InvariantCulture), 255),
+                        (2, "b", texts.BlueFieldLabel, texts.BlueLabel, _color.B.ToString(CultureInfo.InvariantCulture), 255)
                     ];
             }
         }
     }
 
+    /// <summary>
+    /// What the inputs mode switch calls the mode the fields are currently in. The enum name is not it: it is
+    /// English and it is written the way C# names things (<c>HexRgb</c>), while the switch is both read out
+    /// and hovered, so every mode is named by a text of its own that a translation can rewrite.
+    /// </summary>
+    private string _InputsModeLabel => InputsMode switch
+    {
+        BitColorInputsMode.Hex => _Texts.HexModeLabel,
+        BitColorInputsMode.Rgb => _Texts.RgbModeLabel,
+        BitColorInputsMode.Hsl => _Texts.HslModeLabel,
+        BitColorInputsMode.Hsv => _Texts.HsvModeLabel,
+        _ => _Texts.HexRgbModeLabel
+    };
+
     private bool _ShowHexField => InputsMode is BitColorInputsMode.HexRgb or BitColorInputsMode.Hex;
 
     private bool _HasLabel => LabelTemplate is not null || Label.HasValue();
 
+    /// <summary>
+    /// The texts the picker writes with, which is the consumer's object wherever there is one and the
+    /// English defaults otherwise. The fallback is a single shared instance rather than one per picker,
+    /// since nothing ever writes to it.
+    /// </summary>
+    private BitColorPickerTexts _Texts => Texts ?? _defaultTexts;
+
     private string _LabelId => $"{_Id}-label";
 
     /// <summary>
-    /// An explicit AriaLabel still wins, and a Label names the panel through the element it is rendered
-    /// into. Only a picker with neither falls back to spelling the color out on the group itself.
+    /// The id of the contrast readout, which the saturation area points an <c>aria-describedby</c> at so the
+    /// verdict is read out with the control it is about rather than waiting to be found further down.
     /// </summary>
-    private string? _AriaLabelledBy => AriaLabel.HasValue() is false && _HasLabel ? _LabelId : null;
+    private string _ContrastId => $"{_Id}-contrast";
+
+    /// <summary>
+    /// The aria-label and the aria-labelledby of the group, of which at most one is written. An explicit AriaLabel
+    /// (or one the page splatted on) still wins, and a Label names the panel through the element it is rendered
+    /// into; without one, an aria-labelledby the page splatted on is written back, since a null written after the
+    /// splat would remove it. Only a picker with none of them falls back to spelling the color out on the group
+    /// itself. Both are worked out in one pass, so each splatted attribute is looked up once per render.
+    /// </summary>
+    private (string? Label, string? LabelledBy) GetRootName()
+    {
+        var label = AriaLabel.HasValue() ? AriaLabel : GetSplattedAttribute("aria-label");
+
+        if (label.HasValue()) return (label, null);
+
+        if (_HasLabel) return (null, _LabelId);
+
+        var labelledBy = GetSplattedAttribute("aria-labelledby");
+
+        return labelledBy is not null ? (null, labelledBy) : (_ColorAriaLabel, null);
+    }
 
     /// <summary>
     /// How far the picked color stands from the one it will be read on, on the WCAG 2 scale of 1 to 21.
@@ -716,6 +994,11 @@ public partial class BitColorPicker : BitComponentBase
                 if (_presetItems.Count > 0)
                 {
                     _presetItems = [];
+
+                    // The references go with the swatches they were captured from. Left behind, they are
+                    // references to elements that are no longer on the page, and focusing one - which is what
+                    // a picker with nothing else focusable does - throws rather than doing nothing.
+                    _presetRefs = [];
                 }
 
                 return _presetItems;
@@ -778,13 +1061,11 @@ public partial class BitColorPicker : BitComponentBase
     {
         if (_IsInteractive is false) return;
 
-        // The area is measured from its inline-start edge, which is the right one in a right-to-left picker,
-        // so the horizontal axis is mirrored along with the gradient that is drawn on it.
-        var saturation = Dir == BitDir.Rtl ? 1 - x : x;
-
+        // The area is measured from its inline-start edge (the script mirrors the pointer in a right-to-left
+        // picker, whatever made it one), which is where the saturation axis starts.
         var before = _color.Hsv;
 
-        _color.Update(before.Hue, saturation, 1 - y, _color.A);
+        _color.Update(before.Hue, x, 1 - y, _color.A);
 
         // A pointer that has not left the color it is already on - a press that lands on the thumb, or a
         // move along an edge the position is clamped against - has nothing to report.
@@ -799,12 +1080,19 @@ public partial class BitColorPicker : BitComponentBase
     {
         if (_IsInteractive is false) return;
 
+        // A key pressed with a modifier on it belongs to the browser or to the operating system - Ctrl+Home
+        // goes to the top of the page, Alt+Left goes back - and the JavaScript side leaves those alone rather
+        // than preventing them. Moving the color as well would answer one press with two actions.
+        if (e.CtrlKey || e.AltKey || e.MetaKey) return;
+
         var (hue, saturation, value) = _color.Hsv;
 
         // Holding Shift - and the Page keys, which need no modifier for it - moves a tenth of the area at a
         // time, so crossing it costs ten presses instead of a hundred.
         var step = (e.ShiftKey || e.Key is "PageUp" or "PageDown") ? 0.1 : 0.01;
-        var rtl = Dir == BitDir.Rtl;
+        // The direction the area is laid out in, a page's or a content's included, read only for the keys that
+        // act on it since one Dir does not name costs a round trip.
+        var rtl = await IsRtlArrowAsync(_js, e.Key, _saturationPickerRef);
 
         var newSaturation = e.Key switch
         {
@@ -836,11 +1124,18 @@ public partial class BitColorPicker : BitComponentBase
     }
 
     // A native range fires input while it is dragged and change once it is released, which is exactly the
-    // OnChange / OnChangeEnd pair. The last input and the change carry the same value though, so the second
+    // OnColorChange / OnChangeEnd pair. The last input and the change carry the same value though, so the second
     // of them only ends the gesture - it does not report a change that has already been reported.
     private async Task HandleOnHueInput(ChangeEventArgs args, bool final)
     {
-        if (_IsInteractive is false) return;
+        // A read-only picker keeps its sliders focusable, and a native range has no readonly state to refuse
+        // an arrow key with, so the thumb has already moved by the time this runs and is put back here. The
+        // renderer would not do it: the value it last rendered has not changed.
+        if (_IsInteractive is false)
+        {
+            await RestoreInputAsync(_hueInputRef, args.Value as string, _HueValue);
+            return;
+        }
 
         if (TryReadNumber(args.Value, out var hue) is false) return;
 
@@ -853,7 +1148,11 @@ public partial class BitColorPicker : BitComponentBase
 
     private async Task HandleOnAlphaInput(ChangeEventArgs args, bool final)
     {
-        if (_IsInteractive is false) return;
+        if (_IsInteractive is false)
+        {
+            await RestoreInputAsync(_alphaSliderRef, args.Value as string, _AlphaValue);
+            return;
+        }
 
         if (TryReadNumber(args.Value, out var alpha) is false) return;
 
@@ -869,10 +1168,11 @@ public partial class BitColorPicker : BitComponentBase
         if (_IsInteractive is false) return;
 
         var text = args.Value as string;
+        var color = NormalizeHexField(text);
 
         // A field left in a state that is not a color simply does not commit, and the current color is put
         // back into it - which is less surprising than resetting the picker to white.
-        if (BitInternalColor.IsValid(text) is false)
+        if (BitInternalColor.IsValid(color) is false)
         {
             await RestoreInputAsync(_hexInputRef, text, _HexValue);
             return;
@@ -880,11 +1180,26 @@ public partial class BitColorPicker : BitComponentBase
 
         // Parsed onto the current alpha, so typing a six-digit hex into a semi-transparent color does not
         // silently make it opaque; an eight-digit one still brings its own alpha with it.
-        _color.Parse(text, _color.A);
+        _color.Parse(color, _color.A);
 
         await ChangeAsync(final: true);
 
         await RestoreInputAsync(_hexInputRef, text, _HexValue);
+    }
+
+    /// <summary>
+    /// What the hexadecimal field is read as. The field is captioned "Hex", so the digits alone - the form a
+    /// hex is usually copied out of a design tool in - are taken as one rather than refused for the missing
+    /// '#'. Only a run of three, four, six or eight hex digits is completed: anything else - a keyword, an
+    /// rgb() - is passed on as typed, so the field still takes every notation the picker reads.
+    /// </summary>
+    private static string? NormalizeHexField(string? text)
+    {
+        var trimmed = text?.Trim();
+
+        if (trimmed is not { Length: 3 or 4 or 6 or 8 }) return trimmed;
+
+        return trimmed.All(char.IsAsciiHexDigit) ? $"#{trimmed}" : trimmed;
     }
 
     private async Task HandleOnChannelInput(ChangeEventArgs args, int channel)
@@ -983,7 +1298,7 @@ public partial class BitColorPicker : BitComponentBase
     /// </summary>
     private async Task HandleOnInputsModeSwitchClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await AssignInputsMode(InputsMode switch
         {
@@ -1038,7 +1353,9 @@ public partial class BitColorPicker : BitComponentBase
         // A palette laid out on a grid is walked as a grid; one left to wrap has no row length anything can
         // know, so the vertical keys move along it one swatch at a time like the horizontal ones do.
         var columns = PresetsPerRow > 0 ? Math.Min(PresetsPerRow.Value, count) : 1;
-        var step = Dir == BitDir.Rtl ? -1 : 1;
+        // The direction the palette is laid out in, a page's or a content's included, read only for the keys
+        // that act on it since one Dir does not name costs a round trip.
+        var step = await IsRtlArrowAsync(_js, e.Key) ? -1 : 1;
 
         var target = e.Key switch
         {
@@ -1061,13 +1378,7 @@ public partial class BitColorPicker : BitComponentBase
 
         StateHasChanged();
 
-        try
-        {
-            await _presetRefs[target].FocusAsync();
-        }
-        catch (JSDisconnectedException) { }
-        catch (ObjectDisposedException) { }
-        catch (OperationCanceledException) { }
+        await _presetRefs[target].FocusSafelyAsync();
     }
 
     private async Task HandleOnPresetClick(string preset)
@@ -1120,13 +1431,14 @@ public partial class BitColorPicker : BitComponentBase
     /// </summary>
     /// <param name="final">Whether this is the end of a gesture rather than a step of one.</param>
     /// <param name="notifyChange">
-    /// Whether OnChange should fire. The end of a drag has nothing new to report - the last move already
+    /// Whether OnColorChange should fire. The end of a drag has nothing new to report - the last move already
     /// reported it - so it only raises OnChangeEnd.
     /// </param>
     private async Task ChangeAsync(bool final = false, bool notifyChange = true)
     {
         var value = _color.ToString(_format);
         var alpha = _color.A;
+        var previous = Value;
 
         var colorTaken = false;
         var alphaTaken = false;
@@ -1137,10 +1449,10 @@ public partial class BitColorPicker : BitComponentBase
         {
             // Read back rather than assumed: a consumer is free to answer with a different color - clamping
             // it to a palette, rounding it, refusing it - and it is that answer the next render brings back.
-            colorTaken = await AssignColor(value);
+            colorTaken = await AssignValueAsync(value);
             if (colorTaken)
             {
-                _colorParam = Color;
+                _colorParam = Value;
             }
 
             alphaTaken = await AssignAlpha(alpha);
@@ -1158,15 +1470,31 @@ public partial class BitColorPicker : BitComponentBase
         // other, and the picker follows it. It could not be followed as it arrived, since it arrived while
         // the publish was still half-applied, so it is followed here instead - once, off the values that
         // came back, rather than off every render that carried them.
-        if (colorTaken && Color != value)
+        if (colorTaken && Value != value)
         {
-            _color.Parse(Color, alphaTaken ? Alpha : _color.A);
+            _color.Parse(Value, alphaTaken ? Alpha : _color.A);
 
-            value = Color;
+            value = Value ?? _color.ToString(_format);
         }
         else if (alphaTaken && Alpha != alpha)
         {
             _color.A = Alpha;
+        }
+
+        // The form hears of the value only once it is the model's, and only when it actually moved: a step of a
+        // drag that rounds to the same string has changed nothing a validator could read. Nor does it hear of a
+        // value the picker only rewrote in another notation - a Format changed by the app - which nobody picked.
+        if (value != previous)
+        {
+            if (colorTaken && (notifyChange || final))
+            {
+                NotifyFieldChanged();
+            }
+
+            if (notifyChange)
+            {
+                await OnChange.InvokeAsync(value);
+            }
         }
 
         if (notifyChange || final)
@@ -1188,7 +1516,7 @@ public partial class BitColorPicker : BitComponentBase
 
             if (notifyChange)
             {
-                await OnChange.InvokeAsync(args);
+                await OnColorChange.InvokeAsync(args);
             }
 
             if (final)
@@ -1198,6 +1526,37 @@ public partial class BitColorPicker : BitComponentBase
         }
 
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Writes a color the picker moved to into the Value, unless it is bound one way and so has nowhere to be
+    /// written back to, and reports whether it was taken.
+    /// </summary>
+    private async Task<bool> AssignValueAsync(string value)
+    {
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return false;
+
+        if (Value == value) return true;
+
+        Value = value;
+
+        await ValueChanged.InvokeAsync(value);
+
+        return true;
+    }
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
+    {
+        if (value.HasNoValue() || BitInternalColor.IsValid(value))
+        {
+            result = value;
+            parsingErrorMessage = null;
+            return true;
+        }
+
+        result = default;
+        parsingErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not a valid color.";
+        return false;
     }
 
     /// <summary>
@@ -1211,34 +1570,50 @@ public partial class BitColorPicker : BitComponentBase
 
 
 
+    /// <summary>
+    /// Drops the drag listeners the gradient was given. The element they were attached to is gone - hidden by
+    /// <see cref="ShowSaturationArea"/>, or taken down with the whole picker - so what is left to release is
+    /// the abort controller that holds them on the JavaScript side.
+    /// </summary>
+    /// <remarks>
+    /// The JavaScript side owns the listeners, and they hold the .NET reference the moves are reported
+    /// through, so it is told to drop them first. Whatever that call answers - a torn-down circuit, or a setup
+    /// that never returned an id to release - the reference itself is released here, so it is never left
+    /// registered, and the next registration starts from a new one.
+    /// </remarks>
+    private async Task ReleasePointerAsync()
+    {
+        var id = _abortControllerId;
+        var dotnetObj = _dotnetObj;
+
+        // Both cleared first, so a release that fails is not retried against a controller that is already gone.
+        _abortControllerId = null;
+        _dotnetObj = null;
+
+        try
+        {
+            if (id.HasValue())
+            {
+                await _js.BitColorPickerDispose(id);
+            }
+        }
+        catch (JSException) { } // whatever the interop answered, the listeners went with the element
+        catch (JSDisconnectedException) { }
+        catch (ObjectDisposedException) { }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            dotnetObj?.Dispose();
+        }
+    }
+
+
+
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
 
-        if (_dotnetObj is not null)
-        {
-            // The JavaScript side owns the listeners that hold the .NET reference, so it is told to drop them
-            // first. Whether that call succeeds, fails, or cannot be made at all - a torn-down circuit, or a
-            // setup that never returned an id to release - the reference itself is released here, so it is
-            // never left registered.
-            try
-            {
-                if (_abortControllerId.HasValue())
-                {
-                    await _js.BitColorPickerDispose(_abortControllerId);
-                }
-            }
-            catch (JSException) { } // whatever the interop answered, the reference below is still ours to release
-            catch (JSDisconnectedException) { }
-            catch (ObjectDisposedException) { }
-            catch (OperationCanceledException) { }
-            finally
-            {
-                _dotnetObj.Dispose();
-            }
-
-            _dotnetObj = null;
-        }
+        await ReleasePointerAsync();
 
         await base.DisposeAsync(disposing);
     }

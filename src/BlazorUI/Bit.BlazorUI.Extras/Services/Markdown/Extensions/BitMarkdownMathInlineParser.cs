@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Handles inline mathematics: <c>$a^2 + b^2$</c>. The rules are the ones every processor

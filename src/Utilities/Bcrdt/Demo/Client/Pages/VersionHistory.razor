@@ -1,0 +1,229 @@
+﻿@page "/history"
+@inherits ReplicaPageBase
+
+<PageTitle>Version history · Bcrdt</PageTitle>
+
+<div class="bb-intro">
+    <h1>Version history</h1>
+    <p class="bb-subtitle">
+        Save a version of a shared text, keep editing, then look at the document as it was - or bring it back. A
+        version is a <code>BcrdtSnapshot</code>: a few dozen bytes that name a point in the document's history,
+        rather than a copy of the document.
+    </p>
+</div>
+
+@* Each panel carries its own list of versions and a preview, so the panels take the width the "on this page" rail would. *@
+<div class="bb-card bb-page-wide">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two replicas, one history</h3>
+    <p class="bb-card-desc">
+        Type into either replica and press <em>Save a version</em>. The version is stored in the document itself, so
+        it reaches the other replica like any edit, and either replica can open it. <em>Preview</em> rebuilds the
+        text as it was when the version was saved; <em>Restore</em> makes the current text say that again. The
+        footer compares the size of the whole document with the size of a version.
+    </p>
+
+    @if (!Ready)
+    {
+        <p class="loading bb-empty"><span class="bb-spinner" aria-hidden="true"></span> Opening two replicas…</p>
+    }
+    else
+    {
+        <div class="bb-split replicas">
+            @foreach (DemoReplica replica in Replicas)
+            {
+                BcrdtArray versions = Versions(replica);
+
+                <ReplicaPanel Replica="replica">
+                    <ChildContent>
+                        <BcrdtTextArea Text="Text(replica)"
+                                       Presence="replica.Document.Presence"
+                                       Field="@Field"
+                                       Rows="5"
+                                       Class="editor"
+                                       Placeholder="Type, save a version, then keep typing." />
+
+                        <div class="toolbar bb-toolbar">
+                            <button type="button" class="btn btn-primary" @onclick="() => SaveVersion(replica)">Save a version</button>
+                        </div>
+
+                        <h4 class="sub">Versions</h4>
+                        @if (versions.Count == 0)
+                        {
+                            <p class="todo-empty">No versions yet.</p>
+                        }
+                        else
+                        {
+                            <ol class="history-list">
+                                @for (int index = versions.Count - 1; index >= 0; index--)
+                                {
+                                    BcrdtMap? version = versions.GetMap(index);
+                                    if (version is null) continue;
+
+                                    <li @key="version" class="history-item @(IsPreviewed(replica, version) ? "history-item-active" : null)">
+                                        <span class="history-name">@Describe(version)</span>
+                                        <span class="history-size">@SnapshotBytes(version).Length bytes</span>
+                                        <button type="button" class="btn btn-secondary" @onclick="() => Preview(replica, version)">Preview</button>
+                                        <button type="button" class="btn btn-secondary" @onclick="() => Restore(replica, version)">Restore</button>
+                                    </li>
+                                }
+                            </ol>
+                        }
+
+                        @if (_previews.TryGetValue(replica, out PreviewState? preview))
+                        {
+                            <h4 class="sub">@Describe(preview.Version), as it was</h4>
+                            <pre class="bb-code history-preview">@preview.Text</pre>
+                        }
+                    </ChildContent>
+
+                    <Footer>
+                        <span class="metric">@Text(replica).Count characters</span>
+                        <span class="metric" title="The whole document encoded, the way a new peer would receive it.">document: @replica.Document.Crdt.EncodeStateAsUpdate().Length bytes</span>
+                        <span class="metric" title="A snapshot of the document as it stands now: a state vector and a delete set.">a version now: @BcrdtSnapshot.Capture(replica.Document.Crdt).Encode().Length bytes</span>
+                    </Footer>
+                </ReplicaPanel>
+            }
+        </div>
+    }
+
+    <CodeSnippet Sample="SavedVersions.razor" />
+
+    <div class="bb-note bb-note-warn">
+        <strong>The thing worth trying.</strong> Type a sentence into A and save a version. Delete half of it and type
+        something else, then preview the version: the old sentence is back, rebuilt from the document's own history.
+        Now take B offline, type into A and save another version: B does not list it until it reconnects, and then it
+        receives the version together with everything the version names. Finally restore the first version in A
+        while B is offline, type into B meanwhile, and reconnect: the restore merges with B's typing instead of
+        wiping it, because a restore is an edit, not a rewind.
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A version is a name, not a copy</h3>
+    <p class="bb-card-desc">
+        A <code>BcrdtSnapshot</code> holds two things: the state vector - which content existed at that moment - and
+        the delete set - which of it had been deleted. That is all it takes to say exactly what the document looked
+        like, so a version costs a few dozen bytes whatever the document's size, and a hundred versions cost a
+        hundred small records rather than a hundred documents.
+    </p>
+    <p class="bb-card-desc">
+        The price is paid by the document: rebuilding an old version needs every character that has been deleted
+        since, so a document whose history will be restored keeps its deleted content instead of reclaiming it. The
+        replicas on this page are created with <code>GarbageCollect = false</code> for that reason. Restoring from a
+        document that collects is refused with an exception rather than answered wrongly.
+    </p>
+    <pre class="bb-code"><span class="c">// Kept for history: BcrdtCollaborationOptions.GarbageCollect, or BcrdtDocumentOptions.GarbageCollect.</span>
+<span class="k">var</span> options = <span class="k">new</span> BcrdtCollaborationOptions { GarbageCollect = <span class="k">false</span> };
+
+BcrdtSnapshot version = BcrdtSnapshot.Capture(document.Crdt);
+<span class="k">byte</span>[] stored = version.Encode();                               <span class="c">// a few dozen bytes, to keep anywhere</span>
+
+<span class="k">using</span> BcrdtDocument then = BcrdtSnapshot.RestoreDocument(document.Crdt, BcrdtSnapshot.Decode(stored));
+<span class="k">string</span> text = then.GetText(<span class="s">"body"</span>).ToString();               <span class="c">// the document as it was, as a new document</span></pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where versions live, and what restoring does</h3>
+    <p class="bb-card-desc">
+        This page keeps its versions in the document - an array of maps, each with who saved it, when, and the encoded
+        snapshot as a <code>byte[]</code> - so they synchronize, merge and persist like the text does. Two replicas
+        saving a version at the same moment simply add two entries. An application could equally keep them in a
+        database next to the document.
+    </p>
+    <p class="bb-card-desc">
+        A replica can only rebuild a version once it holds everything the version names. Kept in the document, a
+        version arrives after the content it names - a replica's changes reach others in the order it made them - so a
+        replica that lists a version can always open it. Versions kept anywhere else need the check, which is one
+        call: <code>document.Crdt.GetStateVector().IsSupersetOf(version.StateVector)</code>.
+    </p>
+    <p class="bb-card-desc">
+        <em>Restore</em> does not roll anybody back. It works out the smallest edit that turns the current text into
+        the old one (<code>BcrdtTextSynchronizer.Apply</code>) and makes it, as this replica. That edit synchronizes
+        like a keystroke, merges with whatever others are typing meanwhile, and becomes part of the history itself -
+        so the version before the restore can be restored in turn.
+    </p>
+    <pre class="bb-code">BcrdtTextSynchronizer.Apply(document.Text(<span class="s">"body"</span>), text);   <span class="c">// an ordinary edit, not a rewind</span></pre>
+</div>
+
+@code {
+    private const string Field = "body";
+    private const string VersionsField = "versions";
+
+    private readonly Dictionary<DemoReplica, PreviewState> _previews = [];
+
+    private sealed record PreviewState(BcrdtMap Version, string Text);
+
+    protected override string DocumentId => "demo-history";
+
+    protected override string[] ReplicaLabels => ["Replica A", "Replica B"];
+
+    // A snapshot can only be restored from a document that kept every deleted block it names.
+    protected override bool KeepHistory => true;
+
+    private static BcrdtText Text(DemoReplica replica) => replica.Document.Text(Field);
+
+    private static BcrdtArray Versions(DemoReplica replica) => replica.Document.Array(VersionsField);
+
+    /// <summary>Captures the replica's document as it stands and appends the snapshot to the shared list.</summary>
+    /// <remarks>
+    /// Captured before the entry is written, so the version names the text and not the list it is about to
+    /// join. The entry is filled in while detached, so it reaches the other replica as one update.
+    /// </remarks>
+    private static void SaveVersion(DemoReplica replica)
+    {
+        byte[] snapshot = BcrdtSnapshot.Capture(replica.Document.Crdt).Encode();
+
+        var version = new BcrdtMap();
+        version.Set("by", replica.Label);
+        version.Set("at", DateTimeOffset.Now);
+        version.Set("snapshot", snapshot);
+
+        Versions(replica).Push(version);
+    }
+
+    private void Preview(DemoReplica replica, BcrdtMap version)
+    {
+        _previews[replica] = new PreviewState(version, TextAt(replica, version) ?? NotYet);
+    }
+
+    private void Restore(DemoReplica replica, BcrdtMap version)
+    {
+        string? text = TextAt(replica, version);
+        if (text is null)
+        {
+            _previews[replica] = new PreviewState(version, NotYet);
+            return;
+        }
+
+        BcrdtTextSynchronizer.Apply(Text(replica), text);
+        _previews.Remove(replica);
+    }
+
+    // Unreachable while versions travel inside the document they describe, but the check is what an application
+    // keeping its versions anywhere else needs, so the page makes it rather than assume.
+    private const string NotYet =
+        "This replica cannot rebuild this version yet: it was saved by a replica that held changes this one has " +
+        "not received. Reconnect it, and the version opens.";
+
+    /// <summary>The text as it was when the version was saved, or null when this replica cannot rebuild it yet.</summary>
+    private static string? TextAt(DemoReplica replica, BcrdtMap version)
+    {
+        BcrdtSnapshot snapshot = BcrdtSnapshot.Decode(SnapshotBytes(version));
+        if (!replica.Document.Crdt.GetStateVector().IsSupersetOf(snapshot.StateVector)) return null;
+
+        using BcrdtDocument then = BcrdtSnapshot.RestoreDocument(replica.Document.Crdt, snapshot);
+        return then.GetText(Field).ToString();
+    }
+
+    private static byte[] SnapshotBytes(BcrdtMap version) => version.Get("snapshot") as byte[] ?? [];
+
+    private bool IsPreviewed(DemoReplica replica, BcrdtMap version) =>
+        _previews.TryGetValue(replica, out PreviewState? preview) && ReferenceEquals(preview.Version, version);
+
+    private static string Describe(BcrdtMap version)
+    {
+        string by = version.Get("by") as string ?? "a replica";
+        string at = version.Get("at") is DateTimeOffset saved ? saved.ToLocalTime().ToString("HH:mm:ss") : "an unknown time";
+        return $"Saved by {by} at {at}";
+    }
+}

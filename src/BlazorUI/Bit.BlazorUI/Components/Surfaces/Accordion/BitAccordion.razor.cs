@@ -1,8 +1,13 @@
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
 /// The Accordion component allows the user to show and hide sections of related content on a page.
 /// </summary>
+/// <remarks>
+/// Its look is themeable through the public --bit-Accordion-* CSS variables, which inherit, and a
+/// <see cref="BitAccordionParams"/> inside a <see cref="BitParams"/> sets the defaults of every accordion under it.
+/// </remarks>
 public partial class BitAccordion : BitComponentBase
 {
     // The name of the cascading value an accordion hands its own heading level down to the accordions nested
@@ -15,6 +20,32 @@ public partial class BitAccordion : BitComponentBase
     private bool _hasBeenExpanded;
     private bool _contentHasFocus;
     private ElementReference _headerRef;
+    private ElementReference _contentRef;
+
+    // Whether a HiddenUntilFound panel is still playing its close, which is what holds hidden="until-found" back:
+    // the attribute stops the panel from being drawn at all, so it is only put on once the browser reports the
+    // transitions of the close finished, whatever the theme, a TransitionDuration or a reduced-motion preference
+    // made them. The stylesheet cannot hold the hiding back on its own: WebKit lays out a panel whose
+    // content-visibility is being transitioned or animated (allow-discrete, a keyframe) as already hidden, so the
+    // row would snap shut the moment the attribute landed. The version tells the close a wait belongs to apart
+    // from a later one, so a wait that outlives its close - the panel reopened and closed again - hides nothing.
+    private bool _closing;
+    private int _closingVersion;
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+    // Settles when the awaited OnToggling in flight is over, so that a find-in-page reveal landing meanwhile can wait
+    // for it rather than be turned away as if it had been refused.
+    private TaskCompletionSource? _toggled;
+
+    // Whether a find-in-page reveal was refused (by OnToggling): the browser took the hidden attribute off and the
+    // panel stays shut, so the accordion stops offering itself to find-in-page until its state next changes.
+    private bool _revealRefused;
+
+    // The beforematch listener the panel carries while it is searchable, splatted onto the element rather than
+    // written as an @onbeforematch attribute: Blazor does not know the event by name, and a delegate handed to the
+    // renderer as an attribute value becomes a listener all the same. It is built once, so it survives a re-render.
+    private Dictionary<string, object>? _beforeMatchAttributes;
 
 
 
@@ -23,7 +54,19 @@ public partial class BitAccordion : BitComponentBase
     /// another one takes its place one level below it without having to be told.
     /// </summary>
     [CascadingParameter(Name = HeadingLevelCascadeName)]
-    private int? ParentHeadingLevel { get; set; }
+    internal int? ParentHeadingLevel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the accordion component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple accordion
+    /// components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitAccordionParams.ParamName)]
+    public BitAccordionParams? CascadingParameters { get; set; }
 
 
 
@@ -36,12 +79,22 @@ public partial class BitAccordion : BitComponentBase
     /// <summary>
     /// The color kind of the background of the accordion.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Accordion-background</c> and the two header shades that travel with the fill
+    /// (<c>--bit-Accordion-header-hover-background</c>, <c>--bit-Accordion-header-active-background</c>), inherited or
+    /// set on the instance alike; left unset, the accordion takes the primary background (the secondary one with
+    /// <see cref="NoBorder"/>) unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Background { get; set; }
 
     /// <summary>
     /// The color kind of the border of the accordion.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Accordion-border-color</c>, inherited or set on the instance alike; left
+    /// unset, the outline takes the primary border color unless that variable says otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Border { get; set; }
 
@@ -55,8 +108,9 @@ public partial class BitAccordion : BitComponentBase
     /// running - the awaited work of a list that owns the expansion, most of all.
     /// </summary>
     /// <remarks>
-    /// The header says as much - <c>aria-busy</c> for a screen reader, a busy cursor for a pointer - rather
-    /// than going on looking like a toggle that answers at once. An accordion whose own
+    /// The header says as much - a spinner in the expander's slot, <c>aria-busy</c> for a screen reader and a
+    /// busy cursor for a pointer - and answers no click meanwhile, rather than going on looking like a toggle
+    /// that answers at once. An accordion whose own
     /// <see cref="OnToggling"/> is being awaited reports itself as busy without being told to.
     /// </remarks>
     [Parameter] public bool Busy { get; set; }
@@ -64,7 +118,8 @@ public partial class BitAccordion : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the accordion.
     /// </summary>
-    [Parameter] public BitAccordionClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitAccordionClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The content of the accordion.
@@ -88,7 +143,7 @@ public partial class BitAccordion : BitComponentBase
     /// Setting either of them also turns the rotation of the expander icon off, since a swapped icon
     /// already reports the state on its own.
     /// </summary>
-    [Parameter] public BitIconInfo? ExpandedExpanderIcon { get; set; }
+    [Parameter, Outranks(nameof(ExpanderIcon))] public BitIconInfo? ExpandedExpanderIcon { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the icon, from the built-in Fluent UI icons, to show in place of the
@@ -114,10 +169,15 @@ public partial class BitAccordion : BitComponentBase
     /// <summary>
     /// Gets or sets the side of the header the expander icon sits on.
     /// <br />
-    /// The default value is <see cref="BitIconPosition.End"/>.
+    /// The default value is <see cref="BitPlacement.End"/>.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction: Start puts the icon before the content in an LTR component and after it
+    /// in an RTL one. Every other placement leaves the icon at the end, where an unset one puts it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition? ExpanderIconPosition { get; set; }
+    public BitPlacement? ExpanderIconPlacement { get; set; }
 
     /// <summary>
     /// The custom content to render in place of the expander icon, leaving the rest of the header - the
@@ -166,6 +226,23 @@ public partial class BitAccordion : BitComponentBase
     [Parameter] public int? HeadingLevel { get; set; }
 
     /// <summary>
+    /// Hands the collapsed panel to the browser as <c>hidden="until-found"</c>, so find-in-page and a navigation to a
+    /// fragment inside the panel reach into it and expand the accordion around the match.
+    /// </summary>
+    /// <remarks>
+    /// This is what a FAQ or a page of collapsed documentation wants: text the reader cannot see is still text they
+    /// can search for. The attribute is applied once the close the browser plays has finished, whatever its duration,
+    /// so the close still animates, and the expansion the browser asks for is reported like any other
+    /// (<see cref="BitAccordionToggleReason.Reveal"/>), so <see cref="OnToggling"/> can still refuse it.
+    /// <br />
+    /// The panel has to be in the DOM to be found, so <see cref="LazyContent"/> and <see cref="UnmountOnCollapse"/>
+    /// are ignored while it is on. An accordion that cannot expand itself - a disabled or <see cref="ReadOnly"/> one,
+    /// or one whose <see cref="IsExpanded"/> is bound one way - is not offered to find-in-page. A browser that does
+    /// not know the value hides the panel outright, which is what a collapsed panel looks like anyway.
+    /// </remarks>
+    [Parameter] public bool HiddenUntilFound { get; set; }
+
+    /// <summary>
     /// Removes the expander icon from the header of the accordion.
     /// </summary>
     [Parameter] public bool HideExpanderIcon { get; set; }
@@ -190,6 +267,7 @@ public partial class BitAccordion : BitComponentBase
     /// <summary>
     /// Delays the first render of the content of the accordion until it is expanded for the first time.
     /// The content stays in the DOM afterwards, so the state it holds survives a collapse.
+    /// Ignored while <see cref="HiddenUntilFound"/> is on.
     /// </summary>
     [Parameter] public bool LazyContent { get; set; }
 
@@ -267,7 +345,7 @@ public partial class BitAccordion : BitComponentBase
     /// This is the panel that has to stay as it is rather than the one that is turned off - the open panel of
     /// a one-at-a-time accordion, which cannot be collapsed because something has to stay open - so it reports
     /// itself as <c>aria-disabled</c> the way the WAI-ARIA authoring practices ask a header in that position
-    /// to, without being greyed out the way <see cref="BitComponentBase.IsEnabled"/> greys it.
+    /// to, without being greyed out the way <see cref="BitComponentBase.Disabled"/> greys it.
     /// <br />
     /// <see cref="OnClick"/> still reports the click, and <see cref="Expand"/>, <see cref="Collapse"/> and
     /// <see cref="Toggle"/> still drive the accordion: what is closed here is the way in from the header, not
@@ -279,16 +357,19 @@ public partial class BitAccordion : BitComponentBase
     /// <summary>
     /// Gets or sets the size of the accordion, which drives the padding of the header and of the content
     /// and the size of the title.
-    /// <br />
-    /// The default value is <see cref="BitSize.Medium"/>.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Accordion-*</c> size variables (font sizes, header and content padding,
+    /// icon size); left unset, the accordion is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the accordion.
     /// </summary>
-    [Parameter] public BitAccordionClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public BitAccordionClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Title in the header of accordion.
@@ -304,8 +385,8 @@ public partial class BitAccordion : BitComponentBase
 
     /// <summary>
     /// Gets or sets the duration of the expand/collapse transition in milliseconds, overriding the duration
-    /// the theme provides. A reduced-motion preference still collapses it, unless the ForceAnimation
-    /// parameter opts out of that.
+    /// the theme provides. A reduced-motion preference still collapses it the way it collapses the motion
+    /// tokens of the theme, so the ForceAnimation parameter, or an app restoring those tokens, brings it back.
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public int? TransitionDuration { get; set; }
@@ -313,7 +394,7 @@ public partial class BitAccordion : BitComponentBase
     /// <summary>
     /// Removes the content of the accordion from the DOM while it is collapsed, so that nothing it holds
     /// keeps running behind a closed header. The collapse of an accordion that unmounts its content is not
-    /// animated, since there is nothing left to animate.
+    /// animated, since there is nothing left to animate. Ignored while <see cref="HiddenUntilFound"/> is on.
     /// </summary>
     [Parameter] public bool UnmountOnCollapse { get; set; }
 
@@ -335,7 +416,7 @@ public partial class BitAccordion : BitComponentBase
     /// IsExpanded binding, OnChange and OnExpand.
     /// </summary>
     /// <remarks>
-    /// A call of its own is not turned away by <see cref="BitComponentBase.IsEnabled"/> - a disabled
+    /// A call of its own is not turned away by <see cref="BitComponentBase.Disabled"/> - a disabled
     /// accordion answers no pointer and no key, but the app can still open it to show why it is disabled -
     /// and a one-way bound <see cref="IsExpanded"/> still owns the state, so nothing happens there either.
     /// </remarks>
@@ -346,7 +427,7 @@ public partial class BitAccordion : BitComponentBase
     /// IsExpanded binding, OnChange and OnCollapse.
     /// </summary>
     /// <remarks>
-    /// Not turned away by <see cref="BitComponentBase.IsEnabled"/>; see <see cref="Expand"/>.
+    /// Not turned away by <see cref="BitComponentBase.Disabled"/>; see <see cref="Expand"/>.
     /// </remarks>
     public Task Collapse() => SetExpanded(false);
 
@@ -355,7 +436,7 @@ public partial class BitAccordion : BitComponentBase
     /// through the IsExpanded binding, OnChange and OnExpand/OnCollapse.
     /// </summary>
     /// <remarks>
-    /// Not turned away by <see cref="BitComponentBase.IsEnabled"/>; see <see cref="Expand"/>.
+    /// Not turned away by <see cref="BitComponentBase.Disabled"/>; see <see cref="Expand"/>.
     /// </remarks>
     public Task Toggle() => SetExpanded(IsExpanded is false);
 
@@ -363,6 +444,32 @@ public partial class BitAccordion : BitComponentBase
 
     private string _HeaderId => $"{_Id}-hdr";
     private string _ContentId => $"{_Id}-cnt";
+    private string _TitleId => $"{_Id}-ttl";
+    private string _DescriptionId => $"{_Id}-des";
+
+    // The default header names its toggle by the title alone and describes it by the description, rather than
+    // reading both out as one long name: the heading, the button and the panel are then all called what the title
+    // says, and the description is still read after them. A HeaderAriaLabel names the header itself, and a
+    // HeaderTemplate draws a header this cannot see into, so either of them leaves the naming as it was.
+    private bool _NamesByTitle => HeaderTemplate is null && HeaderAriaLabel is null && (TitleTemplate is not null || Title.HasValue());
+    private bool _DescribesByDescription => _NamesByTitle && Description.HasValue();
+
+    // The panel is named by what names the header: the title directly (an aria-labelledby is not followed through
+    // another one, so pointing at the header would name the panel by its whole content), the header otherwise.
+    private string _PanelLabelledBy => _NamesByTitle ? _TitleId : _HeaderId;
+
+    // Whether the collapsed panel is offered to find-in-page at all: only an accordion that can expand itself around
+    // the match is, since the browser would otherwise reveal content inside a panel that stays shut.
+    private bool _IsSearchable => HiddenUntilFound && Disabled is false && ReadOnly is false && (_OwnsExpansion || RevealHandler is not null) && _revealRefused is false;
+
+    // Whether the panel is hidden until found right now. The attribute waits for the end of the close: the render
+    // that starts it (the last one rendered expanded, _wasExpanded) and the ones while it plays (_closing) leave the
+    // panel to the ordinary collapsed state, whose visibility is held back for the length of the transition.
+    private bool _IsHiddenUntilFound => _IsSearchable && IsExpanded is false && _wasExpanded is false && _closing is false;
+
+    private Dictionary<string, object>? _ContentAttributes => _IsSearchable
+        ? (_beforeMatchAttributes ??= new() { ["onbeforematch"] = EventCallback.Factory.Create(this, HandleOnBeforeMatch) })
+        : null;
 
     // An accordion nested in the panel of another one is a subsection of it, so it takes the level below the one
     // holding it unless it is given a level of its own. The clamp is what stops a deep nest from running past 6.
@@ -377,6 +484,13 @@ public partial class BitAccordion : BitComponentBase
     // scroll keys of the panel, so it leaves them alone while the panel is the one holding the focus.
     internal bool IsContentFocused => _contentHasFocus;
 
+    // The owner of the expansion of an accordion whose IsExpanded is bound one way by a list of accordions
+    // (BitAccordionList): the list answers the header itself, so it is also the one a find-in-page reveal asks to
+    // open the panel, and the answer says whether it did. It is internal plumbing between the two components, and a
+    // [Parameter] has to be public, so it is a plain property the list item sets as it captures its reference -
+    // which Blazor does before the accordion's first render, in time for that render to mark the panel searchable.
+    internal Func<Task<bool>>? RevealHandler { get; set; }
+
     // The header answers nothing while an awaited OnToggling of its own is running, and nothing while the
     // page - a BitAccordionList that owns the expansion - says so through the Busy parameter either.
     private bool _IsBusy => _isToggling || Busy;
@@ -385,9 +499,10 @@ public partial class BitAccordion : BitComponentBase
     // nothing it would report about a move of its own would be true.
     private bool _OwnsExpansion => IsExpandedHasBeenSet is false || IsExpandedChanged.HasDelegate;
 
-    private bool _ShouldRenderContent => UnmountOnCollapse
-                                            ? IsExpanded
-                                            : (LazyContent is false || _hasBeenExpanded || IsExpanded);
+    // A searchable panel has to be in the DOM for find-in-page to have anything to find.
+    private bool _ShouldRenderContent => _IsSearchable || (UnmountOnCollapse
+                                                            ? IsExpanded
+                                                            : (LazyContent is false || _hasBeenExpanded || IsExpanded));
 
 
 
@@ -409,15 +524,11 @@ public partial class BitAccordion : BitComponentBase
 
         ClassBuilder.Register(() => ReadOnly ? "bit-acd-rdo" : string.Empty);
 
-        ClassBuilder.Register(() => ExpanderIconPosition is BitIconPosition.Start ? "bit-acd-sei" : string.Empty);
+        ClassBuilder.Register(() => ExpanderIconPlacement is BitPlacement.Start ? "bit-acd-sei" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-acd-sm",
-            BitSize.Medium => "bit-acd-md",
-            BitSize.Large => "bit-acd-lg",
-            _ => "bit-acd-md"
-        });
+        // Size, Background and Border publish nothing while they are unset, which is what lets the stylesheet tell a
+        // default from a choice: the public --bit-Accordion-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-acd"));
 
         ClassBuilder.Register(() => Background switch
         {
@@ -445,8 +556,8 @@ public partial class BitAccordion : BitComponentBase
         StyleBuilder.Register(() => IsExpanded ? Styles?.Expanded : string.Empty);
 
         // The duration is handed to the stylesheet as the -full token rather than written into the transitions
-        // directly, so the reduced-motion collapse in the stylesheet can still shorten it (an inline duration
-        // would be out of reach of any media query).
+        // directly, so the stylesheet can still scale it by the shared motion factor and the reduced motion
+        // preference collapse it (an inline duration would be out of reach of the motion tokens).
         StyleBuilder.Register(() => TransitionDuration.HasValue
                                     ? FormattableString.Invariant($"--bit-acd-dur-full:{Math.Max(0, TransitionDuration.Value)}ms")
                                     : string.Empty);
@@ -466,6 +577,8 @@ public partial class BitAccordion : BitComponentBase
 
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         if (IsExpanded) _hasBeenExpanded = true;
 
         // A render the page asks for is never the one the focus bookkeeping below is trying to skip.
@@ -501,10 +614,29 @@ public partial class BitAccordion : BitComponentBase
         {
             _contentHasFocus = false;
 
-            await _headerRef.FocusAsync();
+            await _headerRef.FocusSafelyAsync();
         }
 
+        // A real change of state, whoever made it, offers a panel whose reveal was refused to find-in-page again.
+        if (firstRender is false && _wasExpanded != IsExpanded)
+        {
+            _revealRefused = false;
+        }
+
+        var closed = _wasExpanded && IsExpanded is false;
+
         _wasExpanded = IsExpanded;
+
+        if (IsExpanded)
+        {
+            _closing = false;
+        }
+        else if (closed && HiddenUntilFound)
+        {
+            _closing = true;
+
+            _ = HideUntilFoundOnceClosedAsync(++_closingVersion);
+        }
 
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -513,7 +645,7 @@ public partial class BitAccordion : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
 
@@ -563,9 +695,13 @@ public partial class BitAccordion : BitComponentBase
         {
             _isToggling = true;
 
+            // Its continuations run off the dispatcher's queue rather than inline, so a reveal waiting on it only
+            // resumes once this toggle has gone on to assign the state it was let through with.
+            var toggled = _toggled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
             // The callback is awaited and nothing else toggles the accordion while it is running, so the
-            // header says as much - aria-busy for a screen reader, a busy cursor for a pointer - rather than
-            // going on looking like a toggle that answers.
+            // header says as much - a spinner, aria-busy and a busy cursor - rather than going on looking like a
+            // toggle that answers.
             await RenderTheBusyState();
 
             try
@@ -583,6 +719,9 @@ public partial class BitAccordion : BitComponentBase
             finally
             {
                 _isToggling = false;
+                _toggled = null;
+
+                toggled.TrySetResult();
 
                 await RenderTheBusyState();
             }
@@ -616,6 +755,56 @@ public partial class BitAccordion : BitComponentBase
         _skipRender = false;
 
         return InvokeAsync(StateHasChanged);
+    }
+
+    // The browser is about to reveal the collapsed panel because find-in-page or a fragment navigation landed inside
+    // it. The stylesheet has already opened the panel around the match the moment the attribute came off, so the
+    // accordion expands for real behind it - or, when OnToggling refuses, stops being searchable, which takes the
+    // panel back out of reach the ordinary way.
+    private async Task HandleOnBeforeMatch()
+    {
+        if (_IsSearchable is false) return;
+
+        _skipRender = false;
+
+        // A toggle already in flight is not a refusal of this reveal: the beforematch of an accordion nested in the
+        // panel bubbles up here ahead of this panel's own, and a click on the header can be waiting on OnToggling
+        // when the match lands. The reveal waits for it, and only asks for itself if that one left the panel shut.
+        while (_toggled is { } toggled)
+        {
+            await toggled.Task;
+
+            if (IsDisposed || IsExpanded || _IsSearchable is false) return;
+        }
+
+        var revealed = RevealHandler is not null
+                     ? await RevealHandler()
+                     : await AssignExpanded(true, BitAccordionToggleReason.Reveal);
+
+        if (revealed || IsExpanded || IsDisposed) return;
+
+        _revealRefused = true;
+    }
+
+    // The render that started the close has just put the collapsed state on the panel, so the transitions the browser
+    // waits out are the ones it is playing now, at whatever pace it resolved.
+    private async Task HideUntilFoundOnceClosedAsync(int version)
+    {
+        try
+        {
+            await _js.BitAccordionWaitForTransitions(_contentRef);
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException) { }
+        catch (TaskCanceledException) { }
+
+        if (version != _closingVersion || IsDisposed || IsExpanded) return;
+
+        _closing = false;
+
+        _skipRender = false;
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private void HandleOnContentFocusIn()

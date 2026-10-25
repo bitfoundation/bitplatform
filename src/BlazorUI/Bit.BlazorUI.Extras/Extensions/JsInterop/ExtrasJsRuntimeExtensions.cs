@@ -62,6 +62,11 @@ internal static class ExtrasJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Extras.scrollIntoView", element);
     }
 
+    internal static ValueTask BitExtrasKeepInPlace(this IJSRuntime jsRuntime, ElementReference element)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.keepInPlace", element);
+    }
+
     internal static ValueTask BitExtrasDisposePreventKeys(this IJSRuntime jsRuntime, ElementReference element)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Extras.disposePreventKeys", element);
@@ -75,5 +80,10 @@ internal static class ExtrasJsRuntimeExtensions
     internal static ValueTask BitExtrasScrollOptionIntoView(this IJSRuntime jsRuntime, string optionId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Extras.scrollOptionIntoView", optionId);
+    }
+
+    internal static ValueTask<string?> BitExtrasGetTimeZone(this IJSRuntime jsRuntime)
+    {
+        return jsRuntime.Invoke<string?>("BitBlazorUI.Extras.getTimeZone");
     }
 }

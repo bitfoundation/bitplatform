@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Bunit;
@@ -58,6 +58,31 @@ public partial class BitCascadingValueProviderReactivityTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual("hello", component.FindComponent<CascadingConsumer>().Instance.Greeting));
         Assert.AreEqual(7, component.FindComponent<CascadingConsumer>().Instance.Number);
+    }
+
+    [TestMethod]
+    public void ShouldNotRunTheFactoryOfADisabledComputedValue()
+    {
+        var calls = 0;
+        var greeting = BitCascadingValue.Computed(() => $"render-{++calls}", "Greeting", enabled: false);
+
+        var component = RenderComponent<BitCascadingValueProvider>(parameters =>
+        {
+            parameters.Add(p => p.Values, new List<BitCascadingValue> { greeting });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<CascadingConsumer>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual(0, calls);
+        Assert.AreEqual("0-", component.Markup);
+
+        greeting.Enabled = true;
+
+        component.WaitForAssertion(() => Assert.AreEqual($"0-render-{calls}", component.Markup));
+        Assert.IsTrue(calls >= 1);
     }
 
     [TestMethod]
@@ -181,6 +206,28 @@ public partial class BitCascadingValueProviderReactivityTests : BunitTestContext
         await value.NotifyChangedAsync();
 
         component.MarkupMatches("mutated");
+    }
+
+    [TestMethod]
+    public async Task ShouldCompleteTheNotifyChangedTaskOnceTheNewValueHasBeenRendered()
+    {
+        var greeting = new BitCascadingValue<string>("hello", "Greeting");
+
+        var component = RenderComponent<BitCascadingValueProvider>(parameters =>
+        {
+            parameters.Add(p => p.Values, new List<BitCascadingValue> { greeting });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<CascadingConsumer>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual("0-hello", component.Markup);
+
+        await greeting.NotifyChangedAsync("bye");
+
+        Assert.AreEqual("0-bye", component.Markup);
     }
 
     [TestMethod]

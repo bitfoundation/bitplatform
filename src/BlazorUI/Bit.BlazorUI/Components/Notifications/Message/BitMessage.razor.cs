@@ -20,6 +20,13 @@ public partial class BitMessage : BitComponentBase
     private bool _isFocusInside;
     private bool _isPausedByApi;
 
+    // The two page-level reasons to hold the countdown, reported by the shared page visibility utility. They are
+    // facts about the page rather than about this showing of the message, so a dismissal leaves them alone.
+    private bool _isPageHidden;
+    private bool _isWindowBlurred;
+    private BitPageVisibility? _pageVisibility;
+    private bool _isPageVisibilityPending;
+
     // A hold has no length of its own: a pointer can rest on the message, and a PauseAutoDismiss can go unanswered,
     // for as long as the reader likes. So a held countdown waits on the resume rather than waking four times a
     // second to find the hold still on. This is what the resume opens.
@@ -31,6 +38,8 @@ public partial class BitMessage : BitComponentBase
     // Latched for the length of one showing of the message, and cleared when it is dismissed or brought back.
     private bool _autoFocusDone;
     private bool _isAnnounced;
+    private bool _isAnnouncing;
+    private int _showing;
     private TimeSpan? _armedAutoDismissTime;
     private CancellationTokenSource? _autoDismissCts;
 
@@ -40,6 +49,21 @@ public partial class BitMessage : BitComponentBase
     // starts over with the countdown it draws.
     private int _autoDismissGeneration;
 
+    // Whether the single line is actually clipped, as the browser measured it: null until it has, which keeps the
+    // expander where it always was for a message that has not been measured (a prerender, a test renderer). For a
+    // message that reflows instead of folding, it stays true for as long as the message is too narrow for its line.
+    // The observer is registered under UniqueId rather than the consumer's Id, which two messages may share and
+    // which may change under a running observer; what it is watching for - a fold or a reflow - is kept beside it,
+    // null while nothing is watched.
+    private bool? _isClipped;
+    private bool? _observedReflow;
+    private DotNetObjectReference<BitMessage>? _dotnetObj;
+
+    // Whether the browser is telling the message which Escapes are its own (see SyncEscapeWatch), and what it answered
+    // for the Escape Blazor is about to hand the key handler (see _OnEscapeVerdict).
+    private bool _escapeWatched;
+    private readonly BitEscapeVerdict _escapeVerdict = new();
+
     // Held as fields so re-registering them on every parameter set keeps handing the renderer the same
     // delegate instance, which is what lets the diff leave the listener alone.
     private readonly Action<PointerEventArgs> _onPointerEnter;
@@ -48,6 +72,15 @@ public partial class BitMessage : BitComponentBase
     private readonly Action _onFocusOut;
     private readonly Func<KeyboardEventArgs, Task> _onRootKeyDown;
     private readonly RenderFragment _renderTitle;
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+    // PauseOnPageHidden and PauseOnWindowBlur need the shared BitPageVisibility utility, which only exists where
+    // the app registered the bit BlazorUI services. It is resolved through the provider rather than injected, so a
+    // message keeps working in an app that never registered them and only those two opt-in features turn off.
+    [Inject] private IServiceProvider _serviceProvider { get; set; } = default!;
 
 
 
@@ -64,6 +97,19 @@ public partial class BitMessage : BitComponentBase
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the message component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple message components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitMessageParams.ParamName)]
+    public BitMessageParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// The content of the action to show on the message.
     /// </summary>
     [Parameter] public RenderFragment? Actions { get; set; }
@@ -71,6 +117,12 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// Determines the alignment of the content section of the message.
     /// </summary>
+    /// <remarks>
+    /// The distributions (Start, End, Center and the three Space ones) place the icon and the text along the width of
+    /// the message. <see cref="BitAlignment.Baseline"/> and <see cref="BitAlignment.Stretch"/> keep them at the start
+    /// and align them across the row instead: Baseline lines the icon up with the first line of the text, Stretch
+    /// draws each the full height of the row.
+    /// </remarks>
     [Parameter, ResetStyleBuilder]
     public BitAlignment? Alignment { get; set; }
 
@@ -83,9 +135,25 @@ public partial class BitMessage : BitComponentBase
     /// - and while the message is enabled. It is held for as long as a pointer that can rest on the message - a
     /// mouse or a pen, never a touch, which is a tap that is over as soon as it began - is over it, or the focus is
     /// inside it, so the message cannot vanish while it is being read or acted upon (WCAG 2.2.1 Timing
-    /// Adjustable). Assigning a different value re-arms the countdown.
+    /// Adjustable); <see cref="PauseOnPageHidden"/> and <see cref="PauseOnWindowBlur"/> hold it while the page is
+    /// not being looked at too. Assigning a different value re-arms the countdown.
     /// </remarks>
     [Parameter] public TimeSpan? AutoDismissTime { get; set; }
+
+    /// <summary>
+    /// Switches a single-line message to the <see cref="Multiline"/> layout for as long as its content does not fit
+    /// on one line, instead of cutting it off with an ellipsis.
+    /// </summary>
+    /// <remarks>
+    /// A single line that is clipped hides the rest of its text from everyone who reads it with their eyes, which is
+    /// what a narrow viewport or a zoomed page does to any message longer than a few words (WCAG 1.4.10 Reflow).
+    /// With this set the message keeps its compact single line wherever it fits, and wraps - moving its actions to
+    /// their own row - wherever it does not, going back to one line once it is given the room again. The browser
+    /// measures the fit, so it takes effect once the message is interactive. <see cref="Truncate"/> is the other
+    /// answer to the same problem and wins where both are set; a <see cref="MaxLines"/> cap only holds on a message
+    /// that is <see cref="Multiline"/> of its own.
+    /// </remarks>
+    [Parameter] public bool AutoMultiline { get; set; }
 
     /// <summary>
     /// Moves the focus to the message as soon as it is rendered.
@@ -107,7 +175,7 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitMessage.
     /// </summary>
-    [Parameter] public BitMessageClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitMessageClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The aria-label and the tooltip of the expander button of the message in Truncate mode while it is expanded.
@@ -145,6 +213,10 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// The general color of the message.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Message-*</c> color variables (color, background, border color,
+    /// focus color); left unset, the message is Info unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -160,9 +232,12 @@ public partial class BitMessage : BitComponentBase
     /// <remarks>
     /// A live region announces what changes inside it, so a region that arrives with its text already in place is
     /// a change of nothing and several screen readers stay silent. Setting this renders the region empty first and
-    /// fills it on the very next render, which is what makes the announcement reliable for a message that appears
+    /// fills it on the next render, once the page has been painted with the empty region (in every render mode,
+    /// WebAssembly included), which is what makes the announcement reliable for a message that appears
     /// in answer to something the reader just did. It costs the message one frame, so leave it off where the
     /// message is part of the page from the start and there is nothing to announce anyway.
+    /// <br />
+    /// A statically rendered page has no next render to fill the region in, so there the text is rendered right away.
     /// </remarks>
     [Parameter] public bool DelayedAnnouncement { get; set; }
 
@@ -388,6 +463,27 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public EventCallback<BitMessageDismissArgs> OnDismissing { get; set; }
 
     /// <summary>
+    /// Holds the <see cref="AutoDismissTime"/> countdown while the page is hidden - a background tab, a minimized
+    /// window - so the message is not gone before anyone has looked at it.
+    /// </summary>
+    /// <remarks>
+    /// It needs the bit BlazorUI services to be registered (<c>AddBitBlazorUIServices</c>); without them the
+    /// countdown runs as it otherwise would.
+    /// </remarks>
+    [Parameter] public bool PauseOnPageHidden { get; set; }
+
+    /// <summary>
+    /// Holds the <see cref="AutoDismissTime"/> countdown while the window does not have the focus.
+    /// </summary>
+    /// <remarks>
+    /// A window covered by another one, or whose focus went to the dev tools, is not hidden, so
+    /// <see cref="PauseOnPageHidden"/> alone lets the countdown run behind whatever is in front of it. It needs the
+    /// bit BlazorUI services to be registered (<c>AddBitBlazorUIServices</c>); without them the countdown runs as it
+    /// otherwise would.
+    /// </remarks>
+    [Parameter] public bool PauseOnWindowBlur { get; set; }
+
+    /// <summary>
     /// How urgently the message interrupts a screen reader, independently of the role it is announced under.
     /// </summary>
     /// <remarks>
@@ -420,6 +516,10 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// The size of Message, Possible values: Small | Medium | Large
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Message-*</c> size variables (font size, icon size, progress height);
+    /// left unset, the message is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -432,7 +532,19 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitMessage.
     /// </summary>
-    [Parameter] public BitMessageClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitMessageClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Washes the surface an Outline or a Text message leaves to the page with a faint tint of its color.
+    /// </summary>
+    /// <remarks>
+    /// It is the soft look most alerts take: Outline with a tint keeps the border around the wash, Text with a
+    /// tint drops it. The text stays on the role foreground, which keeps its 4.5:1 contrast on the tint. The
+    /// tint is the theme's <c>--bit-clr-&lt;role&gt;-tint</c> token, translucent by default so it tints
+    /// whatever surface the message sits on. A Fill message is filled already, so it ignores this.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Tinted { get; set; }
 
     /// <summary>
     /// The title (heading) of the message, rendered above the content in multiline mode and ahead of it otherwise.
@@ -465,7 +577,9 @@ public partial class BitMessage : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It is for the message that has to fit in a tight space: the content is clipped to one line and the button
-    /// unfolds it, so the whole of it is still reachable without the message taking the room to show it.
+    /// unfolds it, so the whole of it is still reachable without the message taking the room to show it. The
+    /// button is only rendered while something is actually clipped (or unfolded), as the browser measures it, so a
+    /// text that fits is not handed a button that unfolds nothing.
     /// <br />
     /// On a <see cref="Multiline"/> message there is nothing folded away to unfold, so this does nothing on its own
     /// there; give that message a <see cref="MaxLines"/> cap and the same button appears, unfolding it past the cap
@@ -476,6 +590,11 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// The variant of the message.
     /// </summary>
+    /// <remarks>
+    /// Fill paints the surface in the role color and the text in its on-color. Outline and Text leave the surface to
+    /// the page, so their text takes the role color shaded toward the foreground, which keeps it at a 4.5:1 contrast;
+    /// <see cref="Tinted"/> washes that surface with a faint tint of the role.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitVariant? Variant { get; set; }
 
@@ -542,6 +661,36 @@ public partial class BitMessage : BitComponentBase
     /// </remarks>
     public ValueTask FocusAsync() => Dismissed ? ValueTask.CompletedTask : RootElement.FocusAsync();
 
+    /// <summary>
+    /// Called by the overflow observer of a truncated or auto-multiline message whenever its text goes from fitting
+    /// to being clipped or back, so the expander is only offered where there is something to unfold and the line
+    /// only wraps where it would otherwise be cut off.
+    /// <br />
+    /// <strong>This method is intended for internal use and should not be called directly.</strong>
+    /// </summary>
+    [JSInvokable("OnOverflowChange")]
+    public void _OnOverflowChange(bool isClipped)
+    {
+        if (IsDisposing || _isClipped == isClipped) return;
+
+        _isClipped = isClipped;
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Called by the browser as each Escape goes down inside a message that dismisses on it, ahead of the keydown
+    /// Blazor then dispatches, with whether the key belongs to something inside the message instead - a field that
+    /// clears on it, a surface rendered inside the message - so the key handler that runs next leaves it alone.
+    /// <br />
+    /// <strong>This method is intended for internal use and should not be called directly.</strong>
+    /// </summary>
+    [JSInvokable("OnEscapeVerdict")]
+    public void _OnEscapeVerdict(bool foreign)
+    {
+        _escapeVerdict.Set(foreign);
+    }
+
 
 
     protected override string RootElementClass => "bit-msg";
@@ -550,7 +699,10 @@ public partial class BitMessage : BitComponentBase
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => Alignment switch
+        // Baseline and Stretch say nothing about where along the width the content goes (justify-content has no
+        // baseline, and lays a stretch out as flex-start), so they leave it at the start and line the icon and the
+        // text up across the row instead: on the first line of the text, or each the full height of the row.
+        StyleBuilder.Register(() => Alignment.ForMainAxis() switch
         {
             BitAlignment.Start => "--bit-msg-justifycontent:flex-start",
             BitAlignment.End => "--bit-msg-justifycontent:flex-end",
@@ -558,9 +710,14 @@ public partial class BitMessage : BitComponentBase
             BitAlignment.SpaceBetween => "--bit-msg-justifycontent:space-between",
             BitAlignment.SpaceAround => "--bit-msg-justifycontent:space-around",
             BitAlignment.SpaceEvenly => "--bit-msg-justifycontent:space-evenly",
-            BitAlignment.Baseline => "--bit-msg-justifycontent:baseline",
-            BitAlignment.Stretch => "--bit-msg-justifycontent:stretch",
             _ => "--bit-msg-justifycontent:flex-start"
+        });
+
+        StyleBuilder.Register(() => Alignment switch
+        {
+            BitAlignment.Baseline => "--bit-msg-alignitems:baseline",
+            BitAlignment.Stretch => "--bit-msg-alignitems:stretch",
+            _ => string.Empty
         });
 
         // The shadow scale only has the 24 steps the theme declares, so anything outside it would resolve
@@ -584,62 +741,72 @@ public partial class BitMessage : BitComponentBase
             _ => "bit-msg-fil"
         });
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-msg-pri",
-            BitColor.Secondary => "bit-msg-sec",
-            BitColor.Tertiary => "bit-msg-ter",
-            BitColor.Info => "bit-msg-inf",
-            BitColor.Success => "bit-msg-suc",
-            BitColor.Warning => "bit-msg-wrn",
-            BitColor.SevereWarning => "bit-msg-swr",
-            BitColor.Error => "bit-msg-err",
-            BitColor.PrimaryBackground => "bit-msg-pbg",
-            BitColor.SecondaryBackground => "bit-msg-sbg",
-            BitColor.TertiaryBackground => "bit-msg-tbg",
-            BitColor.PrimaryForeground => "bit-msg-pfg",
-            BitColor.SecondaryForeground => "bit-msg-sfg",
-            BitColor.TertiaryForeground => "bit-msg-tfg",
-            BitColor.PrimaryBorder => "bit-msg-pbr",
-            BitColor.SecondaryBorder => "bit-msg-sbr",
-            BitColor.TertiaryBorder => "bit-msg-tbr",
-            _ => "bit-msg-inf"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from
+        // a choice: the public --bit-Message-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-msg"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-msg-sm",
-            BitSize.Medium => "bit-msg-md",
-            BitSize.Large => "bit-msg-lg",
-            _ => "bit-msg-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-msg"));
 
         ClassBuilder.Register(() => Square ? "bit-msg-sqr" : string.Empty);
+
+        ClassBuilder.Register(() => Tinted && Variant is BitVariant.Outline or BitVariant.Text ? "bit-msg-tnt" : string.Empty);
     }
 
     protected override void OnParametersSet()
     {
+        // The cascade fills in what the message left unset before anything below reads it: the countdown is armed,
+        // and the listeners are wired up, off the values it hands over.
+        CascadingParameters?.UpdateParameters(this);
+
         base.OnParametersSet();
 
         RegisterInteractionHandlers();
 
+        // A PauseOnPageHidden or PauseOnWindowBlur turned off while it is holding the countdown has no event of its
+        // own coming - the next visibility change might never happen - so the hold is weighed again here.
+        RefreshAutoDismissHold();
+
         // Before the first render the timer is armed by OnAfterRenderAsync instead, so that a message that
         // never makes it to the DOM never starts counting down.
         if (IsRendered) ArmAutoDismiss();
+
+        // A statically rendered page has no render after this one to hand the held-back text over in, so a delayed
+        // announcement would leave the message empty for good - and a page that arrives is read rather than
+        // announced, so there is nothing to hold the text back for. A prerender is followed by the interactive
+        // render that replaces it, so it holds the text back as usual: that render then puts it in once, rather than
+        // taking a prerendered text away and putting it back.
+        if (DelayedAnnouncement && _isAnnounced is false && IsRenderedStatically())
+        {
+            _isAnnounced = true;
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender)
+        // A message rendered into a page that is already hidden or blurred starts out held, so what is already known
+        // of the page is taken before the first countdown is armed. The browser's own answer is waited for last,
+        // so nothing below is held up by the round trip it takes.
+        var pageVisibilityInit = SyncPageVisibility();
+
+        if (firstRender && IsDisposed is false)
         {
             ArmAutoDismiss();
         }
 
         await HandleAutoFocus();
 
-        HandleDelayedAnnouncement();
+        // Waited for last, like the page's visibility: it waits for a paint, which nothing below has to wait for.
+        var announcement = HandleDelayedAnnouncement();
+
+        await SyncOverflowObserver();
+
+        await SyncEscapeWatch();
+
+        await pageVisibilityInit;
+
+        await announcement;
     }
 
 
@@ -653,18 +820,178 @@ public partial class BitMessage : BitComponentBase
 
         _autoFocusDone = true;
 
-        await RootElement.FocusAsync();
+        await RootElement.FocusSafelyAsync();
+    }
+
+    // Whether the single line is clipped is something only the browser can tell, so a message that can fold or
+    // reflow asks it to watch, and stops asking once it can do neither or is off the page. A message that comes
+    // back is a new element, and one that went from folding to reflowing is watched for something else, so both
+    // are watched afresh.
+    private async Task SyncOverflowObserver()
+    {
+        bool? observe = (_CanFold || _CanReflow) && Dismissed is false && IsDisposed is false ? _CanReflow : null;
+
+        if (observe == _observedReflow) return;
+
+        _observedReflow = observe;
+        _isClipped = null;
+
+        if (observe is null)
+        {
+            try
+            {
+                await _js.BitMessageDispose(UniqueId);
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone, and the observer with it
+            catch (JSException) { } // there was no observer to stop
+
+            return;
+        }
+
+        _dotnetObj ??= DotNetObjectReference.Create(this);
+
+        try
+        {
+            await _js.BitMessageObserveOverflow(UniqueId, RootElement, _dotnetObj, observe.Value);
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, nothing to observe
+        catch (JSException) { } // without the observer the expander is rendered, as it always was
+    }
+
+    // The key handler hears every Escape pressed inside the message, the ones a component or a surface inside it took
+    // first included, so the browser tells it which are its own (Utils.watchEscapeClaim) for as long as it claims the
+    // key at all. A message that comes back is a new element, so it is watched afresh.
+    private async Task SyncEscapeWatch()
+    {
+        var watch = _EscapeClaim is not null && Dismissed is false && IsDisposed is false;
+
+        if (watch == _escapeWatched) return;
+
+        _escapeWatched = watch;
+        _escapeVerdict.Reset();
+
+        try
+        {
+            if (watch)
+            {
+                _dotnetObj ??= DotNetObjectReference.Create(this);
+
+                await _js.BitUtilsWatchEscapeClaim(UniqueId, RootElement, _dotnetObj);
+            }
+            else
+            {
+                await _js.BitUtilsUnwatchEscapeClaim(UniqueId);
+            }
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the listener with it
+        catch (JSException) { } // without the listener every Escape is taken for the message's own, as it always was
+    }
+
+    // Subscribed the first time a countdown asks for it, and kept until the message is disposed: the hold is read
+    // through the parameters that asked for it (see _IsPageHeld), so a subscription nobody asks for any more holds
+    // nothing. The utility is a scoped service of the library, so an app that registered none simply goes without.
+    // The subscription and what the utility already knows are taken synchronously; the returned task is the
+    // browser's answer, which is applied once it arrives.
+    private Task SyncPageVisibility()
+    {
+        if (_pageVisibility is not null || IsDisposed) return Task.CompletedTask;
+        if ((PauseOnPageHidden || PauseOnWindowBlur) is false || _HasAutoDismiss is false) return Task.CompletedTask;
+
+        _pageVisibility = _serviceProvider?.GetService(typeof(BitPageVisibility)) as BitPageVisibility;
+        if (_pageVisibility is null) return Task.CompletedTask;
+
+        _pageVisibility.OnChange += HandlePageVisibilityChange;
+        _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
+
+        // Until the page has answered, the countdown armed right after this could be running down in a tab that is
+        // already hidden, so it starts held back, the way a snack bar's does.
+        _isPageVisibilityPending = true;
+
+        ApplyPageVisibility();
+
+        return InitPageVisibility(_pageVisibility);
+    }
+
+    // Only the first call is waited for, and the utility bounds it with a timeout of its own: one that failed (the
+    // script not loaded yet, a round trip that timed out) settles as not held, and is retried by the utility itself,
+    // whose answer arrives as a change like any other - the message does not have to render again to get it.
+    private async Task InitPageVisibility(BitPageVisibility pageVisibility)
+    {
+        try
+        {
+            await pageVisibility.Init();
+        }
+        finally
+        {
+            _isPageVisibilityPending = false;
+        }
+
+        ApplyPageVisibility();
+    }
+
+    private void ApplyPageVisibility()
+    {
+        if (IsDisposed || _pageVisibility is null) return;
+
+        _isPageHidden = _pageVisibility.IsHidden;
+        _isWindowBlurred = _pageVisibility.IsWindowBlurred;
+
+        RefreshAutoDismissHold();
     }
 
     // A live region announces what changes inside it, so the text is handed to it one render after the region
     // itself reaches the page rather than arriving with it. Like the focus, it is done once per showing.
-    private void HandleDelayedAnnouncement()
+    // The render that fills it waits for the page to be painted with the empty region first (Message.afterPaint): on
+    // WebAssembly a render made right here lands in the same browser task as the one that put the region on the page,
+    // so the region would reach the accessibility tree with its text already in it - a change of nothing.
+    private async Task HandleDelayedAnnouncement()
     {
-        if (DelayedAnnouncement is false || Dismissed || _isAnnounced) return;
+        if (DelayedAnnouncement is false || Dismissed || _isAnnounced || _isAnnouncing) return;
+
+        _isAnnouncing = true;
+
+        var showing = _showing;
+
+        try
+        {
+            await _js.BitMessageAfterPaint();
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+        catch (JSException) { } // without the wait the text follows right away, as it always did
+        catch (TaskCanceledException) { } // a round trip that timed out has waited long enough
+        finally
+        {
+            _isAnnouncing = false;
+        }
+
+        if (IsDisposed || DelayedAnnouncement is false || Dismissed || _isAnnounced) return;
+
+        // Dismissed and shown again in the meantime: the region of this showing waits for a paint of its own.
+        if (showing != _showing)
+        {
+            await HandleDelayedAnnouncement();
+            return;
+        }
 
         _isAnnounced = true;
 
         StateHasChanged();
+    }
+
+    // A render with no JS runtime behind it is not an interactive one. Only from net9.0 on does the framework say
+    // which of the two others it is - a static render has no render mode, a prerender has the one of the
+    // interactive render that follows it - and before it the two cannot be told apart, so both count as static:
+    // a prerendered message then shows its text before the page is interactive, at the cost of the interactive
+    // render holding it back for one render, rather than a static one never showing it at all.
+    private bool IsRenderedStatically()
+    {
+        if (_js.IsRuntimeInvalid() is false) return false;
+
+#if NET9_0_OR_GREATER
+        return AssignedRenderMode is null;
+#else
+        return true;
+#endif
     }
 
 
@@ -698,9 +1025,14 @@ public partial class BitMessage : BitComponentBase
     // already clips itself to one.
     private bool _HasMaxLines => Multiline && MaxLines is > 0;
 
-    // Something is folded away either because the message is held to one line, or because it is held to a
-    // number of them - and either way there is a button worth rendering to unfold it.
-    private bool _HasExpander => Truncate && (Multiline is false || _HasMaxLines);
+    // Something can be folded away either because the message is held to one line, or because it is held to a
+    // number of them.
+    private bool _CanFold => Truncate && (Multiline is false || _HasMaxLines);
+
+    // The button is only worth rendering where the fold actually hides something - a short text that fits would
+    // be handed a control that unfolds nothing - and it stays while the message is unfolded, so it can be folded
+    // back. Until the browser has measured, the button is rendered.
+    private bool _HasExpander => _CanFold && (_isClipped is not false || Expanded);
 
     // Expanded only means anything where there is something folded away to unfold, so it is read through
     // the same condition that decides whether the expander button renders at all.
@@ -710,12 +1042,22 @@ public partial class BitMessage : BitComponentBase
     // asked for the button, so a capped message without one stays capped.
     private bool _IsClamped => _HasMaxLines && _IsExpanded is false;
 
+    // A message reflows only where it would neither fold nor wrap already: Truncate is the other answer to a line
+    // that does not fit, and the one the consumer asked for by name.
+    private bool _CanReflow => AutoMultiline && Multiline is false && Truncate is false;
+
+    // The browser has measured the single line and found it too short for what is on it.
+    private bool _IsReflowed => _CanReflow && _isClipped is true;
+
+    // The layout a message is drawn in: the one it asked for, or the one it had to take on to fit its content.
+    private bool _IsMultiline => Multiline || _IsReflowed;
+
     // Two class names too many for the markup to piece together in an attribute of its own.
-    private string _ContentClass => $"bit-msg-cnt{(Multiline ? " bit-msg-mcn" : "")}{(_IsClamped ? " bit-msg-clp" : "")}";
+    private string _ContentClass => $"bit-msg-cnt{(_IsMultiline ? " bit-msg-mcn" : "")}{(_IsClamped ? " bit-msg-clp" : "")}";
 
     // A title sits on the same line as the content unless the message has room for a second line. The row
     // layout is only opted into when there is actually a title, so a message without one renders as before.
-    private bool _IsTitleInline => _HasTitle && Multiline is false && _IsExpanded is false;
+    private bool _IsTitleInline => _HasTitle && _IsMultiline is false && _IsExpanded is false;
 
     // A dismiss button is worth rendering as soon as pressing it would do something: either it is reported to
     // someone, or the message takes itself off the page.
@@ -732,9 +1074,16 @@ public partial class BitMessage : BitComponentBase
     // key still have something to do.
     private bool _CanDismiss => _IsDismissable || _OwnsDismissal;
 
-    private bool _HasAutoDismiss => _CanDismiss && IsEnabled && AutoDismissTime is { } delay && delay > TimeSpan.Zero;
+    private bool _HasAutoDismiss => _CanDismiss && Disabled is false && AutoDismissTime is { } delay && delay > TimeSpan.Zero;
 
-    private bool _HandlesEscape => DismissOnEscape && _CanDismiss && IsEnabled;
+    private bool _HandlesEscape => DismissOnEscape && _CanDismiss && Disabled is false;
+
+    // The Escape that dismisses the message is claimed on its root (see Utils.claimEscape), so a dialog the message
+    // sits in does not close on the same press - but only while the message's own handler is the one listening: a
+    // keydown handler written on the component replaces it, and dismisses nothing.
+    private string? _EscapeClaim => _HandlesEscape
+                                    && HtmlAttributes.TryGetValue("onkeydown", out var handler)
+                                    && ReferenceEquals(handler, _onRootKeyDown) ? "claim" : null;
 
     // There is nothing to count down where nothing is counting down, so the bar follows the countdown itself
     // rather than the parameter that asks for it.
@@ -762,21 +1111,23 @@ public partial class BitMessage : BitComponentBase
     // A name turns the message into something a screen reader can announce as one unit and step over as one,
     // which is what a group is for. Without a name there is nothing to announce, and an unnamed group would only
     // add a boundary to walk in and out of, so the root stays a plain div.
-    private bool _HasRootName => AriaLabel.HasValue() || _HasTitle;
+    private bool _HasRootName => _AriaLabel.HasValue() || _HasTitle;
+
+    private string? _AriaLabel => ResolveAriaLabel();
 
     // Everything the message writes on its root is written after the splatted attributes, and an attribute
     // written after the splat replaces what the splat put there, null included - which would quietly wipe an
     // aria attribute a consumer had put on the component. So what was written on the component itself is handed
-    // back out where there was one: it was put there on purpose, and it wins.
-    private string? RootAttribute(string name, string? value)
-        => HtmlAttributes.TryGetValue(name, out var written) ? written?.ToString() : value;
+    // back out where there was one, however it was cased: it was put there on purpose, and it wins - a null or a false
+    // included, which is how a page opts out of one of them.
+    private string? RootAttribute(string name, string? value) => TryGetSplattedAttribute(name, out var written) ? written : value;
 
     private string? _RootRole => RootAttribute("role", _HasRootName ? "group" : null);
 
     // An explicit label wins; otherwise the title of the message is the name of the group, the way the heading
     // of a section names the section.
     private string? _RootLabelledBy
-        => RootAttribute("aria-labelledby", (AriaLabel.HasValue() is false && _HasTitle) ? $"{_Id}-ttl" : null);
+        => RootAttribute("aria-labelledby", (_AriaLabel.HasValue() is false && _HasTitle) ? $"{_Id}-ttl" : null);
 
     // A description is only ever read out where the focus lands on the thing it describes, so the message points
     // at its own text only while the focus can land on it at all. Without it, a reader taken to the message by
@@ -830,11 +1181,12 @@ public partial class BitMessage : BitComponentBase
         _armedAutoDismissTime = null;
         _autoFocusDone = false;
         _isAnnounced = false;
+        _showing++;
     }
 
     private void ArmAutoDismiss()
     {
-        var delay = (_CanDismiss && IsEnabled && Dismissed is false) ? AutoDismissTime : null;
+        var delay = (_CanDismiss && Disabled is false && Dismissed is false) ? AutoDismissTime : null;
 
         if (delay is not { } value || value <= TimeSpan.Zero)
         {
@@ -869,7 +1221,7 @@ public partial class BitMessage : BitComponentBase
     private void RestartAutoDismiss()
     {
         if (_armedAutoDismissTime is not { } value) return;
-        if (_CanDismiss is false || IsEnabled is false || Dismissed) return;
+        if (_CanDismiss is false || Disabled || Dismissed) return;
 
         StartAutoDismiss(value, restart: true);
 
@@ -1026,7 +1378,7 @@ public partial class BitMessage : BitComponentBase
     // loop has to ask for the render that shows it, which the pointer and focus listeners would have got for free.
     private void RefreshAutoDismissHold()
     {
-        var paused = _isPointerOver || _isFocusInside || _isPausedByApi;
+        var paused = _isPointerOver || _isFocusInside || _isPausedByApi || _IsPageHeld || _IsPagePending;
 
         if (_isAutoDismissPaused == paused) return;
 
@@ -1050,6 +1402,33 @@ public partial class BitMessage : BitComponentBase
         _ = InvokeAsync(StateHasChanged);
     }
 
+    // The page-level reasons are read through the parameters that asked for them rather than off the flags alone,
+    // since the subscription outlives a PauseOnPageHidden or a PauseOnWindowBlur that is turned off again.
+    private bool _IsPageHeld => (PauseOnPageHidden && _isPageHidden) || (PauseOnWindowBlur && _isWindowBlurred);
+
+    // Whether the page is still being asked if it is hidden, for a message that asked for either page-level hold.
+    private bool _IsPagePending => _isPageVisibilityPending && (PauseOnPageHidden || PauseOnWindowBlur);
+
+    private Task HandlePageVisibilityChange(bool hidden)
+    {
+        return InvokeAsync(() =>
+        {
+            _isPageHidden = hidden;
+
+            RefreshAutoDismissHold();
+        });
+    }
+
+    private Task HandleWindowFocusChange(bool blurred)
+    {
+        return InvokeAsync(() =>
+        {
+            _isWindowBlurred = blurred;
+
+            RefreshAutoDismissHold();
+        });
+    }
+
     // Lets go of a countdown waiting on the gate, and leaves nothing behind for the next hold to trip over.
     private void ReleaseAutoDismissGate()
     {
@@ -1069,14 +1448,14 @@ public partial class BitMessage : BitComponentBase
 
     private async Task ToggleExpand()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await AssignExpanded(Expanded is false);
     }
 
     private async Task HandleOnDismiss()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await DismissAsync(BitMessageDismissReason.Button);
     }
@@ -1086,6 +1465,15 @@ public partial class BitMessage : BitComponentBase
         if (_HandlesEscape is false) return;
         // "Esc" is what the older browsers report for the same key.
         if (e.Key is not ("Escape" or "Esc")) return;
+
+        // Taken before anything else is decided, so the answer sent for this key is gone before the next one's comes in.
+        var foreign = _escapeVerdict.Take();
+
+        // Only the plain key, the one the root claims from a surface the message sits in (see _EscapeClaim): with a
+        // modifier the press is that surface's, so it does not dismiss the message as well. Nor does one that a
+        // component or a surface inside the message took first, which the browser has said so of (_OnEscapeVerdict).
+        if (e.ShiftKey || e.CtrlKey || e.AltKey || e.MetaKey) return;
+        if (foreign) return;
 
         await DismissAsync(BitMessageDismissReason.Escape);
     }
@@ -1119,6 +1507,35 @@ public partial class BitMessage : BitComponentBase
         if (IsDisposed || disposing is false) return;
 
         StopAutoDismiss();
+
+        if (_pageVisibility is not null)
+        {
+            _pageVisibility.OnChange -= HandlePageVisibilityChange;
+            _pageVisibility.OnWindowFocusChange -= HandleWindowFocusChange;
+            _pageVisibility = null;
+        }
+
+        if (_observedReflow is not null)
+        {
+            try
+            {
+                await _js.BitMessageDispose(UniqueId);
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone, and the observer with it
+            catch (JSException) { } // the .NET reference below is released regardless
+        }
+
+        if (_escapeWatched)
+        {
+            try
+            {
+                await _js.BitUtilsUnwatchEscapeClaim(UniqueId);
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone, and the listener with it
+            catch (JSException) { } // the .NET reference below is released regardless
+        }
+
+        _dotnetObj?.Dispose();
 
         await base.DisposeAsync(disposing);
     }

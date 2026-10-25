@@ -19,7 +19,7 @@ public interface IBitBesqlStorage
 
     /// <summary>
     /// Typically, whenever you modify the SQLite database using EF Core, the bit Besql automatically calls <see cref="Persist"/> to sync those changes
-    /// to the browser's cache storage. This sync is throttled (so multiple SaveChangeAsync calls might lead to just one sync).
+    /// to the browser's cache storage. SaveChangesAsync waits for this sync, other changes (such as ExecuteDeleteAsync) are synced throttled.
     /// If you're planning on making a bunch of changes in quick succession, you might want to pause this automatic syncing.
     /// Simply call <see cref="PauseAutomaticPersistent"/> to hold off syncing, and don't forget to resume with
     /// <see cref="ResumeAutomaticPersistent"/> once you're done.

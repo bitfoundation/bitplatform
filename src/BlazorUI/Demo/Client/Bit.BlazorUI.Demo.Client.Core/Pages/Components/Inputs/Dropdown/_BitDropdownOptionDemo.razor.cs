@@ -2,12 +2,23 @@
 
 public partial class _BitDropdownOptionDemo
 {
+    private readonly BitDropdownParams<BitDropdownOption<string>, string>[] dropdownParams =
+    [
+        new()
+        {
+            Placeholder = "Select an item",
+            ShowClearButton = true,
+            ShowSearchBox = true,
+            SearchBoxPlaceholder = "Search the list",
+        }
+    ];
+
     private readonly List<BitDropdownItem<string>> basicItems =
     [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app" },
         new() { Text = "Banana", Value = "f-ban" },
-        new() { Text = "Orange", Value = "f-ora", IsEnabled = false },
+        new() { Text = "Orange", Value = "f-ora", IsDisabled = true },
         new() { Text = "Grape", Value = "f-gra" },
         new() { ItemType = BitDropdownItemType.Divider },
         new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
@@ -41,7 +52,7 @@ public partial class _BitDropdownOptionDemo
         new() { ItemType = BitDropdownItemType.Header, Text = "میوه ها" },
         new() { Text = "سیب", Value = "f-app" },
         new() { Text = "موز", Value = "f-ban" },
-        new() { Text = "پرتقال", Value = "f-ora", IsEnabled = false },
+        new() { Text = "پرتقال", Value = "f-ora", IsDisabled = true },
         new() { Text = "انگور", Value = "f-gra" },
         new() { ItemType = BitDropdownItemType.Divider },
         new() { ItemType = BitDropdownItemType.Header, Text = "سیزیجات" },
@@ -55,7 +66,7 @@ public partial class _BitDropdownOptionDemo
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits", Style = "text-align: center;" },
         new() { Text = "Apple", Value = "f-app", Class = "custom-fruit" },
         new() { Text = "Banana", Value = "f-ban", Class = "custom-fruit" },
-        new() { Text = "Orange", Value = "f-ora", IsEnabled = false, Class = "custom-fruit" },
+        new() { Text = "Orange", Value = "f-ora", IsDisabled = true, Class = "custom-fruit" },
         new() { Text = "Grape", Value = "f-gra", Class = "custom-fruit" },
         new() { ItemType = BitDropdownItemType.Divider, Style = "padding: 0 0.25rem;" },
         new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables", Style = "text-align: center;" },
@@ -68,7 +79,7 @@ public partial class _BitDropdownOptionDemo
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app" },
         new() { Text = "Banana", Value = "f-ban" },
-        new() { Text = "Orange", Value = "f-ora", IsEnabled = false },
+        new() { Text = "Orange", Value = "f-ora", IsDisabled = true },
         new() { Text = "Grape", Value = "f-gra" },
         new() { ItemType = BitDropdownItemType.Divider },
         new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
@@ -157,6 +168,10 @@ public partial class _BitDropdownOptionDemo
 
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
+
+    private string? stockValue;
+    // A rule no EditContext knows about: what is in stock is only known once the item has been picked.
+    private string? StockError => stockValue?.StartsWith("v-") is true ? "Vegetables are out of stock right now." : null;
 
     private string? closeOnSelectValue;
     private IEnumerable<string?> closeOnSelectValues = [];

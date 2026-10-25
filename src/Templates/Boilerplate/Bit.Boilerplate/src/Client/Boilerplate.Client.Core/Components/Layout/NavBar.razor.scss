@@ -8,6 +8,7 @@ section {
     position: fixed;
     align-items: center;
     bottom: $bit-env-inset-bottom;
+    z-index: $bit-zindex-base;
     justify-content: space-around;
     max-width: $bit-env-width-available;
     background-color: $bit-color-background-primary;

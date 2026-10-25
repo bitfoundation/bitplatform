@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,7 +14,7 @@ public class BitChoiceGroupOptionsApiTests : BunitTestContext
     [TestMethod]
     public void BitChoiceGroupShouldDisableAllOptionInputsWhenTheGroupIsDisabled()
     {
-        var component = RenderComponent<BitChoiceGroupOptionsTest>(parameters => parameters.Add(p => p.IsEnabled, false));
+        var component = RenderComponent<BitChoiceGroupOptionsTest>(parameters => parameters.Add(p => p.Disabled, true));
 
         var inputs = component.FindAll(".bit-chg-icn input");
 

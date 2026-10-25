@@ -1,0 +1,490 @@
+﻿@page "/"
+@layout MainLayout
+@implements IDisposable
+
+<PageTitle>Bmage - browser-side image processing for Blazor</PageTitle>
+
+@* The landing page: hero → proof strip → capability grid → code walkthrough → comparison with a
+   JavaScript image library → persona tiles → FAQ → final call to action. Everything else on the
+   site is a documentation page under DocsLayout. The hero's sample is a live pipeline rather than
+   a picture of one: the scene is drawn with the library's own canvas and processed by the library
+   in the reader's browser, and every look re-runs the code shown above it. *@
+
+<div class="bb-landing">
+
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net8.0 / net9.0 / net10.0
+            </span>
+            <h1>Images for Blazor,<br /><span class="bb-hero-accent">processed in C#.</span></h1>
+            <p class="bb-hero-sub">
+                Load, crop, resize, adjust, annotate, redact and export images entirely on the user's
+                device, from strongly typed C#. No server round trips, no base64, no JavaScript image
+                library - and a complete editor component when you want a UI instead of a pipeline.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Bmage</pre>
+            <div class="bb-hero-actions">
+                <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <a href="editor" class="btn btn-secondary bb-btn-lg">Try the editor</a>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </div>
+        </div>
+
+        @* The sample, framed as a window: the pipeline on top, and what it produced underneath -
+           live, so the first thing a visitor can do here is change the look and watch it re-run. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">ProfilePhoto.razor</span>
+                </div>
+                <pre class="bb-code"><code>@((MarkupString)SyntaxHighlighter.Highlight(HeroCode, "C#"))</code></pre>
+                <div class="home-hero-live">
+                    <div class="home-hero-result">
+                        @if (_result is not null)
+                        {
+                            <ImagePreview Image="_result" Version="_version" Alt="@($"The generated scene, cropped around its subject with the {_look} look")" Class="home-hero-image" />
+                        }
+                        else
+                        {
+                            <div class="home-hero-image home-hero-placeholder" role="img" aria-label="The sample appears once the page is interactive">
+                                @(_busy ? "Running…" : "Runs in your browser")
+                            </div>
+                        }
+                    </div>
+                    <div class="home-hero-controls">
+                        <div class="bb-segmented" role="group" aria-label="Look">
+                            @foreach (var look in Looks)
+                            {
+                                <button type="button" aria-pressed="@(_look == look ? "true" : "false")"
+                                        disabled="@(IsHydrating || _busy)" @onclick="() => SetLookAsync(look)">@look</button>
+                            }
+                        </div>
+                        <p class="home-hero-caption" role="status">
+                            @if (_elapsed is { } elapsed && _result is not null)
+                            {
+                                <text>SmartCrop found the person in a generated @SceneWidth &times; @SceneHeight scene and framed a @_result.Width &times; @_result.Height avatar in @elapsed.TotalMilliseconds.ToString("0") ms - on this device.</text>
+                            }
+                            else
+                            {
+                                <text>The scene is drawn by the library's own canvas and processed in your browser.</text>
+                            }
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Proof strip ============================== *@
+
+    <section class="bb-proof">
+        <div><strong>Engine in C#</strong><span>resampler, rasteriser, colour pipeline and four codecs</span></div>
+        <div><strong>On the device</strong><span>the original never leaves the browser</span></div>
+        <div><strong>WebP and AVIF</strong><span>from the browser's codecs, probed rather than assumed</span></div>
+        <div><strong>Private by default</strong><span>metadata is removed unless you keep it</span></div>
+    </section>
+
+    @* ============================== Capability grid ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Capabilities</p>
+        <h2>An image platform, not an interop wrapper</h2>
+        <p class="bb-section-sub">
+            Nine decisions run through the whole library. Every tile links to the page that shows the
+            decision paying off - with a sample that runs on your own image.
+        </p>
+        <div class="bb-grid home-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Non-destructive by construction</h3>
+                <p class="bb-card-desc">
+                    An edit is an immutable <code>ImagePipeline</code> - a list of operations, not a mutated
+                    buffer. Undo costs a few hundred bytes, previews are cheap, and the optimiser fuses
+                    per-pixel steps into one pass.
+                </p>
+                <a href="pipelines" class="btn btn-outline">Pipelines →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A complete editor component</h3>
+                <p class="bb-card-desc">
+                    <code>BmageEditor</code> crops, straightens, adjusts, filters, selects, paints, annotates,
+                    redacts, layers and exports, and saves projects that reopen editable - themed through CSS
+                    custom properties, localised, keyboard accessible and right-to-left aware.
+                </p>
+                <a href="editor" class="btn btn-outline">The editor →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Large images stay usable</h3>
+                <p class="bb-card-desc">
+                    Editing runs on a proxy sized for the display and replays at full resolution on
+                    export, so a 24 megapixel photo does not stall the interface.
+                </p>
+                <a href="performance" class="btn btn-outline">Performance →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Privacy is the default</h3>
+                <p class="bb-card-desc">
+                    Metadata is removed unless you ask for it, so GPS coordinates never leak into an
+                    exported avatar by accident - and the page proves it by reading the exported bytes back.
+                </p>
+                <a href="metadata" class="btn btn-outline">Metadata and privacy →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Nothing assumed about the browser</h3>
+                <p class="bb-card-desc">
+                    Format support is probed by encoding a pixel. When a browser would hand back a PNG for
+                    the AVIF you asked for, you get an exception, not a mislabelled file.
+                </p>
+                <a href="capabilities" class="btn btn-outline">Capabilities →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Headless first</h3>
+                <p class="bb-card-desc">
+                    Every capability works without the editor, so the same pipeline runs in an upload
+                    handler, a thumbnail service or a console tool with the managed codecs.
+                </p>
+                <a href="headless" class="btn btn-outline">Headless API →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Selective edits and layers</h3>
+                <p class="bb-card-desc">
+                    Any edit applies through a mask - a gradient, a spotlight, a tone or colour range, a magic
+                    wand - and image, fill, adjustment and paint layers composite with the W3C blend modes,
+                    in groups and clipped to the layer below.
+                </p>
+                <a href="layers-and-masks" class="btn btn-outline">Layers and masks →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Edits are data</h3>
+                <p class="bb-card-desc">
+                    A whole edit - pipeline, layers, masks and annotations - writes to JSON and reads back as
+                    the same edit, so the browser can send the edit instead of the pixels, and a project file
+                    reopens with every step still editable.
+                </p>
+                <a href="retouch" class="btn btn-outline">Retouching and projects →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Every core, predictable memory</h3>
+                <p class="bb-card-desc">
+                    Operations spread their rows over as many threads as you allow with identical pixels,
+                    browser codecs run in Web Workers, and a pipeline estimates its peak memory before it runs.
+                </p>
+                <a href="performance#threads-workers-and-memory" class="btn btn-outline">Threads and memory →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>See it in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>One package, one registration</h3>
+                    <p>
+                        The engine, the browser codecs, loading and export, headless processing and the
+                        editor component are all in <code>Bit.Bmage</code>. One call registers the loader,
+                        the exporter and the capability probe.
+                    </p>
+                    <a href="getting-started">Getting started →</a>
+                </div>
+                <pre class="bb-code"><code>@((MarkupString)SyntaxHighlighter.Highlight(RegisterCode, "C#"))</code></pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>Decode, process, encode</h3>
+                    <p>
+                        The browser decodes the upload and applies the phone's rotation, a pipeline does the
+                        pixel work, and the exporter writes WebP where it can - falling back to JPEG where
+                        it cannot, rather than guessing.
+                    </p>
+                    <a href="pipelines">Pipelines →</a>
+                </div>
+                <pre class="bb-code"><code>@((MarkupString)SyntaxHighlighter.Highlight(ProcessCode, "C#"))</code></pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>Or drop in the whole editor</h3>
+                    <p>
+                        When what you want is an editing UI rather than a pipeline, it is one component.
+                        It fills its container, so give the container a height.
+                    </p>
+                    <a href="editor">The editor →</a>
+                </div>
+                <pre class="bb-code"><code>@((MarkupString)SyntaxHighlighter.Highlight(EditorCode, "Razor"))</code></pre>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Why not wrap a JavaScript image library?</h2>
+        <p class="bb-section-sub">
+            The usual way to crop an avatar in Blazor is to send the full-resolution file to a server, or
+            to put several JavaScript libraries behind hand-written interop. Bmage keeps the engine in C#
+            and uses the browser only for what only it can do.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="A JavaScript image library compared with Bmage">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Concern</th><th>JavaScript library over interop</th><th>Bmage</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Where the pixels are processed</td><td>In script, behind interop calls you write and maintain</td><td>In C# - the browser decodes, writes WebP and AVIF, and draws</td></tr>
+                    <tr><td>The API</td><td>Option bags and untyped results</td><td>An immutable <code>ImagePipeline</code> and typed export options</td></tr>
+                    <tr><td>Format support</td><td>Assumed, or read from the user agent</td><td>Probed by encoding a pixel; a substituted PNG is refused</td></tr>
+                    <tr><td>Metadata</td><td>Whatever the library passes through</td><td>Removed by default, with three explicit policies</td></tr>
+                    <tr><td>On a server</td><td>A second library, a second set of results</td><td>The same pipeline, headless, with the managed codecs</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ============================== Persona tiles ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Bmage?</h3>
+                <p class="bb-card-desc">Install, register, and process your first image - with the snippet runnable on the page.</p>
+                <a href="getting-started" class="btn btn-primary">Getting started →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Building a feature?</h3>
+                <p class="bb-card-desc">Avatars, screenshots, upload optimisation, product and social images, retouching, batches - each a working page with its source.</p>
+                <a href="avatar" class="btn btn-outline">Open the workflows →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Processing on a server?</h3>
+                <p class="bb-card-desc">The engine has no UI dependency: register the headless services and run the same pipelines in an endpoint.</p>
+                <a href="headless" class="btn btn-outline">Headless API →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> and it reads the shipped library - and runs its pipelines - instead of guessing.</p>
+                <a href="mcp-server" class="btn btn-outline">Try the MCP server →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Does the image leave the user's device?</summary>
+                <p>
+                    Not on WebAssembly, which is where Bmage is meant to run: the file is decoded, processed
+                    and encoded in the browser, and only the result goes wherever your code sends it.
+                    Interactive Server works too, but there the pixels cross the circuit to be processed. In
+                    a Blazor Hybrid (MAUI) app they stay on the device as well: .NET runs inside the app.
+                </p>
+            </details>
+            <details>
+                <summary>Which frameworks and render modes are supported?</summary>
+                <p>
+                    .NET 8, 9 and 10. Everything works on Blazor WebAssembly and on Interactive Auto once
+                    interactive, and on Interactive Server and Blazor Hybrid (MAUI, WPF, Windows Forms), where
+                    .NET reaches the browser over interop; prerendering, ASP.NET Core and console hosts get the
+                    headless API with the managed PNG, JPEG, BMP and GIF codecs.
+                </p>
+            </details>
+            <details>
+                <summary>Is C# fast enough for pixel work in a browser?</summary>
+                <p>
+                    Yes. The pixel loops are written for Blazor's default IL interpreter, and the browser does
+                    the work it is fastest at, so the editor opens a 12 megapixel photo in about 50 ms even
+                    there. Publishing the browser project with <code>RunAOTCompilation</code> makes what stays
+                    in .NET 4 to 12&times; faster still.
+                </p>
+            </details>
+            <details>
+                <summary>Can it write WebP and AVIF?</summary>
+                <p>
+                    Through the browser's own codecs, wherever the browser can - which Bmage probes rather
+                    than assumes. Ask for a preference order with <code>EncodeWithFallbackAsync</code>, or
+                    get an <code>ImageCapabilityException</code> instead of a silently substituted PNG.
+                </p>
+            </details>
+            <details>
+                <summary>Can an edit be saved and reopened later?</summary>
+                <p>
+                    Yes, two ways. <code>BmageJson</code> writes the edit itself - pipeline, layers, masks and
+                    annotations - as JSON that references its images, so a server can replay it on the original
+                    at full resolution. <code>BmageProject</code> writes one file with the original and every
+                    image inside, and the editor reopens it with each step still editable.
+                </p>
+            </details>
+            <details>
+                <summary>What about animated GIFs and SVG?</summary>
+                <p>
+                    A GIF decodes to its first frame. SVG is refused with an explanatory error rather than
+                    rasterised, because rendering untrusted SVG can run scripts and fetch remote resources.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Start processing</h2>
+        <p class="bb-section-sub">One package and one service registration - and every image your users pick is yours to shape on their device.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Bmage</pre>
+        <div class="bb-hero-actions">
+            <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="avatar" class="btn btn-secondary bb-btn-lg">Browse the workflows</a>
+        </div>
+    </section>
+</div>
+
+@code {
+    private const int SceneWidth = 720;
+    private const int SceneHeight = 480;
+    private const int AvatarSize = 240;
+
+    private static readonly string[] Looks = ["Original", "Warm", "Mono", "Vintage"];
+
+    private ImageBuffer? _source;
+    private ImageBuffer? _result;
+    private long _version;
+    private string _look = "Vintage";
+    private bool _busy;
+    private TimeSpan? _elapsed;
+    // Identifies the newest run; a slower one that finishes after it is discarded.
+    private int _run;
+
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    /// <summary>The builder calls of a look, as source text and as the pipeline they describe - one list, so the two cannot disagree.</summary>
+    private static (string[] Lines, Func<ImagePipeline, ImagePipeline> Apply) LookOf(string look) => look switch
+    {
+        "Warm" => ([".Temperature(0.3f)", ".Vibrance(0.25f)"], p => p.Temperature(0.3f).Vibrance(0.25f)),
+        "Mono" => ([".Grayscale()", ".Contrast(0.2f)"], p => p.Grayscale().Contrast(0.2f)),
+        "Vintage" => ([".Sepia(0.7f)", ".Vignette(0.5f)"], p => p.Sepia(0.7f).Vignette(0.5f)),
+        _ => ([], p => p),
+    };
+
+    private string HeroCode
+    {
+        get
+        {
+            var lines = LookOf(_look).Lines.Select(line => $"\n    {line}");
+            return $$"""
+                using var photo = await Loader.LoadAsync(e.File);
+
+                using var avatar = await ImagePipeline.Create()
+                    .AutoOrient()
+                    .SmartCrop(AspectRatio.Square)   // finds the subject
+                    .Resize({{AvatarSize}}, {{AvatarSize}}){{string.Concat(lines)}}
+                    .ExecuteAsync(photo);
+                """;
+        }
+    }
+
+    private const string RegisterCode = """
+        // Program.cs
+        using Bit.Bmage;
+
+        builder.Services.AddBitBmageServices();
+        """;
+
+    private const string ProcessCode = """
+        using var image = await Loader.LoadAsync(e.File);
+
+        using var processed = await ImagePipeline.Create()
+            .MaxSize(800, 800)
+            .Sharpen(0.3f)
+            .ExecuteAsync(image);
+
+        var encoded = await Exporter.EncodeWithFallbackAsync(
+            processed,
+            [ImageFormat.WebP, ImageFormat.Jpeg],
+            new ImageExportOptions { Quality = 0.85 });
+        """;
+
+    private const string EditorCode = """
+        <div style="height: 70vh">
+            <BmageEditor @ref="_editor" OnExported="OnExported" />
+        </div>
+        """;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // The scene is drawn and processed in the browser, so it waits for the first interactive
+        // render; the prerendered page shows the code and a placeholder of the same size.
+        if (firstRender is false || IsHydrating) return;
+
+        _busy = true;
+        StateHasChanged();
+        // Let the busy state paint before the drawing work starts.
+        await Task.Yield();
+
+        _source = SampleImages.Landscape(SceneWidth, SceneHeight);
+        await RunAsync();
+    }
+
+    private async Task SetLookAsync(string look)
+    {
+        _look = look;
+        await RunAsync();
+    }
+
+    private async Task RunAsync()
+    {
+        if (_source is not { } source) return;
+
+        var run = ++_run;
+        _busy = true;
+        ImageBuffer? next = null;
+        try
+        {
+            var started = System.Diagnostics.Stopwatch.StartNew();
+            var pipeline = LookOf(_look).Apply(ImagePipeline.Create()
+                .AutoOrient()
+                .SmartCrop(AspectRatio.Square)
+                .Resize(AvatarSize, AvatarSize));
+
+            next = await pipeline.ExecuteAsync(source);
+            started.Stop();
+            if (run != _run) return;
+
+            _result?.Dispose();
+            _result = next;
+            next = null;
+            _version++;
+            _elapsed = started.Elapsed;
+        }
+        finally
+        {
+            next?.Dispose();
+            if (run == _run)
+            {
+                _busy = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        _run++;
+        _source?.Dispose();
+        _result?.Dispose();
+    }
+}

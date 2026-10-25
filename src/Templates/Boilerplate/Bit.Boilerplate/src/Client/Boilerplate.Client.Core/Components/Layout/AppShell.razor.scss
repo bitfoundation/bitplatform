@@ -110,10 +110,10 @@ main {
     }
 
     .nav-panel {
-        width: 280px;
+        --bit-NavPanel-width: 280px;
 
         @include lt-md {
-            width: 210px;
+            --bit-NavPanel-width: 210px;
         }
     }
 

@@ -1,16 +1,23 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
+
+@{
+    LayOutBeforeFirstRender();
+
+    // The region role and its "carousel" description are the pattern's own and stay after the splatted attributes, as
+    // does the tab index, which NoKeyboard and Disabled take off the root on purpose.
+    var ariaLabel = ResolveAriaLabel();
+}
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="region"
      aria-roledescription="carousel"
-     aria-label="@AriaLabel"
+     aria-label="@ariaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     tabindex="@((NoKeyboard || IsEnabled is false) ? null : (TabIndex ?? "0"))"
-     @onkeydown="HandleKeyDown"
+     tabindex="@((NoKeyboard || Disabled) ? null : (TabIndex ?? "0"))"
      @onfocusin="HandleFocusIn"
      @onfocusout="HandleFocusOut"
      @onmouseenter="HandleMouseEnter"
@@ -23,7 +30,7 @@
     @if ((HideDots is false && _pagesCount > 1) || (AutoPlay && ShowPlayPause))
     {
         <div class="bit-csl-dcn @Classes?.DotsContainer"
-             style="@_directionStyle @Styles?.DotsContainer">
+             style="@JoinStyles(_directionStyle, Styles?.DotsContainer)">
             @if (AutoPlay && ShowPlayPause)
             {
                 var playPauseIcon = IsPaused
@@ -33,7 +40,8 @@
                         type="button"
                         aria-controls="@_ContainerId"
                         aria-label="@(IsPaused ? PlayButtonAriaLabel : PauseButtonAriaLabel)"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)"
                         class="bit-csl-ppb @Classes?.PlayPauseButton"
                         style="@Styles?.PlayPauseButton">
                     <i aria-hidden="true"
@@ -49,13 +57,17 @@
                     @for (int i = 0; i < _pagesCount; i++)
                     {
                         int index = i;
-                        <button @onclick="(() => HandleGotoPage(index))"
+                        <button @ref="_dotRefs[index]"
+                                @onclick="(() => HandleGotoPage(index))"
+                                data-bit-key-origin="@KeyOriginDot"
                                 type="button"
+                                tabindex="@GetDotTabIndex(index)"
                                 aria-controls="@_ContainerId"
                                 aria-label="@($"{DotAriaLabel} {index + 1}")"
                                 aria-current="@(_currentPage == index ? "true" : null)"
-                                disabled="@(IsEnabled is false)"
-                                style="@Styles?.Dots @(_currentPage == index ? Styles?.CurrentDot : null)"
+                                disabled="@(Disabled)"
+                                aria-disabled="@(Disabled ? "true" : null)"
+                                style="@JoinStyles(Styles?.Dots, _currentPage == index ? Styles?.CurrentDot : null)"
                                 class="bit-csl-dot @(DotTemplate is null ? null : "bit-csl-dtt") @((_currentPage == index ? $"bit-csl-cud {Classes?.CurrentDot}" : "").Trim()) @Classes?.Dots">@DotTemplate?.Invoke(index)</button>
                     }
                 </div>
@@ -72,12 +84,13 @@
          @onwheel="HandleWheel"
          @onpointerup="HandlePointerUp"
          @onpointerleave="HandlePointerUp"
+         @onpointercancel="HandlePointerUp"
          @onpointermove="HandlePointerMove"
          @onpointerdown="HandlePointerDown"
          aria-atomic="false"
          aria-live="@(IsPlaying ? "off" : "polite")"
-         class="bit-csl-cnt @(NoDrag ? "bit-csl-ndr" : null) @Classes?.Container"
-         style="@_directionStyle @Styles?.Container">
+         class="bit-csl-cnt @((NoDrag || Disabled) ? "bit-csl-ndr" : null) @Classes?.Container"
+         style="@JoinStyles(_directionStyle, Styles?.Container)">
 
         @* The buttons come before the slides (the carousel pattern of the ARIA authoring practices puts
            the controls before the content they control), and the stylesheet places them over the slides.
@@ -90,33 +103,42 @@
             var goLeftIcon = BitIconInfo.From(GoLeftIcon, GoLeftIconName ?? (Vertical ? "ChevronDown" : "ChevronRight"));
             var goRightIcon = BitIconInfo.From(GoRightIcon, GoRightIconName ?? (Vertical ? "ChevronUp" : "ChevronRight bit-ico-r180"));
 
+            // The styles of a part are joined with JoinStyles, which puts the semicolon between two of them: the
+            // display:none of a button at the end it cannot pass would otherwise run into a style the page gives
+            // the buttons and be dropped by the browser along with it, leaving the button on screen.
             RenderFragment goLeftButton =
-                @<button @onclick="HandleGoLeft"
+                @<button @ref="_goLeftButtonRef"
+                         @onclick="HandleGoLeftButtonClick"
+                         data-bit-key-origin="@KeyOriginGoLeft"
                          type="button"
                          aria-controls="@_ContainerId"
                          aria-label="@GetGoLeftAriaLabel()"
-                         disabled="@(IsEnabled is false)"
+                         disabled="@(Disabled)"
+                         aria-disabled="@(Disabled ? "true" : null)"
                          class="bit-csl-lbt @Classes?.Buttons @Classes?.GoLeftButton"
-                         style="@_goLeftButtonStyle @Styles?.Buttons @Styles?.GoLeftButton">
+                         style="@JoinStyles(JoinStyles(_goLeftButtonStyle, Styles?.Buttons), Styles?.GoLeftButton)">
                     <i aria-hidden="true"
-                       style="@Styles?.ButtonIcons @Styles?.GoLeftButtonIcon"
+                       style="@JoinStyles(Styles?.ButtonIcons, Styles?.GoLeftButtonIcon)"
                        class="@goLeftIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoLeftButtonIcon" />
                 </button>;
 
             RenderFragment goRightButton =
-                @<button @onclick="HandleGoRight"
+                @<button @ref="_goRightButtonRef"
+                         @onclick="HandleGoRightButtonClick"
+                         data-bit-key-origin="@KeyOriginGoRight"
                          type="button"
                          aria-controls="@_ContainerId"
                          aria-label="@GetGoRightAriaLabel()"
-                         disabled="@(IsEnabled is false)"
+                         disabled="@(Disabled)"
+                         aria-disabled="@(Disabled ? "true" : null)"
                          class="bit-csl-rbt @Classes?.Buttons @Classes?.GoRightButton"
-                         style="@_goRightButtonStyle @Styles?.Buttons @Styles?.GoRightButton">
+                         style="@JoinStyles(JoinStyles(_goRightButtonStyle, Styles?.Buttons), Styles?.GoRightButton)">
                     <i aria-hidden="true"
-                       style="@Styles?.ButtonIcons @Styles?.GoRightButtonIcon"
+                       style="@JoinStyles(Styles?.ButtonIcons, Styles?.GoRightButtonIcon)"
                        class="@goRightIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoRightButtonIcon" />
                 </button>;
 
-            var goLeftIsFirst = Vertical is false && Dir == BitDir.Rtl;
+            var goLeftIsFirst = Vertical is false && _IsRtl;
 
             @(goLeftIsFirst ? goLeftButton : goRightButton)
             @(goLeftIsFirst ? goRightButton : goLeftButton)

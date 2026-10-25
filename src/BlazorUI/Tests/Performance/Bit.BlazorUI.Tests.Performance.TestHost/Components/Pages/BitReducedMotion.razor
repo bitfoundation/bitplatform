@@ -1,0 +1,126 @@
+﻿@page "/regression/reduced-motion"
+
+<PageTitle>Reduced Motion Regression</PageTitle>
+
+@* Every component whose page-set duration follows the reduced motion preference through the shared factor
+   (--bit-mot-duration-factor), each paced at 1700ms - a pace no theme token has, so the longest duration measured
+   under a component is the page's own. The same set is rendered three times: on its own, inside a ForceAnimation
+   subtree (bit-fam on an ancestor), and with ForceAnimation on the component itself. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>Reduced Motion Regression</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+<div id="plain">
+    @Set(false)
+</div>
+
+<div id="fam" class="bit-fam">
+    @Set(false)
+</div>
+
+<div id="self">
+    @Set(true)
+</div>
+
+@* The swiper moves by script, so it is driven rather than measured: each is two pages wide and moves a page at a time. *@
+<div id="swiper-plain" style="width: 400px;">
+    <BitSwiper AnimationDuration="1.7">
+        @for (var i = 1; i <= 8; i++)
+        {
+            <BitSwiperItem Style="width: 200px; height: 60px;">Item @i</BitSwiperItem>
+        }
+    </BitSwiper>
+</div>
+
+<div id="swiper-fam" class="bit-fam" style="width: 400px;">
+    <BitSwiper AnimationDuration="1.7">
+        @for (var i = 1; i <= 8; i++)
+        {
+            <BitSwiperItem Style="width: 200px; height: 60px;">Item @i</BitSwiperItem>
+        }
+    </BitSwiper>
+</div>
+
+@* The stylesheet-only parts (a skeleton, a shimmer, a refused dismissal) are put together by the test as probes in
+   these, the same element on its own, inside a ForceAnimation subtree and carrying bit-fam itself. *@
+<div id="probes-plain"></div>
+<div id="probes-fam" class="bit-fam"></div>
+
+@code {
+    private const string Image = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Crect width='10' height='10' fill='red'/%3E%3C/svg%3E";
+
+    private readonly List<BitSnackBar?> _snackBars = [];
+
+    private RenderFragment Set(bool force) => __builder =>
+    {
+        <div data-probe="toggle"><BitToggle ForceAnimation="force" Style="--bit-Toggle-transition-duration: 1700ms;" /></div>
+        <div data-probe="slider"><BitSlider ForceAnimation="force" Style="--bit-Slider-transition-duration: 1700ms;" /></div>
+        <div data-probe="textfield"><BitTextField ForceAnimation="force" Style="--bit-TextField-transition-duration: 1700ms;" /></div>
+        <div data-probe="progress"><BitProgress ForceAnimation="force" Percent="40" Style="--bit-Progress-transition-duration: 1700ms;" /></div>
+        <div data-probe="overlay" style="position: relative; height: 10px;"><BitOverlay ForceAnimation="force" Style="--bit-Overlay-transition-duration: 1700ms;" /></div>
+        @* Rendered once the page is interactive, so the image arrives in front of the component and fades in. *@
+        <div data-probe="image">
+            @if (_interactive)
+            {
+                <BitImage ForceAnimation="force" Src="@Image" Alt="probe" Width="10px" Height="10px" FadeIn Style="--bit-Image-fade-duration: 1700ms;" />
+            }
+        </div>
+        <div data-probe="collapse-param"><BitCollapse ForceAnimation="force" Expanded Duration="1700" Delay="400"><p>Collapse</p></BitCollapse></div>
+        <div data-probe="collapse-var"><BitCollapse ForceAnimation="force" Expanded Style="--bit-Collapse-duration: 1700ms;"><p>Collapse</p></BitCollapse></div>
+        <div data-probe="accordion-param"><BitAccordion ForceAnimation="force" Title="Accordion" TransitionDuration="1700"><p>Body</p></BitAccordion></div>
+        <div data-probe="accordion-theme"><BitAccordion ForceAnimation="force" Title="Accordion" Style="--bit-mot-duration-long-full: 1700ms;"><p>Body</p></BitAccordion></div>
+        <div data-probe="carousel" style="width: 300px;">
+            <BitCarousel ForceAnimation="force" AnimationDuration="1.7">
+                <BitCarouselItem><div style="height: 40px;">1</div></BitCarouselItem>
+                <BitCarouselItem><div style="height: 40px;">2</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+        <div data-probe="snackbar"><BitSnackBar @ref="SnackBar" ForceAnimation="force" TransitionDuration="1700" /></div>
+        <div data-probe="chart" style="width: 300px; height: 200px;">
+            <BitChart ForceAnimation="force" Type="BitChartType.Bar" Data="ChartData()" Options="ChartOptions(false)" />
+        </div>
+        <div data-probe="chart-progressive" style="width: 300px; height: 200px;">
+            <BitChart ForceAnimation="force" Type="BitChartType.Line" Data="ChartData()" Options="ChartOptions(true)" />
+        </div>
+        <div data-probe="pivot" style="width: 120px;">
+            <BitPivot ForceAnimation="force" OverflowBehavior="BitPivotOverflowBehavior.Slide">
+                <BitPivotItem HeaderText="First tab">1</BitPivotItem>
+                <BitPivotItem HeaderText="Second tab">2</BitPivotItem>
+                <BitPivotItem HeaderText="Third tab">3</BitPivotItem>
+            </BitPivot>
+        </div>
+    };
+
+    private BitSnackBar? SnackBar { set => _snackBars.Add(value); }
+
+    private static BitChartData ChartData() => new()
+    {
+        Labels = ["A", "B", "C", "D", "E", "F", "G"],
+        Datasets = { new BitChartDataset { Label = "Series", Data = [3, 5, 2, 6, 4, 7, 1] } }
+    };
+
+    private static BitChartOptions ChartOptions(bool progressive) => new()
+    {
+        Animation = new BitChartAnimationOptions { Duration = 1700, DelayBetween = progressive ? 0 : 100, Progressive = progressive },
+    };
+
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+    private bool _interactive;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        foreach (var snackBar in _snackBars.Distinct())
+        {
+            if (snackBar is not null) await snackBar.Info("Probe", persistent: true);
+        }
+
+        _interactive = true;
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

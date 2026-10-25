@@ -18,6 +18,7 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private Keyboard keyboard = default!;
     [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private ThemeService themeService = default!;
+    [AutoInject] private BitThemeNotifications bitThemeNotifications = default!;
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IUserController userController = default!;
     //#if (multitenant == true)
@@ -50,6 +51,8 @@ public partial class MainLayout : IAsyncDisposable
     {
         await base.OnInitializedAsync();
 
+        SetCurrentDir();
+
         try
         {
             var inPrerenderSession = RendererInfo.IsInteractive is false;
@@ -66,6 +69,7 @@ public partial class MainLayout : IAsyncDisposable
             }
 
             authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
+            bitThemeNotifications.ThemeChanged += BitThemeNotifications_ThemeChanged;
 
             unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.THEME_CHANGED, async payload =>
             {
@@ -93,19 +97,19 @@ public partial class MainLayout : IAsyncDisposable
             {
                 if (payload is null) return;
 
-                currentUser = payload is JsonElement jsonDocument
+                var updatedUser = payload is JsonElement jsonDocument
                     ? jsonDocument.Deserialize(jsonSerializerOptions.GetTypeInfo<UserDto>())! /* Message gets published from server through SignalR */
                     : (UserDto)payload;
+
+                if (updatedUser.Id != currentUser?.Id) return;
+
+                currentUser = updatedUser;
+                authManager.SetActiveAccountProfile(updatedUser);
 
                 await InvokeAsync(StateHasChanged);
             }));
 
-            await SetCurrentUser(AuthenticationStateTask);
-
-            SetCurrentDir();
-            currentTheme = await themeService.GetCurrentTheme();
-
-            await bitExtraServices.AddRootCssClasses();
+            await Task.WhenAll(SetCurrentUser(AuthenticationStateTask), SetCurrentThemeAndRootCssClasses());
         }
         catch (Exception exp)
         {
@@ -144,6 +148,27 @@ public partial class MainLayout : IAsyncDisposable
         }
     }
 
+    private async void BitThemeNotifications_ThemeChanged(object? sender, BitThemeChangedEventArgs e)
+    {
+        try
+        {
+            if (e.HasNewTheme is false) return;
+
+            await InvokeAsync(() => themeService.ApplyTheme(e.NewTheme));
+        }
+        catch (Exception ex)
+        {
+            exceptionHandler.Handle(ex);
+        }
+    }
+
+    private async Task SetCurrentThemeAndRootCssClasses()
+    {
+        currentTheme = await themeService.GetCurrentTheme();
+
+        await bitExtraServices.AddRootCssClasses();
+    }
+
     private ClaimsPrincipal? lastAuthUser;
     private async Task SetCurrentUser(Task<AuthenticationState> task)
     {
@@ -164,17 +189,27 @@ public partial class MainLayout : IAsyncDisposable
         }
         else
         {
-            if (currentUser is null || authUser.IsTheSame(lastAuthUser) is false)
-            {
-                currentUser = await userController.GetCurrentUser(getCurrentUserCts.Token);
-            }
+            Task[] loads =
+            [
+                LoadCurrentUser(authUser, getCurrentUserCts.Token),
+                //#if (multitenant == true)
+                SetCurrentTenantIfNeeded(authUser.GetTenantId(), getCurrentUserCts.Token),
+                //#endif
+            ];
 
-            //#if (multitenant == true)
-            await SetCurrentTenantIfNeeded(authUser.GetTenantId(), getCurrentUserCts.Token);
-            //#endif
+            await Task.WhenAll(loads);
         }
 
         lastAuthUser = authUser;
+    }
+
+    private async Task LoadCurrentUser(ClaimsPrincipal authUser, CancellationToken cancellationToken)
+    {
+        if (currentUser is null || authUser.IsTheSame(lastAuthUser) is false)
+        {
+            currentUser = await userController.GetCurrentUser(cancellationToken);
+            authManager.SetActiveAccountProfile(currentUser);
+        }
     }
 
     //#if (multitenant == true)
@@ -261,6 +296,7 @@ public partial class MainLayout : IAsyncDisposable
         }
 
         authManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
+        bitThemeNotifications.ThemeChanged -= BitThemeNotifications_ThemeChanged;
 
         unsubscribers.ForEach(us => us.Invoke());
 

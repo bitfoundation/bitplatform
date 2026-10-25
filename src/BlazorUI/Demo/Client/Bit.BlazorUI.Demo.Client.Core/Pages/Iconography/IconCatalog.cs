@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Iconography;
 

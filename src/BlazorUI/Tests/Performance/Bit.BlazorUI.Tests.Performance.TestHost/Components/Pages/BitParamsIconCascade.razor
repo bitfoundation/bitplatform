@@ -1,0 +1,320 @@
+﻿@page "/regression/params-icon-cascade"
+
+<PageTitle>BitParams Icon Cascade Regression</PageTitle>
+
+@* Every component a params object hands an icon to, in pairs: one that picks no icon of its own and so shows the
+   cascaded one, and one that picks its own through another parameter of the same setting - an IconName beside a
+   cascaded Icon, an icon beside a cascaded template or text - and must go on showing it. The cascaded glyph is always
+   Heart and the component's own Emoji2, so what each case shows tells where it came from. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitParams Icon Cascade Regression</h3>
+    <p>Status: <span id="status">@_status</span></p>
+    <button id="toggle-dynamic" @onclick="ToggleDynamicIcon">Toggle the button's own icon</button>
+</div>
+
+<div class="cases">
+    <section id="button-cascaded">
+        <BitParams Parameters="[new BitButtonParams { IconName = Cascaded }]">
+            <BitButton>Button</BitButton>
+        </BitParams>
+    </section>
+    <section id="button-own">
+        <BitParams Parameters="[new BitButtonParams { Icon = CascadedIcon }]">
+            <BitButton IconName="@Own">Button</BitButton>
+        </BitParams>
+    </section>
+    <section id="button-own-vs-url">
+        <BitParams Parameters="[new BitButtonParams { IconUrl = CascadedUrl }]">
+            <BitButton IconName="@Own">Button</BitButton>
+        </BitParams>
+    </section>
+    <section id="button-own-null">
+        <BitParams Parameters="[new BitButtonParams { Icon = CascadedIcon }]">
+            <BitButton IconName="@_noIcon">Button</BitButton>
+        </BitParams>
+    </section>
+    <section id="button-dynamic">
+        <BitParams Parameters="[_dynamicButtonParams]">
+            <BitButton IconName="@_dynamicIcon">Button</BitButton>
+        </BitParams>
+    </section>
+
+    <section id="action-button-cascaded">
+        <BitParams Parameters="[new BitActionButtonParams { IconName = Cascaded }]">
+            <BitActionButton>Action</BitActionButton>
+        </BitParams>
+    </section>
+    <section id="action-button-own">
+        <BitParams Parameters="[new BitActionButtonParams { Icon = CascadedIcon }]">
+            <BitActionButton IconName="@Own">Action</BitActionButton>
+        </BitParams>
+    </section>
+
+    <section id="menu-button-own">
+        <BitParams Parameters="[new BitMenuButtonParams { Icon = CascadedIcon, ChevronDownIcon = CascadedIcon }]">
+            <BitMenuButton Text="Menu" Items="_menuItems" IconName="@Own" ChevronDownIconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="toggle-button-own-vs-on">
+        <BitParams Parameters="[new BitToggleButtonParams { OnIconName = Cascaded }]">
+            <BitToggleButton DefaultIsChecked="true" IconName="@Own" Text="Toggle" />
+        </BitParams>
+    </section>
+    <section id="toggle-button-off-state">
+        <BitParams Parameters="[new BitToggleButtonParams { IconName = Cascaded }]">
+            <BitToggleButton DefaultIsChecked="false" OnIconName="@Own" Text="Toggle" />
+        </BitParams>
+    </section>
+
+    <section id="checkbox-cascaded">
+        <BitParams Parameters="[new BitCheckboxParams { CheckIcon = CascadedIcon }]">
+            <BitCheckbox DefaultValue="true" Label="Checkbox" />
+        </BitParams>
+    </section>
+    <section id="checkbox-own">
+        <BitParams Parameters="[new BitCheckboxParams { CheckIcon = CascadedIcon }]">
+            <BitCheckbox DefaultValue="true" CheckIconName="@Own" Label="Checkbox" />
+        </BitParams>
+    </section>
+
+    <section id="toggle-own">
+        <BitParams Parameters="[new BitToggleParams { OnIcon = CascadedIcon }]">
+            <BitToggle DefaultValue="true" OnIconName="@Own" Label="Toggle" />
+        </BitParams>
+    </section>
+
+    <section id="search-box-own">
+        <BitParams Parameters="[new BitSearchBoxParams { Icon = CascadedIcon }]">
+            <BitSearchBox IconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="number-field-own">
+        <BitParams Parameters="[new BitNumberFieldParams { Icon = CascadedIcon }]">
+            <BitNumberField TValue="int" IconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="text-field-own">
+        <BitParams Parameters="[new BitTextFieldParams { Icon = CascadedIcon }]">
+            <BitTextField IconName="@Own" />
+        </BitParams>
+    </section>
+    <section id="text-field-clear">
+        <BitParams Parameters="[new BitTextFieldParams { ClearButtonTemplate = CascadedTemplate }]">
+            <BitTextField DefaultValue="text" ShowClearButton ClearButtonIconName="@Own" />
+        </BitParams>
+    </section>
+    <section id="text-field-reveal">
+        <BitParams Parameters="[new BitTextFieldParams { RevealPasswordTemplate = _ => CascadedTemplate }]">
+            <BitTextField DefaultValue="secret" Type="BitInputType.Password" CanRevealPassword RevealPasswordIconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="rating-own">
+        <BitParams Parameters="[new BitRatingParams { GetSelectedIcon = _ => CascadedIcon }]">
+            <BitRating DefaultValue="3" SelectedIconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="calendar-own">
+        <BitParams Parameters="[new BitCalendarParams { PrevMonthNavIcon = CascadedIcon }]">
+            <BitCalendar PrevMonthNavIconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="date-picker-cascaded">
+        <BitParams Parameters="[new BitDatePickerParams { IconTemplate = CascadedTemplate }]">
+            <BitDatePicker />
+        </BitParams>
+    </section>
+    <section id="date-picker-own">
+        <BitParams Parameters="[new BitDatePickerParams { IconTemplate = CascadedTemplate }]">
+            <BitDatePicker IconName="@Own" />
+        </BitParams>
+    </section>
+    <section id="date-range-picker-own">
+        <BitParams Parameters="[new BitDateRangePickerParams { IconTemplate = CascadedTemplate }]">
+            <BitDateRangePicker IconName="@Own" />
+        </BitParams>
+    </section>
+    <section id="time-picker-own">
+        <BitParams Parameters="[new BitTimePickerParams { IconTemplate = CascadedTemplate }]">
+            <BitTimePicker IconName="@Own" />
+        </BitParams>
+    </section>
+    <section id="circular-time-picker-own">
+        <BitParams Parameters="[new BitCircularTimePickerParams { IconTemplate = CascadedTemplate }]">
+            <BitCircularTimePicker IconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="dropdown-own">
+        <BitParams Parameters="[new BitDropdownParams<BitDropdownItem<string>, string> { CaretDownIcon = CascadedIcon }]">
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_dropdownItems" CaretDownIconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="breadcrumb-cascaded-text">
+        <BitParams Parameters="[new BitBreadcrumbParams { DividerText = CascadedText }]">
+            <BitBreadcrumb Items="_breadcrumbItems" />
+        </BitParams>
+    </section>
+    <section id="breadcrumb-own-icon">
+        <BitParams Parameters="[new BitBreadcrumbParams { DividerText = CascadedText }]">
+            <BitBreadcrumb Items="_breadcrumbItems" DividerIconName="@Own" />
+        </BitParams>
+    </section>
+    <section id="breadcrumb-own-text">
+        <BitParams Parameters="[new BitBreadcrumbParams { DividerIconTemplate = CascadedTemplate }]">
+            <BitBreadcrumb Items="_breadcrumbItems" DividerText="»" />
+        </BitParams>
+    </section>
+
+    <section id="drop-menu-own">
+        <BitParams Parameters="[new BitDropMenuParams { Icon = CascadedIcon }]">
+            <BitDropMenu Text="Drop" IconName="@Own">Body</BitDropMenu>
+        </BitParams>
+    </section>
+
+    <section id="nav-own">
+        <BitParams Parameters="[new BitNavParams { ChevronDownIcon = CascadedIcon }]">
+            <BitNav Items="_navItems" ChevronDownIconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="pagination-own">
+        <BitParams Parameters="[new BitPaginationParams { NextButtonIcon = CascadedIcon }]">
+            <BitPagination Count="5" NextButtonIconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="badge-own">
+        <BitParams Parameters="[new BitBadgeParams { Icon = CascadedIcon }]">
+            <BitBadge Content="1" IconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="message-own">
+        <BitParams Parameters="[new BitMessageParams { Icon = CascadedIcon }]">
+            <BitMessage IconName="@Own">Message</BitMessage>
+        </BitParams>
+    </section>
+
+    <section id="persona-own">
+        <BitParams Parameters="[new BitPersonaParams { PresenceIcons = _cascadedPresenceIcons }]">
+            <BitPersona Presence="BitPersonaPresence.Online" PresenceIconName="@Own" Size="BitPersonaSize.Size72" PrimaryText="Persona" />
+        </BitParams>
+    </section>
+    <section id="persona-cascaded">
+        <BitParams Parameters="[new BitPersonaParams { PresenceIcons = _cascadedPresenceIcons }]">
+            <BitPersona Presence="BitPersonaPresence.Online" Size="BitPersonaSize.Size72" PrimaryText="Persona" />
+        </BitParams>
+    </section>
+
+    <section id="tag-own">
+        <BitParams Parameters="[new BitTagParams { IconUrl = CascadedUrl }]">
+            <BitTag Text="Tag" IconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="accordion-own">
+        <BitParams Parameters="[new BitAccordionParams { ExpandedExpanderIconName = Cascaded }]">
+            <BitAccordion Title="Accordion" DefaultIsExpanded="true" ExpanderIconName="@Own">Body</BitAccordion>
+        </BitParams>
+    </section>
+    <section id="accordion-collapsed-state">
+        <BitParams Parameters="[new BitAccordionParams { ExpanderIconName = Cascaded }]">
+            <BitAccordion Title="Accordion" ExpandedExpanderIconName="@Own">Body</BitAccordion>
+        </BitParams>
+    </section>
+
+    <section id="splitter-own">
+        <BitParams Parameters="[new BitSplitterParams { GutterTemplate = CascadedTemplate }]">
+            <BitSplitter GutterIconName="@Own" Style="height: 60px;">
+                <FirstPanel>First</FirstPanel>
+                <SecondPanel>Second</SecondPanel>
+            </BitSplitter>
+        </BitParams>
+    </section>
+
+    <section id="link-own">
+        <BitParams Parameters="[new BitLinkParams { Icon = CascadedIcon }]">
+            <BitLink Href="#" IconName="@Own">Link</BitLink>
+        </BitParams>
+    </section>
+
+    <section id="accordion-list-own">
+        <BitParams Parameters="[new BitAccordionListParams { ExpandedExpanderIconName = Cascaded }]">
+            <BitAccordionList Items="_accordionItems" DefaultExpandedKey="a" ExpanderIconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="error-boundary-own">
+        <BitParams Parameters="[new BitErrorBoundaryParams { IconTemplate = CascadedTemplate }]">
+            <BitErrorBoundary IconName="@Own">
+                <CascadeThrower />
+            </BitErrorBoundary>
+        </BitParams>
+    </section>
+    <section id="error-boundary-empty-name">
+        <BitParams Parameters="[new BitErrorBoundaryParams { IconName = string.Empty }]">
+            <BitErrorBoundary>
+                <CascadeThrower />
+            </BitErrorBoundary>
+        </BitParams>
+    </section>
+
+    <section id="message-box-own">
+        <BitParams Parameters="[new BitMessageBoxParams { CloseIcon = CascadedIcon }]">
+            <BitMessageBox Title="Box" Body="Body" CloseIconName="@Own" />
+        </BitParams>
+    </section>
+
+    <section id="phone-input-own">
+        <BitParams Parameters="[new BitPhoneInputParams { ClearButtonTemplate = CascadedTemplate }]">
+            <BitPhoneInput DefaultValue="5551234" ShowClearButton ClearButtonIconName="@Own" />
+        </BitParams>
+    </section>
+</div>
+
+@code {
+    private const string Cascaded = "Heart";
+    private const string Own = "Emoji2";
+    private const string CascadedUrl = "cascaded-icon.svg";
+    private const string CascadedText = "/";
+
+    private static readonly BitIconInfo CascadedIcon = BitIconInfo.Bit(Cascaded);
+
+    private static readonly RenderFragment CascadedTemplate = builder => builder.AddMarkupContent(0, "<span class=\"cascaded-template\">T</span>");
+
+    private readonly Dictionary<BitPersonaPresence, BitIconInfo> _cascadedPresenceIcons = new() { [BitPersonaPresence.Online] = CascadedIcon };
+
+    // One params object for the whole life of the page, so the button that takes its own icon and lets go of it again
+    // does so under the very object that supplied the cascaded one.
+    private readonly BitButtonParams _dynamicButtonParams = new() { Icon = CascadedIcon };
+
+    private readonly string? _noIcon = null;
+    private string? _dynamicIcon;
+
+    private readonly List<BitMenuButtonItem> _menuItems = [new() { Text = "One" }, new() { Text = "Two" }];
+    private readonly List<BitDropdownItem<string>> _dropdownItems = [new() { Text = "One", Value = "1" }, new() { Text = "Two", Value = "2" }];
+    private readonly List<BitBreadcrumbItem> _breadcrumbItems = [new() { Text = "Home" }, new() { Text = "Docs" }, new() { Text = "Page" }];
+    private readonly List<BitNavItem> _navItems = [new() { Text = "Parent", ChildItems = [new() { Text = "Child" }] }];
+    private readonly List<BitAccordionListItem> _accordionItems = [new() { Key = "a", Title = "Item A" }, new() { Key = "b", Title = "Item B" }];
+
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private void ToggleDynamicIcon() => _dynamicIcon = _dynamicIcon is null ? Own : null;
+}

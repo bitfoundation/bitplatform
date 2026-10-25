@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
 /// Describes alignment for a <see cref="BitDataGridLegacy{TGridItem}"/> column.

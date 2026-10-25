@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    @* No static <title>: every page supplies its own through <PageTitle>, which the HeadOutlet prerenders
+       into this head. A second, earlier one would win in the served HTML. *@
+    <link rel="stylesheet" href="_content/Bit.Blex.Samples.Core/css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="_content/Bit.Blex.Samples.Core/css/app.css" />
+    @* The scoped-CSS bundle: imports the Core library's, which holds the layout's *.razor.css. *@
+    <link rel="stylesheet" href="Bit.Blex.Samples.Wasm.styles.css" />
+    <link rel="icon" type="image/svg+xml" href="_content/Bit.Blex.Samples.Core/favicon.svg" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* Prerendered on the server, then hydrated by the WebAssembly runtime. <BlexProvider> (inside Routes)
+       hands the prerendered store state to the interactive render, then rehydrates the persisted stores
+       from localStorage once the runtime is up. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>

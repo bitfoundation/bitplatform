@@ -39,7 +39,7 @@ public partial class _BitButtonGroupCustomDemo
 
     private List<Operation> disabledCustoms =
     [
-        new() { Name = "Add" }, new() { Name = "Edit", IsEnabled = false }, new() { Name = "Delete" }
+        new() { Name = "Add" }, new() { Name = "Edit", IsDisabled = true }, new() { Name = "Delete" }
     ];
 
     private List<Operation> iconCustoms =

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components.Rendering;
+﻿using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.BlazorUI;
 
@@ -32,6 +32,8 @@ public sealed class BitMarkdownTableRenderer : BitMarkdownNodeRenderer
             b.OpenElement(8, "th");
             b.AddAttribute(9, "scope", "col");
             AddAlignment(b, table, c);
+            if (r.AutoDirection)
+                b.AddAttribute(14, "dir", "auto");
             r.WriteNodes(b, table.Header[c]);
             b.CloseElement();
         }
@@ -46,6 +48,9 @@ public sealed class BitMarkdownTableRenderer : BitMarkdownNodeRenderer
             {
                 b.OpenElement(13, "td");
                 AddAlignment(b, table, c);
+                // Each cell takes the direction of its own text under automatic direction, as a paragraph does.
+                if (r.AutoDirection)
+                    b.AddAttribute(15, "dir", "auto");
                 r.WriteNodes(b, row[c]);
                 b.CloseElement();
             }
@@ -65,9 +70,9 @@ public sealed class BitMarkdownTableRenderer : BitMarkdownNodeRenderer
         if (col >= table.Alignments.Count) return;
         string? align = table.Alignments[col] switch
         {
-            BitMarkdownColumnAlignment.Left => "bit-mdv-align-left",
-            BitMarkdownColumnAlignment.Center => "bit-mdv-align-center",
-            BitMarkdownColumnAlignment.Right => "bit-mdv-align-right",
+            BitTextAlign.Left => "bit-mdv-align-left",
+            BitTextAlign.Center => "bit-mdv-align-center",
+            BitTextAlign.Right => "bit-mdv-align-right",
             _ => null
         };
         if (align is not null)

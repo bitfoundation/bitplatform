@@ -1,0 +1,175 @@
+﻿@page "/e2e/nav/url"
+@page "/e2e/nav/url/{*Path}"
+
+<PageTitle>BitNav URL E2E</PageTitle>
+
+@* The automatic mode of BitNav: every nav here selects the item matching the current URL, and the links below
+   navigate inside this very page (the route takes any path under it), so the navs see every navigation. *@
+
+<E2ESection Id="links" Title="Links">
+    <p>Path: <span id="current-path">/@(Path ?? "")</span></p>
+    <a id="go-root" href="e2e/nav/url">root</a>
+    <a id="go-products" href="e2e/nav/url/products">products</a>
+    <a id="go-products-a" href="e2e/nav/url/products/a">products/a</a>
+    <a id="go-products-a-b" href="e2e/nav/url/products/a/b">products/a/b</a>
+    <a id="go-products-upper" href="e2e/nav/url/PRODUCTS/?q=1">PRODUCTS/?q=1</a>
+    <a id="go-product" href="e2e/nav/url/product">product</a>
+    <a id="go-contact-hash" href="e2e/nav/url/contact?tab=2#form">contact?tab=2#form</a>
+    <a id="go-team-alice" href="e2e/nav/url/team/alice">team/alice</a>
+    <a id="go-blog-42" href="e2e/nav/url/blog/42">blog/42</a>
+    <a id="go-blog-abc" href="e2e/nav/url/blog/abc">blog/abc</a>
+    <a id="go-docs-deep" href="e2e/nav/url/docs/x/y/z">docs/x/y/z</a>
+    <a id="go-files-ab" href="e2e/nav/url/files/ab">files/ab</a>
+    <a id="go-files-abc" href="e2e/nav/url/files/abc">files/abc</a>
+    <a id="go-settings" href="e2e/nav/url/settings">settings</a>
+    <a id="go-preferences" href="e2e/nav/url/preferences">preferences</a>
+    <a id="go-options" href="e2e/nav/url/options">options</a>
+    <a id="go-nowhere" href="e2e/nav/url/nowhere">nowhere</a>
+</E2ESection>
+
+<E2ESection Id="exact" Title="Exact (the default)">
+    <BitNav Id="nav-exact"
+            Items="_exactItems"
+            OnSelectItem="(BitNavItem item) => { _exactSelectCount++; _exactSelected = item?.Text; }"
+            OnItemClick="(BitNavItem item) => _exactClicked = item.Text" />
+    <p>
+        Selects: <span id="exact-select-count">@_exactSelectCount</span>,
+        selected: <span id="exact-selected">@(_exactSelected ?? "none")</span>,
+        clicked: <span id="exact-clicked">@_exactClicked</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="prefix" Title="Prefix">
+    <BitNav Id="nav-prefix" Items="_prefixItems" Match="BitNavMatch.Prefix" />
+</E2ESection>
+
+<E2ESection Id="wildcard" Title="Wildcard">
+    <BitNav Id="nav-wildcard" Items="_wildcardItems" Match="BitNavMatch.Wildcard" />
+</E2ESection>
+
+<E2ESection Id="regex" Title="Regex">
+    <BitNav Id="nav-regex" Items="_regexItems" Match="BitNavMatch.Regex" />
+</E2ESection>
+
+<E2ESection Id="item-match" Title="Match of an item">
+    <BitNav Id="nav-item-match" Items="_itemMatchItems" Match="BitNavMatch.Exact" />
+</E2ESection>
+
+<E2ESection Id="additional" Title="AdditionalUrls">
+    <BitNav Id="nav-additional" Items="_additionalItems" />
+</E2ESection>
+
+<E2ESection Id="reselectable" Title="Reselectable in the automatic mode">
+    <BitNav Id="nav-auto-reselectable" Items="_reselectableItems" Reselectable OnSelectItem="(BitNavItem item) => _reselectCount++" />
+    <p>Reselectable selects: <span id="auto-reselect-count">@_reselectCount</span></p>
+</E2ESection>
+
+<E2ESection Id="switches" Title="Mode and Match changed at runtime">
+    <button id="btn-to-automatic" @onclick="() => _switchMode = BitNavMode.Automatic">To automatic</button>
+    <button id="btn-to-prefix" @onclick="() => _switchMatch = BitNavMatch.Prefix">To prefix</button>
+    <BitNav Id="nav-mode-switch" Items="_modeSwitchItems" Mode="_switchMode" DefaultSelectedItem="_modeSwitchItems[0]" />
+    <BitNav Id="nav-match-switch" Items="_matchSwitchItems" Match="_switchMatch" />
+</E2ESection>
+
+<E2ESection Id="options-auto" Title="Options in the automatic mode">
+    <BitNav Id="nav-options-auto" TItem="BitNavOption" OnSelectItem="(BitNavOption option) => _optionSelected = option?.Text">
+        <BitNavOption Text="Root" Url="/e2e/nav/url" />
+        <BitNavOption Text="Products" Url="/e2e/nav/url/products" />
+        <BitNavOption Text="Team">
+            <BitNavOption Text="Alice" Url="/e2e/nav/url/team/alice" />
+            <BitNavOption Text="Bob" Url="/e2e/nav/url/team/bob" />
+        </BitNavOption>
+        <BitNavOption Text="Settings" Url="/e2e/nav/url/settings" AdditionalUrls="@(["/e2e/nav/url/preferences"])" />
+        <BitNavOption Text="Posts" Url="^/e2e/nav/url/blog/\d+$" Match="BitNavMatch.Regex" />
+    </BitNav>
+    <p>Option selected: <span id="option-selected">@_optionSelected</span></p>
+</E2ESection>
+
+<E2ESection Id="custom-auto" Title="Custom items in the automatic mode">
+    <BitNav Id="nav-custom-auto" Items="_customItems" NameSelectors="_customSelectors" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    [Parameter] public string? Path { get; set; }
+
+    private static BitNavItem Link(string text, string url) => new() { Text = text, Url = url };
+
+    private readonly List<BitNavItem> _exactItems =
+    [
+        Link("Root", "/e2e/nav/url"),
+        new() { Text = "Products", Url = "/e2e/nav/url/products", ChildItems = [Link("Product A", "/e2e/nav/url/products/a")] },
+        Link("Contact", "e2e/nav/url/contact"),
+        new() { Text = "Team", ChildItems = [Link("Alice", "/e2e/nav/url/team/alice"), Link("Bob", "/e2e/nav/url/team/bob")] },
+    ];
+    private int _exactSelectCount;
+    private string? _exactSelected;
+    private string? _exactClicked;
+
+    private readonly List<BitNavItem> _prefixItems =
+    [
+        Link("Products", "/e2e/nav/url/products"),
+        Link("Product", "/e2e/nav/url/product"),
+        Link("Blog", "/e2e/nav/url/blog/"),
+    ];
+
+    private readonly List<BitNavItem> _wildcardItems =
+    [
+        Link("One product", "/e2e/nav/url/products/*"),
+        Link("Docs", "/e2e/nav/url/docs/**"),
+        Link("Files", "/e2e/nav/url/files/a?"),
+    ];
+
+    private readonly List<BitNavItem> _regexItems =
+    [
+        Link("Numbered post", @"^/e2e/nav/url/blog/\d+$"),
+        Link("Named post", "^/e2e/nav/url/blog/[a-z]+$"),
+    ];
+
+    private readonly List<BitNavItem> _itemMatchItems =
+    [
+        Link("Contact", "/e2e/nav/url/contact"),
+        new() { Text = "Products section", Url = "/e2e/nav/url/products", Match = BitNavMatch.Prefix },
+    ];
+
+    private readonly List<BitNavItem> _additionalItems =
+    [
+        Link("Root", "/e2e/nav/url"),
+        new() { Text = "Settings", Url = "/e2e/nav/url/settings", AdditionalUrls = ["/e2e/nav/url/preferences", "/e2e/nav/url/options"] },
+    ];
+
+    private readonly List<BitNavItem> _reselectableItems = [Link("Root", "/e2e/nav/url"), Link("Products", "/e2e/nav/url/products")];
+    private int _reselectCount;
+
+    private BitNavMode _switchMode = BitNavMode.Manual;
+    private BitNavMatch _switchMatch = BitNavMatch.Exact;
+    private readonly List<BitNavItem> _modeSwitchItems = [Link("Manual pick", "/e2e/nav/url/manual"), Link("Products", "/e2e/nav/url/products")];
+    private readonly List<BitNavItem> _matchSwitchItems = [Link("Contact", "/e2e/nav/url/contact"), Link("Products", "/e2e/nav/url/products")];
+
+    private string? _optionSelected;
+
+    public class Section
+    {
+        public string Title { get; set; } = "";
+        public string? Link { get; set; }
+        public List<Section> Sections { get; set; } = [];
+        public string[]? Aliases { get; set; }
+    }
+
+    private readonly List<Section> _customItems =
+    [
+        new() { Title = "Root", Link = "/e2e/nav/url" },
+        new() { Title = "Products", Link = "/e2e/nav/url/products" },
+        new() { Title = "Team", Sections = [new() { Title = "Alice", Link = "/e2e/nav/url/team/alice" }] },
+        new() { Title = "Settings", Link = "/e2e/nav/url/settings", Aliases = ["/e2e/nav/url/options"] },
+    ];
+
+    private readonly BitNavNameSelectors<Section> _customSelectors = new()
+    {
+        Text = { Name = nameof(Section.Title) },
+        Url = { Selector = s => s.Link },
+        ChildItems = { Name = nameof(Section.Sections) },
+        AdditionalUrls = { Selector = s => s.Aliases },
+    };
+}

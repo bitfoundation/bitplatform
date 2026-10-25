@@ -1,11 +1,15 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Container for all plugin options, mirroring Chart.js <c>options.plugins</c>.</summary>
 public sealed class BitChartPluginOptions
 {
     public BitChartLegendOptions Legend { get; set; } = new();
     public BitChartTitleOptions Title { get; set; } = new();
-    public BitChartTitleOptions Subtitle { get; set; } = new() { Font = new BitChartFont { Size = 13 } };
+    public BitChartTitleOptions Subtitle { get; set; } = new()
+    {
+        Color = "var(--bit-Chart-subtitle-color, var(--bit-clr-fg-sec))",
+        Font = new BitChartFont { Size = 13 }
+    };
     public BitChartTooltipOptions Tooltip { get; set; } = new();
     public BitChartDataLabelOptions DataLabels { get; set; } = new();
     public BitChartDecimationOptions Decimation { get; set; } = new();

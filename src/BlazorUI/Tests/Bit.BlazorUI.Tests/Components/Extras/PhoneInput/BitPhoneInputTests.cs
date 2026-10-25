@@ -1,6 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using AngleSharp.Html.Parser;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -39,11 +45,11 @@ public class BitPhoneInputTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitPhoneInputShouldRespectIsEnabled(bool isEnabled)
+    public void BitPhoneInputShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-phi");
@@ -65,6 +71,42 @@ public class BitPhoneInputTests : BunitTestContext
 
         Assert.IsTrue(component.Find("input.bit-phi-inp").HasAttribute("readonly"));
         Assert.AreEqual("-1", component.Find("button.bit-phi-drp").GetAttribute("tabindex"));
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-rdo"));
+
+        // The selector is out of the tab order, so the input is what says which country its number is read with.
+        Assert.AreEqual(component.Find("button.bit-phi-drp").Id, component.Find("input.bit-phi-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod,
+        DataRow("GB", "07911 123456", false, "+447911123456"),
+        DataRow("GB", "+44 (0)7911 123456", false, "+447911123456"),
+        DataRow("GB", "07911 123456", true, "+4407911123456"),
+        DataRow("DE", "0170 1234567", false, "+491701234567"),
+        DataRow("US", "1 415 555 0123", false, "+14155550123"),
+        DataRow("US", "415 555 0123", false, "+14155550123"),
+        DataRow("RU", "8 912 345-67-89", false, "+79123456789"),
+        DataRow("RU", "812 345-67-89", false, "+78123456789"),
+        DataRow("HU", "06 30 123 4567", false, "+36301234567"),
+        DataRow("BY", "8 029 123-45-67", false, "+375291234567"),
+        DataRow("IT", "06 1234 5678", false, "+390612345678"),
+        DataRow("GB", "0", false, "+440")]
+    public void BitPhoneInputShouldDropTheNationalPrefixFromTheValue(string iso2, string typed, bool keep, string expected)
+    {
+        string? value = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.FindByIso2(iso2));
+            parameters.Add(p => p.KeepNationalPrefix, keep);
+            parameters.Add(p => p.ValueChanged, v => value = v);
+        });
+
+        component.Find("input.bit-phi-inp").Change(typed);
+
+        Assert.AreEqual(expected, value);
+
+        // The prefix is the country's own, so dropping it never moves the selection.
+        Assert.AreEqual(iso2, component.Instance.Country?.Iso2);
     }
 
     [TestMethod]
@@ -119,7 +161,16 @@ public class BitPhoneInputTests : BunitTestContext
         DataRow(BitColor.Success, "bit-phi-suc"),
         DataRow(BitColor.Warning, "bit-phi-wrn"),
         DataRow(BitColor.SevereWarning, "bit-phi-swr"),
-        DataRow(BitColor.Error, "bit-phi-err")]
+        DataRow(BitColor.Error, "bit-phi-err"),
+        DataRow(BitColor.PrimaryBackground, "bit-phi-pbg"),
+        DataRow(BitColor.SecondaryBackground, "bit-phi-sbg"),
+        DataRow(BitColor.TertiaryBackground, "bit-phi-tbg"),
+        DataRow(BitColor.PrimaryForeground, "bit-phi-pfg"),
+        DataRow(BitColor.SecondaryForeground, "bit-phi-sfg"),
+        DataRow(BitColor.TertiaryForeground, "bit-phi-tfg"),
+        DataRow(BitColor.PrimaryBorder, "bit-phi-pbr"),
+        DataRow(BitColor.SecondaryBorder, "bit-phi-sbr"),
+        DataRow(BitColor.TertiaryBorder, "bit-phi-tbr")]
     public void BitPhoneInputShouldRespectColor(BitColor color, string cssClass)
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
@@ -826,11 +877,430 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.IsFalse(component.Instance.IsOpen);
         Assert.AreEqual(1, closed);
 
+        // A Tab from the search box is the JS side's to answer (see Utils.setupTabOut), which reports it through
+        // OnTabOut once it has moved the focus on past the country button.
         component.Find("button.bit-phi-drp").Click();
         component.Find(".bit-phi-srch").KeyDown("Tab");
 
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(1, closed);
+
+        component.InvokeAsync(() => component.Instance._OnTabOut()).GetAwaiter().GetResult();
+
         Assert.IsFalse(component.Instance.IsOpen);
         Assert.AreEqual(2, closed);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldPutTheOpenSearchBoxIntoTheTabOrderAfterTheCountryButton()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+
+        // The tab order rides on the toggle that shows the list, so it costs no round trip of its own, and the list
+        // is dismissed once the focus moves on from both the field and itself.
+        var open = LastToggle();
+        Assert.AreEqual(true, open.Arguments[6]);
+        Assert.AreEqual(component.Find("button.bit-phi-drp").Id, open.Arguments[^3]);
+        Assert.AreEqual(true, open.Arguments[^4]);
+        Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.setupTabOut"));
+
+        // A Shift+Tab from the search box goes back to the button with the list left open, and a Tab on the button
+        // goes back into it, both on the JS side.
+        component.Find(".bit-phi-srch").KeyDown(new KeyboardEventArgs { Key = "Tab", ShiftKey = true });
+        component.Find("button.bit-phi-drp").KeyDown("Tab");
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        component.Find(".bit-phi-srch").KeyDown("Escape");
+
+        // The toggle that hides the list takes the tab order back with it.
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(false, LastToggle().Arguments[6]);
+        Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.disposeTabOut"));
+
+        // Every open registers it again.
+        component.Find("button.bit-phi-drp").Click();
+
+        Assert.AreEqual(component.Find("button.bit-phi-drp").Id, LastToggle().Arguments[^3]);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldLeaveTheFocusLeavingTheFieldToTheJsSide()
+    {
+        var closed = 0;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.OnClose, () => closed++);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        // The focus leaves the field backwards. Which Tab the JS side took is not guessed at here: the list is
+        // dismissed by where the focus lands, through the CloseCallout callback.
+        component.Find("button.bit-phi-drp").KeyDown(new KeyboardEventArgs { Key = "Tab", ShiftKey = true });
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var toggles = CountInvocations("BitBlazorUI.Callouts.toggle");
+
+        component.InvokeAsync(() => component.Instance._CloseCalloutBeforeAnotherCalloutIsOpened()).GetAwaiter().GetResult();
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, closed);
+
+        // The JS side has already hidden it.
+        Assert.AreEqual(toggles, CountInvocations("BitBlazorUI.Callouts.toggle"));
+
+        // And the Tab key of the next open list is still the JS side's.
+        component.Find("button.bit-phi-drp").Click();
+        component.Find(".bit-phi-srch").KeyDown("Tab");
+
+        Assert.IsTrue(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNotPutAListWithoutASearchBoxIntoTheTabOrder()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual("", LastToggle().Arguments[^3]);
+
+        // The focus stays on the button, so its Tab moves on through the page and the list closes behind it.
+        component.Find("button.bit-phi-drp").KeyDown("Tab");
+
+        Assert.IsFalse(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldFocusTheButtonWithoutScrollingWhenAListWithoutASearchBoxOpens()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        // Read before the click: a re-render leaves the reference off the markup of an element it keeps.
+        var button = component.Find("button.bit-phi-drp").GetAttribute("blazor:elementReference");
+
+        component.Find("button.bit-phi-drp").Click();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Single();
+
+        // A focus that scrolled the button into view would scroll a sticky header's container back to where the
+        // header sits in the flow.
+        Assert.AreEqual(button, ((ElementReference)focused.Arguments[0]!).Id);
+        Assert.AreEqual(true, focused.Arguments[1]);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task BitPhoneInputShouldBringTheButtonIntoViewBeforeTheListIsPlacedWhenTheApiOpensIt(bool throughIsOpen)
+    {
+        var isOpen = false;
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoSearchBox, true);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        var button = component.Find("button.bit-phi-drp").GetAttribute("blazor:elementReference");
+
+        if (throughIsOpen)
+        {
+            component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+        }
+        else
+        {
+            await component.Instance.OpenAsync();
+        }
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.IsOpen));
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Single();
+
+        // Opened from anywhere on the page, so the button may well be out of view: the focus brings it there - and
+        // does so before the list is placed against it, rather than moving it out from under a list already open.
+        Assert.AreEqual(button, ((ElementReference)focused.Arguments[0]!).Id);
+        Assert.AreEqual(false, focused.Arguments[1]);
+
+        // bUnit records the invocations grouped by identifier, each group where its identifier was first called, so the
+        // positions of the two groups give the order of the two calls only while each of them was made once.
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"]);
+
+        var identifiers = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
+
+        Assert.IsTrue(identifiers.IndexOf("Blazor._internal.domWrapper.focus") < identifiers.IndexOf("BitBlazorUI.Callouts.toggle"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitPhoneInputShouldKeepTheFocusRingOnlyWhenTheTabOutLandsInTheField(bool landsInField)
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        var dropdown = component.Find("button.bit-phi-drp");
+        dropdown.FocusIn();
+        dropdown.Click();
+
+        // The focus moves into the search box of the open list, which reports no focus of its own.
+        component.Find("button.bit-phi-drp").FocusOut();
+
+        if (landsInField)
+        {
+            component.Find("input.bit-phi-inp").FocusIn();
+        }
+
+        component.InvokeAsync(() => component.Instance._OnTabOut()).GetAwaiter().GetResult();
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(landsInField, component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldKeepTheFocusRingOfAListItsIsOpenKeepsOpen()
+    {
+        // IsOpen bound one way: the component cannot close the list.
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        component.Find("button.bit-phi-drp").FocusIn();
+        component.Find("button.bit-phi-drp").FocusOut();
+
+        component.InvokeAsync(() => component.Instance._OnTabOut()).GetAwaiter().GetResult();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldHandTheListKeysOfTheButtonToTheSearchBox()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        var options = component.FindAll("button.bit-phi-itm");
+        Assert.AreEqual(options[0].Id, component.Find(".bit-phi-srch").GetAttribute("aria-activedescendant"));
+
+        // A Shift+Tab has taken the focus back to the button, which names no option: the arrow moves the active one
+        // and hands the focus to the search box, which does.
+        var focuses = CountInvocations("Blazor._internal.domWrapper.focus");
+
+        component.Find("button.bit-phi-drp").KeyDown("ArrowDown");
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(component.FindAll("button.bit-phi-itm")[1].Id, component.Find(".bit-phi-srch").GetAttribute("aria-activedescendant"));
+        Assert.AreEqual(focuses + 1, CountInvocations("Blazor._internal.domWrapper.focus"));
+        Assert.IsNull(component.Find("button.bit-phi-drp").GetAttribute("aria-activedescendant"));
+
+        // A letter goes into the search box as if it had been typed there.
+        component.Find("button.bit-phi-drp").KeyDown("c");
+
+        Assert.AreEqual("c", component.Find(".bit-phi-srch").GetAttribute("value"));
+        Assert.IsTrue(component.FindAll("button.bit-phi-itm").Count < FiveCountries.Count);
+        Assert.AreEqual(focuses + 2, CountInvocations("Blazor._internal.domWrapper.focus"));
+
+        // Enter presses the button, which closes the list as a click on it does, and selects nothing.
+        var country = component.Instance.Country;
+
+        component.Find("button.bit-phi-drp").KeyDown("Enter");
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(country, component.Instance.Country);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldPutTheResponsiveCloseButtonAfterTheSearchBoxInTheTabOrder()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+        });
+
+        // The search box is what a Tab from the country button goes into and Shift+Tab goes back from, and the
+        // close button stays in the tab order right after it.
+        var inOrder = component.FindAll(".bit-phi-srch, .bit-phi-cls");
+
+        Assert.HasCount(2, inOrder);
+        Assert.IsTrue(inOrder[0].ClassList.Contains("bit-phi-srch"));
+        Assert.IsTrue(inOrder[1].ClassList.Contains("bit-phi-cls"));
+        Assert.IsFalse(inOrder[1].HasAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldTakeTheTabOrderBackWhenDisposed()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+
+        Context.DisposeComponentsAsync().GetAwaiter().GetResult();
+
+        // Clearing the callout takes back what its toggle registered.
+        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Callouts.clear"));
+        Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.disposeTabOut"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldCloseItsListWhenDisabledWhileOpen()
+    {
+        var isOpen = false;
+        var closed = 0;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
+            parameters.Add(p => p.OnClose, () => closed++);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        Assert.IsTrue(isOpen);
+
+        // A form disabled for its submit while the list is open.
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        Assert.IsFalse(isOpen);
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, closed);
+
+        // The JS side is told to take the relocated list off the screen, not left holding it.
+        Assert.AreEqual(false, LastToggle().Arguments[6]);
+        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:none");
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldHideAListAOneWayIsOpenKeepsOpenWhileDisabled()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.AreEqual(true, LastToggle().Arguments[6]);
+
+        // Every render of the page hands the one-way IsOpen down again, which is what keeps it from being set back.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(false, LastToggle().Arguments[6]);
+        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:none");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Disabled, false);
+        });
+
+        Assert.AreEqual(true, LastToggle().Arguments[6]);
+        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:block");
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public void BitPhoneInputShouldNotOpenThroughIsOpenWhenTheCountryCannotBeChanged(bool disabled, bool readOnly)
+    {
+        var isOpen = false;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, disabled);
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        Assert.IsFalse(isOpen);
+        Assert.IsFalse(component.Instance.IsOpen);
+        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:none");
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle" && Equals(i.Arguments[6], true)));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldSwapTheKeysOfTheButtonWhenOpenedAndClosedThroughIsOpen()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        CollectionAssert.DoesNotContain(LastButtonKeys(), "Enter");
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        CollectionAssert.Contains(LastButtonKeys(), "Enter");
+        CollectionAssert.Contains(LastButtonKeys(), "PageDown");
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, false));
+
+        CollectionAssert.DoesNotContain(LastButtonKeys(), "Enter");
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldDrawAnEmptyBoxForACountryWithNoFlag()
+    {
+        var neverland = new BitCountry("Neverland", "999", "ZZ", "ZZZ");
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, [neverland, BitCountries.France]);
+            parameters.Add(p => p.Country, neverland);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-phi-drp img").Count);
+        Assert.AreEqual("SPAN", component.Find(".bit-phi-drp .bit-phi-flg").TagName);
+
+        component.Find("button.bit-phi-drp").Click();
+
+        var rows = component.FindAll(".bit-phi-itm");
+
+        Assert.AreEqual("SPAN", rows[0].QuerySelector(".bit-phi-flg")!.TagName);
+        Assert.AreEqual("IMG", rows[1].QuerySelector(".bit-phi-flg")!.TagName);
+    }
+
+    // The keys the country button's own listener was last handed: the button's sets are the ones that carry Home,
+    // which the search box leaves to its caret.
+    private string[] LastButtonKeys()
+    {
+        return (string[])Context.JSInterop.Invocations
+                                .Last(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys" && ((string[])i.Arguments[1]!).Contains("Home"))
+                                .Arguments[1]!;
+    }
+
+    private int CountInvocations(string identifier)
+    {
+        return Context.JSInterop.Invocations.Count(i => i.Identifier == identifier);
+    }
+
+    private JSRuntimeInvocation LastToggle()
+    {
+        return Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
     }
 
     [TestMethod]
@@ -895,6 +1365,59 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.IsTrue(component.FindAll("button.bit-phi-itm")[0].ClassList.Contains("bit-phi-act"));
     }
 
+    // Alt+ArrowDown and Alt+ArrowUp open, walk and close the list the way the combobox pattern has them, and their
+    // default scrolls the page by a screen, which would dismiss the list as a page scroll and drop the focus to the body:
+    // the field prevents them closed and open, and so does the search box.
+    [TestMethod]
+    public void BitPhoneInputShouldPreventTheAltArrowsItActsOn()
+    {
+        var altArrows = new[] { "Alt+ArrowDown", "Alt+ArrowUp" };
+        var component = RenderComponent<BitPhoneInput>();
+
+        CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: true));
+
+        component.Find("button.bit-phi-drp").Click();
+
+        CollectionAssert.Contains(LastPreventKeys(field: true), "Enter");
+        CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: true));
+        CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: false));
+    }
+
+    // A character typed on the trigger is applied by the component itself - to the type-ahead, or as the search term
+    // while the focus moves to the search box - so the trigger keeps the browser from typing it a second time into the
+    // box the focus is already in where the handler runs first (WebAssembly). The search box types its own.
+    [TestMethod]
+    public void BitPhoneInputShouldKeepTheCharactersTypedOnItsTriggerToItself()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        CollectionAssert.Contains(LastPreventKeys(field: true), "Character");
+
+        component.Find("button.bit-phi-drp").Click();
+
+        CollectionAssert.Contains(LastPreventKeys(field: true), "Character");
+        CollectionAssert.DoesNotContain(LastPreventKeys(field: false), "Character");
+    }
+
+    // The keys pressed in the moment the list takes to open are answered by the list that is already open, so the key
+    // that opened it has to land before the open's round trips run, or the letters typed at once are applied out of
+    // order. The prevent-keys call the open makes is held pending here, the way a slow link holds it.
+    [TestMethod]
+    public void BitPhoneInputShouldTypeAheadTheLettersTypedWhileItOpensInOrder()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters => parameters.Add(p => p.NoSearchBox, true));
+        var keys = Context.JSInterop.SetupVoid("BitBlazorUI.Extras.setPreventKeys", _ => true);
+
+        foreach (var key in new[] { "g", "e", "r" })
+        {
+            component.Find("button.bit-phi-drp").KeyDown(key);
+        }
+
+        keys.SetVoidResult();
+
+        component.WaitForAssertion(() => Assert.AreEqual("Germany", component.Find("button.bit-phi-itm.bit-phi-act").GetAttribute("title")));
+    }
+
     [TestMethod]
     public void BitPhoneInputShouldTypeAheadWhenThereIsNoSearchBox()
     {
@@ -911,6 +1434,120 @@ public class BitPhoneInputTests : BunitTestContext
 
         var active = component.FindAll("button.bit-phi-itm").First(i => i.ClassList.Contains("bit-phi-act"));
         Assert.AreEqual(BitCountries.Germany.Name, active.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldKeepASpaceTypedInTheMiddleOfATypeAheadTerm()
+    {
+        BitCountry? changed = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.NoSearchBox, true);
+            parameters.Add(p => p.OnCountryChange, c => changed = c);
+        });
+
+        var dropdown = component.Find("button.bit-phi-drp");
+        dropdown.Click();
+
+        foreach (var key in new[] { "u", "n", "i", "t", "e", "d", " ", "s" })
+        {
+            dropdown.KeyDown(key);
+        }
+
+        // "united " has reached the United Kingdom, and the space is part of the name being typed rather than a
+        // choice of it, so "united s" goes on to the United States.
+        var active = component.FindAll("button.bit-phi-itm").First(i => i.ClassList.Contains("bit-phi-act"));
+        Assert.AreEqual(BitCountries.UnitedStates.Name, active.GetAttribute("title"));
+        Assert.IsNull(changed);
+        Assert.IsTrue(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldOpenOnTheTypedCountryWithoutASearchBox()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        component.Find("button.bit-phi-drp").KeyDown("g");
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var active = component.FindAll("button.bit-phi-itm").First(i => i.ClassList.Contains("bit-phi-act"));
+        Assert.AreEqual(BitCountries.Germany.Name, active.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNotOpenOnATypedLetterWithASearchBoxOrAModifier()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+        });
+
+        component.Find("button.bit-phi-drp").KeyDown("g");
+
+        Assert.IsFalse(component.Instance.IsOpen);
+
+        component.Render(parameters => parameters.Add(p => p.NoSearchBox, true));
+
+        component.Find("button.bit-phi-drp").KeyDown(new KeyboardEventArgs { Key = "c", CtrlKey = true });
+
+        Assert.IsFalse(component.Instance.IsOpen);
+    }
+
+    [TestMethod,
+        DataRow("Home", 0),
+        DataRow("End", 4)]
+    public void BitPhoneInputShouldOpenOnTheFirstOrLastCountryWithHomeOrEnd(string key, int expected)
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedKingdom);
+        });
+
+        component.Find("button.bit-phi-drp").KeyDown(key);
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var active = component.FindAll("button.bit-phi-itm").First(i => i.ClassList.Contains("bit-phi-act"));
+        Assert.AreEqual(FiveCountries[expected].Name, active.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldSelectWithAltArrowUpOnlyWithoutASearchBox()
+    {
+        BitCountry? changed = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.OnCountryChange, c => changed = c);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+        component.Find("input.bit-phi-srch").KeyDown("ArrowDown");
+        component.Find("input.bit-phi-srch").KeyDown(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+
+        // With a search box Alt+Up only closes the list.
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.IsNull(changed);
+
+        component.Render(parameters => parameters.Add(p => p.NoSearchBox, true));
+
+        var dropdown = component.Find("button.bit-phi-drp");
+        dropdown.Click();
+        dropdown.KeyDown("ArrowDown");
+        dropdown.KeyDown(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+
+        // A select-only list takes the option the arrows are on.
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(FiveCountries[1].Iso2, changed?.Iso2);
     }
 
     [TestMethod]
@@ -937,7 +1574,7 @@ public class BitPhoneInputTests : BunitTestContext
     {
         var disabled = RenderComponent<BitPhoneInput>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         disabled.Find("button.bit-phi-drp").Click();
@@ -1108,7 +1745,7 @@ public class BitPhoneInputTests : BunitTestContext
         });
 
         Assert.AreEqual("rtl", component.Find(".bit-phi").GetAttribute("dir"));
-        Assert.IsTrue(component.Find(".bit-phi-cal").ClassList.Contains("bit-phi-rtl"));
+        Assert.IsTrue(component.Find(".bit-phi-cal").ClassList.Contains("bit-rtl"));
     }
 
     [TestMethod]
@@ -1170,9 +1807,11 @@ public class BitPhoneInputTests : BunitTestContext
         // An aria-label replaces the content of the button, so it has to carry the country itself.
         Assert.AreEqual("Country: Germany", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
 
-        component.Render(parameters => parameters.Add(p => p.DropdownAriaLabel, "Dialing code"));
+        // A translated name is a prefix, so the selected country is still part of what is announced.
+        component.Render(parameters => parameters.Add(p => p.DropdownAriaLabel, "Land"));
 
-        Assert.AreEqual("Dialing code", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
+        Assert.AreEqual("Land: Germany", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
+        Assert.AreEqual("Germany", component.Find("button.bit-phi-drp").GetAttribute("title"));
     }
 
     [TestMethod]
@@ -1181,6 +1820,10 @@ public class BitPhoneInputTests : BunitTestContext
         var component = RenderComponent<BitPhoneInput>();
 
         Assert.AreEqual("Select country", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
+
+        component.Render(parameters => parameters.Add(p => p.DropdownAriaLabel, "Land"));
+
+        Assert.AreEqual("Land", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
 
         component.Render(parameters => parameters.Add(p => p.DropdownPlaceholder, "Country"));
 
@@ -1219,8 +1862,19 @@ public class BitPhoneInputTests : BunitTestContext
         // variables of its own.
         Assert.IsTrue(component.Find(".bit-phi-cal").ClassList.Contains("bit-phi-lg"));
 
-        var medium = RenderComponent<BitPhoneInput>();
+        var medium = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitSize.Medium);
+        });
         Assert.IsTrue(medium.Find(".bit-phi-cal").ClassList.Contains("bit-phi-md"));
+
+        // An unset Size publishes no class on the callout either, so the public --bit-PhoneInput-* variables restyle
+        // the default rows while an explicit Size wins over them.
+        var unset = RenderComponent<BitPhoneInput>();
+        var callout = unset.Find(".bit-phi-cal").ClassList;
+        Assert.IsFalse(callout.Contains("bit-phi-sm"));
+        Assert.IsFalse(callout.Contains("bit-phi-md"));
+        Assert.IsFalse(callout.Contains("bit-phi-lg"));
     }
 
     [TestMethod]
@@ -1274,7 +1928,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         var component = RenderComponent<BitPhoneInput>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnKeyDown, () => keyDowns++);
             parameters.Add(p => p.OnClick, () => clicks++);
         });
@@ -1351,6 +2005,33 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPhoneInputShouldNotMoveAFixedCountryForATypedDialCode()
+    {
+        string? value = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoDropdown, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.ValueChanged, v => value = v);
+        });
+
+        var input = component.Find("input.bit-phi-inp");
+
+        // A number of another country is kept whole rather than moving a country nothing on screen can move back.
+        input.Change("+44 7911 123456");
+
+        Assert.AreEqual("US", component.Instance.Country?.Iso2);
+        Assert.AreEqual("+447911123456", value);
+
+        // The code of the fixed country itself is still read off the number.
+        input.Change("+1 415 555 0123");
+
+        Assert.AreEqual("4155550123", component.Find("input.bit-phi-inp").GetAttribute("value"));
+        Assert.AreEqual("+14155550123", value);
+    }
+
+    [TestMethod]
     public void BitPhoneInputShouldNotRenderACalloutItDoesNotHave()
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
@@ -1378,10 +2059,14 @@ public class BitPhoneInputTests : BunitTestContext
         component.Find(".bit-phi-ovl").Click();
 
         Assert.IsFalse(component.Instance.IsOpen);
+
+        // The focus the hidden callout held is given back to the selector rather than dropped on the body.
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
     }
 
     [TestMethod]
-    public void BitPhoneInputShouldDropTheFocusRingWithTheCalloutTheOverlayDismisses()
+    public void BitPhoneInputShouldKeepTheFocusRingOnTheSelectorTheOverlayDismissesTo()
     {
         var component = RenderComponent<BitPhoneInput>();
 
@@ -1394,11 +2079,15 @@ public class BitPhoneInputTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
 
-        // Dismissing the callout puts the focus back nowhere, and there is no focusout of the field
-        // left to fire for it.
+        // Dismissing the callout gives the focus it held back to the selector, so the ring stays with it.
         component.Find(".bit-phi-ovl").Click();
 
         Assert.IsFalse(component.Instance.IsOpen);
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+
+        // Leaving the selector afterwards is a focusout of the field like any other.
+        component.Find("button.bit-phi-drp").FocusOut();
+
         Assert.IsFalse(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
     }
 
@@ -2166,6 +2855,329 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPhoneInputShouldPhraseTheSearchResultAnnouncementWithSearchResultsAnnouncement()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.NoResultsMessage, "Kein Land gefunden");
+            parameters.Add(p => p.SearchResultsAnnouncement, count => $"{count} Länder gefunden");
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        component.Find("input.bit-phi-srch").Input("united");
+
+        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("2 Länder gefunden"));
+
+        // An empty result is what the no-results message is for, so it keeps being the one announced.
+        component.Find("input.bit-phi-srch").Input("zzz");
+
+        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("Kein Land gefunden"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldLeaveItsPublicCssVariablesOnTheRoot()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Style, "width: 300px; --bit-PhoneInput-radius: 2rem");
+            parameters.Add(p => p.Styles, new BitPhoneInputClassStyles
+            {
+                Root = "--bit-PhoneInput-item-height: 40px;",
+                Callout = "--bit-PhoneInput-radius: 1rem;",
+                Overlay = "opacity: 0.5;",
+            });
+        });
+
+        var root = component.Find(".bit-phi").GetAttribute("style")!;
+        var callout = component.Find(".bit-phi-cal").GetAttribute("style")!;
+        var overlay = component.Find(".bit-phi-ovl").GetAttribute("style")!;
+
+        // The root keeps its whole style, and Callouts.ts is what carries it into the callout and the overlay
+        // while they are relocated to the body, so nothing of it is written onto them here.
+        StringAssert.Contains(root, "width: 300px");
+        StringAssert.Contains(root, "--bit-PhoneInput-radius: 2rem");
+        StringAssert.Contains(root, "--bit-PhoneInput-item-height: 40px");
+
+        Assert.AreEqual("--bit-PhoneInput-radius: 1rem;", callout);
+        Assert.AreEqual("display:none;opacity: 0.5;", overlay);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldLeaveTheCalloutStyleAloneWithoutStylesCallout()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Style, "width: 300px; --bit-PhoneInput-radius: 2rem");
+        });
+
+        Assert.IsNull(component.Find(".bit-phi-cal").GetAttribute("style"));
+        Assert.IsFalse(component.Find(".bit-phi-ovl").GetAttribute("style")!.Contains("--bit-PhoneInput-"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNameItsRootToTheCallout()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+
+        // The callout is anchored to the field group, but the element whose declarations it goes on inheriting
+        // once it is relocated is the root, which is the last argument of Callouts.toggle.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(component.Find(".bit-phi").Id, toggle.Arguments[^2]);
+        Assert.AreNotEqual(component.Find(".bit-phi-fgp").Id, toggle.Arguments[^1]);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldGroupTheSelectorAndTheNumberUnderTheLabel()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        var group = component.Find(".bit-phi-fgp");
+
+        // Without a visible label there is nothing to name the group with, and an unnamed group says nothing.
+        Assert.IsNull(group.GetAttribute("role"));
+        Assert.IsNull(group.GetAttribute("aria-labelledby"));
+
+        component.Render(parameters => parameters.Add(p => p.Label, "Phone number"));
+
+        group = component.Find(".bit-phi-fgp");
+
+        Assert.AreEqual("group", group.GetAttribute("role"));
+        Assert.AreEqual(component.Find("label.bit-phi-lbl").Id, group.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldDescribeTheNumberWithAFixedCountry()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoDropdown, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.Japan);
+            parameters.Add(p => p.Description, "A hint");
+        });
+
+        var selector = component.Find(".bit-phi-drp");
+        var input = component.Find("input.bit-phi-inp");
+
+        // A fixed country is no control, so the input points at it to have it read out at all.
+        Assert.AreEqual("Country: Japan", selector.QuerySelector(".bit-phi-vhd")!.TextContent);
+        Assert.AreEqual("true", selector.QuerySelector(".bit-phi-tcn")!.GetAttribute("aria-hidden"));
+        Assert.AreEqual(selector.Id, input.GetAttribute("aria-describedby")!.Split(' ')[0]);
+        StringAssert.Contains(input.GetAttribute("aria-describedby"), component.Find(".bit-phi-des").Id);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldWriteItsTitleOnTheNumberInput()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { ["title"] = "own title" });
+        });
+
+        // A title the consumer put on the input is kept while the field has none of its own.
+        Assert.AreEqual("own title", component.Find("input.bit-phi-inp").GetAttribute("title"));
+
+        component.Render(parameters => parameters.Add(p => p.Title, "the tooltip"));
+
+        Assert.AreEqual("the tooltip", component.Find("input.bit-phi-inp").GetAttribute("title"));
+        Assert.AreEqual("the tooltip", component.Find(".bit-phi").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldSetThePreferredCountriesApartFromTheRest()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.PreferredCountries, [BitCountries.Germany, BitCountries.France]);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        var items = component.FindAll("button.bit-phi-itm");
+
+        Assert.AreEqual(1, component.FindAll(".bit-phi-ilp").Count);
+        Assert.IsTrue(items[1].ClassList.Contains("bit-phi-ilp"));
+
+        // A search orders its matches by how close they are, so there is no boundary left to draw.
+        component.Find("input.bit-phi-srch").Input("an");
+
+        Assert.AreEqual(0, component.FindAll(".bit-phi-ilp").Count);
+    }
+
+    [TestMethod,
+        DataRow(BitColorKind.Primary, "bit-phi-bpr"),
+        DataRow(BitColorKind.Secondary, "bit-phi-bse"),
+        DataRow(BitColorKind.Tertiary, "bit-phi-btr"),
+        DataRow(BitColorKind.Transparent, "bit-phi-btn")]
+    public void BitPhoneInputShouldRespectBackground(BitColorKind kind, string cssClass)
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Background, kind);
+        });
+
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains(cssClass));
+    }
+
+    [TestMethod,
+        DataRow(BitColorKind.Primary, "bit-phi-brp"),
+        DataRow(BitColorKind.Secondary, "bit-phi-brs"),
+        DataRow(BitColorKind.Tertiary, "bit-phi-brt"),
+        DataRow(BitColorKind.Transparent, "bit-phi-brn")]
+    public void BitPhoneInputShouldRespectBorder(BitColorKind kind, string cssClass)
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Border, kind);
+        });
+
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains(cssClass));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRenderNoColorKindClassesByDefault()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        var classes = component.Find(".bit-phi").ClassList;
+
+        foreach (var cssClass in new[] { "bit-phi-bpr", "bit-phi-bse", "bit-phi-btr", "bit-phi-btn", "bit-phi-brp", "bit-phi-brs", "bit-phi-brt", "bit-phi-brn" })
+        {
+            Assert.IsFalse(classes.Contains(cssClass), cssClass);
+        }
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        // An unset Color or Size publishes nothing - on the root, nor on the callout that is given the same classes -
+        // so the public --bit-PhoneInput-* variables restyle the default while an explicit value wins over them.
+        var published = new[]
+        {
+            "bit-phi-pri", "bit-phi-sec", "bit-phi-ter", "bit-phi-inf", "bit-phi-suc", "bit-phi-wrn", "bit-phi-swr", "bit-phi-err",
+            "bit-phi-pbg", "bit-phi-sbg", "bit-phi-tbg", "bit-phi-pfg", "bit-phi-sfg", "bit-phi-tfg", "bit-phi-pbr", "bit-phi-sbr", "bit-phi-tbr",
+            "bit-phi-sm", "bit-phi-md", "bit-phi-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-phi"), component.Find(".bit-phi-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
+    }
+
+    [TestMethod,
+        DataRow(null, "Cleared"),
+        DataRow("Nummer gelöscht", "Nummer gelöscht"),
+        DataRow("", "")]
+    public void BitPhoneInputShouldAnnounceAClear(string? announcement, string expected)
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.Germany);
+            parameters.Add(p => p.ClearedAnnouncement, announcement);
+        });
+
+        component.Find("input.bit-phi-inp").Change("1701234567");
+        component.Find("button.bit-phi-cbt").Click();
+
+        // The live region alternates an invisible marker with the text so a repeated one is still announced.
+        Assert.AreEqual(expected, component.Find(".bit-phi-lvr").TextContent.Replace("​", string.Empty));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRenderAClearMadeThroughItsPublicApi()
+    {
+        var cleared = 0;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.Germany);
+            parameters.Add(p => p.OnClear, () => cleared++);
+        });
+
+        component.Find("input.bit-phi-inp").Change("1701234567");
+
+        // Called the way a consumer calls it - from outside any event handler of the component - so the
+        // component has to ask for its own render.
+        component.Instance.ClearAsync().GetAwaiter().GetResult();
+
+        Assert.AreEqual(1, cleared);
+        Assert.IsTrue(string.IsNullOrEmpty(component.Find("input.bit-phi-inp").GetAttribute("value")));
+        StringAssert.StartsWith(component.Find(".bit-phi-lvr").TextContent, "Cleared");
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRenderANumberSetThroughItsPublicApi()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+        });
+
+        component.Instance.SetNumberAsync("+49 170 1234567").GetAwaiter().GetResult();
+
+        Assert.AreEqual("1701234567", component.Find("input.bit-phi-inp").GetAttribute("value"));
+        Assert.AreEqual("Country: Germany", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNotSetANumberOfAnotherCountryOnAOneWayBoundCountry()
+    {
+        string? number = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Country, BitCountries.UnitedStates);
+            parameters.Add(p => p.NumberChanged, n => number = n);
+        });
+
+        component.Instance.SetNumberAsync("+49 170 1234567").GetAwaiter().GetResult();
+
+        // The country cannot move, so the local part parsed for Germany must not end up under the United States.
+        Assert.AreEqual("US", component.Instance.Country?.Iso2);
+        Assert.IsNull(number);
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldKeepTheTextAidsOfTheKeyboardOffTheSearchBox()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+
+        // A country name is not prose: a spell checker would underline half of them and an autocorrect
+        // would rewrite them while they are being typed.
+        var search = component.Find("input.bit-phi-srch");
+        Assert.AreEqual("false", search.GetAttribute("spellcheck"));
+        Assert.AreEqual("off", search.GetAttribute("autocorrect"));
+        Assert.AreEqual("off", search.GetAttribute("autocapitalize"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRepeatItsColorOnTheCallout()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Color, BitColor.Success);
+        });
+
+        // The callout is rendered outside the root, and its keyboard cue takes the focus color of the role.
+        Assert.IsTrue(component.Find(".bit-phi-cal").ClassList.Contains("bit-phi-suc"));
+    }
+
+    [TestMethod]
     public void BitCountryShouldExposeEveryDialCodeItAnswersTo()
     {
         CollectionAssert.AreEqual(new[] { "1809", "1829", "1849" }, BitCountries.DominicanRepublic.DigitsCodes);
@@ -2190,5 +3202,340 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.AreEqual(0, BitCountries.Canada.Priority);
         Assert.AreEqual(1, BitCountries.Russia.Priority);
         Assert.AreEqual(0, BitCountries.Kazakhstan.Priority);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldKeepASplattedAriaOwnsWhileClosed()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitPhoneInput>(0);
+            builder.AddAttribute(1, "aria-owns", "page-listbox");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-phi");
+
+        Assert.AreEqual("page-listbox", root.GetAttribute("aria-owns"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRespectLabelTemplate()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Label, "ignored");
+            parameters.Add(p => p.Responsive, true);
+            parameters.Add(p => p.LabelTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-label");
+                builder.AddContent(2, "Mobile");
+                builder.CloseElement();
+            }));
+        });
+
+        // The template takes the label's place in the field - and the field's label element still names the input
+        // and the group - and heads the responsive panel as well.
+        var label = component.Find("label.bit-phi-lbl");
+        Assert.IsNotNull(label.QuerySelector(".custom-label"));
+        Assert.IsFalse(label.TextContent.Contains("ignored"));
+        Assert.AreEqual(label.Id, component.Find("input.bit-phi-inp").GetAttribute("aria-labelledby"));
+        Assert.AreEqual(label.Id, component.Find(".bit-phi-fgp").GetAttribute("aria-labelledby"));
+        Assert.IsNotNull(component.Find(".bit-phi-rlc .custom-label"));
+        Assert.AreEqual(0, component.FindAll(".bit-phi-rlb").Count);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRespectTheSearchBoxTexts()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        var search = component.Find("input.bit-phi-srch");
+        Assert.AreEqual("Search", search.GetAttribute("placeholder"));
+        Assert.AreEqual("Search countries", search.GetAttribute("aria-label"));
+
+        // A placeholder of its own also names the box, until a name of its own is given.
+        component.Render(parameters => parameters.Add(p => p.SearchBoxPlaceholder, "Land suchen"));
+
+        search = component.Find("input.bit-phi-srch");
+        Assert.AreEqual("Land suchen", search.GetAttribute("placeholder"));
+        Assert.AreEqual("Land suchen", search.GetAttribute("aria-label"));
+
+        component.Render(parameters => parameters.Add(p => p.SearchBoxAriaLabel, "Länder durchsuchen"));
+
+        search = component.Find("input.bit-phi-srch");
+        Assert.AreEqual("Land suchen", search.GetAttribute("placeholder"));
+        Assert.AreEqual("Länder durchsuchen", search.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRespectTheIconNames()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.Responsive, true);
+            parameters.Add(p => p.Number, "5550123");
+            parameters.Add(p => p.NumberChanged, (string? _) => { });
+        });
+
+        // The library's own Cancel glyph on both buttons by default.
+        Assert.IsTrue(component.Find("button.bit-phi-cbt i").ClassList.Contains("bit-icon--Cancel"));
+        Assert.IsTrue(component.Find("button.bit-phi-cls i").ClassList.Contains("bit-icon--Cancel"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ClearButtonIconName, "Delete");
+            parameters.Add(p => p.ResponsiveCloseIconName, "ChromeClose");
+        });
+
+        var clear = component.Find("button.bit-phi-cbt i");
+        var close = component.Find("button.bit-phi-cls i");
+        Assert.IsTrue(clear.ClassList.Contains("bit-icon"));
+        Assert.IsTrue(clear.ClassList.Contains("bit-icon--Delete"));
+        Assert.IsTrue(close.ClassList.Contains("bit-icon--ChromeClose"));
+        Assert.AreEqual("true", clear.GetAttribute("aria-hidden"));
+        Assert.AreEqual("true", close.GetAttribute("aria-hidden"));
+
+        // An icon given whole wins over a name.
+        component.Render(parameters => parameters.Add(p => p.ClearButtonIcon, BitIconInfo.Css("fa-solid fa-xmark")));
+
+        clear = component.Find("button.bit-phi-cbt i");
+        Assert.IsTrue(clear.ClassList.Contains("fa-xmark"));
+        Assert.IsFalse(clear.ClassList.Contains("bit-icon--Delete"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldHandDropDirectionAndMaxHeightToTheCallout()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+
+        // Both directions and no cap of its own by default: the viewport alone decides the height.
+        var toggle = LastToggle();
+        Assert.AreEqual(BitDropDirection.TopAndBottom, toggle.Arguments[8]);
+        Assert.AreEqual(0, toggle.Arguments[17]);
+
+        component.Find(".bit-phi-srch").KeyDown("Escape");
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.DropDirection, BitDropDirection.TopAndBottom);
+            parameters.Add(p => p.MaxHeight, 240);
+        });
+        component.Find("button.bit-phi-drp").Click();
+
+        toggle = LastToggle();
+        Assert.AreEqual(true, toggle.Arguments[6]);
+        Assert.AreEqual(BitDropDirection.TopAndBottom, toggle.Arguments[8]);
+        Assert.AreEqual(240, toggle.Arguments[17]);
+
+        // A cap of nothing is no cap.
+        component.Find(".bit-phi-srch").KeyDown("Escape");
+        component.Render(parameters => parameters.Add(p => p.MaxHeight, 0));
+        component.Find("button.bit-phi-drp").Click();
+
+        Assert.AreEqual(0, LastToggle().Arguments[17]);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldApplyTheBaseParametersToItsRoot()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Id, "phone-1");
+            parameters.Add(p => p.Class, "host-class");
+            parameters.Add(p => p.Style, "margin:1px");
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { ["data-host"] = "yes" });
+        });
+
+        var root = component.Find(".bit-phi");
+
+        Assert.AreEqual("phone-1", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("host-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.AreEqual("yes", root.GetAttribute("data-host"));
+        // The id names the root alone: the parts keep ids of their own for the aria relations between them.
+        Assert.AreNotEqual("phone-1", component.Find("input.bit-phi-inp").Id);
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, ""),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")]
+    public void BitPhoneInputShouldRespectVisibility(BitVisibility visibility, string expectedStyle)
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        string style = component.Find(".bit-phi").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle.Length == 0)
+        {
+            Assert.IsFalse(style.Contains("visibility:") || style.Contains("display:"), style);
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldPairDisabledWithAriaDisabledOnEveryControl()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.Number, "5550123");
+            parameters.Add(p => p.NumberChanged, (string? _) => { });
+        });
+
+        foreach (var selector in new[] { "button.bit-phi-drp", "input.bit-phi-inp", "button.bit-phi-cbt" })
+        {
+            var control = component.Find(selector);
+            Assert.IsFalse(control.HasAttribute("disabled"), selector);
+            Assert.IsNull(control.GetAttribute("aria-disabled"), selector);
+        }
+        Assert.IsFalse(component.Find(".bit-phi").ClassList.Contains("bit-dis"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        // Both attributes on every native control, so :disabled and [aria-disabled="true"] find the same elements.
+        foreach (var selector in new[] { "button.bit-phi-drp", "input.bit-phi-inp", "button.bit-phi-cbt" })
+        {
+            var control = component.Find(selector);
+            Assert.IsTrue(control.HasAttribute("disabled"), selector);
+            Assert.AreEqual("true", control.GetAttribute("aria-disabled"), selector);
+        }
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-dis"));
+
+        // A read-only field keeps its controls enabled; only the clear button, which would change the value, is not.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Disabled, false);
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        Assert.IsFalse(component.Find("input.bit-phi-inp").HasAttribute("disabled"));
+        Assert.IsTrue(component.Find("button.bit-phi-cbt").HasAttribute("disabled"));
+        Assert.AreEqual("true", component.Find("button.bit-phi-cbt").GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldDropThePagesActivationHandlersWhileDisabled()
+    {
+        // The root takes DisabledAwareHtmlAttributes: a click handler the page splatted on it is dropped while the
+        // field is disabled and runs again once it is not.
+        var clicks = 0;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object>
+            {
+                ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++),
+            });
+        });
+
+        Assert.IsFalse(component.Find(".bit-phi").HasAttribute("blazor:onclick"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
+
+        component.Find(".bit-phi").Click();
+        Assert.AreEqual(1, clicks);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldValidateInsideAnEditForm()
+    {
+        var model = new ValidationModel();
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(Context.Services);
+        Expression<Func<string?>> expression = () => model.Phone;
+
+        var component = RenderComponent<CascadingValue<EditContext>>(parameters =>
+        {
+            parameters.Add(p => p.Value, editContext);
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitPhoneInput>(0);
+                builder.AddAttribute(1, nameof(BitPhoneInput.DefaultCountry), BitCountries.Germany);
+                builder.AddAttribute(2, nameof(BitPhoneInput.Value), model.Phone);
+                builder.AddAttribute(3, nameof(BitPhoneInput.ValueChanged), EventCallback.Factory.Create<string?>(this, v => model.Phone = v));
+                builder.AddAttribute(4, nameof(BitPhoneInput.ValueExpression), expression);
+                builder.CloseComponent();
+            }));
+        });
+
+        Assert.IsNull(component.Find("input.bit-phi-inp").GetAttribute("aria-invalid"));
+
+        component.InvokeAsync(() => editContext.Validate());
+
+        // The required value is missing: the field is marked invalid, on its root and on the number input.
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual("true", component.Find("input.bit-phi-inp").GetAttribute("aria-invalid"));
+            Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-inv"));
+        });
+
+        // A number that does not match the pattern is still invalid, as the full E.164 value is what is validated.
+        component.Find("input.bit-phi-inp").Change("30");
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual("+4930", model.Phone);
+            Assert.AreEqual("true", component.Find("input.bit-phi-inp").GetAttribute("aria-invalid"));
+        });
+
+        component.Find("input.bit-phi-inp").Change("30123456");
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual("+4930123456", model.Phone);
+            Assert.IsNull(component.Find("input.bit-phi-inp").GetAttribute("aria-invalid"));
+            Assert.IsFalse(component.Find(".bit-phi").ClassList.Contains("bit-inv"));
+        });
+    }
+
+    [TestMethod]
+    public async Task BitPhoneInputShouldPrerenderWithoutJavaScript()
+    {
+        // A static render has no browser to wire the keys or place the callout: the field renders its value, its
+        // country and its hidden fields from C# alone, and asks nothing of JavaScript.
+        var html = await Prerenderer.RenderAsync<BitPhoneInput>(new Dictionary<string, object?>
+        {
+            [nameof(BitPhoneInput.Label)] = "Phone",
+            [nameof(BitPhoneInput.Name)] = "phone",
+            [nameof(BitPhoneInput.DefaultCountry)] = BitCountries.Germany,
+            [nameof(BitPhoneInput.Value)] = "+4930123456",
+        });
+
+        var document = new HtmlParser().ParseDocument(html);
+
+        Assert.AreEqual("30123456", document.QuerySelector("input.bit-phi-inp")!.GetAttribute("value"));
+        Assert.AreEqual("+49", document.QuerySelector(".bit-phi-cod")!.TextContent.Trim());
+        Assert.AreEqual("Phone", document.QuerySelector("label.bit-phi-lbl")!.TextContent.Trim());
+        Assert.AreEqual("+4930123456", document.QuerySelector("input[type=hidden][name=phone]")!.GetAttribute("value"));
+        // The list is not in the document until it is opened.
+        Assert.AreEqual(0, document.QuerySelectorAll("button.bit-phi-itm").Length);
+    }
+
+    private class ValidationModel
+    {
+        [Required]
+        [RegularExpression(@"^\+[0-9]{8,15}$")]
+        public string? Phone { get; set; }
+    }
+
+    // The keys the field's listener was last handed (its sets are the ones that carry Home, which the search box leaves
+    // to its caret), and the ones the search box's was.
+    private string[] LastPreventKeys(bool field)
+    {
+        return (string[])Context.JSInterop.Invocations
+                                .Last(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys" && ((string[])i.Arguments[1]!).Contains("Home") == field)
+                                .Arguments[1]!;
     }
 }

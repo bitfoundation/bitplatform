@@ -1,0 +1,33 @@
+﻿@page "/Error"
+@layout MainLayout
+@using System.Diagnostics
+
+<PageTitle>Error · BevTools</PageTitle>
+
+<div class="bb-error">
+    <h1>Error</h1>
+    <p>An error occurred while processing your request.</p>
+
+    @if (ShowRequestId)
+    {
+        <p><strong>Request ID:</strong> <code>@RequestId</code></p>
+    }
+
+    <p class="bb-error-hint">
+        Swapping to the <strong>Development</strong> environment displays more detailed information about the error.
+        The Development environment shouldn't be enabled for deployed applications: it can show sensitive information
+        from exceptions to end users. For local debugging, set the <strong>ASPNETCORE_ENVIRONMENT</strong> environment
+        variable to <strong>Development</strong> and restart the app.
+    </p>
+</div>
+
+@code{
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private string? RequestId { get; set; }
+    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+
+    protected override void OnInitialized() =>
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

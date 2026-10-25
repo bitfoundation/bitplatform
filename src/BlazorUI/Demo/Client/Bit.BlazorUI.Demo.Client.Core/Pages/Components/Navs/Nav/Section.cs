@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Nav;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Nav;
 
 public class Section
 {
@@ -6,11 +6,18 @@ public class Section
     public string? ImageName { get; set; }
     public BitIconInfo? Icon { get; set; }
     public string? Url { get; set; }
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
     public bool IsExpanded { get; set; }
     public bool IsDivider { get; set; }
     public List<Section> Links { get; set; } = [];
     public string? Comment { get; set; }
+    public int? Count { get; set; }
+    public string? Status { get; set; }
+    public string? StatusLabel { get; set; }
+    public bool NeedsAttention { get; set; }
+    public string? Shortcut { get; set; }
+    public string? OpenLabel { get; set; }
+    public string? CloseLabel { get; set; }
     public BitNavMatch? UrlMatch { get; set; }
     public IEnumerable<string>? OtherUrls { get; set; }
     public string? Style { get; set; }

@@ -39,16 +39,23 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: 24
       
     - name: Install wasm and maui
       run:  cd src && dotnet workload install maui-android wasm-tools wasm-tools-net9 wasm-tools-net8
 
+    # The demos install Bit.Minifier as a package at the version being released, which nuget.org only has once this
+    # release is published, so restore takes it from a package packed from this very source instead.
+    - name: Pack Minifier
+      run: |
+        dotnet build src/Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj --output ${{ github.workspace }}/packages --configuration Release
+
     - name: InstallNodejsDependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Bit.CI.Release.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+      run: dotnet build src/Bit.CI.Release.slnx -t:InstallNodejsDependencies -m:1 -f net10.0 -p:RestoreAdditionalProjectSources=${{ github.workspace }}/packages
 
     - name: dotnet build
-      run: dotnet build src/Bit.CI.Release.slnx -c Release
+      run: dotnet build src/Bit.CI.Release.slnx -c Release -p:RestoreAdditionalProjectSources=${{ github.workspace }}/packages

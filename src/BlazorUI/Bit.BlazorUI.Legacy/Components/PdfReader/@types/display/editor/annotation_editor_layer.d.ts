@@ -1,4 +1,4 @@
-declare type AnnotationEditorLayerOptions = {
+﻿declare type AnnotationEditorLayerOptions = {
     mode: Object;
     div: HTMLDivElement;
     structTreeLayer: StructTreeLayerBuilder;

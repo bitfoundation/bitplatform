@@ -1,0 +1,122 @@
+﻿@page "/e2e/dropdown/keyboard"
+
+@* The keyboard of BitDropdown: opening keys, walking the list with wrap and NoWrapNavigation, Home / End / PageUp /
+   PageDown, the type-ahead, selecting with Enter and Space, Escape / Alt+ArrowUp / Tab, Alt+ArrowDown, Ctrl+A in
+   multi select mode, and Escape inside a BitDialog closing the list (or dropping the term, or clearing) before the
+   dialog. *@
+
+<PageTitle>BitDropdown keyboard E2E</PageTitle>
+
+<h1>BitDropdown keyboard</h1>
+
+<E2ESection Id="single" Title="Single select">
+    <button id="before-kb">Before</button>
+    <BitDropdown Id="dd-kb"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Keyboard"
+                 Items="@L("kb")"
+                 @bind-Value="_kbValue"
+                 OnOpen="() => _kbOpenCount++"
+                 OnClose="() => _kbCloseCount++" />
+    <button id="after-kb">After</button>
+    <p>
+        Value: <span id="kb-value">@_kbValue</span> |
+        OnOpen: <span id="kb-open-count">@_kbOpenCount</span> |
+        OnClose: <span id="kb-close-count">@_kbCloseCount</span>
+    </p>
+    <BitDropdown Id="dd-kb-selected"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Opens on its selection"
+                 Items="@L("kb-selected")"
+                 DefaultValue="@("v-bro")" />
+    <BitDropdown Id="dd-kb-nowrap"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="No wrap"
+                 NoWrapNavigation
+                 Items="@L("kb-nowrap")"
+                 DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-kb-long"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Long list"
+                 Items="_long"
+                 DefaultValue="@string.Empty" />
+</E2ESection>
+
+<E2ESection Id="multi" Title="Multi select">
+    <BitDropdown Id="dd-kb-multi"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Keyboard multi"
+                 MultiSelect
+                 Items="@L("kb-multi")"
+                 @bind-Values="_kbMultiValues" />
+    <p>Values: <span id="kb-multi-values">@string.Join(',', _kbMultiValues ?? [])</span></p>
+</E2ESection>
+
+<E2ESection Id="dialog" Title="Escape inside a BitDialog">
+    <button id="btn-open-dialog" @onclick="() => _dialogOpen = true">Open the dialog</button>
+    <p>Dialog: <span id="dialog-open">@_dialogOpen</span></p>
+    <BitDialog @bind-IsOpen="_dialogOpen" Title="Dropdowns in a dialog" ShowOkButton="false" ShowCancelButton="false">
+        <Body>
+            <BitDropdown Id="dd-dlg"
+                         TItem="BitDropdownItem<string>" TValue="string"
+                         Label="In a dialog"
+                         Items="@L("dlg")"
+                         @bind-Value="_dlgValue" />
+            <BitDropdown Id="dd-dlg-combo"
+                         TItem="BitDropdownItem<string>" TValue="string"
+                         Label="Combo in a dialog"
+                         Combo
+                         Items="@L("dlg-combo")"
+                         DefaultValue="@string.Empty" />
+            <BitDropdown Id="dd-dlg-clear"
+                         TItem="BitDropdownItem<string>" TValue="string"
+                         Label="Clears in a dialog"
+                         ClearOnEscape
+                         Items="@L("dlg-clear")"
+                         @bind-Value="_dlgClearValue" />
+        </Body>
+    </BitDialog>
+    <p>Value: <span id="dlg-value">@_dlgValue</span> | Cleared value: <span id="dlg-clear-value">@_dlgClearValue</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly Dictionary<string, List<BitDropdownItem<string>>> _lists = [];
+
+    private List<BitDropdownItem<string>> L(string key)
+    {
+        if (_lists.TryGetValue(key, out var list) is false)
+        {
+            _lists[key] = list = Basic();
+        }
+
+        return list;
+    }
+
+    private static List<BitDropdownItem<string>> Basic() =>
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { Text = "Orange", Value = "f-ora", IsDisabled = true },
+        new() { Text = "Grape", Value = "f-gra" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro" },
+        new() { Text = "Carrot", Value = "v-car" },
+        new() { Text = "Lettuce", Value = "v-let" }
+    ];
+
+    private readonly List<BitDropdownItem<string>> _long =
+        Enumerable.Range(1, 30).Select(i => new BitDropdownItem<string> { Text = $"Item {i:00}", Value = $"i{i}" }).ToList();
+
+    private string? _kbValue;
+    private int _kbOpenCount;
+    private int _kbCloseCount;
+    private IEnumerable<string?>? _kbMultiValues = [];
+
+    private bool _dialogOpen;
+    private string? _dlgValue;
+    private string? _dlgClearValue = "f-gra";
+}

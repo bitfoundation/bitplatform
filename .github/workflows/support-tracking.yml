@@ -1,0 +1,72 @@
+# Adds an issue opened by someone who is not one of the repo's maintainers to the Support Tracking project
+# with the status Investigating, and lets its author know we are on it.
+# SUPPORT_TRACKING_PROJECT_TOKEN must be a token with the `project` scope, since GITHUB_TOKEN cannot write to organization projects.
+
+name: Support tracking
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+
+  track:
+    name: track the issue
+    if: >-
+      github.event.issue.user.type != 'Bot' &&
+      !contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association)
+    runs-on: ubuntu-24.04
+
+    steps:
+
+      - name: Add the issue to the Support Tracking project as Investigating
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.SUPPORT_TRACKING_PROJECT_TOKEN }}
+          script: |
+            const { organization } = await github.graphql(`
+              query ($org: String!) {
+                organization(login: $org) {
+                  projectsV2(first: 100, query: "Support Tracking") {
+                    nodes {
+                      id
+                      title
+                      field(name: "Status") {
+                        ... on ProjectV2SingleSelectField { id options { id name } }
+                      }
+                    }
+                  }
+                }
+              }`, { org: context.repo.owner });
+
+            const project = organization.projectsV2.nodes.find(p => p.title.toLowerCase() === 'support tracking');
+            if (!project) throw new Error('The Support Tracking project was not found.');
+
+            const investigating = project.field?.options.find(o => o.name.toLowerCase() === 'investigating');
+            if (!investigating) throw new Error('The Support Tracking project has no Investigating status.');
+
+            const { addProjectV2ItemById } = await github.graphql(`
+              mutation ($projectId: ID!, $contentId: ID!) {
+                addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) { item { id } }
+              }`, { projectId: project.id, contentId: context.payload.issue.node_id });
+
+            await github.graphql(`
+              mutation ($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: { singleSelectOptionId: $optionId }
+                }) { projectV2Item { id } }
+              }`, { projectId: project.id, itemId: addProjectV2ItemById.item.id, fieldId: project.field.id, optionId: investigating.id });
+
+      - name: Let the issue author know we are investigating
+        if: ${{ !cancelled() }}
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: context.issue.number,
+              body: 'Thank you for contacting us.\nWe are investigating this issue and will update you on the result soon.'
+            });

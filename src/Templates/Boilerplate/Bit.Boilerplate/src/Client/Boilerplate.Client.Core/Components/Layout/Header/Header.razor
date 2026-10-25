@@ -19,7 +19,8 @@
                     <BitButton Variant="BitVariant.Text"
                                IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)"
                                OnClick="GoBack"
-                               Title="@Localizer[nameof(AppStrings.Back)]" />
+                               Title="@Localizer[nameof(AppStrings.Back)]"
+                               AriaLabel="@Localizer[nameof(AppStrings.Back)]" />
                 }
                 <BitText Typography="BitTypography.H5">
                     @pageTitle

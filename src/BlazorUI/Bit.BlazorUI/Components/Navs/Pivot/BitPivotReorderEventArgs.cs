@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The details of a reorder requested on the header of a <see cref="BitPivot"/>, either by dragging a

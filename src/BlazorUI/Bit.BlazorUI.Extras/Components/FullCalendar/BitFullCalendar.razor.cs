@@ -1,9 +1,35 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
-public partial class BitFullCalendar
+public partial class BitFullCalendar : BitComponentBase
 {
+    /// <summary>
+    /// Gets or sets the cascading parameters for the calendar component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to the calendars of an
+    /// application through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitFullCalendarParams.ParamName)]
+    public BitFullCalendarParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
+    /// Optional template for the content of an event row in the agenda view and in the event lists ("+N more" and a
+    /// year-view day). When provided, it replaces the default avatar, title, description and time; the row stays the
+    /// button that opens the event, so its text is the row's accessible name.
+    /// </summary>
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? AgendaEventTemplate { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the calendar.
+    /// </summary>
+    [Parameter, ResetClassBuilder] public BitFullCalendarClassStyles? Classes { get; set; }
+
     /// <summary>
     /// Culture for the calendar. Accepts any CultureInfo, e.g. new CultureInfo("fa-IR").
     /// NOTE: do NOT use this parameter when the component is rendered with
@@ -84,6 +110,21 @@ public partial class BitFullCalendar
     [Parameter] public List<BitFullCalendarEvent>? Events { get; set; }
 
     /// <summary>
+    /// Optional extra content for the built-in event details dialog, under the built-in rows - a location, a meeting
+    /// link, whatever the application keeps in <see cref="BitFullCalendarEvent.Data"/>.
+    /// </summary>
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? EventDetailsTemplate { get; set; }
+
+    /// <summary>
+    /// Optional extra fields for the built-in add/edit dialog, under the built-in ones. The template receives the
+    /// draft being edited, and the draft's <see cref="BitFullCalendarEvent.Data"/> is what the save commits - so the
+    /// built-in fields, the repeat rule, the validation and the occurrence/series choice all keep working. Assign the
+    /// draft a new <c>Data</c> rather than changing the object it starts with (which the event still holds), so Cancel
+    /// leaves the event as it was.
+    /// </summary>
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? EventEditorTemplate { get; set; }
+
+    /// <summary>
     /// When <c>true</c>, the built-in color and attendee filter dropdowns are hidden from the calendar header.
     /// Consumers can provide their own external filter UI and pass pre-filtered events to the calendar.
     /// </summary>
@@ -102,6 +143,13 @@ public partial class BitFullCalendar
     /// Consumers can still drive settings programmatically through the <see cref="Settings"/> object.
     /// </summary>
     [Parameter] public bool HideSettings { get; set; }
+
+    /// <summary>
+    /// When <c>true</c>, an indeterminate progress bar runs along the top of the calendar body and the body is
+    /// marked busy for assistive technology. Set it while the events of a newly reported range (see
+    /// <see cref="OnDateChange"/>) are being fetched; the calendar stays fully interactive meanwhile.
+    /// </summary>
+    [Parameter] public bool IsLoading { get; set; }
 
     /// <summary>
     /// The latest date the calendar can navigate to and display. Navigation past it is refused, the
@@ -131,6 +179,13 @@ public partial class BitFullCalendar
     [Parameter, TwoWayBound] public BitFullCalendarMode Mode { get; set; } = BitFullCalendarMode.Event;
 
     /// <summary>
+    /// Optional template for extra content in each day of the month grid, rendered under the day number and above the
+    /// events - a holiday, a price, an availability count. It receives the cell (its date, its day number in the active
+    /// calendar system, and whether it belongs to the month being shown). Blank leading and trailing days render none.
+    /// </summary>
+    [Parameter] public RenderFragment<BitFullCalendarCell>? MonthCellTemplate { get; set; }
+
+    /// <summary>
     /// Optional template for customizing event rendering in the month view.
     /// When provided, replaces the default event badge content inside month grid cells.
     /// </summary>
@@ -152,9 +207,23 @@ public partial class BitFullCalendar
     [Parameter] public EventCallback<BitFullCalendarChangeEventArgs> OnChange { get; set; }
 
     /// <summary>
+    /// Raised before a user-driven add, edit, or delete is committed - from a dialog, a drag, a resize, or their
+    /// keyboard equivalents - after the built-in rules (date window, business hours, overlap) have passed it. Set
+    /// <see cref="BitFullCalendarChangingEventArgs.Cancel"/> to refuse it: the event goes back to where it was, no
+    /// <see cref="OnChange"/> is raised, and the add/edit dialog stays open with what the user typed. Use it for the
+    /// rules only your application knows (no bookings in the past, a room someone else holds).
+    /// </summary>
+    [Parameter] public EventCallback<BitFullCalendarChangingEventArgs> OnChanging { get; set; }
+
+    /// <summary>
     /// Raised when the visible date range changes - on first render, and afterwards whenever the user
     /// navigates with the prev/next/today buttons, switches views, or the grid shape changes. The
     /// callback receives the inclusive start and end dates of the new range together with the active view.
+    /// A prerendered or statically rendered calendar has no first render in the browser, so there the first
+    /// range is raised as the calendar initializes, and awaited, so the events fetched for it are in the HTML
+    /// sent before the page is interactive; a handler failing there (calling JavaScript, fetching a URL meant for
+    /// the browser) is let fail quietly, and the
+    /// interactive render that replaces a prerendered calendar raises it again, as it initializes anew.
     /// </summary>
     [Parameter] public EventCallback<BitFullCalendarDateChangeEventArgs> OnDateChange { get; set; }
 
@@ -173,12 +242,24 @@ public partial class BitFullCalendar
     [Parameter] public EventCallback<BitFullCalendarMode> OnModeChange { get; set; }
 
     /// <summary>
-    /// Raised when the calendar refuses a user-driven change: a drop or resize that would overlap
-    /// another event while <see cref="BitFullCalendarSettings.AllowEventOverlap"/> is <c>false</c>,
-    /// one that would land outside the <see cref="MinDate"/>/<see cref="MaxDate"/> window, or one
-    /// targeting an event marked <see cref="BitFullCalendarEvent.IsReadOnly"/>.
+    /// Raised when the calendar refuses a user-driven change, whatever it came from - a drop, a resize, their
+    /// keyboard equivalents or a save of the built-in add/edit dialog: one that would overlap another event while
+    /// <see cref="BitFullCalendarSettings.AllowEventOverlap"/> is <c>false</c>, run into an event marked
+    /// <see cref="BitFullCalendarEvent.IsBlocking"/>, land outside the <see cref="MinDate"/>/<see cref="MaxDate"/>
+    /// window or outside the business hours while <see cref="BitFullCalendarSettings.RestrictToBusinessHours"/> is
+    /// <c>true</c>, or change what is read-only (the calendar, its edit permissions, or an event marked
+    /// <see cref="BitFullCalendarEvent.IsReadOnly"/>). A drag or a resize also shows the reason as a notice in the
+    /// calendar, a dialog's save next to its actions. A change <see cref="OnChanging"/> cancels is not reported here,
+    /// since the app refused it itself.
     /// </summary>
     [Parameter] public EventCallback<BitFullCalendarChangeRefusal> OnRefused { get; set; }
+
+    /// <summary>
+    /// Raised after the user changes a preference from the built-in settings panel, once the new values
+    /// have been written back onto the <see cref="Settings"/> instance (which the callback receives). Use it
+    /// to re-render anything else that reads that instance, or to persist the user's preferences.
+    /// </summary>
+    [Parameter] public EventCallback<BitFullCalendarSettings> OnSettingsChange { get; set; }
 
     /// <summary>
     /// Raised when the active view changes - for example when the user selects a view tab or
@@ -193,10 +274,17 @@ public partial class BitFullCalendar
     /// <para>
     /// Everything that does not modify events keeps working - date navigation, view and mode
     /// switching, filtering, the settings panel, and opening an event to read its details.
-    /// Setting <c>IsEnabled</c> to <c>false</c> has the same effect on the event-editing surface.
+    /// Setting <c>Disabled</c> to <c>true</c> has the same effect on the event-editing surface.
     /// </para>
     /// </summary>
     [Parameter] public bool ReadOnly { get; set; }
+
+    /// <summary>
+    /// Optional template for the header cell of a resource row in the timeline view (the sticky gutter on the
+    /// leading side). When provided, it replaces the default title and subtitle - an avatar, a capacity, a status.
+    /// The "Unassigned" row keeps its built-in label.
+    /// </summary>
+    [Parameter] public RenderFragment<BitFullCalendarResource>? ResourceTemplate { get; set; }
 
     /// <summary>
     /// Resources displayed as rows in the resource timeline view. When <c>null</c> or empty,
@@ -215,11 +303,25 @@ public partial class BitFullCalendar
     [Parameter] public BitFullCalendarSettings Settings { get; set; } = new();
 
     /// <summary>
+    /// Custom CSS styles for different parts of the calendar.
+    /// </summary>
+    [Parameter, ResetStyleBuilder] public BitFullCalendarClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// Localized strings for calendar UI labels, buttons, dialogs, filters, and accessibility text.
     /// Defaults to English; override individual properties on a <see cref="BitFullCalendarTexts"/>
     /// instance to localize the component without replacing built-in dialogs.
     /// </summary>
     [Parameter] public BitFullCalendarTexts Texts { get; set; } = new();
+
+    /// <summary>
+    /// The clock the calendar reads "now" and "today" from: the today highlight, the current-time line, the
+    /// "Today" button, the "Happening now" panel and the date it opens on. Defaults to
+    /// <see cref="System.TimeProvider.System"/>, which on Blazor Server is the SERVER's clock and time zone - hand
+    /// it a provider whose <see cref="System.TimeProvider.LocalTimeZone"/> is the user's to show their today, or a
+    /// fake one to pin the date in tests and screenshots.
+    /// </summary>
+    [Parameter] public TimeProvider? TimeProvider { get; set; }
 
     /// <summary>
     /// Optional template for customizing event rendering in the resource timeline view.
@@ -265,9 +367,13 @@ public partial class BitFullCalendar
     /// </summary>
     public BitFullCalendarState State { get; } = new();
 
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
     private BitFullCalendarChangeNotifier _changeNotifier = default!;
     private BitFullCalendarColorScheme _colorScheme = new(null);
-    private BitFcCalendarToast? _toast;
+    private BitFcToast? _toast;
+    private bool _rootSetUp;
+    private bool _readAutoDirection;
     private SettingsSnapshot? _appliedSettings;
     private bool _defaultViewApplied;
     private bool _defaultModeApplied;
@@ -279,9 +385,10 @@ public partial class BitFullCalendar
     private BitFullCalendarView _lastView;
     private BitFullCalendarMode _lastMode;
     private DateTime _lastDate;
-    // True while OnParametersSet pushes parameter/default values into the state. Suppresses the
-    // OnViewChange/OnModeChange callbacks for those echoes while still keeping the bound
-    // View/Mode/Date parameters in sync with the resulting state.
+    // True while OnParametersSet pushes parameter/default values into the state. HandleStateChanged
+    // does nothing at all for the change announced in that window - no settings sync, no
+    // reconciliation, no OnViewChange/OnModeChange - since the bound View/Mode/Date have not all
+    // reached the state yet; OnParametersSetAsync reconciles them once, silently, after it.
     private bool _applyingParameters;
     // While applying parameters, several state setters (SetCulture, SetMode/SetView, SetSelectedDate)
     // can each emit a date-range change in one pass. We coalesce them here and raise only the final
@@ -294,9 +401,16 @@ public partial class BitFullCalendar
     /// <summary>
     /// The direction the calendar renders in: the explicit <c>Dir</c> parameter when supplied,
     /// otherwise the direction of the active culture, so a right-to-left culture flips the layout
-    /// without the consumer having to say so twice.
+    /// without the consumer having to say so twice. Auto is left to the browser, and read back from it
+    /// (see <see cref="BitFullCalendarState.SetAutoDirection"/>).
     /// </summary>
-    private BitDir ResolvedDir => Dir ?? (State.IsRtl ? BitDir.Rtl : BitDir.Ltr);
+    private BitDir ResolvedDir => Dir is BitDir.Auto ? BitDir.Auto : State.IsRtl ? BitDir.Rtl : BitDir.Ltr;
+
+    // A named calendar is a region of the page a screen reader can jump to; an unnamed one stays a plain
+    // container, since a region without a name is not exposed as a landmark anyway.
+    private string? _Role => AriaLabel.HasValue()
+                             || GetSplattedAttribute("aria-label").HasValue()
+                             || GetSplattedAttribute("aria-labelledby").HasValue() ? "region" : null;
 
     private BitCascadingValueList BuildCascadingValues() => new()
     {
@@ -305,11 +419,22 @@ public partial class BitFullCalendar
         { _changeNotifier },
         { _colorScheme },
         { Settings },
+        { new BitFcParts(Classes, Styles, _Id, HideHeader, ResourceTemplate, MonthCellTemplate, AgendaEventTemplate, EventDetailsTemplate, EventEditorTemplate) },
         { HideFilters, "HideFilters" },
         { HideSettings, "HideSettings" },
         { OnAddClick, "OnAddClick" },
         { OnEventClick, "OnEventClick" },
     };
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
     private CultureInfo ResolveCulture()
     {
@@ -330,17 +455,24 @@ public partial class BitFullCalendar
 
     protected override void OnInitialized()
     {
+        // The cascaded defaults are applied before anything below reads the parameters they fill in: the
+        // culture, the date bounds and the settings the state is initialized from.
+        CascadingParameters?.UpdateParameters(this);
+
         // Settings/Texts have default instances but can be set to null when bound externally.
         // Normalize before any downstream use (ApplySettings, cascaded Texts) to avoid NREs.
         Settings ??= new();
         Texts ??= new();
 
+        State.SetTimeProvider(TimeProvider);
         State.Initialize(Events ?? [], ResolveCulture());
+        State.SetDirection(Dir);
         State.SetDateBounds(MinDate, MaxDate);
         ApplySettings();
         _changeNotifier = new BitFullCalendarChangeNotifier(State, args => OnChange.InvokeAsync(args))
         {
-            RefusalReporter = ReportRefusal
+            RefusalReporter = ReportRefusal,
+            ApprovalHandler = ApproveChangeAsync
         };
         State.OnStateChanged += HandleStateChanged;
         State.OnDateRangeChanged += HandleDateRangeChanged;
@@ -356,26 +488,40 @@ public partial class BitFullCalendar
 
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         // A null Settings/Texts can arrive from external binding, overriding the default instances;
+
         // restore valid defaults before ApplySettings and the cascaded Texts are consumed downstream.
         Settings ??= new();
         Texts ??= new();
 
-        // Mark the parameter-application window so state changes triggered below (events, resources,
-        // view, mode, date) keep the bound View/Mode/Date parameters in sync without raising
-        // OnViewChange/OnModeChange.
+        // Mark the parameter-application window. The state changes made below (events, resources,
+        // views, view, mode, date) are held in one update of the state, announced once when it ends,
+        // and that announcement is ignored by HandleStateChanged: the bound View/Mode/Date are brought
+        // back in sync by the one silent reconciliation OnParametersSetAsync runs after the window.
         _applyingParameters = true;
+        State.BeginUpdate();
         try
         {
             _colorScheme = new BitFullCalendarColorScheme(EventColorOptions);
+            State.CanonicalColorId = _colorScheme.GetCanonicalId;
             var resolved = ResolveCulture();
             // Compare the calendar identity in addition to the culture name: two cultures can share
             // the same Name but resolve to different calendars (for example a culture whose calendar
             // was switched), and a name-only check would skip the required SetCulture when only the
             // calendar changed - leaving the calendar rendering against the previous calendar system.
             if (!string.Equals(resolved.Name, State.Culture.Name, StringComparison.Ordinal)
-                || resolved.Calendar.GetType() != State.Culture.Calendar.GetType())
+                || resolved.DateTimeFormat.Calendar.GetType() != State.Culture.DateTimeFormat.Calendar.GetType())
                 State.SetCulture(resolved);
+
+            // The keyboard and pointer handlers map a physical direction onto earlier/later through the state,
+            // so it has to know the direction the calendar is rendered in, not only the culture's.
+            State.SetDirection(Dir);
+            // An Auto direction is the content's, which only the browser knows; what decides it (the culture, the
+            // events, Dir itself) arrives as parameters, so it is read back after the render that follows them.
+            _readAutoDirection = Dir is BitDir.Auto;
+            State.SetTimeProvider(TimeProvider);
 
             if (Events is not null)
                 State.SyncEvents(Events);
@@ -387,7 +533,7 @@ public partial class BitFullCalendar
             State.SyncResources(Resources);
             State.SyncViews(Views);
             // A disabled calendar cannot be edited either, so it takes the same presentation-only path.
-            State.SetReadOnly(ReadOnly || IsEnabled is false);
+            State.SetReadOnly(ReadOnly || Disabled);
             // The bounds are applied before the date so a bound Date outside them is clamped once,
             // by the same rule the navigation buttons obey.
             State.SetDateBounds(MinDate, MaxDate);
@@ -399,29 +545,83 @@ public partial class BitFullCalendar
 
             ApplySettings();
         }
+        catch
+        {
+            // The pass failed partway, so the reconciliation after it never runs. Take what the state
+            // reached as the new baseline: what the parameters did is then never mistaken for a change
+            // the user made, raising OnViewChange/OnModeChange on the next state change, while a bound
+            // value that disagrees with the state is still pushed back silently by the next reconciliation.
+            _lastView = State.View;
+            _lastMode = State.Mode;
+            _lastDate = State.SelectedDate;
+            throw;
+        }
         finally
         {
-            _applyingParameters = false;
+            try
+            {
+                // The one announcement of every change the pass made, sent while the window is still
+                // open so HandleStateChanged leaves it to the reconciliation OnParametersSetAsync runs.
+                State.EndUpdate();
+            }
+            finally
+            {
+                _applyingParameters = false;
+            }
         }
 
         // Raise the single coalesced date-range change (if any) now that all parameter-driven
         // setters have run, so consumers see only the final resolved range rather than each
         // intermediate one produced while applying parameters.
+        // A prerender leaves the very first range to OnParametersSetAsync, which raises the range the state ends up
+        // showing anyway.
         if (_pendingDateChange is { } pending)
         {
             _pendingDateChange = null;
-            _initialDateChangeRaised = true;
-            InvokeAsync(() => OnDateChange.InvokeAsync(pending));
+            if (_initialDateChangeRaised || _js.IsRuntimeInvalid() is false)
+            {
+                _initialDateChangeRaised = true;
+                InvokeAsync(() => OnDateChange.InvokeAsync(pending));
+            }
         }
 
-        // A bound View/Mode the state refuses can resolve to the value that is already active, which
-        // emits no state change and so reaches no reconciliation through HandleStateChanged. Reconcile
-        // explicitly here so the corrected value is always pushed back into the binding. This is an
-        // echo of the parameters just applied, so it stays silent (raiseEvents: false) like the
-        // reconciliations queued during the parameter-application window.
-        InvokeAsync(() => ReconcileBoundState(raiseEvents: false));
-
         base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // The one reconciliation of a parameter pass: HandleStateChanged leaves the state change the
+        // pass announced to it, since only once the pass is over have the bound View/Mode/Date reached
+        // the state. It also covers a bound View/Mode the state refuses, which can resolve to the value
+        // that is already active and so announce no change at all, pushing the corrected value back
+        // into the binding. This is an echo of the parameters just applied, so it stays silent
+        // (raiseEvents: false). It is awaited, so a binding handler that throws fails the pass rather
+        // than vanishing in a discarded task, and the render that ends the pass comes after the
+        // bindings are settled even when a handler awaits.
+        await ReconcileBoundState(raiseEvents: false);
+
+        // A prerender or a static SSR page never renders a second time, so the first range is reported here, and
+        // awaited, rather than after the first render (see OnAfterRender): only the events fetched before it ends
+        // make it into the HTML sent before the page is interactive. The range is the state's alone, so nothing it
+        // needs waits for the browser. An interactive calendar keeps reporting it after its first render, where a
+        // handler is free to call JavaScript and to use the calendar's own.
+        if (_initialDateChangeRaised is false && OnDateChange.HasDelegate && _js.IsRuntimeInvalid())
+        {
+            try
+            {
+                await RaiseInitialDateChangeAsync();
+            }
+            catch (Exception)
+            {
+                // The handler was written for the browser, and the server is not one: it cannot call JavaScript
+                // before the page is interactive, and its HttpClient (when it has one) cannot resolve a URL meant
+                // for the browser. Whatever it fails on is no reason to fail the page, which renders the calendar
+                // without those events; the interactive render that replaces this one is a calendar of its own,
+                // which reports the range again.
+            }
+        }
+
+        await base.OnParametersSetAsync();
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -430,22 +630,58 @@ public partial class BitFullCalendar
         // initial range is reported like every later one instead of only after the first navigation.
         if (firstRender && _initialDateChangeRaised is false && OnDateChange.HasDelegate)
         {
-            _initialDateChangeRaised = true;
-            var (start, end) = BitFullCalendarHelpers.GetDateRange(
-                State.View, State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride);
-            // This range never travelled through the state's own channel, so tell it the range has
-            // been reported - otherwise a first navigation that lands right back on it (pressing
-            // "Today" while today is already showing) would report the same range a second time.
-            State.MarkCurrentRangeReported();
-            InvokeAsync(() => OnDateChange.InvokeAsync(new BitFullCalendarDateChangeEventArgs
-            {
-                Start = start,
-                End = end,
-                View = State.View
-            }));
+            InvokeAsync(RaiseInitialDateChangeAsync);
         }
 
         base.OnAfterRender(firstRender);
+    }
+
+    private Task RaiseInitialDateChangeAsync()
+    {
+        _initialDateChangeRaised = true;
+        var (start, end) = State.GetVisibleRange();
+        // This range may never have travelled through the state's own channel, so tell it the range
+        // has been reported - otherwise a first navigation that lands right back on it (pressing
+        // "Today" while today is already showing) would report the same range a second time.
+        State.MarkCurrentRangeReported();
+        return OnDateChange.InvokeAsync(new BitFullCalendarDateChangeEventArgs
+        {
+            Start = start,
+            End = end,
+            View = State.View
+        });
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // The key defaults the calendar handles and the focus a re-render removes are DOM concerns Blazor's events
+        // cannot reach, so the root hands them to the script once - keyed by the component's unique id, which is what
+        // takes them off again on dispose, once the root itself may already have left the DOM.
+        if (firstRender)
+        {
+            try
+            {
+                await _js.InvokeScriptVoidAsync("BitBlazorUI.FullCalendar.setupRoot", RootElement, UniqueId);
+                _rootSetUp = true;
+            }
+            catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException or InvalidOperationException)
+            {
+                // A circuit going away (or a prerender) leaves nothing to set up.
+            }
+        }
+
+        // A calendar whose direction is Auto is laid out the way its content reads, which only the browser knows, so
+        // what it resolved is read back for the keys, the drags and the layout computed from it - once per change of
+        // the parameters rather than after every render, since a drag or a state notification re-renders often and
+        // changes nothing that decides it.
+        if (_readAutoDirection && IsDisposed is false)
+        {
+            _readAutoDirection = false;
+
+            State.SetAutoDirection(await IsRtlAsync(_js));
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private void ApplyBoundState()
@@ -570,6 +806,11 @@ public partial class BitFullCalendar
             State.SetShowNonCurrentDates(current.ShowNonCurrentDates);
         if (previous.NavLinks != current.NavLinks)
             State.SetNavLinks(current.NavLinks);
+        if (previous.WeekDayCount != current.WeekDayCount)
+            State.SetWeekDayCount(current.WeekDayCount);
+        if ((previous.AllowAdd, previous.AllowEdit, previous.AllowDelete, previous.AllowDrag, previous.AllowResize)
+            != (current.AllowAdd, current.AllowEdit, current.AllowDelete, current.AllowDrag, current.AllowResize))
+            State.SetEditPermissions(current.AllowAdd, current.AllowEdit, current.AllowDelete, current.AllowDrag, current.AllowResize);
     }
 
     private void PushAllSettings()
@@ -598,6 +839,8 @@ public partial class BitFullCalendar
         State.SetFixedWeekCount(Settings.FixedWeekCount);
         State.SetShowNonCurrentDates(Settings.ShowNonCurrentDates);
         State.SetNavLinks(Settings.NavLinks);
+        State.SetWeekDayCount(Settings.WeekDayCount);
+        State.SetEditPermissions(Settings.AllowAdd, Settings.AllowEdit, Settings.AllowDelete, Settings.AllowDrag, Settings.AllowResize);
     }
 
     /// <summary>
@@ -611,10 +854,11 @@ public partial class BitFullCalendar
     /// would overwrite that pending edit with the value the calendar still holds.
     /// </para>
     /// </summary>
-    private void SyncSettingsFromState()
+    private bool SyncSettingsFromState()
     {
-        if (Settings is null) return;
+        if (Settings is null) return false;
 
+        var before = SettingsSnapshot.From(Settings);
         var previous = _appliedSettings;
 
         if (previous is null || previous.Use24HourFormat != State.Use24HourFormat)
@@ -665,19 +909,28 @@ public partial class BitFullCalendar
         // The new baseline is what the STATE now holds, not what Settings holds: a pending consumer
         // edit has to stay "different" so the next ApplySettings still pushes it.
         _appliedSettings = SettingsSnapshot.FromState(State, previous);
+
+        return SettingsSnapshot.From(Settings) != before;
     }
 
     private void HandleStateChanged()
     {
-        // Capture the flag now: the queued callback may run after OnParametersSet's finally block
-        // has reset _applyingParameters to false, which would otherwise wrongly raise events.
-        var applyingParameters = _applyingParameters;
         InvokeAsync(async () =>
         {
-            if (applyingParameters is false)
-                SyncSettingsFromState();
+            // The change OnParametersSet announces at the end of its window is left to the
+            // reconciliation OnParametersSetAsync runs after it, and to the render that follows. The
+            // flag is read in here, on the renderer's dispatcher, never on the thread that announced
+            // the change: one announced from elsewhere while the window is open runs once it has
+            // closed, and is reconciled rather than dropped.
+            if (_applyingParameters)
+                return;
 
-            await ReconcileBoundState(raiseEvents: !applyingParameters);
+            var settingsChanged = SyncSettingsFromState();
+
+            await ReconcileBoundState(raiseEvents: true);
+
+            if (settingsChanged)
+                await OnSettingsChange.InvokeAsync(Settings);
             StateHasChanged();
         });
     }
@@ -738,13 +991,33 @@ public partial class BitFullCalendar
         InvokeAsync(() => OnDateChange.InvokeAsync(args));
     }
 
-    private void ReportRefusal(BitFullCalendarChangeRefusal refusal)
+    private async Task<bool> ApproveChangeAsync(BitFullCalendarChangeEventArgs change)
     {
-        var message = refusal switch
+        if (OnChanging.HasDelegate is false)
+            return true;
+
+        // Snapshots, so a handler that edits what it is handed cannot reach the event the calendar holds.
+        var args = new BitFullCalendarChangingEventArgs
+        {
+            Event = BitFullCalendarChangeNotifier.CloneEvent(change.Event),
+            OldEvent = change.OldEvent is null ? null : BitFullCalendarChangeNotifier.CloneEvent(change.OldEvent),
+            Kind = change.Kind,
+            Source = change.Source
+        };
+
+        await OnChanging.InvokeAsync(args);
+
+        return args.Cancel is false;
+    }
+
+    private void ReportRefusal(BitFullCalendarChangeRefusal refusal, bool showNotice)
+    {
+        var message = showNotice is false ? null : refusal switch
         {
             BitFullCalendarChangeRefusal.Overlap => Texts.EventOverlapMessage,
             BitFullCalendarChangeRefusal.OutOfRange => Texts.OutOfRangeMessage,
             BitFullCalendarChangeRefusal.OutsideBusinessHours => Texts.OutsideBusinessHoursMessage,
+            BitFullCalendarChangeRefusal.Blocked => Texts.BlockedMessage,
             _ => null
         };
 
@@ -786,21 +1059,79 @@ public partial class BitFullCalendar
     /// </summary>
     public void ChangeMode(BitFullCalendarMode mode) => State.SetMode(mode);
 
+    /// <summary>
+    /// Scrolls the time axis to <paramref name="time"/> - the top of the day and week grids, or the leading edge of the
+    /// timeline day and week (on the selected day, when the week shows it). A time outside the visible hours is
+    /// clamped into them. Returns <c>false</c> when the active view has no time axis (month, year, agenda, the month
+    /// timeline) or nothing is rendered yet. <c>ScrollToTimeAsync(calendar.State.Now.TimeOfDay)</c> scrolls to now.
+    /// </summary>
+    public async Task<bool> ScrollToTimeAsync(TimeSpan time)
+    {
+        var hours = Math.Clamp(time.TotalHours, State.VisibleStartHour, State.VisibleEndHour);
+        var offsetHours = hours - State.VisibleStartHour;
+
+        try
+        {
+            if (State.Mode == BitFullCalendarMode.Event)
+            {
+                if (State.View is not (BitFullCalendarView.Day or BitFullCalendarView.Week)) return false;
+
+                return await _js.InvokeScriptAsync<bool>("BitBlazorUI.FullCalendar.scrollGridToTime", RootElement, offsetHours);
+            }
+
+            double offsetPx;
+            switch (State.View)
+            {
+                case BitFullCalendarView.Day:
+                    offsetPx = offsetHours * BitFullCalendarHelpers.TimelineHourWidthPx;
+                    break;
+                case BitFullCalendarView.Week:
+                    // The week timeline lays its shown days end to end, each as long as the visible hours.
+                    var days = State.GetVisibleWeekDates();
+                    var dayIndex = Math.Max(0, Array.FindIndex(days, d => d.Date == State.SelectedDate.Date));
+                    offsetPx = (dayIndex * State.VisibleHourCount + offsetHours) * BitFullCalendarHelpers.TimelineHourWidthPx;
+                    break;
+                default:
+                    return false;
+            }
+
+            return await _js.InvokeScriptAsync<bool>("BitBlazorUI.FullCalendar.scrollTimelineToOffset", RootElement, offsetPx);
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException or InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
     /// <summary>The inclusive start and end dates the calendar is currently showing.</summary>
     public (DateTime Start, DateTime End) GetVisibleRange()
-        => BitFullCalendarHelpers.GetDateRange(State.View, State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride);
+        => State.GetVisibleRange();
 
 
 
-    protected override ValueTask DisposeAsync(bool disposing)
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing)
         {
             State.OnStateChanged -= HandleStateChanged;
             State.OnDateRangeChanged -= HandleDateRangeChanged;
+
+            if (_rootSetUp)
+            {
+                _rootSetUp = false;
+                try
+                {
+                    // The document listener and the observer setupRoot added would otherwise keep the root alive.
+                    await _js.InvokeScriptVoidAsync("BitBlazorUI.FullCalendar.disposeRoot", UniqueId);
+                }
+                catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException or ObjectDisposedException)
+                {
+                    // A circuit already gone took the page, and everything set up on it, with it.
+                }
+            }
         }
 
-        return base.DisposeAsync(disposing);
+        await base.DisposeAsync(disposing);
     }
 
     /// <summary>
@@ -834,7 +1165,13 @@ public partial class BitFullCalendar
         bool RestrictToBusinessHours,
         bool FixedWeekCount,
         bool ShowNonCurrentDates,
-        bool NavLinks)
+        bool NavLinks,
+        bool AllowAdd,
+        bool AllowEdit,
+        bool AllowDelete,
+        bool AllowDrag,
+        bool AllowResize,
+        int? WeekDayCount)
     {
         /// <summary>
         /// The baseline after a user-driven change: the values the state now holds, keeping the two
@@ -868,7 +1205,14 @@ public partial class BitFullCalendar
             state.RestrictToBusinessHours,
             state.FixedWeekCount,
             state.ShowNonCurrentDates,
-            state.NavLinks);
+            state.NavLinks,
+            // The panel cannot change the permissions, so the state holds exactly what was last pushed.
+            state.AllowAdd,
+            state.AllowEdit,
+            state.AllowDelete,
+            state.AllowDrag,
+            state.AllowResize,
+            state.WeekDayCount);
 
         public static SettingsSnapshot From(BitFullCalendarSettings settings) => new(
             settings.Use24HourFormat,
@@ -895,6 +1239,12 @@ public partial class BitFullCalendar
             settings.RestrictToBusinessHours,
             settings.FixedWeekCount,
             settings.ShowNonCurrentDates,
-            settings.NavLinks);
+            settings.NavLinks,
+            settings.AllowAdd,
+            settings.AllowEdit,
+            settings.AllowDelete,
+            settings.AllowDrag,
+            settings.AllowResize,
+            BitFullCalendarHelpers.NormalizeWeekDayCount(settings.WeekDayCount));
     }
 }

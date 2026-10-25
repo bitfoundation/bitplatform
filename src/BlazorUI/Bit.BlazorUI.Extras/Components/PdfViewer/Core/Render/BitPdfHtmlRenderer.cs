@@ -100,6 +100,21 @@ public sealed class BitPdfHtmlRenderer
     /// </summary>
     public bool EmitCanvasOps { get; set; }
 
+    /// <summary>
+    /// Whether link annotations are emitted as hotspots. A thumbnail turns them off: it is
+    /// one option of a listbox, and a link inside it would be a tab stop nobody can see.
+    /// Default is <c>true</c>.
+    /// </summary>
+    public bool EmitLinks { get; set; } = true;
+
+    /// <summary>
+    /// The accessible name of an internal link, with <c>{0}</c> standing for the 1-based
+    /// page it goes to. The hotspot is transparent - the words it covers are painted
+    /// beneath it - so without a name a screen reader has nothing to call it.
+    /// Default is <c>"Go to page {0}"</c>.
+    /// </summary>
+    public string InternalLinkLabelFormat { get; set; } = "Go to page {0}";
+
     /// <summary>The display list JSON after a canvas-mode render, else null.</summary>
     public string? CanvasOpsJson { get; private set; }
 
@@ -122,10 +137,36 @@ public sealed class BitPdfHtmlRenderer
     /// </summary>
     private void Op(params object?[] op)
     {
-        if (_ocHiddenAtDepth < 0)
+        // An op holding a non-finite number (a CTM or font size that overflowed to
+        // Infinity, a NaN from it) cannot be painted, and JSON has no way to write the
+        // number: serializing it would throw and fail the WHOLE page. So that one op is
+        // dropped - the HTML backend writes such a value into CSS the browser ignores,
+        // so the page renders the same in both modes. The clip save/restore pair ("g"
+        // and "G") carries no numbers, so dropping an op never unbalances them.
+        if (_ocHiddenAtDepth < 0 && AllFinite(op))
         {
             _ops!.Add(op);
         }
+    }
+
+    /// <summary>True when every number in <paramref name="values"/>, nested arrays included, is finite.</summary>
+    private static bool AllFinite(object?[] values)
+    {
+        foreach (object? value in values)
+        {
+            bool finite = value switch
+            {
+                double d => double.IsFinite(d),
+                double[] array => Array.TrueForAll(array, double.IsFinite),
+                object?[] nested => AllFinite(nested),
+                _ => true,
+            };
+            if (!finite)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     /// <summary>Rounds a display-list coordinate to keep the ops JSON compact.</summary>
@@ -160,6 +201,10 @@ public sealed class BitPdfHtmlRenderer
     private readonly bool _ownFontFaces;                // emit faces inline (no shared store)
     private readonly Dictionary<object, string?> _patternCache = new();
     private StringBuilder _html = new();
+    // The link hotspots, kept apart from the painted content: that content is hidden
+    // from assistive technology as a whole, and the links are the one part of it a
+    // reader has to be able to reach.
+    private readonly StringBuilder _links = new();
     private int _openGroups;
 
     // Marked-content / optional-content state. While OC content is hidden, output
@@ -229,13 +274,14 @@ public sealed class BitPdfHtmlRenderer
         _viewW = viewW;
         _viewH = viewH;
         _ops = EmitCanvasOps ? new List<object?[]>() : null;
+        _tilesEmitted = 0;
 
         List<BitPdfOperation> ops;
         try
         {
             ops = new BitPdfContentParser(_page.GetContentBytes()).Parse();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex))
         {
             ops = new List<BitPdfOperation>();
             _html.Append($"<!-- content parse error: {Escape(ex.Message)} -->");
@@ -270,9 +316,20 @@ public sealed class BitPdfHtmlRenderer
             sb.Append(string.Create(CultureInfo.InvariantCulture,
                 $"<canvas data-bit-pdv-canvas width=\"{(int)Math.Ceiling(viewW)}\" height=\"{(int)Math.Ceiling(viewH)}\" " +
                 $"style=\"position:absolute;left:0;top:0;width:{viewW:0.##}px;height:{viewH:0.##}px\"></canvas>"));
-            CanvasOpsJson = System.Text.Json.JsonSerializer.Serialize(_ops);
+            CanvasOpsJson = System.Text.Json.JsonSerializer.Serialize(_ops, BitExtrasJsonContext.Default.ListObjectArray);
         }
-        sb.Append(_html);
+        // The painted layer is a picture of the text, not the text: its glyphs may be
+        // private-use codepoints, its images carry no description, and every word in it
+        // is also in the selection layer above - which is what assistive technology reads.
+        // The wrapper is positioned and sized like the page and starts no stacking
+        // context, so what is inside it paints and blends exactly as it did without it.
+        if (_html.Length > 0)
+        {
+            sb.Append("<div aria-hidden=\"true\" style=\"position:absolute;inset:0\">");
+            sb.Append(_html);
+            sb.Append("</div>");
+        }
+        sb.Append(_links);
         // The coalesced selection/text layer sits on top of the painted content so
         // it captures selection. The container itself is transparent to pointer
         // events (clicks pass through to link annotations); only its spans opt back
@@ -305,7 +362,7 @@ public sealed class BitPdfHtmlRenderer
             {
                 Execute(op);
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 // A single malformed operator must not abort the whole page;
                 // skip it and continue with the rest of the content stream.
@@ -740,7 +797,7 @@ public sealed class BitPdfHtmlRenderer
             return;
         }
         object? shadingObj = shadings.Get(name.Value);
-        BitPdfDict? shading = shadingObj as BitPdfDict ?? (shadingObj as BitPdfStream)?.Dict;
+        BitPdfDict? shading = shadingObj as BitPdfDict ?? (shadingObj as BitPdfBaseStream)?.Dict;
         if (shading is null)
         {
             return;
@@ -814,7 +871,7 @@ public sealed class BitPdfHtmlRenderer
         {
             return;
         }
-        if (_resources?.Get("XObject") is not BitPdfDict xobjects || xobjects.Get(name.Value) is not BitPdfStream stream
+        if (_resources?.Get("XObject") is not BitPdfDict xobjects || xobjects.Get(name.Value) is not BitPdfBaseStream stream
             || stream.Dict is null)
         {
             return;
@@ -831,7 +888,7 @@ public sealed class BitPdfHtmlRenderer
         }
     }
 
-    private void DrawImage(BitPdfStream stream)
+    private void DrawImage(BitPdfBaseStream stream)
     {
         var fill = ParseRgb(_state.FillColor);
         string? uri = BitPdfImage.BuildDataUri(stream, _xref, _resources, fill);
@@ -1010,7 +1067,7 @@ public sealed class BitPdfHtmlRenderer
         return raw is BitPdfRef rf && _ocgOff.Contains(rf.ToRefString());
     }
 
-    private void DrawForm(BitPdfStream stream)
+    private void DrawForm(BitPdfBaseStream stream)
     {
         if (_formDepth >= MaxFormDepth)
         {
@@ -1085,7 +1142,7 @@ public sealed class BitPdfHtmlRenderer
             byte[] content = BitPdfStreamDecoder.Decode(stream);
             RunOps(new BitPdfContentParser(content).Parse());
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             // Ignore malformed form content.
         }
@@ -1153,7 +1210,7 @@ public sealed class BitPdfHtmlRenderer
                 DrawAnnotationAppearance(annot);
                 DrawLinkOverlay(annot);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex))
             {
                 _html.Append($"<!-- annotation error: {Escape(ex.Message)} -->");
                 // The failed appearance may have left graphics state behind; put the
@@ -1175,7 +1232,7 @@ public sealed class BitPdfHtmlRenderer
         {
             return;
         }
-        BitPdfStream? appearance = ResolveAppearance(annot);
+        BitPdfBaseStream? appearance = ResolveAppearance(annot);
         if (appearance?.Dict is null)
         {
             return;
@@ -1202,14 +1259,14 @@ public sealed class BitPdfHtmlRenderer
         CloseGroupsTo(0);
     }
 
-    private BitPdfStream? ResolveAppearance(BitPdfDict annot)
+    private BitPdfBaseStream? ResolveAppearance(BitPdfDict annot)
     {
         if (annot.Get("AP") is not BitPdfDict ap)
         {
             return null;
         }
         object? normal = ap.Get("N");
-        if (normal is BitPdfStream stream)
+        if (normal is BitPdfBaseStream stream)
         {
             return stream;
         }
@@ -1217,13 +1274,13 @@ public sealed class BitPdfHtmlRenderer
         if (normal is BitPdfDict states)
         {
             string? state = (annot.Get("AS") as BitPdfName)?.Value;
-            if (state is not null && states.Get(state) is BitPdfStream selected)
+            if (state is not null && states.Get(state) is BitPdfBaseStream selected)
             {
                 return selected;
             }
             foreach (var key in states.Keys)
             {
-                if (states.Get(key) is BitPdfStream first)
+                if (states.Get(key) is BitPdfBaseStream first)
                 {
                     return first;
                 }
@@ -1280,35 +1337,61 @@ public sealed class BitPdfHtmlRenderer
         // (e.g. a link that wraps across several lines); emit one hotspot per quad,
         // falling back to the whole /Rect when they are absent (4.8).
         var regions = QuadPointRegions(annot) ?? new List<double[]> { ToRect(rectArr) };
-        foreach (double[] r in regions)
+        for (int i = 0; i < regions.Count; i++)
         {
-            EmitLinkHotspot(r, uri, destPage, destTop);
+            EmitLinkHotspot(regions[i], uri, destPage, destTop, i > 0);
         }
     }
 
-    private void EmitLinkHotspot(double[] r, string? uri, int? destPage, double? destTop = null)
+    private void EmitLinkHotspot(double[] r, string? uri, int? destPage, double? destTop = null, bool continuation = false)
     {
+        if (EmitLinks is false) return;
+
+        // A link wrapped across lines is one link with several hotspots: the first is the
+        // one a keyboard or a screen reader reaches, the rest only take the pointer.
+        string reach = continuation ? " tabindex=\"-1\" aria-hidden=\"true\"" : string.Empty;
+
         BitPdfMatrix transform = BitPdfMatrix.Concat(_baseMatrix, new BitPdfMatrix(1, 0, 0, 1, r[0], r[1]));
         string style = string.Create(CultureInfo.InvariantCulture,
             $"position:absolute;left:0;top:0;width:{r[2] - r[0]:0.##}px;height:{r[3] - r[1]:0.##}px;transform:{transform.ToSvg()};transform-origin:0 0");
 
         if (uri is not null && IsAllowedUri(uri))
         {
-            _html.Append($"<a href=\"{Escape(uri)}\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"{style}\"></a>");
+            // Named by its address, which is also what the pointer shows on hover.
+            _links.Append($"<a href=\"{Escape(uri)}\" title=\"{Escape(uri)}\" target=\"_blank\" rel=\"noopener noreferrer\"{reach} style=\"{style}\"></a>");
         }
         else if (destPage is int page)
         {
             // Internal link: the viewer delegates clicks on [data-bit-pdv-page] to
-            // page navigation. Emitted as a div (no href) so nothing navigates away.
-            // A destination that names a vertical position carries it along, so the
-            // click lands where the link means to rather than at the page's top edge.
+            // page navigation and cancels the default, so nothing navigates away. A real
+            // link rather than a clickable div, so the keyboard reaches it and Enter
+            // follows it. A destination that names a vertical position carries it along,
+            // so the click lands where the link means to rather than at the page's top.
             string top = destTop is double t
                 ? string.Create(CultureInfo.InvariantCulture, $" data-bit-pdv-top=\"{t:0.##}\"")
                 : string.Empty;
-            _html.Append(string.Create(CultureInfo.InvariantCulture,
-                $"<div data-bit-pdv-page=\"{page}\"{top} style=\"{style};cursor:pointer\"></div>"));
+            string label = Escape(FormatInternalLinkLabel(page));
+            _links.Append(string.Create(CultureInfo.InvariantCulture,
+                $"<a href=\"#page={page}\" data-bit-pdv-page=\"{page}\"{top} aria-label=\"{label}\"{reach} style=\"{style}\"></a>"));
         }
         // Otherwise (unknown/unsafe scheme, unresolved dest): drop the hotspot.
+    }
+
+    /// <summary>
+    /// The accessible name of an internal link to <paramref name="page"/>. A malformed
+    /// <see cref="InternalLinkLabelFormat"/> (a localized text with a stray brace) falls
+    /// back to the default wording rather than dropping the link.
+    /// </summary>
+    private string FormatInternalLinkLabel(int page)
+    {
+        try
+        {
+            return string.Format(CultureInfo.CurrentCulture, InternalLinkLabelFormat, page);
+        }
+        catch (FormatException)
+        {
+            return string.Format(CultureInfo.CurrentCulture, "Go to page {0}", page);
+        }
     }
 
     /// <summary>
@@ -1539,7 +1622,7 @@ public sealed class BitPdfHtmlRenderer
 
         foreach (ref readonly var g in CollectionsMarshal.AsSpan(glyphs))
         {
-            if (visible && font.Type3.GetGlyphProcedure(g.Code) is { } proc)
+            if (visible && font.Type3.GetGlyphProcedureStream(g.Code) is { } proc)
             {
                 RenderType3Glyph(proc, fontMatrix, font.Type3.Resources);
             }
@@ -1551,7 +1634,7 @@ public sealed class BitPdfHtmlRenderer
         }
     }
 
-    private void RenderType3Glyph(BitPdfStream proc, in BitPdfMatrix fontMatrix, BitPdfDict? glyphResources)
+    private void RenderType3Glyph(BitPdfBaseStream proc, in BitPdfMatrix fontMatrix, BitPdfDict? glyphResources)
     {
         if (_formDepth >= MaxFormDepth)
         {
@@ -1582,7 +1665,7 @@ public sealed class BitPdfHtmlRenderer
             byte[] content = BitPdfStreamDecoder.Decode(proc);
             RunOps(new BitPdfContentParser(content).Parse());
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             // Ignore malformed glyph procedures.
         }
@@ -2197,7 +2280,7 @@ public sealed class BitPdfHtmlRenderer
             return null;
         }
         object? obj = patterns.Get(name);
-        BitPdfDict? patDict = obj as BitPdfDict ?? (obj as BitPdfStream)?.Dict;
+        BitPdfDict? patDict = obj as BitPdfDict ?? (obj as BitPdfBaseStream)?.Dict;
         if (patDict is null)
         {
             return null;
@@ -2213,7 +2296,7 @@ public sealed class BitPdfHtmlRenderer
         if (patternType == 2)
         {
             object? shadingObj = patDict.Get("Shading");
-            BitPdfDict? shading = shadingObj as BitPdfDict ?? (shadingObj as BitPdfStream)?.Dict;
+            BitPdfDict? shading = shadingObj as BitPdfDict ?? (shadingObj as BitPdfBaseStream)?.Dict;
             if (shading is null)
             {
                 return null;
@@ -2228,6 +2311,18 @@ public sealed class BitPdfHtmlRenderer
     // this the fill degrades to a solid color to bound the generated DOM.
     private const int MaxTiles = 4000;
 
+    // Maximum number of pattern cells emitted across the WHOLE render: a cell whose
+    // content fills with a tiling pattern again (itself, or another) multiplies the
+    // cell count at every level, and a cell holding several such fills side by side
+    // multiplies it again, so MaxTiles alone bounds one fill but not the page - a
+    // pattern that selects itself in its own cell ran to MaxFormDepth levels and out
+    // of memory. A fill whose cells would push the total past this degrades to a
+    // solid fill, the same as one fill with too many cells.
+    private const long MaxTotalTiles = 16000;
+
+    // The pattern cells emitted so far in this render, every nesting level counted.
+    private long _tilesEmitted;
+
     /// <summary>
     /// Renders a tiling pattern (PatternType 1) fill: the pattern cell's content
     /// stream is replayed across an XStep/YStep grid that covers the fill path's
@@ -2238,7 +2333,7 @@ public sealed class BitPdfHtmlRenderer
     private bool TryRenderTilingFill(string clipData, bool evenOdd)
     {
         if (_resources?.Get("Pattern") is not BitPdfDict patterns
-            || patterns.Get(_state.FillPattern!) is not BitPdfStream patStream
+            || patterns.Get(_state.FillPattern!) is not BitPdfBaseStream patStream
             || patStream.Dict is null)
         {
             return false;
@@ -2289,6 +2384,11 @@ public sealed class BitPdfHtmlRenderer
         {
             return false;
         }
+        if (_tilesEmitted + tileCount > MaxTotalTiles)
+        {
+            return false;
+        }
+        _tilesEmitted += tileCount;
 
         double[] bbox = pd.Get("BBox") is List<object?> bb && bb.Count >= 4
             ? [Num(bb[0]), Num(bb[1]), Num(bb[2]), Num(bb[3])]
@@ -2341,7 +2441,7 @@ public sealed class BitPdfHtmlRenderer
     }
 
     /// <summary>Replays a single tiling-pattern cell at <paramref name="cellCtm"/>, clipped to its BBox.</summary>
-    private void RunPatternCell(BitPdfStream patStream, in BitPdfMatrix cellCtm, BitPdfDict? patRes, double[] bbox)
+    private void RunPatternCell(BitPdfBaseStream patStream, in BitPdfMatrix cellCtm, BitPdfDict? patRes, double[] bbox)
     {
         if (_formDepth >= MaxFormDepth)
         {
@@ -2374,7 +2474,7 @@ public sealed class BitPdfHtmlRenderer
             byte[] content = BitPdfStreamDecoder.Decode(patStream);
             RunOps(new BitPdfContentParser(content).Parse());
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             // Ignore malformed pattern content.
         }

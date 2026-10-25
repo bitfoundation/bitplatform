@@ -1,0 +1,172 @@
+﻿@page "/e2e/nav-bar/options"
+
+<PageTitle>BitNavBar options E2E</PageTitle>
+
+@* The BitNavBarOption API of BitNavBar: the items are components written in the markup. Their automatic mode is
+   on /e2e/nav-bar/url. *@
+
+<E2ESection Id="basic" Title="Basic">
+    <div style="width: 700px;">
+        <BitNavBar Id="onbr-basic" TItem="BitNavBarOption" Mode="BitNavMode.Manual" AriaLabel="Option bar">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" SelectedIconName="@BitIconName.HomeSolid" Key="home" Title="Home tip" Class="home-class" Style="background-color: rgb(1, 2, 3);" />
+            <BitNavBarOption Text="Link" IconName="@BitIconName.Link" Url="/e2e/nav-bar/url/link" Target="_blank" Rel="BitLinkRels.NoReferrer" />
+            <BitNavBarOption Text="Off" IconName="@BitIconName.Blocked" IsDisabled />
+            <BitNavBarOption Text="Inbox" IconName="@BitIconName.Mail" Badge="9" BadgeAriaLabel="9 new" />
+            <BitNavBarOption Text="Alerts" IconName="@BitIconName.Ringer" Dot BadgeAriaLabel="New alerts" />
+            <BitNavBarOption Text="Named" IconName="@BitIconName.Contact" AriaLabel="Custom name" />
+            <BitNavBarOption Text="Stepped" IconName="@BitIconName.Step" AriaCurrent="BitNavAriaCurrent.Step" />
+            <BitNavBarOption Text="Pictured" Icon="@(BitIconInfo.Css("my-picture"))" SelectedIcon="@(BitIconInfo.Css("my-picture-solid"))" />
+        </BitNavBar>
+    </div>
+</E2ESection>
+
+<E2ESection Id="keys" Title="DefaultSelectedKey and SelectedKey">
+    <div style="width: 600px;">
+        <BitNavBar Id="onbr-default-key" TItem="BitNavBarOption" Mode="BitNavMode.Manual" DefaultSelectedKey="search">
+            <BitNavBarOption Text="Home" Key="home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Search" Key="search" IconName="@BitIconName.Search" />
+        </BitNavBar>
+        <BitNavBar Id="onbr-key" TItem="BitNavBarOption" Mode="BitNavMode.Manual" @bind-SelectedKey="_selectedKey" OnSelectItem="(BitNavBarOption option) => _selectedText = option?.Text">
+            <BitNavBarOption Text="Home" Key="home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Search" Key="search" IconName="@BitIconName.Search" />
+            <BitNavBarOption Text="Profile" Key="profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <p>Key: <span id="onbr-selected-key">@(_selectedKey ?? "none")</span>, text: <span id="onbr-selected-text">@_selectedText</span></p>
+    <button id="obtn-key-profile" @onclick="SetKeyProfile">Key profile</button>
+</E2ESection>
+
+<E2ESection Id="reorder" Title="AutoReorderOptions">
+    <button id="obtn-toggle-middle" @onclick="() => _showMiddle = !_showMiddle">Toggle middle</button>
+    <div style="width: 600px;">
+        <BitNavBar Id="onbr-reorder" TItem="BitNavBarOption" Mode="BitNavMode.Manual" AutoReorderOptions>
+            <BitNavBarOption Text="First" IconName="@BitIconName.Home" />
+            @if (_showMiddle)
+            {
+                <BitNavBarOption Text="Middle" IconName="@BitIconName.Search" />
+            }
+            <BitNavBarOption Text="Last" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+        <BitNavBar Id="onbr-no-reorder" TItem="BitNavBarOption" Mode="BitNavMode.Manual">
+            <BitNavBarOption Text="First" IconName="@BitIconName.Home" />
+            @if (_showMiddle)
+            {
+                <BitNavBarOption Text="Middle" IconName="@BitIconName.Search" />
+            }
+            <BitNavBarOption Text="Last" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+</E2ESection>
+
+<E2ESection Id="removal" Title="An option removed while it holds the tab stop">
+    <button id="obtn-remove-second" @onclick="() => _showSecond = false">Remove second</button>
+    <div style="width: 600px;">
+        <BitNavBar Id="onbr-removal" TItem="BitNavBarOption" Mode="BitNavMode.Manual" SingleTabStop>
+            <BitNavBarOption Text="One" IconName="@BitIconName.Home" />
+            @if (_showSecond)
+            {
+                <BitNavBarOption Text="Two" IconName="@BitIconName.Search" />
+            }
+            <BitNavBarOption Text="Three" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <div style="width: 600px;">
+        <BitNavBar Id="onbr-templates" TItem="BitNavBarOption" Mode="BitNavMode.Manual">
+            <ItemTemplate Context="option">
+                <span class="onbr-item-template">Item template: @option.Text</span>
+            </ItemTemplate>
+            <Options>
+                <BitNavBarOption Text="Plain" />
+                <BitNavBarOption Text="Own">
+                    <Template Context="option"><span class="onbr-own">Own: @option.Text</span></Template>
+                </BitNavBarOption>
+                <BitNavBarOption Text="Replaced" TemplateRenderMode="BitNavItemTemplateRenderMode.Replace">
+                    <Template Context="option"><button class="onbr-replaced">Replaced: @option.Text</button></Template>
+                </BitNavBarOption>
+                <BitNavBarOption Text="After" />
+            </Options>
+        </BitNavBar>
+    </div>
+</E2ESection>
+
+<E2ESection Id="look" Title="Vertical, Filled, Indicator, Color and Size">
+    <BitNavBar Id="onbr-look"
+               TItem="BitNavBarOption"
+               Mode="BitNavMode.Manual"
+               DefaultSelectedKey="home"
+               Vertical
+               FitWidth
+               Filled
+               Indicator="BitNavBarIndicator.Line"
+               Color="BitColor.Success"
+               Size="BitSize.Large"
+               Styles="@(new() { ItemText = "letter-spacing: 3px;" })"
+               Classes="@(new() { ItemIcon = "custom-look-icon" })">
+        <BitNavBarOption Text="Home" Key="home" IconName="@BitIconName.Home" />
+        <BitNavBarOption Text="Search" Key="search" IconName="@BitIconName.Search" />
+    </BitNavBar>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events and keyboard">
+    <div style="width: 600px;">
+        <BitNavBar Id="onbr-events"
+                   TItem="BitNavBarOption"
+                   Mode="BitNavMode.Manual"
+                   OnItemClick="(BitNavBarOption option) => { _clicks++; _lastClicked = option.Text; }"
+                   OnSelectItem="(BitNavBarOption option) => { _selects++; _lastSelected = option?.Text; }">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Search" IconName="@BitIconName.Search" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <p>
+        <span id="oevent-clicks">@_clicks</span> <span id="oevent-last-clicked">@_lastClicked</span>
+        <span id="oevent-selects">@_selects</span> <span id="oevent-last-selected">@_lastSelected</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters and RTL">
+    <div style="width: 600px;">
+        <BitParams Parameters="@([new BitNavBarParams { IconOnly = true, Indicator = BitNavBarIndicator.Pill }])">
+            <BitNavBar Id="onbr-params" TItem="BitNavBarOption">
+                <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            </BitNavBar>
+        </BitParams>
+        <BitNavBar Id="onbr-rtl" TItem="BitNavBarOption" Dir="BitDir.Rtl" Mode="BitNavMode.Manual">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Search" IconName="@BitIconName.Search" />
+        </BitNavBar>
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div style="width: 600px;">
+        <BitNavBar Id="onbr-disabled" TItem="BitNavBarOption" Disabled Mode="BitNavMode.Manual" OnItemClick="(BitNavBarOption option) => _disabledClicks++">
+            <BitNavBarOption Text="Link" IconName="@BitIconName.Link" Url="/e2e/nav-bar/url/x" />
+            <BitNavBarOption Text="Button" IconName="@BitIconName.Search" />
+        </BitNavBar>
+    </div>
+    <p><span id="odisabled-clicks">@_disabledClicks</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private string? _selectedKey;
+    private string? _selectedText;
+
+    private void SetKeyProfile() => _selectedKey = "profile";
+
+    private bool _showMiddle;
+    private bool _showSecond = true;
+
+    private int _clicks;
+    private string? _lastClicked;
+    private int _selects;
+    private string? _lastSelected;
+
+    private int _disabledClicks;
+}

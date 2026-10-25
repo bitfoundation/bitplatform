@@ -1,4 +1,4 @@
-using Bit.BlazorUI.Demo.Client.Core.Shared;
+﻿using Bit.BlazorUI.Demo.Client.Core.Shared;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Models;
 
@@ -339,6 +339,7 @@ public static class ComponentCatalog
         ["AccordionList"] = BitIconName.CollapseAll,
         ["AppShell"] = BitIconName.Devices4,
         ["Chart"] = BitIconName.BarChartVertical,
+        ["CountryPicker"] = BitIconName.Globe,
         ["DataGrid"] = BitIconName.Table,
         ["ErrorBoundary"] = BitIconName.ErrorBadge,
         ["Flag"] = BitIconName.Flag,
@@ -353,6 +354,7 @@ public static class ComponentCatalog
         ["PhoneInput"] = BitIconName.Phone,
         ["RichTextEditor"] = BitIconName.EditNote,
         ["TextShimmer"] = BitIconName.ChatBot,
+        ["TimeZonePicker"] = BitIconName.WorldClock,
         ["Virtualize"] = BitIconName.RowsGroup,
 
         // Legacy - the glyph of the component that replaced it, with the badge telling them apart.
@@ -458,19 +460,20 @@ public static class ComponentCatalog
         ["Image"] = "An image with fit, shape and responsive sources, loading states and a fallback.",
         ["Label"] = "Gives a name to a control or a group of controls.",
         ["Link"] = "Navigates elsewhere, inside the app or out of it.",
-        ["MediaQuery"] = "Reports the library's breakpoints to your component as a parameter.",
+        ["MediaQuery"] = "Renders content, or reports a state, by what a media query matches.",
         ["Overlay"] = "Covers the page or a container, catching its clicks to put the emphasis on what it hosts.",
         ["Params"] = "Cascades shared parameter objects so components inherit common defaults.",
         ["PullToRefresh"] = "Adds pull-down-to-refresh to a page or a scrolling element.",
         ["Separator"] = "Visually divides content into groups, with an optional label.",
         ["Sticky"] = "Pins an element in place while the rest of the page scrolls past.",
-        ["SwipeTrap"] = "Traps swipe gestures on an element and reports them as events.",
+        ["SwipeTrap"] = "Traps swipe gestures - touch, mouse, pen or the arrow keys - and reports them as events.",
         ["Text"] = "Applies the theme's typography ramp to a run of text.",
 
         // Extras
         ["AccordionList"] = "An accordion that builds its expandable items from a single collection.",
         ["AppShell"] = "The cross-platform application container: safe areas, scroll state, chrome.",
         ["Chart"] = "A native Blazor charting component rendered entirely with SVG.",
+        ["CountryPicker"] = "A searchable country selector with flags, bound to a BitCountry.",
         ["DataGrid"] = "An information-rich grid with sorting, filtering, paging and virtualization.",
         ["ErrorBoundary"] = "Catches exceptions thrown by its children and renders a recoverable fallback UI.",
         ["Flag"] = "Renders the flag of a country from its ISO code, dialing code or name.",
@@ -485,6 +488,7 @@ public static class ComponentCatalog
         ["PhoneInput"] = "A phone number field with a searchable country selector and flags.",
         ["RichTextEditor"] = "A native WYSIWYG editor written in C#, with a configurable toolbar.",
         ["TextShimmer"] = "A gradient band sweeping across text, for AI-style streaming states.",
+        ["TimeZonePicker"] = "A searchable time zone selector with UTC offsets, bound to a TimeZoneInfo or its IANA id.",
         ["Virtualize"] = "Renders only the rows currently in view, for very long lists.",
 
         // Legacy

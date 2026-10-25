@@ -1,0 +1,75 @@
+﻿@page "/examples/default-node-overwrite"
+
+<PageTitle>Default Node Overwrite · Blow</PageTitle>
+
+<ExampleScaffold Title="Default Node Overwrite"
+                 Summary="Replace the look of the built-in 'default' node type and keep the rest: the NodeTemplate draws every default node as a card with an accent bar, and hands input and output nodes back to BlowDefaultNode so they keep their built-in look.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_overwrite" @onchange="e => _overwrite = (bool)e.Value!" /> overwrite the default node</label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <NodeTemplate Context="node">
+                @if (_overwrite && node.Type == "default")
+                {
+                    @* The node's own sides, as the built-in renderer uses: the data can still turn the card sideways. *@
+                    <BlowHandle Type="BlowHandleType.Target" Position="node.TargetPosition" />
+                    <div class="card-node">
+                        <span class="card-node__bar"></span>
+                        <span class="card-node__label">@node.Label</span>
+                    </div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="node.SourcePosition" />
+                }
+                else
+                {
+                    <BlowDefaultNode Node="node" />
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Compare <strong>Custom default A</strong> and <strong>B</strong> with <strong>Input</strong> and <strong>Output</strong>: the two default nodes are drawn by the template, as cards with an accent bar; the other two keep the built-in look.</li>
+        <li>Untick <strong>overwrite the default node</strong>: the cards go back to the built-in default node. Tick it again to bring them back.</li>
+        <li><strong>Drag</strong>, <strong>connect</strong> and <strong>select</strong> as usual: a template changes how a node looks, not how it behaves.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>NodeTemplate</code> renders the content of every node. Its <code>node.Type == "default"</code> branch draws the card, and <code>&lt;BlowDefaultNode Node="node" /&gt;</code> draws every other type exactly as the canvas would without a template.</li>
+        <li>A node whose <code>Type</code> is not set is a <code>"default"</code> node, so the two nodes with no type get the card.</li>
+        <li>The template places its own <code>BlowHandle</code>s and passes them <code>node.TargetPosition</code> and <code>node.SourcePosition</code> (<code>Top</code> and <code>Bottom</code> unless a node says otherwise), as the built-in renderer does.</li>
+        <li>The template renders inside the node element, so the card keeps the node's border, padding and selection ring; a rule on <code>.bit-blow-node-default</code> would restyle that frame too.</li>
+        <li>The checkbox is read inside the template: changing it re-renders this page, and with it every node.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .card-node { display:flex; align-items:center; gap:8px; padding:2px 4px; }
+    .card-node__bar { width:6px; height:24px; border-radius:3px; background:linear-gradient(#6366f1,#a855f7); }
+    .card-node__label { font-weight:600; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private bool _overwrite = true;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Input", Position = new(250, 20) },
+            new BlowNode { Id = "2", Label = "Custom default A", Position = new(150, 130) },
+            new BlowNode { Id = "3", Label = "Custom default B", Position = new(380, 130) },
+            new BlowNode { Id = "4", Type = "output", Label = "Output", Position = new(280, 250) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
+        ];
+    }
+}

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A single tab of a <see cref="BitPivot"/>: its header, which is rendered into the tablist, and the
@@ -120,11 +120,28 @@ public partial class BitPivotItem : BitComponentBase
         StateHasChanged();
     }
 
+    // The header item and selected item parts of the pivot's Classes and Styles are part of this tab's own strings.
+    internal void RefreshClassStyles()
+    {
+        if (IsDisposed) return;
+
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
+
+        StateHasChanged();
+    }
+
 
 
     protected override string RootElementClass => "bit-pvti";
 
     private bool _IsReorderable => Parent?.GetItemReorderable(this) is true;
+
+    // A tab of a disabled pivot cannot be activated either, so it says so like one disabled on its own.
+    private bool _IsDisabled => Disabled || Parent?.Disabled is true;
+
+    // Nor does it run the page's activation handlers: the tab is the pivot's control, not a host of live content.
+    private protected override bool IsActivationDisabled => _IsDisabled;
 
     protected override void RegisterCssClasses()
     {
@@ -157,18 +174,23 @@ public partial class BitPivotItem : BitComponentBase
         // The Icon is compared by the classes it renders rather than by the instance, so an item given
         // a freshly constructed BitIconInfo on every render of its parent does not report a change
         // that is not one, which would leave the two StateHasChanged calls feeding each other.
-        var state = (IsEnabled, Visibility, HeaderText, Title, Icon?.GetCssClasses(), Icon?.Content, IconName, Key, ItemCount, Dismissible, Reorderable);
+        var state = (Disabled, Visibility, HeaderText, Title, Icon?.GetCssClasses(), Icon?.Content, IconName, Key, ItemCount, Dismissible, Reorderable);
 
         if (state == _lastHeaderState) return;
 
+        // A tab shown or hidden also moves the position every other tab announces in the set.
+        var visibilityChanged = state.Item2 != _lastHeaderState.Item2;
+
         _lastHeaderState = state;
 
-        Parent?.Refresh();
-    }
-
-    protected override void OnVisibilityChanged(BitVisibility visibility)
-    {
-        Parent?.Refresh();
+        if (visibilityChanged)
+        {
+            Parent?.RefreshWithItems();
+        }
+        else
+        {
+            Parent?.Refresh();
+        }
     }
 
 

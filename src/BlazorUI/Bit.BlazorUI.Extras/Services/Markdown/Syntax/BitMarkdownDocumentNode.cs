@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Root of a parsed document.</summary>
 public sealed class BitMarkdownDocumentNode : BitMarkdownNode

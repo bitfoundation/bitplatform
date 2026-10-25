@@ -1,0 +1,585 @@
+﻿@page "/e2e/drop-menu"
+
+<PageTitle>BitDropMenu E2E</PageTitle>
+
+<h1>BitDropMenu</h1>
+
+@* Every feature of BitDropMenu, one section each. Each drop menu has its own Id, so a test finds its button
+   (`#id .bit-drm-btn`) and, through the button's aria-controls, its callout, which is relocated to the body while it is open. *@
+
+<E2ESection Id="basic" Title="Basic: Text, content, events">
+    @* The outside target sits beside the drop menu, clear of the callout that opens under it. *@
+    <div style="display:flex;gap:360px;align-items:flex-start">
+        <BitDropMenu Id="dm-basic" Text="Quick settings"
+                     OnClick="() => _basicClicks++"
+                     OnOpen="() => _basicOpens++"
+                     OnDismiss="() => _basicDismisses++">
+            <div id="basic-content" style="padding:8px;display:flex;flex-direction:column;gap:8px">
+                <input id="basic-input" aria-label="Basic input" />
+                <button id="basic-save" type="button" @onclick="() => _basicSaves++">Save</button>
+            </div>
+        </BitDropMenu>
+        <button id="outside-target" type="button" @onclick="() => _outsideClicks++">Outside target</button>
+    </div>
+    <p>Clicks: <span id="basic-clicks">@_basicClicks</span>, Opens: <span id="basic-opens">@_basicOpens</span>, Dismisses: <span id="basic-dismisses">@_basicDismisses</span>, Saves: <span id="basic-saves">@_basicSaves</span>, outside clicks: <span id="outside-clicks">@_outsideClicks</span></p>
+</E2ESection>
+
+<E2ESection Id="second" Title="Another drop menu takes over">
+    <BitDropMenu Id="dm-second" Text="Second" OnDismiss="() => _secondDismisses++">
+        <div id="second-content" style="padding:8px">Second content</div>
+    </BitDropMenu>
+    <span id="second-dismisses">@_secondDismisses</span>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitDropMenu Id="dm-disabled" Text="Disabled" Disabled="_disabled"
+                 OnClick="() => _disabledClicks++"
+                 @ondblclick="() => _disabledPageActivations++"
+                 @onpointerdown="() => _disabledPageActivations++"
+                 @onmouseover="() => _disabledPageHovers++">
+        <div id="disabled-content" style="padding:8px">Disabled content</div>
+    </BitDropMenu>
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <p>Component clicks: <span id="disabled-clicks">@_disabledClicks</span>, page activations: <span id="disabled-activations">@_disabledPageActivations</span>, page hovers: <span id="disabled-hovers">@_disabledPageHovers</span>, disabled: <span id="disabled-state">@_disabled</span></p>
+</E2ESection>
+
+<E2ESection Id="full-width" Title="FullWidth">
+    <div id="full-width-box" style="width:500px">
+        <BitDropMenu Id="dm-full-width" Text="FullWidth" FullWidth>
+            <div style="padding:8px">Full width content</div>
+        </BitDropMenu>
+        <BitDropMenu Id="dm-fit-width" Text="Fit">
+            <div style="padding:8px">Fit content</div>
+        </BitDropMenu>
+    </div>
+</E2ESection>
+
+<E2ESection Id="icons" Title="Icons">
+    <BitDropMenu Id="dm-icon" Text="Share" IconName="@BitIconName.Share">
+        <div style="padding:8px">Share content</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-chevron" Text="Filters" ChevronDownIconName="@BitIconName.DoubleChevronDown">
+        <div style="padding:8px">Filters content</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-no-chevron" Text="Jane Cooper" IconName="@BitIconName.Contact" NoChevron>
+        <div style="padding:8px">Profile content</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-icon-only" IconName="@BitIconName.More" NoChevron AriaLabel="More actions" Title="More actions tooltip">
+        <div style="padding:8px">More content</div>
+    </BitDropMenu>
+</E2ESection>
+
+<E2ESection Id="template" Title="Template and Body">
+    <BitDropMenu Id="dm-template">
+        <Template>
+            <span id="template-trigger" style="display:flex;gap:10px;align-items:center">Flight BA 117</span>
+        </Template>
+        <Body>
+            <div id="template-body" style="padding:8px">Departs 18:40 from gate B22</div>
+        </Body>
+    </BitDropMenu>
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant and Transparent">
+    <BitDropMenu Id="dm-variant-none" Text="None" Color="BitColor.Primary">
+        <div style="padding:8px">None</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-variant-fill" Text="Fill" Variant="BitVariant.Fill" Color="BitColor.Primary">
+        <div style="padding:8px">Fill</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-variant-outline" Text="Outline" Variant="BitVariant.Outline" Color="BitColor.Primary">
+        <div style="padding:8px">Outline</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-variant-text" Text="Text" Variant="BitVariant.Text" Color="BitColor.Primary">
+        <div style="padding:8px">Text</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-transparent" Text="Transparent" Color="BitColor.Primary" Transparent>
+        <div style="padding:8px">Transparent</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-variant-runtime" Text="Runtime" Variant="_runtimeVariant" Color="BitColor.Primary">
+        <div style="padding:8px">Runtime</div>
+    </BitDropMenu>
+    <button id="btn-variant-outline" type="button" @onclick="() => _runtimeVariant = BitVariant.Outline">Outline</button>
+    <button id="btn-variant-text" type="button" @onclick="() => _runtimeVariant = BitVariant.Text">Text</button>
+</E2ESection>
+
+<E2ESection Id="loading" Title="IsLoading">
+    <BitDropMenu Id="dm-loading" Text="Cloud sync" IconName="@BitIconName.Cloud" IsLoading="_isLoading" @bind-IsOpen="_loadingOpen">
+        <div id="loading-content" style="padding:8px">Last synced 5 minutes ago</div>
+    </BitDropMenu>
+    <button id="btn-toggle-loading" type="button" @onclick="() => _isLoading = !_isLoading">Toggle loading</button>
+    <span id="loading-open">@_loadingOpen</span>
+</E2ESection>
+
+<E2ESection Id="lazy" Title="LazyRender">
+    <BitDropMenu Id="dm-lazy" Text="LazyRender" LazyRender>
+        <div id="lazy-content" style="padding:8px">
+            <label><input id="lazy-check" type="checkbox" /> Keeps its state after a close</label>
+        </div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-eager" Text="Eager">
+        <div id="eager-content" style="padding:8px">Rendered from the start</div>
+    </BitDropMenu>
+</E2ESection>
+
+<E2ESection Id="callout-appearance" Title="Background, Border, NoShadow">
+    <BitDropMenu Id="dm-bg-default" Text="Default background">
+        <div style="padding:8px">Default</div>
+    </BitDropMenu>
+    @foreach (var kind in _colorKinds)
+    {
+        <BitDropMenu Id="@($"dm-bg-{kind}")" Text="@($"Background {kind}")" Background="kind">
+            <div style="padding:8px">Background @kind</div>
+        </BitDropMenu>
+        <BitDropMenu Id="@($"dm-border-{kind}")" Text="@($"Border {kind}")" Border="kind">
+            <div style="padding:8px">Border @kind</div>
+        </BitDropMenu>
+    }
+    <BitDropMenu Id="dm-no-shadow" Text="NoShadow" NoShadow>
+        <div style="padding:8px">Flat</div>
+    </BitDropMenu>
+</E2ESection>
+
+<E2ESection Id="sizing" Title="Width, MinWidth, MaxWidth, MaxHeight, MatchWidth">
+    <BitDropMenu Id="dm-match-width" Text="A rather wide drop menu button for MatchWidth" MatchWidth>
+        <div style="padding:8px">M</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-no-match-width" Text="A rather wide drop menu button without it">
+        <div style="padding:8px">M</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-width" Text="Width" Width="16rem">
+        <div style="padding:8px">16rem</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-min-width" Text="MinWidth" MinWidth="16rem">
+        <div style="padding:8px">Short</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-max-width" Text="MaxWidth" MaxWidth="16rem">
+        <div style="padding:8px">A rather long piece of content that wraps instead of stretching the callout across the screen</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-max-height" Text="MaxHeight" MaxHeight="10rem">
+        <div style="padding:8px">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div>Item @i</div>
+            }
+        </div>
+    </BitDropMenu>
+</E2ESection>
+
+<E2ESection Id="placement" Title="Placement, Alignment, Gap, DropDirection">
+    <div style="display:flex;justify-content:center;padding:8px 0">
+        <BitDropMenu Id="dm-placement" Text="Placed" Placement="_placement" Gap="8" Alignment="_alignment">
+            <div style="padding:8px;width:200px">Placement content</div>
+        </BitDropMenu>
+    </div>
+    <div>
+        <button id="btn-place-top" type="button" @onclick="() => _placement = BitPlacement.Top">Top</button>
+        <button id="btn-place-bottom" type="button" @onclick="() => _placement = BitPlacement.Bottom">Bottom</button>
+        <button id="btn-place-start" type="button" @onclick="() => _placement = BitPlacement.Start">Start</button>
+        <button id="btn-place-end" type="button" @onclick="() => _placement = BitPlacement.End">End</button>
+        <button id="btn-align-start" type="button" @onclick="() => _alignment = BitPlacement.Start">Align start</button>
+        <button id="btn-align-center" type="button" @onclick="() => _alignment = BitPlacement.Center">Align center</button>
+        <button id="btn-align-end" type="button" @onclick="() => _alignment = BitPlacement.End">Align end</button>
+        <span id="placement-state">@_placement|@_alignment</span>
+    </div>
+    <div style="display:flex;justify-content:center;padding:8px 0">
+        <BitDropMenu Id="dm-drop-direction" Text="Categories" DropDirection="_dropDirection">
+            <div style="padding:8px">
+                @for (var i = 1; i <= 40; i++)
+                {
+                    <div>Category @i</div>
+                }
+            </div>
+        </BitDropMenu>
+    </div>
+    <button id="btn-drop-all" type="button" @onclick="() => _dropDirection = BitDropDirection.All">All</button>
+    <button id="btn-drop-tb" type="button" @onclick="() => _dropDirection = BitDropDirection.TopAndBottom">TopAndBottom</button>
+    <span id="drop-direction-state">@_dropDirection</span>
+</E2ESection>
+
+<E2ESection Id="hover" Title="OpenOnHover, HoverOpenDelay, HoverCloseDelay">
+    <BitDropMenu Id="dm-hover" Text="Products" OpenOnHover
+                 OnOpen="() => _hoverOpens++" OnDismiss="() => _hoverDismisses++">
+        <div id="hover-content" style="padding:8px;display:flex;flex-direction:column;gap:8px">
+            <a id="hover-link" href="javascript:void(0)">Platform</a>
+            <a href="javascript:void(0)">Pricing</a>
+        </div>
+    </BitDropMenu>
+    <div style="height:24px"></div>
+    <BitDropMenu Id="dm-hover-delay" Text="With delays" OpenOnHover HoverOpenDelay="600" HoverCloseDelay="900">
+        <div id="hover-delay-content" style="padding:8px">Opens after 600ms, closes after 900ms</div>
+    </BitDropMenu>
+    <p>Hover opens: <span id="hover-opens">@_hoverOpens</span>, dismisses: <span id="hover-dismisses">@_hoverDismisses</span></p>
+    <input id="hover-elsewhere" aria-label="Elsewhere" />
+    <div id="hover-away" style="height:40px;background:#eee">Away</div>
+</E2ESection>
+
+<E2ESection Id="binding" Title="IsOpen, DefaultIsOpen, Open/Close/Toggle">
+    <BitDropMenu Id="dm-bound" @bind-IsOpen="_isOpen" Text="@($"IsOpen: {_isOpen}")">
+        <div id="bound-content" style="padding:8px">Bound content</div>
+    </BitDropMenu>
+    <span id="bound-state">@_isOpen</span>
+    <button id="btn-bound-open" type="button" @onclick="() => _isOpen = true">Open the bound one</button>
+    <button id="btn-bound-close" type="button" @onclick="() => _isOpen = false">Close the bound one</button>
+    <br />
+    <BitDropMenu @ref="_refDropMenu" Id="dm-ref" Text="Controlled by the reference" OnOpen="() => _refOpens++" OnDismiss="() => _refDismisses++">
+        <div id="ref-content" style="padding:8px">Reference content</div>
+    </BitDropMenu>
+    <button id="btn-ref-open" type="button" @onclick="() => _refDropMenu!.Open()">Open()</button>
+    <button id="btn-ref-close" type="button" @onclick="() => _refDropMenu!.Close()">Close()</button>
+    <button id="btn-ref-toggle" type="button" @onclick="() => _refDropMenu!.Toggle()">Toggle()</button>
+    <span id="ref-counts">@_refOpens/@_refDismisses</span>
+    <br />
+    <button id="btn-mount-default-open" type="button" @onclick="() => _mountDefaultIsOpen = !_mountDefaultIsOpen">Mount DefaultIsOpen</button>
+    @if (_mountDefaultIsOpen)
+    {
+        <BitDropMenu Id="dm-default-open" Text="DefaultIsOpen" DefaultIsOpen>
+            <div id="default-open-content" style="padding:8px">Starts open</div>
+        </BitDropMenu>
+    }
+    <br />
+    <BitDropMenu Id="dm-one-way" IsOpen="_oneWayOpen" Text="One-way IsOpen">
+        <div id="one-way-content" style="padding:8px">One way</div>
+    </BitDropMenu>
+    <button id="btn-one-way-toggle" type="button" @onclick="() => _oneWayOpen = !_oneWayOpen">Toggle one-way</button>
+</E2ESection>
+
+<E2ESection Id="auto-close" Title="AutoClose">
+    <BitDropMenu Id="dm-auto-close" Text="@($"AutoClose ({_autoCloseAction})")" AutoClose>
+        <div style="padding:8px;display:flex;flex-direction:column">
+            <button id="auto-rename" type="button" @onclick="@(() => _autoCloseAction = "Renamed")">Rename</button>
+            <button id="auto-delete" type="button" @onclick="@(() => _autoCloseAction = "Deleted")">Delete</button>
+        </div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-no-auto-close" Text="Without AutoClose">
+        <div style="padding:8px">
+            <label><input id="no-auto-check" type="checkbox" /> Active</label>
+        </div>
+    </BitDropMenu>
+    <span id="auto-close-action">@_autoCloseAction</span>
+</E2ESection>
+
+<E2ESection Id="accessibility" Title="Keyboard, AutoFocus, TrapFocus, Aria">
+    <button id="before-keyboard" type="button">Before</button>
+    <BitDropMenu Id="dm-keyboard" Text="Keyboard">
+        <div style="padding:8px;display:flex;flex-direction:column;gap:4px">
+            <button id="kb-first" type="button">First</button>
+            <button id="kb-last" type="button">Last</button>
+        </div>
+    </BitDropMenu>
+    <button id="after-keyboard" type="button">After</button>
+    <br />
+    <BitDropMenu Id="dm-autofocus" Text="AutoFocus" AutoFocus>
+        <div style="padding:8px;display:flex;gap:4px">
+            <input id="af-input" aria-label="Search" />
+            <button id="af-go" type="button">Go</button>
+        </div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-autofocus-empty" Text="AutoFocus empty" AutoFocus>
+        <div id="af-empty-content" style="padding:8px">Nothing focusable</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-trap" Text="TrapFocus" TrapFocus>
+        <div style="padding:8px;display:flex;gap:4px">
+            <input id="trap-email" aria-label="Email" />
+            <button id="trap-subscribe" type="button">Subscribe</button>
+        </div>
+    </BitDropMenu>
+    <button id="after-trap" type="button">After trap</button>
+    <br />
+    <BitDropMenu Id="dm-aria" IconName="@BitIconName.Filter" NoChevron
+                 AriaLabel="Filters"
+                 AriaDescription="Narrows the list below"
+                 Title="Filters title">
+        <div style="padding:8px">Aria content</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-aria-hidden" Text="AriaHidden" AriaHidden>
+        <div style="padding:8px">Hidden content</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-tabindex" Text="TabIndex" TabIndex="3">
+        <div style="padding:8px">TabIndex content</div>
+    </BitDropMenu>
+</E2ESection>
+
+<E2ESection Id="escape-dialog" Title="Escape inside a dialog">
+    <button id="btn-open-dialog" type="button" @onclick="() => _dialogOpen = true">Open dialog</button>
+    <span id="dialog-state">@(_dialogOpen ? "open" : "closed")</span>
+    <span id="dialog-menu-state">@(_dialogMenuOpen ? "open" : "closed")</span>
+    <BitDialog Id="escape-dialog-surface" @bind-IsOpen="_dialogOpen" AutoFocus="false" Title="Outer dialog">
+        <Body>
+            <input id="dialog-input" aria-label="Dialog input" />
+            <BitDropMenu Id="dm-in-dialog" Text="Menu in dialog" @bind-IsOpen="_dialogMenuOpen">
+                <div style="padding:8px"><input id="dialog-menu-input" aria-label="Menu input" /></div>
+            </BitDropMenu>
+        </Body>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="nested-popup" Title="A dropdown inside the callout">
+    <BitDropMenu Id="dm-nested" Text="Subscribe" TrapFocus>
+        <div style="padding:8px;width:240px">
+            <BitDropdown Id="dd-in-menu" Label="Frequency" TItem="BitDropdownOption<string>" TValue="string" DefaultValue="@("weekly")">
+                <BitDropdownOption Text="Daily" Value="@("daily")" />
+                <BitDropdownOption Text="Weekly" Value="@("weekly")" />
+                <BitDropdownOption Text="Monthly" Value="@("monthly")" />
+            </BitDropdown>
+        </div>
+    </BitDropMenu>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <BitParams Parameters="_toolbarParams">
+        <BitDropMenu Id="dm-params-file" Text="File">
+            <div style="padding:8px"><button id="params-file-new" type="button">New</button></div>
+        </BitDropMenu>
+        <BitDropMenu Id="dm-params-share" Text="Share" Variant="BitVariant.Fill">
+            <div style="padding:8px"><button id="params-share-mail" type="button">Email</button></div>
+        </BitDropMenu>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <BitDropMenu Id="dm-color-none" Text="No color">
+        <div style="padding:8px">No color</div>
+    </BitDropMenu>
+    @foreach (var color in _colors)
+    {
+        <BitDropMenu Id="@($"dm-color-{color}")" Text="@color.ToString()" Color="color">
+            <div style="padding:8px">@color</div>
+        </BitDropMenu>
+        <BitDropMenu Id="@($"dm-color-outline-{color}")" Text="@($"Outline {color}")" Color="color" Variant="BitVariant.Outline">
+            <div style="padding:8px">@color</div>
+        </BitDropMenu>
+    }
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External icons">
+    <BitDropMenu Id="dm-ext-css" Text="House" Icon="@("fa-solid fa-house")">
+        <div style="padding:8px">House</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-ext-fa" Text="GitHub" Icon="@BitIconInfo.Fa("brands github")">
+        <div style="padding:8px">GitHub</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-ext-bi" Text="Gear" Icon="@BitIconInfo.Bi("gear-fill")" ChevronDownIcon="@BitIconInfo.Bi("chevron-down")">
+        <div style="padding:8px">Gear</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-ext-precedence" Text="Precedence" Icon="@BitIconInfo.Css("my-icon")" IconName="@BitIconName.Share">
+        <div style="padding:8px">Precedence</div>
+    </BitDropMenu>
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitDropMenu Id="dm-size-none" Text="None" IconName="@BitIconName.Filter">
+        <div style="padding:8px">None</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-size-Small" Text="Small" Size="BitSize.Small" IconName="@BitIconName.Filter">
+        <div style="padding:8px">Small</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-size-Medium" Text="Medium" Size="BitSize.Medium" IconName="@BitIconName.Filter">
+        <div style="padding:8px">Medium</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-size-Large" Text="Large" Size="BitSize.Large" IconName="@BitIconName.Filter">
+        <div style="padding:8px">Large</div>
+    </BitDropMenu>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes">
+    <BitDropMenu Id="dm-style" Text="Styled" Style="border-color: rgb(138, 43, 226); color: rgb(138, 43, 226); margin-left: 7px;">
+        <div style="padding:8px">Styled</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-class" Text="Classed" Class="custom-class">
+        <div style="padding:8px">Classed</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-styles" Text="Styles" IconName="@BitIconName.Filter"
+                 Styles="@(new() { Root = "background-color: rgb(255, 218, 185);",
+                                   Button = "letter-spacing: 3px;",
+                                   Icon = "color: rgb(0, 128, 0);",
+                                   Text = "color: rgb(255, 99, 71); font-weight: 700;",
+                                   ChevronDown = "color: rgb(0, 0, 255);",
+                                   Callout = "border: 2px solid rgb(255, 99, 71);",
+                                   Overlay = "background-color: rgba(0, 0, 0, 0.25);",
+                                   Opened = "background-color: rgb(218, 165, 32);" })">
+        <div style="padding:8px">Styles</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-styles-spinner" Text="Spinner" IsLoading
+                 Styles="@(new() { Spinner = "width: 30px; height: 30px;" })"
+                 Classes="@(new() { Spinner = "custom-spinner" })">
+        <div style="padding:8px">Spinner</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-classes" Text="Classes" IconName="@BitIconName.Filter"
+                 Classes="@(new() { Root = "custom-root",
+                                    Button = "custom-button",
+                                    Icon = "custom-icon",
+                                    Text = "custom-text",
+                                    ChevronDown = "custom-chevron",
+                                    Callout = "custom-callout",
+                                    Overlay = "custom-overlay",
+                                    Opened = "custom-opened" })">
+        <div style="padding:8px">Classes</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-visibility" Text="Visibility" Visibility="_visibility">
+        <div style="padding:8px">Visibility</div>
+    </BitDropMenu>
+    <span id="visibility-state">@_visibility</span>
+    <button id="btn-visibility-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-visibility-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <button id="btn-visibility-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <BitDropMenu Id="dm-html-attrs" Text="HtmlAttributes" data-test="drop-menu-attr" HtmlAttributes="@(new Dictionary<string, object> { ["data-extra"] = "extra" })">
+        <div style="padding:8px">HtmlAttributes</div>
+    </BitDropMenu>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div id="css-vars-ancestor" style="--bit-DropMenu-radius: 999px; --bit-DropMenu-min-height: 50px; --bit-DropMenu-callout-background: rgb(10, 20, 30); --bit-DropMenu-callout-radius: 13px; --bit-DropMenu-background: rgb(200, 100, 50); --bit-DropMenu-callout-padding: 6px;">
+        <BitDropMenu Id="dm-css-vars" Text="Inherited">
+            <div style="padding:8px">Vars</div>
+        </BitDropMenu>
+        <BitDropMenu Id="dm-css-vars-color" Text="Color wins" Color="BitColor.Error">
+            <div style="padding:8px">Color wins</div>
+        </BitDropMenu>
+        <BitDropMenu Id="dm-css-vars-bg-kind" Text="Background wins" Background="BitColorKind.Tertiary">
+            <div style="padding:8px">Background wins</div>
+        </BitDropMenu>
+    </div>
+    <BitDropMenu Id="dm-css-vars-instance" Text="Instance" Style="--bit-DropMenu-callout-background: rgb(40, 50, 60); --bit-DropMenu-outline-border-color: rgb(1, 2, 3);" Variant="BitVariant.Outline">
+        <div style="padding:8px">Instance</div>
+    </BitDropMenu>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="display:flex;justify-content:center">
+        <BitDropMenu Id="dm-rtl" Text="منو" IconName="@BitIconName.Settings" Dir="BitDir.Rtl">
+            <div style="padding:8px;width:220px">تنظیمات</div>
+        </BitDropMenu>
+    </div>
+    <div dir="rtl" style="display:flex;justify-content:center">
+        <BitDropMenu Id="dm-rtl-inherited" Text="منو ارثی" IconName="@BitIconName.Settings">
+            <div style="padding:8px;width:220px">ارثی</div>
+        </BitDropMenu>
+    </div>
+    <div style="display:flex;justify-content:center">
+        <BitDropMenu Id="dm-ltr" Text="Left to right" IconName="@BitIconName.Settings">
+            <div style="padding:8px;width:220px">LTR</div>
+        </BitDropMenu>
+    </div>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Reduced motion, ForceAnimation">
+    <BitDropMenu Id="dm-motion" Text="Motion">
+        <div style="padding:8px">Motion</div>
+    </BitDropMenu>
+    <BitDropMenu Id="dm-force-animation" Text="ForceAnimation" ForceAnimation>
+        <div style="padding:8px">Forced</div>
+    </BitDropMenu>
+</E2ESection>
+
+<E2ESection Id="responsive" Title="Responsive, PanelPlacement, ScrollContainerId">
+    <BitDropMenu Id="dm-responsive" Text="Responsive" Responsive PanelPlacement="_panelPlacement" ScrollContainerId="responsive-list"
+                 OnDismiss="() => _responsiveDismisses++">
+        @* No text selection in the panel: a mouse drag across text selects it, which the swipe gives way to by design. *@
+        <div id="responsive-list" style="max-height:60vh;overflow:auto;user-select:none;-webkit-user-select:none">
+            <div style="padding:8px">Swipe to dismiss</div>
+            @for (var i = 1; i <= 5; i++)
+            {
+                <div style="padding:8px">Row @i</div>
+            }
+        </div>
+    </BitDropMenu>
+    <button id="btn-panel-start" type="button" @onclick="() => _panelPlacement = BitPlacement.Start">Start</button>
+    <button id="btn-panel-end" type="button" @onclick="() => _panelPlacement = BitPlacement.End">End</button>
+    <button id="btn-panel-left" type="button" @onclick="() => _panelPlacement = BitPlacement.Left">Left</button>
+    <button id="btn-panel-right" type="button" @onclick="() => _panelPlacement = BitPlacement.Right">Right</button>
+    <button id="btn-panel-top" type="button" @onclick="() => _panelPlacement = BitPlacement.Top">Top</button>
+    <button id="btn-panel-bottom" type="button" @onclick="() => _panelPlacement = BitPlacement.Bottom">Bottom</button>
+    <span id="panel-placement">@(_panelPlacement?.ToString() ?? "unset")</span>
+    <span id="responsive-dismisses">@_responsiveDismisses</span>
+    <BitDropMenu Id="dm-responsive-rtl" Text="ریسپانسیو" Dir="BitDir.Rtl" Responsive PanelPlacement="BitPlacement.Start">
+        <div style="padding:8px">پنل از ابتدا</div>
+    </BitDropMenu>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Unmount while open">
+    <button id="btn-toggle-mounted" type="button" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    <span id="mounted-state">@_mounted</span>
+    @if (_mounted)
+    {
+        <BitDropMenu Id="dm-unmount" Text="Unmount me" @bind-IsOpen="_unmountOpen">
+            <div id="unmount-content" style="padding:8px">Unmount content</div>
+        </BitDropMenu>
+    }
+</E2ESection>
+
+<E2ESection Id="scroll" Title="Page scroll dismisses">
+    <BitDropMenu Id="dm-scroll" Text="Scroll" @bind-IsOpen="_scrollOpen">
+        <div id="scroll-content" style="padding:8px">Scroll content</div>
+    </BitDropMenu>
+    <span id="scroll-state">@_scrollOpen</span>
+</E2ESection>
+
+<div style="height:900px" aria-hidden="true"></div>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private static readonly BitColorKind[] _colorKinds =
+    [
+        BitColorKind.Primary, BitColorKind.Secondary, BitColorKind.Tertiary, BitColorKind.Transparent
+    ];
+
+    private readonly BitDropMenuParams[] _toolbarParams =
+    [
+        new() { Gap = 4, Color = BitColor.Primary, Variant = BitVariant.Outline, AutoClose = true }
+    ];
+
+    private int _basicClicks;
+    private int _basicOpens;
+    private int _basicDismisses;
+    private int _basicSaves;
+    private int _outsideClicks;
+    private int _secondDismisses;
+
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private int _disabledPageActivations;
+    private int _disabledPageHovers;
+
+    private BitVariant _runtimeVariant = BitVariant.Fill;
+
+    private bool _isLoading;
+    private bool _loadingOpen;
+
+    private BitPlacement _placement = BitPlacement.Bottom;
+    private BitPlacement _alignment = BitPlacement.Start;
+    private BitDropDirection _dropDirection = BitDropDirection.TopAndBottom;
+
+    private int _hoverOpens;
+    private int _hoverDismisses;
+
+    private bool _isOpen;
+    private BitDropMenu? _refDropMenu;
+    private int _refOpens;
+    private int _refDismisses;
+    private bool _mountDefaultIsOpen;
+    private bool _oneWayOpen;
+
+    private string _autoCloseAction = "none";
+
+    private bool _dialogOpen;
+    private bool _dialogMenuOpen;
+
+    private BitVisibility _visibility = BitVisibility.Visible;
+
+    private BitPlacement? _panelPlacement;
+    private int _responsiveDismisses;
+
+    private bool _mounted = true;
+    private bool _unmountOpen;
+    private bool _scrollOpen;
+}

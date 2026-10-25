@@ -1,0 +1,477 @@
+﻿@page "/e2e/pull-to-refresh"
+
+@* Every feature of BitPullToRefresh, one section each. Every anchor is a 300x200 scroller of its own with a list taller
+   than it, so a pull starts at its top (or its bottom, for an upward one). A refresh of the first and the programmatic
+   section waits on a gate the page opens with a button, so a test sees the refreshing state for as long as it needs. *@
+
+<PageTitle>BitPullToRefresh E2E</PageTitle>
+
+<style>
+    .e2e-ptr-anchor {
+        width: 300px;
+        height: 200px;
+        overflow: auto;
+        background: rgb(245, 245, 245);
+    }
+
+    .e2e-ptr-anchor > div {
+        height: 30px;
+    }
+
+    .e2e-ptr-frame {
+        width: 300px;
+        height: 230px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .e2e-ptr-frame > .e2e-ptr-header {
+        height: 30px;
+        flex: none;
+    }
+
+    .e2e-ptr-frame > .e2e-ptr-scroller {
+        flex: 1;
+        overflow: auto;
+    }
+
+    .e2e-ptr-frame > .e2e-ptr-scroller > div {
+        height: 30px;
+    }
+
+    .e2e-ptr-class {
+        outline: 2px solid rgb(1, 2, 3);
+    }
+
+    .e2e-ptr-vars {
+        --bit-PullToRefresh-color: rgb(0, 100, 0);
+        --bit-PullToRefresh-pull-opacity: 0.3;
+        --bit-PullToRefresh-indicator-size: 50px;
+        --bit-PullToRefresh-glyph-size: 30px;
+        --bit-PullToRefresh-indicator-background: rgb(255, 255, 0);
+        --bit-PullToRefresh-indicator-shadow: none;
+        --bit-PullToRefresh-indicator-radius: 4px;
+        --bit-PullToRefresh-refreshing-background: rgb(0, 0, 255);
+        --bit-PullToRefresh-complete-background: rgb(0, 255, 0);
+        --bit-PullToRefresh-strip-background: rgb(255, 200, 200);
+        --bit-PullToRefresh-z-index: 7;
+    }
+
+    .e2e-ptr-cls-root { border-top: 3px solid rgb(10, 0, 0); }
+    .e2e-ptr-cls-loading { border-bottom: 3px solid rgb(20, 0, 0); }
+    .e2e-ptr-cls-spw { outline: 1px solid rgb(30, 0, 0); }
+    .e2e-ptr-cls-spw-crl { outline-color: rgb(40, 0, 0); }
+    .e2e-ptr-cls-spw-swr { outline-color: rgb(50, 0, 0); }
+    .e2e-ptr-cls-spw-cmp { outline-color: rgb(60, 0, 0); }
+    .e2e-ptr-cls-spn { border-left: 1px solid rgb(70, 0, 0); }
+    .e2e-ptr-cls-spn-crl { border-left-color: rgb(80, 0, 0); }
+    .e2e-ptr-cls-spn-swr { border-left-color: rgb(90, 0, 0); }
+    .e2e-ptr-cls-spn-cmp { border-left-color: rgb(100, 0, 0); }
+</style>
+
+<E2ESection Id="basic" Title="Basic: a mouse pull, every event, the states, the refresh held until the page lets go">
+    <button id="btn-finish" @onclick="Finish">Finish the refresh</button>
+    <button id="btn-read" @onclick="Read">Read IsRefreshing / State / PullProgress</button>
+    <span id="read">@_read</span>
+    <BitPullToRefresh @ref="_basicRef" Id="ptr-basic" OnRefresh="HoldRefresh"
+                      OnPullStart="PullStart"
+                      OnPullMove="d => { _moves++; _lastMove = d; }"
+                      OnPullEnd="d => { _ends++; _lastEnd = d; }"
+                      OnPullCancel="d => { _cancels++; _lastCancel = d; }"
+                      OnStateChange="s => _states.Add(s.ToString())">
+        <div id="basic-anchor" class="e2e-ptr-anchor">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div>Item @i</div>
+            }
+        </div>
+    </BitPullToRefresh>
+    <div>
+        <span id="refreshes">@_refreshes</span>
+        <span id="starts">@_starts</span>
+        <span id="start-args">@_startArgs</span>
+        <span id="moves">@_moves</span>
+        <span id="last-move">@_lastMove.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)</span>
+        <span id="ends">@_ends</span>
+        <span id="last-end">@_lastEnd.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)</span>
+        <span id="cancels">@_cancels</span>
+        <span id="last-cancel">@_lastCancel.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)</span>
+        <span id="states">@string.Join(",", _states)</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="behavior" Title="Trigger, Factor, Margin, Threshold, MaxPull">
+    <span id="behavior-move">@_behaviorMove.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)</span>
+    <span id="behavior-moves">@_behaviorMoves</span>
+    <span id="behavior-end">@_behaviorEnd.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)</span>
+    <span id="behavior-refreshes">@_behaviorRefreshes</span>
+    <BitPullToRefresh Id="ptr-behavior" Trigger="100" Factor="2" Margin="10" Threshold="20" MaxPull="150"
+                      OnPullMove="d => { _behaviorMoves++; _behaviorMove = d; }" OnPullEnd="d => _behaviorEnd = d"
+                      OnRefresh="() => _behaviorRefreshes++">
+        <div class="e2e-ptr-anchor">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div>Item @i</div>
+            }
+        </div>
+    </BitPullToRefresh>
+</E2ESection>
+
+<E2ESection Id="direction" Title="Direction Up, a pull from the bottom">
+    <span id="up-refreshes">@_upRefreshes</span>
+    <span id="up-move">@_upMove.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)</span>
+    <BitPullToRefresh Id="ptr-up" Direction="BitPullToRefreshDirection.Up" OnRefresh="() => _upRefreshes++" OnPullMove="d => _upMove = d">
+        <div id="up-anchor" class="e2e-ptr-anchor">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div>Item @i</div>
+            }
+        </div>
+    </BitPullToRefresh>
+</E2ESection>
+
+<E2ESection Id="scroller" Title="ScrollerSelector, ScrollerElement, FullWidth">
+    <span id="selector-refreshes">@_selectorRefreshes</span>
+    <div style="width: 500px;">
+        <BitPullToRefresh Id="ptr-selector" ScrollerSelector=".e2e-ptr-scroller" FullWidth OnRefresh="() => _selectorRefreshes++">
+            <div class="e2e-ptr-frame">
+                <div class="e2e-ptr-header">Header</div>
+                <div id="selector-scroller" class="e2e-ptr-scroller">
+                    @for (var i = 1; i <= 20; i++)
+                    {
+                        <div>Item @i</div>
+                    }
+                </div>
+            </div>
+        </BitPullToRefresh>
+    </div>
+    <span id="element-refreshes">@_elementRefreshes</span>
+    <BitPullToRefresh Id="ptr-element" ScrollerElement="_scrollerRef" OnRefresh="() => _elementRefreshes++">
+        <div class="e2e-ptr-frame">
+            <div class="e2e-ptr-header">Header</div>
+            <div id="element-scroller" class="e2e-ptr-scroller" @ref="_scrollerRef">
+                @for (var i = 1; i <= 20; i++)
+                {
+                    <div>Item @i</div>
+                }
+            </div>
+        </div>
+    </BitPullToRefresh>
+</E2ESection>
+
+<E2ESection Id="templates" Title="CompleteDelay, Loading / Release / Complete templates, IndicatorTemplate">
+    <span id="complete-refreshes">@_completeRefreshes</span>
+    <BitPullToRefresh Id="ptr-complete" CompleteDelay="800" OnRefresh="() => _completeRefreshes++">
+        <div class="e2e-ptr-anchor">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div>Item @i</div>
+            }
+        </div>
+    </BitPullToRefresh>
+    <BitPullToRefresh Id="ptr-templates" CompleteDelay="800" OnRefresh="() => { }">
+        <ChildContent>
+            <div class="e2e-ptr-anchor">
+                @for (var i = 1; i <= 20; i++)
+                {
+                    <div>Item @i</div>
+                }
+            </div>
+        </ChildContent>
+        <Loading><span id="tpl-loading">L</span></Loading>
+        <Release><span id="tpl-release">R</span></Release>
+        <Complete><span id="tpl-complete">C</span></Complete>
+    </BitPullToRefresh>
+    <BitPullToRefresh Id="ptr-indicator" CompleteDelay="800" OnRefresh="() => { }">
+        <ChildContent>
+            <div class="e2e-ptr-anchor">
+                @for (var i = 1; i <= 20; i++)
+                {
+                    <div>Item @i</div>
+                }
+            </div>
+        </ChildContent>
+        <IndicatorTemplate Context="ctx">
+            <span id="ind">@ctx.State|@ctx.Progress.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)</span>
+        </IndicatorTemplate>
+    </BitPullToRefresh>
+</E2ESection>
+
+<E2ESection Id="programmatic" Title="RefreshAsync, IsRefreshing, the labels, AriaLabel">
+    <button id="btn-refresh" @onclick="RefreshProgrammatically">RefreshAsync</button>
+    <button id="btn-finish-programmatic" @onclick="FinishProgrammatic">Finish</button>
+    <button id="btn-read-programmatic" @onclick="ReadProgrammatic">Read IsRefreshing</button>
+    <span id="programmatic-refreshes">@_programmaticRefreshes</span>
+    <span id="programmatic-done">@_programmaticDone</span>
+    <span id="programmatic-read">@_programmaticRead</span>
+    <BitPullToRefresh @ref="_programmaticRef" Id="ptr-programmatic" OnRefresh="HoldProgrammatic" CompleteDelay="400"
+                      AriaLabel="Messages" ReleaseLabel="Release to load new messages" RefreshingLabel="Loading new messages"
+                      CompleteLabel="Messages are up to date">
+        <div class="e2e-ptr-anchor">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div>Message @i</div>
+            }
+        </div>
+    </BitPullToRefresh>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled and NoMouse">
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle Disabled</button>
+    <span id="disabled-value">@_disabled</span>
+    <span id="disabled-starts">@_disabledStarts</span>
+    <span id="disabled-refreshes">@_disabledRefreshes</span>
+    <BitPullToRefresh Id="ptr-disabled" Disabled="_disabled" OnPullStart="_ => _disabledStarts++" OnRefresh="() => _disabledRefreshes++">
+        <div id="disabled-anchor" class="e2e-ptr-anchor">
+            <button id="disabled-content-btn" @onclick="() => _disabledContentClicks++">Still interactive</button>
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div>Item @i</div>
+            }
+        </div>
+    </BitPullToRefresh>
+    <span id="disabled-content-clicks">@_disabledContentClicks</span>
+    <span id="nomouse-starts">@_noMouseStarts</span>
+    <span id="nomouse-refreshes">@_noMouseRefreshes</span>
+    <BitPullToRefresh Id="ptr-nomouse" NoMouse OnPullStart="_ => _noMouseStarts++" OnRefresh="() => _noMouseRefreshes++">
+        <div class="e2e-ptr-anchor">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div>Item @i</div>
+            }
+        </div>
+    </BitPullToRefresh>
+</E2ESection>
+
+<E2ESection Id="cascade" Title="BitParams cascade">
+    <button id="btn-cascade-change" @onclick="ChangeCascade">Change cascade</button>
+    <BitParams Parameters="_ptrParams">
+        <BitPullToRefresh Id="ptr-cascade" OnRefresh="() => _cascadeRefreshes++">
+            <div class="e2e-ptr-anchor">
+                @for (var i = 1; i <= 20; i++)
+                {
+                    <div>Item @i</div>
+                }
+            </div>
+        </BitPullToRefresh>
+        <BitPullToRefresh Id="ptr-cascade-own" Trigger="200" Color="BitColor.Success" OnRefresh="() => _cascadeOwnRefreshes++">
+            <div class="e2e-ptr-anchor">
+                @for (var i = 1; i <= 20; i++)
+                {
+                    <div>Item @i</div>
+                }
+            </div>
+        </BitPullToRefresh>
+    </BitParams>
+    <span id="cascade-refreshes">@_cascadeRefreshes</span>
+    <span id="cascade-own-refreshes">@_cascadeOwnRefreshes</span>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color and CustomColor">
+    <div>
+        @foreach (var color in Enum.GetValues<BitColor>())
+        {
+            var c = color;
+            <button id="btn-color-@c" @onclick="() => _color = c">@c</button>
+        }
+        <button id="btn-color-none" @onclick="() => _color = null">None</button>
+        <span id="color-current">@(_color?.ToString() ?? "none")</span>
+    </div>
+    <BitPullToRefresh Id="ptr-color" Color="_color" CustomColor="#b400ff" OnRefresh="() => { }">
+        <div class="e2e-ptr-anchor">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div>Item @i</div>
+            }
+        </div>
+    </BitPullToRefresh>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes, the --bit-PullToRefresh-* variables, Dir, Visibility, attributes">
+    <BitPullToRefresh Id="ptr-classes" CompleteDelay="600" OnRefresh="HoldVars" Class="e2e-ptr-class"
+                      Classes="@(new() { Root = "e2e-ptr-cls-root", Loading = "e2e-ptr-cls-loading", SpinnerWrapper = "e2e-ptr-cls-spw", SpinnerWrapperCanRelease = "e2e-ptr-cls-spw-crl", SpinnerWrapperRefreshing = "e2e-ptr-cls-spw-swr", SpinnerWrapperComplete = "e2e-ptr-cls-spw-cmp", Spinner = "e2e-ptr-cls-spn", SpinnerCanRelease = "e2e-ptr-cls-spn-crl", SpinnerRefreshing = "e2e-ptr-cls-spn-swr", SpinnerComplete = "e2e-ptr-cls-spn-cmp" })">
+        <div class="e2e-ptr-anchor">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div>Item @i</div>
+            }
+        </div>
+    </BitPullToRefresh>
+    <BitPullToRefresh Id="ptr-styles" CompleteDelay="600" OnRefresh="HoldVars" Style="margin-left: 5px;"
+                      Styles="@(new() { Root = "padding-top: 3px;", Loading = "padding-bottom: 4px;", SpinnerWrapper = "padding-left: 1px;", SpinnerWrapperCanRelease = "padding-right: 2px;", SpinnerWrapperRefreshing = "padding-right: 3px;", SpinnerWrapperComplete = "padding-right: 4px;", Spinner = "margin-left: 1px;", SpinnerCanRelease = "margin-right: 2px;", SpinnerRefreshing = "margin-right: 3px;", SpinnerComplete = "margin-right: 4px;" })">
+        <div class="e2e-ptr-anchor">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div>Item @i</div>
+            }
+        </div>
+    </BitPullToRefresh>
+    <div class="e2e-ptr-vars">
+        <BitPullToRefresh Id="ptr-vars" CompleteDelay="600" OnRefresh="HoldVars">
+            <div class="e2e-ptr-anchor">
+                @for (var i = 1; i <= 20; i++)
+                {
+                    <div>Item @i</div>
+                }
+            </div>
+        </BitPullToRefresh>
+    </div>
+    <button id="btn-finish-vars" @onclick="() => _varsGate?.TrySetResult()">Finish</button>
+    <BitPullToRefresh Id="ptr-rtl" Dir="BitDir.Rtl" OnRefresh="() => _rtlRefreshes++" data-e2e="ptr-attr" title="ptr title">
+        <div class="e2e-ptr-anchor">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div>مورد @i</div>
+            }
+        </div>
+    </BitPullToRefresh>
+    <span id="rtl-refreshes">@_rtlRefreshes</span>
+    <button id="btn-vis-visible" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-vis-hidden" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-vis-collapsed" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <BitPullToRefresh Id="ptr-vis" Visibility="_visibility">
+        <div class="e2e-ptr-anchor"><div>Item</div></div>
+    </BitPullToRefresh>
+</E2ESection>
+
+<E2ESection Id="unmount" Title="A pull to refresh removed in the middle of a refresh">
+    <button id="btn-unmount" @onclick="() => _unmountShown = !_unmountShown">Toggle mounted</button>
+    <span id="unmount-shown">@_unmountShown</span>
+    <span id="unmount-refreshes">@_unmountRefreshes</span>
+    @if (_unmountShown)
+    {
+        <BitPullToRefresh Id="ptr-unmount" OnRefresh="HoldUnmount">
+            <div class="e2e-ptr-anchor">
+                @for (var i = 1; i <= 20; i++)
+                {
+                    <div>Item @i</div>
+                }
+            </div>
+        </BitPullToRefresh>
+    }
+    <button id="btn-finish-unmount" @onclick="() => _unmountGate?.TrySetResult()">Finish</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private BitPullToRefresh _basicRef = default!;
+    private TaskCompletionSource? _gate;
+    private string _read = "";
+    private int _refreshes;
+    private int _starts;
+    private string _startArgs = "";
+    private int _moves;
+    private decimal _lastMove;
+    private int _ends;
+    private decimal _lastEnd;
+    private int _cancels;
+    private decimal _lastCancel;
+    private readonly List<string> _states = [];
+
+    private decimal _behaviorMove;
+    private int _behaviorMoves;
+    private decimal _behaviorEnd;
+    private int _behaviorRefreshes;
+
+    private int _upRefreshes;
+    private decimal _upMove;
+
+    private int _selectorRefreshes;
+    private int _elementRefreshes;
+    private ElementReference _scrollerRef;
+
+    private int _completeRefreshes;
+
+    private BitPullToRefresh _programmaticRef = default!;
+    private TaskCompletionSource? _programmaticGate;
+    private int _programmaticRefreshes;
+    private int _programmaticDone;
+    private string _programmaticRead = "";
+
+    private bool _disabled = true;
+    private int _disabledStarts;
+    private int _disabledRefreshes;
+    private int _disabledContentClicks;
+    private int _noMouseStarts;
+    private int _noMouseRefreshes;
+
+    private BitPullToRefreshParams[] _ptrParams = [new() { Trigger = 40, Color = BitColor.Error }];
+    private int _cascadeRefreshes;
+    private int _cascadeOwnRefreshes;
+
+    private BitColor? _color = BitColor.Primary;
+
+    private TaskCompletionSource? _varsGate;
+    private int _rtlRefreshes;
+    private BitVisibility _visibility;
+
+    private bool _unmountShown = true;
+    private int _unmountRefreshes;
+    private TaskCompletionSource? _unmountGate;
+
+    private async Task HoldRefresh()
+    {
+        _refreshes++;
+        _gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _gate.Task;
+    }
+
+    private void Finish() => _gate?.TrySetResult();
+
+    private void PullStart(BitPullToRefreshPullStartArgs a)
+    {
+        _starts++;
+        _startArgs = $"{a.Top:0}|{a.Left:0}|{a.Width:0}";
+    }
+
+    private void Read()
+    {
+        _read = $"{_basicRef.IsRefreshing}|{_basicRef.State}|{_basicRef.PullProgress.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}";
+    }
+
+    private async Task HoldProgrammatic()
+    {
+        _programmaticRefreshes++;
+        _programmaticGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _programmaticGate.Task;
+    }
+
+    private void FinishProgrammatic() => _programmaticGate?.TrySetResult();
+
+    private async Task RefreshProgrammatically()
+    {
+        await _programmaticRef.RefreshAsync();
+        _programmaticDone++;
+    }
+
+    private void ReadProgrammatic()
+    {
+        _programmaticRead = $"{_programmaticRef.IsRefreshing}|{_programmaticRef.State}";
+    }
+
+    private async Task HoldVars()
+    {
+        _varsGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _varsGate.Task;
+    }
+
+    private async Task HoldUnmount()
+    {
+        _unmountRefreshes++;
+        _unmountGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _unmountGate.Task;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // The scroller ScrollerElement names is captured by the first render, so it reaches the component with the
+        // render after it, as it does in any page that hands a captured reference to a component.
+        if (firstRender) StateHasChanged();
+    }
+
+    private void ChangeCascade()
+    {
+        _ptrParams = [new() { Trigger = 150, Color = BitColor.Warning }];
+    }
+}

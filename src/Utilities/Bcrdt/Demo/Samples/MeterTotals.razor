@@ -1,0 +1,49 @@
+﻿@* A running total of every measurement on the library's meter, Bit.Bcrdt. It listens the way any metrics
+   pipeline does - OpenTelemetry and dotnet-counters are MeterListeners too. In Blazor WebAssembly, set
+   <MetricsSupport>true</MetricsSupport> in the project file: the SDK turns System.Diagnostics.Metrics off by
+   default. *@
+@using System.Collections.Concurrent
+@using System.Diagnostics.Metrics
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+@inherits BcrdtComponentBase
+
+<table>
+    <thead>
+        <tr><th>Instrument</th><th>Total</th></tr>
+    </thead>
+    <tbody>
+        @foreach ((string instrument, double total) in _totals.OrderBy(entry => entry.Key))
+        {
+            <tr><td>@instrument</td><td>@total.ToString("N0")</td></tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private readonly ConcurrentDictionary<string, double> _totals = new();
+
+    protected override void OnInitialized()
+    {
+        var listener = new MeterListener
+        {
+            InstrumentPublished = (instrument, subscriber) =>
+            {
+                if (instrument.Meter.Name == BcrdtDiagnostics.MeterName) subscriber.EnableMeasurementEvents(instrument);
+            },
+        };
+
+        listener.SetMeasurementEventCallback<long>((instrument, value, _, _) => Add(instrument.Name, value));
+        listener.SetMeasurementEventCallback<double>((instrument, value, _, _) => Add(instrument.Name, value));
+        listener.Start();
+
+        TrackDisposable(listener);
+    }
+
+    // Measurements arrive on whichever thread took them; RequestRender is safe from any of them.
+    private void Add(string instrument, double value)
+    {
+        _totals.AddOrUpdate(instrument, value, (_, total) => total + value);
+        RequestRender();
+    }
+}

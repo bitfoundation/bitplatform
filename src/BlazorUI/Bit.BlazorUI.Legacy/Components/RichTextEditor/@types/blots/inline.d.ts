@@ -1,4 +1,4 @@
-declare class Inline extends InlineBlot {
+﻿declare class Inline extends InlineBlot {
     static allowedChildren: BlotConstructor[];
     static order: string[];
     static compare(self: string, other: string): number;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,7 +24,7 @@ public class BitButtonTests : BunitTestContext
         var clicked = false;
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Variant, variant);
             parameters.Add(p => p.Title, title);
             parameters.Add(p => p.OnClick, () => clicked = true);
@@ -53,7 +53,7 @@ public class BitButtonTests : BunitTestContext
             Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-otl"));
         }
 
-        Assert.AreEqual(bitButton.GetAttribute("title"), title);
+        Assert.AreEqual(title, bitButton.GetAttribute("title"));
 
         bitButton.Click();
 
@@ -70,7 +70,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Variant, variant);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
@@ -79,7 +79,7 @@ public class BitButtonTests : BunitTestContext
 
         var hasTabIndexAttr = bitButton.HasAttribute("tabindex");
 
-        Assert.AreEqual(hasTabIndexAttr, expectedResult);
+        Assert.AreEqual(expectedResult, hasTabIndexAttr);
 
         if (hasTabIndexAttr)
         {
@@ -97,7 +97,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Variant, variant);
             parameters.Add(p => p.Href, href);
             parameters.Add(p => p.Title, title);
@@ -108,7 +108,7 @@ public class BitButtonTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.AreEqual(bitButton.GetAttribute("target"), target);
+            Assert.AreEqual(target, bitButton.GetAttribute("target"));
             Assert.IsTrue(bitButton.HasAttribute("href"));
             Assert.IsFalse(bitButton.ClassList.Contains("bit-dis"));
         }
@@ -117,7 +117,7 @@ public class BitButtonTests : BunitTestContext
             Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
         }
 
-        Assert.AreEqual(bitButton.GetAttribute("title"), title);
+        Assert.AreEqual(title, bitButton.GetAttribute("title"));
     }
 
     [TestMethod, DataRow("Detailed description")]
@@ -150,8 +150,8 @@ public class BitButtonTests : BunitTestContext
         Assert.IsTrue(bitButton.HasAttribute("aria-label"));
     }
 
-    [TestMethod, DataRow(true, true), DataRow(false, false), DataRow(null, false)]
-    public void BitButtonAriaHiddenTest(bool ariaHidden, bool expectedResult)
+    [TestMethod, DataRow(true), DataRow(false)]
+    public void BitButtonAriaHiddenTest(bool ariaHidden)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
@@ -160,7 +160,9 @@ public class BitButtonTests : BunitTestContext
 
         var bitButton = com.Find(".bit-btn");
 
-        Assert.AreEqual(expectedResult, bitButton.HasAttribute("aria-hidden"));
+        // A valueless aria-hidden is not "true" to assistive technologies, so the attribute is either "true" or absent.
+        Assert.AreEqual(ariaHidden, bitButton.HasAttribute("aria-hidden"));
+        Assert.AreEqual(ariaHidden ? "true" : null, bitButton.GetAttribute("aria-hidden"));
     }
 
     [TestMethod,
@@ -221,16 +223,12 @@ public class BitButtonTests : BunitTestContext
          DataRow(BitColor.Warning),
          DataRow(BitColor.SevereWarning),
          DataRow(BitColor.Error),
-         DataRow(null),
     ]
-    public void BitColorOfButtonTest(BitColor? color)
+    public void BitColorOfButtonTest(BitColor color)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            if (color.HasValue)
-            {
-                parameters.Add(p => p.Color, color.Value);
-            }
+            parameters.Add(p => p.Color, color);
         });
 
         var bitButton = com.Find(".bit-btn");
@@ -242,33 +240,22 @@ public class BitButtonTests : BunitTestContext
             BitColor.Warning => "bit-btn-wrn",
             BitColor.SevereWarning => "bit-btn-swr",
             BitColor.Error => "bit-btn-err",
-            _ => "bit-btn-pri"
+            _ => throw new ArgumentOutOfRangeException(nameof(color))
         };
 
-        if (color.HasValue)
-        {
-            Assert.IsTrue(bitButton.ClassList.Contains(colorClassName));
-        }
-        else
-        {
-            Assert.AreEqual(5, bitButton.ClassList.Length);
-        }
+        Assert.IsTrue(bitButton.ClassList.Contains(colorClassName));
     }
 
     [TestMethod,
          DataRow(BitSize.Small),
          DataRow(BitSize.Medium),
          DataRow(BitSize.Large),
-         DataRow(null)
     ]
-    public void BitSizeOfButtonTest(BitSize? size)
+    public void BitSizeOfButtonTest(BitSize size)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            if (size.HasValue)
-            {
-                parameters.Add(p => p.Size, size.Value);
-            }
+            parameters.Add(p => p.Size, size);
         });
 
         var bitButton = com.Find(".bit-btn");
@@ -278,17 +265,35 @@ public class BitButtonTests : BunitTestContext
             BitSize.Small => "bit-btn-sm",
             BitSize.Medium => "bit-btn-md",
             BitSize.Large => "bit-btn-lg",
-            _ => "bit-btn-md"
+            _ => throw new ArgumentOutOfRangeException(nameof(size))
         };
 
-        if (size.HasValue)
+        Assert.IsTrue(bitButton.ClassList.Contains(sizeClassName));
+    }
+
+    [TestMethod]
+    public void BitButtonShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var com = RenderComponent<BitButton>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Button-* variables restyle the default while
+        // an explicit value - which does publish its class - wins over them.
+        var bitButton = com.Find(".bit-btn");
+        var published = new[]
         {
-            Assert.IsTrue(bitButton.ClassList.Contains(sizeClassName));
-        }
-        else
+            "bit-btn-pri", "bit-btn-sec", "bit-btn-ter", "bit-btn-inf", "bit-btn-suc", "bit-btn-wrn", "bit-btn-swr", "bit-btn-err",
+            "bit-btn-pbg", "bit-btn-sbg", "bit-btn-tbg", "bit-btn-pfg", "bit-btn-sfg", "bit-btn-tfg", "bit-btn-pbr", "bit-btn-sbr", "bit-btn-tbr",
+            "bit-btn-sm", "bit-btn-md", "bit-btn-lg",
+            "bit-btn-rnd",
+        };
+
+        foreach (var cssClass in published)
         {
-            Assert.AreEqual(5, bitButton.ClassList.Length);
+            Assert.IsFalse(bitButton.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
         }
+
+        // What is left is the root, the variant and the icon-only box a button with no content is.
+        Assert.AreEqual(3, bitButton.ClassList.Length);
     }
 
     [TestMethod,
@@ -323,13 +328,13 @@ public class BitButtonTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitLabelPosition.Top),
-        DataRow(BitLabelPosition.End),
-        DataRow(BitLabelPosition.Bottom),
-        DataRow(BitLabelPosition.Start),
+        DataRow(BitPlacement.Top),
+        DataRow(BitPlacement.End),
+        DataRow(BitPlacement.Bottom),
+        DataRow(BitPlacement.Start),
         DataRow(null),
     ]
-    public void BitButtonLoaderTest(BitLabelPosition? labelPosition)
+    public void BitButtonLoaderTest(BitPlacement? labelPosition)
     {
         const string loadingLabel = "I'm Loading Label";
 
@@ -339,16 +344,16 @@ public class BitButtonTests : BunitTestContext
             parameters.Add(p => p.LoadingLabel, loadingLabel);
             if (labelPosition.HasValue)
             {
-                parameters.Add(p => p.LoadingLabelPosition, labelPosition.Value);
+                parameters.Add(p => p.LoadingLabelPlacement, labelPosition.Value);
             }
         });
 
         var labelPositionClass = labelPosition switch
         {
-            BitLabelPosition.Top => "bit-btn-top",
-            BitLabelPosition.End => "bit-btn-end",
-            BitLabelPosition.Bottom => "bit-btn-btm",
-            BitLabelPosition.Start => "bit-btn-srt",
+            BitPlacement.Top => "bit-btn-top",
+            BitPlacement.End => "bit-btn-end",
+            BitPlacement.Bottom => "bit-btn-btm",
+            BitPlacement.Start => "bit-btn-srt",
             _ => "bit-btn-end"
         };
 
@@ -360,23 +365,23 @@ public class BitButtonTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitIconPosition.Start),
-        DataRow(BitIconPosition.End),
+        DataRow(BitPlacement.Start),
+        DataRow(BitPlacement.End),
         DataRow(null)
     ]
-    public void BitButtonIconPositionClassTest(BitIconPosition? iconPosition)
+    public void BitButtonIconPlacementClassTest(BitPlacement? iconPosition)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
             if (iconPosition.HasValue)
             {
-                parameters.Add(p => p.IconPosition, iconPosition.Value);
+                parameters.Add(p => p.IconPlacement, iconPosition.Value);
             }
         });
 
         var bitButton = com.Find(".bit-btn");
 
-        var expectedClassPresence = iconPosition == BitIconPosition.End;
+        var expectedClassPresence = iconPosition == BitPlacement.End;
 
         Assert.AreEqual(expectedClassPresence, bitButton.ClassList.Contains("bit-btn-eni"));
     }
@@ -390,7 +395,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, false);
             parameters.Add(p => p.TabIndex, tabIndex);
         });
@@ -401,7 +406,7 @@ public class BitButtonTests : BunitTestContext
 
         com.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         if (tabIndex is null)
@@ -491,7 +496,7 @@ public class BitButtonTests : BunitTestContext
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.Href, href);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitButton = com.Find(".bit-btn");
@@ -530,7 +535,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.IconName, "Emoji");
         });
 
@@ -540,7 +545,7 @@ public class BitButtonTests : BunitTestContext
 
         com.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
@@ -572,7 +577,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
@@ -622,6 +627,7 @@ public class BitButtonTests : BunitTestContext
 
     [TestMethod,
         DataRow("https://bitplatform.dev", "_blank", "noopener"),
+        DataRow("https://bitplatform.dev", "_BLANK", "noopener"),
         DataRow("https://bitplatform.dev", "_self", null),
         DataRow("https://bitplatform.dev", null, null)
     ]
@@ -638,7 +644,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual(expectedRel, bitButton.GetAttribute("rel"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -668,7 +674,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual(reclickable, clicked);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -885,7 +891,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AutoFocus, true);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
@@ -903,7 +909,7 @@ public class BitButtonTests : BunitTestContext
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.IsLoading, isLoading);
         });
 
@@ -997,6 +1003,25 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual("noreferrer", anchor.GetAttribute("rel"));
     }
 
+    [TestMethod,
+        DataRow("nofollow sponsored", "nofollow sponsored noopener"),
+        DataRow("opener", "opener"),
+        DataRow("noreferrer", "noreferrer")
+    ]
+    public void BitButtonBlankTargetParameterShouldKeepTheSplattedRel(string splattedRel, string expectedRel)
+    {
+        // With no Rel parameter, the rel written by hand is the one the anchor carries: the new-tab noopener is
+        // added to it, never put in its place, and one that already says what the opener should be is left alone.
+        var anchor = RenderSplatted(new()
+        {
+            [nameof(BitButton.Href)] = "https://bitplatform.dev",
+            [nameof(BitButton.Target)] = "_blank",
+            ["rel"] = splattedRel
+        }).Find(".bit-btn");
+
+        Assert.AreEqual(expectedRel, anchor.GetAttribute("rel"));
+    }
+
     [TestMethod]
     public void BitButtonSplattedBlankTargetShouldNotAddARelToAHashOnlyHref()
     {
@@ -1036,7 +1061,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual("secondary", com.Find(".bit-btn-srl").TextContent.Trim());
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("aria-label"),
         DataRow("aria-labelledby")]
     public void BitButtonIconOnlyShouldDropTheScreenReaderLabelWhenTheButtonIsNamedByHand(string attribute)
@@ -1079,7 +1104,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual("Add an item", com.Find(".bit-btn-hcn .bit-btn-srl").TextContent.Trim());
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)]
     public void BitButtonRoundedClassTest(bool rounded)
@@ -1105,12 +1130,15 @@ public class BitButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitButtonLoadingDelayShouldDeferTheSpinnerButNotTheState()
+    public void BitButtonLoadingDelayShouldDeferTheSpinnerButNotTheState()
     {
+        // The delay runs on the wall clock from the render on, so it is long enough that a test thread held up by
+        // a busy runner still reads the markup before the spinner arrives, and the spinner is then waited for
+        // rather than slept for.
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.IsLoading, true);
-            parameters.Add(p => p.LoadingDelay, 150);
+            parameters.Add(p => p.LoadingDelay, 500);
             parameters.AddChildContent("Save");
         });
 
@@ -1118,9 +1146,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual("true", com.Find(".bit-btn").GetAttribute("aria-busy"));
         Assert.AreEqual(0, com.FindAll(".bit-btn-spn").Count);
 
-        await Task.Delay(400);
-
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-btn-spn").Count));
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-btn-spn").Count), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -1131,7 +1157,8 @@ public class BitButtonTests : BunitTestContext
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.AutoLoading, true);
-            parameters.Add(p => p.LoadingDelay, 150);
+            // long enough that a test thread held up by a busy runner still reads the markup inside it
+            parameters.Add(p => p.LoadingDelay, 500);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<bool>(this, () => tsc.Task));
             parameters.AddChildContent("Save");
         });
@@ -1141,7 +1168,7 @@ public class BitButtonTests : BunitTestContext
         // the handler is still running, but the spinner is still being held back by the delay
         Assert.AreEqual(0, com.FindAll(".bit-btn-spn").Count);
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-btn-spn").Count), TimeSpan.FromSeconds(2));
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-btn-spn").Count), TimeSpan.FromSeconds(5));
 
         tsc.SetResult();
         await click;
@@ -1177,7 +1204,7 @@ public class BitButtonTests : BunitTestContext
         StringAssert.Contains(com.Find(".bit-btn").GetAttribute("style"), "--bit-Button-float-offset:2rem");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("16", "16px"),
         DataRow(" 12.5 ", "12.5px"),
         DataRow("0", "0px"),
@@ -1193,119 +1220,6 @@ public class BitButtonTests : BunitTestContext
         });
 
         StringAssert.Contains(com.Find(".bit-btn").GetAttribute("style"), $"--bit-Button-float-offset:{expected}");
-    }
-
-    [TestMethod]
-    public void BitButtonParamsShouldHaveCorrectParamName()
-    {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitButton)}", BitButtonParams.ParamName);
-    }
-
-    [TestMethod]
-    public void BitButtonParamsShouldImplementIBitComponentParams()
-    {
-        var @params = new BitButtonParams();
-
-        Assert.IsInstanceOfType<IBitComponentParams>(@params);
-        Assert.AreEqual(BitButtonParams.ParamName, @params.Name);
-    }
-
-    [TestMethod]
-    public void BitButtonShouldApplyCascadingParametersFromBitParams()
-    {
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitButtonParams
-            {
-                Color = BitColor.Success,
-                Size = BitSize.Large,
-                Variant = BitVariant.Outline,
-                Title = "Cascaded Title",
-                FullWidth = true,
-                NoWrap = true
-            }
-        };
-
-        var com = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitButton>(0);
-                builder.CloseComponent();
-            });
-        });
-
-        var bitButton = com.Find(".bit-btn");
-
-        Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-suc"));
-        Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-lg"));
-        Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-otl"));
-        Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-flw"));
-        Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-nwr"));
-        Assert.AreEqual("Cascaded Title", bitButton.GetAttribute("title"));
-    }
-
-    [TestMethod]
-    public void BitButtonDirectParametersShouldOverrideCascadingParameters()
-    {
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitButtonParams
-            {
-                Color = BitColor.Success,
-                Size = BitSize.Large,
-                Title = "Cascaded Title"
-            }
-        };
-
-        var com = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitButton>(0);
-                builder.AddAttribute(1, nameof(BitButton.Color), BitColor.Error);
-                builder.AddAttribute(2, nameof(BitButton.Title), "Direct Title");
-                builder.CloseComponent();
-            });
-        });
-
-        var bitButton = com.Find(".bit-btn");
-
-        Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-err"));
-        Assert.AreEqual("Direct Title", bitButton.GetAttribute("title"));
-
-        // the size that was not written by hand still comes from the cascading parameters
-        Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-lg"));
-    }
-
-    [TestMethod]
-    public void BitButtonParamsShouldResolveTheRelFromTheCascadedHrefAndTarget()
-    {
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitButtonParams
-            {
-                Href = "https://bitplatform.dev",
-                Target = "_blank"
-            }
-        };
-
-        var com = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitButton>(0);
-                builder.CloseComponent();
-            });
-        });
-
-        var bitButton = com.Find(".bit-btn");
-
-        Assert.AreEqual("a", bitButton.TagName, ignoreCase: true);
-        Assert.AreEqual("noopener", bitButton.GetAttribute("rel"));
     }
 
     [TestMethod]
@@ -1838,162 +1752,240 @@ public class BitButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitButtonParamsUpdateParametersShouldSetEveryPropertyItCarries()
+    public void BitButtonShouldRenderTheBaseParametersOnItsRoot()
     {
-        var classes = new BitButtonClassStyles { Root = "cascaded-root" };
-        var styles = new BitButtonClassStyles { Root = "color: red;" };
-
-        var @params = new BitButtonParams
-        {
-            AllowDisabledFocus = false,
-            AriaDescription = "Test description",
-            AriaHidden = true,
-            AutoFocus = true,
-            AutoLoading = true,
-            ButtonType = BitButtonType.Reset,
-            Classes = classes,
-            Color = BitColor.Warning,
-            Download = "report.pdf",
-            Draggable = true,
-            FixedColor = true,
-            Float = true,
-            FloatAbsolute = true,
-            FloatOffset = "2rem",
-            FloatPosition = BitPosition.TopLeft,
-            FormId = "my-form",
-            FullWidth = true,
-            Href = "https://bitplatform.dev",
-            IconName = "Share",
-            IconOnly = true,
-            IconPosition = BitIconPosition.End,
-            IconUrl = "/images/icon.svg",
-            IsLoading = true,
-            LoadingDelay = 250,
-            LoadingLabel = "Sending...",
-            LoadingLabelPosition = BitLabelPosition.Top,
-            NoWrap = true,
-            Reclickable = true,
-            Rel = BitLinkRels.NoOpener,
-            Rounded = true,
-            SecondaryText = "secondary",
-            Size = BitSize.Small,
-            StopPropagation = true,
-            Styles = styles,
-            Target = "_blank",
-            Title = "Test Title",
-            Variant = BitVariant.Outline,
-            AriaLabel = "Test Label",
-            IsEnabled = false,
-            TabIndex = "5"
-        };
-
-        var com = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitButton>(0);
-                builder.CloseComponent();
-            });
-        });
-
-        var instance = com.FindComponent<BitButton>().Instance;
-
-        Assert.IsFalse(instance.AllowDisabledFocus);
-        Assert.AreEqual("Test description", instance.AriaDescription);
-        Assert.IsTrue(instance.AriaHidden);
-        Assert.IsTrue(instance.AutoFocus);
-        Assert.IsTrue(instance.AutoLoading);
-        Assert.AreEqual(BitButtonType.Reset, instance.ButtonType);
-        Assert.AreSame(classes, instance.Classes);
-        Assert.AreEqual(BitColor.Warning, instance.Color);
-        Assert.AreEqual("report.pdf", instance.Download);
-        Assert.IsTrue(instance.Draggable);
-        Assert.IsTrue(instance.FixedColor);
-        Assert.IsTrue(instance.Float);
-        Assert.IsTrue(instance.FloatAbsolute);
-        Assert.AreEqual("2rem", instance.FloatOffset);
-        Assert.AreEqual(BitPosition.TopLeft, instance.FloatPosition);
-        Assert.AreEqual("my-form", instance.FormId);
-        Assert.IsTrue(instance.FullWidth);
-        Assert.AreEqual("https://bitplatform.dev", instance.Href);
-        Assert.AreEqual("Share", instance.IconName);
-        Assert.IsTrue(instance.IconOnly);
-        Assert.AreEqual(BitIconPosition.End, instance.IconPosition);
-        Assert.AreEqual("/images/icon.svg", instance.IconUrl);
-        Assert.IsTrue(instance.IsLoading);
-        Assert.AreEqual(250, instance.LoadingDelay);
-        Assert.AreEqual("Sending...", instance.LoadingLabel);
-        Assert.AreEqual(BitLabelPosition.Top, instance.LoadingLabelPosition);
-        Assert.IsTrue(instance.NoWrap);
-        Assert.IsTrue(instance.Reclickable);
-        Assert.AreEqual(BitLinkRels.NoOpener, instance.Rel);
-        Assert.IsTrue(instance.Rounded);
-        Assert.AreEqual("secondary", instance.SecondaryText);
-        Assert.AreEqual(BitSize.Small, instance.Size);
-        Assert.IsTrue(instance.StopPropagation);
-        Assert.AreSame(styles, instance.Styles);
-        Assert.AreEqual("_blank", instance.Target);
-        Assert.AreEqual("Test Title", instance.Title);
-        Assert.AreEqual(BitVariant.Outline, instance.Variant);
-        Assert.AreEqual("Test Label", instance.AriaLabel);
-        Assert.IsFalse(instance.IsEnabled);
-        Assert.AreEqual("5", instance.TabIndex);
-    }
-
-    [TestMethod]
-    public void BitButtonParamsShouldNotOverwriteWhatTheMarkupAlreadySet()
-    {
-        var @params = new BitButtonParams
-        {
-            Color = BitColor.Success,
-            Size = BitSize.Large,
-            Title = "Params Title"
-        };
-
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.Color, BitColor.Error);
-            parameters.Add(p => p.Size, BitSize.Small);
-            parameters.Add(p => p.Title, "Existing Title");
-        });
-
-        @params.UpdateParameters(com.Instance);
-
-        Assert.AreEqual(BitColor.Error, com.Instance.Color);
-        Assert.AreEqual(BitSize.Small, com.Instance.Size);
-        Assert.AreEqual("Existing Title", com.Instance.Title);
-    }
-
-    [TestMethod]
-    public void BitButtonParamsShouldApplyTheCascadedClassesAndStyles()
-    {
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitButtonParams
-            {
-                Classes = new BitButtonClassStyles { Root = "custom-root", Icon = "custom-icon" },
-                Styles = new BitButtonClassStyles { Root = "color: red;", Icon = "font-size: 2rem;" }
-            }
-        };
-
-        var com = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitButton>(0);
-                builder.AddAttribute(1, nameof(BitButton.IconName), "Emoji");
-                builder.CloseComponent();
-            });
+            parameters.Add(p => p.Id, "the-id");
+            parameters.Add(p => p.Class, "the-class");
+            parameters.Add(p => p.Style, "margin: 1px;");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.ForceAnimation, true);
+            parameters.Add(p => p.TabIndex, "2");
         });
 
         var root = com.Find(".bit-btn");
-        var icon = com.Find(".bit-btn-icn");
 
-        Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red;");
-        Assert.IsTrue(icon.ClassList.Contains("custom-icon"));
-        Assert.AreEqual("font-size: 2rem;", icon.GetAttribute("style"));
+        Assert.AreEqual("the-id", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("the-class"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-fam"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.AreEqual("2", root.GetAttribute("tabindex"));
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, null),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitButtonShouldFollowTheVisibility(BitVisibility visibility, string? expectedStyle)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = com.Find(".bit-btn").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle is null)
+        {
+            Assert.IsFalse(style.Contains("visibility") || style.Contains("display"));
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitButtonStopPropagationShouldBeRenderedOnTheClick(bool stopPropagation)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.StopPropagation, stopPropagation);
+        });
+
+        Assert.AreEqual(stopPropagation, com.Markup.Contains("onclick:stopPropagation"));
+    }
+
+    [TestMethod,
+        DataRow(false, false, false, false),
+        DataRow(true, false, false, true),
+        DataRow(false, true, false, true),
+        DataRow(false, true, true, false)
+    ]
+    public void BitButtonShouldSuppressTheNativeClickExactlyWhileItRefusesTheClick(bool disabled, bool isLoading, bool reclickable, bool expected)
+    {
+        // A disabled button kept in the tab order and a loading one carry no native disabled attribute, so without
+        // this the Enter key would still submit the form they sit in.
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, disabled);
+            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Reclickable, reclickable);
+        });
+
+        Assert.AreEqual(expected, com.Markup.Contains("onclick:preventDefault"));
+    }
+
+    [TestMethod,
+        DataRow(false, false, null, "-1"),
+        DataRow(false, true, null, "0"),
+        DataRow(false, true, "3", "3"),
+        DataRow(true, true, null, null),
+        DataRow(true, true, "3", "3")
+    ]
+    public void BitButtonDisabledAnchorShouldOnlyBeFocusableWithAllowDisabledFocus(bool isEnabled, bool allowDisabledFocus, string? tabIndex, string? expectedTabIndex)
+    {
+        // A disabled anchor has no href, and an anchor without one is only focusable through an explicit tabindex.
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Disabled, isEnabled is false);
+            parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+            parameters.Add(p => p.TabIndex, tabIndex);
+        });
+
+        var anchor = com.Find("a.bit-btn");
+
+        Assert.AreEqual(expectedTabIndex, anchor.GetAttribute("tabindex"));
+        Assert.AreEqual(isEnabled, anchor.HasAttribute("href"));
+        Assert.IsFalse(anchor.HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitButtonShouldKeepTheSplattedAriaBusyAndAriaDisabled()
+    {
+        var bitButton = RenderSplatted(new() { ["aria-busy"] = "true", ["aria-disabled"] = "true" }).Find(".bit-btn");
+
+        Assert.AreEqual("true", bitButton.GetAttribute("aria-busy"));
+        Assert.AreEqual("true", bitButton.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitButtonSecondaryTemplateAloneShouldStillRenderTheTextColumn()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.SecondaryTemplate, "<span class=\"secondary-template\">S</span>");
+        });
+
+        var root = com.Find(".bit-btn");
+
+        Assert.HasCount(1, com.FindAll(".bit-btn-sct .secondary-template"));
+        Assert.IsEmpty(com.FindAll(".bit-btn-prt"));
+        Assert.IsTrue(root.ClassList.Contains("bit-btn-hsc"));
+        Assert.IsFalse(root.ClassList.Contains("bit-btn-ntx"));
+    }
+
+    [TestMethod]
+    public void BitButtonHiddenFromAssistiveTechnologiesShouldRenderNoLiveRegion()
+    {
+        // aria-hidden on the button cannot reach a sibling, so a region left there would speak for a button that is not there.
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.AriaHidden, true);
+            parameters.Add(p => p.LoadingLabel, "Saving...");
+            parameters.Add(p => p.IsLoading, true);
+        });
+
+        Assert.IsEmpty(com.FindAll("span[role=status]"));
+    }
+
+    [TestMethod]
+    public void BitButtonLoadingDelayShouldNeverShowTheSpinnerForALoadThatEndsInsideIt()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.LoadingDelay, 5000);
+            parameters.AddChildContent("Save");
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        // the state is immediate, the spinner and the stacking layout wait out the delay
+        Assert.AreEqual("true", bitButton.GetAttribute("aria-busy"));
+        Assert.IsFalse(bitButton.ClassList.Contains("bit-btn-lda"));
+        Assert.IsEmpty(com.FindAll(".bit-btn-spn"));
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, false);
+        });
+
+        Assert.IsFalse(com.Find(".bit-btn").HasAttribute("aria-busy"));
+        Assert.IsFalse(com.Find(".bit-btn").ClassList.Contains("bit-btn-lda"));
+        Assert.IsEmpty(com.FindAll(".bit-btn-spn"));
+    }
+
+    [TestMethod]
+    public async Task BitButtonShouldTearDownTheDragScriptWhenItIsDisposed()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Float, true);
+            parameters.Add(p => p.Draggable, true);
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Draggables.enable"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Draggables.disable"));
+
+        await Context.DisposeComponentsAsync();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Draggables.disable"));
+    }
+
+    [TestMethod]
+    public async Task BitButtonShouldDisposeWithoutTouchingTheDragScriptWhenItNeverDragged()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.LoadingDelay, 5000);
+        });
+
+        Assert.IsEmpty(com.FindAll(".bit-btn-spn"));
+
+        // a pending loading delay is cancelled on the way out, and a button that never enabled the drag script never disables it
+        await Context.DisposeComponentsAsync();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Draggables.disable"));
+    }
+
+    [TestMethod,
+        DataRow(true, 1),
+        DataRow(false, 0)
+    ]
+    public void BitButtonAutoFocusShouldFocusTheButtonOnceOnTheFirstRender(bool autoFocus, int expectedFocusCalls)
+    {
+        // A browser honors the autofocus attribute only while the document loads, so the first interactive render
+        // gives the focus itself - once, never again on a later render.
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, autoFocus);
+            parameters.AddChildContent("Focus me");
+        });
+
+        com.Render();
+
+        Assert.HasCount(expectedFocusCalls, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+    }
+
+    [TestMethod]
+    public void BitButtonAutoFocusShouldNotFocusAButtonHiddenFromAssistiveTechnologies()
+    {
+        RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.AriaHidden, true);
+        });
+
+        Assert.HasCount(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 }

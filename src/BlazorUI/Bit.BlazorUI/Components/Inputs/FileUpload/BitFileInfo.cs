@@ -32,7 +32,8 @@ public class BitFileInfo
     [JsonPropertyName("fileId")] public string FileId { get; set; } = string.Empty;
 
     /// <summary>
-    /// The index of the selected file.
+    /// The index of the file among the ones picked in this browser, which is what names the transfer behind
+    /// it. A preloaded file was never picked and has no transfer of its own, so its index is -1.
     /// </summary>
     [JsonPropertyName("index")] public int Index { get; set; }
 
@@ -95,6 +96,14 @@ public class BitFileInfo
     /// </summary>
     [JsonIgnore] public bool IsQueued { get; internal set; }
 
+    /// <summary>
+    /// Whether the file was handed over through the PreloadedFiles parameter of the BitFileUpload instead of
+    /// being picked in the browser, which is to say it is already on the server: there is no content on this
+    /// side to send, so it is never uploaded, and removing it deletes it from the server through the
+    /// RemoveUrl exactly like a file whose bytes got there through this component.
+    /// </summary>
+    [JsonIgnore] public bool IsPreloaded { get; internal set; }
+
 
     // Whether a request of this file is on the wire right now. A second request for the same file would
     // take over the connection of the first one and start it over from the beginning, so a repeated
@@ -128,8 +137,18 @@ public class BitFileInfo
     /// <summary>
     /// The message attached to the current <see cref="Status"/> of the file: the reason it was rejected by
     /// the validations before the upload, or the body of the server response of its upload or removal.
+    /// A response body is truncated to its first 8 KB, since it crosses the Blazor Server circuit, whose
+    /// default message size limit an error page of a failing endpoint would otherwise exceed.
     /// </summary>
     [JsonIgnore] public string? Message { get; internal set; }
+
+    /// <summary>
+    /// The HTTP status code of the last upload or removal response this file received, which is what tells
+    /// an authorization problem from a payload that was too large or from a server that is temporarily down.
+    /// It is 0 when the request never reached the server at all - a network error, a timeout or an abort -
+    /// and null while no request of this file has come back yet.
+    /// </summary>
+    [JsonIgnore] public int? ResponseStatus { get; internal set; }
 
     /// <summary>
     /// The status of the file in the BitFileUpload.

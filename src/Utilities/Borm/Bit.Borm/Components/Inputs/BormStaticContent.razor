@@ -1,0 +1,44 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+@* Presentational only: no input, no value, no validation. A long form reads as a set of titled
+   sections rather than one undifferentiated column, without the host page having to interleave its
+   own markup with the generated fields.
+
+   The heading is a div carrying role="heading" rather than a fixed <h3>: a form is rendered inside a
+   page whose outline the library cannot know, so the level has to be the caller's choice. *@
+<div class="bit-borm-static">
+    @if (!string.IsNullOrEmpty(HeadingText))
+    {
+        <div class="bit-borm-static__heading" id="@Context.ElementId" role="heading" aria-level="@Level">@HeadingText</div>
+    }
+    @if (!string.IsNullOrEmpty(Context.HelpText))
+    {
+        <p class="bit-borm-static__text">@Context.HelpText</p>
+    }
+    @if (Divider)
+    {
+        <hr class="bit-borm-static__divider" />
+    }
+    @if (IsReview)
+    {
+        @* "Check your answers": everything the form holds, step by step, minus the step it sits on - found
+           by what it holds, not by being the current one, since an accordion or sections render every step. *@
+        <BormReview State="Context.State" HeadingLevel="@Math.Clamp(Level + 1, 1, 6)"
+                    ExcludeStep="@(Context.State.Definition.Steps.FirstOrDefault(step => BormState.StepContains(step, Context.Path)))" />
+    }
+</div>
+
+@code {
+    /// <summary>Renders the form's answers beneath the heading — set <c>Attr("review", true)</c>, or build it with <c>Review(...)</c>.</summary>
+    private bool IsReview => Attr("review", false);
+
+    /// <summary>The heading text — the field's label, unless the schema asked for no label at all.</summary>
+    private string? HeadingText => Field.ShowLabel ? Context.State.LabelOf(Field, Context.Path) : null;
+
+    /// <summary>Heading level, 1-6. Set with <c>Attr("level", 2)</c>; defaults to 3.</summary>
+    private int Level => Math.Clamp(Attr("level", 3), 1, 6);
+
+    /// <summary>Renders a horizontal rule below the content — set <c>Attr("divider", true)</c>.</summary>
+    private bool Divider => Attr("divider", false);
+}

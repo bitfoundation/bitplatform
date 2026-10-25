@@ -1,0 +1,134 @@
+﻿@* A reusable toolbar built entirely from real HTML controls, so it is keyboard and screen reader accessible.
+   The canvas itself never needs to handle these interactions. The tools are a segmented group of toggle
+   buttons (one choice, all of them visible), the colours are a ColorSwatches group, and the history buttons
+   sit at the far end - the same arrangement every editor page on this site uses. *@
+
+<div class="bb-toolbar bink-toolbar" role="toolbar" aria-label="Drawing tools">
+
+    @if (ShowTools)
+    {
+        <div class="bb-segmented" role="group" aria-label="Tool">
+            @foreach (ToolChoice choice in Tools)
+            {
+                <button type="button"
+                        aria-pressed="@(IsToolActive(choice) ? "true" : "false")"
+                        title="@choice.Title"
+                        @onclick="() => SelectToolAsync(choice)">
+                    @choice.Label
+                </button>
+            }
+        </div>
+    }
+
+    @if (ShowColors)
+    {
+        <span class="bink-sep" aria-hidden="true"></span>
+        <ColorSwatches Colors="Palette" Value="@CurrentColor" ValueChanged="SetColorAsync" />
+    }
+
+    @if (ShowWidth)
+    {
+        <span class="bink-sep" aria-hidden="true"></span>
+        <label class="bink-field">
+            Size
+            <input type="range" min="1" max="40" step="1" value="@((int)Width)"
+                   aria-label="Brush size"
+                   @onchange="OnWidthChanged" />
+            <span class="bink-field-value">@((int)Width)</span>
+        </label>
+    }
+
+    @ChildContent
+
+    <span class="bb-spacer"></span>
+
+    @if (ShowHistory && Canvas is not null)
+    {
+        <div class="bink-group" role="group" aria-label="History">
+            <button type="button" class="btn btn-secondary" disabled="@(!Canvas.History.CanUndo)" @onclick="() => Canvas.Undo()"
+                    title="Undo (Ctrl+Z)">Undo</button>
+            <button type="button" class="btn btn-secondary" disabled="@(!Canvas.History.CanRedo)" @onclick="() => Canvas.Redo()"
+                    title="Redo (Ctrl+Shift+Z)">Redo</button>
+            <button type="button" class="btn btn-secondary bink-danger" disabled="@(Canvas.CurrentDocument.IsEmpty)" @onclick="() => Canvas.Clear()">Clear</button>
+        </div>
+    }
+
+    @TrailingContent
+</div>
+
+@code {
+    /// <summary>A selectable tool with its label.</summary>
+    public sealed record ToolChoice(string Id, string Label, string Title, Func<IBinkTool> Create);
+
+    private IBinkTool? _instance;
+
+    [Parameter] public BinkCanvas? Canvas { get; set; }
+
+    [Parameter] public IReadOnlyList<ToolChoice> Tools { get; set; } = DefaultTools;
+
+    [Parameter] public string ActiveToolId { get; set; } = "draw";
+
+    [Parameter] public EventCallback<string> ActiveToolIdChanged { get; set; }
+
+    [Parameter] public EventCallback<IBinkTool> ToolSelected { get; set; }
+
+    [Parameter] public string CurrentColor { get; set; } = "#111827";
+
+    [Parameter] public EventCallback<string> CurrentColorChanged { get; set; }
+
+    [Parameter] public float Width { get; set; } = 4f;
+
+    [Parameter] public EventCallback<float> WidthChanged { get; set; }
+
+    [Parameter] public IReadOnlyList<string> Palette { get; set; } = DefaultPalette;
+
+    [Parameter] public bool ShowTools { get; set; } = true;
+
+    [Parameter] public bool ShowColors { get; set; } = true;
+
+    [Parameter] public bool ShowWidth { get; set; } = true;
+
+    [Parameter] public bool ShowHistory { get; set; } = true;
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public RenderFragment? TrailingContent { get; set; }
+
+    public static readonly IReadOnlyList<string> DefaultPalette =
+    [
+        "#111827", "#dc2626", "#ea580c", "#ca8a04", "#16a34a", "#2563eb", "#7c3aed", "#db2777"
+    ];
+
+    public static readonly IReadOnlyList<ToolChoice> DefaultTools =
+    [
+        new("draw", "Pen", "Freehand pen", () => new BinkDrawTool()),
+        new("eraser", "Eraser", "Eraser", () => new BinkEraserTool()),
+        new("select", "Select", "Select and move", () => new BinkSelectTool()),
+    ];
+
+    private bool IsToolActive(ToolChoice choice) => string.Equals(choice.Id, ActiveToolId, StringComparison.Ordinal);
+
+    private async Task SelectToolAsync(ToolChoice choice)
+    {
+        ActiveToolId = choice.Id;
+        _instance = choice.Create();
+        await ActiveToolIdChanged.InvokeAsync(choice.Id);
+        await ToolSelected.InvokeAsync(_instance);
+    }
+
+    private Task SetColorAsync(string color)
+    {
+        CurrentColor = color;
+        return CurrentColorChanged.InvokeAsync(color);
+    }
+
+    private Task OnWidthChanged(ChangeEventArgs e)
+    {
+        if (float.TryParse(e.Value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out float value))
+        {
+            Width = value;
+            return WidthChanged.InvokeAsync(value);
+        }
+        return Task.CompletedTask;
+    }
+}

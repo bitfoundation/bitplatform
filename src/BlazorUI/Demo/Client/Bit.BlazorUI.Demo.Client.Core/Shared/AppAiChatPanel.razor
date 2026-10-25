@@ -132,7 +132,7 @@
                                FloatOffset="0.5rem"
                                Class="send-message-button"
                                OnClick="WrapHandled(SendMessage)"
-                               IsEnabled=@(string.IsNullOrEmpty(_userInput) is false) />
+                               Disabled=@(string.IsNullOrEmpty(_userInput)) />
                 </BitStack>
             </BitStack>
         </Body>

@@ -1,0 +1,58 @@
+﻿@page "/regression/pivot-behaviour"
+
+<PageTitle>BitPivot Behaviour</PageTitle>
+
+@* The tabs pattern of WAI-ARIA, driven from the keyboard: the arrow keys move the focus between the tabs (wrapping
+   at the ends unless Loop is off, turned around in a header that reads right to left, stepping over a disabled tab),
+   Home and End go to the ends, and Enter or Space select the focused tab - or the focus selects on its own with
+   SelectOnFocus. Two narrow headers of eight tabs show the overflow behaviours: one folds what does not fit into a
+   menu, the other slides the header with a pair of buttons. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitPivot Behaviour</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+@foreach (var probe in _probes)
+{
+    var narrow = probe is "menu" or "slide";
+    var count = narrow ? 8 : 5;
+
+    <div data-probe="@probe" style="margin-bottom: 24px; width: @(narrow ? "260px" : "600px");">
+        <button class="before" type="button">Before @probe</button>
+        <BitPivot @bind-SelectedKey="_selected[probe]"
+                  AriaLabel="@($"Tabs {probe}")"
+                  Dir="@(probe == "rtl" ? BitDir.Rtl : null)"
+                  SelectOnFocus="@(probe == "auto")"
+                  Loop="@(probe != "noloop")"
+                  OverflowBehavior="@(probe switch { "menu" => BitPivotOverflowBehavior.Menu, "slide" => BitPivotOverflowBehavior.Slide, _ => null })">
+            @for (var i = 1; i <= count; i++)
+            {
+                var number = i;
+                <BitPivotItem Key="@number.ToString()"
+                              HeaderText="@($"Tab {number}")"
+                              Disabled="@(narrow is false && number == 4)">
+                    <div class="panel-content">Panel @number</div>
+                </BitPivotItem>
+            }
+        </BitPivot>
+        <p class="report" style="font-family: monospace;">
+            selected: <span class="selected">@(_selected[probe] ?? "none")</span>
+        </p>
+    </div>
+}
+
+@code {
+    private static readonly string[] _probes = ["manual", "auto", "rtl", "noloop", "menu", "slide"];
+
+    private readonly Dictionary<string, string?> _selected = _probes.ToDictionary(p => p, _ => (string?)"1");
+
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

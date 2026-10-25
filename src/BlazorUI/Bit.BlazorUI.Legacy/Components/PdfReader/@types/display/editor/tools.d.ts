@@ -1,4 +1,4 @@
-/**
+﻿/**
  * A pdf has several pages and each of them when it will rendered
  * will have an AnnotationEditorLayer which will contain the some
  * new Annotations associated to an editor in order to modify them.

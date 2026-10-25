@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// What a URL rewriter is told about the destination it is being asked to rewrite: the URL as the

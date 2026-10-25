@@ -1,0 +1,187 @@
+﻿@page "/getting-started"
+
+<PageTitle>Getting started · BbScanner</PageTitle>
+
+<div class="bb-intro">
+    <h1>Getting started</h1>
+    <p class="bb-subtitle">
+        One package and one namespace - there are no services to register, no script tag and no stylesheet
+        link. Put the scanner on a page that runs on WebAssembly and it opens the camera by itself; everything
+        after the camera hands over its pixels is managed code.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
+    <p class="bb-card-desc">
+        In a Blazor Web App, add the package to the <code>.Client</code> project: the scanner runs in the
+        browser, so its assembly has to be downloaded there.
+    </p>
+    <pre class="bb-code">dotnet add package Bit.BbScanner</pre>
+    <p class="bb-card-desc">Then add the namespace to <code>_Imports.razor</code>:</p>
+    <pre class="bb-code"><span class="k">@@using</span> Bit.BbScanner</pre>
+    <p class="bb-card-desc">
+        That is the whole setup. The package's Blazor initializer adds
+        <code>_content/Bit.BbScanner/bit-bbscanner.css</code> to the page, and the component imports its own
+        JavaScript module the first time it renders. Linking the stylesheet yourself also works - the
+        injection then stands down.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A first scanner</h3>
+    <p class="bb-card-desc">
+        The camera starts as soon as the component is ready (<code>AutoStart</code> is on by default) and the
+        browser asks for permission the first time. The scanner prerenders safely on the server and starts once
+        WebAssembly takes over. In a standalone Blazor WebAssembly app leave the <code>@@rendermode</code> line
+        out: everything there already runs on WebAssembly.
+    </p>
+    <pre class="bb-code"><span class="k">@@page</span> <span class="s">"/scan"</span>
+<span class="k">@@rendermode</span> InteractiveWebAssembly
+
+&lt;<span class="k">BbScanner</span> Formats=<span class="s">"BbBarcodeFormat.QrCode"</span>
+           Region=<span class="s">"BbScanRegion.CenteredSquare(0.7)"</span>
+           OnScan=<span class="s">"HandleScan"</span>
+           OnError=<span class="s">"HandleError"</span> /&gt;
+
+<span class="k">@@if</span> (_error <span class="k">is not null</span>)
+{
+    &lt;<span class="k">p</span> role=<span class="s">"alert"</span>&gt;@@_error.Message&lt;/<span class="k">p</span>&gt;
+}
+
+<span class="k">@@code</span> {
+    <span class="k">private</span> BbScannerException? _error;
+
+    <span class="k">private void</span> HandleScan(BbBarcodeResult result)
+    {
+        _error = <span class="k">null</span>;
+        Console.WriteLine(<span class="s">$"{result.Format}: {result.Text}"</span>);
+    }
+
+    <span class="k">private void</span> HandleError(BbScannerException error) =&gt; _error = error;
+}</pre>
+
+    <p class="bb-card-desc">
+        Everything below comes with the component and needs no code: the status bar (top), a dimmed surround and a
+        corner reticle marking the scan region, an outline drawn round each symbol it reads, and a control bar
+        with <em>Pause</em>, <em>Stop</em>/<em>Start</em> and <em>Scan image</em> - plus a camera picker, a torch
+        button and a zoom slider, each only when the device offers one. Drop an image file onto the scanner to scan
+        it without the camera.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <span class="bb-soft">Needs HTTPS or localhost, and camera permission</span>
+        </div>
+        <div class="scan-sample">
+            <div class="scan-layout">
+                <div class="scan-view">
+                    <BbScanner Formats="BbBarcodeFormat.All"
+                               Region="BbScanRegion.CenteredSquare(0.75)"
+                               OnScan="OnScan" />
+                </div>
+                <div class="scan-panels">
+                    <section class="scan-panel">
+                        <h4 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Last scan</h4>
+                        @if (_last is not null)
+                        {
+                            <dl class="bb-params">
+                                <dt>Format</dt>
+                                <dd><span class="bb-badge">@_last.Format</span></dd>
+                                <dt>Text</dt>
+                                <dd>@_last.Text</dd>
+                                <dt>Raw bytes</dt>
+                                <dd>@_last.RawBytes.Length</dd>
+                                <dt>Position</dt>
+                                <dd>@_last.BoundingBox in a @_last.FrameWidth×@_last.FrameHeight frame</dd>
+                            </dl>
+                        }
+                        else
+                        {
+                            <div class="bb-empty">Scan something to see the strongly typed result here.</div>
+                        }
+                        <p class="bb-card-desc">
+                            No camera to hand? Use <a href="image">image scanning</a>, or open the
+                            <a href="samples">sample barcodes</a> on another screen.
+                        </p>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Where it runs</h3>
+    <p class="bb-card-desc">
+        Camera scanning runs in the browser: the component reads frames through <code>[JSImport]</code> memory
+        views, which only exist on the WebAssembly runtime, and only in a secure context - a page served over
+        HTTPS, or from <code>localhost</code>.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Hosting model</th><th>What to do</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key">Blazor WebAssembly</td><td>Nothing else: put <code>&lt;BbScanner /&gt;</code> on a page.</td></tr>
+                <tr><td class="bb-table-key">Blazor Web App</td><td>Put the package and the scanning pages in the .Client project and render them with <code>InteractiveWebAssembly</code>. Under <code>InteractiveAuto</code> give the scanning pages <code>@@rendermode InteractiveWebAssembly</code> explicitly; the rest of the app can stay on Auto.</td></tr>
+                <tr><td class="bb-table-key">Blazor Server</td><td>The component reports <code>NotSupported</code>. Render the page with <code>InteractiveWebAssembly</code>, or decode uploads on the server with <code>BbBarcodeDecoder</code>.</td></tr>
+                <tr><td class="bb-table-key">Blazor Hybrid</td><td>The component reports <code>NotSupported</code>. Feed the platform camera's frames to <code>BbBarcodeDecoder</code>, which runs in-process.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How it works</h3>
+    <p class="bb-card-desc">
+        The browser opens the camera and copies pixels; every stage after that is C#, and reuses its buffers
+        from frame to frame.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Stage</th><th>Where</th><th>What happens</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key">Capture</td><td>Browser</td><td><code>getUserMedia</code> feeds a <code>&lt;video&gt;</code>; a canvas scales frames to the processing size.</td></tr>
+                <tr><td class="bb-table-key">Transfer</td><td>Boundary</td><td>One <code>JSImport</code> call copies RGBA into a reused managed buffer.</td></tr>
+                <tr><td class="bb-table-key">Luminance</td><td>C#</td><td>Fixed point BT.601 weights, with optional subsampling in the same pass.</td></tr>
+                <tr><td class="bb-table-key">Binarise</td><td>C#</td><td>Adaptive 8×8 block thresholds for matrix codes, per-row histograms for linear ones.</td></tr>
+                <tr><td class="bb-table-key">Detect</td><td>C#</td><td>Finder pattern search, perspective transform and grid sampling.</td></tr>
+                <tr><td class="bb-table-key">Decode</td><td>C#</td><td>Reed-Solomon correction, de-interleaving and bit stream parsing.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to go next</h3>
+    <p class="bb-card-desc">
+        Narrow <code>Formats</code> to the symbologies you need - it is the single most effective speed-up -
+        then aim with a region and tune the rest in the playground. Each page of these docs is a working scanner
+        that shows one part of the component.
+    </p>
+    <div class="bb-try">
+        <a href="scan" class="btn btn-outline">Every parameter, live →</a>
+        <a href="samples" class="btn btn-outline">Barcodes to scan →</a>
+        <a href="lifecycle" class="btn btn-outline">Start, stop, duplicates →</a>
+        <a href="camera" class="btn btn-outline">Cameras, torch, zoom →</a>
+        <a href="image" class="btn btn-outline">Scan a photo →</a>
+        <a href="customize" class="btn btn-outline">Theme and translate →</a>
+        <a href="errors" class="btn btn-outline">Handle failures →</a>
+        <a href="api" class="btn btn-outline">API reference →</a>
+    </div>
+</div>
+
+@code {
+    private BbBarcodeResult? _last;
+
+    private void OnScan(BbBarcodeResult result)
+    {
+        _last = result;
+        StateHasChanged();
+    }
+}

@@ -7,6 +7,8 @@ public partial class ThemeService
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
+    private AppThemeType? appliedTheme;
+
     /// <summary>
     /// Read by the native heads at launch, before their WebView exists (See MauiProgram and Windows' Program).
     /// </summary>
@@ -19,7 +21,16 @@ public partial class ThemeService
 
     public async Task<AppThemeType> ToggleTheme()
     {
-        var theme = ToAppTheme(await bitThemeManager.ToggleDarkLightAsync());
+        return await ApplyTheme(await bitThemeManager.ToggleDarkLightAsync());
+    }
+
+    public async Task<AppThemeType> ApplyTheme(string? themeName)
+    {
+        var theme = ToAppTheme(themeName);
+
+        if (appliedTheme == theme) return theme;
+
+        appliedTheme = theme;
 
         if (AppPlatform.IsBlazorHybrid)
         {

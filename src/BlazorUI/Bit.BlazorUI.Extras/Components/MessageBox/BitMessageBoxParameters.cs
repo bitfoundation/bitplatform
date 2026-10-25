@@ -89,10 +89,9 @@ public class BitMessageBoxParameters
     /// The template used to render the footer of the message box, which takes the place of its action buttons.
     /// </summary>
     /// <remarks>
-    /// The controls in it are the caller's own, so nothing in them answers the showing: only the close
-    /// button still does, with <see cref="BitMessageBoxResult.None"/>. Show the message box through the
-    /// <see cref="BitModalService"/> directly where a footer of your own has to close the modal with an
-    /// answer of its own.
+    /// The controls in it are the caller's own, so nothing in them answers the showing by itself. A component of
+    /// your own placed in it receives the message box as a <c>[CascadingParameter] BitMessageBox</c>, and its
+    /// <see cref="BitMessageBox.AnswerAsync"/> closes the showing with the answer it is given.
     /// </remarks>
     public RenderFragment? FooterTemplate { get; set; }
 
@@ -197,6 +196,11 @@ public class BitMessageBoxParameters
     /// The title of the message box.
     /// </summary>
     public string? Title { get; set; }
+
+    /// <summary>
+    /// The HTML element the title of the message box is rendered as.
+    /// </summary>
+    public string? TitleElement { get; set; }
 
     /// <summary>
     /// The text of the Yes button.

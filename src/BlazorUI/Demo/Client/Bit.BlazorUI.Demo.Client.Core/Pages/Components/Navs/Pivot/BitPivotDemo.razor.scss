@@ -1,13 +1,9 @@
-﻿.subtitle {
-    padding: 20px 0 10px 0;
-}
-
-.box {
+﻿.box {
     padding: 5px 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--bit-clr-brd-sec);
 }
 
-::deep {
+.pivot-custom ::deep {
     .custom-class {
         margin: 1rem;
         padding-left: 0.25rem;

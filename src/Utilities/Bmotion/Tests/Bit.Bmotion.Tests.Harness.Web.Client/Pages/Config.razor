@@ -1,0 +1,74 @@
+﻿@page "/config"
+
+@* BmotionConfig: a default transition, TransitionSpeed (instant and faster), ReduceMotion (forced on, forced off,
+   following the OS) and the colour space. Everything starts on #go, so a test sees each animation whole. *@
+
+<HarnessHeader Title="Config" Ready="Ready" OnLog="BindLog" />
+
+<button id="go" @onclick="() => Change(() => _go = true)">go</button>
+
+<BmotionConfig TransitionSpeed="0">
+    <Bmotion Animate="Bm.To(x: _go ? 100 : 0)" Transition="Bm.Tween(2)" OnAnimationStart='_ => Armed("speed0")' OnAnimationComplete='_ => Log(_go ? "speed0:complete" : "speed0:mounted")'>
+        <div id="speed0" class="small"></div>
+    </Bmotion>
+</BmotionConfig>
+
+<BmotionConfig TransitionSpeed="4">
+    <Bmotion Animate="Bm.To(x: _go ? 100 : 0)" Transition="Bm.Tween(2, BmEase.Linear)" OnAnimationStart='_ => Armed("speed4")' OnAnimationComplete='_ => Log(_go ? "speed4:complete" : "speed4:mounted")'>
+        <div id="speed4" class="small"></div>
+    </Bmotion>
+</BmotionConfig>
+
+<BmotionConfig Transition="Bm.Tween(1.5, BmEase.Linear)">
+    <Bmotion Animate="Bm.To(x: _go ? 100 : 0)" OnAnimationStart='_ => Armed("default")'>
+        <div id="default-transition" class="small"></div>
+    </Bmotion>
+</BmotionConfig>
+
+<BmotionConfig ReduceMotion="true">
+    <Bmotion Initial="Bm.To(opacity: 0.2)"
+             Animate="_go ? Bm.To(x: 100, opacity: 1) : Bm.To(opacity: 0.2)"
+             Transition="Bm.Tween(1, BmEase.Linear)"
+             OnAnimationStart='_ => Armed("reduced")'>
+        <div id="reduced" class="small"></div>
+    </Bmotion>
+</BmotionConfig>
+
+<BmotionConfig ReduceMotion="false">
+    <Bmotion Animate="Bm.To(x: _go ? 100 : 0)" Transition="Bm.Tween(1, BmEase.Linear)" OnAnimationStart='_ => Armed("never")'>
+        <div id="never-reduced" class="small"></div>
+    </Bmotion>
+</BmotionConfig>
+
+@* ReduceMotion unset: inside a config the OS preference is followed (the default IgnoreUnlessConfigured mode). *@
+<BmotionConfig>
+    <Bmotion Animate="Bm.To(x: _go ? 100 : 0)" Transition="Bm.Tween(1, BmEase.Linear)" OnAnimationStart='_ => Armed("os")'>
+        <div id="os-config" class="small"></div>
+    </Bmotion>
+</BmotionConfig>
+
+@* No config at all: under IgnoreUnlessConfigured the OS preference is not consulted. *@
+<Bmotion Animate="Bm.To(x: _go ? 100 : 0)" Transition="Bm.Tween(1, BmEase.Linear)" OnAnimationStart='_ => Armed("none")'>
+    <div id="no-config" class="small"></div>
+</Bmotion>
+
+<div class="row">
+    <Bmotion Initial='Bm.To(backgroundColor: "rgb(255, 0, 0)")'
+             Animate='_go ? Bm.To(backgroundColor: "rgb(0, 0, 255)") : Bm.To(backgroundColor: "rgb(255, 0, 0)")'
+             Transition="Bm.Tween(1, BmEase.Linear)"
+             OnAnimationStart='_ => Armed("srgb")'>
+        <div id="srgb" class="small"></div>
+    </Bmotion>
+    <BmotionConfig ColorSpace="BmColorSpace.Oklab">
+        <Bmotion Initial='Bm.To(backgroundColor: "rgb(255, 0, 0)")'
+                 Animate='_go ? Bm.To(backgroundColor: "rgb(0, 0, 255)") : Bm.To(backgroundColor: "rgb(255, 0, 0)")'
+                 Transition="Bm.Tween(1, BmEase.Linear)"
+                 OnAnimationStart='_ => Armed("oklab")'>
+            <div id="oklab" class="small"></div>
+        </Bmotion>
+    </BmotionConfig>
+</div>
+
+@code {
+    private bool _go;
+}

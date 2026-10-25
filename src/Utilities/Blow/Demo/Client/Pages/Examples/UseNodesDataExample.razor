@@ -1,0 +1,117 @@
+﻿@page "/examples/use-nodes-data"
+
+<PageTitle>Use Nodes Data · Blow</PageTitle>
+
+<ExampleScaffold Title="Use Nodes Data"
+                 Summary="Nodes that compute from the data of the nodes connected to them, as React Flow's useNodesData and useNodeConnections do. The source holds a number in its Data; every other node works its value out from its incoming connections as it renders, so changing the number or rewiring an edge updates everything downstream.">
+    <ChildContent>
+        @* EdgesChanged only re-renders the page, so the values follow an edge connected or deleted on the canvas. *@
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" EdgesChanged="@(_ => { })">
+            <NodeTemplate Context="node">
+                @if (node.Data is Counter c)
+                {
+                    <div class="und-node">
+                        <strong>@node.Label</strong>
+                        <input type="range" min="0" max="100" value="@c.Value" class="nodrag" aria-label="Source value"
+                               @oninput="e => SetValue(c, e.Value?.ToString())" @onpointerdown:stopPropagation="true" />
+                        <span class="und-node__value">@c.Value</span>
+                    </div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                }
+                else if (node.Data is Operation op)
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="und-node">
+                        <strong>@node.Label</strong>
+                        <span class="und-node__op">@op.Describe</span>
+                        @if (ValueOf(node) is { } value)
+                        {
+                            <span class="und-node__value">@value.ToString("N0")</span>
+                        }
+                        else
+                        {
+                            <span class="und-node__none">no input</span>
+                        }
+                    </div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                }
+                else
+                {
+                    <BlowDefaultNode Node="node" />
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Drag the slider in <strong>Source</strong>: Double, Square and Sum all recompute as it moves.</li>
+        <li>Click the edge from Square to Sum and press <strong>Delete</strong>: Sum now adds up only what still reaches it. Delete the edge into Double and Double shows <em>no input</em>.</li>
+        <li><strong>Drag from a handle</strong> to rewire: connect Source straight to Sum, or Double into Square, and the values follow the new wiring.</li>
+        <li><strong>Drag</strong> a node anywhere: where it sits changes nothing, only what is connected to it.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>A node's <code>Data</code> holds whatever the application needs: a <code>Counter</code> on the source, and an <code>Operation</code> on each computing node. The <code>NodeTemplate</code> draws each by the type of its data.</li>
+        <li>A computing node's value is worked out as the template renders it: <code>BlowGraphUtils.GetIncomers(node, nodes, edges)</code> returns the nodes with an edge into it - what <code>useNodeConnections</code> answers - and their data gives its inputs - what <code>useNodesData</code> reads. The operation is applied to the sum of the inputs; with none, there is no value.</li>
+        <li>Nothing computed is stored on a node, so nothing can go stale: the value is always that of the graph as it is drawn. A walk that comes back to a node it is already computing stops there, so wiring a loop shows no value rather than hanging.</li>
+        <li>The slider carries the <code>nodrag</code> class, the canvas's default <code>NoDragClass</code>, and stops its own pointer-down, so dragging it moves the value and not the node.</li>
+        <li>Moving the slider runs a handler of the page, which re-renders the page and with it the canvas and every template. <code>EdgesChanged</code> does the same when an edge is connected or deleted on the canvas.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .und-node { display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 8px; }
+    .und-node__op { font-size:11px; color:var(--bit-blow-text-muted); }
+    .und-node__value { font-size:18px; font-weight:700; color:var(--bit-blow-node-selected); font-variant-numeric:tabular-nums; }
+    .und-node__none { font-size:12px; font-style:italic; color:var(--bit-blow-text-muted); }
+</style>
+
+@code {
+    public sealed class Counter { public int Value { get; set; } = 25; }
+
+    /// <summary>What a computing node does with the sum of its inputs.</summary>
+    public sealed record Operation(string Describe, Func<double, double> Apply);
+
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "src", Label = "Source", Position = new(200, 0), Width = 170, Data = new Counter() },
+            new BlowNode { Id = "double", Label = "Double", Position = new(40, 170), Data = new Operation("inputs × 2", v => v * 2) },
+            new BlowNode { Id = "square", Label = "Square", Position = new(360, 170), Data = new Operation("inputs squared", v => v * v) },
+            new BlowNode { Id = "sum", Label = "Sum", Position = new(200, 340), Data = new Operation("inputs added", v => v) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e-src-double", Source = "src", Target = "double", Animated = true },
+            new BlowEdge { Id = "e-src-square", Source = "src", Target = "square", Animated = true },
+            new BlowEdge { Id = "e-double-sum", Source = "double", Target = "sum", Animated = true },
+            new BlowEdge { Id = "e-square-sum", Source = "square", Target = "sum", Animated = true },
+        ];
+    }
+
+    private static void SetValue(Counter c, string? value) => c.Value = int.TryParse(value, out var v) ? v : 0;
+
+    private double? ValueOf(BlowNode node) => ValueOf(node, []);
+
+    // The node's value from those connected into it. The path holds the nodes being worked out, so a loop is cut
+    // where it closes instead of recursing for ever.
+    private double? ValueOf(BlowNode node, HashSet<string> path)
+    {
+        if (node.Data is Counter counter) return counter.Value;
+        if (node.Data is not Operation op || !path.Add(node.Id)) return null;
+
+        var inputs = BlowGraphUtils.GetIncomers(node, _nodes, _edges)
+            .Select(n => ValueOf(n, path))
+            .OfType<double>()
+            .ToList();
+        path.Remove(node.Id);
+
+        return inputs.Count == 0 ? null : op.Apply(inputs.Sum());
+    }
+}

@@ -1,7 +1,13 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 internal static class BitMarkdownEditorJsRuntimeExtensions
 {
+    // System.Text.Json reads the config's getters by reflection, which the trimmer cannot see: they survive today only
+    // because other code reads them too, and a getter nothing else reads would reach the editor missing in trimmed
+    // (release) builds.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMarkdownEditorConfig))]
     public static ValueTask BitMarkdownEditorInit(this IJSRuntime jsRuntime,
                                                        string id,
                                                        ElementReference textArea,
@@ -13,6 +19,7 @@ internal static class BitMarkdownEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.init", id, textArea, root, dotnetObj, defaultValue, config);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMarkdownEditorConfig))]
     public static ValueTask BitMarkdownEditorSetConfig(this IJSRuntime jsRuntime, string id, BitMarkdownEditorConfig config)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.setConfig", id, config);
@@ -86,6 +93,11 @@ internal static class BitMarkdownEditorJsRuntimeExtensions
     public static ValueTask BitMarkdownEditorBlur(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.blur", id);
+    }
+
+    public static ValueTask BitMarkdownEditorSyncFocus(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.syncFocus", id);
     }
 
     public static ValueTask BitMarkdownEditorDispose(this IJSRuntime jsRuntime, string id)

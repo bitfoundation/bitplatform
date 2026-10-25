@@ -60,15 +60,29 @@ public static class AiAnswerJudge
             {answer}
             """;
 
-        // No ChatOptions: gpt-5 rejects any temperature but its default, and the rest is the provider's business.
-        var response = await judge!.GetResponseAsync<Verdict>(
-            [new(ChatRole.System, JudgeInstructions), new(ChatRole.User, prompt)],
-            cancellationToken: cancellationToken);
+        ChatResponse<Verdict> response;
+        Verdict? verdict = null;
+        var attempt = 0;
 
-        Assert.IsTrue(response.TryGetResult(out var verdict) && verdict is not null,
-            $"The judge answered with something that is not a verdict: {response.Text}");
+        // A verdict without its reasoning is the judge failing, not the chatbot: the fields it left out read as false.
+        // The question is asked again rather than graded on it.
+        do
+        {
+            // No ChatOptions: gpt-5 rejects any temperature but its default, and the rest is the provider's business.
+            response = await judge!.GetResponseAsync<Verdict>(
+                [new(ChatRole.System, JudgeInstructions), new(ChatRole.User, prompt)],
+                cancellationToken: cancellationToken);
 
-        Assert.IsTrue(verdict!.MeetsExpectation,
+            if (response.TryGetResult(out var result) && string.IsNullOrWhiteSpace(result?.Reasoning) is false)
+            {
+                verdict = result;
+            }
+        }
+        while (verdict is null && ++attempt < 3);
+
+        Assert.IsNotNull(verdict, $"The judge answered {attempt} times with something that is not a verdict, the last time: {response.Text}");
+
+        Assert.IsTrue(verdict.MeetsExpectation,
             $"""
             The chatbot's answer does not demonstrate: {expectation}
 

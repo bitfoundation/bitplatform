@@ -32,12 +32,13 @@ public static class IServiceCollectionExtensions
         // The app-wide accent configuration, stated once here - this method runs in the server and
         // in every client flavor, so the BitAccentColorHead in the host page (App.razor in the
         // Server project) and the AccentColorSwitcher chrome instances all resolve the same values.
-        // StoredCss + All explicitly: the BitAccentColorConfig defaults persist nothing and skip
-        // first paint.
+        // StoredCss + LocalStorage explicitly: the BitAccentColorConfig defaults persist nothing and
+        // skip first paint. No cookie: the host page is cached by the CDN and served to everyone, so
+        // the server must never paint one visitor's accent (see App.razor).
         services.AddBitBlazorUIExtrasServices(trySingleton: AppRenderMode.IsBlazorHybrid, accentColor: options =>
         {
             options.FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss;
-            options.Persistence = BitAccentColorPersistence.All;
+            options.Persistence = BitAccentColorPersistence.LocalStorage;
         });
         services.AddBitBlazorUILegacyServices(trySingleton: AppRenderMode.IsBlazorHybrid);
         services.AddSharedServices();

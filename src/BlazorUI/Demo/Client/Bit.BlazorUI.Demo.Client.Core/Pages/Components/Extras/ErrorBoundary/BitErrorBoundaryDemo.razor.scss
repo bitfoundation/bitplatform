@@ -5,6 +5,13 @@
     align-items: stretch;
 }
 
+.example-box {
+    gap: 1rem;
+    display: flex;
+    flex: 1 1 18rem;
+    flex-direction: column;
+}
+
 ::deep {
     .custom-erb {
         border-radius: 0.5rem;

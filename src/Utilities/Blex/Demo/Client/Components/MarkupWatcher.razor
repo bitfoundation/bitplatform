@@ -1,0 +1,37 @@
+﻿@inject CounterStore Counter
+
+@*
+    A plain ComponentBase that never subscribes to anything. <BlexSelect> and <BlexView> keep their
+    own content current, so this host renders exactly once while the numbers inside it move.
+*@
+@{ _hostRenders++; }
+<div class="bb-card">
+    <p class="bb-card-title"><code>&lt;BlexSelect&gt;</code> and <code>&lt;BlexView&gt;</code></p>
+    <p class="bb-card-desc">The host renders once; only the content inside each component follows the store.</p>
+    <div class="bb-stats">
+        <div class="bb-stat">
+            <span class="bb-stat-label">Host renders</span>
+            <span class="bb-stat-value">@_hostRenders</span>
+        </div>
+        <BlexSelect Store="Counter" Selector="() => Counter.Count" Context="count">
+            @{ _selectRenders++; }
+            <div class="bb-stat">
+                <span class="bb-stat-label">BlexSelect: Count @count</span>
+                <span class="bb-stat-value demo-accent">@_selectRenders renders</span>
+            </div>
+        </BlexSelect>
+        <BlexView Store="Counter">
+            @{ _viewRenders++; }
+            <div class="bb-stat">
+                <span class="bb-stat-label">BlexView: <Persisted>@Counter.Count</Persisted> / step <Persisted>@Counter.Step</Persisted></span>
+                <span class="bb-stat-value demo-accent">@_viewRenders renders</span>
+            </div>
+        </BlexView>
+    </div>
+</div>
+
+@code {
+    private int _hostRenders;
+    private int _selectRenders;
+    private int _viewRenders;
+}

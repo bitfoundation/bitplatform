@@ -1,0 +1,84 @@
+﻿@page "/examples/edge-types"
+
+<PageTitle>Edge Types · Blow</PageTitle>
+
+<ExampleScaffold Title="Edge Types"
+                 Summary="One edge of each of the six path types, and a toolbar that styles the edges you draw: DefaultEdgeType sets the type of every edge the user creates and ConnectionLineType the line drawn meanwhile, while BlowDefaultEdgeOptions adds animation and arrowheads.">
+    <Toolbar>
+        <label>
+            New edges
+            <select @bind="_type">
+                @foreach (var type in Enum.GetValues<BlowEdgeType>())
+                {
+                    <option value="@type">@type</option>
+                }
+            </select>
+        </label>
+        <label><input type="checkbox" @bind="_animated" /> Animated</label>
+        <label><input type="checkbox" @bind="_arrowhead" /> Arrowhead</label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    DefaultEdgeType="_type"
+                    ConnectionLineType="_type"
+                    DefaultEdgeOptions="NewEdgeOptions">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Read the six labelled edges: one of each type. The routed one, from Source to Target, goes round the node in its way.</li>
+        <li>Pick a type in <strong>New edges</strong>, then <strong>drag</strong> from a node's right-hand dot to another node's left-hand dot: the line follows the pointer in that type, and the edge it leaves is of that type too.</li>
+        <li>Connect <strong>A</strong> to <strong>B</strong>, so the edge has to double back, to see the types differ most; with <strong>Routed</strong> it keeps clear of <em>In the way</em>.</li>
+        <li>Tick <strong>Animated</strong> or untick <strong>Arrowhead</strong> before drawing: only the edges drawn after the change take it - the edges already there keep their own settings.</li>
+        <li><strong>Click</strong> an edge and press <strong>Backspace</strong> or <strong>Delete</strong> to remove it and try again.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>BlowEdgeType</code> has six values: <code>Bezier</code> (the default), <code>SimpleBezier</code>, <code>Straight</code>, <code>Step</code>, <code>SmoothStep</code> and <code>Routed</code>. The edges in the list each set their own <code>Type</code>.</li>
+        <li><code>DefaultEdgeType</code> (<code>Bezier</code> by default) is the type the canvas gives each edge the user creates; it only reaches new edges.</li>
+        <li><code>ConnectionLineType</code> (<code>Bezier</code> by default) is the path of the line drawn while a connection is being made; this page keeps it in step with the select. A routed connection line is drawn as a smooth step, since it has no route yet.</li>
+        <li><code>DefaultEdgeOptions</code> takes a <code>BlowDefaultEdgeOptions</code> applied to each new edge: <code>Animated</code> (off by default) and <code>MarkerEnd</code> (on by default) here. Its own <code>Type</code>, left null, falls back to <code>DefaultEdgeType</code>.</li>
+        <li><code>Routed</code> asks the canvas's router for a path round the nodes near the edge, so <em>In the way</em> bends the Source-to-Target edge; with nothing in its way it is a plain orthogonal path.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowEdgeType _type = BlowEdgeType.Bezier;
+    private bool _animated;
+    private bool _arrowhead = true;
+
+    // Read by the canvas at the moment an edge is created, so a fresh one per render always says what the toolbar says.
+    private BlowDefaultEdgeOptions NewEdgeOptions => new() { Animated = _animated, MarkerEnd = _arrowhead };
+
+    protected override void OnInitialized()
+    {
+        // Left to right, so every edge leaves a right-hand handle and arrives at a left-hand one.
+        BlowNode Node(string id, string label, double x, double y, string type = "default") => new()
+        {
+            Id = id, Type = type, Label = label, Position = new(x, y),
+            SourcePosition = BlowPosition.Right, TargetPosition = BlowPosition.Left,
+        };
+
+        _nodes =
+        [
+            Node("source", "Source", 0, 120, "input"),
+            Node("a", "A", 220, 0),
+            // Straight between Source and Target, so the routed edge from one to the other has to go round it.
+            Node("block", "In the way", 220, 120),
+            Node("b", "B", 220, 240),
+            Node("target", "Target", 440, 120, "output"),
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "source-a", Source = "source", Target = "a", Type = BlowEdgeType.Bezier, Label = "bezier" },
+            new BlowEdge { Id = "source-b", Source = "source", Target = "b", Type = BlowEdgeType.SimpleBezier, Label = "simple bezier" },
+            new BlowEdge { Id = "source-block", Source = "source", Target = "block", Type = BlowEdgeType.Straight, Label = "straight" },
+            new BlowEdge { Id = "a-target", Source = "a", Target = "target", Type = BlowEdgeType.Step, Label = "step" },
+            new BlowEdge { Id = "b-target", Source = "b", Target = "target", Type = BlowEdgeType.SmoothStep, Label = "smooth step" },
+            new BlowEdge { Id = "source-target", Source = "source", Target = "target", Type = BlowEdgeType.Routed, Label = "routed" },
+        ];
+    }
+}

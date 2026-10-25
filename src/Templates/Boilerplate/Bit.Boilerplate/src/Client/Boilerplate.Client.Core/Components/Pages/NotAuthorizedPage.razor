@@ -1,3 +1,4 @@
+@*+:cnd:noEmit*@
 @attribute [Route(PageUrls.NotAuthorized)]
 @attribute [Route("{culture?}" + PageUrls.NotAuthorized)]
 @inherits AppPageBase
@@ -13,7 +14,7 @@ else
     <AuthorizeView>
         <Authorized>
             <section>
-                <BitStack HorizontalAlign="BitAlignment.Center">
+                <BitStack HorizontalAlign="BitAlignment.Center" Style="--bit-Button-min-width:min(300px, 100%)">
                     <BitImage Alt="" Src="_content/Boilerplate.Client.Core/images/403.svg" Width="100%" Style="max-width:600px" />
 
                     <BitText Typography="BitTypography.H5" Color="BitColor.SevereWarning" Align="BitTextAlign.Center">
@@ -22,17 +23,26 @@ else
 
                     <BitText>@Localizer[nameof(AppStrings.YouAreSignedInAs)] <b>@context.User.GetDisplayName()</b></BitText>
 
+                    @*#if (multitenant == true)*@
+                    @if (lacksSelectedTenant)
+                    {
+                        <BitText Align="BitTextAlign.Center">@Localizer[nameof(AppStrings.SelectTenantMessage)]</BitText>
+
+                        <BitButton Href="@PageUrls.ManageMyTenants">
+                            @Localizer[nameof(AppStrings.ManageMyTenants)]
+                        </BitButton>
+                    }
+                    @*#endif*@
+
                     @if (lacksValidPrivilege)
                     {
-                        <BitButton Style="width:300px"
-                                   Color="BitColor.SevereWarning"
+                        <BitButton Color="BitColor.SevereWarning"
                                    Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Sessions}")">
                             @Localizer[nameof(AppStrings.TryRemovingOtherSessions)]
                         </BitButton>
                     }
 
                     <BitButton AutoLoading
-                               Style="width:300px"
                                OnClick="WrapHandled(SignIn)">
                         @Localizer[nameof(AppStrings.SignInAsDifferentUser)]
                     </BitButton>

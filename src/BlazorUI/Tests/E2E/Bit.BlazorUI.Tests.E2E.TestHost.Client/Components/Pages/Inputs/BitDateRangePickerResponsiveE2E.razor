@@ -1,0 +1,41 @@
+﻿@page "/e2e/date-range-picker/responsive"
+@using System.Globalization
+
+@* BitDateRangePicker on a phone: the Responsive callout as a full-width panel at the top that a swipe dismisses, and
+   the narrow viewport folding the month picker, the time picker and the extra months away. "Today" is June 12, 2024. *@
+
+<PageTitle>BitDateRangePicker responsive E2E</PageTitle>
+
+<h1>BitDateRangePicker - responsive</h1>
+
+<E2ESection Id="r-responsive" Title="Responsive">
+    <BitDateRangePicker Id="drp-resp"
+                        Responsive
+                        ShowWeekNumbers
+                        Culture="_en"
+                        Today="_today"
+                        @bind-Value="_value"
+                        OnClose="() => _closes++" />
+    <div>Value: <span id="resp-value">@Fmt(_value)</span>, closes <span id="resp-closes">@_closes</span></div>
+</E2ESection>
+
+<E2ESection Id="r-narrow" Title="A narrow viewport without Responsive">
+    <BitDateRangePicker Id="drp-narrow" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-narrow-time" ShowTimePicker Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-narrow-two" MonthCount="2" Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+
+    private readonly DateTimeOffset _today = new(new DateTime(2024, 6, 12, 10, 30, 0), TimeZoneInfo.Local.GetUtcOffset(new DateTime(2024, 6, 12, 10, 30, 0)));
+
+    private static string Fmt(DateTimeOffset? value) => value?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "-";
+
+    private static string Fmt(BitDateRangePickerValue? value) => value is null ? "null" : $"{Fmt(value.StartDate)} / {Fmt(value.EndDate)}";
+
+    private BitDateRangePickerValue? _value;
+    private int _closes;
+}

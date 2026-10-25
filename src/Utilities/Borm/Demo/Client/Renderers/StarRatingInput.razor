@@ -1,0 +1,80 @@
+﻿@inherits BormInputBase
+
+@* A custom renderer: a row of stars, registered under the key "rating" (AddBorm in
+   Extensions/IServiceCollectionExtensions.cs) and asked for with CustomRenderer("rating"). It paints
+   itself with the form's own --bit-borm-* tokens, so it follows the form's theme - light, dark, or an
+   app's override - the way the built-in controls do.
+
+   Each star is a native radio button, hidden from sight but not from the keyboard or a screen reader: the group is
+   one tab stop, the arrow keys move through it, every star is announced as "3 stars, 3 of 5, checked" - none of which
+   five plain buttons said, and which a radiogroup of buttons claims without doing. The group carries the field's id,
+   name, state and messages, as the built-in radio group does. *@
+<div id="@Context.ElementId"
+     class="star-rating"
+     @ref="Element"
+     tabindex="-1"
+     role="radiogroup"
+     aria-labelledby="@(Field.ShowLabel ? Context.LabelId : null)"
+     aria-label="@AriaLabel"
+     aria-required="@AriaRequired"
+     aria-invalid="@AriaInvalid"
+     aria-describedby="@DescribedBy">
+    @for (var n = 1; n <= Max; n++)
+    {
+        var star = n;
+        <label class="star @(star <= Current ? "star--on" : "")">
+            <input type="radio"
+                   class="star__input"
+                   name="@_group"
+                   value="@star"
+                   checked="@(star == Current)"
+                   disabled="@DisabledOrReadOnly"
+                   @ref="_stars[star]"
+                   @onchange="@(() => Context.SetValueAsync(star))"
+                   @onblur="OnBlur" />
+            @* Filled and outlined, so the choice is in the shape as well as the colour. *@
+            <span class="star__glyph" aria-hidden="true">@(star <= Current ? "★" : "☆")</span>
+            <span class="star__name">@(star == 1 ? "1 star" : $"{star} stars")</span>
+        </label>
+    }
+    <span class="star-rating__value" aria-hidden="true">@Current / @Max</span>
+</div>
+
+<style>
+    .star-rating { display: inline-flex; align-items: center; gap: .15rem; border-radius: var(--bit-borm-radius); }
+    .star { position: relative; cursor: pointer; font-size: 1.6rem; line-height: 1; padding: 0 .05rem; border-radius: 4px; }
+    /* Off stars in the muted text colour and on stars in the warning colour: both hold 3:1 against the form, which
+       the grey border colour and a light amber did not. */
+    .star__glyph { color: var(--bit-borm-muted); }
+    .star--on .star__glyph { color: var(--bit-borm-warning); }
+    .star__input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: inherit; }
+    .star:has(.star__input:focus-visible) { outline: 2px solid var(--bit-borm-accent); outline-offset: 1px; }
+    .star:has(.star__input:disabled) { cursor: not-allowed; opacity: .6; }
+    .star__name { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .star-rating__value { margin-inline-start: .6rem; color: var(--bit-borm-muted); font-size: .85rem; }
+</style>
+
+@code {
+    private static int s_groups;
+
+    // One name per control, so two ratings on a page - or the same one in two repeater rows - are separate groups.
+    private readonly string _group = "star-rating-" + Interlocked.Increment(ref s_groups);
+    private readonly Dictionary<int, ElementReference> _stars = new();
+
+    private int Max => Field.Attributes.TryGetValue("max", out var m) && m is int i ? i : 5;
+    private int Current => Context.Value is int v ? v : int.TryParse(Context.StringValue, out var p) ? p : 0;
+
+    /// <summary>
+    /// The star the keyboard would land on - the chosen one, else the first - for "take me to the first error" and the
+    /// summary's links. The form's own focus goes to the group, which no arrow key moves through.
+    /// </summary>
+    public override async ValueTask<bool> FocusAsync()
+    {
+        if (!DisabledOrReadOnly && _stars.TryGetValue(Math.Max(Current, 1), out var star))
+        {
+            await star.FocusAsync();
+            return true;
+        }
+        return await base.FocusAsync();
+    }
+}

@@ -9,12 +9,15 @@ namespace Bit.BlazorUI;
 /// group headers, separators, links, keyboard shortcuts, a loading state, and full keyboard navigation with
 /// proper ARIA menu semantics.
 /// </summary>
-public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
+public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     // The typeahead of a menu resets after this long without a keystroke, which is what separates one
     // search from the next (the APG menu pattern leaves the exact value to the implementation).
     private const int TypeaheadTimeout = 1000;
 
+    private int _clickId;
+    private bool _internalIsOpenChange;
+    private bool _repositionAfterRender;
     private List<TItem> _items = [];
     private bool _showLoading;
     internal BitButtonType _buttonType;
@@ -24,6 +27,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     private string _menuId = default!;
     private string _calloutId = default!;
     private string _overlayId = default!;
+    private bool _autoFocus;
     private bool _focusFirstItemOnOpen;
     private int _hoverToken;
     private bool _hasSubmenus;
@@ -102,11 +106,17 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The background color kind of the callout.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-MenuButton-callout-background</c>; left unset, the callout takes the
+    /// primary background unless that variable says otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Background { get; set; }
 
     /// <summary>
-    ///  The value of the type attribute of the menu button.
+    /// The value of the type attribute of the items, and of the main half of a split menu button when it is set.
+    /// Left unset, the items are submit buttons inside an <see cref="EditForm"/> and plain buttons elsewhere; a submit
+    /// or reset item acts on the form the menu button sits in, although its open menu is moved out of it to the body.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
@@ -151,7 +161,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Custom CSS classes for different parts of the menu button.
     /// </summary>
-    [Parameter] public BitMenuButtonClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitMenuButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Closes the callout when an item is clicked, which is what a menu of one-off commands wants.
@@ -165,6 +175,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The general color of the menu button.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-MenuButton-*</c> color variables, the toggled ones and the item
+    /// focus and check mark colors included; left unset, the menu button is primary unless those variables say
+    /// otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -196,6 +211,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// the header button and of the items). It lets a submit or reset command sit outside of its form element.
     /// </summary>
     [Parameter] public string? FormId { get; set; }
+
+    // The form the header and the items are associated with: FormId, or the form attribute the page wrote by hand,
+    // so the two halves of the component can never name different forms.
+    internal string? ResolvedFormId => FormId ?? GetSplattedAttribute("form");
 
     /// <summary>
     /// Expands the menu button width to 100% of the available width.
@@ -240,9 +259,33 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     public bool IconOnly { get; set; }
 
     /// <summary>
+    /// Replaces the text the items opening a new tab are announced with, for translating it or for saying it
+    /// another way.
+    /// </summary>
+    /// <remarks>
+    /// A link opening a new tab takes the reader somewhere the back button no longer returns from, so one whose
+    /// target is <c>_blank</c> carries the sentence saying so - "<c>(opens in a new tab)</c>" unless this
+    /// replaces it - as visually hidden text after its content, or appended to its aria-label when it has one,
+    /// since an aria-label replaces the content rather than adding to it.
+    /// <br />
+    /// An empty value takes the announcement off, the same as <see cref="NoNewTabHint"/> does.
+    /// </remarks>
+    [Parameter] public string? NewTabHint { get; set; }
+
+    /// <summary>
     /// If true, removes the icon from the header button.
     /// </summary>
     [Parameter] public bool NoIcon { get; set; }
+
+    /// <summary>
+    /// Stops the items opening a new tab from announcing that they do.
+    /// </summary>
+    /// <remarks>
+    /// Only set this where the announcement would be made twice - on items whose own labels already say they open
+    /// a new tab, or under a heading that already says every one of them does. See <see cref="NewTabHint"/> for
+    /// what is being taken off.
+    /// </remarks>
+    [Parameter] public bool NoNewTabHint { get; set; }
 
     /// <summary>
     /// Determines whether the menu button is in the loading state.
@@ -363,6 +406,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The size of the menu button.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-MenuButton-*</c> size variables (min-height, padding, font size, icon
+    /// size, chevron width, and the min-height and padding of the items); left unset, the menu button is medium
+    /// unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -399,7 +447,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Custom CSS styles for different parts of the menu button.
     /// </summary>
-    [Parameter] public BitMenuButtonClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitMenuButtonClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The text to show inside the header of menu button.
@@ -473,6 +521,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     internal void UnregisterOption(BitMenuButtonOption option)
     {
+        // The options unregister while they are being disposed, which also happens when the menu button goes away
+        // with them: rescanning for submenus and re-rendering once per option is work for a component that is gone.
+        if (IsDisposing) return;
+
         _items.Remove((option as TItem)!);
 
         _hasSubmenus = _items.Exists(GetHasChildren);
@@ -488,38 +540,14 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-mnb-pri",
-            BitColor.Secondary => "bit-mnb-sec",
-            BitColor.Tertiary => "bit-mnb-ter",
-            BitColor.Info => "bit-mnb-inf",
-            BitColor.Success => "bit-mnb-suc",
-            BitColor.Warning => "bit-mnb-wrn",
-            BitColor.SevereWarning => "bit-mnb-swr",
-            BitColor.Error => "bit-mnb-err",
-            BitColor.PrimaryBackground => "bit-mnb-pbg",
-            BitColor.SecondaryBackground => "bit-mnb-sbg",
-            BitColor.TertiaryBackground => "bit-mnb-tbg",
-            BitColor.PrimaryForeground => "bit-mnb-pfg",
-            BitColor.SecondaryForeground => "bit-mnb-sfg",
-            BitColor.TertiaryForeground => "bit-mnb-tfg",
-            BitColor.PrimaryBorder => "bit-mnb-pbr",
-            BitColor.SecondaryBorder => "bit-mnb-sbr",
-            BitColor.TertiaryBorder => "bit-mnb-tbr",
-            _ => "bit-mnb-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-MenuButton-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-mnb"));
 
         ClassBuilder.Register(() => IsOpen ? "bit-mnb-omn" : string.Empty);
         ClassBuilder.Register(() => IsOpen ? Classes?.Opened : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-mnb-sm",
-            BitSize.Medium => "bit-mnb-md",
-            BitSize.Large => "bit-mnb-lg",
-            _ => "bit-mnb-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-mnb"));
 
         ClassBuilder.Register(() => FullWidth ? "bit-mnb-flw" : string.Empty);
 
@@ -557,6 +585,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
         _overlayId = $"BitMenuButton-{UniqueId}-overlay";
 
+        // The cascade is read here as well as in OnParametersSet because DefaultIsToggled (and the Split and Toggle
+        // it depends on) is acted on while initializing, which is before OnParametersSet has run for the first time -
+        // a cascaded one applied only there would come too late to seed anything.
+        CascadingParameters?.UpdateParameters(this);
+
         if (Split && Toggle && IsToggledHasBeenSet is false && DefaultIsToggled.HasValue)
         {
             await AssignIsToggled(DefaultIsToggled.Value);
@@ -570,7 +603,6 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMenuButtonParams))]
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);
@@ -645,6 +677,35 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
                 await _js.BitMenuButtonsSetup(_Id, _calloutId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+
+            // The autofocus attribute is written on the header button, but a browser honors it only while the
+            // document is still loading: an interactive render replaces the prerendered markup that took the focus,
+            // and a WebAssembly page or a menu button rendered later never gets that far. So the first render gives
+            // the focus itself, by the very rule the attribute is written by.
+            if (_autoFocus && IsDisposed is false)
+            {
+                await _operatorButtonRef.FocusSafelyAsync();
+            }
+        }
+
+        // The menu is placed against the root as the toggle finds it, which can be before the render that shows the
+        // root open: a Styles.Opened or Classes.Opened that moves or resizes the root (a margin, a border) lands
+        // after the placement - in WebAssembly always, the toggle running in the click's own task. Left there, the
+        // menu points at where the root was, and the scroll the browser makes to keep the page steady under the
+        // shift reads as the page moving away from the menu, which dismisses it. So it is placed again once the
+        // open root is on the page.
+        if (_repositionAfterRender)
+        {
+            _repositionAfterRender = false;
+
+            if (IsOpen && IsDisposed is false)
+            {
+                try
+                {
+                    await _js.BitCalloutReposition();
+                }
+                catch (JSDisconnectedException) { } // we can ignore this exception here
+            }
         }
     }
 
@@ -664,7 +725,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     // which leaves out the separators and the group labels that only structure the list around them.
     private bool IsSelectable(TItem item)
     {
-        return GetIsEnabled(item)
+        return GetIsDisabled(item) is false
             && GetIsSeparator(item) is false
             && GetIsHeader(item) is false
             // An item that opens a submenu is a way further in rather than a command, so there is nothing
@@ -850,6 +911,30 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.RadioGroup.Name);
     }
 
+    internal BitLinkRels? GetRel(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.Rel;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Rel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Rel.Selector is not null)
+        {
+            return NameSelectors.Rel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitLinkRels?>(NameSelectors.Rel.Name);
+    }
+
     internal string? GetSecondaryText(TItem? item)
     {
         if (item is null) return null;
@@ -996,28 +1081,28 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Href.Name);
     }
 
-    internal bool GetIsEnabled(TItem? item)
+    internal bool GetIsDisabled(TItem? item)
     {
-        if (item is null) return false;
+        if (item is null) return true;
 
         if (item is BitMenuButtonItem menuButtonItem)
         {
-            return menuButtonItem.IsEnabled;
+            return menuButtonItem.IsDisabled;
         }
 
         if (item is BitMenuButtonOption menuButtonOption)
         {
-            return menuButtonOption.IsEnabled;
+            return menuButtonOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     private bool GetIsSelected(TItem? item)
@@ -1212,7 +1297,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleOnHeaderClick(TItem? item)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsLoading && Reclickable is false) return;
 
         if (Split is false)
@@ -1238,9 +1323,18 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             await OnToggleChange.InvokeAsync(IsToggled);
         }
 
-        if (item is not null && GetIsEnabled(item) is false) return;
+        if (item is not null && GetIsDisabled(item)) return;
 
-        if (AutoLoading)
+        var isLoading = IsLoading;
+
+        // The loading state belongs to the latest click alone (as BitButton's does). A Reclickable menu button's
+        // re-click arrives while that state is already on, so it only runs the command again: entering it again
+        // would be a no-op, and leaving it when this run ends would clear the spinner of the run that is still in
+        // flight - or, for a handler that abandons its previous run by throwing into it, clear it on the way out
+        // of the run the user has just replaced.
+        var clickId = ++_clickId;
+
+        if (AutoLoading && isLoading is false)
         {
             if (await AssignIsLoading(true) is false) return;
 
@@ -1261,7 +1355,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
         finally
         {
-            if (AutoLoading)
+            if (AutoLoading && clickId == _clickId)
             {
                 await AssignIsLoading(false);
 
@@ -1275,7 +1369,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     // keyboard the chevron can still be the focused element with the menu open, and Enter has to close it.
     private async Task HandleOnChevronClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (IsOpen)
         {
@@ -1303,7 +1397,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     internal async Task HandleOnItemClick(TItem item)
     {
-        if (IsEnabled is false || GetIsEnabled(item) is false) return;
+        if (Disabled || GetIsDisabled(item)) return;
 
         // A check or radio item's state changes on activation, so it is written before anything is told
         // about the click: a handler that reads the item back sees the state its own click produced.
@@ -1432,7 +1526,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleOnTriggerKeyDown(KeyboardEventArgs e, bool opener)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key is "Escape")
         {
@@ -1464,19 +1558,26 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
     }
 
+    // The key that walks back out of a submenu is the one pointing at the menu it was opened from, which is the
+    // opposite of the one that walked into it (_BitMenuButtonItem.HandleOnItemKeyDown), in the direction the button is laid
+    // out in - a page's or a content's included, which the menus carry over to the body. Only a horizontal arrow
+    // asks, since a direction Dir does not name costs a round trip to read.
+    private async ValueTask<bool> IsBackKey(KeyboardEventArgs e)
+    {
+        if (e.Key is not ("ArrowLeft" or "ArrowRight")) return false;
+
+        return (e.Key is "ArrowRight") == await IsRtlArrowAsync(_js, e.Key);
+    }
+
     // The one keyboard handler of every menu the button renders: the menu itself, and each submenu, which
     // is a callout of its own rather than a part of the menu it was opened from - moved to the body while
     // it is open, so its keys never reach the handler of the menu around it.
     internal async Task HandleOnMenuKeyDown(KeyboardEventArgs e, string calloutId, IBitMenuButtonSubmenu? owner)
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         // The level of the items of THIS menu: the submenu of an item at level N holds items at N + 1.
         var level = owner is null ? 0 : owner.Level + 1;
-
-        // The key that walks back out of a submenu is the one pointing at the menu it was opened from,
-        // which is the opposite of the one that walked into it.
-        var backKey = Dir is BitDir.Rtl ? "ArrowRight" : "ArrowLeft";
 
         switch (e.Key)
         {
@@ -1518,7 +1619,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
                 await FocusTrigger();
                 break;
             default:
-                if (owner is not null && e.Key == backKey)
+                if (owner is not null && await IsBackKey(e))
                 {
                     await CloseSubmenusFrom(owner.Level);
                     await owner.FocusAsync();
@@ -1572,11 +1673,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     {
         if (Split)
         {
-            await _chevronButtonRef.FocusAsync();
+            await _chevronButtonRef.FocusSafelyAsync();
         }
         else
         {
-            await _operatorButtonRef.FocusAsync();
+            await _operatorButtonRef.FocusSafelyAsync();
         }
     }
 
@@ -1588,12 +1689,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     {
         // The loading state belongs to the header button alone: in split mode the chevron still opens the menu,
         // so the operation running under the main half never takes the rest of the commands away with it.
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
 
         var focusFirstItem = _focusFirstItemOnOpen;
         _focusFirstItemOnOpen = false;
 
-        if (await AssignIsOpen(true) is false) return false;
+        if (await AssignIsOpenInternal(true) is false) return false;
 
         await ToggleCallout();
 
@@ -1613,9 +1714,26 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         ResetTypeahead();
 
-        if (await AssignIsOpen(false) is false) return;
+        if (await AssignIsOpenInternal(false) is false) return;
 
         await ToggleCallout();
+    }
+
+    // The open and close flows follow AssignIsOpen with a ToggleCallout of their own, which they await to order
+    // their focus work after it, so the change is marked as theirs and OnSetIsOpen does not toggle the callout a
+    // second time (see BitDropdown's twin). Toggled twice, the callout is placed twice in a row, and a click
+    // handled in the same task as the browser's event (WebAssembly) can see the second toggle undo the first.
+    private async Task<bool> AssignIsOpenInternal(bool value)
+    {
+        _internalIsOpenChange = true;
+        try
+        {
+            return await AssignIsOpen(value);
+        }
+        finally
+        {
+            _internalIsOpenChange = false;
+        }
     }
 
     // A menu that closes ends the search that was being typed into it, so the next one starts over rather
@@ -1680,7 +1798,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private async Task ToggleCallout()
     {
-        if (IsEnabled is false || IsDisposed) return;
+        if (Disabled || IsDisposed) return;
+
+        // Only an open state the page restyles the root for can move what the menu is placed against.
+        _repositionAfterRender = IsOpen && (Styles?.Opened.HasValue() is true || Classes?.Opened.HasValue() is true);
 
         await _js.BitCalloutToggleCallout(
             dotnetObj: _dotnetObj,
@@ -1692,7 +1813,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             isCalloutOpen: IsOpen,
             responsiveMode: BitResponsiveMode.None,
             dropDirection: DropDirection,
-            isRtl: Dir is BitDir.Rtl,
+            isRtl: ExplicitRtl,
             // With nothing else named as the scrollable part, the callout itself takes that role, so that a menu
             // taller than the screen scrolls inside the callout instead of running off the bottom of it - where a
             // fixed-positioned element leaves it out of reach of the page's own scrolling. An author-set MaxHeight
@@ -1703,11 +1824,17 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             footerId: "",
             setCalloutWidth: true,
             fixedCalloutWidth: false,
-            maxWindowWidth: 0);
+            maxWindowWidth: 0,
+            // The root is named so that what it declares - the custom properties of Style and Styles.Root,
+            // and ForceAnimation's bit-fam - goes on reaching the callout once it is relocated to the body.
+            rootId: _Id);
     }
 
     private void OnSetIsOpen()
     {
+        // The component's own open and close flows toggle the callout themselves, right after the assignment.
+        if (_internalIsOpenChange) return;
+
         _ = ToggleCalloutOnSetIsOpen();
     }
 
@@ -1766,21 +1893,24 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             classes.Add("bit-mnb-ocl");
         }
 
-        // While open the callout is reparented to the body, which takes it out of the subtree that
-        // carries the root's bit-fam class, so ForceAnimation has to be rendered on the callout
-        // itself for its opening animation to opt out of reduced motion.
+        // The callout is a sibling of the root, so the root's bit-fam class never reaches it where it is
+        // rendered - only while it is relocated, through the copy of the root Callouts.ts moves it into. So
+        // ForceAnimation is rendered on the callout itself, for its motion to opt out of reduced motion
+        // whether or not it is relocated.
         if (ForceAnimation)
         {
             classes.Add("bit-fam");
         }
 
         // The callout is rendered outside the root element - and moved to the body while it is open - so it is
-        // a sibling of the root rather than a descendant of it, and nothing the root declares reaches it. The
-        // two classes that carry what the items need are repeated here: the size class sizes their text, their
-        // height and their padding, and the color class paints the focus ring of the focused one and the glyph
-        // of a checked one in the color the menu button was given.
-        classes.Add(BitCssClasses.Color(Color, "bit-mnb"));
-        classes.Add(BitCssClasses.Size(Size ?? BitSize.Medium, "bit-mnb"));
+        // a sibling of the root rather than a descendant of it. Callouts.ts carries the custom properties and the
+        // author's classes of the root into it, but none of the component's own bit- classes, so the two that
+        // carry what the items need are repeated here: the size class sizes their text, their height and their
+        // padding, and the color class paints the focus ring of the focused one and the glyph of a checked one in
+        // the color the menu button was given. Like the root, the callout carries neither while it is unset, so
+        // the public variables restyle the default there and never an explicit value.
+        classes.AddIfHasValue(BitCssClasses.Color(Color, "bit-mnb"));
+        classes.AddIfHasValue(BitCssClasses.Size(Size, "bit-mnb"));
 
         var bgClass = Background switch
         {

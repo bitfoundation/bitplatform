@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Describes an image pasted into or dropped onto the <see cref="BitMarkdownEditor"/>,

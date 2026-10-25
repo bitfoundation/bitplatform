@@ -1,4 +1,4 @@
-namespace BitBlazorUI.Legacy {
+﻿namespace BitBlazorUI.Legacy {
     export class PdfReader {
         private static _bitPdfReaders = new Map<string, BitPdfReaderLegacyConfig>();
 
@@ -96,3 +96,5 @@ declare type BitPdfReaderLegacyConfig = {
     pdfDoc?: PDFDocumentProxy;
     isRendering: boolean[];
 }
+
+// bit-lazy: teardown Legacy.PdfReader.dispose

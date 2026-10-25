@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -22,6 +22,7 @@ public sealed class BitThemeDtcgTests
             Error = "#C50F1F",
         });
         theme.Shape.BorderRadius = "0.5rem";
+        theme.Shape.Radius.Progress = "9999px";
         theme.Motion.Duration = "200ms";
         theme.ZIndex.Modal = "1300";
         theme.Color.Semantic.SurfaceElevated = "var(--bit-clr-bg-sec)";
@@ -94,6 +95,29 @@ public sealed class BitThemeDtcgTests
         // DTCG requires a `number` token's $value to be a JSON number, not a string.
         Assert.AreEqual(JsonValueKind.Number, value.GetValueKind());
         Assert.AreEqual(1300, value.GetValue<int>());
+    }
+
+    [TestMethod]
+    public void ExportTypesTheStepsOfTheSpacingUnitAsNumbers()
+    {
+        var theme = new BitTheme();
+        theme.Spacing.Card.Md = "1rem";
+        theme.Spacing.Steps.Card.Md = "2";
+        theme.Size.Steps.Control.Md = "4.5";
+
+        var root = JsonNode.Parse(BitThemeDtcg.Export(theme))!.AsObject();
+
+        // The steps sit in the dimension-typed spacing and size groups, but are unitless multiples of the unit.
+        Assert.IsFalse(root["spacing"]!["card"]!["md"]!.AsObject().ContainsKey("$type"));
+        Assert.AreEqual("number", root["spacing"]!["steps"]!["card"]!["md"]!["$type"]!.GetValue<string>());
+        Assert.AreEqual(JsonValueKind.Number, root["spacing"]!["steps"]!["card"]!["md"]!["$value"]!.GetValueKind());
+        Assert.AreEqual("number", root["size"]!["steps"]!["control"]!["md"]!["$type"]!.GetValue<string>());
+        Assert.AreEqual(4.5, root["size"]!["steps"]!["control"]!["md"]!["$value"]!.GetValue<double>());
+
+        var restored = BitThemeDtcg.Import(BitThemeDtcg.Export(theme));
+
+        Assert.AreEqual("2", restored.Spacing.Steps.Card.Md);
+        Assert.AreEqual("4.5", restored.Size.Steps.Control.Md);
     }
 
     [TestMethod]

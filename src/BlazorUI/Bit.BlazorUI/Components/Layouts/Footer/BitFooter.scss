@@ -1,41 +1,85 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
+
+// Public CSS variables (read here with a fallback and never declared, so they inherit: set one on
+// :root, on any ancestor, or on the Style of a single footer):
+//   --bit-Footer-background    background of the Fill variant              (default: $clr-bg-pri)
+//   --bit-Footer-color         text color                                  (default: $clr-fg-pri)
+//   --bit-Footer-border-color  Outline border and Bordered divider color   (default: $clr-brd-pri)
+//   --bit-Footer-padding       padding around the content                  (default: spacing(1) spacing(3))
+//   --bit-Footer-gap           room between the children                   (default: 0; the Gap parameter wins)
+//   --bit-Footer-max-width     maximum width of the centered content       (default: none; the MaxWidth parameter wins)
+//   --bit-Footer-min-height    smallest height of the footer               (default: auto)
+//   --bit-Footer-font-size     text size                                   (default: inherited)
+//   --bit-Footer-radius        corner radius                               (default: 0)
+//   --bit-Footer-shadow        shadow of an Elevated footer                (default: $box-shadow-appbar-bottom)
+//   --bit-Footer-blur          backdrop blur of a Translucent footer       (default: 12px)
+//   --bit-Footer-z-index       stacking order of a Fixed/Sticky/Absolute footer (default: $zindex-base)
+//                              Each variant reads a twin of every one above that it draws with, ahead of it,
+//                              so a theme can set one look apart from the other two (Color still wins):
+//   --bit-Footer-fill-background       background, Fill variant              (default: --bit-Footer-background)
+//   --bit-Footer-fill-color            text color, Fill variant              (default: --bit-Footer-color)
+//   --bit-Footer-fill-border-color     Bordered divider color, Fill variant  (default: --bit-Footer-border-color)
+//   --bit-Footer-fill-blur             Translucent blur, Fill variant        (default: --bit-Footer-blur)
+//   --bit-Footer-outline-color         text color, Outline variant           (default: --bit-Footer-color)
+//   --bit-Footer-outline-border-color  border color, Outline variant         (default: --bit-Footer-border-color)
+//   --bit-Footer-text-color            text color, Text variant              (default: --bit-Footer-color)
+//   --bit-Footer-text-border-color     Bordered divider color, Text variant  (default: --bit-Footer-border-color)
+//
+// A parameter written on the footer wins over the variable that restyles what it sets: an explicit Color over the
+// background, the color and the border color, an explicit Size over the padding, NoGutter over the padding as well,
+// and Gap and MaxWidth over theirs. The variables restyle the default, not a choice - which is why Color and Size
+// publish nothing while they are left unset: a class that always carried the default would be indistinguishable
+// from one that was asked for. A disabled footer keeps the disabled colors whatever the variables say.
+
+// The disabled colors read the value an explicit Color publishes first, then the disabled default of the page
+// surface; the other colors are read per variant (see .bit-ftr-fil).
+$ftr-bg-dis: var(--bit-ftr-bg-dis, #{$clr-bg-pri});
+$ftr-fg-dis: var(--bit-ftr-fg-dis, #{$clr-fg-dis});
+
+$ftr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, padding, gap, max-width, wrap, align, justify;
 
 .bit-ftr {
     display: flex;
     flex-shrink: 0;
-    z-index: $zindex-base;
     box-sizing: border-box;
     line-height: $tg-line-height;
+    min-height: var(--bit-Footer-min-height, auto);
+    font-size: var(--bit-Footer-font-size, inherit);
+    border-radius: var(--bit-Footer-radius, 0);
 
     // The footer establishes a typographic default for whatever the app puts inside it, so it takes
     // the body weight rather than $tg-font-weight - which is the weight of a control's own label.
     font-weight: $tg-fw-regular;
     font-family: $tg-font-family;
 
-    // The uncolored footer keeps the plain page surface it always had: the Fill variant below resolves
-    // --bit-ftr-bg/-on to these, and the borderless variants resolve --bit-ftr-fg/-brd to the neutral
-    // foreground and border of the theme, so a footer with no Color set never turns invisible.
-    --bit-ftr-bg: #{$clr-bg-pri};
-    --bit-ftr-on: #{$clr-fg-pri};
-    --bit-ftr-fg: #{$clr-fg-pri};
-    --bit-ftr-brd: #{$clr-brd-pri};
-    --bit-ftr-bg-dis: #{$clr-bg-pri};
-    --bit-ftr-fg-dis: #{$clr-fg-dis};
-
-    // Medium is the historical spacing of the footer and stays the default when no Size is set.
-    --bit-ftr-padding: #{spacing(1)} #{spacing(3)};
+    // Every value a parameter publishes starts out unset on every root, so a footer nested in another one never
+    // inherits the outer one's choice; the classes - declared further down at the same weight - and the inline
+    // Gap and MaxWidth still win on the root that carries them. Left unset, each var() reading them moves on to
+    // the public variable and then to the default (see .bit-ftr-fil and .bit-ftr-gut): the plain page surface
+    // an uncolored footer always had - so a footer with no Color set never turns invisible - and the medium
+    // spacing.
+    @each $name in $ftr-private-properties {
+        --bit-ftr-#{$name}: initial;
+    }
 }
 
 // The content sits in its own box so the paddings can be themed, removed (NoGutter) and targeted by
 // Classes/Styles.Container. The paddings live on this box rather than as margins because a 100% wide
 // item with side margins is wider than the footer that holds it, which overflows the page horizontally.
+// The parameters (Gap, MaxWidth) are written to the internal variables of the instance, so they win
+// over a public variable inherited from an ancestor.
 .bit-ftr-gut {
     width: 100%;
     display: flex;
     position: relative;
     box-sizing: border-box;
-    padding: var(--bit-ftr-padding);
-    gap: var(--bit-ftr-gap, 0);
+    padding: var(--bit-ftr-padding, var(--bit-Footer-padding, #{spacing(1)} #{spacing(3)}));
+
+    // MaxWidth caps the content alone and centers it, so the background, the border and the shadow of the
+    // footer still run edge to edge while its content lines up with a page body centered in the same column.
+    margin-inline: auto;
+    max-width: var(--bit-ftr-max-width, var(--bit-Footer-max-width, none));
+    gap: var(--bit-ftr-gap, var(--bit-Footer-gap, 0));
     flex-wrap: var(--bit-ftr-wrap, nowrap);
     align-items: var(--bit-ftr-align, center);
     justify-content: var(--bit-ftr-justify, normal);
@@ -46,33 +90,42 @@
 }
 
 
+// Each color reads the value an explicit Color publishes first, then the public variables, then the default an
+// unset one stands for: the plain page surface of an uncolored footer. Every public variable is read in two tiers:
+// the variant's own (--bit-Footer-fill-*, -outline-*, -text-*) ahead of the shared one, so a theme can give the three
+// looks different colors from :root - a neutral hairline around the outlined footers without a divider over every
+// filled one - while a shared variable still re-skins all three at once. Both tiers sit between the Color and the
+// default, so an explicit Color still wins over them.
+//
+// The divider of a Bordered footer is drawn by its variant for the same reason. Outline draws none of its own: its
+// border already runs along that edge in the same width and color, and its disabled state recolors the whole border.
 .bit-ftr-fil {
-    color: var(--bit-ftr-on);
-    background-color: var(--bit-ftr-bg);
+    color: var(--bit-ftr-on, var(--bit-Footer-fill-color, var(--bit-Footer-color, #{$clr-fg-pri})));
+    background-color: var(--bit-ftr-bg, var(--bit-Footer-fill-background, var(--bit-Footer-background, #{$clr-bg-pri})));
 
     &.bit-dis {
-        color: var(--bit-ftr-fg-dis);
-        background-color: var(--bit-ftr-bg-dis);
+        color: $ftr-fg-dis;
+        background-color: $ftr-bg-dis;
     }
 }
 
 .bit-ftr-otl {
-    color: var(--bit-ftr-fg);
+    color: var(--bit-ftr-fg, var(--bit-Footer-outline-color, var(--bit-Footer-color, #{$clr-fg-pri})));
     background-color: transparent;
-    border: $shp-border-width $shp-border-style var(--bit-ftr-brd);
+    border: $shp-border-width $shp-border-style var(--bit-ftr-brd, var(--bit-Footer-outline-border-color, var(--bit-Footer-border-color, #{$clr-brd-pri})));
 
     &.bit-dis {
-        color: var(--bit-ftr-fg-dis);
-        border-color: var(--bit-ftr-fg-dis);
+        color: $ftr-fg-dis;
+        border-color: $ftr-fg-dis;
     }
 }
 
 .bit-ftr-txt {
-    color: var(--bit-ftr-fg);
+    color: var(--bit-ftr-fg, var(--bit-Footer-text-color, var(--bit-Footer-color, #{$clr-fg-pri})));
     background-color: transparent;
 
     &.bit-dis {
-        color: var(--bit-ftr-fg-dis);
+        color: $ftr-fg-dis;
     }
 }
 
@@ -82,16 +135,17 @@
 // this ahead of the plain variant rule. Where backdrop-filter is unsupported the background simply
 // stays translucent, which still reads as intended.
 .bit-ftr-trs.bit-ftr-fil {
-    backdrop-filter: blur(rem2(12px));
-    -webkit-backdrop-filter: blur(rem2(12px));
-    background-color: translucent(var(--bit-ftr-bg), 72%);
+    backdrop-filter: blur(var(--bit-Footer-fill-blur, var(--bit-Footer-blur, #{rem2(12px)})));
+    -webkit-backdrop-filter: blur(var(--bit-Footer-fill-blur, var(--bit-Footer-blur, #{rem2(12px)})));
+    background-color: translucent(var(--bit-ftr-bg, var(--bit-Footer-fill-background, var(--bit-Footer-background, #{$clr-bg-pri}))), 72%);
 
     &.bit-dis {
-        background-color: translucent(var(--bit-ftr-bg-dis), 72%);
+        background-color: translucent($ftr-bg-dis, 72%);
     }
 }
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), and are only
+// rendered for an explicit Color.
 // The border and the text of the borderless variants take the main color of the role, so an Outline
 // footer reads as that role even though its background stays transparent.
 @each $role, $tokens in $bit-color-roles {
@@ -106,6 +160,8 @@
 }
 
 
+// Published only by an explicit Size, so it wins over --bit-Footer-padding; an unset one is the medium spacing,
+// which .bit-ftr-gut spells out after that variable.
 .bit-ftr-sm {
     --bit-ftr-padding: #{spacing(0.5)} #{spacing(2)};
 }
@@ -118,8 +174,9 @@
     --bit-ftr-padding: #{spacing(1.5)} #{spacing(4)};
 }
 
-.bit-ftr-ngt {
-    --bit-ftr-padding: 0;
+// NoGutter is asked for by the instance itself, so it outranks a padding inherited from an ancestor.
+.bit-ftr-ngt > .bit-ftr-gut {
+    padding: 0;
 }
 
 
@@ -175,15 +232,28 @@
 }
 
 
+// The z-index belongs to the positioned footers alone: on a footer in the normal flow (a flex item of an
+// app shell, typically) it would make the footer a stacking context that clamps anything inside it.
+.bit-ftr-fix,
+.bit-ftr-stk,
+.bit-ftr-abs {
+    z-index: var(--bit-Footer-z-index, #{$zindex-base});
+}
+
 // A footer pinned to the bottom of the viewport sits over the home indicator / gesture bar of a mobile
 // device, so the safe area is added to its own padding. env() resolves to the 0px fallback everywhere
 // else, which leaves the footer untouched on a device with no inset.
+// A fixed footer spans the whole viewport, so it also runs into the side insets of a notched device held
+// in landscape. Those two are physical rather than logical - the notch does not move to the other side in
+// an RTL page - so they are spelled left and right instead of inline-start and inline-end.
 .bit-ftr-fix {
     left: 0;
     right: 0;
     bottom: 0;
     position: fixed;
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
 }
 
 .bit-ftr-stk {
@@ -202,26 +272,42 @@
 }
 
 
-.bit-ftr-brd {
-    border-block-start: $shp-border-width $shp-border-style var(--bit-ftr-brd);
+// Bordered draws the divider in the variant's own tier of the border variables; Outline draws a whole border
+// already. The variant costs no specificity, so the rule weighs the one class it always did and a single class
+// an app hands the footer through Class still restyles the divider.
+:where(.bit-ftr-fil).bit-ftr-brd {
+    border-block-start: $shp-border-width $shp-border-style var(--bit-ftr-brd, var(--bit-Footer-fill-border-color, var(--bit-Footer-border-color, #{$clr-brd-pri})));
+}
+
+:where(.bit-ftr-txt).bit-ftr-brd {
+    border-block-start: $shp-border-width $shp-border-style var(--bit-ftr-brd, var(--bit-Footer-text-border-color, var(--bit-Footer-border-color, #{$clr-brd-pri})));
 }
 
 // The shadow is cast upwards, towards the content the footer covers, which is the opposite of the
-// downward elevation shadows of the theme. It is tinted with the primary foreground color so it stays
-// readable in a dark theme, where a black shadow over a dark surface is invisible.
+// downward elevation shadows of the theme.
 .bit-ftr-elv {
-    box-shadow: $box-shadow-appbar-bottom;
+    box-shadow: var(--bit-Footer-shadow, #{$box-shadow-appbar-bottom});
+}
+
+// A shadow that comes and goes with the scroll has to fade, or the footer snaps between flat and lifted
+// on the last pixel before the end of the scroller.
+.bit-ftr-esc {
+    transition: box-shadow $mot-duration $mot-easing;
 }
 
 
 .bit-ftr-anm {
     will-change: transform;
-    transition: transform $mot-duration $mot-easing;
+    transition: transform $mot-duration $mot-easing, box-shadow $mot-duration $mot-easing;
 }
 
 // translateY is used rather than a bottom offset so the slide runs on the compositor, and it hides the
 // footer in both directions without any RTL specific rule.
+// The shadow is cast upwards, outside the box, so it would still be showing along the bottom edge of the
+// screen once the box itself has slid out of it: a hidden footer drops its shadow, which the transition
+// above fades out along with the slide.
 .bit-ftr-hdn {
+    box-shadow: none;
     transform: translateY(100%);
 }
 
@@ -232,6 +318,33 @@
     .bit-ftr-elv {
         border-block-start: $shp-border-width $shp-border-style CanvasText;
     }
+
+    // Forced colors repaints the footer with the system palette, so there is no longer a tinted surface to
+    // soften - and blurring what passes behind it only muddies the content the mode is there to keep crisp.
+    .bit-ftr-trs.bit-ftr-fil {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    // A Fill footer reads its content color from the role's on-color, which the palette makes Canvas for the
+    // primary role and the foreground ones - and Chromium draws a Canvas backplate behind every line of text, so
+    // everything on the bar would be Canvas on Canvas. The bar is painted as the plain surface it is in this mode,
+    // CanvasText on Canvas, which reads with the backplate and without it (Firefox draws none); the border color
+    // keeps a Bordered divider in the same system text color.
+    .bit-ftr-fil:not(.bit-dis) {
+        color: CanvasText;
+        border-color: CanvasText;
+        background-color: Canvas;
+    }
+
+    // An Outline or Text footer reads its content and its border from the role's main color, and a background
+    // role is the page's own color, Canvas here - invisible in every engine. It is the system text color instead.
+    @each $role in $bit-background-color-roles {
+        .bit-ftr-#{$role} {
+            --bit-ftr-fg: CanvasText;
+            --bit-ftr-brd: CanvasText;
+        }
+    }
 }
 
 // On paper there is no viewport to pin anything to: a pinned footer would either repeat on every sheet or
@@ -241,10 +354,11 @@
     .bit-ftr-abs,
     .bit-ftr-stk {
         position: static;
-        padding-bottom: 0;
+        padding: 0;
     }
 
-    .bit-ftr-anm {
+    .bit-ftr-anm,
+    .bit-ftr-esc {
         transition: none;
     }
 

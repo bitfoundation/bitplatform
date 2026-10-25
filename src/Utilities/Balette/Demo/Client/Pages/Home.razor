@@ -1,0 +1,392 @@
+﻿@page "/"
+@layout MainLayout
+@implements IDisposable
+@inject IBaletteService Palette
+@inject DemoState State
+
+<PageTitle>Balette - a command palette for Blazor</PageTitle>
+
+@* The landing page: hero → proof strip → feature grid → code walkthrough → comparison with a
+   JavaScript palette → persona tiles → FAQ → final call to action. Everything else on the site is
+   a documentation page under DocsLayout. The hero's sample is this site's own palette rather than a
+   picture of one: its trigger and mode buttons open it, and every command it runs shows up in the
+   activity under them. *@
+
+<div class="bb-landing">
+
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net8.0 / net9.0 / net10.0
+            </span>
+            <h1>A command palette for Blazor,<br />
+                <span class="bb-hero-accent">every decision in C#.</span></h1>
+            <p class="bb-hero-sub">
+                The <kbd>Ctrl</kbd> <kbd>K</kbd> box that searches every page, action and setting of an app and runs the
+                one you pick: fuzzy search, nested pages, modes, async sources, recents, global shortcuts, multi-select,
+                prompts and a detail pane - accessible and keyboard-first. Matching, ranking and every decision run in C#;
+                JavaScript only owns the dialog, focus and keys.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Balette</pre>
+            <div class="bb-hero-actions">
+                <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <button type="button" class="btn btn-secondary bb-btn-lg" @onclick="() => Palette.OpenAsync()">Open the palette</button>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </div>
+        </div>
+
+        @* The sample, framed as the app it runs in: the palette's way in on top, and what the commands did
+           underneath - live, so the first thing a visitor can do here is press Ctrl+K and run something. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">acme.app/<strong>dashboard</strong></span>
+                </div>
+                <div class="demo-hero-app">
+                    <PaletteBar />
+
+                    <div class="demo-hero-try">
+                        <span class="bb-overline">Try</span>
+                        @foreach (var (query, label) in TryQueries)
+                        {
+                            <button type="button" class="btn btn-outline demo-chip" title="@label" @onclick="() => Palette.OpenAsync(query)"><code>@query</code></button>
+                        }
+                    </div>
+
+                    <p class="demo-hero-state">
+                        Project: <strong>@State.ProjectName</strong> · Labels: <strong>@(State.Labels.Count == 0 ? "none" : string.Join(", ", State.Labels))</strong>
+                        · Theme: <strong>@State.Theme</strong>
+                    </p>
+
+                    <div class="bb-log demo-hero-log" aria-live="polite" aria-label="Activity">
+                        @if (State.Log.Count == 0)
+                        {
+                            <div class="bb-log-empty">Run a command - press <kbd>C</kbd>, or <kbd>F2</kbd> to rename the project - and it shows up here.</div>
+                        }
+                        @foreach (var entry in State.Log)
+                        {
+                            <div class="bb-log-line">@entry</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Proof strip ============================== *@
+
+    <section class="bb-proof">
+        <div><strong>fzf's matcher, in C#</strong><span>word starts, camel humps, the best positions to highlight</span></div>
+        <div><strong>Accessible by design</strong><span>a native modal <code>&lt;dialog&gt;</code> and the WAI-ARIA combobox</span></div>
+        <div><strong>No JavaScript menu</strong><span>one package, one namespace, a small module for keys</span></div>
+        <div><strong>Every hosting model</strong><span>WebAssembly, Server, Web App and Hybrid</span></div>
+    </section>
+
+    @* ============================== Feature grid ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Capabilities</p>
+        <h2>Everything a command palette does - natively in Blazor</h2>
+        <p class="bb-section-sub">
+            The pattern of VS Code's Quick Pick, Linear, GitHub, Raycast and cmdk: one place where every page, action,
+            setting and record of an app can be reached by typing. Each feature below has a page you can try it on, with
+            this site's own palette.
+        </p>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Registering commands</h3>
+                <p class="bb-card-desc">
+                    A fluent builder, declarative <code>BaletteItem</code> markup, commands that exist only while a page is
+                    on screen or only when they apply, and toggles that stay in sync - merged into one list.
+                </p>
+                <a href="commands" class="btn btn-outline">Registering commands →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Nested pages &amp; flows</h3>
+                <p class="bb-card-desc">
+                    Static, lazy and searching pages, prompts, multi-select, confirmations, long-running and failing
+                    commands, recents, pins and a Raycast-style action panel - every step in the same box.
+                </p>
+                <a href="pages" class="btn btn-outline">Nested pages →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Search &amp; ranking</h3>
+                <p class="bb-card-desc">
+                    An fzf-style fuzzy matcher with <code>'exact</code>, <code>^prefix</code>, <code>suffix$</code>,
+                    <code>!negate</code>, <code>"phrases"</code> and <code>a | b</code>, accents and typos forgiven, weighted
+                    fields, priority and frecency - every score shown live.
+                </p>
+                <a href="search" class="btn btn-outline">Search &amp; ranking →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Modes &amp; sources</h3>
+                <p class="bb-card-desc">
+                    Typed prefixes - <code>&gt;</code> <code>#</code> <code>@@</code> <code>?</code> - that scope the palette,
+                    and async sources that are debounced, cancelled, paged, timed out and retried.
+                </p>
+                <a href="modes" class="btn btn-outline">Modes &amp; sources →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Keyboard &amp; shortcuts</h3>
+                <p class="bb-card-desc">
+                    Every key inside the palette, global chords such as <kbd>Alt</kbd> <kbd>Z</kbd> and G-then-X sequences,
+                    matched in the browser on any keyboard layout and shown in the platform's own symbols.
+                </p>
+                <a href="keyboard" class="btn btn-outline">Keyboard &amp; shortcuts →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Theming &amp; templates</h3>
+                <p class="bb-card-desc">
+                    Light and dark, CSS custom properties and density changed live on this site's palette, the detail pane,
+                    eight templates and a fully unstyled mode - each one running.
+                </p>
+                <a href="theming" class="btn btn-outline">Theming &amp; templates →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Localization &amp; RTL</h3>
+                <p class="bb-card-desc">
+                    Every label and announcement in another language, plural forms, translated commands that keep their
+                    English names, and right-to-left layouts.
+                </p>
+                <a href="localization" class="btn btn-outline">Localization &amp; RTL →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Large registry</h3>
+                <p class="bb-card-desc">
+                    Thousands of commands registered, or served from a static source, and what one keystroke costs -
+                    measured in your browser.
+                </p>
+                <a href="performance" class="btn btn-outline">Large registry →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Options &amp; security</h3>
+                <p class="bb-card-desc">
+                    Every option with this site's value beside the default, the parameters one palette overrides, and what
+                    keeps text, links and history safe - with a refused <code>javascript:</code> link to try.
+                </p>
+                <a href="options" class="btn btn-outline">Options &amp; security →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>See it in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>A command is a record</h3>
+                    <p>
+                        A title, where it is listed, what it matches and what it does - built with <code>BaletteCmd</code>
+                        and registered from anywhere. A shortcut is written once, as text, and works with the palette closed.
+                    </p>
+                    <a href="commands">Registering commands →</a>
+                </div>
+                <pre class="bb-code"><span class="p">Palette</span>.Register(
+    <span class="k">BaletteCmd</span>.Navigate(<span class="s">"Settings"</span>, <span class="s">"/settings"</span>)
+        .Group(<span class="s">"Navigation"</span>).Shortcut(<span class="s">"G S"</span>).Keywords(<span class="s">"preferences"</span>),
+    <span class="k">BaletteCmd</span>.Action(<span class="s">"Toggle sidebar"</span>, () =&gt; _sidebarOpen = !_sidebarOpen)
+        .Shortcut(<span class="s">"Mod+B"</span>));</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>The next step is a return value</h3>
+                    <p>
+                        A handler does its work and tells the palette what comes next - a prompt, a page, a toast or
+                        <code>Back</code> - so a multi-step flow stays in one place instead of a chain of callbacks.
+                    </p>
+                    <a href="pages">Nested pages &amp; flows →</a>
+                </div>
+                <pre class="bb-code"><span class="k">BaletteCmd</span>.New(<span class="s">"Rename project…"</span>)
+    .Shortcut(<span class="s">"F2"</span>)
+    .Handler(_ =&gt; Task.FromResult(<span class="k">BaletteCommandResult</span>.Prompt(
+        <span class="s">"New project name"</span>,
+        ctx =&gt;
+        {
+            state.Rename(ctx.PromptValue!.Trim());
+            <span class="k">return</span> Task.FromResult(<span class="k">BaletteCommandResult</span>.Toast(<span class="s">"Renamed"</span>));
+        },
+        initialValue: state.ProjectName)))</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>Your API is a source</h3>
+                    <p>
+                        An <code>IBaletteSource</code> answers a query later. The palette debounces it, cancels it when the
+                        query moves on, and ranks what it returns with everything else.
+                    </p>
+                    <a href="modes">Modes &amp; sources →</a>
+                </div>
+                <pre class="bb-code"><span class="k">public sealed class</span> PeopleSource : <span class="k">IBaletteSource</span>
+{
+    <span class="k">public string</span> Name =&gt; <span class="s">"People"</span>;
+    <span class="k">public bool</span> ApplyMatcher =&gt; <span class="k">true</span>;   <span class="c">// re-rank with the palette's matcher</span>
+
+    <span class="k">public async</span> Task&lt;IReadOnlyList&lt;<span class="k">BaletteCommand</span>&gt;&gt; SearchAsync(
+        <span class="k">string</span> query, <span class="k">BaletteSourceContext</span> context, CancellationToken cancellationToken)
+    {
+        <span class="k">var</span> people = <span class="k">await</span> context.Services.GetRequiredService&lt;PeopleClient&gt;()
+            .SearchAsync(query, cancellationToken);
+        <span class="k">return</span> [.. people.Select(p =&gt; <span class="k">BaletteCmd</span>.New(p.Name).Subtitle(p.Role).Build())];
+    }
+}</pre>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Why not wrap a JavaScript palette?</h2>
+        <p class="bb-section-sub">
+            A JavaScript command menu keeps its commands, its matching and its flows on the other side of the interop
+            boundary, and every handler has to be reached back across it. Balette keeps all of it in C#, next to the
+            code the commands call.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="A wrapped JavaScript palette compared with Balette">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Concern</th><th>Wrapped JavaScript palette</th><th>Balette</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Who matches and ranks</td><td>The JavaScript library</td><td><code>IBaletteMatcher</code> and <code>BaletteRanker</code> - C#, replaceable, unit-testable</td></tr>
+                    <tr><td>Commands</td><td>JavaScript objects, handlers reached through interop</td><td>Typed <code>BaletteCommand</code> records; handlers are C# delegates with the user's DI scope</td></tr>
+                    <tr><td>Multi-step flows</td><td>Callbacks wired across the boundary</td><td>A handler returns the next step: <code>Prompt</code>, <code>Page</code>, <code>Toast</code>, <code>Back</code></td></tr>
+                    <tr><td>Results from an API</td><td>Fetched in JavaScript, or bridged back from .NET</td><td><code>IBaletteSource</code>: debounced, cancelled through a <code>CancellationToken</code></td></tr>
+                    <tr><td>Script to ship</td><td>The library plus interop glue</td><td>One small module, imported on demand - no inline script, no <code>eval</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Balette?</h3>
+                <p class="bb-card-desc">Install, register the services, link the stylesheet, place one palette - and register your first commands.</p>
+                <a href="getting-started" class="btn btn-primary">Getting started →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Want to see it live?</h3>
+                <p class="bb-card-desc">Press <kbd>Ctrl</kbd> <kbd>K</kbd> anywhere on this site. Every feature also has a page that drives this very palette.</p>
+                <a href="pages" class="btn btn-outline">Open the demos →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> and it reads the shipped library - and runs its real matcher - instead of guessing.</p>
+                <a href="mcp-server" class="btn btn-outline">Try the MCP server →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Is this a JavaScript command menu behind interop?</summary>
+                <p>
+                    No. Matching, ranking, paging, history and what <kbd>Enter</kbd> does are C#. A small module does only
+                    what the browser alone can: open the native <code>&lt;dialog&gt;</code>, move focus into and out of it,
+                    scroll the active row into view, and decide which keys belong to the palette.
+                </p>
+            </details>
+            <details>
+                <summary>Which render modes does it work in?</summary>
+                <p>
+                    Any interactive one - WebAssembly, Server, Auto and Hybrid - on .NET 8, 9 and 10. Shortcuts and the
+                    navigation keys are matched in the browser, so on Blazor Server only the query and the chosen command
+                    cross the connection. This site runs on WebAssembly, so the whole search runs next to the list it fills.
+                </p>
+            </details>
+            <details>
+                <summary>Do I have to take its look?</summary>
+                <p>
+                    No. Every visual is a <code>--bit-balette-*</code> custom property - this site re-tints them to its own
+                    brand - every part of a row and of the dialog can be replaced with a template, and
+                    <code>Unstyled="true"</code> leaves bare, accessible markup to style from scratch.
+                </p>
+            </details>
+            <details>
+                <summary>How many commands can it hold?</summary>
+                <p>
+                    Thousands. Only the best <code>MaxResults</code> rows are rendered, <code>Virtualize</code> renders just
+                    the visible ones, and on WebAssembly a search that takes longer than a frame lets the keystroke paint
+                    first. The <a href="performance">large registry</a> page measures it in your browser.
+                </p>
+            </details>
+            <details>
+                <summary>Does it work in other languages, and right to left?</summary>
+                <p>
+                    Yes. Every label and announcement - the ones only screen readers hear included - is a property of
+                    <code>BaletteStrings</code>, every rule of the stylesheet uses logical properties, and search treats the
+                    Arabic and Persian forms of a letter and Persian digits as one. The <a href="localization">localization</a>
+                    page switches a palette between English, German and Persian as you watch.
+                </p>
+            </details>
+            <details>
+                <summary>What happens when a command or an API fails?</summary>
+                <p>
+                    It is logged and reported in the palette - a generic message, never the exception's text, unless you choose
+                    to show it - and it never ends a Blazor Server circuit. A page that failed to load and a source that threw
+                    or timed out offer a retry, and the rest of the list stays. <a href="pages#failures">Try it</a>.
+                </p>
+            </details>
+            <details>
+                <summary>Why does the search box in this site's header answer to <kbd>/</kbd> and not <kbd>Ctrl</kbd> <kbd>K</kbd>?</summary>
+                <p>
+                    Because <kbd>Ctrl</kbd> <kbd>K</kbd> is Balette's, and the palette it opens is the one this site
+                    demonstrates. The header's box only searches these docs, and while either of the two is open the keys
+                    are its own.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Give your app a <kbd>Ctrl</kbd> <kbd>K</kbd></h2>
+        <p class="bb-section-sub">One package, one service registration, one stylesheet and one component - and every page, action and setting is a keystroke away.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Balette</pre>
+        <div class="bb-hero-actions">
+            <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="commands" class="btn btn-secondary bb-btn-lg">Browse the docs</a>
+        </div>
+    </section>
+</div>
+
+@code {
+    // Queries the hero opens the palette with: fuzzy word starts, a nested page, and the four modes.
+    private static readonly (string Query, string Label)[] TryQueries =
+    [
+        ("rc", "Fuzzy: R and C at two word starts"),
+        ("theme", "A nested page - Enter opens it, Backspace comes back"),
+        (">", "Commands mode"),
+        ("#105", "Issues mode: an issue by number"),
+        ("@ada", "People mode: an async source"),
+        ("?", "Help mode: the Help group only"),
+    ];
+
+    protected override void OnInitialized() => State.Changed += Refresh;
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => State.Changed -= Refresh;
+}

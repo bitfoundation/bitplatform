@@ -16,13 +16,13 @@ internal static class DevMcpHangfireReader
     {
         return state.Trim().ToLowerInvariant() switch
         {
-            "succeeded" => monitoring.SucceededJobs(from, count).Select(pair => new HangfireJobRow(pair.Key, pair.Value.Job, pair.Value.SucceededAt, null, "succeeded")),
-            "failed" => monitoring.FailedJobs(from, count).Select(pair => new HangfireJobRow(pair.Key, pair.Value.Job, pair.Value.FailedAt, pair.Value.ExceptionMessage, "failed")),
-            "scheduled" => monitoring.ScheduledJobs(from, count).Select(pair => new HangfireJobRow(pair.Key, pair.Value.Job, pair.Value.ScheduledAt, null, "scheduled")),
-            "processing" => monitoring.ProcessingJobs(from, count).Select(pair => new HangfireJobRow(pair.Key, pair.Value.Job, pair.Value.StartedAt, null, "processing")),
-            "deleted" => monitoring.DeletedJobs(from, count).Select(pair => new HangfireJobRow(pair.Key, pair.Value.Job, pair.Value.DeletedAt, null, "deleted")),
+            "succeeded" => monitoring.SucceededJobs(from, count).Select(pair => new HangfireJobRow(pair.Key, pair.Value.Job, Utc(pair.Value.SucceededAt?.Ticks), null, "succeeded")),
+            "failed" => monitoring.FailedJobs(from, count).Select(pair => new HangfireJobRow(pair.Key, pair.Value.Job, Utc(pair.Value.FailedAt?.Ticks), pair.Value.ExceptionMessage, "failed")),
+            "scheduled" => monitoring.ScheduledJobs(from, count).Select(pair => new HangfireJobRow(pair.Key, pair.Value.Job, Utc(pair.Value.ScheduledAt?.Ticks), null, "scheduled")),
+            "processing" => monitoring.ProcessingJobs(from, count).Select(pair => new HangfireJobRow(pair.Key, pair.Value.Job, Utc(pair.Value.StartedAt?.Ticks), null, "processing")),
+            "deleted" => monitoring.DeletedJobs(from, count).Select(pair => new HangfireJobRow(pair.Key, pair.Value.Job, Utc(pair.Value.DeletedAt?.Ticks), null, "deleted")),
             "enqueued" => monitoring.EnqueuedJobs(string.IsNullOrWhiteSpace(queue) ? "default" : queue, from, count)
-                .Select(pair => new HangfireJobRow(pair.Key, pair.Value.Job, pair.Value.EnqueuedAt, null, "enqueued")),
+                .Select(pair => new HangfireJobRow(pair.Key, pair.Value.Job, Utc(pair.Value.EnqueuedAt?.Ticks), null, "enqueued")),
             _ => throw new InvalidOperationException("State must be succeeded, failed, scheduled, processing, enqueued, deleted or any.")
         };
     }
@@ -34,9 +34,9 @@ internal static class DevMcpHangfireReader
 
     public static bool Matches(HangfireJobRow job, string? argumentContains, DateTimeOffset? fromUtc, DateTimeOffset? toUtc)
     {
-        if (fromUtc is not null && (job.At is null || job.At < fromUtc.Value.UtcDateTime))
+        if (fromUtc is not null && (job.At is null || job.At < fromUtc))
             return false;
-        if (toUtc is not null && (job.At is null || job.At > toUtc.Value.UtcDateTime))
+        if (toUtc is not null && (job.At is null || job.At > toUtc))
             return false;
         if (string.IsNullOrWhiteSpace(argumentContains))
             return true;
@@ -65,5 +65,11 @@ internal static class DevMcpHangfireReader
         }
     }
 
-    public sealed record HangfireJobRow(string Id, Hangfire.Common.Job? Job, DateTime? At, string? Exception, string State);
+    /// <summary>
+    /// Hangfire keeps every timestamp in UTC, but storages disagree on the kind they hand it back with: EF Core's (SQLite)
+    /// says Unspecified, which an implicit conversion to <see cref="DateTimeOffset"/> would read as local time.
+    /// </summary>
+    private static DateTimeOffset? Utc(long? ticks) => ticks is null ? null : new DateTimeOffset(ticks.Value, TimeSpan.Zero);
+
+    public sealed record HangfireJobRow(string Id, Hangfire.Common.Job? Job, DateTimeOffset? At, string? Exception, string State);
 }

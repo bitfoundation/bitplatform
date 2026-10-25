@@ -1,0 +1,238 @@
+﻿@page "/e2e/progress"
+
+<PageTitle>BitProgress E2E</PageTitle>
+
+<h1>BitProgress</h1>
+
+<div style="width: 400px;">
+
+    <E2ESection Id="basic" Title="Basic">
+        <BitProgress Id="prg-basic" Label="Uploading report.pdf" Description="4.2 MB of 10 MB" Percent="42" />
+        <BitProgress Id="prg-circular" Circular Label="Uploading report.pdf" Description="4.2 MB of 10 MB" Percent="42" />
+        <BitProgress Id="prg-templates" Percent="10">
+            <LabelTemplate><b id="label-template">Bold label</b></LabelTemplate>
+            <DescriptionTemplate><i id="description-template">Italic description</i></DescriptionTemplate>
+        </BitProgress>
+        <BitProgress Id="prg-aria-label" AriaLabel="Named by aria" Label="Visible label" Percent="5" />
+        <BitProgress Id="prg-zero" AriaLabel="Zero" Percent="0" />
+        <BitProgress Id="prg-over" AriaLabel="Over" Percent="150" />
+    </E2ESection>
+
+    <E2ESection Id="indeterminate" Title="Indeterminate">
+        <BitProgress Id="prg-indeterminate" Indeterminate Label="Preparing your export" Thickness="6" />
+        <BitProgress Id="prg-cir-indeterminate" Circular Indeterminate AriaLabel="Loading" />
+        <BitProgress Id="prg-delay-prerendered" Indeterminate Delay="800" Label="Shown after 800 ms" />
+        <button id="btn-show-delayed" @onclick="() => _showDelayed = true">Show delayed</button>
+        @if (_showDelayed)
+        {
+            <BitProgress Id="prg-delay" Indeterminate Delay="2000" Label="Late, shown after 2000 ms" />
+            <BitProgress Id="prg-delay-cancel" Indeterminate Delay="@_cancelDelay" Label="Delay cancelled" />
+        }
+        <button id="btn-cancel-delay" @onclick="() => _cancelDelay = 0">Cancel delay</button>
+    </E2ESection>
+
+    <E2ESection Id="thickness" Title="Thickness and diameter">
+        <BitProgress Id="prg-thick" AriaLabel="Thick bar" Percent="69" Thickness="14" />
+        <BitProgress Id="prg-cir-thick" Circular AriaLabel="Thick ring" Percent="69" Thickness="8" Diameter="96" />
+        <BitProgress Id="prg-cir-24" Circular AriaLabel="24 pixel ring" Percent="69" Diameter="24" />
+        <BitProgress Id="prg-cir-thin-cap" Circular AriaLabel="Capped stroke" Percent="69" Thickness="40" Diameter="40" />
+        <BitProgress Id="prg-cir-radius" Circular AriaLabel="Radius ring" Percent="69" Thickness="10" Radius="8" />
+    </E2ESection>
+
+    <E2ESection Id="percent" Title="Percent number">
+        <BitProgress Id="prg-pct-end" Label="End" Percent="85.69" ShowPercentNumber />
+        <BitProgress Id="prg-pct-format" Label="Format" Percent="85.69" PercentNumberFormat="{0:F2} %" ShowPercentNumber />
+        <BitProgress Id="prg-pct-bad-format" Label="Bad format" Percent="85.69" PercentNumberFormat="{0:Q9} {1}" ShowPercentNumber />
+        <BitProgress Id="prg-pct-template" Label="Template" Percent="85.69">
+            <PercentNumberTemplate Context="percent"><b id="pct-template">@($"{percent:F0}% done")</b></PercentNumberTemplate>
+        </BitProgress>
+        <BitProgress Id="prg-pct-Start" Label="Start" Percent="42" ShowPercentNumber PercentNumberPosition="BitProgressPercentPosition.Start" />
+        <BitProgress Id="prg-pct-Center" Label="Center" Percent="42" ShowPercentNumber PercentNumberPosition="BitProgressPercentPosition.Center" />
+        <BitProgress Id="prg-pct-Top" Label="Top" Percent="42" ShowPercentNumber PercentNumberPosition="BitProgressPercentPosition.Top" />
+        <BitProgress Id="prg-pct-Inside" Label="Inside" Percent="42" Thickness="20" ShowPercentNumber PercentNumberPosition="BitProgressPercentPosition.Inside" />
+        <BitProgress Id="prg-pct-indeterminate" Label="No number" Indeterminate ShowPercentNumber />
+        <BitProgress Id="prg-pct-ring" Circular AriaLabel="Ring readout" Percent="85.69" ShowPercentNumber />
+        <BitProgress Id="prg-pct-ring-large" Circular AriaLabel="Large ring readout" Percent="85.69" ShowPercentNumber Diameter="96" Thickness="8" PercentNumberFormat="{0:F1} %" />
+    </E2ESection>
+
+    <E2ESection Id="value" Title="Value and range">
+        <BitProgress Id="prg-value" Label="Uploading files" Value="3" Max="12" AriaValueText="3 of 12 files" ShowPercentNumber />
+        <BitProgress Id="prg-value-min" Label="Re-indexing rows" Value="1500" Min="1000" Max="3000" />
+        <BitProgress Id="prg-value-clamp" AriaLabel="Clamped" Value="50" Min="0" Max="20" />
+        <BitProgress Id="prg-value-ring" Circular Label="Steps" Value="7" Max="12" ShowPercentNumber />
+    </E2ESection>
+
+    <E2ESection Id="buffer" Title="Buffer">
+        <BitProgress Id="prg-buffer" AriaLabel="Playing" Percent="30" Buffer="55" Thickness="6" />
+        <BitProgress Id="prg-buffer-value" Label="Processing" Value="4" Max="10" Buffer="8" ShowPercentNumber />
+        <BitProgress Id="prg-cir-buffer" Circular AriaLabel="Playing ring" Percent="30" Buffer="55" Thickness="6" Diameter="64" />
+        <BitProgress Id="prg-buffer-indeterminate" AriaLabel="No buffer" Indeterminate Buffer="50" />
+    </E2ESection>
+
+    <E2ESection Id="shape" Title="Rounded and striped">
+        <BitProgress Id="prg-rounded" Rounded AriaLabel="Rounded bar" Percent="42" Thickness="10" />
+        <BitProgress Id="prg-shape-Pill" Shape="BitShape.Pill" AriaLabel="Pill" Percent="42" Thickness="10" />
+        <BitProgress Id="prg-shape-Rounded" Shape="BitShape.Rounded" AriaLabel="Theme corners" Percent="42" Thickness="10" />
+        <BitProgress Id="prg-shape-Square" Shape="BitShape.Square" Rounded AriaLabel="Square wins over Rounded" Percent="42" Thickness="10" />
+        <BitProgress Id="prg-striped" Striped AriaLabel="Striped bar" Percent="42" Thickness="12" />
+        <BitProgress Id="prg-striped-animated" Striped StripedAnimation Rounded AriaLabel="Travelling stripes" Percent="72" Thickness="12" />
+        <BitProgress Id="prg-cir-rounded" Circular Rounded AriaLabel="Rounded ring" Percent="42" Thickness="8" Diameter="48" />
+    </E2ESection>
+
+    <E2ESection Id="segments" Title="Segments">
+        <BitProgress Id="prg-segments" AriaLabel="Five segments" Segments="5" Percent="60" Thickness="12" />
+        <BitProgress Id="prg-segments-gap" AriaLabel="Ten segments" Segments="10" SegmentGap="2" Percent="60" Thickness="8" />
+        <BitProgress Id="prg-segments-one" AriaLabel="One segment is none" Segments="1" Percent="60" Thickness="8" />
+    </E2ESection>
+
+    <E2ESection Id="direction" Title="Reversed and vertical">
+        <BitProgress Id="prg-reversed" Reversed AriaLabel="Reversed bar" Percent="42" Thickness="10" />
+        <BitProgress Id="prg-reversed-indeterminate" Reversed Indeterminate AriaLabel="Reversed indeterminate bar" Thickness="10" />
+        <BitProgress Id="prg-cir-reversed" Circular Reversed AriaLabel="Reversed ring" Percent="42" Thickness="6" Diameter="48" />
+        <div style="display: flex; gap: 16px; align-items: flex-end;">
+            <BitProgress Id="prg-vertical" Vertical AriaLabel="Vertical bar" Percent="42" Thickness="12" />
+            <BitProgress Id="prg-vertical-length" Vertical AriaLabel="Short vertical bar" Percent="42" Thickness="12" Length="96px" />
+            <BitProgress Id="prg-vertical-reversed" Vertical Reversed AriaLabel="Reversed vertical bar" Percent="42" Thickness="12" />
+            <BitProgress Id="prg-vertical-indeterminate" Vertical Indeterminate AriaLabel="Vertical indeterminate bar" Thickness="12" />
+        </div>
+    </E2ESection>
+
+    <E2ESection Id="gauge" Title="Gauge">
+        <BitProgress Id="prg-gauge-Bottom" Circular Rounded AriaLabel="Gap at the bottom" GapDegree="90" Diameter="80" Thickness="8" Percent="50" />
+        <BitProgress Id="prg-gauge-Top" Circular AriaLabel="Gap at the top" GapDegree="120" GapPlacement="BitPlacement.Top" Diameter="80" Thickness="8" Percent="50" />
+        <BitProgress Id="prg-gauge-Start" Circular AriaLabel="Gap at the start" GapDegree="120" GapPlacement="BitPlacement.Start" Diameter="80" Thickness="8" Percent="50" />
+        <BitProgress Id="prg-gauge-End" Circular AriaLabel="Gap at the end" GapDegree="120" GapPlacement="BitPlacement.End" Diameter="80" Thickness="8" Percent="50" />
+        <BitProgress Id="prg-gauge-clamped" Circular AriaLabel="Clamped gap" GapDegree="400" Diameter="80" Thickness="8" Percent="50" />
+        <div dir="rtl">
+            <BitProgress Id="prg-gauge-rtl-Start" Circular AriaLabel="Start in rtl" GapDegree="120" GapPlacement="BitPlacement.Start" Diameter="80" Thickness="8" Percent="50" />
+        </div>
+    </E2ESection>
+
+    <E2ESection Id="meter" Title="Meter">
+        <BitProgress Id="prg-meter" Meter Label="Disk usage" Value="72" Max="128" AriaValueText="72 of 128 GB" />
+        <BitProgress Id="prg-meter-indeterminate" Meter Indeterminate AriaLabel="Indeterminate meter" />
+    </E2ESection>
+
+    <E2ESection Id="announce" Title="Accessibility">
+        <BitProgress Id="prg-announce" AnnounceProgress Label="Importing rows" Percent="_announced" ShowPercentNumber />
+        <BitProgress Id="prg-announce-step" AnnounceProgress AnnounceStep="10" AriaValueText="@($"{_announced} rows")" AriaLabel="Uploading" Percent="_announced" />
+        <button id="btn-announce-30" @onclick="() => _announced = 30">30</button>
+        <button id="btn-announce-60" @onclick="() => _announced = 60">60</button>
+        <button id="btn-announce-100" @onclick="() => _announced = 100">100</button>
+    </E2ESection>
+
+    <E2ESection Id="custom-colors" Title="Custom colors">
+        <BitProgress Id="prg-custom" Label="Brand" BarColor="rgb(139, 92, 246)" TrackColor="rgb(233, 213, 255)" Percent="62" Thickness="10" Buffer="80" ShowPercentNumber PercentNumberPosition="BitProgressPercentPosition.Inside" />
+        <BitProgress Id="prg-cir-custom" Circular AriaLabel="Brand ring" BarColor="rgb(255, 99, 71)" TrackColor="rgb(255, 224, 214)" Percent="62" Diameter="80" Thickness="8" />
+    </E2ESection>
+
+    <E2ESection Id="params" Title="Cascading parameters">
+        <BitParams Parameters="_progressParams">
+            <BitProgress Id="prg-params-1" Label="CPU" Percent="34" />
+            <BitProgress Id="prg-params-2" Label="Disk" Percent="92" Rounded="false" />
+        </BitParams>
+        <BitProgress Id="prg-params-outside" Label="Outside" Percent="50" />
+    </E2ESection>
+
+    <E2ESection Id="colors" Title="Color">
+        @foreach (var color in _colors)
+        {
+            <BitProgress Id="@($"prg-color-{color}")" AriaLabel="@color.ToString()" Color="color" Percent="69" Thickness="20" ShowPercentNumber PercentNumberPosition="BitProgressPercentPosition.Inside" />
+        }
+    </E2ESection>
+
+    <E2ESection Id="sizes" Title="Size">
+        @foreach (var size in _sizes)
+        {
+            <BitProgress Id="@($"prg-size-{size}")" Size="size" Label="@size.ToString()" Description="Description" Percent="69" ShowPercentNumber />
+            <BitProgress Id="@($"prg-cir-size-{size}")" Size="size" AriaLabel="@size.ToString()" Circular Percent="69" />
+        }
+        <BitProgress Id="prg-size-none" Label="Unset" Percent="69" />
+        <BitProgress Id="prg-cir-size-none" AriaLabel="Unset" Circular Percent="69" />
+    </E2ESection>
+
+    <E2ESection Id="style-class" Title="Style and Class">
+        <BitProgress Id="prg-style" AriaLabel="Styled" Style="padding: 3px; background-color: rgb(230, 135, 220);" Class="e2e-progress-class" Percent="69" Thickness="10" />
+        <BitProgress Id="prg-styles" Label="Label" Description="Description" Percent="45" Buffer="80" Thickness="10" ShowPercentNumber
+                     Styles="@(new() { Root = "margin: 5px", Label = "color: rgb(1, 1, 1)", BarContainer = "border: 1px solid rgb(2, 2, 2)", Track = "background-color: rgb(3, 3, 3)", Buffer = "background-color: rgb(4, 4, 4)", Bar = "background-color: rgb(5, 5, 5)", PercentNumber = "color: rgb(6, 6, 6)", Description = "color: rgb(7, 7, 7)" })"
+                     Classes="@(new() { Root = "e2e-root", Label = "e2e-label", BarContainer = "e2e-container", Track = "e2e-track", Buffer = "e2e-buffer", Bar = "e2e-bar", PercentNumber = "e2e-percent", Description = "e2e-description" })" />
+        <BitProgress Id="prg-cir-styles" Circular AriaLabel="Ring parts" Percent="69" Buffer="80" Thickness="6" Diameter="48"
+                     Styles="@(new() { Bar = "stroke: rgb(8, 8, 8)", Track = "stroke: rgb(9, 9, 9)", Buffer = "stroke: rgb(10, 10, 10)" })" />
+        <BitProgress Id="prg-hidden" Visibility="BitVisibility.Hidden" AriaLabel="Hidden" Percent="5" />
+        <BitProgress Id="prg-collapsed" Visibility="BitVisibility.Collapsed" AriaLabel="Collapsed" Percent="5" />
+        <BitProgress Id="prg-disabled" Disabled Indeterminate AriaLabel="Disabled" />
+        <BitProgress Id="prg-disabled-striped" Disabled Striped StripedAnimation AriaLabel="Disabled stripes" Percent="50" />
+        <BitProgress Id="prg-attrs" AriaLabel="Attributes" Percent="5" data-e2e="splatted" title="A title" />
+    </E2ESection>
+
+    <E2ESection Id="css-vars" Title="CSS variables">
+        <div style="--bit-Progress-bar-color: rgb(10, 20, 30); --bit-Progress-bar-text-color: rgb(250, 250, 250); --bit-Progress-track-color: rgb(40, 50, 60); --bit-Progress-buffer-color: rgb(70, 80, 90); --bit-Progress-stripe-color: rgba(255, 0, 0, 0.5); --bit-Progress-stripe-size: 24px; --bit-Progress-thickness: 13px; --bit-Progress-radius: 5px; --bit-Progress-diameter: 70px; --bit-Progress-length: 120px; --bit-Progress-font-size: 17px; --bit-Progress-label-color: rgb(1, 2, 3); --bit-Progress-label-font-weight: 700; --bit-Progress-percent-color: rgb(4, 5, 6); --bit-Progress-percent-font-size: 19px; --bit-Progress-description-color: rgb(7, 8, 9); --bit-Progress-description-font-size: 11px; --bit-Progress-transition-duration: 1234ms;">
+            <BitProgress Id="prg-css" Label="Restyled" Description="Described" Percent="50" Buffer="70" ShowPercentNumber />
+            <BitProgress Id="prg-css-inside" AriaLabel="Inside" Percent="50" ShowPercentNumber PercentNumberPosition="BitProgressPercentPosition.Inside" />
+            <BitProgress Id="prg-css-striped" AriaLabel="Stripes" Striped Percent="50" />
+            <BitProgress Id="prg-css-ring" Circular AriaLabel="Ring" Percent="50" ShowPercentNumber />
+            <BitProgress Id="prg-css-vertical" Vertical AriaLabel="Vertical" Percent="50" />
+            <BitProgress Id="prg-css-params" AriaLabel="Parameters win" Color="BitColor.Error" Size="BitSize.Large" Shape="BitShape.Square" Percent="50" />
+            <BitProgress Id="prg-css-thickness" AriaLabel="Thickness wins" Thickness="3" Percent="50" />
+        </div>
+    </E2ESection>
+
+    <E2ESection Id="rtl" Title="RTL">
+        <BitProgress Id="prg-rtl" Dir="BitDir.Rtl" Label="بارگذاری" Percent="42" ShowPercentNumber Thickness="8" />
+        <BitProgress Id="prg-rtl-reversed" Dir="BitDir.Rtl" Reversed AriaLabel="Reversed in rtl" Percent="42" Thickness="8" />
+        <BitProgress Id="prg-rtl-segments" Dir="BitDir.Rtl" AriaLabel="Segments in rtl" Segments="4" Percent="42" Thickness="8" />
+        <div dir="rtl">
+            <BitProgress Id="prg-rtl-inherited" AriaLabel="Inherited" Percent="42" Thickness="8" />
+        </div>
+    </E2ESection>
+
+    <E2ESection Id="runtime" Title="Runtime parameter changes">
+        <BitProgress Id="prg-runtime" Label="Runtime" Percent="_runtimePercent" Indeterminate="_runtimeIndeterminate" Circular="_runtimeCircular" Color="_runtimeColor" ShowPercentNumber Thickness="8" />
+        <button id="btn-set-percent" @onclick="() => _runtimePercent = 80">80</button>
+        <button id="btn-toggle-indeterminate" @onclick="() => _runtimeIndeterminate = !_runtimeIndeterminate">Toggle indeterminate</button>
+        <button id="btn-toggle-circular" @onclick="() => _runtimeCircular = !_runtimeCircular">Toggle circular</button>
+        <button id="btn-set-color" @onclick="() => _runtimeColor = BitColor.Success">Success</button>
+        <button id="btn-toggle-mounted" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+        @if (_mounted)
+        {
+            <BitProgress Id="prg-mounted" Indeterminate Delay="5000" Label="Mounted, delayed" />
+        }
+        <span id="mounted">@_mounted</span>
+    </E2ESection>
+
+</div>
+
+<E2EStatus />
+
+@code {
+    private bool _showDelayed;
+    private int _cancelDelay = 60000;
+    private double _announced;
+    private double _runtimePercent = 20;
+    private bool _runtimeIndeterminate;
+    private bool _runtimeCircular;
+    private BitColor? _runtimeColor;
+    private bool _mounted = true;
+
+    private readonly BitSize[] _sizes = [BitSize.Small, BitSize.Medium, BitSize.Large];
+
+    private readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly BitProgressParams[] _progressParams =
+    [
+        new()
+        {
+            Thickness = 8,
+            Rounded = true,
+            ShowPercentNumber = true,
+            PercentNumberPosition = BitProgressPercentPosition.Top,
+            Color = BitColor.Success,
+        }
+    ];
+}

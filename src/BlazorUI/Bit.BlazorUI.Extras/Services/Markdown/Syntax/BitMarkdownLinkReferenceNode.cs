@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A reference link or image (<c>[text][ref]</c>, <c>[text][]</c>, <c>[text]</c>,

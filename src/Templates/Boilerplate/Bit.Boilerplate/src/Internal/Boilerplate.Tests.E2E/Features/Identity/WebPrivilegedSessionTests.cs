@@ -13,7 +13,7 @@ namespace Boilerplate.Tests.E2E.Features.Identity;
 [TestClass, TestCategory(TestCategories.Web), Retry(2)]
 public partial class WebPrivilegedSessionTests : AppTestBase
 {
-    private const string password = "123456";
+    private const string password = "12345678";
 
     /// <summary>The deployment's own <c>Identity:MaxPrivilegedSessionsCount</c>.</summary>
     private const int maxPrivilegedSessions = 3;

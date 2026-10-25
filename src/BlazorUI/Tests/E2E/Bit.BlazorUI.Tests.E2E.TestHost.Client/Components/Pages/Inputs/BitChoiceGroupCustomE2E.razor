@@ -1,0 +1,192 @@
+﻿@page "/e2e/choice-group/custom"
+
+<PageTitle>BitChoiceGroup Custom E2E</PageTitle>
+
+<h1>BitChoiceGroup (Custom items through NameSelectors)</h1>
+
+<E2ESection Id="names" Title="NameSelectors by property name">
+    <button id="btn-before-names">Before names</button>
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-names" Label="By name" Items="_namePlans" @bind-Value="_nameValue"
+                    NameSelectors="@(new() { Text = { Name = nameof(Plan.Name) }, Value = { Name = nameof(Plan.Code) }, Title = { Name = nameof(Plan.Hint) }, Description = { Name = nameof(Plan.Summary) }, AriaLabel = { Name = nameof(Plan.ScreenReaderName) }, Class = { Name = nameof(Plan.Css) }, Style = { Name = nameof(Plan.InlineStyle) }, IsDisabled = { Name = nameof(Plan.Locked) }, Prefix = { Name = nameof(Plan.Lead) }, Suffix = { Name = nameof(Plan.Trail) }, Id = { Name = nameof(Plan.Key) }, Index = nameof(Plan.Position), IsSelected = nameof(Plan.Picked) })"
+                    OnClick="(Plan p) => _clicked = p.Name" OnChange="(string? v) => _changes++" />
+    <span id="names-value">@_nameValue</span>
+    <span id="names-written">@string.Join(",", _namePlans.Select(p => $"{p.Position}:{(p.Picked ? 1 : 0)}"))</span>
+    <span id="names-clicked">@_clicked</span>
+    <span id="names-changes">@_changes</span>
+    <button id="btn-names-c" @onclick="@(() => _nameValue = "C")">Set C</button>
+    <button id="btn-names-refresh" @onclick="() => { }">Refresh the written values</button>
+</E2ESection>
+
+<E2ESection Id="selectors" Title="NameSelectors by selector">
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-selectors" Label="By selector" Items="_selectorPlans" DefaultValue="@("B")"
+                    NameSelectors="@(new() { Text = { Selector = p => p.Name }, Value = { Selector = p => p.Code }, Title = { Selector = p => p.Hint }, Description = { Selector = p => p.Summary }, AriaLabel = { Selector = p => p.ScreenReaderName }, Class = { Selector = p => p.Css }, Style = { Selector = p => p.InlineStyle }, IsDisabled = { Selector = p => p.Locked }, Prefix = { Selector = p => p.Lead }, Suffix = { Selector = p => p.Trail }, Id = { Selector = p => p.Key } })"
+                    OnChange="(string? v) => _selectorValue = v" />
+    <span id="selectors-value">@_selectorValue</span>
+</E2ESection>
+
+<E2ESection Id="media" Title="Images and icons">
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-images" Label="Images" Items="_imagePlans" DefaultValue="@("Bar")"
+                    NameSelectors="@(new() { Text = { Name = nameof(Plan.Name) }, Value = { Name = nameof(Plan.Code) }, ImageSrc = { Name = nameof(Plan.Picture) }, ImageAlt = { Name = nameof(Plan.PictureAlt) }, ImageSize = { Name = nameof(Plan.PictureSize) }, SelectedImageSrc = { Name = nameof(Plan.PictureSelected) } })" />
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-images-selector" Label="Images by selector" Items="_imagePlans" DefaultValue="@("Pie")"
+                    NameSelectors="@(new() { Text = { Selector = p => p.Name }, Value = { Selector = p => p.Code }, ImageSrc = { Selector = p => p.Picture }, ImageAlt = { Selector = p => p.PictureAlt }, ImageSize = { Selector = p => p.PictureSize }, SelectedImageSrc = { Selector = p => p.PictureSelected } })" />
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-icons" Label="Icons" Items="_iconPlans" DefaultValue="@("Day")"
+                    NameSelectors="@(new() { Text = { Name = nameof(Plan.Name) }, Value = { Name = nameof(Plan.Code) }, IconName = { Name = nameof(Plan.GlyphName) }, Icon = { Name = nameof(Plan.Glyph) } })" />
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-icons-selector" Label="Icons by selector" Items="_iconPlans" DefaultValue="@("Day")" Inline
+                    NameSelectors="@(new() { Text = { Selector = p => p.Name }, Value = { Selector = p => p.Code }, IconName = { Selector = p => p.GlyphName }, Icon = { Selector = p => p.Glyph } })" />
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-template" Label="Item's own template" Items="_templatePlans" @bind-Value="_templateValue"
+                    NameSelectors="@(new() { Text = { Name = nameof(Plan.Name) }, Value = { Name = nameof(Plan.Code) }, Template = { Name = nameof(Plan.Fragment) } })" />
+    <span id="template-value">@_templateValue</span>
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-template-selector" Label="Template by selector" Items="_templatePlans" DefaultValue="@("Week")"
+                    NameSelectors="@(new() { Text = { Selector = p => p.Name }, Value = { Selector = p => p.Code }, Template = { Selector = p => p.Fragment } })" />
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-item-template" Label="ItemTemplate" Items="_basicPlans" DefaultValue="@("A")"
+                    NameSelectors="@(new() { Text = { Name = nameof(Plan.Name) }, Value = { Name = nameof(Plan.Code) } })">
+        <ItemTemplate Context="plan">
+            <span class="custom-item-tpl">@(plan.Name!.ToUpperInvariant())</span>
+        </ItemTemplate>
+    </BitChoiceGroup>
+</E2ESection>
+
+<E2ESection Id="behaviour" Title="Behaviour">
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-keyboard" Label="Keyboard" Items="_basicPlans" DefaultValue="@("A")" Horizontal
+                    NameSelectors="@(new() { Text = { Name = nameof(Plan.Name) }, Value = { Name = nameof(Plan.Code) } })" />
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-disabled" Label="Disabled" Disabled Items="_basicPlans" DefaultValue="@("A")"
+                    NameSelectors="@(new() { Text = { Name = nameof(Plan.Name) }, Value = { Name = nameof(Plan.Code) } })" />
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-readonly" Label="ReadOnly" ReadOnly Items="_basicPlans" @bind-Value="_readOnlyValue"
+                    NameSelectors="@(new() { Text = { Name = nameof(Plan.Name) }, Value = { Name = nameof(Plan.Code) } })" />
+    <span id="readonly-value">@_readOnlyValue</span>
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-oneway" Label="One-way" Items="_basicPlans" Value="@_oneWayValue"
+                    NameSelectors="@(new() { Text = { Name = nameof(Plan.Name) }, Value = { Name = nameof(Plan.Code) } })" />
+    <button id="btn-oneway-d" @onclick="@(() => _oneWayValue = "D")">One-way to D</button>
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-styled" Label="Variant, color and size" Items="_basicPlans" DefaultValue="@("B")" Variant="BitVariant.Outline" Color="BitColor.Success" Size="BitSize.Large" FullWidth
+                    NameSelectors="@(new() { Text = { Name = nameof(Plan.Name) }, Value = { Name = nameof(Plan.Code) } })" />
+</E2ESection>
+
+<E2ESection Id="dynamic" Title="Dynamic items">
+    <button id="btn-dyn-add" @onclick="AddDynamic">Add item</button>
+    <button id="btn-dyn-reverse" @onclick="ReverseDynamic">Reverse items</button>
+    <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-dynamic" Label="Dynamic" Items="_dynamicPlans" @bind-Value="_dynamicValue"
+                    NameSelectors="@(new() { Text = { Name = nameof(Plan.Name) }, Value = { Name = nameof(Plan.Code) }, Index = nameof(Plan.Position) })">
+        <ItemPrefixTemplate Context="plan">
+            <span class="dyn-index">@(plan.Position + 1).</span>
+        </ItemPrefixTemplate>
+    </BitChoiceGroup>
+    <span id="dynamic-value">@_dynamicValue</span>
+</E2ESection>
+
+<E2ESection Id="validation" Title="Validation">
+    <EditForm Model="_model" OnValidSubmit="() => _submit = 1" OnInvalidSubmit="() => _submit = -1" novalidate>
+        <DataAnnotationsValidator />
+        <BitChoiceGroup TItem="Plan" TValue="string" Id="cu-validation" Label="Pick one" Required Items="_basicPlans" @bind-Value="_model.Value"
+                        NameSelectors="@(new() { Text = { Name = nameof(Plan.Name) }, Value = { Name = nameof(Plan.Code) } })" />
+        <div id="cu-error"><ValidationMessage For="@(() => _model.Value)" /></div>
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="submit-result">@_submit</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private string? _nameValue = "B";
+    private string? _clicked;
+    private int _changes;
+    private string? _selectorValue = "B";
+    private string? _templateValue = "Day";
+    private string? _readOnlyValue = "A";
+    private string? _oneWayValue = "A";
+    private string? _dynamicValue = "1";
+    private int _dynamicCounter = 3;
+    private int _submit;
+    private readonly CuModel _model = new();
+
+    private readonly List<Plan> _namePlans = CreateDetailedPlans("names");
+    private readonly List<Plan> _selectorPlans = CreateDetailedPlans("selectors");
+
+    private readonly List<Plan> _basicPlans =
+    [
+        new() { Name = "Custom A", Code = "A" },
+        new() { Name = "Custom B", Code = "B" },
+        new() { Name = "Custom C", Code = "C" },
+        new() { Name = "Custom D", Code = "D" }
+    ];
+
+    private readonly List<Plan> _imagePlans =
+    [
+        new() { Name = "Bar", Code = "Bar", Picture = "samples/choicegroup-bar.svg", PictureSelected = "samples/choicegroup-bar-selected.svg", PictureAlt = "alt for Bar image", PictureSize = new BitImageSize(32, 32) },
+        new() { Name = "Pie", Code = "Pie", Picture = "samples/choicegroup-pie.svg", PictureSelected = "samples/choicegroup-pie-selected.svg", PictureAlt = "alt for Pie image", PictureSize = new BitImageSize(24, 24) }
+    ];
+
+    private readonly List<Plan> _iconPlans =
+    [
+        new() { Name = "Day", Code = "Day", GlyphName = BitIconName.CalendarDay },
+        new() { Name = "Week", Code = "Week", Glyph = BitIconInfo.Bi("calendar-week") },
+        new() { Name = "Month", Code = "Month", Glyph = BitIconInfo.Fa("solid calendar"), GlyphName = BitIconName.Calendar }
+    ];
+
+    private List<Plan> _templatePlans = default!;
+
+    private List<Plan> _dynamicPlans =
+    [
+        new() { Name = "Custom 1", Code = "1" },
+        new() { Name = "Custom 2", Code = "2" },
+        new() { Name = "Custom 3", Code = "3" }
+    ];
+
+    protected override void OnInitialized()
+    {
+        _templatePlans =
+        [
+            new() { Name = "Day", Code = "Day", Fragment = p => @<span class="custom-tpl" style="color: rgb(255, 0, 0);">@p.Name</span> },
+            new() { Name = "Week", Code = "Week", Fragment = p => @<span class="custom-tpl" style="color: rgb(0, 128, 0);">@p.Name</span> }
+        ];
+    }
+
+    private static List<Plan> CreateDetailedPlans(string keyPrefix) =>
+    [
+        new() { Name = "Custom A", Code = "A", Hint = "Tooltip A", Css = "custom-a", Lead = "$0 - ", Key = $"{keyPrefix}-plan-a" },
+        new() { Name = "Custom B", Code = "B", Summary = "B summary", InlineStyle = "padding: 6px; border: 1px solid rgb(0, 0, 255)", Trail = "Free" },
+        new() { Name = "Custom C", Code = "C", ScreenReaderName = "Custom C, the third plan" },
+        new() { Name = "Custom D", Code = "D", Locked = true }
+    ];
+
+    private void AddDynamic()
+    {
+        _dynamicCounter++;
+        _dynamicPlans = [.. _dynamicPlans, new Plan { Name = $"Custom {_dynamicCounter}", Code = $"{_dynamicCounter}" }];
+    }
+
+    private void ReverseDynamic() => _dynamicPlans = [.. Enumerable.Reverse(_dynamicPlans)];
+
+    private sealed class CuModel
+    {
+        [Required(ErrorMessage = "Pick one")]
+        public string? Value { get; set; }
+    }
+
+    public sealed class Plan
+    {
+        public string? Name { get; set; }
+        public string? Code { get; set; }
+        public string? Hint { get; set; }
+        public string? Summary { get; set; }
+        public string? ScreenReaderName { get; set; }
+        public string? Css { get; set; }
+        public string? InlineStyle { get; set; }
+        public bool Locked { get; set; }
+        public string? Lead { get; set; }
+        public string? Trail { get; set; }
+        public string? Key { get; set; }
+        public string? Picture { get; set; }
+        public string? PictureSelected { get; set; }
+        public string? PictureAlt { get; set; }
+        public BitImageSize? PictureSize { get; set; }
+        public BitIconInfo? Glyph { get; set; }
+        public string? GlyphName { get; set; }
+        public RenderFragment<Plan>? Fragment { get; set; }
+        public int Position { get; set; }
+        public bool Picked { get; set; }
+    }
+}

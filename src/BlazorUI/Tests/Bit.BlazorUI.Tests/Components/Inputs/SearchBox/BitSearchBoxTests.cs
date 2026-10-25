@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -19,6 +20,15 @@ public class BitSearchBoxTests : BunitTestContext
     private void SetupGetPropertyResult(string? result)
     {
         Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true).SetResult(result!);
+    }
+
+    /// <summary>
+    /// Answers whether the input element took the inline completion, which it only refuses when it no longer
+    /// holds the term the completion was worked out for.
+    /// </summary>
+    private void SetupFillAndSelectResult(bool filled)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.SearchBox.fillAndSelect", _ => true).SetResult(filled);
     }
 
     /// <summary>
@@ -187,7 +197,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var bitSearchBox = com.Find(".bit-srb-inp");
 
-        Assert.IsTrue(bitSearchBox?.GetAttribute("aria-label")?.Equals(ariaLabel));
+        Assert.AreEqual(ariaLabel, bitSearchBox.GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -304,7 +314,7 @@ public class BitSearchBoxTests : BunitTestContext
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
             parameters.Add(p => p.AutoComplete, autoComplete);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var input = component.Find(".bit-srb-inp");
@@ -468,13 +478,37 @@ public class BitSearchBoxTests : BunitTestContext
         DataRow(BitColor.Primary, "bit-srb-pri"),
         DataRow(BitColor.Secondary, "bit-srb-sec"),
         DataRow(BitColor.Error, "bit-srb-err"),
-        DataRow(BitColor.Success, "bit-srb-suc"),
-        DataRow(null, "bit-srb-pri")]
-    public void BitSearchBoxColorShouldHaveCorrectClassName(BitColor? color, string expectedClass)
+        DataRow(BitColor.Success, "bit-srb-suc")]
+    public void BitSearchBoxColorShouldHaveCorrectClassName(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.Color, color));
 
         Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldPublishNoColorBackgroundOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.SuggestItems, Fruits));
+
+        // An unset Color, Background or Size publishes nothing - on the root, nor on the callout that is given the
+        // same classes - so the public --bit-SearchBox-* variables restyle the default while an explicit value, which
+        // does publish its class, wins over them.
+        var published = new[]
+        {
+            "bit-srb-pri", "bit-srb-sec", "bit-srb-ter", "bit-srb-inf", "bit-srb-suc", "bit-srb-wrn", "bit-srb-swr", "bit-srb-err",
+            "bit-srb-pbg", "bit-srb-sbg", "bit-srb-tbg", "bit-srb-pfg", "bit-srb-sfg", "bit-srb-tfg", "bit-srb-pbr", "bit-srb-sbr", "bit-srb-tbr",
+            "bit-srb-bpr", "bit-srb-bse", "bit-srb-btr", "bit-srb-btn",
+            "bit-srb-sm", "bit-srb-md", "bit-srb-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-srb"), component.Find(".bit-srb-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
     }
 
     [TestMethod]
@@ -734,7 +768,7 @@ public class BitSearchBoxTests : BunitTestContext
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
             parameters.Add(p => p.Value, "bit");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.ShowSearchButton, true);
         });
 
@@ -892,7 +926,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnKeyDown, _ => downCount++);
         });
 
@@ -1107,6 +1141,132 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSearchBoxAListClosedRightAfterTheFocusShouldStayClosed()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "apple");
+        component.WaitForState(() => component.Find(".bit-srb-inp").GetAttribute("aria-expanded") == "true");
+
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+        WaitForClosedCallout(component);
+        component.Find(".bit-srb-inp").FocusOut();
+
+        // The focus coming back re-checks the list the field still holds results for a moment later. The user
+        // types and then dismisses the list before that moment: the dismissal is the last word, so the re-check
+        // that runs after it must not bring the list back. The three events are raised in one turn of the
+        // renderer's dispatcher, where the 100 ms waits of the re-check and of the opening resume, so both always
+        // resume after the dismissal: raised one after the other from the test, a test thread held up for longer
+        // than that would let them run first, and the test would pass without the re-check ever following it.
+        Task focusIn = Task.CompletedTask;
+        Task typing = Task.CompletedTask;
+        Task dismissing = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            focusIn = component.Find(".bit-srb-inp").FocusInAsync(new FocusEventArgs());
+            typing = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "appl" });
+            dismissing = component.Find(".bit-srb-inp").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+        });
+
+        await dismissing;
+        await typing;
+        await focusIn;
+
+        Assert.AreEqual("false", component.Find(".bit-srb-inp").GetAttribute("aria-expanded"));
+        Assert.IsFalse(component.Instance.IsSuggestItemsOpen);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxAListClosedWhileItIsBeingOpenedShouldNotBeReportedAsOpen()
+    {
+        var toggles = new List<bool>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Add(p => p.OnSuggestItemsToggle, (bool open) => toggles.Add(open));
+        });
+
+        component.Find(".bit-srb-inp").FocusIn();
+
+        // The opening waits for the items to be rendered before it shows the list; an Alt+ArrowUp in that moment
+        // closes it, and the opening that resumes afterwards neither shows it again nor reports it as open. Both
+        // keys are pressed in one turn of the renderer's dispatcher, where the 100 ms wait of the opening resumes,
+        // so the Alt+ArrowUp always lands inside it: pressed one after the other from the test, a test thread held
+        // up for longer than that would let the opening report the list as open first, and the test would fail.
+        Task typing = Task.CompletedTask;
+        Task dismissing = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            typing = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "apple" });
+            dismissing = component.Find(".bit-srb-inp").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+        });
+
+        await dismissing;
+        await typing;
+
+        Assert.IsFalse(component.Instance.IsSuggestItemsOpen);
+        Assert.AreEqual("false", component.Find(".bit-srb-inp").GetAttribute("aria-expanded"));
+        Assert.IsFalse(toggles.Contains(true));
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxShouldNotAskTheProviderAboutASupersededTerm()
+    {
+        var requests = new List<(string Term, bool CancelledOnArrival)>();
+        var toggles = new List<bool>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.OnSuggestItemsToggle, (bool open) => toggles.Add(open));
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItemsProvider, (BitSearchBoxSuggestItemsProviderRequest req) =>
+            {
+                var term = req.SearchTerm ?? string.Empty;
+
+                requests.Add((term, req.CancellationToken.IsCancellationRequested));
+
+                return ValueTask.FromResult<IEnumerable<string>>(Fruits.Where(f => f.Contains(term, StringComparison.OrdinalIgnoreCase)));
+            });
+        });
+
+        component.Find(".bit-srb-inp").FocusIn();
+
+        // The search for the first term opens the list before it asks the provider, and the opening waits for a
+        // render; the second term supersedes it in the meantime, so the first one is never asked about at all.
+        // Both terms are typed in one turn of the renderer's dispatcher, where the 100 ms wait of the opening
+        // resumes, so the second one always lands inside it: typed one after the other from the test, a test thread
+        // held up for longer than that would let the provider be asked about the first term, and the test would fail.
+        Task first = Task.CompletedTask;
+        Task second = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            first = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "a" });
+            second = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "ap" });
+        });
+
+        await first;
+        await second;
+
+        // The first search reports the list it opened once that opening is done, and goes on to the provider (or
+        // not) in the same turn of the renderer, which the empty invocation below waits out.
+        component.WaitForAssertion(() => Assert.IsTrue(toggles.Contains(true)));
+        await component.InvokeAsync(() => { });
+
+        Assert.AreEqual(1, requests.Count);
+        Assert.AreEqual("ap", requests[0].Term);
+        Assert.IsFalse(requests[0].CancelledOnArrival);
+    }
+
+    [TestMethod]
     public void BitSearchBoxTabShouldCloseTheSuggestCallout()
     {
         var component = RenderComponent<BitSearchBox>(parameters =>
@@ -1123,6 +1283,100 @@ public class BitSearchBoxTests : BunitTestContext
         component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" });
 
         WaitForClosedCallout(component);
+    }
+
+    // The Escape the field acts on is claimed through data-bit-esc (Utils.claimEscape), so a dialog around it does
+    // not close on the same press: always while there is a value to clear, and while there is text otherwise.
+    [TestMethod]
+    public void BitSearchBoxShouldClaimTheEscapeThatClearsIt()
+    {
+        var empty = RenderComponent<BitSearchBox>();
+        Assert.AreEqual("text", empty.Find(".bit-srb-inp").GetAttribute("data-bit-esc"));
+
+        var filled = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "apple");
+        });
+        Assert.AreEqual("claim", filled.Find(".bit-srb-inp").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod,
+        DataRow(true, false),
+        DataRow(false, true)
+    ]
+    public void BitSearchBoxShouldNotClaimTheEscapeItDoesNotClearWith(bool readOnly, bool noClearOnEscape)
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.NoClearOnEscape, noClearOnEscape);
+            parameters.Add(p => p.DefaultValue, "apple");
+        });
+
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldLeaveTheEscapeOfAOneWayBindingAlone()
+    {
+        var clearCount = 0;
+
+        // A Value with neither a ValueChanged nor an OnChange refuses the empty value, so the Escape clears nothing,
+        // raises nothing and is not claimed: it goes on to the dialog around the field.
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Value, "apple");
+            parameters.Add(p => p.OnClear, () => clearCount++);
+        });
+
+        var input = component.Find(".bit-srb-inp");
+        Assert.IsFalse(input.HasAttribute("data-bit-esc"));
+
+        input.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual("apple", component.Instance.Value);
+        Assert.AreEqual(0, clearCount);
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldLeaveAModifiedEscapeAlone()
+    {
+        var clearCount = 0;
+
+        // Utils.claimEscape never claims an Escape with a modifier, so the dialog around the field closes on it - and
+        // the field must not clear on the same press.
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "apple");
+            parameters.Add(p => p.OnClear, () => clearCount++);
+        });
+
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
+
+        Assert.AreEqual("apple", component.Instance.Value);
+        Assert.AreEqual(0, clearCount);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldClaimTheEscapeThatClosesTheCallout()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.NoClearOnEscape, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("data-bit-esc"));
+
+        component.Find(".bit-srb-inp").Input("apple");
+
+        OpenTheCallout(component);
+
+        // The list closes whether or not the field may be cleared, so the press is the field's either way.
+        Assert.AreEqual("claim", component.Find(".bit-srb-inp").GetAttribute("data-bit-esc"));
     }
 
     [TestMethod]
@@ -1196,6 +1450,54 @@ public class BitSearchBoxTests : BunitTestContext
 
         Assert.AreEqual(component.FindAll(".bit-srb-itm")[0].GetAttribute("id"),
                         component.Find(".bit-srb-inp").GetAttribute("aria-activedescendant"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxFocusShortcutShouldBeAdvertisedOnTheInputAndListenedFor()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.FocusShortcut, "Control+K Meta+K");
+        });
+
+        // The very same string drives the listener and tells assistive technologies about it.
+        Assert.AreEqual("Control+K Meta+K", component.Find(".bit-srb-inp").GetAttribute("aria-keyshortcuts"));
+
+        var registration = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.SearchBox.registerShortcut");
+
+        Assert.AreEqual(component.Find(".bit-srb-inp").Id, registration.Arguments[0]);
+        Assert.AreEqual("Control+K Meta+K", registration.Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutAFocusShortcutShouldNeitherAdvertiseNorRegisterOne()
+    {
+        var component = RenderComponent<BitSearchBox>();
+
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("aria-keyshortcuts"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.SearchBox.registerShortcut"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxChangingTheFocusShortcutShouldTakeThePreviousOneBackOff()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.FocusShortcut, "Control+K");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.FocusShortcut, "Alt+S"));
+
+        // The listener sits on the document, so the second registration would otherwise leave the
+        // first one armed for the rest of the life of the page.
+        var registrations = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SearchBox.registerShortcut").ToList();
+
+        Assert.AreEqual(2, registrations.Count);
+        Assert.AreEqual("Alt+S", registrations[1].Arguments[1]);
+
+        component.Render(parameters => parameters.Add(p => p.FocusShortcut, (string?)null));
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.SearchBox.unregisterShortcut"));
     }
 
     #endregion
@@ -1640,7 +1942,7 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitSearchBoxSuggestItemsProviderFailureShouldNotCrashTheComponent()
+    public void BitSearchBoxSuggestItemsProviderFailureShouldNotCrashNorBeToldAsAnEmptyResult()
     {
         var component = RenderComponent<BitSearchBox>(p =>
         {
@@ -1651,10 +1953,14 @@ public class BitSearchBoxTests : BunitTestContext
                 ValueTask.FromException<IEnumerable<string>>(new InvalidOperationException("boom")));
         });
 
-        component.Find(".bit-srb-inp").Input("a");
+        FocusAndType(component, "a");
 
+        component.WaitForState(() => component.Find(".bit-srb-lvr").TextContent.Contains("could not be loaded"));
+
+        // A faulted ValueTask is a search that could not run, so the message for a search that ran and
+        // found nothing must not stand in for it - the live region says what actually happened.
         Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
-        Assert.AreEqual("Nothing here", component.Find(".bit-srb-nrs").TextContent.Trim());
+        Assert.AreEqual(0, component.FindAll(".bit-srb-nrs").Count);
     }
 
     [TestMethod]
@@ -1801,6 +2107,189 @@ public class BitSearchBoxTests : BunitTestContext
         component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         component.WaitForState(() => component.Find(".bit-srb").ClassList.Contains("bit-srb-opn") is false);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxReadOnlySuggestItemsShouldSayThatTheyCannotBeChosen()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Add(p => p.DefaultValue, "apple");
+        });
+
+        await component.InvokeAsync(() => component.Instance.ShowSuggestItems());
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count == 4);
+
+        // Read-only blocks picking a suggestion but not browsing the list, so the rows stay in the
+        // accessibility tree and say that they cannot be chosen rather than swallowing the attempt.
+        Assert.IsTrue(component.FindAll(".bit-srb-itm").All(i => i.GetAttribute("aria-disabled") == "true"));
+
+        // Both the root and the callout carry it, because the callout is not a child of the root.
+        Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-srb-rol"));
+        Assert.IsTrue(component.Find(".bit-srb-cal").ClassList.Contains("bit-srb-rol"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxEditableSuggestItemsShouldNotBeMarkedDisabled()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "apple");
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count == 4);
+
+        Assert.IsTrue(component.FindAll(".bit-srb-itm").All(i => i.HasAttribute("aria-disabled") is false));
+        Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-srb-rol"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxTakingTheSuggestSourceAwayShouldDismissAnOpenCallout()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "apple");
+        component.WaitForState(() => component.Find(".bit-srb-inp").GetAttribute("aria-expanded") == "true");
+
+        component.Render(parameters => parameters.Add(p => p.SuggestItems, (IEnumerable<string>?)null));
+
+        // The callout leaves the markup on its own, but the full screen overlay it opened with is
+        // dismissed by nothing unless the component closes itself.
+        component.WaitForState(() => component.FindAll(".bit-srb-cal").Count == 0);
+        Assert.AreEqual(0, component.FindAll(".bit-srb-ovl").Count);
+        Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-srb-opn"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxCalloutShouldCarryTheColorRoleOfTheComponent()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.Color, BitColor.Success);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "apple");
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count == 4);
+
+        // The callout is a sibling of the root element, so it never inherits the role tokens and has to
+        // be given the class itself - which is what paints the ring of the highlighted row and the spinner.
+        var callout = component.Find(".bit-srb-cal");
+
+        Assert.IsTrue(callout.ClassList.Contains("bit-srb-suc"));
+
+        // The Size is left unset, so the callout carries no size class either: its rows are the medium ones unless
+        // the public --bit-SearchBox-* variables say otherwise.
+        Assert.IsFalse(callout.ClassList.Contains("bit-srb-sm"));
+        Assert.IsFalse(callout.ClassList.Contains("bit-srb-md"));
+        Assert.IsFalse(callout.ClassList.Contains("bit-srb-lg"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxFailingSuggestItemsProviderShouldBeReportedInsteadOfLookingEmpty()
+    {
+        Exception? logged = null;
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.NoResultsText, "No matching item found.");
+            parameters.Add(p => p.SuggestFailedText, "Suggestions are unavailable.");
+            parameters.Add(p => p.OnSuggestFailed, ex => logged = ex);
+            parameters.Add<BitSearchBoxSuggestItemsProvider>(p => p.SuggestItemsProvider,
+                _ => throw new InvalidOperationException("boom"));
+        });
+
+        FocusAndType(component, "apple");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-fld").Count == 1);
+
+        // A search that could not run must not be told as a search that found nothing.
+        Assert.AreEqual("Suggestions are unavailable.", component.Find(".bit-srb-fld").TextContent.Trim());
+        Assert.AreEqual(0, component.FindAll(".bit-srb-nrs").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
+
+        // The exception is the one failure an app would otherwise never get to see.
+        Assert.IsInstanceOfType<InvalidOperationException>(logged);
+        Assert.AreEqual("boom", logged!.Message);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxFailingSuggestItemsProviderShouldBeAnnounced()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestFailedText, "Suggestions are unavailable.");
+            parameters.Add<BitSearchBoxSuggestItemsProvider>(p => p.SuggestItemsProvider,
+                _ => throw new InvalidOperationException("boom"));
+        });
+
+        FocusAndType(component, "apple");
+
+        component.WaitForState(() => component.Find(".bit-srb-lvr").TextContent.Contains("unavailable"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxRecoveringSuggestItemsProviderShouldClearTheFailure()
+    {
+        var shouldFail = true;
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestFailedText, "Suggestions are unavailable.");
+            parameters.Add<BitSearchBoxSuggestItemsProvider>(p => p.SuggestItemsProvider, _ =>
+            {
+                if (shouldFail) throw new InvalidOperationException("boom");
+
+                return ValueTask.FromResult<IEnumerable<string>>(["Apple"]);
+            });
+        });
+
+        FocusAndType(component, "apple");
+        component.WaitForState(() => component.FindAll(".bit-srb-fld").Count == 1);
+
+        shouldFail = false;
+        component.Find(".bit-srb-inp").Input("apples");
+
+        // The next search starts from a clean slate, so a provider that recovers is not left reported as broken.
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count == 1);
+        Assert.AreEqual(0, component.FindAll(".bit-srb-fld").Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutFailureContentShouldNotKeepTheCalloutOpenOnAFailure()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add<BitSearchBoxSuggestItemsProvider>(p => p.SuggestItemsProvider,
+                _ => throw new InvalidOperationException("boom"));
+        });
+
+        FocusAndType(component, "apple");
+
+        // Nothing was given to report it with, so the callout closes the way an empty result does.
+        WaitForClosedCallout(component);
+        Assert.AreEqual(0, component.FindAll(".bit-srb-fld").Count);
     }
 
     #endregion
@@ -2004,6 +2493,384 @@ public class BitSearchBoxTests : BunitTestContext
         component.Find(".bit-srb-inp").FocusIn();
 
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+    }
+
+    #endregion
+
+
+
+    #region inline auto completion
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldCompleteTheTypedTermInPlace()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count > 0);
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Single();
+
+        // The rest of the first match is appended to what was typed and left selected, so the next
+        // keystroke replaces it rather than landing behind it. The typed part keeps the casing it was
+        // typed with: re-casing it under the caret is what makes a completion feel like it is fighting back.
+        Assert.AreEqual("apple", invocation.Arguments[1]);
+        Assert.AreEqual("ap", invocation.Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldKeepTheTypedTermUncommitted()
+    {
+        string? boundValue = null;
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Bind(p => p.Value, boundValue, v => boundValue = v);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count > 0);
+
+        // Only the input element is written to: the completion is accepted by enter, by the search
+        // button or by tabbing out, and until then the value still follows what the user typed.
+        Assert.AreEqual("ap", boundValue);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldOnlyCompleteAnItemThatStartsWithTheTerm()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        // "Apple" matches "pple" the way every other suggestion is matched, but completing it would
+        // mean rewriting what the user already typed instead of adding to it.
+        FocusAndType(component, "pple");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldNotPutBackWhatBackspaceTakesAway()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count == 1);
+
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Backspace" });
+        component.Find(".bit-srb-inp").Input("a");
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+
+        // ... while the very next character typed is completed again.
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "p" });
+        component.Find(".bit-srb-inp").Input("ap");
+
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count == 2);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldNotPutBackTextThatWasCutOut()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "appl");
+
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count == 1);
+
+        // A cut or a drag out of the field takes text away without a key ever being pressed, and
+        // completing the shorter term again would simply put it back.
+        component.Find(".bit-srb-inp").Input("ap");
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldNotCompletePastTheMaxLength()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.MaxLength, 3);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldNotRunWhileTheFieldIsNotBeingTypedIn()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        // A value that arrives from the outside must not rewrite a field nobody is typing into.
+        component.Render(parameters => parameters.Add(p => p.Value, "ap"));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxEscapeShouldTakeBackTheInlineCompletion()
+    {
+        SetupFillAndSelectResult(true);
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => component.Find(".bit-srb-inp").GetAttribute("aria-expanded") == "true");
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count == 1);
+
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        // Dismissing the list gives the typed term back rather than leaving the completion behind.
+        component.WaitForAssertion(() =>
+            Assert.AreEqual("ap", Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Last().Arguments[2]));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxEscapeShouldLeaveAloneACompletionTheFieldRefused()
+    {
+        // The field refuses a completion when a keystroke has landed in it since the term was committed
+        // (under a DebounceTime), so there is nothing to take back and the text typed since must stay.
+        SetupFillAndSelectResult(false);
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => component.Find(".bit-srb-inp").GetAttribute("aria-expanded") == "true");
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count == 1);
+
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        WaitForClosedCallout(component);
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxSearchButtonShouldAcceptTheInlineCompletion()
+    {
+        SetupFillAndSelectResult(true);
+        SetupGetPropertyResult("apple");
+
+        string? boundValue = null;
+        string? searched = null;
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ShowSearchButton, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Add(p => p.OnSearch, v => searched = v);
+            parameters.Bind(p => p.Value, boundValue, v => boundValue = v);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count == 1);
+
+        component.Find(".bit-srb-sbn").Click();
+
+        // The search runs for what the field shows, not for the part of it the user typed.
+        component.WaitForAssertion(() => Assert.AreEqual("apple", searched));
+        Assert.AreEqual("apple", boundValue);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxTabShouldAcceptTheInlineCompletion()
+    {
+        SetupFillAndSelectResult(true);
+        SetupGetPropertyResult("apple");
+
+        string? boundValue = null;
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Bind(p => p.Value, boundValue, v => boundValue = v);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count == 1);
+
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" });
+
+        // The completion only ever reached the input element, so tabbing out is what commits it.
+        component.WaitForAssertion(() => Assert.AreEqual("apple", boundValue));
+        WaitForClosedCallout(component);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxTabWithoutAnInlineCompletionShouldNotReadTheField()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.getProperty"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldNotCompleteASearchTheFocusStarted()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "ap");
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.ShowSuggestItemsOnFocus, true);
+            parameters.Add(p => p.SelectTextOnFocus, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        // Focusing the field opens the list for the term already in it, but nobody typed that term, so the
+        // field keeps it as it was - and the select-all of SelectTextOnFocus is not undone by a completion.
+        OpenTheCallout(component);
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldNotCompleteASearchTheAltArrowDownStarted()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "ap");
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        component.Find(".bit-srb-inp").FocusIn();
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "ArrowDown", AltKey = true });
+
+        component.WaitForState(() => component.Find(".bit-srb-inp").GetAttribute("aria-expanded") == "true");
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutAutoFillSuggestItemShouldNotCompleteAnything()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxInlineAutoCompletionShouldBeAdvertisedToAssistiveTechnologies()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        Assert.AreEqual("list", component.Find(".bit-srb-inp").GetAttribute("aria-autocomplete"));
+
+        component.Render(parameters => parameters.Add(p => p.AutoFillSuggestItem, true));
+
+        Assert.AreEqual("both", component.Find(".bit-srb-inp").GetAttribute("aria-autocomplete"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxNullSuggestItemsShouldBeDroppedInsteadOfBeingRendered()
+    {
+        var items = new List<string> { "Apple", null!, "Apricot" };
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, items);
+            // A filter function of the app's own is free not to guard against a null item.
+            parameters.Add(p => p.SuggestFilterFunction, (string? term, string? item) => true);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
+
+        Assert.AreEqual(2, component.FindAll(".bit-srb-itm").Count);
     }
 
     #endregion
@@ -2404,7 +3271,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.MinSuggestTriggerChars, 1);
             parameters.Add(p => p.SuggestItems, Fruits);
             parameters.Bind(p => p.Value, value, v => value = v);
@@ -2478,7 +3345,7 @@ public class BitSearchBoxTests : BunitTestContext
         var component = RenderComponent<BitSearchBoxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitSearchBoxTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Immediate, true);
         });
 
@@ -2519,7 +3386,7 @@ public class BitSearchBoxTests : BunitTestContext
         var component = RenderComponent<BitSearchBoxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitSearchBoxTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Immediate, true);
         });
 
@@ -2558,7 +3425,7 @@ public class BitSearchBoxTests : BunitTestContext
         var component = RenderComponent<BitSearchBoxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitSearchBoxTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Immediate, true);
         });
 
@@ -2584,6 +3451,873 @@ public class BitSearchBoxTests : BunitTestContext
         }
 
         Assert.AreEqual(isInvalid is false, bitSearchBox.ClassList.Contains("bit-inv"));
+    }
+
+    #endregion
+
+    #region description & error message
+
+    [TestMethod]
+    public void BitSearchBoxDescriptionShouldRenderAndDescribeTheInput()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Description, "Searches products by name.");
+        });
+
+        var description = component.Find(".bit-srb-des");
+        var input = component.Find(".bit-srb-inp");
+
+        Assert.AreEqual("Searches products by name.", description.TextContent.Trim());
+        Assert.AreEqual(description.GetAttribute("id"), input.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxDescriptionTemplateShouldReplaceTheDescriptionText()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Description, "plain");
+            parameters.Add(p => p.DescriptionTemplate, "<span id='custom-description'>custom</span>");
+        });
+
+        var description = component.Find(".bit-srb-des");
+
+        Assert.IsNotNull(component.Find("#custom-description"));
+        Assert.IsFalse(description.TextContent.Contains("plain"));
+        Assert.AreEqual(description.GetAttribute("id"), component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAriaDescriptionShouldRenderHiddenAndDescribeTheInput()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.AriaDescription, "Results update as you type.");
+        });
+
+        var ariaDescription = component.Find(".bit-srb-ard");
+
+        Assert.AreEqual("Results update as you type.", ariaDescription.TextContent.Trim());
+        Assert.AreEqual(ariaDescription.GetAttribute("id"), component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutDescriptionsShouldNotRenderDescribedBy()
+    {
+        var component = RenderComponent<BitSearchBox>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-srb-des").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-srb-ard").Count);
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxDescribedByShouldKeepTheConsumerOwnValueFirst()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-describedby", "outside-hint" } });
+            parameters.Add(p => p.ErrorMessage, "Rejected.");
+            parameters.Add(p => p.Description, "A hint.");
+            parameters.Add(p => p.AriaDescription, "For screen readers.");
+        });
+
+        var describedBy = component.Find(".bit-srb-inp").GetAttribute("aria-describedby")!.Split(' ');
+
+        Assert.AreEqual(4, describedBy.Length);
+        Assert.AreEqual("outside-hint", describedBy[0]);
+        Assert.AreEqual(component.Find(".bit-srb-erm").GetAttribute("id"), describedBy[1]);
+        Assert.AreEqual(component.Find(".bit-srb-des").GetAttribute("id"), describedBy[2]);
+        Assert.AreEqual(component.Find(".bit-srb-ard").GetAttribute("id"), describedBy[3]);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxErrorMessageShouldMarkTheFieldInvalidAndBeAnnounced()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "The term is too short.");
+        });
+
+        var input = component.Find(".bit-srb-inp");
+
+        Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
+        Assert.AreEqual("The term is too short.", component.Find(".bit-srb-erm").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-srb-erm").GetAttribute("id"), input.GetAttribute("aria-describedby"));
+        Assert.AreEqual("The term is too short.", component.Find(".bit-srb-elv").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSearchBoxErrorLiveRegionShouldAlwaysBeRendered()
+    {
+        var component = RenderComponent<BitSearchBox>();
+
+        var liveRegion = component.Find(".bit-srb-elv");
+
+        Assert.AreEqual("status", liveRegion.GetAttribute("role"));
+        Assert.AreEqual(string.Empty, liveRegion.TextContent);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxErrorMessageTemplateShouldReplaceTheErrorText()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageTemplate, "<span id='custom-error'>custom</span>");
+        });
+
+        Assert.IsNotNull(component.Find("#custom-error"));
+        Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-inv"));
+
+        // Only the plain text is announced, since a template is free to render anything at all.
+        Assert.AreEqual(string.Empty, component.Find(".bit-srb-elv").TextContent);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutErrorMessageShouldNotBeInvalid()
+    {
+        var component = RenderComponent<BitSearchBox>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-srb-erm").Count);
+        Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-inv"));
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAriaLabelShouldWinOverTheLabelElement()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Search products");
+            parameters.Add(p => p.AriaLabel, "Search the whole catalog");
+        });
+
+        var input = component.Find(".bit-srb-inp");
+
+        // aria-labelledby takes precedence over aria-label, so pointing at the visible label while a
+        // name of its own was given would quietly throw that name away.
+        Assert.AreEqual("Search the whole catalog", input.GetAttribute("aria-label"));
+        Assert.IsFalse(input.HasAttribute("aria-labelledby"));
+        Assert.AreEqual(input.GetAttribute("id"), component.Find("label.bit-srb-lbl").GetAttribute("for"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldRenderTheAutoCapitalizeAndAutoCorrectAttributes()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.AutoCapitalize, "none");
+            parameters.Add(p => p.AutoCorrect, false);
+        });
+
+        var input = component.Find(".bit-srb-inp");
+
+        Assert.AreEqual("none", input.GetAttribute("autocapitalize"));
+        Assert.AreEqual("off", input.GetAttribute("autocorrect"));
+
+        var without = RenderComponent<BitSearchBox>();
+
+        Assert.IsFalse(without.Find(".bit-srb-inp").HasAttribute("autocapitalize"));
+        Assert.IsFalse(without.Find(".bit-srb-inp").HasAttribute("autocorrect"));
+    }
+
+    [TestMethod,
+        DataRow(BitSize.Small, "bit-srb-sm"),
+        DataRow(BitSize.Medium, "bit-srb-md"),
+        DataRow(BitSize.Large, "bit-srb-lg")
+    ]
+    public void BitSearchBoxCalloutShouldCarryTheSizeClass(BitSize size, string expectedClass)
+    {
+        // The callout is rendered as a sibling of the root element, so the size class of the
+        // component never reaches it through the cascade and it has to be given one of its own.
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        Assert.IsTrue(component.Find(".bit-srb-cal").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxRequiredShouldRenderAriaRequired()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        // The combobox role replaces the implicit one of the input, so the required state is stated in
+        // the ARIA property rather than left to the mapping of the native attribute.
+        Assert.AreEqual("true", component.Find(".bit-srb-inp").GetAttribute("aria-required"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxOnlyTheDefaultSearchGlyphShouldBeMirroredInRtl()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchButton, true);
+        });
+
+        // The default glyph is a directional arrow, which an RTL layout has to turn around.
+        Assert.IsTrue(component.Find(".bit-srb-sbn i").ClassList.Contains("bit-srb-dsi"));
+
+        component.Render(parameters => parameters.Add(p => p.SearchButtonIconName, "Search"));
+
+        // A magnifier means the same thing both ways, and mirroring it would only render it backwards.
+        Assert.IsFalse(component.Find(".bit-srb-sbn i").ClassList.Contains("bit-srb-dsi"));
+    }
+
+    #endregion
+
+    #region loading & search button text
+
+    [TestMethod]
+    public void BitSearchBoxLoadingShouldShowTheSpinnerInPlaceOfTheClearButton()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "apple");
+            parameters.Add(p => p.Loading, true);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-srb-lsp .bit-srb-spn").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-srb-cbt").Count);
+        Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-srb-lng"));
+        Assert.AreEqual("true", component.Find(".bit-srb-inp").GetAttribute("aria-busy"));
+        Assert.AreEqual("Searching", component.Find(".bit-srb-elv").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSearchBoxSpinnerClassAndStyleShouldReachTheFieldSpinner()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.Classes, new BitSearchBoxClassStyles { Spinner = "custom-spinner" });
+            parameters.Add(p => p.Styles, new BitSearchBoxClassStyles { Spinner = "color: red;" });
+        });
+
+        var spinner = component.Find(".bit-srb-lsp .bit-srb-spn");
+
+        Assert.IsTrue(spinner.ClassList.Contains("custom-spinner"));
+        Assert.AreEqual("color: red;", spinner.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxSpinnerClassAndStyleShouldReachTheCalloutSpinner()
+    {
+        var tcs = new TaskCompletionSource<IEnumerable<string>>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var component = RenderComponent<BitSearchBox>(p =>
+        {
+            p.Add(x => x.Immediate, true);
+            p.Add(x => x.MinSuggestTriggerChars, 1);
+            p.Add(x => x.Classes, new BitSearchBoxClassStyles { Spinner = "custom-spinner" });
+            p.Add(x => x.Styles, new BitSearchBoxClassStyles { Spinner = "color: red;" });
+            p.Add(x => x.SuggestItemsProvider, (BitSearchBoxSuggestItemsProviderRequest req) => new(tcs.Task));
+        });
+
+        FocusAndType(component, "a");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-lod .bit-srb-spn").Count == 1);
+
+        var spinner = component.Find(".bit-srb-lod .bit-srb-spn");
+
+        Assert.IsTrue(spinner.ClassList.Contains("custom-spinner"));
+        Assert.AreEqual("color: red;", spinner.GetAttribute("style"));
+
+        await component.InvokeAsync(() => tcs.SetResult(["Apple"]));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutLoadingShouldKeepTheClearButton()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.DefaultValue, "apple"));
+
+        Assert.AreEqual(0, component.FindAll(".bit-srb-lsp").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-srb-cbt").Count);
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("aria-busy"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxLoadingAriaLabelShouldBeAnnounced()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingAriaLabel, "Looking for matches");
+        });
+
+        Assert.AreEqual("Looking for matches", component.Find(".bit-srb-elv").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSearchBoxErrorMessageShouldWinOverTheLoadingAnnouncement()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.ErrorMessage, "The search failed.");
+        });
+
+        Assert.AreEqual("The search failed.", component.Find(".bit-srb-elv").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSearchBoxSearchButtonTextShouldRenderAndNameTheButton()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchButton, true);
+            parameters.Add(p => p.SearchButtonText, "Search");
+            parameters.Add(p => p.SearchButtonAriaLabel, "Run the search");
+        });
+
+        var button = component.Find(".bit-srb-sbn");
+
+        Assert.AreEqual("Search", component.Find(".bit-srb-sbx").TextContent.Trim());
+        Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-srb-sbt"));
+
+        // The visible label already names the button, so an aria-label on top of it would replace what is
+        // written on it with a second, unrelated string, and a tooltip repeating it is pure noise.
+        Assert.IsFalse(button.HasAttribute("aria-label"));
+        Assert.IsFalse(button.HasAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxSearchButtonWithoutTextShouldKeepItsAriaLabel()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchButton, true);
+            parameters.Add(p => p.SearchButtonAriaLabel, "Run the search");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-srb-sbx").Count);
+        Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-srb-sbt"));
+        Assert.AreEqual("Run the search", component.Find(".bit-srb-sbn").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxSearchButtonTemplateShouldReplaceTheTextAndTheIcon()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchButton, true);
+            parameters.Add(p => p.SearchButtonText, "Search");
+            parameters.Add(p => p.SearchButtonTemplate, "<span id='custom-search'>go</span>");
+        });
+
+        Assert.IsNotNull(component.Find("#custom-search"));
+        Assert.AreEqual(0, component.FindAll(".bit-srb-sbx").Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxSearchButtonTemplateShouldKeepTheAriaLabelEvenWithASearchButtonText()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchButton, true);
+            parameters.Add(p => p.SearchButtonText, "Search");
+            parameters.Add(p => p.SearchButtonAriaLabel, "Run the search");
+            parameters.Add(p => p.SearchButtonTemplate, "<i class='custom-icon'></i>");
+        });
+
+        // The template replaces the visible label, so without the aria-label the button would have no name.
+        var button = component.Find(".bit-srb-sbn");
+
+        Assert.AreEqual("Run the search", button.GetAttribute("aria-label"));
+        Assert.AreEqual("Run the search", button.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxCalloutShouldCarryOnlyItsOwnStyle()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Add(p => p.Style, "--bit-SearchBox-item-color: red; margin: 4px");
+            parameters.Add(p => p.Styles, new BitSearchBoxClassStyles
+            {
+                Root = "--bit-SearchBox-callout-background:#222;padding:2px",
+                Callout = "--bit-SearchBox-item-color:blue;"
+            });
+        });
+
+        // The callout renders outside the root and is relocated to the body while it is open, but the public
+        // variables set on the component are no longer copied onto it: Callouts.ts carries what the root
+        // declares into the popup, so its inline style is only what was written for the callout itself.
+        Assert.AreEqual("--bit-SearchBox-item-color:blue;", component.Find(".bit-srb-cal").GetAttribute("style"));
+
+        // ... and the root keeps everything it was given.
+        var root = component.Find(".bit-srb").GetAttribute("style");
+        Assert.IsNotNull(root);
+        StringAssert.Contains(root, "--bit-SearchBox-item-color: red");
+        StringAssert.Contains(root, "margin: 4px");
+        StringAssert.Contains(root, "--bit-SearchBox-callout-background:#222");
+        StringAssert.Contains(root, "padding:2px");
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldNameItsRootWhenItTogglesTheCallout()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Add(p => p.Style, "--bit-SearchBox-item-color: red");
+        });
+
+        component.Find(".bit-srb-inp").Input("apple");
+
+        OpenTheCallout(component);
+
+        // The root is what Callouts.ts copies into the chain it relocates the callout into, which is how the
+        // public variables of the instance still reach the suggest list once it sits under the body. The
+        // component waits for the list to render before it positions it, so the call comes a moment later.
+        var rootId = component.Find(".bit-srb").Id;
+
+        Assert.IsFalse(string.IsNullOrEmpty(rootId));
+
+        component.WaitForAssertion(() =>
+        {
+            var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+            Assert.AreEqual(rootId, toggle.Arguments[^2]);
+        });
+    }
+
+    [TestMethod]
+    public void BitSearchBoxOverlayShouldBeHiddenFromAssistiveTechnologies()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.SuggestItems, Fruits));
+
+        Assert.AreEqual("true", component.Find(".bit-srb-ovl").GetAttribute("aria-hidden"));
+    }
+
+    #endregion
+    #region disabled, base parameters & lifecycle
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitSearchBoxShouldPairTheDisabledAttributesOfItsControls(bool disabled)
+    {
+        // A native control rendered disabled writes disabled and aria-disabled both, so :disabled and
+        // [aria-disabled="true"] each find it - the input and both of its buttons alike - and the root says so once.
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Value, "bit");
+            parameters.Add(p => p.Disabled, disabled);
+            parameters.Add(p => p.ShowSearchButton, true);
+        });
+
+        Assert.AreEqual(disabled, component.Find(".bit-srb").ClassList.Contains("bit-dis"));
+
+        foreach (var selector in new[] { ".bit-srb-inp", ".bit-srb-cbt", ".bit-srb-sbn" })
+        {
+            var control = component.Find(selector);
+
+            Assert.AreEqual(disabled, control.HasAttribute("disabled"), selector);
+            Assert.AreEqual(disabled ? "true" : null, control.GetAttribute("aria-disabled"), selector);
+        }
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldKeepThePagesAriaDisabledOnTheInputWhileEnabled()
+    {
+        // The input writes its own aria-disabled after the splat of the InputHtmlAttributes, so the value the page
+        // wrote there is carried over rather than overwritten with the parameter's null.
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-disabled", "true" } });
+        });
+
+        var input = component.Find(".bit-srb-inp");
+
+        Assert.IsFalse(input.HasAttribute("disabled"));
+        Assert.AreEqual("true", input.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod,
+        DataRow(true, 0),
+        DataRow(false, 1)
+    ]
+    public void BitSearchBoxShouldDropTheSplattedActivationHandlersWhileDisabled(bool disabled, int expected)
+    {
+        // A screen reader activates what it announces by dispatching a click, which pointer-events: none does not
+        // stop, so a disabled search box drops the page's handlers of the activating events (see
+        // BitComponentBase.DisabledAwareHtmlAttributes) rather than running them for a state it announces as unavailable.
+        var clicks = 0;
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitSearchBox>(0);
+            builder.AddAttribute(1, nameof(BitSearchBox.Disabled), disabled);
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
+            builder.CloseComponent();
+        });
+
+        try
+        {
+            component.Find(".bit-srb").Click();
+        }
+        catch (MissingEventHandlerException) { }
+
+        Assert.AreEqual(expected, clicks);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldRaiseTheClickAndFocusCallbacks()
+    {
+        var clicks = 0;
+        var focuses = 0;
+        var focusIns = 0;
+        var focusOuts = 0;
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => clicks++);
+            parameters.Add(p => p.OnFocus, () => focuses++);
+            parameters.Add(p => p.OnFocusIn, () => focusIns++);
+            parameters.Add(p => p.OnFocusOut, () => focusOuts++);
+        });
+
+        var input = component.Find(".bit-srb-inp");
+
+        input.Click();
+        input.Focus();
+        input.FocusIn();
+        input.FocusOut();
+
+        Assert.AreEqual(1, clicks);
+        Assert.AreEqual(1, focuses);
+        Assert.AreEqual(1, focusIns);
+        Assert.AreEqual(1, focusOuts);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldNotRaiseTheClickAndFocusCallbacksWhileDisabled()
+    {
+        var clicks = 0;
+        var focuses = 0;
+        var focusIns = 0;
+        var focusOuts = 0;
+        var keyUps = 0;
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.OnClick, () => clicks++);
+            parameters.Add(p => p.OnFocus, () => focuses++);
+            parameters.Add(p => p.OnFocusIn, () => focusIns++);
+            parameters.Add(p => p.OnFocusOut, () => focusOuts++);
+            parameters.Add(p => p.OnKeyUp, () => keyUps++);
+        });
+
+        var input = component.Find(".bit-srb-inp");
+
+        input.Click();
+        input.Focus();
+        input.FocusIn();
+        input.FocusOut();
+        input.KeyUp(new KeyboardEventArgs { Key = "a" });
+
+        Assert.AreEqual(0, clicks);
+        Assert.AreEqual(0, focuses);
+        Assert.AreEqual(0, focusIns);
+        Assert.AreEqual(0, focusOuts);
+        Assert.AreEqual(0, keyUps);
+        Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-srb-foc"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxIconClickShouldFocusTheInput()
+    {
+        // The icon sits inside the field and advertises a text cursor, so clicking it has to put the caret in the
+        // input the same way clicking the empty space of the field does.
+        var component = RenderComponent<BitSearchBox>();
+
+        component.Find(".bit-srb-iwp").Click();
+
+        var focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        Assert.AreEqual(1, focuses.Count);
+        Assert.AreEqual(component.Instance.InputElement.Id, ((ElementReference)focuses[0].Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxIconClickShouldNotFocusADisabledInput()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.Disabled, true));
+
+        component.Find(".bit-srb-iwp").Click();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldMarkTheFocusedState()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Style, "margin: 1px;");
+            parameters.Add(p => p.Classes, new BitSearchBoxClassStyles { Focused = "custom-focused" });
+            parameters.Add(p => p.Styles, new BitSearchBoxClassStyles { Root = "padding: 2px;", Focused = "color: red;" });
+        });
+
+        var root = component.Find(".bit-srb");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-srb-foc"));
+        Assert.IsFalse(root.ClassList.Contains("custom-focused"));
+        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("color: red;"));
+        Assert.IsFalse(root.HasAttribute("data-bit-popup-style"));
+
+        component.Find(".bit-srb-inp").FocusIn();
+
+        root = component.Find(".bit-srb");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-srb-foc"));
+        Assert.IsTrue(root.ClassList.Contains("custom-focused"));
+        StringAssert.Contains(root.GetAttribute("style"), "color: red;");
+
+        // The style of a passing state never reaches the popup: while it is applied, the root publishes the style it
+        // has without it for the callout chain to copy instead.
+        var popupStyle = root.GetAttribute("data-bit-popup-style");
+
+        Assert.IsNotNull(popupStyle);
+        StringAssert.Contains(popupStyle, "padding: 2px;");
+        StringAssert.Contains(popupStyle, "margin: 1px;");
+        Assert.IsFalse(popupStyle.Contains("color: red;"));
+
+        component.Find(".bit-srb-inp").FocusOut();
+
+        root = component.Find(".bit-srb");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-srb-foc"));
+        Assert.IsFalse(root.ClassList.Contains("custom-focused"));
+        Assert.IsFalse(root.HasAttribute("data-bit-popup-style"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutImmediateShouldCommitOnChangeOnly()
+    {
+        string? value = null;
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-srb-inp").Input("bit");
+
+        Assert.IsNull(value);
+
+        component.Find(".bit-srb-inp").Change("bit");
+
+        Assert.AreEqual("bit", value);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithImmediateShouldCommitOnEveryInput()
+    {
+        var values = new List<string?>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.OnChange, v => values.Add(v));
+        });
+
+        component.Find(".bit-srb-inp").Input("b");
+        component.Find(".bit-srb-inp").Input("bi");
+
+        CollectionAssert.AreEqual(new List<string?> { "b", "bi" }, values);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldRefuseTheTypedTextOfAOneWayBoundValue()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.Value, "bit");
+        });
+
+        component.Find(".bit-srb-inp").Input("blazor");
+        component.Find(".bit-srb-inp").Change("blazor");
+
+        Assert.AreEqual("bit", component.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, ""),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitSearchBoxShouldRespectVisibility(BitVisibility visibility, string expectedStyle)
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = component.Find(".bit-srb").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle.HasValue())
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+        else
+        {
+            Assert.AreEqual(string.Empty, style);
+        }
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldRenderTheBaseParametersOnItsRoot()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Id, "search-id");
+            parameters.Add(p => p.Class, "custom-class");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.TabIndex, "4");
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { { "data-test", "search" } });
+        });
+
+        var root = component.Find(".bit-srb");
+
+        Assert.AreEqual("search-id", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.AreEqual("search", root.GetAttribute("data-test"));
+        Assert.AreEqual("4", component.Find(".bit-srb-inp").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldRenderTheNameAndTheAutoFocusOnTheInput()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Name, "q");
+            parameters.Add(p => p.AutoFocus, true);
+        });
+
+        var input = component.Find(".bit-srb-inp");
+
+        Assert.AreEqual("q", input.GetAttribute("name"));
+        Assert.IsTrue(input.HasAttribute("autofocus"));
+        Assert.AreEqual("text", input.GetAttribute("type"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldSetUpTheKeyboardGuardOfItsInputOnce()
+    {
+        var component = RenderComponent<BitSearchBox>();
+
+        var setups = Context.JSInterop.Invocations["BitBlazorUI.SearchBox.setupInput"];
+
+        Assert.AreEqual(1, setups.Count);
+        Assert.AreEqual(component.Instance.InputElement.Id, ((ElementReference)setups[0].Arguments[0]!).Id);
+
+        component.Render();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.setupInput"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxShouldTearDownTheCalloutAndTheShortcutOnDispose()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Add(p => p.FocusShortcut, "Control+K");
+        });
+
+        var calloutId = component.Find(".bit-srb-cal").Id;
+        var inputId = component.Find(".bit-srb-inp").Id;
+
+        await component.Instance.DisposeAsync();
+
+        // The shortcut listens on the document, so it would outlive the component unless it is taken off, and the
+        // callout may still be relocated under the body.
+        var unregistrations = Context.JSInterop.Invocations["BitBlazorUI.SearchBox.unregisterShortcut"];
+        var clears = Context.JSInterop.Invocations["BitBlazorUI.Callouts.clear"];
+
+        Assert.AreEqual(1, unregistrations.Count);
+        Assert.AreEqual(inputId, unregistrations[0].Arguments[0]);
+        Assert.AreEqual(1, clears.Count);
+        Assert.AreEqual(calloutId, clears[0].Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxWithoutAFocusShortcutShouldNotUnregisterOneOnDispose()
+    {
+        var component = RenderComponent<BitSearchBox>();
+
+        await component.Instance.DisposeAsync();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.unregisterShortcut"].Count);
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitSearchBoxShouldHandFixedCalloutWidthToTheCallout(bool fixedCalloutWidth)
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Add(p => p.FixedCalloutWidth, fixedCalloutWidth);
+        });
+
+        component.Find(".bit-srb-inp").Input("apple");
+
+        OpenTheCallout(component);
+
+        component.WaitForAssertion(() =>
+        {
+            var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+            // The callout always takes the width of the component; whether it is held at exactly that width is the
+            // parameter's.
+            Assert.AreEqual(true, toggle.Arguments[14]);
+            Assert.AreEqual(fixedCalloutWidth, toggle.Arguments[15]);
+        });
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldHandTheDirectionItNamesToTheCallout()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        component.Find(".bit-srb-inp").Input("apple");
+
+        OpenTheCallout(component);
+
+        component.WaitForAssertion(() =>
+        {
+            var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+            Assert.AreEqual(true, toggle.Arguments[9]);
+        });
     }
 
     #endregion

@@ -57,6 +57,13 @@ public static partial class BitMarkdownEditorCommands
     // ---- reading ------------------------------------------------------------
 
     /// <summary>
+    /// Whether the range is a caret or lies inside a single cell - the one a table walk has just selected - rather
+    /// than spanning a cell border or a line, which makes it a block of text that Tab indents as a whole.
+    /// </summary>
+    private static bool IsInsideOneCell(string text, int start, int end) =>
+        text.AsSpan(start, end - start).IndexOfAny('\n', '|') < 0;
+
+    /// <summary>
     /// Reads the table around <paramref name="caret"/>, or null when the caret is not in one.
     /// A run of lines counts as a table only with a delimiter row right below its header, which
     /// is what tells a table apart from any other text that happens to contain a pipe.

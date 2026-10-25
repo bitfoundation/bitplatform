@@ -1,6 +1,5 @@
 //+:cnd:noEmit
 using Boilerplate.Server.Api.Features.Identity.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 using Hangfire;
 using Hangfire.EntityFrameworkCore;
 
@@ -10,13 +9,25 @@ public static partial class WebApplicationBuilderExtensions
 {
     extension(WebApplicationBuilder builder)
     {
-        public void AddTestProjectServices()
+        /// <summary>
+        /// Server.Web's test services. Server.Api's are in <c>AddTestApiProjectServices</c>.
+        /// </summary>
+        public void AddTestWebProjectServices()
         {
-            var services = builder.Services;
-
             builder.AddServerWebProjectServices();
+            //#if (api == "Integrated")
+            builder.AddTestApiProjectServices(); // The api is integrated into this host.
+            //#endif
 
             // Register test-specific services for all tests here
+        }
+
+        /// <summary>
+        /// Server.Api's test services, registered wherever its services are (See <c>AppTestServer.ApiApp</c>).
+        /// </summary>
+        public void AddTestApiProjectServices()
+        {
+            var services = builder.Services;
 
             // Capture every identity e-mail in-process (See TestIdentityEmailService) instead of rendering and delivering it,
             // so tests can read back the confirmation link / OTP / elevated-access token straight from the message. Capturing
@@ -26,21 +37,11 @@ public static partial class WebApplicationBuilderExtensions
             services.RemoveAll<IdentityEmailService>();
             services.AddScoped<IdentityEmailService, TestIdentityEmailService>();
 
-            services.AddTransient<HttpClient>(sp =>
-            {
-                var handlerFactory = sp.GetRequiredService<HttpMessageHandlersChainFactory>();
-                var serverAddress = new Uri(sp.GetRequiredService<IConfiguration>().GetServerAddress(), UriKind.Absolute);
-                var httpClient = new HttpClient(handlerFactory.Invoke())
-                {
-                    BaseAddress = serverAddress
-                };
-                httpClient.DefaultRequestHeaders.Add("X-Origin", serverAddress.ToString());
-                return httpClient;
-            });
+            EFCoreStorage? storage = null;
 
             services.AddHangfire((sp, hangfireConfiguration) =>
             {
-                hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
+                storage = hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
                 {
                     var keepAliveConnection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source=BoilerplateJobs-{Guid.NewGuid():N};Mode=Memory;Cache=Shared;");
                     keepAliveConnection.Open();
@@ -52,7 +53,8 @@ public static partial class WebApplicationBuilderExtensions
                     Schema = "jobs",
                     QueuePollInterval = new TimeSpan(0, 0, 1)
                 })
-                .UseDatabaseCreator();
+                .UseDatabaseCreator()
+                .Entry;
 
                 // Hangfire keeps its log provider in a process-wide static (Hangfire.Logging.LogProvider.CurrentLogProvider).
                 // With several hosts per dotnet test runner process, each AddHangfire binds that static to its own (disposable) ILoggerFactory,
@@ -66,6 +68,12 @@ public static partial class WebApplicationBuilderExtensions
                 hangfireConfiguration.UseIgnoredAssemblyVersionTypeResolver();
                 hangfireConfiguration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180);
             });
+
+            services.Replace(ServiceDescriptor.Singleton<JobStorage>(sp =>
+            {
+                sp.GetRequiredService<IGlobalConfiguration>();
+                return storage!;
+            }));
         }
     }
 }

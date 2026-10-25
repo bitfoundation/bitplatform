@@ -29,7 +29,7 @@ public class AiChatImagesRetentionTests
     {
         await using var server = await StartServer();
 
-        var retention = server.WebApp.Services.GetRequiredService<ServerApiSettings>().AiChatImagesRetention;
+        var retention = server.ApiApp.Services.GetRequiredService<ServerApiSettings>().AiChatImagesRetention;
 
         Assert.IsGreaterThan(TimeSpan.Zero, retention, "The job refuses to run without a positive retention period.");
 
@@ -74,11 +74,11 @@ public class AiChatImagesRetentionTests
     {
         await using var server = await StartServer();
 
-        var retention = server.WebApp.Services.GetRequiredService<ServerApiSettings>().AiChatImagesRetention;
+        var retention = server.ApiApp.Services.GetRequiredService<ServerApiSettings>().AiChatImagesRetention;
 
         var (attachmentId, blobPath) = await StoreAiChatImage(server, createdOn: DateTimeOffset.UtcNow - retention - TimeSpan.FromMinutes(1));
 
-        await using (var scope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scope = server.ApiApp.Services.CreateAsyncScope())
         {
             await scope.ServiceProvider.GetRequiredService<IStore>().DeleteObject(blobPath, TestContext.CancellationToken);
         }
@@ -93,7 +93,7 @@ public class AiChatImagesRetentionTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 
@@ -104,7 +104,7 @@ public class AiChatImagesRetentionTests
     /// </summary>
     private async Task<(Guid AttachmentId, string BlobPath)> StoreAiChatImage(AppTestServer server, DateTimeOffset createdOn)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
         var attachmentId = Guid.CreateSequentialGuid();
         var appSettings = scope.ServiceProvider.GetRequiredService<ServerApiSettings>();
@@ -130,7 +130,7 @@ public class AiChatImagesRetentionTests
 
     private async Task EnforceRetention(AppTestServer server)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
         await scope.ServiceProvider.GetRequiredService<AiChatImagesRetentionJobRunner>()
             .EnforceRetention(TestContext.CancellationToken);
@@ -138,7 +138,7 @@ public class AiChatImagesRetentionTests
 
     private async Task<bool> AttachmentExists(AppTestServer server, Guid attachmentId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.Attachments.AnyAsync(att => att.Id == attachmentId, TestContext.CancellationToken);
@@ -146,7 +146,7 @@ public class AiChatImagesRetentionTests
 
     private async Task<bool> BlobExists(AppTestServer server, string blobPath)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
         return await scope.ServiceProvider.GetRequiredService<IStore>().ObjectExists(blobPath, TestContext.CancellationToken);
     }
@@ -159,7 +159,7 @@ public class AiChatImagesRetentionTests
     {
         try
         {
-            await using var scope = server.WebApp.Services.CreateAsyncScope();
+            await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
             await scope.ServiceProvider.GetRequiredService<AppDbContext>().Attachments
                 .Where(att => att.Id == attachmentId)

@@ -1,0 +1,497 @@
+﻿@page "/e2e/app-shell"
+
+<PageTitle>BitAppShell E2E</PageTitle>
+
+@* Every shell sits in a box of its own fixed size, since a shell fills the room it is given; the rows are 40px tall so
+   the scroll positions the tests read are whole numbers of rows. *@
+<style>
+    .ash-box { width: 320px; height: 200px; border: 1px solid #999; }
+    /* The main container is a flex row, so the page in it is kept at the height of its content rather than
+       stretched to the container's - which is what a sticky header needs to stay put the whole way down. */
+    .ash-page { width: 100%; align-self: flex-start; }
+    .ash-row { height: 40px; box-sizing: border-box; border-bottom: 1px solid #ddd; }
+    .ash-head { position: sticky; top: 0; height: 40px; background: #eee; z-index: 1; }
+    .ash-wide { width: 900px; height: 40px; flex: none; }
+</style>
+
+<h1>BitAppShell</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <div class="ash-box">
+        <BitAppShell Id="ash-basic">
+            <div class="ash-page">
+                <div class="ash-head" id="basic-head">Header</div>
+                @foreach (var i in Enumerable.Range(1, 30))
+                {
+                    <div class="ash-row">Row @i</div>
+                }
+            </div>
+        </BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="insets" Title="Safe area insets">
+    <button id="btn-no-insets" type="button" @onclick="() => _noInsets = !_noInsets">NoInsets</button>
+    <button id="btn-no-top" type="button" @onclick="() => _noTopInset = !_noTopInset">NoTopInset</button>
+    <button id="btn-no-bottom" type="button" @onclick="() => _noBottomInset = !_noBottomInset">NoBottomInset</button>
+    <button id="btn-no-start" type="button" @onclick="() => _noStartInset = !_noStartInset">NoStartInset</button>
+    <button id="btn-no-end" type="button" @onclick="() => _noEndInset = !_noEndInset">NoEndInset</button>
+    <button id="btn-stable" type="button" @onclick="() => _stableInsets = !_stableInsets">StableInsets</button>
+    <button id="btn-insets-rtl" type="button" @onclick="() => _insetsRtl = !_insetsRtl">RTL</button>
+    @* Desktop browsers report no safe areas, so the shell is handed a phone's through the public variables, which
+       inherit from the box around it. *@
+    <div class="ash-box" id="insets-box" style="--bit-AppShell-safe-area-top: 20px; --bit-AppShell-safe-area-bottom: 30px; --bit-AppShell-safe-area-start: 10px; --bit-AppShell-safe-area-end: 15px; --bit-AppShell-inset-background: rgb(255, 0, 0); --bit-AppShell-inset-top-background: rgb(0, 128, 0);">
+        <BitAppShell Id="ash-insets"
+                     Dir="@(_insetsRtl ? BitDir.Rtl : null)"
+                     NoInsets="_noInsets"
+                     NoTopInset="_noTopInset"
+                     NoBottomInset="_noBottomInset"
+                     NoStartInset="_noStartInset"
+                     NoEndInset="_noEndInset"
+                     StableInsets="_stableInsets">
+            <div class="ash-page">
+                @foreach (var i in Enumerable.Range(1, 10))
+                {
+                    <div class="ash-row">Row @i</div>
+                }
+            </div>
+        </BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard inset">
+    <button id="btn-avoid-keyboard" type="button" @onclick="() => _avoidKeyboard = !_avoidKeyboard">Toggle AvoidKeyboard</button>
+    <div>Inset: <span id="keyboard-inset">@_keyboardInset</span> (<span id="keyboard-inset-count">@_keyboardInsetCount</span> reports)</div>
+    <div class="ash-box">
+        <BitAppShell Id="ash-keyboard" AvoidKeyboard="_avoidKeyboard" OnKeyboardInsetChanged="HandleKeyboardInset">
+            <div class="ash-page">
+                @foreach (var i in Enumerable.Range(1, 4))
+                {
+                    <div class="ash-row">Row @i</div>
+                }
+                <input id="keyboard-input" aria-label="Message" style="height: 30px;" />
+            </div>
+        </BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="scroll-api" Title="Scrolling from code">
+    <button id="btn-instant" type="button" @onclick="() => _instant = !_instant">Toggle ScrollBehavior Instant</button>
+    <button id="btn-go-top" type="button" @onclick="() => _scrollShell!.GoToTop()">GoToTop</button>
+    <button id="btn-go-bottom" type="button" @onclick="() => _scrollShell!.GoToBottom()">GoToBottom</button>
+    <button id="btn-scroll-to" type="button" @onclick="() => _scrollShell!.ScrollTo(null, 240)">ScrollTo(null, 240)</button>
+    <button id="btn-scroll-by" type="button" @onclick="() => _scrollShell!.ScrollBy(0, 120)">ScrollBy(0, 120)</button>
+    <button id="btn-scroll-by-nan" type="button" @onclick="() => _scrollShell!.ScrollBy(double.NaN, 120)">ScrollBy(NaN, 120)</button>
+    <button id="btn-scroll-to-element" type="button" @onclick="ScrollToTarget">ScrollToElement</button>
+    <button id="btn-scroll-to-element-offset" type="button" @onclick="ScrollToTargetWithOffset">ScrollToElement(offset 40)</button>
+    <button id="btn-scroll-to-element-end" type="button" @onclick="ScrollToTargetEnd">ScrollToElement(End)</button>
+    <button id="btn-scroll-to-element-center" type="button" @onclick="ScrollToTargetCenter">ScrollToElement(Center)</button>
+    <button id="btn-go-bottom-instant" type="button" @onclick="() => _scrollShell!.GoToBottom(BitScrollBehavior.Instant)">GoToBottom(Instant)</button>
+    <button id="btn-get-offset" type="button" @onclick="ReadOffset">GetScrollOffset</button>
+    <div>Offset: <span id="scroll-offset">@_offsetText</span></div>
+    <div>Container: <span id="scroll-container-id">@_scrollShell?.MainContainerId</span> - <span id="scroll-container-ref">@(_scrollShell?.ContainerRef is null ? "null" : "set")</span></div>
+    <div class="ash-box">
+        <BitAppShell Id="ash-scroll" @ref="_scrollShell" ScrollBehavior="@(_instant ? BitScrollBehavior.Instant : BitScrollBehavior.Smooth)">
+            <div class="ash-page">
+                @foreach (var i in Enumerable.Range(1, 30))
+                {
+                    <div class="ash-row" id="@(i == 20 ? "scroll-target" : null)">Row @i</div>
+                }
+            </div>
+        </BitAppShell>
+    </div>
+</E2ESection>
+
+@* The shells whose tests scroll them straight away also carry AvoidKeyboard, which does nothing on a desktop browser
+   but marks the root with data-bit-ash-kbd once the browser side is set up - after the scroll reporting it is set up
+   behind - so a test can wait for the shell to be listening before it scrolls (WaitForShellAsync). *@
+<E2ESection Id="scroll-events" Title="Scroll events and state">
+    <div>Scroll: <span id="events-scroll-count">@_scrollCount</span> top <span id="events-top">@_scrollTop</span> <span id="events-direction">@_scrollDirection</span> <span id="events-percent">@_scrollPercent</span></div>
+    <div>Start: <span id="events-start-count">@_scrollStartCount</span> End: <span id="events-end-count">@_scrollEndCount</span> at <span id="events-end-top">@_scrollEndTop</span></div>
+    <div>Reached top: <span id="events-top-count">@_reachedTopCount</span> bottom: <span id="events-bottom-count">@_reachedBottomCount</span></div>
+    <div class="ash-box">
+        <BitAppShell Id="ash-events"
+                     AvoidKeyboard
+                     TrackScrollState
+                     ReachOffset="16"
+                     ScrollBehavior="BitScrollBehavior.Instant"
+                     OnScroll="HandleScroll"
+                     OnScrollStart="o => _scrollStartCount++"
+                     OnScrollEnd="HandleScrollEnd"
+                     OnReachedTop="() => _reachedTopCount++"
+                     OnReachedBottom="() => _reachedBottomCount++">
+            <div class="ash-page">
+                @foreach (var i in Enumerable.Range(1, 40))
+                {
+                    <div class="ash-row">Row @i</div>
+                }
+            </div>
+        </BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="throttle" Title="ScrollThrottle">
+    <div>Reports: <span id="throttle-count">@_throttleCount</span> last top <span id="throttle-top">@_throttleTop</span></div>
+    <div class="ash-box">
+        <BitAppShell Id="ash-throttle" AvoidKeyboard ScrollThrottle="1000" ScrollBehavior="BitScrollBehavior.Instant" OnScroll="HandleThrottledScroll">
+            <div class="ash-page">
+                @foreach (var i in Enumerable.Range(1, 30))
+                {
+                    <div class="ash-row">Row @i</div>
+                }
+            </div>
+        </BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="horizontal" Title="Horizontal edges">
+    <div>Reached left: <span id="wide-left-count">@_reachedLeftCount</span> right: <span id="wide-right-count">@_reachedRightCount</span></div>
+    <div class="ash-box">
+        <BitAppShell Id="ash-wide" AvoidKeyboard ScrollBehavior="BitScrollBehavior.Instant" OnReachedLeft="() => _reachedLeftCount++" OnReachedRight="() => _reachedRightCount++">
+            <div class="ash-wide">A row wider than the shell</div>
+        </BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="overflow" Title="Overflow, overscroll and gutter">
+    <button id="btn-overflow-x" type="button" @onclick="() => _overflowX = _overflowX is null ? BitOverflow.Hidden : null">OverflowX Hidden</button>
+    <button id="btn-overflow-y" type="button" @onclick="() => _overflowY = _overflowY is null ? BitOverflow.Scroll : null">OverflowY Scroll</button>
+    @foreach (var value in Enum.GetValues<BitOverflow>())
+    {
+        <button id="btn-ox-@value.ToString().ToLowerInvariant()" type="button" @onclick="() => _overflowX = value">OverflowX @value</button>
+        <button id="btn-oy-@value.ToString().ToLowerInvariant()" type="button" @onclick="() => _overflowY = value">OverflowY @value</button>
+    }
+    <button id="btn-gutter-auto" type="button" @onclick="() => _gutter = BitScrollbarGutter.Auto">Gutter Auto</button>
+    <button id="btn-no-scroll" type="button" @onclick="() => _noScroll = !_noScroll">NoScroll</button>
+    <button id="btn-gutter-stable" type="button" @onclick="() => _gutter = BitScrollbarGutter.Stable">Gutter Stable</button>
+    <button id="btn-gutter-both" type="button" @onclick="() => _gutter = BitScrollbarGutter.BothEdges">Gutter BothEdges</button>
+    <button id="btn-overscroll-none" type="button" @onclick="() => _overscroll = BitOverscroll.None">Overscroll None</button>
+    <button id="btn-overscroll-contain" type="button" @onclick="() => _overscroll = BitOverscroll.Contain">Overscroll Contain</button>
+    <button id="btn-overscroll-auto" type="button" @onclick="() => _overscroll = BitOverscroll.Auto">Overscroll Auto</button>
+    <button id="btn-overflow-scroll-by" type="button" @onclick="() => _overflowShell!.ScrollBy(0, 80, BitScrollBehavior.Instant)">ScrollBy(0, 80)</button>
+    <div class="ash-box">
+        <BitAppShell Id="ash-overflow"
+                     @ref="_overflowShell"
+                     NoScroll="_noScroll"
+                     Gutter="_gutter"
+                     Overscroll="_overscroll"
+                     OverflowX="_overflowX"
+                     OverflowY="_overflowY">
+            <div class="ash-page">
+                <div class="ash-wide">A row wider than the shell</div>
+                @foreach (var i in Enumerable.Range(1, 20))
+                {
+                    <div class="ash-row">Row @i</div>
+                }
+            </div>
+        </BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="padding" Title="Scroll padding">
+    <button id="btn-padding" type="button" @onclick="TogglePadding">Toggle ScrollPadding</button>
+    <button id="btn-padding-scroll" type="button" @onclick="ScrollToPaddedRow">ScrollToElement(row 15)</button>
+    <div class="ash-box">
+        <BitAppShell Id="ash-padding" @ref="_paddingShell" ScrollPadding="@_padding">
+            <div class="ash-page">
+                <div class="ash-head">A sticky header</div>
+                @foreach (var i in Enumerable.Range(1, 30))
+                {
+                    <div class="ash-row" id="@(i == 15 ? "padded-row" : null)">Row @i</div>
+                }
+            </div>
+        </BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="endless" Title="Endless content">
+    <button id="btn-auto-scroll" type="button" @onclick="() => _autoScroll = !_autoScroll">Toggle AutoScroll</button>
+    <button id="btn-preserve" type="button" @onclick="() => _preserveScroll = !_preserveScroll">Toggle PreserveScroll</button>
+    <button id="btn-append" type="button" @onclick="Append">Append</button>
+    <button id="btn-prepend" type="button" @onclick="Prepend">Prepend 5</button>
+    <button id="btn-refresh" type="button" @onclick="() => _feedShell!.Refresh()">Refresh</button>
+    <div>AutoScroll: <span id="auto-scroll">@_autoScroll</span> PreserveScroll: <span id="preserve-scroll">@_preserveScroll</span> Items: <span id="feed-count">@_feed.Count</span></div>
+    <div class="ash-box">
+        <BitAppShell Id="ash-feed" @ref="_feedShell" ScrollBehavior="BitScrollBehavior.Instant" AutoScroll="_autoScroll" PreserveScroll="_preserveScroll">
+            <div class="ash-page">
+                @foreach (var item in _feed)
+                {
+                    <div @key="item" class="ash-row" id="feed-@item.Replace(" ", "-")">@item</div>
+                }
+            </div>
+        </BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="values" Title="Cascading values">
+    <button id="btn-rename" type="button" @onclick="Rename">Change the cascaded name</button>
+    <div class="ash-box">
+        <BitAppShell Id="ash-values" Values="_values" ValueList="_valueList">
+            <DynamicComponent Type="typeof(CascadeReader)" />
+        </BitAppShell>
+    </div>
+    <DynamicComponent Type="typeof(OutsideReader)" />
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="_params">
+        <div class="ash-box" style="--bit-AppShell-safe-area-bottom: 12px; --bit-AppShell-safe-area-top: 8px;">
+            <BitAppShell Id="ash-params-1"><div class="ash-row">All cascaded</div></BitAppShell>
+        </div>
+        <div class="ash-box" style="--bit-AppShell-safe-area-bottom: 12px; --bit-AppShell-safe-area-top: 8px;">
+            <BitAppShell Id="ash-params-2" NoBottomInset="false" Classes="@(new() { Root = "own-root" })"><div class="ash-row">Own values</div></BitAppShell>
+        </div>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes">
+    <div class="ash-box">
+        <BitAppShell Id="ash-styled"
+                     Class="custom-root-class"
+                     Style="outline: 2px dashed rgb(255, 0, 0);"
+                     Classes="@(new() { Root = "c-root", Top = "c-top", Center = "c-center", Left = "c-left", Main = "c-main", Right = "c-right", Bottom = "c-bottom" })"
+                     Styles="@(new() { Root = "padding: 3px", Top = "min-height: 4px", Center = "opacity: 0.9", Left = "min-width: 5px", Main = "padding-top: 6px;", Right = "min-width: 7px", Bottom = "min-height: 8px" })">
+            <div class="ash-page"><div class="ash-row">Styled</div></div>
+        </BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="variables" Title="Public CSS variables">
+    <div class="ash-box" style="--bit-AppShell-background: rgb(10, 20, 30); --bit-AppShell-color: rgb(250, 240, 230);">
+        <BitAppShell Id="ash-vars"><div class="ash-page"><div class="ash-row" id="vars-row">Text</div></div></BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="base" Title="AriaLabel, attributes, visibility, TabIndex">
+    <div class="ash-box">
+        <BitAppShell Id="ash-aria" AriaLabel="Application" TabIndex="0" data-testid="shell-attrs"><div class="ash-row">Named</div></BitAppShell>
+    </div>
+    <div class="ash-box">
+        <BitAppShell Id="ash-unnamed"><div class="ash-row">Unnamed</div></BitAppShell>
+    </div>
+    <div class="ash-box">
+        <BitAppShell Id="ash-hidden" Visibility="BitVisibility.Hidden"><div class="ash-row">Hidden</div></BitAppShell>
+    </div>
+    <div class="ash-box">
+        <BitAppShell Id="ash-collapsed" Visibility="BitVisibility.Collapsed"><div class="ash-row">Collapsed</div></BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Smooth scrolling and reduced motion">
+    <div class="ash-box">
+        <BitAppShell Id="ash-smooth"><div class="ash-row">Smooth</div></BitAppShell>
+    </div>
+    <div class="ash-box">
+        <BitAppShell Id="ash-forced" ForceAnimation><div class="ash-row">ForceAnimation</div></BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="more" Title="Disabled, inherited direction and the default container id">
+    <div class="ash-box">
+        <BitAppShell Id="ash-disabled" Disabled @onclick="() => _disabledShellClicks++">
+            <button id="disabled-shell-button" type="button" @onclick="() => _disabledShellButtonClicks++">Content stays live</button>
+        </BitAppShell>
+    </div>
+    <div>Shell clicks: <span id="disabled-shell-clicks">@_disabledShellClicks</span> button clicks: <span id="disabled-shell-button-clicks">@_disabledShellButtonClicks</span></div>
+    <div dir="rtl" class="ash-box" style="--bit-AppShell-safe-area-start: 10px; --bit-AppShell-safe-area-end: 15px;">
+        <BitAppShell Id="ash-rtl-inherited"><div class="ash-row">سطر</div></BitAppShell>
+    </div>
+    <div class="ash-box">
+        <BitAppShell><div class="ash-row" id="default-id-row">No Id of its own</div></BitAppShell>
+    </div>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Mounted at runtime">
+    <button id="btn-mount" type="button" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <div class="ash-box">
+            <BitAppShell Id="ash-runtime" AvoidKeyboard TrackScrollState OnScroll="o => { }" AutoScroll>
+                <div class="ash-page">
+                    @foreach (var i in Enumerable.Range(1, 10))
+                    {
+                        <div class="ash-row">Row @i</div>
+                    }
+                </div>
+            </BitAppShell>
+        </div>
+    }
+    <div>Mounted: <span id="runtime-mounted">@_mounted</span></div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private bool _noInsets;
+    private bool _noTopInset;
+    private bool _noBottomInset;
+    private bool _noStartInset;
+    private bool _noEndInset;
+    private bool _stableInsets;
+    private bool _insetsRtl;
+
+    private bool _avoidKeyboard = true;
+    private double _keyboardInset;
+    private int _keyboardInsetCount;
+
+    private bool _instant;
+    private BitAppShell? _scrollShell;
+    private string _offsetText = "-";
+
+    private int _scrollCount;
+    private double _scrollTop;
+    private string _scrollDirection = "-";
+    private string _scrollPercent = "-";
+    private int _scrollStartCount;
+    private int _scrollEndCount;
+    private double _scrollEndTop;
+    private int _reachedTopCount;
+    private int _reachedBottomCount;
+    private int _reachedLeftCount;
+    private int _throttleCount;
+    private double _throttleTop;
+    private int _reachedRightCount;
+
+    private BitAppShell? _overflowShell;
+    private bool _noScroll;
+    private BitScrollbarGutter? _gutter;
+    private BitOverscroll? _overscroll;
+    private BitOverflow? _overflowX;
+    private BitOverflow? _overflowY;
+
+    private BitAppShell? _paddingShell;
+    private string? _padding;
+
+    private BitAppShell? _feedShell;
+    private bool _autoScroll;
+    private bool _preserveScroll;
+    private int _feedNext = 13;
+    private int _feedOlder;
+    private readonly List<string> _feed = [.. Enumerable.Range(1, 12).Select(i => $"Message {i}")];
+
+    private ShellUser _user = new("Saleh", "Admin");
+    private IEnumerable<BitCascadingValue> _values = [];
+    private readonly BitCascadingValueList _valueList = [];
+
+    private readonly BitAppShellParams[] _params =
+    [
+        new()
+        {
+            NoBottomInset = true,
+            ScrollPadding = "11px 0 0 0",
+            Classes = new() { Root = "cascaded-root" },
+        },
+    ];
+
+    private bool _mounted = true;
+    private int _disabledShellClicks;
+    private int _disabledShellButtonClicks;
+
+    protected override void OnInitialized()
+    {
+        _values = [new BitCascadingValue(_user), new BitCascadingValue("Acme", "Tenant")];
+        _valueList.Add("From the list", "Note");
+        _valueList.Add("Ignored", "Tenant");
+    }
+
+    private Task ScrollToTarget() => _scrollShell!.ScrollToElement("scroll-target");
+
+    private Task ScrollToTargetWithOffset() => _scrollShell!.ScrollToElement("scroll-target", 40, false);
+
+    private Task ScrollToTargetEnd() => _scrollShell!.ScrollToElement("scroll-target", alignment: BitScrollAlignment.End, behavior: BitScrollBehavior.Instant);
+
+    private Task ScrollToTargetCenter() => _scrollShell!.ScrollToElement("scroll-target", alignment: BitScrollAlignment.Center, behavior: BitScrollBehavior.Instant);
+
+    private void TogglePadding() => _padding = _padding is null ? "40px 0 0 0" : null;
+
+    private Task ScrollToPaddedRow() => _paddingShell!.ScrollToElement("padded-row", smooth: false);
+
+    private void HandleKeyboardInset(double inset)
+    {
+        _keyboardInset = inset;
+        _keyboardInsetCount++;
+    }
+
+    private async Task ReadOffset()
+    {
+        var offset = await _scrollShell!.GetScrollOffset();
+
+        _offsetText = offset is null
+            ? "null"
+            : $"{offset.Top:0}|{offset.MaxTop:0}|{offset.AtTop}|{offset.AtBottom}|{offset.ClientHeight:0}";
+    }
+
+    private void HandleScroll(BitScrollOffset offset)
+    {
+        _scrollCount++;
+        _scrollTop = Math.Round(offset.Top);
+        _scrollDirection = offset.ScrollingDown ? "down" : offset.ScrollingUp ? "up" : "-";
+        _scrollPercent = offset.PercentY.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private void HandleThrottledScroll(BitScrollOffset offset)
+    {
+        _throttleCount++;
+        _throttleTop = Math.Round(offset.Top);
+    }
+
+    private void HandleScrollEnd(BitScrollOffset offset)
+    {
+        _scrollEndCount++;
+        _scrollEndTop = Math.Round(offset.Top);
+    }
+
+    private void Append() => _feed.Add($"Message {_feedNext++}");
+
+    private void Prepend()
+    {
+        for (var i = 0; i < 5; i++)
+        {
+            _feed.Insert(0, $"Older {++_feedOlder}");
+        }
+    }
+
+    private void Rename()
+    {
+        _user = new(_user.Name == "Saleh" ? "Yaser" : "Saleh", "Admin");
+        _values = [new BitCascadingValue(_user), new BitCascadingValue("Acme", "Tenant")];
+    }
+
+    public record ShellUser(string Name, string Role);
+
+    /// <summary>Reads what the shell around it cascades: two values, one value of the list, and the container.</summary>
+    public class CascadeReader : ComponentBase
+    {
+        [CascadingParameter] public ShellUser? User { get; set; }
+
+        [CascadingParameter(Name = "Tenant")] public string? Tenant { get; set; }
+
+        [CascadingParameter(Name = "Note")] public string? Note { get; set; }
+
+        [CascadingParameter(Name = BitAppShell.Container)] public ElementReference? Container { get; set; }
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "id", "cascade-reader");
+            builder.AddContent(2, $"{User?.Name ?? "-"}|{User?.Role ?? "-"}|{Tenant ?? "-"}|{Note ?? "-"}|{(Container is null ? "no-container" : "container")}");
+            builder.CloseElement();
+        }
+    }
+
+    /// <summary>The same reads outside every shell, which see nothing.</summary>
+    public class OutsideReader : ComponentBase
+    {
+        [CascadingParameter] public ShellUser? User { get; set; }
+
+        [CascadingParameter(Name = BitAppShell.Container)] public ElementReference? Container { get; set; }
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "id", "outside-reader");
+            builder.AddContent(2, $"{User?.Name ?? "-"}|{(Container is null ? "no-container" : "container")}");
+            builder.CloseElement();
+        }
+    }
+}

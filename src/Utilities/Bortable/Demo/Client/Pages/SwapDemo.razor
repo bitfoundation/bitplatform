@@ -1,0 +1,92 @@
+﻿@page "/swap"
+
+<PageTitle>Swap · Bortable</PageTitle>
+
+<div class="bb-intro">
+    <h1>Swap</h1>
+    <p class="bb-subtitle">
+        With <code>Swap="true"</code> the list no longer sorts. Instead, the item you drag over is highlighted, and
+        on drop the dragged item trades places with it. Swapping works inside a single list and between lists that
+        share a group. This mirrors the SortableJS
+        <a href="https://github.com/SortableJS/Sortable/tree/master/plugins/Swap" target="_blank" rel="noopener">Swap plugin</a>.
+    </p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A single list</h3>
+    <p class="bb-card-desc">
+        Nothing moves while you drag: the item under the pointer is highlighted with <code>SwapClass</code>, and the two
+        trade places only when you drop.
+    </p>
+
+    <div class="bb-demo">
+        <SwapList />
+    </div>
+
+    <DemoCode For="typeof(SwapList)" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Across two lists</h3>
+    <p class="bb-card-desc">
+        Both lists have <code>Swap="true"</code> and the same <code>Group</code>: an item dropped onto an item of the
+        other list trades places with it, and each list keeps its length.
+    </p>
+
+    <div class="bb-demo">
+        <SwapAcross />
+    </div>
+
+    <DemoCode For="typeof(SwapAcross)" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>Drag <em>Item 1</em> onto <em>Item 5</em> and drop: the two trade places, and Items 2 to 4 stay where they were.</li>
+        <li>Drag <em>Item 2</em> on the left onto <em>Item C</em> on the right: Item 2 goes right, Item C comes left.</li>
+        <li>Drag an item over another and back over itself before dropping: no item is highlighted, and nothing changes.</li>
+        <li>
+            From the keyboard, pick an item up with <kbd>Space</kbd>: the arrows move the highlight instead of the item -
+            "Item 1 will trade places with Item 3." - and <kbd>Space</kbd> makes the swap.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Good to know</h3>
+    <ul class="bb-detail-list">
+        <li>
+            Between lists, a swap needs each list to be able to take the other's item: the same group, a <code>Pull</code>
+            that lets the item go, and a <code>Put</code> that lets it in.
+        </li>
+        <li>
+            A swap brings one item into a list and takes one out, so a full list (<code>MaxItems</code>) never refuses it
+            for room.
+        </li>
+        <li>
+            A swap always trades the items themselves: a list whose <code>Pull</code> is <code>Clone</code> gives its item
+            away in a swap rather than a copy of it.
+        </li>
+        <li>
+            The highlighted item wears <code>SwapClass</code> - <code>bit-bortable-swap-highlight</code> by default, drawn
+            with <code>--bit-bortable-swap-bg</code> and <code>--bit-bortable-swap-outline</code>. Pass a class of your own
+            for a look of your own.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Parameters on this page</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>Default</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Swap</code></td><td><code>false</code></td><td>Trades places with the item it is dropped on instead of sorting.</td></tr>
+                <tr><td class="bb-table-key"><code>SwapClass</code></td><td><code>bit-bortable-swap-highlight</code></td><td>The class of the highlighted swap target.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>

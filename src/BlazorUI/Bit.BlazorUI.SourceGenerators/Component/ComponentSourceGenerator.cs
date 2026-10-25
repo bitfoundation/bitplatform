@@ -77,11 +77,25 @@ public class ComponentSourceGenerator : IIncrementalGenerator
         var callOnSetAsyncAttr = attrs.SingleOrDefault(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.CallOnSetAsyncAttribute");
         var callOnSetAsyncName = callOnSetAsyncAttr?.ConstructorArguments.FirstOrDefault().Value as string;
 
+        // A [CallOnSet] naming a method that returns a Task or a ValueTask would have the generated code call it
+        // without awaiting it: its work would run on past the parameter pass, and whatever it throws would go
+        // unobserved. Such a hook is awaited like a [CallOnSetAsync] one instead. A params object applies its values
+        // from the synchronous OnParametersSet, which can await neither, so BitParamsContractTests fails on a
+        // parameter a params type supplies whose hook is either one.
+        if (callOnSetName is not null && callOnSetAsyncName is null && ReturnsAwaitable(containingType, callOnSetName))
+        {
+            callOnSetAsyncName = callOnSetName;
+            callOnSetName = null;
+        }
+
         var classNameForCode = BuildClassNameForCode(containingType);
         var isBaseTypeComponentBase = containingType.BaseType is not null &&
             componentBaseType is not null &&
             SymbolEqualityComparer.Default.Equals(containingType.BaseType, componentBaseType);
         var inheritsFromBit = InheritsFromBitComponentBase(containingType, bitComponentBaseType);
+        var tracksSetByMarkup = inheritsFromBit && CanAccessBitComponentBaseMember(containingType, compilation, bitComponentBaseType!, "IsSetByMarkup");
+        var takesParametersDictionary = inheritsFromBit && CanAccessBitComponentBaseMember(containingType, compilation, bitComponentBaseType!, "TakeParametersDictionary");
+        var isCascadedParams = tracksSetByMarkup && IsCascadedParams(prop, compilation);
 
         return new BlazorParameter(
             ContainingTypeFullName: containingType.ToDisplayString(),
@@ -92,11 +106,62 @@ public class ComponentSourceGenerator : IIncrementalGenerator
             InheritsFromBitComponentBase: inheritsFromBit,
             PropertyName: prop.Name,
             PropertyType: prop.Type.ToDisplayString(),
+            NeedsNullGuard: prop.Type.IsReferenceType is false && prop.Type.OriginalDefinition.SpecialType != SpecialType.System_Nullable_T,
             ResetClassBuilder: resetClassBuilder,
             ResetStyleBuilder: resetStyleBuilder,
             IsTwoWayBound: isTwoWayBound,
             CallOnSetMethodName: callOnSetName,
-            CallOnSetAsyncMethodName: callOnSetAsyncName);
+            CallOnSetAsyncMethodName: callOnSetAsyncName,
+            TracksSetByMarkup: tracksSetByMarkup,
+            TakesParametersDictionary: takesParametersDictionary,
+            IsCascadedParams: isCascadedParams);
+    }
+
+    /// <summary>
+    /// Whether the class can use an internal member of BitComponentBase (add its own parameters to the IsSetByMarkup
+    /// answer, take the dictionary of a pass), which it only can from inside the assemblies that see that member.
+    /// </summary>
+    private static bool CanAccessBitComponentBaseMember(INamedTypeSymbol type, Compilation compilation, INamedTypeSymbol bitComponentBaseType, string memberName)
+    {
+        var member = bitComponentBaseType.GetMembers(memberName).FirstOrDefault();
+
+        return member is not null && compilation.IsSymbolAccessibleWithin(member, type);
+    }
+
+    /// <summary>
+    /// Whether the parameterless method of the type (or of one of its base types) the name points at returns a Task
+    /// or a ValueTask, generic or not.
+    /// </summary>
+    private static bool ReturnsAwaitable(INamedTypeSymbol type, string methodName)
+    {
+        for (var current = type; current is not null; current = current.BaseType)
+        {
+            var method = current.GetMembers(methodName).OfType<IMethodSymbol>().FirstOrDefault(m => m.Parameters.Length == 0);
+
+            if (method is null) continue;
+
+            var returnType = method.ReturnType.OriginalDefinition.ToDisplayString();
+
+            return returnType is "System.Threading.Tasks.Task" or "System.Threading.Tasks.Task<TResult>"
+                              or "System.Threading.Tasks.ValueTask" or "System.Threading.Tasks.ValueTask<TResult>";
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Whether the property is the cascading parameter a component takes its params object by, which the restore of
+    /// BitComponentBase then reads directly rather than through reflection on every render.
+    /// </summary>
+    private static bool IsCascadedParams(IPropertySymbol prop, Compilation compilation)
+    {
+        var paramsType = compilation.GetTypeByMetadataName("Bit.BlazorUI.IBitComponentParams");
+
+        if (paramsType is null) return false;
+
+        var isCascading = prop.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == "Microsoft.AspNetCore.Components.CascadingParameterAttribute");
+
+        return isCascading && prop.Type.AllInterfaces.Contains(paramsType, SymbolEqualityComparer.Default);
     }
 
     private static void Execute(SourceProductionContext spc, ImmutableArray<BlazorParameter> parameters)
@@ -116,7 +181,8 @@ public class ComponentSourceGenerator : IIncrementalGenerator
         var className = classInfo.ClassNameForCode;
         var twoWayParameters = parameters.Where(p => p.IsTwoWayBound).ToArray();
         var isBaseTypeComponentBase = classInfo.IsBaseTypeComponentBase;
-        var doesSupportParametersViewCache = classInfo.InheritsFromBitComponentBase;
+        var takesParametersDictionary = classInfo.TakesParametersDictionary;
+        var awaitsOnSet = parameters.Any(p => string.IsNullOrWhiteSpace(p.CallOnSetAsyncMethodName) is false);
 
         StringBuilder builder = new StringBuilder($@"using System;
 using System.Linq;
@@ -135,6 +201,10 @@ namespace {namespaceName}
     {{
 ");
         builder.AppendLine("        private readonly HashSet<string> __assignedParameters = [];");
+        if (awaitsOnSet)
+        {
+            builder.AppendLine("        private int __setParametersPass;");
+        }
         builder.AppendLine("");
         foreach (var par in twoWayParameters)
         {
@@ -147,20 +217,36 @@ namespace {namespaceName}
         public override async Task SetParametersAsync(ParameterView parameters)
         {{");
         builder.AppendLine($"            __assignedParameters.Clear();");
+        if (awaitsOnSet)
+        {
+            builder.AppendLine($"            var __pass = ++__setParametersPass;");
+        }
         foreach (var par in twoWayParameters)
         {
             builder.AppendLine($"            {par.PropertyName}HasBeenSet = false;");
         }
-        if (doesSupportParametersViewCache)
+        // A params cascade that no longer reaches the component is absent from the ParameterView rather than
+        // passed as null, so it is cleared first; otherwise the last one it saw would keep being applied.
+        foreach (var par in parameters.Where(p => p.IsCascadedParams))
         {
-            builder.AppendLine("            var parametersDictionary = new Dictionary<string, object?>(parameters.ToDictionary());");
-            builder.AppendLine("            ParametersCache = parametersDictionary;");
+            builder.AppendLine($"            {par.PropertyName} = default!;");
+        }
+        // The dictionary is this pass's own, so it needs no copy to enumerate: removing an entry does not invalidate the
+        // enumerator of a dictionary. It is filled from the view itself rather than cast from ToDictionary, whose
+        // concrete type is no part of its contract.
+        if (takesParametersDictionary)
+        {
+            builder.AppendLine("            var parametersDictionary = TakeParametersDictionary(parameters);");
         }
         else
         {
-            builder.AppendLine("            var parametersDictionary = new Dictionary<string, object?>(parameters.ToDictionary());");
+            builder.AppendLine("            var parametersDictionary = new Dictionary<string, object?>();");
+            builder.AppendLine("            foreach (var parameter in parameters)");
+            builder.AppendLine("            {");
+            builder.AppendLine("                parametersDictionary[parameter.Name] = parameter.Value;");
+            builder.AppendLine("            }");
         }
-        builder.AppendLine("            foreach (var parameter in parametersDictionary.ToArray())");
+        builder.AppendLine("            foreach (var parameter in parametersDictionary)");
         builder.AppendLine("            {");
         builder.AppendLine("                switch (parameter.Key)");
         builder.AppendLine("                {");
@@ -175,7 +261,12 @@ namespace {namespaceName}
             {
                 builder.AppendLine($"                       {paramName}HasBeenSet = true;");
             }
-            builder.AppendLine($"                       var {varName} = parameter.Value is null ? default! : ({paramType})parameter.Value;");
+            // The null check is only there for the types a cast of null would throw on, so any other type is assigned in
+            // one step: a branch fewer per parameter, and less IL for the WebAssembly interpreter to walk.
+            var value = par.NeedsNullGuard
+                ? $"parameter.Value is null ? default! : ({paramType})parameter.Value"
+                : $"({paramType})parameter.Value!";
+            builder.AppendLine($"                       var {varName} = {value};");
             if (par.ResetClassBuilder || par.ResetStyleBuilder || string.IsNullOrWhiteSpace(par.CallOnSetMethodName) is false || string.IsNullOrWhiteSpace(par.CallOnSetAsyncMethodName) is false)
             {
                 builder.AppendLine($"                       var notEquals{paramName} = EqualityComparer<{paramType}>.Default.Equals({paramName}, {varName}) is false;");
@@ -195,7 +286,13 @@ namespace {namespaceName}
             }
             if (string.IsNullOrWhiteSpace(par.CallOnSetAsyncMethodName) is false)
             {
-                builder.AppendLine($"                       if (notEquals{paramName}) await {par.CallOnSetAsyncMethodName}();");
+                // A pass that started while this one awaited has assigned every parameter anew and goes on to the base
+                // itself, so this one stops: what is left of it is older than what that one already set.
+                builder.AppendLine($"                       if (notEquals{paramName})");
+                builder.AppendLine("                       {");
+                builder.AppendLine($"                           await {par.CallOnSetAsyncMethodName}();");
+                builder.AppendLine("                           if (__pass != __setParametersPass) return;");
+                builder.AppendLine("                       }");
             }
             builder.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
             builder.AppendLine("                       break;");
@@ -212,31 +309,64 @@ namespace {namespaceName}
         }
         builder.AppendLine("                }");
         builder.AppendLine("            }");
-        if (isBaseTypeComponentBase)
+        // What is left reaches a BitComponentBase through ParametersCache, set only now that nothing of this pass awaits
+        // any more, so no other pass can take it in between; the base reads it ahead of the view it is handed. A class
+        // right on ComponentBase hands it nothing, as every parameter left is one ComponentBase has no property for.
+        if (takesParametersDictionary)
         {
-            builder.AppendLine("            await base.SetParametersAsync(ParameterView.Empty);");
+            builder.AppendLine("            ParametersCache = parametersDictionary;");
         }
-        else
-        {
-            if (doesSupportParametersViewCache)
-            {
-                builder.AppendLine("            await base.SetParametersAsync(ParameterView.Empty);");
-            }
-            else
-            {
-                builder.AppendLine("            await base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary));");
-            }
-        }
+        var baseParameters = isBaseTypeComponentBase || takesParametersDictionary
+            ? "ParameterView.Empty"
+            : "ParameterView.FromDictionary(parametersDictionary)";
+        builder.AppendLine($"            await base.SetParametersAsync({baseParameters});");
         builder.AppendLine(@"        }");
 
         builder.AppendLine("");
 
-        builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
+        // HasNotBeenSet of BitComponentBase answers for the whole hierarchy through IsSetByMarkup, so a class that can
+        // add its parameters to that leaves HasNotBeenSet alone, and one that cannot (outside the assemblies that see
+        // the internal member) overrides HasNotBeenSet itself. Either way the answer is the same whatever the static
+        // type of the reference it is asked through; only a class outside BitComponentBase gets a member of its own.
+        if (classInfo.TracksSetByMarkup)
+        {
+            builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+        private protected override bool IsSetByMarkup(string name)
+        {{
+            return __assignedParameters.Contains(name) || base.IsSetByMarkup(name);
+        }}");
+        }
+        else if (classInfo.InheritsFromBitComponentBase)
+        {
+            builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+        public override bool HasNotBeenSet(string name)
+        {{
+            return __assignedParameters.Contains(name) is false && base.HasNotBeenSet(name);
+        }}");
+        }
+        else
+        {
+            builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public bool HasNotBeenSet(string name)
-        {{");
-        builder.AppendLine("            return __assignedParameters.Contains(name) is false;");
-        builder.AppendLine("        }");
+        {{
+            return __assignedParameters.Contains(name) is false;
+        }}");
+        }
+
+        var cascadedParams = parameters.Where(p => p.IsCascadedParams).ToArray();
+
+        // A class that reads more than one params object is left to the reflection of BitComponentBase, which then
+        // reads none of them.
+        if (cascadedParams.Length == 1)
+        {
+            builder.AppendLine("");
+            builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+        private protected override global::Bit.BlazorUI.IBitComponentParams? CascadedParams => {cascadedParams[0].PropertyName};");
+        }
 
         if (twoWayParameters.Length > 0) builder.AppendLine("");
         foreach (var par in twoWayParameters)

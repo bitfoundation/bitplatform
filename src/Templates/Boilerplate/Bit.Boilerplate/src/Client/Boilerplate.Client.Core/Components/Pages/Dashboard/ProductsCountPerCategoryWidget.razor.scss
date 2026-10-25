@@ -6,8 +6,4 @@ section {
     @include lt-md {
         width: 100%;
     }
-
-    ::deep .card {
-        min-height: 333px;
-    }
 }

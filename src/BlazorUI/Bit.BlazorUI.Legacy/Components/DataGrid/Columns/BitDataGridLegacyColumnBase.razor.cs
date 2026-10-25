@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
 /// An abstract base class for columns in a <see cref="BitDataGridLegacy{TGridItem}"/>.

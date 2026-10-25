@@ -1,3 +1,5 @@
+﻿using System.ComponentModel;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -24,6 +26,8 @@ public partial class BitSnackBar : BitComponentBase
     private readonly Dictionary<Guid, ElementReference> _dismissButtons = [];
 
     private BitPageVisibility? _pageVisibility;
+    private bool _pageVisibilityPending;
+    private BitSnackBarService? _service;
     private NavigationManager? _navigationManager;
     private bool _pageHidden;
     private bool _windowBlurred;
@@ -31,6 +35,7 @@ public partial class BitSnackBar : BitComponentBase
     private string? _registeredHotkeyId;
     private string? _registeredSwipeId;
     private int _registeredSwipeThreshold;
+    private string? _focusedRegionId;
     private DotNetObjectReference<BitSnackBar>? _dotnetObj;
 
     // One counter per region rather than one shared between them: the counter keys the element that carries the
@@ -57,6 +62,17 @@ public partial class BitSnackBar : BitComponentBase
     [Inject] private IServiceProvider _serviceProvider { get; set; } = default!;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the snack bar component.
+    /// </summary>
+    /// <remarks>
+    /// The intended use is to allow shared configuration or settings to be applied to multiple snack bar components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitSnackBarParams.ParamName)]
+    public BitSnackBarParams? CascadingParameters { get; set; }
 
 
 
@@ -98,7 +114,7 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the snack bar.
     /// </summary>
-    [Parameter] public BitSnackBarClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitSnackBarClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Closes every snack bar item as soon as the app navigates somewhere else.
@@ -177,8 +193,12 @@ public partial class BitSnackBar : BitComponentBase
     /// <c>F8</c> as its default. This is off unless a shortcut is given; pass <c>["F8"]</c> for that default.
     /// <br />
     /// The modifiers are written as their property names - <c>["KeyT", "altKey"]</c> is Alt+T - and the shortcut
-    /// needs the bit BlazorUI script to be on the page. Say which shortcut it is in <c>AriaLabel</c>
-    /// (for example <c>"Notifications (F8)"</c>) so it can be discovered by the people it is for.
+    /// needs the bit BlazorUI script to be on the page. The default name of the region spells the shortcut out
+    /// (<c>"Notifications (Alt+T)"</c>) so the people it is for can discover it; a custom <c>AriaLabel</c> should
+    /// do the same.
+    /// <br />
+    /// Escape on the region, or the last item that held the focus leaving, hands the focus back to where it was
+    /// before the jump.
     /// </remarks>
     [Parameter] public string[]? Hotkey { get; set; }
 
@@ -218,6 +238,9 @@ public partial class BitSnackBar : BitComponentBase
     /// Any CSS length is accepted, and the stack never grows past the width of the screen whatever this says.
     /// Unset, an item is as wide as its longest line needs, which on a wide screen is a line too long to be read
     /// comfortably - a notification of any length is worth capping at a readable measure.
+    /// <br />
+    /// The <c>--bit-SnackBar-max-width</c> CSS variable sets the same cap for every snack bar under it; this
+    /// parameter wins where both are set.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? MaxWidth { get; set; }
@@ -241,7 +264,11 @@ public partial class BitSnackBar : BitComponentBase
     /// </summary>
     /// <remarks>
     /// Any CSS length is accepted. This is what keeps a snack bar clear of the chrome the app already has at that
-    /// edge - a bottom app bar, a cookie banner, the safe area of a phone.
+    /// edge - a bottom app bar, a cookie banner. The safe area of a phone (its notch, its home indicator) is added
+    /// on top of it, so the offset is always measured from the part of the screen that can be drawn on.
+    /// <br />
+    /// The <c>--bit-SnackBar-offset</c> CSS variable sets the same distance for every snack bar under it; this
+    /// parameter wins where both are set.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Offset { get; set; }
@@ -332,10 +359,17 @@ public partial class BitSnackBar : BitComponentBase
     [Parameter] public bool Persistent { get; set; }
 
     /// <summary>
-    /// The position of the snack bars to show (default is bottom right).
+    /// The corner or edge of the screen the snack bars are stacked at (default is the bottom end).
     /// </summary>
+    /// <remarks>
+    /// The Start and End values follow the text direction rather than the screen, so a stack keeps to the same
+    /// side of the reading order in both LTR and RTL; the Left and Right ones stay on the same side of the
+    /// screen in either. The enter animation of an item slides out of the edge its stack is pinned to - down from
+    /// the top, up from the bottom, in from the side for the vertically centered stacks - and one centered on the
+    /// screen, pinned to no edge, rises from below.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSnackBarPosition? Position { get; set; }
+    public BitPosition? Position { get; set; }
 
     /// <summary>
     /// Skips showing a new snack bar while an identical one is already on screen.
@@ -357,6 +391,10 @@ public partial class BitSnackBar : BitComponentBase
     /// By default an item whose color reports a problem (Warning, SevereWarning, Error) is announced as an
     /// <c>alert</c> and every other item as a <c>status</c>. A single item can override this through
     /// <see cref="BitSnackBarItem.Role"/>.
+    /// <br />
+    /// The role decides how loudly the host's live region announces the item. An <c>alert</c> item is rendered with
+    /// the <c>status</c> role, because a browser raises an alert event of its own for every element that arrives with
+    /// the <c>alert</c> role and the notification would be heard twice.
     /// </remarks>
     [Parameter] public string? Role { get; set; }
 
@@ -372,17 +410,36 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// Renders a leading icon in each snack bar item, chosen from its color unless one is provided.
     /// </summary>
+    /// <remarks>
+    /// The glyphs are the ones a <see cref="BitMessage"/> of the same color carries: Completed for Success, Warning for
+    /// Warning, WarningSolid for SevereWarning, ErrorBadge for Error and Info for every other color.
+    /// </remarks>
     [Parameter] public bool ShowIcon { get; set; }
 
     /// <summary>
     /// The size of the snack bar items.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-SnackBar-*</c> size variables (padding, title and body font sizes,
+    /// icon size); left unset, the items are medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter] public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Makes this snack bar the one <see cref="BitSnackBarService"/> shows its notifications through.
+    /// </summary>
+    /// <remarks>
+    /// Mark the one host in the layout, and every part of the app can raise a notification by injecting the
+    /// service instead of being handed this snack bar's reference. The service needs the bit BlazorUI services to be
+    /// registered (<c>AddBitBlazorUIServices</c>). While several hosts are marked, the one rendered most recently
+    /// takes the notifications.
+    /// </remarks>
+    [Parameter] public bool ServiceHost { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the snack bar.
     /// </summary>
-    [Parameter] public BitSnackBarClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitSnackBarClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Lets a snack bar item be dragged out of the way with the pointer, in either inline direction.
@@ -426,7 +483,8 @@ public partial class BitSnackBar : BitComponentBase
     /// skip both animations.
     /// <br />
     /// The duration reaches the stylesheet as a token, so it still collapses under
-    /// <c>prefers-reduced-motion: reduce</c> unless the snack bar opts out with <c>ForceAnimation</c>.
+    /// <c>prefers-reduced-motion: reduce</c> the way the motion tokens of the theme do, and <c>ForceAnimation</c>,
+    /// or an app restoring those tokens, brings it back.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int TransitionDuration { get; set; } = 200;
@@ -462,6 +520,11 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// Shows a new snackbar with Info color.
     /// </summary>
+    /// <remarks>
+    /// Info is named here, so it counts as a choice and wins over the <c>--bit-SnackBar-*</c> color variables, the
+    /// same as any other color passed in. The variables restyle only an item that leaves its color out, which
+    /// <c>Show</c> without a color does.
+    /// </remarks>
     public Task<BitSnackBarItem> Info(string title, string? body = "", bool persistent = false, TimeSpan? autoDismissTime = null) => Show(title, body, BitColor.Info, persistent: persistent, autoDismissTime: autoDismissTime);
 
     /// <summary>
@@ -487,10 +550,14 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// Shows a new snackbar.
     /// </summary>
+    /// <remarks>
+    /// A <paramref name="color"/> left out is no color at all rather than Info: the item is drawn in Info unless the
+    /// <c>--bit-SnackBar-*</c> color variables say otherwise, while one passed in wins over them.
+    /// </remarks>
     public Task<BitSnackBarItem> Show(
         string title,
         string? body = "",
-        BitColor color = BitColor.Info,
+        BitColor? color = null,
         string? cssClass = null,
         string? cssStyle = null,
         bool persistent = false,
@@ -509,6 +576,24 @@ public partial class BitSnackBar : BitComponentBase
 
         return Show(item);
     }
+
+    /// <summary>
+    /// Shows a new snackbar.
+    /// </summary>
+    /// <remarks>
+    /// Kept only for assemblies compiled against the earlier version of this method, whose color was a plain
+    /// <see cref="BitColor"/> defaulting to Info. Every parameter is required, so no call written today binds to it;
+    /// a call that does pass every one of them is handed over to the overload above unchanged.
+    /// </remarks>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public Task<BitSnackBarItem> Show(
+        string title,
+        string? body,
+        BitColor color,
+        string? cssClass,
+        string? cssStyle,
+        bool persistent,
+        TimeSpan? autoDismissTime) => Show(title, body, (BitColor?)color, cssClass, cssStyle, persistent, autoDismissTime);
 
     /// <summary>
     /// Shows a new snackbar.
@@ -534,7 +619,7 @@ public partial class BitSnackBar : BitComponentBase
         {
             if (_items.Contains(item) || _queue.Contains(item)) return;
 
-            if (PreventDuplicates)
+            if (PreventDuplicates && item._tracked is false)
             {
                 var duplicate = _items.Find(i => IsDuplicate(i, item)) ?? _queue.Find(i => IsDuplicate(i, item));
                 if (duplicate is not null)
@@ -567,6 +652,7 @@ public partial class BitSnackBar : BitComponentBase
                         // not gone: what took it away last time is no longer what it is.
                         item.DismissReason = null;
                         item.DuplicateCount = 0;
+                        item._owner = this;
                         _queue.Add(item);
                         return;
 
@@ -586,6 +672,116 @@ public partial class BitSnackBar : BitComponentBase
     }
 
     /// <summary>
+    /// Shows a loading snackbar for as long as a task runs, then turns it into a Success or Error one reporting
+    /// how the task ended - the promise toast of the JavaScript notification libraries.
+    /// </summary>
+    /// <remarks>
+    /// This is <see cref="BitSnackBarItem.IsLoading"/> and <see cref="Update(BitSnackBarItem)"/> wired together:
+    /// the item shows a spinner and sits out the countdown while the task runs, and its outcome is announced again
+    /// when it ends. An outcome whose loading item the user dismissed in the meantime is shown afresh, since it is
+    /// news the loading item never carried; a task that is canceled closes the item instead, since nothing
+    /// happened to report.
+    /// <br />
+    /// The returned task completes with the result of the tracked one, and a task that fails or is canceled
+    /// rethrows its exception after the snackbar has reported it, so the caller still decides what the failure
+    /// means for the rest of its code.
+    /// <br />
+    /// The loading item belongs to this call alone: <see cref="PreventDuplicates"/> never folds it into an
+    /// identical item, so two calls tracking work under the same title each report their own outcome. A title
+    /// callback that throws does not keep the item spinning or take the outcome away: the item is settled with a
+    /// fallback title - the loading title on success, the exception's message on failure - and the task's own
+    /// result or exception still comes back.
+    /// </remarks>
+    /// <param name="task">The work to report on.</param>
+    /// <param name="loadingTitle">The title while the task is running.</param>
+    /// <param name="successTitle">Builds the title from the result once the task has completed.</param>
+    /// <param name="errorTitle">Builds the title from the exception once the task has failed.</param>
+    /// <param name="body">The body of the item, kept through every state.</param>
+    public async Task<T> Track<T>(
+        Task<T> task,
+        string loadingTitle,
+        Func<T, string> successTitle,
+        Func<Exception, string> errorTitle,
+        string? body = null)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+        ArgumentNullException.ThrowIfNull(successTitle);
+        ArgumentNullException.ThrowIfNull(errorTitle);
+
+        // The loading item is left without a color: it is drawn in Info, the default the --bit-SnackBar-* color
+        // variables restyle, while the outcome it settles into is an explicit Success or Error.
+        var item = new BitSnackBarItem { Title = loadingTitle, Body = body, IsLoading = true, _tracked = true };
+
+        await Show(item);
+
+        T result;
+
+        try
+        {
+            result = await task;
+        }
+        catch (OperationCanceledException)
+        {
+            await Close(item);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await SettleAsync(item, BuildTitle(() => errorTitle(ex), ex.Message), BitColor.Error);
+            throw;
+        }
+
+        await SettleAsync(item, BuildTitle(() => successTitle(result), loadingTitle), BitColor.Success);
+
+        return result;
+
+        // The callbacks are the caller's code, run in the middle of reporting an outcome that has already happened:
+        // one that throws must neither leave the item spinning for good nor replace that outcome with its own.
+        static string BuildTitle(Func<string> build, string fallback)
+        {
+            try
+            {
+                return build();
+            }
+            catch (Exception)
+            {
+                return fallback;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Shows a loading snackbar for as long as a task runs, then turns it into a Success or Error one reporting
+    /// how the task ended - the promise toast of the JavaScript notification libraries.
+    /// </summary>
+    /// <remarks>
+    /// The same as <see cref="Track{T}(Task{T}, string, Func{T, string}, Func{Exception, string}, string?)"/> for a
+    /// task that has no result to put in the title.
+    /// </remarks>
+    /// <param name="task">The work to report on.</param>
+    /// <param name="loadingTitle">The title while the task is running.</param>
+    /// <param name="successTitle">The title once the task has completed.</param>
+    /// <param name="errorTitle">Builds the title from the exception once the task has failed.</param>
+    /// <param name="body">The body of the item, kept through every state.</param>
+    public Task Track(
+        Task task,
+        string loadingTitle,
+        string successTitle,
+        Func<Exception, string> errorTitle,
+        string? body = null)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+
+        return Track(AsResultTask(task), loadingTitle, _ => successTitle, errorTitle, body);
+
+        static async Task<bool> AsResultTask(Task task)
+        {
+            await task;
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Closes a snackbar item.
     /// </summary>
     /// <remarks>
@@ -597,6 +793,7 @@ public partial class BitSnackBar : BitComponentBase
     {
         if (item is not null && _queue.Remove(item))
         {
+            Release(item);
             item.DismissReason = BitSnackBarDismissReason.Programmatic;
 
             StateHasChanged();
@@ -616,18 +813,28 @@ public partial class BitSnackBar : BitComponentBase
     /// The items are taken away at once rather than one exit animation after another, so clearing a full stack does
     /// not take as long as the stack is tall.
     /// </remarks>
-    public Task Clear() => InvokeAsync(async () =>
+    public Task Clear() => ClearAsync(restoreFocus: true);
+
+    private Task ClearAsync(bool restoreFocus) => InvokeAsync(async () =>
     {
         var queued = _queue.ToArray();
         _queue.Clear();
+
+        // Every item is leaving, so handing the focus from one to the next would only land it on the next one to
+        // go: it is handed back once, after all of them have left.
+        var hadFocus = _items.Exists(HoldsKeyboardFocus);
+        _items.ForEach(i => i._focusWithin = false);
 
         foreach (var item in _items.ToArray())
         {
             await DismissAsync(item, animate: false, reason: BitSnackBarDismissReason.Clear);
         }
 
+        if (hadFocus && restoreFocus) await HandFocusOnAsync(null);
+
         foreach (var item in queued)
         {
+            Release(item);
             item.DismissReason = BitSnackBarDismissReason.Clear;
 
             await ReportDismissed(item);
@@ -666,11 +873,40 @@ public partial class BitSnackBar : BitComponentBase
     /// <remarks>
     /// This is what <see cref="Hotkey"/> does, offered on its own for an app that already has a shortcut
     /// registry of its own to hang it off. Focusing the region puts the next Tab inside the notifications, which
-    /// is how their dismiss buttons and actions are reached from the keyboard.
+    /// is how their dismiss buttons and actions are reached from the keyboard. The element that had the focus is
+    /// remembered and gets it back when Escape is pressed on the region, or when the last item holding the focus
+    /// leaves.
     /// </remarks>
-    public ValueTask FocusAsync()
+    public async ValueTask FocusAsync()
     {
-        return RootElement.Context is null ? ValueTask.CompletedTask : RootElement.FocusAsync();
+        // There is nothing to focus before the first interactive render, and a prerender pass cannot reach the
+        // script at all: both are the no-op they always were rather than an exception.
+        if (RootElement.Context is null) return;
+
+        // Through the script rather than the element reference, so the element the focus came from is remembered
+        // and handed the focus back once the user is done with the notifications - the same detour the Hotkey
+        // takes. The id is only kept once the script has taken it, so a missing script leaves nothing to let go of.
+        try
+        {
+            await _js.InvokeVoid("BitBlazorUI.SnackBars.focus", _Id);
+
+            _focusedRegionId = _Id;
+        }
+        catch (JSException)
+        {
+            // The bit BlazorUI script is not on the page: the region still takes the focus, only without the
+            // detour back.
+            try
+            {
+                await RootElement.FocusAsync();
+            }
+            catch (JSException) { }
+            catch (InvalidOperationException) { }
+        }
+        catch (JSDisconnectedException) { }
+        // ObjectDisposedException derives from this one too, and it is what an interop call made during a
+        // prerender pass throws.
+        catch (InvalidOperationException) { }
     }
 
     /// <summary>
@@ -717,12 +953,21 @@ public partial class BitSnackBar : BitComponentBase
 
         ClassBuilder.Register(() => Position switch
         {
-            BitSnackBarPosition.TopStart => "bit-snb-tst",
-            BitSnackBarPosition.TopCenter => "bit-snb-tcn",
-            BitSnackBarPosition.TopEnd => "bit-snb-ten",
-            BitSnackBarPosition.BottomStart => "bit-snb-bst",
-            BitSnackBarPosition.BottomCenter => "bit-snb-bcn",
-            BitSnackBarPosition.BottomEnd => "bit-snb-ben",
+            BitPosition.TopStart => "bit-snb-tst",
+            BitPosition.TopCenter => "bit-snb-tcn",
+            BitPosition.TopEnd => "bit-snb-ten",
+            BitPosition.TopLeft => "bit-snb-tlf",
+            BitPosition.TopRight => "bit-snb-trg",
+            BitPosition.CenterStart => "bit-snb-cst",
+            BitPosition.Center => "bit-snb-ctr",
+            BitPosition.CenterEnd => "bit-snb-cen",
+            BitPosition.CenterLeft => "bit-snb-clf",
+            BitPosition.CenterRight => "bit-snb-crg",
+            BitPosition.BottomStart => "bit-snb-bst",
+            BitPosition.BottomCenter => "bit-snb-bcn",
+            BitPosition.BottomEnd => "bit-snb-ben",
+            BitPosition.BottomLeft => "bit-snb-blf",
+            BitPosition.BottomRight => "bit-snb-brg",
             _ => "bit-snb-ben"
         });
     }
@@ -732,8 +977,8 @@ public partial class BitSnackBar : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
 
         // The duration is handed to the stylesheet as the -full token rather than written into the animations
-        // directly, so the reduced-motion collapse in the stylesheet can still shorten it (an inline duration
-        // would be out of reach of any media query).
+        // directly, so the stylesheet can still scale it by the shared motion factor and the reduced motion
+        // preference collapse it (an inline duration would be out of reach of the motion tokens).
         StyleBuilder.Register(() => FormattableString.Invariant($"--bit-snb-dur-full:{Math.Max(0, TransitionDuration)}ms"));
 
         StyleBuilder.Register(() => Offset.HasValue() ? $"--bit-snb-off:{Offset}" : string.Empty);
@@ -743,7 +988,11 @@ public partial class BitSnackBar : BitComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         await base.OnParametersSetAsync();
+
+        SyncServiceHost();
 
         await SyncQueueAsync();
 
@@ -752,6 +1001,52 @@ public partial class BitSnackBar : BitComponentBase
         // re-evaluated here instead of leaving every countdown stopped for good.
         if (_items.Exists(i => i._paused) || _PageHeld) await SyncPageHoldAsync();
     }
+
+    // Resolved through the provider rather than injected, like the page visibility utility: a snack bar has to keep
+    // working in an app that never registered the services, where only this one opt-in feature is lost.
+    private void SyncServiceHost()
+    {
+        if (ServiceHost)
+        {
+            if (_service is not null) return;
+
+            _service = _serviceProvider?.GetService(typeof(BitSnackBarService)) as BitSnackBarService;
+            _service?.Register(this);
+        }
+        else if (_service is not null)
+        {
+            _service.Unregister(this);
+            _service = null;
+        }
+    }
+
+    // An item that leaves the host - dismissed, or dropped from the queue - no longer names it, so the service does
+    // not route a later Close or Update of it here. Another host may have taken it over since.
+    private void Release(BitSnackBarItem item)
+    {
+        if (item._owner == this) item._owner = null;
+    }
+
+    // The loading item of Track becomes its outcome: updated in place while it is still showing, and left to arrive
+    // with the outcome already in it while it is still queued. One the user has already dismissed (or is leaving)
+    // keeps the reason it left with, and the outcome arrives as a notification of its own.
+    private Task SettleAsync(BitSnackBarItem item, string title, BitColor color) => InvokeAsync(async () =>
+    {
+        if (_queue.Contains(item) || (_items.Contains(item) && item._dismissing is false))
+        {
+            // With its outcome in, the item is an ordinary notification, which a repeat of it may now fold into.
+            item._tracked = false;
+            item.Title = title;
+            item.Color = color;
+            item.IsLoading = false;
+
+            await Update(item);
+
+            return;
+        }
+
+        await Show(new BitSnackBarItem { Title = title, Body = item.Body, Color = color });
+    });
 
     private async Task SyncQueueAsync()
     {
@@ -773,6 +1068,9 @@ public partial class BitSnackBar : BitComponentBase
 
         foreach (var item in waiting)
         {
+            // Show names this host again if it keeps the item, and leaves it unowned if it drops it.
+            Release(item);
+
             await Show(item);
         }
     }
@@ -800,7 +1098,15 @@ public partial class BitSnackBar : BitComponentBase
 
         await SyncSwipeAsync();
 
-        if ((PauseOnPageHidden || PauseOnWindowBlur) is false || _pageVisibility is not null) return;
+        await SyncPageVisibilityAsync();
+    }
+
+    // Subscribed the first time a pause asks for it, and kept until the snack bar is disposed. Only the first call is
+    // waited for: one that failed (the script not loaded yet, a round trip that timed out) is retried by the utility
+    // itself, whose answer arrives as a change like any other, and until then the countdowns are simply not held.
+    private async Task SyncPageVisibilityAsync()
+    {
+        if (_pageVisibility is not null || (PauseOnPageHidden || PauseOnWindowBlur) is false) return;
 
         // The utility is a scoped service of the library, so it is only there in an app that registered them.
         // Nothing else about the snack bar depends on it, which is why its absence turns this one feature off
@@ -811,7 +1117,38 @@ public partial class BitSnackBar : BitComponentBase
         _pageVisibility.OnChange += HandlePageVisibilityChange;
         _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
 
-        await _pageVisibility.Init();
+        // The utility is shared, so another component may already have asked the page; what it knows is taken right
+        // away, and what the page answers once it arrives.
+        await ApplyPageVisibilityAsync();
+
+        // Until the page has answered, a countdown handed out now could be running down in a tab that is already
+        // hidden, so new ones start held back; once the first call settles, the hold is re-evaluated below and they
+        // run unless the page is in fact hidden (or blurred). The call is bounded by the utility's own timeout, and
+        // a failed one settles as not held - the retries that follow it hold nothing back.
+        _pageVisibilityPending = true;
+
+        try
+        {
+            await _pageVisibility.Init();
+        }
+        finally
+        {
+            _pageVisibilityPending = false;
+        }
+
+        await ApplyPageVisibilityAsync();
+    }
+
+    // No event is coming for the state the page is already in - a tab that was in the background before the snack
+    // bar subscribed, or a window that had already lost the focus - so it is read rather than waited for.
+    private Task ApplyPageVisibilityAsync()
+    {
+        if (IsDisposed || _pageVisibility is null) return Task.CompletedTask;
+
+        _pageHidden = _pageVisibility.IsHidden;
+        _windowBlurred = _pageVisibility.IsWindowBlurred;
+
+        return _items.Exists(i => i._paused) || _PageHeld ? SyncPageHoldAsync() : Task.CompletedTask;
     }
 
     // The shortcut is registered from the rendered id rather than from a parameter setter, so it follows a Hotkey
@@ -884,7 +1221,7 @@ public partial class BitSnackBar : BitComponentBase
     [JSInvokable("SwipeDismissed")]
     public Task _SwipeDismissed(string id)
     {
-        if (IsDisposed || Guid.TryParse(id, out var itemId) is false) return Task.CompletedTask;
+        if (IsDisposing || Guid.TryParse(id, out var itemId) is false) return Task.CompletedTask;
 
         return InvokeAsync(async () =>
         {
@@ -901,7 +1238,52 @@ public partial class BitSnackBar : BitComponentBase
 
     private string _DismissAriaLabel => DismissAriaLabel ?? "Close";
 
-    private string _RootAriaLabel => AriaLabel ?? "Notifications";
+    // The shortcut is spelled out in the default name, the way Radix Toast names its viewport, so the people it is
+    // for can discover it from the landmark list. An aria-label the page splatted on is kept rather than replaced by it.
+    private string _RootAriaLabel => ResolveAriaLabel() ?? (Hotkey is { Length: > 0 } ? $"Notifications ({FormatHotkey(Hotkey)})" : "Notifications");
+
+    // ["KeyT", "altKey"] reads as "Alt+T": the modifiers first and in the order people say them, the key codes
+    // without the prefix that only tells the kind of key apart.
+    private static string FormatHotkey(string[] keys)
+    {
+        string[] modifiers = ["ctrlKey", "altKey", "shiftKey", "metaKey"];
+
+        var parts = modifiers.Where(keys.Contains).Select(m => m switch
+        {
+            "ctrlKey" => "Ctrl",
+            "altKey" => "Alt",
+            "shiftKey" => "Shift",
+            _ => "Meta"
+        }).ToList();
+
+        foreach (var key in keys)
+        {
+            if (modifiers.Contains(key)) continue;
+
+            parts.Add(key.StartsWith("Key", StringComparison.Ordinal) && key.Length == 4 ? key[3..]
+                    : key.StartsWith("Digit", StringComparison.Ordinal) && key.Length == 6 ? key[5..]
+                    : key);
+        }
+
+        return string.Join('+', parts);
+    }
+
+    private string GetTitleId(BitSnackBarItem item) => $"{_Id}-{item.Id:N}-ttl";
+
+    private string GetBodyId(BitSnackBarItem item) => $"{_Id}-{item.Id:N}-bdy";
+
+    // The item is named by its own title and described by its body, so a clickable item reached with Tab is
+    // announced by what it says - a status takes no name from its content. A template draws its own text, so
+    // there is nothing of ours to point at.
+    private string? GetItemLabelledBy(BitSnackBarItem item)
+    {
+        return Template is null && TitleTemplate is null && item.Title.HasValue() ? GetTitleId(item) : null;
+    }
+
+    private string? GetItemDescribedBy(BitSnackBarItem item)
+    {
+        return Template is null && BodyTemplate is null && item.Body.HasValue() ? GetBodyId(item) : null;
+    }
 
     private bool IsDismissible(BitSnackBarItem item) => Persistent is false && item.Persistent is false;
 
@@ -911,13 +1293,16 @@ public partial class BitSnackBar : BitComponentBase
     }
 
     // An item whose exit animation is playing is on its way out, so a new notification identical to it is news
-    // rather than a repeat - matching it would drop the new one and leave nothing on screen.
+    // rather than a repeat - matching it would drop the new one and leave nothing on screen. The loading item of a
+    // Track call still belongs to that call, so a new notification is not handed it either. Colors are compared as
+    // drawn: an item that leaves its color out is shown in Info, so it repeats one that asks for Info.
     private static bool IsDuplicate(BitSnackBarItem left, BitSnackBarItem right)
     {
         return left._dismissing is false
+            && left._tracked is false
             && left.Title == right.Title
             && left.Body == right.Body
-            && left.Color == right.Color;
+            && (left.Color ?? BitColor.Info) == (right.Color ?? BitColor.Info);
     }
 
     private bool IsFull() => MaxItems is int max && max > 0 && _items.Count(i => i._dismissing is false) >= max;
@@ -927,9 +1312,11 @@ public partial class BitSnackBar : BitComponentBase
         return item.AutoDismissTime ?? AutoDismissTime ?? TimeSpan.FromSeconds(3);
     }
 
+    // A notification about work that is still running is not over yet, so it sits out the countdown until an Update
+    // turns it into the outcome.
     private bool IsAutoDismissed(BitSnackBarItem item)
     {
-        return AutoDismiss && IsDismissible(item) && GetAutoDismissTime(item) > TimeSpan.Zero;
+        return AutoDismiss && IsDismissible(item) && item.IsLoading is false && GetAutoDismissTime(item) > TimeSpan.Zero;
     }
 
     private bool ShowProgressBar(BitSnackBarItem item)
@@ -948,6 +1335,17 @@ public partial class BitSnackBar : BitComponentBase
         if (Role.HasValue()) return Role!;
 
         return item.Color is BitColor.Warning or BitColor.SevereWarning or BitColor.Error ? "alert" : "status";
+    }
+
+    // The alert role is not only a live region: a browser also raises a system alert event for every element with
+    // that role the moment it is added, which NVDA and JAWS speak on top of whatever the live region says. An alert
+    // is already announced assertively by the host's own region, so the item itself is marked as a status, whose
+    // aria-live="off" really does keep it quiet - the same split Radix Toast makes.
+    private string GetRenderedRole(BitSnackBarItem item)
+    {
+        var role = GetItemRole(item);
+
+        return role == "alert" ? "status" : role;
     }
 
     // The politeness of the announcement follows the role rather than being declared beside it, and a role that is
@@ -1064,44 +1462,22 @@ public partial class BitSnackBar : BitComponentBase
 
     private string GetItemClasses(BitSnackBarItem item)
     {
+        // The Color of the item and the Size publish nothing while they are unset, which is what lets the stylesheet
+        // tell a default from a choice: the public --bit-SnackBar-* variables restyle the default and never an
+        // explicit value.
         var classes = new List<string>(6)
         {
-            item.Color switch
-            {
-                BitColor.Primary => "bit-snb-pri",
-                BitColor.Secondary => "bit-snb-sec",
-                BitColor.Tertiary => "bit-snb-ter",
-                BitColor.Info => "bit-snb-inf",
-                BitColor.Success => "bit-snb-suc",
-                BitColor.Warning => "bit-snb-wrn",
-                BitColor.SevereWarning => "bit-snb-swr",
-                BitColor.Error => "bit-snb-err",
-                BitColor.PrimaryBackground => "bit-snb-pbg",
-                BitColor.SecondaryBackground => "bit-snb-sbg",
-                BitColor.TertiaryBackground => "bit-snb-tbg",
-                BitColor.PrimaryForeground => "bit-snb-pfg",
-                BitColor.SecondaryForeground => "bit-snb-sfg",
-                BitColor.TertiaryForeground => "bit-snb-tfg",
-                BitColor.PrimaryBorder => "bit-snb-pbr",
-                BitColor.SecondaryBorder => "bit-snb-sbr",
-                BitColor.TertiaryBorder => "bit-snb-tbr",
-                _ => "bit-snb-inf"
-            },
             Variant switch
             {
                 BitVariant.Fill => "bit-snb-fil",
                 BitVariant.Outline => "bit-snb-otl",
                 BitVariant.Text => "bit-snb-txt",
                 _ => "bit-snb-fil"
-            },
-            Size switch
-            {
-                BitSize.Small => "bit-snb-sm",
-                BitSize.Medium => "bit-snb-md",
-                BitSize.Large => "bit-snb-lg",
-                _ => "bit-snb-md"
             }
         };
+
+        classes.AddIfHasValue(BitCssClasses.Color(item.Color, "bit-snb"));
+        classes.AddIfHasValue(BitCssClasses.Size(Size, "bit-snb"));
 
         if (item._dismissing) classes.Add("bit-snb-dsm");
         if (item._paused) classes.Add("bit-snb-pau");
@@ -1116,6 +1492,7 @@ public partial class BitSnackBar : BitComponentBase
     {
         item.DismissReason = null;
         item.DuplicateCount = 0;
+        item._owner = this;
 
         if (NewestOnTop)
         {
@@ -1196,17 +1573,28 @@ public partial class BitSnackBar : BitComponentBase
 
         item._dismissing = false;
 
+        // An item that leaves while the keyboard focus is inside it - an action button that closes it, a countdown
+        // that was not held back, a Close from code - would take the focus with it, so the focus is handed on
+        // exactly as the dismiss button hands it on. Only a keyboard user is stranded that way, though: after a
+        // click or a tap the next click goes wherever the user points it, and a focus moved onto the next item for
+        // them would only hold that item's countdown back with nothing to let it go.
+        focusNext = (focusNext || item._focusWithin) && item._pointerInput is false;
+
         // An element taken out from under the pointer does not always report the pointer leaving it, so the hover
         // and focus states are cleared here rather than left to say the item is being read after it is gone - which
         // would start the next countdown of a re-shown item paused with nothing to let it go.
         item._hovered = false;
+        item._focusWithin = false;
         item._focused = false;
         item._held = false;
         item._activationPending = false;
+        item._pointerInput = false;
 
         var index = _items.IndexOf(item);
 
         if (_items.Remove(item) is false) return;
+
+        Release(item);
 
         _dismissButtons.Remove(item.Id);
 
@@ -1232,26 +1620,20 @@ public partial class BitSnackBar : BitComponentBase
         await OnDismiss.InvokeAsync(item);
     }
 
-    // A dismiss button that removes itself leaves the keyboard focus on nothing, which sends the next Tab back to
-    // the top of the page. Handing the focus to the nearest item that still offers a dismiss button - the one that
-    // took its place, or, failing that, the closest one before it - keeps a run of dismissals reachable from the
-    // keyboard.
-    private async Task FocusNeighbourAsync(int index)
+    // An item that leaves with the focus inside it leaves the keyboard focus on nothing, which sends the next Tab
+    // back to the top of the page. Handing the focus to the nearest item that still offers a dismiss button - the
+    // one that took its place, or, failing that, the closest one before it - keeps a run of dismissals reachable
+    // from the keyboard.
+    private Task FocusNeighbourAsync(int index)
     {
         for (var offset = 0; offset < _items.Count; offset++)
         {
-            if (TryPick(index + offset, out var forward))
-            {
-                await FocusAsync(forward);
-                return;
-            }
+            if (TryPick(index + offset, out var forward)) return HandFocusOnAsync(forward);
 
-            if (TryPick(index - offset - 1, out var backward))
-            {
-                await FocusAsync(backward);
-                return;
-            }
+            if (TryPick(index - offset - 1, out var backward)) return HandFocusOnAsync(backward);
         }
+
+        return HandFocusOnAsync(null);
 
         bool TryPick(int at, out ElementReference reference)
         {
@@ -1265,22 +1647,42 @@ public partial class BitSnackBar : BitComponentBase
 
             if (_dismissButtons.TryGetValue(_items[at].Id, out reference) is false) return false;
 
-            return reference.Context is not null;
-        }
+            if (reference.Context is null) return false;
 
-        // The reference can still be stale - an item whose dismiss button was taken away by a parameter change
-        // keeps the one it was given - and reaching for an element the browser no longer has is not worth failing
-        // a dismissal over.
-        static async Task FocusAsync(ElementReference reference)
-        {
-            try
-            {
-                await reference.FocusAsync();
-            }
-            // JSException and ObjectDisposedException both derive from this one.
-            catch (InvalidOperationException) { }
+            // The focus arrives there from the keyboard, whatever that item last saw of the pointer.
+            _items[at]._pointerInput = false;
+
+            return true;
         }
     }
+
+    // Hands the focus to the dismiss button of another item or, with none, back to where the user was before they
+    // jumped here (failing that, to the region), which ends the detour instead of stranding the focus on nothing.
+    // The script only moves a focus that is still the host's to move - on nothing, or inside the host - so a flag
+    // left standing by a browser that reported no focusout for a removed element cannot take the focus away from
+    // wherever the user has since put it.
+    private async Task HandFocusOnAsync(ElementReference? target)
+    {
+        // Moving the focus is not worth failing a dismissal over: the callbacks and the queue come after this, and
+        // a script that is missing or a reference that has gone stale must not keep them from running.
+        try
+        {
+            if (target is ElementReference element)
+            {
+                await _js.InvokeVoid("BitBlazorUI.SnackBars.passFocus", _Id, element);
+            }
+            else
+            {
+                await _js.InvokeVoid("BitBlazorUI.SnackBars.restoreFocus", _Id);
+            }
+        }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+        // ObjectDisposedException derives from this one too.
+        catch (InvalidOperationException) { }
+    }
+
+    private static bool HoldsKeyboardFocus(BitSnackBarItem item) => item._focusWithin && item._pointerInput is false;
 
     private async Task HandleItemClick(BitSnackBarItem item)
     {
@@ -1298,9 +1700,10 @@ public partial class BitSnackBar : BitComponentBase
         }
     }
 
-    // The dismiss button and the Escape key hand the focus on to the next item, which the public Close does not:
-    // the code that closes a snack bar of its own accord has no reason to take the focus away from wherever the
-    // user has it.
+    // The dismiss button and the Escape key hand the focus on to the next item, which the public Close does not
+    // unless the focus is inside the item it closes: the code that closes a snack bar of its own accord has no
+    // reason to take the focus away from wherever the user has it. A dismiss button that was clicked rather than
+    // pressed from the keyboard leaves the focus where the browser puts it, as DismissAsync explains.
     private Task HandleDismissClick(BitSnackBarItem item)
     {
         // The dismiss button keeps its click to itself, so the Enter or Space that pressed it is answered here and
@@ -1318,6 +1721,8 @@ public partial class BitSnackBar : BitComponentBase
         // The key is only noted here, not answered: this handler also sees the keys pressed on whatever the item
         // holds, and a control of its own turns Enter or Space into a click that arrives before the key is
         // released. What is left unanswered by the time of the key-up was pressed on the item itself.
+        item._pointerInput = false;
+
         if ((e.Key is "Enter" or " " or "Spacebar") && IsClickable(item))
         {
             item._activationPending = true;
@@ -1326,13 +1731,28 @@ public partial class BitSnackBar : BitComponentBase
         // Escape is what closes the thing that has the focus, and while the focus is inside a snack bar that
         // thing is the snack bar. Only the items that can be dismissed at all answer it, so the key never takes
         // away a persistent notification the app is keeping on screen on purpose.
-        if (e.Key != "Escape" || IsDismissible(item) is false) return Task.CompletedTask;
+        // Only the plain key, the one the item claims (EscapeClaim): an Escape with a modifier is left to the surface
+        // around the snack bar.
+        if (e.IsPlainEscape() is false || DismissesOnEscape(item) is false) return Task.CompletedTask;
 
         return DismissAsync(item, animate: true, reason: BitSnackBarDismissReason.Escape, focusNext: true);
     }
 
+    // Whether a plain Escape inside the item dismisses it, the one rule HandleItemKeyDown and EscapeClaim both go by:
+    // an item that can be dismissed at all, and is not already on its way out (DismissAsync leaves one that is alone).
+    private bool DismissesOnEscape(BitSnackBarItem item) => IsDismissible(item) && item._dismissing is false;
+
+    // When HandleItemKeyDown acts on Escape, written onto the item for Utils.claimEscape: read off the same state it
+    // decides on, so a dialog the snack bar sits in stays open on the press that dismisses the item, and a persistent
+    // item leaves the key to the dialog.
+    private string? EscapeClaim(BitSnackBarItem item) => DismissesOnEscape(item) ? "claim" : null;
+
     private Task HandleItemKeyUp(KeyboardEventArgs e, BitSnackBarItem item)
     {
+        // A Tab that moved the focus in from outside was pressed somewhere else and is released here, so this is
+        // the first the item hears of the keyboard.
+        item._pointerInput = false;
+
         if (e.Key is not ("Enter" or " " or "Spacebar")) return Task.CompletedTask;
 
         if (item._activationPending is false) return Task.CompletedTask;
@@ -1341,6 +1761,8 @@ public partial class BitSnackBar : BitComponentBase
 
         return HandleItemClick(item);
     }
+
+    private static void HandlePointerDown(BitSnackBarItem item) => item._pointerInput = true;
 
     private void HandleHoverStart(BitSnackBarItem item)
     {
@@ -1366,6 +1788,10 @@ public partial class BitSnackBar : BitComponentBase
     // that hand-off run the countdown of an item the pointer had never left.
     private void HandleFocusStart(BitSnackBarItem item)
     {
+        // Where the focus is is tracked whatever PauseOnHover says: it also decides whether the item hands the focus
+        // on when it leaves.
+        item._focusWithin = true;
+
         if (PauseOnHover is false) return;
 
         item._focused = true;
@@ -1376,6 +1802,7 @@ public partial class BitSnackBar : BitComponentBase
     private void HandleFocusEnd(BitSnackBarItem item)
     {
         item._focused = false;
+        item._focusWithin = false;
 
         // A key held down while the focus moves away never reports its release here, so the note it left is
         // dropped rather than answered by the next key-up the item happens to see.
@@ -1397,7 +1824,9 @@ public partial class BitSnackBar : BitComponentBase
     {
         try
         {
-            await Clear();
+            // The page the focus would go back to is the one being left, and the new one decides where its own
+            // focus goes.
+            await ClearAsync(restoreFocus: false);
         }
         catch (ObjectDisposedException) { }
         catch (Exception ex) { await DispatchSafelyAsync(ex); }
@@ -1472,7 +1901,12 @@ public partial class BitSnackBar : BitComponentBase
 
             if (cts.IsCancellationRequested || IsDisposed) return;
 
-            await InvokeAsync(() => DismissAsync(item, animate: true, reason: BitSnackBarDismissReason.Timeout));
+            // A pause, a restart or a dismissal that ran while this continuation was waiting for the dispatcher has
+            // already taken the countdown's source out of the item: the countdown it called off must not dismiss the
+            // item all the same.
+            await InvokeAsync(() => ReferenceEquals(item._cts, cts) && IsDisposed is false
+                ? DismissAsync(item, animate: true, reason: BitSnackBarDismissReason.Timeout)
+                : Task.CompletedTask);
         }
         catch (OperationCanceledException) { }
         catch (ObjectDisposedException) { }
@@ -1522,12 +1956,15 @@ public partial class BitSnackBar : BitComponentBase
     // view does not let go of an item the pointer is still inside, the pointer leaving does not let go of one the
     // keyboard focus is still inside or one the code asked to hold, and none of them lets go of an item whose page
     // is still hidden.
-    private bool IsHeldBack(BitSnackBarItem item) => _PageHeld || item._hovered || item._focused || item._held;
+    private bool IsHeldBack(BitSnackBarItem item) => _PageHeld || _PagePending || item._hovered || item._focused || item._held;
 
     // The page-level reasons to hold a countdown back are read through the parameters that asked for them rather
     // than from the flags alone: the subscription is never taken down once it is made, so a snack bar whose
     // PauseOnPageHidden was turned off again would otherwise still be stopped by a hidden tab.
     private bool _PageHeld => (PauseOnPageHidden && _pageHidden) || (PauseOnWindowBlur && _windowBlurred);
+
+    // Whether the page is still being asked if it is hidden, for a snack bar that asked for either page-level hold.
+    private bool _PagePending => _pageVisibilityPending && (PauseOnPageHidden || PauseOnWindowBlur);
 
     private bool PauseItem(BitSnackBarItem item)
     {
@@ -1590,23 +2027,27 @@ public partial class BitSnackBar : BitComponentBase
             _navigationManager = null;
         }
 
-        if (_registeredHotkeyId is not null || _registeredSwipeId is not null)
+        _service?.Unregister(this);
+        _service = null;
+
+        // Whatever the script holds on this host's behalf - the shortcut, the swipe listener, the element the focus
+        // is to go back to - is let go of in one call per id it was held under.
+        string?[] scriptIds = [_registeredHotkeyId, _registeredSwipeId, _focusedRegionId];
+
+        _registeredHotkey = null;
+        _registeredHotkeyId = null;
+        _registeredSwipeId = null;
+        _focusedRegionId = null;
+
+        try
         {
-            var hotkeyId = _registeredHotkeyId;
-            var swipeId = _registeredSwipeId;
-
-            _registeredHotkey = null;
-            _registeredHotkeyId = null;
-            _registeredSwipeId = null;
-
-            try
+            foreach (var id in scriptIds.Where(i => i is not null).Distinct())
             {
-                if (hotkeyId is not null) await _js.InvokeVoid("BitBlazorUI.SnackBars.unregisterHotkey", hotkeyId);
-                if (swipeId is not null) await _js.InvokeVoid("BitBlazorUI.SnackBars.unregisterSwipe", swipeId);
+                await _js.InvokeVoid("BitBlazorUI.SnackBars.dispose", id);
             }
-            catch (JSDisconnectedException) { }
-            catch (ObjectDisposedException) { }
         }
+        catch (JSDisconnectedException) { }
+        catch (ObjectDisposedException) { }
 
         _dotnetObj?.Dispose();
         _dotnetObj = null;
@@ -1614,7 +2055,10 @@ public partial class BitSnackBar : BitComponentBase
         foreach (var item in _items)
         {
             CancelCountdown(item);
+            Release(item);
         }
+
+        _queue.ForEach(Release);
 
         // The host is going away with its items, so nothing it was holding on their behalf is worth keeping: the
         // element references in particular would otherwise point at a DOM that is no longer there.
@@ -1636,8 +2080,8 @@ public partial class BitSnackBar : BitComponentBase
         [BitColor.Tertiary] = "Info",
         [BitColor.Info] = "Info",
         [BitColor.Success] = "Completed",
-        [BitColor.Warning] = "Info",
-        [BitColor.SevereWarning] = "Warning",
+        [BitColor.Warning] = "Warning",
+        [BitColor.SevereWarning] = "WarningSolid",
         [BitColor.Error] = "ErrorBadge",
         [BitColor.PrimaryBackground] = "Info",
         [BitColor.SecondaryBackground] = "Info",

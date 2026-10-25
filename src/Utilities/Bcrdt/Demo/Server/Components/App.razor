@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <base href="/" />
+    @* No static <title> here: every page supplies its own through <PageTitle>, and with
+       prerendering the HeadOutlet emits a real <title> element into this head. *@
+    <meta name="description" content="bit Bcrdt (Bit.Bcrdt) - real-time collaborative editing for .NET and Blazor, written natively in C#: a CRDT engine for text, lists, maps and sets, a synchronization protocol, presence, offline-first persistence and selective undo, with no JavaScript CRDT library." />
+
+    @* Link previews: the card a chat client or a social site unfurls is the first impression a
+       shared link makes - and the live page is made to be shared. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.Bcrdt" />
+    <meta property="og:title" content="Bcrdt - real-time collaboration for .NET and Blazor" />
+    <meta property="og:description" content="A CRDT engine, sync, presence, offline-first persistence and selective undo, written in C# - no JavaScript CRDT library, no interop in the engine." />
+    <meta name="twitter:card" content="summary" />
+
+    <ResourcePreloader />
+    @* The site kit (app.css, theme.js, site.js - shared by every Utilities demo), then this demo's
+       own sample styles. The library ships no stylesheet: its components render plain markup, and
+       the one script BcrdtTextArea needs is imported on demand. *@
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["demo.css"]" />
+    @* Scoped-CSS bundle: includes the client project's *.razor.css files as well. *@
+    <link rel="stylesheet" href="@Assets["Bit.Bcrdt.Demo.Server.styles.css"]" />
+    @* Synchronous on purpose: applies the light/dark theme before first paint. *@
+    <script src="@Assets["theme.js"]"></script>
+    <ImportMap />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+@* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
+   page load rather than an enhanced one. Enhanced navigation fetches and merges the next page while
+   the runtime is still starting, and the router the runtime then attaches can render the address
+   it read before the merge - the URL says /getting-started and the page is the landing page. Once the
+   app is interactive its router handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
+    @* InteractiveWebAssembly rather than Auto or Server: every replica on a demo page is a separate document in the
+       browser's own memory, talking to its peers over the library's in-memory transport, so nothing has to cross the
+       network to be merged. The pages are still prerendered, so the first response carries the explanations. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">&#128473;</span>
+    </div>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["site.js"]"></script>
+</body>
+
+</html>

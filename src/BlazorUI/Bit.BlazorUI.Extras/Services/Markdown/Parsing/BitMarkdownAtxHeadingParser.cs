@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Parses ATX headings (<c># ... ######</c>).</summary>
 public sealed class BitMarkdownAtxHeadingParser : BitMarkdownBlockParser

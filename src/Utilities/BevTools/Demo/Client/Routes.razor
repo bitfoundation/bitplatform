@@ -1,0 +1,45 @@
+﻿@implements IDisposable
+@inject AppState AppState
+@inject NavigationManager Navigation
+
+@* Every page but the landing page renders inside the docs shell (Layout/DocsLayout.razor); the
+   landing page and the not-found page opt out with @layout MainLayout. After a navigation the
+   page's own H1 takes focus, so a screen reader starts reading at the new page. *@
+
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DocsLayout)" />
+        @* Not on arrival: <FocusOnNavigate> also fires on its first render, which here is the
+           moment the app turns interactive - seconds after the page appeared - and it would pull
+           focus away from wherever the reader had already tabbed to, the skip link included. It
+           joins the tree with the first navigation, and its first render then is that one. *@
+        @if (_navigated)
+        {
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        }
+    </Found>
+</Router>
+
+@* The tool this site demonstrates, mounted once for the whole app and outside the layouts: the site
+   chrome is shared by every Utilities demo, and the panel has to survive every navigation anyway.
+   It is still inside the interactive root (App.razor renders Routes with InteractiveAuto), which is
+   all BevToolsPanel asks of its host. *@
+<BevToolsPanel />
+
+@code {
+    private bool _navigated;
+
+    // Every navigation is also a named state change of AppState ("Visit"), so the State panel has a
+    // history to show on every page, not only on the ones that change state themselves. Subscribed
+    // ahead of the router (a parent initializes before the children it renders), so _navigated is
+    // already set when the router renders the page the navigation asked for.
+    protected override void OnInitialized() => Navigation.LocationChanged += OnLocationChanged;
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _navigated = true;
+        AppState.Visit("/" + Navigation.ToBaseRelativePath(e.Location));
+    }
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+}

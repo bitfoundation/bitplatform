@@ -1,0 +1,40 @@
+﻿@page "/e2e/snack-bar/cascade"
+
+<PageTitle>BitSnackBar cascade E2E</PageTitle>
+
+@* A BitSnackBarParams is a default for the snack bars under it: the first host takes everything from it, the second
+   keeps its own Position, and the third, outside the BitParams, keeps the library defaults. *@
+<E2ESection Id="cascade" Title="Cascading parameters">
+    <BitParams Parameters="@_params">
+        <BitSnackBar @ref="_cascaded" Id="cas-host" />
+        <BitSnackBar @ref="_own" Id="cas-own" Position="BitPosition.BottomCenter" />
+    </BitParams>
+    <BitSnackBar @ref="_outside" Id="cas-outside" />
+
+    <div style="margin: 160px auto 0; max-width: 560px;">
+        <button id="btn-cascaded" @onclick='() => _cascaded.Success("Cascaded", "From the cascade")'>Cascaded</button>
+        <button id="btn-own" @onclick='() => _own.Success("Own", "Own position")'>Own</button>
+        <button id="btn-outside" @onclick='() => _outside.Success("Outside", "Defaults")'>Outside</button>
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private BitSnackBar _cascaded = default!;
+    private BitSnackBar _own = default!;
+    private BitSnackBar _outside = default!;
+
+    private readonly BitSnackBarParams[] _params =
+    [
+        new()
+        {
+            Position = BitPosition.TopCenter,
+            ShowIcon = true,
+            AutoDismiss = true,
+            AutoDismissTime = TimeSpan.FromSeconds(30),
+            Variant = BitVariant.Outline,
+            DismissAriaLabel = "Dismiss it",
+        }
+    ];
+}

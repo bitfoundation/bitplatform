@@ -18,7 +18,7 @@ public partial class ForceUpdateSnackBar
             if (isShown) return;
 
             isShown = true;
-            await bitSnackBar.Error(string.Empty);
+            await bitSnackBar.Error(Localizer[nameof(AppStrings.ForceUpdateTitle)], Localizer[nameof(AppStrings.ForceUpdateBody)]);
         });
     }
 

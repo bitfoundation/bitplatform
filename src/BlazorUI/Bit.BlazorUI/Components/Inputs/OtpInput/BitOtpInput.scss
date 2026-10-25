@@ -1,43 +1,141 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
+
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// otp input and one set on the Style of an instance re-skins that one and the otp inputs nested in it:
+//   --bit-OtpInput-gap                     room between the boxes                        (default: spacing(1.25))
+//   --bit-OtpInput-input-size              width and height of every box                 (default: $siz-ctrl-md)
+//   --bit-OtpInput-input-width             width alone, for a box wider than it is tall  (default: --bit-OtpInput-input-size)
+//   --bit-OtpInput-input-height            height alone                                  (default: --bit-OtpInput-input-size)
+//   --bit-OtpInput-font-family             typeface of the whole component               (default: $tg-font-family)
+//   --bit-OtpInput-font-size               size of the code, the label and the hint      (default: $tg-fs-sm)
+//   --bit-OtpInput-label-font-size         size of the label above the inputs            (default: the size of the code)
+//   --bit-OtpInput-label-font-weight       weight of the label above the inputs          (default: $tg-field-label-font-weight)
+//   --bit-OtpInput-description-font-size   size of the helper text under the inputs      (default: $tg-fs-xs, the ramp step below the code)
+//   --bit-OtpInput-font-weight             weight of the character inside a box          (default: $tg-fw-regular)
+//   --bit-OtpInput-radius                  corner radius of a box, and of the two ends
+//                                          of every merged group                         (default: $shp-radius-control)
+//   --bit-OtpInput-border-width            thickness of a box's rule                     (default: $shp-border-width)
+//   --bit-OtpInput-color                   color of the typed character                  (default: $clr-fg-pri)
+//   --bit-OtpInput-background              box background at rest                        (default: per variant)
+//   --bit-OtpInput-hover-background        box background on hover                       (default: per variant)
+//   --bit-OtpInput-border-color            box rule at rest                              (default: per variant)
+//   --bit-OtpInput-hover-border-color      box rule on hover                             (default: per variant)
+//   --bit-OtpInput-filled-background       background of a box that holds a character    (default: the rest background)
+//   --bit-OtpInput-filled-border-color     rule of a box that holds a character          (default: the rest rule)
+//   --bit-OtpInput-focus-border-color      box rule while focused                        (default: $clr-pri)
+//   --bit-OtpInput-focus-color             focus ring color                              (default: $clr-pri-focus)
+//   --bit-OtpInput-placeholder-color       hint character of an empty box                (default: $clr-fg-sec)
+//   --bit-OtpInput-label-color             label above the boxes                         (default: $clr-fg-pri)
+//   --bit-OtpInput-description-color       helper text under the boxes                   (default: $clr-fg-sec)
+//   --bit-OtpInput-separator-color         text drawn between the groups                 (default: $clr-fg-sec)
+//   --bit-OtpInput-invalid-color           rule, helper text and bar in the error state  (default: $clr-err)
+//   --bit-OtpInput-invalid-focus-color     focus ring in the error state                 (default: $clr-err-focus)
+//   --bit-OtpInput-disabled-color          character, label, helper text and separator
+//                                          when disabled                                 (default: $clr-fg-dis)
+//   --bit-OtpInput-disabled-background     box background when disabled                  (default: $clr-bg-dis)
+//   --bit-OtpInput-disabled-border-color   box rule when disabled                        (default: $clr-brd-dis)
+//   --bit-OtpInput-loader-color            the sweep of the IsLoading bar                (default: $clr-pri)
+//   --bit-OtpInput-loader-background       the track of the IsLoading bar                (default: $clr-bg-sec)
+//   --bit-OtpInput-loader-height           thickness of the IsLoading bar                (default: $siz-track-sm)
+//                                          The box colors and focus rings have a twin per variant, read ahead of
+//                                          the shared one, so a theme can set one look apart from the other two:
+//   --bit-OtpInput-fill-background                  box background at rest, Fill variant           (default: --bit-OtpInput-background)
+//   --bit-OtpInput-fill-hover-background            box background on hover, Fill variant          (default: --bit-OtpInput-hover-background)
+//   --bit-OtpInput-fill-filled-background           background of a filled box, Fill variant       (default: --bit-OtpInput-filled-background)
+//   --bit-OtpInput-fill-border-color                box rule at rest, Fill variant                 (default: --bit-OtpInput-border-color)
+//   --bit-OtpInput-fill-hover-border-color          box rule on hover, Fill variant                (default: --bit-OtpInput-hover-border-color)
+//   --bit-OtpInput-fill-filled-border-color         rule of a filled box, Fill variant             (default: --bit-OtpInput-filled-border-color)
+//   --bit-OtpInput-fill-focus-color                 focus ring color, Fill variant                 (default: --bit-OtpInput-focus-color)
+//   --bit-OtpInput-fill-invalid-focus-color         focus ring in the error state, Fill variant    (default: --bit-OtpInput-invalid-focus-color)
+//   --bit-OtpInput-outline-background               box background at rest, Outline variant        (default: --bit-OtpInput-background)
+//   --bit-OtpInput-outline-hover-background         box background on hover, Outline variant       (default: --bit-OtpInput-hover-background)
+//   --bit-OtpInput-outline-filled-background        background of a filled box, Outline variant    (default: --bit-OtpInput-filled-background)
+//   --bit-OtpInput-outline-border-color             box rule at rest, Outline variant              (default: --bit-OtpInput-border-color)
+//   --bit-OtpInput-outline-hover-border-color       box rule on hover, Outline variant             (default: --bit-OtpInput-hover-border-color)
+//   --bit-OtpInput-outline-filled-border-color      rule of a filled box, Outline variant          (default: --bit-OtpInput-filled-border-color)
+//   --bit-OtpInput-outline-focus-color              focus ring color, Outline variant              (default: --bit-OtpInput-focus-color)
+//   --bit-OtpInput-outline-invalid-focus-color      focus ring in the error state, Outline variant (default: --bit-OtpInput-invalid-focus-color)
+//   --bit-OtpInput-text-background                  box background at rest, Text variant           (default: --bit-OtpInput-background)
+//   --bit-OtpInput-text-hover-background            box background on hover, Text variant          (default: --bit-OtpInput-hover-background)
+//   --bit-OtpInput-text-filled-background           background of a filled box, Text variant       (default: --bit-OtpInput-filled-background)
+//   --bit-OtpInput-text-border-color                box rule at rest, Text variant                 (default: --bit-OtpInput-border-color)
+//   --bit-OtpInput-text-hover-border-color          box rule on hover, Text variant                (default: --bit-OtpInput-hover-border-color)
+//   --bit-OtpInput-text-filled-border-color         rule of a filled box, Text variant             (default: --bit-OtpInput-filled-border-color)
+//   --bit-OtpInput-text-focus-color                 focus ring color, Text variant                 (default: --bit-OtpInput-focus-color)
+//   --bit-OtpInput-text-invalid-focus-color         focus ring in the error state, Text variant    (default: --bit-OtpInput-invalid-focus-color)
+//
+// A parameter written on the component wins over the variable that restyles what it sets: an explicit Accent over
+// the focused box rule, the focus ring and the loader sweep, and an explicit Size over the box size (the width and
+// the height alone included), the font size and the description font size. The variables restyle the default,
+// not a choice - which is why Accent and Size publish nothing while they are left unset: a class that always
+// carried the default would be indistinguishable from one that was asked for. The colors of the boxes are the
+// Variant's recipe rather than a parameter's value, so the background and border variables re-skin every variant,
+// and a state - disabled, invalid - is still read before everything. The label follows the size of the code by
+// inheritance, so --bit-OtpInput-label-font-size, which is there to set it apart from the code, keeps the label.
+
+$otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
 
 .bit-otp {
+    // The containing block of the visually hidden .bit-otp-sts inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     display: flex;
     width: fit-content;
+    //never wider than what it is given: a row of boxes that does not fit narrows its boxes (see .bit-otp-inp)
+    //rather than running past the side of a phone and scrolling the page around it.
+    max-width: 100%;
     box-sizing: border-box;
     flex-direction: column;
-    font-family: $tg-font-family;
-    font-size: var(--bit-otp-fontsize);
+    //a code is the one piece of text in a form that is read character by character rather than as a word, so
+    //setting it in a tabular or a monospaced face - where a zero cannot be mistaken for an O - is a design
+    //decision worth making once for a whole application rather than per instance.
+    font-family: var(--bit-OtpInput-font-family, #{$tg-font-family});
+    font-size: var(--bit-otp-fontsize, var(--bit-OtpInput-font-size, #{$tg-fs-sm}));
+
+    //the values the Size and Accent classes publish start out unset on every root, and the classes - declared
+    //further down at the same weight - still win on the root that carries them. Left unset, each sends the var()
+    //reading it on to the public variable and then to the default (the medium size, the primary role), which is
+    //what lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
+    @each $name in $otp-private-properties {
+        --bit-otp-#{$name}: initial;
+    }
 }
 
+//the label follows the size of the code by default, and carries a variable of its own so that a code drawn
+//larger than its size class does not drag the caption above it along with it. The fallback is the inherit
+//keyword rather than the variable the root reads, so a font-size written straight onto the root still
+//reaches the label: a var() that falls back to a CSS-wide keyword computes as unset, which for an inherited
+//property such as this one is the very same inherit it would have been without the variable.
 .bit-otp-lbl {
     margin: 0;
     display: block;
-    font-weight: $tg-fw-semibold;
-    color: $clr-fg-pri;
-    font-size: inherit;
+    font-size: var(--bit-OtpInput-label-font-size, inherit);
+    font-weight: var(--bit-OtpInput-label-font-weight, #{$tg-field-label-font-weight});
     box-sizing: border-box;
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;
+    color: var(--bit-OtpInput-label-color, #{$clr-fg-pri});
 }
 
-//the helper text under the inputs. It is a touch smaller than the code itself, so that the sentence
-//explaining the code never outweighs the code it explains.
+//the helper text under the inputs. It takes the step of the type ramp below the code itself, so that the
+//sentence explaining the code never outweighs the code it explains.
 .bit-otp-dsc {
     margin: 0;
     display: block;
     max-width: 100%;
-    color: $clr-fg-sec;
     box-sizing: border-box;
     overflow-wrap: break-word;
     padding: spacing(0.625) 0 0;
-    font-size: calc(var(--bit-otp-fontsize) - #{spacing(0.5)});
+    color: var(--bit-OtpInput-description-color, #{$clr-fg-sec});
+    font-size: var(--bit-otp-dsc-fontsize, var(--bit-OtpInput-description-font-size, #{$tg-fs-xs}));
 }
 
 .bit-otp-iwr {
     display: flex;
     align-items: center;
-    gap: spacing(1.25);
     box-sizing: border-box;
+    gap: var(--bit-OtpInput-gap, #{spacing(1.25)});
     flex-direction: var(--bit-otp-iwr-flexdirection);
 }
 
@@ -46,8 +144,8 @@
 .bit-otp-sep {
     line-height: 1;
     user-select: none;
-    color: $clr-fg-sec;
     pointer-events: none;
+    color: var(--bit-OtpInput-separator-color, #{$clr-fg-sec});
 }
 
 //the code has been submitted and is being checked: an indeterminate bar under the inputs, as wide as the
@@ -57,10 +155,10 @@
     overflow: hidden;
     position: relative;
     box-sizing: border-box;
-    height: spacing(0.375);
     margin-top: spacing(0.625);
     border-radius: $shp-radius-sm;
-    background-color: $clr-bg-sec;
+    height: var(--bit-OtpInput-loader-height, #{$siz-track-sm});
+    background-color: var(--bit-OtpInput-loader-background, #{$clr-bg-sec});
 
     &::after {
         content: "";
@@ -69,7 +167,7 @@
         position: absolute;
         border-radius: inherit;
         inset-inline-start: -33%;
-        background-color: var(--bit-otp-clr);
+        background-color: var(--bit-otp-clr, var(--bit-OtpInput-loader-color, #{$clr-pri}));
         //the sweep is not a spinner, so it scales its own duration by the shared loop factor instead of
         //taking the spinner tokens: stretched under reduced motion, restored inside a ForceAnimation subtree.
         animation: calc(1.5s * #{$mot-loop-factor}) $mot-easing 0s infinite normal none running bit-otp-ldr-anm;
@@ -86,6 +184,13 @@
     }
 }
 
+//the live region that announces the sentence a rejected code came back with. It is read rather than drawn,
+//so it is taken out of the layout without being taken out of the accessibility tree the way display:none
+//or visibility:hidden would.
+.bit-otp-sts {
+    @include visually-hidden;
+}
+
 .bit-otp-inp {
     cursor: text;
     //a form control carries a padding of its own that is not the same on both sides in every engine, which
@@ -95,20 +200,65 @@
     //asked for explicitly, otherwise the code would be drawn in the default font of the browser while
     //the label above it follows the theme.
     font-size: inherit;
-    font-family: inherit;
+    //the family is read here rather than only inherited from the root, so that a font-family written onto
+    //an element between the root and the box (a `* { font-family: ... }` reset lands on the wrapper of the
+    //inputs too, and an inherited value always loses to one set on the element itself) cannot keep the
+    //public variable from reaching the one element that draws the code. The fallback is the inherit
+    //keyword, so a component that sets no variable of its own is left exactly where it was: following
+    //whatever it inherits.
+    font-family: var(--bit-OtpInput-font-family, inherit);
     text-align: center;
-    color: $clr-fg-pri;
     box-sizing: border-box;
     -moz-appearance: textfield;
-    width: var(--bit-otp-size);
-    height: var(--bit-otp-size);
-    border-radius: $shp-radius-control;
-    border-width: $shp-border-width;
     border-style: $shp-border-style;
+    color: var(--bit-OtpInput-color, #{$clr-fg-pri});
+    //a form control does not inherit the weight of the page either, and the character in a box is the value
+    //the user typed rather than the label of a control, so it takes the regular step of the weight ramp.
+    font-weight: var(--bit-OtpInput-font-weight, #{$tg-fw-regular});
+    border-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
+    border-width: var(--bit-OtpInput-border-width, #{$shp-border-width});
+    width: var(--bit-otp-size, var(--bit-OtpInput-input-width, var(--bit-OtpInput-input-size, #{$siz-ctrl-md})));
+    height: var(--bit-otp-size, var(--bit-OtpInput-input-height, var(--bit-OtpInput-input-size, #{$siz-ctrl-md})));
+    //the width is where a box rests, not a floor: a flex item never shrinks below its own width on its own, so
+    //without this a long code in a narrow container would hold every box at its full size and overflow. The
+    //boxes give up the same share of their width instead, and one character still fits a box at any width a
+    //phone leaves it. The height is left alone, so a box only ever narrows along the row.
+    min-width: 0;
+    //the two colors of a box are read from private variables here, which every variant resolves on the box
+    //itself from its own tier of the public variables (--bit-OtpInput-outline-*, -fill-*, -text-*) ahead of
+    //the shared one: a shared variable still re-skins every variant at once, and a variant's own one sets that
+    //look apart from the other two.
+    //the states below set the two variables read ahead of them rather than the colors themselves, so only the
+    //rules at rest paint the box: a box the app paints through Classes keeps that paint under the pointer and
+    //while it is focused, instead of losing it to a state that outranks the app's class.
+    --bit-otp-inp-sbr: initial;
+    --bit-otp-inp-sbg: initial;
+    border-color: var(--bit-otp-inp-sbr, var(--bit-otp-brd));
+    background-color: var(--bit-otp-inp-sbg, var(--bit-otp-bg));
     transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
-    &::placeholder {
-        color: $clr-fg-ter;
+    @include input-placeholder(var(--bit-OtpInput-placeholder-color, #{$clr-fg-sec}));
+
+    //a box that already holds a character, which is the hook for a row that shows its own progress. Both
+    //of its colors fall back to the ones of the rest state, so nothing changes until one of the two is set.
+    &.bit-otp-fld {
+        border-color: var(--bit-otp-inp-sbr, var(--bit-otp-brd-filled));
+        background-color: var(--bit-otp-inp-sbg, var(--bit-otp-bg-filled));
+    }
+
+    //the hover rule is qualified so that it lights up nothing but a box the user can actually type in:
+    //never a disabled or a read-only component, and never over the accent color of the focused input.
+    &:enabled:read-write:hover:not(:focus-visible) {
+        --bit-otp-inp-sbr: var(--bit-otp-brd-hover);
+        --bit-otp-inp-sbg: var(--bit-otp-bg-hover);
+    }
+
+    //the accent of the focused box goes into the variable the filled block reads first as well, so it is never
+    //painted over by the rule of a box that happens to hold a character. Only the rule is taken over: a
+    //filled background is a part of the box rather than of its rest state, so it stays underneath the accent
+    //while the box is being typed in.
+    &:focus-visible {
+        --bit-otp-inp-sbr: var(--bit-otp-clr, var(--bit-OtpInput-focus-border-color, #{$clr-pri}));
     }
 
     //the spin buttons of a number typed input would not fit in a single character wide box, and the
@@ -117,60 +267,83 @@
     &::-webkit-outer-spin-button {
         -webkit-appearance: none
     }
+
+    //a one-time code is filled far more often than it is typed - that is what the one-time-code autofill,
+    //the WebOTP request and the password managers are all there for - so the colors a Chromium or a WebKit
+    //engine paints an auto filled control with are what the row would usually be seen in. They are declared
+    //with an internal rule no author declaration wins against, and in a dark scheme they are a pale blue box
+    //holding the light character of the theme, which is the code itself falling under the contrast minimum.
+    //Both halves are taken back: the character through the one property the engines do read back from the
+    //author, and the box by never letting the auto fill transition arrive, since the engine animates that
+    //color rather than painting it outright. The states are listed one by one because the engines match the
+    //auto filled control with a selector per state rather than with the bare one.
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+        caret-color: var(--bit-OtpInput-color, #{$clr-fg-pri});
+        -webkit-text-fill-color: var(--bit-OtpInput-color, #{$clr-fg-pri});
+        transition: border-color $mot-duration-short $mot-easing, background-color 0s 10000s;
+    }
 }
 
+//every variant resolves the colors of its boxes here, each public variable read behind the variant's own twin of
+//it, so a theme can give one look colors of its own from :root without re-skinning the other two. The state
+//colors fall back to the rest ones of the same variant, its own tier included. They are resolved on each box,
+//never on the root: Styles.Input, Styles.Filled and Styles.InputsWrapper land on the box or between it and the
+//root, and a public variable set there reaches only what is resolved at or below it.
+
 //Outline - the default: each input is a box drawn with the border color, filled with the page surface.
-.bit-otp-otl {
-    .bit-otp-inp {
-        border-color: $clr-brd-pri;
-        background-color: $clr-bg-pri;
-
-        //the hover rule is qualified so that it lights up nothing but a box the user can actually type
-        //in: never a disabled or a read-only component, and never over the accent color of the focused
-        //input. The very same qualifiers are repeated in the invalid block below, which is what keeps a
-        //hovered box red while the code is in error.
-        &:enabled:read-write:hover:not(:focus-visible) {
-            border-color: $clr-brd-pri-hover;
-        }
-
-        &:focus-visible {
-            border-color: var(--bit-otp-clr);
-        }
-    }
+.bit-otp-otl .bit-otp-inp {
+    --bit-otp-bg: var(--bit-OtpInput-outline-background, var(--bit-OtpInput-background, #{$clr-bg-pri}));
+    --bit-otp-bg-hover: var(--bit-OtpInput-outline-hover-background, var(--bit-OtpInput-hover-background, var(--bit-otp-bg)));
+    --bit-otp-bg-filled: var(--bit-OtpInput-outline-filled-background, var(--bit-OtpInput-filled-background, var(--bit-otp-bg)));
+    --bit-otp-brd: var(--bit-OtpInput-outline-border-color, var(--bit-OtpInput-border-color, #{$clr-brd-pri}));
+    --bit-otp-brd-hover: var(--bit-OtpInput-outline-hover-border-color, var(--bit-OtpInput-hover-border-color, #{$clr-brd-pri-hover}));
+    --bit-otp-brd-filled: var(--bit-OtpInput-outline-filled-border-color, var(--bit-OtpInput-filled-border-color, var(--bit-otp-brd)));
 }
 
 //Fill: the box is painted with the secondary surface and carries no rule of its own, for a softer
 //looking field that still reads as a single character slot.
-.bit-otp-fil {
-    .bit-otp-inp {
-        border-color: transparent;
-        background-color: $clr-bg-sec;
-
-        &:enabled:read-write:hover:not(:focus-visible) {
-            background-color: $clr-bg-sec-hover;
-        }
-
-        &:focus-visible {
-            border-color: var(--bit-otp-clr);
-        }
-    }
+.bit-otp-fil .bit-otp-inp {
+    --bit-otp-bg: var(--bit-OtpInput-fill-background, var(--bit-OtpInput-background, #{$clr-bg-sec}));
+    --bit-otp-bg-hover: var(--bit-OtpInput-fill-hover-background, var(--bit-OtpInput-hover-background, #{$clr-bg-sec-hover}));
+    --bit-otp-bg-filled: var(--bit-OtpInput-fill-filled-background, var(--bit-OtpInput-filled-background, var(--bit-otp-bg)));
+    --bit-otp-brd: var(--bit-OtpInput-fill-border-color, var(--bit-OtpInput-border-color, transparent));
+    --bit-otp-brd-hover: var(--bit-OtpInput-fill-hover-border-color, var(--bit-OtpInput-hover-border-color, var(--bit-otp-brd)));
+    --bit-otp-brd-filled: var(--bit-OtpInput-fill-filled-border-color, var(--bit-OtpInput-filled-border-color, var(--bit-otp-brd)));
 }
 
 //Text: only an underline is painted, for a code entry that should not outweigh the content around it.
-.bit-otp-txt {
+.bit-otp-txt .bit-otp-inp {
+    --bit-otp-bg: var(--bit-OtpInput-text-background, var(--bit-OtpInput-background, transparent));
+    --bit-otp-bg-hover: var(--bit-OtpInput-text-hover-background, var(--bit-OtpInput-hover-background, var(--bit-otp-bg)));
+    --bit-otp-bg-filled: var(--bit-OtpInput-text-filled-background, var(--bit-OtpInput-filled-background, var(--bit-otp-bg)));
+    --bit-otp-brd: var(--bit-OtpInput-text-border-color, var(--bit-OtpInput-border-color, #{$clr-brd-pri}));
+    --bit-otp-brd-hover: var(--bit-OtpInput-text-hover-border-color, var(--bit-OtpInput-hover-border-color, #{$clr-brd-pri-hover}));
+    --bit-otp-brd-filled: var(--bit-OtpInput-text-filled-border-color, var(--bit-OtpInput-filled-border-color, var(--bit-otp-brd)));
+    //the other three sides are taken away, which leaves the bottom one at the thickness the rule of the box
+    //reads in every variant - drawn here as the underline.
+    border-radius: 0;
+    border-top-width: 0;
+    border-right-width: 0;
+    border-left-width: 0;
+}
+
+//FullWidth: the row stretches across whatever it is given and the boxes share it evenly, which is what
+//keeps a long code from running off the side of a phone. The height stays the one of the size class, so
+//the boxes only ever grow or shrink along the axis the code is laid out on.
+.bit-otp-fwi {
+    width: 100%;
+
     .bit-otp-inp {
-        border-radius: 0;
-        border-color: $clr-brd-pri;
-        background-color: transparent;
-        border-width: 0 0 $shp-border-width 0;
+        min-width: 0;
+        flex: 1 1 0;
+        width: auto;
+    }
 
-        &:enabled:read-write:hover:not(:focus-visible) {
-            border-color: $clr-brd-pri-hover;
-        }
-
-        &:focus-visible {
-            border-color: var(--bit-otp-clr);
-        }
+    &.bit-otp-vrt .bit-otp-inp {
+        flex: 0 0 auto;
+        width: 100%;
     }
 }
 
@@ -222,65 +395,65 @@
 
 .bit-otp-mrg:not(.bit-otp-vrt):not(.bit-otp-rvs) {
     .bit-otp-inp:not(.bit-otp-gst) {
-        margin-inline-start: calc(-1 * #{$shp-border-width});
+        margin-inline-start: calc(-1 * var(--bit-OtpInput-border-width, #{$shp-border-width}));
     }
 
     .bit-otp-gst {
-        border-start-start-radius: $shp-radius-control;
-        border-end-start-radius: $shp-radius-control;
+        border-start-start-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
+        border-end-start-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
     }
 
     .bit-otp-gnd {
-        border-start-end-radius: $shp-radius-control;
-        border-end-end-radius: $shp-radius-control;
+        border-start-end-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
+        border-end-end-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
     }
 }
 
 .bit-otp-mrg.bit-otp-rvs:not(.bit-otp-vrt) {
     .bit-otp-inp:not(.bit-otp-gnd) {
-        margin-inline-end: calc(-1 * #{$shp-border-width});
+        margin-inline-end: calc(-1 * var(--bit-OtpInput-border-width, #{$shp-border-width}));
     }
 
     .bit-otp-gnd {
-        border-start-start-radius: $shp-radius-control;
-        border-end-start-radius: $shp-radius-control;
+        border-start-start-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
+        border-end-start-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
     }
 
     .bit-otp-gst {
-        border-start-end-radius: $shp-radius-control;
-        border-end-end-radius: $shp-radius-control;
+        border-start-end-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
+        border-end-end-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
     }
 }
 
 .bit-otp-mrg.bit-otp-vrt:not(.bit-otp-rvs) {
     .bit-otp-inp:not(.bit-otp-gst) {
-        margin-block-start: calc(-1 * #{$shp-border-width});
+        margin-block-start: calc(-1 * var(--bit-OtpInput-border-width, #{$shp-border-width}));
     }
 
     .bit-otp-gst {
-        border-start-start-radius: $shp-radius-control;
-        border-start-end-radius: $shp-radius-control;
+        border-start-start-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
+        border-start-end-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
     }
 
     .bit-otp-gnd {
-        border-end-start-radius: $shp-radius-control;
-        border-end-end-radius: $shp-radius-control;
+        border-end-start-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
+        border-end-end-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
     }
 }
 
 .bit-otp-mrg.bit-otp-vrt.bit-otp-rvs {
     .bit-otp-inp:not(.bit-otp-gnd) {
-        margin-block-end: calc(-1 * #{$shp-border-width});
+        margin-block-end: calc(-1 * var(--bit-OtpInput-border-width, #{$shp-border-width}));
     }
 
     .bit-otp-gnd {
-        border-start-start-radius: $shp-radius-control;
-        border-start-end-radius: $shp-radius-control;
+        border-start-start-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
+        border-start-end-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
     }
 
     .bit-otp-gst {
-        border-end-start-radius: $shp-radius-control;
-        border-end-end-radius: $shp-radius-control;
+        border-end-start-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
+        border-end-end-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
     }
 }
 
@@ -309,9 +482,25 @@
 //the focus ring and the disabled/invalid overrides are declared after the variants on purpose: they are
 //as specific as the variant rules, so only the source order keeps a focused input from painting the
 //accent color over an error, or a disabled component from keeping its variant colors.
-.bit-otp .bit-otp-inp {
+//the Text variant is left out of the ring so that it gets the underline treatment below instead: a ring drawn
+//around a box that is only an underline would bring back the very frame the variant is there to leave out, and
+//applying the ring only to take its shadow away again would still leave its forced-colors outline behind. Each
+//variant reads its own tier of the focus color ahead of the shared one.
+.bit-otp.bit-otp-otl .bit-otp-inp {
     &:focus-visible {
-        @include focus-ring(var(--bit-otp-clr-focus));
+        @include focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-outline-focus-color, var(--bit-OtpInput-focus-color))));
+    }
+}
+
+.bit-otp.bit-otp-fil .bit-otp-inp {
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-fill-focus-color, var(--bit-OtpInput-focus-color))));
+    }
+}
+
+.bit-otp.bit-otp-txt .bit-otp-inp {
+    &:focus-visible {
+        @include focus-underline-ring(var(--bit-otp-clr-focus, var(--bit-OtpInput-text-focus-color, var(--bit-OtpInput-focus-color, #{$clr-pri-focus}))));
     }
 }
 
@@ -319,25 +508,37 @@
     .bit-otp-lbl,
     .bit-otp-dsc,
     .bit-otp-sep {
-        color: $clr-fg-dis;
+        color: var(--bit-OtpInput-disabled-color, #{$clr-fg-dis});
     }
 
     .bit-otp-inp {
-        color: $clr-fg-dis;
-        border-color: $clr-brd-dis;
-        background-color: $clr-bg-dis;
+        color: var(--bit-OtpInput-disabled-color, #{$clr-fg-dis});
+        border-color: var(--bit-OtpInput-disabled-border-color, #{$clr-brd-dis});
+        background-color: var(--bit-OtpInput-disabled-background, #{$clr-bg-dis});
+        //a box that was auto filled before the component was turned off - a code being submitted is disabled
+        //while the answer is awaited - still carries the fill color of the rule above, and a text fill wins
+        //over a color whatever the two selectors weigh, so the dimmed one has to be declared in kind.
+        -webkit-text-fill-color: var(--bit-OtpInput-disabled-color, #{$clr-fg-dis});
+
+        //and the auto fill states are listed one by one here as well, for the reason the rule up there
+        //lists them and for one more: a hovered or a focused auto filled box is matched by a selector of
+        //the very same weight as this block, so the dimming would be left resting on the order of the two
+        //rules alone, which a reordering of this file would quietly take away.
+        &:-webkit-autofill,
+        &:-webkit-autofill:hover,
+        &:-webkit-autofill:focus {
+            -webkit-text-fill-color: var(--bit-OtpInput-disabled-color, #{$clr-fg-dis});
+        }
 
         //the hint of an empty box is a part of the field, so it has to be dimmed along with it instead of
         //staying the only thing in the component that still reads as enabled.
-        &::placeholder {
-            color: $clr-fg-dis;
-        }
+        @include input-placeholder(var(--bit-OtpInput-disabled-color, #{$clr-fg-dis}));
     }
 
     //a disabled component is out of the flow the wait belongs to, so the bar is dimmed along with the rest
     //of it rather than being the one part that still looks live.
     .bit-otp-ldr::after {
-        background-color: $clr-fg-dis;
+        background-color: var(--bit-OtpInput-disabled-color, #{$clr-fg-dis});
     }
 }
 
@@ -346,26 +547,37 @@
     //rather than as a hint standing next to it. It is also what keeps the failure from being carried by the
     //color of the boxes alone.
     .bit-otp-dsc {
-        color: $clr-err;
+        color: var(--bit-OtpInput-invalid-color, #{$clr-err});
     }
 
     //a code that is being checked again after it came back rejected keeps the error state while it waits,
     //so the bar belongs to that state rather than staying the one part still painted with the accent.
     .bit-otp-ldr::after {
-        background-color: $clr-err;
+        background-color: var(--bit-OtpInput-invalid-color, #{$clr-err});
     }
 
     .bit-otp-inp {
-        border-color: $clr-err;
+        border-color: var(--bit-otp-inp-sbr, var(--bit-OtpInput-invalid-color, #{$clr-err}));
 
         &:enabled:read-write:hover:not(:focus-visible) {
-            border-color: $clr-err;
+            --bit-otp-inp-sbr: var(--bit-OtpInput-invalid-color, #{$clr-err});
         }
 
         &:focus-visible {
-            border-color: $clr-err;
-            @include focus-ring($clr-err-focus);
+            --bit-otp-inp-sbr: var(--bit-OtpInput-invalid-color, #{$clr-err});
         }
+    }
+
+    &.bit-otp-otl .bit-otp-inp:focus-visible {
+        @include focus-ring(var(--bit-OtpInput-outline-invalid-focus-color, var(--bit-OtpInput-invalid-focus-color, #{$clr-err-focus})));
+    }
+
+    &.bit-otp-fil .bit-otp-inp:focus-visible {
+        @include focus-ring(var(--bit-OtpInput-fill-invalid-focus-color, var(--bit-OtpInput-invalid-focus-color, #{$clr-err-focus})));
+    }
+
+    &.bit-otp-txt .bit-otp-inp:focus-visible {
+        @include focus-underline-ring(var(--bit-OtpInput-text-invalid-focus-color, var(--bit-OtpInput-invalid-focus-color, #{$clr-err-focus})));
     }
 }
 
@@ -403,7 +615,8 @@
 }
 
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by
+// an explicit Accent; an unset one is the primary role, after the public variables.
 @each $role, $tokens in $bit-color-roles {
     .bit-otp-#{$role} {
         --bit-otp-clr: #{role($tokens, main)};
@@ -412,17 +625,24 @@
 }
 
 
+//the box is a square of the control height of its size class, so a row of code boxes lines up with the
+//other controls of the form it sits in, and the smallest one still clears the 24px minimum pointer target
+//of WCAG 2.2 (SC 2.5.8). Published only by an explicit Size; an unset one is the medium box, which the reads
+//spell out after the public variables.
 .bit-otp-sm {
-    --bit-otp-size: #{spacing(3.0)};
+    --bit-otp-size: #{$siz-ctrl-sm};
     --bit-otp-fontsize: #{$tg-fs-xs};
+    --bit-otp-dsc-fontsize: #{$tg-fs-2xs};
 }
 
 .bit-otp-md {
-    --bit-otp-size: #{spacing(3.75)};
+    --bit-otp-size: #{$siz-ctrl-md};
     --bit-otp-fontsize: #{$tg-fs-sm};
+    --bit-otp-dsc-fontsize: #{$tg-fs-xs};
 }
 
 .bit-otp-lg {
-    --bit-otp-size: #{spacing(4.5)};
+    --bit-otp-size: #{$siz-ctrl-lg};
     --bit-otp-fontsize: #{$tg-fs-md};
+    --bit-otp-dsc-fontsize: #{$tg-fs-sm};
 }

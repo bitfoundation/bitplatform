@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The shared breakpoints of bit BlazorUI, in pixels, for the components that have to resolve one in C#.

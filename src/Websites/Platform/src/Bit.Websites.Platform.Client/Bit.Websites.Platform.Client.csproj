@@ -10,10 +10,6 @@
         <InvariantTimezone Condition="'$(Configuration)' == 'Release'">true</InvariantTimezone>
         <InvariantGlobalization Condition="'$(Configuration)' == 'Release'">true</InvariantGlobalization>
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
-        <ResolveStaticWebAssetsInputsDependsOn>
-            BeforeBuildTasks;
-            $(ResolveStaticWebAssetsInputsDependsOn)
-        </ResolveStaticWebAssetsInputsDependsOn>
         
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
@@ -30,28 +26,28 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
     </ItemGroup>
 
     <ItemGroup>
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
-        <PackageReference Include="Bit.Bswup" Version="10.6.2" />
-        <PackageReference Include="Bit.Butil" Version="10.6.2" />
-        <PackageReference Include="Bit.BlazorUI" Version="10.6.2" />
-        <PackageReference Include="Bit.BlazorUI.Extras" Version="10.6.2" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="10.6.2" />
-        <PackageReference Include="Bit.Minifier" Version="10.6.2" PrivateAssets="all" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.2">
+        <PackageReference Include="Bit.Bswup" Version="10.7.0" />
+        <PackageReference Include="Bit.Butil" Version="10.7.0" />
+        <PackageReference Include="Bit.BlazorUI" Version="10.7.0" />
+        <PackageReference Include="Bit.BlazorUI.Extras" Version="10.7.0" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="10.7.0" />
+        <PackageReference Include="Bit.Minifier" Version="10.7.0" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.7.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.6.2">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.7.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.12" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.13" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -98,11 +94,14 @@
         <TypeScriptFiles Include="**\*.ts" Exclude="node_modules\**;bin\**;obj\**" />
     </ItemGroup>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+    <Target Name="BeforeBuildTasks" BeforeTargets="ResolveProjectStaticWebAssets;ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <CallTarget Targets="InstallNodejsDependencies" />
         <CallTarget Targets="BuildJavaScript" />
         <CallTarget Targets="BuildIsolatedScssFiles" />
         <CallTarget Targets="BuildGlobalScssFiles" />
+        <ItemGroup>
+            <Content Include="**\*.razor.css;wwwroot\scripts\app.js;wwwroot\styles\app.css" Exclude="@(Content);@(None);node_modules\**;bin\**;obj\**" />
+        </ItemGroup>
     </Target>
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">

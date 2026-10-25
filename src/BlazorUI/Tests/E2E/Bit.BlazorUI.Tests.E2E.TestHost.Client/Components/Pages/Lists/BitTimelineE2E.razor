@@ -1,0 +1,453 @@
+﻿@page "/e2e/timeline"
+@using Microsoft.AspNetCore.Components.Rendering
+
+<PageTitle>BitTimeline E2E</PageTitle>
+
+@* Every feature is rendered once per API - the BitTimelineItem list ("items"), a model of its own read through
+   NameSelectors ("custom") and BitTimelineOption children ("options") - with the same entries, under the ids
+   "<api>-<feature>", so a test runs the same assertions over the three of them. *@
+<style>
+    .tl-host { width: 600px; }
+    .tl-hhost { width: 600px; height: 160px; }
+    .tl-custom-root { outline: 2px solid rgb(1, 1, 1); }
+    .tl-item-class { letter-spacing: 1px; }
+    .tl-pcn-class { letter-spacing: 2px; }
+    .tl-ptx-class { letter-spacing: 3px; }
+    .tl-scn-class { letter-spacing: 4px; }
+    .tl-stx-class { letter-spacing: 5px; }
+    .tl-dvd-class { --bit-Timeline-line-color: rgb(6, 7, 8); }
+    .tl-dot-class { outline: 1px solid rgb(9, 10, 11); }
+    .tl-ico-class { letter-spacing: 6px; }
+    .tl-entry-class { word-spacing: 7px; }
+</style>
+
+@foreach (var api in Apis)
+{
+    <E2ESection Id="@($"sec-{api}")" Title="@($"The {api} API")">
+        <div class="tl-host">@Tl(api, "basic", Basic3)</div>
+        <div class="tl-hhost">@Tl(api, "basic-h", Basic3, P(("Horizontal", true)))</div>
+
+        <div class="tl-hhost">@Tl(api, "disabled", Basic3, P(("Horizontal", true), ("Disabled", true)))</div>
+        <div class="tl-hhost">@Tl(api, "disabled-item", DisabledItems, P(("Horizontal", true)))</div>
+
+        <div class="tl-hhost">@Tl(api, "fill", Icons, P(("Horizontal", true), ("Variant", BitVariant.Fill)))</div>
+        <div class="tl-hhost">@Tl(api, "outline", Icons, P(("Horizontal", true), ("Variant", BitVariant.Outline)))</div>
+        <div class="tl-hhost">@Tl(api, "text", Icons, P(("Horizontal", true), ("Variant", BitVariant.Text)))</div>
+        <div class="tl-hhost">@Tl(api, "default-variant", Icons, P(("Horizontal", true)))</div>
+
+        <div class="tl-host">@Tl(api, "reversed", TwoSided, P(("Reversed", true)))</div>
+        <div class="tl-host">@Tl(api, "item-reversed", ItemReversed)</div>
+        <div class="tl-host">@Tl(api, "alternate", TwoSided, P(("Alternate", true)))</div>
+        <div class="tl-host">@Tl(api, "alternate-reversed", TwoSided, P(("Alternate", true), ("Reversed", true)))</div>
+        <div class="tl-hhost">@Tl(api, "reversed-h", TwoSided, P(("Horizontal", true), ("Reversed", true)))</div>
+        <div class="tl-hhost">@Tl(api, "alternate-h", TwoSided, P(("Horizontal", true), ("Alternate", true)))</div>
+
+        <div class="tl-host">@Tl(api, "reverse-order", TwoSided, P(("ReverseOrder", true)))</div>
+        <div class="tl-hhost">@Tl(api, "reverse-order-h", TwoSided, P(("Horizontal", true), ("ReverseOrder", true)))</div>
+
+        <div class="tl-host">@Tl(api, "truncate-none", Basic3)</div>
+        <div class="tl-host">@Tl(api, "truncate-start", Basic3, P(("TruncateLine", BitTimelineTruncateLine.Start)))</div>
+        <div class="tl-host">@Tl(api, "truncate-end", Basic3, P(("TruncateLine", BitTimelineTruncateLine.End)))</div>
+        <div class="tl-host">@Tl(api, "truncate-both", Basic3, P(("TruncateLine", BitTimelineTruncateLine.Both)))</div>
+        <div class="tl-host">@Tl(api, "line-solid", Basic3, P(("LineStyle", BitLineStyle.Solid)))</div>
+        <div class="tl-host">@Tl(api, "line-dashed", Basic3, P(("LineStyle", BitLineStyle.Dashed)))</div>
+        <div class="tl-host">@Tl(api, "line-dotted", Basic3, P(("LineStyle", BitLineStyle.Dotted)))</div>
+        <div class="tl-host">@Tl(api, "line-items", LineItems)</div>
+
+        <div class="tl-host">@Tl(api, "dot-center", Tall)</div>
+        <div class="tl-host">@Tl(api, "dot-start", Tall, P(("DotAlignment", BitPlacement.Start)))</div>
+        <div class="tl-host">@Tl(api, "dot-end", Tall, P(("DotAlignment", BitPlacement.End)))</div>
+
+        <div class="tl-host">@Tl(api, "line-start", TwoSided, P(("LinePlacement", BitPlacement.Start)))</div>
+        <div class="tl-host">@Tl(api, "line-end", TwoSided, P(("LinePlacement", BitPlacement.End)))</div>
+        <div class="tl-hhost">@Tl(api, "line-start-h", TwoSided, P(("Horizontal", true), ("LinePlacement", BitPlacement.Start)))</div>
+
+        <div class="tl-host">@Tl(api, "customized", Customized)</div>
+
+        <div class="tl-host">@Tl(api, "templates", Templates)</div>
+        <div class="tl-host">@Tl(api, "timeline-templates", Basic3, null, itemTemplate: true)</div>
+        <div class="tl-host">@Tl(api, "timeline-dot-template", Basic3, null, dotTemplate: true)</div>
+
+        <div class="tl-host">@Tl(api, "events", Clickable)</div>
+        <div class="tl-host">@Tl(api, "on-item-click", Basic3, null, onItemClick: true)</div>
+        <div class="tl-host">@Tl(api, "disabled-click", Basic3, P(("Disabled", true)), onItemClick: true)</div>
+
+        <div class="tl-host">@Tl(api, "a11y", Accessible, P(("AriaLabel", "Project history")))</div>
+
+        <div class="tl-host">@Tl(api, "external", External)</div>
+
+        <div class="tl-hhost">@Tl(api, "size-sm", Icons, P(("Horizontal", true), ("Size", BitSize.Small)))</div>
+        <div class="tl-hhost">@Tl(api, "size-md", Icons, P(("Horizontal", true), ("Size", BitSize.Medium)))</div>
+        <div class="tl-hhost">@Tl(api, "size-lg", Icons, P(("Horizontal", true), ("Size", BitSize.Large)))</div>
+
+        <div class="tl-host">@Tl(api, "styled", Styled, P(("Class", "tl-custom-root"), ("Style", "max-width: 500px; color: rgb(30, 144, 255)"),
+                                      ("Styles", new BitTimelineClassStyles { Root = "padding: 1px", Item = "padding: 2px", PrimaryContent = "margin: 3px", PrimaryText = "color: rgb(32, 178, 170)", SecondaryContent = "margin: 4px", SecondaryText = "color: rgb(5, 6, 7)", Divider = "margin: 5px", Dot = "background-color: rgb(32, 178, 170)", Icon = "color: rgb(245, 245, 245)" }),
+                                      ("Classes", new BitTimelineClassStyles { Item = "tl-item-class", PrimaryContent = "tl-pcn-class", PrimaryText = "tl-ptx-class", SecondaryContent = "tl-scn-class", SecondaryText = "tl-stx-class", Divider = "tl-dvd-class", Dot = "tl-dot-class", Icon = "tl-ico-class" })))</div>
+
+        <div class="tl-host">@Tl(api, "rtl", TwoSided, P(("Dir", BitDir.Rtl)))</div>
+        <div class="tl-hhost">@Tl(api, "rtl-h", Basic3, P(("Dir", BitDir.Rtl), ("Horizontal", true)))</div>
+        <div class="tl-host" dir="rtl">@Tl(api, "rtl-inherited", TwoSided)</div>
+    </E2ESection>
+}
+
+<E2ESection Id="sec-colors" Title="Color: every color, every variant, enabled and disabled">
+    @foreach (var color in Enum.GetValues<BitColor>())
+    {
+        <div class="tl-hhost">@Tl("items", $"color-{color}", Variants, P(("Horizontal", true), ("Color", color)))</div>
+        <div class="tl-hhost">@Tl("items", $"item-color-{color}", ItemColors[color], P(("Horizontal", true)))</div>
+    }
+</E2ESection>
+
+<E2ESection Id="sec-cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_timelineParams">
+        @foreach (var api in Apis)
+        {
+            <div class="tl-hhost">@Tl(api, "casc", Icons)</div>
+            <div class="tl-hhost">@Tl(api, "casc-own", Icons, P(("Color", BitColor.Error)))</div>
+        }
+    </BitParams>
+    <div class="tl-host">@Tl("items", "casc-out", Icons)</div>
+</E2ESection>
+
+<E2ESection Id="sec-css-vars" Title="The --bit-Timeline-* variables">
+    <div class="tl-host" style="--bit-Timeline-font-size: 17px; --bit-Timeline-dot-size: 40px; --bit-Timeline-dot-background: rgb(10, 20, 30); --bit-Timeline-dot-border-color: rgb(40, 50, 60); --bit-Timeline-dot-border-width: 3px; --bit-Timeline-dot-radius: 6px; --bit-Timeline-dot-shadow: rgb(255, 0, 0) 0px 0px 0px 4px; --bit-Timeline-icon-color: rgb(70, 80, 90); --bit-Timeline-icon-size: 21px; --bit-Timeline-line-color: rgb(0, 128, 0); --bit-Timeline-line-width: 5px; --bit-Timeline-content-gap: 13px; --bit-Timeline-item-spacing: 11px; --bit-Timeline-item-radius: 9px; --bit-Timeline-item-hover-background: rgb(100, 110, 120); --bit-Timeline-item-active-background: rgb(130, 140, 150)">
+        @Tl("items", "vars", Clickable)
+        @Tl("items", "vars-color", Icons, P(("Color", BitColor.Error)))
+        @Tl("items", "vars-size", Icons, P(("Size", BitSize.Small)))
+        @Tl("items", "vars-outline", Icons, P(("Variant", BitVariant.Outline)))
+        @Tl("items", "vars-text", Icons, P(("Variant", BitVariant.Text)))
+    </div>
+    <div class="tl-host" style="--bit-Timeline-dot-background: rgb(1, 1, 1); --bit-Timeline-fill-dot-background: rgb(2, 2, 2); --bit-Timeline-outline-dot-background: rgb(3, 3, 3); --bit-Timeline-text-dot-background: rgb(4, 4, 4); --bit-Timeline-fill-dot-border-color: rgb(5, 5, 5); --bit-Timeline-outline-dot-border-color: rgb(6, 6, 6); --bit-Timeline-text-dot-border-color: rgb(7, 7, 7); --bit-Timeline-fill-icon-color: rgb(8, 8, 8); --bit-Timeline-outline-icon-color: rgb(9, 9, 9); --bit-Timeline-text-icon-color: rgb(12, 12, 12)">
+        @Tl("items", "tier-fill", Icons, P(("Variant", BitVariant.Fill)))
+        @Tl("items", "tier-outline", Icons, P(("Variant", BitVariant.Outline)))
+        @Tl("items", "tier-text", Icons, P(("Variant", BitVariant.Text)))
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-runtime" Title="Runtime changes and lifecycle">
+    <button id="btn-swap-items" @onclick="() => _swapped = !_swapped">Swap the items</button>
+    <div class="tl-host">@Tl("items", "runtime-items", _swapped ? TwoSided : Basic3)</div>
+    <button id="btn-add-option" @onclick="() => _optionCount++">Add an option</button>
+    <button id="btn-remove-option" @onclick="() => _optionCount--">Remove an option</button>
+    <div class="tl-host">@Tl("options", "runtime-options", Enumerable.Range(1, _optionCount).Select(i => new Entry($"Option {i}")).ToList())</div>
+    <div class="tl-host">@Tl("options", "options-parameter", Basic3, optionsParameter: true)</div>
+    <button id="btn-toggle-horizontal" @onclick="() => _runtimeHorizontal = !_runtimeHorizontal">Toggle Horizontal</button>
+    <div class="tl-hhost">@Tl("custom", "runtime-horizontal", Basic3, P(("Horizontal", _runtimeHorizontal)))</div>
+    @if (_mounted)
+    {
+        <div class="tl-host">@Tl("options", "mount-timeline", Clickable)</div>
+    }
+    <button id="btn-unmount" @onclick="() => _mounted = false">Unmount</button>
+    <button id="btn-mount" @onclick="() => _mounted = true">Mount</button>
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<p>Clicks: <span id="click-log">@string.Join("|", _clicks)</span></p>
+
+<E2EStatus />
+
+@code {
+    private static readonly string[] Apis = ["items", "custom", "options"];
+
+    /// <summary>
+    /// One entry of a timeline, written once and turned into the item of each API.
+    /// </summary>
+    public record Entry(string Primary, string? Secondary = null)
+    {
+        public string? IconName { get; init; }
+        public BitIconInfo? Icon { get; init; }
+        public BitColor? Color { get; init; }
+        public BitSize? Size { get; init; }
+        public BitVariant? Variant { get; init; }
+        public BitLineStyle? LineStyle { get; init; }
+        public bool IsDisabled { get; init; }
+        public bool Reversed { get; init; }
+        public bool HideDot { get; init; }
+        public string? Class { get; init; }
+        public string? Style { get; init; }
+        public string? Title { get; init; }
+        public string? AriaLabel { get; init; }
+        public string? Key { get; init; }
+        public bool Clickable { get; init; }
+        public bool PrimaryContent { get; init; }
+        public bool SecondaryContent { get; init; }
+        public bool DotTemplate { get; init; }
+        public bool Template { get; init; }
+    }
+
+    /// <summary>
+    /// The model of the custom API: nothing in it is named the way BitTimelineItem names it.
+    /// </summary>
+    public class Milestone
+    {
+        public string? Label { get; set; }
+        public string? Details { get; set; }
+        public string? Glyph { get; set; }
+        public BitIconInfo? Symbol { get; set; }
+        public BitColor? Tone { get; set; }
+        public BitSize? Scale { get; set; }
+        public BitVariant? Look { get; set; }
+        public BitLineStyle? Stroke { get; set; }
+        public bool Off { get; set; }
+        public bool Flip { get; set; }
+        public bool NoDot { get; set; }
+        public string? Css { get; set; }
+        public string? Inline { get; set; }
+        public string? Tip { get; set; }
+        public string? Spoken { get; set; }
+        public string? Ident { get; set; }
+        public Action<Milestone>? Clicked { get; set; }
+        public RenderFragment<Milestone>? Before { get; set; }
+        public RenderFragment<Milestone>? After { get; set; }
+        public RenderFragment<Milestone>? Marker { get; set; }
+        public RenderFragment<Milestone>? Whole { get; set; }
+    }
+
+    // Half of the members read by Name, the other half by Selector, so both ways of the NameSelectors are driven.
+    private readonly BitTimelineNameSelectors<Milestone> _nameSelectors = new()
+    {
+        PrimaryText = { Name = nameof(Milestone.Label) },
+        SecondaryText = { Selector = m => m.Details },
+        IconName = { Name = nameof(Milestone.Glyph) },
+        Icon = { Selector = m => m.Symbol },
+        Color = { Name = nameof(Milestone.Tone) },
+        Size = { Selector = m => m.Scale },
+        Variant = { Name = nameof(Milestone.Look) },
+        LineStyle = { Selector = m => m.Stroke },
+        IsDisabled = { Name = nameof(Milestone.Off) },
+        Reversed = { Selector = m => m.Flip },
+        HideDot = { Name = nameof(Milestone.NoDot) },
+        Class = { Selector = m => m.Css },
+        Style = { Name = nameof(Milestone.Inline) },
+        Title = { Selector = m => m.Tip },
+        AriaLabel = { Name = nameof(Milestone.Spoken) },
+        Key = { Selector = m => m.Ident },
+        OnClick = { Name = nameof(Milestone.Clicked) },
+        PrimaryContent = { Selector = m => m.Before },
+        SecondaryContent = { Name = nameof(Milestone.After) },
+        DotTemplate = { Selector = m => m.Marker },
+        Template = { Name = nameof(Milestone.Whole) },
+    };
+
+    private static readonly List<Entry> Basic3 = [new("P1"), new("P2", "S2"), new("P3")];
+    private static readonly List<Entry> DisabledItems = [new("P1"), new("P2", "S2") { IsDisabled = true }, new("P3")];
+    private static readonly List<Entry> Icons = [new("P1") { IconName = "Accept" }, new("P2", "S2") { IconName = "Edit" }, new("P3") { IconName = "Delete" }];
+    private static readonly List<Entry> TwoSided = [new("A1", "B1"), new("A2", "B2"), new("A3", "B3"), new("A4", "B4")];
+    private static readonly List<Entry> ItemReversed = [new("A1", "B1"), new("A2", "B2") { Reversed = true }, new("A3", "B3")];
+    private static readonly List<Entry> LineItems = [new("P1") { LineStyle = BitLineStyle.Dashed }, new("P2") { LineStyle = BitLineStyle.Dotted }, new("P3") { LineStyle = BitLineStyle.Solid }];
+    private static readonly List<Entry> Tall = [new("T1", "S1") { Style = "min-height: 120px" }, new("T2", "S2") { Style = "min-height: 120px" }];
+    private static readonly List<Entry> Customized =
+    [
+        new("Colored") { Color = BitColor.Error, IconName = "Accept" },
+        new("Large") { Size = BitSize.Large, IconName = "Accept" },
+        new("Outline") { Variant = BitVariant.Outline, IconName = "Accept" },
+        new("No dot") { HideDot = true },
+        new("Plain"),
+    ];
+    private static readonly List<Entry> Templates =
+    [
+        new("T1", "S1") { PrimaryContent = true, SecondaryContent = true },
+        new("T2", "S2") { DotTemplate = true },
+        new("T3") { Template = true },
+    ];
+    private static readonly List<Entry> Clickable = [new("C1") { Clickable = true, IconName = "Accept" }, new("C2") { Clickable = true, IsDisabled = true }, new("C3")];
+    private static readonly List<Entry> Accessible =
+    [
+        new("P1") { AriaLabel = "First milestone", Title = "Tip 1" },
+        new("P2") { Clickable = true, AriaLabel = "Clickable milestone", Title = "Tip 2" },
+        new("P3") { IconName = "Accept" },
+    ];
+    private static readonly List<Entry> External = [new("P1") { Icon = BitIconInfo.Css("tl-ext-icon tl-ext-name"), IconName = "Accept" }, new("P2") { IconName = "Edit" }];
+    private static readonly List<Entry> Styled = [new("P1", "S1") { Class = "tl-entry-class", Style = "background-color: rgb(250, 250, 210)", IconName = "Accept" }, new("P2", "S2") { IconName = "Edit" }];
+    private static readonly List<Entry> Variants =
+    [
+        new("Fill") { Variant = BitVariant.Fill, IconName = "Accept" },
+        new("Outline") { Variant = BitVariant.Outline, IconName = "Accept" },
+        new("Text") { Variant = BitVariant.Text, IconName = "Accept" },
+        new("Disabled fill") { Variant = BitVariant.Fill, IconName = "Accept", IsDisabled = true },
+    ];
+
+    private static readonly Dictionary<BitColor, IReadOnlyList<Entry>> ItemColors =
+        Enum.GetValues<BitColor>().ToDictionary(c => c, c => (IReadOnlyList<Entry>)[new("Item color") { Color = c, IconName = "Accept" }]);
+
+    private readonly List<string> _clicks = [];
+    private bool _swapped;
+    private int _optionCount = 2;
+    private bool _runtimeHorizontal;
+    private bool _mounted = true;
+
+    private readonly BitTimelineParams[] _timelineParams =
+    [
+        new() { Horizontal = true, Color = BitColor.Success, Variant = BitVariant.Outline, TruncateLine = BitTimelineTruncateLine.Both }
+    ];
+
+    // The items of the two list APIs are built once per timeline, so a re-render of the page hands a timeline the
+    // very same items rather than a new set.
+    private readonly Dictionary<(string, IReadOnlyList<Entry>), object> _built = [];
+
+    private static Dictionary<string, object?> P(params (string Name, object? Value)[] parameters)
+    {
+        return parameters.ToDictionary(p => p.Name, p => p.Value);
+    }
+
+    private void Log(string id, string? text)
+    {
+        _clicks.Add($"{id}:{text}");
+    }
+
+    private static RenderFragment<T> Frag<T>(string element, string cls, Func<T, string?> text) => item => builder =>
+    {
+        builder.OpenElement(0, element);
+        builder.AddAttribute(1, "class", cls);
+        builder.AddContent(2, text(item));
+        builder.CloseElement();
+    };
+
+    private BitTimelineItem ToItem(string id, Entry e) => new()
+    {
+        PrimaryText = e.Primary,
+        SecondaryText = e.Secondary,
+        IconName = e.IconName,
+        Icon = e.Icon,
+        Color = e.Color,
+        Size = e.Size,
+        Variant = e.Variant,
+        LineStyle = e.LineStyle,
+        IsDisabled = e.IsDisabled,
+        Reversed = e.Reversed,
+        HideDot = e.HideDot,
+        Class = e.Class,
+        Style = e.Style,
+        Title = e.Title,
+        AriaLabel = e.AriaLabel,
+        Key = e.Key,
+        OnClick = e.Clickable ? i => { Log(id, i.PrimaryText); InvokeAsync(StateHasChanged); } : null,
+        PrimaryContent = e.PrimaryContent ? Frag<BitTimelineItem>("b", "tl-pc", i => $"{i.PrimaryText} content") : null,
+        SecondaryContent = e.SecondaryContent ? Frag<BitTimelineItem>("i", "tl-sc", i => $"{i.SecondaryText} content") : null,
+        DotTemplate = e.DotTemplate ? Frag<BitTimelineItem>("span", "tl-dot", _ => "*") : null,
+        Template = e.Template ? Frag<BitTimelineItem>("div", "tl-whole", i => $"whole {i.PrimaryText}") : null,
+    };
+
+    private Milestone ToMilestone(string id, Entry e) => new()
+    {
+        Label = e.Primary,
+        Details = e.Secondary,
+        Glyph = e.IconName,
+        Symbol = e.Icon,
+        Tone = e.Color,
+        Scale = e.Size,
+        Look = e.Variant,
+        Stroke = e.LineStyle,
+        Off = e.IsDisabled,
+        Flip = e.Reversed,
+        NoDot = e.HideDot,
+        Css = e.Class,
+        Inline = e.Style,
+        Tip = e.Title,
+        Spoken = e.AriaLabel,
+        Ident = e.Key,
+        Clicked = e.Clickable ? m => { Log(id, m.Label); InvokeAsync(StateHasChanged); } : null,
+        Before = e.PrimaryContent ? Frag<Milestone>("b", "tl-pc", m => $"{m.Label} content") : null,
+        After = e.SecondaryContent ? Frag<Milestone>("i", "tl-sc", m => $"{m.Details} content") : null,
+        Marker = e.DotTemplate ? Frag<Milestone>("span", "tl-dot", _ => "*") : null,
+        Whole = e.Template ? Frag<Milestone>("div", "tl-whole", m => $"whole {m.Label}") : null,
+    };
+
+    private RenderFragment Tl(string api, string name, IReadOnlyList<Entry> entries, Dictionary<string, object?>? parameters = null,
+                              bool itemTemplate = false, bool dotTemplate = false, bool onItemClick = false, bool optionsParameter = false) => builder =>
+    {
+        var id = $"{api}-{name}";
+
+        switch (api)
+        {
+            case "items":
+            {
+                if (_built.TryGetValue((id, entries), out var built) is false)
+                {
+                    built = entries.Select(e => ToItem(id, e)).ToList();
+                    _built[(id, entries)] = built;
+                }
+
+                builder.OpenComponent<BitTimeline<BitTimelineItem>>(0);
+                builder.AddComponentParameter(1, "Id", id);
+                builder.AddComponentParameter(2, "Items", built);
+                if (itemTemplate) builder.AddComponentParameter(3, "ItemTemplate", Frag<BitTimelineItem>("div", "tl-item-template", i => $"item {i.PrimaryText}"));
+                if (dotTemplate) builder.AddComponentParameter(4, "DotTemplate", Frag<BitTimelineItem>("span", "tl-tdot", _ => "o"));
+                if (onItemClick) builder.AddComponentParameter(5, "OnItemClick", EventCallback.Factory.Create<BitTimelineItem>(this, i => Log($"{id}/timeline", i.PrimaryText)));
+                AddParameters(builder, parameters);
+                builder.CloseComponent();
+                break;
+            }
+            case "custom":
+            {
+                if (_built.TryGetValue((id, entries), out var built) is false)
+                {
+                    built = entries.Select(e => ToMilestone(id, e)).ToList();
+                    _built[(id, entries)] = built;
+                }
+
+                builder.OpenComponent<BitTimeline<Milestone>>(10);
+                builder.AddComponentParameter(11, "Id", id);
+                builder.AddComponentParameter(12, "Items", built);
+                builder.AddComponentParameter(13, "NameSelectors", _nameSelectors);
+                if (itemTemplate) builder.AddComponentParameter(14, "ItemTemplate", Frag<Milestone>("div", "tl-item-template", m => $"item {m.Label}"));
+                if (dotTemplate) builder.AddComponentParameter(15, "DotTemplate", Frag<Milestone>("span", "tl-tdot", _ => "o"));
+                if (onItemClick) builder.AddComponentParameter(16, "OnItemClick", EventCallback.Factory.Create<Milestone>(this, m => Log($"{id}/timeline", m.Label)));
+                AddParameters(builder, parameters);
+                builder.CloseComponent();
+                break;
+            }
+            default:
+            {
+                builder.OpenComponent<BitTimeline<BitTimelineOption>>(20);
+                builder.AddComponentParameter(21, "Id", id);
+                if (itemTemplate) builder.AddComponentParameter(22, "ItemTemplate", Frag<BitTimelineOption>("div", "tl-item-template", o => $"item {o.PrimaryText}"));
+                if (dotTemplate) builder.AddComponentParameter(23, "DotTemplate", Frag<BitTimelineOption>("span", "tl-tdot", _ => "o"));
+                if (onItemClick) builder.AddComponentParameter(24, "OnItemClick", EventCallback.Factory.Create<BitTimelineOption>(this, o => Log($"{id}/timeline", o.PrimaryText)));
+                AddParameters(builder, parameters);
+                builder.AddComponentParameter(25, optionsParameter ? "Options" : "ChildContent", (RenderFragment)(options =>
+                {
+                    foreach (var e in entries)
+                    {
+                        options.OpenComponent<BitTimelineOption>(0);
+                        options.SetKey(e);
+                        options.AddComponentParameter(1, "PrimaryText", e.Primary);
+                        options.AddComponentParameter(2, "SecondaryText", e.Secondary);
+                        options.AddComponentParameter(3, "IconName", e.IconName);
+                        options.AddComponentParameter(4, "Icon", e.Icon);
+                        options.AddComponentParameter(5, "Color", e.Color);
+                        options.AddComponentParameter(6, "Size", e.Size);
+                        options.AddComponentParameter(7, "Variant", e.Variant);
+                        options.AddComponentParameter(8, "LineStyle", e.LineStyle);
+                        options.AddComponentParameter(9, "IsDisabled", e.IsDisabled);
+                        options.AddComponentParameter(10, "Reversed", e.Reversed);
+                        options.AddComponentParameter(11, "HideDot", e.HideDot);
+                        options.AddComponentParameter(12, "Class", e.Class);
+                        options.AddComponentParameter(13, "Style", e.Style);
+                        options.AddComponentParameter(14, "Title", e.Title);
+                        options.AddComponentParameter(15, "AriaLabel", e.AriaLabel);
+                        options.AddComponentParameter(16, "Key", e.Key);
+                        if (e.Clickable) options.AddComponentParameter(17, "OnClick", EventCallback.Factory.Create<BitTimelineOption>(this, o => Log(id, o.PrimaryText)));
+                        if (e.PrimaryContent) options.AddComponentParameter(18, "PrimaryContent", Frag<BitTimelineOption>("b", "tl-pc", o => $"{o.PrimaryText} content"));
+                        if (e.SecondaryContent) options.AddComponentParameter(19, "SecondaryContent", Frag<BitTimelineOption>("i", "tl-sc", o => $"{o.SecondaryText} content"));
+                        if (e.DotTemplate) options.AddComponentParameter(20, "DotTemplate", Frag<BitTimelineOption>("span", "tl-dot", _ => "*"));
+                        if (e.Template) options.AddComponentParameter(21, "Template", Frag<BitTimelineOption>("div", "tl-whole", o => $"whole {o.PrimaryText}"));
+                        options.CloseComponent();
+                    }
+                }));
+                builder.CloseComponent();
+                break;
+            }
+        }
+    };
+
+    private static void AddParameters(RenderTreeBuilder builder, Dictionary<string, object?>? parameters)
+    {
+        if (parameters is null) return;
+
+        foreach (var (name, value) in parameters)
+        {
+            builder.AddComponentParameter(30, name, value);
+        }
+    }
+}

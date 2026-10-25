@@ -1,0 +1,56 @@
+﻿@*
+    A live sample, in the site kit's bb-demo frame: a title bar naming it (with the "Show code"
+    toggle at its end when the sample has a listing), a line on what to try, the sample itself and,
+    when asked for, its source. The content is rendered straight into the frame rather than into a
+    wrapper, so the frame's own spacing rules reach the sample's last element.
+*@
+<div class="bb-demo">
+    <div class="bb-demo-bar">
+        @* The hairline between "Live" and the title is drawn, not written; the hidden separator is
+           what keeps a screen reader and copied text from running the two together ("LiveCounter"). *@
+        <span class="bb-demo-label">Live<span class="bb-visually-hidden">: </span><span class="demo-card-title">@Title</span></span>
+        @if (!string.IsNullOrEmpty(Source))
+        {
+            <button type="button" class="btn btn-secondary" aria-expanded="@(_showSource ? "true" : "false")"
+                    @onclick="() => _showSource = !_showSource">
+                @(_showSource ? "Hide code" : "Show code")
+            </button>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <p class="bb-card-desc">@Description</p>
+    }
+
+    @ChildContent
+
+    @if (_showSource && !string.IsNullOrEmpty(Source))
+    {
+        <CodeBlock Code="@Source" Language="@SourceLanguage" />
+    }
+</div>
+
+@code {
+    private bool _showSource;
+
+    /// <summary>Short name for the demo.</summary>
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    /// <summary>One-line explanation of what to try.</summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>The interactive content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Optional source listing revealed by the "Show code" toggle.</summary>
+    [Parameter] public string? Source { get; set; }
+
+    /// <summary>Language of <see cref="Source"/>.</summary>
+    [Parameter] public string SourceLanguage { get; set; } = "csharp";
+
+    /// <summary>Whether the source starts expanded.</summary>
+    [Parameter] public bool SourceExpanded { get; set; }
+
+    protected override void OnInitialized() => _showSource = SourceExpanded;
+}

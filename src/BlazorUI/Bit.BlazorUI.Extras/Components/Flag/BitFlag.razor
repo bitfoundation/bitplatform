@@ -8,12 +8,12 @@
         and a null one takes it off the element altogether. Everything the flag decides below therefore
         has to read what came in with the attributes and write it back, or setting it that way would
         stop working. *@
-    var splattedRole = HtmlAttributes.TryGetValue("role", out var srl) ? srl?.ToString() : null;
-    var splattedTitle = HtmlAttributes.TryGetValue("title", out var stl) ? stl?.ToString() : null;
-    var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
-    var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
-    var splattedHidden = HtmlAttributes.TryGetValue("aria-hidden", out var shd) ? shd?.ToString() : null;
-    var splattedDisabled = HtmlAttributes.TryGetValue("aria-disabled", out var sdd) ? sdd?.ToString() : null;
+    var splattedRole = GetSplattedAttribute("role");
+    var splattedTitle = GetSplattedAttribute("title");
+    var splattedLabel = GetSplattedAttribute("aria-label");
+    var splattedTabIndex = GetSplattedAttribute("tabindex");
+    var splattedHidden = GetSplattedAttribute("aria-hidden");
+    var splattedDisabled = GetSplattedAttribute("aria-disabled");
 
     var title = Title ?? (AutoTitle ? _country?.Name : null) ?? splattedTitle;
 
@@ -30,7 +30,7 @@
         as one written here does, so a flag carrying one is not the decorative flag that is left out of
         the accessibility tree. It names the element it is written on, which is the frame, so the frame
         is what takes the img role for it while the picture inside keeps the empty alt of a decoration. *@
-    var labelledBy = HtmlAttributes.ContainsKey("aria-labelledby");
+    var labelledBy = HasSplattedAttribute("aria-labelledby");
     var named = name.HasValue() || labelledBy;
 
     @*  Which element carries the name depends on what is drawn. An image carries it in its own alt,
@@ -63,36 +63,45 @@
         accessibility tree altogether - unless the page said otherwise in the attributes, which is left
         exactly as it was given. *@
     var hidden = imageMode is false && interactive is false && named is false
-              && HtmlAttributes.ContainsKey("aria-hidden") is false;
+              && HasSplattedAttribute("aria-hidden") is false;
     var ariaHidden = hidden ? "true" : splattedHidden;
 
     @*  A flag with a handler is a tab stop; a disabled one leaves the tab order but stays in the
         document, so whatever pointed at it still has something to point at. Everywhere else the tab
         index is whatever was asked for and nothing more - a flag is not focusable by itself. *@
     var tabIndex = TabIndex ?? splattedTabIndex;
-    var rootTabIndex = interactive ? (IsEnabled ? (tabIndex ?? "0") : "-1") : tabIndex;
+    var rootTabIndex = interactive ? (Disabled ? "-1" : (tabIndex ?? "0")) : tabIndex;
 
-    var ariaDisabled = interactive && IsEnabled is false ? "true" : splattedDisabled;
+    var ariaDisabled = interactive && Disabled ? "true" : splattedDisabled;
 
-    @*  Nothing is listening on a flag that does nothing: an empty handler still costs a round trip to
-        the server on every click and every keystroke of a Blazor Server app. *@
-    var onClick = interactive ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick) : default;
-    var onKeyDown = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyDown) : default;
-    var onKeyUp = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyUp) : default;
-    var onBlur = interactive ? EventCallback.Factory.Create<FocusEventArgs>(this, HandleOnBlur) : default;
+    @*  Nothing of the flag's own is listening on a flag that does nothing: an empty handler still costs a
+        round trip to the server on every click and every keystroke of a Blazor Server app. Nor would an
+        empty one leave the page's own handler alone: written after the splat, it takes the splatted one
+        off the element, so the page's handler would never run. A flag with no click of its own therefore
+        writes back whatever the page splatted on it instead - read from the disabled-aware splat, so a
+        disabled flag still has none of the page's activation handlers to write back. *@
+    TryFindAttribute(DisabledAwareHtmlAttributes, "onclick", out var splattedOnClick);
+    TryFindAttribute(DisabledAwareHtmlAttributes, "onkeydown", out var splattedOnKeyDown);
+    TryFindAttribute(DisabledAwareHtmlAttributes, "onkeyup", out var splattedOnKeyUp);
+    TryFindAttribute(DisabledAwareHtmlAttributes, "onblur", out var splattedOnBlur);
+    object? onClick = interactive ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick) : splattedOnClick;
+    object? onKeyDown = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyDown) : splattedOnKeyDown;
+    object? onKeyUp = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyUp) : splattedOnKeyUp;
+    object? onBlur = interactive ? EventCallback.Factory.Create<FocusEventArgs>(this, HandleOnBlur) : splattedOnBlur;
 
     @*  The two the picture is given that are defaults rather than decisions of the flag's: a flag is
         not dragged out of the page it is read in, and it is decoded off the main thread because a list
         of two hundred of them is what this renders. Both are read back out of the image attributes so
         that a page saying otherwise is not overwritten by the value written after the splat. *@
-    var splattedDraggable = ImageAttributes.TryGetValue("draggable", out var sdg) ? sdg?.ToString() : null;
-    var splattedDecoding = ImageAttributes.TryGetValue("decoding", out var sdc) ? sdc?.ToString() : null;
+    var splattedDraggable = GetImageAttribute("draggable");
+    var splattedDecoding = GetImageAttribute("decoding");
 
     @*  The srcset of the picture. An image of a set carries its own; a srcset of the page's own goes with
-        the Src of the page's own only, since the packaged flag standing in for a failed one - or asked
-        for in the first place - would otherwise never be drawn over it. *@
-    var splattedSrcSet = ImageAttributes.TryGetValue("srcset", out var sss) ? sss?.ToString() : null;
-    var srcSet = _srcSet ?? (Src.HasValue() && _hasError is false ? splattedSrcSet : null);
+        an image of the page's own only - a Src, or one written out of a SrcPattern - since the packaged
+        flag standing in for a failed one - or asked for in the first place - would otherwise never be
+        drawn over it. *@
+    var splattedSrcSet = GetImageAttribute("srcset");
+    var srcSet = _srcSet ?? (_drawsOwnSrc && _hasError is false ? splattedSrcSet : null);
 
     @*  The error is the flag's own business - it is what moves the picture on to the packaged flag and
         then to the fallback - so that one is always listened for. The load is nobody's unless the page
@@ -106,7 +115,7 @@
     circular shapes crop the flag rather than only round the corners of the box around it. It is also
     what a click lands on, so the flag stays one target whether it is drawn as an image, as an emoji or
     as a fallback of the page's own. *@
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      role="@role"
      title="@title"
@@ -117,10 +126,10 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLowerInvariant()"
-     @onclick="onClick"
-     @onkeydown="onKeyDown"
-     @onkeyup="onKeyUp"
-     @onblur="onBlur">
+     onclick="@onClick"
+     onkeydown="@onKeyDown"
+     onkeyup="@onKeyUp"
+     onblur="@onBlur">
     @if (emojiMode)
     {
         <span aria-hidden="true"
@@ -132,7 +141,7 @@
         @*  The attributes of the page's own are splatted in first, so everything written after them
             wins: the flag would otherwise stop being able to say what it draws or how it is named.
             The two it only defaults are read back out of them above. *@
-        <img @attributes="ImageAttributes"
+        <img @attributes="_imageAttributes"
              src="@_src"
              srcset="@srcSet"
              alt="@alt"

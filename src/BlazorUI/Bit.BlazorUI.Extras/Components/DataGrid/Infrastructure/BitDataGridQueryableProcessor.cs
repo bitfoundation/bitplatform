@@ -1,4 +1,6 @@
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Bit.BlazorUI;
 
@@ -12,7 +14,7 @@ namespace Bit.BlazorUI;
 public static class BitDataGridQueryableProcessor
 {
     /// <summary>Applies the active filters then sorts onto the queryable (no paging).</summary>
-    public static IQueryable<TItem> Apply<TItem>(
+    public static IQueryable<TItem> Apply<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IQueryable<TItem> source,
         IReadOnlyList<BitDataGridFilterDescriptor> filters,
         IReadOnlyList<BitDataGridSortDescriptor> sorts,
@@ -20,7 +22,7 @@ public static class BitDataGridQueryableProcessor
         => ApplySorts(ApplyFilters(source, filters, columns), sorts, columns);
 
     /// <summary>Applies the quick-search term, then the filters and sorts, onto the queryable.</summary>
-    public static IQueryable<TItem> Apply<TItem>(
+    public static IQueryable<TItem> Apply<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IQueryable<TItem> source,
         string? search,
         IReadOnlyList<BitDataGridFilterDescriptor> filters,
@@ -38,7 +40,7 @@ public static class BitDataGridQueryableProcessor
     /// nothing a term could ever match, so it matches no row - the same contract as
     /// <see cref="BitDataGridDataProcessor.Search"/> over an in-memory source.
     /// </summary>
-    public static IQueryable<TItem> ApplySearch<TItem>(
+    public static IQueryable<TItem> ApplySearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IQueryable<TItem> source,
         string? search,
         IEnumerable<BitDataGridColumn<TItem>> columns)
@@ -94,7 +96,7 @@ public static class BitDataGridQueryableProcessor
             => ReferenceEquals(node, _from) ? _to : base.VisitParameter(node);
     }
 
-    public static IQueryable<TItem> ApplyFilters<TItem>(
+    public static IQueryable<TItem> ApplyFilters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IQueryable<TItem> source,
         IReadOnlyList<BitDataGridFilterDescriptor> filters,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
@@ -110,7 +112,7 @@ public static class BitDataGridQueryableProcessor
         return source;
     }
 
-    public static IQueryable<TItem> ApplySorts<TItem>(
+    public static IQueryable<TItem> ApplySorts<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IQueryable<TItem> source,
         IReadOnlyList<BitDataGridSortDescriptor> sorts,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
@@ -141,7 +143,7 @@ public static class BitDataGridQueryableProcessor
     /// Builds a translatable predicate for one filter descriptor, or <c>null</c> when the filter
     /// carries no criteria (empty value) or cannot be expressed for the member's type.
     /// </summary>
-    private static Expression<Func<TItem, bool>>? BuildPredicate<TItem>(
+    private static Expression<Func<TItem, bool>>? BuildPredicate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         BitDataGridPropertyAccessor<TItem> accessor, BitDataGridFilterDescriptor filter)
     {
         var lambda = accessor.PropertyLambda;
@@ -156,10 +158,81 @@ public static class BitDataGridQueryableProcessor
             BitDataGridFilterOperator.Contains or BitDataGridFilterOperator.DoesNotContain
                 or BitDataGridFilterOperator.StartsWith or BitDataGridFilterOperator.EndsWith
                 => BuildStringMatch(member, filter),
+            BitDataGridFilterOperator.In => BuildSetMatch(accessor, member, filter, negate: false),
+            BitDataGridFilterOperator.NotIn => BuildSetMatch(accessor, member, filter, negate: true),
             _ => BuildComparison(accessor, member, filter),
         };
 
         return body is null ? null : Expression.Lambda<Func<TItem, bool>>(body, param);
+    }
+
+    /// <summary>
+    /// Translates a set operand into one <c>Enumerable.Contains</c> over a typed array (SQL <c>IN</c>),
+    /// or - for a DateTime/DateTimeOffset member, whose midnight members mean a whole day - into an OR
+    /// of the same per-member equalities a single <see cref="BitDataGridFilterOperator.Equals"/> builds.
+    /// Members that cannot be coerced to the member type are dropped; a set left empty applies no filter.
+    /// </summary>
+    private static Expression? BuildSetMatch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
+        BitDataGridPropertyAccessor<TItem> accessor, Expression member, BitDataGridFilterDescriptor filter, bool negate)
+    {
+        if (!BitDataGridDataProcessor.TryGetSetMembers(filter.Value, out var members) || members.Count == 0) return null;
+
+        var underlying = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
+        var nullable = !member.Type.IsValueType || member.Type != underlying;
+
+        Expression? body;
+        if (underlying == typeof(DateTime) || underlying == typeof(DateTimeOffset))
+        {
+            body = null;
+            foreach (var m in members)
+            {
+                var eq = BuildComparison(accessor, member, new BitDataGridFilterDescriptor { ColumnId = filter.ColumnId, Operator = BitDataGridFilterOperator.Equals, Value = m });
+                if (eq is null) continue;
+                body = body is null ? eq : Expression.OrElse(body, eq);
+            }
+        }
+        else
+        {
+            var values = new List<object?>(members.Count);
+            foreach (var m in members)
+            {
+                if (m is null)
+                {
+                    if (nullable) values.Add(null);
+                    continue;
+                }
+                if (accessor.TryConvertValue(m, out var converted) && converted is not null) values.Add(converted);
+            }
+            if (values.Count == 0)
+            {
+                body = null;
+            }
+            else if (member.Type == typeof(string))
+            {
+                // Case-insensitive like the in-memory pipeline (BitDataGridValueComparer) and BuildStringMatch:
+                // both sides are lowered with the same culture-aware ToLower(), and a null row value is matched
+                // separately since ToLower() cannot be called on it.
+                var toLower = typeof(string).GetMethod(nameof(string.ToLower), Type.EmptyTypes)!;
+                var lowered = values.OfType<string>().Select(v => v.ToLower()).Distinct().ToArray();
+                var isNull = Expression.Equal(member, Expression.Constant(null, typeof(string)));
+                Expression? match = lowered.Length == 0 ? null : Expression.AndAlso(Expression.Not(isNull),
+                    Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(string)],
+                        Expression.Constant(lowered, typeof(string[])), Expression.Call(member, toLower)));
+                body = values.Contains(null)
+                    ? (match is null ? isNull : Expression.OrElse(isNull, match))
+                    : match;
+            }
+            else
+            {
+                var array = Array.CreateInstance(member.Type, values.Count);
+                for (int i = 0; i < values.Count; i++) array.SetValue(values[i], i);
+                body = Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [member.Type],
+                    Expression.Constant(array, array.GetType()), member);
+            }
+        }
+
+        if (body is null) return null;
+        return negate ? Expression.Not(body) : body;
     }
 
     private static Expression? BuildEmptiness(Expression member, bool negate)
@@ -211,7 +284,7 @@ public static class BitDataGridQueryableProcessor
             : Expression.AndAlso(Expression.Not(isNull), match);
     }
 
-    private static Expression? BuildComparison<TItem>(
+    private static Expression? BuildComparison<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         BitDataGridPropertyAccessor<TItem> accessor, Expression member, BitDataGridFilterDescriptor filter)
     {
         if (filter.Value is string s && string.IsNullOrWhiteSpace(s)) return null;
@@ -264,6 +337,13 @@ public static class BitDataGridQueryableProcessor
         }
     }
 
+    private static readonly PropertyInfo DateTimeDate = typeof(DateTime).GetProperty(nameof(DateTime.Date))!;
+    private static readonly PropertyInfo DateTimeOffsetDate = typeof(DateTimeOffset).GetProperty(nameof(DateTimeOffset.Date))!;
+    private static readonly PropertyInfo NullableDateTimeValue = typeof(DateTime?).GetProperty(nameof(Nullable<DateTime>.Value))!;
+    private static readonly PropertyInfo NullableDateTimeHasValue = typeof(DateTime?).GetProperty(nameof(Nullable<DateTime>.HasValue))!;
+    private static readonly PropertyInfo NullableDateTimeOffsetValue = typeof(DateTimeOffset?).GetProperty(nameof(Nullable<DateTimeOffset>.Value))!;
+    private static readonly PropertyInfo NullableDateTimeOffsetHasValue = typeof(DateTimeOffset?).GetProperty(nameof(Nullable<DateTimeOffset>.HasValue))!;
+
     // Builds a calendar-day (in)equality for a DateTime/DateTimeOffset member and a midnight operand,
     // via the .Date property (which LINQ providers translate, e.g. EF Core → CONVERT(date, ...));
     // DateTimeOffset.Date uses the row's own offset, matching the in-memory behavior. Returns null
@@ -282,15 +362,20 @@ public static class BitDataGridQueryableProcessor
         else
             return null;
 
+        // The members are named on the two closed types they can belong to rather than looked up by name on the
+        // member's type, so the trimmer sees which ones are used and keeps them.
+        var isDateTime = underlying == typeof(DateTime);
         var nullable = member.Type != underlying;
-        var valueExpr = nullable ? Expression.Property(member, "Value") : member;
-        var dateExpr = Expression.Property(valueExpr, nameof(DateTime.Date));
+        var valueExpr = nullable
+            ? Expression.Property(member, isDateTime ? NullableDateTimeValue : NullableDateTimeOffsetValue)
+            : member;
+        var dateExpr = Expression.Property(valueExpr, isDateTime ? DateTimeDate : DateTimeOffsetDate);
         var dayConst = Expression.Constant(day, typeof(DateTime));
 
         if (!nullable)
             return negate ? Expression.NotEqual(dateExpr, dayConst) : Expression.Equal(dateExpr, dayConst);
 
-        var hasValue = Expression.Property(member, "HasValue");
+        var hasValue = Expression.Property(member, isDateTime ? NullableDateTimeHasValue : NullableDateTimeOffsetHasValue);
         return negate
             ? Expression.OrElse(Expression.Not(hasValue), Expression.NotEqual(dateExpr, dayConst))
             : Expression.AndAlso(hasValue, Expression.Equal(dateExpr, dayConst));

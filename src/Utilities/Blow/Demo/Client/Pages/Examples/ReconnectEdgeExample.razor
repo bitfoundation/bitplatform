@@ -1,0 +1,155 @@
+﻿@page "/examples/reconnect-edge"
+
+<PageTitle>Reconnect Edge · Blow</PageTitle>
+
+<ExampleScaffold Title="Reconnect Edge"
+                 Summary="A selected edge shows a dot at each end; drag one onto another handle and the edge is rewired in place, keeping its id. OnReconnectStart, OnReconnect and OnReconnectEnd report the gesture - the last one says whether it rewired anything, the usual cue to delete an edge dropped on nothing.">
+    <Toolbar>
+        <label><input type="checkbox" @bind="_reconnectable" /> Edges reconnectable</label>
+        <label>
+            Grab radius
+            <input type="range" min="4" max="40" step="2" value="@_radius"
+                   @oninput="@(e => SetRadius(e.Value))" />
+            <span class="rc-value">@_radius px</span>
+        </label>
+        <label><input type="checkbox" @bind="_showGrabArea" /> Show grab area</label>
+        <label><input type="checkbox" @bind="_deleteDropped" /> Delete an edge dropped on nothing</label>
+        <button class="btn btn-secondary" @onclick="Reset">Reset</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    Class="@(_showGrabArea ? "rc-show-grab" : null)"
+                    EdgesReconnectable="_reconnectable"
+                    ReconnectRadius="_radius"
+                    OnReconnectStart="OnReconnectStart"
+                    OnReconnect="OnReconnect"
+                    OnReconnectEnd="OnReconnectEnd"
+                    OnConnectEnd="OnConnectEnd">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <Footer>
+        @* Under the canvas: a log over it grew across the nodes as the events came in. *@
+        <div class="rc-log-title">Events</div>
+        @if (_log.Count == 0)
+        {
+            <div class="rc-log-empty">Select the edge from A to B and drag one of its end dots onto another handle.</div>
+        }
+        @foreach (var entry in _log)
+        {
+            <div class="rc-log-row">@entry</div>
+        }
+    </Footer>
+    <TryIt>
+        <li><strong>Click</strong> the edge labelled <em>drag my ends</em>: a small dot appears at each end.</li>
+        <li><strong>Drag</strong> the dot at B onto the top dot of C or D: the edge now ends there, and the log shows the start, the new wiring under the same id, and an end that rewired it.</li>
+        <li>With the edge selected, tick <strong>Show grab area</strong> and move <strong>Grab radius</strong>: the shaded circle round each dot is how close the pointer has to come to pick that end up, the same on screen at any zoom.</li>
+        <li><strong>Click</strong> the edge labelled <em>Reconnectable = false</em>: no dots appear, so its ends stay where they are.</li>
+        <li>Drop an end on the empty pane: the edge stays as it was and the log reports an end that did not rewire. Tick <strong>Delete an edge dropped on nothing</strong> first and the edge is removed instead - but press <strong>Escape</strong> in the middle of a drag and it is kept, since giving up is not a drop.</li>
+        <li>Untick <strong>Edges reconnectable</strong>: no edge shows its dots any more.</li>
+        <li>From the keyboard: <strong>Tab</strong> to the edge and press <strong>C</strong> to pick up its target end (<strong>C</strong> again for the source end), <strong>Tab</strong> to another node and press <strong>Enter</strong> to attach it, or <strong>Escape</strong> to give up.</li>
+        <li><strong>Reset</strong> puts both edges back as they started.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>The end dots show on a selected edge when <code>EdgesReconnectable</code> (on by default) and the edge's own <code>Reconnectable</code> (true by default) both allow it; selecting needs <code>ElementsSelectable</code>.</li>
+        <li><code>ReconnectRadius</code> (10 by default) is the radius, in screen pixels, of the invisible circle round each dot that picks it up; the checkbox paints the <code>bit-blow-edge-reconnect-hit</code> circle that draws it.</li>
+        <li><code>OnReconnectStart</code> receives a <code>BlowEdgeReconnectStart</code>: the <code>Edge</code> and its <code>MovingEnd</code>, the end being moved (<code>Source</code> or <code>Target</code>).</li>
+        <li><code>OnReconnect</code> receives a <code>BlowEdgeReconnect</code>: the <code>Edge</code>, already rewired in place with its <code>Id</code> unchanged, and the new <code>Connection</code>.</li>
+        <li><code>OnReconnectEnd</code> receives a <code>BlowEdgeReconnectEnd</code> whichever way the gesture ended: <code>Edge</code>, <code>MovingEnd</code> and <code>Rewired</code>. <code>Rewired</code> is false when the end did not attach - dropped on the pane or on a handle that refuses it, or abandoned with <strong>Escape</strong>.</li>
+        <li><code>OnConnectEnd</code> follows it for the same gesture, with <code>IsReconnect</code> set; its <code>IsDropped</code> is true only for a real drop, so the page deletes an edge that did not rewire only when <code>IsDropped</code> says it was let go on nothing, not when the gesture was cancelled.</li>
+        <li>Every connection rule applies to the moved end as it does to a new connection; dropping it back where it came from is allowed, since the edge does not count as a duplicate of itself.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .rc-value { display: inline-block; min-width: 3rem; text-align: right; }
+    /* The grab circle is drawn transparent; painting it shows how close the pointer has to come. */
+    .rc-show-grab .bit-blow-edge-reconnect-hit { fill: color-mix(in srgb, var(--bit-blow-edge-selected) 20%, transparent); }
+    .rc-log-title { font-weight: 600; margin-bottom: 4px; }
+    .rc-log-empty { color: var(--bb-text-soft); line-height: 1.45; }
+    .rc-log-row { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 0; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private readonly List<string> _log = [];
+    private bool _reconnectable = true;
+    private double _radius = 10;
+    private bool _showGrabArea;
+    private bool _deleteDropped;
+    private BlowEdge? _notRewired;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "a", Type = "input", Label = "A", Position = new(100, 0) },
+            new BlowNode { Id = "b", Label = "B", Position = new(100, 150) },
+            new BlowNode { Id = "c", Label = "C", Position = new(360, 0) },
+            new BlowNode { Id = "d", Type = "output", Label = "D", Position = new(360, 150) },
+        ];
+        Reset();
+    }
+
+    private void Reset()
+    {
+        _edges =
+        [
+            new BlowEdge { Id = "a-b", Source = "a", Target = "b", Label = "drag my ends" },
+            new BlowEdge { Id = "c-d", Source = "c", Target = "d", Label = "Reconnectable = false", Reconnectable = false },
+        ];
+        _log.Clear();
+    }
+
+    private void SetRadius(object? raw)
+    {
+        if (double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var value)) _radius = value;
+    }
+
+    private void OnReconnectStart(BlowEdgeReconnectStart start)
+        => Log($"start: {start.Edge.Id}, moving its {End(start.MovingEnd)} end");
+
+    private void OnReconnect(BlowEdgeReconnect reconnect)
+        => Log($"reconnect: {reconnect.Edge.Id} now runs {NodeName(reconnect.Connection.Source)} → {NodeName(reconnect.Connection.Target)}");
+
+    private void OnReconnectEnd(BlowEdgeReconnectEnd end)
+    {
+        if (end.Rewired)
+        {
+            Log($"end: {end.Edge.Id} rewired");
+            return;
+        }
+
+        // Rewired is false for a drop on nothing and for Escape alike; OnConnectEnd, raised next for the same
+        // gesture, tells the two apart, so the decision waits for it.
+        _notRewired = end.Edge;
+    }
+
+    private void OnConnectEnd(BlowConnectEndInfo info)
+    {
+        if (!info.IsReconnect || _notRewired is not { } edge) return;
+        _notRewired = null;
+
+        if (_deleteDropped && info.IsDropped)
+        {
+            _edges.Remove(edge);
+            Log($"end: {edge.Id} dropped on nothing - deleted");
+        }
+        else
+        {
+            Log($"end: {edge.Id} not rewired ({(info.IsDropped ? "dropped" : "cancelled")}) - left as it was");
+        }
+    }
+
+    private static string End(BlowHandleType end) => end == BlowHandleType.Source ? "source" : "target";
+
+    private string NodeName(string? id) => _nodes.Find(n => n.Id == id)?.Label ?? id ?? "nothing";
+
+    private void Log(string message)
+    {
+        _log.Insert(0, message);
+        if (_log.Count > 12) _log.RemoveAt(_log.Count - 1);
+    }
+}

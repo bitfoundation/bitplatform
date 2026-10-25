@@ -31,9 +31,9 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     [Parameter] public string? Id { get; set; }
 
     /// <summary>
-    /// Whether the BitChoiceGroup option is enabled.
+    /// Whether the BitChoiceGroup option is disabled.
     /// </summary>
-    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool IsDisabled { get; set; }
 
     /// <summary>
     /// The icon to show as content of the BitChoiceGroup option.
@@ -144,7 +144,7 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     {
         base.OnParametersSet();
 
-        // The parameters of an option (IsEnabled, Value, ...) feed the parent's choice of which input
+        // The parameters of an option (IsDisabled, Value, ...) feed the parent's choice of which input
         // carries the tab stop, and they are applied after the parent's own OnParametersSet has already
         // run, so the memoized target has to be invalidated from here to be recomputed fresh after render.
         Parent?.InvalidateInputTarget();

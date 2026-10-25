@@ -1,0 +1,514 @@
+﻿/* ============================================================================================
+   Belemetry demo - the styles of the live samples.
+
+   The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
+   shares); this file only draws what is this site's own - the syntax highlighter's tokens, the
+   pieces the shared components (Client/Shared/*.razor) add to the kit's markup, the consent banner
+   and the live telemetry feed - and it is written against the kit's --bb-* names, so it follows the
+   light/dark theme with no rules of its own for either. Bit.Belemetry itself ships no stylesheet.
+   ============================================================================================ */
+
+/* ---------- Colors the kit has no token for ----------
+
+   The highlighter tells more kinds apart than the kit's four code colors, and the feed tells three
+   sources and four kinds of record apart. Each extra color is picked to hold its contrast on its
+   surface in both themes. */
+:root {
+    --demo-code-type: #8250DF;
+    --demo-code-number: #CF222E;
+    --demo-code-razor: #A21CAF;
+    --demo-violet: #8250DF;
+    --demo-violet-soft: color-mix(in srgb, #8250DF 12%, transparent);
+}
+
+:root[bit-theme="dark"] {
+    --demo-code-type: #D2A8FF;
+    --demo-code-number: #FF7B72;
+    --demo-code-razor: #F0ABFC;
+    --demo-violet: #D2A8FF;
+    --demo-violet-soft: color-mix(in srgb, #D2A8FF 16%, transparent);
+}
+
+/* ---------- Code: SyntaxHighlighter's tokens on the kit's code surface ---------- */
+
+.bb-code .tok-com { color: var(--bb-code-comment); font-style: italic; }
+.bb-code .tok-tag,
+.bb-code .tok-key { color: var(--bb-code-keyword); }
+.bb-code .tok-attr { color: var(--bb-code-param); }
+.bb-code .tok-str { color: var(--bb-code-string); }
+.bb-code .tok-type { color: var(--demo-code-type); }
+.bb-code .tok-num { color: var(--demo-code-number); }
+.bb-code .tok-raz { color: var(--demo-code-razor); font-weight: var(--fl-weight-semibold); }
+
+/* The lines that use a Belemetry component (<BelemetryScript />, <BelemetryInitializer />), so they
+   stand out from the markup around them: tinted edge to edge of the block, with the brand's rule
+   down the start. The block's padding is 1rem at the start and 3rem at the end (room for the copy
+   button), which is what the margins reach back out over. */
+.bb-code .hl-line {
+    display: inline-block;
+    min-width: calc(100% + 4rem);
+    margin-inline: -1rem -3rem;
+    padding-inline: 1rem 3rem;
+    background: var(--bb-primary-soft);
+    box-shadow: inset 3px 0 0 var(--bb-primary);
+}
+
+/* ---------- CodeSnippet: the language on its disclosure ---------- */
+
+.demo-snippet-caret {
+    font-size: .75em;
+    color: var(--bb-text-soft);
+}
+
+.demo-snippet-lang {
+    margin-inline-start: .25rem;
+    padding-inline-start: .5rem;
+    border-inline-start: 1px solid var(--bb-border-strong);
+    font-weight: var(--fl-weight-regular);
+    color: var(--bb-text-soft);
+}
+
+/* ---------- ApiTable: the reflected reference of one type ---------- */
+
+.demo-api {
+    margin: 0 0 1.5rem;
+}
+
+.demo-api-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    margin: 0 0 .375rem;
+}
+
+.demo-api-head > code {
+    font-size: var(--fl-font-size-300);
+    font-weight: var(--fl-weight-semibold);
+}
+
+.demo-api-summary,
+.demo-api-loading {
+    max-width: var(--bb-measure);
+    margin: 0 0 .75rem;
+    font-size: var(--fl-font-size-200);
+    line-height: 1.6;
+    color: var(--bb-text-muted);
+}
+
+/* The member and type columns wrap between the words of a signature but never inside one: a member
+   name or a type broken letter by letter cannot be read. The table's own layout then gives the
+   description what is left, and a table that no longer fits scrolls inside its .bb-scroll.
+   Defaults are values, and may still break anywhere. */
+.demo-api-table td:is(:first-child, :nth-child(2)),
+.demo-api-table td:is(:first-child, :nth-child(2)) code {
+    overflow-wrap: normal;
+}
+
+/* The default, under the type it is a value of. */
+.demo-api-default {
+    display: block;
+    margin-top: .25rem;
+    color: var(--bb-text-soft);
+}
+
+.demo-api-table td .demo-api-default code {
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Inside the samples ---------- */
+
+/* The sample's name in its title bar, after the "Live" label and a hairline - usually the API it
+   exercises, or the consent feature it needs. */
+.demo-sample-title {
+    margin-inline-start: .625rem;
+    padding-inline-start: .625rem;
+    border-inline-start: 1px solid var(--bb-border-strong);
+    font-size: var(--fl-font-size-200);
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--bb-text);
+}
+
+/* A caption over one part of a sample - "Per feature", "Groups", "Exporters". */
+.bb-overline.demo-sublabel {
+    margin: 0 0 .5rem;
+}
+
+* + .bb-overline.demo-sublabel {
+    margin-top: 1rem;
+}
+
+/* What a sample's last action did, under its controls. */
+.demo-status {
+    margin: 0 0 1rem;
+    font-size: var(--fl-font-size-200);
+    line-height: 1.6;
+    color: var(--bb-text-muted);
+}
+
+/* A row of tinted readouts: the features in effect, the parameters a list redacts. */
+.demo-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem;
+    margin: 0 0 1rem;
+}
+
+/* A state that is off, next to the tinted badges of states that are on. */
+.bb-badge.demo-badge-off {
+    background: var(--bb-surface-sunken);
+    color: var(--bb-text-muted);
+    box-shadow: inset 0 0 0 1px var(--bb-border);
+}
+
+/* The destructive or deliberately-wrong action in a row - throw, reject, revoke: danger-stroked,
+   never filled, so it reads as "careful" rather than as the thing to press. */
+.btn.demo-btn-danger {
+    background: transparent;
+    color: var(--bb-danger-text);
+    border-color: color-mix(in srgb, var(--bb-danger) 45%, transparent);
+}
+
+.btn.demo-btn-danger:hover {
+    background: var(--bb-danger-soft);
+    border-color: var(--bb-danger);
+    color: var(--bb-danger-text);
+}
+
+/* A text field that takes what is left of its row, beside the button that submits it. */
+.bb-field.demo-field-grow {
+    flex: 1;
+    min-width: min(240px, 100%);
+}
+
+.bb-field.demo-field-grow > input {
+    width: 100%;
+}
+
+.bb-field > :is(input, select) {
+    font-weight: var(--fl-weight-regular);
+}
+
+/* WebKit counts the text of a select's longest option as overflow of the select itself, even after
+   max-width has narrowed the box to its column, so on a phone the page scrolls sideways (the MCP
+   page's Consent field: 27px at 390px). Layout containment turns that into ink overflow, which does
+   not widen the page; the box, its text and its focus border paint exactly as before. */
+.bb-field > select {
+    contain: layout;
+}
+
+.demo-toolbar-label {
+    font-size: var(--fl-font-size-200);
+}
+
+/* The MCP page's review console: code, typed into. The kit gives every textarea a field's chrome;
+   this one is a code editor, so it takes the code surface and the monospace face instead. */
+textarea.demo-code-input {
+    display: block;
+    margin: 0 0 1rem;
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+    line-height: 1.7;
+    tab-size: 4;
+    white-space: pre;
+    color: var(--bb-code-fg);
+    background: var(--bb-code-bg);
+}
+
+/* The landing page's hero sample: a live corner of the site under the code that drives it. */
+.demo-home-live {
+    padding: 1rem;
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border);
+}
+
+.demo-home-live .bb-toolbar {
+    margin-bottom: .75rem;
+}
+
+/* ---------- The consent panel: one tile per feature bit ---------- */
+
+.demo-consent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
+    gap: .5rem;
+    margin: 0 0 1rem;
+}
+
+.demo-consent-feature {
+    display: flex;
+    gap: .625rem;
+    align-items: flex-start;
+    padding: .625rem .75rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    font-size: var(--fl-font-size-200);
+    line-height: 1.45;
+    color: var(--bb-text);
+    cursor: pointer;
+    transition: border-color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                background var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.demo-consent-feature:hover {
+    border-color: var(--bb-border-strong);
+    background: var(--bb-surface-hover);
+}
+
+.demo-consent-feature:has(input:checked) {
+    border-color: color-mix(in srgb, var(--bb-primary) 45%, transparent);
+    background: var(--bb-primary-soft);
+}
+
+.demo-consent-feature:has(input:disabled) {
+    cursor: not-allowed;
+}
+
+.demo-consent-feature input {
+    margin-top: .1875rem;
+}
+
+.demo-consent-feature strong {
+    display: block;
+}
+
+.demo-consent-feature small {
+    display: block;
+    color: var(--bb-text-muted);
+}
+
+/* ---------- The consent banner (Shared/ConsentBanner.razor) ----------
+
+   A Fluent dialog surface pinned to the bottom of the viewport, over the page but under the
+   header, its drawers and the search palette - an open palette is what the reader is using. */
+.demo-consent-banner {
+    position: fixed;
+    z-index: 950;
+    inset-inline: 1rem;
+    bottom: 1rem;
+    max-width: 56rem;
+    margin-inline: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    color: var(--bb-text);
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-inline-start: 3px solid var(--bb-primary);
+    border-radius: var(--bb-radius-xl);
+    box-shadow: var(--bb-shadow-dialog);
+}
+
+.demo-consent-banner-text {
+    flex: 1 1 22rem;
+    min-width: 0;
+}
+
+.demo-consent-banner-text p {
+    margin: .25rem 0 0;
+    font-size: var(--fl-font-size-200);
+    line-height: 1.6;
+    color: var(--bb-text-muted);
+}
+
+.demo-consent-banner-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+@media print {
+    .demo-consent-banner {
+        display: none;
+    }
+}
+
+/* ---------- The live telemetry feed (Shared/TelemetryFeedView.razor) ---------- */
+
+.feed {
+    width: 100%;
+    min-width: 0;
+}
+
+.feed-chip-count {
+    margin-inline-start: .25rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--bb-text-soft);
+}
+
+.feed-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem .75rem;
+    align-items: center;
+    margin: 0 0 .75rem;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-muted);
+}
+
+.feed-dot {
+    width: .5rem;
+    height: .5rem;
+    flex: none;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-success);
+    animation: feed-pulse 1.6s ease-in-out infinite;
+}
+
+.feed-dot.paused {
+    animation: none;
+    background: var(--bb-text-soft);
+}
+
+@keyframes feed-pulse {
+    50% { opacity: .35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .feed-dot { animation: none; }
+}
+
+.feed-warn {
+    color: var(--bb-warning-text);
+}
+
+.bb-empty.feed-empty {
+    margin: 0;
+    padding: 1.25rem 1rem;
+}
+
+.feed-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.feed-row + .feed-row {
+    border-top: 1px solid var(--bb-border);
+}
+
+.feed-row-head {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 6.5rem 4.25rem 3.5rem minmax(0, 1fr) auto;
+    gap: .5rem;
+    align-items: center;
+    padding: .375rem .75rem;
+    font: inherit;
+    font-size: var(--fl-font-size-200);
+    text-align: start;
+    color: var(--bb-text);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.feed-row-head:hover {
+    background: var(--bb-surface-hover);
+}
+
+.feed-row.open > .feed-row-head {
+    background: var(--bb-primary-soft);
+}
+
+.feed-row-head:focus-visible {
+    outline-offset: -2px;
+}
+
+.feed-time {
+    font-family: var(--bb-mono);
+    font-size: .9em;
+    color: var(--bb-text-soft);
+}
+
+.feed-source {
+    font-size: .6875rem;
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.6;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 0 .25rem;
+    border-radius: var(--bb-radius-sm);
+    color: var(--bb-text-muted);
+    background: var(--bb-surface-sunken);
+}
+
+.feed-source.src-browser { color: var(--bb-primary-hover); background: var(--bb-primary-soft); }
+.feed-source.src-wasm { color: var(--demo-violet); background: var(--demo-violet-soft); }
+.feed-source.src-server { color: var(--bb-success-text); background: var(--bb-success-soft); }
+
+.feed-kind {
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text-muted);
+}
+
+.kind-error .feed-kind { color: var(--bb-danger-text); }
+.kind-event .feed-kind { color: var(--bb-primary); }
+.kind-metric .feed-kind { color: var(--demo-violet); }
+
+.feed-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-family: var(--bb-mono);
+    font-size: .9em;
+}
+
+.feed-meta {
+    white-space: nowrap;
+    color: var(--bb-text-soft);
+}
+
+.feed-detail {
+    padding: .75rem;
+    background: var(--bb-bg);
+    border-top: 1px solid var(--bb-border);
+}
+
+.bb-params.feed-ids {
+    margin-bottom: .75rem;
+    box-shadow: none;
+}
+
+.feed-attrs {
+    margin-bottom: .75rem;
+}
+
+.feed-attrs td:first-child {
+    width: 35%;
+}
+
+.feed-resource {
+    font-size: var(--fl-font-size-200);
+}
+
+.feed-resource summary {
+    margin-bottom: .5rem;
+    cursor: pointer;
+    color: var(--bb-text-muted);
+}
+
+.feed-compact .feed-list {
+    max-height: 22rem;
+    overflow-y: auto;
+}
+
+@media (max-width: 40rem) {
+    .feed-row-head {
+        grid-template-columns: 4.25rem 3.5rem minmax(0, 1fr);
+    }
+
+    .feed-time,
+    .feed-meta {
+        display: none;
+    }
+}

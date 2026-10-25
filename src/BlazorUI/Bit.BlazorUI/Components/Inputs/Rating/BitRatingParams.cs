@@ -1,0 +1,341 @@
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
+
+/// <summary>
+/// The parameters for <see cref="BitRating"/> component.
+/// </summary>
+public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
+{
+    /// <summary>
+    /// Represents the parameter name used to identify the <see cref="BitRating"/> cascading parameters within <see cref="BitParams"/>.
+    /// </summary>
+    /// <remarks>
+    /// This constant is typically used when referencing or accessing the BitRating value in
+    /// parameterized APIs or configuration settings. Using this constant helps ensure consistency and reduces the risk
+    /// of typographical errors.
+    /// </remarks>
+    public const string ParamName = $"{nameof(BitParams)}.{nameof(BitRating)}";
+
+
+
+    // What BitParams reads of a params object by reflection is kept by its constructor rather than by the component
+    // reading it, so the trimmer keeps it only for the params types an app creates.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRatingParams))]
+    public BitRatingParams() { }
+
+
+
+    public string Name => ParamName;
+
+
+
+    /// <summary>
+    /// Lets the current value be cleared, by clicking the item that is already selected or by pressing
+    /// Delete or Backspace. Clearing sets the value to 0, so it also makes 0 a reachable value the same
+    /// way <see cref="AllowZeroStars"/> does, and the items empty under a pointer resting on the committed
+    /// value, since the preview is the value a click would commit.
+    /// </summary>
+    public bool? AllowClear { get; set; }
+
+    /// <summary>
+    /// Puts the unrated 0 in the range of the rating, so a value of 0 is kept instead of being pulled up to
+    /// the smallest step and the rating can start empty. The keys that reach the ends of the range - Home and
+    /// the 0 key - reach it, while the pointer always commits at least one step and Delete stays behind
+    /// <see cref="AllowClear"/>.
+    /// </summary>
+    public bool? AllowZeroStars { get; set; }
+
+    /// <summary>
+    /// Names each individual rating item - not the rating as a whole - for screen readers. Placeholder {0} is
+    /// the rating that item stands for, which is its one-based position, and placeholder {1} is the max: for
+    /// example, "Select {0} of {1} stars" names the third of five items "Select 3 of 5 stars".
+    /// </summary>
+    public string? AriaLabelFormat { get; set; }
+
+    /// <summary>
+    /// The id of an element that names the rating as a whole. It wins over every other source of the name,
+    /// including the visible <see cref="Label"/>.
+    /// </summary>
+    public string? AriaLabelledBy { get; set; }
+
+    /// <summary>
+    /// If true, the rating automatically receives focus when the page renders.
+    /// </summary>
+    public bool? AutoFocus { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitRating.
+    /// </summary>
+    public BitRatingClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The general color of the rating, applied to the filled part of the items.
+    /// The unfilled part stays neutral so it reads as "not rated yet" whichever color is picked.
+    /// </summary>
+    public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// The hint shown under the items and pointed at by <c>aria-describedby</c>, for the instruction a row of
+    /// stars cannot give by itself.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Names the rating as a whole from its current value and the max, which arrive as the first and the
+    /// second argument. It is used whenever the AriaLabel is not set, and like that label it wins over the
+    /// visible <see cref="Label"/>.
+    /// </summary>
+    public Func<double, double, string>? GetAriaLabel { get; set; }
+
+    /// <summary>
+    /// Chooses the selected (filled) icon of each rating item separately, from the one-based position of the item.
+    /// Returning null falls back to <see cref="SelectedIcon"/> / <see cref="SelectedIconName"/>.
+    /// </summary>
+    public Func<int, BitIconInfo?>? GetSelectedIcon { get; set; }
+
+    /// <summary>
+    /// Chooses the unselected (empty) icon of each rating item separately, from the one-based position of the item.
+    /// Returning null falls back to <see cref="UnselectedIcon"/> / <see cref="UnselectedIconName"/>.
+    /// </summary>
+    public Func<int, BitIconInfo?>? GetUnselectedIcon { get; set; }
+
+    /// <summary>
+    /// Highlights only the item matching the current value instead of every item up to it,
+    /// turning the rating into a scale of standalone choices rather than a cumulative one.
+    /// </summary>
+    public bool? HighlightSelectedOnly { get; set; }
+
+    /// <summary>
+    /// The native tooltips of the rating items, in order, shown when hovering over each one, and used as the
+    /// accessible name of the item unless the AriaLabelFormat overrides it. The items of a read-only or
+    /// disabled rating take no pointer events, so their tooltips never appear there.
+    /// </summary>
+    public IList<string>? ItemTitles { get; set; }
+
+    /// <summary>
+    /// The visible label of the rating, which also becomes its accessible name.
+    /// </summary>
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Where the label sits relative to the items.
+    /// </summary>
+    public BitPlacement? LabelPlacement { get; set; }
+
+    /// <summary>
+    /// Maximum rating, which is also the number of rendered items. Values below 1 are treated as 1.
+    /// </summary>
+    public int? Max { get; set; }
+
+    /// <summary>
+    /// Turns off the preview that follows the pointer over the items and shows the value that a click would
+    /// commit. Only the preview the component paints stops: the OnHoverChange callback goes on reporting.
+    /// </summary>
+    public bool? NoHoverPreview { get; set; }
+
+    /// <summary>
+    /// The smallest change of the value the user can make, as a fraction of a single item.
+    /// The default of 1 only allows whole items, 0.5 adds halves, 0.1 makes every tenth selectable, and so on;
+    /// anything at or above 1, and anything at or below 0, leaves the items whole.
+    /// It is also the floor of the scale unless <see cref="AllowZeroStars"/> or <see cref="AllowClear"/>
+    /// opens up the unrated 0.
+    /// </summary>
+    public double? Precision { get; set; }
+
+    /// <summary>
+    /// The icon to display for selected rating elements using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="SelectedIconName"/> when both are set.
+    /// </summary>
+    public BitIconInfo? SelectedIcon { get; set; }
+
+    /// <summary>
+    /// Custom icon name for selected rating elements. If unset, default will be the FavoriteStarFill icon.
+    /// </summary>
+    public string? SelectedIconName { get; set; }
+
+    /// <summary>
+    /// Size of the rating, which scales the item glyphs, the label and the description together.
+    /// </summary>
+    public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitRating.
+    /// </summary>
+    public BitRatingClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The icon to display for unselected rating elements using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="UnselectedIconName"/> when both are set.
+    /// </summary>
+    public BitIconInfo? UnselectedIcon { get; set; }
+
+    /// <summary>
+    /// Custom icon name for unselected rating elements. If unset, default will be the FavoriteStar icon.
+    /// </summary>
+    public string? UnselectedIconName { get; set; }
+
+    /// <summary>
+    /// The format of the spoken form of the current value, where placeholder {0} is the value and placeholder
+    /// {1} is the max: for example "{0} out of {1} stars". The default is "{0} of {1}".
+    /// </summary>
+    public string? ValueTextFormat { get; set; }
+
+    /// <summary>
+    /// Stacks the rating items in a column instead of a row, filling from the bottom up so that "more" is up,
+    /// the way the ArrowUp key means more.
+    /// </summary>
+    public bool? Vertical { get; set; }
+
+
+
+    /// <summary>
+    /// Updates the properties of the specified <see cref="BitRating"/> instance with any values that have been set on
+    /// this object, if those properties have not already been set on the <see cref="BitRating"/>.
+    /// </summary>
+    /// <remarks>
+    /// Only properties that have a value set and have not already been set on the <paramref name="bitRating"/> will be updated.
+    /// This method does not overwrite existing values on <paramref name="bitRating"/>.
+    /// </remarks>
+    /// <param name="bitRating">
+    /// The <see cref="BitRating"/> instance whose properties will be updated. Cannot be null.
+    /// </param>
+    public void UpdateParameters(BitRating bitRating)
+    {
+        if (bitRating is null) return;
+
+        UpdateInputBaseParameters(bitRating);
+
+        if (AllowClear.HasValue)
+        {
+            bitRating.TakeFromCascade(nameof(AllowClear), AllowClear.Value, static r => r.AllowClear, static (r, v) => r.AllowClear = v);
+        }
+
+        if (AllowZeroStars.HasValue)
+        {
+            bitRating.TakeFromCascade(nameof(AllowZeroStars), AllowZeroStars.Value, static r => r.AllowZeroStars, static (r, v) => r.AllowZeroStars = v);
+        }
+
+        if (AriaLabelFormat.HasValue())
+        {
+            bitRating.TakeFromCascade(nameof(AriaLabelFormat), AriaLabelFormat, static r => r.AriaLabelFormat, static (r, v) => r.AriaLabelFormat = v);
+        }
+
+        if (AriaLabelledBy.HasValue())
+        {
+            bitRating.TakeFromCascade(nameof(AriaLabelledBy), AriaLabelledBy, static r => r.AriaLabelledBy, static (r, v) => r.AriaLabelledBy = v);
+        }
+
+        if (AutoFocus.HasValue)
+        {
+            bitRating.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static r => r.AutoFocus, static (r, v) => r.AutoFocus = v);
+        }
+
+        if (Classes is not null)
+        {
+            bitRating.TakeFromCascade(nameof(Classes), Classes, static r => r.Classes, static (r, v) => r.Classes = v);
+        }
+
+        if (Color.HasValue)
+        {
+            bitRating.TakeFromCascade(nameof(Color), Color.Value, static r => r.Color, static (r, v) => r.Color = v);
+        }
+
+        if (Description.HasValue())
+        {
+            bitRating.TakeFromCascade(nameof(Description), Description, static r => r.Description, static (r, v) => r.Description = v);
+        }
+
+        if (GetAriaLabel is not null)
+        {
+            bitRating.TakeFromCascade(nameof(GetAriaLabel), GetAriaLabel, static r => r.GetAriaLabel, static (r, v) => r.GetAriaLabel = v);
+        }
+
+        if (GetSelectedIcon is not null)
+        {
+            bitRating.TakeFromCascade(nameof(GetSelectedIcon), GetSelectedIcon, static r => r.GetSelectedIcon, static (r, v) => r.GetSelectedIcon = v);
+        }
+
+        if (GetUnselectedIcon is not null)
+        {
+            bitRating.TakeFromCascade(nameof(GetUnselectedIcon), GetUnselectedIcon, static r => r.GetUnselectedIcon, static (r, v) => r.GetUnselectedIcon = v);
+        }
+
+        if (HighlightSelectedOnly.HasValue)
+        {
+            bitRating.TakeFromCascade(nameof(HighlightSelectedOnly), HighlightSelectedOnly.Value, static r => r.HighlightSelectedOnly, static (r, v) => r.HighlightSelectedOnly = v);
+        }
+
+        if (ItemTitles is not null)
+        {
+            bitRating.TakeFromCascade(nameof(ItemTitles), ItemTitles, static r => r.ItemTitles, static (r, v) => r.ItemTitles = v);
+        }
+
+        if (Label.HasValue())
+        {
+            bitRating.TakeFromCascade(nameof(Label), Label, static r => r.Label, static (r, v) => r.Label = v);
+        }
+
+        if (LabelPlacement.HasValue)
+        {
+            bitRating.TakeFromCascade(nameof(LabelPlacement), LabelPlacement.Value, static r => r.LabelPlacement, static (r, v) => r.LabelPlacement = v);
+        }
+
+        if (Max.HasValue)
+        {
+            bitRating.TakeFromCascade(nameof(Max), Max.Value, static r => r.Max, static (r, v) => r.Max = v);
+        }
+
+        if (NoHoverPreview.HasValue)
+        {
+            bitRating.TakeFromCascade(nameof(NoHoverPreview), NoHoverPreview.Value, static r => r.NoHoverPreview, static (r, v) => r.NoHoverPreview = v);
+        }
+
+        if (Precision.HasValue)
+        {
+            bitRating.TakeFromCascade(nameof(Precision), Precision.Value, static r => r.Precision, static (r, v) => r.Precision = v);
+        }
+
+
+        if (SelectedIcon is not null)
+        {
+            bitRating.TakeFromCascade(nameof(SelectedIcon), SelectedIcon, static r => r.SelectedIcon, static (r, v) => r.SelectedIcon = v);
+        }
+
+        if (SelectedIconName.HasValue())
+        {
+            bitRating.TakeFromCascade(nameof(SelectedIconName), SelectedIconName, static r => r.SelectedIconName, static (r, v) => r.SelectedIconName = v);
+        }
+
+        if (Size.HasValue)
+        {
+            bitRating.TakeFromCascade(nameof(Size), Size.Value, static r => r.Size, static (r, v) => r.Size = v);
+        }
+
+        if (Styles is not null)
+        {
+            bitRating.TakeFromCascade(nameof(Styles), Styles, static r => r.Styles, static (r, v) => r.Styles = v);
+        }
+
+
+        if (UnselectedIcon is not null)
+        {
+            bitRating.TakeFromCascade(nameof(UnselectedIcon), UnselectedIcon, static r => r.UnselectedIcon, static (r, v) => r.UnselectedIcon = v);
+        }
+
+        if (UnselectedIconName.HasValue())
+        {
+            bitRating.TakeFromCascade(nameof(UnselectedIconName), UnselectedIconName, static r => r.UnselectedIconName, static (r, v) => r.UnselectedIconName = v);
+        }
+
+        if (ValueTextFormat.HasValue())
+        {
+            bitRating.TakeFromCascade(nameof(ValueTextFormat), ValueTextFormat, static r => r.ValueTextFormat, static (r, v) => r.ValueTextFormat = v);
+        }
+
+        if (Vertical.HasValue)
+        {
+            bitRating.TakeFromCascade(nameof(Vertical), Vertical.Value, static r => r.Vertical, static (r, v) => r.Vertical = v);
+        }
+    }
+}

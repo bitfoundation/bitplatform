@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -59,9 +59,7 @@ public sealed class BitThemeScopedPresetTests
 
     private static string ReadStylesFile(string relativePath)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", relativePath);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure the library Styles folder is copied to output.");
-        return File.ReadAllText(path);
+        return SourceFiles.ReadThemeStylesheet(relativePath);
     }
 
     [TestMethod]
@@ -175,20 +173,20 @@ public sealed class BitThemeScopedPresetTests
         // The plain --bit-mot-* tokens alias the -full ones, and a preset retunes only the -full
         // literals. Declared on :root alone the aliases would freeze the DOCUMENT's durations inside
         // an element carrying bit-theme="material", whose own -full tokens say something else. The
-        // twin is wrapped in :where() so it adds no specificity: the reduced-motion query must still
-        // win on source order, and .bit-fam (the ForceAnimation opt-out) must still outrank both.
+        // twin is wrapped in :where() so it adds no specificity, and it needs no reduced-motion twin:
+        // the reduction is the inherited -reduced tokens, which the twin reads off its ancestors, so a
+        // scoped region inside a ForceAnimation subtree stays unreduced and one outside it is reduced.
         var scss = ReadStylesFile(Path.Combine("Fluent", "motion.fluent.scss"));
 
         var twins = Regex.Matches(scss, @":where\(:root \[bit-theme\]\)").Count;
-        Assert.AreEqual(2, twins,
-            "motion.fluent.scss must carry the ':where(:root [bit-theme])' scoped twin twice - once on the " +
-            "block that aliases the -full tokens, and once inside the prefers-reduced-motion query so the " +
-            "collapse reaches a scoped preset region as well.");
+        Assert.AreEqual(1, twins,
+            "motion.fluent.scss must carry the ':where(:root [bit-theme])' scoped twin once, on the block that " +
+            "aliases the -full tokens.");
 
-        var reducedMotion = scss[scss.IndexOf("prefers-reduced-motion", StringComparison.Ordinal)..];
-        Assert.IsTrue(reducedMotion.Contains(":where(:root [bit-theme])", StringComparison.Ordinal),
-            "The prefers-reduced-motion block must carry the scoped twin too, or a scoped preset region " +
-            "would keep its unreduced durations.");
+        var reducedMotion = SourceFiles.GetScssBlock(scss, "@media (prefers-reduced-motion: reduce) {");
+        Assert.IsFalse(reducedMotion.Contains("[bit-theme]", StringComparison.Ordinal),
+            "The prefers-reduced-motion block declares the reduction on :root alone; a scoped region reads it by " +
+            "inheritance, and a twin of its own there would collapse a region inside a ForceAnimation subtree.");
     }
 
     [TestMethod]

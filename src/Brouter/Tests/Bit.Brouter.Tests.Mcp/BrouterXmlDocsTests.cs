@@ -40,6 +40,19 @@ public class BrouterXmlDocsTests
     }
 
     [TestMethod]
+    public void A_cref_to_a_member_of_a_generic_type_keeps_the_member()
+    {
+        // "<see cref="P:Bit.Brouter.BrouterAwait`1.Task"/>" carries the arity marker in the middle of the
+        // cref; cutting the text there would read "Brouter.BrouterAwait" - the namespace kept, the member lost.
+        var summary = BrouterXmlDocs.GetSummary("T:Bit.Brouter.BrouterAwait`1")!;
+
+        StringAssert.Contains(summary, "BrouterAwait.Task");
+        StringAssert.Contains(summary, "BrouterAwait.Pending");
+        Assert.IsFalse(summary.Contains("Brouter.BrouterAwait", StringComparison.Ordinal), $"A member reference lost its member: {summary}");
+        Assert.IsFalse(summary.Contains("`1", StringComparison.Ordinal), $"An arity marker reached the reader: {summary}");
+    }
+
+    [TestMethod]
     public void No_flattened_documentation_carries_markup_through()
     {
         foreach (var id in new[]

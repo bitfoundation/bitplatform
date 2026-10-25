@@ -1,0 +1,366 @@
+﻿@page "/e2e/footer"
+
+<PageTitle>BitFooter E2E</PageTitle>
+
+@* The containers are 600px wide and the children fixed in size, so where a footer puts them is a number. *@
+<style>
+    .ftr-host { width: 600px; position: relative; }
+    .ftr-chip { width: 60px; height: 20px; background: #ccc; flex-shrink: 0; font-size: 12px; }
+    .ftr-tall { width: 60px; height: 50px; background: #aaa; flex-shrink: 0; }
+    .ftr-scroll { width: 600px; height: 200px; overflow: auto; position: relative; border: 1px solid #999; }
+    .ftr-row { height: 60px; border-bottom: 1px solid #eee; }
+    .ftr-abs-host { width: 600px; height: 120px; position: relative; background: #f4f4f4; }
+    .ftr-custom { background-color: rgb(1, 2, 3) !important; }
+    .ftr-root-class { outline: 3px solid rgb(4, 5, 6); }
+    .ftr-container-class { letter-spacing: 3px; }
+</style>
+
+<E2ESection Id="basic" Title="Basic, Height and Disabled">
+    <div class="ftr-host"><BitFooter Id="basic-footer"><div class="ftr-chip" id="basic-child">I'm a Footer</div></BitFooter></div>
+    <div class="ftr-host"><BitFooter Id="height-footer" Height="@_height">fixed height</BitFooter></div>
+    <button id="btn-height" @onclick="() => _height = 100">Height 100</button>
+    <div class="ftr-host"><BitFooter Id="disabled-footer" Disabled="_disabled" HtmlAttributes="@_disabledFooterAttributes"><button id="disabled-inner" @onclick="() => _innerClicks++">inner</button></BitFooter></div>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="root-clicks">@_rootClicks</span>
+    <span id="inner-clicks">@_innerClicks</span>
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant">
+    <div class="ftr-host"><BitFooter Id="variant-fill" Variant="BitVariant.Fill">Fill</BitFooter></div>
+    <div class="ftr-host"><BitFooter Id="variant-outline" Variant="BitVariant.Outline">Outline</BitFooter></div>
+    <div class="ftr-host"><BitFooter Id="variant-text" Variant="BitVariant.Text">Text</BitFooter></div>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color: every color with every variant">
+    @foreach (var color in Enum.GetValues<BitColor>())
+    {
+        <div class="ftr-host"><BitFooter Id="@($"color-fill-{color}")" Color="color" Variant="BitVariant.Fill">@color fill</BitFooter></div>
+        <div class="ftr-host"><BitFooter Id="@($"color-outline-{color}")" Color="color" Variant="BitVariant.Outline">@color outline</BitFooter></div>
+        <div class="ftr-host"><BitFooter Id="@($"color-text-{color}")" Color="color" Variant="BitVariant.Text">@color text</BitFooter></div>
+        <div class="ftr-host"><BitFooter Id="@($"color-dis-{color}")" Color="color" Disabled>@color disabled</BitFooter></div>
+    }
+</E2ESection>
+
+<E2ESection Id="border-elevation" Title="Bordered and Elevated">
+    <div class="ftr-host"><BitFooter Id="bordered" Bordered>Bordered</BitFooter></div>
+    <div class="ftr-host"><BitFooter Id="bordered-text" Bordered Variant="BitVariant.Text">Bordered text</BitFooter></div>
+    <div class="ftr-host"><BitFooter Id="elevated" Elevated>Elevated</BitFooter></div>
+    <div class="ftr-host"><BitFooter Id="plain">Plain</BitFooter></div>
+</E2ESection>
+
+<E2ESection Id="alignment" Title="Alignment and VerticalAlign">
+    <select id="sel-al" @onchange="e => _al = ParseAlignment(e.Value)">
+        <option value="">(none)</option>
+        @foreach (var a in Enum.GetNames<BitAlignment>())
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+    <select id="sel-va" @onchange="e => _va = ParseAlignment(e.Value)">
+        <option value="">(none)</option>
+        @foreach (var a in Enum.GetNames<BitAlignment>())
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+    <span id="al-state">@($"al={_al};va={_va};")</span>
+    <div class="ftr-host">
+        <BitFooter Id="al-footer" NoGutter Height="80" Alignment="_al" VerticalAlign="_va">
+            <div class="ftr-chip" id="al-1">1</div>
+            <div class="ftr-chip" id="al-2">2</div>
+            <div class="ftr-tall" id="al-3">3</div>
+        </BitFooter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="layout" Title="Gap, Wrap, NoGutter, MaxWidth">
+    <div class="ftr-host"><BitFooter Id="gap-footer" Gap="1rem" NoGutter><div class="ftr-chip" id="gap-1">A</div><div class="ftr-chip" id="gap-2">B</div></BitFooter></div>
+    <div class="ftr-host" style="width: 200px">
+        <BitFooter Id="wrap-footer" Wrap Gap="4px 10px" NoGutter>
+            @for (var i = 1; i <= 6; i++)
+            {
+                <div class="ftr-chip" id="@($"wrap-{i}")">@i</div>
+            }
+        </BitFooter>
+    </div>
+    <div class="ftr-host" style="width: 200px">
+        <BitFooter Id="nowrap-footer" Gap="10px" NoGutter>
+            @for (var i = 1; i <= 6; i++)
+            {
+                <div class="ftr-chip" id="@($"nowrap-{i}")">@i</div>
+            }
+        </BitFooter>
+    </div>
+    <div class="ftr-host"><BitFooter Id="nogutter-footer" NoGutter><div class="ftr-chip" id="nogutter-child">no gutter</div></BitFooter></div>
+    <div class="ftr-host">
+        <BitFooter Id="maxwidth-footer" MaxWidth="300px" Alignment="BitAlignment.SpaceBetween" NoGutter>
+            <div class="ftr-chip" id="mw-1">capped</div>
+            <div class="ftr-chip" id="mw-2">centered</div>
+        </BitFooter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="position" Title="Sticky, Fixed, Absolute">
+    <div class="ftr-scroll" id="sticky-box">
+        @for (var i = 1; i <= 12; i++)
+        {
+            <div class="ftr-row">Row @i</div>
+        }
+        <BitFooter Id="sticky-footer" Sticky Bordered>Sticky</BitFooter>
+    </div>
+    <div class="ftr-abs-host" id="abs-host">
+        <div>The absolute footer covers the bottom of its container.</div>
+        <BitFooter Id="absolute-footer" Absolute Bordered>Absolute</BitFooter>
+    </div>
+    <div class="ftr-abs-host" id="fixed-host" style="transform: translateZ(0)">
+        <BitFooter Id="fixed-footer" Fixed>Fixed, scoped by a transformed ancestor</BitFooter>
+    </div>
+    <div class="ftr-abs-host" style="transform: translateZ(0)">
+        <BitFooter Id="all-positions" Fixed Absolute Sticky>Fixed wins</BitFooter>
+        <BitFooter Id="abs-sticky" Absolute Sticky Style="bottom: 60px">Absolute wins over Sticky</BitFooter>
+    </div>
+    <div class="ftr-scroll">
+        <BitFooter Id="sticky-height" Sticky Height="50">Sticky with Height</BitFooter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="reveal" Title="Reveal, RevealOffset, OnRevealChanged, IsRevealed">
+    <span id="reveal-state">@_revealed</span>
+    <span id="reveal-count">@_revealCount</span>
+    <span id="is-revealed">@_isRevealed</span>
+    <button id="btn-read-revealed" @onclick="() => _isRevealed = _revealFooter?.IsRevealed">Read IsRevealed</button>
+    <div class="ftr-scroll" id="reveal-box">
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="ftr-row">Row @i</div>
+        }
+        <BitFooter @ref="_revealFooter" Id="reveal-footer" Sticky Reveal Elevated OnRevealChanged="v => { _revealed = v; _revealCount++; }">
+            <button id="reveal-inner">inside</button>
+        </BitFooter>
+    </div>
+    <span id="reveal-offset-state">@_revealedOffset</span>
+    <div class="ftr-scroll" id="reveal-offset-box">
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="ftr-row">Row @i</div>
+        }
+        <BitFooter Id="reveal-offset-footer" Sticky Reveal RevealOffset="150" OnRevealChanged="v => _revealedOffset = v">offset 150</BitFooter>
+    </div>
+    <div class="ftr-scroll" id="reveal-unpinned-box">
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="ftr-row">Row @i</div>
+        }
+        <BitFooter Id="reveal-unpinned-footer" Reveal>Not pinned: never hides</BitFooter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="elevate" Title="ElevateOnScroll, OnOverlapChanged, IsOverlapping">
+    <span id="overlap-state">@_overlapping</span>
+    <span id="overlap-count">@_overlapCount</span>
+    <span id="is-overlapping">@_isOverlapping</span>
+    <button id="btn-read-overlapping" @onclick="() => _isOverlapping = _elevateFooter?.IsOverlapping">Read IsOverlapping</button>
+    <div class="ftr-scroll" id="elevate-box">
+        @for (var i = 1; i <= 12; i++)
+        {
+            <div class="ftr-row">Row @i</div>
+        }
+        <BitFooter @ref="_elevateFooter" Id="elevate-footer" Sticky ElevateOnScroll OnOverlapChanged="v => { _overlapping = v; _overlapCount++; }">I lose my shadow at the end</BitFooter>
+    </div>
+    <div class="ftr-scroll">
+        @for (var i = 1; i <= 12; i++)
+        {
+            <div class="ftr-row">Row @i</div>
+        }
+        <BitFooter Id="elevate-elevated" Sticky ElevateOnScroll Elevated>Elevated wins</BitFooter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="scroll-target" Title="ScrollTarget">
+    <span id="target-state">@_targetRevealed</span>
+    <div style="width: 600px">
+        <div id="ftr-scroll-pane" class="ftr-scroll">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <div class="ftr-row">Row @i</div>
+            }
+        </div>
+        <BitFooter Id="target-footer" Sticky Reveal RevealOffset="100" ScrollTarget="#ftr-scroll-pane" OnRevealChanged="v => _targetRevealed = v">I react to the pane above me</BitFooter>
+    </div>
+    <span id="target-miss-state">@_targetMissOverlapping</span>
+    <div class="ftr-scroll" id="target-miss-box">
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="ftr-row">Row @i</div>
+        }
+        <BitFooter Id="target-miss-footer" Sticky ElevateOnScroll ScrollTarget="#no-such-pane" OnOverlapChanged="v => _targetMissOverlapping = v">A selector matching nothing falls back to the walk</BitFooter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="hidden" Title="Hidden">
+    <button id="btn-toggle-hidden" @onclick="() => _hidden = !_hidden">Toggle Hidden</button>
+    <span id="hidden-state">@_hidden</span>
+    <div class="ftr-abs-host" style="overflow: hidden">
+        <BitFooter Id="hidden-footer" Absolute Hidden="_hidden" AriaLabel="Selection actions">
+            <button id="hidden-inner">Delete</button>
+        </BitFooter>
+    </div>
+    <div class="ftr-host"><BitFooter Id="inert-footer" HtmlAttributes="@_inertAttributes">An inert the page wrote by hand is kept</BitFooter></div>
+</E2ESection>
+
+<E2ESection Id="translucent" Title="Translucent">
+    <div class="ftr-host"><BitFooter Id="translucent-footer" Translucent>Translucent</BitFooter></div>
+    <div class="ftr-host"><BitFooter Id="translucent-outline" Translucent Variant="BitVariant.Outline">Translucent outline: no blur</BitFooter></div>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="AriaLabel, ScrollPadding">
+    <div class="ftr-host"><BitFooter Id="labelled-footer" AriaLabel="Editor actions">Editor</BitFooter></div>
+    <div class="ftr-host"><BitFooter Id="labelled-attr-footer" HtmlAttributes="@_ariaAttributes">From attributes</BitFooter></div>
+    <div class="ftr-scroll" id="padding-box">
+        @for (var i = 1; i <= 12; i++)
+        {
+            <div class="ftr-row"><button id="@($"pad-btn-{i}")">Button @i</button></div>
+        }
+        <BitFooter Id="padding-footer" Sticky ScrollPadding Height="50">With ScrollPadding</BitFooter>
+    </div>
+    <div class="ftr-scroll" id="no-padding-box">
+        @for (var i = 1; i <= 3; i++)
+        {
+            <div class="ftr-row">Row @i</div>
+        }
+        <BitFooter Id="no-padding-footer" Sticky Height="50">Without</BitFooter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_footerParams">
+        <div class="ftr-host"><BitFooter Id="casc-footer">cascaded</BitFooter></div>
+        <div class="ftr-host"><BitFooter Id="casc-own" Color="BitColor.Tertiary">own color</BitFooter></div>
+    </BitParams>
+    <div class="ftr-host"><BitFooter Id="casc-out">outside</BitFooter></div>
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <div class="ftr-host"><BitFooter Id="size-sm" Size="BitSize.Small">Small</BitFooter></div>
+    <div class="ftr-host"><BitFooter Id="size-md" Size="BitSize.Medium">Medium</BitFooter></div>
+    <div class="ftr-host"><BitFooter Id="size-lg" Size="BitSize.Large">Large</BitFooter></div>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="The --bit-Footer-* variables on an ancestor">
+    <div class="ftr-host" style="--bit-Footer-background: rgb(10, 20, 30); --bit-Footer-color: rgb(200, 210, 220); --bit-Footer-border-color: rgb(0, 255, 0); --bit-Footer-radius: 12px; --bit-Footer-padding: 5px 7px; --bit-Footer-min-height: 64px; --bit-Footer-font-size: 19px; --bit-Footer-gap: 9px; --bit-Footer-max-width: 400px; --bit-Footer-shadow: rgb(255, 0, 0) 0px -2px 4px 0px; --bit-Footer-z-index: 7; --bit-Footer-blur: 3px">
+        <BitFooter Id="var-footer" Bordered Elevated Sticky><div class="ftr-chip" id="var-1">a</div><div class="ftr-chip" id="var-2">b</div></BitFooter>
+        <BitFooter Id="var-color" Color="BitColor.Error">An explicit Color wins</BitFooter>
+        <BitFooter Id="var-size" Size="BitSize.Large">An explicit Size wins</BitFooter>
+        <BitFooter Id="var-gap" Gap="2px" MaxWidth="500px"><div class="ftr-chip" id="vg-1">a</div><div class="ftr-chip" id="vg-2">b</div></BitFooter>
+        <BitFooter Id="var-outline" Variant="BitVariant.Outline">outline</BitFooter>
+        <BitFooter Id="var-translucent" Translucent>translucent</BitFooter>
+    </div>
+    <div class="ftr-host" style="--bit-Footer-background: rgb(10, 20, 30); --bit-Footer-fill-background: rgb(40, 50, 60); --bit-Footer-outline-border-color: rgb(70, 80, 90); --bit-Footer-outline-color: rgb(1, 1, 1); --bit-Footer-text-color: rgb(2, 2, 2); --bit-Footer-fill-color: rgb(3, 3, 3); --bit-Footer-text-border-color: rgb(5, 5, 5); --bit-Footer-fill-border-color: rgb(6, 6, 6); --bit-Footer-blur: 3px; --bit-Footer-fill-blur: 5px">
+        <BitFooter Id="tier-fill" Bordered>fill</BitFooter>
+        <BitFooter Id="tier-outline" Variant="BitVariant.Outline">outline</BitFooter>
+        <BitFooter Id="tier-text" Variant="BitVariant.Text" Bordered>text</BitFooter>
+        <BitFooter Id="tier-translucent" Translucent>translucent</BitFooter>
+    </div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes">
+    <div class="ftr-host"><BitFooter Id="styled-footer" Style="background: rgb(126, 87, 194); color: white">Styled</BitFooter></div>
+    <div class="ftr-host"><BitFooter Id="classed-footer" Class="ftr-custom">Classed</BitFooter></div>
+    <div class="ftr-host">
+        <BitFooter Id="styles-footer" Styles="@(new() { Root = "border-block-start: 2px dashed rgb(255, 99, 71)", Container = "justify-content: center; color: rgb(255, 99, 71)" })">
+            <div class="ftr-chip" id="styles-child">Styles</div>
+        </BitFooter>
+    </div>
+    <div class="ftr-host"><BitFooter Id="classes-footer" Classes="@(new() { Root = "ftr-root-class", Container = "ftr-container-class" })">Classes</BitFooter></div>
+    <div class="ftr-host"><BitFooter Id="vis-footer" Visibility="_visibility">Visibility</BitFooter></div>
+    <button id="btn-hidden-vis" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-collapsed-vis" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="ftr-host"><BitFooter Id="rtl-footer" Dir="BitDir.Rtl" Alignment="BitAlignment.Start"><div class="ftr-chip" id="rtl-1">1</div><div class="ftr-chip" id="rtl-2">2</div></BitFooter></div>
+    <div class="ftr-host" dir="rtl"><BitFooter Id="rtl-inherited" Alignment="BitAlignment.Start"><div class="ftr-chip" id="rtli-1">1</div></BitFooter></div>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <div class="ftr-scroll">
+            @for (var i = 1; i <= 10; i++)
+            {
+                <div class="ftr-row">Row @i</div>
+            }
+            <BitFooter Id="mount-footer" Sticky Reveal ElevateOnScroll ScrollPadding>mounted</BitFooter>
+        </div>
+    }
+    <button id="btn-unmount" @onclick="() => _mounted = false">Unmount</button>
+    <button id="btn-mount" @onclick="() => _mounted = true">Mount</button>
+    <span id="mounted">@_mounted</span>
+    <button id="btn-runtime" @onclick="() => _runtimeReveal = !_runtimeReveal">Toggle Reveal</button>
+    <div class="ftr-scroll" id="runtime-box">
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="ftr-row">Row @i</div>
+        }
+        <BitFooter Id="runtime-footer" Sticky Reveal="_runtimeReveal" OnRevealChanged="v => _runtimeRevealed = v">runtime</BitFooter>
+    </div>
+    <span id="runtime-state">@($"reveal={_runtimeReveal};revealed={_runtimeRevealed}")</span>
+</E2ESection>
+
+@* The one footer outside every section: a footer not scoped to sectioning content is the page's contentinfo landmark. *@
+<BitFooter Id="contentinfo" Height="40">Footer of the page</BitFooter>
+
+@* A round trip through the circuit: a test that clicks it and waits for the count knows every message the scripts
+   sent before the click has been handled and rendered. *@
+<button id="btn-sync" style="position: fixed; right: 0; top: 0; z-index: 100" @onclick="() => _sync++">sync</button>
+<span id="sync">@_sync</span>
+
+<E2EStatus />
+
+@code {
+    private int _sync;
+    private int _height = 80;
+    private bool _disabled = true;
+    private int _rootClicks;
+    private int _innerClicks;
+    private BitAlignment? _al;
+    private BitAlignment? _va;
+    private bool _revealed = true;
+    private int _revealCount;
+    private bool? _isRevealed;
+    private bool _revealedOffset = true;
+    private bool _overlapping;
+    private int _overlapCount;
+    private bool? _isOverlapping;
+    private bool _targetRevealed = true;
+    private bool _targetMissOverlapping;
+    private bool _hidden;
+    private bool _mounted = true;
+    private bool _runtimeReveal;
+    private bool _runtimeRevealed = true;
+    private BitVisibility _visibility = BitVisibility.Visible;
+    private BitFooter? _revealFooter;
+    private BitFooter? _elevateFooter;
+
+    private Dictionary<string, object> _disabledFooterAttributes = default!;
+    private readonly Dictionary<string, object> _inertAttributes = new() { ["inert"] = true };
+    private readonly Dictionary<string, object> _ariaAttributes = new() { ["aria-label"] = "Toolbar from attributes" };
+
+    private readonly BitFooterParams[] _footerParams =
+    [
+        new() { Color = BitColor.Error, Variant = BitVariant.Outline, Size = BitSize.Small, Bordered = true }
+    ];
+
+    protected override void OnInitialized()
+    {
+        _disabledFooterAttributes = new()
+        {
+            ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _rootClicks++)
+        };
+    }
+
+    private static BitAlignment? ParseAlignment(object? value)
+    {
+        return value is string s && s.Length > 0 ? Enum.Parse<BitAlignment>(s) : null;
+    }
+}

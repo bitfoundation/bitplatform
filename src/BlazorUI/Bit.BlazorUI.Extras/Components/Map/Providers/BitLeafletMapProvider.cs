@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Leaflet provider for <see cref="BitMap{TMapProvider}"/>. Uses the bundled

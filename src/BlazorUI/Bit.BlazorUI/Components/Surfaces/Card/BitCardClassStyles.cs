@@ -11,7 +11,7 @@ public class BitCardClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// The custom CSS class/style for the stretched link that covers a card with an Href.
+    /// The custom CSS class/style for the stretched link that covers a card with an Href, or the stretched button that covers a clickable one.
     /// </summary>
     public string? Link { get; set; }
 
@@ -69,6 +69,16 @@ public class BitCardClassStyles
     /// The custom CSS class/style for the body of the card, which is what the ChildContent renders into.
     /// </summary>
     public string? Body { get; set; }
+
+    /// <summary>
+    /// The custom CSS class/style for the default placeholder of a loading card, drawn when no LoadingTemplate is set.
+    /// </summary>
+    public string? Skeleton { get; set; }
+
+    /// <summary>
+    /// The custom CSS class/style for each bar of the default placeholder of a loading card.
+    /// </summary>
+    public string? SkeletonBar { get; set; }
 
     /// <summary>
     /// The custom CSS class/style for the footer of the card.

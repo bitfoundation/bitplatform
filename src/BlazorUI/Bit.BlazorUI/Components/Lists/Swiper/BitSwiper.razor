@@ -1,15 +1,20 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@{
+    // The region role and its "carousel" description are the pattern's own and stay after the splatted attributes, as
+    // does the tab index, which NoKeyboard and Disabled take off the root on purpose.
+    var ariaLabel = ResolveAriaLabel();
+}
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="region"
      aria-roledescription="carousel"
-     aria-label="@AriaLabel"
+     aria-label="@ariaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     tabindex="@((NoKeyboard || IsEnabled is false) ? null : (TabIndex ?? "0"))"
+     tabindex="@((NoKeyboard || Disabled) ? null : (TabIndex ?? "0"))"
      @onkeydown="HandleKeyDown"
      @onfocusin="HandleFocusIn"
      @onfocusout="HandleFocusOut"
@@ -23,7 +28,7 @@
     @if ((ShowDots && _pagesCount > 1) || (AutoPlay && ShowPlayPause))
     {
         <div class="bit-swp-dcn @Classes?.DotsContainer"
-             style="@_directionStyle @Styles?.DotsContainer">
+             style="@JoinStyles(_directionStyle, Styles?.DotsContainer)">
             @if (AutoPlay && ShowPlayPause)
             {
                 var playPauseIcon = IsPaused
@@ -33,7 +38,8 @@
                         type="button"
                         aria-controls="@_ContainerId"
                         aria-label="@(IsPaused ? PlayButtonAriaLabel : PauseButtonAriaLabel)"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)"
                         class="bit-swp-ppb @Classes?.PlayPauseButton"
                         style="@Styles?.PlayPauseButton">
                     <i aria-hidden="true"
@@ -54,8 +60,9 @@
                                 aria-controls="@_ContainerId"
                                 aria-label="@($"{DotAriaLabel} {index + 1}")"
                                 aria-current="@(_page == index ? "true" : null)"
-                                disabled="@(IsEnabled is false)"
-                                style="@Styles?.Dots @(_page == index ? Styles?.CurrentDot : null)"
+                                disabled="@(Disabled)"
+                                aria-disabled="@(Disabled ? "true" : null)"
+                                style="@JoinStyles(Styles?.Dots, _page == index ? Styles?.CurrentDot : null)"
                                 class="bit-swp-dot @(DotTemplate is null ? null : "bit-swp-dtt") @((_page == index ? $"bit-swp-cud {Classes?.CurrentDot}" : "").Trim()) @Classes?.Dots">@DotTemplate?.Invoke(index)</button>
                     }
                 </div>
@@ -78,11 +85,12 @@
                     type="button"
                     aria-controls="@_ContainerId"
                     aria-label="@(PrevAriaLabel.HasValue() ? PrevAriaLabel : "Previous slide")"
-                    disabled="@(IsEnabled is false)"
+                    disabled="@(Disabled)"
+                    aria-disabled="@(Disabled ? "true" : null)"
                     class="bit-swp-lbt @Classes?.Buttons @Classes?.PrevButton"
-                    style="@_prevButtonStyle @Styles?.Buttons @Styles?.PrevButton">
+                    style="@JoinStyles(JoinStyles(_prevButtonStyle, Styles?.Buttons), Styles?.PrevButton)">
                 <i aria-hidden="true"
-                   style="@Styles?.ButtonIcons @Styles?.PrevButtonIcon"
+                   style="@JoinStyles(Styles?.ButtonIcons, Styles?.PrevButtonIcon)"
                    class="@prevIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.PrevButtonIcon" />
             </button>
 
@@ -90,11 +98,12 @@
                     type="button"
                     aria-controls="@_ContainerId"
                     aria-label="@(NextAriaLabel.HasValue() ? NextAriaLabel : "Next slide")"
-                    disabled="@(IsEnabled is false)"
+                    disabled="@(Disabled)"
+                    aria-disabled="@(Disabled ? "true" : null)"
                     class="bit-swp-rbt @Classes?.Buttons @Classes?.NextButton"
-                    style="@_nextButtonStyle @Styles?.Buttons @Styles?.NextButton">
+                    style="@JoinStyles(JoinStyles(_nextButtonStyle, Styles?.Buttons), Styles?.NextButton)">
                 <i aria-hidden="true"
-                   style="@Styles?.ButtonIcons @Styles?.NextButtonIcon"
+                   style="@JoinStyles(Styles?.ButtonIcons, Styles?.NextButtonIcon)"
                    class="@nextIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.NextButtonIcon" />
             </button>
         }
@@ -102,10 +111,14 @@
         <div @ref="_swiperContainer"
              id="@_ContainerId"
              class="bit-swp-cnt @Classes?.Container"
-             style="@_directionStyle @Styles?.Container">
+             style="@JoinStyles(_directionStyle, Styles?.Container)">
             <CascadingValue Value="this" IsFixed="true">
                 @ChildContent
             </CascadingValue>
         </div>
     </div>
+
+    @* The carousel pattern of the ARIA authoring practices keeps the announcements quiet while the swiper
+       moves on its own, and polite while it is only moved by the person reading the page. *@
+    <div class="bit-swp-sro" aria-live="@(IsPlaying ? "off" : "polite")" aria-atomic="true">@_announcement</div>
 </div>

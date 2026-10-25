@@ -54,7 +54,8 @@ public class FullSampleHostingTests
 
         var manifest = await PrecacheManifest.LoadAsync(client, "/");
         // The sample's own assetsExclude (see its service-worker.js).
-        var problems = await manifest.VerifyServedAsync(client, "/", @"^Bit\.Bswup\.FullSample\.Client\.styles\.css$", @"weather\.json$");
+        var problems = await manifest.VerifyServedAsync(client, "/",
+            @"^Bit\.Bswup\.FullSample\.Client\.styles\.css$", @"weather\.json$", @"^_framework/blazor\.webassembly\.js$");
 
         Assert.AreEqual(0, problems.Count, string.Join(Environment.NewLine, problems));
     }

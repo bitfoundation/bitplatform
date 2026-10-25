@@ -1,5 +1,9 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Defines the type attribute of the rendered input element, which decides what it accepts and which virtual keyboard a
+/// browser offers for it.
+/// </summary>
 public enum BitInputType
 {
     /// <summary>

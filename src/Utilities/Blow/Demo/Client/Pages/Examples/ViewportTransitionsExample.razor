@@ -1,0 +1,171 @@
+﻿@page "/examples/viewport-transitions"
+
+<PageTitle>Viewport Transitions · Blow</PageTitle>
+
+<ExampleScaffold Title="Viewport Transitions"
+                 Summary="Every viewport helper has an async twin that eases over a duration - SetCenterAsync, FitViewAsync, FitBoundsAsync, ZoomToAsync and SetViewportAsync. Jumping between two far-apart parts of a graph loses the reader; a short eased transition tells them which way they travelled.">
+    <Toolbar>
+        <label>
+            Duration
+            <input type="range" min="0" max="1500" step="100" value="@_duration"
+                   @oninput="@(e => SetDuration(e.Value))" />
+            <span class="vt-duration">@(_duration == 0 ? "instant" : $"{_duration} ms")</span>
+        </label>
+        <label>
+            Motion
+            <select @bind="_motion">
+                <option value="@BlowReducedMotion.System">Follow the system</option>
+                <option value="@BlowReducedMotion.Always">Reduce</option>
+                <option value="@BlowReducedMotion.Never">Always animate</option>
+            </select>
+        </label>
+        <button class="btn btn-secondary" @onclick="FlyToStart">Fly to Start</button>
+        <button class="btn btn-secondary" @onclick="FlyToFinish">Fly to Finish</button>
+        <button class="btn btn-secondary" @onclick="FrameFanOut">Frame the fan-out</button>
+        <button class="btn btn-secondary" @onclick="FitAll">Fit all</button>
+        <button class="btn btn-secondary" @onclick="ZoomInSlowly">Zoom to 200%</button>
+        <button class="btn btn-secondary" @onclick="Bookmark">Bookmark this view</button>
+        <button class="btn btn-secondary" @onclick="BackToBookmark" disabled="@(_bookmark is null)">Back to bookmark</button>
+        <span class="vt-state">@_state</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    MinZoom="0.1"
+                    ReducedMotion="_motion"
+                    OnMoveStart="OnMoveStart"
+                    OnMove="OnMove"
+                    OnMoveEnd="OnMoveEnd"
+                    FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="24" />
+            <BlowControls />
+            <BlowMiniMap Pannable="true" />
+            <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                <div class="vt-hint">Drag the pane mid-flight: the drag wins.</div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Drag <strong>Duration</strong> to choose how long each move takes; at <strong>instant</strong> every button jumps.</li>
+        <li><strong>Fly to Start</strong> and <strong>Fly to Finish</strong> glide to the two ends of the graph and zoom to 120%; <strong>Frame the fan-out</strong> fits the two middle nodes, and <strong>Fit all</strong> the whole graph.</li>
+        <li><strong>Zoom to 200%</strong> zooms about the middle of the pane without panning.</li>
+        <li><strong>Bookmark this view</strong> remembers where you are; pan away, then <strong>Back to bookmark</strong> glides back to it.</li>
+        <li>Watch the readout at the end of the toolbar: it says <strong>moving</strong> with the zoom of every frame while a transition runs, and <strong>settled</strong> once it ends.</li>
+        <li>Start a long transition, then <strong>drag the pane</strong> before it lands: the transition stops where it got to and the drag takes over. Pressing another button mid-flight starts the new move from there.</li>
+        <li>Set <strong>Motion</strong> to <strong>Reduce</strong>: every button jumps whatever the duration, and the animated edges keep their dashes but stop marching. <strong>Always animate</strong> ignores the operating system's setting.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>SetCenterAsync(x, y, zoom, durationMs)</code> centres a flow point, here the middle of a node from <code>GetNode(id).GetRect()</code>.</li>
+        <li><code>FitBoundsAsync(rect, padding, durationMs)</code> fits any flow-space <code>BlowRect</code> - the box round the two middle nodes - and <code>FitViewAsync(options)</code> fits nodes, taking its duration from <code>BlowFitViewOptions.Duration</code>.</li>
+        <li><code>ZoomToAsync(zoom, durationMs)</code> sets an absolute zoom about the pane centre. Every helper clamps to <code>MinZoom</code> and <code>MaxZoom</code> - lowered to 0.1 here so the whole graph fits.</li>
+        <li><code>GetViewport()</code> reads the current <code>BlowViewport</code>, and <code>SetViewportAsync(viewport, durationMs)</code> eases back to a saved one.</li>
+        <li>Each has a synchronous twin - <code>SetCenter</code>, <code>FitBounds</code>, <code>FitView</code>, <code>ZoomTo</code>, <code>SetViewport</code> - that never animates; a duration of 0 makes the async ones apply at once too.</li>
+        <li>A new request cancels the one in flight, so the last one wins; a user pan, pinch or scroll abandons it, since a transition still easing to its old target would fight the pointer.</li>
+        <li><code>OnMoveStart</code> and <code>OnMoveEnd</code> bracket a transition as they do a gesture, and <code>OnMove</code> reports every frame in between.</li>
+        <li><code>ReducedMotion</code> (default <code>BlowReducedMotion.System</code>) follows the operating system's reduce-motion setting; <code>Always</code> and <code>Never</code> override it, and <code>ReducesMotion</code> says which is in force.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .vt-duration { display: inline-block; min-width: 5rem; text-align: right; }
+    .vt-state { margin-left: auto; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--bb-text-soft); }
+    .vt-hint {
+        max-width: 230px;
+        padding: 6px 10px;
+        font-size: 11px;
+        line-height: 1.45;
+        background: var(--bit-blow-surface);
+        color: var(--bit-blow-text);
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 6px;
+    }
+</style>
+
+@code {
+    private BlowReducedMotion _motion = BlowReducedMotion.System;
+
+    private BlowCanvas _flow = default!;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _duration = 600;
+    private string _state = "settled";
+    private BlowViewport? _bookmark;
+
+    protected override void OnInitialized()
+    {
+        // Spread far enough apart that fitting them all zooms right out, so travelling between
+        // the two ends is a real journey rather than a nudge.
+        _nodes =
+        [
+            new BlowNode { Id = "start", Label = "Start", Position = new(0, 0), Width = 160, Height = 56 },
+            new BlowNode { Id = "mid-a", Label = "Fan out", Position = new(700, -220), Width = 160, Height = 56 },
+            new BlowNode { Id = "mid-b", Label = "Fan out", Position = new(700, 240), Width = 160, Height = 56 },
+            new BlowNode { Id = "join", Label = "Join", Position = new(1400, 10), Width = 160, Height = 56 },
+            new BlowNode { Id = "finish", Label = "Finish", Position = new(2100, 10), Width = 160, Height = 56 },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "s-a", Source = "start", Target = "mid-a", Animated = true },
+            new BlowEdge { Id = "s-b", Source = "start", Target = "mid-b", Animated = true },
+            new BlowEdge { Id = "a-j", Source = "mid-a", Target = "join" },
+            new BlowEdge { Id = "b-j", Source = "mid-b", Target = "join" },
+            new BlowEdge { Id = "j-f", Source = "join", Target = "finish" },
+        ];
+    }
+
+    private void SetDuration(object? raw)
+    {
+        if (int.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var value))
+            _duration = value;
+    }
+
+    private void OnMoveStart(BlowViewport _) => SetState("moving");
+
+    // Every frame of a transition comes through here, so this stays as cheap as a string.
+    private void OnMove(BlowViewport viewport)
+    {
+        if (_state != "settled") SetState($"moving · zoom {viewport.Zoom:0.00}");
+    }
+
+    private void OnMoveEnd(BlowViewport _) => SetState("settled");
+
+    private void SetState(string state)
+    {
+        _state = state;
+        StateHasChanged();
+    }
+
+    private Task FlyToStart() => FlyTo("start");
+
+    private Task FlyToFinish() => FlyTo("finish");
+
+    private async Task FlyTo(string nodeId)
+    {
+        if (_flow.GetNode(nodeId) is not { } node) return;
+
+        var rect = node.GetRect();
+        await _flow.SetCenterAsync(rect.X + rect.Width / 2, rect.Y + rect.Height / 2, 1.2, _duration);
+    }
+
+    // The box round the two middle nodes - whichever of them is still there, since either can be deleted.
+    private Task FrameFanOut()
+    {
+        var rects = new[] { "mid-a", "mid-b" }.Select(_flow.GetNode).OfType<BlowNode>().Select(n => n.GetRect()).ToList();
+        if (rects.Count == 0) return Task.CompletedTask;
+
+        var left = rects.Min(r => r.Left);
+        var top = rects.Min(r => r.Top);
+        var bounds = new BlowRect(left, top, rects.Max(r => r.Right) - left, rects.Max(r => r.Bottom) - top);
+        return _flow.FitBoundsAsync(bounds, 0.2, _duration);
+    }
+
+    private Task FitAll() => _flow.FitViewAsync(new BlowFitViewOptions { Padding = 0.15, Duration = _duration });
+
+    private Task ZoomInSlowly() => _flow.ZoomToAsync(2, _duration);
+
+    private void Bookmark() => _bookmark = _flow.GetViewport();
+
+    private Task BackToBookmark() => _bookmark is { } saved ? _flow.SetViewportAsync(saved, _duration) : Task.CompletedTask;
+}

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
 
 public partial class _BitDropdownCustomDemo
 {
@@ -6,13 +6,31 @@ public partial class _BitDropdownCustomDemo
     [Inject] private NavigationManager NavManager { get; set; } = default!;
 
 
+    private readonly BitDropdownParams<Product, string>[] dropdownParams =
+    [
+        new()
+        {
+            NameSelectors = new()
+            {
+                Id = { Selector = c => c.Key },
+                ItemType = { Selector = c => c.Type },
+                Text = { Selector = c => c.Text },
+                Value = { Selector = c => c.Value },
+            },
+            Placeholder = "Select an item",
+            ShowClearButton = true,
+            ShowSearchBox = true,
+            SearchBoxPlaceholder = "Search the list",
+        }
+    ];
+
     private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     {
         AriaLabel = { Selector = c => c.Label },
         Class = { Selector = c => c.CssClass },
         Id = { Selector = c => c.Key },
         Data = { Selector = c => c.Payload },
-        IsEnabled = { Selector = c => c.Disabled is false },
+        IsDisabled = { Selector = c => c.Disabled },
         IsHidden = { Selector = c => c.Visible is false },
         ItemType = { Selector = c => c.Type },
         Style = { Selector = c => c.CssStyle },
@@ -29,7 +47,7 @@ public partial class _BitDropdownCustomDemo
         Class = { Selector = c => c.CssClass },
         Id = { Selector = c => c.Key },
         Data = { Selector = c => c.Payload },
-        IsEnabled = { Selector = c => c.Disabled is false },
+        IsDisabled = { Selector = c => c.Disabled },
         IsHidden = { Selector = c => c.Visible is false },
         ItemType = { Selector = c => c.Type },
         Style = { Selector = c => c.CssStyle },
@@ -250,6 +268,10 @@ public partial class _BitDropdownCustomDemo
 
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
+
+    private string? stockValue;
+    // A rule no EditContext knows about: what is in stock is only known once the item has been picked.
+    private string? StockError => stockValue?.StartsWith("v-") is true ? "Vegetables are out of stock right now." : null;
 
     private string? closeOnSelectValue;
     private IEnumerable<string?> closeOnSelectValues = [];

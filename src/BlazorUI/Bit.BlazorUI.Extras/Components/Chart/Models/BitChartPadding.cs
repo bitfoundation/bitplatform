@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>BitChartPadding values mirroring Chart.js padding (number or per-side).</summary>
 public readonly record struct BitChartPadding(double Top, double Right, double Bottom, double Left)

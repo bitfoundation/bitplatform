@@ -1,8 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -18,6 +17,26 @@ public sealed class BitComponentCssVariablesContractTests
     private static readonly Regex CssVarDeclaration = new(
         @"^\s*(--bit-[a-zA-Z0-9-]+)\s*:",
         RegexOptions.Compiled | RegexOptions.Multiline);
+
+    // The public tier: --bit-<Component>-<part>, told apart from the private --bit-<abbr>-* one and from
+    // the global tokens by the capital its component name starts with. Only reads count - the whole point
+    // of the tier is that a component never declares one, so that a value set anywhere above it inherits.
+    private static readonly Regex PublicVarRead = new(
+        @"var\(\s*(--bit-(?<component>[A-Z][A-Za-z0-9]*)-[a-z0-9-]+)",
+        RegexOptions.Compiled);
+
+    // One row of the demo page's componentCssVariables table, which is the whole source of what the site
+    // and the MCP server say about this tier - there is no type behind it to read the names off. Only a name
+    // of the public shape counts: a page may also tabulate the global tokens it reads (--bit-bp-*), which
+    // belong to the theme tier this contract is not about.
+    private static readonly Regex DocumentedVar = new(
+        @"Name\s*=\s*""(--bit-[A-Z][A-Za-z0-9]*-[a-z0-9-]+)",
+        RegexOptions.Compiled);
+
+    // A numbered series - BitChart's --bit-Chart-series-color-1..10 - is read with its number interpolated
+    // (so the read ends in the dash) and documented as a span ("-1 ... -10"), so both sides are compared as
+    // the one family they name.
+    private static readonly Regex SeriesNumber = new(@"-\d*$", RegexOptions.Compiled);
 
     [TestMethod]
     public void ComponentVariablesNeverShadowGlobalTokens()
@@ -37,20 +56,127 @@ public sealed class BitComponentCssVariablesContractTests
             $"Component styles redeclare global theme tokens: {string.Join(", ", offenders)}");
     }
 
-    private static string GetTestSourceDirectory([CallerFilePath] string thisFile = "")
+    /// <summary>
+    /// The public <c>--bit-&lt;Component&gt;-*</c> variables a component reads have no type behind them, so the
+    /// demo page's <c>componentCssVariables</c> table is the only thing that says they exist - to the site, to
+    /// the MCP server and to anyone reading the docs. This pins the two to each other in both directions.
+    /// </summary>
+    [TestMethod]
+    public void EveryPublicVariableIsBothReadAndDocumented()
     {
-        var dir = Path.GetDirectoryName(thisFile);
-        Assert.IsTrue(dir is not null && Directory.Exists(dir),
-            $"The test source directory ({dir}) is not available; this contract test must run from a source checkout.");
-        return dir!;
+        var read = CollectPublicReads(GetPublicComponentDirectories());
+        var documented = CollectDocumented(GetDemoPagesDirectory());
+
+        var undocumented = read.Keys.Except(documented.Keys)
+            .Select(v => $"{v} (read by {read[v]}, named in no componentCssVariables table)");
+
+        var unread = documented.Keys.Except(read.Keys)
+            .Select(v => $"{v} (documented by {documented[v]}, read by no component)");
+
+        var offenders = undocumented.Concat(unread).OrderBy(o => o, StringComparer.Ordinal).ToArray();
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
+            $"The public CSS variable tier and the demo tables have drifted apart: {string.Join(", ", offenders)}");
     }
 
-    private static string GetComponentStylesDirectory()
+    /// <summary>
+    /// A public variable is named after the component that reads it, so the one place it is set says which
+    /// component it re-skins. A name that does not match the stylesheet reading it is a typo or a leak.
+    /// </summary>
+    [TestMethod]
+    public void EveryPublicVariableIsNamedAfterItsComponent()
     {
-        var dir = Path.GetFullPath(Path.Combine(GetTestSourceDirectory(), "..", "..", "..", "..", "Bit.BlazorUI", "Components"));
-        Assert.IsTrue(Directory.Exists(dir), $"Missing {dir}.");
-        return dir;
+        var offenders = new SortedSet<string>(StringComparer.Ordinal);
+
+        foreach (var file in EnumerateStyles(GetComponentStylesDirectory()))
+        {
+            var component = Path.GetFileNameWithoutExtension(file);
+
+            foreach (Match match in PublicVarRead.Matches(SourceFiles.ReadFullPath(file)))
+            {
+                if ($"Bit{match.Groups["component"].Value}" == component) continue;
+
+                offenders.Add($"{component} reads {match.Groups[1].Value}");
+            }
+        }
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), offenders.ToArray(),
+            $"Public CSS variables read outside the component they are named for: {string.Join(", ", offenders)}");
     }
+
+    private static string GetComponentStylesDirectory() => SourceFiles.GetDirectory("Bit.BlazorUI", "Components");
+
+    /// <summary>
+    /// Every package's components: Extras and Legacy ship public variables of their own, and the demo pages
+    /// documenting them sit in the same tree as the core ones.
+    /// </summary>
+    private static string[] GetPublicComponentDirectories()
+    {
+        return new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy" }
+            .Select(project => SourceFiles.GetDirectory(project, "Components"))
+            .ToArray();
+    }
+
+    private static string GetDemoPagesDirectory()
+        => SourceFiles.GetDirectory("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components");
+
+    private static IEnumerable<string> EnumerateStyles(string stylesDir)
+        => Directory.EnumerateFiles(stylesDir, "*.scss", SearchOption.AllDirectories);
+
+    /// <summary>
+    /// The stylesheets and the C# of the components. A variable is not always read by a stylesheet: one that
+    /// feeds a value the component computes (BitDialog's --bit-Dialog-max-width) is written into an inline
+    /// style by the C# side, and is just as public for it.
+    /// </summary>
+    private static IEnumerable<string> EnumerateSources(string componentsDir)
+        => Directory.EnumerateFiles(componentsDir, "*.scss", SearchOption.AllDirectories)
+                    .Concat(Directory.EnumerateFiles(componentsDir, "*.cs", SearchOption.AllDirectories));
+
+    /// <summary>The component a file belongs to: BitDialog for BitDialog.scss and BitDialog.razor.cs alike.</summary>
+    private static string GetComponentName(string file) => Path.GetFileName(file).Split('.')[0];
+
+    /// <summary>Every public variable a component reads, against the component that reads it.</summary>
+    private static SortedDictionary<string, string> CollectPublicReads(string[] componentDirs)
+    {
+        var byVariable = new SortedDictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var file in componentDirs.SelectMany(EnumerateSources))
+        {
+            var component = GetComponentName(file);
+
+            foreach (Match match in PublicVarRead.Matches(SourceFiles.ReadFullPath(file)))
+            {
+                byVariable[NormalizeSeries(match.Groups[1].Value)] = component;
+            }
+        }
+
+        return byVariable;
+    }
+
+    /// <summary>Every variable a demo page's componentCssVariables table names, against the page naming it.</summary>
+    private static SortedDictionary<string, string> CollectDocumented(string demoPagesDir)
+    {
+        var byVariable = new SortedDictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var file in Directory.EnumerateFiles(demoPagesDir, "*.cs", SearchOption.AllDirectories))
+        {
+            var text = SourceFiles.ReadFullPath(file);
+
+            // The table is a field of the page, so only what follows its declaration is read - every other
+            // mention of a variable on a demo page is a worked example setting one, which documents nothing.
+            var start = text.IndexOf("componentCssVariables", StringComparison.Ordinal);
+            if (start < 0) continue;
+
+            foreach (Match match in DocumentedVar.Matches(text, start))
+            {
+                byVariable[NormalizeSeries(match.Groups[1].Value)] = Path.GetFileName(file);
+            }
+        }
+
+        return byVariable;
+    }
+
+    private static string NormalizeSeries(string name) => SeriesNumber.Replace(name, "-N");
 
     private static SortedDictionary<string, SortedSet<string>> CollectDeclarations(string stylesDir)
     {
@@ -59,7 +185,7 @@ public sealed class BitComponentCssVariablesContractTests
         foreach (var file in Directory.EnumerateFiles(stylesDir, "*.scss", SearchOption.AllDirectories))
         {
             var component = Path.GetFileNameWithoutExtension(file);
-            var names = CssVarDeclaration.Matches(File.ReadAllText(file)).Select(m => m.Groups[1].Value);
+            var names = CssVarDeclaration.Matches(SourceFiles.ReadFullPath(file)).Select(m => m.Groups[1].Value);
 
             foreach (var name in names)
             {

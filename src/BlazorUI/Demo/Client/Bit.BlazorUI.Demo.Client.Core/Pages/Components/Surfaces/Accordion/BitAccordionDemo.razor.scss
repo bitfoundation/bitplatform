@@ -10,11 +10,12 @@
 }
 
 .custom-title {
-    color: #0054C6;
+    font-weight: 600;
+    color: var(--bit-clr-pri);
 }
 
 .custom-desc {
-    color: brown;
+    color: var(--bit-clr-fg-sec);
 }
 
 // Written literally as the wrapper div of the examples, so the scope attribute lands on it and no ::deep is
@@ -25,12 +26,30 @@
     flex-flow: column;
 }
 
+// The public CSS variables inherit, so one block on an ancestor re-skins every accordion under it.
+// It sits outside ::deep because the wrapper is a plain element written in this page's own markup.
+.faq-accordions {
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: column;
+    --bit-Accordion-radius: 0.75rem;
+    --bit-Accordion-header-padding: 1rem 1.25rem;
+    --bit-Accordion-content-padding: 1rem 1.25rem;
+    --bit-Accordion-border-color: color-mix(in srgb, var(--bit-clr-pri) 35%, transparent);
+    --bit-Accordion-header-hover-background: color-mix(in srgb, var(--bit-clr-pri) 8%, transparent);
+    --bit-Accordion-header-active-background: color-mix(in srgb, var(--bit-clr-pri) 16%, transparent);
+    --bit-Accordion-header-expanded-background: color-mix(in srgb, var(--bit-clr-pri) 12%, transparent);
+    --bit-Accordion-divider-color: color-mix(in srgb, var(--bit-clr-pri) 35%, transparent);
+    --bit-Accordion-title-color: var(--bit-clr-pri);
+    --bit-Accordion-expander-color: var(--bit-clr-pri);
+}
+
 // Handed to the component as Class/Classes, so it renders on markup of the component's own and needs ::deep
 // to reach past the scope; the anchor is the plain wrapper div each of those examples is written inside.
 ::deep {
     .custom-class {
         border-color: blueviolet;
-        background-color: blanchedalmond;
+        background-color: color-mix(in srgb, blueviolet 12%, transparent);
     }
 
     .custom-acd-title {
@@ -39,6 +58,6 @@
     }
 
     .custom-acd-content {
-        color: darkslateblue;
+        font-family: monospace;
     }
 }

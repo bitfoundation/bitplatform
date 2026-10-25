@@ -1,14 +1,17 @@
-using System.Text.RegularExpressions;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class _BitNavChild<TItem> : IDisposable where TItem : class
+public partial class _BitNavChild<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : IDisposable where TItem : class
 {
     private bool _disposed;
+    private bool _rendersHeader;
+    private bool _rendersContainer;
     private TItem? _registeredItem;
     private ElementReference _headerElement;
     private ElementReference _registeredElement;
     private _BitNavItemContainer? _container;
+    private readonly string _descriptionId = $"bit-nav-des-{BitShortId.NewId()}";
 
 
 
@@ -32,13 +35,20 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     {
         // The nav moves the focus between its items from the keyboard, so every item hands over the
         // element it rendered: the item's own anchor/button, or the group header button in Grouped mode.
-        if (_container is not null)
+        // What was rendered this time is what counts, since a reference is kept after its element is gone: a
+        // group whose last child is removed turns its header button into a plain label, for instance.
+        if (_rendersContainer && _container is not null)
         {
             RegisterItemElement(_container.Element);
         }
-        else if (_headerElement.Id is not null)
+        else if (_rendersHeader && _headerElement.Id is not null)
         {
             RegisterItemElement(_headerElement);
+        }
+        else if (_registeredItem is not null)
+        {
+            Nav?.UnregisterItemElement(_registeredItem, _registeredElement);
+            _registeredItem = null;
         }
 
         base.OnAfterRender(firstRender);
@@ -73,8 +83,8 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     private async Task HandleOnClick()
     {
         if (Nav is null) return;
-        if (Nav.IsEnabled is false) return;
-        if (Nav.GetIsEnabled(Item) is false) return;
+        if (Nav.Disabled) return;
+        if (Nav.GetIsDisabled(Item)) return;
 
         // The selection is read before the click is handled: the manual mode selects the clicked item right
         // here, and asking afterwards would report every freshly clicked item as the already-selected one
@@ -130,20 +140,25 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     {
         if (Nav is null) return;
         if (Nav.NoCollapse) return;
-        if (Nav.IsEnabled is false) return;
+        if (Nav.Disabled) return;
 
-        if (Nav.GetIsEnabled(Item) is false || Nav.GetChildItems(Item).Count is 0) return;
+        if (Nav.GetIsDisabled(Item) || Nav.GetChildItems(Item).Count is 0) return;
 
         await Nav.ToggleItem(Item);
     }
 
-    private string GetItemContainerClasses()
+    private string GetItemContainerClasses(bool isSelectedAncestor)
     {
         var classes = new List<string>();
 
-        if (Nav.IsEnabled is false || Nav.GetIsEnabled(Item) is false)
+        if (Nav.Disabled || Nav.GetIsDisabled(Item))
         {
             classes.Add("bit-nav-dis");
+        }
+
+        if (isSelectedAncestor)
+        {
+            classes.Add("bit-nav-sca");
         }
 
         if (Nav.IsSelected(Item))
@@ -218,15 +233,6 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
 
         return string.Join(";", styles);
     }
-
-    // rel="noopener noreferrer" only protects against a cross-origin target, so it is only added to the
-    // links that actually leave the app: the ones carrying a scheme (https://, mailto:, ...) or a
-    // protocol-relative host (//host/path).
-    private static readonly Regex _AbsoluteUrlRegex = new("^(?:[a-zA-Z][a-zA-Z0-9+.-]*:|//)", RegexOptions.Compiled);
-
-    private static bool IsRelativeUrl(string? url) => url.HasNoValue() || _AbsoluteUrlRegex.IsMatch(url!) is false;
-
-
 
     private static readonly Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
     {

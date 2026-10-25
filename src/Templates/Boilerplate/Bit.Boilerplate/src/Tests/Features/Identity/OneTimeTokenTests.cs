@@ -32,10 +32,10 @@ public class OneTimeTokenTests
     public async Task ReplayingAConsumedConfirmationToken_Should_NotChargeAFailedAccessAttempt()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         var email = MagicLinkSignInUtils.NewTestEmail();
 
@@ -69,10 +69,10 @@ public class OneTimeTokenTests
     public async Task ConfirmingAPhoneWithNoOutstandingToken_Should_ReportExpiredRatherThanInvalid()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         var exception = await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => identityController.ConfirmPhone(new() { PhoneNumber = SeededTestPhoneNumber, Token = "123456" }, TestContext.CancellationToken),
@@ -92,10 +92,10 @@ public class OneTimeTokenTests
     public async Task ConfirmEmail_Should_AcceptACaseVariantOfTheRegisteredAddress()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         var email = $"Mixed.Case.{Guid.NewGuid()}@BitPlatform.dev";
 
@@ -108,8 +108,8 @@ public class OneTimeTokenTests
         await identityController.ConfirmEmail(
             new() { Email = email.ToLowerInvariant(), Token = captured.Token }, TestContext.CancellationToken);
 
-        await using var dbScope = server.WebApp.Services.CreateAsyncScope();
-        var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
 
         Assert.IsTrue(await dbContext.Set<User>().AnyAsync(u => u.NormalizedEmail == normalizedEmail && u.EmailConfirmed, TestContext.CancellationToken),
@@ -127,10 +127,10 @@ public class OneTimeTokenTests
     public async Task AnUnparsablePhoneNumber_Should_BeABadRequestRatherThanAServerFault(string phoneNumber)
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => identityController.SendConfirmPhoneToken(new() { PhoneNumber = phoneNumber }, TestContext.CancellationToken),
@@ -142,7 +142,7 @@ public class OneTimeTokenTests
 
     private static async Task<int> ReadAccessFailedCount(AppTestServer server, string email)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
 

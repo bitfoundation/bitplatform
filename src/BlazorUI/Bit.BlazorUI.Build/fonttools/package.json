@@ -1,0 +1,7 @@
+{
+    "private": true,
+    "description": "What the publish-time cut of an icon font runs on Node.js (BitBlazorUITrimIconFont, IconFontSubsetter.cs): fonttools' pyftsubset on Pyodide, installed from package-lock.json with npm ci, so every byte of it is the one pinned there.",
+    "dependencies": {
+        "@web-alchemy/fonttools": "1.4.0"
+    }
+}

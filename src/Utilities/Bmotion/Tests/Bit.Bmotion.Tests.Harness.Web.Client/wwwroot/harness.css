@@ -1,0 +1,54 @@
+﻿/* Deterministic geometry for the harness pages: fixed sizes, no web fonts, no transitions of their own - every
+   pixel a test measures is put there by the fixture, never by a theme. */
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; font: 14px/1.4 sans-serif; }
+
+body { padding: 16px; }
+
+h1 { font-size: 18px; margin: 0 0 8px; }
+
+h2 { font-size: 15px; margin: 16px 0 8px; }
+
+#log { max-height: 120px; overflow: auto; font-size: 11px; margin: 0 0 8px; }
+
+section { margin: 12px 0; padding: 8px; border: 1px dashed #ccc; position: relative; }
+
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.box { width: 60px; height: 60px; background: rgb(108, 71, 255); }
+
+.small { width: 30px; height: 30px; background: rgb(255, 71, 133); }
+
+.track { position: relative; width: 400px; height: 80px; background: #eee; }
+
+.stage { position: relative; width: 400px; height: 300px; background: #f4f4f4; }
+
+.spacer { height: 1600px; }
+
+.scroller { height: 200px; width: 300px; overflow: auto; border: 1px solid #999; }
+
+.scroller .inner { height: 1200px; }
+
+.list { position: relative; display: flex; flex-direction: column; gap: 4px; width: 200px; }
+
+.list .item { height: 40px; background: #ddd; display: flex; align-items: center; padding: 0 8px; }
+
+.hlist { display: flex; flex-direction: row; gap: 4px; }
+
+.hlist .item { width: 60px; height: 40px; background: #ddd; }
+
+.tabs { display: flex; gap: 8px; }
+
+.tab { position: relative; width: 80px; height: 32px; }
+
+.underline { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgb(108, 71, 255); }
+
+.layout-row { display: flex; width: 400px; height: 70px; background: #eee; }
+
+.layout-row.end { justify-content: flex-end; }
+
+.grip { display: inline-block; width: 16px; height: 16px; background: #333; }
+
+.progress { height: 6px; width: 400px; background: rgb(108, 71, 255); transform-origin: 0 50%; }

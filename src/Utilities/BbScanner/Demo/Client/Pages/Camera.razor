@@ -1,0 +1,323 @@
+﻿@page "/camera"
+
+<PageTitle>Camera control · BbScanner</PageTitle>
+
+<div class="bb-intro">
+    <h1>Camera, torch and zoom</h1>
+    <p class="bb-subtitle">
+        Camera selection, torch and zoom are all capabilities of the running media track. The
+        component reports what the browser says is available and never offers a control the hardware
+        will refuse: its own control bar shows a camera picker only when there is more than one camera,
+        and a torch button and a zoom slider only when the open camera supports them.
+    </p>
+</div>
+
+<div class="bb-demo bb-page-wide">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">Live</span>
+        <StatusBadge Status="_scanner?.Status" />
+    </div>
+
+    <div class="scan-sample">
+        <div class="scan-layout">
+            <div class="scan-view">
+                <BbScanner @ref="_scanner"
+                           Facing="_facing"
+                           ShowControls="true"
+                           OnScan="r => _last = r"
+                           OnCameraChanged="OnCameraChanged"
+                           OnStatusChanged="OnStatusChanged"
+                           OnError="e => _error = e" />
+
+                @if (_error is not null)
+                {
+                    <div class="bb-note bb-note-warn"><strong>@_error.Kind</strong> — @_error.Message</div>
+                }
+
+                @if (_last is not null)
+                {
+                    <dl class="bb-params">
+                        <dt>Last scan</dt>
+                        <dd><span class="bb-badge">@_last.Format</span> @_last.Text</dd>
+                    </dl>
+                }
+            </div>
+
+            <div class="scan-panels">
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Available cameras</h3>
+                    <div class="bb-toolbar">
+                        <button class="btn btn-secondary" type="button" @onclick="RefreshCameras">Enumerate</button>
+                    </div>
+
+                    @if (_cameras.Count == 0)
+                    {
+                        <div class="bb-empty">
+                            None listed yet. Browsers withhold the list, and camera labels, until permission
+                            has been granted at least once.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="bb-scroll">
+                            <table class="bb-table">
+                                <tbody>
+                                    @foreach (var camera in _cameras)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @camera.Label
+                                                @if (camera.DeviceId == _camera?.DeviceId)
+                                                {
+                                                    <span class="bb-badge bb-badge-success">in use</span>
+                                                }
+                                            </td>
+                                            <td class="bb-table-action">
+                                                <button class="btn btn-secondary" type="button" @onclick="() => Switch(camera.DeviceId)">Use</button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    <p class="bb-card-desc">
+                        <em>Enumerate</em> calls <code>GetCamerasAsync</code>, and <em>Use</em>
+                        <code>SwitchCameraAsync</code>, which reopens the scanner on that camera without tearing the
+                        component down. Binding the <code>DeviceId</code> parameter does the same. A camera the
+                        browser gives no name - every one, before permission - is listed as
+                        <code>BbScannerTexts.UnnamedCamera</code>, "Camera 1" in English.
+                    </p>
+
+                    <label class="bb-field">
+                        <span>Preferred facing</span>
+                        <select id="facing" value="@_facing" @onchange="OnFacingChanged">
+                            <option value="@BbCameraFacing.Rear">Rear</option>
+                            <option value="@BbCameraFacing.Front">Front</option>
+                            <option value="@BbCameraFacing.Any">Any</option>
+                        </select>
+                        <small>
+                            <code>Facing</code> picks a camera when no <code>DeviceId</code> is set: <code>Rear</code>
+                            (the default, what a scanner normally wants), <code>Front</code>, or <code>Any</code> to
+                            let the browser decide. Changing it reopens the running camera. A front camera's preview
+                            is mirrored, as a selfie view is; the highlights follow it.
+                        </small>
+                    </label>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Negotiated track</h3>
+                    <p class="bb-card-desc">
+                        The <code>BbCameraInfo</code> that <code>OnCameraChanged</code> delivers each time a camera
+                        opens, also readable as the scanner's <code>Camera</code> property: what the browser actually
+                        negotiated, which may differ from <code>RequestedWidth</code> and <code>RequestedHeight</code>.
+                    </p>
+                    @if (_camera is null)
+                    {
+                        <div class="bb-empty">No camera open.</div>
+                    }
+                    else
+                    {
+                        <dl class="bb-params">
+                            <dt>Label</dt>
+                            <dd>@_camera.Label</dd>
+                            <dt>Resolution</dt>
+                            <dd>@_camera.Width × @_camera.Height</dd>
+                            <dt>Decoded at</dt>
+                            <dd>@(_scanner?.ProcessingSize.Width) × @(_scanner?.ProcessingSize.Height) (<code>ProcessingSize</code>)</dd>
+                            <dt>Frame rate</dt>
+                            <dd>@(_camera.FrameRate > 0 ? $"{_camera.FrameRate:0.#} fps" : "unreported")</dd>
+                            <dt>Facing</dt>
+                            <dd>@(_camera.FacingMode.Length == 0 ? "unreported" : _camera.FacingMode)</dd>
+                            <dt>Torch</dt>
+                            <dd>
+                                @if (_camera.SupportsTorch)
+                                {
+                                    <span class="bb-badge bb-badge-success">supported</span>
+                                }
+                                else
+                                {
+                                    <span class="bb-soft">not supported</span>
+                                }
+                            </dd>
+                            <dt>Zoom</dt>
+                            <dd>
+                                @if (_camera.SupportsZoom)
+                                {
+                                    <span class="bb-badge bb-badge-success">@_camera.ZoomMin.ToString("0.#") to @_camera.ZoomMax.ToString("0.#")</span>
+                                    @if (_camera.ZoomStep > 0)
+                                    {
+                                        <span class="bb-soft"> in steps of @_camera.ZoomStep.ToString("0.###")</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="bb-soft">not supported</span>
+                                }
+                            </dd>
+                        </dl>
+                    }
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Controls</h3>
+                    <div class="bb-toolbar">
+                        <button class="btn btn-secondary" type="button" disabled="@(_camera?.SupportsTorch != true)" @onclick="ToggleTorch">
+                            @(_scanner?.IsTorchOn == true ? "Torch off" : "Torch on")
+                        </button>
+                        <button class="btn btn-secondary" type="button" id="scan-full-frame" disabled="@(!CanScanFrame)" @onclick="ScanFullFrame">
+                            Scan full frame
+                        </button>
+                    </div>
+
+                    @if (_captured is not null)
+                    {
+                        <p class="bb-card-desc" id="full-frame-result">
+                            @(_captured.Count == 0 ? "Nothing in the full frame either." : string.Join(", ", _captured.Select(r => $"{r.Format}: {r.Text}")))
+                        </p>
+                    }
+
+                    @if (_camera?.SupportsZoom == true)
+                    {
+                        <label class="bb-field">
+                            <span class="scan-field-head"><span>Zoom</span><output>@(_scanner?.Zoom.ToString("0.##"))</output></span>
+                            <input type="range"
+                                   min="@Invariant(_camera.ZoomMin)"
+                                   max="@Invariant(_camera.ZoomMax)"
+                                   step="@Invariant(_camera.ZoomStep > 0 ? _camera.ZoomStep : 0.1)"
+                                   value="@Invariant(_scanner?.Zoom ?? 0)"
+                                   @onchange="OnZoomChanged" />
+                        </label>
+                    }
+
+                    <p class="bb-card-desc">
+                        The torch button calls <code>SetTorchAsync</code> and the slider <code>SetZoomAsync</code>;
+                        <code>IsTorchOn</code> and <code>Zoom</code> read the current state back. Torch and zoom are
+                        almost always rear-camera-only, and support varies by browser, so both calls return whether
+                        the browser accepted them rather than throwing, and a zoom outside the range is clamped to it.
+                    </p>
+                    <p class="bb-card-desc">
+                        <em>Scan full frame</em> calls <code>ScanCurrentFrameAsync</code>, which reads the current
+                        frame at the camera's own resolution with the still image settings - for a code too dense or
+                        too far away for the live frames, which are scaled down to <code>MaxProcessingSize</code>.
+                        It returns every symbol it finds and raises no event, which makes it a good "capture" button.
+                    </p>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> In code</h3>
+    <p class="bb-card-desc">
+        A camera picker of your own: list the cameras once the scanner has opened one - so their labels are
+        readable - and bind the choice to <code>DeviceId</code>.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">BbScanner</span> @@ref=<span class="s">"_scanner"</span> DeviceId=<span class="s">"@@_deviceId"</span> OnCameraChanged=<span class="s">"OnCameraChanged"</span> /&gt;
+
+&lt;<span class="k">select</span> @@bind=<span class="s">"_deviceId"</span>&gt;
+    <span class="k">@@foreach</span> (<span class="k">var</span> camera <span class="k">in</span> _cameras)
+    {
+        &lt;<span class="k">option</span> value=<span class="s">"@@camera.DeviceId"</span>&gt;@@camera.Label&lt;/<span class="k">option</span>&gt;
+    }
+&lt;/<span class="k">select</span>&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private</span> BbScanner _scanner = <span class="k">default</span>!;
+    <span class="k">private</span> IReadOnlyList&lt;BbCameraDevice&gt; _cameras = [];
+    <span class="k">private string</span>? _deviceId;
+    <span class="k">private bool</span> _canTorch;   <span class="c">// offer a torch button of your own only when there is a torch</span>
+
+    <span class="k">private async</span> Task OnCameraChanged(BbCameraInfo camera)
+    {
+        _canTorch = camera.SupportsTorch;
+        _cameras = <span class="k">await</span> _scanner.GetCamerasAsync();
+    }
+}</pre>
+</div>
+
+@code {
+    private BbScanner? _scanner;
+    private IReadOnlyList<BbCameraDevice> _cameras = [];
+    private BbCameraInfo? _camera;
+    private BbBarcodeResult? _last;
+    private BbScannerException? _error;
+    private BbCameraFacing _facing = BbCameraFacing.Rear;
+    private IReadOnlyList<BbBarcodeResult>? _captured;
+
+    // A frame exists only while the track runs; the camera info outlives a restart that is still Starting.
+    private bool CanScanFrame => _scanner?.Status is BbScannerStatus.Scanning or BbScannerStatus.Paused;
+
+    private async Task ScanFullFrame()
+    {
+        if (_scanner is not null && CanScanFrame)
+        {
+            _captured = await _scanner.ScanCurrentFrameAsync();
+        }
+    }
+
+    private async Task RefreshCameras()
+    {
+        if (_scanner is not null)
+        {
+            _cameras = await _scanner.GetCamerasAsync();
+        }
+    }
+
+    private async Task Switch(string deviceId)
+    {
+        if (_scanner is not null)
+        {
+            await _scanner.SwitchCameraAsync(deviceId);
+        }
+    }
+
+    private async Task ToggleTorch()
+    {
+        if (_scanner is not null)
+        {
+            await _scanner.SetTorchAsync(!_scanner.IsTorchOn);
+        }
+    }
+
+    private async Task OnZoomChanged(ChangeEventArgs args)
+    {
+        if (_scanner is not null &&
+            double.TryParse(args.Value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var zoom))
+        {
+            await _scanner.SetZoomAsync(zoom);
+        }
+    }
+
+    // Numeric attributes must not pick up a culture specific decimal separator.
+    private static string Invariant(double value) => value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    private void OnFacingChanged(ChangeEventArgs args)
+    {
+        if (Enum.TryParse<BbCameraFacing>(args.Value?.ToString(), out var facing))
+        {
+            _facing = facing;
+        }
+    }
+
+    private async Task OnCameraChanged(BbCameraInfo camera)
+    {
+        _camera = camera;
+        _error = null;
+        await RefreshCameras();
+        StateHasChanged();
+    }
+
+    private void OnStatusChanged(BbScannerStatus status)
+    {
+        // The card describes a running track, so it has to empty when the track goes away.
+        if (status is BbScannerStatus.Stopped or BbScannerStatus.Faulted or BbScannerStatus.Idle)
+        {
+            _camera = null;
+        }
+
+        StateHasChanged();
+    }
+}

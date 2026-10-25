@@ -21,7 +21,7 @@ public partial class _BitButtonGroupItemDemo
 
     private List<BitButtonGroupItem> disabledItems =
     [
-        new() { Text = "Add" }, new() { Text = "Edit", IsEnabled = false }, new() { Text = "Delete" }
+        new() { Text = "Add" }, new() { Text = "Edit", IsDisabled = true }, new() { Text = "Delete" }
     ];
 
     private List<BitButtonGroupItem> iconItems =

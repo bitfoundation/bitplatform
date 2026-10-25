@@ -1,4 +1,4 @@
-declare type Op = {
+﻿declare type Op = {
     insert?: string | Record<string, unknown>;
     delete?: number;
     retain?: number | Record<string, unknown>;

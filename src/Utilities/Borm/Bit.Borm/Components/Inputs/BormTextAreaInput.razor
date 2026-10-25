@@ -1,0 +1,68 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+@* Splat first so the renderer's own attributes below always win. A field written as the user types is
+   bound on input (see BormInputBase.OnTyped); one written on change keeps its content, which does not
+   change while the user types. *@
+@if (UpdatesOnInput)
+{
+    <textarea @attributes="ExtraAttributes"
+              id="@Context.ElementId"
+              name="@Context.InputName"
+              @ref="Element"
+              class="@CssClass"
+              placeholder="@Context.Placeholder"
+              disabled="@Disabled"
+              readonly="@ReadOnly"
+              maxlength="@MaxLengthAttribute"
+              rows="@Rows"
+              autocomplete="@Field.Autocomplete"
+              aria-required="@AriaRequired"
+              aria-invalid="@AriaInvalid"
+              aria-label="@AriaLabel"
+              aria-describedby="@DescribedBy"
+              @bind:get="LiveValue(Context.StringValue)"
+              @bind:set="OnTyped"
+              @bind:event="oninput"
+              @onchange="OnChange"
+              @onblur="OnBlur"></textarea>
+}
+else
+{
+    <textarea @attributes="ExtraAttributes"
+              id="@Context.ElementId"
+              name="@Context.InputName"
+              @ref="Element"
+              class="@CssClass"
+              placeholder="@Context.Placeholder"
+              disabled="@Disabled"
+              readonly="@ReadOnly"
+              maxlength="@MaxLengthAttribute"
+              rows="@Rows"
+              autocomplete="@Field.Autocomplete"
+              aria-required="@AriaRequired"
+              aria-invalid="@AriaInvalid"
+              aria-label="@AriaLabel"
+              aria-describedby="@DescribedBy"
+              @onchange="OnChange"
+              @oninput="InputHandler"
+              @onblur="OnBlur">@Context.StringValue</textarea>
+}
+
+@if (ShowCounter)
+{
+    <p class="bit-borm-counter @(Length > Field.MaxLength ? "bit-borm-counter--over" : "")" aria-hidden="true">
+        @Context.Text(BormMessageKeys.CharacterCount, Length, Field.MaxLength)
+    </p>
+    @* See BormInputBase.CharacterCountAnnouncement: the visible counter is decorative, so the
+       remaining count is announced politely as the limit approaches. *@
+    <p class="bit-borm-sr-only" aria-live="polite">@CharacterCountAnnouncement</p>
+}
+
+@code {
+    private int Rows => Attr("rows", 4);
+
+    private bool ShowCounter => Field.ShowCharacterCount && Field.MaxLength is > 0;
+
+    private int Length => DisplayLength;
+}

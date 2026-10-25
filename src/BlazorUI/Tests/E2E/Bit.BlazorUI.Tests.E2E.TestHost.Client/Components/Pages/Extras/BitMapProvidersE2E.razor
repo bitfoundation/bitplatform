@@ -1,0 +1,101 @@
+﻿@page "/e2e/map/providers"
+@using System.Globalization
+@inject NavigationManager Navigation
+
+<PageTitle>BitMap providers E2E</PageTitle>
+
+<h1>BitMap providers</h1>
+
+@* The two other providers that need no key. Their libraries come from a CDN (OpenLayers from esm.sh and jsDelivr,
+   MapLibre from unpkg), so this page needs the network; the tiles are the host's own image either way. *@
+
+@* Rendered on demand, so opening the page makes no request off this machine. *@
+<button id="btn-load" @onclick="() => _load = true">Load the maps</button>
+
+@if (_load)
+{
+    <E2ESection Id="openlayers" Title="OpenLayers">
+        <div class="map-box">
+            <BitMap @ref="_olMap" TMapProvider="BitOpenLayersMapProvider" Id="map-ol" Provider="_olProvider" Markers="_markers"
+                    AriaLabel="OpenLayers map"
+                    OnMarkerClick="id => _olMarker = id"
+                    OnLoadStateChanged="s => _olState = s.ToString()"
+                    @bind-Zoom="_olZoom" />
+        </div>
+        <button id="btn-ol-zoom-in" @onclick="@(async () => await _olMap.ZoomIn(animate: false))">ZoomIn</button>
+        <button id="btn-ol-project" @onclick="ProjectBigBen">Project Big Ben</button>
+        <span id="ol-projected">@(_olProjected ?? "none")</span>
+        <span id="ol-state">@(_olState ?? "none")</span>
+        <span id="ol-marker">@(_olMarker ?? "none")</span>
+        <span id="ol-zoom">@(_olZoom?.ToString("F1", CultureInfo.InvariantCulture) ?? "null")</span>
+    </E2ESection>
+
+    <E2ESection Id="maplibre" Title="MapLibre">
+        <div class="map-box">
+            <BitMap @ref="_glMap" TMapProvider="BitMapLibreMapProvider" Id="map-gl" Provider="_glProvider" Markers="_markers"
+                    AriaLabel="MapLibre map"
+                    OnMarkerClick="id => _glMarker = id"
+                    OnLoadStateChanged="s => _glState = s.ToString()"
+                    @bind-Zoom="_glZoom" />
+        </div>
+        <button id="btn-gl-zoom-in" @onclick="@(async () => await _glMap.ZoomIn(animate: false))">ZoomIn</button>
+        <span id="gl-state">@(_glState ?? "none")</span>
+        <span id="gl-marker">@(_glMarker ?? "none")</span>
+        <span id="gl-zoom">@(_glZoom?.ToString("F1", CultureInfo.InvariantCulture) ?? "null")</span>
+    </E2ESection>
+}
+
+<style>
+    .map-box { width: 600px; height: 400px; }
+</style>
+
+<E2EStatus />
+
+@code {
+    private readonly BitOpenLayersMapProvider _olProvider = new()
+    {
+        TileUrl = "samples/map-tile.png?z={z}&x={x}&y={y}",
+        Center = new(51.505, -0.09),
+        Zoom = 13
+    };
+
+    private BitMapLibreMapProvider _glProvider = default!;
+
+    private bool _load;
+
+    private readonly IEnumerable<BitMapMarker> _markers =
+    [
+        new() { Id = "big-ben", Position = new(51.5007, -0.1246), Alt = "Big Ben" },
+        new() { Id = "tower", Position = new(51.5055, -0.0754), Alt = "Tower Bridge" }
+    ];
+
+    private BitMap<BitOpenLayersMapProvider> _olMap = default!;
+    private string? _olState;
+    private string? _olMarker;
+    private double? _olZoom = 13;
+    private string? _olProjected;
+
+    private BitMap<BitMapLibreMapProvider> _glMap = default!;
+    private string? _glState;
+    private string? _glMarker;
+    private double? _glZoom = 13;
+
+    private async Task ProjectBigBen()
+    {
+        var point = await _olMap.Project(new(51.5007, -0.1246));
+        _olProjected = point is { } p ? string.Create(CultureInfo.InvariantCulture, $"{p.X:F0},{p.Y:F0}") : "null";
+    }
+
+    protected override void OnInitialized()
+    {
+        // A raster style of the host's own tile, handed over as a data URL so the tiles need no network either.
+        var tile = $"{Navigation.BaseUri}samples/map-tile.png?gl=1&z={{z}}&x={{x}}&y={{y}}";
+        var style = "{\"version\":8,\"sources\":{\"t\":{\"type\":\"raster\",\"tiles\":[\"" + tile + "\"],\"tileSize\":256}},\"layers\":[{\"id\":\"t\",\"type\":\"raster\",\"source\":\"t\"}]}";
+        _glProvider = new()
+        {
+            StyleUrl = "data:application/json;charset=utf-8," + Uri.EscapeDataString(style),
+            Center = new(51.505, -0.09),
+            Zoom = 13
+        };
+    }
+}

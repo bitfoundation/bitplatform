@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Collections.Frozen;
 using Microsoft.AspNetCore.Components;
 using Bit.BlazorUI.Demo.Client.Core.Models;
@@ -94,6 +94,14 @@ public sealed record BlazorUIComponent
     /// </summary>
     public Type? CascadingParams { get; init; }
 
+    /// <summary>
+    /// The component a service shows, for a service named after one - <c>BitModal</c> for
+    /// <c>BitModalService</c> - which is where the service's <see cref="CascadingParams"/> come from:
+    /// what it renders is that component, so a <c>BitParams</c> around its container reaches it.
+    /// Null for a component, and for a service that is named after nothing it renders.
+    /// </summary>
+    public Type? ShownComponentType { get; init; }
+
     /// <summary>The classes and enums this component owns, in full - nothing else documents them.</summary>
     public IReadOnlyList<ComponentSubType> OwnTypes { get; init; } = [];
 
@@ -105,6 +113,13 @@ public sealed record BlazorUIComponent
     /// <c>GetBitBlazorUIType</c>.
     /// </summary>
     public IReadOnlyList<ComponentSubType> SharedTypes { get; init; } = [];
+
+    /// <summary>
+    /// The concrete components of a family documented on one page - the eighteen loaders on Loading -
+    /// whose <see cref="ComponentType"/> is their abstract base, which is not a tag anyone can write.
+    /// Read off the assembly once, while the catalog is built, and empty for every other component.
+    /// </summary>
+    public IReadOnlyList<string> FamilyMembers { get; init; } = [];
 
     public IReadOnlyList<DemoExampleSource> Examples { get; init; } = [];
 }
@@ -131,6 +146,38 @@ public static class BlazorUIComponentCatalog
     private static readonly Type[] _baseTypes = [typeof(BitComponentBase), typeof(BitInputBase<>), typeof(BitTextInputBase<>)];
 
     private static readonly Lazy<BlazorUIComponent[]> _components = new(Build, LazyThreadSafetyMode.PublicationOnly);
+
+    /// <summary>
+    /// The link to a component's source: <paramref name="pagePath"/> is the path its demo page states,
+    /// relative to the package's Components folder. A page whose source lives outside that folder (the
+    /// Params utilities) climbs out of it with "../", which is resolved here segment by segment, so the
+    /// link reads as the file's own path. Nothing else about the path is touched - Uri would resolve the
+    /// segment too, but it would also percent-encode and normalize every other component's link - and a
+    /// "../" never climbs above the package.
+    /// </summary>
+    private static string SourceUrlOf(string packageId, string pagePath)
+    {
+        List<string> segments = [packageId, "Components"];
+
+        foreach (var segment in pagePath.Split('/'))
+        {
+            if (segment is "" or ".") continue;
+
+            if (segment is "..")
+            {
+                if (segments.Count > 1)
+                {
+                    segments.RemoveAt(segments.Count - 1);
+                }
+
+                continue;
+            }
+
+            segments.Add(segment);
+        }
+
+        return $"{SourceRoot}/{string.Join('/', segments)}";
+    }
     private static readonly Lazy<FrozenDictionary<string, BlazorUIComponent>> _byName = new(BuildIndex, LazyThreadSafetyMode.PublicationOnly);
 
     /// <summary>Every documented component, in nav order.</summary>
@@ -220,14 +267,15 @@ public static class BlazorUIComponentCatalog
         return [.. ComponentCatalog.Items.Select(item =>
         {
             var name = $"Bit{item.Name}";
-            var componentType = FindType(name);
+            var componentType = FindComponentType(name);
             var demoType = demoAssembly.GetTypes().FirstOrDefault(t => t.Name == $"{name}Demo");
             var demo = demoType is null ? null : BlazorUIDemoSource.Get(demoType);
             var tables = demoType is null ? null : DemoTables.Read(demoType);
 
             var inherited = InheritedBases(componentType);
+            var shownType = ShownComponentTypeOf(componentType);
             var parameters = MergeParameters(tables?.Parameters, componentType);
-            var (own, shared) = SplitSubTypes(name, tables);
+            var (own, shared) = SplitSubTypes(name, shownType, tables);
 
             return new BlazorUIComponent
             {
@@ -244,17 +292,33 @@ public static class BlazorUIComponentCatalog
                 ComponentType = componentType,
                 SourceUrl = demo?.SourceUrl is null || componentType is null
                     ? null
-                    : $"{SourceRoot}/{BlazorUIAssemblies.Of(componentType).PackageId}/Components/{demo.SourceUrl}",
+                    : SourceUrlOf(BlazorUIAssemblies.Of(componentType).PackageId, demo.SourceUrl),
                 Inherited = inherited,
                 Parameters = parameters,
                 PublicMembers = MergeMembers(tables?.PublicMembers, componentType, parameters),
                 CssVariables = tables?.CssVariables ?? [],
-                CascadingParams = CascadingParamsOf(componentType),
+                CascadingParams = CascadingParamsOf(shownType ?? componentType),
+                ShownComponentType = shownType,
                 OwnTypes = own,
                 SharedTypes = shared,
+                FamilyMembers = FamilyMembersOf(componentType),
                 Examples = demo?.Examples ?? []
             };
         })];
+    }
+
+    /// <summary>
+    /// The concrete components deriving from an abstract component type - see
+    /// <see cref="BlazorUIComponent.FamilyMembers"/> - in ordinal order.
+    /// </summary>
+    private static string[] FamilyMembersOf(Type? componentType)
+    {
+        if (componentType is not { IsAbstract: true } family) return [];
+
+        return [.. family.Assembly.GetExportedTypes()
+                                  .Where(t => t.IsAbstract is false && family.IsAssignableFrom(t))
+                                  .Select(t => t.Name)
+                                  .Order(StringComparer.Ordinal)];
     }
 
     /// <summary>
@@ -338,6 +402,22 @@ public static class BlazorUIComponentCatalog
     }
 
     /// <summary>
+    /// The component a service named after one shows - see <see cref="BlazorUIComponent.ShownComponentType"/>.
+    /// </summary>
+    private static Type? ShownComponentTypeOf(Type? componentType)
+    {
+        if (componentType is null || typeof(IComponent).IsAssignableFrom(componentType)) return null;
+
+        const string suffix = "Service";
+
+        if (componentType.Name.EndsWith(suffix, StringComparison.Ordinal) is false) return null;
+
+        var shown = FindType(componentType.Name[..^suffix.Length]);
+
+        return shown is not null && typeof(IComponent).IsAssignableFrom(shown) ? shown : null;
+    }
+
+    /// <summary>
     /// The base of <paramref name="type"/> that is <paramref name="baseType"/>, as it is closed
     /// there - <c>BitInputBase&lt;string&gt;</c> for BitTextField's <c>BitInputBase&lt;&gt;</c> -
     /// or null when it does not derive from it at all.
@@ -404,9 +484,11 @@ public static class BlazorUIComponentCatalog
     /// properties.
     /// <para>
     /// What is left out is what is public for a reason other than being called: the
-    /// <c>[JSInvokable]</c> callbacks the library's own scripts invoke, the <c>Assign*</c> setters
-    /// and the <c>HasNotBeenSet</c> probe the parameter source generator emits behind a two-way
-    /// binding, the framework members a component overrides, and disposal.
+    /// <c>[JSInvokable]</c> callbacks the library's own scripts invoke, the overloads hidden from the editor that
+    /// are kept only for assemblies compiled against an earlier signature, the <c>Assign*</c> setters the
+    /// parameter source generator emits behind a two-way binding and the <c>HasNotBeenSet</c> probe it
+    /// emits on a component outside <c>BitComponentBase</c>, the framework members a component
+    /// overrides, and disposal.
     /// </para>
     /// </summary>
     private static ComponentMember[] ReflectMembers(Type? type, IReadOnlyList<ComponentMember> parameters)
@@ -420,6 +502,7 @@ public static class BlazorUIComponentCatalog
         var methods = type.GetMethods(Declared)
             .Where(m => m.IsSpecialName is false && m.GetBaseDefinition() == m)
             .Where(m => m.IsDefined(typeof(Microsoft.JSInterop.JSInvokableAttribute)) is false)
+            .Where(m => m.GetCustomAttribute<System.ComponentModel.EditorBrowsableAttribute>()?.State is not System.ComponentModel.EditorBrowsableState.Never)
             .Where(m => m.Name.StartsWith('_') is false && generated.Contains(m.Name) is false)
             .Where(m => m.Name is not ("Dispose" or "DisposeAsync" or "Equals" or "GetHashCode" or "ToString"))
             .Select(m => new ComponentMember(
@@ -451,6 +534,9 @@ public static class BlazorUIComponentCatalog
 
         var parameters = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(p => p.IsDefined(typeof(ParameterAttribute)))
+            // An [Obsolete] parameter is kept only so old markup still binds; naming it would be
+            // handing an agent the very name it should not write.
+            .Where(p => p.IsDefined(typeof(ObsoleteAttribute)) is false)
             .Where(p => documented.Contains(p.DeclaringType is { IsGenericType: true } declaring ? declaring.GetGenericTypeDefinition() : p.DeclaringType) is false)
             .OrderBy(p => p.Name, StringComparer.Ordinal)
             .ToArray();
@@ -528,16 +614,37 @@ public static class BlazorUIComponentCatalog
     /// dropped it from both halves - <c>BitButton</c> never mentioned the <c>BitIconInfo</c> its
     /// own <c>Icon</c> parameter takes.
     /// </para>
+    /// <para>
+    /// A service's types are named after the component it shows rather than after the service -
+    /// <c>BitModalReference</c>, <c>BitModalParameters</c> on the <c>BitModalService</c> page - and that
+    /// page is the only one documenting them, so they are its own too.
+    /// </para>
     /// </summary>
-    private static (ComponentSubType[] Own, ComponentSubType[] Shared) SplitSubTypes(string name, DemoTables? tables)
+    private static (ComponentSubType[] Own, ComponentSubType[] Shared) SplitSubTypes(string name, Type? shownType, DemoTables? tables)
     {
         if (tables is null) return ([], []);
 
         var all = tables.SubClasses.Concat(tables.SubEnums).ToArray();
 
-        var own = all.ToLookup(t => t.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase));
+        var own = all.ToLookup(t => t.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase) ||
+                                    (shownType is not null && t.Name.StartsWith(shownType.Name, StringComparison.OrdinalIgnoreCase)));
 
         return ([.. own[true]], [.. own[false]]);
+    }
+
+    /// <summary>
+    /// The type whose API a nav entry documents. That is the type of the same name, except for a family of
+    /// components documented on one page - the eighteen loaders on Loading - whose name belongs to the shell they
+    /// all render through (<c>BitLoading</c>, a plain <c>ComponentBase</c> taking <c>This</c>): the family's
+    /// parameters, its base and its <c>BitParams</c> cascade are declared on its abstract <c>...Base</c> instead.
+    /// </summary>
+    private static Type? FindComponentType(string name)
+    {
+        var type = FindType(name);
+
+        if (type is null || typeof(BitComponentBase).IsAssignableFrom(type)) return type;
+
+        return FindType($"{name}Base") is { } family && typeof(BitComponentBase).IsAssignableFrom(family) ? family : type;
     }
 
     private static Type? FindType(string name)

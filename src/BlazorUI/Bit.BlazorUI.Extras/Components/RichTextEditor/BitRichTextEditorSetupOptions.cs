@@ -1,16 +1,19 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 internal class BitRichTextEditorSetupOptions
 {
     public int Debounce { get; set; }
     public BitRichTextEditorPolicyPayload? Policy { get; set; }
     public bool HasUpload { get; set; }
+
+    /// <summary>The largest image a drop or a paste may insert, checked before the file is read.</summary>
+    public long MaxImageBytes { get; set; }
     public bool PlainTextPaste { get; set; }
     public int? MaxLength { get; set; }
     public string[]? ShortcutKeys { get; set; }
 
     /// <summary>
-    /// Mirrors the effective read-only state (ReadOnly or IsEnabled=false). The bridge refuses
+    /// Mirrors the effective read-only state (ReadOnly or Disabled). The bridge refuses
     /// every mutating path while set, so paste, drop, typing, and shortcuts cannot change content
     /// the component considers locked.
     /// </summary>

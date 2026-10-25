@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Determines which ends of the connecting line of the BitTimeline are truncated at the first and the last dot.

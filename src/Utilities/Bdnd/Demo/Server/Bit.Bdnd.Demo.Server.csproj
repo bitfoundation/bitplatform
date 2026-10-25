@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+        <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.3.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Also what puts Bit.Bdnd.xml next to this app: a referenced project's documentation file is
+             copied with its assembly, and the API tool reads every summary out of it. -->
+        <ProjectReference Include="..\..\Bit.Bdnd\Bit.Bdnd.csproj" />
+        <ProjectReference Include="..\Client\Bit.Bdnd.Demo.Client.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Bit.Bdnd" />
+        <Using Include="Microsoft.AspNetCore.Mvc" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The MCP tests boot this very app: WebApplicationFactory needs its entry point type, which
+             top-level statements declare as internal. -->
+        <InternalsVisibleTo Include="Bit.Bdnd.Tests.Mcp" />
+    </ItemGroup>
+
+    <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
+         working from a published deployment, where none of these files exist next to the app.
+         LogicalName is set explicitly because the resource name IS the path an MCP client asks for. -->
+    <ItemGroup>
+        <EmbeddedResource Include="..\..\README.md" LogicalName="BdndDocs/README.md" />
+
+        <!-- The library's components, the manager that holds the drag state, and the script module, as they
+             ship: when the guide and the API reference leave a question about what a drag does, these are
+             the answer. The razor components come with their partial classes, which carry their summaries. -->
+        <EmbeddedResource Include="..\..\Bit.Bdnd\Components\*.cs;..\..\Bit.Bdnd\Components\*.razor">
+            <LogicalName>BdndSource/Library/Components/%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="..\..\Bit.Bdnd\Core\BdndDragDropManager.cs" LogicalName="BdndSource/Library/Core/BdndDragDropManager.cs" />
+        <EmbeddedResource Include="..\..\Bit.Bdnd\Scripts\bit-bdnd.ts" LogicalName="BdndSource/Library/Scripts/bit-bdnd.ts" />
+
+        <!-- Every demo page - each one is a working drag-and-drop example - plus what they share and the
+             client half of the hosting. The MCP page describes this server rather than the library, the
+             not-found page teaches nothing about dragging, and the code viewer (CodeBlock and its
+             SyntaxHighlighter) is the site's chrome, not an example. -->
+        <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
+                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor;..\Client\Examples\CodeBlock.razor;..\Client\Examples\SyntaxHighlighter.cs">
+            <LogicalName>BdndSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <EmbeddedResource Include="Program.cs" LogicalName="BdndSource/Demo/Server/Program.cs" />
+
+        <!-- The Components\ prefix is written out: %(RecursiveDir) only captures what the '**' matched.
+             Error.razor is the template's own error page and says nothing about dragging. -->
+        <EmbeddedResource Include="Components\**\*.razor" Exclude="Components\Pages\Error.razor">
+            <LogicalName>BdndSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+</Project>

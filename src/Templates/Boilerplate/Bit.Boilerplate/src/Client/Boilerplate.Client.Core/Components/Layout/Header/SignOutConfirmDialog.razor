@@ -6,14 +6,20 @@
     <NavigationLock OnBeforeInternalNavigation="HandleNavigation" />
 }
 
-<BitDialog IsBlocking="true"
+<BitDialog Blocking
            @bind-IsOpen="IsOpen"
            OnDismiss="CloseModal"
            ShowCloseButton="false"
            OnOk="WrapHandled(SignOut)"
-           ShowCancelButton="isSigningOut is false"
            Title="@Localizer[nameof(AppStrings.SignOut)]"
            OkText="@Localizer[nameof(AppStrings.SignOut)]"
            CancelText="@Localizer[nameof(AppStrings.Cancel)]"
            Message="@Localizer[nameof(AppStrings.SignOutPrompt)]"
-           Styles="@(new() { OkButton = "width:100%", CancelButton = "width:100%" })" />
+           Styles="@(new() { OkButton = "width:100%", CancelButton = "width:100%" })">
+    @if (CanSignOutOfAllAccounts)
+    {
+        <div class="sign-out-all">
+            <BitCheckbox @bind-Value="signOutOfAllAccounts" Label="@Localizer[nameof(AppStrings.SignOutOfAllAccounts)]" />
+        </div>
+    }
+</BitDialog>

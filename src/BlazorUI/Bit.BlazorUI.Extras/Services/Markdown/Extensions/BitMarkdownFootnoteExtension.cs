@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Enables GitHub-style footnotes: a <c>[^label]</c> reference in the text and a

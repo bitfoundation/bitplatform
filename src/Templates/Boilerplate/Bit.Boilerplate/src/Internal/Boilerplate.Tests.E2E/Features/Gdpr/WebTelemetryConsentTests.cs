@@ -23,8 +23,8 @@ public partial class WebTelemetryConsentTests : AppTestBase
     /// walks between About and Terms are in-app navigations: a document load would re-run that answer.
     /// </summary>
     [TestMethod]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
-    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
+    [DataRow(App.Todo, DisplayName = "Todo")]
     public async Task Telemetry_Should_KeepIdentifyingCookiesOffTheDevice_UntilAnalyticsConsentIsGranted(App app)
     {
         var track = new ConcurrentQueue<string>();

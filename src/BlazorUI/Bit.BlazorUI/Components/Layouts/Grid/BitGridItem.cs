@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
@@ -241,11 +240,13 @@ public partial class BitGridItem : BitComponentBase
     public int? ColumnSpan { get; set; }
 
     /// <summary>
-    /// The custom html element used for the root node. The default is "div".
+    /// The custom html element used for the root node. The default is "div", or "li" in a grid rendered as a
+    /// <c>ul</c>, an <c>ol</c> or a <c>menu</c>.
     /// </summary>
     /// <remarks>
-    /// This is the counterpart of <see cref="BitGrid.Element"/>: the items of a grid rendered as a <c>ul</c>
-    /// are rendered as <c>li</c>, and the items of a grid rendered as a <c>dl</c> as <c>dt</c> and <c>dd</c>.
+    /// This is the counterpart of <see cref="BitGrid.Element"/>: the items of a grid rendered as a list element
+    /// are list items without being told, and the items of a grid rendered as a <c>dl</c> name <c>dt</c> and
+    /// <c>dd</c> here.
     /// </remarks>
     [Parameter] public string? Element { get; set; }
 
@@ -574,33 +575,32 @@ public partial class BitGridItem : BitComponentBase
         // Every one of these is the base of a mobile first chain the stylesheet carries upwards: a breakpoint that
         // is not declared here inherits the value of the breakpoint below it, and the base of the span chain is
         // inherited from the grid itself when the item does not set one.
-        StyleBuilder.Register(() => GetVar("span", ColumnSpan));
-        StyleBuilder.Register(() => GetVar("xs", Xs));
-        StyleBuilder.Register(() => GetVar("sm", Sm));
-        StyleBuilder.Register(() => GetVar("md", Md));
-        StyleBuilder.Register(() => GetVar("lg", Lg));
-        StyleBuilder.Register(() => GetVar("xl", Xl));
-        StyleBuilder.Register(() => GetVar("xxl", Xxl));
+        StyleBuilder.Register(() => GetVar("--bit-grd-span", ColumnSpan));
+        StyleBuilder.Register(() => GetVar("--bit-grd-xs", Xs));
+        StyleBuilder.Register(() => GetVar("--bit-grd-sm", Sm));
+        StyleBuilder.Register(() => GetVar("--bit-grd-md", Md));
+        StyleBuilder.Register(() => GetVar("--bit-grd-lg", Lg));
+        StyleBuilder.Register(() => GetVar("--bit-grd-xl", Xl));
+        StyleBuilder.Register(() => GetVar("--bit-grd-xxl", Xxl));
 
-        StyleBuilder.Register(() => GetVar("off", Offset));
-        StyleBuilder.Register(() => GetVar("off-xs", OffsetXs));
-        StyleBuilder.Register(() => GetVar("off-sm", OffsetSm));
-        StyleBuilder.Register(() => GetVar("off-md", OffsetMd));
-        StyleBuilder.Register(() => GetVar("off-lg", OffsetLg));
-        StyleBuilder.Register(() => GetVar("off-xl", OffsetXl));
-        StyleBuilder.Register(() => GetVar("off-xxl", OffsetXxl));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off", Offset));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off-xs", OffsetXs));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off-sm", OffsetSm));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off-md", OffsetMd));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off-lg", OffsetLg));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off-xl", OffsetXl));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off-xxl", OffsetXxl));
 
         // An order can be negative, which is how a single item is moved ahead of the ones that left it alone.
-        StyleBuilder.Register(() => GetVar("ord", Order, allowNegative: true));
-        StyleBuilder.Register(() => GetVar("ord-xs", OrderXs, allowNegative: true));
-        StyleBuilder.Register(() => GetVar("ord-sm", OrderSm, allowNegative: true));
-        StyleBuilder.Register(() => GetVar("ord-md", OrderMd, allowNegative: true));
-        StyleBuilder.Register(() => GetVar("ord-lg", OrderLg, allowNegative: true));
-        StyleBuilder.Register(() => GetVar("ord-xl", OrderXl, allowNegative: true));
-        StyleBuilder.Register(() => GetVar("ord-xxl", OrderXxl, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord", Order, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord-xs", OrderXs, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord-sm", OrderSm, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord-md", OrderMd, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord-lg", OrderLg, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord-xl", OrderXl, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord-xxl", OrderXxl, allowNegative: true));
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitGridItemParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
@@ -612,15 +612,29 @@ public partial class BitGridItem : BitComponentBase
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenElement(0, Element ?? "div");
+        // The only child a list element may have is a list item, so an item of a grid rendered as one is an li
+        // unless it names an element of its own.
+        builder.OpenElement(0, Element ?? (Parent?.IsListElement is true ? "li" : "div"));
         builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
         builder.AddAttribute(2, "id", _Id);
-        builder.AddAttribute(3, "aria-label", AriaLabel);
-        builder.AddAttribute(4, "style", StyleBuilder.Value);
-        builder.AddAttribute(5, "class", ClassBuilder.Value);
-        builder.AddAttribute(6, "dir", Dir?.ToString().ToLower());
-        builder.AddElementReferenceCapture(7, v => RootElement = v);
-        builder.AddContent(8, ChildContent);
+        // A null value still drops the attribute of the same name that came out of HtmlAttributes, so an unset
+        // parameter is only written when it carries a value and a splatted one is left alone otherwise.
+        if (AriaLabel is not null)
+        {
+            builder.AddAttribute(3, "aria-label", AriaLabel);
+        }
+        if (TabIndex is not null)
+        {
+            builder.AddAttribute(4, "tabindex", TabIndex);
+        }
+        builder.AddAttribute(5, "style", StyleBuilder.Value);
+        builder.AddAttribute(6, "class", ClassBuilder.Value);
+        if (Dir is not null)
+        {
+            builder.AddAttribute(7, "dir", Dir.Value.ToString().ToLowerInvariant());
+        }
+        builder.AddElementReferenceCapture(8, v => RootElement = v);
+        builder.AddContent(9, ChildContent);
         builder.CloseElement();
 
         base.BuildRenderTree(builder);
@@ -786,6 +800,6 @@ public partial class BitGridItem : BitComponentBase
 
         // The invariant culture is what keeps a negative order readable as CSS: the minus sign of the
         // current culture is not always the hyphen the browser is looking for.
-        return $"--bit-grd-{name}:{number.ToString(CultureInfo.InvariantCulture)}";
+        return $"{name}:{number.ToString(CultureInfo.InvariantCulture)}";
     }
 }

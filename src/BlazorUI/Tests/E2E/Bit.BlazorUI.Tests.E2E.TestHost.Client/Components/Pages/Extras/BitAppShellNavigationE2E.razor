@@ -1,0 +1,73 @@
+﻿@page "/e2e/app-shell/nav-a"
+@page "/e2e/app-shell/nav-b"
+@implements IDisposable
+@inject NavigationManager Navigation
+
+<PageTitle>BitAppShell navigation E2E</PageTitle>
+
+@* The one shell of this page, pinned to the viewport the way the shell of an application is: both routes render this
+   same component, so the shell outlives a navigation between them exactly as one in a layout does. Nothing else on
+   the page is tall enough to scroll the document, which is what the scrolling keys are handed to the shell for. *@
+<style>
+    .nav-row { height: 40px; box-sizing: border-box; border-bottom: 1px solid #ddd; }
+    .nav-head { position: sticky; top: 0; background: #eee; z-index: 1; display: flex; flex-wrap: wrap; gap: 4px; padding: 2px; }
+</style>
+
+<BitAppShell Id="ash-nav"
+             @ref="_shell"
+             FullScreen
+             PersistScroll="@(_mode is "url" or "history")"
+             ScrollRestoration="@(_mode == "history" ? BitAppShellScrollRestoration.History : BitAppShellScrollRestoration.Url)"
+             AutoGoToTop="@(_mode == "top")"
+             ScrollBehavior="BitScrollBehavior.Instant">
+    <div style="width: 100%;">
+        <div class="nav-head">
+            <a id="link-a" href="e2e/app-shell/nav-a">Page A</a>
+            <a id="link-b" href="e2e/app-shell/nav-b">Page B</a>
+            <a id="link-a-query" href="e2e/app-shell/nav-a?filter=1">Page A filtered</a>
+            <a id="link-fragment" href="e2e/app-shell/nav-a#nav-row-25">Row 25</a>
+            <button id="btn-mode-url" type="button" @onclick="@(() => _mode = "url")">Url</button>
+            <button id="btn-mode-history" type="button" @onclick="@(() => _mode = "history")">History</button>
+            <button id="btn-mode-top" type="button" @onclick="@(() => _mode = "top")">AutoGoToTop</button>
+            <button id="btn-mode-none" type="button" @onclick="@(() => _mode = "none")">None</button>
+            <button id="btn-clear-all" type="button" @onclick="() => _shell!.ClearPersistedScroll()">Clear all</button>
+            <button id="btn-clear-current" type="button" @onclick="() => _shell!.ClearPersistedScroll(Navigation.Uri)">Clear this page</button>
+            <span>Page: <span id="nav-page">@_page</span></span>
+            <span>Mode: <span id="nav-mode">@_mode</span></span>
+        </div>
+        @foreach (var i in Enumerable.Range(1, 60))
+        {
+            <div class="nav-row" id="nav-row-@i">@_page row @i</div>
+        }
+    </div>
+</BitAppShell>
+
+<E2EStatus />
+
+@code {
+    private BitAppShell? _shell;
+    private string _mode = "url";
+    private string _page = "A";
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += HandleLocationChanged;
+        _page = ReadPage();
+    }
+
+    private string ReadPage() => new Uri(Navigation.Uri).AbsolutePath.EndsWith("nav-b", StringComparison.Ordinal) ? "B" : "A";
+
+    private void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _ = InvokeAsync(() =>
+        {
+            _page = ReadPage();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
+    }
+}

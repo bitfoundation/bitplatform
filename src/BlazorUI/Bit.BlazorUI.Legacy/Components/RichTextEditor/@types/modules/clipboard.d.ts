@@ -1,4 +1,4 @@
-type Selector = string | Node['TEXT_NODE'] | Node['ELEMENT_NODE'];
+﻿type Selector = string | Node['TEXT_NODE'] | Node['ELEMENT_NODE'];
 type Matcher = (node: Node, delta: Delta, scroll: ScrollBlot) => Delta;
 interface ClipboardOptions {
     matchers: [Selector, Matcher][];

@@ -1,0 +1,425 @@
+﻿@page "/"
+@layout MainLayout
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<PageTitle>Bink - drawing and ink for Blazor</PageTitle>
+
+@* The landing page: hero → proof strip → use cases → code walkthrough → comparison with a JavaScript
+   drawing library → persona tiles → FAQ → final call to action. Everything else on the site is a
+   documentation page under DocsLayout. The hero's sample is a live canvas rather than a picture of
+   one - an ink library is best introduced by being drawn on. *@
+
+<div class="bb-landing">
+
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net8.0 / net9.0 / net10.0
+            </span>
+            <h1>Drawing and ink for Blazor,<br /><span class="bb-hero-accent">engineered in C#.</span></h1>
+            <p class="bb-hero-sub">
+                Signature fields, handwriting, whiteboards, image markup and document review on one vector
+                document model. The stroke model, smoothing, pressure response, hit testing, undo, serialization
+                and export are C#; JavaScript only collects pointer input and replays a command buffer onto a
+                canvas - there is no JavaScript drawing library underneath.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Bink</pre>
+            <div class="bb-hero-actions">
+                <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <a href="whiteboard" class="btn btn-secondary bb-btn-lg">Live demos</a>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </div>
+        </div>
+
+        @* The sample, framed as a window: the markup on top, and the canvas it renders underneath -
+           live, so the first thing a visitor can do here is draw on it. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">Sketch.razor</span>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> @@ref=<span class="s">"_canvas"</span> Document=<span class="s">"_sketch"</span> Height=<span class="s">"240px"</span>
+            Brush=<span class="s">"_pen"</span> EnableTouchGestures=<span class="s">"true"</span> /&gt;
+
+<span class="c">// No background, so the page shows through.</span>
+<span class="k">private</span> BinkDocument _sketch = <span class="k">new</span>(BinkDocumentSettings.Default
+    <span class="k">with</span> { Background = BinkColor.Transparent });
+<span class="c">// On this page its colour also follows the theme.</span>
+<span class="k">private</span> BinkBrush _pen = <span class="k">new</span> BinkPenBrush { Width = 4f };</pre>
+                <div class="bink-hero-live">
+                    <div class="bink-surface">
+                        @* A host that reads canvas state (such as the undo button below) re-renders on these
+                           callbacks. Pointer input itself never re-renders anything. The document has no
+                           background, so the sketch sits on the theme's surface (demo.css). *@
+                        <BinkCanvas @ref="_canvas" Document="_sketch" Height="240px" Brush="_pen" EnableTouchGestures="true"
+                                    AriaLabel="Try drawing here"
+                                    HistoryChanged="() => StateHasChanged()"
+                                    DocumentChanged="OnSketchChanged" />
+                        @if (_canvas is null || _canvas.CurrentDocument.IsEmpty)
+                        {
+                            <span class="bink-surface-hint" aria-hidden="true">Draw here with a mouse, a finger or a stylus</span>
+                        }
+                    </div>
+                    <div class="bb-toolbar bink-toolbar">
+                        <span class="bink-hint">Ink is a vector document, not pixels.</span>
+                        <span class="bb-spacer"></span>
+                        <button type="button" class="btn btn-secondary" disabled="@(_canvas is null || !_canvas.History.CanUndo)" @onclick="Undo">Undo</button>
+                        <button type="button" class="btn btn-secondary bink-danger" disabled="@(_canvas is null || _canvas.CurrentDocument.IsEmpty)" @onclick="Clear">Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Proof strip ============================== *@
+
+    <section class="bb-proof">
+        <div><strong>Engine in C#</strong><span>strokes, geometry, hit testing and undo</span></div>
+        <div><strong>A vector document</strong><span>saved, versioned and re-rendered at any size</span></div>
+        <div><strong>Pen-grade input</strong><span>pressure, tilt, palm rejection, coalesced samples</span></div>
+        <div><strong>Every hosting model</strong><span>WebAssembly, Server, Web App and Hybrid</span></div>
+    </section>
+
+    @* ============================== Use cases ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Use cases</p>
+        <h2>One engine for everything that needs ink</h2>
+        <p class="bb-section-sub">
+            Every page of this site is a working drawing surface built from the public API - open one, draw on
+            it, and read its source from the link under the page.
+        </p>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Signature</h3>
+                <p class="bb-card-desc">
+                    A signature field with validation, a read-only accepted state, and vector export that stays
+                    sharp at any size.
+                </p>
+                <a href="signature" class="btn btn-outline">Signature →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Handwriting</h3>
+                <p class="bb-card-desc">
+                    A note-taking surface tuned for writing, with pen pressure, tilt and palm rejection.
+                </p>
+                <a href="handwriting" class="btn btn-outline">Handwriting →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Whiteboard</h3>
+                <p class="bb-card-desc">
+                    Pens, markers, highlighters, three erasers, every shape, text, pictures, grouping, alignment, layers,
+                    the clipboard, pan, zoom and autosave.
+                </p>
+                <a href="whiteboard" class="btn btn-outline">Whiteboard →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Diagram surface</h3>
+                <p class="bb-card-desc">
+                    Nodes and connectors that stay attached when you move things - built on the document model,
+                    with no diagram code in the library.
+                </p>
+                <a href="diagram" class="btn btn-outline">Diagram surface →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Image annotation</h3>
+                <p class="bb-card-desc">
+                    Open a screenshot, mark it up with arrows, boxes and highlights, export a flattened PNG, JPEG or
+                    WebP, or an editable SVG.
+                </p>
+                <a href="image-annotation" class="btn btn-outline">Image annotation →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Document review</h3>
+                <p class="bb-card-desc">
+                    Text highlights, callout comments and freehand notes over a document, each one an object with
+                    its own description.
+                </p>
+                <a href="document-annotation" class="btn btn-outline">Document review →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Collaboration</h3>
+                <p class="bb-card-desc">
+                    Two canvases synchronizing through operations, with live cursors, remote ink and an offline
+                    queue.
+                </p>
+                <a href="collaboration" class="btn btn-outline">Collaboration →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Under the hood</h3>
+                <p class="bb-card-desc">
+                    Work the canvas by keyboard and touch, save and reload the document, time the engine on thousands of
+                    strokes in your own browser, and add brushes and elements of your own.
+                </p>
+                <div class="bb-try">
+                    <a href="input-and-accessibility" class="btn btn-outline">Input and accessibility →</a>
+                    <a href="serialization" class="btn btn-outline">Serialization →</a>
+                    <a href="performance" class="btn btn-outline">Performance →</a>
+                    <a href="extending" class="btn btn-outline">Extending →</a>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>See it in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>A canvas is one tag</h3>
+                    <p>
+                        No services to register and no stylesheet to link: the package's Blazor initializer adds
+                        <code>bit-bink.css</code> by itself. That is already a working canvas - pointer and stylus
+                        input, pressure-aware ink, undo and redo on the keyboard.
+                    </p>
+                    <a href="getting-started">Getting started →</a>
+                </div>
+                <pre class="bb-code"><span class="k">@@using</span> Bit.Bink
+
+&lt;<span class="k">BinkCanvas</span> Height=<span class="s">"400px"</span> /&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>Pick a brush and a tool</h3>
+                    <p>
+                        <code>Brush</code> decides how ink looks, <code>Tool</code> what pointer input does. Brushes
+                        are immutable records, so a variant is a <code>with</code> away.
+                    </p>
+                    <a href="whiteboard">Whiteboard →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> Tool=<span class="s">"_tool"</span> Brush=<span class="s">"_brush"</span> Height=<span class="s">"400px"</span> /&gt;
+
+<span class="k">private</span> IBinkTool _tool = <span class="k">new</span> BinkDrawTool();
+<span class="k">private</span> BinkBrush _brush = <span class="k">new</span> BinkPenBrush { Color = BinkColor.Parse(<span class="s">"#1d4ed8"</span>), Width = 5f };
+
+<span class="k">private void</span> UseEraser() =&gt; _tool = <span class="k">new</span> BinkEraserTool { Mode = BinkEraserMode.Stroke, Radius = 12f };</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>Save it, export it</h3>
+                    <p>
+                        The drawing is a document you can store anywhere and load back to keep editing - and the
+                        SVG and PNG exports go through the same renderer as the screen, so they match what was drawn.
+                    </p>
+                    <a href="serialization">Serialization →</a>
+                </div>
+                <pre class="bb-code"><span class="k">string</span> json = BinkSerializer.Serialize(_canvas.CurrentDocument);
+_canvas.LoadDocument(BinkSerializer.Deserialize(json));
+
+<span class="k">string</span> svg = <span class="k">await</span> _canvas.ExportSvgAsync();
+<span class="k">byte</span>[] png = <span class="k">await</span> _canvas.ExportPngAsync(<span class="k">new</span> BinkPngExportOptions { Scale = 3f });</pre>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Why not wrap a JavaScript drawing library?</h2>
+        <p class="bb-section-sub">
+            A wrapper keeps the drawing in JavaScript and hands .NET a picture of it, or a copy it has to keep in
+            step by hand. Bink keeps the drawing in C#, so the document your code reads is the one on the screen.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="A JavaScript drawing library wrapper compared with Bink">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Concern</th><th>JavaScript library wrapper</th><th>Bink</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Where the drawing lives</td><td>In the library's JavaScript objects</td><td>A <code>BinkDocument</code> in C#: layers of immutable elements</td></tr>
+                    <tr><td>Undo and redo</td><td>The library's own history, out of .NET's reach</td><td>Inverse operations - never snapshots - that your code can group</td></tr>
+                    <tr><td>Saving</td><td>The library's format, or a picture</td><td>A versioned, compact JSON format, validated against hostile input</td></tr>
+                    <tr><td>Export</td><td>A screenshot of the canvas</td><td>SVG and PNG through the screen's renderer, and a pure .NET PNG path for servers</td></tr>
+                    <tr><td>Collaboration</td><td>Bring your own</td><td>Operation sync over any transport, with presence and offline queueing</td></tr>
+                    <tr><td>Testing</td><td>Needs a browser</td><td>The engine runs in a unit test, a console app or on a server</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Bink?</h3>
+                <p class="bb-card-desc">Install the package, add the namespace, put a canvas on a page - a drawing surface in five minutes.</p>
+                <a href="getting-started" class="btn btn-primary">Getting started →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Want to see it live?</h3>
+                <p class="bb-card-desc">The whiteboard has every tool, layers, selection and export - and every page has its source one click away.</p>
+                <a href="whiteboard" class="btn btn-outline">Open the whiteboard →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> and it reads the shipped library instead of guessing.</p>
+                <a href="mcp-server" class="btn btn-outline">Try the MCP server →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Is this a JavaScript drawing library behind interop?</summary>
+                <p>
+                    No. The stroke model, smoothing, pressure response, hit testing, undo, serialization and export
+                    are C#. JavaScript collects pointer and keyboard input and replays a command buffer onto a
+                    canvas. The one drawing it does on its own is a provisional trail under Blazor Server, which
+                    hides network latency and is replaced by the engine's own geometry.
+                </p>
+            </details>
+            <details>
+                <summary>Does it work with Blazor Server?</summary>
+                <p>
+                    Yes - the same component works in every hosting model. Under Blazor Server the engine runs on the
+                    server and a provisional "wet ink" trail is drawn locally while each batch is in flight. A
+                    signature field or a form annotation is fine over Server; sustained handwriting over a
+                    high-latency connection is what WebAssembly, where the engine runs in the browser, is for.
+                </p>
+            </details>
+            <details>
+                <summary>Does it support pen pressure, tilt and touch?</summary>
+                <p>
+                    Pressure, tilt and twist are captured when the device reports them, and pressure is simulated
+                    from speed when it does not. Palm rejection ignores touch while a pen is down, and with
+                    <code>EnableTouchGestures</code> a finger draws and two fingers pan and pinch-zoom.
+                </p>
+            </details>
+            <details>
+                <summary>Can I save a drawing and edit it later?</summary>
+                <p>
+                    Yes - that is the point of a vector document. <code>BinkSerializer</code> writes a versioned,
+                    compact JSON format with binary stroke points; <code>TryDeserialize</code> reports a reason
+                    instead of throwing on untrusted input, and a document written by a newer version is refused
+                    rather than half read.
+                </p>
+            </details>
+            <details>
+                <summary>Is the canvas accessible?</summary>
+                <p>
+                    The canvas is a labelled, focusable, keyboard-operable element with a live text summary of the
+                    drawing, built from the descriptions an application attaches to its elements, and polite
+                    announcements of what changed. The strokes themselves cannot be described automatically - the
+                    objects around them can.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Put ink on the page</h2>
+        <p class="bb-section-sub">One package, one tag - no services to register and no stylesheet to link.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Bink</pre>
+        <div class="bb-hero-actions">
+            <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="whiteboard" class="btn btn-secondary bb-btn-lg">Browse the demos</a>
+        </div>
+    </section>
+</div>
+
+@code {
+    // The theme's text colour (--bit-clr-fg-pri in app.css), so the sketch reads on the theme's surface the way
+    // the page's own text does.
+    private static readonly BinkColor LightInk = BinkColor.Parse("#1A1A1A");
+    private static readonly BinkColor DarkInk = BinkColor.Parse("#E6ECF2");
+
+    private BinkCanvas? _canvas;
+    private readonly BinkDocument _sketch = new(BinkDocumentSettings.Default with { Background = BinkColor.Transparent });
+    private BinkBrush _pen = new BinkPenBrush { Width = 4f, Color = LightInk };
+    private DotNetObjectReference<Home>? _self;
+    private IJSObjectReference? _themeSubscription;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        // Not during prerendering, where OnAfterRender does not run: the pen starts in the light theme's ink, and
+        // theme.js calls back with the current theme at once, recolouring anything drawn in between.
+        _self = DotNetObjectReference.Create(this);
+        _themeSubscription = await JSRuntime.InvokeAsync<IJSObjectReference>("bitDemoTheme.subscribe", _self, nameof(OnThemeChanged));
+    }
+
+    /// <summary>Called by theme.js with "light" or "dark" when subscribing and after every change.</summary>
+    [JSInvokable]
+    public Task OnThemeChanged(string theme) => InvokeAsync(() =>
+    {
+        BinkColor ink = theme == "dark" ? DarkInk : LightInk;
+        if (_pen.Color == ink) return;
+
+        _pen = _pen with { Color = ink };
+        RecolorInk();
+        StateHasChanged();
+    });
+
+    /// <summary>
+    /// Gives the other theme's ink the current theme's colour; any other colour is left as drawn. It is applied the
+    /// way a loaded document is, which history does not record, so undo never brings the old ink back.
+    /// </summary>
+    private void RecolorInk()
+    {
+        BinkColor stale = _pen.Color == DarkInk ? LightInk : DarkInk;
+        var strokes = new List<BinkStroke>();
+        foreach (BinkLayer layer in _sketch.Layers)
+            foreach (BinkElement element in layer.Elements)
+                if (element is BinkStroke { IsEraser: false } stroke && stroke.Brush.Color == stale) strokes.Add(stroke);
+        if (strokes.Count == 0) return;
+
+        using (_sketch.BeginBatch("Theme", BinkChangeOrigin.Load))
+        {
+            foreach (BinkStroke stroke in strokes) _sketch.ReplaceElement(stroke with { Brush = stroke.Brush with { Color = _pen.Color } });
+        }
+    }
+
+    // Undo and redo put strokes back exactly as history recorded them, so a stroke cleared or undone before the theme
+    // changed comes back in the other theme's ink.
+    private void OnSketchChanged(BinkDocumentChangedEventArgs e)
+    {
+        if (e.Origin is BinkChangeOrigin.Undo or BinkChangeOrigin.Redo) RecolorInk();
+    }
+
+    private void Undo() => _canvas?.Undo();
+
+    private void Clear() => _canvas?.Clear();
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_themeSubscription is not null)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("bitDemoTheme.unsubscribe", _themeSubscription);
+                await _themeSubscription.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // The circuit is already gone; there is nothing on the other side to unsubscribe from.
+            }
+            _themeSubscription = null;
+        }
+
+        _self?.Dispose();
+        _self = null;
+    }
+}

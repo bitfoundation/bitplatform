@@ -1,0 +1,55 @@
+﻿@namespace Bit.Blow.Demo.Client.Examples
+@inject NavigationManager Nav
+
+@* A collapsible "View code" panel under a demo's sample that shows the .razor source of the current page,
+   coloured as a CodeBlock. The source is resolved from the build-generated DemoSources lookup, keyed by
+   route. *@
+
+<div class="bb-source demo-code">
+    <button type="button"
+            class="btn btn-secondary demo-code__toggle"
+            aria-expanded="@_open.ToString().ToLowerInvariant()"
+            @onclick="Toggle">
+        <span class="demo-code__caret">@(_open ? "▾" : "▸")</span>
+        <span class="demo-code__glyph">&lt;/&gt;</span>
+        @(_open ? "Hide code" : "View code")
+    </button>
+
+    @if (_source is not null)
+    {
+        @* Kept once shown, and hidden while the panel is closed, so that opening it again does not lex the page again. *@
+        <CodeBlock Code="@_source" Class="demo-code__pre" hidden="@(!_open)" />
+    }
+    else if (_open)
+    {
+        <div class="bb-empty demo-code__empty">Source for this page is not available.</div>
+    }
+</div>
+
+@code {
+    private bool _open;
+    private string? _source;
+    private bool _resolved;
+
+    private void Toggle()
+    {
+        _open = !_open;
+        if (_open && !_resolved)
+        {
+            _source = Resolve();
+            _resolved = true;
+        }
+    }
+
+    private string? Resolve()
+    {
+        var key = Nav.ToBaseRelativePath(Nav.Uri);
+
+        // Drop any query string or fragment so the key matches the @page route. The lookup
+        // itself ignores case, as the router does.
+        var cut = key.IndexOfAny(['?', '#']);
+        if (cut >= 0) key = key[..cut];
+
+        return DemoSources.ByRoute.TryGetValue(key.TrimEnd('/'), out var src) ? src : null;
+    }
+}

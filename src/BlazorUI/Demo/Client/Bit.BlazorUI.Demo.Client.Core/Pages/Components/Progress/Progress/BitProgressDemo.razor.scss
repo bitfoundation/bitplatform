@@ -1,17 +1,20 @@
-﻿::deep {
-    .example-box {
-        gap: 1rem;
-        display: flex;
-        flex-flow: column nowrap;
-    }
+﻿// The boxes are plain elements written in the page, so they carry its scope attribute themselves. The
+// custom classes land on the root of a BitProgress, a component, so they are reached through ::deep from
+// the plain element the Style & Class example wraps them in.
+.example-box {
+    gap: 1rem;
+    display: flex;
+    flex-flow: column nowrap;
+}
 
-    .circular-box {
-        gap: 1rem;
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-    }
+.circular-box {
+    gap: 1rem;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+}
 
+.style-class-box ::deep {
     .custom-class {
         padding: 0.2rem;
         margin-bottom: 1rem;

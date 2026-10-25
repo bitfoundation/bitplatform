@@ -16,7 +16,6 @@ public static class Urls
 
     public const string YouTube = "https://www.youtube.com/@bitplatform";
 
-    public const string LowCodeNoCode = "/lowcode-nocode";
     public const string Templates = "/templates";
 
     public const string Bswup = "https://bswup.bitplatform.dev/";
@@ -24,6 +23,26 @@ public static class Urls
     public const string Butil = "https://butil.bitplatform.dev/";
     public const string Brouter = "https://brouter.bitplatform.dev/";
     public const string Bmotion = "https://bmotion.bitplatform.dev/";
+    public const string Bmage = "https://bmage.bitplatform.dev/";
+    public const string Bsqlite = "https://bsqlite.bitplatform.dev/";
+    public const string Bink = "https://bink.bitplatform.dev/";
+    public const string Balette = "https://balette.bitplatform.dev/";
+    public const string BbScanner = "https://bbscanner.bitplatform.dev/";
+    public const string Bdnd = "https://bdnd.bitplatform.dev/";
+    public const string BlazeDb = "https://blazedb.bitplatform.dev/";
+    public const string Blow = "https://blow.bitplatform.dev/";
+    public const string Borm = "https://borm.bitplatform.dev/";
+    public const string Bcrdt = "https://bcrdt.bitplatform.dev/";
+    public const string Bonboarding = "https://bonboarding.bitplatform.dev/";
+    public const string Bortable = "https://bortable.bitplatform.dev/";
+    public const string Blex = "https://blex.bitplatform.dev/";
+    public const string Belemetry = "https://belemetry.bitplatform.dev/";
+
+    public const string Cli = "/toolings/cli";
+    public const string Minifier = "/toolings/minifier";
+    public const string BlazorES2019 = "/toolings/blazor-es2019";
+    public const string CodeAnalyzers = "/toolings/code-analyzers";
+    public const string SourceGenerators = "/toolings/source-generators";
 
     public const string PlatformPwa = "https://bitplatform.dev/";
     public const string PlatformPageSpeed = "https://pagespeed.web.dev/analysis/https-bitplatform-dev/qa9agr7isx?form_factor=mobile";

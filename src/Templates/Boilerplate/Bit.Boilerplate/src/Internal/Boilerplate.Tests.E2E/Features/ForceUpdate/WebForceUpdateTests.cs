@@ -23,7 +23,7 @@ public partial class WebForceUpdateTests : AppTestBase
     [TestMethod]
     [DataRow(App.Sales, DisplayName = "Sales (prerendered, integrated API)")]
     [DataRow(App.Todo, DisplayName = "Todo (prerendered, standalone API)")]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (prerendered, bit Brouter)")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (prerendered)")]
     [DataRow(App.AdminPanelWasmStandalone, DisplayName = "AdminPanelWasmStandalone (not prerendered)")]
     public async Task AnOutdatedClient_Should_BeShownTheForceUpdatePanel(App app)
     {
@@ -73,8 +73,8 @@ public partial class WebForceUpdateTests : AppTestBase
 
         // Scoped to the panel: the exception's own message is the same title, and may reach AppSnackBar too.
         var panel = page.Locator(".force-update-snack-bar");
-        await Expect(panel.GetByText(AppStrings.ForceUpdateTitle)).ToBeVisibleAsync();
-        await Expect(panel.GetByText(AppStrings.ForceUpdateBody)).ToBeVisibleAsync();
+        await Expect(panel.GetByText(AppStrings.ForceUpdateTitle, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(panel.GetByText(AppStrings.ForceUpdateBody, new() { Exact = true })).ToBeVisibleAsync();
         await Expect(panel.GetByRole(AriaRole.Button, new() { Name = AppStrings.Update })).ToBeVisibleAsync();
 
         Assert.IsGreaterThan(0, rewritten, "No API call went through the rewrite, so the panel was not this test's doing.");

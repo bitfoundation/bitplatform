@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -372,7 +373,7 @@ public class BitModalTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.IsFalse(isOpen);
         Assert.AreEqual(0, com.FindAll(".bit-mdl").Count);
@@ -388,7 +389,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.NoDismissOnEscape, true);
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.IsTrue(isOpen);
         Assert.AreEqual(1, com.FindAll(".bit-mdl").Count);
@@ -421,7 +422,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.Blocking, true);
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.IsFalse(isOpen);
     }
@@ -437,7 +438,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         com.WaitForAssertion(() => Assert.AreEqual(1, dismissCount));
     }
@@ -449,11 +450,11 @@ public class BitModalTests : BunitTestContext
         var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         com.Find(".bit-mdl-ovl").Click();
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.IsTrue(isOpen);
         Assert.AreEqual(1, com.FindAll(".bit-mdl").Count);
@@ -488,7 +489,7 @@ public class BitModalTests : BunitTestContext
         });
 
         com.Find(".bit-mdl-ovl").Click();
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.AreEqual(1, com.FindAll(".bit-mdl").Count);
     }
@@ -803,7 +804,7 @@ public class BitModalTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.IsTrue(isOpen);
     }
@@ -1436,7 +1437,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => escapes++));
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.AreEqual(1, escapes);
         Assert.IsTrue(isOpen);
@@ -1454,7 +1455,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => escapes++));
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.AreEqual(1, escapes);
         Assert.IsFalse(isOpen);
@@ -1494,7 +1495,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => ownEscape++));
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         com.WaitForAssertion(() =>
         {
@@ -1537,7 +1538,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.NoDismissOnEscape, true);
         });
 
-        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape();
 
         Assert.IsTrue(com.Find(".bit-mdl-ctn").ClassList.Contains("bit-mdl-bna"));
     }
@@ -1907,10 +1908,66 @@ public class BitModalTests : BunitTestContext
         Assert.AreEqual(1, com.FindAll(".inner-modal").Count);
         Assert.AreEqual(1, com.FindAll(".outer-modal").Count);
 
-        com.Find(".inner-modal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape(".inner-modal");
 
         Assert.AreEqual(0, com.FindAll(".inner-modal").Count);
         Assert.AreEqual(1, com.FindAll(".outer-modal").Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotReportTheEscapeOfAModalNestedInIt()
+    {
+        var outerEscapes = 0;
+        var innerEscapes = 0;
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => outerEscapes++));
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitModal>(0);
+                builder.AddAttribute(1, nameof(BitModal.IsOpen), true);
+                builder.AddAttribute(2, nameof(BitModal.Class), "inner-modal");
+                builder.AddAttribute(3, nameof(BitModal.OnEscapeKeyDown), EventCallback.Factory.Create<KeyboardEventArgs>(this, () => innerEscapes++));
+                builder.CloseComponent();
+            }));
+        });
+
+        // No key is stopped at the inner Modal, so its Escape reaches the outer one's handler too. What
+        // Utils.watchEscape sends the outer one as the key goes down through its root, after the inner one has
+        // spoken for it.
+        com.Instance._OnEscapeVerdict(true);
+
+        com.Find(".inner-modal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, innerEscapes);
+        Assert.AreEqual(0, outerEscapes);
+
+        // A verdict answers the one key it was sent for: the next Escape, pressed in the outer Modal itself, is its own.
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, outerEscapes);
+    }
+
+    // Nothing stops a key at the Modal, so until the script tells its handler which Escapes a surface nested in it
+    // answered, the handler would report theirs as its own: the watch goes first, ahead of every other round trip of
+    // the opening.
+    [TestMethod]
+    public void BitModalShouldWatchItsEscapesFirstWhenItOpens()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count));
+
+        var order = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
+        var watch = order.IndexOf("BitBlazorUI.Utils.watchEscape");
+
+        Assert.IsTrue(watch >= 0);
+        Assert.IsTrue(watch < order.IndexOf("BitBlazorUI.Utils.storeFocus"));
     }
 
     [TestMethod]
@@ -1931,7 +1988,7 @@ public class BitModalTests : BunitTestContext
         var secondKey = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][1].Arguments[0];
         Assert.AreNotEqual(firstKey, secondKey);
 
-        com.Find(".inner-modal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        _ = com.PressEscape(".inner-modal");
 
         com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count));
         Assert.AreEqual(secondKey, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"][^1].Arguments[0]);
@@ -1952,6 +2009,29 @@ public class BitModalTests : BunitTestContext
         // inside of, so Tab cycles within the Modal the keyboard is actually in.
         var innerContainerId = com.Find(".inner-modal .bit-mdl-ctn").Id;
         Assert.AreEqual(innerContainerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitModalShouldNotDismissOnAnEscapeTheScriptSendsWhileItIsBeingDisposed()
+    {
+        // The script answers later, the way it does in a browser: the Modal's reference stays alive while it awaits
+        // its own teardown, before the base class has marked it disposed, so an Escape sent in that window still
+        // reaches it - and is not a dismissal of a Modal that is going away anyway.
+        var unwatch = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.unwatchEscape", _ => true);
+
+        var component = RenderComponent<BitModalTeardownTest>();
+        var modal = component.FindComponent<BitModal>().Instance;
+
+        component.Render(parameters => parameters.Add(p => p.Show, false));
+
+        Assert.AreEqual(1, unwatch.Invocations.Count);
+
+        await component.InvokeAsync(modal._OnEscape);
+
+        Assert.AreEqual(0, component.Instance.Dismissals);
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        unwatch.SetVoidResult();
     }
 
 

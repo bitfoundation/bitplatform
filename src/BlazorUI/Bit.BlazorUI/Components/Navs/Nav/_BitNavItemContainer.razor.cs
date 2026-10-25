@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class _BitNavItemContainer
 {
@@ -11,6 +11,8 @@ public partial class _BitNavItemContainer
 
     [Parameter] public string? AriaCurrent { get; set; }
 
+    [Parameter] public string? AriaDescribedBy { get; set; }
+
     [Parameter] public string? AriaExpanded { get; set; }
 
     [Parameter] public string? AriaLabel { get; set; }
@@ -22,6 +24,11 @@ public partial class _BitNavItemContainer
     [Parameter] public bool Disabled { get; set; }
 
     [Parameter] public string? Href { get; set; }
+
+    /// <summary>
+    /// The visually hidden sentence a link opening a new tab is announced with, rendered after the content.
+    /// </summary>
+    [Parameter] public string? NewTabHint { get; set; }
 
     [Parameter] public EventCallback OnClick { get; set; }
 

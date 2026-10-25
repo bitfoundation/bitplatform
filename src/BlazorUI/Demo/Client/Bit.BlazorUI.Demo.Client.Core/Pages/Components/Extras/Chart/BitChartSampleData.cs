@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
 /// <summary>Reusable sample datasets shared across the BitChart demo sections.</summary>
 public static class BitChartSampleData

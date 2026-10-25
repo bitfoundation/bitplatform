@@ -23,7 +23,9 @@ Everything the UI offers reduces to one of these:
 
 1. **Identifier + password** - identifier being a username, email or phone number.
 2. **Identifier + OTP** - a 6-digit code delivered by email or SMS. Delivered as a clickable email link, this is
-   what users call a "magic link".
+   what users call a "magic link". The SMS ends with an `@<host> #<code>` line, which browsers read through the
+   WebOTP API and the Android app through Google's SMS User Consent API, so the code fills itself in once the user
+   allows it.
 
 Every other sign-in button - Google, GitHub, a passkey, a push notification code - finishes by generating an OTP
 and performing an **automatic OTP sign-in** behind the scenes.
@@ -81,12 +83,27 @@ id used to push notifications to that device.
 
 Its id travels in both tokens as the `s-id` claim, which is what makes **session revocation** possible: delete the
 row and that device can no longer refresh. Users manage their own sessions from the Settings page.
+<!--#if (signalR == true)-->
+
+The SignalR hub checks the same row too, and closes the connection of a revoked session, or of one whose password or
+2FA settings changed.
+<!--#endif-->
 
 **Privileged sessions** cap how many devices get full access at once (3 by default,
 `Identity:MaxPrivilegedSessionsCount`, overridable per user with the `mx-p-s` claim; `-1` means unlimited). Older
 sessions stay signed in but lose access to pages guarded by `PRIVILEGED_ACCESS`. Once a session is privileged it
 stays privileged. The Settings page is deliberately *not* guarded by this policy - otherwise a user could never
 reach the screen that lets them revoke a session and free a slot.
+
+### Several accounts on one device
+
+People can stay signed in to several accounts on one device and switch between them from the account menu, as in
+Gmail or GitHub. Each account keeps its own session and tokens on the device (See `AuthManager`), so revocation,
+the privileged-session cap, 2FA and elevated access work per account as before. Switching rebuilds the app with
+`SOFT_RESTART`, so nothing the previous account loaded stays on the screen, and on the web every tab follows the
+active account. Only the active account signs out, and another account on the device takes its place; the sign-out
+dialog can also sign out every account at once. Push notifications reach every account on the device, realtime
+messages only the active one.
 
 ### Configuration
 
@@ -229,7 +246,8 @@ An entity opts in by implementing
 [`ITenantAware`](/src/Server/Boilerplate.Server.Api/Features/Tenants/ITenantAware.cs) (a `TenantId` plus a `Tenant`
 navigation). `AppDbContext.OnModelCreating` then applies the same global query filter - and the same
 `OnDelete(NoAction)` relationship - to every such entity by reflection. You never write the filter yourself, and
-there is no other global filter in the model to compose with.
+there is no other global filter in the model to compose with. A foreign key between two such entities also gets
+`TenantId` added to both of its sides, so the database rejects a row that references another tenant's row.
 
 Two limits matter more than anything else in this section:
 
@@ -314,6 +332,20 @@ Everything else follows from that single trick:
 In practice: a reset requested at 10:00 stops working the moment another is requested at 10:05, and the 10:05 one
 dies the instant it is used.
 
+The codes themselves are derived from the user's security stamp, which also travels inside every access and
+refresh token. So
+[`AppUserManager`](/src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppUserManager.cs) mixes the
+stamp with a secret derived from the app certificate first: reading a token is not enough to compute a code.
+
+A few rules sit on top of the mechanism:
+
+- **Resetting the password of an account with 2FA on** also takes a code from the authenticator app or one of the
+  recovery codes. A code sent by email or SMS alone would hand the account to whoever controls that inbox or phone
+  number.
+- **Asking for a code doesn't tell whether an account exists.** The endpoints that send one answer an unknown email
+  or phone number the way they answer a known one. Signing up with an identifier that already has an account looks
+  like any other sign-up, and the owner gets an email (or SMS) saying someone tried.
+
 ---
 
 ## 6. External providers
@@ -349,8 +381,8 @@ a container, pre-loaded from
 
 | Username | Password | Group |
 |---|---|---|
-| test | 123456 | `g-admin` |
-| store-admin | 123456 | `t-admin`, used when multi-tenancy is enabled |
+| test | 12345678 | `g-admin` |
+| store-admin | 12345678 | `t-admin`, used when multi-tenancy is enabled |
 | bob | bob | `demo` |
 | alice | alice | `demo` |
 
@@ -392,7 +424,8 @@ for delegating access to other apps, not a full identity server - no OIDC, no `i
 
 Run the project and walk through these - it is faster than reading:
 
-- **Sign up** with email or phone, confirm it, then try signing up again with the same identifier.
+- **Sign up** with email or phone, confirm it, then try signing up again with the same identifier: the page moves
+  on as usual, and the inbox gets a "you already have an account" email instead of a code.
 - **Sign in** with a password, then with a magic link. Get the password wrong repeatedly and watch lockout kick in.
 - **Enable 2FA** in Settings with an authenticator app, then sign in again. Try a recovery code.
 - **Sign in from several browsers**, list the sessions in Settings, revoke one, and watch that device drop out.

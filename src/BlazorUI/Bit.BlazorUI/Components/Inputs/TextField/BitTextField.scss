@@ -1,86 +1,186 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
+
+// Public CSS variables, read off the elements and never declared here, so a value set on :root re-skins every
+// text field and one set on the Style of an instance (or through Styles.Root) re-skins that one and the text fields
+// nested in it:
+//   --bit-TextField-background              fill of the frame at rest                       (default: $clr-bg-pri)
+//   --bit-TextField-hover-background        fill while hovered                              (default: the rest fill)
+//   --bit-TextField-border-color            frame color at rest                             (default: $clr-brd-pri)
+//   --bit-TextField-hover-border-color      frame color while hovered, on a pointer device  (default: $clr-brd-pri-hover)
+//   --bit-TextField-focus-border-color      frame color while focused                       (default: the rest frame color; the focus
+//                                                                                            ring is what marks the focus by default)
+//   --bit-TextField-border-width            thickness of the frame and of the underline     (default: $shp-border-width)
+//   --bit-TextField-radius                  corner radius of the frame and its focus ring   (default: $shp-radius-control)
+//   --bit-TextField-shadow                  elevation of the frame                          (default: none)
+//   --bit-TextField-min-height              smallest height of the frame                    (default: $siz-ctrl-md)
+//   --bit-TextField-focus-color             focus ring color                                (default: $clr-pri-focus)
+//   --bit-TextField-accent-color            color the icon, the affixes and the busy
+//                                           indicator take while the field has focus        (default: $clr-pri)
+//   --bit-TextField-transition-duration     how long the frame takes to repaint between
+//                                           rest, hover and focus                           (default: $mot-duration-short, which
+//                                                                                            collapses under reduced motion)
+//   --bit-TextField-color                   color of the typed text                         (default: $clr-fg-pri)
+//   --bit-TextField-caret-color             color of the text cursor                        (default: the typed text color)
+//   --bit-TextField-placeholder-color       color of the placeholder                        (default: $clr-fg-sec)
+//   --bit-TextField-font-family             typeface of the field and of its chrome         (default: $tg-font-family)
+//   --bit-TextField-font-size               size of the typed text, the label and the
+//                                           affixes                                         (default: $tg-fs-sm)
+//   --bit-TextField-font-weight             weight of the typed text                        (default: $tg-fw-regular)
+//   --bit-TextField-line-height             leading of the multiline text and of the ghost
+//                                           overlay behind it                               (default: spacing(2.125))
+//   --bit-TextField-padding                 padding of the input inside the frame           (default: 0 spacing(1), and
+//                                                                                            spacing(0.75) spacing(1) when Multiline)
+//   --bit-TextField-resize                  the axes the grip of a Resizable multiline
+//                                           field drags along                               (default: vertical)
+//   --bit-TextField-label-color             color of the label                              (default: $clr-fg-pri)
+//   --bit-TextField-label-font-size         size of the label                               (default: --bit-TextField-font-size)
+//   --bit-TextField-label-font-weight       weight of the label                             (default: $tg-field-label-font-weight)
+//   --bit-TextField-label-letter-spacing    tracking of the label                           (default: $tg-ctrl-letter-spacing)
+//   --bit-TextField-label-gap               room between the label and the frame when the
+//                                           two share a row (LabelPlacement Start/End)       (default: spacing(1))
+//   --bit-TextField-required-color          color of the asterisk of a required field       (default: $clr-req)
+//   --bit-TextField-icon-color              color of the icon at rest                       (default: $clr-fg-pri)
+//   --bit-TextField-icon-size               size of the icon and of the glyphs of the
+//                                           clear and reveal buttons                        (default: $siz-icon-md)
+//   --bit-TextField-spinner-size            diameter of the default busy spinner            (default: $siz-icon-md plus the stroke on each side)
+//   --bit-TextField-spinner-color           the spinner's moving arc                        (default: the busy indicator's color,
+//                                                                                            see --bit-TextField-accent-color)
+//   --bit-TextField-spinner-track-color     the ring the arc travels on                     (default: the arc color at 25%)
+//   --bit-TextField-button-width            width of the clear, reveal and icon buttons     (default: $siz-ctrl-md)
+//   --bit-TextField-button-color            glyph color of the clear and reveal buttons     (default: $clr-fg-sec for the clear one,
+//                                                                                            the accent for the reveal one; an icon
+//                                                                                            button keeps --bit-TextField-icon-color)
+//   --bit-TextField-button-hover-color      glyph color of those buttons, and of an icon
+//                                           button, while hovered                           (default: $clr-fg-pri-hover)
+//   --bit-TextField-button-hover-background background of those buttons while hovered       (default: $clr-bg-pri-hover)
+//   --bit-TextField-affix-color             color of the prefix and the suffix              (default: $clr-fg-pri)
+//   --bit-TextField-affix-background        fill behind the prefix and the suffix           (default: $clr-bg-sec, and none in the
+//                                                                                            Underlined variant, which has no box
+//                                                                                            to fill against)
+//   --bit-TextField-affix-padding           padding of the prefix and the suffix            (default: 0 spacing(1.25))
+//   --bit-TextField-description-color       color of the description under the field        (default: $clr-fg-pri)
+//   --bit-TextField-count-color             color of the character counter                  (default: $clr-fg-sec)
+//   --bit-TextField-error-color             color of the message under a rejected value,
+//                                           and of a counter that is over the limit         (default: $clr-err)
+//   --bit-TextField-invalid-border-color    frame color of a rejected value                 (default: $clr-err)
+//   --bit-TextField-invalid-focus-color     focus ring color of a rejected value            (default: $clr-err-focus)
+//   --bit-TextField-footer-font-size        size of the description, the counter and the
+//                                           error message                                   (default: $tg-fs-2xs)
+//   --bit-TextField-footer-gap              room between the frame and what is written
+//                                           under it                                        (default: spacing(0.625), the air
+//                                                                                            the label leaves above the frame)
+//   --bit-TextField-ghost-color             color of the inline ghost suggestion            (default: $clr-fg-ter)
+//   --bit-TextField-disabled-color          text, label, icon and affix color when disabled (default: $clr-fg-dis)
+//   --bit-TextField-disabled-background     fill of the frame when disabled                 (default: $clr-bg-dis)
+//   --bit-TextField-disabled-border-color   frame color when disabled                       (default: $clr-brd-dis)
+//
+// A parameter written on the field wins over the variable that restyles what it sets: an explicit Accent over
+// the accent and focus colors (the focus ring, the focused icon, affixes and busy indicator, and the reveal
+// glyph, whose --bit-TextField-button-color it outranks too), an explicit Background over the rest fill, an
+// explicit Border over the rest and hover frame colors, and an explicit Size over the minimum height, the font
+// sizes (the label's included), the line height, the icon size, the spinner size and the button width. An
+// explicit Accent also paints the busy spinner ahead of --bit-TextField-spinner-color. The variables restyle the
+// default, not a choice - which is why Accent, Background, Border and Size publish nothing while they are left
+// unset: a class that always carried the default would be indistinguishable from one that was asked for. A
+// state the field is in is still read first: disabled, rejected, and the focused frame and the hovered fill,
+// for which no parameter has a value of its own (--bit-TextField-focus-border-color and
+// --bit-TextField-hover-background fall back to the frame and the fill ranked as above).
+
+$tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn-width, spn-size, clr, clr-focus,
+                         clr-bg, clr-brd, clr-brd-hover;
 
 .bit-tfl {
     margin: 0;
     padding: 0;
     box-shadow: none;
-    font-weight: $tg-fw-regular;
     position: relative;
     box-sizing: border-box;
-    font-family: $tg-font-family;
-    font-size: var(--bit-tfl-font-size);
+    font-weight: var(--bit-TextField-font-weight, #{$tg-fw-regular});
+    font-family: var(--bit-TextField-font-family, #{$tg-font-family});
+    font-size: var(--bit-tfl-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm}));
 
-    // The medium size is the default one, so its values sit on the root instead of only on .bit-tfl-md.
-    --bit-tfl-font-size: #{$tg-fs-sm};
-    --bit-tfl-line-height: #{spacing(2.125)};
-    --bit-tfl-min-height: #{$siz-ctrl-md};
+    // The values the Size, Accent, Background and Border classes publish start out unset on every root, so a
+    // field rendered inside another one's template never inherits the outer field's choice; the classes -
+    // declared further down at the same weight - still win on the root that carries them. Left unset, each
+    // sends the var() reading it on to the public variable and then to the default (the medium size, the
+    // primary accent, the primary background and border kinds), which is what lets an explicit parameter
+    // outrank the variable while an unset one leaves the variable in charge.
+    @each $name in $tfl-private-properties {
+        --bit-tfl-#{$name}: initial;
+    }
+    // The row height of the input has no public variable to compete with, so the medium one sits on the root
+    // itself instead of only on .bit-tfl-md.
     --bit-tfl-inp-min-height: #{spacing(3.75)};
-    --bit-tfl-icon-font-size: #{$siz-icon-md};
-    --bit-tfl-btn-width: #{$siz-ctrl-md};
+    // How long the frame takes to repaint between rest, hover and focus. A pace set through the public variable
+    // is scaled by the shared motion factor, so the reduced motion preference collapses it along with the theme's
+    // own (and ForceAnimation brings both back).
+    --bit-tfl-dur: #{mot-scaled-duration(var(--bit-TextField-transition-duration, #{$mot-duration-short}))};
 
     &.bit-dis {
         .bit-tfl-cnt {
-            color: $clr-fg-dis;
+            color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-tfl-lbl {
-            color: $clr-fg-dis;
+            color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-tfl-fgp {
             border: none;
             cursor: default;
-            color: $clr-fg-dis;
-            background: $clr-bg-dis;
-            border: $shp-border-width $shp-border-style $clr-brd-dis;
+            color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
+            background: var(--bit-TextField-disabled-background, #{$clr-bg-dis});
+            border: var(--bit-TextField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-TextField-disabled-border-color, #{$clr-brd-dis});
         }
 
         .bit-tfl-inp {
-            color: $clr-fg-dis;
+            color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
+            @include input-placeholder(var(--bit-TextField-disabled-color, #{$clr-fg-dis}));
         }
 
         .bit-tfl-pre,
         .bit-tfl-suf {
-            color: $clr-fg-dis;
+            color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
         }
 
         // Everything that sits inside the frame goes grey with it: an icon or a busy indicator left at
         // full contrast next to a greyed-out value reads as if that part of the field were still live.
         .bit-tfl-ico,
+        .bit-tfl-icb,
         .bit-tfl-lod,
         .bit-tfl-rpi {
-            color: $clr-fg-dis;
+            color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
+        }
+
+        // The spinner takes that grey too, ahead of an explicit Accent and of its own color variable.
+        .bit-tfl-lod {
+            --bit-tfl-spn-clr: currentcolor;
         }
 
         .bit-tfl-cbt {
             cursor: default;
-            color: $clr-fg-dis;
             pointer-events: none;
-            background: $clr-bg-dis;
-            border: $shp-border-width $shp-border-style $clr-brd-dis;
+            color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
+            background: var(--bit-TextField-disabled-background, #{$clr-bg-dis});
+            border: var(--bit-TextField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-TextField-disabled-border-color, #{$clr-brd-dis});
         }
 
         .bit-tfl-rpb {
             cursor: default;
-            color: $clr-fg-dis;
             pointer-events: none;
+            color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
         }
 
         &.bit-tfl-und {
             .bit-tfl-wrp {
                 width: 100%;
                 display: flex;
-                border-bottom: $shp-border-width $shp-border-style $clr-brd-dis;
+                border-bottom: var(--bit-TextField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-TextField-disabled-border-color, #{$clr-brd-dis});
             }
 
-            .bit-tfl-lbl {
-                height: var(--bit-tfl-min-height);
-                margin-inline-end: spacing(1);
-                line-height: calc(var(--bit-tfl-min-height) - #{spacing(1.25)});
-                padding-block: spacing(0.625);
-                padding-inline-start: spacing(1.5);
-            }
-
+            // Only what the disabled state actually changes is repeated here - the rule under the field,
+            // which takes the disabled color, and the frame, which the disabled border above would
+            // otherwise draw back around an underlined field. The label keeps the metrics of the variant.
             .bit-tfl-fgp {
                 flex: 1 1 0;
                 border: none;
@@ -89,11 +189,16 @@
         }
 
         // NoBorder means no border in every state: the disabled frame border above is more specific than
-        // the .bit-tfl-nbd rule, so it has to be turned off again here.
+        // the .bit-tfl-nbd rule, so it has to be turned off again here - and so is the underline, which is
+        // what the border of the underlined variant is.
         &.bit-tfl-nbd {
             .bit-tfl-fgp,
             .bit-tfl-cbt {
                 border: none;
+            }
+
+            .bit-tfl-wrp {
+                border-bottom: none;
             }
         }
     }
@@ -101,17 +206,17 @@
     &.bit-inv {
         .bit-tfl-fgp,
         .bit-tfl-wrp {
-            border-color: $clr-err;
+            border-color: var(--bit-TextField-invalid-border-color, #{$clr-err});
         }
 
         &.bit-tfl-fcs {
             &:not(.bit-tfl-und) .bit-tfl-fgp {
-                @include focus-ring($clr-err-focus);
+                @include focus-ring(var(--bit-TextField-invalid-focus-color, #{$clr-err-focus}));
             }
 
             &.bit-tfl-und {
                 .bit-tfl-wrp {
-                    @include focus-underline-ring($clr-err-focus);
+                    @include focus-underline-ring(var(--bit-TextField-invalid-focus-color, #{$clr-err-focus}));
                 }
             }
         }
@@ -133,13 +238,14 @@
     margin: 0;
     display: block;
     box-shadow: none;
-    font-weight: $tg-fw-semibold;
-    color: $clr-fg-pri;
     box-sizing: border-box;
     padding: spacing(0.625) 0;
     line-height: spacing(2.5);
     overflow-wrap: break-word;
-    font-size: var(--bit-tfl-font-size);
+    color: var(--bit-TextField-label-color, #{$clr-fg-pri});
+    letter-spacing: var(--bit-TextField-label-letter-spacing, #{$tg-ctrl-letter-spacing});
+    font-weight: var(--bit-TextField-label-font-weight, #{$tg-field-label-font-weight});
+    font-size: var(--bit-tfl-font-size, var(--bit-TextField-label-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm})));
 }
 
 .bit-tfl-fgp {
@@ -147,15 +253,44 @@
     padding: 0;
     cursor: text;
     display: flex;
-    box-shadow: none;
     position: relative;
     align-items: center;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    border-radius: $shp-radius-control;
-    min-height: var(--bit-tfl-min-height);
-    background-color: var(--bit-tfl-clr-bg);
-    border: $shp-border-width $shp-border-style var(--bit-tfl-clr-brd);
+    box-shadow: var(--bit-TextField-shadow, none);
+    border-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+    min-height: var(--bit-tfl-min-height, var(--bit-TextField-min-height, #{$siz-ctrl-md}));
+    --bit-tfl-fgp-bg: initial;
+    --bit-tfl-fgp-brd: initial;
+    background-color: var(--bit-tfl-fgp-bg, var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri})));
+    border: var(--bit-TextField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-tfl-fgp-brd, var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri})));
+    // Rest, hover and focus repaint the same two properties, so they cross-fade instead of snapping. The
+    // duration comes from the motion tokens, which collapse to near zero under prefers-reduced-motion.
+    transition: border-color var(--bit-tfl-dur) $mot-easing,
+                background-color var(--bit-tfl-dur) $mot-easing;
+}
+
+// A frame that darkens under the pointer is what tells a mouse user the whole box is the target, not only
+// the text inside it. It is drawn on pointer devices alone - a touch device would keep the hover state
+// painted after the tap - and it never overrides the focused or the rejected frame, both of which say
+// something the hover does not. An explicit Border carries a hover step of its own, which outranks the
+// public hover frame color; a Background has none, so the public hover fill comes first and falls back to
+// the rest fill.
+//
+// The states change the variables the parts are painted from rather than their colors, so the rules that
+// declare the colors are the ones at rest: a part the app paints through Classes keeps that paint under the
+// pointer, instead of losing it to a state that outranks the app's class.
+@media (hover: hover) {
+    .bit-tfl:not(.bit-dis):not(.bit-tfl-fcs):not(.bit-inv) {
+        .bit-tfl-fgp:hover {
+            --bit-tfl-fgp-bg: var(--bit-TextField-hover-background, var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri})));
+            --bit-tfl-fgp-brd: var(--bit-tfl-clr-brd-hover, var(--bit-TextField-hover-border-color, #{$clr-brd-pri-hover}));
+        }
+
+        &.bit-tfl-und .bit-tfl-wrp:hover {
+            --bit-tfl-wrp-brd: var(--bit-tfl-clr-brd-hover, var(--bit-TextField-hover-border-color, #{$clr-brd-pri-hover}));
+        }
+    }
 }
 
 .bit-tfl-inp {
@@ -165,21 +300,39 @@
     min-width: 0;
     height: 100%;
     border: none;
-    font-weight: $tg-fw-regular;
     border-radius: 0;
     box-shadow: none;
-    color: $clr-fg-pri;
-    padding: 0 spacing(1);
     box-sizing: border-box;
     text-overflow: ellipsis;
     background: none transparent;
-    font-family: $tg-font-family;
-    font-size: var(--bit-tfl-font-size);
+    color: var(--bit-TextField-color, #{$clr-fg-pri});
+    caret-color: var(--bit-TextField-caret-color, var(--bit-TextField-color, #{$clr-fg-pri}));
+    padding: var(--bit-TextField-padding, 0 #{spacing(1)});
+    font-weight: var(--bit-TextField-font-weight, #{$tg-fw-regular});
+    font-family: var(--bit-TextField-font-family, #{$tg-font-family});
+    font-size: var(--bit-tfl-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm}));
     min-height: var(--bit-tfl-inp-min-height);
+
+    @include input-placeholder(var(--bit-TextField-placeholder-color, #{$clr-fg-sec}));
 
     &[type="password"]::-ms-reveal,
     &[type="password"]::-ms-clear {
         display: none;
+    }
+
+    // Chrome paints an autofilled field with a background of its own that no background-color declaration
+    // can override, which turns a dark themed field into a pale yellow box. An inset shadow the size of the
+    // element is what paints over it, and the text color is handed over through -webkit-text-fill-color for
+    // the same reason. The out-of-reach delay is not an animation but the known way to hold back the fade
+    // the browser runs over its own background color, which would otherwise wash the shadow out.
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus,
+    &:-webkit-autofill:active {
+        caret-color: var(--bit-TextField-caret-color, var(--bit-TextField-color, #{$clr-fg-pri}));
+        -webkit-text-fill-color: var(--bit-TextField-color, #{$clr-fg-pri});
+        -webkit-box-shadow: 0 0 0 spacing(12.5) var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri})) inset;
+        transition: background-color 0s 100000s;
     }
 }
 
@@ -203,15 +356,7 @@
 // Visually hidden, but still read out: the element only exists to give aria-describedby something to
 // point at.
 .bit-tfl-dsc {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-tfl-rpb {
@@ -221,18 +366,34 @@
     position: relative;
     outline: transparent;
     padding: 0 spacing(0.5);
-    color: var(--bit-tfl-clr);
-    background-color: transparent;
-    width: var(--bit-tfl-btn-width);
+    --bit-tfl-rpb-bg: initial;
+    background-color: var(--bit-tfl-rpb-bg, transparent);
+    color: var(--bit-tfl-clr, var(--bit-TextField-button-color, var(--bit-TextField-accent-color, #{$clr-pri})));
+    width: var(--bit-tfl-btn-width, var(--bit-TextField-button-width, #{$siz-ctrl-md}));
     min-height: var(--bit-tfl-inp-min-height);
 
+    // The button is the last thing in the frame often enough that its corner has to follow the frame's,
+    // and only then: rounding it while an icon or a suffix still comes after it would draw a rounded chip
+    // in the middle of the field the moment the button is hovered.
+    &:last-child {
+        border-start-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+        border-end-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+    }
+
     &:focus-visible {
-        @include focus-ring(var(--bit-tfl-clr-focus));
+        @include focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)));
+    }
+
+    // A read-only field keeps its buttons enabled-looking otherwise: the disabled state of the field is a
+    // class on the root, while the one a read-only field gives its clear button is the html attribute alone.
+    &:disabled {
+        cursor: default;
+        color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
     }
 
     @media (hover: hover) {
-        &:hover {
-            background-color: $clr-bg-pri-hover;
+        &:not(:disabled):hover {
+            --bit-tfl-rpb-bg: var(--bit-TextField-button-hover-background, #{$clr-bg-pri-hover});
         }
     }
 }
@@ -241,53 +402,126 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--bit-tfl-icon-font-size);
+    font-size: var(--bit-tfl-icon-font-size, var(--bit-TextField-icon-size, #{$siz-icon-md}));
 }
 
 .bit-tfl-rpi {
-    color: var(--bit-tfl-clr);
+    color: var(--bit-tfl-clr, var(--bit-TextField-button-color, var(--bit-TextField-accent-color, #{$clr-pri})));
 }
 
 .bit-tfl-cbt {
     height: auto;
     border: none;
     cursor: pointer;
-    font-weight: $tg-fw-regular;
     user-select: none;
-    color: $clr-fg-sec;
     position: relative;
-    text-align: center;
+    display: inline-flex;
+    align-items: center;
     outline: transparent;
     text-decoration: none;
-    display: inline-block;
+    justify-content: center;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    font-family: $tg-font-family;
-    background-color: transparent;
-    width: var(--bit-tfl-btn-width);
-    font-size: var(--bit-tfl-font-size);
+    --bit-tfl-cbt-bg: initial;
+    --bit-tfl-cbt-clr: initial;
+    background-color: var(--bit-tfl-cbt-bg, transparent);
+    font-weight: var(--bit-TextField-font-weight, #{$tg-fw-regular});
+    font-family: var(--bit-TextField-font-family, #{$tg-font-family});
+    color: var(--bit-tfl-cbt-clr, var(--bit-TextField-button-color, #{$clr-fg-sec}));
+    width: var(--bit-tfl-btn-width, var(--bit-TextField-button-width, #{$siz-ctrl-md}));
+    font-size: var(--bit-tfl-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm}));
     min-height: var(--bit-tfl-inp-min-height);
-    border-start-end-radius: $shp-radius-control;
-    border-end-end-radius: $shp-radius-control;
 
+    // Only when it is the last thing in the frame: a reveal button, an icon or a suffix after it would
+    // otherwise leave a rounded hover chip sitting in the middle of the field.
+    &:last-child {
+        border-start-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+        border-end-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+    }
+
+    // The glyph follows the icon size of the field rather than a size of its own, so it stays the same
+    // mark as the reveal password one next to it and grows along with a Large field instead of staying
+    // the 12px of a Small one.
     i {
         width: unset;
+        line-height: 1;
         flex-shrink: 0;
-        height: spacing(2);
         text-align: center;
-        margin: 0 spacing(0.5);
-        font-size: $tg-fs-xs;
-        line-height: spacing(2);
+        font-size: var(--bit-tfl-icon-font-size, var(--bit-TextField-icon-size, #{$siz-icon-md}));
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-tfl-clr-focus));
+        @include focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)));
+    }
+
+    // A read-only field disables the button through the html attribute rather than through the disabled
+    // class of the root, so the muted look and the refusal to answer the pointer are asked for here.
+    &:disabled {
+        cursor: default;
+        color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
     }
 
     @media (hover: hover) {
-        &:hover {
-            color: $clr-fg-pri-hover;
-            background-color: $clr-bg-pri-hover;
+        &:not(:disabled):hover {
+            --bit-tfl-cbt-clr: var(--bit-TextField-button-hover-color, #{$clr-fg-pri-hover});
+            --bit-tfl-cbt-bg: var(--bit-TextField-button-hover-background, #{$clr-bg-pri-hover});
+        }
+    }
+}
+
+// The icon becomes a button when it is given something to do, and then it is a target rather than a mark:
+// it answers the pointer and the keyboard, draws a ring of its own, and takes the same width as the clear
+// and reveal buttons so the chrome of a field stays one row of equally sized targets.
+.bit-tfl-icb {
+    height: 100%;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    align-items: center;
+    outline: transparent;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 0 spacing(0.5);
+    --bit-tfl-icb-bg: initial;
+    --bit-tfl-icb-clr: initial;
+    background-color: var(--bit-tfl-icb-bg, transparent);
+    color: var(--bit-tfl-icb-clr, var(--bit-TextField-icon-color, #{$clr-fg-pri}));
+    width: var(--bit-tfl-btn-width, var(--bit-TextField-button-width, #{$siz-ctrl-md}));
+    min-height: var(--bit-tfl-inp-min-height);
+
+    // Only when it is the last thing in the frame: a suffix after it would otherwise leave a rounded
+    // hover chip sitting in the middle of the field.
+    &:last-child {
+        border-start-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+        border-end-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+    }
+
+    // The leading one rounds the other corner instead, for the same reason.
+    &:first-child {
+        border-start-start-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+        border-end-start-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+    }
+
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)));
+    }
+
+    &:disabled {
+        cursor: default;
+        color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
+    }
+
+    .bit-tfl-ico {
+        color: inherit;
+        min-width: unset;
+    }
+
+    @media (hover: hover) {
+        &:not(:disabled):hover {
+            --bit-tfl-icb-clr: var(--bit-TextField-button-hover-color, #{$clr-fg-pri-hover});
+            --bit-tfl-icb-bg: var(--bit-TextField-button-hover-background, #{$clr-bg-pri-hover});
         }
     }
 }
@@ -297,40 +531,63 @@
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    color: var(--bit-tfl-clr);
     padding-inline: spacing(0.5);
+    color: var(--bit-tfl-clr, var(--bit-TextField-accent-color, #{$clr-pri}));
     min-height: var(--bit-tfl-inp-min-height);
+    // The arc of the spinner inside: an explicit Accent, unset otherwise (see .bit-tfl-spn); a disabled field
+    // hands it the grey of the slot instead.
+    --bit-tfl-spn-clr: var(--bit-tfl-clr);
+}
+
+// The field's own spinner rather than a BitSpinnerLoading: a component re-skinned on its own would otherwise
+// re-skin this one too. The arc and its track are painted from the color of the slot, so the spinner follows
+// the accent and the disabled state. The ring is drawn around the icon's box - the icon size with the stroke
+// outside it on each side - so it grows and shrinks with the field and stands a step above the glyphs beside it.
+// An explicit Accent and Size reach the spinner ahead of its own variables, as they reach the rest of the field.
+.bit-tfl-spn {
+    @include spinner-ring(var(--bit-tfl-spn-size, var(--bit-TextField-spinner-size, calc(var(--bit-TextField-icon-size, #{$siz-icon-md}) + 2 * #{$siz-spinner-stroke}))),
+                          var(--bit-tfl-spn-clr, var(--bit-TextField-spinner-color, currentcolor)),
+                          var(--bit-TextField-spinner-track-color, #{translucent(var(--bit-tfl-spn-clr, var(--bit-TextField-spinner-color, currentcolor)), 25%)}));
 }
 
 .bit-tfl-ico {
-    color: $clr-fg-pri;
+    color: var(--bit-TextField-icon-color, #{$clr-fg-pri});
 }
 
 .bit-tfl-rpi,
 .bit-tfl-ico {
     text-align: center;
     min-width: spacing(3.5);
-    font-size: var(--bit-tfl-icon-font-size);
+    font-size: var(--bit-tfl-icon-font-size, var(--bit-TextField-icon-size, #{$siz-icon-md}));
 }
 
 // The rejection is colored like every other rejected value of the library, and it keeps that color while the
 // field is disabled: a message that goes grey with the rest of the field stops reading as the reason the
 // value was refused.
 .bit-tfl-erm {
-    color: $clr-err;
     overflow-wrap: break-word;
-    font-size: $tg-fs-2xs;
+    padding-top: var(--bit-TextField-footer-gap, #{spacing(0.625)});
+    color: var(--bit-TextField-error-color, #{$clr-err});
+    font-size: var(--bit-TextField-footer-font-size, #{$tg-fs-2xs});
 
     span {
-        color: $clr-err;
+        color: var(--bit-TextField-error-color, #{$clr-err});
     }
 }
 
+// The description and the counter sit one line under the frame rather than flush against it, the same
+// air the label leaves above it, so the field reads as one block instead of three stacked edges. A
+// message above them already carries that gap, so the footer only adds its own when it is alone.
 .bit-tfl-ftr {
     gap: spacing(1);
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+    padding-top: var(--bit-TextField-footer-gap, #{spacing(0.625)});
+}
+
+.bit-tfl-erm + .bit-tfl-ftr {
+    padding-top: 0;
 }
 
 .bit-tfl-des {
@@ -338,23 +595,23 @@
     min-width: 0;
 
     span {
-        color: $clr-fg-pri;
-        font-size: $tg-fs-2xs;
+        color: var(--bit-TextField-description-color, #{$clr-fg-pri});
+        font-size: var(--bit-TextField-footer-font-size, #{$tg-fs-2xs});
     }
 }
 
 .bit-tfl-cnt {
     flex: 0 0 auto;
-    color: $clr-fg-sec;
     white-space: nowrap;
-    font-size: $tg-fs-2xs;
     margin-inline-start: auto;
+    color: var(--bit-TextField-count-color, #{$clr-fg-sec});
+    font-size: var(--bit-TextField-footer-font-size, #{$tg-fs-2xs});
 }
 
 // A count above the limit is a state of the value, not a decoration of the counter, so it is colored like
 // every other rejected value of the library instead of staying the muted grey of a count within the limit.
 .bit-tfl-cno {
-    color: $clr-err;
+    color: var(--bit-TextField-error-color, #{$clr-err});
 }
 
 .bit-tfl-pre,
@@ -362,16 +619,16 @@
     height: 100%;
     display: flex;
     flex-shrink: 0;
-    color: $clr-fg-pri;
     align-items: center;
     white-space: nowrap;
-    background: $clr-bg-sec;
-    padding: 0 spacing(1.25);
+    color: var(--bit-TextField-affix-color, #{$clr-fg-pri});
+    background: var(--bit-TextField-affix-background, #{$clr-bg-sec});
+    padding: var(--bit-TextField-affix-padding, 0 #{spacing(1.25)});
     min-height: var(--bit-tfl-inp-min-height);
 
     span {
         padding-bottom: spacing(0.125);
-        font-size: var(--bit-tfl-font-size);
+        font-size: var(--bit-tfl-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm}));
     }
 }
 
@@ -387,6 +644,7 @@
     // instead - next to the first line of the text, where the affordances of a single line field sit.
     .bit-tfl-cbt,
     .bit-tfl-rpb,
+    .bit-tfl-icb,
     .bit-tfl-lod,
     .bit-tfl-ico {
         height: var(--bit-tfl-inp-min-height);
@@ -410,8 +668,8 @@
         word-wrap: break-word;
         white-space: pre-wrap;
         overflow-wrap: break-word;
-        padding: spacing(0.75) spacing(1);
-        line-height: var(--bit-tfl-line-height);
+        padding: var(--bit-TextField-padding, #{spacing(0.75)} #{spacing(1)});
+        line-height: var(--bit-tfl-line-height, var(--bit-TextField-line-height, #{spacing(2.125)}));
     }
 }
 
@@ -420,8 +678,12 @@
         flex-grow: 1;
         overflow: auto;
         min-height: inherit;
-        padding: spacing(0.75) spacing(1);
-        line-height: var(--bit-tfl-line-height);
+        // Vertical only: the grip of a textarea resizes the element itself, and a width dragged past the
+        // frame around it leaves the input hanging out of its own field. The height is the axis a resizable
+        // field is actually resized along, and the one the frame grows with.
+        resize: var(--bit-TextField-resize, vertical);
+        padding: var(--bit-TextField-padding, #{spacing(0.75)} #{spacing(1)});
+        line-height: var(--bit-tfl-line-height, var(--bit-TextField-line-height, #{spacing(2.125)}));
     }
 }
 
@@ -431,8 +693,8 @@
         flex-grow: 1;
         overflow: auto;
         min-height: inherit;
-        padding: spacing(0.75) spacing(1);
-        line-height: var(--bit-tfl-line-height);
+        padding: var(--bit-TextField-padding, #{spacing(0.75)} #{spacing(1)});
+        line-height: var(--bit-tfl-line-height, var(--bit-TextField-line-height, #{spacing(2.125)}));
     }
 }
 
@@ -445,24 +707,43 @@
 
 .bit-tfl-fcs {
     .bit-tfl-ico {
-        color: var(--bit-tfl-clr);
+        color: var(--bit-tfl-clr, var(--bit-TextField-accent-color, #{$clr-pri}));
+    }
+
+    // The button is what paints the glyph inside it, so the accent is handed to the button rather than to
+    // the icon it inherits from.
+    .bit-tfl-icb {
+        color: var(--bit-tfl-icb-clr, var(--bit-tfl-clr, var(--bit-TextField-accent-color, #{$clr-pri})));
     }
 
     .bit-tfl-pre,
     .bit-tfl-suf {
-        color: var(--bit-tfl-clr);
+        color: var(--bit-tfl-clr, var(--bit-TextField-accent-color, #{$clr-pri}));
     }
 
     // The underlined variant is excluded so it gets only the bottom-rule treatment below - applying
     // the ring mixin and negating its box-shadow would still leave its forced-colors outline behind.
     &:not(.bit-tfl-und) .bit-tfl-fgp {
-        @include focus-ring(var(--bit-tfl-clr-focus));
+        @include focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)));
     }
 
     &.bit-tfl-und {
         .bit-tfl-wrp {
-            @include focus-underline-ring(var(--bit-tfl-clr-focus));
+            @include focus-underline-ring(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color, #{$clr-pri-focus})));
         }
+    }
+
+    // A rejected value keeps its red frame while it is focused: the ring already says where the keyboard
+    // is, and the frame is the only thing left saying the value was refused. Everywhere else the frame
+    // takes the focus color, which is unset by default - the ring is the indicator this design system
+    // draws - and is there for a design system whose fields color their border instead. No Border kind
+    // has a focus step, so that variable comes first and falls back to the rest frame.
+    &:not(.bit-tfl-und):not(.bit-inv) .bit-tfl-fgp {
+        border-color: var(--bit-TextField-focus-border-color, var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri})));
+    }
+
+    &.bit-tfl-und:not(.bit-inv) .bit-tfl-wrp {
+        border-bottom-color: var(--bit-TextField-focus-border-color, var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri})));
     }
 }
 
@@ -470,24 +751,56 @@
     .bit-tfl-wrp {
         width: 100%;
         display: flex;
-        border-bottom: $shp-border-width $shp-border-style var(--bit-tfl-clr-brd);
+        --bit-tfl-wrp-brd: initial;
+        border-bottom: var(--bit-TextField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-tfl-wrp-brd, var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri})));
+        transition: border-color var(--bit-tfl-dur) $mot-easing;
     }
 
     .bit-tfl-lbl {
-        height: var(--bit-tfl-min-height);
+        height: var(--bit-tfl-min-height, var(--bit-TextField-min-height, #{$siz-ctrl-md}));
         margin-inline-end: spacing(1);
 
         // The label fills the height of the field minus its own padding, so its text stays centered
         // against the input at every size instead of only at the medium one.
-        line-height: calc(var(--bit-tfl-min-height) - #{spacing(1.25)});
+        line-height: calc(var(--bit-tfl-min-height, var(--bit-TextField-min-height, #{$siz-ctrl-md})) - #{spacing(1.25)});
         padding-block: spacing(0.625);
         padding-inline-start: spacing(1.5);
+
+        // The row is one line tall, so a label too long for it is cut short with an ellipsis (the component
+        // offers the whole text as its title) instead of wrapping out of the row onto whatever follows. The
+        // label never takes more than half the row, which leaves the input room to type in; it is a flex
+        // container so the required marker after the text keeps its place while the text is cut.
+        display: flex;
+        min-width: 0;
+        max-width: 50%;
+        flex: 0 1 auto;
+        white-space: nowrap;
+    }
+
+    .bit-tfl-ltx {
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .bit-tfl-fgp {
         flex: 1 1 0;
         border: none;
         text-align: start;
+    }
+
+    // The variant drops the box around the field, so the filled chip the affixes wear in the boxed one
+    // would be the only block of color left in a field that is otherwise a single rule.
+    .bit-tfl-pre,
+    .bit-tfl-suf {
+        background: var(--bit-TextField-affix-background, transparent);
+    }
+}
+
+// NoBorder means no border in every variant: in the underlined one the rule under the field is the border,
+// so taking the frame away has to take that rule with it.
+.bit-tfl-nbd.bit-tfl-und {
+    .bit-tfl-wrp {
+        border-bottom: none;
     }
 }
 
@@ -525,7 +838,7 @@
 .bit-tfl-lst,
 .bit-tfl-led {
     .bit-tfl-wrp {
-        gap: spacing(1);
+        gap: var(--bit-TextField-label-gap, #{spacing(1)});
         align-items: center;
     }
 
@@ -547,23 +860,43 @@
     }
 }
 
+// An explicit LabelPlacement lays the wrapper out itself, so the metrics the underlined variant gives its
+// label - the fixed row height, the inset and the margin that line it up next to the input - are only right
+// while the two actually share the row the variant puts them on. Stacked above or below the field, or laid
+// out by the Start and End positions with a gap of their own, they would leave an indented, over-tall
+// caption, so they are handed back here.
+.bit-tfl-und.bit-tfl-ltp,
+.bit-tfl-und.bit-tfl-lbt,
+.bit-tfl-und.bit-tfl-lst,
+.bit-tfl-und.bit-tfl-led {
+    .bit-tfl-lbl {
+        height: auto;
+        display: block;
+        max-width: none;
+        margin-inline-end: 0;
+        white-space: normal;
+        padding-inline-start: 0;
+        line-height: spacing(2.5);
+    }
+}
+
 .bit-tfl-req {
     // Every label of the field is marked, not only the one built from the Label parameter: a field
     // rendered through a LabelTemplate is just as required as any other one.
     .bit-tfl-wrp > label::after {
         content: "*";
-        color: $clr-req;
         margin-inline-start: spacing(0.625);
+        color: var(--bit-TextField-required-color, #{$clr-req});
     }
 }
 
 .bit-tfl-rnl {
     .bit-tfl-fgp::before {
         content: "*";
-        color: $clr-req;
         position: absolute;
         top: spacing(-0.625);
         inset-inline-end: spacing(-1.25);
+        color: var(--bit-TextField-required-color, #{$clr-req});
     }
 }
 
@@ -602,20 +935,22 @@
     z-index: 0;
     display: flex;
     overflow: hidden;
-    font-weight: $tg-fw-regular;
     user-select: none;
     position: absolute;
     align-items: center;
     pointer-events: none;
     white-space: pre;
-    color: $clr-fg-ter;
-    padding: 0 spacing(1);
     box-sizing: border-box;
-    font-family: $tg-font-family;
-    font-size: var(--bit-tfl-font-size);
+    color: var(--bit-TextField-ghost-color, #{$clr-fg-ter});
+    padding: var(--bit-TextField-padding, 0 #{spacing(1)});
+    font-weight: var(--bit-TextField-font-weight, #{$tg-fw-regular});
+    font-family: var(--bit-TextField-font-family, #{$tg-font-family});
+    font-size: var(--bit-tfl-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm}));
 }
 
 
+// Published only by an explicit Size; an unset one is the medium field, which the reads spell out after the
+// public variables.
 .bit-tfl-sm {
     --bit-tfl-font-size: #{$tg-fs-xs};
     --bit-tfl-line-height: #{spacing(1.875)};
@@ -623,6 +958,7 @@
     --bit-tfl-inp-min-height: #{spacing(3)};
     --bit-tfl-icon-font-size: #{$siz-icon-sm};
     --bit-tfl-btn-width: #{$siz-ctrl-sm};
+    --bit-tfl-spn-size: calc(#{$siz-icon-sm} + 2 * #{$siz-spinner-stroke});
 }
 
 .bit-tfl-md {
@@ -632,6 +968,7 @@
     --bit-tfl-inp-min-height: #{spacing(3.75)};
     --bit-tfl-icon-font-size: #{$siz-icon-md};
     --bit-tfl-btn-width: #{$siz-ctrl-md};
+    --bit-tfl-spn-size: calc(#{$siz-icon-md} + 2 * #{$siz-spinner-stroke});
 }
 
 .bit-tfl-lg {
@@ -641,9 +978,12 @@
     --bit-tfl-inp-min-height: #{spacing(4.75)};
     --bit-tfl-icon-font-size: #{$siz-icon-lg};
     --bit-tfl-btn-width: #{$siz-ctrl-lg};
+    --bit-tfl-spn-size: calc(#{$siz-icon-lg} + 2 * #{$siz-spinner-stroke});
 }
 
 
+// Published only by an explicit Accent; an unset one is the primary role, after the public accent and focus
+// colors.
 .bit-tfl-pri {
     --bit-tfl-clr: #{$clr-pri};
     --bit-tfl-clr-focus: #{$clr-pri-focus};
@@ -730,6 +1070,7 @@
 }
 
 
+// Published only by an explicit Background; an unset one is the primary background, after the public one.
 .bit-tfl-bpr {
     --bit-tfl-clr-bg: #{$clr-bg-pri};
 }
@@ -747,18 +1088,118 @@
 }
 
 
+// Each border kind carries the hover step of its own role, so a frame that is deliberately invisible
+// (Transparent) stays invisible under the pointer instead of appearing out of nowhere. Published only by an
+// explicit Border; an unset one is the primary border, after the public border colors.
 .bit-tfl-brp {
     --bit-tfl-clr-brd: #{$clr-brd-pri};
+    --bit-tfl-clr-brd-hover: #{$clr-brd-pri-hover};
 }
 
 .bit-tfl-brs {
     --bit-tfl-clr-brd: #{$clr-brd-sec};
+    --bit-tfl-clr-brd-hover: #{$clr-brd-sec-hover};
 }
 
 .bit-tfl-brt {
     --bit-tfl-clr-brd: #{$clr-brd-ter};
+    --bit-tfl-clr-brd-hover: #{$clr-brd-ter-hover};
 }
 
 .bit-tfl-brn {
     --bit-tfl-clr-brd: transparent;
+    --bit-tfl-clr-brd-hover: transparent;
+}
+
+
+// Windows High Contrast / forced-colors: every color an author paints is replaced by the system pair, which
+// takes four of this component's states with it. The disabled field would come back at full contrast, the
+// rejected frame would be painted the same color as an accepted one, the ghost suggestion would read as text
+// that is already in the value, and a field that deliberately has no frame would have no perceivable boundary
+// at all. Each is re-established with something the mode keeps: a system color, or a border style.
+@media (forced-colors: active) {
+    // A background-role Accent is the page's own color, Canvas here, focus color included - so the reveal button,
+    // the busy indicator, the icons and the prefix and suffix of a focused field would be drawn in the color they
+    // sit on, in both engines (Chromium's backplate behind text is Canvas too). The Accent is taken back, after the
+    // classes that publish it, and those parts read the accent the field has without one.
+    @each $role in $bit-background-color-roles {
+        .bit-tfl-#{$role} {
+            --bit-tfl-clr: initial;
+            --bit-tfl-clr-focus: initial;
+        }
+    }
+
+    .bit-tfl.bit-dis {
+        .bit-tfl-lbl,
+        .bit-tfl-cnt,
+        .bit-tfl-des span,
+        .bit-tfl-ico,
+        .bit-tfl-icb,
+        .bit-tfl-lod,
+        .bit-tfl-rpi,
+        .bit-tfl-cbt,
+        .bit-tfl-pre,
+        .bit-tfl-suf {
+            color: GrayText;
+        }
+
+        .bit-tfl-spn {
+            @include spinner-ring-forced-disabled;
+        }
+
+        .bit-tfl-fgp,
+        .bit-tfl-cbt {
+            border-color: GrayText;
+        }
+
+        &.bit-tfl-und .bit-tfl-wrp {
+            border-bottom-color: GrayText;
+        }
+    }
+
+    // The suggestion is faded text behind the input; painted in the same CanvasText as the value it trails,
+    // it would read as something that has already been accepted.
+    .bit-tfl-gho {
+        color: GrayText;
+    }
+
+    // A frame the author took away - NoBorder, or a Transparent border kind - leaves nothing but the system
+    // Canvas behind it here, so the field itself becomes invisible. The stroke is handed back, which is the
+    // accommodation this mode exists for; the borderless look is kept everywhere else.
+    .bit-tfl-nbd:not(.bit-tfl-und) .bit-tfl-fgp,
+    .bit-tfl-brn:not(.bit-tfl-und) .bit-tfl-fgp {
+        border: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    .bit-tfl-brn.bit-tfl-und .bit-tfl-wrp,
+    .bit-tfl-nbd.bit-tfl-und .bit-tfl-wrp {
+        border-bottom: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    // A disabled NoBorder field loses its frame to a rule that has to outweigh the disabled frame
+    // (.bit-tfl.bit-dis.bit-tfl-nbd), which the two rules above are too light to override, so its stroke is
+    // handed back here at a weight above that one - in the GrayText the rest of a disabled field is drawn in.
+    .bit-tfl.bit-dis.bit-tfl-nbd:not(.bit-tfl-und) .bit-tfl-fgp {
+        border: $shp-border-width $shp-border-style GrayText;
+    }
+
+    .bit-tfl.bit-dis.bit-tfl-nbd.bit-tfl-und .bit-tfl-wrp {
+        border-bottom: $shp-border-width $shp-border-style GrayText;
+    }
+
+    // The rejection is carried by a color alone everywhere else, so here it is carried by the stroke itself:
+    // a dashed frame is the one difference from an accepted field that the forced palette cannot flatten. It
+    // comes after the frames handed back to a borderless field above, which would otherwise repaint it solid,
+    // and the disabled borderless one is matched at the weight of the rule that handed its frame back.
+    .bit-tfl.bit-inv {
+        .bit-tfl-fgp,
+        &.bit-dis.bit-tfl-nbd:not(.bit-tfl-und) .bit-tfl-fgp {
+            border-style: dashed;
+        }
+
+        &.bit-tfl-und .bit-tfl-wrp,
+        &.bit-dis.bit-tfl-nbd.bit-tfl-und .bit-tfl-wrp {
+            border-bottom-style: dashed;
+        }
+    }
 }

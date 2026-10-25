@@ -1,0 +1,191 @@
+﻿@page "/e2e/data-grid/api"
+@using System.Text.Json
+@implements IDisposable
+@inject IJSRuntime JS
+
+@* BitDataGrid's programmatic control and state: SortByAsync, ClearSortsAsync, ApplyFilterAsync, ApplyRangeFilterAsync,
+   ClearFilterAsync, ClearFiltersAsync, GroupByAsync, UngroupAsync, ClearGroupsAsync, GoToPageAsync, SetPageSizeAsync,
+   MoveColumnAsync, SearchAsync, RefreshAsync, the Active* / Total* / CurrentPage readouts, the change events,
+   OnStateChange with GetState and ApplyStateAsync across a JSON round trip, and the localized Strings. *@
+
+<PageTitle>BitDataGrid API E2E</PageTitle>
+
+<h1>BitDataGrid API and state</h1>
+
+<E2ESection Id="api" Title="Programmatic control">
+    <div class="api-buttons">
+        <button id="btn-sort-price-desc" type="button" @onclick="() => _grid.SortByAsync(nameof(Product.Price), BitDataGridSortDirection.Descending)">Sort price desc</button>
+        <button id="btn-sort-name-additive" type="button" @onclick="() => _grid.SortByAsync(nameof(Product.Name), BitDataGridSortDirection.Ascending, additive: true)">Add name asc</button>
+        <button id="btn-sort-price-none" type="button" @onclick="() => _grid.SortByAsync(nameof(Product.Price), BitDataGridSortDirection.None, additive: true)">Unsort price</button>
+        <button id="btn-clear-sorts" type="button" @onclick="() => _grid.ClearSortsAsync()">ClearSortsAsync</button>
+        <button id="btn-filter-price" type="button" @onclick="() => _grid.ApplyFilterAsync(nameof(Product.Price), BitDataGridFilterOperator.GreaterThan, 500)">Price &gt; 500</button>
+        <button id="btn-filter-range" type="button" @onclick="() => _grid.ApplyRangeFilterAsync(nameof(Product.Price), 100, 300)">100 &lt;= Price &lt; 300</button>
+        <button id="btn-filter-name" type="button" @onclick="FilterNameStartsWithP">Name starts with P</button>
+        <button id="btn-filter-unspecified" type="button" @onclick="() => _grid.ApplyFilterAsync(nameof(Product.Price), BitDataGridFilterOperator.Unspecified, 500)">Unspecified 500</button>
+        <button id="btn-clear-filter-price" type="button" @onclick="() => _grid.ClearFilterAsync(nameof(Product.Price))">ClearFilterAsync(Price)</button>
+        <button id="btn-clear-filters" type="button" @onclick="() => _grid.ClearFiltersAsync()">ClearFiltersAsync</button>
+        <button id="btn-group-category" type="button" @onclick="() => _grid.GroupByAsync(nameof(Product.Category))">GroupByAsync(Category)</button>
+        <button id="btn-ungroup-category" type="button" @onclick="() => _grid.UngroupAsync(nameof(Product.Category))">UngroupAsync(Category)</button>
+        <button id="btn-clear-groups" type="button" @onclick="() => _grid.ClearGroupsAsync()">ClearGroupsAsync</button>
+        <button id="btn-page-3" type="button" @onclick="() => _grid.GoToPageAsync(3)">GoToPageAsync(3)</button>
+        <button id="btn-page-size-10" type="button" @onclick="() => _grid.SetPageSizeAsync(10)">SetPageSizeAsync(10)</button>
+        <button id="btn-move-price" type="button" @onclick="() => _grid.MoveColumnAsync(nameof(Product.Price), 0)">MoveColumnAsync(Price, 0)</button>
+        <button id="btn-search" type="button" @onclick="SearchProduct">SearchAsync(Product 1)</button>
+        @* The list is changed from JS (MutateQuietly) rather than from a button: a button's click re-renders the page,
+           and the grid with it, which would pick the change up without RefreshAsync. *@
+        <button id="btn-mutate" type="button" @onclick="Mutate">Add a row in place</button>
+        <button id="btn-refresh" type="button" @onclick="() => _grid.RefreshAsync()">RefreshAsync</button>
+        <button id="btn-read" type="button" @onclick="Read">Read</button>
+    </div>
+    <p id="api-read">@_read</p>
+    <BitDataGrid @ref="_grid" TItem="Product" Id="grid-api" Items="@_products" KeyField="p => p.Id"
+                 Filterable="true" Groupable="true" Pageable="true" PageSize="5" ShowSearchBox="true"
+                 OnSortChange="s => _sortLog = string.Join(',', s.Select(d => d.ColumnId + ':' + d.Direction + ':' + d.Priority))"
+                 OnFilterChange="f => _filterLog = string.Join(',', f.Select(d => d.ColumnId + ':' + d.Operator + ':' + d.Value))"
+                 OnGroupChange="g => _groupLog = string.Join(',', g.Select(d => d.ColumnId + ':' + d.Direction))"
+                 OnPageChange="OnPage"
+                 OnStateChange="s => _apiStateChanges++">
+        <BitDataGridColumn Property="p => p.Id" Filterable="false" Groupable="false" />
+        <BitDataGridColumn Property="p => p.Name" Groupable="false" />
+        <BitDataGridColumn Property="p => p.Category" />
+        <BitDataGridColumn Property="p => p.Price" Groupable="false" />
+    </BitDataGrid>
+    <p>
+        sorts <span id="sort-log">@_sortLog</span> | filters <span id="filter-log">@_filterLog</span> |
+        groups <span id="group-log">@_groupLog</span> | pages <span id="page-log">@_pageLog</span> |
+        state changes <span id="api-state-changes">@_apiStateChanges</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="state" Title="State persistence">
+    <button id="btn-recreate-restore" type="button" @onclick="() => Recreate(restore: true)" disabled="@(_savedState is null)">Recreate and restore</button>
+    <button id="btn-recreate-fresh" type="button" @onclick="() => Recreate(restore: false)">Recreate fresh</button>
+    <span id="state-status">@_stateStatus</span>
+    <BitDataGrid @key="_stateKey" @ref="_stateGrid" TItem="Product" Id="grid-state" Items="@_products" KeyField="p => p.Id"
+                 Filterable="true" FilterDebounce="0" Resizable="true" Reorderable="true" ShowColumnChooser="true" ShowSearchBox="true" SearchDebounce="0"
+                 Pageable="true" PageSize="5" OnStateChange="SaveState">
+        <BitDataGridColumn Property="p => p.Id" Width="80px" Filterable="false" />
+        <BitDataGridColumn Property="p => p.Name" Width="160px" />
+        <BitDataGridColumn Property="p => p.Category" Width="140px" />
+        <BitDataGridColumn Property="p => p.Price" Width="120px" />
+    </BitDataGrid>
+    <pre id="state-json">@_savedState</pre>
+</E2ESection>
+
+<E2ESection Id="localization" Title="Localization">
+    <BitDataGrid TItem="Product" Id="grid-localized" Items="@_products" Strings="@_german"
+                 ShowSearchBox="true" SearchDebounce="0" Filterable="true" Pageable="true" PageSize="8">
+        <BitDataGridColumn Property="p => p.Id" Title="Nr." Filterable="false" />
+        <BitDataGridColumn Property="p => p.Name" Title="Name" />
+        <BitDataGridColumn Property="p => p.Price" Title="Preis" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public enum Category { Electronics, Books, Toys }
+
+    public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public Category Category { get; set; }
+        public int Price { get; set; }
+    }
+
+    // 23 rows: Product 01..23, the categories in turn, a price of 50 per id.
+    private readonly List<Product> _products = Enumerable.Range(1, 23)
+        .Select(i => new Product { Id = i, Name = $"Product {i:00}", Category = (Category)((i - 1) % 3), Price = i * 50 })
+        .ToList();
+
+    private readonly BitDataGridStrings _german = new()
+    {
+        GridLabel = "Datentabelle",
+        EmptyText = "Keine Datensätze.",
+        NoMatchesText = "Keine Treffer für die aktuellen Filter.",
+        PagerRangeFormat = "{0}–{1} von {2}",
+        PagerPageFormat = "Seite {0} von {1}",
+        PerPageFormat = "{0} pro Seite",
+        RowsPerPageLabel = "Zeilen pro Seite",
+        NextPageLabel = "Nächste Seite",
+        PreviousPageLabel = "Vorherige Seite",
+        FirstPageLabel = "Erste Seite",
+        LastPageLabel = "Letzte Seite",
+        SearchPlaceholder = "Suchen…",
+        SearchLabel = "Alle Spalten durchsuchen",
+        FilterPlaceholder = "Filtern…",
+        FilterByFormat = "Filtern nach {0}",
+        AnnouncementSortedAscending = "Sortiert nach {0}, aufsteigend",
+        AnnouncementResultsFormat = "{0}. Zeilen: {1}",
+        AnnouncementSearched = "Suche nach {0}",
+    };
+
+    private BitDataGrid<Product> _grid = default!;
+    private BitDataGrid<Product> _stateGrid = default!;
+    private string _sortLog = "", _filterLog = "", _groupLog = "", _pageLog = "", _read = "";
+    private int _apiStateChanges;
+
+    private int _stateKey;
+    private string? _savedState;
+    private string _stateStatus = "";
+    private bool _restorePending;
+
+    public void Dispose() => _selfRef?.Dispose();
+
+    private Task FilterNameStartsWithP() => _grid.ApplyFilterAsync(nameof(Product.Name), BitDataGridFilterOperator.StartsWith, "P");
+
+    private void OnPage(int page) => _pageLog += page + ";";
+
+    private Task SearchProduct() => _grid.SearchAsync("Product 1");
+
+    private void Mutate() => _products.Insert(0, new Product { Id = 99, Name = "Added in place", Category = Category.Toys, Price = 1 });
+
+    private DotNetObjectReference<BitDataGridApiE2E>? _selfRef;
+
+    // Changes the list without a render of the page: what RefreshAsync exists for (a timer, a service, a message).
+    [JSInvokable]
+    public void MutateQuietly() => Mutate();
+
+    // RefreshAsync without a render of the page around the grid, so what the grid shows afterwards is its own doing.
+    [JSInvokable]
+    public Task RefreshQuietly() => _grid.RefreshAsync();
+
+    private void Read()
+        => _read = $"sorts={string.Join(',', _grid.ActiveSorts.Select(s => s.ColumnId + ':' + s.Direction))};" +
+                   $"filters={string.Join(',', _grid.ActiveFilters.Select(f => f.ColumnId + ':' + f.Operator))};" +
+                   $"groups={string.Join(',', _grid.ActiveGroups.Select(g => g.ColumnId))};" +
+                   $"search={_grid.ActiveSearch};total={_grid.TotalCount};pages={_grid.TotalPages};page={_grid.CurrentPage}";
+
+    private void SaveState(BitDataGridState state)
+    {
+        _savedState = JsonSerializer.Serialize(state);
+        _stateStatus = "saved";
+    }
+
+    private void Recreate(bool restore)
+    {
+        _restorePending = restore;
+        _stateStatus = restore ? "restoring" : "fresh";
+        if (restore is false) _savedState = null;
+        _stateKey++;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Hands the page to the test as window.__dtgApiPage, for MutateQuietly.
+            _selfRef = DotNetObjectReference.Create(this);
+            await using var window = await JS.InvokeAsync<IJSObjectReference>("eval", "window");
+            await JS.InvokeVoidAsync("Reflect.set", window, "__dtgApiPage", _selfRef);
+        }
+
+        if (_restorePending is false || _savedState is null) return;
+        _restorePending = false;
+        var state = JsonSerializer.Deserialize<BitDataGridState>(_savedState)!;
+        await _stateGrid.ApplyStateAsync(state);
+        _stateStatus = "restored";
+        StateHasChanged();
+    }
+}

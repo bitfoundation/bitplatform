@@ -1,0 +1,37 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../../.gitignore" />
+    <File Path="../../.editorconfig" />
+    <File Path="../../Bit.Build.props" />
+    <File Path="../../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Client/Bit.Bink.Demo.Client.csproj" />
+    <Project Path="Demo/Server/Bit.Bink.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="Samples/Core/Bit.Bink.Samples.Core.csproj" />
+    <Project Path="Samples/MAUI/Bit.Bink.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Samples/Auto/">
+    <Project Path="Samples/Auto/Bit.Bink.Samples.Auto.Client/Bit.Bink.Samples.Auto.Client.csproj" />
+    <Project Path="Samples/Auto/Bit.Bink.Samples.Auto/Bit.Bink.Samples.Auto.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Server/">
+    <Project Path="Samples/Server/Bit.Bink.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Wasm/">
+    <Project Path="Samples/Wasm/Bit.Bink.Samples.Wasm.Client/Bit.Bink.Samples.Wasm.Client.csproj" />
+    <Project Path="Samples/Wasm/Bit.Bink.Samples.Wasm/Bit.Bink.Samples.Wasm.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Bink.Tests/Bit.Bink.Tests.csproj" />
+    <Project Path="Tests/Bit.Bink.Tests.Mcp/Bit.Bink.Tests.Mcp.csproj" />
+    <Project Path="Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj" />
+    <Project Path="Tests/Bit.Bink.Benchmarks/Bit.Bink.Benchmarks.csproj" />
+  </Folder>
+  <Project Path="Bit.Bink/Bit.Bink.csproj" />
+</Solution>

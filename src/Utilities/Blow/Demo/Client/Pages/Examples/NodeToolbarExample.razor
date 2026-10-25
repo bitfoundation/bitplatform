@@ -1,0 +1,120 @@
+﻿@page "/examples/node-toolbar"
+
+<PageTitle>Node Toolbar · Blow</PageTitle>
+
+<ExampleScaffold Title="Node Toolbar"
+                 Summary="A BlowNodeToolbar in the node template anchors controls to a node - by default while it is selected - and keeps them the same size on screen at any zoom. The toolbar above the canvas places it: the side, where along that side, the gap, and when it shows.">
+    <Toolbar>
+        <label>Position
+            <select @onchange="@(e => _position = Enum.Parse<BlowPosition>(e.Value?.ToString() ?? nameof(BlowPosition.Top)))">
+                @foreach (var side in new[] { BlowPosition.Top, BlowPosition.Bottom, BlowPosition.Left, BlowPosition.Right })
+                {
+                    <option value="@side" selected="@(side == _position)">@side</option>
+                }
+            </select>
+        </label>
+        <label>Align
+            <select @onchange="@(e => _align = Enum.Parse<BlowToolbarAlign>(e.Value?.ToString() ?? nameof(BlowToolbarAlign.Center)))">
+                @foreach (var align in Enum.GetValues<BlowToolbarAlign>())
+                {
+                    <option value="@align" selected="@(align == _align)">@align</option>
+                }
+            </select>
+        </label>
+        <label>Offset @_offset.ToString("0")px
+            <input type="range" min="0" max="40" step="2" value="@_offset.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                   @oninput="@(e => _offset = double.TryParse(e.Value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 8)" />
+        </label>
+        <label>Show
+            <select @onchange="SetVisibility">
+                <option value="selected" selected="@(_visible is null)">While selected</option>
+                <option value="always" selected="@(_visible is true)">Always</option>
+                <option value="never" selected="@(_visible is false)">Never</option>
+            </select>
+        </label>
+    </Toolbar>
+    <ChildContent>
+        @* A wide margin: a toolbar on any side of a node at the graph's edge stays inside the pane. *@
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" FitViewOptions="new BlowFitViewOptions { Padding = 0.3 }">
+            <NodeTemplate Context="node">
+                <BlowNodeToolbar Position="_position" Align="_align" Offset="_offset" Visible="_visible">
+                    <button class="btn btn-secondary" title="Recolour" aria-label="@($"Recolour {node.Label}")" @onclick="() => Recolor(node)">🎨</button>
+                    <button class="btn btn-secondary" title="Delete" aria-label="@($"Delete {node.Label}")" @onclick="() => Remove(node)">🗑</button>
+                </BlowNodeToolbar>
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                <div class="tb-node">@node.Label</div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Click a node</strong> to select it: its toolbar appears. <strong>🎨</strong> gives the node a new colour and <strong>🗑</strong> deletes it.</li>
+        <li><strong>Scroll to zoom</strong> in and out: the node grows and shrinks, the toolbar keeps its size and its distance from the node.</li>
+        <li>Pick a <strong>Position</strong> to move the toolbar to another side of the node.</li>
+        <li>Pick an <strong>Align</strong>: <em>Start</em> and <em>End</em> line the toolbar up with the node's left and right corners (top and bottom on the left and right sides) instead of centring it.</li>
+        <li>Drag <strong>Offset</strong> to widen or close the gap between node and toolbar.</li>
+        <li>Set <strong>Show</strong> to <em>Always</em> to keep every node's toolbar open without selecting it, or <em>Never</em> to hide it even on a selected node.</li>
+        <li><strong>Drag on the toolbar</strong>: it neither moves the node nor pans the canvas.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>BlowNodeToolbar</code> goes inside the node's template, so its buttons can act on that node. It sits inside the zoomed layer and is counter-scaled by the zoom, which is what keeps it a constant size on screen.</li>
+        <li><code>Visible</code> (null) shows it only while the node is selected; true or false forces it.</li>
+        <li><code>Position</code> (<code>Top</code>) is the side of the node it is anchored to, and <code>Align</code> (<code>BlowToolbarAlign.Center</code>, or <code>Start</code> and <code>End</code>) where along that side.</li>
+        <li><code>Offset</code> (8) is the gap between node and toolbar in screen pixels, the same at any zoom.</li>
+        <li>A press inside the toolbar does not reach the node or the pane, so its buttons are clicked rather than starting a drag or a pan.</li>
+        <li>🎨 writes the node's <code>Style</code>; 🗑 removes the node and its edges from the two lists. <code>FitViewOptions</code> with a <code>Padding</code> of 0.3 leaves room for a toolbar on any side.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .tb-node { padding:10px 16px; font-weight:600; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowPosition _position = BlowPosition.Top;
+    private BlowToolbarAlign _align = BlowToolbarAlign.Center;
+    private double _offset = 8;
+    private bool? _visible;
+
+    // A tint of the colour mixed into the node's own fill rather than a fixed pastel, so the node reads
+    // in the light and the dark colour mode alike.
+    private static string Tint(string color) => $"background:color-mix(in srgb, {color} 20%, var(--bit-blow-node-bg));";
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Label = "Select me", Position = new(160, 60), Style = Tint("#eab308") },
+            new BlowNode { Id = "2", Label = "Or me", Position = new(220, 200), Style = Tint("#3b82f6") },
+        ];
+        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
+    }
+
+    private void SetVisibility(ChangeEventArgs e) => _visible = e.Value?.ToString() switch
+    {
+        "always" => true,
+        "never" => false,
+        _ => null,
+    };
+
+    private void Recolor(BlowNode node)
+    {
+        var colors = new[] { "#3b82f6", "#22c55e", "#ef4444", "#eab308", "#a855f7" };
+        // Never the colour it already has, so every click shows a change.
+        var next = node.Style;
+        while (next == node.Style) next = Tint(colors[Random.Shared.Next(colors.Length)]);
+        node.Style = next;
+    }
+
+    private void Remove(BlowNode node)
+    {
+        _nodes.Remove(node);
+        _edges.RemoveAll(e => e.Source == node.Id || e.Target == node.Id);
+    }
+}

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitNavBarNameSelectors<TItem>
 {
@@ -50,9 +50,9 @@ public class BitNavBarNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitNavBarItem.IconName));
 
     /// <summary>
-    /// The IsEnabled field name and selector of the custom input class.
+    /// The IsDisabled field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, bool?> IsEnabled { get; set; } = new(nameof(BitNavBarItem.IsEnabled));
+    public BitNameSelectorPair<TItem, bool?> IsDisabled { get; set; } = new(nameof(BitNavBarItem.IsDisabled));
 
     /// <summary>
     /// The Key field name and selector of the custom input class.
@@ -75,6 +75,11 @@ public class BitNavBarNameSelectors<TItem>
     /// Maps to <see cref="BitNavBarItem.SelectedIconName"/> for built-in Fluent UI icons.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> SelectedIconName { get; set; } = new(nameof(BitNavBarItem.SelectedIconName));
+
+    /// <summary>
+    /// The Rel field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitLinkRels?> Rel { get; set; } = new(nameof(BitNavBarItem.Rel));
 
     /// <summary>
     /// The Style field name and selector of the custom input class.

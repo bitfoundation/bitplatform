@@ -10,4 +10,17 @@ public static class IConfigurationExtensions
             ? apiServerAddress
             : throw new InvalidOperationException($"Api server address {apiServerAddress} is invalid");
     }
+
+    /// <summary>
+    /// Joins a relative api path onto the api server address. The address comes back without its trailing
+    /// slash, so a plain concatenation only works while it is empty; this puts the separator back otherwise.
+    /// </summary>
+    public static string GetApiUrl(this IConfiguration configuration, string relativePath)
+    {
+        var apiServerAddress = configuration.GetApiServerAddress();
+
+        return string.IsNullOrEmpty(apiServerAddress)
+            ? relativePath
+            : $"{apiServerAddress}/{relativePath.TrimStart('/')}";
+    }
 }

@@ -1,0 +1,417 @@
+﻿@page "/e2e/dropdown/display"
+
+@* How BitDropdown presents itself and its selection: required, title, delimiter, description, error states, prefix
+   and suffix, FitWidth, the three variants, grouping and sticky headers, the per-item properties, the selection limit,
+   the select all item, the selection display options, the chips and the public CSS variables. *@
+
+<PageTitle>BitDropdown display E2E</PageTitle>
+
+<h1>BitDropdown display</h1>
+
+<E2ESection Id="required" Title="Required, Title and delimiter">
+    <BitDropdown Id="dd-required"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Required"
+                 Required
+                 Items="@L("required")"
+                 DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-title"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Title"
+                 Title="Pick your favorite"
+                 Items="@L("title")"
+                 DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-delimiter"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Delimiter"
+                 MultiSelect
+                 MultiSelectDelimiter=" - "
+                 Items="@L("delimiter")"
+                 DefaultValues="@(["f-app", "f-ban"])" />
+</E2ESection>
+
+<E2ESection Id="description" Title="Description">
+    <BitDropdown Id="dd-desc"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Category"
+                 Description="Only the categories you have access to."
+                 AriaDescription="Refreshed every morning."
+                 Items="@L("desc")"
+                 DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-desc-tpl"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Description template"
+                 Items="@L("desc-tpl")"
+                 DefaultValue="@string.Empty">
+        <DescriptionTemplate>
+            <span id="desc-tpl-content">Nothing here is final.</span>
+        </DescriptionTemplate>
+    </BitDropdown>
+</E2ESection>
+
+<E2ESection Id="error" Title="ErrorMessage and Invalid">
+    <BitDropdown Id="dd-error"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="With error"
+                 ErrorMessage="@_error"
+                 Description="Helper text"
+                 Items="@L("error")"
+                 DefaultValue="@string.Empty" />
+    <button id="btn-set-error" @onclick="@(() => _error = "Out of stock")">Set error</button>
+    <button id="btn-clear-error" @onclick="@(() => _error = null)">Clear error</button>
+    <BitDropdown Id="dd-error-tpl"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Error template"
+                 Items="@L("error-tpl")"
+                 DefaultValue="@string.Empty">
+        <ErrorMessageTemplate>
+            <b id="error-tpl-content">Templated rejection</b>
+        </ErrorMessageTemplate>
+    </BitDropdown>
+    <BitDropdown Id="dd-invalid"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Invalid"
+                 Invalid
+                 Items="@L("invalid")"
+                 DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-valid"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Valid"
+                 Items="@L("valid")"
+                 DefaultValue="@string.Empty" />
+</E2ESection>
+
+<E2ESection Id="prefix-suffix" Title="Prefix and Suffix">
+    <BitDropdown Id="dd-prefix"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Prefix and suffix"
+                 Prefix="Fruits:"
+                 Suffix="kg"
+                 Items="@L("prefix")"
+                 DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-prefix-tpl"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Templates"
+                 Items="@L("prefix-tpl")"
+                 DefaultValue="@string.Empty">
+        <PrefixTemplate><span id="prefix-tpl-content">PRE</span></PrefixTemplate>
+        <SuffixTemplate><span id="suffix-tpl-content">SUF</span></SuffixTemplate>
+    </BitDropdown>
+</E2ESection>
+
+<E2ESection Id="fit-width" Title="FitWidth">
+    <div style="width: 600px">
+        <BitDropdown Id="dd-fit"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     FitWidth
+                     Placeholder="Pick"
+                     Items="@L("fit")"
+                     DefaultValue="@string.Empty" />
+        <BitDropdown Id="dd-nofit"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Placeholder="Pick"
+                     Items="@L("nofit")"
+                     DefaultValue="@string.Empty" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="variants" Title="NoBorder, Underlined and Transparent">
+    <div style="background: rgb(10, 120, 60); padding: 8px; width: 300px">
+        <BitDropdown Id="dd-plain"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Items="@L("plain")"
+                     DefaultValue="@string.Empty" />
+        <BitDropdown Id="dd-noborder"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     NoBorder
+                     Items="@L("noborder")"
+                     DefaultValue="@string.Empty" />
+        <BitDropdown Id="dd-underlined"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Underlined
+                     Items="@L("underlined")"
+                     DefaultValue="@string.Empty" />
+        <BitDropdown Id="dd-transparent"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Transparent
+                     Items="@L("transparent")"
+                     DefaultValue="@string.Empty" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="grouping" Title="Grouping and StickyHeaders">
+    <BitDropdown Id="dd-sticky"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Sticky headers"
+                 StickyHeaders
+                 MaxHeight="200"
+                 Items="_longGrouped"
+                 DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-nosticky"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Plain headers"
+                 MaxHeight="200"
+                 Items="_longGroupedPlain"
+                 DefaultValue="@string.Empty" />
+</E2ESection>
+
+<E2ESection Id="item-props" Title="Item properties">
+    <BitDropdown Id="dd-itemprops"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Item properties"
+                 Items="_itemProps"
+                 OnSelectItem="(BitDropdownItem<string> i) => _itemPropsData = i.Data?.ToString()"
+                 @bind-Value="_itemPropsValue" />
+    <p>Value: <span id="itemprops-value">@_itemPropsValue</span> | Data: <span id="itemprops-data">@_itemPropsData</span></p>
+</E2ESection>
+
+<E2ESection Id="max-selected" Title="MaxSelectedItems">
+    <BitDropdown Id="dd-max"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="At most two"
+                 MultiSelect
+                 MaxSelectedItems="2"
+                 MaxSelectedItemsText="At most {0} picked"
+                 Items="@L("max")"
+                 @bind-Values="_maxValues" />
+    <p>Values: <span id="max-values">@string.Join(',', _maxValues ?? [])</span></p>
+</E2ESection>
+
+<E2ESection Id="select-all" Title="ShowSelectAll">
+    <BitDropdown Id="dd-selall"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Select all"
+                 MultiSelect
+                 ShowSelectAll
+                 Items="@L("selall")"
+                 @bind-Values="_selAllValues"
+                 OnValuesChange="() => _selAllChangeCount++" />
+    <p>
+        Values: <span id="selall-values">@string.Join(',', _selAllValues ?? [])</span> |
+        OnValuesChange: <span id="selall-change-count">@_selAllChangeCount</span>
+    </p>
+    <BitDropdown Id="dd-selall-text"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Custom text and search"
+                 MultiSelect
+                 ShowSelectAll
+                 ShowSearchBox
+                 Immediate
+                 SelectAllText="Pick everything"
+                 Items="@L("selall-text")"
+                 @bind-Values="_selAllTextValues" />
+    <p>Values: <span id="selall-text-values">@string.Join(',', _selAllTextValues ?? [])</span></p>
+    <BitDropdown Id="dd-selall-max"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Select all with a limit"
+                 MultiSelect
+                 ShowSelectAll
+                 MaxSelectedItems="3"
+                 Items="@L("selall-max")"
+                 @bind-Values="_selAllMaxValues" />
+    <p>Values: <span id="selall-max-values">@string.Join(',', _selAllMaxValues ?? [])</span></p>
+</E2ESection>
+
+<E2ESection Id="selection-display" Title="Selection display">
+    <BitDropdown Id="dd-maxdisp"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="MaxDisplayedItems chips"
+                 Chips
+                 MultiSelect
+                 MaxDisplayedItems="2"
+                 Items="@L("maxdisp")"
+                 DefaultValues="@(["f-app", "f-ban", "f-gra", "v-car"])" />
+    <BitDropdown Id="dd-overflow"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="OverflowTextFormat"
+                 Chips
+                 MultiSelect
+                 MaxDisplayedItems="2"
+                 OverflowTextFormat="and {0} more"
+                 Items="@L("overflow")"
+                 DefaultValues="@(["f-app", "f-ban", "f-gra", "v-car"])" />
+    <BitDropdown Id="dd-seltext"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="SelectedItemsTextFormat"
+                 MultiSelect
+                 MaxDisplayedItems="2"
+                 SelectedItemsTextFormat="{0} picked"
+                 Items="@L("seltext")"
+                 DefaultValues="@(["f-app", "f-ban", "f-gra"])" />
+    <BitDropdown Id="dd-seltext-default"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Default summary"
+                 MultiSelect
+                 MaxDisplayedItems="2"
+                 Items="@L("seltext-default")"
+                 @bind-Values="_selTextDefaultValues" />
+    <BitDropdown Id="dd-hidesel"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="HideSelectedItems"
+                 Chips
+                 MultiSelect
+                 HideSelectedItems
+                 Items="_hideSelItems"
+                 @bind-Values="_hideSelValues" />
+    <p>Hidden-selection values: <span id="hidesel-values">@string.Join(',', _hideSelValues ?? [])</span></p>
+</E2ESection>
+
+<E2ESection Id="chips" Title="Chips">
+    <BitDropdown Id="dd-chips"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Chips"
+                 Chips
+                 MultiSelect
+                 ChipsRemoveButtonAriaLabel="Drop {0}"
+                 Items="@L("chips")"
+                 @bind-Values="_chipsValues"
+                 OnDeselectItem="(BitDropdownItem<string> i) => _chipsDeselected = i.Text" />
+    <p>
+        Values: <span id="chips-values">@string.Join(',', _chipsValues ?? [])</span> |
+        Deselected: <span id="chips-deselected">@_chipsDeselected</span>
+    </p>
+    <BitDropdown Id="dd-chip-tpl"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Chip template"
+                 Chips
+                 MultiSelect
+                 Items="@L("chip-tpl")"
+                 DefaultValues="@(["f-app", "v-bro"])">
+        <ChipTemplate Context="item">
+            <span class="chip-tpl">[@item.Text]</span>
+        </ChipTemplate>
+    </BitDropdown>
+    <BitDropdown Id="dd-chips-single"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Single chip"
+                 Chips
+                 Items="@L("chips-single")"
+                 @bind-Value="_chipsSingle" />
+    <p>Single: <span id="chips-single-value">@_chipsSingle</span></p>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="Public CSS variables">
+    <div id="vars-scope"
+         style="--bit-Dropdown-background: rgb(255, 250, 205); --bit-Dropdown-border-color: rgb(0, 0, 255); --bit-Dropdown-radius: 9px; --bit-Dropdown-min-height: 50px; --bit-Dropdown-label-color: rgb(128, 0, 128); --bit-Dropdown-color: rgb(139, 69, 19); --bit-Dropdown-placeholder-color: rgb(0, 128, 128); --bit-Dropdown-chip-background: rgb(255, 192, 203); --bit-Dropdown-chip-radius: 3px; --bit-Dropdown-callout-background: rgb(240, 255, 240); --bit-Dropdown-item-height: 50px; --bit-Dropdown-item-selected-background: rgb(255, 215, 0); --bit-Dropdown-accent-color: rgb(0, 100, 0); --bit-Dropdown-header-color: rgb(255, 0, 255); --bit-Dropdown-overlay-background: rgba(0, 0, 0, 0.25);">
+        <BitDropdown Id="dd-vars"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Variables"
+                     Chips
+                     MultiSelect
+                     Items="@L("vars")"
+                     DefaultValues="@(["f-app"])" />
+        <BitDropdown Id="dd-vars-empty"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Placeholder="Empty field"
+                     Items="@L("vars-empty")"
+                     DefaultValue="@string.Empty" />
+        <BitDropdown Id="dd-vars-color"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Explicit color and size"
+                     MultiSelect
+                     Color="BitColor.Error"
+                     Size="BitSize.Small"
+                     Items="@L("vars-color")"
+                     DefaultValues="@(["f-app"])" />
+        <BitDropdown Id="dd-vars-transparent"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Transparent
+                     Items="@L("vars-transparent")"
+                     DefaultValue="@string.Empty" />
+    </div>
+    <BitDropdown Id="dd-vars-outside"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Outside"
+                 Chips
+                 MultiSelect
+                 Items="@L("vars-outside")"
+                 DefaultValues="@(["f-app"])" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly Dictionary<string, List<BitDropdownItem<string>>> _lists = [];
+
+    private List<BitDropdownItem<string>> L(string key)
+    {
+        if (_lists.TryGetValue(key, out var list) is false)
+        {
+            _lists[key] = list = Basic();
+        }
+
+        return list;
+    }
+
+    private static List<BitDropdownItem<string>> Basic() =>
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { Text = "Orange", Value = "f-ora", IsDisabled = true },
+        new() { Text = "Grape", Value = "f-gra" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro" },
+        new() { Text = "Carrot", Value = "v-car" },
+        new() { Text = "Lettuce", Value = "v-let" }
+    ];
+
+    private static List<BitDropdownItem<string>> LongGrouped()
+    {
+        List<BitDropdownItem<string>> items = [];
+        foreach (var group in new[] { "Alpha", "Beta", "Gamma" })
+        {
+            items.Add(new() { ItemType = BitDropdownItemType.Header, Text = $"Group {group}" });
+            for (var i = 1; i <= 10; i++)
+            {
+                items.Add(new() { Text = $"{group} {i}", Value = $"{group}-{i}" });
+            }
+        }
+
+        return items;
+    }
+
+    private readonly List<BitDropdownItem<string>> _longGrouped = LongGrouped();
+    private readonly List<BitDropdownItem<string>> _longGroupedPlain = LongGrouped();
+
+    private readonly List<BitDropdownItem<string>> _itemProps =
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Group", Id = "item-group-header" },
+        new() { Text = "Styled", Value = "s", Id = "item-styled", Class = "item-cls", Style = "color: rgb(255, 0, 0)", Title = "Styled title", AriaLabel = "Styled aria", Data = "styled-data" },
+        new() { Text = "Hidden", Value = "h", IsHidden = true },
+        new() { Text = "With icon", Value = "i", IconName = "Heart" },
+        new() { Text = "External icon", Value = "e", Icon = BitIconInfo.Css("ext-icon-class") },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Hidden header", IsHidden = true },
+        new() { Text = "Plain", Value = "p" },
+    ];
+
+    private string? _itemPropsValue;
+    private string? _itemPropsData;
+
+    private string? _error;
+
+    private IEnumerable<string?>? _maxValues = [];
+
+    private IEnumerable<string?>? _selAllValues = [];
+    private int _selAllChangeCount;
+    private IEnumerable<string?>? _selAllTextValues = [];
+    private IEnumerable<string?>? _selAllMaxValues = [];
+
+    private IEnumerable<string?>? _selTextDefaultValues = ["f-app", "f-ban", "f-gra"];
+    private IEnumerable<string?>? _hideSelValues = ["f-app"];
+
+    private readonly List<BitDropdownItem<string>> _hideSelItems =
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Carrot", Value = "v-car" },
+    ];
+
+    private IEnumerable<string?>? _chipsValues = ["f-app", "v-car"];
+    private string? _chipsDeselected;
+    private string? _chipsSingle = "f-gra";
+}

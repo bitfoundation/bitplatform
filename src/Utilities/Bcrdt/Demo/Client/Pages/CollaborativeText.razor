@@ -1,0 +1,295 @@
+﻿@page "/text"
+@inherits ReplicaPageBase
+
+<PageTitle>Collaborative text · Bcrdt</PageTitle>
+
+<div class="bb-intro">
+    <h1>Collaborative text</h1>
+    <p class="bb-subtitle">
+        Three independent replicas of one paragraph, side by side. Type into any of them and watch it appear in the
+        others; take one offline, edit all three, bring it back, and watch a genuine divergence be reconciled without
+        anybody losing a word.
+    </p>
+</div>
+
+@* Three panels side by side need the width the "on this page" rail would take. *@
+<div class="bb-card bb-page-wide">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Three replicas, one document</h3>
+    <p class="bb-card-desc">
+        Below are three independent replicas of the same document, <code>demo-text</code>. Nothing is shared
+        between them except the messages they send each other.
+    </p>
+    <p class="bb-card-desc">
+        Each panel is one participant. Its title bar carries the replica's presence colour, its connection status
+        (<em>synced</em>, <em>syncing</em>, <em>reconnecting</em>, <em>offline</em>…) and a button that disconnects
+        it for real. <em>Also here</em> lists the other participants this replica can currently see, through
+        <code>BcrdtPresenceView</code>. The footer counts the characters and the engine's storage blocks, and ends
+        with the replica's client identifier - a different one in every panel.
+    </p>
+
+    @if (!Ready)
+    {
+        <p class="loading bb-empty"><span class="bb-spinner" aria-hidden="true"></span> Opening three replicas…</p>
+    }
+    else
+    {
+        <div class="bb-split replicas replicas-3">
+            @foreach (DemoReplica replica in Replicas)
+            {
+                <ReplicaPanel Replica="replica">
+                    <ChildContent>
+                        @*
+                            The library's own component. It handles the two things a naïve textarea
+                            binding gets wrong: it diffs the new value back into the edit the user made,
+                            and it maps the local caret through incoming remote edits so somebody typing
+                            above you does not push your cursor along.
+                        *@
+                        <BcrdtTextArea Text="replica.Document.Text(Field)"
+                                       Presence="replica.Document.Presence"
+                                       Field="@Field"
+                                       Rows="10"
+                                       Class="editor"
+                                       Placeholder="Type here - the other panels will follow." />
+                    </ChildContent>
+
+                    <Footer>
+                        <span class="metric">@Length(replica) characters</span>
+                        <span class="metric" title="Blocks in the underlying store. Run-length encoding keeps this far below the character count.">
+                            @Blocks(replica) blocks
+                        </span>
+                        @if (!replica.IsOnline)
+                        {
+                            <span class="metric metric-warn">
+                                editing offline - changes are held locally until this replica reconnects
+                            </span>
+                        }
+                    </Footer>
+                </ReplicaPanel>
+            }
+        </div>
+    }
+
+    <CodeSnippet Sample="Notes.razor" />
+
+    <div class="bb-note bb-note-warn">
+        <strong>The thing worth trying.</strong> Take <em>Replica A</em> offline with its
+        <em>Go offline</em> button. Type a sentence into it. Now type different sentences into B and
+        into C - note that those two still see each other, because only A left. Then bring A back
+        online. All three converge on a document containing every sentence, in the same order in all
+        three panels. Nothing was locked, nothing was queued keystroke by keystroke, and nothing was
+        overwritten. Without a CRDT, the usual outcome here is that whichever replica saved last wins
+        and the other two sentences are gone.
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What a keystroke becomes</h3>
+    <p class="bb-card-desc">
+        Each panel has its own client identifier, its own presence identity, its own local storage and its own
+        connection to the in-memory network the other two are on, which is why what you see is a real
+        demonstration rather than three views of one variable.
+    </p>
+    <p class="bb-card-desc">
+        Type into any panel. The edit is turned into the minimal insertion or deletion you actually
+        made - not "the textarea now says this", which would replace every character and destroy
+        concurrent work - encoded as a delta of a few bytes, sent, decoded, merged, and rendered in
+        the other two. The coloured bar of each panel is that replica's presence colour, and it is
+        the same colour its collaborators show next to its name in their own presence lists.
+    </p>
+    <p class="bb-card-desc">
+        Each replica also keeps its document in a store of its own, standing for that participant's device. Leave
+        this page and come back: every panel opens from what its store kept and reconnects, so the text is where you
+        left it - including whatever a replica typed while it was offline and never got to send.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What the editor does for you</h3>
+    <p class="bb-card-desc">
+        Every panel is the same one line of markup. <code>BcrdtTextArea</code> binds a <code>&lt;textarea&gt;</code>
+        to a <code>BcrdtText</code>, and does the parts that are easy to get wrong:
+    </p>
+    <ul class="bb-detail-list">
+        <li>It recovers the real edit from the control's new value, so a keystroke is a one-character insertion
+            however long the text is, and concurrent edits elsewhere in the text are untouched.</li>
+        <li>It keeps your caret on the character it was on while somebody types above it.</li>
+        <li>It never lets a remote change land on top of a keystroke still on its way - an input method's
+            composition included - and reads a paste too big for one message back in chunks.</li>
+        <li>It publishes your caret and selection through presence, anchored to content rather than to an index.</li>
+        <li>It turns read-only when its <code>ReadOnly</code> parameter says so, or when the server granted only
+            read access, and reports through <code>OnError</code> if its small browser module cannot load.</li>
+    </ul>
+    <pre class="bb-code">&lt;<span class="k">BcrdtTextArea</span> Text=<span class="s">"@@document.Text("body")"</span>
+               Presence=<span class="s">"document.Presence"</span>
+               Field=<span class="s">"body"</span>
+               Rows=<span class="s">"10"</span>
+               Placeholder=<span class="s">"Type here"</span> /&gt;</pre>
+    <p class="bb-card-desc">
+        For an input you render yourself, <code>BcrdtTextSynchronizer.Apply(text, newValue)</code> does the first of
+        those, and <code>BcrdtTextInputBinding</code> all of them without a component.
+    </p>
+</div>
+
+@if (Ready)
+{
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where everyone's caret is</h3>
+        <p class="bb-card-desc">
+            Presence is the other half of collaborating: who is here and where they are working. It travels beside the
+            document rather than in it - it is never stored, never merged and never undone - and every entry expires
+            unless its owner keeps refreshing it, so a closed tab disappears from everyone's list on its own (after 30
+            seconds by default; 12 here, so you need not wait).
+        </p>
+        <p class="bb-card-desc">
+            Click into one panel, then type into another <em>above</em> that caret. The library draws no remote cursors
+            - the table below is what an application reads to draw them: each replica's view of the others, resolved
+            against its <em>own</em> copy of the text. The caret moves with the text typed before it, because it is
+            published as a position anchored to a character rather than as an index.
+        </p>
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr><th>Replica</th><th>Sees</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (DemoReplica replica in Replicas)
+                    {
+                        <tr>
+                            <td class="bb-table-key bb-nowrap"><span class="replica-dot" style="--replica-color: @replica.Color" aria-hidden="true"></span> @replica.Label</td>
+                            <td>
+                                @if (replica.Document.Presence.Others.Count == 0)
+                                {
+                                    <span class="bb-soft">nobody - it is offline, or alone</span>
+                                }
+                                else
+                                {
+                                    @foreach (BcrdtCollaborator other in replica.Document.Presence.Others)
+                                    {
+                                        <div><strong>@other.User.Name</strong> - @Where(replica, other)</div>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <pre class="bb-code"><span class="k">foreach</span> (BcrdtCollaborator other <span class="k">in</span> document.Presence.Others)
+{
+    (<span class="k">int</span> Start, <span class="k">int</span> End)? range = other.Selection?.Resolve(document.Crdt);   <span class="c">// null until the anchored text arrives</span>
+}</pre>
+        <CodeSnippet Sample="CollaboratorCarets.razor" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> A dropped connection repairs itself</h3>
+        <p class="bb-card-desc">
+            <em>Go offline</em> is a deliberate disconnect: the replica stays offline until it is told otherwise. A
+            network that fails is different - the replica still wants its connection. The button below pulls Replica
+            A's plug without a goodbye. Its sync provider notices, shows <em>reconnecting</em>, retries after a short,
+            randomized delay that doubles with each failure (0.5 s to start with, 30 s at most), and repeats the
+            handshake, which hands A whatever it missed meanwhile. Nothing is queued while it is down: the document
+            itself is the queue.
+        </p>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary" @onclick="DropReplicaA">Drop Replica A's connection</button>
+        </div>
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr><th>Replica</th><th>Connection status</th><th>Last synced</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (DemoReplica replica in Replicas)
+                    {
+                        <tr>
+                            <td class="bb-table-key bb-nowrap"><span class="replica-dot" style="--replica-color: @replica.Color" aria-hidden="true"></span> @replica.Label</td>
+                            <td class="bb-mono">@replica.Status</td>
+                            <td class="bb-mono">@LastSynced(replica)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="bb-card-desc">
+            The same three facts are on every <code>BcrdtCollaborativeDocument</code>: <code>ConnectionStatus</code>,
+            <code>IsSynced</code> and <code>Sync.LastSyncedAt</code> - the last of them is how an application tells a
+            user how fresh an offline copy is.
+        </p>
+        <CodeSnippet Sample="SyncStatus.razor" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot @(AllConverged ? "bb-dot-success" : "bb-dot-warning")"></span> Are they actually the same document?</h3>
+        <p class="bb-card-desc">
+            Convergence is a claim that can be checked rather than asserted: two replicas that have
+            received the same updates must hold identical state. The three panels report
+            @(AllConverged ? "identical" : "differing") content right now, which is
+            @(AllConverged ? "what you should see whenever every replica is online and idle."
+                           : "exactly what you should see while a replica is offline or an update is still in flight.")
+        </p>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary" @onclick="ClearFromReplicaA">Clear the document (from Replica A)</button>
+        </div>
+        <p class="bb-card-desc">
+            A deletion is an edit like any other, so it merges the same way. Issued from A, it
+            reaches B and C - unless one of them is offline, in which case it arrives when they
+            reconnect. And a deletion removes only what A could see: text an offline replica typed meanwhile
+            survives it.
+        </p>
+        <CodeSnippet Sample="ClearDocument.razor" />
+    </div>
+}
+
+@code {
+    private const string Field = "body";
+
+    protected override string DocumentId => "demo-text";
+
+    // Three labels means three replicas. The base class asks the workspace for one full
+    // BcrdtCollaborationService per label - see DemoWorkspace.OpenReplicasAsync for why that matters.
+    protected override string[] ReplicaLabels => ["Replica A", "Replica B", "Replica C"];
+
+    private static int Length(DemoReplica replica) => replica.Document.Text(Field).Count;
+
+    private static int Blocks(DemoReplica replica) =>
+        replica.Document.Crdt.Store.Clients.Sum(entry => entry.Value.Count);
+
+    private bool AllConverged
+    {
+        get
+        {
+            if (Replicas.Count < 2) return true;
+            string first = Replicas[0].Document.Text(Field).ToString();
+            return Replicas.All(replica => replica.Document.Text(Field).ToString() == first);
+        }
+    }
+
+    // A collaborator's selection resolved against this replica's own document. It is null while the
+    // character it is anchored to has not reached this replica yet - presence and the document travel
+    // separately, so a caret can arrive before the text it sits in.
+    private static string Where(DemoReplica replica, BcrdtCollaborator other)
+    {
+        if (other.Selection is not { } selection) return "has not placed a caret yet";
+
+        (int Start, int End)? range = selection.Resolve(replica.Document.Crdt);
+        if (range is not { } resolved) return "caret in text not received yet";
+
+        return resolved.Start == resolved.End
+            ? $"caret at {resolved.Start}"
+            : $"selecting {resolved.Start} to {resolved.End}";
+    }
+
+    private static string LastSynced(DemoReplica replica) =>
+        replica.Document.Sync?.LastSyncedAt is { } at ? at.ToLocalTime().ToString("HH:mm:ss.fff") : "never";
+
+    // Not GoOfflineAsync: that would leave the replica offline on purpose. This one still wants its
+    // connection, so its provider's backoff loop brings it back by itself.
+    private void DropReplicaA() => Replicas[0].SimulateNetworkDrop();
+
+    private void ClearFromReplicaA()
+    {
+        BcrdtText text = Replicas[0].Document.Text(Field);
+        if (text.Count > 0) text.Delete(0, text.Count);
+    }
+}

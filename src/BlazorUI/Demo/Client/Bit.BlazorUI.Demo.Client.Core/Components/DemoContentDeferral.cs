@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Components;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Components;
 
 /// <summary>
 /// Whether a component demo page may hold back the parts of itself the reader has not reached yet -

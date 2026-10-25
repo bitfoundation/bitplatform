@@ -1,0 +1,257 @@
+﻿@page "/signature"
+
+<PageTitle>Signature · Bink</PageTitle>
+
+<div class="bb-intro">
+    <h1>Signature</h1>
+    <p class="bb-subtitle">
+        A production signature field: capture, clear, undo, validate and export. The signature is stored as vector
+        ink, so it can be re-rendered at any size, embedded in a PDF as SVG, or rasterized at print resolution.
+    </p>
+</div>
+
+<div class="bb-demo bink-editor">
+    <div class="bb-toolbar bink-toolbar">
+        <ColorSwatches Colors="InkColors" Value="@_color" ValueChanged="SetColor" Label="Ink colour" Prefix="Ink:" />
+        <span class="bink-sep" aria-hidden="true"></span>
+        <label class="bink-field">
+            Nib
+            <input type="range" min="2" max="8" step="0.5" value="@_width" aria-label="Nib width"
+                   @onchange="OnWidthChanged" />
+            <span class="bink-field-value">@_width.ToString("0.#")</span>
+        </label>
+        <span class="bb-spacer"></span>
+        <div class="bink-group" role="group" aria-label="History">
+            <button type="button" class="btn btn-secondary" disabled="@(_locked || !CanUndo)" @onclick="() => _canvas?.Undo()">Undo</button>
+            <button type="button" class="btn btn-secondary" disabled="@(_locked || !CanRedo)" @onclick="() => _canvas?.Redo()">Redo</button>
+            <button type="button" class="btn btn-secondary bink-danger" disabled="@IsEmpty" @onclick="Clear">@(_locked ? "Sign again" : "Clear")</button>
+        </div>
+    </div>
+
+    @* A fixed aspect signing area with a baseline, the way a paper form has one. The line and its caption are
+       printed on the paper, so they take the paper's colours (demo.css) rather than the theme's. *@
+    <div class="bink-surface">
+        <BinkCanvas @ref="_canvas" Ready="() => StateHasChanged()"
+                   ViewportChanged="_status?.ViewportChanged ?? default"
+                   EnableTouchGestures="true"
+                   Height="200px"
+                   Brush="_brush"
+                   ReadOnly="_locked"
+                   AriaLabel="@(_locked ? "Accepted signature" : "Sign here")"
+                   StrokeCompleted="OnStrokeCompleted"
+                   DocumentChanged="OnDocumentChanged"
+                   HistoryChanged="() => StateHasChanged()" />
+        <div class="bink-signature-line" aria-hidden="true"></div>
+        <div class="bink-signature-caption" aria-hidden="true">Sign above the line</div>
+    </div>
+
+    <CanvasStatus @ref="_status" Canvas="_canvas">
+        <span>Ink length <strong>@_ink.Length.ToString("0")</strong> units</span>
+        <span><strong>@_ink.StrokeCount</strong> strokes in <strong>@_ink.Duration.TotalSeconds.ToString("0.0")</strong> s</span>
+    </CanvasStatus>
+
+    <div class="bb-toolbar bink-toolbar">
+        <button type="button" class="btn btn-primary" disabled="@(_locked || !IsValid)" @onclick="Accept">Accept signature</button>
+        <button type="button" class="btn btn-secondary" disabled="@IsEmpty" @onclick="DownloadSvgAsync">Download SVG</button>
+        <button type="button" class="btn btn-secondary" disabled="@IsEmpty" @onclick="DownloadPngAsync">Download PNG (3x)</button>
+        <span class="bb-spacer"></span>
+        <span class="bink-hint" role="status">@_message</span>
+    </div>
+</div>
+
+@if (_saved is not null)
+{
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Stored signature</h3>
+        <p class="bb-card-desc">
+            This is the document as it would be persisted. It is compact vector data, not an image: @_savedBytes bytes
+            for @_saved.ElementCount strokes. It carries <code>signed-at</code> and <code>purpose</code> metadata, set with
+            <code>SetMetadata</code>, which the format keeps for the application; the JSON is shown in the readable form,
+            and the bytes counted are the compact one.
+        </p>
+        <div class="bb-split">
+            <div class="bb-demo">
+                <div class="bb-demo-bar"><span class="bb-demo-label">Re-rendered from the stored document</span></div>
+                @* The export has a transparent background and dark ink, so it is shown on paper in either theme. *@
+                <div class="bink-paper">@((MarkupString)_savedSvg)</div>
+            </div>
+            <div class="bb-demo">
+                <div class="bb-demo-bar"><span class="bb-demo-label">Serialized document</span></div>
+                <pre class="bb-code bink-output">@_savedJson</pre>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Validation and the accepted state</h3>
+    <p class="bb-card-desc">
+        A scribble of one dot is not a signature. The page measures the ink - its length, the number of strokes and
+        how long the pen was down - and enables <strong>Accept signature</strong> only past a minimum length: a real
+        validation rule that the vector model makes easy to express. Accepting makes the field
+        <code>ReadOnly</code>, the way ink on paper is final, until the signer chooses to sign again.
+    </p>
+    <pre class="bb-code">BinkInkMetrics ink = BinkDocumentQuery.MeasureInk(_canvas.CurrentDocument);
+<span class="k">bool</span> valid = ink.Length &gt; 120f;   <span class="c">// also ink.StrokeCount, ink.Duration, ink.Bounds</span></pre>
+    <p class="bb-card-desc">
+        The message beside the buttons comes from <code>StrokeCompleted</code>, which hands over each finished stroke:
+        its <code>Input.HasRealPressure</code> says whether a pen measured the pressure or the width was derived from
+        drawing speed. While the field is read only, drawing, undo, redo and the editing shortcuts are refused (zooming
+        still works), and its accessible name changes from "Sign here" to "Accepted signature".
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A field inside a form</h3>
+    <p class="bb-card-desc">
+        Whether a finger on a touch screen signs or scrolls the page is the one decision a signature field has to make,
+        because no setting gets both. This field sets <code>EnableTouchGestures</code>, so a finger signs on a phone.
+        In a long form that has to keep scrolling past the field, leave it off, as it is by default: the canvas then
+        sets <code>touch-action: pan-x pan-y</code>, a finger scrolls, and a stylus still signs because a pen is not a
+        touch pointer. The wheel is left to the page either way (<code>WheelMode</code> is <code>None</code> by
+        default), so a mouse wheel over the field still scrolls the form.
+    </p>
+    <pre class="bb-code"><span class="c">@@* EnableTouchGestures="false": a finger scrolls the form, and a pen still signs. *@@</span>
+&lt;<span class="k">BinkCanvas</span> Height=<span class="s">"200px"</span> AriaLabel=<span class="s">"Sign here"</span>
+            EnableTouchGestures=<span class="s">"true"</span>
+            ReadOnly=<span class="s">"_accepted"</span>
+            StrokeCompleted=<span class="s">"OnStrokeCompleted"</span>
+            DocumentChanged=<span class="s">"() =&gt; StateHasChanged()"</span> /&gt;</pre>
+    <p class="bb-card-desc">
+        The clipboard and dropping files stay off, as they are by default, so nobody can paste or drop a picture of a
+        signature into the field. The signing line and its caption are printed over the canvas by the page, not drawn
+        into the document, so they never appear in what is saved or exported.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Export cropped to the ink</h3>
+    <p class="bb-card-desc">
+        <code>BinkExportRegion.Content</code> crops an export to what was drawn, and a transparent background lets the
+        signature sit on whatever document it is placed into. The stored copy above is exported the same way, with
+        <code>BinkSvgExporter</code> on the document rather than through the canvas.
+    </p>
+    <pre class="bb-code"><span class="k">await</span> _canvas.SavePngAsync(<span class="s">"signature.png"</span>, <span class="k">new</span> BinkPngExportOptions
+{
+    Region = BinkExportRegion.Content,
+    Padding = 12f,
+    Scale = 3f,
+    Background = BinkColor.Transparent,
+});</pre>
+</div>
+
+@code {
+    private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
+    private BinkBrush _brush = new BinkPenBrush { Width = 3.5f, Color = BinkColor.Parse("#0f172a"), TaperEnd = 8f };
+    private string _color = "#0f172a";
+    private float _width = 3.5f;
+    private BinkInkMetrics _ink;
+    private bool _locked;
+
+    private static readonly string[] InkColors = ["#0f172a", "#1d4ed8"];
+    private string _message = "Sign to continue.";
+
+    private BinkDocument? _saved;
+    private string _savedSvg = string.Empty;
+    private string _savedJson = string.Empty;
+    private int _savedBytes;
+
+    private bool IsEmpty => _canvas?.CurrentDocument.IsEmpty ?? true;
+
+    private bool CanUndo => _canvas?.History.CanUndo ?? false;
+
+    private bool CanRedo => _canvas?.History.CanRedo ?? false;
+
+    // A scribble of one dot is not a signature. Requiring a little ink is a real validation rule that the
+    // vector model makes easy to express.
+    private bool IsValid => _ink.Length > MinimumInkLength;
+
+    private const float MinimumInkLength = 120f;
+
+    private void SetColor(string color)
+    {
+        _color = color;
+        _brush = _brush with { Color = BinkColor.Parse(color) };
+    }
+
+    private void OnWidthChanged(ChangeEventArgs e)
+    {
+        if (float.TryParse(e.Value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out float value))
+        {
+            _width = value;
+            _brush = _brush with { Width = value };
+        }
+    }
+
+    private void OnStrokeCompleted(BinkStrokeEventArgs args)
+    {
+        // Stroke and document notifications can arrive in either order, so measure here as well.
+        MeasureInk();
+        string captured = args.Stroke is { } stroke && stroke.Input.HasRealPressure
+            ? "Captured with pen pressure."
+            : "Captured.";
+        _message = IsValid ? captured : captured + " Keep signing: the signature is still too short to accept.";
+    }
+
+    private void OnDocumentChanged(BinkDocumentChangedEventArgs args)
+    {
+        MeasureInk();
+        StateHasChanged();
+    }
+
+    private void MeasureInk() => _ink = _canvas is null ? default : BinkDocumentQuery.MeasureInk(_canvas.CurrentDocument);
+
+    private void Clear()
+    {
+        // Signing again unlocks the field. The stored copy below is kept until a new one is accepted.
+        _locked = false;
+        // The canvas still has ReadOnly set until this component re-renders, and a read only canvas ignores
+        // Clear. Clearing the document directly is the same undoable edit, without waiting for that render.
+        _canvas?.CurrentDocument.Clear();
+        _message = "Sign to continue.";
+    }
+
+    private void Accept()
+    {
+        if (_canvas is null || !IsValid) return;
+
+        // Persisting a signature: crop to the ink, keep it as vector data, and label it for accessibility.
+        BinkDocument document = _canvas.CurrentDocument.Clone();
+        document.SetMetadata("signed-at", DateTimeOffset.UtcNow.ToString("O"));
+        document.SetMetadata("purpose", "signature");
+
+        _saved = document;
+        _savedJson = BinkSerializer.Serialize(document, BinkSerializerOptions.Readable);
+        _savedBytes = BinkSerializer.SerializeToUtf8Bytes(document).Length;
+        _savedSvg = BinkSvgExporter.Export(document, new BinkSvgExportOptions
+        {
+            Region = BinkExportRegion.Content,
+            Padding = 12f,
+            Background = BinkColor.Transparent,
+            Title = "Signature",
+            IncludeElementDescriptions = true,
+        });
+        // An accepted signature is final, the way ink on paper is: the field becomes read only until the
+        // signer chooses to sign again.
+        _locked = true;
+        _message = "Signature accepted.";
+    }
+
+    private Task DownloadSvgAsync()
+        => _canvas?.SaveSvgAsync("signature.svg", new BinkSvgExportOptions
+        {
+            Region = BinkExportRegion.Content,
+            Padding = 12f,
+            Background = BinkColor.Transparent,
+        }) ?? Task.CompletedTask;
+
+    private Task DownloadPngAsync()
+        => _canvas?.SavePngAsync("signature.png", new BinkPngExportOptions
+        {
+            Region = BinkExportRegion.Content,
+            Padding = 12f,
+            Scale = 3f,
+            Background = BinkColor.Transparent,
+        }) ?? Task.CompletedTask;
+}

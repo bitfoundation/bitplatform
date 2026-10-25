@@ -1,4 +1,4 @@
-description = "Drive a feature end-to-end with the AI-Driven Development Lifecycle: requirements, plan, design, implement, validate - with approval gates before any code is written."
+description = "Drive any task that is not a small, obvious edit with the AI-Driven Development Lifecycle, sized to the task: reproduce, fix and validate a known bug or a change inside one feature; requirements, plan, design, implement, validate - with approval gates - for anything bigger."
 
 prompt = """
 Follow these instructions exactly:

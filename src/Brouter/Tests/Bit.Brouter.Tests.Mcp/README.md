@@ -1,7 +1,7 @@
 ﻿# Bit.Brouter.Tests.Mcp
 
 Tests for the **MCP server** the Brouter demo hosts at `/mcp`
-(`Bit.Brouter.Demo/Server/Controllers/McpController.cs` and the services behind it).
+(`Demo/Server/Controllers/McpController.cs` and the services behind it).
 
 ```bash
 cd src/Brouter
