@@ -31,4 +31,10 @@
         <Using Include="Bit.Bcrdt.Blazor" />
     </ItemGroup>
 
+    <!-- The code under each sample, for CodeSnippet to show. Only the text: the samples compile in their own project
+         (Demo\Samples), which keeps them in step with the library's API without shipping them to every visitor. -->
+    <ItemGroup>
+        <EmbeddedResource Include="..\Samples\*.razor;..\Samples\*.cs" Exclude="..\Samples\_Imports.razor" LogicalName="Samples/%(Filename)%(Extension)" />
+    </ItemGroup>
+
 </Project>
