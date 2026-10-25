@@ -284,6 +284,7 @@ _book
 
 /src/Utilities/BevTools/Bit.BevTools/Scripts/**/*.js
 /src/Utilities/BevTools/Bit.BevTools/wwwroot/**/*.js
+/src/Utilities/BevTools/Bit.BevTools.Extension/dist/
 
 /src/Utilities/Bmage/Bit.Bmage/Scripts/**/*.js
 /src/Utilities/Bmage/Bit.Bmage/wwwroot/**/*.js

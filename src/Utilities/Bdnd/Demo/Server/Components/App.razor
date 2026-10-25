@@ -35,7 +35,7 @@
     <script>try { if (window.frameElement && window.frameElement.hasAttribute('data-bdnd-frame')) document.documentElement.classList.add('bdnd-framed'); } catch (_) { }</script>
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+    <HeadOutlet @rendermode="PageRenderMode" />
 </head>
 
 @* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
@@ -45,9 +45,10 @@
    app is interactive its router handles every link itself and this attribute is not consulted. *@
 <body data-enhance-nav="false">
     @* InteractiveWebAssembly rather than Auto or Server: dragover fires continuously during a drag,
-       and on WebAssembly none of its handlers waits on a network round trip. The pages are still
-       prerendered, so the first response carries them. *@
-    <Routes @rendermode="InteractiveWebAssembly" />
+       and on WebAssembly none of its handlers waits on a network round trip. The one exception is
+       /hosting/server-check, served with InteractiveServer to show the library over a circuit (see
+       PageRenderMode). The pages are still prerendered, so the first response carries them. *@
+    <Routes @rendermode="PageRenderMode" />
     <div id="blazor-error-ui" data-nosnippet>
         An unhandled error has occurred.
         <a href="." class="reload">Reload</a>
@@ -58,3 +59,12 @@
 </body>
 
 </html>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    // The server check page shows the library over a SignalR circuit: loaded by its address, the whole app runs on
+    // the server for that page. Everything else runs on WebAssembly.
+    private IComponentRenderMode PageRenderMode =>
+        HttpContext.Request.Path.StartsWithSegments("/hosting/server-check") ? InteractiveServer : InteractiveWebAssembly;
+}

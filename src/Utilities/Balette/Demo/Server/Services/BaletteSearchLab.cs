@@ -86,7 +86,8 @@ public static class BaletteSearchLab
         // What the palette calls a query: the text without surrounding spaces. Only then does it decide
         // whether there is one - a query of spaces is the empty query, ordered by priority alone.
         var hasQuery = query.Trim().Length > 0;
-        var terms = Split(query).Select(raw => DescribeTerm(raw, matcherInstance)).ToArray();
+        // The library's own parser, so phrases and alternatives are described exactly as the palette matches them.
+        var terms = BaletteQuery.Parse(query).Terms.Select(term => DescribeTerm(term, matcherInstance)).ToArray();
 
         var hidden = candidates.Where(command => command.IsVisible?.Invoke() == false).ToList();
         var visible = candidates.Where(command => command.IsVisible?.Invoke() != false).ToList();
@@ -349,32 +350,33 @@ public static class BaletteSearchLab
     }
 
     /// <summary>The query's terms, split exactly where the palette splits them: on spaces.</summary>
-    private static string[] Split(string query) => query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     /// <summary>
     /// One term with the operator its first or last character gives it - the syntax the guide documents
     /// (<c>'exact</c>, <c>^prefix</c>, <c>suffix$</c>, <c>!negate</c>; a lone operator character is a
     /// plain term) - and whether it matches case-sensitively.
     /// </summary>
-    private static BaletteQueryTermDto DescribeTerm(string raw, IBaletteMatcher matcher)
+    private static BaletteQueryTermDto DescribeTerm(BaletteQueryTerm term, IBaletteMatcher matcher)
     {
         var plain = matcher is BaletteSubstringMatcher ? "substring" : "fuzzy";
+        var phrase = term.Text.Contains(' ');
 
-        var (term, op) = raw.Length > 1 ? raw[0] switch
+        // The term as it is written: its operator characters put back, a phrase in quotes.
+        var (text, op) = term.Operator switch
         {
-            '!' => (raw[1..], "negate"),
-            '\'' => (raw[1..], "exact"),
-            '^' => (raw[1..], "prefix"),
-            _ when raw[^1] == '$' => (raw[..^1], "suffix"),
-            _ => (raw, plain)
-        } : (raw, plain);
+            BaletteQueryOperator.Negate => (phrase ? $"!\"{term.Text}\"" : "!" + term.Text, "negate"),
+            BaletteQueryOperator.Exact => (phrase ? $"\"{term.Text}\"" : "'" + term.Text, "exact"),
+            BaletteQueryOperator.Prefix => (phrase ? $"^\"{term.Text}\"" : "^" + term.Text, "prefix"),
+            BaletteQueryOperator.Suffix => (phrase ? $"\"{term.Text}\"$" : term.Text + "$", "suffix"),
+            _ => (term.Text, plain),
+        };
 
         return new BaletteQueryTermDto
         {
-            Text = raw,
-            Term = term,
+            Text = text,
+            Term = term.Text,
             Operator = op,
-            CaseSensitive = op == "fuzzy" && matcher is BaletteFuzzyMatcher { IgnoreCase: false } && term.Any(char.IsUpper)
+            CaseSensitive = op == "fuzzy" && matcher is BaletteFuzzyMatcher { IgnoreCase: false } && term.Text.Any(char.IsUpper)
         };
     }
 

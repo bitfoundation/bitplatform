@@ -33,6 +33,13 @@ public sealed class BbAdaptiveRowBinarizer : IBbBinarizer
     private int[] _minimums = [];
     private int[] _maximums = [];
 
+    /// <summary>Zeroes the per-segment extremes of the last line.</summary>
+    internal void ForgetImage()
+    {
+        Array.Clear(_minimums);
+        Array.Clear(_maximums);
+    }
+
     /// <inheritdoc />
     public BbBitMatrix? GetBlackMatrix(in BbLuminanceView source) => _matrixFallback.GetBlackMatrix(source);
 

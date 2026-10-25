@@ -9,7 +9,7 @@ public class BelemetrySettingsTests
     [
         "OTEL_SERVICE_NAME", "OTEL_RESOURCE_ATTRIBUTES", "OTEL_EXPORTER_OTLP_ENDPOINT", "OTEL_EXPORTER_OTLP_HEADERS",
         "OTEL_EXPORTER_OTLP_PROTOCOL", "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT", "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT", "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
-        "OTEL_EXPORTER_OTLP_TIMEOUT", "OTEL_EXPORTER_OTLP_COMPRESSION", "APPLICATIONINSIGHTS_CONNECTION_STRING",
+        "OTEL_EXPORTER_OTLP_TIMEOUT", "OTEL_EXPORTER_OTLP_COMPRESSION", "APPLICATIONINSIGHTS_CONNECTION_STRING", "OTEL_SDK_DISABLED",
     ];
 
     private const string ConnectionString = "InstrumentationKey=11111111-2222-3333-4444-555555555555;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/";
@@ -27,6 +27,29 @@ public class BelemetrySettingsTests
     public void RestoreEnvironment()
     {
         foreach (var (name, value) in _savedEnv) Environment.SetEnvironmentVariable(name, value);
+    }
+
+    [TestMethod]
+    [DataRow("true", false)]
+    [DataRow("TRUE", false)]
+    [DataRow("false", true)]
+    [DataRow("yes", true)]
+    public void OtelSdkDisabled_IsTheOperatorsKillSwitch(string value, bool enabled)
+    {
+        Environment.SetEnvironmentVariable("OTEL_SDK_DISABLED", value);
+
+        var settings = TestHost.CreateSettings(o =>
+        {
+            o.UseEnvironmentVariables = true;
+            o.Enabled = true;
+            o.AddOtlpExporter("http://collector.test:4318");
+        }, webHost: true);
+
+        Assert.AreEqual(enabled, settings.Options.Enabled, "Only \"true\" (any case) disables, and it wins over code, as in the OpenTelemetry SDKs.");
+        Assert.AreEqual(enabled ? BelemetryFeatures.All : BelemetryFeatures.None, settings.ConfiguredFeatures);
+
+        var ignored = TestHost.CreateSettings(o => o.UseEnvironmentVariables = false);
+        Assert.IsTrue(ignored.Options.Enabled, "Not read when environment variables are off.");
     }
 
     [TestMethod]

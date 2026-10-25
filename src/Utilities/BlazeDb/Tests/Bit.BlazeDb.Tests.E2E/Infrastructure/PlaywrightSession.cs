@@ -3,9 +3,10 @@
 namespace Bit.BlazeDb.Tests.E2E.Infrastructure;
 
 /// <summary>
-/// One Playwright driver, one launched Chromium and one running demo for the whole run. Tests isolate
-/// from each other with a browser context apiece (separate storage, cache and WebAssembly instance),
-/// which is far cheaper than a browser apiece and isolates just as well.
+/// One Playwright driver, one launched browser (Chromium unless <see cref="E2EEnvironment.Browser"/> names
+/// another engine) and one running demo for the whole run. Tests isolate from each other with a browser
+/// context apiece (separate storage, cache and WebAssembly instance), which is far cheaper than a browser
+/// apiece and isolates just as well.
 /// </summary>
 /// <remarks>
 /// Whatever stops the suite from running at all - no browser, a demo that does not start - is captured
@@ -47,11 +48,20 @@ public static class PlaywrightSession
             return Session.Fail("Playwright is not available: " + ex.Message);
         }
 
+        // Checked rather than defaulted: a misspelt engine would otherwise run Chromium under another name.
+        if (E2EEnvironment.Browser is not ("chromium" or "firefox" or "webkit"))
+        {
+            playwright.Dispose();
+            return Session.Fail($"BLAZEDB_E2E_BROWSER is '{E2EEnvironment.Browser}'; it has to be chromium, firefox or webkit.");
+        }
+
         var browser = await LaunchAsync(playwright);
         if (browser is null)
         {
             playwright.Dispose();
-            return Session.Fail("no Chromium-based browser could be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install chromium', or install Chrome or Edge.");
+            return Session.Fail(E2EEnvironment.Browser == "chromium"
+                ? "no Chromium-based browser could be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install chromium', or install Chrome or Edge."
+                : $"{E2EEnvironment.Browser} could not be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install {E2EEnvironment.Browser}'.");
         }
 
         try
@@ -68,17 +78,25 @@ public static class PlaywrightSession
 
     private static async Task<IBrowser?> LaunchAsync(IPlaywright playwright)
     {
+        var engine = E2EEnvironment.Browser switch
+        {
+            "firefox" => playwright.Firefox,
+            "webkit" => playwright.Webkit,
+            _ => playwright.Chromium, // StartAsync has refused anything but the three names
+        };
+
         // Preferred: the browser Playwright manages. Falling back to an installed one keeps the suite usable
-        // where that download is blocked. A channel or an executable asked for explicitly is the only candidate.
+        // where that download is blocked - Chromium only, the one engine browsers ship as channels. A channel
+        // or an executable asked for explicitly is the only candidate.
         string?[] channels = E2EEnvironment.Channel is { } channel ? [channel]
-            : E2EEnvironment.Executable is not null ? [null]
+            : E2EEnvironment.Executable is not null || engine != playwright.Chromium ? [null]
             : [null, "chrome", "msedge"];
 
         foreach (var candidate in channels)
         {
             try
             {
-                return await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+                return await engine.LaunchAsync(new BrowserTypeLaunchOptions
                 {
                     Channel = candidate,
                     ExecutablePath = E2EEnvironment.Executable,

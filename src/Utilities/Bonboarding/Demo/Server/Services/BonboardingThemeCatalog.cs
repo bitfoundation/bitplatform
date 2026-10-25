@@ -9,15 +9,20 @@ namespace Bit.Bonboarding.Demo.Server.Services;
 /// stylesheet the library ships.
 /// <para>
 /// Restyling the tours means overriding these, and only these: the stylesheet routes every colour,
-/// radius, font and duration through a variable on <c>.bit-bonboarding-root</c>, so an override needs
+/// radius, font and duration through a variable on <c>.bit-bonboarding-root</c> (and <c>.bit-bonboarding-themed</c>, the
+/// components rendered on the page), so an override needs
 /// no selector of its own. Parsing the shipped file rather than keeping a table means the answer
 /// cannot name a variable the library dropped, or miss one it added.
 /// </para>
 /// </summary>
 public static partial class BonboardingThemeCatalog
 {
-    private const string RootSelector = ".bit-bonboarding-root";
-    private const string DarkSelector = ".bit-bonboarding-root[data-bonboarding-theme=\"dark\"]";
+    private const string RootSelector = ".bit-bonboarding-root, .bit-bonboarding-themed";
+    private const string DarkSelector = ".bit-bonboarding-root[data-bonboarding-theme=\"dark\"], .bit-bonboarding-themed[data-bonboarding-theme=\"dark\"]";
+
+    // The rules as the stylesheet spells them: the tour host and the on-page components share every variable.
+    private const string RootRule = ".bit-bonboarding-root,\n.bit-bonboarding-themed";
+    private const string DarkRule = ".bit-bonboarding-root[data-bonboarding-theme=\"dark\"],\n.bit-bonboarding-themed[data-bonboarding-theme=\"dark\"]";
 
     private static readonly Lazy<BonboardingThemeVariableDto[]> _variables = new(Build);
 
@@ -54,7 +59,8 @@ public static partial class BonboardingThemeCatalog
                .AppendLine("```")
                .AppendLine()
                .AppendLine("The dark column applies when the resolved theme is `BonboardingTheme.Dark` (the root then carries ")
-               .AppendLine("`data-bonboarding-theme=\"dark\"`); `System`, the default, keeps the light values. The variables ")
+               .AppendLine("`data-bonboarding-theme=\"dark\"`), and when it is `System`, the default, while the operating system ")
+               .AppendLine("asks for a dark scheme (`prefers-color-scheme: dark`). Override both rules to restyle dark mode. The variables ")
                .AppendLine("with an option in the last column are written into the root's inline style for every step from that ")
                .AppendLine("option, so overriding them in CSS has no effect - set the option (globally, per tour or per step) instead.")
                .AppendLine();
@@ -84,8 +90,8 @@ public static partial class BonboardingThemeCatalog
     {
         var css = BonboardingSourceCatalog.Stylesheet.Replace("\r\n", "\n", StringComparison.Ordinal);
 
-        var light = ReadBlock(css, RootSelector);
-        var dark = ReadBlock(css, DarkSelector).ToDictionary(variable => variable.Name, variable => variable.Value, StringComparer.Ordinal);
+        var light = ReadBlock(css, RootRule);
+        var dark = ReadBlock(css, DarkRule).ToDictionary(variable => variable.Name, variable => variable.Value, StringComparer.Ordinal);
 
         return [.. light.Select(variable => new BonboardingThemeVariableDto
         {

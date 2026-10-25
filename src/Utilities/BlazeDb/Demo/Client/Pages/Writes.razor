@@ -1,0 +1,847 @@
+﻿@page "/writes"
+@implements IAsyncDisposable
+
+<PageTitle>Writing rows · BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Writing rows" Title="Every write, and what it promises"
+            Lead="Insert, Update, Upsert and Delete are the basic writes. The Try forms report instead of throwing, the comparison forms add optimistic concurrency, and the bulk forms apply a whole batch atomically. Every scenario below runs against a private in-memory database of six people, so nothing here touches the rows on the other pages.">
+    <span class="bb-badge bd-badge-neutral">@Scenarios.Length scenarios</span>
+    <span class="bb-badge bd-badge-neutral">Unique index enforced by every write</span>
+    <span class="bb-badge bd-badge-neutral">Bulk writes are one commit</span>
+</PageHeader>
+
+<Section Title="The write calls"
+         Lead="Each basic write has a form that reports instead of throwing. Which one to call is a question of whether the situation is a bug or an ordinary outcome for the code calling it.">
+    <Panel Flush="true">
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr><th>Call</th><th>What it does</th><th>When the row is not as expected</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="bb-mono">Insert(row)</td>
+                        <td>Adds a row.</td>
+                        <td>A key that exists throws <code>BlazeDbDuplicateKeyException</code>.</td>
+                    </tr>
+                    <tr>
+                        <td class="bb-mono">TryInsert(row)</td>
+                        <td>Adds a row unless its key exists.</td>
+                        <td>Returns <code>false</code> - decided on the key alone.</td>
+                    </tr>
+                    <tr>
+                        <td class="bb-mono">Update(row)</td>
+                        <td>Replaces the row with that key.</td>
+                        <td>A missing key throws <code>KeyNotFoundException</code>.</td>
+                    </tr>
+                    <tr>
+                        <td class="bb-mono">TryUpdate(row)</td>
+                        <td>Replaces the row if there is one.</td>
+                        <td>Returns <code>false</code>, writing nothing.</td>
+                    </tr>
+                    <tr>
+                        <td class="bb-mono">Upsert(row)</td>
+                        <td>Inserts or replaces.</td>
+                        <td>Never refuses for the key.</td>
+                    </tr>
+                    <tr>
+                        <td class="bb-mono">Delete(key)</td>
+                        <td>Removes a row.</td>
+                        <td>Returns <code>false</code> when there was none.</td>
+                    </tr>
+                    <tr>
+                        <td class="bb-mono">TryUpdate(row, comparisonValue)<br />TryDelete(key, comparisonValue)</td>
+                        <td>Write only while the table still holds <code>comparisonValue</code> for the key.</td>
+                        <td>Return <code>false</code> when anything replaced or deleted the row since it was read - optimistic concurrency.</td>
+                    </tr>
+                    <tr>
+                        <td class="bb-mono">InsertMany · UpsertMany · DeleteMany(keys) · DeleteWhere(predicate) · DeleteAll()</td>
+                        <td>A whole batch, atomically: every row or none, one commit and one log record.</td>
+                        <td>A refused row throws what its single-row counterpart would, and takes the rows before it back.</td>
+                    </tr>
+                    <tr>
+                        <td class="bb-mono">UpdateInPlace(row, previousValues)<br />DeleteInPlace(key, previousValues)</td>
+                        <td>Write a row that was changed in place, given the values the table last indexed.</td>
+                        <td><code>BlazeDbStaleRowException</code> when those values are no longer what the indexes hold.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </Panel>
+    <Callout Tone="info" Title="Two rules hold for every one of them.">
+        A unique index is enforced by every write - <code>TryInsert</code> decides on the key alone, so a duplicate
+        unique value still throws <code>BlazeDbUniqueConstraintViolationException</code> - and every write that takes a
+        row (<code>Insert</code>, <code>Update</code>, <code>Upsert</code>, their Try and bulk forms, <code>UpdateInPlace</code>)
+        refuses a null row, or a row whose key is null, with the table named, before anything changes.
+    </Callout>
+</Section>
+
+<Section Title="Run a scenario"
+         Lead="Each run starts from the same six people, so results are always reproducible. The counter under the table is the database's Changed event: one commit per autocommit write, one per bulk write however many rows it carries.">
+    <div class="bd-main-side">
+        <div class="bb-flex">
+            <Panel Title="Scenarios" IconName="list">
+                <div class="bd-actions">
+                    @foreach (var scenario in Scenarios)
+                    {
+                        var key = scenario.Key;
+                        <button type="button" class="btn @(_selected == key ? "btn-primary" : "btn-secondary")"
+                                disabled="@_running" @onclick="() => RunAsync(key)">
+                            <Icon Name="@scenario.Icon" />
+                            @scenario.Title
+                        </button>
+                    }
+                </div>
+            </Panel>
+
+            @if (Current is { } current)
+            {
+                <CodeBlock Title="@($"Scenario: {current.Title}")" Code="@current.Code" />
+                <Callout Tone="@current.Tone" Title="@current.Takeaway"></Callout>
+            }
+        </div>
+
+        <div class="bb-flex">
+            <Panel Title="Trace" IconName="history" Flush="true">
+                <ScenarioSteps Steps="_log.Steps" EmptyText="Pick a scenario to run it." />
+            </Panel>
+
+            @if (_people is not null)
+            {
+                <Panel Title="people" IconName="database" Flush="true">
+                    <Actions>
+                        <span class="bd-panel-sub">Count = @_people.Count</span>
+                    </Actions>
+                    <ChildContent>
+                        @if (_people.Count == 0)
+                        {
+                            <div class="bb-empty">Empty.</div>
+                        }
+                        else
+                        {
+                            <div class="bb-scroll">
+                                <table class="bb-table bb-compare">
+                                    <thead>
+                                        <tr><th class="bd-num">Id</th><th>Name</th><th>Email</th><th>City</th><th>Role</th><th>Joined</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var person in _people.Scan().OrderBy(p => p.Id))
+                                        {
+                                            <tr>
+                                                <td class="bd-num">@person.Id</td>
+                                                <td class="bd-strong">@person.Name</td>
+                                                <td class="bb-mono bd-small">@(person.Email ?? "null")</td>
+                                                <td>@person.City</td>
+                                                <td>@person.Role</td>
+                                                <td class="bb-mono bd-small">@person.Joined.ToString("yyyy-MM-dd")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        <div class="bd-panel-pad bd-panel-foot">
+                            <div class="bd-foot bb-mono">
+                                db.Changed since the scenario started: @_commits commit(s), @_changes row change(s)
+                            </div>
+                        </div>
+                    </ChildContent>
+                </Panel>
+            }
+        </div>
+    </div>
+</Section>
+
+<Section Title="Rows are live objects"
+         Lead="A read hands back the instance the table holds, not a copy. That is what makes reads free - and it is why a write takes a new instance.">
+    <div class="bb-flex">
+        <CodeBlock Title="Replace a row, do not mutate it" Code="@ReplaceSnippet" />
+        <div class="bb-flex">
+            <Panel Title="Why Update refuses a mutated instance" IconName="alert">
+                <p>
+                    The table retracts a row's old index entries through the values of the row it currently holds.
+                    Change an indexed property on that very instance and hand it back, and the old values are gone -
+                    so the write is refused rather than left to strand an index entry that would keep returning the
+                    row under a value it no longer has.
+                </p>
+                <p>
+                    Code that does change rows in place - the EF Core provider, whose change tracker works that way -
+                    writes them with <code>UpdateInPlace(row, previousValues)</code> and
+                    <code>DeleteInPlace(key, previousValues)</code>, passing every indexed property as the table last
+                    saw it. If the row was written since those values were taken, the call throws
+                    <code>BlazeDbStaleRowException</code> instead of indexing the row twice.
+                </p>
+            </Panel>
+            <Panel Title="Checking integrity" IconName="shield">
+                <p>
+                    <code>db.VerifyIntegrity()</code> compares every row with every index entry and returns what
+                    disagrees - an empty list on a healthy database. The one thing the engine cannot see on its own is
+                    a row object changed in place after it was written; run it in tests, or from a support tool, to
+                    find the code that does that. It also reports a rollback that could not undo a write.
+                </p>
+                <CodeBlock Code="@VerifySnippet" />
+            </Panel>
+        </div>
+    </div>
+</Section>
+
+@code {
+    private sealed record Scenario(
+        string Key,
+        string Title,
+        string Icon,
+        string Code,
+        string Takeaway,
+        string Tone,
+        Action<Writes> Run);
+
+    private BlazeDbDatabase? _db;
+    private BlazeDbTable<int, Person>? _people;
+    private BlazeDbTable<string, Setting>? _settings;
+    private BlazeDbTable<int, Seat>? _seats;
+    private readonly ScenarioLog _log = new();
+    private string _selected = "";
+    private bool _running;
+    private int _commits;
+    private int _changes;
+
+    private Scenario? Current => Scenarios.FirstOrDefault(s => s.Key == _selected);
+
+    private static readonly Scenario[] Scenarios =
+    [
+        new("insert", "Insert or TryInsert", "plus",
+            """
+            people.Insert(rowWithKey1);     // BlazeDbDuplicateKeyException
+            people.TryInsert(rowWithKey1);  // false - nothing written
+            people.TryInsert(rowWithKey7);  // true
+            """,
+            "Insert treats an existing key as a bug; TryInsert treats it as an answer.",
+            "info",
+            static page => page.ScenarioInsert()),
+
+        new("update", "Update, TryUpdate, Upsert and Delete", "refresh",
+            """
+            people.Update(missing);         // KeyNotFoundException
+            people.TryUpdate(missing);      // false
+            people.Upsert(missing);         // inserted
+            people.Upsert(changed);         // replaced, count unchanged
+            people.Delete(1234);            // false - not an error
+            """,
+            "Only Update and Insert insist on the state of the key; every other form reports it.",
+            "info",
+            static page => page.ScenarioUpdate()),
+
+        new("unique", "A unique index refuses every duplicate", "key",
+            """
+            [BlazeDbIndex(Unique = true)] public string? Email { get; set; }
+
+            people.TryInsert(new Person { Id = 50, Email = "ada@analytical.org" });
+            // BlazeDbUniqueConstraintViolationException - TryInsert decides on the key alone
+
+            people.Insert(new Person { Id = 51, Email = null });
+            people.Insert(new Person { Id = 52, Email = null });   // fine: nulls are never duplicates
+            """,
+            "The unique check runs before anything changes, on every write path - and null is exempt.",
+            "warn",
+            static page => page.ScenarioUnique()),
+
+        new("uniqueshapes", "Compound and ordered unique indexes", "layers",
+            """
+            [BlazeDbCompoundIndex("RowNumber", nameof(Row), nameof(Number), Unique = true)]
+            public partial class Seat
+            {
+                [BlazeDbKey] public int Id { get; set; }
+                public string? Row { get; set; }
+                public int Number { get; set; }
+                [BlazeDbOrderedIndex(Unique = true)] public string? Code { get; set; }
+            }
+
+            seats.Insert(new Seat { Id = 5, Row = null, Number = 1 });   // refused if (null, 1) exists
+            """,
+            "On a compound unique index the value is the whole tuple - nulls included; a unique ordered index works as a hash one does.",
+            "warn",
+            static page => page.ScenarioUniqueShapes()),
+
+        new("optimistic", "Optimistic concurrency: a stale form is refused", "lock",
+            """
+            var read = people.Get(2)!;                        // the edit form opens
+            var edited = read.With(p => p.Role = "admiral");
+
+            people.Update(read.With(p => p.City = "Washington"));   // someone else saves first
+
+            people.TryUpdate(edited, comparisonValue: read);  // false - the row moved on
+            var current = people.Get(2)!;                     // re-read, and ask again
+            people.TryUpdate(current.With(p => p.Role = "admiral"), comparisonValue: current);   // true
+            """,
+            "Every write installs a new instance, so comparing with the row you read is an exact version check.",
+            "ok",
+            static page => page.ScenarioOptimistic()),
+
+        new("trydelete", "TryDelete removes only the row you read", "trash",
+            """
+            var read = people.Get(3)!;
+            people.Update(read.With(p => p.Role = "mathematician"));   // changed meanwhile
+
+            people.TryDelete(3, comparisonValue: read);      // false - not the row you saw
+            people.TryDelete(3, people.Get(3)!);             // true
+            """,
+            "A delete confirmed against stale data would remove an edit nobody has looked at.",
+            "ok",
+            static page => page.ScenarioTryDelete()),
+
+        new("insertmany", "InsertMany is all or nothing", "layers",
+            """
+            var batch = FivePeople();
+            batch.Insert(3, rowWithKey1);    // a duplicate key in the middle
+
+            people.InsertMany(batch);        // BlazeDbDuplicateKeyException
+            // the three rows before it were taken back too
+
+            batch.RemoveAt(3);
+            people.InsertMany(batch);        // five rows, one commit
+            """,
+            "A bulk write is one commit and one log record - and when a row is refused, none of the batch stays.",
+            "ok",
+            static page => page.ScenarioInsertMany()),
+
+        new("upsertmany", "UpsertMany from a query over the same table", "refresh",
+            """
+            // Everyone in London moves to Cambridge. The input is a lazy query over the
+            // table being written - safe, because a bulk write reads it in full first.
+            people.UpsertMany(people.Scan()
+                .Where(p => p.City == "London")
+                .Select(p => p.With(x => x.City = "Cambridge")));
+            """,
+            "A bulk write buffers its input before the first write, so it can come straight from the table it changes.",
+            "accent",
+            static page => page.ScenarioUpsertMany()),
+
+        new("retention", "A retention sweep in one line", "clock",
+            """
+            var cutoff = new DateOnly(2025, 1, 1);
+
+            people.DeleteMany(people
+                .Range(Person.Indexes.JoinedId,
+                       BlazeDbBound<(DateOnly, int)>.Unbounded,
+                       BlazeDbBound<(DateOnly, int)>.Exclusive((cutoff, int.MinValue)))
+                .Select(p => p.Id));
+            """,
+            "DeleteMany reads its keys in full before it deletes, so an index range can feed it directly.",
+            "accent",
+            static page => page.ScenarioRetention()),
+
+        new("deletewhere", "DeleteWhere and DeleteAll", "close",
+            """
+            people.DeleteWhere(p => p.Email is null);   // a scan: the predicate sees every row
+            people.DeleteAll();                         // every row, one commit
+            """,
+            "DeleteWhere scans; when an index can find the rows, DeleteMany over the index query is cheaper.",
+            "info",
+            static page => page.ScenarioDeleteWhere()),
+
+        new("inplace", "Changing a live row in place", "alert",
+            """
+            var row = people.Get(1)!;              // the instance the table holds
+            var previous = row.With(_ => { });     // what the indexes were built from
+            row.City = "Paris";                    // CityRole still files it under London
+
+            db.VerifyIntegrity();                  // 1 issue
+            people.Update(row);                    // InvalidOperationException - refused
+            people.UpdateInPlace(row, previous);   // the index moves to Paris
+            db.VerifyIntegrity();                  // empty
+            """,
+            "UpdateInPlace is the write for a row changed in place: it is told what the indexes still hold.",
+            "warn",
+            static page => page.ScenarioInPlace()),
+
+        new("stale", "Stale previous values are refused", "lock",
+            """
+            var row = people.Get(4)!;
+            var trackerA = row.With(_ => { });     // two editors share the live row
+            var trackerB = row.With(_ => { });
+
+            row.City = "Houston";
+            people.UpdateInPlace(row, trackerA);   // A saves - the index moves
+
+            row.Role = "engineer";
+            people.UpdateInPlace(row, trackerB);   // BlazeDbStaleRowException
+            """,
+            "B's originals no longer describe the indexes, so the write is refused instead of indexing the row twice. Through EF Core this surfaces as DbUpdateConcurrencyException.",
+            "err",
+            static page => page.ScenarioStale()),
+
+        new("deleteinplace", "DeleteInPlace", "trash",
+            """
+            var row = people.Get(6)!;
+            var previous = row.With(_ => { });
+            row.Email = "changed@example.com";     // changed in place
+
+            people.Delete(6);                      // InvalidOperationException - refused
+            people.DeleteInPlace(6, previous);     // true: every index entry retracted
+            """,
+            "A delete has to retract index entries too, so it needs the indexed values just as an update does.",
+            "info",
+            static page => page.ScenarioDeleteInPlace()),
+
+        new("nulls", "Null rows and null keys", "close",
+            """
+            people.Insert(null!);                           // ArgumentNullException, table named
+            settings.Insert(new Setting { Name = null! });  // ArgumentException, key property named
+            """,
+            "Refused at the door with the table named, rather than from deep inside a dictionary.",
+            "err",
+            static page => page.ScenarioNulls()),
+    ];
+
+    // --------------------------------------------------------------- runner
+
+    private async Task RunAsync(string key)
+    {
+        var scenario = Scenarios.FirstOrDefault(s => s.Key == key);
+        if (scenario is null || _running)
+        {
+            return;
+        }
+
+        _running = true;
+        _selected = key;
+        _log.Clear();
+
+        try
+        {
+            await ResetAsync();
+            scenario.Run(this);
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Unexpected exception", ex.GetType().Name, ex.Message);
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+
+    private async Task ResetAsync()
+    {
+        if (_db is not null)
+        {
+            await _db.DisposeAsync();
+        }
+
+        _db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(Person.Table).AddTable(Setting.Table).AddTable(Seat.Table));
+        _people = _db.GetTable(Person.Table);
+        _settings = _db.GetTable(Setting.Table);
+        _seats = _db.GetTable(Seat.Table);
+        _people.InsertMany(DemoData.People());
+
+        // Counted from here, so the seeding commit is not part of the scenario's tally.
+        _commits = 0;
+        _changes = 0;
+        _db.Changed += (_, e) =>
+        {
+            _commits++;
+            _changes += e.Changes.Count;
+        };
+
+        _log.Add("Fresh database seeded", "people.InsertMany(DemoData.People())", $"Count = {_people.Count}");
+    }
+
+    private static string Lower(bool value) => value.ToString().ToLowerInvariant();
+
+    private string Commits(int before, int changesBefore) =>
+        $"db.Changed raised {_commits - before}× for {_changes - changesBefore} row change(s)";
+
+    // ------------------------------------------------------------ scenarios
+
+    private void ScenarioInsert()
+    {
+        var people = _people!;
+
+        try
+        {
+            people.Insert(new Person { Id = 1, Name = "Another Ada" });
+            _log.Error("No exception", "unexpected");
+        }
+        catch (BlazeDbDuplicateKeyException ex)
+        {
+            _log.Error("Insert threw", $"BlazeDbDuplicateKeyException(table: \"{ex.TableName}\", key: {ex.Key})",
+                "Nothing was written: the check runs before memory or the log is touched.");
+        }
+
+        var again = people.TryInsert(new Person { Id = 1, Name = "Another Ada" });
+        _log.Ok("TryInsert reported instead", $"people.TryInsert(row) → {Lower(again)}",
+            "The same refusal as a return value - what an import that skips rows it already has wants.");
+
+        var fresh = people.TryInsert(new Person
+        {
+            Id = 7, Name = "Barbara Liskov", Email = "barbara@mit.edu", City = "Boston", Role = "researcher", Joined = new(2025, 9, 1),
+        });
+        _log.Ok("A new key goes in", $"people.TryInsert(row) → {Lower(fresh)}", $"Count = {people.Count}");
+    }
+
+    private void ScenarioUpdate()
+    {
+        var people = _people!;
+
+        try
+        {
+            people.Update(new Person { Id = 99, Name = "Nobody" });
+            _log.Error("No exception", "unexpected");
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _log.Error("Update threw", "KeyNotFoundException", ex.Message);
+        }
+
+        var updated = people.TryUpdate(new Person { Id = 99, Name = "Nobody" });
+        _log.Ok("TryUpdate reported", $"people.TryUpdate(row) → {Lower(updated)}", $"Nothing written; Count = {people.Count}");
+
+        people.Upsert(new Person { Id = 99, Name = "Upserted", City = "Oslo", Role = "engineer", Joined = new(2025, 10, 1) });
+        _log.Ok("Upsert inserted", "people.Upsert(row)", $"Key 99 was free, so the row went in. Count = {people.Count}");
+
+        people.Upsert(people.Get(99)!.With(p => p.Name = "Upserted again"));
+        _log.Ok("Upsert replaced", "people.Upsert(people.Get(99)!.With(p => p.Name = \"Upserted again\"))",
+            $"Same key, so the row was replaced. Count = {people.Count}");
+
+        var deleted = people.Delete(1234);
+        _log.Ok("Delete a missing key", $"people.Delete(1234) → {Lower(deleted)}", "Deleting nothing is not an error, and writes nothing to the log.");
+    }
+
+    private void ScenarioUnique()
+    {
+        var people = _people!;
+
+        try
+        {
+            people.TryInsert(new Person { Id = 50, Name = "Impostor", Email = "ada@analytical.org" });
+            _log.Error("No exception", "unexpected");
+        }
+        catch (BlazeDbUniqueConstraintViolationException ex)
+        {
+            _log.Error("TryInsert threw anyway",
+                $"BlazeDbUniqueConstraintViolationException(index: \"{ex.IndexName}\", value: {ex.Value})",
+                "Key 50 is free - TryInsert decides on the key alone - but another row already holds that address.");
+        }
+
+        try
+        {
+            people.Update(people.Get(2)!.With(p => p.Email = "ada@analytical.org"));
+            _log.Error("No exception", "unexpected");
+        }
+        catch (BlazeDbUniqueConstraintViolationException ex)
+        {
+            _log.Error("An update onto a taken value is refused too", "people.Update(grace.With(p => p.Email = \"ada@…\"))", ex.Message);
+        }
+
+        _log.Add("Nothing changed", $"people.Get(2)!.Email → \"{people.Get(2)!.Email}\"", "The check runs before the write, so there was nothing to undo.");
+
+        people.Insert(new Person { Id = 51, Name = "No email", Email = null });
+        people.Insert(new Person { Id = 52, Name = "No email either", Email = null });
+        _log.Ok("Any number of nulls",
+            $"people.CountBy(Person.Indexes.Email, null) → {people.CountBy(Person.Indexes.Email, null)}",
+            "A single-property unique index never counts null as a duplicate.");
+    }
+
+    private void ScenarioUniqueShapes()
+    {
+        var seats = _seats!;
+        seats.Insert(new Seat { Id = 1, Row = "A", Number = 1, Code = "A1" });
+        seats.Insert(new Seat { Id = 2, Row = "A", Number = 2, Code = "A2" });
+        seats.Insert(new Seat { Id = 3, Row = null, Number = 1, Code = null });
+        _log.Run("Three seats", "(A, 1, \"A1\") · (A, 2, \"A2\") · (null, 1, null)");
+
+        Refuse("The same row and number", () => seats.Insert(new Seat { Id = 4, Row = "A", Number = 1, Code = "A1b" }),
+            "RowNumber is unique over the tuple (Row, Number); (A, 1) is taken.");
+        Refuse("A null member is part of the tuple", () => seats.Insert(new Seat { Id = 5, Row = null, Number = 1, Code = "N1" }),
+            "(null, 1) is taken too: a compound index is keyed on the tuple, which is never itself null, so its null members are not exempt.");
+        Refuse("A unique ordered index", () => seats.Insert(new Seat { Id = 6, Row = "B", Number = 1, Code = "A2" }),
+            "[BlazeDbOrderedIndex(Unique = true)] refuses \"A2\" again - and still answers ranges and ordering.");
+
+        seats.Insert(new Seat { Id = 7, Row = "B", Number = 2, Code = null });
+        _log.Ok("A second null Code is fine", $"seats.Count → {seats.Count}",
+            $"Code is a single-property index, so null is exempt. seats.OrderBy(Seat.Indexes.Code) → {string.Join(", ", seats.OrderBy(Seat.Indexes.Code).Select(s => s.Code ?? "null"))}");
+
+        void Refuse(string title, Action write, string note)
+        {
+            try
+            {
+                write();
+                _log.Error("No exception", "unexpected");
+            }
+            catch (BlazeDbUniqueConstraintViolationException ex)
+            {
+                _log.Error(title, $"BlazeDbUniqueConstraintViolationException(index: \"{ex.IndexName}\")", note);
+            }
+        }
+    }
+
+    private void ScenarioOptimistic()
+    {
+        var people = _people!;
+
+        var read = people.Get(2)!;
+        _log.Run("The edit form opens", "var read = people.Get(2)!", $"City = \"{read.City}\", Role = \"{read.Role}\"");
+        var edited = read.With(p => p.Role = "admiral");
+
+        people.Update(read.With(p => p.City = "Washington"));
+        _log.Add("Meanwhile another handler saves the row", "people.Update(read.With(p => p.City = \"Washington\"))",
+            "The table now holds a new instance for key 2.");
+
+        var saved = people.TryUpdate(edited, comparisonValue: read);
+        _log.Error("The form saves", $"people.TryUpdate(edited, comparisonValue: read) → {Lower(saved)}",
+            "The row is no longer the one the form read, so nothing was written - the other edit survives.");
+
+        var current = people.Get(2)!;
+        var retried = people.TryUpdate(current.With(p => p.Role = "admiral"), comparisonValue: current);
+        var after = people.Get(2)!;
+        _log.Ok("Re-read and retry", $"people.TryUpdate(current.With(...), comparisonValue: current) → {Lower(retried)}",
+            $"City = \"{after.City}\", Role = \"{after.Role}\" - both edits kept.");
+    }
+
+    private void ScenarioTryDelete()
+    {
+        var people = _people!;
+
+        var read = people.Get(3)!;
+        _log.Run("A delete is confirmed against this row", "var read = people.Get(3)!", $"Role = \"{read.Role}\"");
+
+        people.Update(read.With(p => p.Role = "mathematician"));
+        _log.Add("Someone edits it first", "people.Update(read.With(p => p.Role = \"mathematician\"))");
+
+        var removed = people.TryDelete(3, comparisonValue: read);
+        _log.Error("Delete what was confirmed", $"people.TryDelete(3, comparisonValue: read) → {Lower(removed)}",
+            $"The row is still there: Count = {people.Count}.");
+
+        removed = people.TryDelete(3, people.Get(3)!);
+        _log.Ok("Delete the row as it is now", $"people.TryDelete(3, people.Get(3)!) → {Lower(removed)}", $"Count = {people.Count}");
+    }
+
+    private void ScenarioInsertMany()
+    {
+        var people = _people!;
+        var before = people.Count;
+        var (commits, changes) = (_commits, _changes);
+
+        var batch = Enumerable.Range(100, 5)
+            .Select(i => new Person { Id = i, Name = $"Batch {i}", City = "Berlin", Role = "engineer", Joined = new(2025, 10, 1) })
+            .ToList();
+        batch.Insert(3, new Person { Id = 1, Name = "a duplicate of Ada's key" });
+
+        try
+        {
+            people.InsertMany(batch);
+            _log.Error("No exception", "unexpected");
+        }
+        catch (BlazeDbDuplicateKeyException ex)
+        {
+            _log.Error("InsertMany threw at the fourth row", $"BlazeDbDuplicateKeyException(key: {ex.Key})", ex.Message);
+        }
+
+        _log.Add("None of the batch stayed", $"people.Count → {people.Count} (was {before})",
+            $"The three rows before the duplicate were taken back with it. {Commits(commits, changes)}.");
+
+        (commits, changes) = (_commits, _changes);
+        batch.RemoveAt(3);
+        people.InsertMany(batch);
+        _log.Ok("Without the duplicate", $"people.InsertMany(batch)  Count → {people.Count}", $"{Commits(commits, changes)} - one commit for the batch.");
+    }
+
+    private void ScenarioUpsertMany()
+    {
+        var people = _people!;
+        var (commits, changes) = (_commits, _changes);
+
+        _log.Run("Who lives in London", $"{people.Scan().Count(p => p.City == "London")} people");
+
+        people.UpsertMany(people.Scan()
+            .Where(p => p.City == "London")
+            .Select(p => p.With(x => x.City = "Cambridge")));
+
+        _log.Ok("Moved in one atomic write",
+            $"London → {people.Scan().Count(p => p.City == "London")}   Cambridge → {people.Scan().Count(p => p.City == "Cambridge")}",
+            $"{Commits(commits, changes)}. The query was enumerated in full before the first row was replaced.");
+    }
+
+    private void ScenarioRetention()
+    {
+        var people = _people!;
+        var cutoff = new DateOnly(2025, 1, 1);
+        var (commits, changes) = (_commits, _changes);
+
+        var removed = people.DeleteMany(people
+            .Range(Person.Indexes.JoinedId,
+                   BlazeDbBound<(DateOnly, int)>.Unbounded,
+                   BlazeDbBound<(DateOnly, int)>.Exclusive((cutoff, int.MinValue)))
+            .Select(p => p.Id));
+
+        _log.Ok("Everyone who joined before 2025", $"people.DeleteMany(...) → {removed}",
+            $"Count = {people.Count}. {Commits(commits, changes)}.");
+        _log.Add("Why the compound index", "Person.Indexes.JoinedId = (Joined, Id)",
+            "Ordered by Joined first, so a range on its leading member is one contiguous scan; the trailing Id makes every entry unique for keyset paging.");
+    }
+
+    private void ScenarioDeleteWhere()
+    {
+        var people = _people!;
+        var (commits, changes) = (_commits, _changes);
+
+        var withoutEmail = people.DeleteWhere(p => p.Email is null);
+        _log.Ok("DeleteWhere", $"people.DeleteWhere(p => p.Email is null) → {withoutEmail}", $"Count = {people.Count}. {Commits(commits, changes)}.");
+
+        (commits, changes) = (_commits, _changes);
+        var all = people.DeleteAll();
+        _log.Ok("DeleteAll", $"people.DeleteAll() → {all}", $"Count = {people.Count}. {Commits(commits, changes)}.");
+    }
+
+    private void ScenarioInPlace()
+    {
+        var people = _people!;
+        var db = _db!;
+
+        var row = people.Get(1)!;
+        var previous = row.With(_ => { });
+        row.City = "Paris";
+        _log.Run("Changed the live row in place", "row.City = \"Paris\"",
+            $"Lookup(CityRole, (\"London\", \"engineer\")) still finds it: {people.Lookup(Person.Indexes.CityRole, ("London", "engineer")).Count(p => p.Id == 1)} row(s), now in Paris.");
+
+        var issues = db.VerifyIntegrity();
+        _log.Error("db.VerifyIntegrity()", $"{issues.Count} issue(s)",
+            string.Join(" · ", issues.Select(i => $"{i.Table} / {i.Index ?? "primary key"}: {i.Description}")));
+
+        try
+        {
+            people.Update(row);
+            _log.Error("No exception", "unexpected");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("Update(row) is refused", "InvalidOperationException", ex.Message);
+        }
+
+        people.UpdateInPlace(row, previous);
+        _log.Ok("UpdateInPlace(row, previous)", "people.UpdateInPlace(row, previous)",
+            $"Lookup(CityRole, (\"Paris\", \"engineer\")) → {people.Lookup(Person.Indexes.CityRole, ("Paris", "engineer")).Count()} row(s)");
+
+        _log.Ok("db.VerifyIntegrity()", $"{db.VerifyIntegrity().Count} issue(s)", "Rows and indexes agree again.");
+    }
+
+    private void ScenarioStale()
+    {
+        var people = _people!;
+        var db = _db!;
+
+        var row = people.Get(4)!;
+        var trackerA = row.With(_ => { });
+        var trackerB = row.With(_ => { });
+        _log.Run("Two editors share the live row", "trackerA, trackerB = copies of row 4", $"City = \"{row.City}\", Role = \"{row.Role}\"");
+
+        row.City = "Houston";
+        people.UpdateInPlace(row, trackerA);
+        _log.Ok("A saves", "row.City = \"Houston\"; people.UpdateInPlace(row, trackerA)", "The CityRole entry moved to (Houston, researcher).");
+
+        row.Role = "engineer";
+        try
+        {
+            people.UpdateInPlace(row, trackerB);
+            _log.Error("No exception", "unexpected");
+        }
+        catch (BlazeDbStaleRowException ex)
+        {
+            _log.Error("B saves with its originals",
+                $"BlazeDbStaleRowException(table: \"{ex.TableName}\", index: \"{ex.IndexName}\")", ex.Message);
+        }
+
+        _log.Add("The row is still changed in place", $"db.VerifyIntegrity() → {db.VerifyIntegrity().Count} issue(s)",
+            "B's in-place change is in memory but not indexed. Telling the table what it really holds fixes that:");
+
+        people.UpdateInPlace(row, row.With(p => p.Role = "researcher"));
+        _log.Ok("Retry with the values the indexes hold",
+            "people.UpdateInPlace(row, row.With(p => p.Role = \"researcher\"))",
+            $"db.VerifyIntegrity() → {db.VerifyIntegrity().Count} issue(s)");
+    }
+
+    private void ScenarioDeleteInPlace()
+    {
+        var people = _people!;
+
+        var row = people.Get(6)!;
+        var previous = row.With(_ => { });
+        row.Email = "changed@example.com";
+        _log.Run("Changed the live row in place", "row.Email = \"changed@example.com\"");
+
+        try
+        {
+            people.Delete(6);
+            _log.Error("No exception", "unexpected");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("Delete(6) is refused", "InvalidOperationException", ex.Message);
+        }
+
+        var removed = people.DeleteInPlace(6, previous);
+        _log.Ok("DeleteInPlace(6, previous)", $"→ {Lower(removed)}",
+            $"Lookup(Email, \"{previous.Email}\") → {people.Lookup(Person.Indexes.Email, previous.Email).Count()} row(s); db.VerifyIntegrity() → {_db!.VerifyIntegrity().Count} issue(s)");
+    }
+
+    private void ScenarioNulls()
+    {
+        var people = _people!;
+        var settings = _settings!;
+
+        try
+        {
+            people.Insert(null!);
+            _log.Error("No exception", "unexpected");
+        }
+        catch (ArgumentNullException ex)
+        {
+            _log.Error("A null row", "ArgumentNullException", ex.Message);
+        }
+
+        try
+        {
+            settings.Insert(new Setting { Name = null! });
+            _log.Error("No exception", "unexpected");
+        }
+        catch (ArgumentException ex)
+        {
+            _log.Error("A null key", ex.GetType().Name, ex.Message);
+        }
+
+        _log.Ok("Nothing was written", $"people.Count → {people.Count}   settings.Count → {settings.Count}");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_db is not null)
+        {
+            await _db.DisposeAsync();
+            _db = null;
+        }
+    }
+
+    private const string ReplaceSnippet = """
+        var read = people.Get(id)!;              // the live row - do not edit it
+
+        // Build the replacement, then write it.
+        people.Update(read.With(p => p.City = "Lisbon"));
+
+        // Or, when the row may have changed since it was read:
+        if (!people.TryUpdate(read.With(p => p.City = "Lisbon"), comparisonValue: read))
+        {
+            // Someone changed it since the form opened: re-read and ask the user.
+        }
+
+        // Code that did mutate the row in place passes what the indexes hold:
+        people.UpdateInPlace(row, previousValues);
+        """;
+
+    private const string VerifySnippet = """
+        foreach (var issue in db.VerifyIntegrity())
+        {
+            Console.WriteLine($"{issue.Table} / {issue.Index ?? "primary key"}: {issue.Description}");
+        }
+        """;
+}

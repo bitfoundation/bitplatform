@@ -20,6 +20,7 @@ interface DotNetObjectReference {
 
 // camelCase JSON of BinkInteropOptions. Every field is optional because setOptions merges partial updates.
 interface BinkSurfaceOptions {
+    // Read once, when the canvases' contexts are created at attach.
     lowLatency?: boolean;
     rejectTouchWhilePen?: boolean;
     suppressContextMenu?: boolean;
@@ -463,8 +464,12 @@ class Surface {
 
     createContext(canvas: HTMLCanvasElement | null): CanvasRenderingContext2D | null {
         if (!canvas) return null;
-        const attributes: CanvasRenderingContext2DSettings = { alpha: true, desynchronized: this.options.lowLatency !== false };
-        const ctx = canvas.getContext('2d', attributes);
+        // `desynchronized` only when the application asks for it (BinkCanvas.LowLatency). Chromium (seen on Windows
+        // with GPU compositing) shows a desynchronized canvas whose pixels are not all opaque - the overlay always, the
+        // document with a transparent background - as solid black once it sits inside an ancestor that clips to
+        // rounded corners: overflow: hidden with a border-radius, an ordinary card. Only the application knows whether
+        // its canvas has such an ancestor.
+        const ctx = canvas.getContext('2d', { alpha: true, desynchronized: this.options.lowLatency === true });
         if (ctx && typeof ctx.getContextAttributes === 'function') {
             const actual = ctx.getContextAttributes();
             this.lowLatency = !!(actual && actual.desynchronized);

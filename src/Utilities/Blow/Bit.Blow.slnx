@@ -14,6 +14,7 @@
         <Project Path="Tests/Bit.Blow.Tests/Bit.Blow.Tests.csproj" />
         <Project Path="Tests/Bit.Blow.Tests.Mcp/Bit.Blow.Tests.Mcp.csproj" />
         <Project Path="Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj" />
+        <Project Path="Tests/Bit.Blow.Benchmarks/Bit.Blow.Benchmarks.csproj" />
     </Folder>
     <Project Path="Bit.Blow/Bit.Blow.csproj" />
 </Solution>

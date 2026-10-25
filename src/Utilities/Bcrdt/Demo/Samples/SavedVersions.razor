@@ -1,0 +1,75 @@
+﻿@* One participant of the version history: save a version of the text, preview it, restore it. Restoring needs
+   every character deleted since the version, so the app keeps them:
+       builder.Services.AddBitBcrdtServices(collaboration => collaboration
+           .Configure(options => options.GarbageCollect = false));
+   Each panel of the history page is this component, opened by a different user. *@
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+
+<BcrdtCollaborationScope DocumentId="demo-history" User="_me" Context="document">
+    @{
+        BcrdtArray versions = document.Array("versions");
+    }
+
+    <BcrdtTextArea Text="@document.Text("body")" Presence="document.Presence" Field="body" Rows="5"
+                   Placeholder="Type, save a version, then keep typing." />
+
+    <button type="button" @onclick="() => SaveVersion(document)">Save a version</button>
+
+    <ol>
+        @for (int index = versions.Count - 1; index >= 0; index--)
+        {
+            if (versions.GetMap(index) is not { } version) continue;
+
+            <li @key="version">
+                Saved by @version.Get("by") at @(version.Get("at") is DateTimeOffset at ? at.ToLocalTime().ToString("HH:mm:ss") : "")
+                <button type="button" @onclick="() => _preview = TextAt(document, version)">Preview</button>
+                <button type="button" @onclick="() => Restore(document, version)">Restore</button>
+            </li>
+        }
+    </ol>
+
+    @if (_preview is not null)
+    {
+        <pre>@_preview</pre>
+    }
+</BcrdtCollaborationScope>
+
+@code {
+    private readonly BcrdtCollaboratorInfo _me = new("u-1", "Ada", BcrdtPresenceService.SuggestColor("u-1"));
+    private string? _preview;
+
+    // A version is a snapshot - the state vector and the delete set, a few dozen bytes - kept in the
+    // document itself, so it syncs, merges and persists like the text does. It is captured before the
+    // entry is written, so it names the text and not the list it is about to join.
+    private void SaveVersion(BcrdtCollaborativeDocument document)
+    {
+        byte[] snapshot = BcrdtSnapshot.Capture(document.Crdt).Encode();
+
+        var version = new BcrdtMap();   // filled in detached, so it reaches the others as one update
+        version.Set("by", _me.Name);
+        version.Set("at", DateTimeOffset.Now);
+        version.Set("snapshot", snapshot);
+
+        document.Array("versions").Push(version);
+    }
+
+    // A restore is an ordinary edit, not a rewind: the smallest change that turns the current text into
+    // the old one, which merges with whatever the others are typing meanwhile.
+    private void Restore(BcrdtCollaborativeDocument document, BcrdtMap version)
+    {
+        if (TextAt(document, version) is { } text) BcrdtTextSynchronizer.Apply(document.Text("body"), text);
+        _preview = null;
+    }
+
+    // The text as it was, rebuilt from the document's own history - or null while this replica does not
+    // yet hold everything the version names.
+    private static string? TextAt(BcrdtCollaborativeDocument document, BcrdtMap version)
+    {
+        BcrdtSnapshot snapshot = BcrdtSnapshot.Decode(version.Get("snapshot") as byte[] ?? []);
+        if (!document.Crdt.GetStateVector().IsSupersetOf(snapshot.StateVector)) return null;
+
+        using BcrdtDocument then = BcrdtSnapshot.RestoreDocument(document.Crdt, snapshot);
+        return then.GetText("body").ToString();
+    }
+}

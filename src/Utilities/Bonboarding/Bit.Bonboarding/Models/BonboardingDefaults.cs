@@ -52,4 +52,7 @@ public static class BonboardingDefaults
     public const bool AutoFocus = true;
 
     public const BonboardingPlacement Placement = BonboardingPlacement.Auto;
+
+    /// <summary>How long a "remind me later" keeps automatic starts away when no duration is given: a day.</summary>
+    public static readonly TimeSpan SnoozeDuration = TimeSpan.FromDays(1);
 }

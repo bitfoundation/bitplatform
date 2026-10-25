@@ -73,14 +73,24 @@ public static class BcrdtTextSynchronizer
     /// <param name="desired">The value after the edit.</param>
     /// <param name="caretAfterEdit">
     /// Where the caret sits in <paramref name="desired"/> after the edit - the input's
-    /// <c>selectionEnd</c>. A user's edit ends at the caret, so everything after it is unchanged
-    /// text. When the hint is inconsistent with the two values it is ignored.
+    /// <c>selectionEnd</c>. A user's edit ends at the caret, so of the places the edit could have
+    /// happened, the one ending there - or nearest to it - is chosen.
     /// </param>
     /// <remarks>
+    /// <para>
     /// Typing an <c>a</c> after the first character of <c>aaa</c> produces <c>aaaa</c>, which the
     /// plain diff reports as an insertion at the end. The text is the same either way, but the
     /// position is not: a collaborator's concurrent insertion between the original characters would
     /// land on the wrong side of it, and their cursor anchors would move. The caret disambiguates.
+    /// </para>
+    /// <para>
+    /// The caret only ever chooses among edits of the smallest size; it never makes the edit larger.
+    /// It is not always next to the change: a value set by script (a browser extension correcting a
+    /// word, say) leaves the caret at the end of the text, and the deleting half of a drag and drop
+    /// leaves it where the text is about to be dropped. An edit stretched to reach the caret would
+    /// then replace everything in between - every concurrent edit there lost, every cursor anchored
+    /// there moved.
+    /// </para>
     /// </remarks>
     public static BcrdtTextEdit Diff(string current, string desired, int caretAfterEdit)
     {
@@ -92,20 +102,28 @@ public static class BcrdtTextSynchronizer
             return new BcrdtTextEdit(0, 0, string.Empty);
         }
 
-        int suffix = desired.Length - caretAfterEdit;
-        if (caretAfterEdit < 0 ||
-            caretAfterEdit > desired.Length ||
-            suffix > current.Length ||
-            !current.AsSpan(current.Length - suffix).SequenceEqual(desired.AsSpan(caretAfterEdit)))
+        int limit = Math.Min(current.Length, desired.Length);
+
+        // The longest common prefix and the longest common suffix, each on its own. A smallest edit
+        // keeps `kept` characters in all, as any split of them into a prefix and a suffix no longer
+        // than those two: the edit can slide across a run of repeated characters without changing
+        // the result, and only there does the caret have anything to choose.
+        int longestPrefix = 0;
+        while (longestPrefix < limit && current[longestPrefix] == desired[longestPrefix]) longestPrefix++;
+
+        int longestSuffix = 0;
+        while (longestSuffix < limit &&
+               current[current.Length - 1 - longestSuffix] == desired[desired.Length - 1 - longestSuffix])
         {
-            return Diff(current, desired);
+            longestSuffix++;
         }
 
-        int maxPrefix = Math.Min(current.Length - suffix, caretAfterEdit);
-        int prefix = 0;
-        while (prefix < maxPrefix && current[prefix] == desired[prefix]) prefix++;
+        int kept = Math.Min(limit, longestPrefix + longestSuffix);
 
-        return Build(current, desired, prefix, suffix);
+        // The edit ends at desired.Length - suffix; ending at the caret means prefix = caret - (desired.Length - kept).
+        int prefix = Math.Clamp(caretAfterEdit - (desired.Length - kept), kept - longestSuffix, Math.Min(longestPrefix, kept));
+
+        return Build(current, desired, prefix, kept - prefix);
     }
 
     private static BcrdtTextEdit Build(string current, string desired, int prefix, int suffix)

@@ -13,6 +13,12 @@ internal interface IBlazeDbIndexStore<TRow>
     void Clear();
 
     /// <summary>
+    /// How many entries the store holds - one per row it indexes, nulls included. For integrity checks
+    /// rather than queries: a hash index counts it bucket by bucket.
+    /// </summary>
+    int Count { get; }
+
+    /// <summary>
     /// Throws <see cref="BlazeDbUniqueConstraintViolationException"/> if storing <paramref name="row"/>
     /// would duplicate an indexed value. <paramref name="replacedSeq"/> is the sequence number of
     /// the row being replaced (0 when inserting), whose entry is about to be removed and so must

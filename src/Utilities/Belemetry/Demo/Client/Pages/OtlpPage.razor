@@ -74,22 +74,52 @@
         <code>Headers</code> are added to every request - typically the vendor's API key.
         <code>Compression = BelemetryCompression.Gzip</code> sends <code>Content-Encoding: gzip</code> (in the browser
         through <code>CompressionStream</code>, except for the final batch sent while the page unloads, which cannot
-        wait for it). <code>Timeout</code> bounds one export request (10 s, the OTLP default). Failed requests are
-        retried with backoff, honoring <code>Retry-After</code>, and kept for later with the
-        <a href="/persistence">offline persistence</a>. <code>MinimumLogLevel</code> is the per-exporter counterpart
+        wait for it). <code>Timeout</code> bounds one export request (10 s, the OTLP default). .NET exports carry
+        <code>User-Agent: Bit.Belemetry/&lt;version&gt;</code> unless a header sets one (a page cannot set it).
+        <code>MinimumLogLevel</code> is the per-exporter counterpart
         of a logging provider's level: this exporter gets the plain log records at or above it while the others get
         everything - one backend for errors, another for the full picture, from one pipeline. Events (page views,
         interactions, web vitals, custom events, exceptions), spans and metrics are not logs to a log level and always pass.
     </p>
     <div class="bb-note bb-note-warn">
-        Headers the browser script uses are visible to anyone who opens the page. Never put a credential in an
-        exporter the browser exports to: set <code>IncludeInBrowser = false</code> on it and give the browser a
-        credential-free route (a collector in front of the vendor), or use the
-        <a href="/transport">Relay transport</a>, which hands browser records to .NET. Relay only hides the key when
-        .NET runs outside the browser - Blazor Server or Hybrid. In WebAssembly the .NET pipeline is itself in the
-        browser, and so is its configuration.
+        Headers the browser script uses are visible to anyone who opens the page. A server (Blazor Server, static
+        SSR, the server half of Auto) therefore keeps <code>Headers</code> (and
+        <code>OTEL_EXPORTER_OTLP_HEADERS</code>) to itself and hands the script only <code>BrowserHeaders</code>, for a
+        key that is meant to be public - and logs a startup warning naming an exporter whose page now exports without
+        the headers it has. In WebAssembly and Hybrid the configuration already lives on the device, so the script
+        sends <code>Headers</code> too, with <code>BrowserHeaders</code> on top: never put a credential in a client's
+        exporter. Give the browser a credential-free route (a collector in front of the vendor,
+        <code>IncludeInBrowser = false</code> on the keyed exporter), or use the <a href="/transport">Relay transport</a>,
+        which hands browser records to .NET - which only hides the key when .NET runs outside the browser, on Blazor
+        Server or in Hybrid.
     </div>
     <CodeSnippet Code="@HeadersCode" Language="C#" />
+    <CodeSnippet Code="@BrowserHeadersCode" Language="C#" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Retries and partial success</h3>
+    <p>
+        The OTLP specification says which failures are worth another try, and Belemetry follows it on both sides: a
+        network error and the statuses below are retried with backoff (honoring <code>Retry-After</code>) and then kept
+        by the <a href="/persistence">offline persistence</a>; any other status - a 400 for a malformed body, a 401 or
+        403 for a wrong key, 408 or 500 included - is the backend's final word, and the request is dropped with a
+        warning in the <code>Bit.Belemetry</code> log category.
+    </p>
+    <div class="demo-badges">
+        <span class="bb-badge">429 Too Many Requests</span>
+        <span class="bb-badge">502 Bad Gateway</span>
+        <span class="bb-badge">503 Service Unavailable</span>
+        <span class="bb-badge">504 Gateway Timeout</span>
+    </div>
+    <p>
+        A receiver may also accept a request and refuse part of it, answering <code>200</code> with a
+        <code>partial_success</code> that counts the rejected spans, log records or data points. The specification
+        forbids retrying those, so the .NET exporter reports them as a warning in the <code>Bit.Belemetry</code>
+        category and counts them as <code>rejected</code> on the <code>Bit.Belemetry</code> meter (see
+        <a href="/dotnet">.NET instrumentation</a>); the rest of the request counts as delivered.
+    </p>
+    <CodeSnippet Code="@PartialSuccessCode" Language="JSON" />
 </div>
 
 <div class="bb-card">
@@ -107,6 +137,7 @@
         <table class="bb-table">
             <thead><tr><th scope="col">Variable</th><th scope="col">Effect</th></tr></thead>
             <tbody>
+                <tr><td><code>OTEL_SDK_DISABLED</code></td><td><code>true</code> (any case) turns Belemetry off entirely - an operator's kill switch, so unlike the others it wins over code</td></tr>
                 <tr><td><code>OTEL_SERVICE_NAME</code></td><td><code>service.name</code>, when <code>ServiceName</code> is not set</td></tr>
                 <tr><td><code>OTEL_RESOURCE_ATTRIBUTES</code></td><td>Extra resource attributes (<code>k=v,k2=v2</code>)</td></tr>
                 <tr><td><code>OTEL_EXPORTER_OTLP_ENDPOINT</code></td><td>Adds an OTLP exporter when none is configured, and fills unset endpoints</td></tr>
@@ -127,8 +158,9 @@
         The dashboard is an OTLP receiver with a UI - the quickest way to see traces, logs and metrics locally. Use its
         OTLP/HTTP endpoint with protobuf. The browser posts to it from your app's origin, so allow that origin with
         <code>DASHBOARD__OTLP__CORS__ALLOWEDORIGINS</code> (and <code>DASHBOARD__OTLP__CORS__ALLOWEDHEADERS</code> if
-        you send headers). If the dashboard requires an OTLP API key, the browser would have to carry it - keep the
-        browser on the Relay transport or on an unsecured local endpoint.
+        you send headers). If the dashboard requires an OTLP API key, the browser would have to carry it - a server
+        does not hand the key from <code>OTEL_EXPORTER_OTLP_HEADERS</code> to the page, so keep the browser on the
+        Relay transport or on an unsecured local endpoint.
     </p>
     <CodeSnippet Code="@AspireShellCode" Language="Shell" />
     <CodeSnippet Code="@AspireCode" Language="C#" />
@@ -249,6 +281,25 @@
             // (Blazor Server, Hybrid) or a credential-free collector route instead.
             otlp.IncludeInBrowser = false;
         });
+        """;
+
+    private const string BrowserHeadersCode = """
+        // A Blazor Web App: the server exports with the secret, the page with a key made to be public.
+        options.AddOtlpExporter("https://otlp.vendor.example", otlp =>
+        {
+            otlp.Headers["x-api-key"] = builder.Configuration["Telemetry:ApiKey"]!;   // stays on the server
+            otlp.BrowserHeaders["x-ingest-key"] = "public-browser-key";            // written into the page
+        });
+        """;
+
+    private const string PartialSuccessCode = """
+        // 200 OK from /v1/logs: accepted, except for two records the receiver refused for good.
+        {
+          "partialSuccess": {
+            "rejectedLogRecords": "2",
+            "errorMessage": "log record attribute value exceeds the 4096-byte limit"
+          }
+        }
         """;
 
     private const string EnvCode = """

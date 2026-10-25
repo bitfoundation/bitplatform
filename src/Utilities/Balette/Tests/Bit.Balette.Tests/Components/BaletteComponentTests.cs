@@ -40,6 +40,14 @@ public class BaletteComponentTests : BunitContext
     }
 
     [TestMethod]
+    public void The_dialog_says_when_its_browser_layer_listens_for_keys()
+    {
+        var cut = RenderPalette();
+
+        cut.WaitForAssertion(() => Assert.AreEqual("true", cut.Find("dialog").GetAttribute("data-ready")));
+    }
+
+    [TestMethod]
     public async Task Opening_lists_registered_commands_grouped()
     {
         _service.Register(
@@ -759,5 +767,33 @@ public class BaletteComponentTests : BunitContext
             Assert.AreEqual(3, args[2]);
             Assert.AreEqual(4, args[3]);
         });
+    }
+
+    /// <summary>
+    /// On Blazor Server every keystroke is a round trip, and a box whose value the component writes itself
+    /// (<c>value="@_query" @oninput</c>) gets the query of each render written back over the keys typed since: typed
+    /// fast over a slow link, letters vanish. A binding marks the value as the browser's: its <c>oninput</c> handler
+    /// carries the attribute it updates, and the renderer takes the browser's value from each event rather than
+    /// writing its own over it. bUnit sends no browser value with its events, so the flag is what can be checked here.
+    /// </summary>
+    [TestMethod]
+    public async Task The_query_box_leaves_typed_text_to_the_browser()
+    {
+        var cut = RenderPalette();
+        await cut.InvokeAsync(() => _service.OpenAsync());
+
+#pragma warning disable BL0006 // the render tree is the only place the flag the renderer acts on is visible
+        var current = typeof(Microsoft.AspNetCore.Components.RenderTree.Renderer).GetMethod("GetCurrentRenderTreeFrames",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, [typeof(int)])!;
+        var frames = (Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame>)current.Invoke(Renderer, [cut.ComponentId])!;
+        var oninput = frames.Array.Take(frames.Count)
+            .Single(f => f.FrameType == Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Attribute && f.AttributeName == "oninput");
+        Assert.AreEqual("value", oninput.AttributeEventUpdatesAttributeName);
+#pragma warning restore BL0006
+
+        await cut.InvokeAsync(() => cut.Find("[data-balette=input]").Input("clo"));
+        Assert.AreEqual("clo", cut.Instance.Query);
+        await cut.InvokeAsync(() => cut.Instance.SetQueryAsync("save"));
+        Assert.AreEqual("save", cut.Find("[data-balette=input]").GetAttribute("value"), "a query set from code still reaches the box");
     }
 }

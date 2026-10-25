@@ -5,7 +5,8 @@ import { Severity, type Attributes } from '../model';
 import { createLog } from '../records';
 import { absoluteUrl, guard, type InstrumentationContext, type Uninstall } from './context';
 
-export type NavigationType = 'initial' | 'push' | 'replace' | 'pop' | 'hash' | 'manual';
+/** `restore`: the page came back from the back/forward cache - a new visit, though no navigation happened. */
+export type NavigationType = 'initial' | 'push' | 'replace' | 'pop' | 'hash' | 'manual' | 'restore';
 
 export interface PageViewOptions {
     name?: string | null;
@@ -68,8 +69,9 @@ export function trackPageView(ctx: InstrumentationContext, type: NavigationType,
     const key = pageKey(url, ctx.config.pageViews.trackHashChanges);
     const time = now();
     if (key === state.key && (options.onlyIfChanged || time - state.time < DEDUPE_MS)) return false;
-    // The previous page's visit ends where the next one starts.
-    trackPageVisitTime(ctx, time);
+    // The previous page's visit ends where the next one starts - except after a restore, where it ended when the page
+    // was hidden on its way into the back/forward cache, and the time spent there was nobody's visit.
+    if (type !== 'restore') trackPageVisitTime(ctx, time);
     const referrer = state.url || document.referrer;
     state.key = key;
     state.url = url;
@@ -139,7 +141,12 @@ export function installPageViews(ctx: InstrumentationContext): Uninstall {
     const onPop = guard(() => trackPageView(ctx, 'pop', { onlyIfChanged: true }));
     const onHash = guard(() => trackPageView(ctx, 'hash', { onlyIfChanged: true }));
     const onEnhancedLoad = guard(() => trackPageView(ctx, 'push', { onlyIfChanged: true }));
+    // No history event fires when the back/forward cache brings a page back, yet the user is looking at it again.
+    const onRestore = guard((event: PageTransitionEvent) => {
+        if (event.persisted) trackPageView(ctx, 'restore');
+    });
     addEventListener('popstate', onPop);
+    addEventListener('pageshow', onRestore);
     if (ctx.config.pageViews.trackHashChanges) addEventListener('hashchange', onHash);
 
     // The last page's visit has no next page view to end it; the hide is the only chance, and it comes before the
@@ -169,6 +176,7 @@ export function installPageViews(ctx: InstrumentationContext): Uninstall {
         if (h.pushState === pushState) h.pushState = originalPush;
         if (h.replaceState === replaceState) h.replaceState = originalReplace;
         removeEventListener('popstate', onPop);
+        removeEventListener('pageshow', onRestore);
         removeEventListener('hashchange', onHash);
         removeEventListener('load', hookBlazor);
         if (offHidden) offHidden();

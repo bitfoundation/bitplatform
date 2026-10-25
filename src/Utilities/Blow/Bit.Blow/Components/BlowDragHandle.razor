@@ -10,7 +10,7 @@
 
 @code {
     [CascadingParameter] private BlowNodeContext NodeContext { get; set; } = default!;
-    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.Context)] private IBlowContext Flow { get; set; } = default!;
 
     [Parameter] public string? Class { get; set; }
     [Parameter] public string? Style { get; set; }

@@ -1,0 +1,93 @@
+﻿@page "/sortable/multi-select"
+@using System.Globalization
+
+<PageTitle>Sortable - Dragging several items · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Sortable - Dragging several items</h1>
+    <p class="bb-subtitle">
+        A drag carries one item, and that item can be a list. Tick some cards and drag one of them: its
+        <code>ItemFactory</code> hands over the whole selection when the drag starts, <code>IsDraggingOverride</code>
+        marks every selected card as dragged, and the archive receives them all. A card that is not ticked drags alone.
+        The cards set <code>UseCustomDragLayer</code>, and a <code>BdndDragLayer</code> draws the badge that follows
+        the pointer - "3 cards" - in place of the browser's picture of the one card that was grabbed. The keyboard
+        does the same: Space on a ticked card picks the selection up (the layer asks
+        <code>Monitor.GetDragInput()</code> and draws nothing for a keyboard drag, which has no pointer to follow).
+    </p>
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">@_selected.Count selected · @_archived.Count archived</span>
+        <button type="button" class="btn btn-secondary" disabled="@(_archived.Count == 0)" @onclick="Restore">Put them back</button>
+    </div>
+
+    <BdndProvider>
+        <div class="multi-board">
+            <ul class="multi-list" aria-label="Cards">
+                @foreach (var card in _cards)
+                {
+                    <li class="multi-row" @key="card">
+                        <input type="checkbox" class="multi-check" checked="@_selected.Contains(card)"
+                               aria-label="@($"Select {card}")" @onchange="() => Toggle(card)" />
+                        <BdndDraggable TItem="IReadOnlyList<string>" Type="cards" Label="@card" UseCustomDragLayer="true"
+                                       ItemFactory="@(() => _selected.Contains(card) ? _cards.Where(_selected.Contains).ToList() : [card])"
+                                       IsDraggingOverride="@(m => m.GetItem<IReadOnlyList<string>>()?.Contains(card) == true)"
+                                       class="@($"multi-card {(_selected.Contains(card) ? "multi-card--selected" : "")}")" Context="drag">
+                            @card
+                        </BdndDraggable>
+                    </li>
+                }
+            </ul>
+
+            <BdndDropTarget TItem="IReadOnlyList<string>" Accept="cards" Label="the archive" class="multi-archive"
+                            OnDrop="@(e => Archive(e.Item!))" Context="archive">
+                @(archive.IsOver ? $"Release to archive {archive.Item?.Count} card(s)" : "Archive")
+            </BdndDropTarget>
+        </div>
+
+        @* The preview of a drag: next to the pointer, saying how many cards it carries. *@
+        <BdndDragLayer TItem="IReadOnlyList<string>" Accept="cards" Context="layer">
+            @if (layer.IsDragging && layer.Monitor.GetDragInput() != BdndDragInput.Keyboard && layer.ClientOffset is { } at && layer.Item is { } cards)
+            {
+                <div class="multi-preview" style="@($"left:{Px(at.X + 12)};top:{Px(at.Y + 12)};")">
+                    @(cards.Count == 1 ? cards[0] : $"{cards.Count} cards")
+                </div>
+            }
+        </BdndDragLayer>
+    </BdndProvider>
+
+    <p class="demo-caption multi-archived">Archived: @(_archived.Count == 0 ? "nothing yet" : string.Join(", ", _archived))</p>
+</div>
+
+<DemoCode />
+
+@code {
+    private static readonly string[] All = ["Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot"];
+
+    private readonly List<string> _cards = [.. All];
+    private readonly HashSet<string> _selected = [];
+    private readonly List<string> _archived = [];
+
+    private void Toggle(string card)
+    {
+        if (_selected.Add(card) is false) _selected.Remove(card);
+    }
+
+    private void Archive(IReadOnlyList<string> cards)
+    {
+        foreach (var card in cards) _cards.Remove(card);
+        _selected.ExceptWith(cards);
+        _archived.AddRange(cards);
+    }
+
+    private void Restore()
+    {
+        _cards.Clear();
+        _cards.AddRange(All);
+        _archived.Clear();
+    }
+
+    // the invariant culture: a decimal comma would be invalid CSS
+    private static string Px(double v) => v.ToString("0.#", CultureInfo.InvariantCulture) + "px";
+}

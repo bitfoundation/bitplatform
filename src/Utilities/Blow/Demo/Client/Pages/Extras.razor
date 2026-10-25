@@ -3,18 +3,53 @@
 <PageTitle>Theming &amp; Extras · Blow</PageTitle>
 
 <div class="bb-intro">
-    <h1>Theming, Viewport Portal, Single Resize &amp; Graph Utils</h1>
+    <h1>Theming, Node Origin, Portal, Resize Control &amp; Graph Utils</h1>
     <p class="bb-subtitle">
-        Switch the <strong>color mode</strong>, toggle <strong>loose connections</strong> (connect any handle
-        to any handle) and <strong>node origin</strong> (center vs top-left). The teal box is a
-        <strong>BlowViewportPortal</strong> annotation (pans/zooms with the graph). The green node uses a single
-        <strong>BlowNodeResizeControl</strong>. Select a node and click <em>Neighbors</em> to use <strong>BlowGraphUtils</strong>.
+        Canvas-wide options and small add-ons in one flow: <code>ColorMode</code>, <code>ConnectionMode</code> and
+        <code>NodeOrigin</code> on the canvas, a <code>BlowViewportPortal</code> that draws in flow space, a single
+        <code>BlowNodeResizeControl</code>, and the pure <code>BlowGraphUtils</code> helpers that answer questions
+        about the graph and the viewport.
     </p>
 </div>
 
-<DemoCode />
-
 <div class="bb-demo blow-demo bb-page-wide">
+    <div class="bb-demo-bar example-toolbar">
+        <label>
+            Colour mode
+            <select @bind="_mode">
+                <option value="site">Site theme</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="system">System</option>
+            </select>
+        </label>
+        <label><input type="checkbox" @bind="_loose" /> Loose connections</label>
+        <label>
+            Node origin
+            <select @bind="_origin">
+                <option value="top-left">Top-left (0, 0)</option>
+                <option value="center">Centre (0.5, 0.5)</option>
+                <option value="bottom-right">Bottom-right (1, 1)</option>
+            </select>
+        </label>
+        <label>
+            Attribution
+            <select @bind="_attribution">
+                <option value="bottom-right">Bottom right</option>
+                <option value="top-right">Top right</option>
+                <option value="hidden">Hidden</option>
+            </select>
+        </label>
+        <label><input type="checkbox" @bind="_keepAspectRatio" /> Resize keeps aspect ratio</label>
+        <label><input type="checkbox" @bind="_gripAlwaysVisible" /> Grip always visible</label>
+    </div>
+    <div class="bb-demo-bar example-toolbar">
+        <button class="btn btn-secondary" @onclick="ShowNeighbors">Neighbours</button>
+        <button class="btn btn-secondary" @onclick="FitSelectionAsync">Fit selection</button>
+        <button class="btn btn-secondary" @onclick="LinkSourceToSink">Add edge Source → Sink</button>
+        <button class="btn btn-secondary" @onclick="RerouteEdge">Reconnect edge e3-4</button>
+        <span class="bb-muted">@_info</span>
+    </div>
     <div class="demo-canvas">
         <BlowCanvas @ref="_flow"
                     Nodes="_nodes"
@@ -23,15 +58,26 @@
                     ColorMode="Mode"
                     Class="@CanvasClass"
                     ConnectionMode="_loose ? BlowConnectionMode.Loose : BlowConnectionMode.Strict"
-                    NodeOrigin="_centerOrigin ? new BlowXYPosition(0.5, 0.5) : new BlowXYPosition(0, 0)"
-                    HideAttribution="_hideAttribution"
-                    OnNodeClick="n => _selected = n">
+                    NodeOrigin="Origin"
+                    HideAttribution="HideAttribution"
+                    AttributionPosition="AttributionPosition"
+                    OnSelectionChange="OnSelectionChange">
             <NodeTemplate Context="node">
                 @if (node.Type == "sized")
                 {
-                    <BlowNodeResizeControl Position="BlowResizeDirection.BottomRight" MinWidth="120" MinHeight="60" />
+                    @* One grip in one corner, where BlowNodeResizer would put eight controls round the node. The
+                       limits share the 2:1 shape the node starts with, so a node resized with its aspect ratio kept
+                       from the start can reach both of them. *@
+                    <BlowNodeResizeControl Position="BlowResizeDirection.BottomRight"
+                                           MinWidth="120" MinHeight="60" MaxWidth="320" MaxHeight="160"
+                                           KeepAspectRatio="_keepAspectRatio"
+                                           Visible="GripVisible"
+                                           Color="#16a34a" />
                     <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
-                    <div style="display:flex;align-items:center;justify-content:center;height:100%;font-weight:600;">@node.Label</div>
+                    <div class="ex-sized">
+                        <strong>@node.Label</strong>
+                        <span>@SizeOf(node)</span>
+                    </div>
                     <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
                 }
                 else
@@ -45,67 +91,96 @@
                 <BlowControls />
                 <BlowMiniMap />
 
+                @* Drawn inside the zoomed layer, in flow coordinates: the note stays put on the graph, and each dot
+                   marks the point a node's Position names - redrawn as the node is dragged. *@
                 <BlowViewportPortal>
-                    <div class="portal-annotation">Region A &middot; flow-space annotation</div>
+                    <div class="ex-note">Region A &middot; drawn through BlowViewportPortal</div>
+                    @foreach (var node in _nodes)
+                    {
+                        <div class="ex-pin" style="@PinStyle(node)"></div>
+                    }
                 </BlowViewportPortal>
-
-                <BlowPanel Position="top-left">
-                    <div class="toolbar">
-                        <label>
-                            Colour mode
-                            <select @bind="_mode">
-                                <option value="site">Site theme</option>
-                                <option value="light">Light</option>
-                                <option value="dark">Dark</option>
-                                <option value="system">System</option>
-                            </select>
-                        </label>
-                        <label><input type="checkbox" @bind="_loose" /> Loose connections</label>
-                        <label><input type="checkbox" @bind="_centerOrigin" /> Center node origin</label>
-                        <label><input type="checkbox" @bind="_hideAttribution" /> Hide attribution</label>
-                        <button class="btn btn-primary" @onclick="ShowNeighbors">Neighbors of selected</button>
-                        <div class="hint">@_info</div>
-                    </div>
-                </BlowPanel>
             </ChildContent>
         </BlowCanvas>
     </div>
 </div>
 
+<DemoCode />
+
+<DemoNotes>
+    <TryIt>
+        <li>Pick a <strong>Colour mode</strong>: <em>Light</em> and <em>Dark</em> force the canvas's palette whatever the site's theme, <em>System</em> follows the operating system's light or dark setting, and <em>Site theme</em> leaves it to this site's theme toggle.</li>
+        <li>Drag from the bottom handle of <em>Own origin</em> onto the bottom handle of <em>Resize me</em>: both are source handles, so the canvas refuses it. Tick <strong>Loose connections</strong> and the same drag connects.</li>
+        <li>Change <strong>Node origin</strong>: the red dots mark each node's <code>Position</code>, and the nodes move round them so the dot names their top-left corner, centre or bottom-right corner. <em>Own origin</em> stays centred on its dot whatever you pick.</li>
+        <li>Move the "bit Blow" badge to the top-right corner, or hide it, with <strong>Attribution</strong>.</li>
+        <li><strong>Click</strong> the green node and <strong>drag</strong> the small green square at its bottom-right corner to resize it, between 120 &times; 60 and 320 &times; 160; the node shows its size as it changes. Tick <strong>Resize keeps aspect ratio</strong> and each drag keeps the shape the node had when it began; tick <strong>Grip always visible</strong> to show the square without selecting the node.</li>
+        <li><strong>Drag the background</strong> and <strong>scroll</strong>: the dashed note and the dots pan and zoom with the graph, and a dot follows its node when you drag the node.</li>
+        <li><strong>Click</strong> one node and press <strong>Neighbours</strong> to list the nodes feeding it, the nodes it feeds and how many edges touch it.</li>
+        <li>Select a node or two (<strong>Shift+click</strong> adds to the selection) and press <strong>Fit selection</strong>: the view eases to frame them, and the line beside the buttons shows their bounds and the zoom. With nothing selected it frames every node.</li>
+        <li>Press <strong>Add edge Source → Sink</strong>: an edge appears with the id <code>bit-blow-1--4</code>. Press it again and nothing is added, because that connection already exists.</li>
+        <li>Press <strong>Reconnect edge e3-4</strong> to move the edge from <em>Own origin</em> to <em>Sink</em> over to <em>Resize me</em>, and again to move it back. It keeps its id both ways.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>ColorMode</code> is <code>Light</code> (the default), <code>Dark</code> or <code>System</code>, which follows <code>prefers-color-scheme</code>. <em>Site theme</em> is this demo's own wiring rather than a library feature: the canvas stays <code>Light</code> and the site's stylesheet copies the library's dark palette in under its dark theme. The <code>own-color-mode</code> class keeps that rule off a canvas that picks its own mode.</li>
+        <li><code>ConnectionMode</code> is <code>Strict</code> by default, which only joins a source handle to a target handle; <code>Loose</code> lets any handle connect to any other.</li>
+        <li><code>NodeOrigin</code> on the canvas (default <code>(0, 0)</code>, the top-left corner) says which point of a node its <code>Position</code> names. A node's own <code>BlowNode.Origin</code> overrides it: <em>Own origin</em> sets <code>(0.5, 0.5)</code>. The layout, align and clipboard helpers honour both.</li>
+        <li><code>HideAttribution</code> removes the badge and <code>AttributionPosition</code> (default <code>BottomRight</code>) moves it.</li>
+        <li><code>BlowViewportPortal</code> renders its content inside the canvas's zoomed layer, so you place it with flow coordinates - here a CSS <code>transform</code> - and it pans and zooms with the nodes. The dots are drawn from each node's <code>Position</code>, so they move as the canvas moves the nodes.</li>
+        <li><code>BlowNodeResizeControl</code> is a single resize control, where <code>BlowNodeResizer</code> renders all eight. <code>Position</code> picks the corner or side (<code>BottomRight</code> by default); <code>MinWidth</code>/<code>MinHeight</code> (default 40 &times; 30) and <code>MaxWidth</code>/<code>MaxHeight</code> (unbounded by default) limit the size; <code>KeepAspectRatio</code> makes the dragged axis drive the other; <code>Color</code> paints the square (<code>var(--bit-blow-node-selected)</code> by default); and <code>Visible</code> is null by default, which shows the control only while the node is selected. Resizing writes the node's <code>Width</code> and <code>Height</code>.</li>
+        <li><code>OnSelectionChange</code> hands the page the selected nodes and edges whenever the selection changes; the buttons act on what it last reported.</li>
+        <li><code>BlowGraphUtils.GetIncomers</code>, <code>GetOutgoers</code> and <code>GetConnectedEdges</code> read the neighbourhood straight from the two lists.</li>
+        <li><code>BlowGraphUtils.GetNodesBounds</code> returns the rectangle round the nodes, and <code>GetViewportForBounds(bounds, paneWidth, paneHeight, minZoom, maxZoom, padding)</code> the viewport that frames it in a pane of the canvas's <code>PaneSize</code>; <code>SetViewportAsync(viewport, 300)</code> eases there. <code>FitBoundsAsync</code> does the same in one call - the helpers are for when you need the numbers, or have no canvas at all.</li>
+        <li><code>BlowGraphUtils.AddEdge(connection, edges)</code> appends an edge for a <code>BlowConnection</code> unless an equivalent one exists, with the id <code>BuildEdgeId</code> derives from the wiring - the same id the canvas gives a connection you drag.</li>
+        <li><code>BlowGraphUtils.ReconnectEdge(oldEdge, newConnection, edges)</code> rewires an edge in place and keeps its <code>Id</code>, as the canvas does when you drag the end of a selected edge.</li>
+        <li>The helpers are pure functions over the lists the canvas renders: an edit made in a button's handler is drawn when the page re-renders after it.</li>
+    </HowItWorks>
+</DemoNotes>
+
 <style>
-    .portal-annotation {
-        position:absolute; transform:translate(440px, 40px);
+    /* Inside the graph's bounds - the fit only measures nodes, so anything outside them is cut off at the edge. */
+    .ex-note {
+        position:absolute; transform:translate(400px, 90px); max-width:110px;
         background:rgba(13,148,136,0.12); border:1px dashed #0d9488; color:color-mix(in srgb, #0d9488 70%, var(--bit-blow-text));
-        padding:6px 10px; border-radius:6px; font-size:12px; white-space:nowrap; pointer-events:none;
+        padding:6px 10px; border-radius:6px; font-size:12px; pointer-events:none;
     }
-    .toolbar { display:flex; flex-direction:column; gap:5px; padding:8px 10px; font-size:13px; color:var(--bit-blow-text); background:var(--bit-blow-surface-translucent); border:1px solid var(--bit-blow-border); border-radius:6px; }
-    .toolbar label { display:flex; align-items:center; gap:6px; white-space:nowrap; }
-    .toolbar .hint { font-size:12px; color:var(--bit-blow-text-muted); max-width:220px; }
+    /* Centred on its point, and above even a selected node (raised to z-index 1000), whose corner it marks. */
+    .ex-pin {
+        position:absolute; left:-5px; top:-5px; width:10px; height:10px; box-sizing:border-box;
+        border-radius:50%; background:#e11d48; border:2px solid var(--bit-blow-surface);
+        pointer-events:none; z-index:1100;
+    }
+    .ex-sized { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; height:100%; }
+    .ex-sized span { font-size:11px; color:var(--bit-blow-text-muted); }
 </style>
 
 @code {
     private BlowCanvas? _flow;
-    private List<BlowNode> _nodes = new();
-    private List<BlowEdge> _edges = new();
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
 
     private bool _loose;
-    private bool _centerOrigin;
-    private bool _hideAttribution;
+    private bool _keepAspectRatio;
+    private bool _gripAlwaysVisible;
+    private string _origin = "top-left";
+    private string _attribution = "bottom-right";
 
     // "site" leaves the canvas to this site's light/dark toggle; any other choice is the canvas's own
     // ColorMode, and the own-color-mode class tells the site's stylesheet to keep out of it.
     private string _mode = "site";
+
+    private IReadOnlyList<BlowNode> _selection = [];
     private BlowNode? _selected;
-    private string _info = "No node selected.";
+    private string _info = "Select a node, then use a button.";
 
     protected override void OnInitialized()
     {
         _nodes =
         [
             new BlowNode { Id = "1", Type = "input",  Label = "Source", Position = new(240, 30) },
-            new BlowNode { Id = "2", Type = "sized",  Label = "Resize ↘", Position = new(120, 170), Width = 150, Height = 70,
-                       Style = "background:color-mix(in srgb, #16a34a 18%, var(--bit-blow-node-bg));border-color:#16a34a;" },
-            new BlowNode { Id = "3",                  Label = "Node C", Position = new(400, 180) },
+            new BlowNode { Id = "2", Type = "sized",  Label = "Resize me", Position = new(110, 170), Width = 160, Height = 80,
+                           Style = "background:color-mix(in srgb, #16a34a 18%, var(--bit-blow-node-bg));border-color:#16a34a;" },
+            // Positioned by its centre whatever the canvas's NodeOrigin says, so it stays put when the others move.
+            new BlowNode { Id = "3",                  Label = "Own origin", Position = new(460, 200), Origin = new(0.5, 0.5) },
             new BlowNode { Id = "4", Type = "output", Label = "Sink",   Position = new(260, 320) },
         ];
 
@@ -127,12 +202,91 @@
 
     private string? CanvasClass => _mode == "site" ? null : "own-color-mode";
 
+    private BlowXYPosition Origin => _origin switch
+    {
+        "center" => new(0.5, 0.5),
+        "bottom-right" => new(1, 1),
+        _ => new(0, 0),
+    };
+
+    private bool HideAttribution => _attribution == "hidden";
+
+    private BlowPanelPosition AttributionPosition =>
+        _attribution == "top-right" ? BlowPanelPosition.TopRight : BlowPanelPosition.BottomRight;
+
+    // Null is the control's own default: shown only while the node is selected.
+    private bool? GripVisible => _gripAlwaysVisible ? true : null;
+
+    private static string SizeOf(BlowNode node) => $"{node.EffectiveSize.Width:0} × {node.EffectiveSize.Height:0}";
+
+    // Every node here is a root, so its Position is already in flow coordinates.
+    private static string PinStyle(BlowNode node) =>
+        $"transform:translate({Inv(node.Position.X)}px,{Inv(node.Position.Y)}px)";
+
+    private static string Inv(double v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    private void OnSelectionChange(BlowSelectionChange change)
+    {
+        _selection = change.Nodes;
+        _selected = change.Nodes.Count == 1 ? change.Nodes[0] : null;
+    }
+
+    private string NameOf(string id) => _nodes.Find(n => n.Id == id)?.Label ?? id;
+
     private void ShowNeighbors()
     {
-        if (_selected is null) { _info = "Select a node first."; return; }
+        if (_selected is null) { _info = "Select exactly one node first."; return; }
         var incomers = BlowGraphUtils.GetIncomers(_selected, _nodes, _edges).Select(n => n.Label ?? n.Id);
         var outgoers = BlowGraphUtils.GetOutgoers(_selected, _nodes, _edges).Select(n => n.Label ?? n.Id);
         var connected = BlowGraphUtils.GetConnectedEdges([_selected], _edges).Count;
         _info = $"{_selected.Label}: in [{string.Join(", ", incomers)}], out [{string.Join(", ", outgoers)}], {connected} edge(s).";
+    }
+
+    private async Task FitSelectionAsync()
+    {
+        if (_flow is null) return;
+
+        // Nothing selected frames the whole graph, as the control bar's fit button does.
+        var nodes = _selection.Count > 0 ? _selection : _nodes;
+        var pane = _flow.PaneSize;
+        if (nodes.Count == 0 || pane.IsEmpty) { _info = "Nothing to fit."; return; }
+
+        var bounds = BlowGraphUtils.GetNodesBounds(nodes);
+        var viewport = BlowGraphUtils.GetViewportForBounds(bounds, pane.Width, pane.Height, _flow.MinZoom, _flow.MaxZoom, padding: 0.2);
+        _info = $"Bounds {bounds.Width:0} × {bounds.Height:0} at ({bounds.X:0}, {bounds.Y:0}), framed at zoom {viewport.Zoom:0.##}.";
+        await _flow.SetViewportAsync(viewport, 300);
+    }
+
+    private void LinkSourceToSink()
+    {
+        if (!_nodes.Exists(n => n.Id == "1") || !_nodes.Exists(n => n.Id == "4"))
+        {
+            _info = "Source or Sink has been deleted.";
+            return;
+        }
+
+        var count = _edges.Count;
+        BlowGraphUtils.AddEdge(new BlowConnection("1", "4", null, null), _edges);
+        _info = _edges.Count > count
+            ? $"AddEdge added {_edges[^1].Id}."
+            : "AddEdge added nothing: Source and Sink are already connected.";
+    }
+
+    // Moves the far end of e3-4 between the Sink and the resize node, the way dragging that end of the edge would.
+    private void RerouteEdge()
+    {
+        var edge = _edges.Find(e => e.Id == "e3-4");
+        if (edge is null) { _info = "Edge e3-4 has been deleted."; return; }
+
+        var target = edge.Target == "4" ? "2" : "4";
+        if (!_nodes.Exists(n => n.Id == target)) { _info = $"{NameOf(target)} has been deleted."; return; }
+        if (_edges.Exists(e => e != edge && e.Source == edge.Source && e.Target == target))
+        {
+            _info = $"{NameOf(edge.Source)} is already connected to {NameOf(target)}.";
+            return;
+        }
+
+        BlowGraphUtils.ReconnectEdge(edge, new BlowConnection(edge.Source, target, edge.SourceHandle, null), _edges);
+        _info = $"ReconnectEdge moved e3-4 to {NameOf(target)}; it kept its id.";
     }
 }

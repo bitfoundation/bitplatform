@@ -94,6 +94,29 @@ public class CanvasApiTests : BunitContext
     }
 
     [TestMethod]
+    public void AnUncolouredMarkerFallsBackToTheEdgeColourWhereContextStrokeIsUnknown()
+    {
+        // WebKit has no context-stroke: it drops that declaration and keeps the colour before it, while the
+        // other engines take the later one. Without it every default arrowhead in Safari is invisible.
+        var edges = new List<BlowEdge>
+        {
+            new() { Id = "plain", Source = "a", Target = "b" },
+            new() { Id = "green", Source = "b", Target = "a", Stroke = "#16a34a" },
+            new() { Id = "closed", Source = "a", Target = "b", MarkerType = BlowMarkerType.ArrowClosed },
+            new() { Id = "red", Source = "b", Target = "a", MarkerColor = "tomato" },
+        };
+
+        var cut = Render(TwoNodes(), edges);
+
+        var styles = cut.FindAll("marker path").Select(p => p.GetAttribute("style")).ToList();
+        Assert.HasCount(4, styles, "an edge colour of its own needs a head of its own");
+        Assert.Contains("stroke:var(--bit-blow-edge-stroke);stroke:context-stroke", styles);
+        Assert.Contains("stroke:#16a34a;stroke:context-stroke", styles);
+        Assert.Contains("fill:var(--bit-blow-edge-stroke);stroke:var(--bit-blow-edge-stroke);fill:context-stroke;stroke:context-stroke", styles);
+        Assert.Contains((string?)null, styles, "an explicit marker colour needs no fallback");
+    }
+
+    [TestMethod]
     public void MarkersAreOnlyDeclaredForEdgesThatShowThem()
     {
         var edges = new List<BlowEdge> { new() { Id = "e", Source = "a", Target = "b", MarkerEnd = false } };

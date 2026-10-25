@@ -1,0 +1,33 @@
+﻿@implements IDisposable
+
+<p>
+    <button @onclick="Toggle">@(_timer is null ? "Start" : "Stop")</button>
+    <span>@_now.ToString("HH:mm:ss")</span>
+</p>
+
+@code {
+    private Timer? _timer;
+    private DateTime _now = DateTime.Now;
+
+    private void Toggle()
+    {
+        if (_timer is null)
+        {
+            _timer = new Timer(_ => InvokeAsync(() =>
+            {
+                _now = DateTime.Now;
+                StateHasChanged();
+            }), null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+        }
+        else
+        {
+            Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        _timer = null;
+    }
+}

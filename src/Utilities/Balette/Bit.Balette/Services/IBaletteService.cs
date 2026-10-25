@@ -36,33 +36,57 @@ public interface IBaletteService
     /// <summary>Looks up a command by id across all registrations.</summary>
     BaletteCommand? Find(string commandId);
 
+    /// <summary>Adds a mode, replacing one with the same prefix. Dispose the returned handle to remove it.</summary>
     IDisposable RegisterMode(BaletteCommandMode mode);
 
+    /// <summary>Adds an async source queried in the default mode. Dispose the returned handle to remove it.</summary>
     IDisposable RegisterSource(IBaletteSource source);
+
+    /// <summary>
+    /// Re-evaluates what depends on application state: every command's <see cref="BaletteCommand.IsVisible"/> predicate,
+    /// which global shortcuts are claimed, and an open palette's list. Call it after state those predicates read changed -
+    /// a selection, a signed-in user, the current route - so a command that just became available answers its shortcut
+    /// and one that just went away leaves its keys to the page. Registering, updating or removing a command refreshes
+    /// on its own.
+    /// </summary>
+    void Refresh()
+    {
+    }
 
     /// <summary>Opens the palette, optionally with an initial query (a mode prefix is honoured) or directly inside a command's page.</summary>
     Task OpenAsync(string? query = null, string? pageCommandId = null);
 
+    /// <summary>Closes the palette, cancelling a command that is still running.</summary>
     Task CloseAsync();
 
+    /// <summary>Opens the palette when it is closed and closes it when it is open.</summary>
     Task ToggleAsync();
 
     /// <summary>
     /// Executes a command programmatically as if selected - one from the registry, or one declared in the palette's
     /// markup or passed to its <c>Commands</c> parameter. A command that needs the palette (a page, a confirmation, a
-    /// prompt) opens it. Throws <see cref="KeyNotFoundException"/> for an unknown id.
+    /// prompt) opens it. Throws <see cref="KeyNotFoundException"/> for an unknown id, and rethrows what the handler
+    /// throws unless a <see cref="CommandFailed"/> subscriber set <see cref="BaletteCommandErrorEventArgs.Handled"/>.
     /// </summary>
     Task ExecuteAsync(string commandId);
 
     /// <summary>Fired whenever the registry changes.</summary>
     event Action? CommandsChanged;
 
+    /// <summary>Fired after a palette opened.</summary>
     event Action? Opened;
 
+    /// <summary>Fired after a palette closed.</summary>
     event Action? Closed;
 
+    /// <summary>Fired after a command's handler returned, with its result and how long it took.</summary>
     event EventHandler<BaletteCommandExecutedEventArgs>? CommandExecuted;
 
+    /// <summary>
+    /// Fired when a command's handler, or the loader of a page's children, threw. The palette logs the exception and shows
+    /// <see cref="BaletteCommandErrorEventArgs.Message"/>; a subscriber can change that message, or set
+    /// <see cref="BaletteCommandErrorEventArgs.Handled"/> to say it reported the error itself.
+    /// </summary>
     event EventHandler<BaletteCommandErrorEventArgs>? CommandFailed;
 
     /// <summary>
@@ -70,6 +94,17 @@ public interface IBaletteService
     /// <see cref="IsMac"/> can re-render with ⌘ instead of Ctrl.
     /// </summary>
     event Action? PlatformDetected;
+
+    /// <summary>
+    /// Raised when the first chords of a global shortcut sequence were pressed (<c>G</c> of <c>G S</c>), with them, and
+    /// again with null when the sequence completed, broke off or timed out - for an app that shows the pending keys
+    /// itself (see <see cref="BaletteOptions.ShowSequenceHint"/>).
+    /// </summary>
+    event Action<BaletteKeyboardShortcut?>? SequencePending
+    {
+        add { }
+        remove { }
+    }
 }
 
 /// <summary>Describes a command that ran: <see cref="IBaletteService.CommandExecuted"/> and <see cref="Balette.OnCommandExecuted"/>.</summary>
@@ -94,6 +129,18 @@ public sealed class BaletteCommandErrorEventArgs(BaletteCommand command, Excepti
     /// <summary>What the handler threw.</summary>
     public Exception Exception { get; } = exception;
 
-    /// <summary>Set to true to prevent the exception from being rethrown.</summary>
+    /// <summary>
+    /// Set to true when the subscriber reported the error itself: the palette then does not log it, and
+    /// <see cref="IBaletteService.ExecuteAsync"/> does not rethrow it. A failure in the palette's own UI - a row chosen
+    /// with the keyboard or the mouse, a shortcut - is never rethrown, so it cannot end a Blazor Server circuit.
+    /// </summary>
     public bool Handled { get; set; }
+
+    /// <summary>
+    /// What the palette shows the user: a localized, generic <see cref="BaletteStrings.CommandFailed"/> by default, so
+    /// an exception's own text - which can name servers, tables or users - never reaches the screen by accident. Set it
+    /// to a text of your own (for example <c>Exception.Message</c> for exceptions written for users), or to an empty
+    /// string to show nothing.
+    /// </summary>
+    public string? Message { get; set; }
 }

@@ -1,0 +1,17 @@
+﻿@* A list whose items drag only by their handle: Handle is a CSS selector matched inside each item. *@
+
+<Bortable @bind-Items="_items" TItem="string" Handle=".handle" Id="handle-list"
+          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+    <ItemTemplate Context="item">
+        <span class="handle">☰</span>@item
+    </ItemTemplate>
+</Bortable>
+
+<p class="demo-order"><strong>Order:</strong> <span id="handle-order">@string.Join(", ", _items)</span></p>
+
+@code {
+    private IList<string> _items = new List<string>
+    {
+        "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"
+    };
+}

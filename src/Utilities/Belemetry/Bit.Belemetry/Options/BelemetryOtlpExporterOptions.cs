@@ -55,8 +55,21 @@ public sealed class BelemetryOtlpExporterOptions
     internal bool IsProtocolSet => _protocol.HasValue;
 
     /// <summary>Extra request headers (e.g. an API key). Merged with <c>OTEL_EXPORTER_OTLP_HEADERS</c> outside the browser.</summary>
-    /// <remarks>Headers used by the browser exporter are visible to anyone who opens the page; prefer <see cref="BelemetryBrowserTransport.Relay"/> or a collector without credentials for browser traffic.</remarks>
+    /// <remarks>
+    /// An ASP.NET Core host (Blazor Server, static SSR, the server half of Auto) never hands these to the browser
+    /// script: they come from server configuration, and anything in the script's configuration is visible to every
+    /// visitor. Put what the page may send - a public ingest key - in <see cref="BrowserHeaders"/>. In WebAssembly and
+    /// Hybrid the configuration already lives on the device, so the script sends these too.
+    /// </remarks>
     public Dictionary<string, string> Headers { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Headers the browser script sends to this exporter (with <see cref="BelemetryBrowserTransport.Direct"/>), on top
+    /// of - and winning over - <see cref="Headers"/> where the script gets those. Everything here is readable by anyone
+    /// who opens the page, so only put what is meant to be public in it; for a real secret use
+    /// <see cref="BelemetryBrowserTransport.Relay"/> or a collector in between. Empty by default.
+    /// </summary>
+    public Dictionary<string, string> BrowserHeaders { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// The request-body compression (for gRPC, the message compression with <c>grpc-encoding</c>). Defaults to

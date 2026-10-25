@@ -1,0 +1,97 @@
+﻿@* A list and a grid whose swap zones follow the sliders, drawn as shaded bands. *@
+@using System.Globalization
+
+<div class="demo-controls">
+    <label>
+        <code>SwapThreshold</code>: <strong id="swap-threshold-value">@Format(_swapThreshold)</strong>
+        <input id="swap-threshold" type="range" min="0.1" max="1" step="0.05"
+               value="@Format(_swapThreshold)" @oninput="OnSwapThresholdChanged" />
+    </label>
+
+    <label class="demo-check">
+        <input id="invert-swap" type="checkbox" checked="@_invertSwap" @onchange="OnInvertSwapChanged" />
+        <code>InvertSwap</code>
+    </label>
+
+    <label>
+        <code>InvertedSwapThreshold</code>: <strong id="inverted-swap-threshold-value">@Format(_invertedSwapThreshold)</strong>
+        <input id="inverted-swap-threshold" type="range" min="0.1" max="1" step="0.05"
+               value="@Format(_invertedSwapThreshold)" @oninput="OnInvertedSwapThresholdChanged" />
+    </label>
+
+    <label class="demo-check">
+        <input id="show-zones" type="checkbox" checked="@_showZones" @onchange="OnShowZonesChanged" />
+        Show the swap zones
+    </label>
+</div>
+
+<div class="demo-columns">
+    <div class="demo-col">
+        <div class="demo-col-title">Vertical list</div>
+        <Bortable @bind-Items="_list" TItem="string" Id="thresholds-list"
+                  SwapThreshold="_swapThreshold"
+                  InvertSwap="_invertSwap"
+                  InvertedSwapThreshold="_invertedSwapThreshold"
+                  Direction="BortableDirection.Vertical"
+                  Class="@($"demo-list threshold-list {ZoneClass}")" Style="@ZoneStyle"
+                  ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">Grid</div>
+        <Bortable @bind-Items="_grid" TItem="int" Id="thresholds-grid"
+                  SwapThreshold="_swapThreshold"
+                  InvertSwap="_invertSwap"
+                  InvertedSwapThreshold="_invertedSwapThreshold"
+                  Direction="BortableDirection.Horizontal"
+                  Class="@($"demo-grid threshold-grid {ZoneClass}")" Style="@ZoneStyle"
+                  GhostClass="demo-ghost">
+            <ItemTemplate Context="n">
+                <div class="grid-square">@n</div>
+            </ItemTemplate>
+        </Bortable>
+    </div>
+</div>
+
+<p class="demo-order"><strong>List:</strong> <span id="thresholds-list-order">@string.Join(", ", _list)</span></p>
+<p class="demo-order"><strong>Grid:</strong> <span id="thresholds-grid-order">@string.Join(", ", _grid)</span></p>
+
+@code {
+    private double _swapThreshold = 0.65;
+    private bool _invertSwap;
+    private double _invertedSwapThreshold = 0.65;
+    private bool _showZones = true;
+
+    private IList<string> _list = new List<string>
+    {
+        "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"
+    };
+
+    private IList<int> _grid = Enumerable.Range(1, 9).ToList();
+
+    // The zones are drawn by the page's stylesheet (.show-zones), sized from these two custom properties:
+    // a band of --zone across the middle of each item, or with InvertSwap two bands of --inverted-zone / 2
+    // at its edges - the same geometry the library hit-tests against.
+    private string ZoneClass => _showZones ? (_invertSwap ? "show-zones zones-inverted" : "show-zones") : "";
+
+    private string ZoneStyle => $"--zone: {Format(_swapThreshold)}; --inverted-zone: {Format(_invertedSwapThreshold)};";
+
+    private static string Format(double value) => value.ToString("0.00", CultureInfo.InvariantCulture);
+
+    private void OnSwapThresholdChanged(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), CultureInfo.InvariantCulture, out var v))
+            _swapThreshold = v;
+    }
+
+    private void OnInvertedSwapThresholdChanged(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), CultureInfo.InvariantCulture, out var v))
+            _invertedSwapThreshold = v;
+    }
+
+    private void OnInvertSwapChanged(ChangeEventArgs e) => _invertSwap = e.Value is true;
+
+    private void OnShowZonesChanged(ChangeEventArgs e) => _showZones = e.Value is true;
+}

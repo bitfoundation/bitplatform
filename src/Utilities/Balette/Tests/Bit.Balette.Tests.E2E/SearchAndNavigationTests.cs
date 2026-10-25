@@ -12,6 +12,22 @@ namespace Bit.Balette.Tests.E2E;
 public sealed class SearchAndNavigationTests : BaletteTest
 {
     [TestMethod]
+    public async Task Keys_typed_faster_than_the_palette_renders_are_all_kept()
+    {
+        // On Blazor Server each key's render arrives a round trip after the key. One answering an earlier key once wrote its
+        // older value over the keys typed since - "theme" came out as "teme" in Firefox and WebKit - because the input was
+        // not bound, so the renderer never learnt what the field held when each key's event arrived.
+        var page = await OpenAsync("/");
+        await OpenPaletteAsync(page);
+
+        const string Typed = "keyboard and shortcuts";
+        await TypeAsync(page, Typed);
+
+        await Assertions.Expect(Input(page)).ToHaveValueAsync(Typed);
+        await ExpectFirstItemAsync(page, "navigation.keyboard-and-shortcuts");
+    }
+
+    [TestMethod]
     public async Task Typing_filters_the_list_and_ranks_the_best_match_first()
     {
         var page = await OpenAsync("/");
@@ -203,14 +219,34 @@ public sealed class SearchAndNavigationTests : BaletteTest
     }
 
     /// <summary>Waits until the active row lies inside the list's visible box (the group heading may stick over its top).</summary>
-    private static Task WaitForActiveRowInViewAsync(IPage page) => page.WaitForFunctionAsync(
-        """
-        () => {
-          const list = document.querySelector('[data-balette="list"]');
-          const row = list?.querySelector('[data-balette="item"][data-active="true"]');
-          if (!row) return false;
-          const l = list.getBoundingClientRect(), r = row.getBoundingClientRect();
-          return r.top >= l.top - 1 && r.bottom <= l.bottom + 1;
+    private static async Task WaitForActiveRowInViewAsync(IPage page)
+    {
+        try
+        {
+            await page.WaitForFunctionAsync(
+                """
+                () => {
+                  const list = document.querySelector('[data-balette="list"]');
+                  const row = list?.querySelector('[data-balette="item"][data-active="true"]');
+                  if (!row) return false;
+                  const l = list.getBoundingClientRect(), r = row.getBoundingClientRect();
+                  return r.top >= l.top - 1 && r.bottom <= l.bottom + 1;
+                }
+                """, null, new PageWaitForFunctionOptions { Timeout = 5_000 });
         }
-        """, null, new PageWaitForFunctionOptions { Timeout = 5_000 });
+        catch (TimeoutException)
+        {
+            var where = await page.EvaluateAsync<string>(
+                """
+                () => {
+                  const list = document.querySelector('[data-balette="list"]');
+                  const row = list?.querySelector('[data-balette="item"][data-active="true"]');
+                  if (!row) return 'no active row';
+                  const l = list.getBoundingClientRect(), r = row.getBoundingClientRect();
+                  return `list ${l.top}..${l.bottom} scrollTop ${list.scrollTop}/${list.scrollHeight - list.clientHeight}, row ${row.dataset.value} ${r.top}..${r.bottom}`;
+                }
+                """);
+            throw new TimeoutException("The active row did not come into view: " + where);
+        }
+    }
 }

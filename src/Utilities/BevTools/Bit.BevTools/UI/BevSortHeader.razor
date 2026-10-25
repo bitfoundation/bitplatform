@@ -1,0 +1,24 @@
+﻿@namespace Bit.BevTools
+
+@* A sortable column header: a button inside the cell, so the keyboard sorts too, and aria-sort on the cell for screen readers. *@
+<th class="@(Numeric ? "bev-num " : "")bev-sortable" aria-sort="@(Active ? (Ascending ? "ascending" : "descending") : "none")" title="@Title">
+    <button type="button" class="bev-sort" @onclick="() => OnSort.InvokeAsync(Key)">@Label@if (Active) { <span aria-hidden="true">@(Ascending ? " ▲" : " ▼")</span> }</button>
+</th>
+
+@code {
+    [Parameter, EditorRequired] public string Key { get; set; } = "";
+
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Right-aligned, as figures are.</summary>
+    [Parameter] public bool Numeric { get; set; } = true;
+
+    /// <summary>The table is sorted by this column.</summary>
+    [Parameter] public bool Active { get; set; }
+
+    [Parameter] public bool Ascending { get; set; }
+
+    [Parameter] public EventCallback<string> OnSort { get; set; }
+}

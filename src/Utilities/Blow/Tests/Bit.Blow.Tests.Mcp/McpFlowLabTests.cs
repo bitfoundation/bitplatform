@@ -147,7 +147,8 @@ public class McpFlowLabTests
 
         var report = await InspectAsync(flow.ToJsonString());
 
-        Assert.IsEmpty(report.Problems!, "None of these is a BlowErrorCode, which is why the tool has to say them.");
+        // The canvas reports the parent cycles itself; the rest are not BlowErrorCodes, which is why the tool says them.
+        CollectionAssert.AreEquivalent(new[] { "parent-cycle", "parent-cycle" }, report.Problems!.Select(p => p.Code).ToArray());
         Assert.IsTrue(report.Notes.Any(note => note.Contains("parent cycle", StringComparison.Ordinal) && note.Contains("'p'", StringComparison.Ordinal)));
         Assert.IsTrue(report.Notes.Any(note => note.Contains("own parent", StringComparison.Ordinal) && note.Contains("'self'", StringComparison.Ordinal)));
         Assert.IsTrue(report.Notes.Any(note => note.Contains("'into-input'", StringComparison.Ordinal) && note.Contains("no target handle", StringComparison.Ordinal)));

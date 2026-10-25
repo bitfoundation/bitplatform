@@ -19,9 +19,19 @@ public sealed class BitBevToolsLoaderOptions
     /// Lets <see cref="BevToolsLoader.OpenAsync"/> attach BevTools outside Development in a process that serves many
     /// users: Blazor Server circuits, prerendering and static rendering. Off by default, because the panel shows
     /// whoever opens it the server side objects of their circuit, injected services and configuration included.
+    /// It takes <see cref="Authorize"/> as well: a process that serves many users has to be told who may look. Such a
+    /// session reads no application values unless <c>BitBevToolsOptions.ValueAccess</c> says otherwise.
     /// Blazor WebAssembly and Blazor Hybrid apps only ever show users their own process, so it does not apply there.
     /// </summary>
     public bool AllowInMultiUserHost { get; set; }
+
+    /// <summary>
+    /// Decides whether whoever is in the current scope may open BevTools: typically by role or claim, read through the
+    /// scope's <c>AuthenticationStateProvider</c>. <see cref="BevToolsLoader.OpenAsync"/> asks it before Bit.BevTools is
+    /// loaded or attached; false, or an exception, leaves BevTools closed and <see cref="BevToolsLoader.Problem"/> says
+    /// why. Required with <see cref="AllowInMultiUserHost"/> outside Development, and honoured everywhere it is set.
+    /// </summary>
+    public Func<IServiceProvider, ValueTask<bool>>? Authorize { get; set; }
 
     /// <summary>
     /// Registers the framework's components ActivitySource and meters (.NET 10) at startup. A renderer reads them when

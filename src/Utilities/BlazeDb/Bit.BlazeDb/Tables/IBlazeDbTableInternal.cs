@@ -26,4 +26,10 @@ internal interface IBlazeDbTableInternal
 
     /// <summary>Drops every row and index entry, for reloading a replica from a fresh snapshot.</summary>
     void Clear();
+
+    /// <summary>Adds every disagreement between the table's rows and its indexes to <paramref name="issues"/>.</summary>
+    void VerifyIntegrity(List<BlazeDbIntegrityIssue> issues);
+
+    /// <summary>Tells the table's subscribers its rows were replaced wholesale; collects what a handler throws.</summary>
+    void RaiseReset(ref List<Exception>? errors);
 }

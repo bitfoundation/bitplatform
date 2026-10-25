@@ -42,7 +42,7 @@ public static class SiteInfo
     public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
-    public static readonly string[] SearchHints = ["offline", "undo", "conflict", "presence", "SignalR"];
+    public static readonly string[] SearchHints = ["offline", "undo", "conflict", "presence", "history", "SignalR"];
 
     /// <summary>
     /// Whether Ctrl+K / Cmd+K opens the site's search palette. "/" always does. A demo whose own
@@ -91,44 +91,52 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting started",
                 "Install the packages, register the services, map the relay and put a collaborative editor on a page.",
-                "install setup nuget package AddBitBcrdtServices AddBitBcrdtHub MapHub BcrdtHub program.cs quick start five-minute data type",
+                "install setup nuget package AddBitBcrdtServices AddBitBcrdtHub MapHub BcrdtHub AddBitBcrdtDocumentHost program.cs quick start five-minute data type store IndexedDB file system OpenAsync transaction BcrdtComponentBase Track websocket",
                 typeof(GettingStarted)),
         ]),
         new("Collaborating",
         [
             new("/text", "Collaborative text",
                 "Three replicas editing one paragraph: take one offline, edit all three, and watch them converge without losing a word.",
-                "text BcrdtText BcrdtTextArea editor textarea offline merge converge replicas presence caret",
+                "text BcrdtText BcrdtTextArea editor textarea offline merge converge replicas presence caret cursor selection reconnect backoff drop LastSyncedAt BcrdtTextSynchronizer",
                 typeof(CollaborativeText)),
             new("/list", "Collaborative list",
                 "A shared to-do list - a BcrdtArray of BcrdtMaps - where a rename and a concurrent tick of the same item both survive.",
                 "list array BcrdtArray BcrdtMap nested todo move reorder delete items",
                 typeof(CollaborativeList)),
             new("/form", "Collaborative form",
-                "Map fields next to a nested text field, so last-writer-wins and a character-by-character merge show side by side.",
-                "form fields map BcrdtMap last writer wins EnsureText nested text scalar",
+                "Map fields, a set of labels and a nested text, so last-writer-wins, add-wins and a character-by-character merge show side by side.",
+                "form fields map BcrdtMap last writer wins EnsureText EnsureSet BcrdtSet set tags labels add wins nested text scalar BcrdtObjectBinding SetObject",
                 typeof(CollaborativeForm)),
+            new("/rich-text", "Rich text",
+                "Bold, italic and underline marks on a shared text, merging like any edit and read back as a Quill-style delta.",
+                "rich text formatting format bold italic marks attributes delta ToDelta ApplyDelta InsertEmbed embed quill editor",
+                typeof(RichText)),
         ]),
         new("Under the hood",
         [
             new("/conflicts", "Conflict lab",
-                "Six conflicting edits made on purpose - same position, same element, same key - each with its outcome stated before it runs.",
-                "conflict lab scenario concurrent insert delete same key converge verdict merge",
+                "Eight conflicting edits made on purpose - same position, same element, same key, same tag - each with its outcome stated before it runs.",
+                "conflict lab scenario concurrent insert delete same key set tag add wins remove converge verdict merge",
                 typeof(ConflictLab)),
             new("/undo", "Collaborative undo",
                 "Selective undo: each replica undoes its own edits and leaves everyone else's work alone.",
-                "undo redo BcrdtUndoManager selective stack TrackedOrigins StopCapturing",
+                "undo redo BcrdtUndoManager selective stack TrackedOrigins StopCapturing CaptureTimeout MaxStackItems origin scope",
                 typeof(UndoRedo)),
+            new("/history", "Version history",
+                "Save versions of a shared text as snapshots of a few dozen bytes, preview the past and restore it as an ordinary edit.",
+                "version history snapshot BcrdtSnapshot RestoreDocument restore GarbageCollect tombstones state vector delete set",
+                typeof(VersionHistory)),
             new("/internals", "Internals",
-                "The engine laid open: state vectors, block counts, encoded sizes and every update as it is produced.",
-                "internals state vector blocks run-length encoding update size bytes delta log origin",
+                "The engine laid open: state vectors, block counts, encoded sizes, every update and change as it happens, and the library's metrics.",
+                "internals state vector blocks run-length encoding update size bytes delta log origin transaction events Observe metrics diagnostics meter OpenTelemetry",
                 typeof(Internals)),
         ]),
         new("Across tabs",
         [
             new("/live", "Live, across tabs",
-                "One replica per browser tab, meeting through the demo server's SignalR hub or WebSocket endpoint.",
-                "live tabs SignalR hub WebSocket relay BcrdtCollaborationScope BcrdtPresenceView server share link room",
+                "One replica per browser tab, meeting through the demo server's SignalR hub or WebSocket endpoint - with a read-only link to share.",
+                "live tabs SignalR hub WebSocket relay BcrdtCollaborationScope BcrdtPresenceView server share link room read-only access authorization AuthorizeAccessAsync document host IndexedDB",
                 typeof(Live)),
         ]),
         new("Tooling",

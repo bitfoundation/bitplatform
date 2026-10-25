@@ -3,52 +3,111 @@
 <PageTitle>Validation · Blow</PageTitle>
 
 <ExampleScaffold Title="Validation"
-                 Summary="Connections are validated while dragging. Here you may only connect handle 'A' to handle 'B'. While you drag, the valid target handle lights up green and the invalid one red, and an invalid target won't accept the drop.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" IsValidConnection="IsValid">
-        <NodeTemplate Context="node">
-            @if (node.Id == "A")
-            {
-                <div class="vnode">@node.Label</div>
-                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="a" />
-            }
-            else
-            {
-                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" Id="b" Class="@(node.Id == "B" ? "handle-ok" : "handle-no")" />
-                <div class="vnode">@node.Label</div>
-            }
-        </NodeTemplate>
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
-        </ChildContent>
-    </BlowCanvas>
+                 Summary="One IsValidConnection predicate on the canvas decides which connections are allowed, and it is asked while you drag: every handle turns green or red, and a drop on a red one connects nothing. Use it for the rules of your own application - which node may feed which.">
+    <Toolbar>
+        <label>
+            Accept connections into
+            <select @bind="_rule">
+                <option value="B">B only</option>
+                <option value="C">C only</option>
+                <option value="both">B or C</option>
+            </select>
+        </label>
+        <button class="btn btn-secondary" @onclick="RemoveEdges">Remove edges</button>
+        <span class="bb-muted" aria-live="polite">@_status</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    IsValidConnection="IsValid" OnConnect="OnConnect" OnConnectEnd="OnConnectEnd">
+            <NodeTemplate Context="node">
+                @if (node.Id == "A")
+                {
+                    <div class="val-node"><strong>@node.Label</strong></div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="out" />
+                }
+                else
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" Id="in"
+                                Class="@(Accepts(node.Id) ? "val-ok" : "val-no")" />
+                    <div class="val-node">
+                        <strong>@node.Label</strong>
+                        <div class="val-sub">@(Accepts(node.Id) ? "accepts A" : "refuses A")</div>
+                    </div>
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag</strong> from A's handle on the right: while you drag, the handle of every node that would accept the connection turns green and the others red.</li>
+        <li><strong>Release</strong> on the green handle to connect, or on the red one to see that nothing happens; the line beside the toolbar says how the attempt ended.</li>
+        <li><strong>Drag again</strong> from A to a node it is already connected to: that handle is red now too, because the canvas refuses duplicate edges before your rule is even asked.</li>
+        <li><strong>Drag the other way</strong>, from B's or C's handle back to A: the same rule decides, because the connection it is shown always runs from source to target.</li>
+        <li>Change <strong>Accept connections into</strong> and drag again: the rule is asked afresh on every move, so the colours follow at once. <strong>Remove edges</strong> starts over.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>IsValidConnection</code> on the canvas is a <code>Func&lt;BlowConnection, bool&gt;</code>. It receives the connection completing would make - <code>Source</code>, <code>Target</code>, <code>SourceHandle</code>, <code>TargetHandle</code>, normalised so <code>Source</code> is the source end - and false refuses it.</li>
+        <li>It runs for every handle on every frame of the drag, so keep it cheap. It is only asked about connections the built-in rules (handle types, duplicates, self-connections) already allow.</li>
+        <li>While dragging, the canvas gives each handle <code>bit-blow-handle-valid</code> (green, with a ring) or <code>bit-blow-handle-invalid</code> (red, dimmed); the handle the drag came from gets <code>bit-blow-handle-connectingfrom</code>.</li>
+        <li>The pale green and red at rest are this page's own hint, set through the handle's <code>--bit-blow-handle-bg</code> custom property in its <code>Class</code>, so the live colours still win while a connection is dragged.</li>
+        <li><code>OnConnect</code> reports the connection that was made. <code>OnConnectEnd</code> reports every attempt: when <code>IsValid</code> is false, <code>Rejection</code> says why a handle refused - <code>RejectedByRule</code> for this predicate - and <code>IsDropped</code> tells a drop on empty space from a click or <strong>Escape</strong>.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
-    .vnode { padding: 6px 10px; font-weight: 600; }
+    .val-node { padding: 6px 10px; }
+    .val-sub { font-size: 11px; color: var(--bit-blow-text-muted); }
     /* A pale hint at rest, set through the handle's own colour token rather than a background
        with !important: that way the canvas's live valid/invalid colours still take over while
        a connection is being dragged, instead of being painted over. */
-    .handle-ok, .handle-no { width: 12px; height: 12px; }
-    .handle-ok { --bit-blow-handle-bg: #86efac; }
-    .handle-no { --bit-blow-handle-bg: #fca5a5; }
+    .val-ok, .val-no { width: 12px; height: 12px; }
+    .val-ok { --bit-blow-handle-bg: #86efac; }
+    .val-no { --bit-blow-handle-bg: #fca5a5; }
 </style>
 
 @code {
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+    private string _rule = "B";
+    private string _status = "Drag from A's handle.";
 
     protected override void OnInitialized()
     {
         _nodes =
         [
             new BlowNode { Id = "A", Label = "A (source)", Position = new(60, 140) },
-            new BlowNode { Id = "B", Label = "B - valid target", Position = new(340, 60) },
-            new BlowNode { Id = "C", Label = "C - invalid target", Position = new(340, 220) },
+            new BlowNode { Id = "B", Label = "B", Position = new(340, 60) },
+            new BlowNode { Id = "C", Label = "C", Position = new(340, 220) },
         ];
-        _edges = [];
     }
 
-    // Only A's handle "a" connecting to handle "b" on node "B" is valid.
-    private bool IsValid(BlowConnection c) => c.TargetHandle == "b" && c.Target == "B";
+    private bool Accepts(string nodeId) => _rule == "both" ? nodeId is "B" or "C" : nodeId == _rule;
+
+    // The canvas asks this for every handle on every move of the drag; this rule only has to look at the target.
+    private bool IsValid(BlowConnection c) => c.Target is { } target && Accepts(target);
+
+    private void OnConnect(BlowConnection c) => _status = $"Connected {c.Source} to {c.Target}.";
+
+    // Raised after OnConnect for a connection that was made, so only the attempts that failed have anything to add.
+    private void OnConnectEnd(BlowConnectEndInfo end)
+    {
+        if (end.IsValid) return;
+
+        _status = end.Rejection switch
+        {
+            BlowConnectionRejection.None => end.IsDropped ? "Dropped on empty space: nothing connected." : "Cancelled.",
+            BlowConnectionRejection.RejectedByRule => "Refused by IsValidConnection.",
+            BlowConnectionRejection.Duplicate => "Refused: those two are already connected.",
+            var other => $"Refused: {other}.",
+        };
+    }
+
+    private void RemoveEdges()
+    {
+        _edges = [];
+        _status = "Edges removed.";
+    }
 }

@@ -250,9 +250,21 @@
             <details>
                 <summary>Can I keep an API key out of the browser?</summary>
                 <p>
-                    Yes: set <code>IncludeInBrowser = false</code> on the exporter that carries it and give the browser a
-                    credential-free route, or use the Relay transport on Blazor Server and Hybrid. In WebAssembly the
-                    .NET pipeline runs in the browser too, so its configuration is public.
+                    Yes, and on a server it is the default: Blazor Server, static SSR and the server half of Auto never
+                    write an exporter's <code>Headers</code> into the page - the script sends only
+                    <code>BrowserHeaders</code>, for a key that is meant to be public. For the browser's own records, set
+                    <code>IncludeInBrowser = false</code> on the keyed exporter and give the page a credential-free route,
+                    or use the Relay transport on Blazor Server and Hybrid. In WebAssembly the .NET pipeline runs in the
+                    browser too, so its whole configuration is public: put the key in a collector instead.
+                </p>
+            </details>
+            <details>
+                <summary>How much does it add to the download?</summary>
+                <p>
+                    Measured on a trimmed Release publish of a WebAssembly app, brotli-compressed as served: 107 KB for
+                    <code>Bit.Belemetry.wasm</code> (the .NET pipeline, both encoders and the bridge), 16 KB for the
+                    browser script, and 29 KB for <code>System.Diagnostics.DiagnosticSource.wasm</code> when the app did
+                    not ship it already. A Server or static SSR page downloads the 16 KB script only.
                 </p>
             </details>
             <details>
@@ -287,9 +299,9 @@
 
     private static readonly Capability[] _capabilities =
     [
-        new("Errors", "JS errors and unhandled rejections, .NET logs at Error or with an exception, and TrackException - with the stack trace, scrubbed.", "browser", "danger"),
+        new("Errors", "JS errors and unhandled rejections, .NET logs at Error or with an exception, and TrackException - with the stack trace, scrubbed, and an error loop recorded once instead of a thousand times.", "browser", "danger"),
         new("Page views", "History and enhanced navigation as browser.page_view events with the URL redacted - plus TrackPageView for dialogs and wizard steps.", "browser", "primary"),
-        new("Interactions", "Clicks as browser.user_interaction events, named with data-bit-belemetry-name and kept out with data-bit-belemetry-ignore. Input values are never read.", "browser", "primary"),
+        new("Interactions", "Clicks as browser.user_interaction events, named with data-bit-belemetry-name and kept out with data-bit-belemetry-ignore, and rage clicks as their own event. Input values are never read.", "browser", "primary"),
         new("Performance", "LCP, INP, CLS, FCP and TTFB, the document-load span with navigation timing, resource timing and long tasks.", "browser", "success"),
         new("Dependencies", "fetch and XHR client spans that add a W3C traceparent to your own origin, so the server's span joins the browser's trace.", "browser", "success"),
         new("Sessions", "A session id that survives reloads in sessionStorage, rotated after inactivity. Without consent it lives in memory only.", "consent", "warning"),

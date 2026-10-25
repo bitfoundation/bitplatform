@@ -18,7 +18,7 @@ public sealed class BlowEdgeContext
     /// the current inputs to decide whether this context can be reused, which is what lets a
     /// pan or zoom of a large graph avoid rebuilding every path string.
     /// </summary>
-    internal BlowEdgeGeometryKey GeometryKey { get; init; }
+    internal BlowEdgeGeometryKey GeometryKey { get; set; }
 
     /// <summary>Where the edge leaves its source handle, in flow space.</summary>
     public BlowXYPosition Source { get; init; }
@@ -82,4 +82,5 @@ internal readonly record struct BlowEdgeGeometryKey(
     BlowEdgeType Type,
     double? Curvature, double? BorderRadius, double? Offset, double? StepPosition,
     double? LoopRadius,
-    bool MarkerStart, bool MarkerEnd, BlowMarkerSpec Marker);
+    bool MarkerStart, bool MarkerEnd, BlowMarkerSpec Marker,
+    int RouteVersion = 0);

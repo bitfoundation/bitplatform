@@ -1,0 +1,325 @@
+﻿@page "/troubleshooting"
+@using System.Text.Json
+@inject IJSRuntime JS
+
+<PageTitle>Troubleshooting · Belemetry</PageTitle>
+
+<div class="bb-intro">
+    <h1>Troubleshooting</h1>
+    <p class="bb-subtitle">
+        Telemetry fails quietly: no exception when nothing is granted, when a collector refuses the page's origin, or
+        when a backend rejects a key. Belemetry keeps the evidence - in the browser script's counters, in the
+        <code>Bit.Belemetry</code> log category and on the <code>Bit.Belemetry</code> meter. This page is the checklist,
+        in the order worth following, with a live check of the page you are reading.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Check this page</h3>
+    <p>
+        In any app, the first two calls to make in the browser console are <code>BitBelemetry.getContext()</code> - what
+        is granted, and the session - and <code>BitBelemetry.getStats()</code> - what the script dropped and why, and
+        what became of its requests. The button runs both on this page and reads the answer for you.
+    </p>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">getContext() and getStats()</span></span></div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="CheckAsync">Run the check</button>
+        </div>
+        @if (_findings.Count > 0)
+        {
+            <ul class="bb-detail-list" aria-live="polite">
+                @foreach (var finding in _findings)
+                {
+                    <li>
+                        <span class="bb-badge @(finding.Level switch { "ok" => "bb-badge-success", "warn" => "bb-badge-warn", _ => "demo-badge-off" })">@finding.Level</span>
+                        @finding.Text
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="demo-status">@(RendererInfo.IsInteractive ? "Press the button." : "The check runs once the page is interactive.")</p>
+        }
+        @if (_raw is not null)
+        {
+            <pre class="demo-json">@_raw</pre>
+        }
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Nothing arrives</h3>
+    <ol class="bb-detail-list">
+        <li>
+            <strong>Is the script on the page?</strong> View the page source. <code>&lt;BelemetryScript /&gt;</code>
+            renders a <code>&lt;script type="application/json" id="bit-belemetry-config"&gt;</code> element and the
+            module after it; in the console, <code>window.BitBelemetry</code> exists. A literal
+            <code>&lt;BelemetryScript&gt;</code> tag in the HTML means <code>_Imports.razor</code> lacks
+            <code>@@using Bit.Belemetry</code> - the component compiled as an unknown element, with only a warning.
+        </li>
+        <li>
+            <strong>Has anything been granted?</strong> By default nothing is sent until the user consents
+            (<code>Consent.Default = None</code>). Check <code>getContext().consent</code> in the browser, or
+            <code>IBelemetryConsent.Granted</code> in .NET - and that the app shows a banner at all. Records of features
+            not yet decided are held (<code>getStats().pending</code>), not sent.
+        </li>
+        <li>
+            <strong>What did the script drop?</strong> <code>getStats().dropped</code> counts every record that never
+            left, by reason (the table below).
+        </li>
+        <li>
+            <strong>Did the backend accept it?</strong> <code>getStats().requests.rejected</code> means the backend refused
+            requests for good - a wrong key, a wrong endpoint, a body it cannot read. On .NET each refusal is a warning
+            in the <code>Bit.Belemetry</code> log category, naming the exporter and the URL.
+        </li>
+        <li>
+            <strong>Turn on the diagnostics.</strong> <code>options.Debug</code> raises Belemetry's own log messages from
+            Debug to Information, <code>options.Browser.Debug</code> writes the script's to <code>console.debug</code>, and
+            a console exporter prints every record the pipeline hands over.
+        </li>
+    </ol>
+    <CodeSnippet Code="@DebugCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What getStats() counts</h3>
+    <p>
+        Counted since the page loaded. The reasons are the same words as the <code>belemetry.reason</code> attribute of
+        the .NET <code>belemetry.records.dropped</code> counter, where both sides drop for the same cause (see
+        <a href="/dotnet">.NET instrumentation</a>).
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th scope="col"><code>dropped</code> reason</th><th scope="col">Means</th><th scope="col">Look at</th></tr></thead>
+            <tbody>
+                @foreach (var reason in _reasons)
+                {
+                    <tr><td><code>@reason.Key</code></td><td>@reason.Value.Means</td><td>@reason.Value.LookAt</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th scope="col"><code>requests</code> outcome</th><th scope="col">Means</th></tr></thead>
+            <tbody>
+                @foreach (var outcome in _outcomes)
+                {
+                    <tr><td><code>@outcome.Key</code></td><td>@outcome.Value</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p>
+        <code>queued</code> is what waits for the next export, and <code>pending</code> what is held until the user
+        decides on consent.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Symptoms</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th scope="col">Symptom</th><th scope="col">Cause</th><th scope="col">Fix</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>CORS errors in the browser console</td>
+                    <td>The browser posts to the collector from the page's origin, and the collector does not allow it</td>
+                    <td>Allow the origin on the receiver (<a href="/otlp">OTLP</a>), give the exporter a CORS-enabled <code>BrowserEndpoint</code>, or switch to the <a href="/transport">Relay transport</a></td>
+                </tr>
+                <tr>
+                    <td>No .NET telemetry from the server</td>
+                    <td>The server pipeline is off by default on ASP.NET Core hosts</td>
+                    <td><code>options.Server.CollectDotnetTelemetry = true</code> (<a href="/server-pipeline">Server pipeline</a>)</td>
+                </tr>
+                <tr>
+                    <td>Nothing reaches the Aspire dashboard</td>
+                    <td>The AppHost hands its resources a gRPC endpoint; an exporter with its protocol fixed to HTTP in code posts HTTP to the gRPC port and fails quietly</td>
+                    <td>Leave <code>Protocol</code> unset so <code>OTEL_EXPORTER_OTLP_PROTOCOL=grpc</code> applies, or give the AppHost <code>WithOtlpExporter(OtlpProtocol.HttpProtobuf)</code>. An unknown protocol value is reported at startup</td>
+                </tr>
+                <tr>
+                    <td>Logs and traces from WebAssembly, but no metrics</td>
+                    <td><code>System.Diagnostics.Metrics</code> is off in the app (<code>MetricsSupport=false</code>); Belemetry logs a startup warning saying so</td>
+                    <td>Remove <code>&lt;MetricsSupport&gt;false&lt;/MetricsSupport&gt;</code>, or - when referencing Bit.Belemetry as a project rather than the package - import <code>buildTransitive/Bit.Belemetry.props</code></td>
+                </tr>
+                <tr>
+                    <td>No <code>System.Net.Http</code> spans in WebAssembly</td>
+                    <td>The WebAssembly SDK turns <code>HttpClient</code>'s tracing off; its requests show up as the script's fetch spans instead</td>
+                    <td><code>&lt;HttpActivityPropagationSupport&gt;true&lt;/HttpActivityPropagationSupport&gt;</code> - then <code>HttpClient</code> sends <code>traceparent</code> to every origin, which a cross-origin API must allow</td>
+                </tr>
+                <tr>
+                    <td>Duplicate HTTP spans in WebAssembly</td>
+                    <td>A custom handler strips the <code>traceparent</code> .NET added, so the script cannot tell the request was traced</td>
+                    <td>Add the URL to <code>Browser.IgnoreUrls</code></td>
+                </tr>
+                <tr>
+                    <td>The browser exports without its API key</td>
+                    <td>A server never writes an exporter's <code>Headers</code> into the page; a startup warning names the exporter</td>
+                    <td>Move a key meant to be public to <code>BrowserHeaders</code>; keep a secret one in a collector, or use Relay</td>
+                </tr>
+                <tr>
+                    <td>A 400, 401, 403 - or for OTLP a 408 or 500 - is dropped, not retried</td>
+                    <td>Only the statuses the backend's protocol calls transient are retried (<a href="/persistence">Offline persistence</a>)</td>
+                    <td>Read the warning in the <code>Bit.Belemetry</code> category: it is the backend's final word on the key, the endpoint or the body</td>
+                </tr>
+                <tr>
+                    <td>Only one of many identical errors arrives</td>
+                    <td>By design: <code>Errors.DuplicateWindow</code> and <code>Errors.MaxPerMinute</code> cap error loops (<code>error_limit</code>)</td>
+                    <td>Shorten the window or raise the limit; zero switches either off</td>
+                </tr>
+                <tr>
+                    <td>An attribute reads <code>REDACTED</code>, <code>[email]</code> or <code>[ip]</code></td>
+                    <td>The <a href="/privacy">privacy rules</a> - a credential name, or a pattern in free text</td>
+                    <td>Remove the name from <code>Privacy.RedactedAttributes</code>, or turn off <code>Privacy.ScrubPatterns</code></td>
+                </tr>
+                <tr>
+                    <td>A long value ends abruptly</td>
+                    <td><code>MaxValueLength</code> (32768 characters) cuts attribute values, bodies and status messages</td>
+                    <td>Raise it, or set <code>0</code> to keep strings whole</td>
+                </tr>
+                <tr>
+                    <td>Nothing at all, not even Belemetry's own diagnostics</td>
+                    <td><code>OTEL_SDK_DISABLED=true</code> in the environment turns Belemetry off, whatever the code says</td>
+                    <td>Unset the variable on that host</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private sealed record Finding(string Level, string Text);
+
+    private sealed record Reason(string Means, string LookAt);
+
+    private static readonly Dictionary<string, Reason> _reasons = new()
+    {
+        ["not_consented"] = new("Their feature was not granted when the user decided", "The consent the app asks for, and Consent.Default"),
+        ["consent_revoked"] = new("Their feature was revoked while they were queued", "Expected after a revoke"),
+        ["pending_full"] = new("More than Consent.PendingLimit records waited for a decision; the oldest went first", "A banner the user never answers"),
+        ["queue_full"] = new("More than Browser.MaxQueueSize records waited for an export; the oldest went first", "An endpoint that does not answer, or a flood of records"),
+        ["error_limit"] = new("An identical error within Errors.DuplicateWindow, or over Errors.MaxPerMinute", "The error loop it held back"),
+        ["sampled_out"] = new("This session is outside Browser.SessionSampleRatio", "Expected with a ratio below 1"),
+        ["filtered"] = new("A processor (BitBelemetry.addProcessor) returned false", "Your processors"),
+    };
+
+    private static readonly Dictionary<string, string> _outcomes = new()
+    {
+        ["delivered"] = "Accepted by the backend",
+        ["rejected"] = "Refused for good - a wrong key, a wrong endpoint, a body it cannot read",
+        ["kept"] = "Not delivered, and stored for a later retry (needs Persistence)",
+        ["dropped"] = "Neither delivered nor stored: lost",
+    };
+
+    private readonly List<Finding> _findings = [];
+    private string? _raw;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false || RendererInfo.IsInteractive is false) return;
+
+        await CheckAsync();
+        StateHasChanged();
+    }
+
+    private async Task CheckAsync()
+    {
+        _findings.Clear();
+        _raw = null;
+
+        JsonElement context, stats;
+        try
+        {
+            context = await JS.InvokeAsync<JsonElement>("blDemo.context");
+            stats = await JS.InvokeAsync<JsonElement>("blDemo.stats");
+        }
+        catch (Exception ex)
+        {
+            _findings.Add(new("warn", $"The page did not answer: {ex.Message}"));
+            return;
+        }
+
+        if (context.ValueKind is not JsonValueKind.Object || stats.ValueKind is not JsonValueKind.Object)
+        {
+            _findings.Add(new("warn", "window.BitBelemetry is not on this page: the script has not loaded. In an app, look for the bit-belemetry-config element in the page source."));
+            return;
+        }
+
+        var consent = context.TryGetProperty("consent", out var c) && c.TryGetInt32(out var granted) ? granted : 0;
+        var decided = context.TryGetProperty("decided", out var d) && d.ValueKind is JsonValueKind.True;
+        var pending = Count(stats, "pending");
+        var queued = Count(stats, "queued");
+
+        if (consent == 0)
+        {
+            _findings.Add(new("warn", decided
+                ? "Nothing is granted, so nothing is sent. Choose features on the consent page."
+                : "Nothing is granted yet, so nothing is sent: answer the consent banner."));
+        }
+        else
+        {
+            _findings.Add(new("ok", $"Granted: {(BelemetryFeatures)consent} ({consent})."));
+        }
+
+        if (decided is false)
+        {
+            _findings.Add(new("info", $"No consent decision yet: {pending} record(s) held in memory, sent or dropped by the decision."));
+        }
+
+        if (stats.TryGetProperty("dropped", out var dropped) && dropped.ValueKind is JsonValueKind.Object)
+        {
+            foreach (var reason in dropped.EnumerateObject())
+            {
+                var means = _reasons.TryGetValue(reason.Name, out var known) ? known.Means.ToLowerInvariant() : "see the reasons table below";
+                _findings.Add(new("info", $"{reason.Value} record(s) dropped as {reason.Name}: {means}."));
+            }
+        }
+
+        if (stats.TryGetProperty("requests", out var requests) && requests.ValueKind is JsonValueKind.Object)
+        {
+            foreach (var outcome in requests.EnumerateObject())
+            {
+                var level = outcome.Name switch { "delivered" => "ok", "rejected" or "dropped" => "warn", _ => "info" };
+                var means = _outcomes.TryGetValue(outcome.Name, out var text) ? text.ToLowerInvariant() : outcome.Name;
+                _findings.Add(new(level, $"{outcome.Value} request(s) {outcome.Name}: {means}."));
+            }
+        }
+
+        _findings.Add(new("info", $"{queued} record(s) waiting for the next export."));
+
+        // Written by hand rather than with JsonSerializer, which needs reflection a trimmed client does not have.
+        using var buffer = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(buffer, new JsonWriterOptions { Indented = true }))
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("getContext()");
+            context.WriteTo(writer);
+            writer.WritePropertyName("getStats()");
+            stats.WriteTo(writer);
+            writer.WriteEndObject();
+        }
+        _raw = System.Text.Encoding.UTF8.GetString(buffer.ToArray());
+    }
+
+    private static int Count(JsonElement stats, string name)
+        => stats.TryGetProperty(name, out var value) && value.TryGetInt32(out var count) ? count : 0;
+
+    private const string DebugCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            if (builder.Environment.IsDevelopment())
+            {
+                options.Debug = true;              // Belemetry's own messages at Information, in the Bit.Belemetry category
+                options.Browser.Debug = true;      // the script's diagnostics in console.debug
+                options.AddConsoleExporter();      // every record, printed
+            }
+
+            options.Metrics.Meters.Add("Bit.Belemetry");   // what was dropped and exported, as metrics
+        });
+
+        // appsettings.Development.json - make sure the console logger shows the category:
+        // { "Logging": { "LogLevel": { "Bit.Belemetry": "Information" } } }
+        """;
+}

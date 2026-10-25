@@ -46,6 +46,13 @@ public class BlowNode
     public bool Hidden { get; set; }
 
     /// <summary>
+    /// True when the node's children are folded away into it: they are hidden, edges running into them from outside
+    /// are drawn to this node instead, and edges among them are hidden with them. Set through
+    /// <c>BlowCanvas.SetCollapsedAsync</c>, which hides and shows the children to match.
+    /// </summary>
+    public bool Collapsed { get; set; }
+
+    /// <summary>
     /// When false the node is skipped by delete interactions (key press, <c>DeleteElementsAsync</c>).
     /// A node nested in one that is deleted goes with its parent regardless, as its edges do.
     /// </summary>
@@ -115,6 +122,25 @@ public class BlowNode
     /// defines which point of the node <see cref="Position"/> refers to. Overrides the canvas default.
     /// </summary>
     public BlowXYPosition? Origin { get; set; }
+
+    /// <summary>
+    /// The node's declared connection points: their data types, connection limits and whether they must be
+    /// connected. Null (the default) declares none, and the node's handles accept whatever the canvas-wide rules
+    /// allow. The built-in node types draw one handle per declared port; a template's <c>BlowHandle</c> picks up
+    /// the port with its type and id. See <see cref="BlowPort"/>.
+    /// </summary>
+    public List<BlowPort>? Ports { get; set; }
+
+    /// <summary>The declared port standing for the handle of the given type and id, or null.</summary>
+    public BlowPort? FindPort(BlowHandleType type, string? handleId)
+    {
+        if (Ports is not { Count: > 0 } ports) return null;
+        foreach (var port in ports)
+        {
+            if (port.Matches(type, handleId)) return port;
+        }
+        return null;
+    }
 
     // ---- internal measured / transient state (maintained by the canvas) ----
 
@@ -204,6 +230,7 @@ public class BlowNode
         Selectable = Selectable,
         Connectable = Connectable,
         Hidden = Hidden,
+        Collapsed = Collapsed,
         Deletable = Deletable,
         SourcePosition = SourcePosition,
         TargetPosition = TargetPosition,
@@ -218,6 +245,7 @@ public class BlowNode
         Style = Style,
         ZIndex = ZIndex,
         Origin = Origin,
+        Ports = Ports?.ConvertAll(p => p.Clone()),
         Measured = Measured,
     };
 
@@ -249,6 +277,14 @@ public readonly record struct BlowHandleBounds(
     bool ConnectableEnd = true)
 {
     /// <summary>Builds the dictionary key used to store/lookup a handle.</summary>
-    public static string Key(BlowHandleType type, string? handleId) =>
-        $"{type}:{handleId ?? string.Empty}";
+    /// <remarks>
+    /// Asked for both ends of every edge on every render, so the keys of the unnamed handles - the common case - are
+    /// constants rather than a fresh string each time.
+    /// </remarks>
+    public static string Key(BlowHandleType type, string? handleId) => string.IsNullOrEmpty(handleId)
+        ? (type == BlowHandleType.Source ? UnnamedSourceKey : UnnamedTargetKey)
+        : $"{type}:{handleId}";
+
+    private const string UnnamedSourceKey = "Source:";
+    private const string UnnamedTargetKey = "Target:";
 }

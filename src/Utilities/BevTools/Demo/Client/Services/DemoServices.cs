@@ -14,7 +14,15 @@ public static class DemoServices
         services.AddHttpClient("api");
         services.AddScoped<ProductApi>();
         services.AddScoped<FilterState>();
+        services.AddScoped<RedirectCounter>();
         services.AddScoped<UserSession>();
+
+        // A sign-in without an identity provider, for BevTools' Authentication state (State and Routing panels).
+        // Registered after AddRazorComponents, so it replaces the server's own provider in this demo.
+        services.AddAuthorizationCore();
+        services.AddCascadingAuthenticationState();
+        services.AddScoped<DemoAuthenticationStateProvider>();
+        services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider>(sp => sp.GetRequiredService<DemoAuthenticationStateProvider>());
 
         // State containers that integrate with BevTools through IBevStateProvider.
         services.AddBevToolsStateProvider<CartState>();
@@ -43,6 +51,10 @@ public sealed class UserSession
 
     [BevToolsSensitive]
     public string Nickname { get; set; } = "hidden by attribute";
+
+    // Left out of BevTools altogether: the inspector does not list it, not even as redacted.
+    [BevToolsIgnore]
+    public string SupportNotes { get; set; } = "never listed by BevTools";
 }
 
 public sealed class LeakyCache(UserSession session)
@@ -60,6 +72,12 @@ public sealed class ExportService(ReportService report)
     public ReportService Report => report;
 }
 
+/// <summary>How many times the planted redirect loop (problem 18) bounced; it stops after a few rounds.</summary>
+public sealed class RedirectCounter
+{
+    public int Hops { get; set; }
+}
+
 /// <summary>Filter state shared by the products page. Notifies on every change without coalescing (intentional).</summary>
 public sealed class FilterState
 {
@@ -75,7 +93,7 @@ public sealed class FilterState
         set
         {
             _query = value;
-            Changed?.Invoke();
+            Notify();
         }
     }
 
@@ -85,7 +103,7 @@ public sealed class FilterState
         set
         {
             _category = value;
-            Changed?.Invoke();
+            Notify();
         }
     }
 
@@ -95,15 +113,28 @@ public sealed class FilterState
         set
         {
             _maxPrice = value;
-            Changed?.Invoke();
+            Notify();
         }
     }
 
+    /// <summary>How many times <see cref="Touch"/> notified without changing anything.</summary>
     public int ChangeCount { get; private set; }
+
+    /// <summary>Every notification, whatever raised it.</summary>
+    public int Notifications { get; private set; }
+
+    /// <summary>The handlers subscribed to <see cref="Changed"/> right now, for the demo's BevTools panel (Extension/DemoStorePanel).</summary>
+    internal Delegate[] Subscribers => Changed?.GetInvocationList() ?? [];
 
     public void Touch()
     {
         ChangeCount++;
+        Notify();
+    }
+
+    private void Notify()
+    {
+        Notifications++;
         Changed?.Invoke();
     }
 }
@@ -241,6 +272,9 @@ public sealed class ProductApi(IHttpClientFactory factory, NavigationManager nav
 
     public Task<List<Order>> GetOrdersAsync(int delayMs = 0, CancellationToken ct = default) =>
         Client.GetFromJsonAsync<List<Order>>("api/orders?delay=" + delayMs, ct)!;
+
+    public Task<OrderDetails> GetOrderDetailsAsync(int id, CancellationToken ct = default) =>
+        Client.GetFromJsonAsync<OrderDetails>("api/orders/" + id, ct)!;
 
     public async Task<string> GetFlakyAsync(CancellationToken ct = default)
     {

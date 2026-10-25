@@ -1,0 +1,17 @@
+﻿@* A list with a locked item: Filter is asked about every item, and true keeps it from being dragged. *@
+
+<Bortable @bind-Items="_items" TItem="string" Id="filter-list" Filter="IsLocked"
+          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+    <ItemTemplate Context="item">@item</ItemTemplate>
+</Bortable>
+
+<p class="demo-order"><strong>Order:</strong> <span id="filter-order">@string.Join(", ", _items)</span></p>
+
+@code {
+    private IList<string> _items = new List<string>
+    {
+        "Item 1", "Item 2", "Item 3", "Filtered (locked)", "Item 4", "Item 5"
+    };
+
+    private bool IsLocked(string item) => item.StartsWith("Filtered", StringComparison.Ordinal);
+}

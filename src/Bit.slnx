@@ -225,6 +225,7 @@
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj" />
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj" />
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj" />
+    <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.Harness.Hybrid/Bit.Bdnd.Tests.Harness.Hybrid.csproj" />
   </Folder>
   <Folder Name="/Utilities/BlazeDb/">
     <File Path="Utilities/BlazeDb/README.md" />
@@ -254,6 +255,7 @@
     <Project Path="Utilities/Blow/Tests/Bit.Blow.Tests/Bit.Blow.Tests.csproj" />
     <Project Path="Utilities/Blow/Tests/Bit.Blow.Tests.Mcp/Bit.Blow.Tests.Mcp.csproj" />
     <Project Path="Utilities/Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj" />
+    <Project Path="Utilities/Blow/Tests/Bit.Blow.Benchmarks/Bit.Blow.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/Utilities/Borm/">
     <File Path="Utilities/Borm/README.md" />
@@ -297,6 +299,7 @@
   <Folder Name="/Utilities/Bonboarding/Tests/">
     <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
     <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.Mcp/Bit.Bonboarding.Tests.Mcp.csproj" />
+    <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E/Bit.Bonboarding.Tests.E2E.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bortable/">
     <File Path="Utilities/Bortable/README.md" />
@@ -365,6 +368,23 @@
   <Folder Name="/Utilities/BevTools/Demo/">
     <Project Path="Utilities/BevTools/Demo/Client/Bit.BevTools.Demo.Client.csproj" />
     <Project Path="Utilities/BevTools/Demo/Server/Bit.BevTools.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BevTools/Samples/">
+    <Project Path="Utilities/BevTools/Samples/Core/Bit.BevTools.Samples.Core.csproj" />
+    <Project Path="Utilities/BevTools/Samples/MAUI/Bit.BevTools.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/BevTools/Samples/Auto/">
+    <Project Path="Utilities/BevTools/Samples/Auto/Bit.BevTools.Samples.Auto/Bit.BevTools.Samples.Auto.csproj" />
+    <Project Path="Utilities/BevTools/Samples/Auto/Bit.BevTools.Samples.Auto.Client/Bit.BevTools.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BevTools/Samples/Server/">
+    <Project Path="Utilities/BevTools/Samples/Server/Bit.BevTools.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BevTools/Samples/Wasm/">
+    <Project Path="Utilities/BevTools/Samples/Wasm/Bit.BevTools.Samples.Wasm/Bit.BevTools.Samples.Wasm.csproj" />
+    <Project Path="Utilities/BevTools/Samples/Wasm/Bit.BevTools.Samples.Wasm.Client/Bit.BevTools.Samples.Wasm.Client.csproj" />
   </Folder>
   <Folder Name="/Utilities/BevTools/Tests/">
     <Project Path="Utilities/BevTools/Tests/Bit.BevTools.Benchmarks/Bit.BevTools.Benchmarks.csproj" />

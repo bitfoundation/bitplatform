@@ -96,8 +96,14 @@ public sealed partial class BonboardingStep : ComponentBase, IDisposable
     /// <summary>Branching: returns the id of the previous step.</summary>
     [Parameter] public Func<BonboardingStepContext, ValueTask<string?>>? ResolvePrevious { get; set; }
 
+    /// <summary>Shown and announced when <see cref="CanAdvance"/> holds the user on the step.</summary>
+    [Parameter] public string? ValidationMessage { get; set; }
+
     /// <summary>Advances when the user interacts with the highlighted element.</summary>
     [Parameter] public BonboardingAdvanceTrigger? AdvanceOn { get; set; }
+
+    /// <summary>Advances when the application raises this signal through <c>IBonboardingService.SignalAsync</c>.</summary>
+    [Parameter] public string? AdvanceOnSignal { get; set; }
 
     /// <summary>Runs before the popover is shown.</summary>
     [Parameter] public Func<BonboardingStepContext, ValueTask>? OnBeforeShow { get; set; }
@@ -139,6 +145,22 @@ public sealed partial class BonboardingStep : ComponentBase, IDisposable
     [Parameter] public string? SkipLabel { get; set; }
     [Parameter] public string? DoneLabel { get; set; }
     [Parameter] public string? PopoverClass { get; set; }
+    [Parameter] public double? ViewportPadding { get; set; }
+    [Parameter] public double? ArrowSize { get; set; }
+    [Parameter] public double? OverlayOpacity { get; set; }
+    [Parameter] public bool? CloseOnOverlayClick { get; set; }
+    [Parameter] public bool? CloseOnEscape { get; set; }
+    [Parameter] public double? ScrollPadding { get; set; }
+    [Parameter] public TimeSpan? AnimationDuration { get; set; }
+    [Parameter] public BonboardingTheme? Theme { get; set; }
+    [Parameter] public BonboardingDirection? Direction { get; set; }
+    [Parameter] public int? ZIndex { get; set; }
+    [Parameter] public bool? KeyboardNavigation { get; set; }
+    [Parameter] public bool? TrapFocus { get; set; }
+    [Parameter] public bool? AutoFocus { get; set; }
+
+    /// <summary>Free-form metadata, handy for analytics dimensions.</summary>
+    [Parameter] public IReadOnlyDictionary<string, object?>? Metadata { get; set; }
 
     /// <summary>Escape hatch for anything not exposed as a parameter.</summary>
     /// <remarks>
@@ -195,9 +217,12 @@ public sealed partial class BonboardingStep : ComponentBase, IDisposable
         Definition.Route = Route;
         Definition.When = When;
         Definition.CanAdvance = CanAdvance;
+        Definition.ValidationMessage = ValidationMessage;
         Definition.ResolveNext = ResolveNext;
         Definition.ResolvePrevious = ResolvePrevious;
         Definition.AdvanceOn = AdvanceOn;
+        Definition.AdvanceOnSignal = AdvanceOnSignal;
+        Definition.Metadata = Metadata;
         Definition.OnBeforeShow = OnBeforeShow;
         Definition.OnShown = OnShown;
         Definition.OnBeforeLeave = OnBeforeLeave;
@@ -226,6 +251,19 @@ public sealed partial class BonboardingStep : ComponentBase, IDisposable
         Definition.SkipLabel = SkipLabel;
         Definition.DoneLabel = DoneLabel;
         Definition.PopoverClass = PopoverClass;
+        Definition.ViewportPadding = ViewportPadding;
+        Definition.ArrowSize = ArrowSize;
+        Definition.OverlayOpacity = OverlayOpacity;
+        Definition.CloseOnOverlayClick = CloseOnOverlayClick;
+        Definition.CloseOnEscape = CloseOnEscape;
+        Definition.ScrollPadding = ScrollPadding;
+        Definition.AnimationDuration = AnimationDuration;
+        Definition.Theme = Theme;
+        Definition.Direction = Direction;
+        Definition.ZIndex = ZIndex;
+        Definition.KeyboardNavigation = KeyboardNavigation;
+        Definition.TrapFocus = TrapFocus;
+        Definition.AutoFocus = AutoFocus;
 
         Configure?.Invoke(Definition);
     }

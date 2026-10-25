@@ -41,7 +41,15 @@
         Trace and Debug are below the minimum level, so their buttons produce nothing - which is the point.
         <code>IncludeMessageTemplate</code> keeps the raw template as <code>log.record.template</code>, and
         <code>ExcludedCategories</code> drops category prefixes outright (Belemetry's own diagnostics category,
-        <code>Bit.Belemetry</code>, is always excluded, so its diagnostics never feed back into its pipeline).
+        <code>Bit.Belemetry</code>, is always excluded, so its diagnostics never feed back into its pipeline; your own
+        types in <code>Bit.Belemetry.*</code> namespaces are collected like any other).
+    </p>
+    <p>
+        In WebAssembly and Hybrid the error logs are capped like the browser's errors: an entry identical to one just
+        recorded - same category, exception type, message and first stack lines - is suppressed for
+        <code>Errors.DuplicateWindow</code> (5 s), and at most <code>Errors.MaxPerMinute</code> (100) are recorded a
+        minute (see <a href="/browser">Browser instrumentation</a>). Press <em>LogError with an exception</em> several
+        times quickly: one record arrives. The server pipeline serves every user at once and is not capped.
     </p>
     <div class="bb-demo">
         <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">ILogger</span></span></div>
@@ -79,6 +87,15 @@
         <code>MyApp.Search</code> alike. This demo adds its own <code>Bit.Belemetry.Demo</code> source. Names in
         <code>Traces.IgnoredActivityNames</code> are never created at all - their children attach to the parent -
         which is the cheapest way to drop a chatty source such as Blazor's per-event spans.
+    </p>
+    <p>
+        In WebAssembly, <code>HttpClient</code> traces itself only with the <code>HttpActivityPropagationSupport</code>
+        switch on, and the WebAssembly SDK turns it off by default. Off, its requests go out through the browser's
+        <code>fetch</code>, and the browser script records them as client spans of its own (<code>Dependencies</code>,
+        with <code>traceparent</code> only where <code>PropagateTraceContextTo</code> allows). This demo turns it on in
+        its client project, which is why the checkout trace below has a <code>System.Net.Http</code> span. On, though,
+        <code>HttpClient</code> sends <code>traceparent</code> to every origin it calls, so a cross-origin API has to
+        allow that header.
     </p>
     <p>
         Sampling is parent-based: a span whose parent was sampled is recorded, a new trace is recorded with
@@ -157,6 +174,55 @@
 </div>
 
 <div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Belemetry's own health</h3>
+    <p>
+        Telemetry that goes missing leaves a gap, not an error. Add the <code>Bit.Belemetry</code> meter to
+        <code>Metrics.Meters</code> and Belemetry reports what it dropped and what became of its exports, so a dashboard
+        can alert on data loss. The counters cost nothing while nobody listens.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th scope="col">Instrument</th><th scope="col">Attributes</th><th scope="col">Counts</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>belemetry.records.dropped</code></td>
+                    <td><code>belemetry.reason</code>, <code>belemetry.signal</code> (<code>traces</code> / <code>logs</code>)</td>
+                    <td>
+                        Records dropped before export: <code>queue_full</code>, <code>pending_full</code> (the hold before a
+                        consent decision overflowed), <code>not_consented</code>, <code>consent_revoked</code>,
+                        <code>error_limit</code>, <code>relay_limit</code> (a Blazor Server page relaying too much),
+                        <code>filtered</code> (a processor returned <code>false</code>)
+                    </td>
+                </tr>
+                <tr>
+                    <td><code>belemetry.records.exported</code></td>
+                    <td><code>belemetry.exporter</code>, <code>belemetry.outcome</code></td>
+                    <td>
+                        Records handed to an exporter: <code>delivered</code>, <code>rejected</code> (refused for good,
+                        including the items a partial success refused), <code>stored</code> (kept for a retry, and counted
+                        as <code>delivered</code> again when the retry succeeds), <code>failed</code> (lost)
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        This demo collects it. Every export of the WebAssembly pipeline counts as <code>delivered</code>, and every
+        live-feed poll the demo's processor drops counts as <code>filtered</code> - press <em>HttpClient GET
+        /api/telemetry</em> on the <a href="/processors">Processors</a> page and watch it grow. The browser script's
+        counterpart is <code>BitBelemetry.getStats()</code>.
+    </p>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">Bit.Belemetry meter</span></span></div>
+        <TelemetryFeedView Compact="true" Match="@IsHealthMetric"
+                           EmptyText="No health metrics yet - they are exported every 10 s in this demo, once Metrics is granted." />
+    </div>
+    <CodeSnippet Code="@HealthCode" Language="C#" />
+</div>
+
+<div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Entity Framework Core and Hangfire</h3>
     <p>
         Neither EF Core nor Hangfire starts activities of its own, and the OpenTelemetry instrumentations for them
@@ -211,6 +277,8 @@
     private static bool IsWasmSpan(TelemetryRecord r) => r.Source == "wasm" && r.Signal == "span";
 
     private static bool IsWasmMetric(TelemetryRecord r) => r.Source == "wasm" && r.Signal == "metric" && r.Name.StartsWith("demo.", StringComparison.Ordinal);
+
+    private static bool IsHealthMetric(TelemetryRecord r) => r.Source == "wasm" && r.Signal == "metric" && r.Name.StartsWith("belemetry.", StringComparison.Ordinal);
 
     private void Log(LogLevel level)
     {
@@ -409,6 +477,16 @@
         }
 
         options.AddProcessor(new TailSampler());
+        """;
+
+    private const string HealthCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Metrics.Meters.Add("Bit.Belemetry");   // belemetry.records.dropped and belemetry.records.exported
+        });
+
+        // An alert worth having, in PromQL (the dots become underscores in Prometheus):
+        //   sum by (belemetry_reason) (rate(belemetry_records_dropped_total[5m])) > 0
         """;
 
     private const string EfCoreCode = """

@@ -72,6 +72,24 @@ public sealed class BcrdtCollaborationBuilder
     /// <summary>Stores documents in process memory, for tests and ephemeral sessions.</summary>
     public BcrdtCollaborationBuilder UseInMemoryStore() => UseStore(new BcrdtInMemoryDocumentStore());
 
+    /// <summary>
+    /// Stores documents in the browser's IndexedDB, so they - and the edits made offline - survive a
+    /// reload, a closed tab and a restarted browser. See <see cref="BcrdtIndexedDbDocumentStore"/>.
+    /// </summary>
+    /// <remarks>
+    /// Registered per scope, because it talks to the browser through the scope's
+    /// <see cref="Microsoft.JSInterop.IJSRuntime"/>: in WebAssembly that is the page's, in Blazor Server the
+    /// circuit's - which keeps each user's documents in their own browser.
+    /// </remarks>
+    /// <param name="databaseName">The IndexedDB database to use.</param>
+    public BcrdtCollaborationBuilder UseIndexedDbStore(string databaseName = BcrdtIndexedDbDocumentStore.DefaultDatabaseName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(databaseName);
+        Services.TryAddScoped<IBcrdtDocumentStore>(provider =>
+            new BcrdtIndexedDbDocumentStore(provider.GetRequiredService<Microsoft.JSInterop.IJSRuntime>(), databaseName));
+        return this;
+    }
+
     private sealed class DelegateTransportFactory(Func<string, IBcrdtTransport> factory) : IBcrdtTransportFactory
     {
         public IBcrdtTransport Create(string documentId) => factory(documentId);

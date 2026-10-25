@@ -35,6 +35,9 @@
 .bit-bortable-item {
     cursor: grab;
     user-select: none;
+    -webkit-user-select: none;
+    /* A long press drags on a touch screen: no callout menu for it. */
+    -webkit-touch-callout: none;
     transition: background-color 0.15s ease, transform 0.15s ease;
 }
 
@@ -57,6 +60,14 @@
 /* The chosen item (ChosenClass). */
 .bit-bortable-chosen {
     background-color: var(--bit-bortable-chosen-bg, rgba(var(--bit-bortable-accent-rgb), 0.12));
+}
+
+/* The preview of the item that follows a finger, a pen, or the mouse with ForceFallback (DragClass). It is a copy of
+   the item placed above the page, which keeps the item's own look. */
+.bit-bortable-drag {
+    opacity: var(--bit-bortable-drag-opacity, 0.92);
+    box-shadow: var(--bit-bortable-drag-shadow, 0 10px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12));
+    cursor: grabbing;
 }
 
 /* The original item is hidden in its source list while it is previewed as the placeholder in a target list
@@ -86,4 +97,54 @@
 
 .bit-bortable-disabled > .bit-bortable-item {
     cursor: default;
+}
+
+/* While a drag runs, the browser layer marks the lists: those that take the drag (data-bortable-accepts), the one
+   under the pointer (data-bortable-over) and, when it refused the position, data-bortable-refused. Nothing is drawn
+   unless the custom properties below are set - an outline for valid and invalid targets on a kanban board, say. */
+.bit-bortable[data-bortable-accepts] {
+    outline: var(--bit-bortable-accepts-outline, none);
+    outline-offset: var(--bit-bortable-target-offset, 2px);
+}
+
+.bit-bortable[data-bortable-over] {
+    outline: var(--bit-bortable-over-outline, none);
+}
+
+.bit-bortable[data-bortable-refused] {
+    outline: var(--bit-bortable-refused-outline, none);
+}
+
+/* The keyboard: the focused item, and the one picked up from the keyboard (chosen, and focused). */
+.bit-bortable-item:focus-visible {
+    outline: var(--bit-bortable-focus-outline, 2px solid rgba(var(--bit-bortable-accent-rgb), 0.9));
+    outline-offset: var(--bit-bortable-focus-offset, 2px);
+}
+
+.bit-bortable-chosen:focus-visible {
+    outline-style: var(--bit-bortable-lifted-outline-style, dashed);
+}
+
+/* The keyboard instructions every item refers to (aria-describedby): read, never shown. */
+.bit-bortable-instructions {
+    display: none !important;
+}
+
+/* Windows high contrast and other forced colours: the states are drawn with system colours instead of tints. */
+@media (forced-colors: active) {
+    .bit-bortable-chosen,
+    .bit-bortable-selected,
+    .bit-bortable-swap-highlight {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+    }
+
+    .bit-bortable-ghost {
+        outline: 2px dashed GrayText;
+        outline-offset: -2px;
+    }
+
+    .bit-bortable-item:focus-visible {
+        outline: 2px solid Highlight;
+    }
 }

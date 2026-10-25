@@ -24,4 +24,10 @@ public enum BonboardingTourStatus
     Cancelled,
     /// <summary>Stopped by an unrecoverable error.</summary>
     Failed,
+
+    /// <summary>
+    /// The user asked to be reminded later. Progress is kept, and automatic starts pass the tour over until
+    /// <see cref="BonboardingRecord.SnoozedUntil"/>.
+    /// </summary>
+    Snoozed,
 }

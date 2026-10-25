@@ -12,4 +12,6 @@ public enum BonboardingStepActionEffect
     Complete,
     Skip,
     Dismiss,
+    /// <summary>End the tour for now and remind the user after <see cref="BonboardingStepAction.SnoozeFor"/>.</summary>
+    Snooze,
 }

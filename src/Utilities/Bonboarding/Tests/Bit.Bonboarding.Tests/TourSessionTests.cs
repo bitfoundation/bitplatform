@@ -530,6 +530,55 @@ public class TourSessionTests
     // ---- Interaction --------------------------------------------------------
 
     [TestMethod]
+    public async Task A_Refresh_That_Finds_The_Target_Gone_Treats_It_As_Lost()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b");
+
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")));
+        var activations = harness.Interop.Activations.Count;
+
+        // Removed by a re-render that no observer reported.
+        harness.Interop.ExistingSelectors.Remove("#a");
+        await session.RefreshAsync();
+
+        Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status, "The default behaviour waits for the target to come back.");
+        Assert.AreEqual(BonboardingWaitReason.Target, session.WaitReason);
+        Assert.IsGreaterThan(activations, harness.Interop.Activations.Count, "The step was handed back to the browser to watch for it.");
+        Assert.Contains(BonboardingEventKind.TargetMissing, harness.Events.Kinds);
+    }
+
+    [TestMethod]
+    public async Task An_Invalid_Selector_Is_Not_Waited_On()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#b");
+        harness.Interop.InvalidSelectors.Add("#a[");
+
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a["), Step("b", "#b")));
+
+        // The default is to wait, then skip: an unparseable selector skips at once.
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+    }
+
+    [TestMethod]
+    public async Task An_Invalid_Selector_Names_Itself_When_The_Step_Fails()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.Interop.InvalidSelectors.Add("button:has(");
+
+        var step = Step("a", "button:has(");
+        step.MissingTarget = BonboardingMissingTargetBehavior.Fail;
+
+        var session = await harness.Service.StartAsync(Tour(step));
+
+        Assert.AreEqual(BonboardingTourStatus.Failed, session.Status);
+        Assert.Contains("not a valid CSS selector", session.Error!.Message);
+        Assert.Contains("button:has(", session.Error.Message);
+    }
+
+    [TestMethod]
     public async Task An_AdvanceOn_Step_Lets_Pointer_Events_Reach_The_Target()
     {
         await using var harness = new BonboardingHarness();
@@ -545,6 +594,50 @@ public class TourSessionTests
 
         await harness.Interop.TriggerAdvanceAsync(session.Id);
 
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+    }
+
+    [TestMethod]
+    public async Task Advance_Triggers_In_Flight_Together_Move_The_Tour_Only_Once()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b", "#c");
+
+        var decision = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var interactive = Step("a", "#a");
+        interactive.AdvanceOn = BonboardingAdvanceTrigger.TargetClick;
+        interactive.CanAdvance = _ => new ValueTask<bool>(decision.Task);
+
+        var session = await harness.Service.StartAsync(Tour(interactive, Step("b", "#b"), Step("c", "#c")));
+
+        // The user clicks the target twice while the first advance is still being decided.
+        var first = harness.Interop.TriggerAdvanceAsync(session.Id);
+        var second = harness.Interop.TriggerAdvanceAsync(session.Id);
+
+        decision.SetResult(true);
+        await Task.WhenAll(first, second);
+
+        Assert.AreEqual("b", session.CurrentStep!.Id, "The second click belongs to the step that was left, not to the next one.");
+    }
+
+    [TestMethod]
+    public async Task An_Advance_Trigger_Held_Back_By_CanAdvance_Can_Fire_Again()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b");
+
+        var allowed = false;
+        var interactive = Step("a", "#a");
+        interactive.AdvanceOn = BonboardingAdvanceTrigger.TargetClick;
+        interactive.CanAdvance = _ => ValueTask.FromResult(allowed);
+
+        var session = await harness.Service.StartAsync(Tour(interactive, Step("b", "#b")));
+
+        await harness.Interop.TriggerAdvanceAsync(session.Id);
+        Assert.AreEqual("a", session.CurrentStep!.Id);
+
+        allowed = true;
+        await harness.Interop.TriggerAdvanceAsync(session.Id);
         Assert.AreEqual("b", session.CurrentStep!.Id);
     }
 
@@ -671,6 +764,42 @@ public class TourSessionTests
         Assert.IsTrue(clicked);
         Assert.AreEqual("c", session.CurrentStep!.Id);
         Assert.Contains(BonboardingEventKind.ActionInvoked, harness.Events.Kinds);
+    }
+
+    [TestMethod]
+    public async Task A_Second_Click_On_An_Action_Still_Running_Is_Not_A_Second_Request()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var runs = 0;
+        var action = new BonboardingStepAction
+        {
+            Label = "Create a sample project",
+            OnClick = async _ =>
+            {
+                runs++;
+                await release.Task;
+            },
+        };
+
+        var step = Step("a", "#a");
+        step.Actions = [action];
+
+        var session = await harness.Service.StartAsync(Tour(step));
+
+        var first = session.InvokeActionAsync(action);
+        var second = session.InvokeActionAsync(action);
+
+        release.SetResult();
+        await Task.WhenAll(first, second);
+
+        Assert.AreEqual(1, runs, "A handler that creates something must not run once per impatient click.");
+
+        // Once it has finished, the same button is a new request again.
+        await session.InvokeActionAsync(action);
+        Assert.AreEqual(2, runs);
     }
 
     [TestMethod]
@@ -1082,6 +1211,23 @@ public class TourSessionTests
 
         // Step durations are what make funnel analysis possible.
         Assert.IsTrue(harness.Events.Events.Any(e => e.Kind == BonboardingEventKind.StepLeft && e.Duration is not null));
+    }
+
+    [TestMethod]
+    public async Task Finishing_With_Next_Reports_Leaving_The_Last_Step_Once()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b");
+
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")));
+        await session.NextAsync();
+
+        // Next on the last step is what a Done button does: the step is left, and the tour completes.
+        await session.NextAsync();
+
+        Assert.AreEqual(BonboardingTourStatus.Completed, session.Status);
+        Assert.AreEqual(1, harness.Events.Events.Count(e => e.Kind == BonboardingEventKind.StepLeft && e.Step?.Id == "b"));
+        Assert.AreEqual(BonboardingEventKind.TourCompleted, harness.Events.Kinds[^1]);
     }
 
     [TestMethod]

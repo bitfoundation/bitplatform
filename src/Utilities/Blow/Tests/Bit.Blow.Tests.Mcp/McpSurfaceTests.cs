@@ -55,6 +55,7 @@ public class McpSurfaceTests
     {
         var info = McpTestHost.Client.ServerInfo;
 
+        Assert.IsNotNull(info, "The server sent no information about itself.");
         Assert.AreEqual("bit-blow", info.Name);
         Assert.AreEqual("Bit.Blow", info.Title);
         Assert.AreEqual(BlowServerInstructions.BlowVersion, info.Version);

@@ -283,6 +283,11 @@ jobs:
     name: bonboarding
     uses: ./.github/workflows/bit.ci.Bonboarding.yml
 
+  bonboarding_e2e:
+    name: bonboarding e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Bonboarding.e2e.yml
+
   bdnd:
     name: bdnd
     uses: ./.github/workflows/bit.ci.Bdnd.yml

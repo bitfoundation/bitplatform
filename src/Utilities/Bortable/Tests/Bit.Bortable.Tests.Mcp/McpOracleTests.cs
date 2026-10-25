@@ -253,7 +253,7 @@ public partial class McpOracleTests
             Assert.AreEqual(cssClass.Name, typeof(Bortable<string>).GetProperty(cssClass.Parameter!)!.GetValue(list), cssClass.Parameter);
         }
 
-        Assert.HasCount(4, BortableStylesheetClasses.Classes.Where(cssClass => cssClass.Parameter is not null), "GhostClass, ChosenClass, SwapClass and SelectedClass.");
+        Assert.HasCount(5, BortableStylesheetClasses.Classes.Where(cssClass => cssClass.Parameter is not null), "GhostClass, ChosenClass, SwapClass, SelectedClass and DragClass.");
     }
 
     // ---- The drag lab against the README ---------------------------------------

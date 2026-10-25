@@ -1,0 +1,35 @@
+﻿@* A hex dump - offset, sixteen bytes, their printable ASCII - for the pages that show the bytes the
+   engine wrote: an exported file, a stored frame next to the plaintext it seals. *@
+
+<div class="bd-hex">
+    @foreach (var line in Lines)
+    {
+        <div class="bd-hex-row">
+            <span class="bd-hex-off">@line.Offset</span>
+            <span class="bd-hex-bytes">@line.Bytes</span>
+            <span class="bd-hex-ascii">@line.Ascii</span>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>One row of the dump.</summary>
+    public sealed record Line(string Offset, string Bytes, string Ascii);
+
+    [Parameter] public IReadOnlyList<Line> Lines { get; set; } = [];
+
+    /// <summary>The first <paramref name="max"/> bytes of <paramref name="bytes"/>, sixteen to a line.</summary>
+    public static List<Line> Dump(ReadOnlySpan<byte> bytes, int max = int.MaxValue)
+    {
+        var length = Math.Min(bytes.Length, max);
+        var lines = new List<Line>();
+        for (var offset = 0; offset < length; offset += 16)
+        {
+            var slice = bytes.Slice(offset, Math.Min(16, length - offset)).ToArray();
+            var hex = string.Join(' ', slice.Select(b => b.ToString("x2"))).PadRight(47);
+            var ascii = new string(slice.Select(b => b is >= 0x20 and < 0x7f ? (char)b : '.').ToArray());
+            lines.Add(new Line(offset.ToString("x4"), hex, ascii));
+        }
+        return lines;
+    }
+}

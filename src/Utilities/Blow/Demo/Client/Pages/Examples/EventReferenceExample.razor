@@ -1,0 +1,287 @@
+﻿@page "/examples/event-reference"
+
+<PageTitle>Event Reference · Blow</PageTitle>
+
+<ExampleScaffold Title="Event Reference"
+                 Summary="Every event BlowCanvas raises, wired to one canvas and logged under it with its payload - the quickest way to find out which event answers your question, when it fires and what it carries. Repeats are merged into one line with a count, and the three noisiest families stay off until you tick them.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_mouseMoves" @onchange="@(e => _mouseMoves = (bool)e.Value!)" /> Node and edge mouse moves</label>
+        <label><input type="checkbox" checked="@_paneMoves" @onchange="@(e => _paneMoves = (bool)e.Value!)" /> Pane mouse moves</label>
+        <label><input type="checkbox" checked="@_viewportMoves" @onchange="@(e => _viewportMoves = (bool)e.Value!)" /> Viewport moves</label>
+        <button class="btn btn-secondary" @onclick="AddBrokenEdge">Add a broken edge</button>
+        <button class="btn btn-secondary" @onclick="ClearLog">Clear log</button>
+    </Toolbar>
+    <ChildContent>
+        @* The canvas suppresses the browser's menu for the node, edge and selection context menus it hands to the app,
+           but not for OnPaneContextMenu; this wrapper does it for the pane, so a right-click there shows only the log. *@
+        <div class="er-frame" @oncontextmenu:preventDefault="true">
+            <BlowCanvas Nodes="_nodes"
+                        Edges="_edges"
+                        FitViewOnInit="true"
+                        ClipboardShortcutsEnabled="true"
+                        HistoryEnabled="true"
+                        OnInit="@(flow => Log("OnInit", $"canvas ready with {flow.CurrentNodes.Count} nodes"))"
+                        OnNodesInitialized="@(() => Log("OnNodesInitialized", "every visible node is measured"))"
+                        OnError="@(e => Log("OnError", $"{e.Code}: {e.Message}"))"
+                        OnNodeMouseEnter="@(e => Log("OnNodeMouseEnter", $"node {e.Node.Id}"))"
+                        OnNodeMouseMove="NodeMouseMove"
+                        OnNodeMouseLeave="@(e => Log("OnNodeMouseLeave", $"node {e.Node.Id}"))"
+                        OnNodeClick="@(n => Log("OnNodeClick", $"node {n.Id}"))"
+                        OnNodeDoubleClick="@(e => Log("OnNodeDoubleClick", $"node {e.Node.Id} at {At(e.Event)}"))"
+                        OnNodeContextMenu="@(e => Log("OnNodeContextMenu", $"node {e.Node.Id} at {At(e.Event)}"))"
+                        OnNodeDragStart="@(n => Log("OnNodeDragStart", $"node {n.Id} at {At(n.Position)}"))"
+                        OnNodeDrag="@(n => Log("OnNodeDrag", $"node {n.Id} at {At(n.Position)}", stream: true))"
+                        OnNodeDragStop="@(n => Log("OnNodeDragStop", $"node {n.Id} at {At(n.Position)}"))"
+                        OnEdgeMouseEnter="@(e => Log("OnEdgeMouseEnter", $"edge {e.Edge.Id}"))"
+                        OnEdgeMouseMove="EdgeMouseMove"
+                        OnEdgeMouseLeave="@(e => Log("OnEdgeMouseLeave", $"edge {e.Edge.Id}"))"
+                        OnEdgeClick="@(ed => Log("OnEdgeClick", $"edge {ed.Id}"))"
+                        OnEdgeDoubleClick="@(e => Log("OnEdgeDoubleClick", $"edge {e.Edge.Id} at {At(e.Event)}"))"
+                        OnEdgeContextMenu="@(e => Log("OnEdgeContextMenu", $"edge {e.Edge.Id} at {At(e.Event)}"))"
+                        OnPaneClick="@(e => Log("OnPaneClick", $"at {At(e)}"))"
+                        OnPaneContextMenu="@(e => Log("OnPaneContextMenu", $"at {At(e)}"))"
+                        OnPaneMouseEnter="@(e => Log("OnPaneMouseEnter", $"at {At(e)}"))"
+                        OnPaneMouseMove="PaneMouseMove"
+                        OnPaneMouseLeave="@(e => Log("OnPaneMouseLeave", $"at {At(e)}"))"
+                        OnPaneScroll="@(e => Log("OnPaneScroll", $"deltaX {e.DeltaX:0}, deltaY {e.DeltaY:0}", stream: true))"
+                        OnMoveStart="@(v => Log("OnMoveStart", Describe(v)))"
+                        OnMove="ViewportMove"
+                        OnMoveEnd="@(v => Log("OnMoveEnd", Describe(v)))"
+                        OnViewportChanged="@(v => Log("OnViewportChanged", Describe(v), stream: true))"
+                        OnSelectionStart="@(e => Log("OnSelectionStart", $"at {At(e)}"))"
+                        OnSelectionEnd="@(e => Log("OnSelectionEnd", $"at {At(e)}"))"
+                        OnSelectionChange="@(s => Log("OnSelectionChange", $"nodes {Ids(s.Nodes)}, edges {Ids(s.Edges)}"))"
+                        OnSelectionDragStart="@(e => Log("OnSelectionDragStart", $"nodes {Ids(e.Nodes)}"))"
+                        OnSelectionDrag="@(e => Log("OnSelectionDrag", $"nodes {Ids(e.Nodes)}", stream: true))"
+                        OnSelectionDragStop="@(e => Log("OnSelectionDragStop", $"nodes {Ids(e.Nodes)}"))"
+                        OnSelectionContextMenu="@(e => Log("OnSelectionContextMenu", $"nodes {Ids(e.Nodes)} at {At(e.Event)}"))"
+                        OnConnectStart="@(c => Log("OnConnectStart", $"from node {c.NodeId}, {c.HandleType} handle{HandleName(c.HandleId)}"))"
+                        OnConnectionChange="@(c => Log("OnConnectionChange", DescribeLine(c), stream: true))"
+                        OnConnect="@(c => Log("OnConnect", $"{c.Source} -> {c.Target}"))"
+                        OnConnectEnd="@(c => Log("OnConnectEnd", DescribeEnd(c)))"
+                        OnReconnectStart="@(r => Log("OnReconnectStart", $"edge {r.Edge.Id}, moving its {r.MovingEnd} end"))"
+                        OnReconnect="@(r => Log("OnReconnect", $"edge {r.Edge.Id} now {r.Connection.Source} -> {r.Connection.Target}"))"
+                        OnReconnectEnd="@(r => Log("OnReconnectEnd", $"edge {r.Edge.Id}, {(r.Rewired ? "rewired" : "left as it was")}"))"
+                        OnNodeResizeStart="@(n => Log("OnNodeResizeStart", $"node {n.Id} {Size(n)}"))"
+                        OnNodeResize="@(n => Log("OnNodeResize", $"node {n.Id} {Size(n)}", stream: true))"
+                        OnNodeResizeEnd="@(n => Log("OnNodeResizeEnd", $"node {n.Id} {Size(n)}"))"
+                        OnNodesDelete="@(nodes => Log("OnNodesDelete", Ids(nodes)))"
+                        OnEdgesDelete="@(edges => Log("OnEdgesDelete", Ids(edges)))"
+                        OnDelete="@(d => Log("OnDelete", $"{d.Nodes.Count} node(s), {d.Edges.Count} edge(s)"))"
+                        NodesChanged="@(nodes => Log("NodesChanged", $"{nodes.Count} nodes in the list"))"
+                        EdgesChanged="@(edges => Log("EdgesChanged", $"{edges.Count} edges in the list"))"
+                        OnGraphChanged="@(c => Log("OnGraphChanged", DescribeChange(c)))"
+                        OnHistoryChanged="@(h => Log("OnHistoryChanged", $"{h.UndoDepth} undo step(s), next undo: {h.UndoLabel ?? "-"}"))"
+                        OnPaste="@(f => Log("OnPaste", $"nodes {Ids(f.Nodes)}, edges {Ids(f.Edges)}"))">
+                <NodeTemplate Context="node">
+                    @if (node.Type == "resizable")
+                    {
+                        <BlowNodeResizer MinWidth="120" MinHeight="50" />
+                        <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                        <div class="er-resizable">@node.Label</div>
+                        <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                    }
+                    else
+                    {
+                        <BlowDefaultNode Node="node" />
+                    }
+                </NodeTemplate>
+                <ChildContent>
+                    <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                    <BlowControls />
+                </ChildContent>
+            </BlowCanvas>
+        </div>
+    </ChildContent>
+    <Footer>
+        <div class="er-log">
+            @if (_log.Count == 0)
+            {
+                <div class="er-empty">Nothing yet - hover, click or drag something on the canvas.</div>
+            }
+            @foreach (var entry in _log)
+            {
+                <div class="er-row">
+                    <code class="er-name">@entry.Name</code>
+                    @if (entry.Count > 1)
+                    {
+                        <span class="er-count">×@entry.Count</span>
+                    }
+                    <span class="er-payload">@entry.Payload</span>
+                </div>
+            }
+        </div>
+    </Footer>
+    <TryIt>
+        <li>Look at the bottom of the log: <strong>OnInit</strong> and <strong>OnNodesInitialized</strong> were raised as the page opened, once the canvas had rendered and measured its nodes.</li>
+        <li><strong>Hover</strong> a node or an edge for its mouse-enter and mouse-leave events; tick <strong>Node and edge mouse moves</strong> to see the moves between them. Move onto and off the canvas for <strong>OnPaneMouseEnter</strong> and <strong>OnPaneMouseLeave</strong>; tick <strong>Pane mouse moves</strong> for <strong>OnPaneMouseMove</strong>.</li>
+        <li><strong>Click</strong>, <strong>double-click</strong> and <strong>right-click</strong> a node, an edge and the empty background. No browser menu opens over the canvas.</li>
+        <li><strong>Drag</strong> a node: <strong>OnNodeDragStart</strong>, one <strong>OnNodeDrag</strong> line counting the moves, <strong>OnNodeDragStop</strong>, then the edit's <strong>NodesChanged</strong>, <strong>OnGraphChanged</strong> and <strong>OnHistoryChanged</strong>.</li>
+        <li><strong>Drag the background</strong> to pan and <strong>scroll</strong> to zoom: <strong>OnMoveStart</strong>, <strong>OnMoveEnd</strong>, <strong>OnViewportChanged</strong> and <strong>OnPaneScroll</strong>. Tick <strong>Viewport moves</strong> for the stream of <strong>OnMove</strong> in between.</li>
+        <li><strong>Shift+drag</strong> a box round two nodes for <strong>OnSelectionStart</strong>, <strong>OnSelectionChange</strong> and <strong>OnSelectionEnd</strong>; drag one of them for the selection-drag events, and right-click one for <strong>OnSelectionContextMenu</strong>.</li>
+        <li><strong>Drag from a handle</strong> to a handle of another node: <strong>OnConnectStart</strong>, <strong>OnConnectionChange</strong> while the line follows the pointer, <strong>OnConnect</strong> and <strong>OnConnectEnd</strong>. Let go on empty space instead and there is no <strong>OnConnect</strong>, and <strong>OnConnectEnd</strong> says the drop was not valid.</li>
+        <li><strong>Click</strong> an edge to select it, then <strong>drag one of the dots</strong> at its ends to another handle: <strong>OnReconnectStart</strong>, <strong>OnReconnect</strong> and <strong>OnReconnectEnd</strong>.</li>
+        <li><strong>Click</strong> "Resize me" to select it and <strong>drag a corner or a side</strong>: <strong>OnNodeResizeStart</strong>, <strong>OnNodeResize</strong> and <strong>OnNodeResizeEnd</strong>.</li>
+        <li>Select something and press <strong>Delete</strong>: <strong>OnNodesDelete</strong>, <strong>OnEdgesDelete</strong> and <strong>OnDelete</strong>. <strong>Ctrl+Z</strong> (<strong>Cmd+Z</strong>) brings it back.</li>
+        <li>Select a node and press <strong>Ctrl+C</strong> then <strong>Ctrl+V</strong> (<strong>Cmd</strong> on a Mac) for <strong>OnPaste</strong>.</li>
+        <li>Click <strong>Add a broken edge</strong>: it points at a node that does not exist, and <strong>OnError</strong> reports it. <strong>Clear log</strong> empties the log.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>Node pointer events carry a <code>BlowNodeMouseEvent</code> - the <code>Node</code> and the DOM <code>Event</code> (<code>MouseEventArgs</code>: <code>ClientX</code>, <code>ClientY</code>, the modifier keys) - except <code>OnNodeClick</code>, which carries the <code>BlowNode</code>. Edge events match with <code>BlowEdgeMouseEvent</code> (<code>Edge</code>, <code>Event</code>) and <code>OnEdgeClick</code>'s <code>BlowEdge</code>.</li>
+        <li>Pane events carry the <code>MouseEventArgs</code>; <code>OnPaneScroll</code> carries the <code>WheelEventArgs</code> (<code>DeltaX</code>, <code>DeltaY</code>) of every wheel event, before it pans or zooms.</li>
+        <li>The canvas only listens for node and edge mouse moves, enters, leaves, double-clicks and context menus, and for pane mouse moves, while a handler is supplied. The checkboxes pass a <code>default</code> <code>EventCallback</code> when off, which takes the DOM listener away rather than merely ignoring what it hears.</li>
+        <li>A handled <code>OnNodeContextMenu</code>, <code>OnEdgeContextMenu</code> or <code>OnSelectionContextMenu</code> suppresses the browser's menu; <code>OnPaneContextMenu</code> does not, so the page wraps the canvas in an element with <code>@@oncontextmenu:preventDefault</code>.</li>
+        <li>Drag and resize events carry the live <code>BlowNode</code> grabbed, its <code>Position</code>, <code>Width</code> and <code>Height</code> already updated. A drag moving several nodes adds the <code>BlowSelectionMouseEvent</code> events (<code>Nodes</code>, <code>Event</code>). The start events are raised at the press, so a plain click on a node logs a drag start and stop too.</li>
+        <li><code>OnMoveStart</code>, <code>OnMove</code>, <code>OnMoveEnd</code> and <code>OnViewportChanged</code> carry the <code>BlowViewport</code> (<code>X</code>, <code>Y</code>, <code>Zoom</code>). <code>OnSelectionStart</code> and <code>OnSelectionEnd</code> carry the <code>PointerEventArgs</code> of the box; <code>OnSelectionChange</code> a <code>BlowSelectionChange</code> (<code>Nodes</code>, <code>Edges</code>).</li>
+        <li><code>OnConnectStart</code> carries a <code>BlowConnectionStartInfo</code> (<code>NodeId</code>, <code>HandleId</code>, <code>HandleType</code>); <code>OnConnectionChange</code> a <code>BlowConnectionLineContext</code> (<code>From</code>, <code>To</code>, <code>IsValid</code>), and <code>null</code> once it ends; <code>OnConnect</code> a <code>BlowConnection</code> (<code>Source</code>, <code>Target</code>, <code>SourceHandle</code>, <code>TargetHandle</code>); <code>OnConnectEnd</code> a <code>BlowConnectEndInfo</code> (<code>IsValid</code>, <code>IsDropped</code>, <code>IsReconnect</code>, <code>FlowPosition</code>, <code>Rejection</code>).</li>
+        <li>Reconnecting raises <code>BlowEdgeReconnectStart</code> (<code>Edge</code>, <code>MovingEnd</code>), <code>BlowEdgeReconnect</code> (<code>Edge</code>, <code>Connection</code>) and <code>BlowEdgeReconnectEnd</code> (<code>Edge</code>, <code>MovingEnd</code>, <code>Rewired</code>); <code>EdgesReconnectable</code> is on by default.</li>
+        <li>Deleting raises <code>OnNodesDelete</code> (<code>IReadOnlyList&lt;BlowNode&gt;</code>), <code>OnEdgesDelete</code> (<code>IReadOnlyList&lt;BlowEdge&gt;</code>) and <code>OnDelete</code> (a <code>BlowSelectionChange</code> of what went).</li>
+        <li>After every completed edit <code>NodesChanged</code> and <code>EdgesChanged</code> hand back the live lists, and <code>OnGraphChanged</code> a <code>BlowGraphChange</code> (<code>Kind</code>, <code>Origin</code>, <code>Label</code>, <code>Nodes</code>, <code>Edges</code>, <code>RemovedNodes</code>, <code>RemovedEdges</code>). With <code>HistoryEnabled</code>, <code>OnHistoryChanged</code> carries a <code>BlowHistoryState</code> (<code>CanUndo</code>, <code>UndoDepth</code>, <code>UndoLabel</code> ...); with <code>ClipboardShortcutsEnabled</code>, <code>OnPaste</code> carries the pasted <code>BlowFragment</code> (<code>Nodes</code>, <code>Edges</code>).</li>
+        <li><code>OnInit</code> carries the <code>BlowCanvas</code> itself, once, after the first render and measurement; <code>OnNodesInitialized</code> carries nothing; <code>OnError</code> carries a <code>BlowError</code> (<code>Code</code>, <code>Message</code>), once for each distinct problem.</li>
+        <li>"Resize me" has a <code>BlowNodeResizer</code> in its template; the other nodes fall back to <code>BlowDefaultNode</code>. The page merges a repeating event into one line with a count, so a drag is one line rather than fifty.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .er-frame { height: 100%; }
+    .er-resizable { display: flex; align-items: center; justify-content: center; height: 100%; font-weight: 600; }
+    /* The log is what this page is for, so its footer is given more room than a sample's usual few lines. */
+    .example-footer:has(.er-log) { height: 14rem; }
+    .er-empty { color: var(--bb-text-soft); }
+    .er-row { display: flex; flex-wrap: wrap; gap: 0 .5rem; padding: 1px 0; border-top: 1px solid var(--bb-border); }
+    .er-row:first-child { border-top: 0; }
+    .er-name { font-weight: 600; color: var(--bb-text); }
+    .er-count { font-variant-numeric: tabular-nums; color: var(--bb-primary); }
+    .er-payload { color: var(--bb-text-muted); }
+</style>
+
+@code {
+    /// <summary>One line of the log. A repeating event updates its line instead of adding another.</summary>
+    private sealed class LogEntry(string name, string payload, bool stream)
+    {
+        public string Name { get; } = name;
+        public string Payload { get; set; } = payload;
+        public bool Stream { get; } = stream;
+        public int Count { get; set; } = 1;
+    }
+
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private readonly List<LogEntry> _log = [];
+    private bool _mouseMoves;
+    private bool _paneMoves;
+    private bool _viewportMoves;
+    private int _brokenEdges;
+
+    // Built once and handed over only while their box is ticked: the rest of the time the canvas gets an empty
+    // callback and so attaches no listener at all.
+    private EventCallback<BlowNodeMouseEvent> _nodeMouseMove;
+    private EventCallback<BlowEdgeMouseEvent> _edgeMouseMove;
+    private EventCallback<MouseEventArgs> _paneMouseMove;
+    private EventCallback<BlowViewport> _viewportMove;
+
+    private EventCallback<BlowNodeMouseEvent> NodeMouseMove => _mouseMoves ? _nodeMouseMove : default;
+    private EventCallback<BlowEdgeMouseEvent> EdgeMouseMove => _mouseMoves ? _edgeMouseMove : default;
+    private EventCallback<MouseEventArgs> PaneMouseMove => _paneMoves ? _paneMouseMove : default;
+    private EventCallback<BlowViewport> ViewportMove => _viewportMoves ? _viewportMove : default;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Input", Position = new(250, 0) },
+            new BlowNode { Id = "2", Label = "Hover, click, drag me", Position = new(40, 120), Width = 180 },
+            new BlowNode { Id = "3", Type = "resizable", Label = "Resize me", Position = new(380, 110), Width = 160, Height = 70 },
+            new BlowNode { Id = "4", Type = "output", Label = "Output", Position = new(250, 280) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Label = "select, then drag an end" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4" },
+        ];
+
+        _nodeMouseMove = EventCallback.Factory.Create<BlowNodeMouseEvent>(this,
+            e => Log("OnNodeMouseMove", $"node {e.Node.Id} at {At(e.Event)}", stream: true));
+        _edgeMouseMove = EventCallback.Factory.Create<BlowEdgeMouseEvent>(this,
+            e => Log("OnEdgeMouseMove", $"edge {e.Edge.Id} at {At(e.Event)}", stream: true));
+        _paneMouseMove = EventCallback.Factory.Create<MouseEventArgs>(this,
+            e => Log("OnPaneMouseMove", $"at {At(e)}", stream: true));
+        _viewportMove = EventCallback.Factory.Create<BlowViewport>(this,
+            v => Log("OnMove", Describe(v), stream: true));
+    }
+
+    private void AddBrokenEdge()
+    {
+        // Straight into the list: the canvas re-reads it when the page re-renders, finds no node "ghost" and says so
+        // once, through OnError, rather than throwing or drawing a dangling line.
+        _brokenEdges++;
+        _edges.Add(new BlowEdge { Id = $"broken-{_brokenEdges}", Source = "2", Target = "ghost" });
+    }
+
+    private void ClearLog() => _log.Clear();
+
+    private void Log(string name, string payload, bool stream = false)
+    {
+        if (stream)
+        {
+            // Merged into its own line within the run of repeating events at the top of the log, so a drag reads as
+            // one line with a count; any other event ends the run, and the next drag starts a line of its own.
+            foreach (var entry in _log)
+            {
+                if (!entry.Stream) break;
+                if (entry.Name != name) continue;
+                entry.Payload = payload;
+                entry.Count++;
+                return;
+            }
+        }
+
+        _log.Insert(0, new LogEntry(name, payload, stream));
+        if (_log.Count > 80) _log.RemoveAt(_log.Count - 1);
+    }
+
+    private static string At(MouseEventArgs e) => $"({e.ClientX:0}, {e.ClientY:0})";
+
+    private static string At(BlowXYPosition p) => $"({p.X:0}, {p.Y:0})";
+
+    private static string Describe(BlowViewport v) => $"x {v.X:0}, y {v.Y:0}, zoom {v.Zoom:0.00}";
+
+    private static string Size(BlowNode n) => $"{(n.Width ?? n.Measured.Width):0} x {(n.Height ?? n.Measured.Height):0}";
+
+    private static string HandleName(string? handleId) => string.IsNullOrEmpty(handleId) ? "" : $" '{handleId}'";
+
+    private static string Ids(IEnumerable<BlowNode> nodes) => Join(nodes.Select(n => n.Id));
+
+    private static string Ids(IEnumerable<BlowEdge> edges) => Join(edges.Select(e => e.Id));
+
+    private static string Join(IEnumerable<string> ids)
+    {
+        var list = string.Join(", ", ids);
+        return list.Length == 0 ? "none" : list;
+    }
+
+    private static string DescribeLine(BlowConnectionLineContext? line) => line is null
+        ? "null - the connection ended"
+        : $"from node {line.FromNode} to {At(line.To)}, {(line.IsValid ? "over a valid handle" : "no valid handle")}";
+
+    private static string DescribeEnd(BlowConnectEndInfo end)
+    {
+        var text = $"{(end.IsValid ? "valid" : "not valid")}, {(end.IsDropped ? "dropped" : "not dropped")} at {At(end.FlowPosition)}";
+        if (end.IsReconnect) text += ", a reconnect";
+        if (end.Rejection != BlowConnectionRejection.None) text += $", refused: {end.Rejection}";
+        return text;
+    }
+
+    private static string DescribeChange(BlowGraphChange change)
+    {
+        var text = $"{change.Kind} by {change.Origin}";
+        if (change.Label is not null) text += $" ({change.Label})";
+        if (change.Nodes.Count > 0) text += $", nodes {Ids(change.Nodes)}";
+        if (change.Edges.Count > 0) text += $", edges {Ids(change.Edges)}";
+        if (change.RemovedNodes.Count > 0) text += $", removed nodes {Ids(change.RemovedNodes)}";
+        if (change.RemovedEdges.Count > 0) text += $", removed edges {Ids(change.RemovedEdges)}";
+        return text;
+    }
+}

@@ -1,0 +1,21 @@
+﻿@namespace Bit.BevTools
+
+@* A source location: "Counter.razor:12", a link into the editor when one is configured (BevToolsUiOptions.EditorUrlTemplate). *@
+@if (Location.Url is { } url)
+{
+    <a class="bev-link bev-mono" href="@url" title="@("Open " + Location.Path + " at line " + Location.Line + " in your editor" + Moved)">@Location.FileName:@Location.Line</a>
+}
+else
+{
+    <span class="bev-mono" title="@(Location.Path + Moved)">@Location.FileName:@Location.Line</span>
+}
+@if (Location.MayHaveMoved)
+{
+    <span class="bev-muted"> (before hot reload)</span>
+}
+
+@code {
+    [Parameter, EditorRequired] public BevSourceLocation Location { get; set; } = default!;
+
+    private string Moved => Location.MayHaveMoved ? " (as built: edited with hot reload since, so the line may have moved)" : "";
+}

@@ -5,7 +5,8 @@ namespace Bit.Balette.Demo.Client.Services;
 /// <summary>
 /// Records every call the palette makes into the demo's async sources and how it ended, so the modes page can
 /// show debouncing and cancellation happening rather than describe them. A keystroke the debounce swallowed never
-/// reaches a source at all; a search still in flight when the next one starts ends as cancelled.
+/// reaches a source at all; a search still in flight when the next one starts ends as cancelled, and one that threw as
+/// failed.
 /// </summary>
 /// <remarks>
 /// It is a singleton because the sources are: they are created once, with the options. The sources only run in
@@ -57,6 +58,11 @@ public sealed class SourceLog
             call.Cancel(stopwatch.Elapsed);
             throw;
         }
+        catch (Exception)
+        {
+            call.Fail(stopwatch.Elapsed);
+            throw;
+        }
         finally
         {
             Changed?.Invoke();
@@ -79,6 +85,7 @@ public enum SourceCallOutcome
     Running,
     Completed,
     Cancelled,
+    Failed,
 }
 
 public sealed class SourceCall(string source, string query, DateTime startedAt)
@@ -105,6 +112,12 @@ public sealed class SourceCall(string source, string query, DateTime startedAt)
     internal void Cancel(TimeSpan duration)
     {
         Outcome = SourceCallOutcome.Cancelled;
+        Duration = duration;
+    }
+
+    internal void Fail(TimeSpan duration)
+    {
+        Outcome = SourceCallOutcome.Failed;
         Duration = duration;
     }
 }
