@@ -62,6 +62,7 @@
             <FilesToDelete Include="$(PublishDir)D3DCompiler_47_cor3.dll" />
             <FilesToDelete Include="$(PublishDir)PresentationFramework.dll" />
             <FilesToDelete Include="$(PublishDir)System.Windows.Forms.Design.dll" />
+            <FilesToDelete Include="$(PublishDir)Microsoft.DiaSymReader.Native.*.dll" />
         </ItemGroup>
         <Delete Files="@(FilesToDelete)" />
     </Target>
