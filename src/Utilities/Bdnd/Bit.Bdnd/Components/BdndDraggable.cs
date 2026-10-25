@@ -564,7 +564,8 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
             await GuardAsync(manager.FlushBeginAsync());
             if (IsKeyboardDrag(dragId) is false) return false;
 
-            var place = await NavigateAsync("stay");
+            // no place at all: nothing the item can go to, not every target there is
+            var place = await NavigateAsync("stay") ?? new BdndKeyboardTarget();
             await AnnounceAsync(manager.Announcements.DragStarted, null, place);
             return IsKeyboardDrag(dragId);
         }

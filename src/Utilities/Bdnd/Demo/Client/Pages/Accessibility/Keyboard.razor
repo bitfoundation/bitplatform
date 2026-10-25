@@ -79,16 +79,18 @@
     private bool CanMove(KanbanTask? task, string column) =>
         task is not null && (task.Column == column || column != "Doing" || TasksIn("Doing").Count() < DoingLimit);
 
-    private string? PreviousOf(KanbanTask task)
-    {
-        var index = Array.IndexOf(Columns, task.Column);
-        return index > 0 && CanMove(task, Columns[index - 1]) ? Columns[index - 1] : null;
-    }
+    private string? PreviousOf(KanbanTask task) => NearestOf(task, -1);
 
-    private string? NextOf(KanbanTask task)
+    private string? NextOf(KanbanTask task) => NearestOf(task, 1);
+
+    // The nearest column that way the task can move to: a full column is skipped, as the arrow keys skip it.
+    private string? NearestOf(KanbanTask task, int step)
     {
-        var index = Array.IndexOf(Columns, task.Column);
-        return index < Columns.Length - 1 && CanMove(task, Columns[index + 1]) ? Columns[index + 1] : null;
+        for (var index = Array.IndexOf(Columns, task.Column) + step; index >= 0 && index < Columns.Length; index += step)
+        {
+            if (CanMove(task, Columns[index])) return Columns[index];
+        }
+        return null;
     }
 
     // One move for the drop and the buttons alike: the task goes to the end of the column.

@@ -798,7 +798,7 @@ the innermost hovered target (`IsOverShallow`) - a tree node around a hovered ch
 gets no edge in its `OnDrop` - and only where the drop would be taken (`CanDrop`): a full list shows no line.
 
 Edges are where they are on screen. In a list laid out against its order - right to left (`dir="rtl"`),
-`flex-direction: row-reverse` or `column-reverse` - the left (or bottom) edge is *after* the item: pass
+`flex-direction: row-reverse` or `column-reverse` - the left (or top) edge is *after* the item: pass
 `reversed: true` to `BdndList.InsertionIndex` and `ReorderIndex` there. Keyboard drags take the direction into
 account by themselves: in a right-to-left layout the left arrow goes to the next place, and the right edge of a
 horizontal item is the place before it. A keyboard drag visits every place - before the first card, between two
@@ -1362,7 +1362,7 @@ instead of arriving in `drop`.
 | `Manager` | `BdndDragDropManager?` | `null` | An externally-owned manager. When omitted, one is created for the subtree. Cannot change once set. |
 | `Announcements` | `BdndAnnouncements?` | `null` | The keyboard instructions and screen-reader announcements; sets the manager's (`BdndAnnouncements.Default` otherwise). |
 | `AllowKeyboard` | `bool?` | `null` | `false` takes every draggable of the context out of keyboard dragging; sets the manager's (`true` otherwise). |
-| `OnDragStart` | `EventCallback<BdndDragEventArgs>` | | Any drag of the context began (right before its source's `OnBegin`). |
+| `OnDragStart` | `EventCallback<BdndDragEventArgs>` | | Any drag of the context began: runs once the drag is published and its source's `OnBegin` started. |
 | `OnDragEnd` | `EventCallback<BdndDragEventArgs>` | | Any drag of the context ended, with `DidDrop` and the drop result. |
 | `ChildContent` | `RenderFragment?` | | The drag-and-drop content. |
 

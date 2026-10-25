@@ -490,9 +490,10 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
     // with the drop, the rest read here. A page that cannot be read ends the list there.
     private async Task<BdndNativeFile[]> ReadAllFilesAsync(string dropId, BdndNativeFile[] first, int count)
     {
+        // the count is the browser's: no more than the target hands over, and no capacity taken on its word
+        if (MaxFiles > 0) count = Math.Min(count, MaxFiles);
         if (count <= first.Length) return first;
-        var files = new List<BdndNativeFile>(count);
-        files.AddRange(first);
+        var files = new List<BdndNativeFile>(first);
         while (files.Count < count)
         {
             BdndNativeFile[] page;

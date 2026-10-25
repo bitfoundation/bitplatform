@@ -40,8 +40,9 @@
 
 <body>
     @* InteractiveWebAssembly rather than Auto or Server: dragover fires continuously during a drag,
-       and on WebAssembly none of its handlers waits on a network round trip. The pages are still
-       prerendered, so the first response carries them. *@
+       and on WebAssembly none of its handlers waits on a network round trip. The one exception is
+       /hosting/server-check, served with InteractiveServer to show the library over a circuit (see
+       PageRenderMode). The pages are still prerendered, so the first response carries them. *@
     <Routes @rendermode="PageRenderMode" />
     <div id="blazor-error-ui" data-nosnippet>
         An unhandled error has occurred.

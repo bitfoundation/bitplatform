@@ -16,7 +16,7 @@ public static class BdndList
     /// <paramref name="targetIndex"/> against <paramref name="edge"/>: before it for <see cref="BdndEdge.Top"/> and
     /// <see cref="BdndEdge.Left"/> (or no edge), after it for <see cref="BdndEdge.Bottom"/> and <see cref="BdndEdge.Right"/>.
     /// Edges are where they are on screen, so a list laid out against its order - right to left (<c>dir="rtl"</c>),
-    /// <c>row-reverse</c> or <c>column-reverse</c> - passes <paramref name="reversed"/>: there the left (or bottom) edge
+    /// <c>row-reverse</c> or <c>column-reverse</c> - passes <paramref name="reversed"/>: there the left (or top) edge
     /// is after the item.
     /// </summary>
     public static int InsertionIndex(int targetIndex, BdndEdge? edge, bool reversed = false) =>
