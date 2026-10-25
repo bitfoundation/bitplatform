@@ -97,7 +97,7 @@ public class ServerModeTests : PrerenderedWebModeTests
     [TestMethod]
     public async Task Stores_survive_the_circuit_being_paused_and_resumed()
     {
-        if (Framework != "net10.0")
+        if (Framework is "net8.0" or "net9.0")
             Assert.Inconclusive("Circuit pause and resume arrived in .NET 10.");
 
         await GotoAsync("/");

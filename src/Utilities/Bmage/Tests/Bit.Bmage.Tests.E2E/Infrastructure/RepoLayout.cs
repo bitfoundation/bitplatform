@@ -21,7 +21,7 @@ public static class RepoLayout
         : Path.Combine("Samples", sample, $"Bit.Bmage.Samples.{sample}", $"Bit.Bmage.Samples.{sample}.csproj"));
 
     public static string SampleAssembly(string sample, string configuration) =>
-        Path.Combine(Path.GetDirectoryName(SampleProject(sample))!, "bin", configuration, "net10.0", $"{Path.GetFileNameWithoutExtension(SampleProject(sample))}.dll");
+        Path.Combine(Path.GetDirectoryName(SampleProject(sample))!, "bin", configuration, "net11.0", $"{Path.GetFileNameWithoutExtension(SampleProject(sample))}.dll");
 
     public static string MauiSampleProject() => FindUpward(Path.Combine("Samples", "MAUI", "Bit.Bmage.Samples.Maui.csproj"));
 
