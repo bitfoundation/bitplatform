@@ -37,14 +37,6 @@ public sealed class BbDataMatrixDetector
     private BbBitMatrix _image;
     private readonly BbDarkRegionFinder _regionFinder;
 
-    /// <summary>
-    /// The luminance plane the image was binarised from, when the caller has one, and whether the symbol sought is light
-    /// on dark; see <see cref="UseLuminance"/>.
-    /// </summary>
-    private BbLuminanceView _luminance;
-    private bool _hasLuminance;
-    private bool _inverted;
-
     /// <summary>The module size, in pixels, below which a grid the binarised image does not decode is sampled from luminance.</summary>
     private const float MaxLuminanceModule = 3.5f;
     private readonly List<BbScanPoint> _samples;
@@ -81,22 +73,6 @@ public sealed class BbDataMatrixDetector
         _image = image;
     }
 
-    /// <summary>
-    /// Lets the next detection sample a grid the binarised image does not decode from the luminance plane it was made
-    /// from, when the symbol's modules are small enough for binarisation to have lost some; see
-    /// <see cref="BbGridSampler.SampleLuminance"/>. <see cref="ForgetLuminance"/> lets go of it.
-    /// </summary>
-    internal void UseLuminance(in BbLuminanceView luminance, bool inverted)
-    {
-        (_luminance, _hasLuminance, _inverted) = (luminance, true, inverted);
-    }
-
-    /// <summary>Lets go of the luminance plane, so the detector holds no reference to the frame between frames.</summary>
-    internal void ForgetLuminance()
-    {
-        (_luminance, _hasLuminance, _inverted) = (default, false, false);
-    }
-
     /// <summary>Detects and samples the first symbol found.</summary>
     /// <returns>The sampled grid and its corner points, or <see langword="null"/> when no symbol is found.</returns>
     public BbDetectorResult? Detect() => Detect(tryHarder: false, static _ => true);
@@ -107,7 +83,19 @@ public sealed class BbDataMatrixDetector
     /// <param name="tryHarder">Examine more candidate patches, for still images.</param>
     /// <param name="accept">Called with each sampled grid; returning <see langword="true"/> ends the search.</param>
     /// <returns>The accepted result, or <see langword="null"/>. Rejected results are disposed.</returns>
-    public BbDetectorResult? Detect(bool tryHarder, Func<BbDetectorResult, bool> accept)
+    public BbDetectorResult? Detect(bool tryHarder, Func<BbDetectorResult, bool> accept) => Detect(tryHarder, accept, default, inverted: false);
+
+    /// <summary>
+    /// Detects and samples symbols as <see cref="Detect(bool, Func{BbDetectorResult, bool})"/> does, and samples a grid
+    /// the binarised image does not decode again from the luminance plane it was made from, when that is not empty and
+    /// the symbol's modules are small enough for binarisation to have lost some; see
+    /// <see cref="BbGridSampler.SampleLuminance"/>.
+    /// </summary>
+    /// <param name="tryHarder">Examine more candidate patches, for still images.</param>
+    /// <param name="accept">Called with each sampled grid; returning <see langword="true"/> ends the search.</param>
+    /// <param name="luminance">The luminance plane the image was binarised from, or an empty view.</param>
+    /// <param name="inverted">Whether the symbol sought is light on dark.</param>
+    internal BbDetectorResult? Detect(bool tryHarder, Func<BbDetectorResult, bool> accept, in BbLuminanceView luminance, bool inverted)
     {
         ArgumentNullException.ThrowIfNull(accept);
 
@@ -148,14 +136,14 @@ public sealed class BbDataMatrixDetector
             used |= 1L << best;
             examined++;
 
-            var result = DetectInRegion(regions[best], accept);
+            var result = DetectInRegion(regions[best], accept, luminance, inverted);
             if (result is not null)
             {
                 return result;
             }
         }
 
-        return DetectFromCenter(accept);
+        return DetectFromCenter(accept, luminance, inverted);
     }
 
     private static bool IsPlausibleRegion(in BbDarkRegion region)
@@ -175,7 +163,7 @@ public sealed class BbDataMatrixDetector
         return longer <= shorter * 5;
     }
 
-    private BbDetectorResult? DetectInRegion(in BbDarkRegion region, Func<BbDetectorResult, bool> accept)
+    private BbDetectorResult? DetectInRegion(in BbDarkRegion region, Func<BbDetectorResult, bool> accept, in BbLuminanceView luminance, bool inverted)
     {
         var left = Math.Max(0, region.Left - 1);
         var top = Math.Max(0, region.Top - 1);
@@ -200,14 +188,14 @@ public sealed class BbDataMatrixDetector
             return null;
         }
 
-        return SampleQuadrilateral(corners, accept);
+        return SampleQuadrilateral(corners, accept, luminance, inverted);
     }
 
     /// <summary>
     /// Orients, refines and samples a rough quadrilateral around a symbol, offering each
     /// plausible module count to <paramref name="accept"/> in turn.
     /// </summary>
-    private BbDetectorResult? SampleQuadrilateral(Span<BbScanPoint> corners, Func<BbDetectorResult, bool> accept)
+    private BbDetectorResult? SampleQuadrilateral(Span<BbScanPoint> corners, Func<BbDetectorResult, bool> accept, in BbLuminanceView luminance, bool inverted)
     {
         // Corners are ordered clockwise on screen: TL, TR, BR, BL for an upright symbol.
         var centroidX = (corners[0].X + corners[1].X + corners[2].X + corners[3].X) / 4;
@@ -352,8 +340,8 @@ public sealed class BbDataMatrixDetector
 
             // At two or three pixels a module a turned symbol's binarised image has lost modules its luminance still
             // tells apart, so a grid that did not decode is sampled again from that.
-            if (_hasLuminance && Math.Min(pitchAcross, pitchDown) < MaxLuminanceModule &&
-                TryGrid(BbGridSampler.SampleLuminance(_luminance, columns, rows, transform, _inverted)) is { } fromLuminance)
+            if (!luminance.IsEmpty && Math.Min(pitchAcross, pitchDown) < MaxLuminanceModule &&
+                TryGrid(BbGridSampler.SampleLuminance(luminance, columns, rows, transform, inverted)) is { } fromLuminance)
             {
                 return fromLuminance;
             }
@@ -1047,7 +1035,7 @@ public sealed class BbDataMatrixDetector
     /// Fallback: grow a rectangle out of the image centre until it is clear of ink, then read the
     /// enclosed shape's corners off its diagonals.
     /// </summary>
-    private BbDetectorResult? DetectFromCenter(Func<BbDetectorResult, bool> accept)
+    private BbDetectorResult? DetectFromCenter(Func<BbDetectorResult, bool> accept, in BbLuminanceView luminance, bool inverted)
     {
         var rectangleDetector = BbWhiteRectangleDetector.Create(_image);
         var cornerPoints = rectangleDetector?.Detect();
@@ -1077,7 +1065,7 @@ public sealed class BbDataMatrixDetector
             (corners[1], corners[3]) = (corners[3], corners[1]);
         }
 
-        return SampleQuadrilateral(corners, accept);
+        return SampleQuadrilateral(corners, accept, luminance, inverted);
     }
 }
 

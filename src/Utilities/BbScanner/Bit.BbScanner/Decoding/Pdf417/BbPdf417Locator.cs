@@ -1100,20 +1100,9 @@ internal sealed class BbPdf417Locator
     /// <summary>Bilinear sample of the frame; anything outside it reads as paper.</summary>
     private static byte SampleLuminance(in BbLuminanceView view, float x, float y)
     {
-        if (x < 0 || y < 0 || x > view.Width - 1 || y > view.Height - 1)
-        {
-            return 255;
-        }
-
-        var x0 = (int)x;
-        var y0 = (int)y;
-        var x1 = Math.Min(x0 + 1, view.Width - 1);
-        var y1 = Math.Min(y0 + 1, view.Height - 1);
-        var tx = x - x0;
-        var ty = y - y0;
-        var top = (view[x0, y0] * (1 - tx)) + (view[x1, y0] * tx);
-        var bottom = (view[x0, y1] * (1 - tx)) + (view[x1, y1] * tx);
-        return (byte)((top * (1 - ty)) + (bottom * ty) + 0.5f);
+        return x < 0 || y < 0 || x > view.Width - 1 || y > view.Height - 1
+            ? (byte)255
+            : (byte)(view.Interpolate(x, y) + 0.5f);
     }
 
     /// <summary>Bilinear sample of the binarised frame, ink as black and everything else as paper.</summary>

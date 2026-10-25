@@ -317,18 +317,26 @@ public class Pdf417DecoderTests
     }
 
     [TestMethod]
-    public void PipelineReadsPdf417ByDefault()
+    public void PipelineReadsPdf417OnceAskedFor()
     {
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { DuplicateSuppressionWindow = TimeSpan.Zero });
-
-        using var matrix = Pdf417Encoder.Encode("ENABLED BY DEFAULT");
+        using var matrix = Pdf417Encoder.Encode("ASKED FOR BY NAME");
         using var image = SyntheticImage.FromMatrix(matrix, scale: 3);
+
+        // Its locator costs every frame time of its own, so the default set leaves it out.
+        using var defaults = new BbBarcodeDecoder(new BbScannerOptions { DuplicateSuppressionWindow = TimeSpan.Zero });
+        Assert.IsNull(defaults.Decode(image.View));
+
+        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        {
+            Formats = BbBarcodeFormat.Common | BbBarcodeFormat.Pdf417,
+            DuplicateSuppressionWindow = TimeSpan.Zero,
+        });
 
         var result = decoder.Decode(image.View);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(BbBarcodeFormat.Pdf417, result.Format);
-        Assert.AreEqual("ENABLED BY DEFAULT", result.Text);
+        Assert.AreEqual("ASKED FOR BY NAME", result.Text);
     }
 
     [TestMethod]

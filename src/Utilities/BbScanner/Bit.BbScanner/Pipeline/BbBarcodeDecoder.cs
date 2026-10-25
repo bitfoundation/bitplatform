@@ -389,25 +389,25 @@ public sealed class BbBarcodeDecoder : IDisposable
                 // Each symbol found is painted out of a working copy of the frame, so the next
                 // pass finds the next symbol rather than the same one again. A pass that does
                 // find the same one - a symbol painting did not fully cover - still counts, so
-                // the loop ends whatever the frame holds.
-                var working = CopyForMasking(view);
+                // the loop ends whatever the frame holds. The copy is only made once there is
+                // something to paint out: most frames hold nothing, and the first pass reads the
+                // frame itself.
                 for (var pass = 0; pass < maxSymbols + 2 && symbols.Count < maxSymbols; pass++)
                 {
-                    var symbol = DecodeMatrix(working, ref binarizeTicks, ref matrixTicks);
+                    var symbol = DecodeMatrix(searched, ref binarizeTicks, ref matrixTicks);
                     if (symbol is null)
                     {
                         break;
                     }
 
-                    if (!IsRepeat(symbols, symbol))
+                    Collect(symbols, symbol);
+                    if (pass == 0)
                     {
-                        symbols.Add(symbol);
+                        searched = CopyForMasking(view);
                     }
 
-                    PaintOut(working, symbol.Points);
+                    PaintOut(searched, symbol.Points);
                 }
-
-                searched = working;
             }
         }
 
@@ -448,7 +448,7 @@ public sealed class BbBarcodeDecoder : IDisposable
         var timestamp = Environment.TickCount64;
         if (symbols is null)
         {
-            return suppressDuplicates && !_duplicateFilter.ShouldReport(first!.Payload.Text, first.Format, timestamp)
+            return suppressDuplicates && !_duplicateFilter.ShouldReport(first!.Payload.Text, first.Format, first.Payload.Extension, timestamp)
                 ? null
                 : ToResult(first!, offsetX, offsetY, step, frameWidth, frameHeight);
         }
@@ -459,7 +459,7 @@ public sealed class BbBarcodeDecoder : IDisposable
             // filter has just recorded and would otherwise take the copy for a repeat of.
             if (!suppressDuplicates ||
                 IsReported(results!, symbol) ||
-                _duplicateFilter.ShouldReport(symbol.Payload.Text, symbol.Format, timestamp))
+                _duplicateFilter.ShouldReport(symbol.Payload.Text, symbol.Format, symbol.Payload.Extension, timestamp))
             {
                 results!.Add(ToResult(symbol, offsetX, offsetY, step, frameWidth, frameHeight));
             }
@@ -664,31 +664,49 @@ public sealed class BbBarcodeDecoder : IDisposable
     }
 
     /// <summary>
-    /// Whether a symbol is one already found again: the same value from the same symbology,
-    /// centred inside the outline of the earlier one.
+    /// Adds a symbol to those a frame has found, unless it is one already found again: the same
+    /// value from the same symbology, centred inside the outline of the earlier one. An EAN or UPC
+    /// add-on is part of the value, so the same main symbol with another add-on is another symbol;
+    /// a reading that missed the add-on is a repeat of one that has it, and one that has the add-on
+    /// takes the place of an earlier reading that missed it.
     /// </summary>
-    private static bool IsRepeat(List<BbSymbolDecodeResult> found, BbSymbolDecodeResult symbol)
+    private static void Collect(List<BbSymbolDecodeResult> found, BbSymbolDecodeResult symbol)
     {
         var center = BbScanRect.FromPoints(symbol.Points).Center;
-        foreach (var earlier in found)
+        var extension = symbol.Payload.Extension;
+        for (var i = 0; i < found.Count; i++)
         {
-            if (earlier.Format == symbol.Format &&
-                string.Equals(earlier.Payload.Text, symbol.Payload.Text, StringComparison.Ordinal) &&
-                (earlier.Points.Length < 3 || IsInsideConvex(center, earlier.Points)))
+            var earlier = found[i];
+            if (earlier.Format != symbol.Format ||
+                !string.Equals(earlier.Payload.Text, symbol.Payload.Text, StringComparison.Ordinal) ||
+                (earlier.Points.Length >= 3 && !IsInsideConvex(center, earlier.Points)))
             {
-                return true;
+                continue;
+            }
+
+            if (extension is null || string.Equals(earlier.Payload.Extension, extension, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (earlier.Payload.Extension is null)
+            {
+                found[i] = symbol;
+                return;
             }
         }
 
-        return false;
+        found.Add(symbol);
     }
 
-    /// <summary>Whether the same value from the same symbology is already among this frame's results.</summary>
+    /// <summary>Whether the same value, add-on included, from the same symbology is already among this frame's results.</summary>
     private static bool IsReported(List<BbBarcodeResult> results, BbSymbolDecodeResult symbol)
     {
         foreach (var result in results)
         {
-            if (result.Format == symbol.Format && string.Equals(result.Text, symbol.Payload.Text, StringComparison.Ordinal))
+            if (result.Format == symbol.Format &&
+                string.Equals(result.Text, symbol.Payload.Text, StringComparison.Ordinal) &&
+                string.Equals(result.Metadata?.Extension, symbol.Payload.Extension, StringComparison.Ordinal))
             {
                 return true;
             }
@@ -1096,11 +1114,7 @@ public sealed class BbBarcodeDecoder : IDisposable
                 return true;
             }
 
-            if (!IsRepeat(collect, result))
-            {
-                collect.Add(result);
-            }
-
+            Collect(collect, result);
             return collect.Count >= limit;
         }
     }
@@ -1449,22 +1463,9 @@ public sealed class BbBarcodeDecoder : IDisposable
             // measure: the symptom is a symbol that reads at one angle but not at the angle it
             // is actually printed at. Interpolating only across the line is not enough, because
             // the rounding along it distorts the run lengths in its own right.
-            var maxX = view.Width - 1;
-            var maxY = view.Height - 1;
             for (var i = 0; i < length; i++)
             {
-                var fx = Math.Clamp(geometry.X0 + (geometry.DX * i), 0, maxX);
-                var fy = Math.Clamp(geometry.Y0 + (geometry.DY * i), 0, maxY);
-                var x0 = (int)fx;
-                var y0 = (int)fy;
-                var x1 = Math.Min(x0 + 1, maxX);
-                var y1 = Math.Min(y0 + 1, maxY);
-                var tx = fx - x0;
-                var ty = fy - y0;
-
-                var top = (view[x0, y0] * (1 - tx)) + (view[x1, y0] * tx);
-                var bottom = (view[x0, y1] * (1 - tx)) + (view[x1, y1] * tx);
-                line[i] = (byte)((top * (1 - ty)) + (bottom * ty) + 0.5f);
+                line[i] = (byte)(view.Interpolate(geometry.X0 + (geometry.DX * i), geometry.Y0 + (geometry.DY * i)) + 0.5f);
             }
         }
 

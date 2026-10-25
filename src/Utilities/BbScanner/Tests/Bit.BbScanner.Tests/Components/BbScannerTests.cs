@@ -221,6 +221,19 @@ public class BbScannerTests : BunitContext
     }
 
     [TestMethod]
+    public async Task Scanning_with_a_disposed_scanner_says_it_is_disposed_rather_than_unsupported()
+    {
+        var scanner = RenderPrerendered();
+        await scanner.Instance.DisposeAsync();
+        using var stream = new MemoryStream([0x89, 0x50, 0x4E, 0x47]);
+
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() =>
+            scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, "image/png")));
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(stream)));
+        Assert.ThrowsExactly<ObjectDisposedException>(() => scanner.Instance.ScanCurrentFrameAsync());
+    }
+
+    [TestMethod]
     public void The_root_carries_an_id_for_the_drop_target_unless_the_application_gave_it_one()
     {
         var own = RenderPrerendered();

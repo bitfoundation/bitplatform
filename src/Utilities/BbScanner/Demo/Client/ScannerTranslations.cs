@@ -7,8 +7,37 @@ namespace Bit.BbScanner.Demo.Client;
 /// usually build these from its own resources - <c>IStringLocalizer</c>, a resx file - once per
 /// language at startup.
 /// </summary>
+/// <remarks>
+/// The numbers are formatted by hand rather than through <c>CultureInfo.GetCultureInfo("es")</c>: the demo runs
+/// with <c>InvariantGlobalization</c>, where looking up any other culture throws.
+/// </remarks>
 public static class ScannerTranslations
 {
+    /// <summary>Spanish writes a decimal comma.</summary>
+    private static readonly NumberFormatInfo SpanishNumbers = NumberFormatInfo.ReadOnly(new NumberFormatInfo
+    {
+        NumberDecimalSeparator = ",",
+        NumberGroupSeparator = ".",
+    });
+
+    /// <summary>A number written the Persian way: in Persian digits, with the Arabic decimal separator.</summary>
+    private static string PersianNumber(IFormattable number, string? format = null)
+    {
+        var invariant = number.ToString(format, CultureInfo.InvariantCulture);
+        return string.Create(invariant.Length, invariant, static (span, text) =>
+        {
+            for (var i = 0; i < text.Length; i++)
+            {
+                span[i] = text[i] switch
+                {
+                    >= '0' and <= '9' => (char)('۰' + (text[i] - '0')),
+                    '.' => '٫',
+                    var other => other,
+                };
+            }
+        });
+    }
+
     /// <summary>Spanish.</summary>
     public static BbScannerTexts Spanish { get; } = new()
     {
@@ -33,7 +62,7 @@ public static class ScannerTranslations
         NotAnImage = "El archivo seleccionado no es una imagen.",
         ImageUnreadable = "El archivo no se pudo leer como imagen.",
         ImageNotScanned = "No se pudo procesar la imagen.",
-        ImageTooLarge = megabytes => string.Create(CultureInfo.GetCultureInfo("es"), $"La imagen supera el máximo de {megabytes:0.#} MB."),
+        ImageTooLarge = megabytes => string.Create(SpanishNumbers, $"La imagen supera el máximo de {megabytes:0.#} MB."),
         ImageTooManyPixels = "La imagen es demasiado grande para escanearla.",
         ErrorMessage = exception => exception.Kind switch
         {
@@ -59,7 +88,7 @@ public static class ScannerTranslations
         ScanImageButton = "اسکن تصویر",
         CameraLabel = "دوربین",
         ZoomLabel = "بزرگ‌نمایی",
-        UnnamedCamera = number => string.Create(CultureInfo.GetCultureInfo("fa"), $"دوربین {number}"),
+        UnnamedCamera = number => $"دوربین {PersianNumber(number)}",
         StatusIdle = "آماده",
         StatusStarting = "در حال روشن کردن دوربین",
         StatusScanning = "در حال اسکن",
@@ -72,7 +101,7 @@ public static class ScannerTranslations
         NotAnImage = "فایل انتخاب‌شده تصویر نیست.",
         ImageUnreadable = "فایل به‌عنوان تصویر خوانده نشد.",
         ImageNotScanned = "پردازش تصویر ممکن نشد.",
-        ImageTooLarge = megabytes => string.Create(CultureInfo.GetCultureInfo("fa"), $"حجم تصویر از {megabytes:0.#} مگابایت مجاز بیشتر است."),
+        ImageTooLarge = megabytes => $"حجم تصویر از {PersianNumber(megabytes, "0.#")} مگابایت مجاز بیشتر است.",
         ImageTooManyPixels = "تصویر برای اسکن بیش از حد بزرگ است.",
         ErrorMessage = exception => exception.Kind switch
         {

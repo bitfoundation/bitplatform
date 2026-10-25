@@ -8,32 +8,8 @@ public sealed class BbQrDetector
     private readonly BbQrFinderPatternFinder _finder = new();
     private BbBitMatrix _image;
 
-    /// <summary>
-    /// The luminance plane the image was binarised from, when the caller has one, and whether the symbol sought is light
-    /// on dark; see <see cref="UseLuminance"/>.
-    /// </summary>
-    private BbLuminanceView _luminance;
-    private bool _hasLuminance;
-    private bool _inverted;
-
     /// <summary>The module size, in pixels, below which a grid the binarised image does not decode is sampled from luminance.</summary>
     private const float MaxLuminanceModule = 3.5f;
-
-    /// <summary>
-    /// Lets the next detection sample a grid the binarised image does not decode from the luminance plane it was made
-    /// from, when the symbol's modules are small enough for binarisation to have lost some; see
-    /// <see cref="BbGridSampler.SampleLuminance"/>. <see cref="ForgetLuminance"/> lets go of it.
-    /// </summary>
-    internal void UseLuminance(in BbLuminanceView luminance, bool inverted)
-    {
-        (_luminance, _hasLuminance, _inverted) = (luminance, true, inverted);
-    }
-
-    /// <summary>Lets go of the luminance plane, so the detector holds no reference to the frame between frames.</summary>
-    internal void ForgetLuminance()
-    {
-        (_luminance, _hasLuminance, _inverted) = (default, false, false);
-    }
 
     /// <summary>Creates a detector over a binarised image.</summary>
     /// <param name="image">The binarised image.</param>
@@ -99,7 +75,19 @@ public sealed class BbQrDetector
     /// <param name="tryHarder">When <see langword="true"/> the finder pattern search scans every row.</param>
     /// <param name="accept">Called with each candidate; returning <see langword="true"/> ends the search.</param>
     /// <returns>The accepted result, or <see langword="null"/>. Rejected candidates are disposed.</returns>
-    public BbDetectorResult? Detect(bool tryHarder, Func<BbDetectorResult, bool> accept)
+    public BbDetectorResult? Detect(bool tryHarder, Func<BbDetectorResult, bool> accept) => Detect(tryHarder, accept, default, inverted: false);
+
+    /// <summary>
+    /// Detects and samples a symbol as <see cref="Detect(bool, Func{BbDetectorResult, bool})"/> does, and samples a grid
+    /// the binarised image does not decode again from the luminance plane it was made from, when that is not empty and
+    /// the symbol's modules are small enough for binarisation to have lost some; see
+    /// <see cref="BbGridSampler.SampleLuminance"/>.
+    /// </summary>
+    /// <param name="tryHarder">When <see langword="true"/> the finder pattern search scans every row.</param>
+    /// <param name="accept">Called with each candidate; returning <see langword="true"/> ends the search.</param>
+    /// <param name="luminance">The luminance plane the image was binarised from, or an empty view.</param>
+    /// <param name="inverted">Whether the symbol sought is light on dark.</param>
+    internal BbDetectorResult? Detect(bool tryHarder, Func<BbDetectorResult, bool> accept, in BbLuminanceView luminance, bool inverted)
     {
         ArgumentNullException.ThrowIfNull(accept);
 
@@ -107,7 +95,7 @@ public sealed class BbQrDetector
         var triples = _finder.FindCandidates(tryHarder);
         foreach (var triple in triples)
         {
-            if (DetectFrom(triple.TopLeft, triple.TopRight, triple.BottomLeft, accept) is { } result)
+            if (DetectFrom(triple.TopLeft, triple.TopRight, triple.BottomLeft, accept, luminance, inverted) is { } result)
             {
                 return result;
             }
@@ -120,7 +108,9 @@ public sealed class BbQrDetector
         BbQrFinderPattern topLeft,
         BbQrFinderPattern topRight,
         BbQrFinderPattern bottomLeft,
-        Func<BbDetectorResult, bool> accept)
+        Func<BbDetectorResult, bool> accept,
+        in BbLuminanceView luminance,
+        bool inverted)
     {
         // Written this way so that a NaN, which every comparison answers false to, is rejected
         // rather than carried into the dimension estimate.
@@ -158,14 +148,14 @@ public sealed class BbQrDetector
 
             // Preferred first: the alignment pattern corrects for perspective when it is real.
             if (hasAlignment && alignmentPattern is not null &&
-                TryCandidate(topLeft, topRight, bottomLeft, alignmentPattern, dimension, accept) is { } withAlignment)
+                TryCandidate(topLeft, topRight, bottomLeft, alignmentPattern, dimension, accept, luminance, inverted) is { } withAlignment)
             {
                 return withAlignment;
             }
 
             // The affine grid, which ignores the alignment pattern entirely. This is the one that
             // works when the alignment search found noise.
-            if (TryCandidate(topLeft, topRight, bottomLeft, null, dimension, accept) is { } affine)
+            if (TryCandidate(topLeft, topRight, bottomLeft, null, dimension, accept, luminance, inverted) is { } affine)
             {
                 return affine;
             }
@@ -238,7 +228,9 @@ public sealed class BbQrDetector
         BbQrFinderPattern bottomLeft,
         BbQrFinderPattern? alignmentPattern,
         int dimension,
-        Func<BbDetectorResult, bool> accept)
+        Func<BbDetectorResult, bool> accept,
+        in BbLuminanceView luminance,
+        bool inverted)
     {
         var transform = CreateTransform(topLeft, topRight, bottomLeft, alignmentPattern, dimension);
         if (TryGrid(BbGridSampler.Sample(_image, dimension, dimension, transform), transform, dimension, accept) is { } result)
@@ -249,8 +241,8 @@ public sealed class BbQrDetector
         // At two or three pixels a module a turned symbol's binarised image has lost modules its luminance still tells
         // apart, so a grid that did not decode is sampled again from that.
         var module = BbScanPoint.Distance(transform.Transform(new BbScanPoint(0, 0)), transform.Transform(new BbScanPoint(dimension, 0))) / dimension;
-        return _hasLuminance && module < MaxLuminanceModule
-            ? TryGrid(BbGridSampler.SampleLuminance(_luminance, dimension, dimension, transform, _inverted), transform, dimension, accept)
+        return !luminance.IsEmpty && module < MaxLuminanceModule
+            ? TryGrid(BbGridSampler.SampleLuminance(luminance, dimension, dimension, transform, inverted), transform, dimension, accept)
             : null;
     }
 

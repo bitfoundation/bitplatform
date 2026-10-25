@@ -93,4 +93,12 @@ public enum BbBarcodeFormat
 
     /// <summary>Every supported symbology.</summary>
     All = AllLinear | AllMatrix,
+
+    /// <summary>
+    /// The symbologies on most products, tickets and labels - QR Code, Data Matrix, Code 128, Code 39, EAN, UPC and
+    /// ITF - and what a scanner looks for unless told otherwise. PDF417, Aztec, MaxiCode, Micro QR, Codabar, Code 93
+    /// and the GS1 DataBar family are asked for by name: each costs every frame time of its own, and Codabar, which has
+    /// no check character, is a source of misreads wherever it is not expected.
+    /// </summary>
+    Common = QrCode | DataMatrix | Code128 | Code39 | Ean13 | Ean8 | UpcA | UpcE | Itf,
 }

@@ -96,7 +96,9 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     private CancellationTokenSource? _loopCancellation;
     private PeriodicTimer? _timer;
     private byte[] _frameBuffer = [];
+    private BbCameraDevice[] _devices = [];
     private List<BbCameraDevice> _cameras = [];
+    private BbScannerTexts? _camerasLabelledWith;
     private BbCameraInfo? _camera;
     private BbScanRegion _region = BbScanRegion.Full;
 
@@ -110,7 +112,6 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     private string? _alert;
     private bool _announcementMark;
     private readonly List<Highlight> _highlights = [];
-    private readonly List<BbBarcodeResult> _accepted = [];
     private long _symbolSeenAt;
     private string? _activeDeviceId;
     private string? _lastRequestedDeviceId;
@@ -119,9 +120,6 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
     /// <summary>Set while a camera the browser ended in the background waits for the page to be shown again.</summary>
     private bool _awaitingVisible;
-
-    /// <summary>Set while that camera is being reopened, which continues the scanning session rather than starting one.</summary>
-    private bool _reopening;
     private bool _mirrored;
     private bool _torchOn;
     private double _zoom;
@@ -133,9 +131,12 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     private int _changeToken;
     private bool _disposed;
 
-    /// <summary>The symbologies to look for.</summary>
+    /// <summary>
+    /// The symbologies to look for: <see cref="BbBarcodeFormat.Common"/> unless set. The others,
+    /// PDF417 and Aztec among them, are asked for by name, since each costs every frame time of its own.
+    /// </summary>
     [Parameter]
-    public BbBarcodeFormat Formats { get; set; } = BbBarcodeFormat.All;
+    public BbBarcodeFormat Formats { get; set; } = BbBarcodeFormat.Common;
 
     /// <summary>
     /// The part of the frame to search, in normalized coordinates. The default searches the whole
@@ -195,9 +196,10 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// <remarks>
     /// <see cref="Timeout.InfiniteTimeSpan"/> reports each value once for as long as the camera
     /// stays open - a stocktake, a check-in desk - remembering up to
-    /// <see cref="BbDuplicateFilter.SessionCapacity"/> values. <see cref="StartAsync"/> and
-    /// <see cref="ResetDuplicateFilter"/> forget them; unlike a finite window, <see cref="Resume"/>
-    /// does not.
+    /// <see cref="BbDuplicateFilter.SessionCapacity"/> values. <see cref="StartAsync"/> on a
+    /// scanner with no camera open, after <see cref="StopAsync"/> or a fault, and
+    /// <see cref="ResetDuplicateFilter"/> forget them; switching cameras, a camera reopened once the
+    /// page is shown again and, unlike a finite window, <see cref="Resume"/> do not.
     /// </remarks>
     [Parameter]
     public TimeSpan? DuplicateSuppressionWindow { get; set; }
@@ -257,8 +259,9 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// phone takes.
     /// </summary>
     /// <remarks>
-    /// The size of a file says little about the size of the image it decodes to, so an image of
-    /// more than about 268 megapixels is refused after decoding as well, whatever this is set to.
+    /// The size of a file says little about the size of the image it decodes to, so an image whose
+    /// header declares more than about 268 megapixels is refused before it is decoded as well,
+    /// whatever this is set to.
     /// </remarks>
     [Parameter]
     public long MaxImageFileSize { get; set; } = 32 * 1024 * 1024;
@@ -385,6 +388,12 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
         _region = Region.Normalized();
         _duplicateFilter.Window = EffectiveDuplicateWindow();
+
+        // The cameras the browser left unnamed are named in the language the scanner speaks now.
+        if (!ReferenceEquals(Texts, _camerasLabelledWith))
+        {
+            LabelCameras();
+        }
 
         if (_decoder is not null)
         {
@@ -579,8 +588,17 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             return;
         }
 
+        // A start that opens a camera for a scanner that has none - idle, stopped or faulted - begins a scanning session
+        // and forgets what the last one reported. One that only changes the camera of a running scanner, or reopens it
+        // once the page is shown again, carries the session on: under an infinite DuplicateSuppressionWindow what it
+        // reported stays reported, which is the whole point of one - a stocktake must not count everything again after
+        // switching lenses or a screen lock.
+        if (_status is not (BbScannerStatus.Starting or BbScannerStatus.Scanning or BbScannerStatus.Paused))
+        {
+            _duplicateFilter.Reset();
+        }
+
         var version = ++_startVersion;
-        var reopening = _reopening;
         StopFrameLoop();
 
         _highlights.Clear();
@@ -665,11 +683,9 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
         ConfigureProcessingSize(camera.Width, camera.Height);
 
-        // A camera reopened after the page was hidden carries on the scanning session, as Resume does: under an infinite
-        // DuplicateSuppressionWindow what it reported stays reported, which is the whole point of one - a stocktake
-        // must not count everything again after a screen lock - and under a finite one the symbol still in view is
-        // reported again, as it would be after Resume.
-        if (!reopening || _duplicateFilter.Window != Timeout.InfiniteTimeSpan)
+        // Under a finite window the symbol in view of the camera just opened is reported again, as it would be after
+        // Resume.
+        if (_duplicateFilter.Window != Timeout.InfiniteTimeSpan)
         {
             _duplicateFilter.Reset();
         }
@@ -883,10 +899,12 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// <see cref="BbScannerErrorKind.InvalidImage"/> when the image is too large or cannot be decoded,
     /// <see cref="BbScannerErrorKind.NotSupported"/> when the component is not running on WebAssembly.
     /// </exception>
+    /// <exception cref="ObjectDisposedException">The scanner has been disposed.</exception>
     public async Task<IReadOnlyList<BbBarcodeResult>> ScanImageAsync(Stream image, int maxSymbols = 16, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(image);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxSymbols);
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         // Read with the limit applied as the bytes arrive, so an oversized upload is refused
         // without first being held in memory in full.
@@ -919,14 +937,18 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// <see cref="BbScannerErrorKind.InvalidImage"/> when the image is refused or cannot be decoded,
     /// <see cref="BbScannerErrorKind.NotSupported"/> when the component is not running on WebAssembly.
     /// </exception>
+    /// <exception cref="ObjectDisposedException">The scanner has been disposed.</exception>
     public async Task<IReadOnlyList<BbBarcodeResult>> ScanImageAsync(
         ReadOnlyMemory<byte> image, string? contentType = null, int maxSymbols = 16, CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxSymbols);
         cancellationToken.ThrowIfCancellationRequested();
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
-        if (!OperatingSystem.IsBrowser() || _disposed || !await EnsureModuleAsync().ConfigureAwait(true))
+        if (!OperatingSystem.IsBrowser() || !await EnsureModuleAsync().ConfigureAwait(true))
         {
+            // Disposed while the module loaded is a lifetime error, not a platform limitation.
+            ObjectDisposedException.ThrowIf(_disposed, this);
             throw new BbScannerException(
                 BbScannerErrorKind.NotSupported,
                 "Scanning an encoded image needs the browser's image decoders, which the component only reaches on WebAssembly. " +
@@ -982,10 +1004,12 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// <param name="maxSymbols">The most symbols to return, at least one.</param>
     /// <returns>The symbols found; empty when the frame holds none.</returns>
     /// <exception cref="InvalidOperationException">The camera is not open.</exception>
+    /// <exception cref="ObjectDisposedException">The scanner has been disposed.</exception>
     public Task<IReadOnlyList<BbBarcodeResult>> ScanCurrentFrameAsync(int maxSymbols = 16)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxSymbols);
-        if (!OperatingSystem.IsBrowser() || _disposed || !BbScannerJsInterop.IsImported ||
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (!OperatingSystem.IsBrowser() || !BbScannerJsInterop.IsImported ||
             _status is not (BbScannerStatus.Scanning or BbScannerStatus.Paused))
         {
             throw new InvalidOperationException("The camera is not open; start the scanner before capturing a frame.");
@@ -1047,8 +1071,8 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
         if (packed < 0)
         {
-            // Refused before the pixels were ever copied: too big, not an image, or decoding to more
-            // pixels than a tab can afford to hold twice.
+            // Refused before the image was ever decoded: too big, not an image, or declaring more
+            // pixels than a tab can afford to decode.
             SetNotice(RefusalMessage(packed), transient: true);
             return;
         }
@@ -1072,8 +1096,18 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         }
         catch (Exception ex)
         {
-            SetNotice(T.ImageNotScanned, transient: true);
-            await DispatchExceptionAsync(ex).ConfigureAwait(true);
+            // The fault is the application's to see whatever was chosen since; the notice is told only while this is
+            // still the selection the user is waiting on, as a result would be.
+            if (!_disposed)
+            {
+                if (request == _imageRequest)
+                {
+                    SetNotice(T.ImageNotScanned, transient: true);
+                }
+
+                await DispatchExceptionAsync(ex).ConfigureAwait(true);
+            }
+
             return;
         }
 
@@ -1536,15 +1570,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
                 deviceId = null;
             }
 
-            _reopening = true;
-            try
-            {
-                await StartAsync(deviceId).ConfigureAwait(true);
-            }
-            finally
-            {
-                _reopening = false;
-            }
+            await StartAsync(deviceId).ConfigureAwait(true);
 
             if (paused)
             {
@@ -1789,21 +1815,30 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         try
         {
             var json = await BbScannerJsInterop.ListCamerasAsync().ConfigureAwait(true);
-            var devices = JsonSerializer.Deserialize(json, BbScannerJsonContext.Default.BbCameraDeviceArray) ?? [];
-
-            // The browser names no camera until permission has been granted once; those are
-            // numbered here, in the application's language, rather than in the bridge.
-            _cameras = [.. devices.Select((device, index) => string.IsNullOrWhiteSpace(device.Label)
-                ? device with { Label = Say(T.UnnamedCamera, BbScannerTexts.Default.UnnamedCamera, index + 1) }
-                : device)];
-            RequestRender();
+            _devices = JsonSerializer.Deserialize(json, BbScannerJsonContext.Default.BbCameraDeviceArray) ?? [];
+            LabelCameras();
         }
         catch
         {
             // Enumeration is best effort: a browser that refuses it still supports scanning with
             // the default camera.
+            _devices = [];
             _cameras = [];
         }
+    }
+
+    /// <summary>
+    /// Builds <see cref="Cameras"/> from what the browser listed. The browser names no camera until permission has been
+    /// granted once; those are numbered here, in the application's language, rather than in the bridge, and numbered
+    /// again whenever <see cref="Texts"/> changes language.
+    /// </summary>
+    private void LabelCameras()
+    {
+        _camerasLabelledWith = Texts;
+        _cameras = [.. _devices.Select((device, index) => string.IsNullOrWhiteSpace(device.Label)
+            ? device with { Label = Say(T.UnnamedCamera, BbScannerTexts.Default.UnnamedCamera, index + 1) }
+            : device)];
+        RequestRender();
     }
 
     private async Task OnCameraSelectedAsync(ChangeEventArgs args)
@@ -1862,8 +1897,9 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// </summary>
     private async Task ReportLiveAsync(BbBarcodeResult? result, IReadOnlyList<BbBarcodeResult>? results, int version)
     {
-        var accepted = _accepted;
-        accepted.Clear();
+        // A list of the frame's own, not one kept for every frame: the awaits below can let a frame loop superseded by a
+        // restart resume and go on adding to it while the new loop is still reporting from it.
+        var accepted = new List<BbBarcodeResult>(results?.Count ?? 1);
         if (result is not null)
         {
             if (await AcceptsAsync(result).ConfigureAwait(true))
@@ -1894,7 +1930,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         var reported = false;
         foreach (var scanned in accepted)
         {
-            if (!_duplicateFilter.ShouldReport(scanned.Text, scanned.Format, now))
+            if (!_duplicateFilter.ShouldReport(scanned, now))
             {
                 continue;
             }

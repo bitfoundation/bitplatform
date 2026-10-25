@@ -117,7 +117,8 @@ public static class BbScannerFormatCatalog
 
         builder.AppendLine("# Symbologies Bit.BbScanner reads").AppendLine();
         builder.AppendLine("`BbBarcodeFormat` is a flags enum: combine members with `|`. The composites are " +
-                           $"`AllLinear` ({(int)BbBarcodeFormat.AllLinear}), `AllMatrix` ({(int)BbBarcodeFormat.AllMatrix}) " +
+                           $"`Common` ({(int)BbBarcodeFormat.Common}), `AllLinear` ({(int)BbBarcodeFormat.AllLinear}), " +
+                           $"`AllMatrix` ({(int)BbBarcodeFormat.AllMatrix}) " +
                            $"and `All` ({(int)BbBarcodeFormat.All}), and a new `BbScannerOptions` (and the `BbScanner` component) " +
                            $"starts with `{Describe(new BbScannerOptions().Formats)}`. Call `GetBbScannerFormats(format: \"...\")` " +
                            "for one symbology with the options that steer it.").AppendLine();

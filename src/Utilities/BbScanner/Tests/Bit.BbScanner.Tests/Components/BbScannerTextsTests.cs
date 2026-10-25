@@ -97,6 +97,7 @@ public class BbScannerTextsTests : BunitContext
     public void The_english_announcement_names_the_symbology_as_it_is_written()
     {
         Assert.AreEqual("QR Code: HELLO", BbScannerTexts.Default.ScanAnnouncement(Decode(QrEncoder.Encode("HELLO"))));
+        Assert.AreEqual("Aztec Code: AZTEC", BbScannerTexts.Default.ScanAnnouncement(Decode(AztecEncoder.Encode("AZTEC"))));
         Assert.AreEqual("Code 128: CODE-128", BbScannerTexts.Default.ScanAnnouncement(DecodeLinear(LinearEncoders.Code128("CODE-128"))));
         Assert.AreEqual("EAN-13: 4006381333931", BbScannerTexts.Default.ScanAnnouncement(DecodeLinear(LinearEncoders.Ean13("4006381333931"))));
     }
@@ -127,7 +128,7 @@ public class BbScannerTextsTests : BunitContext
     private static BbBarcodeResult Decode(BbBitMatrix matrix)
     {
         using var image = SyntheticImage.FromMatrix(matrix, scale: 4);
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { DuplicateSuppressionWindow = TimeSpan.Zero });
+        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.All, DuplicateSuppressionWindow = TimeSpan.Zero });
         return decoder.Decode(image.View, suppressDuplicates: false) ?? throw new AssertFailedException("The symbol did not decode.");
     }
 

@@ -139,7 +139,7 @@ public static class BbGridSampler
                         return null;
                     }
 
-                    var value = Interpolate(luminance, fx, fy);
+                    var value = luminance.Interpolate(fx, fy);
                     samples[(y * dimensionX) + x] = value;
                     lowest = MathF.Min(lowest, value);
                     highest = MathF.Max(highest, value);
@@ -183,16 +183,6 @@ public static class BbGridSampler
             ArrayPool<float>.Shared.Return(points);
             ArrayPool<float>.Shared.Return(samples, clearArray: true);
             ArrayPool<float>.Shared.Return(sums, clearArray: true);
-        }
-
-        static float Interpolate(in BbLuminanceView luminance, float x, float y)
-        {
-            var (x0, y0) = ((int)x, (int)y);
-            var (x1, y1) = (Math.Min(x0 + 1, luminance.Width - 1), Math.Min(y0 + 1, luminance.Height - 1));
-            var (tx, ty) = (x - x0, y - y0);
-            var top = (luminance[x0, y0] * (1 - tx)) + (luminance[x1, y0] * tx);
-            var bottom = (luminance[x0, y1] * (1 - tx)) + (luminance[x1, y1] * tx);
-            return (top * (1 - ty)) + (bottom * ty);
         }
     }
 }

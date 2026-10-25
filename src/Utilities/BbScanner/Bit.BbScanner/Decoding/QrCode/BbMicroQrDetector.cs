@@ -70,11 +70,11 @@ internal sealed class BbMicroQrDetector
 
     /// <summary>
     /// Offers the grid of every Micro QR symbol found round <paramref name="centers"/> to <paramref name="accept"/>,
-    /// sampled from <paramref name="image"/> and, failing that, from <paramref name="luminance"/> when there is one.
+    /// sampled from <paramref name="image"/> and, failing that, from <paramref name="luminance"/> when it is not empty.
     /// </summary>
     public BbDetectorResult? Detect(
         BbBitMatrix image, ReadOnlySpan<BbQrFinderPattern> centers, Func<BbDetectorResult, bool> accept,
-        in BbLuminanceView luminance, bool hasLuminance, bool inverted)
+        in BbLuminanceView luminance, bool inverted)
     {
         var tried = 0;
         foreach (var center in centers)
@@ -112,7 +112,7 @@ internal sealed class BbMicroQrDetector
                         continue;
                     }
 
-                    if (Sample(image, timing.Placement, timing.Dimension, accept, luminance, hasLuminance, inverted) is { } result)
+                    if (Sample(image, timing.Placement, timing.Dimension, accept, luminance, inverted) is { } result)
                     {
                         return result;
                     }
@@ -422,11 +422,11 @@ internal sealed class BbMicroQrDetector
 
     /// <summary>
     /// Samples the grid at its centres and offers it to <paramref name="accept"/>: from the binarised image, and then
-    /// from the luminance when there is one.
+    /// from the luminance when it is not empty.
     /// </summary>
     private static BbDetectorResult? Sample(
         BbBitMatrix image, Placement placement, int dimension, Func<BbDetectorResult, bool> accept,
-        in BbLuminanceView luminance, bool hasLuminance, bool inverted)
+        in BbLuminanceView luminance, bool inverted)
     {
         var corners = new[]
         {
@@ -449,7 +449,7 @@ internal sealed class BbMicroQrDetector
             return result;
         }
 
-        return hasLuminance
+        return !luminance.IsEmpty
             ? Offer(BbGridSampler.SampleLuminance(luminance, dimension, dimension, transform, inverted), points, accept)
             : null;
 

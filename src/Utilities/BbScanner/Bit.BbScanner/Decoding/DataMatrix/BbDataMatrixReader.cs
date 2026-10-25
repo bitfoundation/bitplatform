@@ -12,10 +12,6 @@ public sealed class BbDataMatrixReader : IBbMatrixDecoder, IBbLuminanceMatrixDec
     private BbDataMatrixDetector? _detector;
     private BbDecoderResult? _payload;
 
-    /// <summary>The luminance plane of the image being decoded, while one is; see <see cref="IBbLuminanceMatrixDecoder"/>.</summary>
-    private BbLuminanceView _luminance;
-    private bool _hasLuminance;
-
     /// <summary>Creates a reader.</summary>
     public BbDataMatrixReader()
     {
@@ -37,25 +33,21 @@ public sealed class BbDataMatrixReader : IBbMatrixDecoder, IBbLuminanceMatrixDec
 
     /// <inheritdoc />
     BbSymbolDecodeResult? IBbLuminanceMatrixDecoder.Decode(BbBitMatrix image, in BbLuminanceView luminance, BbMatrixDecodeOptions options)
-    {
-        (_luminance, _hasLuminance) = (luminance, true);
-        try
-        {
-            return Decode(image, options);
-        }
-        finally
-        {
-            (_luminance, _hasLuminance) = (default, false);
-            _detector?.ForgetLuminance();
-        }
-    }
+        => Decode(image, luminance, options);
 
     /// <inheritdoc />
-    public BbSymbolDecodeResult? Decode(BbBitMatrix image, BbMatrixDecodeOptions options)
+    public BbSymbolDecodeResult? Decode(BbBitMatrix image, BbMatrixDecodeOptions options) => Decode(image, default, options);
+
+    /// <summary>
+    /// Decodes with the luminance plane the image was binarised from, which a grid too fine for the binarised image is
+    /// sampled from when it is not empty. It is handed down, never kept: the reader holds no reference to a frame once
+    /// read.
+    /// </summary>
+    private BbSymbolDecodeResult? Decode(BbBitMatrix image, in BbLuminanceView luminance, BbMatrixDecodeOptions options)
     {
         ArgumentNullException.ThrowIfNull(image);
 
-        var result = TryDecode(image, options.TryHarder, inverted: false);
+        var result = TryDecode(image, luminance, options.TryHarder, inverted: false);
         if (result is not null || !options.AllowInverted)
         {
             return result;
@@ -64,7 +56,7 @@ public sealed class BbDataMatrixReader : IBbMatrixDecoder, IBbLuminanceMatrixDec
         image.Invert();
         try
         {
-            return TryDecode(image, options.TryHarder, inverted: true);
+            return TryDecode(image, luminance, options.TryHarder, inverted: true);
         }
         finally
         {
@@ -203,7 +195,7 @@ public sealed class BbDataMatrixReader : IBbMatrixDecoder, IBbLuminanceMatrixDec
         return solidErrors * 10 <= perimeter && timingErrors * 5 <= perimeter;
     }
 
-    private BbSymbolDecodeResult? TryDecode(BbBitMatrix image, bool tryHarder, bool inverted)
+    private BbSymbolDecodeResult? TryDecode(BbBitMatrix image, in BbLuminanceView luminance, bool tryHarder, bool inverted)
     {
         if (_detector is null)
         {
@@ -214,13 +206,8 @@ public sealed class BbDataMatrixReader : IBbMatrixDecoder, IBbLuminanceMatrixDec
             _detector.Reset(image);
         }
 
-        if (_hasLuminance)
-        {
-            _detector.UseLuminance(_luminance, inverted);
-        }
-
         _payload = null;
-        using var detected = _detector.Detect(tryHarder, _accept);
+        using var detected = _detector.Detect(tryHarder, _accept, luminance, inverted);
 
         return detected is null || _payload is null
             ? null

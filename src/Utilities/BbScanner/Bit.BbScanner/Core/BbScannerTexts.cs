@@ -106,7 +106,7 @@ public sealed class BbScannerTexts
     public Func<double, string> ImageTooLarge { get; init; } =
         megabytes => string.Create(CultureInfo.InvariantCulture, $"The image is larger than the {megabytes:0.#} MB allowed.");
 
-    /// <summary>The notice for an image that decodes to more pixels than is safe to hold.</summary>
+    /// <summary>The notice for an image that declares more pixels than is safe to decode.</summary>
     public string ImageTooManyPixels { get; init; } = "The image is too large to scan.";
 
     /// <summary>
@@ -129,6 +129,7 @@ public sealed class BbScannerTexts
         BbBarcodeFormat.QrCode => "QR Code",
         BbBarcodeFormat.DataMatrix => "Data Matrix",
         BbBarcodeFormat.Pdf417 => "PDF417",
+        BbBarcodeFormat.Aztec => "Aztec Code",
         BbBarcodeFormat.Code128 => "Code 128",
         BbBarcodeFormat.Code39 => "Code 39",
         BbBarcodeFormat.Code93 => "Code 93",

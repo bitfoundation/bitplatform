@@ -234,6 +234,82 @@ public class PublicApiTests
         Assert.IsFalse(filter.ShouldReport($"V{BbDuplicateFilter.SessionCapacity}", BbBarcodeFormat.QrCode, 0));
     }
 
+    private const string Magazine = "9771234567003";
+
+    [TestMethod]
+    public void AnAddOnIsPartOfTheValue()
+    {
+        var filter = new BbDuplicateFilter(TimeSpan.FromSeconds(2));
+
+        // Two issues of a magazine share the main symbol and differ in the add-on alone.
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "01", 0));
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "02", 100), "Issue 02 is not issue 01 again.");
+        Assert.IsFalse(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "02", 200));
+
+        // A frame that missed the add-on is a repeat of either.
+        Assert.IsFalse(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, 300));
+    }
+
+    [TestMethod]
+    public void AFrameThatReadsTheAddOnAnEarlierOneMissedIsReported()
+    {
+        var filter = new BbDuplicateFilter(TimeSpan.FromSeconds(2));
+
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, 0));
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "01", 66), "Otherwise the add-on would never reach the application.");
+
+        // Held in view, the frames go on reading it with the add-on or without, and report nothing more.
+        for (var t = 133L; t < 5_000; t += 66)
+        {
+            Assert.IsFalse(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, (t / 66) % 2 == 0 ? "01" : null, t));
+        }
+    }
+
+    [TestMethod]
+    public void AnInfiniteWindowCountsEachIssueOnce()
+    {
+        var filter = new BbDuplicateFilter(Timeout.InfiniteTimeSpan);
+
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "01", 0));
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "02", 0));
+        Assert.IsFalse(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "01", 0));
+        Assert.IsFalse(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, 0), "A frame that missed the add-on counts nothing new.");
+
+        filter.Reset();
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, 0));
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "01", 0));
+    }
+
+    [TestMethod]
+    public void AnInfiniteWindowForgetsAMainSymbolOnceEveryReadingOfItIsForgotten()
+    {
+        var filter = new BbDuplicateFilter(Timeout.InfiniteTimeSpan);
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, "01", 0));
+        for (var i = 0; i < BbDuplicateFilter.SessionCapacity; i++)
+        {
+            filter.ShouldReport($"V{i}", BbBarcodeFormat.QrCode, i);
+        }
+
+        Assert.IsTrue(filter.ShouldReport(Magazine, BbBarcodeFormat.Ean13, 0), "The issue made room, and the main symbol went with it.");
+    }
+
+    [TestMethod]
+    public void AResultIsFilteredWithItsAddOn()
+    {
+        var symbol = ReferenceSymbols.Get("ean13-addon2");
+        using var image = SyntheticImage.FromLinear(SyntheticImage.ExpandWidths(symbol.Widths), scale: 3, height: 40);
+        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.Ean13, RequireEanExtension = true });
+        var result = decoder.Decode(image.View, suppressDuplicates: false);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual(symbol.Extension, result.Metadata?.Extension);
+
+        var filter = new BbDuplicateFilter(TimeSpan.FromSeconds(2));
+        Assert.IsTrue(filter.ShouldReport(result, 0));
+        Assert.IsFalse(filter.ShouldReport(result, 100));
+        Assert.IsTrue(filter.ShouldReport(result.Text, result.Format, "99", 200), "Another add-on is another symbol.");
+    }
+
     [TestMethod]
     public void AnInfiniteWindowIsAValidOption()
     {
@@ -461,7 +537,7 @@ public class PublicApiTests
     public void EveryFormatFlagIsDistinctAndTheGroupsAgree()
     {
         var all = Enum.GetValues<BbBarcodeFormat>()
-            .Where(f => f is not (BbBarcodeFormat.None or BbBarcodeFormat.All or BbBarcodeFormat.AllLinear or BbBarcodeFormat.AllMatrix))
+            .Where(f => f is not (BbBarcodeFormat.None or BbBarcodeFormat.All or BbBarcodeFormat.AllLinear or BbBarcodeFormat.AllMatrix or BbBarcodeFormat.Common))
             .ToArray();
 
         Assert.AreEqual(all.Length, all.Distinct().Count());
@@ -479,6 +555,20 @@ public class PublicApiTests
         }
 
         Assert.AreEqual(BbBarcodeFormat.All, union);
+    }
+
+    [TestMethod]
+    public void ByDefaultOnlyTheCommonSymbologiesAreLookedFor()
+    {
+        // Each symbology costs every frame time of its own; the rarer ones, and Codabar with no check character, are
+        // asked for by name.
+        Assert.AreEqual(BbBarcodeFormat.Common, new BbScannerOptions().Formats);
+        Assert.AreEqual(BbBarcodeFormat.Common, BbBarcodeFormat.Common & BbBarcodeFormat.All);
+        foreach (var rare in new[] { BbBarcodeFormat.Pdf417, BbBarcodeFormat.Aztec, BbBarcodeFormat.MaxiCode, BbBarcodeFormat.MicroQrCode,
+                     BbBarcodeFormat.Codabar, BbBarcodeFormat.Code93, BbBarcodeFormat.DataBar, BbBarcodeFormat.DataBarLimited, BbBarcodeFormat.DataBarExpanded })
+        {
+            Assert.AreEqual(BbBarcodeFormat.None, BbBarcodeFormat.Common & rare, rare.ToString());
+        }
     }
 
     [TestMethod]

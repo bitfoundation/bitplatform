@@ -13,10 +13,11 @@
 public sealed class BbScannerOptions
 {
     /// <summary>
-    /// The symbologies to look for. Narrowing this is the single most effective way to make
-    /// scanning faster and to avoid misreads between similar linear symbologies.
+    /// The symbologies to look for; <see cref="BbBarcodeFormat.Common"/> unless set. Narrowing this
+    /// is the single most effective way to make scanning faster and to avoid misreads between
+    /// similar linear symbologies.
     /// </summary>
-    public BbBarcodeFormat Formats { get; set; } = BbBarcodeFormat.All;
+    public BbBarcodeFormat Formats { get; set; } = BbBarcodeFormat.Common;
 
     /// <summary>
     /// The part of the frame to search, in normalized coordinates. Restricting the region

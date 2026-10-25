@@ -151,13 +151,13 @@ const IMAGE_TOO_LARGE = -3;
 /** prepareImage result: the file does not declare an image type. */
 const IMAGE_NOT_AN_IMAGE = -4;
 
-/** prepareImage result: the image decodes to more pixels than it is safe to hold. */
+/** prepareImage result: the image declares more pixels than it is safe to decode. */
 const IMAGE_TOO_MANY_PIXELS = -5;
 
 /**
- * The most pixels a selected image may decode to. A phone's largest photograph is around 200 megapixels; an image
+ * The most pixels a selected image may declare. A phone's largest photograph is around 200 megapixels; an image
  * beyond this is either a panorama nobody aims at a barcode or a file crafted to exhaust memory, and the decoded
- * bitmap alone would be more than a gigabyte.
+ * bitmap alone would be more than a gigabyte. Checked against the file's header, before it is decoded.
  */
 const MAX_IMAGE_PIXELS = 268_435_456;
 
@@ -857,6 +857,10 @@ function beep(): void {
             void audio.resume().then(() => {
                 if (performance.now() - asked < 150) {
                     playBeep(audio);
+                } else if (beepsPlaying === 0 && feedbackAudio === audio && audio.state === 'running') {
+                    // Resumed too late to belong to the scan - typically at the user's first tap, long after it - so
+                    // the context it woke goes back to sleep rather than keeping the audio hardware awake.
+                    void audio.suspend().catch(() => undefined);
                 }
             }).catch(() => undefined);
             return;
@@ -1022,6 +1026,116 @@ function refuseBlob(blob: Blob, maxBytes: number): number {
     return 0;
 }
 
+/** How much of a file declaredPixels reads: enough to get past a JPEG's EXIF, thumbnail and colour profile. */
+const IMAGE_HEADER_BYTES = 512 * 1024;
+
+/**
+ * The number of pixels an image declares in its header, read without decoding it, or 0 for a format this does not
+ * know - PNG, JPEG, GIF, BMP, WebP, and AVIF and HEIC through their ispe box, are known. The size has to be known
+ * before the image is decoded: decoding allocates the whole bitmap, so a small file that declares an enormous image
+ * would have exhausted the tab's memory before any check made afterwards could refuse it.
+ */
+async function declaredPixels(blob: Blob): Promise<number> {
+    const bytes = new Uint8Array(await blob.slice(0, IMAGE_HEADER_BYTES).arrayBuffer());
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const length = bytes.length;
+    const ascii = (offset: number, text: string): boolean => {
+        if (offset + text.length > length) {
+            return false;
+        }
+
+        for (let i = 0; i < text.length; i++) {
+            if (bytes[offset + i] !== text.charCodeAt(i)) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    // PNG: the IHDR chunk always comes first.
+    if (length >= 24 && bytes[0] === 0x89 && ascii(1, 'PNG') && ascii(12, 'IHDR')) {
+        return view.getUint32(16) * view.getUint32(20);
+    }
+
+    // GIF: the logical screen, which every frame is drawn into.
+    if (length >= 10 && (ascii(0, 'GIF87a') || ascii(0, 'GIF89a'))) {
+        return view.getUint16(6, true) * view.getUint16(8, true);
+    }
+
+    // BMP: a twelve byte core header or any of the larger info headers; a top-down bitmap's height is negative.
+    if (length >= 26 && ascii(0, 'BM')) {
+        return view.getUint32(14, true) === 12
+            ? view.getUint16(18, true) * view.getUint16(20, true)
+            : Math.abs(view.getInt32(18, true)) * Math.abs(view.getInt32(22, true));
+    }
+
+    // WebP: lossy, lossless or extended, each with its own way of writing the size.
+    if (length >= 30 && ascii(0, 'RIFF') && ascii(8, 'WEBP')) {
+        if (ascii(12, 'VP8 ')) {
+            return (view.getUint16(26, true) & 0x3FFF) * (view.getUint16(28, true) & 0x3FFF);
+        }
+
+        if (ascii(12, 'VP8L')) {
+            const bits = view.getUint32(21, true);
+            return ((bits & 0x3FFF) + 1) * (((bits >>> 14) & 0x3FFF) + 1);
+        }
+
+        if (ascii(12, 'VP8X')) {
+            const width = (bytes[24] | (bytes[25] << 8) | (bytes[26] << 16)) + 1;
+            const height = (bytes[27] | (bytes[28] << 8) | (bytes[29] << 16)) + 1;
+            return width * height;
+        }
+
+        return 0;
+    }
+
+    // JPEG: the segments are walked to the start of frame, which follows the application segments.
+    if (length >= 4 && bytes[0] === 0xFF && bytes[1] === 0xD8) {
+        let offset = 2;
+        while (offset + 9 <= length) {
+            if (bytes[offset] !== 0xFF) {
+                return 0;
+            }
+
+            const marker = bytes[offset + 1];
+            if (marker === 0xFF) {
+                offset++;
+                continue;
+            }
+
+            // Every start of frame marker but the three that are not one: DHT, JPG and DAC.
+            if (marker >= 0xC0 && marker <= 0xCF && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC) {
+                return view.getUint16(offset + 5) * view.getUint16(offset + 7);
+            }
+
+            // Markers without a length: the restart markers and the start and end of image.
+            if ((marker >= 0xD0 && marker <= 0xD9) || marker === 0x01) {
+                offset += 2;
+                continue;
+            }
+
+            offset += 2 + view.getUint16(offset + 2);
+        }
+
+        return 0;
+    }
+
+    // AVIF and HEIC: an ISO base media file whose image spatial extents box gives the size of each image it holds.
+    if (length >= 12 && ascii(4, 'ftyp')) {
+        let largest = 0;
+        for (let offset = 8; offset + 16 <= length; offset++) {
+            if (bytes[offset] === 0x69 && ascii(offset, 'ispe')) {
+                largest = Math.max(largest, view.getUint32(offset + 8) * view.getUint32(offset + 12));
+            }
+        }
+
+        return largest;
+    }
+
+    return 0;
+}
+
 async function decodeBitmap(blob: Blob): Promise<ImageBitmap> {
     try {
         // Honour the EXIF orientation of photographs, which phones store rotated.
@@ -1045,6 +1159,14 @@ export async function prepareImageFromBlob(sessionId: string, requestId: number,
     }
 
     const session = getSession(sessionId);
+
+    // A small file can still declare an enormous image. Browsers bound what they decode, but not tightly enough to
+    // keep a phone's tab alive through it, so the size the file declares is checked before anything is decoded. What
+    // is decoded is then copied out at maxDimension, whatever its size.
+    if (await declaredPixels(blob) > MAX_IMAGE_PIXELS) {
+        return IMAGE_TOO_MANY_PIXELS;
+    }
+
     const bitmap = await decodeBitmap(blob);
 
     try {
@@ -1058,12 +1180,6 @@ export async function prepareImageFromBlob(sessionId: string, requestId: number,
         let height = bitmap.height;
         if (!width || !height) {
             return 0;
-        }
-
-        // A small file can still declare an enormous image. Browsers bound what they decode, but not tightly
-        // enough to keep a phone's tab alive through the copy a scan makes of it.
-        if (width * height > MAX_IMAGE_PIXELS) {
-            return IMAGE_TOO_MANY_PIXELS;
         }
 
         const longest = Math.max(width, height);

@@ -56,9 +56,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
 
     private readonly List<Bullseye> _candidates = new(16);
     private readonly int[] _runs = new int[11];
-    private BbLuminanceView _luminance;
     private int _rowPhase;
-    private bool _hasLuminance;
 
     /// <summary>A bullseye: its centre, and the radius of its outer ring in four directions - across, down and the two diagonals.</summary>
     private readonly record struct Bullseye(float X, float Y, float Across, float Down, float Falling, float Rising, int Seen = 1);
@@ -68,24 +66,20 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
 
     /// <inheritdoc />
     BbSymbolDecodeResult? IBbLuminanceMatrixDecoder.Decode(BbBitMatrix image, in BbLuminanceView luminance, BbMatrixDecodeOptions options)
-    {
-        (_luminance, _hasLuminance) = (luminance, true);
-        try
-        {
-            return Decode(image, options);
-        }
-        finally
-        {
-            (_luminance, _hasLuminance) = (default, false);
-        }
-    }
+        => Decode(image, luminance, options);
 
     /// <inheritdoc />
-    public BbSymbolDecodeResult? Decode(BbBitMatrix image, BbMatrixDecodeOptions options)
+    public BbSymbolDecodeResult? Decode(BbBitMatrix image, BbMatrixDecodeOptions options) => Decode(image, default, options);
+
+    /// <summary>
+    /// Decodes with the luminance plane the image was binarised from, which the measures and the samples are taken
+    /// from when it is not empty. It is handed down, never kept: the reader holds no reference to a frame once read.
+    /// </summary>
+    private BbSymbolDecodeResult? Decode(BbBitMatrix image, in BbLuminanceView luminance, BbMatrixDecodeOptions options)
     {
         ArgumentNullException.ThrowIfNull(image);
 
-        var result = TryDecode(image, options.TryHarder, inverted: false);
+        var result = TryDecode(image, luminance, options.TryHarder, inverted: false);
         if (result is not null || !options.AllowInverted)
         {
             return result;
@@ -94,7 +88,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
         image.Invert();
         try
         {
-            return TryDecode(image, options.TryHarder, inverted: true);
+            return TryDecode(image, luminance, options.TryHarder, inverted: true);
         }
         finally
         {
@@ -102,9 +96,9 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
         }
     }
 
-    private BbSymbolDecodeResult? TryDecode(BbBitMatrix image, bool thorough, bool inverted)
+    private BbSymbolDecodeResult? TryDecode(BbBitMatrix image, in BbLuminanceView luminance, bool thorough, bool inverted)
     {
-        FindBullseyes(image, thorough);
+        FindBullseyes(image, luminance, thorough);
         var tried = 0;
         foreach (var bullseye in _candidates)
         {
@@ -113,7 +107,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
                 break;
             }
 
-            if (TryRead(image, bullseye, inverted) is { } result)
+            if (TryRead(image, luminance, bullseye, inverted) is { } result)
             {
                 return result;
             }
@@ -126,7 +120,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     /// Scans rows for the bullseye's eleven runs, confirms each down its column and both diagonals, and keeps the
     /// distinct centres, the most often seen first.
     /// </summary>
-    private void FindBullseyes(BbBitMatrix image, bool thorough)
+    private void FindBullseyes(BbBitMatrix image, in BbLuminanceView luminance, bool thorough)
     {
         _candidates.Clear();
         // A live frame skips rows, each search starting a row on from the last: the light centre is only a module and a
@@ -162,7 +156,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
                 {
                     var centreStart = end - Sum(runs, 5, 6);
                     var centreX = centreStart + (runs[5] / 2f);
-                    Confirm(image, centreX, y + 0.5f, Sum(runs, 1, 9));
+                    Confirm(image, luminance, centreX, y + 0.5f, Sum(runs, 1, 9));
                 }
 
                 x = end;
@@ -225,21 +219,21 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     /// Confirms a bullseye a row found at (<paramref name="x"/>, <paramref name="y"/>): the same eleven runs down the
     /// column and along both diagonals through its centre, the centre refined to the middle of each.
     /// </summary>
-    private void Confirm(BbBitMatrix image, float x, float y, int rowInner)
+    private void Confirm(BbBitMatrix image, in BbLuminanceView luminance, float x, float y, int rowInner)
     {
-        if (Measure(image, x, y, 0, 1) is not ({ } down, var downShift))
+        if (Measure(image, luminance, x, y, 0, 1) is not ({ } down, var downShift))
         {
             return;
         }
 
         y += downShift;
-        if (Measure(image, x, y, 1, 0) is not ({ } across, var acrossShift))
+        if (Measure(image, luminance, x, y, 1, 0) is not ({ } across, var acrossShift))
         {
             return;
         }
 
         x += acrossShift;
-        if (Measure(image, x, y, 1, 1) is not ({ } falling, _) || Measure(image, x, y, 1, -1) is not ({ } rising, _))
+        if (Measure(image, luminance, x, y, 1, 1) is not ({ } falling, _) || Measure(image, luminance, x, y, 1, -1) is not ({ } rising, _))
         {
             return;
         }
@@ -284,7 +278,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     /// edges stray from by more than a third of a ring is not the bullseye's: a line through the rings off their
     /// centre can cross runs near enough the right widths.
     /// </remarks>
-    private (float? Radius, float Shift) Measure(BbBitMatrix image, float x, float y, int dx, int dy)
+    private static (float? Radius, float Shift) Measure(BbBitMatrix image, in BbLuminanceView luminance, float x, float y, int dx, int dy)
     {
         Span<int> forward = stackalloc int[6];
         Span<int> backward = stackalloc int[6];
@@ -311,8 +305,8 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
 
         // Edge k, in steps from the starting pixel, forward and back: between the last pixel of the runs to it and the
         // next, half a step short of them in the binarised image.
-        var subPixel = _hasLuminance && _luminance.Width == image.Width && _luminance.Height == image.Height;
-        var (threshold, lightIsBrighter) = subPixel ? LineThreshold(cx, cy, dx, dy, forward, backward) : (0, true);
+        var subPixel = !luminance.IsEmpty && luminance.Width == image.Width && luminance.Height == image.Height;
+        var (threshold, lightIsBrighter) = subPixel ? LineThreshold(luminance, cx, cy, dx, dy, forward, backward) : (0, true);
         Span<float> ahead = stackalloc float[5];
         Span<float> behind = stackalloc float[5];
         var (front, back) = (0, 0);
@@ -322,8 +316,8 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
             back += backward[k];
             // Outwards from run k to run k + 1, which is the light of the rings when k is odd.
             var rises = (k % 2 == 1) == lightIsBrighter;
-            ahead[k] = subPixel ? Crossing(cx, cy, dx, dy, front - 1, 1, threshold, rises) : front - 0.5f;
-            behind[k] = subPixel ? Crossing(cx, cy, dx, dy, 1 - back, -1, threshold, rises) : 0.5f - back;
+            ahead[k] = subPixel ? Crossing(luminance, cx, cy, dx, dy, front - 1, 1, threshold, rises) : front - 0.5f;
+            behind[k] = subPixel ? Crossing(luminance, cx, cy, dx, dy, 1 - back, -1, threshold, rises) : 0.5f - back;
         }
 
         // At c + s r(k) forward and c - s r(k) back, for the centre c and the scale s.
@@ -379,14 +373,15 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     /// middle of each run on it but the outer ring's; and whether the light is the brighter, which it is but in an
     /// inverted symbol.
     /// </summary>
-    private (float Threshold, bool LightIsBrighter) LineThreshold(int x, int y, int dx, int dy, ReadOnlySpan<int> forward, ReadOnlySpan<int> backward)
+    private static (float Threshold, bool LightIsBrighter) LineThreshold(
+        in BbLuminanceView luminance, int x, int y, int dx, int dy, ReadOnlySpan<int> forward, ReadOnlySpan<int> backward)
     {
-        float dark = 0, light = Pixel(x + ((forward[0] - backward[0]) / 2 * dx), y + ((forward[0] - backward[0]) / 2 * dy));
+        float dark = 0, light = Pixel(luminance, x + ((forward[0] - backward[0]) / 2 * dx), y + ((forward[0] - backward[0]) / 2 * dy));
         var (front, back) = (forward[0], backward[0]);
         for (var run = 1; run < 5; run++)
         {
             var (ahead, behind) = (front + (forward[run] / 2), back + (backward[run] / 2));
-            var sum = Pixel(x + (ahead * dx), y + (ahead * dy)) + Pixel(x - (behind * dx), y - (behind * dy));
+            var sum = Pixel(luminance, x + (ahead * dx), y + (ahead * dy)) + Pixel(luminance, x - (behind * dx), y - (behind * dy));
             if (run % 2 == 1)
             {
                 dark += sum;
@@ -408,13 +403,13 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     /// when it <paramref name="rises"/>: between it and the next if it crosses there, else a step either side - the
     /// other edges of rings a step or two wide cross the other way - and half a step on when it crosses nowhere near.
     /// </summary>
-    private float Crossing(int x, int y, int dx, int dy, int from, int direction, float threshold, bool rises)
+    private static float Crossing(in BbLuminanceView luminance, int x, int y, int dx, int dy, int from, int direction, float threshold, bool rises)
     {
         foreach (var shift in (ReadOnlySpan<int>)[0, -1, 1])
         {
             var near = from + (direction * shift);
             var far = near + direction;
-            var (a, b) = (Pixel(x + (near * dx), y + (near * dy)), Pixel(x + (far * dx), y + (far * dy)));
+            var (a, b) = (Pixel(luminance, x + (near * dx), y + (near * dy)), Pixel(luminance, x + (far * dx), y + (far * dy)));
             if (a != b && (b > a) == rises && (a - threshold) * (b - threshold) <= 0)
             {
                 return near + (direction * (threshold - a) / (b - a));
@@ -425,7 +420,8 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     }
 
     /// <summary>The luminance of a pixel, the nearest inside the image for one outside it.</summary>
-    private float Pixel(int x, int y) => _luminance[Math.Clamp(x, 0, _luminance.Width - 1), Math.Clamp(y, 0, _luminance.Height - 1)];
+    private static float Pixel(in BbLuminanceView luminance, int x, int y)
+        => luminance[Math.Clamp(x, 0, luminance.Width - 1), Math.Clamp(y, 0, luminance.Height - 1)];
 
     private static bool Inside(BbBitMatrix image, int x, int y) => (uint)x < (uint)image.Width && (uint)y < (uint)image.Height;
 
@@ -433,7 +429,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     /// Reads the symbol round a bullseye: the ellipse its four diameters make gives the module grid but its rotation,
     /// the orientation patterns the rotation, and then the data modules are sampled and decoded.
     /// </summary>
-    private BbSymbolDecodeResult? TryRead(BbBitMatrix image, Bullseye bullseye, bool inverted)
+    private static BbSymbolDecodeResult? TryRead(BbBitMatrix image, in BbLuminanceView luminance, Bullseye bullseye, bool inverted)
     {
         if (Shape(bullseye) is not { } shape)
         {
@@ -441,7 +437,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
         }
 
         var centre = new Vector2(bullseye.X, bullseye.Y);
-        var threshold = _hasLuminance ? Threshold(centre, shape) : 0;
+        var threshold = luminance.IsEmpty ? 0 : Threshold(luminance, centre, shape);
 
         // Every rotation a degree at a time. The orientation modules lie within six modules of the centre, so a few
         // degrees either side of the true rotation match them as well: the middle of the widest run of best scores is
@@ -451,7 +447,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
         var bestScore = 0;
         for (var degrees = 0; degrees < 360; degrees++)
         {
-            scores[degrees] = OrientationScore(image, centre, shape, degrees, threshold, inverted);
+            scores[degrees] = OrientationScore(image, luminance, centre, shape, degrees, threshold, inverted);
             bestScore = Math.Max(bestScore, scores[degrees]);
         }
 
@@ -470,7 +466,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
             foreach (var offset in AngleOffsets)
             {
                 grid = Matrix3x2.CreateScale(scale) * Grid(shape, middle + offset);
-                if (Read(image, centre, grid, perspective, threshold, inverted, codewords) && BbMaxiCodeDecoder.Decode(codewords) is { } read)
+                if (Read(image, luminance, centre, grid, perspective, threshold, inverted, codewords) && BbMaxiCodeDecoder.Decode(codewords) is { } read)
                 {
                     payload = read;
                     break;
@@ -483,10 +479,10 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
             }
         }
 
-        if (payload is null && _hasLuminance)
+        if (payload is null && !luminance.IsEmpty)
         {
             var radius = (bullseye.Across + bullseye.Down + bullseye.Falling + bullseye.Rising) / 4;
-            (payload, grid, perspective) = ReadForeshortened(image, centre, Grid(shape, middle), threshold, inverted, radius, codewords);
+            (payload, grid, perspective) = ReadForeshortened(image, luminance, centre, Grid(shape, middle), threshold, inverted, radius, codewords);
         }
 
         if (payload is null)
@@ -566,12 +562,12 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     /// the one whose samples lie furthest from the threshold in all: on a coarse lattice, then a finer one round the
     /// best.
     /// </summary>
-    private (BbDecoderResult? Payload, Matrix3x2 Grid, Vector2 Perspective) ReadForeshortened(
-        BbBitMatrix image, Vector2 centre, Matrix3x2 grid, float threshold, bool inverted, float radius, Span<int> codewords)
+    private static (BbDecoderResult? Payload, Matrix3x2 Grid, Vector2 Perspective) ReadForeshortened(
+        BbBitMatrix image, in BbLuminanceView luminance, Vector2 centre, Matrix3x2 grid, float threshold, bool inverted, float radius, Span<int> codewords)
     {
         // The outermost modules are about three and a half outer ring radii from the centre.
         var step = MaxForeshortening / (3.5f * radius * ForeshorteningSteps);
-        var (best, bestContrast) = (Vector2.Zero, Contrast(centre, grid, Vector2.Zero, threshold));
+        var (best, bestContrast) = (Vector2.Zero, Contrast(luminance, centre, grid, Vector2.Zero, threshold));
         foreach (var (around, spacing, steps) in (ReadOnlySpan<(bool, float, int)>)[(false, step, ForeshorteningSteps), (true, step / 4, 3)])
         {
             var middle = around ? best : Vector2.Zero;
@@ -580,7 +576,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
                 for (var j = -steps; j <= steps; j++)
                 {
                     var perspective = middle + new Vector2(i * spacing, j * spacing);
-                    var contrast = Contrast(centre, grid, perspective, threshold);
+                    var contrast = Contrast(luminance, centre, grid, perspective, threshold);
                     if (contrast > bestContrast)
                     {
                         (best, bestContrast) = (perspective, contrast);
@@ -594,7 +590,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
             foreach (var offset in (ReadOnlySpan<float>)[0, 1, -1])
             {
                 var turned = Matrix3x2.CreateScale(scale) * Matrix3x2.CreateRotation(offset * MathF.PI / 180) * grid;
-                if (Read(image, centre, turned, best, threshold, inverted, codewords) && BbMaxiCodeDecoder.Decode(codewords) is { } read)
+                if (Read(image, luminance, centre, turned, best, threshold, inverted, codewords) && BbMaxiCodeDecoder.Decode(codewords) is { } read)
                 {
                     return (read, turned, best);
                 }
@@ -608,19 +604,19 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     /// How far, in all, the luminance at the data modules' centres lies from <paramref name="threshold"/>; a grid that
     /// runs off the image scores nothing.
     /// </summary>
-    private float Contrast(Vector2 centre, Matrix3x2 grid, Vector2 perspective, float threshold)
+    private static float Contrast(in BbLuminanceView luminance, Vector2 centre, Matrix3x2 grid, Vector2 perspective, float threshold)
     {
         float sum = 0;
         var map = BbMaxiCodeDecoder.ModuleMap;
         for (var bit = 0; bit < map.Length; bit++)
         {
             var point = Map(centre, grid, perspective, Module(map[bit]));
-            if (point.X < 0 || point.Y < 0 || point.X >= _luminance.Width - 1 || point.Y >= _luminance.Height - 1)
+            if (point.X < 0 || point.Y < 0 || point.X >= luminance.Width - 1 || point.Y >= luminance.Height - 1)
             {
                 return 0;
             }
 
-            sum += MathF.Abs(Luminance(point) - threshold);
+            sum += MathF.Abs(Luminance(luminance, point) - threshold);
         }
 
         return sum;
@@ -640,13 +636,14 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     /// Samples the 864 data modules of the grid into <paramref name="codewords"/>, six bits each; <see langword="false"/>
     /// when the grid runs off the image.
     /// </summary>
-    private bool Read(BbBitMatrix image, Vector2 centre, Matrix3x2 grid, Vector2 perspective, float threshold, bool inverted, Span<int> codewords)
+    private static bool Read(
+        BbBitMatrix image, in BbLuminanceView luminance, Vector2 centre, Matrix3x2 grid, Vector2 perspective, float threshold, bool inverted, Span<int> codewords)
     {
         codewords.Clear();
         var map = BbMaxiCodeDecoder.ModuleMap;
         for (var bit = 0; bit < map.Length; bit++)
         {
-            if (Sample(image, Map(centre, grid, perspective, Module(map[bit])), threshold, inverted) is not { } dark)
+            if (Sample(image, luminance, Map(centre, grid, perspective, Module(map[bit])), threshold, inverted) is not { } dark)
             {
                 return false;
             }
@@ -716,13 +713,14 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     /// <summary>The module grid turned by <paramref name="degrees"/>, then given the shape.</summary>
     private static Matrix3x2 Grid(Matrix3x2 shape, float degrees) => Matrix3x2.CreateRotation(degrees * MathF.PI / 180) * shape;
 
-    private int OrientationScore(BbBitMatrix image, Vector2 centre, Matrix3x2 shape, float degrees, float threshold, bool inverted)
+    private static int OrientationScore(
+        BbBitMatrix image, in BbLuminanceView luminance, Vector2 centre, Matrix3x2 shape, float degrees, float threshold, bool inverted)
     {
         var grid = Grid(shape, degrees);
         var score = 0;
         foreach (var (module, dark) in Orientation)
         {
-            if (Sample(image, centre + Vector2.Transform(Module(module), grid), threshold, inverted) == dark)
+            if (Sample(image, luminance, centre + Vector2.Transform(Module(module), grid), threshold, inverted) == dark)
             {
                 score++;
             }
@@ -735,7 +733,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     /// The luminance halfway between the bullseye's dark rings and the light between them, sampled round the middle of
     /// each, for sampling modules from luminance.
     /// </summary>
-    private float Threshold(Vector2 centre, Matrix3x2 shape)
+    private static float Threshold(in BbLuminanceView luminance, Vector2 centre, Matrix3x2 shape)
     {
         float dark = 0, light = 0;
         for (var ring = 0; ring < 5; ring++)
@@ -745,7 +743,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
             {
                 var (sin, cos) = MathF.SinCos(step * MathF.PI / 4);
                 var point = centre + Vector2.Transform(new Vector2(cos * radius, sin * radius), shape);
-                var value = Luminance(point);
+                var value = Luminance(luminance, point);
                 if (ring % 2 == 0)
                 {
                     dark += value;
@@ -761,30 +759,24 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     }
 
     /// <summary>Whether the module centred at <paramref name="point"/> is dark; <see langword="null"/> outside the image.</summary>
-    private bool? Sample(BbBitMatrix image, Vector2 point, float threshold, bool inverted)
+    private static bool? Sample(BbBitMatrix image, in BbLuminanceView luminance, Vector2 point, float threshold, bool inverted)
     {
         if (point.X < 0 || point.Y < 0 || point.X >= image.Width - 1 || point.Y >= image.Height - 1)
         {
             return null;
         }
 
-        if (!_hasLuminance)
+        if (luminance.IsEmpty)
         {
             return image[(int)point.X, (int)point.Y];
         }
 
-        return Luminance(point) < threshold != inverted;
+        return Luminance(luminance, point) < threshold != inverted;
     }
 
-    /// <summary>The luminance at <paramref name="point"/>, interpolated between the four pixels round it.</summary>
-    private float Luminance(Vector2 point)
-    {
-        var (x, y) = (MathF.Max(0, point.X - 0.5f), MathF.Max(0, point.Y - 0.5f));
-        var (x0, y0) = (Math.Min((int)x, _luminance.Width - 1), Math.Min((int)y, _luminance.Height - 1));
-        var (x1, y1) = (Math.Min(x0 + 1, _luminance.Width - 1), Math.Min(y0 + 1, _luminance.Height - 1));
-        var (tx, ty) = (x - x0, y - y0);
-        var top = (_luminance[x0, y0] * (1 - tx)) + (_luminance[x1, y0] * tx);
-        var bottom = (_luminance[x0, y1] * (1 - tx)) + (_luminance[x1, y1] * tx);
-        return (top * (1 - ty)) + (bottom * ty);
-    }
+    /// <summary>
+    /// The luminance at <paramref name="point"/>, interpolated between the four pixels round it: the point is measured
+    /// from the pixels' edges, so a pixel's centre is half a pixel in.
+    /// </summary>
+    private static float Luminance(in BbLuminanceView luminance, Vector2 point) => luminance.Interpolate(point.X - 0.5f, point.Y - 0.5f);
 }

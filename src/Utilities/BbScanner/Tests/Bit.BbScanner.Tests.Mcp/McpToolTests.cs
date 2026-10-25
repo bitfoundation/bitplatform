@@ -85,7 +85,7 @@ public class McpToolTests
 
         Assert.StartsWith("# BbScanner (Component)", reference);
         Assert.Contains("## Parameter", reference);
-        Assert.Contains("**Formats** : `BbBarcodeFormat` = `BbBarcodeFormat.All`", reference);
+        Assert.Contains("**Formats** : `BbBarcodeFormat` = `BbBarcodeFormat.Common`", reference);
         Assert.Contains("**TargetFrameRate** : `int` = `15`", reference);
         Assert.Contains("**Facing** : `BbCameraFacing` = `BbCameraFacing.Rear`", reference);
         Assert.Contains("**OnScan** : `EventCallback<BbBarcodeResult>`", reference);
@@ -176,12 +176,14 @@ public class McpToolTests
     }
 
     [TestMethod]
-    public async Task Pdf417_is_described_as_read_by_default()
+    public async Task Pdf417_is_described_as_read_once_asked_for()
     {
         var pdf417 = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "Pdf417" });
+        var qr = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "QrCode" });
 
-        Assert.Contains("Enabled by default", pdf417);
+        Assert.Contains("Not enabled by default", pdf417);
         Assert.DoesNotContain("The pipeline does not create this reader", pdf417);
+        Assert.Contains("Enabled by default", qr);
     }
 
     [TestMethod]

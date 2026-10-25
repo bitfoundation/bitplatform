@@ -22,7 +22,7 @@
                 <tr><th>Parameter</th><th>Type</th><th>Default</th><th>Purpose</th></tr>
             </thead>
             <tbody>
-                <tr><td class="bb-table-key">Formats</td><td class="bb-mono bb-table-key">BbBarcodeFormat</td><td class="bb-mono bb-table-key">All</td><td>Symbologies to look for. A flags enum.</td></tr>
+                <tr><td class="bb-table-key">Formats</td><td class="bb-mono bb-table-key">BbBarcodeFormat</td><td class="bb-mono bb-table-key">Common</td><td>Symbologies to look for. A flags enum.</td></tr>
                 <tr><td class="bb-table-key">Region</td><td class="bb-mono bb-table-key">BbScanRegion</td><td class="bb-mono bb-table-key">Full</td><td>Normalized sub-rectangle to search.</td></tr>
                 <tr><td class="bb-table-key">Options</td><td class="bb-mono bb-table-key">BbScannerOptions?</td><td class="bb-mono bb-table-key">null</td><td>Advanced tuning applied under Formats and Region.</td></tr>
                 <tr><td class="bb-table-key">TargetFrameRate</td><td class="bb-mono bb-table-key">int</td><td class="bb-mono bb-table-key">15</td><td>Frames a second to decode.</td></tr>
@@ -177,7 +177,7 @@
 
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> BbScannerOptions</h3>
-    <pre class="bb-code">BbBarcodeFormat Formats                    = BbBarcodeFormat.All
+    <pre class="bb-code">BbBarcodeFormat Formats                    = BbBarcodeFormat.Common
 BbScanRegion    Region                     = BbScanRegion.Full
 <span class="k">int</span>           MaxScanLines               = 15      <span class="c">// lines per orientation</span>
 <span class="k">int</span>           DownsampleFactor           = 1

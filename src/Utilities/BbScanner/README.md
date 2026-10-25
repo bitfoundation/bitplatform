@@ -248,7 +248,9 @@ Narrow `Formats` to the symbologies you need - it is the single most effective s
 | GS1 DataBar Expanded | Supported | Expanded and Expanded Stacked, every encodation method: the compressed forms for a GTIN with a weight, a price or a date, and the general purpose field in its numeric, alphanumeric and ISO/IEC 646 modes. Reported as the GS1 element string, with a group separator after every element that is not of a predefined length but the last, and `Metadata.IsGs1` set. The modulo 211 checksum, the character count the check character carries, the finder pattern sequence and the data are verified to the last bit and the padding; a stacked symbol's rows, and a long one turned off the lines, are put together from the lines that read them - only along characters some line read one after the other, so that two labels with the same GTIN are not mixed. Confirmed on a second scan line. The linear part of a GS1 Composite symbol is not read |
 
 `BbBarcodeFormat` is a flags enum, so a set of symbologies is one value: `BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13`.
-`AllLinear`, `AllMatrix` and `All` are the composites, and `All` is the default. Only the readers of the requested
+`AllLinear`, `AllMatrix` and `All` are the composites. The default is `Common` - QR Code, Data Matrix, Code 128,
+Code 39, EAN, UPC and ITF, the symbologies on most products, tickets and labels; PDF417, Aztec, MaxiCode, Micro QR,
+Codabar, Code 93 and the GS1 DataBar family are asked for by name, or with `All`. Only the readers of the requested
 formats are created, so narrowing `Formats` costs nothing and makes every frame cheaper - and it is the main guard
 against a misread between similar linear symbologies.
 
@@ -258,7 +260,7 @@ against a misread between similar linear symbologies.
 
 | Parameter | Type | Default | Purpose |
 | --- | --- | --- | --- |
-| `Formats` | `BbBarcodeFormat` | `All` | Symbologies to look for. A flags enum. |
+| `Formats` | `BbBarcodeFormat` | `Common` | Symbologies to look for. A flags enum. |
 | `Region` | `BbScanRegion` | `Full` | Normalized sub-rectangle of the frame to search. |
 | `Options` | `BbScannerOptions?` | `null` | Advanced tuning, applied under `Formats` and `Region`. |
 | `TargetFrameRate` | `int` | `15` | Frames a second to decode. |
@@ -457,10 +459,14 @@ suppressed for `DuplicateSuppressionWindow` (two seconds by default) after it wa
 stays in view. Every symbol seen within the window is remembered, so two codes in view at once are each reported
 once, however the frames alternate between them. Set it to `TimeSpan.Zero` to report every frame that decodes.
 `Resume` and `StartAsync` reset the filter, so the symbol that was in view when scanning paused is reported again.
+An EAN or UPC add-on is part of the value, so two issues of a magazine that share the main symbol are each reported;
+a frame that reads the add-on an earlier one missed reports the symbol again, with `Metadata.Extension` set, so set
+`RequireEanExtension` where each item must be reported once and with its add-on.
 
 `Timeout.InfiniteTimeSpan` turns the window into a session: each value is reported once for as long as the camera
-stays open - a stocktake, a check-in desk - remembering up to 4 096 values. `StartAsync` and `ResetDuplicateFilter`
-start a new session; `Resume` does not, since the point is that a value already counted stays counted.
+stays open - a stocktake, a check-in desk - remembering up to 4 096 values. `StartAsync` on a scanner with no camera
+open and `ResetDuplicateFilter` start a new session; `Resume`, switching cameras and a camera reopened after the page
+was hidden do not, since the point is that a value already counted stays counted.
 
 `AfterScan` decides what a reported scan does to the scanner: `Continue` (the default), `Pause`, which stops
 decoding and keeps the camera open so a "scan another" button's `Resume` is instant, or `Stop`, which releases the
@@ -611,7 +617,7 @@ rotation, the exhaustive detector path, and inverted symbols allowed.
 
 | Setting | Default | Effect |
 | --- | --- | --- |
-| `Formats` | `All` | Only the decoders that can produce a requested format are created. |
+| `Formats` | `Common` | Only the decoders that can produce a requested format are created. |
 | `Region` | `Full` | Restricts every stage proportionally. |
 | `MaxScanLines` | `15` | Scan lines per orientation for linear symbologies. |
 | `DownsampleFactor` | `1` | Subsamples while converting to grayscale. Quadratic. |

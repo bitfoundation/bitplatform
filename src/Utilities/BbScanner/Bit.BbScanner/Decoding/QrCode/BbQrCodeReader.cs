@@ -14,10 +14,6 @@ public sealed class BbQrCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecoder
     private BbQrDetector? _detector;
     private BbDecoderResult? _payload;
 
-    /// <summary>The luminance plane of the image being decoded, while one is; see <see cref="IBbLuminanceMatrixDecoder"/>.</summary>
-    private BbLuminanceView _luminance;
-    private bool _hasLuminance;
-
     /// <summary>Creates a reader for QR Code.</summary>
     public BbQrCodeReader()
         : this(BbBarcodeFormat.QrCode)
@@ -56,25 +52,21 @@ public sealed class BbQrCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecoder
 
     /// <inheritdoc />
     BbSymbolDecodeResult? IBbLuminanceMatrixDecoder.Decode(BbBitMatrix image, in BbLuminanceView luminance, BbMatrixDecodeOptions options)
-    {
-        (_luminance, _hasLuminance) = (luminance, true);
-        try
-        {
-            return Decode(image, options);
-        }
-        finally
-        {
-            (_luminance, _hasLuminance) = (default, false);
-            _detector?.ForgetLuminance();
-        }
-    }
+        => Decode(image, luminance, options);
 
     /// <inheritdoc />
-    public BbSymbolDecodeResult? Decode(BbBitMatrix image, BbMatrixDecodeOptions options)
+    public BbSymbolDecodeResult? Decode(BbBitMatrix image, BbMatrixDecodeOptions options) => Decode(image, default, options);
+
+    /// <summary>
+    /// Decodes with the luminance plane the image was binarised from, which a grid too fine for the binarised image is
+    /// sampled from when it is not empty. It is handed down, never kept: the reader holds no reference to a frame once
+    /// read.
+    /// </summary>
+    private BbSymbolDecodeResult? Decode(BbBitMatrix image, in BbLuminanceView luminance, BbMatrixDecodeOptions options)
     {
         ArgumentNullException.ThrowIfNull(image);
 
-        var result = TryDecode(image, options.TryHarder, inverted: false);
+        var result = TryDecode(image, luminance, options.TryHarder, inverted: false);
         if (result is not null)
         {
             return result;
@@ -90,7 +82,7 @@ public sealed class BbQrCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecoder
         image.Invert();
         try
         {
-            return TryDecode(image, options.TryHarder, inverted: true);
+            return TryDecode(image, luminance, options.TryHarder, inverted: true);
         }
         finally
         {
@@ -98,7 +90,7 @@ public sealed class BbQrCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecoder
         }
     }
 
-    private BbSymbolDecodeResult? TryDecode(BbBitMatrix image, bool tryHarder, bool inverted)
+    private BbSymbolDecodeResult? TryDecode(BbBitMatrix image, in BbLuminanceView luminance, bool tryHarder, bool inverted)
     {
         if (_detector is null)
         {
@@ -109,15 +101,10 @@ public sealed class BbQrCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecoder
             _detector.Reset(image);
         }
 
-        if (_hasLuminance)
-        {
-            _detector.UseLuminance(_luminance, inverted);
-        }
-
         _payload = null;
         if ((_formats & BbBarcodeFormat.QrCode) != 0)
         {
-            using var detected = _detector.Detect(tryHarder, _accept);
+            using var detected = _detector.Detect(tryHarder, _accept, luminance, inverted);
             if (detected is not null && _payload is not null)
             {
                 return new BbSymbolDecodeResult(_payload, BbBarcodeFormat.QrCode, detected.Points);
@@ -132,7 +119,7 @@ public sealed class BbQrCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecoder
         // No QR symbol: the finder patterns the search found are tried as Micro QR symbols' one each.
         var centers = (_formats & BbBarcodeFormat.QrCode) != 0 ? _detector.FinderCenters : _detector.ScanFinders(tryHarder);
         _payload = null;
-        using var micro = _microDetector.Detect(image, centers, _acceptMicro, _luminance, _hasLuminance, inverted);
+        using var micro = _microDetector.Detect(image, centers, _acceptMicro, luminance, inverted);
         return micro is null || _payload is null
             ? null
             : new BbSymbolDecodeResult(_payload, BbBarcodeFormat.MicroQrCode, micro.Points);
