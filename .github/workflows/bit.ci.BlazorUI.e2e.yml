@@ -144,7 +144,7 @@ jobs:
 
   trimming-BlazorUI:
     name: trimming
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 120
 
     env:
@@ -159,10 +159,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -182,12 +187,12 @@ jobs:
       run: dotnet build $TRIMMING_DIR
 
     - name: Install the Playwright browsers
-      run: pwsh $TRIMMING_DIR/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium firefox webkit
+      run: pwsh $TRIMMING_DIR/bin/Debug/net11.0/playwright.ps1 install --with-deps chromium firefox webkit
 
     - name: Run the trimming tests
       run: |
         cd $TRIMMING_DIR
-        dotnet exec bin/Debug/net10.0/Bit.BlazorUI.Tests.Trimming.dll --report-trx --results-directory "$GITHUB_WORKSPACE/trimming-results"
+        dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Tests.Trimming.dll --report-trx --results-directory "$GITHUB_WORKSPACE/trimming-results"
 
     - name: Upload the test results
       if: always()
@@ -199,7 +204,7 @@ jobs:
 
   browser-BlazorUI:
     name: browser tests
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 120
 
     env:
@@ -213,7 +218,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -223,18 +228,18 @@ jobs:
         node-version: 24
 
     - name: Build the test host
-      run: dotnet build $PERFORMANCE_DIR/Bit.BlazorUI.Tests.Performance.TestHost -f net10.0
+      run: dotnet build $PERFORMANCE_DIR/Bit.BlazorUI.Tests.Performance.TestHost -f net11.0
 
     - name: Build the browser tests
-      run: dotnet build $PERFORMANCE_DIR/Bit.BlazorUI.Tests.Performance -f net10.0
+      run: dotnet build $PERFORMANCE_DIR/Bit.BlazorUI.Tests.Performance -f net11.0
 
     - name: Install the Playwright browser
-      run: pwsh $PERFORMANCE_DIR/Bit.BlazorUI.Tests.Performance/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh $PERFORMANCE_DIR/Bit.BlazorUI.Tests.Performance/bin/Debug/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run the browser tests
       run: |
         cd $PERFORMANCE_DIR/Bit.BlazorUI.Tests.Performance
-        dotnet exec bin/Debug/net10.0/Bit.BlazorUI.Tests.Performance.dll --report-trx --results-directory "$GITHUB_WORKSPACE/browser-results"
+        dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Tests.Performance.dll --report-trx --results-directory "$GITHUB_WORKSPACE/browser-results"
 
     - name: Upload the test results
       if: always()
