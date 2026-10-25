@@ -158,10 +158,13 @@ From [`src/Server/Boilerplate.Server.Api/Features/Identity/IdentityController.Em
 
 ```csharp
 var user = await userManager.FindByEmailAsync(request.Email!)
-    ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Email", request.Email);
+    ?? throw new BadRequestException(nameof(AppStrings.ExpiredToken)).WithData("Email", request.Email);
 
-if (await userManager.IsEmailConfirmedAsync(user))
-    throw new BadRequestException(Localizer[nameof(AppStrings.EmailAlreadyConfirmed)]).WithData("UserId", user.Id);
+var expired = user.EmailTokenRequestedOn is null ||
+              (TimeProvider.GetUtcNow() - user.EmailTokenRequestedOn.Value) > AppSettings.Identity.EmailTokenLifetime;
+
+if (expired)
+    throw new BadRequestException(nameof(AppStrings.ExpiredToken)).WithData("UserId", user.Id);
 ```
 
 ### Benefits

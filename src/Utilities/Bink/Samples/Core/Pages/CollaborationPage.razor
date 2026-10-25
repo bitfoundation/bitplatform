@@ -1,0 +1,114 @@
+﻿@page "/collaboration"
+@implements IAsyncDisposable
+
+<PageTitle>Collaboration - Bink samples</PageTitle>
+
+<h1>Collaboration</h1>
+
+<p>
+    Two participants, each with their own document, kept in step by a <code>BinkCollaborationSession</code> over an
+    in-memory transport. Draw, erase, undo or clear on either side and the other follows. Take one offline, keep
+    drawing on both, and bring it back: the queued edits are exchanged and both sides converge again.
+</p>
+
+<p class="status" role="status">
+    @(Converged ? "Both documents hold the same elements." : "The documents differ until the offline side reconnects.")
+    @if (_lastMessage is not null)
+    {
+        <span> @_lastMessage</span>
+    }
+</p>
+
+<div class="columns">
+    @for (int index = 0; index < 2; index++)
+    {
+        int i = index;
+        <section>
+            <div class="toolbar">
+                <strong>@Names[i]</strong>
+                <label><input type="checkbox" checked="@_online[i]" @onchange="e => SetOnlineAsync(i, (bool)e.Value!)" /> online</label>
+                <button disabled="@(_canvases[i]?.History.CanUndo is not true)" @onclick="() => _canvases[i]?.Undo()">Undo</button>
+                <button disabled="@_documents[i].IsEmpty" @onclick="() => _canvases[i]?.Clear()">Clear</button>
+                <span>Queued: <strong>@(_sessions[i]?.PendingCount ?? 0)</strong></span>
+            </div>
+            <div class="surface">
+                <BinkCanvas @ref="_canvases[i]"
+                            Document="_documents[i]"
+                            Height="320px"
+                            Brush="_brushes[i]"
+                            AriaLabel="@($"{Names[i]}'s canvas")"
+                            EnableTouchGestures="true"
+                            DocumentChanged="() => StateHasChanged()"
+                            Ready="() => StateHasChanged()"
+                            HistoryChanged="() => StateHasChanged()" />
+            </div>
+            <CanvasStatus Canvas="_canvases[i]">
+                <span><strong>@(_transports[i]?.SentCount ?? 0)</strong> messages sent</span>
+            </CanvasStatus>
+        </section>
+    }
+</div>
+
+@code {
+    private static readonly string[] Names = ["Alex", "Sam"];
+
+    private readonly BinkCanvas?[] _canvases = new BinkCanvas?[2];
+    private readonly BinkDocument[] _documents = new BinkDocument[2];
+    private readonly BinkCollaborationSession?[] _sessions = new BinkCollaborationSession?[2];
+    private readonly LoopbackTransport?[] _transports = new LoopbackTransport?[2];
+    private readonly bool[] _online = [true, true];
+    private readonly BinkBrush[] _brushes =
+    [
+        new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#2563eb") },
+        new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#16a34a") },
+    ];
+    private string? _lastMessage;
+
+    /// <summary>True when both documents hold the same elements at the same versions.</summary>
+    private bool Converged
+    {
+        get
+        {
+            var left = _documents[0].AllElements.ToDictionary(e => e.Id, e => e.Version);
+            var right = _documents[1].AllElements.ToDictionary(e => e.Id, e => e.Version);
+            return left.Count == right.Count && left.All(pair => right.TryGetValue(pair.Key, out int version) && version == pair.Value);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        // Both participants must start from the same document, layer ids included, which is what joining a real
+        // session does: it loads a snapshot.
+        _documents[0] = new BinkDocument(new BinkDocumentSettings { Width = 600, Height = 400, Background = BinkColor.White });
+        _documents[1] = BinkSerializer.Deserialize(BinkSerializer.Serialize(_documents[0]));
+
+        // Every message is applied on the renderer's dispatcher, which is what keeps the documents safe on Blazor
+        // Server and in MAUI, where the renderer is not the only thread.
+        var hub = new LoopbackHub(work => InvokeAsync(work));
+        for (int i = 0; i < 2; i++)
+        {
+            LoopbackTransport transport = hub.CreateClient();
+            var session = new BinkCollaborationSession(_documents[i], transport, Names[i]);
+            session.RemoteOperationRejected += reason => _lastMessage = "Rejected: " + reason;
+            _transports[i] = transport;
+            _sessions[i] = session;
+        }
+    }
+
+    private async Task SetOnlineAsync(int index, bool online)
+    {
+        _online[index] = online;
+        if (_transports[index] is not { } transport) return;
+        await transport.SetConnectedAsync(online);
+        // Sends whatever was drawn while offline.
+        if (online && _sessions[index] is { } session) await session.FlushAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        foreach (BinkCollaborationSession? session in _sessions)
+        {
+            if (session is not null) await session.DisposeAsync();
+        }
+    }
+}

@@ -1,0 +1,222 @@
+﻿@page "/whiteboard"
+
+<PageTitle>Whiteboard - Bink samples</PageTitle>
+
+<h1>Whiteboard</h1>
+
+<p>
+    Every tool and brush on one board with two layers. The board pans and zooms with the wheel, a trackpad or two
+    fingers; Ctrl+C, Ctrl+X, Ctrl+V and Ctrl+D use the system clipboard, and images can be pasted or dropped onto it.
+</p>
+
+<div class="toolbar" role="toolbar" aria-label="Tools">
+    <div class="segmented" role="group" aria-label="Tool">
+        @foreach ((string id, string label) in Tools)
+        {
+            <button aria-pressed="@(_toolId == id ? "true" : "false")" @onclick="() => SelectTool(id)">@label</button>
+        }
+    </div>
+
+    @if (_toolId == "eraser")
+    {
+        <select aria-label="Eraser mode" @bind="EraserMode" @bind:after="ApplyTool">
+            @foreach (BinkEraserMode mode in Enum.GetValues<BinkEraserMode>())
+            {
+                <option value="@mode">@mode</option>
+            }
+        </select>
+    }
+
+    @if (_toolId == "shape")
+    {
+        <select aria-label="Shape" @bind="ShapeKind" @bind:after="ApplyTool">
+            @foreach (BinkShapeKind kind in Enum.GetValues<BinkShapeKind>())
+            {
+                <option value="@kind">@kind</option>
+            }
+        </select>
+        <label><input type="checkbox" @bind="Fill" @bind:after="ApplyTool" /> Fill</label>
+    }
+
+    <select aria-label="Colour" @bind="Color" @bind:after="ApplyTool">
+        @foreach (string color in Palette)
+        {
+            <option value="@color">@color</option>
+        }
+    </select>
+
+    <label>
+        Size
+        <input type="range" min="1" max="24" step="1" @bind="Size" @bind:after="ApplyTool" />
+    </label>
+</div>
+
+<div class="toolbar" role="toolbar" aria-label="Edit and view">
+    <button disabled="@(_canvas?.History.CanUndo is not true)" @onclick="() => _canvas?.Undo()">Undo</button>
+    <button disabled="@(_canvas?.History.CanRedo is not true)" @onclick="() => _canvas?.Redo()">Redo</button>
+    <button @onclick="() => _canvas?.SelectAll()">Select all</button>
+    <button disabled="@NoSelection" @onclick="() => _canvas?.DuplicateSelection()">Duplicate</button>
+    <button disabled="@NoSelection" @onclick="() => _canvas?.GroupSelection()">Group</button>
+    <button disabled="@NoSelection" @onclick="() => _canvas?.UngroupSelection()">Ungroup</button>
+    <button disabled="@NoSelection" @onclick="() => _canvas?.ArrangeSelection(BinkArrangement.BringToFront)">To front</button>
+    <button disabled="@NoSelection" @onclick="() => _canvas?.DeleteSelection()">Delete</button>
+    <button disabled="@_document.IsEmpty" @onclick="() => _canvas?.Clear()">Clear</button>
+    <span class="spacer"></span>
+    <button aria-label="Zoom in" @onclick="() => _canvas?.ZoomBy(1.25f)">+</button>
+    <button aria-label="Zoom out" @onclick="() => _canvas?.ZoomBy(0.8f)">&minus;</button>
+    <button @onclick="() => _canvas?.ZoomToFit()">Fit</button>
+    <button @onclick="() => _canvas?.ResetViewport()">100%</button>
+    <label><input type="checkbox" @bind="_grid" /> Grid</label>
+    <label><input type="checkbox" @bind="_snap" /> Snap</label>
+</div>
+
+<div class="toolbar" role="toolbar" aria-label="Layers">
+    @foreach (BinkLayer layer in _document.Layers.Reverse())
+    {
+        <span class="layer @(layer.Id == _activeLayer ? "active" : null)">
+            <button aria-pressed="@(layer.Id == _activeLayer ? "true" : "false")" @onclick="() => _activeLayer = layer.Id">@layer.Name</button>
+            <label><input type="checkbox" checked="@layer.IsVisible" @onchange="e => SetVisible(layer.Id, (bool)e.Value!)" /> visible</label>
+            <label><input type="checkbox" checked="@layer.IsLocked" @onchange="e => SetLocked(layer.Id, (bool)e.Value!)" /> locked</label>
+        </span>
+    }
+</div>
+
+<div class="surface">
+    <BinkCanvas @ref="_canvas"
+                Document="_document"
+                Height="480px"
+                AriaLabel="Whiteboard"
+                Tool="_tool"
+                Brush="_brush"
+                ShapeStyle="_shapeStyle"
+                ActiveLayerId="_activeLayer"
+                EnableTouchGestures="true"
+                WheelMode="BinkWheelMode.PanAndZoom"
+                EnableClipboard="true"
+                EnableDrop="true"
+                Grid="@(_grid ? BinkGrid.DottedDefault : null)"
+                Snapping="@(_snap ? SnapOptions : null)"
+                DocumentChanged="() => StateHasChanged()"
+                Ready="() => StateHasChanged()"
+                HistoryChanged="() => StateHasChanged()"
+                SelectionChanged="() => StateHasChanged()" />
+</div>
+
+<CanvasStatus Canvas="_canvas">
+    <span><strong>@(_canvas?.Selection.Count ?? 0)</strong> selected</span>
+</CanvasStatus>
+
+@code {
+    private static readonly (string Id, string Label)[] Tools =
+    [
+        ("select", "Select"),
+        ("lasso", "Lasso"),
+        ("pen", "Pen"),
+        ("pencil", "Pencil"),
+        ("marker", "Marker"),
+        ("highlighter", "Highlighter"),
+        ("calligraphy", "Calligraphy"),
+        ("eraser", "Eraser"),
+        ("shape", "Shape"),
+        ("polyline", "Outline"),
+        ("text", "Text"),
+        ("pan", "Pan"),
+    ];
+
+    private static readonly string[] Palette = ["#111827", "#dc2626", "#ea580c", "#16a34a", "#2563eb", "#7c3aed"];
+
+    private static readonly BinkSnapOptions SnapOptions = new() { GridSize = 20f };
+
+    private BinkCanvas? _canvas;
+    private readonly BinkDocument _document = CreateDocument();
+    private Guid _activeLayer;
+    private string _toolId = "pen";
+    private IBinkTool _tool = new BinkDrawTool();
+    private BinkBrush _brush = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#111827") };
+    private BinkShapeStyle _shapeStyle = new() { StrokeColor = BinkColor.Parse("#111827"), StrokeWidth = 4f };
+    private bool _grid;
+    private bool _snap = true;
+
+    private string Color { get; set; } = "#111827";
+
+    private float Size { get; set; } = 4f;
+
+    private bool Fill { get; set; }
+
+    private BinkEraserMode EraserMode { get; set; } = BinkEraserMode.Stroke;
+
+    private BinkShapeKind ShapeKind { get; set; } = BinkShapeKind.Rectangle;
+
+    private bool NoSelection => _canvas?.Selection.IsEmpty ?? true;
+
+    private static BinkDocument CreateDocument()
+    {
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 1600, Height = 1000, Background = BinkColor.White });
+        document.UpdateLayer(document.Layers[0].Id, p => p with { Name = "Drawing" });
+        document.AddLayer("Annotations");
+        return document;
+    }
+
+    protected override void OnInitialized() => _activeLayer = _document.Layers[0].Id;
+
+    private void SelectTool(string id)
+    {
+        _toolId = id;
+        ApplyTool();
+    }
+
+    private void ApplyTool()
+    {
+        BinkColor color = BinkColor.Parse(Color);
+        _shapeStyle = new BinkShapeStyle { StrokeColor = color, StrokeWidth = Size, FillColor = Fill ? color with { A = 64 } : null };
+
+        switch (_toolId)
+        {
+            case "select":
+                _tool = new BinkSelectTool();
+                break;
+            case "lasso":
+                _tool = new BinkSelectTool { MarqueeShape = BinkMarqueeShape.Lasso };
+                break;
+            case "pen":
+                _brush = new BinkPenBrush { Width = Size, Color = color };
+                _tool = new BinkDrawTool();
+                break;
+            case "pencil":
+                _brush = new BinkPencilBrush { Width = Size, Color = color };
+                _tool = new BinkDrawTool();
+                break;
+            case "marker":
+                _brush = new BinkMarkerBrush { Width = MathF.Max(Size * 1.5f, 6f), Color = color };
+                _tool = new BinkDrawTool();
+                break;
+            case "highlighter":
+                _brush = new BinkHighlighterBrush { Width = MathF.Max(Size * 4f, 16f), Color = color };
+                _tool = new BinkDrawTool();
+                break;
+            case "calligraphy":
+                _brush = new BinkCalligraphyBrush { Width = MathF.Max(Size * 2f, 6f), Color = color };
+                _tool = new BinkDrawTool();
+                break;
+            case "eraser":
+                _tool = new BinkEraserTool { Mode = EraserMode, Radius = MathF.Max(Size * 2f, 8f) };
+                break;
+            case "shape":
+                _tool = new BinkShapeTool(ShapeKind);
+                break;
+            case "polyline":
+                _tool = new BinkPolylineTool { Smooth = true };
+                break;
+            case "text":
+                _tool = new BinkTextTool { Style = BinkTextStyle.Default with { FontSize = MathF.Max(Size * 4f, 16f), Color = color } };
+                break;
+            case "pan":
+                _tool = new BinkPanTool();
+                break;
+        }
+    }
+
+    private void SetVisible(Guid layerId, bool visible) => _document.UpdateLayer(layerId, p => p with { IsVisible = visible });
+
+    private void SetLocked(Guid layerId, bool locked) => _document.UpdateLayer(layerId, p => p with { IsLocked = locked });
+}

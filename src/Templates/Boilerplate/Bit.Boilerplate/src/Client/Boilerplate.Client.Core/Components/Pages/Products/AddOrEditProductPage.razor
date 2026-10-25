@@ -1,4 +1,5 @@
 @*+:cnd:noEmit*@
+@using Boilerplate.Shared.Features.Attachments
 @attribute [Route(PageUrls.AddOrEditProduct + "/{Id:guid?}")]
 @attribute [Route("{culture?}" + PageUrls.AddOrEditProduct + "/{Id:guid?}")]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
@@ -71,10 +72,10 @@
                                    AutoReset
                                    ShowPreview
                                    HideFileView
-                                   Accept="image/*"
+                                   Accept="@ImageUploadContentTypes.Accept"
                                    Style="max-width:unset;"
                                    MaxSize="1024 * 1024 * 10"
-                                   AllowedExtensions="@(["image/*"])"
+                                   AllowedExtensions="ImageUploadContentTypes.All"
                                    UploadUrlProvider="GetUploadUrl"
                                    OnFilesChange="WrapHandled((BitFileInfo[] files) => HandleOnFilesChange(files))"
                                    OnUploading="() => isManagingFile = true"

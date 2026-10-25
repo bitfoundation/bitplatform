@@ -233,7 +233,7 @@ public partial class ProductImageLifecycleTests
     /// <summary>A solid-colour PNG at least 512x512, which is the minimum the medium kind's resize accepts.</summary>
     private static byte[] SolidImage(MagickColor color, uint size = 512)
     {
-        using var image = new MagickImage(color, size, size);
+        using var image = TestImageFactory.Solid(color, size, size);
         return image.ToByteArray(MagickFormat.Png);
     }
 

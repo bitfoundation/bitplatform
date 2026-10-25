@@ -115,6 +115,13 @@ internal static class BlazorReflection
             RendererDisposedField = typeof(Renderer).GetField("_rendererIsDisposed", Instance) is { } disposedField && disposedField.FieldType == typeof(bool) ? disposedField : null;
             HasNeverRenderedField = typeof(ComponentBase).GetField("_hasNeverRendered", Instance) is { } neverRendered && neverRendered.FieldType == typeof(bool) ? neverRendered : null;
             HasPendingQueuedRenderField = typeof(ComponentBase).GetField("_hasPendingQueuedRender", Instance) is { } pending && pending.FieldType == typeof(bool) ? pending : null;
+            HasCalledOnAfterRenderField = typeof(ComponentBase).GetField("_hasCalledOnAfterRender", Instance) is { } afterRender && afterRender.FieldType == typeof(bool) ? afterRender : null;
+
+            // The frames a component produced on its latest render: what it bound (event handlers, child component
+            // parameters), read from the renderer's own copy rather than inferred.
+            CurrentRenderTreeProperty = typeof(ComponentState).GetProperty("CurrentRenderTree", Instance) is { } tree && tree.PropertyType == typeof(RenderTreeBuilder) ? tree : null;
+            EventCallbackDelegateField = typeof(EventCallback).GetField("Delegate", Instance) is { } callbackDelegate && typeof(Delegate).IsAssignableFrom(callbackDelegate.FieldType) ? callbackDelegate : null;
+            GetComponentRenderModeMethod = typeof(Renderer).GetMethod("GetComponentRenderMode", Instance, [typeof(IComponent)]) is { } renderMode && renderMode.ReturnType == typeof(IComponentRenderMode) ? renderMode : null;
         }
         catch (Exception ex)
         {
@@ -166,7 +173,256 @@ internal static class BlazorReflection
 
     public static FieldInfo? HasPendingQueuedRenderField { get; }
 
+    public static FieldInfo? HasCalledOnAfterRenderField { get; }
+
+    public static PropertyInfo? CurrentRenderTreeProperty { get; }
+
+    public static FieldInfo? EventCallbackDelegateField { get; }
+
+    public static MethodInfo? GetComponentRenderModeMethod { get; }
+
     public static Exception? InitializationError { get; }
+
+    public static bool CanReadRenderTree => CurrentRenderTreeProperty is not null;
+
+    /// <summary>The frames the component produced on its latest render; null when they cannot be read.</summary>
+    public static RenderTreeFrame[]? CurrentFrames(ComponentState state)
+    {
+        try
+        {
+            if (CurrentRenderTreeProperty?.GetValue(state) is not RenderTreeBuilder builder)
+            {
+                return null;
+            }
+
+            var frames = builder.GetFrames();
+            // A copy: the builder's buffer is reused by the next render, and the caller reads it after this returns.
+            return frames.Array.AsSpan(0, frames.Count).ToArray();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// The frames the component produced on its latest render, without copying them: valid only until that component
+    /// renders again, so only for a caller on the renderer's dispatcher that reads them before yielding. Null when they
+    /// cannot be read.
+    /// </summary>
+    public static ArrayRange<RenderTreeFrame>? CurrentFramesInPlace(ComponentState state)
+    {
+        try
+        {
+            return GetCurrentRenderTree.Value?.Invoke(state) is { } builder ? builder.GetFrames() : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    // Compiled on first use: mapping a component to the page reads every ancestor's tree, for many components at once
+    // while renders are being highlighted.
+    private static readonly Lazy<Func<ComponentState, RenderTreeBuilder>?> GetCurrentRenderTree = new(() =>
+    {
+        if (CurrentRenderTreeProperty is null)
+        {
+            return null;
+        }
+
+        var state = Expression.Parameter(typeof(ComponentState), "s");
+        return Expression.Lambda<Func<ComponentState, RenderTreeBuilder>>(Expression.Property(state, CurrentRenderTreeProperty), state).Compile();
+    });
+
+    private static readonly Lazy<FieldInfo?> NextRenderTreeField = new(() =>
+        typeof(ComponentState).GetField("_nextRenderTree", Instance) is { } field && field.FieldType == typeof(RenderTreeBuilder) ? field : null);
+
+    private static readonly Lazy<Func<Renderer, RenderTreeFrame[]?>?> ReferenceFramesBuffer = new(() =>
+    {
+        var batchBuilder = typeof(Renderer).GetField("_batchBuilder", Instance);
+        var referenceFrames = batchBuilder?.FieldType.GetProperty("ReferenceFramesBuffer", Instance);
+        var buffer = referenceFrames?.PropertyType.GetProperty("Buffer", Instance);
+        if (batchBuilder is null || referenceFrames is null || buffer?.PropertyType != typeof(RenderTreeFrame[]))
+        {
+            return null;
+        }
+
+        return renderer => batchBuilder.GetValue(renderer) is { } builder && referenceFrames.GetValue(builder) is { } frames ? buffer.GetValue(frames) as RenderTreeFrame[] : null;
+    });
+
+    /// <summary>
+    /// Every frame buffer the renderer keeps for a component: both of its render trees whole, not just their used part
+    /// (a tree is double-buffered for diffing, and a buffer is reused without being cleared). A component the parent
+    /// stopped rendering stays referenced from these until the parent renders again.
+    /// </summary>
+    public static IEnumerable<RenderTreeFrame[]> FrameBuffers(ComponentState state)
+    {
+        if (GetCurrentRenderTree.Value?.Invoke(state) is { } current && current.GetFrames().Array is { } currentFrames)
+        {
+            yield return currentFrames;
+        }
+
+        RenderTreeFrame[]? next = null;
+        try
+        {
+            next = NextRenderTreeField.Value?.GetValue(state) is RenderTreeBuilder builder ? builder.GetFrames().Array : null;
+        }
+        catch
+        {
+        }
+
+        if (next is not null)
+        {
+            yield return next;
+        }
+    }
+
+    /// <summary>The renderer's buffer of frames sent with render batches, whole; null when it cannot be read.</summary>
+    public static RenderTreeFrame[]? BatchReferenceFrames(Renderer renderer)
+    {
+        try
+        {
+            return ReferenceFramesBuffer.Value?.Invoke(renderer);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static readonly ConcurrentDictionary<Type, FieldInfo?> TypedCallbackDelegateFields = new();
+
+    /// <summary>
+    /// The setter an <c>@bind</c> handler runs. The handler itself is a lambda of the framework's binder
+    /// (<c>EventCallbackFactoryBinderExtensions</c>), which converts the browser's value and passes it to the setter the
+    /// component wrote (<c>@bind:set</c>, or the assignment <c>@bind</c> compiles to), captured in its closure; a
+    /// <c>@bind:set</c> method arrives wrapped once more by <c>RuntimeHelpers.CreateInferredBindSetter</c>. Null for any
+    /// other handler, or when the closures no longer have that shape.
+    /// </summary>
+    public static Delegate? BindSetter(Delegate handler)
+    {
+        try
+        {
+            if (Captured(handler, typeof(EventCallbackFactoryBinderExtensions), "setter") is not { } setter)
+            {
+                return null;
+            }
+
+            return Captured(setter, typeof(Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers), "callback") ?? setter;
+        }
+        catch
+        {
+            return null;
+        }
+
+        // The delegate a lambda of the framework's `owner` captured as `field`.
+        static Delegate? Captured(Delegate lambda, Type owner, string field)
+        {
+            var declaring = lambda.Method.DeclaringType;
+            while (declaring is not null && declaring.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), false) && declaring.DeclaringType is not null)
+            {
+                declaring = declaring.DeclaringType;
+            }
+
+            return declaring == owner && lambda.Target is { } closure ? closure.GetType().GetField(field, Instance)?.GetValue(closure) as Delegate : null;
+        }
+    }
+
+    /// <summary>
+    /// The delegate an <c>EventCallback</c> or <c>EventCallback&lt;T&gt;</c> invokes, which says what it is bound to
+    /// ("ProductList.OnSelected"); the struct keeps it in an internal field. Null when unbound or unreadable.
+    /// </summary>
+    public static Delegate? EventCallbackDelegate(object callback)
+    {
+        try
+        {
+            if (callback is EventCallback untyped)
+            {
+                return EventCallbackDelegateField?.GetValue(untyped) as Delegate;
+            }
+
+            var field = TypedCallbackDelegateFields.GetOrAdd(callback.GetType(), static type =>
+                type.IsGenericType && type.GetGenericTypeDefinition() == typeof(EventCallback<>)
+                    && type.GetField("Delegate", Instance) is { } f && typeof(Delegate).IsAssignableFrom(f.FieldType) ? f : null);
+            return field?.GetValue(callback) as Delegate;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// The render mode the renderer assigned to a component (<c>@rendermode</c> on it or on an ancestor's component
+    /// frame, or <c>[RenderMode*]</c> on its type). <c>ComponentBase.AssignedRenderMode</c> reads the same on .NET 9,
+    /// but it is protected; this works on every version and for components that do not derive from ComponentBase.
+    /// </summary>
+    public static IComponentRenderMode? AssignedRenderMode(Renderer renderer, IComponent component)
+    {
+        try
+        {
+            return GetComponentRenderModeMethod?.Invoke(renderer, [component]) as IComponentRenderMode;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// The render mode that starts at <paramref name="component"/>: what the renderer assigned to it, unless its parent
+    /// has the same one. A renderer answers for a whole subtree - an interactive renderer with its own mode for every
+    /// component it runs, the prerendering renderer with the mode of the nearest boundary above - so a mode is only
+    /// assigned where it differs from the parent's. The prerendering renderer wraps each boundary in a component of its
+    /// own that reports the mode too; the component the application wrote <c>@rendermode</c> on is the one below it.
+    /// </summary>
+    public static IComponentRenderMode? OwnRenderMode(Renderer renderer, IComponent component)
+    {
+        if (AssignedRenderMode(renderer, component) is not { } mode)
+        {
+            return null;
+        }
+
+        var parent = ResolveState(renderer, component)?.ParentComponentState;
+        while (parent is not null && parent.Component.GetType().Name == "SSRRenderModeBoundary")
+        {
+            parent = parent.ParentComponentState;
+        }
+
+        return parent is not null && BevRenderModes.Describe(AssignedRenderMode(renderer, parent.Component)) == BevRenderModes.Describe(mode) ? null : mode;
+    }
+
+    private static readonly PropertyInfo? JSObjectIdProperty = typeof(Microsoft.JSInterop.Implementation.JSObjectReference).GetProperty("Id", Instance) is { } id && id.PropertyType == typeof(long) ? id : null;
+
+    /// <summary>
+    /// The id the JS side knows a JS object reference by (protected internal on <c>JSObjectReference</c>). Every .NET → JS
+    /// call on that object names it, which is how the page hub tells BevTools' own calls over a circuit from the app's.
+    /// </summary>
+    public static long? JSObjectId(object reference)
+    {
+        try
+        {
+            return reference is Microsoft.JSInterop.Implementation.JSObjectReference && JSObjectIdProperty?.GetValue(reference) is long value ? value : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Whether ComponentBase ran OnAfterRender at least once; null when the field is missing.</summary>
+    public static bool? HasCalledOnAfterRender(ComponentBase component)
+    {
+        try
+        {
+            return HasCalledOnAfterRenderField?.GetValue(component) as bool?;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     public static bool CanWrapRenderFragment => RenderFragmentField is not null && GetRenderFragment is not null;
 

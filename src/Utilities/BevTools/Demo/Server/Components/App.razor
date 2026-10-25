@@ -50,6 +50,8 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">&#128473;</span>
     </div>
+    @* Before blazor.web.js, so it sees the circuit's socket: the Circuit page's "Drop the connection". *@
+    <script src="@Assets["js/connection.js"]"></script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
     <script src="@Assets["site.js"]"></script>
 </body>

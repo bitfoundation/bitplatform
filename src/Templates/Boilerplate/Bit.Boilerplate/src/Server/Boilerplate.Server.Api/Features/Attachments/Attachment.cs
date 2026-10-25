@@ -10,8 +10,5 @@ public partial class Attachment
 
     public string? Path { get; set; }
 
-    [MaxLength(100)]
-    public string? ContentType { get; set; }
-
     public DateTimeOffset CreatedOn { get; set; }
 }

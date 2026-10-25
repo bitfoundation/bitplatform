@@ -1,0 +1,27 @@
+﻿@page "/products/{Id:int}"
+@inject CartState Cart
+
+<PageTitle>@(_product?.Name ?? "Product") - BevTools samples</PageTitle>
+
+@if (_product is null)
+{
+    <h1>No such product</h1>
+}
+else
+{
+    <h1>@_product.Name</h1>
+    <p>@_product.Price.ToString("0.00")</p>
+    <button @onclick="AddToCart">Add to cart</button>
+}
+
+<p><NavLink href="state">Back to the cart</NavLink></p>
+
+@code {
+    private Product? _product;
+
+    [Parameter] public int Id { get; set; }
+
+    protected override void OnParametersSet() => _product = SampleCatalog.Find(Id);
+
+    private void AddToCart() => Cart.Add(_product!);
+}

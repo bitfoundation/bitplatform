@@ -95,7 +95,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (userSession.SignalRConnectionId is not null)
         {
             await appHubContext.Clients.Client(userSession.SignalRConnectionId)
-                .Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
+                .Publish(SharedAppMessages.SESSION_REVOKED, userSession.Id, cancellationToken);
         }
         //#endif
     }
@@ -239,7 +239,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var link = new Uri(
             HttpContext.Request.GetWebAppUrl(),
-            $"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
+            $"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}&{DeviceAccountDto.QueryParameter}={user.Id}");
 
         await emailService.SendEmailToken(user, request.Email!, token, link, cancellationToken);
     }

@@ -42,6 +42,13 @@ internal sealed class ComponentRegistry
     private bool _treeCacheIncludesHidden;
     private WeakReference<Renderer>? _renderer;
 
+    // The framework's activities and meters name a component type, never an instance. These remember, past the records
+    // themselves, which types the application rendered and which only BevTools' own UI did - its panels, an extension's
+    // panel, and the framework components they render (Virtualize in the component tree) - so that what the latter do
+    // is not put down to the application.
+    private readonly ConcurrentDictionary<string, byte> _applicationTypes = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, byte> _bevToolsTypes = new(StringComparer.Ordinal);
+
     public ComponentRegistry(BevToolsSession session, BitBevToolsOptions options)
     {
         _session = session;
@@ -71,9 +78,20 @@ internal sealed class ComponentRegistry
         var record = new BevComponentRecord(Interlocked.Increment(ref _nextInstanceId), component, type, _options.MaxRendersPerComponent, isBevTools, isHidden);
         _byComponent.AddOrUpdate(component, record);
         _byId[record.InstanceId] = record;
+        if (isBevTools)
+        {
+            _bevToolsTypes.TryAdd(record.TypeName, 0);
+        }
+
         _session.Touch();
         return record;
     }
+
+    /// <summary>
+    /// Whether components of this type (its full name) were rendered only by BevTools' own UI in this session: known as
+    /// BevTools', never as the application's. A type not seen at all yet is not.
+    /// </summary>
+    public bool IsBevToolsOnlyType(string typeName) => _bevToolsTypes.ContainsKey(typeName) && !_applicationTypes.ContainsKey(typeName);
 
     public bool TryGet(IComponent component, out BevComponentRecord record) => _byComponent.TryGetValue(component, out record!);
 
@@ -122,9 +140,9 @@ internal sealed class ComponentRegistry
         {
             if (record.IsDisposed)
             {
-                if (now - record.DisposedAt > retention)
+                if (now - record.DisposedAt > retention && _byId.TryRemove(record.InstanceId, out _))
                 {
-                    _byId.TryRemove(record.InstanceId, out _);
+                    FoldIntoGone(record);
                 }
 
                 continue;
@@ -196,6 +214,15 @@ internal sealed class ComponentRegistry
             {
                 record.Parent = parent;
                 record.ParentResolved = true;
+
+                // A component that does not derive from ComponentBase (a CascadingValue) has no render of its own to
+                // link it at, only the next refresh; until then a render's walk up to the ancestor that re-rendered
+                // it would stop there, and the render would be put down to StateHasChanged. Linking it links its own
+                // unlinked parent in turn.
+                if (!parent.ParentResolved && parent.Component is not ComponentBase)
+                {
+                    ResolveHierarchy(parent, now);
+                }
             }
             // A renderer can expose the child before its parent has been registered by our activator.
             // Leave the link unresolved so a later refresh can repair the tree.
@@ -207,6 +234,15 @@ internal sealed class ComponentRegistry
         {
             record.MarkBevToolsOwned();
         }
+
+        if (record.IsBevTools)
+        {
+            _bevToolsTypes.TryAdd(record.TypeName, 0);
+        }
+        else if (record.ParentResolved)
+        {
+            _applicationTypes.TryAdd(record.TypeName, 0);
+        }
     }
 
     private void MarkDisposed(BevComponentRecord record, DateTimeOffset now, bool collected)
@@ -216,6 +252,11 @@ internal sealed class ComponentRegistry
         if (record.Component is { } component)
         {
             _byComponent.Remove(component);
+            if (!record.IsHidden)
+            {
+                // Held weakly from here on: whether garbage collection reclaims it is the leak check's question.
+                _session.Leaks.Track(record, component);
+            }
         }
 
         record.ReleaseReferences();
@@ -315,6 +356,48 @@ internal sealed class ComponentRegistry
         }
     }
 
+    private readonly Dictionary<string, BevGoneRenderTotals> _gone = [];
+
+    /// <summary>
+    /// Render totals per type of the components the registry let go after their retention, so a profile of a long
+    /// interaction (pages navigated away from a minute ago) still adds up. Read under the lock.
+    /// </summary>
+    internal BevGoneRenderTotals[] GoneTotals()
+    {
+        lock (_gone)
+        {
+            return [.. _gone.Values.Select(g => g with { })];
+        }
+    }
+
+    private void FoldIntoGone(BevComponentRecord record)
+    {
+        if (record.IsBevTools || record.IsHidden || record.RenderCount == 0)
+        {
+            return;
+        }
+
+        lock (_gone)
+        {
+            if (!_gone.TryGetValue(record.TypeName, out var totals))
+            {
+                _gone[record.TypeName] = totals = new BevGoneRenderTotals { TypeName = record.TypeName, DisplayName = record.DisplayName };
+            }
+
+            totals.Instances++;
+            totals.Renders += record.RenderCount;
+            totals.RenderMs += record.TotalRenderMs;
+            totals.MaxRenderMs = Math.Max(totals.MaxRenderMs, record.MaxRenderMs);
+            if (record.RendersSinceBaseline > 0)
+            {
+                totals.InstancesSinceBaseline++;
+                totals.RendersSinceBaseline += record.RendersSinceBaseline;
+                totals.RenderMsSinceBaseline += record.RenderMsSinceBaseline;
+                totals.MaxRenderMsSinceBaseline = Math.Max(totals.MaxRenderMsSinceBaseline, record.MaxRenderMsSinceBaseline);
+            }
+        }
+    }
+
     /// <summary>When the profiler baseline was last reset for this session, or null when it never was.</summary>
     public DateTimeOffset? BaselineAt { get; private set; }
 
@@ -332,6 +415,17 @@ internal sealed class ComponentRegistry
             record.MarkBaseline(now);
         }
 
+        lock (_gone)
+        {
+            foreach (var totals in _gone.Values)
+            {
+                totals.InstancesSinceBaseline = 0;
+                totals.RendersSinceBaseline = 0;
+                totals.RenderMsSinceBaseline = 0;
+                totals.MaxRenderMsSinceBaseline = 0;
+            }
+        }
+
         _session.Touch();
     }
 
@@ -344,6 +438,12 @@ internal sealed class ComponentRegistry
             {
                 _byId.TryRemove(record.InstanceId, out _);
             }
+        }
+
+        // Asked to forget the components that are gone: their totals too.
+        lock (_gone)
+        {
+            _gone.Clear();
         }
 
         // Once an instance was omitted at the cap we cannot know when that untracked instance is disposed.

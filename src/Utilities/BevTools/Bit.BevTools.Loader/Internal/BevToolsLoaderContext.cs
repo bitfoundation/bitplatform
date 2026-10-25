@@ -60,7 +60,8 @@ internal sealed class BevToolsLoaderContext(BitBevToolsLoaderOptions options, IS
 
     /// <summary>Whether BevTools may be attached in the scope of <paramref name="services"/>; <see cref="BevToolsAttachPolicy"/> says why.</summary>
     internal (bool Allowed, string Reason) ResolveAttach(IServiceProvider services) =>
-        BevToolsAttachPolicy.Resolve(services, IsMultiUserHost, Options.AllowInMultiUserHost, "Set BitBevToolsLoaderOptions.AllowInMultiUserHost to allow it.");
+        BevToolsAttachPolicy.Resolve(services, IsMultiUserHost, Options.AllowInMultiUserHost, Options.Authorize is not null,
+            "Set BitBevToolsLoaderOptions.AllowInMultiUserHost, with BitBevToolsLoaderOptions.Authorize, to allow it.");
 
     internal void Registered(IBevToolsEntryPoint entryPoint, string reason)
     {

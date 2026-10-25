@@ -152,7 +152,18 @@ public sealed class BevComponentRecord
 
     public DateTimeOffset? LastRenderAt { get; private set; }
 
+    /// <summary>When the first recorded render happened; it stays when the render history has long since moved on.</summary>
+    public DateTimeOffset? FirstRenderAt { get; private set; }
+
     public long LastRenderTicks { get; private set; }
+
+    /// <summary>
+    /// The render mode the renderer assigned to this instance, as written in markup ("InteractiveServer",
+    /// "InteractiveWebAssembly, no prerendering"): <c>@rendermode</c> on it or on the component frame that created it,
+    /// or <c>[RenderMode*]</c> on its type. Null when none was assigned, which is every component below the one that
+    /// was: a render mode applies to a subtree, and BevTools shows where each subtree starts. Read on the first render.
+    /// </summary>
+    public string? RenderModeName { get; internal set; }
 
     public int ErrorCount => Volatile.Read(ref _errorCount);
 
@@ -292,6 +303,7 @@ public sealed class BevComponentRecord
         }
 
         LastRenderAt = sample.At;
+        FirstRenderAt ??= sample.At;
         LastRenderTicks = sample.StartTicks;
         _renders.Add(sample);
     }

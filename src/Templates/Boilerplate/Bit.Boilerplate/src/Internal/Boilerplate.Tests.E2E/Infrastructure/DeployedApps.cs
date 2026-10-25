@@ -26,7 +26,7 @@ public static class DeployedApps
     /// <summary>Admin module, prerendered PWA served by Server.Web with a standalone API (Azure Web App + Cloudflare CDN).</summary>
     public const string AdminPanel = "https://adminpanel.bitplatform.dev/";
 
-    /// <summary>Admin module, Blazor WebAssembly Standalone (Azure Static Web App).</summary>
+    /// <summary>Admin module, AOT compiled Blazor WebAssembly Standalone (Azure Static Web App).</summary>
     public const string AdminPanelWasmStandalone = "https://adminpanel.bitplatform.cc/";
 
     /// <summary>Todo sample, prerendered PWA served by Server.Web with a standalone API (Azure Web App + Cloudflare CDN).</summary>

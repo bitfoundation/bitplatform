@@ -4,7 +4,7 @@ name: bit platform CI - Butil E2E
 # net10.0/net9.0/net8.0 where the runtime is what differs), Blazor Hybrid in WebView2, and trimmed/AOT publishes.
 # They take far longer than the build, MCP and hosting pipeline (bit.ci.Butil.yml), so they run only when started
 # by hand. Every job runs the same suite against a different host (BUTIL_E2E_HOST); see
-# src/Butil/tests/Bit.Butil.Tests.E2E/README.md for what each host proves and how to run the same thing locally.
+# src/Butil/Tests/Bit.Butil.Tests.E2E/README.md for what each host proves and how to run the same thing locally.
 
 on:
   workflow_dispatch:
@@ -67,13 +67,13 @@ jobs:
     # The standalone sample is started with `dotnet run`, which builds it; the web harness host is built here.
     - name: Build the web harness host
       if: matrix.host != 'standalone'
-      run: dotnet build src/Butil/tests/Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj -c Release -f ${{ matrix.framework }}
+      run: dotnet build src/Butil/Tests/Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj -c Release -f ${{ matrix.framework }}
 
     - name: Build the E2E suite
-      run: dotnet build src/Butil/tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release
+      run: dotnet build src/Butil/Tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Butil/tests/Bit.Butil.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Butil/Tests/Bit.Butil.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       env:
@@ -83,7 +83,7 @@ jobs:
         BUTIL_E2E_SKIP_BUILD: 1
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
-        cd src/Butil/tests/Bit.Butil.Tests.E2E &&
+        cd src/Butil/Tests/Bit.Butil.Tests.E2E &&
         dotnet test -c Release --no-build
         --report-trx --report-trx-filename butil-e2e-${{ matrix.host }}-${{ matrix.framework }}.trx
 
@@ -131,10 +131,10 @@ jobs:
         Write-Host "WebView2 Runtime $version"
 
     - name: Build the hybrid harness host
-      run: dotnet build src/Butil/tests/Bit.Butil.Tests.Harness.Hybrid/Bit.Butil.Tests.Harness.Hybrid.csproj -c Release
+      run: dotnet build src/Butil/Tests/Bit.Butil.Tests.Harness.Hybrid/Bit.Butil.Tests.Harness.Hybrid.csproj -c Release
 
     - name: Build the E2E suite
-      run: dotnet build src/Butil/tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release
+      run: dotnet build src/Butil/Tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release
 
     # No Playwright browser download: the suite attaches to the WebView2 Runtime installed above.
     - name: Run hybrid E2E tests
@@ -143,7 +143,7 @@ jobs:
         BUTIL_E2E_CONFIGURATION: Release
         BUTIL_E2E_SKIP_BUILD: 1
       run: >
-        cd src/Butil/tests/Bit.Butil.Tests.E2E &&
+        cd src/Butil/Tests/Bit.Butil.Tests.E2E &&
         dotnet test -c Release --no-build
         --report-trx --report-trx-filename butil-e2e-hybrid.trx
 
@@ -192,20 +192,20 @@ jobs:
       run: dotnet workload install wasm-tools
 
     - name: Publish the web harness host (fails on trim/AOT warnings from Bit.Butil)
-      run: bash src/Butil/tests/Bit.Butil.Tests.E2E/publish-gate.sh ${{ github.workspace }}/artifacts/butil-harness-${{ matrix.name }} ${{ matrix.properties }}
+      run: bash src/Butil/Tests/Bit.Butil.Tests.E2E/publish-gate.sh ${{ github.workspace }}/artifacts/butil-harness-${{ matrix.name }} ${{ matrix.properties }}
 
     - name: Build the E2E suite
-      run: dotnet build src/Butil/tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release
+      run: dotnet build src/Butil/Tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Butil/tests/Bit.Butil.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Butil/Tests/Bit.Butil.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests against the published host
       env:
         BUTIL_E2E_HOST: wasm
         BUTIL_E2E_PUBLISHED_HOST: ${{ github.workspace }}/artifacts/butil-harness-${{ matrix.name }}
       run: >
-        cd src/Butil/tests/Bit.Butil.Tests.E2E &&
+        cd src/Butil/Tests/Bit.Butil.Tests.E2E &&
         dotnet test -c Release --no-build
         --report-trx --report-trx-filename butil-publish-${{ matrix.name }}.trx
 
@@ -222,7 +222,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     env:
-      MANUAL_DIR: src/Butil/tests/Bit.Butil.Tests.Manual
+      MANUAL_DIR: src/Butil/Tests/Bit.Butil.Tests.Manual
 
     steps:
     - name: Checkout source code

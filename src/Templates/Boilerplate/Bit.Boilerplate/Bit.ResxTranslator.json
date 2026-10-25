@@ -1,5 +1,5 @@
 {
-    "Docs_Comment": "Used by bit translate. Check out https://github.com/bitfoundation/bitplatform/tree/develop/src/Cli#bit-translate",
+    "Docs_Comment": "Used by bit translate. Check out https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Cli#bit-translate",
 
     "DefaultLanguage": "en",
 

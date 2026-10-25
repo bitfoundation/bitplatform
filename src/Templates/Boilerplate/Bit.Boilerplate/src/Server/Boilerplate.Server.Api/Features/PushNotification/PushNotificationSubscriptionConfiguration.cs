@@ -25,8 +25,7 @@ public class PushNotificationSubscriptionConfiguration : IEntityTypeConfiguratio
         */
         //#endif
 
-        builder.HasIndex(sub => sub.DeviceId)
-               .IsUnique();
+        builder.HasIndex(sub => sub.DeviceId);
 
         builder.HasIndex(sub => sub.ExpirationTime);
     }

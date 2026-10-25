@@ -16,7 +16,7 @@ public partial class UserSessionsPersonalDataSource : IPersonalDataSource
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
 
     /// <summary>Read by <see cref="PrepareErase"/>, because after the delete there is no row to find them from.</summary>
-    private string[] signalRConnectionIdsToRevoke = [];
+    private (Guid UserSessionId, string SignalRConnectionId)[] userSessionsToRevoke = [];
     //#endif
 
     public string Key => "sessions";
@@ -94,11 +94,13 @@ public partial class UserSessionsPersonalDataSource : IPersonalDataSource
     public async Task PrepareErase(PersonalDataErasureContext context, CancellationToken cancellationToken)
     {
         // WhereIf rather than an inline comparison: a null there is SQL NULL, which matches no rows.
-        signalRConnectionIdsToRevoke = await dbContext.UserSessions
+        var userSessions = await dbContext.UserSessions
             .Where(userSession => userSession.UserId == context.UserId && userSession.SignalRConnectionId != null)
             .WhereIf(context.ExceptSessionId is not null, userSession => userSession.Id != context.ExceptSessionId)
-            .Select(userSession => userSession.SignalRConnectionId!)
+            .Select(userSession => new { userSession.Id, userSession.SignalRConnectionId })
             .ToArrayAsync(cancellationToken);
+
+        userSessionsToRevoke = [.. userSessions.Select(userSession => (userSession.Id, userSession.SignalRConnectionId!))];
     }
     //#endif
 
@@ -115,7 +117,7 @@ public partial class UserSessionsPersonalDataSource : IPersonalDataSource
     /// </summary>
     public async Task ErasePublished(PersonalDataErasureContext context, CancellationToken cancellationToken)
     {
-        await appHubContext.Clients.Clients(signalRConnectionIdsToRevoke).Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
+        await appHubContext.Clients.PublishSessionRevoked(userSessionsToRevoke, cancellationToken);
     }
     //#endif
 }

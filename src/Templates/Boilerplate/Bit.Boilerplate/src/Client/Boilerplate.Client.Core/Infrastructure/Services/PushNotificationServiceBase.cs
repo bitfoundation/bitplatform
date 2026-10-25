@@ -4,6 +4,7 @@ namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 public abstract partial class PushNotificationServiceBase : IPushNotificationService
 {
+    [AutoInject] protected AuthManager authManager = default!;
     [AutoInject] protected ILogger<PushNotificationServiceBase> Logger = default!;
     [AutoInject] protected IPushNotificationController pushNotificationController = default!;
     [AutoInject] protected NotificationPreferenceService notificationPreferenceService = default!;
@@ -61,6 +62,8 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
 
         if (subscription is null)
             return;
+
+        subscription.UserSessionIds = await authManager.GetDeviceSessionIds();
 
         await pushNotificationController.Subscribe(subscription, cancellationToken);
     }

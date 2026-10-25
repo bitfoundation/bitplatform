@@ -34,10 +34,12 @@
     color-scheme: light;
 
     /* primary. Interaction moves the fill toward MORE contrast with the surface under it, so the
-       states darken on these light surfaces; '-dis' is the tint the soft backgrounds use. */
-    --bit-clr-pri: #1276C6;
-    --bit-clr-pri-hover: #0B6AB4;
-    --bit-clr-pri-active: #095A9B;
+       states darken on these light surfaces; '-dis' is the tint the soft backgrounds use. Dark
+       enough to be read as text: 5.2:1 on the page background and 4.7:1 on the '-dis' tint of an
+       active link, both over WCAG AA's 4.5:1, where the earlier #1276C6 managed 4.3 and 4.0. */
+    --bit-clr-pri: #0B6AB4;
+    --bit-clr-pri-hover: #095A9B;
+    --bit-clr-pri-active: #084C84;
     --bit-clr-pri-text: #FFFFFF;
     --bit-clr-pri-dis: #DDEDFF;
     /* secondary - the bit orange */

@@ -22,10 +22,10 @@ For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 
 # 🚀 Get started
 
-Create a ready-to-run [bit Boilerplate](src/Templates/Boilerplate/Readme.md) project on Windows, macOS or Linux with the [bit CLI](src/Cli/README.md):
+Create a ready-to-run [bit Boilerplate](src/Templates/Boilerplate/Readme.md) project on Windows, macOS or Linux with the [bit CLI](src/Toolings/Cli/README.md):
 
 ```bash
-dotnet tool install --global Bit.Cli --prerelease
+dotnet tool install --global Bit.Cli --version 10.7.0-pre-04
 bit new MyApp
 ```
 
@@ -62,8 +62,8 @@ bit new MyApp
 
 ## Build & tooling
 
-- [***bit CLI***](src/Cli/README.md) (`Bit.Cli`): Creates bitplatform projects (`bit new`), sets up cloned ones (`bit setup`), cleans build outputs, renames or removes projects, translates `.resx` files with an LLM, and decodes stack traces minified by Bit.Minifier.
-- [***Minifier***](src/Cli/Minifier/README.md) (`Bit.Minifier`): Shrinks the .NET assemblies a Blazor WebAssembly app downloads by stripping non-public names and compiler-only attributes after trimming. Install it and publish in Release; there's nothing else to set up.
+- [***bit CLI***](src/Toolings/Cli/README.md) (`Bit.Cli`): Creates bitplatform projects (`bit new`), sets up cloned ones (`bit setup`), cleans build outputs, renames or removes projects, translates `.resx` files with an LLM, and decodes stack traces minified by Bit.Minifier.
+- [***Minifier***](src/Toolings/Minifier/README.md) (`Bit.Minifier`): Shrinks the .NET assemblies a Blazor WebAssembly app downloads by stripping non-public names and compiler-only attributes after trimming. Install it and publish in Release; there's nothing else to set up.
 - [***BevTools***](src/Utilities/BevTools/README.md) (`Bit.BevTools`): In-app developer tools for Blazor. A live component tree, a render profiler that explains why each component rendered, an activity timeline, state diffs, network, JS interop, errors, DI and circuit diagnostics, with no changes to your app's code.
 - [***BlazorES2019***](src/Toolings/BlazorES2019/README.md) (`Bit.BlazorES2019`): An ES2019 build of the Blazor scripts, so apps also run on older browsers and WebViews (for example Safari before 16.4).
 - [***Code Analyzers***](src/Toolings/CodeAnalyzers/README.md) (`Bit.CodeAnalyzers`) and [***Source Generators***](src/Toolings/SourceGenerators/README.md) (`Bit.SourceGenerators`): Analyzers that enforce our best practices, and source generators that improve code quality and performance.
@@ -99,7 +99,7 @@ The following apps are our open-source projects powered by the bit platform show
 6. [todo-offline.bitplatform.cc](https://todo-offline.bitplatform.cc): .NET 10 Todo demo app with ef-core, sqlite & sync (Azure static web app)
 7. [todo-aot.bitplatform.cc](https://todo-aot.bitplatform.cc): .NET 10 AOT Compiled PWA with Blazor WebAssembly Standalone (Azure static web app)
 8. [todo-small.bitplatform.cc](https://todo-small.bitplatform.cc): .NET 10 Todo demo app with smaller download footprint (Azure static web app)
-9. [adminpanel.bitplatform.cc](https://adminpanel.bitplatform.cc): .NET 10 PWA with Blazor WebAssembly Standalone (Azure static web app)
+9. [adminpanel.bitplatform.cc](https://adminpanel.bitplatform.cc): .NET 10 AOT Compiled PWA with Blazor WebAssembly Standalone (Azure static web app)
 
 [Todo](https://todo.bitplatform.dev) & [Adminpanel](https://adminpanel.bitplatform.dev) web apps will launch their respective Android and iOS applications if you have already installed them, mirroring the behavior of apps like YouTube and Instagram.
 

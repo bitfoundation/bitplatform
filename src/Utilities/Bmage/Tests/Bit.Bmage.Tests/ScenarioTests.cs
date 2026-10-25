@@ -242,7 +242,8 @@ public sealed class ScenarioTests
 
         using var cts = new CancellationTokenSource();
         var completed = 0;
-        var progress = new Progress<BatchProgress>(_ =>
+        // Reported inline: a Progress<T> would post to the thread pool and could cancel the token after it is disposed.
+        var progress = new Inline<BatchProgress>(_ =>
         {
             if (Interlocked.Increment(ref completed) >= 5) cts.Cancel();
         });
@@ -358,5 +359,10 @@ public sealed class ScenarioTests
 
         var preview = await session.RenderPreviewAsync();
         Assert.AreEqual(new Size(300, 75), preview.Size);
+    }
+
+    private sealed class Inline<T>(Action<T> report) : IProgress<T>
+    {
+        public void Report(T value) => report(value);
     }
 }

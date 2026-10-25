@@ -53,6 +53,13 @@ public sealed class BevToolsLoader : IDisposable
             return false;
         }
 
+        // Asked before anything is downloaded or attached, and on every open: whoever is in the scope can change (a
+        // sign-out in the same circuit), and a decision cached from before would outlive it.
+        if (!_context.RegisteredAtStartup && await AuthorizeAsync() is { } refusal)
+        {
+            return Fail(refusal);
+        }
+
         var entryPoint = await _context.LoadAsync(_js);
         if (entryPoint is null)
         {
@@ -86,6 +93,32 @@ public sealed class BevToolsLoader : IDisposable
     /// <summary>The panel to render: known once BevTools runs in this scope.</summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     internal Type? PanelType => IsActive ? _context.EntryPoint?.PanelType : null;
+
+    /// <summary>
+    /// Whether <see cref="BitBevToolsLoaderOptions.Authorize"/> accepts whoever is in this scope (true when none is
+    /// set), on top of <see cref="CanOpen"/>. Use it to show the "Open dev tools" button only to the people allowed to
+    /// press it; <see cref="OpenAsync"/> asks again either way.
+    /// </summary>
+    public async Task<bool> IsAuthorizedAsync() => CanOpen && (_context.RegisteredAtStartup || await AuthorizeAsync() is null);
+
+    /// <returns>Null when authorized, otherwise why not.</returns>
+    private async Task<string?> AuthorizeAsync()
+    {
+        if (_context.Options.Authorize is not { } authorize)
+        {
+            return null;
+        }
+
+        try
+        {
+            return await authorize(_services) ? null : "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize did not accept the current user.";
+        }
+        catch (Exception ex)
+        {
+            // A failing check is a refusal, never an opening: the callback is a security control.
+            return "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize threw " + ex.GetType().Name + ": " + ex.Message;
+        }
+    }
 
     private bool Fail(string problem)
     {

@@ -146,14 +146,15 @@ public class TrustedSessionTests
 
         await SetReachability(server, firstTrustedSession.Id, notificationsAllowed: true, connected: true);
 
-        await SignInWithTwoFactorAgain(client, email, userId);
-        var secondTrustedSession = await ReadCurrentSession(client);
+        await using var otherDevice = server.CreateAppClient();
+        await SignInWithTwoFactorAgain(otherDevice, email, userId);
+        var secondTrustedSession = await ReadCurrentSession(otherDevice);
 
         Assert.AreNotEqual(firstTrustedSession.Id, secondTrustedSession.Id,
             "The second sign-in has to be its own session, otherwise there is no other device in play.");
         Assert.IsTrue(secondTrustedSession.Trusted);
 
-        var sentTo = await client.GetController<IUserController>()
+        var sentTo = await otherDevice.GetController<IUserController>()
                                                 .SendElevatedAccessToken(TestContext.CancellationToken);
 
         Assert.IsTrue(sentTo.SentToOtherDevices,
@@ -178,9 +179,10 @@ public class TrustedSessionTests
 
         await SetReachability(server, offlineSession.Id, notificationsAllowed: true, connected: false);
 
-        await SignInWithTwoFactorAgain(client, email, userId);
+        await using var otherDevice = server.CreateAppClient();
+        await SignInWithTwoFactorAgain(otherDevice, email, userId);
 
-        var sentTo = await client.GetController<IUserController>()
+        var sentTo = await otherDevice.GetController<IUserController>()
                                                 .SendElevatedAccessToken(TestContext.CancellationToken);
 
         Assert.IsFalse(sentTo.SentToOtherDevices,
@@ -207,9 +209,10 @@ public class TrustedSessionTests
         // Connected, so the mute is the only thing left that can stop the message.
         await SetReachability(server, mutedSession.Id, notificationsAllowed: false, connected: true);
 
-        await SignInWithTwoFactorAgain(client, email, userId);
+        await using var otherDevice = server.CreateAppClient();
+        await SignInWithTwoFactorAgain(otherDevice, email, userId);
 
-        var sentTo = await client.GetController<IUserController>()
+        var sentTo = await otherDevice.GetController<IUserController>()
                                                 .SendElevatedAccessToken(TestContext.CancellationToken);
 
         Assert.IsFalse(sentTo.SentToOtherDevices,

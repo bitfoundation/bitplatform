@@ -26,21 +26,54 @@ public partial class PushNotificationJobRunner
     {
         var subscriptions = await dbContext.PushNotificationSubscriptions
             .Where(pns => pushNotificationSubscriptionIds.Contains(pns.Id))
+            .Include(pns => pns.UserSession!.User)
             .ToArrayAsync(cancellationToken);
 
-        var payload = new AdsPushBasicSendPayload()
-        {
-            Title = AdsPushText.CreateUsingString(request.Title ?? "Boilerplate push"),
-            Detail = AdsPushText.CreateUsingString(request.Message ?? string.Empty)
-        };
+        string?[] devicesWithSeveralAccounts = [];
 
-        if (string.IsNullOrWhiteSpace(request.Action) is false)
+        if (request.UserRelatedPush)
         {
-            payload.Parameters.Add("action", request.Action);
+            var deviceIds = subscriptions.Select(pns => pns.DeviceId).ToArray();
+
+            devicesWithSeveralAccounts = await dbContext.PushNotificationSubscriptions
+                .Where(pns => deviceIds.Contains(pns.DeviceId) && pns.UserSessionId != null)
+                .GroupBy(pns => pns.DeviceId)
+                .Where(device => device.Count() > 1)
+                .Select(device => device.Key)
+                .ToArrayAsync(cancellationToken);
         }
-        if (string.IsNullOrWhiteSpace(request.PageUrl) is false)
+
+        AdsPushBasicSendPayload CreatePayload(User? account)
         {
-            payload.Parameters.Add("pageUrl", request.PageUrl);
+            var title = request.Title ?? "Boilerplate push";
+            var pageUrl = request.PageUrl;
+
+            if (account is not null)
+            {
+                title = $"{title} ({account.Email ?? account.PhoneNumber ?? account.UserName})";
+
+                if (string.IsNullOrWhiteSpace(pageUrl) is false)
+                {
+                    pageUrl = $"{pageUrl}{(pageUrl.Contains('?') ? '&' : '?')}{DeviceAccountDto.QueryParameter}={account.Id}";
+                }
+            }
+
+            var payload = new AdsPushBasicSendPayload()
+            {
+                Title = AdsPushText.CreateUsingString(title),
+                Detail = AdsPushText.CreateUsingString(request.Message ?? string.Empty)
+            };
+
+            if (string.IsNullOrWhiteSpace(request.Action) is false)
+            {
+                payload.Parameters.Add("action", request.Action);
+            }
+            if (string.IsNullOrWhiteSpace(pageUrl) is false)
+            {
+                payload.Parameters.Add("pageUrl", pageUrl);
+            }
+
+            return payload;
         }
 
         int succeededItems = 0;
@@ -70,6 +103,8 @@ public partial class PushNotificationJobRunner
                                     : subscription.Platform is "fcmV1" ? AdsPushTarget.Android
                                     : subscription.Platform is "apns" ? AdsPushTarget.Ios
                                     : throw new NotImplementedException($"Platform {subscription.Platform} is not supported.");
+
+                var payload = CreatePayload(devicesWithSeveralAccounts.Contains(subscription.DeviceId) ? subscription.UserSession?.User : null);
 
                 await adsPushSender.BasicSendAsync(target, subscription.PushChannel, payload, default);
 

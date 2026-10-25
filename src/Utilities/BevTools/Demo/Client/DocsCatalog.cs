@@ -36,13 +36,13 @@ public static class SiteInfo
     /// <summary>What the library is, in the two or three sentences the footer has room for.</summary>
     public const string Tagline =
         "BevTools is an in-app developer tool for Blazor: a live component tree, a render profiler that explains " +
-        "why a component rendered, a timeline, state, network, JS interop, errors, DI and circuit diagnostics. " +
+        "why a component rendered, a timeline, state, forms, routing, network, JS interop, errors, DI and circuit diagnostics. " +
         "This site is a Blazor app with BevTools switched on - press Ctrl+Shift+D to open it.";
 
     public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
-    public static readonly string[] SearchHints = ["render", "state", "network", "interop", "circuit"];
+    public static readonly string[] SearchHints = ["render", "state", "network", "routing", "extension"];
 
     /// <summary>
     /// Whether Ctrl+K / Cmd+K opens the site's search palette. "/" always does. A demo whose own
@@ -91,54 +91,69 @@ public static class DocsCatalog
         new("Start here",
         [
             new("/getting-started", "Getting started",
-                "Install the packages, register BevTools in the server and the client, place the panel once and open it with Ctrl+Shift+D.",
-                "install setup nuget package AddBitBevToolsServices AddBitBevToolsServerServices BevToolsPanel program.cs MetricsSupport interactive auto enabled development shortcut",
+                "Install the packages, register BevTools in the server and the client, place the panel once, open it with Ctrl+Shift+D - and what each of its tabs is for.",
+                "install setup nuget package AddBitBevToolsServices AddBitBevToolsServerServices BevToolsPanel program.cs MetricsSupport interactive auto enabled development shortcut options panels tabs tour loader lazy load on demand production ValueAccess security",
                 typeof(GettingStarted)),
             new("/problems", "Problems to diagnose",
-                "Ten real problems planted in this app, each with the panels and the steps that lead from the symptom to its cause.",
+                "Twenty-four real problems planted in this app, each with the panels and the steps that lead from the symptom to its cause.",
                 "problems index scenarios exercises planted bugs walkthrough diagnose symptoms causes",
                 typeof(Problems)),
         ]),
         new("Rendering",
         [
             new("/dashboard", "Dashboard",
-                "A component hierarchy with a cascading value, HTTP data and a live clock: the component tree, render causes and renders driven only by a parent.",
-                "components tree inspector profiler cascading value CascadingParameter StatsCard LiveClock timer StateHasChanged parent render forced re-render",
+                "A component hierarchy with a cascading value, HTTP data and a live clock: the component tree and inspector, picking components in the page, render causes and renders driven only by a parent.",
+                "components tree inspector profiler cascading value CascadingParameter StatsCard LiveClock timer StateHasChanged parent render forced re-render pick show in page flash renders lifecycle source services redaction",
                 typeof(Dashboard)),
             new("/products", "Products",
-                "A 120-row list that re-renders on every keystroke and a search that fires one request per key: render storms, cascades and duplicate HTTP.",
-                "render storm cascade ShouldRender FilterState ProductList ProductRow keystroke oninput duplicate requests search debounce profiler by type",
+                "A 120-row list that re-renders on every keystroke, a search that fires one request per key, data loaded twice, a component that is never freed and a fix to measure.",
+                "render storm cascade ShouldRender FilterState ProductList ProductRow keystroke oninput burst requests search debounce profiler by type batch cost tree compare prerendering leak disposed memory websockets event handlers",
                 typeof(Products)),
             new("/counter", "Counter",
-                "The baseline: one click, one event, one render - and ten renders from a single event that awaits between them.",
-                "counter baseline click event render timeline StateHasChanged await caused by",
+                "The baseline: one click, one event, one render - ten renders from a single event that awaits between them, renders per page and where each handler is written.",
+                "counter baseline click event render timeline StateHasChanged await caused by renders per page source editor link handler",
                 typeof(Counter)),
         ]),
-        new("Network & state",
+        new("Network, state & routing",
         [
             new("/orders", "Orders",
-                "Slow, very slow, flaky and missing endpoints and a burst of identical requests, for the Network panel and the HTTP rules.",
-                "network http slow flaky 404 duplicate requests IHttpClientFactory status duration trigger",
+                "Slow, flaky, missing and cancelled requests, a burst of identical ones and a table whose rows each load their own details: the Network panel, its endpoints and the HTTP rules.",
+                "network http slow flaky 404 duplicate requests IHttpClientFactory status duration trigger sent from endpoints p95 per item n+1 cancelled",
                 typeof(Orders)),
             new("/checkout", "Checkout",
-                "A cart and a validated form whose every action is a named state change with a before/after diff.",
-                "state CartState AppState IBevStateProvider AddBevToolsStateProvider diff history form validation EditForm",
+                "A cart and two forms: named state changes with before/after diffs, what validates each form, and an accessibility problem to find.",
+                "state CartState AppState IBevStateProvider AddBevToolsStateProvider diff history form validation EditForm DataAnnotationsValidator forms accessibility a11y label",
                 typeof(Checkout)),
+            new("/routing", "Routing & sign-in",
+                "Route values, a query string with a token in it, a sign-in, a navigation guard and a redirect loop: the Routing panel and the authentication state.",
+                "routing route values query template route table navigation history NavigationLock guard authentication claims roles sign in redirect loop",
+                typeof(Routing)),
         ]),
         new("Interop, errors & circuits",
         [
             new("/interop", "JS interop",
-                "Measured, slow, chatty and failing JS calls, JS → .NET callbacks and browser storage, each attributed to the component that made it.",
-                "js interop IJSRuntime IJSObjectReference module slow chatty callbacks DotNetObjectReference JSInvokable localStorage sessionStorage redaction",
+                "Measured, slow, chatty and failing JS calls, a JS object built from .NET, JS → .NET callbacks and browser storage, each attributed to the component that made it.",
+                "js interop IJSRuntime IJSObjectReference module slow chatty callbacks DotNetObjectReference JSInvokable InvokeConstructorAsync GetValueAsync SetValueAsync localStorage sessionStorage redaction browser",
                 typeof(Interop)),
             new("/errors", "Errors",
-                "Exceptions from an event handler, an async continuation, a render, a child's OnInitialized and an HTTP call, with the component and the click before each.",
-                "errors exceptions ErrorBoundary unhandled stack trace component handler render lifecycle OnInitialized http 404",
+                "Exceptions from a handler, an await, a render, a child's OnInitialized and an HTTP call, one error with a new id each time, and a missing image and a blocked frame.",
+                "errors exceptions ErrorBoundary unhandled stack trace component handler render lifecycle OnInitialized http 404 groups repeated resource csp content security policy",
                 typeof(Errors)),
             new("/circuit", "Circuit",
-                "Block the Blazor Server circuit's only thread, or end the circuit with an unhandled exception, and read the circuit diagnostics.",
-                "circuit blazor server blocked thread sleep reconnect disconnect inbound message slow DispatchExceptionAsync",
+                "Block the Blazor Server circuit's only thread, drop its connection, or end the circuit with an unhandled exception, and read the circuit diagnostics.",
+                "circuit blazor server blocked thread sleep reconnect disconnect connection drop instability inbound message slow DispatchExceptionAsync thread pool runtime",
                 typeof(Circuit)),
+        ]),
+        new("Beyond the panel",
+        [
+            new("/share", "Share & automate",
+                "The companion window, the browser extension, session and trace exports, comparing two recordings and failing a CI build on what BevTools found.",
+                "companion window browser extension devtools export session json markdown report performance trace perfetto compare cli bevtools check ci protocol page hub",
+                typeof(Share)),
+            new("/extending", "Extending",
+                "Panels, state providers, rules, commands, value formatters and timeline events of your own - shown by the extension this site registers.",
+                "extension IBevToolsExtension panel state provider adapter diagnostic rule command value formatter IBevToolsTimeline custom events BevToolsSensitive BevToolsIgnore",
+                typeof(Extending)),
         ]),
     ];
 
