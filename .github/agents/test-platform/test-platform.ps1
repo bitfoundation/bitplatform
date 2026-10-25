@@ -1088,12 +1088,12 @@ function Invoke-DevContainerTest {
 
         $upLog = Join-Path $lab 'up.log'
         Write-Host "Bringing the dev container up at $(Get-Date -Format 'HH:mm:ss'), log: $upLog"
-        $started = Get-Date
+        $started = [DateTimeOffset]::Now
         npx -y '@devcontainers/cli' up --workspace-folder $project @mount *> $upLog
         $result = Get-Content $upLog -Encoding utf8 | Where-Object { $_ -match '^\{"outcome"' } | Select-Object -Last 1 | ConvertFrom-Json -ErrorAction SilentlyContinue
 
         Write-BitSteps $upLog 'Running the onCreateCommand'
-        Write-Host ('The dev container {0} after {1:mm\:ss}.' -f ($result.outcome -eq 'success' ? 'came up' : "didn't come up ($($result.outcome ?? 'no result'))"), ((Get-Date) - $started))
+        Write-Host ('The dev container {0} after {1:mm\:ss}.' -f ($result.outcome -eq 'success' ? 'came up' : "didn't come up ($($result.outcome ?? 'no result'))"), ([DateTimeOffset]::Now - $started))
 
         if ($result.outcome -ne 'success') {
             $failures.Add("the dev container didn't come up; see $upLog")
@@ -1180,10 +1180,10 @@ function Get-IdleMinutes([string] $appHost) {
 }
 
 function Start-AppHostRun([string] $appHost, [string] $aliveUrl, [string] $log) {
-    $started = Get-Date
+    $started = [DateTimeOffset]::Now
     $process = Start-Process dotnet -ArgumentList 'run', '--project', $appHost, '--no-build' -WorkingDirectory $appHost -RedirectStandardOutput $log -RedirectStandardError "$log.err" -PassThru -WindowStyle Hidden
 
-    while (((Get-Date) - $started).TotalMinutes -lt 15) {
+    while (([DateTimeOffset]::Now - $started).TotalMinutes -lt 15) {
         Start-Sleep -Seconds 3
 
         if ($process.HasExited) {
@@ -1192,7 +1192,7 @@ function Start-AppHostRun([string] $appHost, [string] $aliveUrl, [string] $log) 
 
         try {
             if ((Invoke-WebRequest $aliveUrl -TimeoutSec 5 -SkipHttpErrorCheck).StatusCode -eq 200) {
-                return [pscustomobject]@{ Process = $process; Seconds = [int]((Get-Date) - $started).TotalSeconds }
+                return [pscustomobject]@{ Process = $process; Seconds = [int]([DateTimeOffset]::Now - $started).TotalSeconds }
             }
         }
         catch {
@@ -1339,16 +1339,16 @@ function Invoke-AspireTest {
         }
 
         Stop-AppHostRun $second $appHostName
-        $idleSince = Get-Date
+        $idleSince = [DateTimeOffset]::Now
         Write-Host "Waiting up to $($idleMinutes + 3) minutes for the containers to stop, from $($idleSince.ToString('HH:mm:ss'))..."
 
         do {
             Start-Sleep -Seconds 30
             $running = @(Get-AspireContainers $names | Where-Object Status -eq 'running')
         }
-        while ($running -and ((Get-Date) - $idleSince).TotalMinutes -lt $idleMinutes + 3)
+        while ($running -and ([DateTimeOffset]::Now - $idleSince).TotalMinutes -lt $idleMinutes + 3)
 
-        $idle = (Get-Date) - $idleSince
+        $idle = [DateTimeOffset]::Now - $idleSince
 
         if ($running) {
             $failures.Add("$($running.Name -join ', ') still running $([int]$idle.TotalMinutes) minutes after the last run")
@@ -1640,7 +1640,7 @@ function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
     $turns = [Collections.Generic.List[object]]::new()
     $states = @{}
     $session = $null
-    $started = Get-Date
+    $started = [DateTimeOffset]::Now
 
     for ($i = 0; $i -lt $prompts.Count; $i++) {
         $turn = Invoke-AgentTurn $folder $model $prompts[$i] $session $budget (Join-Path $results "turn$($i + 1).jsonl")
@@ -1677,7 +1677,7 @@ function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
     [pscustomobject]@{
         Scenario = $id
         Model = $model
-        Minutes = [Math]::Round(((Get-Date) - $started).TotalMinutes, 1)
+        Minutes = [Math]::Round(([DateTimeOffset]::Now - $started).TotalMinutes, 1)
         Cost = [Math]::Round((@($turns) + @($handoff) | Where-Object { $_ -and $_.Cost } | Measure-Object Cost -Sum).Sum, 2)
         Checks = @($checks)
         Changed = $states[$turns.Count]
@@ -1719,14 +1719,14 @@ function Invoke-AgentsTest {
         $running = [Collections.Generic.List[object]]::new()
 
         while ($pending.Count -or $running.Count) {
-            foreach ($run in @($running | Where-Object { $_.Process.HasExited -or ((Get-Date) - $_.Started).TotalMinutes -gt 120 })) {
+            foreach ($run in @($running | Where-Object { $_.Process.HasExited -or ([DateTimeOffset]::Now - $_.Started).TotalMinutes -gt 120 })) {
                 if (-not $run.Process.HasExited) {
                     taskkill /PID $run.Process.Id /T /F 2>&1 | Out-Null
                     Stop-FolderProcesses (Join-Path $lab "runs\$($run.Id)-$($run.Model)")
                 }
 
                 $running.Remove($run) | Out-Null
-                Write-Host "Done: $($run.Id) with $($run.Model) in $([int]((Get-Date) - $run.Started).TotalMinutes) min."
+                Write-Host "Done: $($run.Id) with $($run.Model) in $([int]([DateTimeOffset]::Now - $run.Started).TotalMinutes) min."
             }
 
             while ($running.Count -lt 3 -and ($run = $pending | Where-Object { -not $_.Heavy -or -not ($running | Where-Object Heavy) } | Select-Object -First 1)) {
@@ -1734,7 +1734,7 @@ function Invoke-AgentsTest {
                 $arguments = @('-NoProfile', '-File', "`"$PSCommandPath`"", 'agents', '-Worker', '-Lab', "`"$lab`"", '-Scenario', $run.Id, '-Model', $run.Model) + @($(if ($Long) { '-Long' }))
                 $log = Join-Path $lab "worker-$($run.Id)-$($run.Model).log"
                 $process = Start-Process $pwsh -ArgumentList $arguments -PassThru -NoNewWindow -RedirectStandardOutput $log -RedirectStandardError "$log.err"
-                $running.Add(($run | Add-Member -PassThru Process $process | Add-Member -PassThru Started (Get-Date)))
+                $running.Add(($run | Add-Member -PassThru Process $process | Add-Member -PassThru Started ([DateTimeOffset]::Now)))
                 Write-Host "Started: $($run.Id) with $($run.Model)."
             }
 
