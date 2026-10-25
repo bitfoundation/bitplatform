@@ -51,9 +51,11 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Focus</h3>
     <p>
-        <strong>WhileFocus</strong> plays while the element or any of its descendants holds focus.
-        It is the accessible half of a hover effect: keyboard users get the same affordance pointer
-        users do, without a second code path.
+        <strong>WhileFocus</strong> plays while the element or any of its descendants holds
+        <em>keyboard</em> focus: wherever the browser would draw a focus ring (<code>:focus-visible</code>),
+        as in Motion. Tabbing to a button plays it, and clicking the button with the mouse doesn't. Text
+        fields count however they were focused. It is the accessible half of a hover effect: keyboard users
+        get the same affordance pointer users do, without a second code path.
     </p>
     <div class="demo-row">
         <div class="demo-card stack">

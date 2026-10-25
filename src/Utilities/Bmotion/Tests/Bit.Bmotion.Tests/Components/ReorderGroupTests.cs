@@ -137,4 +137,132 @@ public class ReorderGroupTests
             .Add(p => p.Items, new List<string> { "a", "a" })
             .Add(p => p.ChildContent, Row)));
     }
+
+    // ── Keyboard ──────────────────────────────────────────────────────────────
+
+    private static BmotionReorderGroup<string> KeysOf(BmotionTestContext ctx, string id)
+        => (BmotionReorderGroup<string>)ctx.Interop.ReorderKeyRefs[id];
+
+    // Runs a step that settles on the frame loop (a drop animates the item into its slot before committing).
+    private static async Task Settle(BmotionTestContext ctx, Task step)
+    {
+        await ctx.RunFramesAsync(0, 3000);
+        await ctx.FinishWaapiAsync();
+        await step.WaitAsync(TimeSpan.FromSeconds(10));
+    }
+
+    private static string[] Announced(BmotionTestContext ctx)
+        => ctx.Interop.ArgsOf("announce").Select(a => (string)a[0]!).ToArray();
+
+    [TestMethod]
+    public void EveryRow_ListensForTheKeyboard_AlongTheListsAxis()
+    {
+        using var ctx = new BmotionTestContext();
+        var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
+            .Add(p => p.Items, new List<string> { "a", "b", "c" })
+            .Add(p => p.ChildContent, Row));
+
+        var attached = ctx.Interop.ArgsOf("attachReorderKeys");
+        CollectionAssert.AreEquivalent(RowIds(cut), attached.Select(a => (string)a[0]!).ToArray());
+        Assert.IsTrue(attached.All(a => (bool)a[1]! == false), "vertical: up and down");
+    }
+
+    [TestMethod]
+    public void WithKeyboardOff_NoRowListens()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Render<BmotionReorderGroup<string>>(ps => ps
+            .Add(p => p.Items, new List<string> { "a", "b" })
+            .Add(p => p.Keyboard, false)
+            .Add(p => p.ChildContent, Row));
+
+        Assert.IsFalse(ctx.Interop.WasCalled("attachReorderKeys"));
+    }
+
+    [TestMethod]
+    public async Task PickUp_MoveTwice_Drop_CommitsTheNewOrder_AnnouncesEachStep_AndKeepsFocus()
+    {
+        using var ctx = new BmotionTestContext();
+        List<string>? committed = null;
+        var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
+            .Add(p => p.Items, new List<string> { "a", "b", "c" })
+            .Add(p => p.ItemsChanged, EventCallback.Factory.Create<List<string>>(this, l => committed = l))
+            .Add(p => p.ChildContent, Row));
+        var ids = RowIds(cut);
+        UseVerticalLayout(ctx, ids);
+        var keys = KeysOf(ctx, ids[0]);
+
+        Assert.IsTrue(await cut.InvokeAsync(() => keys.OnReorderPickUp(ids[0])));
+        await cut.InvokeAsync(() => keys.OnReorderMove(ids[0], 1));
+        await cut.InvokeAsync(() => keys.OnReorderMove(ids[0], 1));
+        await cut.InvokeAsync(() => keys.OnReorderMove(ids[0], 1)); // already last: nothing to do
+        Assert.IsNull(committed, "nothing is committed while the item is held");
+        await Settle(ctx, cut.InvokeAsync(() => keys.OnReorderDrop(ids[0])));
+
+        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "b", "c", "a" }, committed));
+        CollectionAssert.AreEqual(new[] { "b", "c", "a" }, RowTexts(cut));
+        CollectionAssert.AreEqual(new[]
+        {
+            "Picked up, position 1 of 3. Arrow keys move it, Space drops it, Escape cancels.",
+            "Position 2 of 3.",
+            "Position 3 of 3.",
+            "Dropped at position 3 of 3.",
+        }, Announced(ctx));
+        cut.WaitForAssertion(() => Assert.AreEqual(ids[0], ctx.Interop.ArgsOf("focusElement").LastOrDefault()?[0], "focus stays on the moved item"));
+    }
+
+    [TestMethod]
+    public async Task Escape_PutsTheItemBack_AndCommitsNothing()
+    {
+        using var ctx = new BmotionTestContext();
+        bool changed = false;
+        var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
+            .Add(p => p.Items, new List<string> { "a", "b", "c" })
+            .Add(p => p.ItemsChanged, EventCallback.Factory.Create<List<string>>(this, _ => changed = true))
+            .Add(p => p.ChildContent, Row));
+        var ids = RowIds(cut);
+        UseVerticalLayout(ctx, ids);
+        var keys = KeysOf(ctx, ids[1]);
+
+        await cut.InvokeAsync(() => keys.OnReorderPickUp(ids[1]));
+        await cut.InvokeAsync(() => keys.OnReorderMove(ids[1], -1));
+        await Settle(ctx, cut.InvokeAsync(() => keys.OnReorderCancel(ids[1])));
+
+        Assert.IsFalse(changed);
+        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, RowTexts(cut));
+        Assert.AreEqual("Cancelled, back at position 2 of 3.", Announced(ctx)[^1]);
+        // Picking up again works: the cancelled session is over.
+        Assert.IsTrue(await cut.InvokeAsync(() => keys.OnReorderPickUp(ids[1])));
+    }
+
+    [TestMethod]
+    public async Task OnlyOneItem_IsHeldAtATime()
+    {
+        using var ctx = new BmotionTestContext();
+        var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
+            .Add(p => p.Items, new List<string> { "a", "b" })
+            .Add(p => p.ChildContent, Row));
+        var ids = RowIds(cut);
+        UseVerticalLayout(ctx, ids);
+
+        Assert.IsTrue(await cut.InvokeAsync(() => KeysOf(ctx, ids[0]).OnReorderPickUp(ids[0])));
+        Assert.IsFalse(await cut.InvokeAsync(() => KeysOf(ctx, ids[1]).OnReorderPickUp(ids[1])));
+    }
+
+    [TestMethod]
+    public async Task Announcements_CanBeWorded()
+    {
+        using var ctx = new BmotionTestContext();
+        var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
+            .Add(p => p.Items, new List<string> { "a", "b" })
+            .Add(p => p.Announce, a => $"{a.Item}: {a.Event} {a.Position}/{a.Count}")
+            .Add(p => p.ChildContent, Row));
+        var ids = RowIds(cut);
+        UseVerticalLayout(ctx, ids);
+
+        await cut.InvokeAsync(() => KeysOf(ctx, ids[0]).OnReorderPickUp(ids[0]));
+        await cut.InvokeAsync(() => KeysOf(ctx, ids[0]).OnReorderMove(ids[0], 1));
+
+        CollectionAssert.AreEqual(new[] { "a: PickedUp 1/2", "a: Moved 2/2" }, Announced(ctx));
+    }
 }

@@ -78,11 +78,15 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Keyboard access</h3>
     <p>
-        A pointer drag is not reachable by keyboard, so a reorderable list needs a second way in -
-        and it does not need to be a separate mechanism. The group observes external mutations of
-        the bound list, so plain move-up / move-down buttons that reorder <code>Items</code>
-        directly (the ▲▼ controls in the first sample) animate exactly like a drag would. The same
-        applies to any other source of order: a sort, a server push, an undo.
+        Every list here is keyboard-reorderable out of the box. Tab to a row and press <kbd>Space</kbd> to
+        pick it up. The arrow keys move it while the others make way, <kbd>Space</kbd> drops it, and
+        <kbd>Escape</kbd> puts it back. Each step is announced to screen readers, and <code>Announce</code>
+        lets you word those announcements or translate them.
+    </p>
+    <p>
+        The group also follows any change to the bound list, so plain move-up / move-down buttons that
+        reorder <code>Items</code> directly (the ▲▼ controls in the first sample) animate exactly like a
+        drag. The same goes for any other source of order: a sort, a server push, an undo.
     </p>
 
     <CodeSnippet Code="@_keyboardCode" />
@@ -104,7 +108,7 @@
 
     private List<string> _stages = ["Draft", "Review", "Approved", "Shipped"];
 
-    // Keyboard-accessible fallback for the pointer-only drag: the group observes external
+    // Another source of order next to the drag and the built-in keyboard reordering: the group observes external
     // Items mutations, so moving an item in the bound list reorders the rendered rows.
     private void MoveTrack(Track track, int delta)
     {
@@ -173,8 +177,14 @@
         """;
 
     private const string _keyboardCode = """
-        @* The group observes external mutations of the bound list, so anything that reorders
-           Items animates exactly like a drag: keyboard controls, a sort, a server push, an undo. *@
+        @* Keyboard reordering is built in (Space, the arrow keys, Space; Escape cancels) - Announce words it: *@
+        <BmotionReorderGroup @bind-Items="_tracks" Context="track"
+                             Announce='a => $"{a.Item.Title}, {a.Event}: {a.Position} of {a.Count}"'>
+            …
+        </BmotionReorderGroup>
+
+        @* And the group observes external mutations of the bound list, so anything that reorders
+           Items animates exactly like a drag: move buttons, a sort, a server push, an undo. *@
         <button aria-label="Move @track.Title up"
                 disabled="@(_tracks.IndexOf(track) is 0)"
                 @onclick="() => MoveTrack(track, -1)">▲</button>

@@ -241,10 +241,10 @@
             <details>
                 <summary>Which render modes does it work in?</summary>
                 <p>
-                    Blazor WebAssembly is fully supported. On Blazor Server the compositor path works, so enter, exit,
-                    hover, tap and variant animations on transform and opacity play normally; features that need the
-                    per-frame loop - inertia, colour and dimension interpolation - become instant changes. It targets
-                    .NET 8, 9 and 10.
+                    Blazor WebAssembly and Blazor Server play the same animations - the browser plays transforms,
+                    opacity, colours, sizes, filters, keyframes, springs and inertia on both. On Server, per-frame
+                    callbacks and SVG path morphs become instant changes and drag follows the pointer a round trip
+                    behind. It targets .NET 8, 9 and 10.
                 </p>
             </details>
             <details>

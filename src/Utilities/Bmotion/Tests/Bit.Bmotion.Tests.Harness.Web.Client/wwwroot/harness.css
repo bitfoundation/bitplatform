@@ -52,3 +52,14 @@ section { margin: 12px 0; padding: 8px; border: 1px dashed #ccc; position: relat
 .grip { display: inline-block; width: 16px; height: 16px; background: #333; }
 
 .progress { height: 6px; width: 400px; background: rgb(108, 71, 255); transform-origin: 0 50%; }
+
+/* Values only a stylesheet sets (fidelity): the engine must start from them and give them back. */
+.box.css-blue { background-color: rgb(0, 0, 255); }
+
+.box.css-shadow { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); }
+
+.box.css-width { width: 100px; }
+
+/* Sized by its lines only: Bmotion animates its height to and from that. */
+.accordion { width: 200px; overflow: hidden; background: #dde3ea; }
+.accordion p { margin: 0; height: 20px; line-height: 20px; }

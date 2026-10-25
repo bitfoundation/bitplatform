@@ -36,6 +36,7 @@ public class GestureLifecycleTests
     public async Task Focus_AppliesWhileFocus_AndRevertsOnFocusOut()
     {
         using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false; // ticked by hand on the frame loop
         bool started = false, ended = false;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
@@ -63,6 +64,7 @@ public class GestureLifecycleTests
     public async Task PointerCancel_CancelsTheTap_AndRevertsWhileTap()
     {
         using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false; // ticked by hand on the frame loop
         bool tapStarted = false, tapped = false, cancelled = false;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
@@ -90,6 +92,7 @@ public class GestureLifecycleTests
     private async Task<(double AfterLeave, bool LeaveFired)> EnterThenLeaveViewport(bool once)
     {
         using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false; // ticked by hand on the frame loop
         bool left = false;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")

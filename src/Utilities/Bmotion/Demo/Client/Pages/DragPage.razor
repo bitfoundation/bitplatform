@@ -8,8 +8,9 @@
         <strong>Drag="true"</strong> is the entire opt-in. Everything after that is a refinement of the
         same gesture: which axes it may use, how far it may go, how it behaves at the edges, what
         happens to the momentum when you let go, and which part of the element is allowed to start it.
-        Drag runs on the per-frame engine, so it is a <strong>Blazor WebAssembly</strong> feature; on
-        Blazor Server the element simply does not move.
+        Drag is at its best on <strong>Blazor WebAssembly</strong>, where the element moves in the
+        same frame as the pointer. On Blazor Server it follows the pointer a round trip behind, and
+        the throw's momentum plays in the browser.
     </p>
 </div>
 

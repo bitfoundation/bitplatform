@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.JSInterop;
 
 namespace Bit.Bmotion;
 
@@ -16,8 +17,13 @@ namespace Bit.Bmotion;
 /// The reorder preview is transform-based: the list itself only re-renders once, on release,
 /// so item state is preserved and the drag stays smooth. Works for vertical (default) and
 /// horizontal lists; wrapping grids are not supported.
+/// <para>
+/// Keyboard users reorder too (<see cref="Keyboard"/>): Space or Enter on a focused item picks it up, the arrow keys
+/// along the list move it - the others making way as for a drag - Space or Enter drops it and Escape puts it back.
+/// Each step is announced to screen readers (<see cref="Announce"/>). Items are made focusable if they aren't.
+/// </para>
 /// </summary>
-public sealed class BmotionReorderGroup<TItem> : ComponentBase
+public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
 {
     [Inject] private BmotionAnimationEngine Engine { get; set; } = null!;
     [Inject] private IBmotionInterop Interop { get; set; } = null!;
@@ -54,6 +60,18 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
 
     /// <summary>Fires after a reorder is committed to <see cref="Items"/>.</summary>
     [Parameter] public EventCallback OnReorder { get; set; }
+
+    /// <summary>
+    /// Whether keyboard users can reorder: Space/Enter picks the focused item up and drops it, the arrow keys along
+    /// <see cref="Axis"/> move it while it is held, Escape puts it back. Default: <c>true</c>.
+    /// </summary>
+    [Parameter] public bool Keyboard { get; set; } = true;
+
+    /// <summary>
+    /// What screen readers hear at each keyboard reorder step - picked up, moved, dropped, cancelled - e.g. to name
+    /// the item or speak another language. Default: <see cref="BmReorderAnnouncement{TItem}.DefaultText"/>.
+    /// </summary>
+    [Parameter] public Func<BmReorderAnnouncement<TItem>, string>? Announce { get; set; }
 
     private sealed class Entry
     {
@@ -143,12 +161,14 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (Keyboard) await AttachKeysAsync();
+
         // After a commit re-render the DOM order matches the transform-displaced positions
         // exactly, so zeroing every transform is pixel-neutral - it just hands layout back to
         // the document flow.
         if (!_pendingTransformClear) return;
         _pendingTransformClear = false;
-        foreach (var entry in _entries)
+        foreach (var entry in _entries.ToArray()) // a snapshot: a parameter update can rebuild the list while this awaits
         {
             Engine.SetInstant(entry.Id, new Dictionary<string, object?> { ["x"] = 0.0, ["y"] = 0.0 });
             try
@@ -161,6 +181,14 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
                 });
             }
             catch { /* element may be gone mid-teardown */ }
+        }
+
+        // Re-rendering in the new order can move the focused item's element, which loses focus: a keyboard user
+        // keeps hold of the item they just moved.
+        if (_refocus is { } id)
+        {
+            _refocus = null;
+            try { await Interop.FocusAsync(id); } catch { /* gone */ }
         }
     }
 
@@ -176,7 +204,14 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
     // a newer drag session has replaced it and must not touch that session's state.
     private int _dragSession;
 
-    private Task HandleDragStartAsync(Entry entry) => _measuring = MeasureDragSessionAsync(entry);
+    private Task HandleDragStartAsync(Entry entry) => _measuring = StartDragSessionAsync(entry);
+
+    private async Task StartDragSessionAsync(Entry entry)
+    {
+        // A pointer takes over from an item held from the keyboard: it goes back first.
+        if (_held is { } held) await CancelHeldAsync(held);
+        await MeasureDragSessionAsync(entry);
+    }
 
     private async Task MeasureDragSessionAsync(Entry entry)
     {
@@ -190,7 +225,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
 
         // Measure every row's untransformed position (its rect minus any in-flight transform
         // from a previous, still-settling reorder).
-        foreach (var e in _entries)
+        foreach (var e in _entries.ToArray()) // a snapshot: a parameter update can rebuild the list while this awaits
         {
             var rect = await Interop.GetBoundingRectAsync(e.Id);
             if (session != _dragSession) return;
@@ -256,8 +291,13 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
         // Catch the order up with where the row was released: on Blazor Server the moves that would
         // have reordered it may all have arrived before the measurement did.
         HandleDragMove(entry);
+        await CommitAsync(entry);
+    }
 
-        // Settle the dragged row into its final slot, then commit the new order.
+    // Settles the moved row into its final slot, then commits the new order - the end of a drag, and of a keyboard
+    // move once the item is dropped.
+    private async Task CommitAsync(Entry entry)
+    {
         int index = _visualOrder.IndexOf(entry);
         double target = SlotStart(index) - _origStart[entry.Key];
         var values = new Dictionary<string, object?> { [Horizontal ? "x" : "y"] = target };
@@ -288,6 +328,141 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
         }
         StateHasChanged();
     }
+
+    // ── Keyboard ──────────────────────────────────────────────────────────────
+
+    private DotNetObjectReference<BmotionReorderGroup<TItem>>? _keysRef;
+    private readonly HashSet<string> _keysAttached = new(StringComparer.Ordinal);
+    // The item a keyboard user is holding, and the order it was picked up from (for Escape).
+    private Entry? _held;
+    private List<Entry>? _orderBeforeHold;
+    // An item to give focus back to once the order it was moved into has rendered.
+    private string? _refocus;
+    // Keyboard steps run one after another: each awaits round trips (measuring, on Blazor Server), and a held arrow
+    // key repeats faster than that.
+    private Task _keySteps = Task.CompletedTask;
+
+    private async Task AttachKeysAsync()
+    {
+        _keysRef ??= DotNetObjectReference.Create(this);
+        foreach (var entry in _entries.ToArray()) // a snapshot: a parameter update can rebuild the list while this awaits
+        {
+            if (!_keysAttached.Add(entry.Id)) continue;
+            try { await Interop.AttachReorderKeysAsync(entry.Id, _keysRef, Horizontal, HandleSelector); }
+            catch { _keysAttached.Remove(entry.Id); /* not attached yet: the next render retries */ }
+        }
+    }
+
+    private Task Step(Func<Task> step)
+    {
+        var previous = _keySteps;
+        return _keySteps = RunAsync();
+
+        async Task RunAsync()
+        {
+            try { await previous; } catch { /* a failed step doesn't block the next */ }
+            await step();
+        }
+    }
+
+    /// <summary>Space or Enter on an item that isn't held: picks it up. Returns whether it was. Not for direct use.</summary>
+    [JSInvokable]
+    public async Task<bool> OnReorderPickUp(string elementId)
+    {
+        bool held = false;
+        await Step(async () => held = await PickUpAsync(elementId));
+        return held;
+    }
+
+    /// <summary>An arrow key while an item is held: moves it one place. Not for direct use.</summary>
+    [JSInvokable]
+    public Task OnReorderMove(string elementId, int delta) => Step(() => MoveHeldAsync(elementId, delta));
+
+    /// <summary>Space, Enter or focus leaving a held item: drops it where it is. Not for direct use.</summary>
+    [JSInvokable]
+    public Task OnReorderDrop(string elementId) => Step(() => DropHeldAsync(elementId));
+
+    /// <summary>Escape on a held item: puts it back where it was picked up. Not for direct use.</summary>
+    [JSInvokable]
+    public Task OnReorderCancel(string elementId)
+        => Step(() => _held is { } held && held.Id == elementId ? CancelHeldAsync(held) : Task.CompletedTask);
+
+    private async Task<bool> PickUpAsync(string elementId)
+    {
+        // A pointer drag (or another held item) owns the session.
+        if (_dragged != null || _entries.Find(e => e.Id == elementId) is not { } entry) return false;
+        _orderBeforeHold = _entries.ToList();
+        _held = entry;
+        await (_measuring = MeasureDragSessionAsync(entry));
+        if (_dragged != entry || !_measured)
+        {
+            _held = null;
+            return false;
+        }
+        if (entry.Ref is { } row) await row.ShowDragOverlayAsync(true);
+        await AnnounceAsync(BmReorderEvent.PickedUp, entry);
+        return true;
+    }
+
+    private async Task MoveHeldAsync(string elementId, int delta)
+    {
+        if (_held is not { } entry || entry.Id != elementId || _dragged != entry || !_measured) return;
+        int from = _visualOrder.IndexOf(entry);
+        int to = Math.Clamp(from + Math.Sign(delta), 0, _visualOrder.Count - 1);
+        if (to == from) return;
+        _visualOrder.RemoveAt(from);
+        _visualOrder.Insert(to, entry);
+        // The others make way exactly as for a drag; the held item moves into its new slot itself.
+        AnimateDisplacements();
+        _ = Engine.AnimateToAsync(entry.Id,
+            new Dictionary<string, object?> { [Horizontal ? "x" : "y"] = SlotStart(to) - _origStart[entry.Key] },
+            DisplacementConfig());
+        await AnnounceAsync(BmReorderEvent.Moved, entry);
+    }
+
+    private async Task DropHeldAsync(string elementId)
+    {
+        if (_held is not { } entry || entry.Id != elementId) return;
+        _held = null;
+        _orderBeforeHold = null;
+        if (entry.Ref is { } row) await row.ShowDragOverlayAsync(false);
+        if (_dragged != entry || !_measured) return;
+        int position = _visualOrder.IndexOf(entry) + 1;
+        _refocus = entry.Id;
+        await CommitAsync(entry);
+        await AnnounceAsync(BmReorderEvent.Dropped, entry, position);
+    }
+
+    private async Task CancelHeldAsync(Entry entry)
+    {
+        _held = null;
+        if (entry.Ref is { } row) await row.ShowDragOverlayAsync(false);
+        if (_dragged == entry && _orderBeforeHold is { } before)
+        {
+            // Everything goes back to where it was; nothing is committed.
+            _visualOrder = before;
+            AnimateDisplacements();
+            _ = Engine.AnimateToAsync(entry.Id,
+                new Dictionary<string, object?> { [Horizontal ? "x" : "y"] = SlotStart(_visualOrder.IndexOf(entry)) - _origStart[entry.Key] },
+                DisplacementConfig());
+            _dragged = null;
+            try { await Interop.ApplyStylesAsync(entry.Id, new Dictionary<string, string> { ["position"] = "", ["zIndex"] = "" }); }
+            catch { /* cosmetic only */ }
+        }
+        _orderBeforeHold = null;
+        await AnnounceAsync(BmReorderEvent.Cancelled, entry);
+    }
+
+    private async Task AnnounceAsync(BmReorderEvent kind, Entry entry, int? position = null)
+    {
+        var order = _dragged == entry ? _visualOrder : _entries;
+        var announcement = new BmReorderAnnouncement<TItem>(kind, entry.Item, position ?? order.IndexOf(entry) + 1, _entries.Count);
+        var text = Announce?.Invoke(announcement) ?? announcement.DefaultText;
+        if (string.IsNullOrEmpty(text)) return;
+        try { await Interop.AnnounceAsync(text); } catch { /* the circuit is going */ }
+    }
+
+    public void Dispose() => _keysRef?.Dispose();
 
     // ── Slot math (current visual order) ──────────────────────────────────────
 

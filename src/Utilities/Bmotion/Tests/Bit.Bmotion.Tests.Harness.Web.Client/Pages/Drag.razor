@@ -120,6 +120,18 @@
     </Bmotion>
 </div>
 
+@* Thrown at its bound: it keeps its speed until it gets there, bounces off it and settles on it. *@
+<div class="track">
+    <Bmotion Drag="BmDrag.X"
+             DragConstraints="BmDragConstraints.Horizontal(0, 150)"
+             DragElastic="0"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:bounce")'
+             OnDragEnd='() => Log("bounce:end")'>
+        <div id="bounce" class="small"></div>
+    </Bmotion>
+</div>
+
 @code {
     private readonly BmDragControls _controls = new();
 

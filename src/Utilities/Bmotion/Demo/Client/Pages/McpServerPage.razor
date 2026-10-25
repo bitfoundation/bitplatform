@@ -21,8 +21,9 @@
         into the assembly, the source of every page you have been reading. The other half answer by
         <strong>running the real animation engine off-screen</strong> and reporting what it did. That
         second half is the reason it exists: no amount of documentation can tell you that
-        <code>Bm.Spring(stiffness: 400, damping: 2)</code> wobbles for five seconds, or that animating
-        <code>height</code> stops moving the moment your app is served over Blazor Server.
+        <code>Bm.Spring(stiffness: 400, damping: 2)</code> wobbles for five seconds, or that morphing an
+        SVG path's <code>d</code> stops moving the moment your app is served over Blazor Server while
+        a <code>height</code> animation beside it keeps playing.
     </p>
 </div>
 
@@ -213,10 +214,11 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Will it work on Blazor Server?</h3>
     <p>
-        Only animations the browser compositor can own play on Blazor Server; everything else needs
-        the C# per-frame loop, which does not exist there, and becomes an instant jump.
-        <code>AnalyzeBmotionAnimation</code> does not consult a table - it starts the animation on
-        the real engine and watches which path the engine takes.
+        The engine hands the browser almost every animation - as a two-keyframe timeline when one
+        exact curve covers it, as a recording of the frames its own drivers draw otherwise - and both
+        play on Blazor Server. Only a few need the C# per-frame loop, which does not exist there, and
+        become an instant jump. <code>AnalyzeBmotionAnimation</code> does not consult a table - it
+        starts the animation on the real engine, as each runtime, and watches what the engine does.
     </p>
 
     <div class="bb-demo mcp-check">
@@ -270,10 +272,11 @@
 
         <p class="mcp-reading">@_playback.Reason</p>
 
-        @if (_playback.HowToOffload is { Length: > 0 })
+        @* What would get it to the browser, or - for a recording - make it a cheaper timeline. *@
+        @if ((_playback.HowToOffload ?? _playback.HowToPlayAsTimeline) is { Length: > 0 } fixes)
         {
             <ul class="bb-detail-list mcp-fixes">
-                @foreach (var fix in _playback.HowToOffload)
+                @foreach (var fix in fixes)
                 {
                     <li>@fix</li>
                 }
@@ -501,12 +504,13 @@
             itself. A three-second spring is simulated in microseconds.
         </li>
         <li>
-            <strong>The compositor verdict is observed.</strong> The engine decides whether an
-            animation can go to the browser through a long rule set; restating that rule set here
-            would mean maintaining a second copy of it and being wrong in exactly the cases that
-            matter. Instead the server starts the animation and records whether the engine reached
-            for the Web Animations API - including for every animatable property, once, to build the
-            table behind <code>GetBmotionAnimatableProperties</code>.
+            <strong>The playback verdict is observed.</strong> The engine decides whether the browser
+            plays an animation - and whether as a timeline or as a recording - through a long rule set;
+            restating that rule set here would mean maintaining a second copy of it and being wrong in
+            exactly the cases that matter. Instead the server starts the animation, as WebAssembly and
+            as Blazor Server, and records what the engine handed the Web Animations API - including for
+            every animatable property, once, to build the table behind
+            <code>GetBmotionAnimatableProperties</code>.
         </li>
     </ul>
 
@@ -532,7 +536,8 @@
 
     private sealed record Sample(double Seconds, double Value);
 
-    private sealed record Playback(string Path, bool WorksOnBlazorServer, string Reason, string[]? HowToOffload, string? Error);
+    private sealed record Playback(string Path, bool WorksOnBlazorServer, string Reason, string[]? HowToOffload,
+        string[]? HowToPlayAsTimeline, string? Error);
 
     // Nullable arrays throughout: what comes back is JSON, and a body that is missing a field - or a
     // panel pointed at a server that answers with something else entirely - deserialises to null
@@ -550,7 +555,7 @@
     private static readonly Problem[] _problems =
     [
         new("It works locally, not in production",
-            "The animation touches a property the browser compositor cannot own, so it needs the C# frame loop - which does not exist on Blazor Server.",
+            "The animation needs something only the C# frame loop can play - a per-frame OnUpdate, an SVG path morph - and Blazor Server has no frame loop.",
             "AnalyzeBmotionAnimation"),
         new("The exit animation never plays",
             "Blazor removed the element the moment the condition flipped. Exit needs a presence component to hold it in the DOM.",
@@ -617,9 +622,9 @@
     private static readonly CheckExample[] _checkExamples =
     [
         new("x, opacity", "spring(stiffness: 200, damping: 20)"),
-        new("width, height", "tween(0.4)"),
-        new("backgroundColor", "tween(0.4)"),
+        new("width, backgroundColor", "tween(0.4)"),
         new("x", "inertia(velocity: 500)"),
+        new("d", "tween(0.4)"),
     ];
 
     private const string _architectureCode = """
@@ -646,7 +651,9 @@
 
         // For the render-mode question the interop is the instrument rather than the stage: if the
         // engine called PlayWaapiAnimationAsync, the browser owns the animation - and it plays on
-        // Blazor Server. If it never did, the animation needs the frame loop, and it does not.
+        // Blazor Server too; keyframes carrying their own offsets make it a recording rather than a
+        // two-keyframe timeline. If it never did, the animation needs the frame loop, which Blazor
+        // Server does not have.
         """;
 
     private string _spec = "spring(stiffness: 260, damping: 12)";

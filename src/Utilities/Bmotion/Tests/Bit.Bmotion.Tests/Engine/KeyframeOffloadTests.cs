@@ -50,8 +50,14 @@ public class KeyframeOffloadTests
         return call is null ? null : (object[])call.Args[2]!;
     }
 
+    // A keyframe sequence plays in the browser exactly as the frame loop would play it - recorded frame by frame -
+    // so its easing applies to every segment (motion.dev semantics), not once across the whole sequence.
+
+    private static Dictionary<string, object>[] Recorded(FakeBmotionInterop interop)
+        => (Dictionary<string, object>[])interop.Calls.Last(c => c.Method == "playWaapiAnimation").Args[2]!;
+
     [TestMethod]
-    public async Task KeyframeTransform_OffloadsWithNKeyframes()
+    public async Task KeyframeTransform_PlaysInTheBrowser_EasedPerSegment()
     {
         var (engine, interop) = NewEngine();
         await using var _ = engine;
@@ -61,36 +67,42 @@ public class KeyframeOffloadTests
             new Dictionary<string, object?> { ["scale"] = new double[] { 1, 1.4, 0.8, 1 } },
             Bm.Tween(0.6).ToConfig());
 
-        var kf = OffloadedKeyframes(interop);
-        Assert.IsNotNull(kf, "an eligible keyframe transform should offload to the compositor");
-        Assert.AreEqual(4, kf!.Length, "one WAAPI keyframe per array frame");
+        var kf = Recorded(interop);
+        // A third of the way in is the end of the first of three segments: exactly its keyframe.
+        Assert.AreEqual(1.4, WebAnimationKeyframes.At(kf, 1.0 / 3, WebAnimationKeyframes.Scale), 2e-3);
+        // Half-way through that segment it is eased out within it, past the linear mid-point.
+        double mid = WebAnimationKeyframes.At(kf, 1.0 / 6, WebAnimationKeyframes.Scale);
+        Assert.IsTrue(mid > 1.2 + 0.05, $"the segment eases on its own: {mid}");
+        Assert.AreEqual(1.0, WebAnimationKeyframes.Scale(kf[^1]), 1e-9);
     }
 
     [TestMethod]
-    public async Task ScalarPlusKeyframe_AlignOntoCommonGrid()
+    public async Task ScalarBesideAKeyframeSequence_KeepsItsOwnTimeline()
     {
         var (engine, interop) = NewEngine();
         await using var _ = engine;
-        engine.RegisterElement("el", null);
+        engine.RegisterElement("el", new Dictionary<string, object?> { ["opacity"] = 1.0 });
 
-        // opacity is a scalar (2 frames); y is a 3-frame keyframe → both align to 3 keyframes.
+        // opacity is a scalar (eased once over the whole tween); y is a 3-frame sequence (eased per segment).
         await engine.AnimateToAsync("el",
             new Dictionary<string, object?> { ["opacity"] = 0.5, ["y"] = new double[] { 0, -20, 0 } },
-            Bm.Tween(0.5).ToConfig());
+            Bm.Tween(0.5, ease: BmEase.Linear).ToConfig());
 
-        var kf = OffloadedKeyframes(interop);
-        Assert.IsNotNull(kf);
-        Assert.AreEqual(3, kf!.Length);
+        var kf = Recorded(interop);
+        Assert.AreEqual(0.75, WebAnimationKeyframes.At(kf, 0.5, k => WebAnimationKeyframes.Number(k, "opacity")), 2e-3,
+            "linear over the whole tween");
+        Assert.AreEqual(-20, WebAnimationKeyframes.At(kf, 0.5, WebAnimationKeyframes.TranslateY), 0.1,
+            "the sequence is at its middle keyframe");
     }
 
     [TestMethod]
-    public async Task MixedKeyframeLengths_StayOnRafPath()
+    public async Task MixedKeyframeLengths_PlayInTheBrowser_EachOnItsOwnTimeline()
     {
         var (engine, interop) = NewEngine();
         await using var _ = engine;
         engine.RegisterElement("el", null);
 
-        // x has 2 frames, scale has 3 → mismatched keyframe lengths → not offloaded.
+        // x has 2 frames, scale has 3 - once a limit of the compositor offload, now just two recorded tracks.
         await engine.AnimateToAsync("el",
             new Dictionary<string, object?>
             {
@@ -99,7 +111,9 @@ public class KeyframeOffloadTests
             },
             Bm.Tween(0.5).ToConfig());
 
-        Assert.IsNull(OffloadedKeyframes(interop), "mixed keyframe lengths must fall back to rAF");
+        var kf = Recorded(interop);
+        Assert.AreEqual("translate(100px,0px)", kf[^1]["transform"]);
+        Assert.AreEqual(2, WebAnimationKeyframes.At(kf, 0.5, WebAnimationKeyframes.Scale), 2e-3, "scale peaks half-way, at its middle keyframe");
     }
 
     [TestMethod]

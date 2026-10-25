@@ -36,6 +36,38 @@ public sealed class ReorderTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task TheKeyboard_PicksAnItemUp_MovesIt_AndDropsIt_KeepingFocusOnIt()
+    {
+        var a = Page.Locator("#vertical .item[data-item='A']");
+        await a.FocusAsync();
+        Assert.AreEqual("0", await a.GetAttributeAsync("tabindex"), "a plain row is made focusable");
+
+        await Page.Keyboard.PressAsync("Space");
+        await Page.WaitForFunctionAsync("() => document.querySelector('[data-bm-announcer]')?.textContent.startsWith('Picked up')");
+        // Held: the others make way at each press, nothing is committed yet.
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await WaitForStateAsync("#vertical .item[data-item='B']", "s => s.y < -30");
+        Assert.AreEqual("A,B,C,D", await ReadoutAsync("vertical-order"));
+
+        await Page.Keyboard.PressAsync("Space");
+        await ExpectEventAsync("vertical:reordered");
+        await ExpectReadoutAsync("vertical-order", "B,C,A,D");
+        CollectionAssert.AreEqual(new[] { "B", "C", "A", "D" }, await DomOrderAsync("vertical"));
+        await Page.WaitForFunctionAsync("() => document.activeElement?.dataset.item === 'A'");
+        await Page.WaitForFunctionAsync("() => document.querySelector('[data-bm-announcer]')?.textContent === 'Dropped at position 3 of 4.'");
+
+        // Escape puts it back: pick it up again, move it, cancel.
+        await Page.Keyboard.PressAsync("Space");
+        await Page.Keyboard.PressAsync("ArrowUp");
+        await Page.Keyboard.PressAsync("Escape");
+        await Page.WaitForFunctionAsync("() => document.querySelector('[data-bm-announcer]')?.textContent.startsWith('Cancelled')");
+        foreach (var id in new[] { "A", "B", "C", "D" }.Select(i => $"#vertical .item[data-item='{i}']"))
+            await WaitForStateAsync(id, "s => Math.abs(s.y) < 0.5");
+        Assert.AreEqual("B,C,A,D", await ReadoutAsync("vertical-order"));
+    }
+
+    [TestMethod]
     public async Task SiblingsMakeRoomWhileTheItemIsStillHeld()
     {
         await DragByAsync("#vertical .item[data-item='A']", 0, 60, steps: 15, release: false);

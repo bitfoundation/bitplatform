@@ -34,6 +34,7 @@ public static partial class BmotionCodeReview
         "component-as-animated-root",
         "empty-bmotion",
         "frame-loop-only-properties",
+        "frame-loop-only-transition",
         "drag-without-capability-guard",
         "eased-infinite-rotation",
         "resting-state-in-gesture",
@@ -70,6 +71,7 @@ public static partial class BmotionCodeReview
         CheckAnimatedRoot(lines, findings);
         CheckEmptyBmotion(lines, findings);
         CheckFrameLoopProperties(lines, findings);
+        CheckFrameLoopTransitions(text, lines, findings);
         CheckDragGuard(text, lines, findings);
         CheckEasedRotation(lines, findings);
         CheckRestingStateInGesture(lines, findings);
@@ -358,7 +360,8 @@ public static partial class BmotionCodeReview
     }
 
     /// <summary>
-    /// Properties the browser compositor cannot own. They animate on WebAssembly and jump on Blazor
+    /// Properties no Web Animation can play - the SVG geometry attributes. Everything else Bm.To
+    /// animates plays in the browser on every runtime; these animate on WebAssembly and jump on Blazor
     /// Server, which is a difference no build output will point out.
     /// </summary>
     private static void CheckFrameLoopProperties(string[] lines, List<BmotionReviewFindingDto> findings)
@@ -373,8 +376,7 @@ public static partial class BmotionCodeReview
                 {
                     var name = argument.Groups["name"].Value;
 
-                    if (name is "transition") continue;
-                    if (BmotionPropertyCatalog.IsCompositorProperty(name)) continue;
+                    if (BmotionPropertyCatalog.IsFrameLoopOnlyProperty(name) is false) continue;
                     if (reported.Add(name) is false) continue;
 
                     findings.Add(new BmotionReviewFindingDto
@@ -382,18 +384,146 @@ public static partial class BmotionCodeReview
                         Severity = "Suggestion",
                         Rule = "frame-loop-only-properties",
                         Line = i + 1,
-                        Message = $"'{name}' cannot be handed to the browser compositor, so this animation runs on " +
-                                  "the C# per-frame loop. That is fine on Blazor WebAssembly, and on Blazor Server " +
-                                  "it becomes an instant jump to the target.",
-                        Fix = "Ignore this if the app is WebAssembly-only. Otherwise animate x, y, scale, rotate " +
-                              "and opacity instead, and confirm with AnalyzeBmotionAnimation."
+                        Message = $"'{name}' is an SVG attribute, and Web Animations cannot animate attributes, so " +
+                                  "this morph runs on the C# per-frame loop. That is fine on Blazor WebAssembly; on " +
+                                  "Blazor Server, which has no frame loop, it becomes an instant jump to the target shape.",
+                        Fix = "Ignore this if the app is WebAssembly-only. Otherwise cross-fade two stacked shapes with " +
+                              "opacity, or draw the stroke with pathLength - both play in the browser on every " +
+                              "runtime - and confirm with AnalyzeBmotionAnimation."
                     });
                 }
             }
         }
     }
 
-    /// <summary>Drag on a page that may be served over Blazor Server, with nothing to say so.</summary>
+    /// <summary>
+    /// Transitions only the frame loop can play, whatever they animate: a per-frame <c>OnUpdate</c>
+    /// callback, an endlessly reversing repeat, and a repeat that unrolls into a recording longer
+    /// than the engine records. Like the properties above, they animate on WebAssembly and jump on
+    /// Blazor Server.
+    /// </summary>
+    private static void CheckFrameLoopTransitions(string text, string[] lines, List<BmotionReviewFindingDto> findings)
+    {
+        const string fix = "Ignore this if the app is WebAssembly-only. Otherwise ";
+
+        // An OnUpdate set in a transition's initializer. The component's own OnUpdate parameter is a
+        // different thing: it is written as an attribute, and the animations it reports on still play.
+        foreach (Match match in TransitionInitializerRegex().Matches(text))
+        {
+            var body = match.Groups["body"];
+            var onUpdate = OnUpdateAssignmentRegex().Match(body.Value);
+
+            if (onUpdate.Success is false) continue;
+
+            findings.Add(new BmotionReviewFindingDto
+            {
+                Severity = "Suggestion",
+                Rule = "frame-loop-only-transition",
+                Line = LineOf(text, body.Index + onUpdate.Index),
+                Message = "This transition has an OnUpdate callback, which needs a call into C# on every frame - and " +
+                          "only the frame loop gives it that. The animation runs there instead of in the browser: fine " +
+                          "on Blazor WebAssembly, an instant jump to the target on Blazor Server.",
+                Fix = fix + "drop OnUpdate and read the end state once the animation completes; the browser then plays " +
+                      "the animation on every runtime."
+            });
+        }
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            foreach (Match repeat in RepeatCallRegex().Matches(lines[i]))
+            {
+                var type = repeat.Groups["type"].Value;
+                var count = RepeatCount(repeat.Groups["args"].Value);
+
+                if (type == "Reverse" && count < 0)
+                {
+                    findings.Add(new BmotionReviewFindingDto
+                    {
+                        Severity = "Suggestion",
+                        Rule = "frame-loop-only-transition",
+                        Line = i + 1,
+                        Message = "An endless BmRepeat.Reverse plays its first cycle forwards and every one after it " +
+                                  "backwards, which no single repeating recording reproduces - so it runs on the C# " +
+                                  "frame loop: fine on Blazor WebAssembly, an instant jump on Blazor Server.",
+                        Fix = fix + "use BmRepeat.Mirror, which the browser plays as one recorded cycle there and back " +
+                              "on a loop, or give the Reverse a count."
+                    });
+
+                    continue;
+                }
+
+                // A fixed number of mirrored, reversed or delayed repeats is recorded unrolled, every
+                // iteration and every gap - and past the engine's limit, not recorded at all.
+                var delay = RepeatDelay(repeat.Groups["args"].Value);
+
+                if (count <= 0 || (type == "Loop" && delay <= 0)) continue;
+                if (TweenDurationRegex().Match(lines[i]) is not { Success: true } tween) continue;
+                if (double.TryParse(tween.Groups["duration"].Value, System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out var duration) is false) continue;
+
+                var seconds = (duration * (count + 1)) + (delay * count);
+
+                if (seconds <= 10) continue;
+
+                findings.Add(new BmotionReviewFindingDto
+                {
+                    Severity = "Suggestion",
+                    Rule = "frame-loop-only-transition",
+                    Line = i + 1,
+                    Message = $"This repeat unrolls into {seconds:0.#} seconds of animation, and only a recording " +
+                              "reproduces it - but the engine records at most 10 seconds, so it runs on the C# frame " +
+                              "loop: fine on Blazor WebAssembly, an instant jump on Blazor Server.",
+                    Fix = fix + "shorten it, or repeat it forever instead: an endless BmRepeat.Loop or BmRepeat.Mirror " +
+                          "records one cycle and the browser repeats it."
+                });
+            }
+        }
+
+        // The count a BmRepeat factory call was given: its first positional argument or 'count:', and
+        // -1 - forever - when it was given neither, as the factories default to.
+        static int RepeatCount(string arguments)
+        {
+            var first = arguments.Split(',')[0].Trim();
+            var value = Named(arguments, "count") ?? (first.Contains(':') ? string.Empty : first);
+
+            return int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var count)
+                ? count
+                : -1;
+        }
+
+        // The delay a BmRepeat factory call was given: 'delay:' or its second positional argument.
+        static double RepeatDelay(string arguments)
+        {
+            var parts = arguments.Split(',');
+            var value = Named(arguments, "delay") ?? (parts.Length > 1 && parts[1].Contains(':') is false ? parts[1].Trim() : string.Empty);
+
+            return double.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var delay)
+                ? delay
+                : 0;
+        }
+
+        static string? Named(string arguments, string name)
+            => RepeatArgumentRegex().Matches(arguments).FirstOrDefault(argument => argument.Groups["name"].Value == name)?.Groups["value"].Value;
+    }
+
+    /// <summary>The 1-based line a character offset of the reviewed text falls on.</summary>
+    private static int LineOf(string text, int index)
+    {
+        var line = 1;
+
+        for (int i = 0; i < index && i < text.Length; i++)
+        {
+            if (text[i] == '\n') line++;
+        }
+
+        return line;
+    }
+
+    /// <summary>
+    /// Drag on a page that may be served over Blazor Server, with nothing to say so. It works there,
+    /// but every position makes a round trip to the server first, so it trails the pointer by the
+    /// network's latency - which reads as a sluggish page rather than as a cost of the render mode.
+    /// </summary>
     private static void CheckDragGuard(string text, string[] lines, List<BmotionReviewFindingDto> findings)
     {
         if (text.Contains("SupportsFrameLoop", StringComparison.Ordinal)) return;
@@ -407,11 +537,12 @@ public static partial class BmotionCodeReview
                 Severity = "Suggestion",
                 Rule = "drag-without-capability-guard",
                 Line = i + 1,
-                Message = "Drag needs the synchronous per-frame loop, so it only works on Blazor WebAssembly. On " +
-                          "Blazor Server the element simply does not move when the user tries to drag it, which " +
-                          "reads as a broken page rather than as an unavailable feature.",
-                Fix = "If this page can ever render on Server, gate it: inject BmotionCapabilities and check " +
-                      "Caps.SupportsFrameLoop, giving the Server path a non-dragging equivalent.",
+                Message = "Drag follows the pointer synchronously only on Blazor WebAssembly. On Blazor Server it still " +
+                          "works, but every position travels to the server and back before the element moves, so it " +
+                          "trails the pointer by the round trip - unnoticeable on a local network, sluggish over a slow one. " +
+                          "The throw's momentum, once released, plays in the browser.",
+                Fix = "If this page can render on Server and that lag matters here, gate it: inject BmotionCapabilities " +
+                      "and check Caps.SupportsFrameLoop, giving the Server path a non-dragging equivalent.",
             });
 
             break;
@@ -546,6 +677,24 @@ public static partial class BmotionCodeReview
 
     [GeneratedRegex(@"\bDrag\s*=\s*""(?!false)")]
     private static partial Regex DragAttributeRegex();
+
+    // A transition built with an object initializer, whose body may hold one level of braces - the
+    // block body of an OnUpdate lambda, typically.
+    [GeneratedRegex(@"\bnew\s+Bm(?:Tween|Spring|Inertia)\s*(?:\(\s*\))?\s*\{(?<body>(?:[^{}]|\{[^{}]*\})*)\}")]
+    private static partial Regex TransitionInitializerRegex();
+
+    [GeneratedRegex(@"\bOnUpdate\s*=(?![=>])")]
+    private static partial Regex OnUpdateAssignmentRegex();
+
+    [GeneratedRegex(@"\bBmRepeat\.(?<type>Loop|Mirror|Reverse)\s*\((?<args>[^()]*)\)")]
+    private static partial Regex RepeatCallRegex();
+
+    [GeneratedRegex(@"\b(?<name>count|delay)\s*:\s*(?<value>-?\d*\.?\d+)")]
+    private static partial Regex RepeatArgumentRegex();
+
+    // A Bm.Tween's duration: its first positional argument, or 'duration:' wherever it is written.
+    [GeneratedRegex(@"\bBm\.Tween\s*\(\s*(?:(?<duration>\d*\.?\d+)|[^)]*?\bduration\s*:\s*(?<duration>\d*\.?\d+))")]
+    private static partial Regex TweenDurationRegex();
 
     [GeneratedRegex(@"While(Hover|Tap)\s*=\s*['""]Bm\.To\([^)]*\bscale:\s*1\s*[,)]")]
     private static partial Regex RestingScaleRegex();

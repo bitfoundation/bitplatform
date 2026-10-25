@@ -65,6 +65,28 @@ export function clampToConstraints(x: number, y: number, c: BmBounds | null, ela
     return { x, y };
 }
 
+/**
+ * Whether Space on a focused element of this kind does something of its own - activates a button, toggles a
+ * checkbox, opens a picker, types a space - rather than scrolling the page. A tap's keyboard handling must leave
+ * those defaults alone; only elsewhere is Space's page scroll suppressed. (Every `<input>` type either activates
+ * on Space or types it, so none of them scrolls.)
+ */
+export function nativeSpaceActivation(tagName: string, editable: boolean): boolean {
+    if (editable) return true;
+    switch (tagName.toUpperCase()) {
+        case 'BUTTON': case 'INPUT': case 'SUMMARY': case 'SELECT': case 'TEXTAREA': return true;
+        default: return false;
+    }
+}
+
+function hasNativeSpaceActivation(el: HTMLElement): boolean {
+    return nativeSpaceActivation(el.tagName, el.isContentEditable);
+}
+
+// How many drags are in progress anywhere on the page: a pointer carrying a dragged element over another one
+// is not hovering it.
+let _activeDrags = 0;
+
 /** Normalised 0→1 scroll progress along one axis (0 when the content doesn't overflow). */
 export function scrollFraction(scroll: number, size: number, client: number): number {
     return size > client ? scroll / (size - client) : 0;
@@ -230,6 +252,57 @@ export function applyStyles(elementId: string, styles: BmStyleMap): void {
     if (el) _applyStyles(el, styles);
 }
 
+// One property's value as the page shows it: the computed style (camelCase name or custom property), or the SVG
+// geometry attribute.
+function _readStyle(el: HTMLElement, cs: CSSStyleDeclaration, prop: string): string {
+    if (_svgGeomAttrs.has(prop)) return el.getAttribute(prop) ?? '';
+    if (prop.startsWith('--')) return cs.getPropertyValue(prop).trim();
+    return String((cs as any)[prop] ?? '');
+}
+
+function _inline(el: HTMLElement, prop: string): string {
+    return prop.startsWith('--') ? el.style.getPropertyValue(prop) : String((el.style as any)[prop] ?? '');
+}
+
+function _setInline(el: HTMLElement, prop: string, value: string): void {
+    if (prop.startsWith('--')) el.style.setProperty(prop, value);
+    else (el.style as any)[prop] = value;
+}
+
+/**
+ * Reads what the engine needs to know before it animates: the computed values of `current` (starting values it
+ * has never seen), and for `stylesheet` the value the stylesheet gives each property once its inline declaration
+ * is lifted - read with the declaration removed for an instant and put straight back, so nothing is ever painted
+ * without it. Null when the element is gone.
+ */
+export function readStyles(elementId: string, current: string[], stylesheet: string[], auto?: string[]):
+    { current: BmStyleMap; stylesheet: BmStyleMap; auto: BmStyleMap } | null {
+    const el = document.getElementById(elementId);
+    if (!el) return null;
+    const out = { current: {} as BmStyleMap, stylesheet: {} as BmStyleMap, auto: {} as BmStyleMap };
+    // The natural size an animation to "auto" plays towards: the computed size with the inline size set to auto for
+    // an instant (an animation of ours on it was cancelled by the engine first). Read before the current values,
+    // which must see the element as it is.
+    for (const prop of auto ?? []) {
+        const inline = _inline(el, prop);
+        _setInline(el, prop, 'auto');
+        out.auto[prop] = _readStyle(el, getComputedStyle(el), prop);
+        _setInline(el, prop, inline);
+    }
+    if (current.length) {
+        const cs = getComputedStyle(el);
+        for (const prop of current) out.current[prop] = _readStyle(el, cs, prop);
+    }
+    for (const prop of stylesheet) {
+        if (_svgGeomAttrs.has(prop)) continue; // an attribute has no stylesheet value behind it
+        const inline = _inline(el, prop);
+        _setInline(el, prop, '');
+        out.stylesheet[prop] = _readStyle(el, getComputedStyle(el), prop);
+        _setInline(el, prop, inline);
+    }
+    return out;
+}
+
 //
 // Accessibility - prefers-reduced-motion
 //
@@ -337,6 +410,7 @@ export function unregisterElement(elementId: string): void {
     _vpRefs.delete(elementId);
     _popped.delete(elementId);
     _flips.delete(elementId);
+    _interruptedAt.delete(elementId);
 }
 
 function _runCleanup(elementId: string, unregistering = false): void {
@@ -373,8 +447,20 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
 
     //  Hover
     if (events.hover) {
-        const onEnter = () => dotnetRef.invokeMethodAsync('OnPointerEnter');
-        const onLeave = () => dotnetRef.invokeMethodAsync('OnPointerLeave');
+        // A finger has no hover: touch fires pointerenter/leave around every tap, which would flash (or, on some
+        // browsers, stick) the hover state on phones - motion.dev ignores touch for hover too. So does a pointer
+        // passing over while it drags something else. Only a hover this element started is ended by it.
+        let hovering = false;
+        const onEnter = (e: PointerEvent) => {
+            if (e.pointerType === 'touch' || _activeDrags > 0 || hovering) return;
+            hovering = true;
+            dotnetRef.invokeMethodAsync('OnPointerEnter');
+        };
+        const onLeave = (e: PointerEvent) => {
+            if (!hovering || e.pointerType === 'touch') return;
+            hovering = false;
+            dotnetRef.invokeMethodAsync('OnPointerLeave');
+        };
         el.addEventListener('pointerenter', onEnter);
         el.addEventListener('pointerleave', onLeave);
         cleanups.push(() => { el.removeEventListener('pointerenter', onEnter); el.removeEventListener('pointerleave', onLeave); });
@@ -398,19 +484,22 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
         // Keyboard accessibility (matches motion.dev): when the element is focused, Enter and
         // Space press and release it like a tap. Key state is tracked separately from pointer
         // state so a keyboard press can't cancel an in-flight pointer tap (and vice versa).
+        // Only a key pressed on the element itself presses it: keys typed into a field inside a
+        // tappable card, or pressed on a nested button, belong to that control.
         let keyPressing = false;
         const isTapKey = (e: KeyboardEvent) => e.key === 'Enter' || e.key === ' ';
         const onKeyDown = (e: KeyboardEvent) => {
-            if (!isTapKey(e)) return;
-            // Space's default action scrolls the page on non-button elements; suppress it for
-            // every tap-key keydown (including repeats) so a held press can't scroll either.
-            if (e.key === ' ') e.preventDefault();
+            if (!isTapKey(e) || e.target !== el) return;
+            // Space's default action scrolls the page on an element with no activation of its own;
+            // suppress it there (repeats included, so a held press can't scroll either). A native
+            // control activates on Space - a button clicks on its keyup - so its default stays.
+            if (e.key === ' ' && !hasNativeSpaceActivation(el)) e.preventDefault();
             if (e.repeat || keyPressing) return;
             keyPressing = true;
             dotnetRef.invokeMethodAsync('OnPointerDown');
         };
         const onKeyUp = (e: KeyboardEvent) => {
-            if (!isTapKey(e) || !keyPressing) return;
+            if (!isTapKey(e) || !keyPressing || e.target !== el) return;
             keyPressing = false;
             dotnetRef.invokeMethodAsync('OnPointerUp', true);
         };
@@ -438,8 +527,20 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
 
     //  Focus
     if (events.focus) {
-        const onIn  = () => dotnetRef.invokeMethodAsync('OnFocusIn');
-        const onOut = () => dotnetRef.invokeMethodAsync('OnFocusOut');
+        // motion.dev semantics: the focus gesture is keyboard focus - what the browser draws a focus ring for
+        // (:focus-visible). A button clicked with the mouse takes focus too, but shows no ring, and plays no focus
+        // overlay either.
+        let focused = false;
+        const onIn = (e: FocusEvent) => {
+            if (!focusVisible(e.target as Element)) return;
+            focused = true;
+            dotnetRef.invokeMethodAsync('OnFocusIn');
+        };
+        const onOut = () => {
+            if (!focused) return;
+            focused = false;
+            dotnetRef.invokeMethodAsync('OnFocusOut');
+        };
         el.addEventListener('focusin',  onIn);
         el.addEventListener('focusout', onOut);
         cleanups.push(() => { el.removeEventListener('focusin', onIn); el.removeEventListener('focusout', onOut); });
@@ -466,6 +567,12 @@ function _attachPan(
     let panning = false;
     let startX = 0, startY = 0, lastX = 0, lastY = 0, lastT = 0;
     let velX = 0, velY = 0;
+    // One OnPanMove on its way at a time (a round trip on Blazor Server): the moves meanwhile arrive as one, their
+    // deltas added up and the rest (position, offset, velocity) the latest - nothing queues behind the circuit.
+    type PanMove = { x: number; y: number; deltaX: number; deltaY: number; offsetX: number; offsetY: number; velX: number; velY: number };
+    const moves = coalesce<PanMove>(
+        m => dotnetRef.invokeMethodAsync('OnPanMove', m.x, m.y, m.deltaX, m.deltaY, m.offsetX, m.offsetY, m.velX, m.velY),
+        (a, b) => ({ ...b, deltaX: a.deltaX + b.deltaX, deltaY: a.deltaY + b.deltaY }));
 
     const onDown = (e: PointerEvent) => {
         if (e.button !== 0 && e.pointerType !== 'touch') return;
@@ -493,18 +600,18 @@ function _attachPan(
             panning = true;
             dotnetRef.invokeMethodAsync('OnPanStart_');
         }
-        if (panning) {
-            dotnetRef.invokeMethodAsync('OnPanMove',
-                e.clientX, e.clientY,
-                deltaX, deltaY,
-                dx, dy,
-                velX, velY);
-        }
+        if (panning) moves.push({ x: e.clientX, y: e.clientY, deltaX, deltaY, offsetX: dx, offsetY: dy, velX, velY });
 
         lastX = e.clientX; lastY = e.clientY; lastT = now;
     };
 
-    const onUp = () => { down = false; if (panning) { panning = false; dotnetRef.invokeMethodAsync('OnPanEnd_'); } };
+    const onUp = () => {
+        down = false;
+        if (!panning) return;
+        panning = false;
+        moves.flush(); // the last movement arrives before the end
+        dotnetRef.invokeMethodAsync('OnPanEnd_');
+    };
 
     el.addEventListener('pointerdown',   onDown);
     el.addEventListener('pointermove',   onMove);
@@ -597,6 +704,7 @@ function _attachDrag(
         startPX = clientX; startPY = clientY;
         lastPX = clientX; lastPY = clientY; lastT = performance.now();
         velX = velY = 0;
+        if (!dragging) _activeDrags++;
         dragging = true;
         lockedAxis = null;
         constraints = _resolveDragConstraints(constraintsCfg, el, startElX, startElY);
@@ -645,6 +753,12 @@ function _attachDrag(
 
     const onDown = (e: PointerEvent) => {
         if (e.button !== 0 && e.pointerType !== 'touch') return;
+        // A press in a form field inside the draggable is for the field - placing a caret, selecting text, opening a
+        // select - not the start of a drag (motion.dev semantics). Buttons and links still drag.
+        if (e.target instanceof Element) {
+            const field = e.target.closest('input, select, textarea, [contenteditable]:not([contenteditable="false"])');
+            if (field && el.contains(field)) return;
+        }
         // Handle mode: only start when the press lands on (or inside) a matching descendant.
         if (handleSel && !(e.target instanceof Element && e.target.closest(handleSel))) return;
         // Isolate nested draggables unless propagation is opted in (motion.dev's dragPropagation).
@@ -685,6 +799,7 @@ function _attachDrag(
     const onUp = () => {
         if (!dragging) return;
         dragging = false;
+        _activeDrags = Math.max(0, _activeDrags - 1);
         flushPosition();
         _stopObservingConstraintChanges();
         // Report the constraints actually used for this drag so C#'s release logic (momentum
@@ -710,7 +825,10 @@ function _attachDrag(
         // Listeners are re-attached whenever the gesture configuration changes, which can happen
         // mid-drag: end that drag first, or C# would be left dragging (and WhileDrag applied) forever.
         // On unregistration the component is going away, so there is no drag end to report.
-        if (unregistering) dragging = false;
+        if (unregistering) {
+            if (dragging) _activeDrags = Math.max(0, _activeDrags - 1);
+            dragging = false;
+        }
         else onUp();
         el.removeEventListener('pointerdown',   onDown);
         el.removeEventListener('pointermove',   onMove);
@@ -773,6 +891,113 @@ export function popLayout(elementId: string, curX: number, curY: number): void {
     s.top  = (rect.top  - pRect.top  - parent.clientTop  - curY) + 'px';
 }
 
+// ── Keyboard reordering (BmotionReorderGroup) ───────────────────────────────
+
+const _reorderKeyed = new WeakSet<Element>();
+
+/**
+ * Keyboard reordering for one item of a BmotionReorderGroup: Space or Enter picks it up and drops it, the arrow keys
+ * along the list's axis move it while it is held, Escape puts it back, and focus leaving it drops it. Only keys on
+ * the item itself (or its drag handle) count - a field or a button inside it keeps its own. The item is made
+ * focusable when it isn't.
+ */
+export function attachReorderKeys(elementId: string, dotnetRef: DotNet.DotNetObject, horizontal: boolean, handleSelector: string | null): void {
+    const el = document.getElementById(elementId);
+    if (!el || _reorderKeyed.has(el)) return;
+    _reorderKeyed.add(el);
+    if (!el.hasAttribute('tabindex') && el.tabIndex < 0) el.setAttribute('tabindex', '0');
+
+    const back = horizontal ? 'ArrowLeft' : 'ArrowUp';
+    const forward = horizontal ? 'ArrowRight' : 'ArrowDown';
+    let held = false;
+    const ours = (target: EventTarget | null) =>
+        target === el || (!!handleSelector && target instanceof Element && target.matches(handleSelector) && el.contains(target));
+
+    el.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.altKey || e.ctrlKey || e.metaKey || !ours(e.target)) return;
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            if (held) {
+                held = false;
+                dotnetRef.invokeMethodAsync('OnReorderDrop', elementId);
+            } else {
+                // Held until .NET says otherwise (another item, or a pointer drag, owns the list).
+                held = true;
+                dotnetRef.invokeMethodAsync('OnReorderPickUp', elementId).then((ok: boolean) => { if (!ok) held = false; }, () => { held = false; });
+            }
+            return;
+        }
+        if (!held) return;
+        if (e.key === back || e.key === forward) {
+            e.preventDefault();
+            dotnetRef.invokeMethodAsync('OnReorderMove', elementId, e.key === forward ? 1 : -1);
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            held = false;
+            dotnetRef.invokeMethodAsync('OnReorderCancel', elementId);
+        }
+    });
+    el.addEventListener('focusout', (e: FocusEvent) => {
+        if (!held || el.contains(e.relatedTarget as Node | null)) return;
+        held = false;
+        dotnetRef.invokeMethodAsync('OnReorderDrop', elementId);
+    });
+}
+
+/** Moves focus to the element without scrolling it into view. */
+export function focusElement(elementId: string): void {
+    document.getElementById(elementId)?.focus({ preventScroll: true });
+}
+
+let _liveRegion: HTMLElement | null = null;
+
+/**
+ * Has screen readers announce <paramref name="text"/>: one polite, visually hidden live region at the end of the
+ * page, made on first use. Cleared and refilled on the next frame, so the same words twice are announced twice.
+ */
+export function announce(text: string): void {
+    if (!_liveRegion || !_liveRegion.isConnected) {
+        _liveRegion = document.createElement('div');
+        _liveRegion.setAttribute('role', 'status');
+        _liveRegion.setAttribute('aria-live', 'polite');
+        _liveRegion.setAttribute('aria-atomic', 'true');
+        _liveRegion.setAttribute('data-bm-announcer', '');
+        Object.assign(_liveRegion.style, {
+            position: 'absolute', width: '1px', height: '1px', margin: '-1px', padding: '0', border: '0',
+            overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap',
+        });
+        document.body.appendChild(_liveRegion);
+    }
+    const region = _liveRegion;
+    region.textContent = '';
+    requestAnimationFrame(() => { region.textContent = text; });
+}
+
+/** Whether <paramref name="el"/> shows keyboard focus (:focus-visible); true where the browser can't tell. */
+export function focusVisible(el: Element | null): boolean {
+    if (!el || typeof el.matches !== 'function') return true;
+    try { return el.matches(':focus-visible'); }
+    catch { return true; /* a browser without :focus-visible: every focus counts, as it always did */ }
+}
+
+/**
+ * Makes an exiting element inert - nothing in it can be focused, clicked or read out, and pointer events reach what
+ * is behind it - or, when its exit is cancelled, interactive again. Only an inert this function added is removed, so
+ * one the app set itself stays.
+ */
+export function setInert(elementId: string, inert: boolean): void {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    if (inert) {
+        if (el.hasAttribute('inert')) return;
+        el.setAttribute('inert', '');
+        el.setAttribute('data-bm-inert', '');
+    } else if (el.hasAttribute('data-bm-inert')) {
+        el.removeAttribute('inert');
+        el.removeAttribute('data-bm-inert');
+    }
+}
+
 /** Restores the inline styles replaced by popLayout (used when an exit is cancelled). */
 export function unpopLayout(elementId: string): void {
     const el = document.getElementById(elementId);
@@ -820,6 +1045,15 @@ export function supportsLinearEasing(): boolean {
     }
 }
 
+/** True when the browser supports oklab() colours (an OKLab colour transition then plays in the browser). */
+export function supportsOklabColor(): boolean {
+    try {
+        return typeof CSS !== 'undefined' && CSS.supports?.('color', 'oklab(0.5 0 0 / 0.5)') === true;
+    } catch {
+        return false;
+    }
+}
+
 /**
  * Plays a pre-sampled animation via element.animate(). Resolves true when the animation
  * finishes naturally (styles committed inline), false when it is cancelled or fails to start.
@@ -846,6 +1080,20 @@ export function playWaapiAnimation(elementId: string, token: string, keyframes: 
     // Started on an element that is paused or re-timed (Blazor Server, where C# can't move it to
     // its frame loop instead).
     if (typeof timing.playbackRate === 'number') anim.playbackRate = timing.playbackRate;
+    // Start the moment the engine sampled its starting point, not on the next frame: a new animation is otherwise
+    // held on its first keyframe for a whole frame, and when it takes over from one in flight (a retargeted spring)
+    // that frame of standing still is a visible kink. One that continues an interrupted animation (timing.continues)
+    // starts from the instant that one was cancelled - when the engine read the values it starts from - however long
+    // building it took.
+    let start = performance.now();
+    if (timing.continues) {
+        const at = _interruptedAt.get(elementId);
+        if (at !== undefined && at <= start) start = at;
+    }
+    _interruptedAt.delete(elementId);
+    try {
+        if (document.timeline?.currentTime != null) anim.startTime = start;
+    } catch { /* an inactive timeline: the animation starts on the next frame as usual */ }
 
     let map = _waapiAnims.get(elementId);
     if (!map) { map = new Map(); _waapiAnims.set(elementId, map); }
@@ -875,10 +1123,15 @@ export function setWaapiPlaybackRate(elementId: string, rate: number): void {
     for (const anim of map.values()) anim.playbackRate = rate;
 }
 
+// When each element's animations were last interrupted to hand over to a new one (performance.now()): the instant
+// the engine sampled the values that one starts from.
+const _interruptedAt = new Map<string, number>();
+
 /** Cancels one offloaded animation; commit=true snapshots current values inline first. */
 export function cancelWaapiAnimation(elementId: string, token: string, commit: boolean): void {
     const anim = _waapiAnims.get(elementId)?.get(token);
     if (!anim) return;
+    if (commit) _interruptedAt.set(elementId, performance.now());
     if (commit) { try { anim.commitStyles(); } catch { /* detached element */ } }
     anim.cancel(); // rejects anim.finished → cleanup runs in playWaapiAnimation's handler
 }
@@ -1346,6 +1599,10 @@ export function observeScroll(containerId: string | null, dotnetRef: DotNet.DotN
     const targetId = options?.targetId ?? null;
     const offsets = options?.offsets ?? null; // [[targetFrac, containerFrac], [targetFrac, containerFrac]]
 
+    // Positions are absolute, so only the latest matters: one call on its way at a time (a round trip on Blazor
+    // Server), and whatever scrolled meanwhile goes next as one.
+    const report = latestOnly((progress: object) => dotnetRef.invokeMethodAsync('OnScroll', progress));
+
     const onScroll = () => {
         let sX: number, sY: number, sW: number, sH: number, cW: number, cH: number;
         if (el === window) {
@@ -1380,7 +1637,7 @@ export function observeScroll(containerId: string | null, dotnetRef: DotNet.DotN
             }
         }
 
-        dotnetRef.invokeMethodAsync('OnScroll', {
+        report({
             scrollX: sX, scrollY: sY,
             progressX: pX, progressY: pY,
             scrollWidth: sW, scrollHeight: sH,
@@ -1400,6 +1657,51 @@ export function observeScroll(containerId: string | null, dotnetRef: DotNet.DotN
     return key;
 }
 
+/**
+ * Turns a stream of values into calls to <paramref name="send"/>, one at a time: while one is on its way (to .NET, a
+ * round trip on Blazor Server), newer values replace each other and only the last goes next. The stream never queues
+ * up behind a slow connection, and what arrives is always the freshest value. A failed send doesn't stop it.
+ */
+export function latestOnly<T>(send: (value: T) => Promise<unknown>): (value: T) => void {
+    return coalesce(send, (_, next) => next).push;
+}
+
+/**
+ * <see cref="latestOnly"/> for values that add up: while a call is on its way, newer values are folded into one by
+ * <paramref name="merge"/> (a pan's deltas summed, its position the latest). <c>flush</c> sends what is waiting at
+ * once - before a message that must come after it (the end of the gesture).
+ */
+export function coalesce<T>(send: (value: T) => Promise<unknown>, merge: (pending: T, next: T) => T):
+    { push: (value: T) => void; flush: () => void } {
+    let inFlight = false;
+    let pending: { value: T } | null = null;
+    const pump = (value: T): void => {
+        inFlight = true;
+        let sent: Promise<unknown>;
+        try { sent = send(value); } catch (e) { sent = Promise.reject(e); }
+        sent.catch(() => { /* the circuit may be going; the next value still goes */ }).finally(() => {
+            inFlight = false;
+            if (pending) {
+                const next = pending.value;
+                pending = null;
+                pump(next);
+            }
+        });
+    };
+    return {
+        push: (value: T) => {
+            if (!inFlight) pump(value);
+            else pending = { value: pending ? merge(pending.value, value) : value };
+        },
+        flush: () => {
+            if (!pending) return;
+            const next = pending.value;
+            pending = null;
+            pump(next);
+        },
+    };
+}
+
 export function unobserveScroll(key: string): void {
     _scrollSubs.get(key)?.();
     _scrollSubs.delete(key);
@@ -1410,14 +1712,21 @@ export function unobserveScroll(key: string): void {
 // Wrap document.startViewTransition around a C# DOM-update callback. The callback (invoked by
 // name on the dotnet ref) performs the Blazor state change; the browser snapshots before/after and
 // cross-fades. Falls back to running the callback directly when the API is unsupported.
-export async function startViewTransition(dotnetRef: DotNet.DotNetObject, callbackName: string): Promise<boolean> {
+export async function startViewTransition(dotnetRef: DotNet.DotNetObject, callbackName: string, types?: string[]): Promise<boolean> {
     const runUpdate = () => dotnetRef.invokeMethodAsync(callbackName);
     const doc = document as any;
     if (typeof doc.startViewTransition !== 'function') {
         await runUpdate();
         return false;
     }
-    const transition = doc.startViewTransition(() => runUpdate());
+    // Typed transitions take an options object; a browser that only knows the callback form throws on it (it isn't
+    // callable), and then gets the untyped transition - the update must run exactly once either way.
+    let transition: any = null;
+    if (types && types.length) {
+        try { transition = doc.startViewTransition({ update: () => runUpdate(), types }); }
+        catch { transition = null; }
+    }
+    transition ??= doc.startViewTransition(() => runUpdate());
     try { await transition.finished; }
     catch {
         // `finished` also rejects when the C# update callback threw - that IS an error and must

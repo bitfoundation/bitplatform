@@ -7,6 +7,23 @@ public class SpringDriverTests
     // ── Settling ──────────────────────────────────────────────────────────────
 
     [TestMethod]
+    [DataRow(100.0, 5_000.0)]
+    [DataRow(1_000_000.0, 10_000_000.0)]
+    public void AVeryHeavilyDampedSpring_StaysFinite_AndNeverOvershoots(double stiffness, double damping)
+    {
+        // The sub-step floor (1 ms) let explicit damping this heavy flip and amplify the velocity every step, until
+        // the values were non-finite and the spring could never come to rest.
+        var values = new List<double>();
+        var driver = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = stiffness, Damping = damping }, values.Add);
+        for (double ts = 0; ts < 2000; ts += 1000.0 / 60) driver.Tick(ts);
+
+        Assert.IsTrue(values.All(double.IsFinite), "a heavily damped spring produced non-finite values");
+        Assert.IsTrue(values.All(v => v is >= 0 and <= 100 + 1e-9), "an overdamped spring overshot");
+        for (int i = 1; i < values.Count; i++)
+            Assert.IsTrue(values[i] >= values[i - 1] - 1e-9, $"frame {i}: an overdamped spring went backwards");
+    }
+
+    [TestMethod]
     public void Tick_EventuallySettlesAtTarget()
     {
         double lastValue = double.NaN;

@@ -171,6 +171,27 @@ public sealed class DragTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task Momentum_ThrownAtABound_BouncesOffIt_AndSettlesOnIt()
+    {
+        await ExpectEventAsync("armed:bounce");
+
+        // A quick flick towards the bound, every frame after the release sampled in the page.
+        await DragByAsync("#bounce", 100, 0, steps: 3, release: false);
+        var sampling = SampleOnTheTimelineAsync("#bounce", 1500);
+        await Page.Mouse.UpAsync();
+        var samples = await sampling;
+
+        // Braking from the release to stop exactly on the bound (as it used to) never passes it; a throw that keeps
+        // its speed reaches the bound moving and the bounce spring carries it a little past before it settles.
+        var furthest = samples.Max(s => s.X);
+        var trace = string.Join(" ", samples.Where((_, i) => i % 3 == 0).Select(s => $"{s.Time:0}:{s.X:0.#}"));
+        Assert.IsTrue(furthest > 151, $"It braked to a stop at the bound instead of bouncing off it (furthest {furthest:0.##}): {trace}");
+        Assert.IsTrue(furthest < 150 + 60, $"It flew {furthest - 150:0.##}px past the bound: {trace}");
+        var rest = await WaitForRestAsync("#bounce");
+        Assert.AreEqual(150, rest.X, 0.5, "and it settles on the bound");
+    }
+
+    [TestMethod]
     public async Task Momentum_WithASnapTarget_ComesToRestOnTheGrid()
     {
         await ExpectEventAsync("armed:momentum");

@@ -185,6 +185,12 @@ internal sealed class BmotionTransitionConfig
     /// <summary>Optional upper bound for the inertia target.</summary>
     public double? InertiaMax { get; set; }
 
+    /// <summary>Stiffness of the spring that bounces an inertia off <see cref="InertiaMin"/>/<see cref="InertiaMax"/>; <c>null</c> = 500.</summary>
+    public double? BounceStiffness { get; set; }
+
+    /// <summary>Damping of the spring that bounces an inertia off <see cref="InertiaMin"/>/<see cref="InertiaMax"/>; <c>null</c> = 10.</summary>
+    public double? BounceDamping { get; set; }
+
     /// <summary>
     /// Adjusts the projected resting target before the coast begins (motion.dev's
     /// <c>modifyTarget</c>) - the snap-to-grid / snap-to-page hook. Applied before
@@ -297,6 +303,8 @@ internal sealed class BmotionTransitionConfig
         InertiaRestDelta = InertiaRestDelta,
         InertiaMin = InertiaMin,
         InertiaMax = InertiaMax,
+        BounceStiffness = BounceStiffness,
+        BounceDamping = BounceDamping,
         ModifyTarget = ModifyTarget,
         StaggerChildren = StaggerChildren,
         DelayChildren = DelayChildren,

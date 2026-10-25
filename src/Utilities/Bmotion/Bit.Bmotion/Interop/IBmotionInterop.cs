@@ -16,7 +16,8 @@ public interface IBmotionInterop : IAsyncDisposable
     /// <summary>
     /// <c>true</c> when the JS runtime supports synchronous interop (Blazor WebAssembly). The
     /// per-frame rAF engine and drag handlers rely on synchronous JS↔.NET calls; on Server this
-    /// is <c>false</c> and only the async compositor (WAAPI) path is available.
+    /// is <c>false</c>: animations play as Web Animations (timelines or recorded frames) over
+    /// async interop, and what only the frame loop can play lands at once.
     /// </summary>
     bool IsInProcess { get; }
 
@@ -51,6 +52,28 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask PopLayoutAsync(string elementId, double currentX, double currentY);
     ValueTask UnpopLayoutAsync(string elementId);
 
+    /// <summary>
+    /// Makes an exiting element <c>inert</c> (<paramref name="inert"/> <c>true</c>) or, when its exit is cancelled,
+    /// interactive again - removing only an <c>inert</c> it added. Defaults to a no-op.
+    /// </summary>
+    ValueTask SetInertAsync(string elementId, bool inert) => ValueTask.CompletedTask;
+
+    // ── Keyboard reordering and announcements ─────────────────────────────────
+    /// <summary>
+    /// Lets a keyboard user reorder the item: Space/Enter on it calls <c>OnReorderPickUp</c> / <c>OnReorderDrop</c>
+    /// on <paramref name="dotnetRef"/>, the arrow keys along the list's axis <c>OnReorderMove</c> while it is held,
+    /// Escape <c>OnReorderCancel</c>. Makes the item focusable when it isn't. Defaults to a no-op.
+    /// </summary>
+    ValueTask AttachReorderKeysAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
+        string elementId, DotNetObjectReference<T> dotnetRef, bool horizontal, string? handleSelector) where T : class
+        => ValueTask.CompletedTask;
+
+    /// <summary>Moves focus to the element (without scrolling it into view). Defaults to a no-op.</summary>
+    ValueTask FocusAsync(string elementId) => ValueTask.CompletedTask;
+
+    /// <summary>Has screen readers announce <paramref name="text"/> through a polite live region. Defaults to a no-op.</summary>
+    ValueTask AnnounceAsync(string text) => ValueTask.CompletedTask;
+
     // ── Element registration ──────────────────────────────────────────────────
     ValueTask<bool> RegisterElementAsync(string elementId);
     ValueTask UnregisterElementAsync(string elementId);
@@ -82,8 +105,33 @@ public interface IBmotionInterop : IAsyncDisposable
         string elementId, double dx, double dy, double sx, double sy, double durationMs, string easingStr,
         string? finalTransform, double originX, double originY, DotNetObjectReference<T>? dotnetRef) where T : class;
 
+    // ── Reading the page ──────────────────────────────────────────────────────
+    /// <summary>
+    /// Reads, in one call, the computed values of the <paramref name="current"/> properties (the starting values
+    /// the engine has never seen) and what the stylesheet gives the <paramref name="stylesheet"/> properties with
+    /// their inline declarations lifted (the values a gesture hands back to it). Property names are the engine's
+    /// camelCase keys; <c>d</c>/<c>points</c> read the SVG attribute. Defaults to <c>null</c> (nothing read) for
+    /// interop implementations without a browser.
+    /// </summary>
+    ValueTask<BmotionStyleRead?> ReadStylesAsync(string elementId, string[] current, string[] stylesheet)
+        => ValueTask.FromResult<BmotionStyleRead?>(null);
+
+    /// <summary>
+    /// <see cref="ReadStylesAsync(string, string[], string[])"/>, and also the natural size of the <paramref name="auto"/>
+    /// properties (<c>width</c>/<c>height</c>): their computed value with the inline declaration set to <c>auto</c>
+    /// for an instant - what an animation to <c>"auto"</c> plays towards. Defaults to reading without them.
+    /// </summary>
+    ValueTask<BmotionStyleRead?> ReadStylesAsync(string elementId, string[] current, string[] stylesheet, string[] auto)
+        => ReadStylesAsync(elementId, current, stylesheet);
+
     // ── WAAPI compositor offload ──────────────────────────────────────────────
     ValueTask<bool> SupportsLinearEasingAsync();
+
+    /// <summary>
+    /// Whether the browser supports <c>oklab()</c> colours - which lets an OKLab colour transition play in the
+    /// browser (it interpolates them in OKLab). Defaults to <c>false</c>.
+    /// </summary>
+    ValueTask<bool> SupportsOklabColorAsync() => ValueTask.FromResult(false);
     ValueTask<bool> PlayWaapiAnimationAsync(string elementId, int token, object keyframes, object timing);
     ValueTask CancelWaapiAnimationAsync(string elementId, int token, bool commit);
 
@@ -120,4 +168,12 @@ public interface IBmotionInterop : IAsyncDisposable
     /// transition, <c>false</c> when it isn't supported and the callback ran without one.
     /// </summary>
     ValueTask<bool> StartViewTransitionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef, string callbackName) where T : class;
+
+    /// <summary>
+    /// <see cref="StartViewTransitionAsync{T}(DotNetObjectReference{T}, string)"/> with view transition
+    /// <paramref name="types"/> (<c>startViewTransition({ update, types })</c>); a browser without typed transitions
+    /// plays an untyped one. Defaults to ignoring the types.
+    /// </summary>
+    ValueTask<bool> StartViewTransitionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef, string callbackName, string[] types) where T : class
+        => StartViewTransitionAsync(dotnetRef, callbackName);
 }

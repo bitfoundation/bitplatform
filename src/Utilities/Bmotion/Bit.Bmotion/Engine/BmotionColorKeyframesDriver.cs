@@ -103,8 +103,9 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
         var ca = _curChannels[seg];
         var cb = _curChannels[seg + 1];
         // Fall back to the raw target frame string when a color couldn't be parsed
-        // (matches the string Lerp returning 'to' for unparseable input).
-        _apply(ca != null && cb != null
+        // (matches the string Lerp returning 'to' for unparseable input). The end of a pass is the
+        // authored frame itself rather than its sRGB approximation.
+        _apply(t < 1.0 && ca != null && cb != null
             ? BmotionColorInterpolator.Lerp(ca, cb, easedT, _colorSpace)
             : _curFrames[seg + 1]);
 

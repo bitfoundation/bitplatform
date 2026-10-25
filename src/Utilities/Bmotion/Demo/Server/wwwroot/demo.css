@@ -890,6 +890,74 @@
     color: #fff;
 }
 
+/* ---------- Presets ---------- */
+
+/* An enter/exit stage keeps its height and its caption's place while its box is gone, so removing them doesn't
+   reflow the row or move the caption. */
+.preset-stage {
+    flex-basis: 9rem;
+    min-height: 10rem;
+    justify-content: flex-start;
+}
+
+/* The overlays play inside one stage rather than over the page: each is positioned where it would be on a
+   real screen - the dialog centred, the drawer against the right edge, the toast at the bottom. */
+.overlay-stage {
+    position: relative;
+    min-height: 16rem;
+    overflow: hidden;
+}
+
+.preset-overlay {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-xl);
+    box-shadow: var(--bb-shadow-card);
+}
+
+.preset-modal { inset: 3rem 25%; }
+.preset-drawer { top: 0; right: 0; bottom: 0; width: 35%; border-radius: 0; }
+.preset-popover { top: 1rem; left: calc(50% - 6rem); width: 12rem; height: 6rem; }
+.preset-tooltip { top: 45%; left: calc(50% - 4rem); width: 8rem; height: 2rem; font-size: .8125rem; }
+.preset-toast { bottom: 1rem; left: calc(50% - 8rem); width: 16rem; height: 3rem; }
+
+.preset-tile {
+    width: 8rem;
+    height: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-xl);
+    box-shadow: var(--bb-shadow-card);
+}
+
+.preset-spinner {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 4px solid var(--demo-accent-line);
+    border-top-color: var(--demo-blue);
+    border-radius: 50%;
+}
+
+/* Shimmer sweeps the background across the element: a gradient twice its width. */
+.preset-skeleton {
+    width: 10rem;
+    height: 1rem;
+    border-radius: .5rem;
+    background: linear-gradient(90deg, var(--demo-grid-dot) 25%, var(--demo-accent-line) 50%, var(--demo-grid-dot) 75%);
+    background-size: 200% 100%;
+}
+
 /* ---------- Programmatic ---------- */
 
 .dot-row {

@@ -31,6 +31,34 @@ public sealed class PresenceTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task AnExitingDialog_CanNoLongerBeFocusedOrPressed_AndIsInteractiveAgainWhenItReturns()
+    {
+        await ExpectEventAsync("dialog:entered");
+
+        await ClickAsync("dialog-toggle");
+        await Page.WaitForFunctionAsync("() => document.getElementById('dialog')?.inert === true");
+        var focused = await Page.EvaluateAsync<bool>(
+            "() => { const b = document.getElementById('dialog-ok'); b.focus(); return document.activeElement === b; }");
+        Assert.IsFalse(focused, "a button in an exiting dialog took focus");
+        // At its position, not through the element: an inert element isn't hit-tested, so the click lands behind it.
+        var box = await BoxAsync("#dialog-ok");
+        await Page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        await ExpectEventAsync("dialog:exited");
+        CollectionAssert.DoesNotContain(await LoggedAsync(), "dialog:ok", "a button in an exiting dialog was pressed");
+
+        // Shown, hidden and shown again before the exit is over: interactive again, and nothing of the inert left.
+        await ClickAsync("dialog-toggle");
+        await ExpectEventAsync("dialog:entered", 2);
+        await ClickAsync("dialog-toggle");
+        await Page.WaitForFunctionAsync("() => document.getElementById('dialog')?.inert === true");
+        await ClickAsync("dialog-toggle");
+        await Page.WaitForFunctionAsync(
+            "() => { const d = document.getElementById('dialog'); return d && !d.inert && !d.hasAttribute('data-bm-inert'); }");
+        await ClickAsync("dialog-ok");
+        await ExpectEventAsync("dialog:ok");
+    }
+
+    [TestMethod]
     public async Task AnimatePresence_ShownAgain_EntersAgain()
     {
         await ExpectEventAsync("sync:entered");

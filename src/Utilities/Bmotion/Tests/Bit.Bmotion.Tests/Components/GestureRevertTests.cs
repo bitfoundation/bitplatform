@@ -11,8 +11,9 @@ namespace Bit.Bmotion.Tests.Components;
 /// gesture rather than to an identity value, and an orchestration delay that timed the element's
 /// entrance does not time every later hover-out.
 /// <para>
-/// Gesture layers always animate on the frame loop, so the tests tick it by hand and read the
-/// element's values through the engine's diagnostics.
+/// These semantics are the same wherever the animation plays; the tests run them on the frame loop (the fake
+/// browser has no Web Animations), tick it by hand and read the element's values through the engine's
+/// diagnostics.
 /// </para>
 /// </summary>
 [TestClass]
@@ -47,6 +48,7 @@ public class GestureRevertTests
     public async Task HoverEnd_LeavesAnInFlightEnterOnAnUnrelatedPropertyAlone()
     {
         using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false;
         var enterCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         // A colour enter (frame loop) still playing while a scale hover comes and goes.
         var cut = ctx.Render<Bmotion>(ps => ps
@@ -76,6 +78,7 @@ public class GestureRevertTests
     public async Task HoverEnd_OverAKeyframeRestingTarget_SettlesOnItsLastFrame_InsteadOfReplaying()
     {
         using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Animate, Bm.To(opacity: new double[] { 0, 1 }))
@@ -100,6 +103,7 @@ public class GestureRevertTests
     public async Task LeavingTheViewport_RestoresAnInitialOnlyValue_NotTheIdentityValue()
     {
         using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false;
         // opacity has no resting target (no Animate): before the in-view gesture it showed the
         // Initial 0.2, and that - not opacity's identity value 1 - is what it goes back to.
         var cut = ctx.Render<Bmotion>(ps => ps
@@ -123,6 +127,7 @@ public class GestureRevertTests
     public async Task HoverEnd_OnAVariantChild_RevertsWithoutItsEntranceDelay()
     {
         using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false;
         var states = new BmVariants { ["hidden"] = Bm.To(opacity: 0), ["visible"] = Bm.To(opacity: 1) };
         // The parent holds its children back by a second; the child's own transition is quick.
         var cut = ctx.Render<Bmotion>(ps => ps
@@ -162,6 +167,7 @@ public class GestureRevertTests
     public async Task HoverEnd_OnAVariantChildWithNoTransitionAnywhere_RevertsWithoutItsEntranceDelay()
     {
         using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false;
         var states = new BmVariants { ["hidden"] = Bm.To(opacity: 0), ["visible"] = Bm.To(opacity: 1) };
         // As above, but the child has no transition of its own (nor a config default): its resting
         // transition is the engine default, and only its entrance - not the revert - may inherit

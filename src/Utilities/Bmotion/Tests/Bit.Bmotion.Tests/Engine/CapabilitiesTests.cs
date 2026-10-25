@@ -27,16 +27,33 @@ public class CapabilitiesTests
         await using var engine = new BmotionAnimationEngine(interop, logger);
         engine.RegisterElement("el", null);
 
-        // A color animation is never compositor-eligible, so on Server it degrades to instant.
+        // An SVG path morph is an attribute, which the browser can't play as a Web Animation: on Server it degrades
+        // to instant.
         await engine.AnimateToAsync("el",
-            new Dictionary<string, object?> { ["backgroundColor"] = "#ff0000" },
+            new Dictionary<string, object?> { ["d"] = "M0 0 L10 10" },
             Bm.Tween(0.5).ToConfig());
         await engine.AnimateToAsync("el",
-            new Dictionary<string, object?> { ["backgroundColor"] = "#00ff00" },
+            new Dictionary<string, object?> { ["d"] = "M0 0 L20 20" },
             Bm.Tween(0.5).ToConfig());
 
         var warnings = logger.Warnings.Count(w => w.Contains("instant change on Blazor Server"));
         Assert.AreEqual(1, warnings, "degradation should warn exactly once");
+    }
+
+    [TestMethod]
+    public async Task Server_AColourTween_PlaysInTheBrowser_AndDoesNotWarn()
+    {
+        var interop = new FakeBmotionInterop { IsInProcess = false };
+        var logger = new ListLogger<BmotionAnimationEngine>();
+        await using var engine = new BmotionAnimationEngine(interop, logger);
+        engine.RegisterElement("el", new Dictionary<string, object?> { ["backgroundColor"] = "#000000" });
+
+        await engine.AnimateToAsync("el",
+            new Dictionary<string, object?> { ["backgroundColor"] = "#ff0000" },
+            Bm.Tween(0.5).ToConfig());
+
+        Assert.AreEqual(1, interop.CountOf("playWaapiAnimation"), "a colour plays as a Web Animation on Server");
+        Assert.AreEqual(0, logger.Warnings.Count(w => w.Contains("instant change on Blazor Server")));
     }
 
     [TestMethod]

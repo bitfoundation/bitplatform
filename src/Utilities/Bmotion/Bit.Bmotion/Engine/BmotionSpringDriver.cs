@@ -120,11 +120,19 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
 
         int subSteps = Math.Max(1, (int)Math.Ceiling(dt / _maxSubDt));
         double subDt = dt / subSteps;
+        // Explicit damping is only stable while it removes less than all of the velocity in a step (d·dt/m < 2); the
+        // sub-step floor lets a very heavy damping (a hard wall, d in the thousands) past that, where it would flip
+        // and amplify the velocity every step until it is non-finite. There the damping is applied implicitly
+        // instead, which is stable at any strength; every ordinary spring keeps its exact trajectory.
+        double dampingPerStep = _d / _m * subDt;
+        bool implicitDamping = dampingPerStep >= 1.8;
         for (int i = 0; i < subSteps; i++)
         {
             double springF = -_k * (_pos - _target);
-            double dampF = -_d * _vel;
-            _vel += (springF + dampF) / _m * subDt;
+            if (implicitDamping)
+                _vel = (_vel + (springF / _m * subDt)) / (1 + dampingPerStep);
+            else
+                _vel += (springF + (-_d * _vel)) / _m * subDt;
             _pos += _vel * subDt;
         }
 

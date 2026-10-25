@@ -45,10 +45,11 @@ public static class McpPrompts
                transition states how long it takes to settle - a spring's falls out of the physics - so this is the
                only way to know.
             5. Write the code.
-            6. Call `AnalyzeBmotionAnimation` with the properties and transition you settled on. If it reports the
-               C# frame loop and this app is not WebAssembly-only, either switch to the compositor-friendly
-               equivalent it suggests, or tell me explicitly that this animation will snap rather than play on
-               Server and let me decide.
+            6. Call `AnalyzeBmotionAnimation` with the properties and transition you settled on. If it reports
+               "Frame loop only" and this app is not WebAssembly-only, either make the change its HowToOffload
+               suggests, or tell me explicitly that this animation will snap rather than play on Server and let me
+               decide. If it reports a recording, look at HowToPlayAsTimeline: a timeline is cheaper, so take it
+               when the motion does not need what made it a recording.
             7. Call `ReviewBmotionCode` on what you wrote and fix every Error and Warning it reports.
             8. Build the app and fix what the compiler says.
 
@@ -110,8 +111,8 @@ public static class McpPrompts
                `Bm.Spring(bounce:, duration:)` expresses intent directly and cannot be configured into a spring that
                never settles, while stiffness and damping can. Say so if switching form is the better fix.
             5. Call `AnalyzeBmotionAnimation` with the animated properties and the new transition, to confirm the
-               change did not cost the animation its compositor path - a spring with an initial velocity, for one,
-               drops off it silently.
+               change did not move the animation off the browser, or from a two-keyframe timeline to a heavier
+               recording - a spring given an initial velocity, for one, is silently recorded instead.
 
             Give me the replacement line, the before-and-after numbers, and one sentence on what the reader will
             actually notice.
@@ -134,9 +135,10 @@ public static class McpPrompts
                stiffness is discarded, a nested-quote attribute that does not parse as intended. The cause is
                often there verbatim.
             2. If nothing animates at all, establish the render mode, then call `AnalyzeBmotionAnimation` with the
-               properties and transition. An animation the engine keeps on the C# frame loop becomes an instant
-               state change on Blazor Server - which is exactly the "works on my machine, not in production" shape,
-               and the "works on the second visit but not the first" shape under InteractiveAuto.
+               properties and transition. The browser plays almost everything, but what the engine keeps on the C#
+               frame loop - a transition OnUpdate, an SVG path morph, an endless BmRepeat.Reverse - becomes an
+               instant state change on Blazor Server, which is exactly the "works on my machine, not in production"
+               shape, and the "works on the second visit but not the first" shape under InteractiveAuto.
             3. If the element does not move on mount, check whether `Initial` is set. `Animate` alone leaves the
                element already at its target with nothing to travel from.
             4. If the motion happens but looks wrong, call `SimulateBmotionTransition` on the transition. A spring

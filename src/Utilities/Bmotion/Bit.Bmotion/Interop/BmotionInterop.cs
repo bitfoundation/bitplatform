@@ -140,6 +140,19 @@ public sealed class BmotionInterop : IBmotionInterop
     public async ValueTask UnpopLayoutAsync(string elementId)
         => await (await Module()).InvokeVoidAsync("unpopLayout", elementId);
 
+    public async ValueTask SetInertAsync(string elementId, bool inert)
+        => await (await Module()).InvokeVoidAsync("setInert", elementId, inert);
+
+    public async ValueTask AttachReorderKeysAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
+        string elementId, DotNetObjectReference<T> dotnetRef, bool horizontal, string? handleSelector) where T : class
+        => await (await Module()).InvokeVoidAsync("attachReorderKeys", elementId, dotnetRef, horizontal, handleSelector);
+
+    public async ValueTask FocusAsync(string elementId)
+        => await (await Module()).InvokeVoidAsync("focusElement", elementId);
+
+    public async ValueTask AnnounceAsync(string text)
+        => await (await Module()).InvokeVoidAsync("announce", text);
+
     // ── Element registration ──────────────────────────────────────────────────
 
     /// <summary>Marks the element for the JS bridge; <c>false</c> when no element with the id exists.</summary>
@@ -217,6 +230,21 @@ public sealed class BmotionInterop : IBmotionInterop
     public async ValueTask<bool> SupportsLinearEasingAsync()
         => await (await Module()).InvokeAsync<bool>("supportsLinearEasing");
 
+    /// <summary>Whether the browser supports <c>oklab()</c> colours (OKLab colour transitions in the browser).</summary>
+    public async ValueTask<bool> SupportsOklabColorAsync()
+        => await (await Module()).InvokeAsync<bool>("supportsOklabColor");
+
+    /// <summary>
+    /// Reads computed values, and the values the stylesheet gives properties with their inline declarations
+    /// lifted, in one call (see <see cref="IBmotionInterop.ReadStylesAsync(string, string[], string[])"/>).
+    /// </summary>
+    public async ValueTask<BmotionStyleRead?> ReadStylesAsync(string elementId, string[] current, string[] stylesheet)
+        => await (await Module()).InvokeAsync<BmotionStyleRead?>("readStyles", elementId, current, stylesheet);
+
+    /// <summary>Also measures the natural size of the <paramref name="auto"/> properties (see <see cref="IBmotionInterop"/>).</summary>
+    public async ValueTask<BmotionStyleRead?> ReadStylesAsync(string elementId, string[] current, string[] stylesheet, string[] auto)
+        => await (await Module()).InvokeAsync<BmotionStyleRead?>("readStyles", elementId, current, stylesheet, auto);
+
     /// <summary>
     /// Plays a pre-sampled compositor animation via <c>element.animate()</c>. Resolves
     /// <c>true</c> on natural completion, <c>false</c> when cancelled or failed to start.
@@ -291,6 +319,10 @@ public sealed class BmotionInterop : IBmotionInterop
     /// <summary>Wraps <c>document.startViewTransition</c> around a C# DOM-update callback.</summary>
     public async ValueTask<bool> StartViewTransitionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef, string callbackName) where T : class
         => await (await Module()).InvokeAsync<bool>("startViewTransition", dotnetRef, callbackName);
+
+    /// <summary>Wraps <c>document.startViewTransition({ update, types })</c> around a C# DOM-update callback.</summary>
+    public async ValueTask<bool> StartViewTransitionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef, string callbackName, string[] types) where T : class
+        => await (await Module()).InvokeAsync<bool>("startViewTransition", dotnetRef, callbackName, types);
 
     // ── Dispose ───────────────────────────────────────────────────────────────
 

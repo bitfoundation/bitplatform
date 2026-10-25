@@ -173,7 +173,7 @@ public class WaapiContinuationTests
         Assert.IsTrue(settled, "the superseded animation settles at once");
         Assert.IsFalse(completed);
         Assert.AreEqual(2, interop.CountOf("playWaapiAnimation"), "with no continuation in the way, the new target offloads too");
-        Assert.IsFalse(State(engine).HasActiveAnimations, "no frame-loop driver was left behind");
+        Assert.AreEqual(0, State(engine).ActiveDriverCount, "no frame-loop driver was left behind");
 
         // The new animation finishing is its own completion, never the old one's.
         interop.FinishWaapi();

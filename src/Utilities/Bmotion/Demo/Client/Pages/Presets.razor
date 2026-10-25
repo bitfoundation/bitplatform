@@ -1,0 +1,265 @@
+@page "/presets"
+
+<PageTitle>Presets · Bmotion</PageTitle>
+
+<div class="bb-intro">
+    <h1>Presets</h1>
+    <p class="bb-subtitle">
+        Most interfaces animate the same dozen things: a modal opening, a toast arriving, a card lifting under
+        the pointer, a list revealing itself on scroll. <strong>BmPresets</strong> packages each one, its
+        transition included, so <code>Preset="BmPresets.Modal()"</code> replaces an <code>Initial</code>, an
+        <code>Animate</code>, an <code>Exit</code> and a tuned spring. A preset only fills in what the element
+        leaves unset, so anything you write on the element still wins.
+    </p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Enter and exit</h3>
+    <p>
+        Each preset sets the element's starting state, its resting state and its exit, so it animates in when it
+        mounts and out when a presence component removes it. Remove them all and add them back to compare.
+    </p>
+    <div class="demo-row">
+        @foreach (var (name, preset) in _enterExit)
+        {
+            <div class="demo-card stack presence-stage preset-stage">
+                <span class="demo-label">@name</span>
+                <BmotionAnimatePresence IsPresent="_shown">
+                    <Bmotion Preset="preset">
+                        <div class="box box-sm" />
+                    </Bmotion>
+                </BmotionAnimatePresence>
+            </div>
+        }
+    </div>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="() => _shown = !_shown">@(_shown ? "Remove all" : "Add all")</button>
+    </div>
+    <CodeSnippet Code="@_enterCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Overlays</h3>
+    <p>
+        Dialogs, drawers, popovers, tooltips and toasts each move in their own way. A drawer slides by its own
+        size whatever that is, a popover grows from the edge facing its trigger, and a tooltip barely moves so it
+        never gets in the way of reading it. Their exits are quicker than their entrances, as they should be.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card overlay-stage">
+            @foreach (var (name, preset) in _overlays)
+            {
+                <BmotionAnimatePresence IsPresent="_overlay == name">
+                    <Bmotion Preset="preset">
+                        <div class="preset-overlay preset-@name.ToLowerInvariant()" role="@(name == "Modal" ? "dialog" : null)">@name</div>
+                    </Bmotion>
+                </BmotionAnimatePresence>
+            }
+        </div>
+    </div>
+    <div class="bb-toolbar">
+        @foreach (var (name, _) in _overlays)
+        {
+            <button class="btn btn-secondary" aria-pressed="@(_overlay == name ? "true" : "false")"
+                    @onclick="() => _overlay = _overlay == name ? null : name">@name</button>
+        }
+    </div>
+    <CodeSnippet Code="@_overlayCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Hover and press</h3>
+    <p>
+        Gesture presets add an overlay and nothing else, so they combine with whatever the element animates.
+        <code>Press</code> works from the keyboard too: tab to the button and hold <kbd>Space</kbd>.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">HoverLift</span>
+            <Bmotion Preset="BmPresets.HoverLift()"><div class="preset-tile">Card</div></Bmotion>
+        </div>
+        <div class="demo-card stack">
+            <span class="demo-label">HoverScale</span>
+            <Bmotion Preset="BmPresets.HoverScale()"><div class="box" /></Bmotion>
+        </div>
+        <div class="demo-card stack">
+            <span class="demo-label">Press</span>
+            <Bmotion Preset="BmPresets.Press()"><button type="button" class="sample-btn">Press me</button></Bmotion>
+        </div>
+    </div>
+    <CodeSnippet Code="@_gestureCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Drawing attention</h3>
+    <p>
+        These play when the element mounts. To play one again, give the element a new <code>@@key</code>, which
+        mounts it afresh. Use them sparingly: a shake that says "that password was wrong" helps, and one on every
+        button doesn't.
+    </p>
+    <div class="demo-row">
+        @foreach (var (name, preset) in _attention)
+        {
+            <div class="demo-card stack">
+                <span class="demo-label">@name</span>
+                <Bmotion @key="(name, _attentionRun)" Preset="preset"><div class="box box-sm" /></Bmotion>
+            </div>
+        }
+    </div>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="() => _attentionRun++">Play again</button>
+    </div>
+    <CodeSnippet Code="@_attentionCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Revealing on scroll, and loading</h3>
+    <p>
+        <code>Reveal</code> fades content in from an edge once part of it is in view, and leaves it there.
+        <code>Spin</code> and <code>Shimmer</code> loop for as long as something is loading. Shimmer sweeps the
+        element's background, so give it a gradient twice its width.
+    </p>
+    <div class="demo-row">
+        @for (int i = 0; i < 3; i++)
+        {
+            var from = (BmEdge)(i % 4);
+            <div class="demo-card stack">
+                <span class="demo-label">Reveal(from: BmEdge.@from)</span>
+                <Bmotion Preset="BmPresets.Reveal(from: from)"><div class="box box-sm" /></Bmotion>
+            </div>
+        }
+        <div class="demo-card stack">
+            <span class="demo-label">Spin</span>
+            <Bmotion Preset="BmPresets.Spin()"><div class="preset-spinner" role="status" aria-label="Loading" /></Bmotion>
+        </div>
+        <div class="demo-card stack">
+            <span class="demo-label">Shimmer</span>
+            <Bmotion Preset="BmPresets.Shimmer()"><div class="preset-skeleton" aria-hidden="true" /></Bmotion>
+        </div>
+    </div>
+    <CodeSnippet Code="@_loopCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Making them yours</h3>
+    <p>
+        Every factory takes the knobs that matter for it, such as the edge a slide starts from or how far a card
+        lifts. Presets add with <code>+</code>, target by target, and the right-hand side's transition wins.
+        They are records, so <code>with</code> changes a single part. Set a property on the element and it
+        overrides the preset's.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack presence-stage preset-stage">
+            <span class="demo-label">Fade() + Scale(from: 0.5), on a bouncy spring</span>
+            <BmotionAnimatePresence IsPresent="_shown">
+                <Bmotion Preset="_composed"><div class="box box-sm" /></Bmotion>
+            </BmotionAnimatePresence>
+        </div>
+        <div class="demo-card stack presence-stage preset-stage">
+            <span class="demo-label">Slide(), with the element's own transition</span>
+            <BmotionAnimatePresence IsPresent="_shown">
+                <Bmotion Preset="BmPresets.Slide(from: BmEdge.Left, distance: 60)" Transition="Bm.Tween(0.9, BmEase.Out)">
+                    <div class="box box-sm" />
+                </Bmotion>
+            </BmotionAnimatePresence>
+        </div>
+    </div>
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="() => _shown = !_shown">@(_shown ? "Remove" : "Add")</button>
+    </div>
+    <CodeSnippet Code="@_composeCode" />
+</section>
+
+@code {
+    private bool _shown = true;
+    private string? _overlay = "Modal";
+    private int _attentionRun;
+
+    private readonly (string Name, BmPreset Preset)[] _enterExit =
+    [
+        ("Fade", BmPresets.Fade()),
+        ("Slide", BmPresets.Slide()),
+        ("Scale", BmPresets.Scale()),
+        ("Pop", BmPresets.Pop()),
+        ("Blur", BmPresets.Blur()),
+        ("Rotate", BmPresets.Rotate()),
+        ("Flip", BmPresets.Flip()),
+    ];
+
+    private readonly (string Name, BmPreset Preset)[] _overlays =
+    [
+        ("Modal", BmPresets.Modal()),
+        ("Drawer", BmPresets.Drawer()),
+        ("Popover", BmPresets.Popover()),
+        ("Tooltip", BmPresets.Tooltip()),
+        ("Toast", BmPresets.Toast()),
+    ];
+
+    private readonly (string Name, BmPreset Preset)[] _attention =
+    [
+        ("Pulse", BmPresets.Pulse()),
+        ("Shake", BmPresets.Shake()),
+        ("Wiggle", BmPresets.Wiggle()),
+        ("Jump", BmPresets.Jump()),
+        ("Heartbeat", BmPresets.Heartbeat()),
+    ];
+
+    private readonly BmPreset _composed = BmPresets.Fade() + BmPresets.Scale(from: 0.5) with { Transition = Bm.Spring(bounce: 0.5, duration: 0.5) };
+
+    private const string _enterCode = """
+        <BmotionAnimatePresence IsPresent="_open">
+            <Bmotion Preset="BmPresets.Slide(from: BmEdge.Bottom, distance: 24)">
+                <div class="card">…</div>
+            </Bmotion>
+        </BmotionAnimatePresence>
+        """;
+
+    private const string _overlayCode = """
+        <BmotionAnimatePresence IsPresent="_dialogOpen">
+            <Bmotion Preset="BmPresets.Modal()">
+                <div role="dialog" aria-modal="true" class="dialog">…</div>
+            </Bmotion>
+        </BmotionAnimatePresence>
+
+        <BmotionAnimatePresence IsPresent="_menuOpen">
+            <Bmotion Preset="BmPresets.Popover(origin: BmEdge.Top)">
+                <ul role="menu" class="menu">…</ul>
+            </Bmotion>
+        </BmotionAnimatePresence>
+        """;
+
+    private const string _gestureCode = """
+        <Bmotion Preset="BmPresets.HoverLift(lift: 6)"><article class="card">…</article></Bmotion>
+        <Bmotion Preset="BmPresets.Press()"><button>Save</button></Bmotion>
+        """;
+
+    private const string _attentionCode = """
+        @* A new key mounts it afresh, which plays it again *@
+        <Bmotion @key="_attempt" Preset="BmPresets.Shake()">
+            <input type="password" />
+        </Bmotion>
+        """;
+
+    private const string _loopCode = """
+        <Bmotion Preset="BmPresets.Reveal(from: BmEdge.Left)"><section>…</section></Bmotion>
+
+        <Bmotion Preset="BmPresets.Spin()"><div class="spinner" role="status" aria-label="Loading" /></Bmotion>
+
+        <style>
+            .skeleton { background: linear-gradient(90deg, #eee 25%, #f8f8f8 50%, #eee 75%); background-size: 200% 100%; }
+        </style>
+        <Bmotion Preset="BmPresets.Shimmer()"><div class="skeleton" /></Bmotion>
+        """;
+
+    private const string _composeCode = """
+        @code {
+            // Target by target: the fade fades, the scale scales - and the right-hand side's transition wins.
+            BmPreset enter = BmPresets.Fade() + BmPresets.Scale(from: 0.5) with { Transition = Bm.Spring(bounce: 0.5) };
+        }
+
+        <Bmotion Preset="enter">…</Bmotion>
+
+        @* Anything set on the element wins over the preset *@
+        <Bmotion Preset="BmPresets.Slide(from: BmEdge.Left, distance: 60)" Transition="Bm.Tween(0.9, BmEase.Out)">…</Bmotion>
+        """;
+}

@@ -61,11 +61,11 @@ builder.Services.AddBitBmotionServices();</pre>
         because the engine can run its per-frame loop in the browser - it is what this site uses.
     </p>
     <div class="bb-note bb-note-warn">
-        On <strong>Blazor Server</strong> the compositor path still works, so enter, exit, hover, tap and variant
-        animations on transform and opacity play normally, and drag follows the pointer a round trip behind.
-        What needs the per-frame loop - inertia, colour and dimension interpolation, keyframe arrays off the
-        compositor - becomes an instant change. Inject <code>BmotionCapabilities</code> to tell which runtime you
-        are on rather than guessing; the <a href="accessibility">Accessibility</a> page shows it live.
+        On <strong>Blazor Server</strong> the browser plays the same animations: transforms, opacity, colours,
+        sizes, filters, keyframes, springs, inertia and arcs, on enter, exit, gestures and variants alike. Drag
+        follows the pointer a round trip behind. What needs the per-frame loop, per-frame callbacks and SVG path
+        morphs, becomes an instant change. Inject <code>BmotionCapabilities</code> to tell which runtime you are
+        on rather than guessing; the <a href="accessibility">Accessibility</a> page shows it live.
     </div>
 </section>
 

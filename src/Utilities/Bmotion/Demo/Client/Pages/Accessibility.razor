@@ -151,11 +151,12 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Knowing what the runtime can do</h3>
     <p>
         Rather than guessing which render mode you are in, inject <strong>BmotionCapabilities</strong>.
-        On Blazor Server there is no synchronous interop, so the per-frame loop cannot run: inertia,
-        colour interpolation, keyframe arrays and motion values collapse to instant state changes,
-        while compositor-eligible animations still play normally. Drag still works, but follows the
-        pointer a round trip behind - immediate pointer response needs WebAssembly. Detect it and
-        offer a different affordance instead of shipping a control that does not feel the way you meant.
+        On Blazor Server there is no synchronous interop, so the per-frame loop cannot run. The browser
+        still plays almost everything there: transforms, opacity, colours, sizes, filters, keyframes,
+        springs, inertia and arcs all animate. What only the loop can play, per-frame callbacks and SVG
+        path morphs, lands on its target at once. Drag works, but follows the pointer a round trip
+        behind, so immediate pointer response needs WebAssembly. Detect it and offer a different
+        affordance instead of shipping a control that does not feel the way you meant.
     </p>
 
     <div class="demo-row">
@@ -308,9 +309,9 @@
         @using Bit.Bmotion
         @inject BmotionCapabilities Caps
 
-        @* SupportsFrameLoop is false on Blazor Server, where inertia, colour interpolation and
-           keyframe arrays degrade to instant state changes and drag follows the pointer a round trip
-           behind. Branch on it rather than shipping a control that doesn't feel the way you meant. *@
+        @* SupportsFrameLoop is false on Blazor Server, where drag follows the pointer a round trip
+           behind and per-frame callbacks and SVG path morphs land at once. Branch on it rather than
+           shipping a control that doesn't feel the way you meant. *@
         @if (Caps.SupportsFrameLoop)
         {
             <Bmotion Drag="true"><div class="box" /></Bmotion>

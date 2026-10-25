@@ -61,8 +61,10 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
         double t = _durationMs > 0 ? Math.Min(elapsed / _durationMs, 1.0) : 1.0;
         double p = _easeFn(t);
         // Fall back to the raw target string when a color couldn't be parsed (matches the
-        // string Lerp's behaviour of returning 'to' for unparseable input).
-        _apply(_curFromCh != null && _curToCh != null
+        // string Lerp's behaviour of returning 'to' for unparseable input). The end of a pass is the
+        // authored string itself: interpolation runs in sRGB, so its last frame would only be an
+        // approximation of a wide-gamut target such as a saturated oklch().
+        _apply(t < 1.0 && _curFromCh != null && _curToCh != null
             ? BmotionColorInterpolator.Lerp(_curFromCh, _curToCh, p, _colorSpace)
             : _curTo);
 

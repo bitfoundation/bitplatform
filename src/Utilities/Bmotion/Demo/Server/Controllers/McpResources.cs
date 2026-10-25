@@ -100,7 +100,7 @@ public static class McpResources
     }
 
     [McpServerResource(UriTemplate = "bmotion://properties", Name = "Animatable properties", MimeType = "text/markdown")]
-    [Description("Every property Bit.Bmotion can animate, and whether it survives on Blazor Server.")]
+    [Description("Every property Bit.Bmotion can animate, how the browser plays it, and whether it survives on Blazor Server.")]
     public static async Task<string> Properties()
     {
         var properties = await BmotionPropertyCatalog.GetAsync();
@@ -108,12 +108,13 @@ public static class McpResources
         var builder = new StringBuilder();
 
         builder.AppendLine("# Animatable properties").AppendLine();
-        builder.AppendLine("| Property | Category | CSS | Compositor | On Blazor Server |");
-        builder.AppendLine("|---|---|---|---|---|");
+        builder.AppendLine("| Property | Category | CSS | Browser plays it as | Compositor | On Blazor Server |");
+        builder.AppendLine("|---|---|---|---|---|---|");
 
         foreach (var property in properties)
         {
             builder.AppendLine($"| `{property.Name}` | {property.Category} | `{property.Css}` | " +
+                               $"{property.BrowserPlayback?.ToLowerInvariant() ?? "- (frame loop only)"} | " +
                                $"{(property.CompositorEligible ? "yes" : "no")} | {property.OnBlazorServer} |");
         }
 

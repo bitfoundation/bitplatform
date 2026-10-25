@@ -16,10 +16,14 @@ namespace Bit.Bmotion.Demo.Server.Services;
 ///     the transition on the real driver and reports the settle time, the overshoot and the shape.
 ///   </description></item>
 ///   <item><description>
-///     <b>Will it play on Blazor Server?</b> Only animations the browser compositor can own do; the
-///     rest need the per-frame loop and collapse to an instant change. The rule set behind that
-///     decision is long and lives in the engine. <see cref="AnalyzePlaybackAsync"/> asks the engine
-///     instead of restating it: it starts the animation and watches which path the engine takes.
+///     <b>Where will it play, and what will it cost?</b> The engine hands almost every animation to
+///     the browser as a Web Animation - a two-keyframe timeline when one exact curve covers it, a
+///     recording of the frames its own drivers draw otherwise - and both play on Blazor Server. Only
+///     a few need the per-frame loop, which Blazor Server does not have, and collapse to an instant
+///     change there. The rule set behind that decision is long and lives in the engine.
+///     <see cref="AnalyzePlaybackAsync(IReadOnlyCollection{string}, BmTransition, string)"/> asks the
+///     engine instead of restating it: it starts the animation as each runtime and watches what the
+///     engine hands the browser.
 ///   </description></item>
 /// </list>
 /// <para>
@@ -128,8 +132,9 @@ public static class BmotionMotionLab
     }
 
     /// <summary>
-    /// Starts a real animation on the engine and reports which playback path it took - which is what
-    /// decides whether it survives on Blazor Server.
+    /// Starts a real animation on the engine, once as Blazor WebAssembly and once as Blazor Server,
+    /// and reports where each played it - in the browser as a timeline or a recording, on the frame
+    /// loop, or at once. That is what decides whether it survives on Blazor Server, and what it costs.
     /// </summary>
     /// <param name="properties">The animated properties, by their <c>Bm.To(...)</c> names.</param>
     /// <param name="spec">The transition spec, e.g. "tween(0.4, InOut)".</param>
@@ -139,71 +144,249 @@ public static class BmotionMotionLab
 
         if (parsed.Transition is null)
         {
-            return new BmotionPlaybackDto
-            {
-                Properties = [.. properties],
-                Transition = spec ?? string.Empty,
-                Path = "Not analysed",
-                WorksOnBlazorServer = false,
-                Reason = parsed.Error ?? "The transition could not be read.",
-                Error = parsed.Error
-            };
+            var error = parsed.Error ?? "The transition could not be read.";
+
+            return NotAnalysed(properties, spec ?? string.Empty, error);
         }
 
-        var props = BmotionPropertyCatalog.BuildTarget(properties, out var unknown);
+        return await AnalyzePlaybackAsync(properties, parsed.Transition, parsed.Canonical);
+    }
 
-        var interop = new HeadlessBmotionInterop();
-        await using var engine = new BmotionAnimationEngine(interop);
-        var service = new BmotionAnimateService(engine, interop);
+    /// <summary>
+    /// The same analysis for a transition built in C#, which can carry what a spec string cannot
+    /// write: a repeat, per-property transitions, an arc, an <c>OnUpdate</c> callback.
+    /// </summary>
+    /// <param name="properties">The animated properties, by their <c>Bm.To(...)</c> names.</param>
+    /// <param name="transition">The transition to start them with.</param>
+    /// <param name="canonical">How the answer names the transition; its type name when omitted.</param>
+    public static async Task<BmotionPlaybackDto> AnalyzePlaybackAsync(
+        IReadOnlyCollection<string> properties, BmTransition transition, string? canonical = null)
+    {
+        var name = canonical ?? transition.GetType().Name;
+        var target = BmotionPropertyCatalog.BuildTarget(properties, out var unknown);
 
-        var controls = await service.AnimateAsync(".bmotion-target", props, parsed.Transition);
+        var ignored = unknown.Length > 0
+            ? $" Ignored, because Bm.To has no such argument: {string.Join(", ", unknown)}."
+            : string.Empty;
 
-        // The compositor decision is taken inside the animation's first few asynchronous steps, and
-        // the frame-loop path needs frames to finish at all. Pump a bounded number of both so the
-        // engine reaches its decision either way; the verdict is read from the interop afterwards.
-        var clockMs = 0.0;
-        var completion = controls.WhenCompleteAsync();
+        // The verdict is about the properties that were actually animated, as BuildTarget read them.
+        var known = properties.Select(BmotionPropertyCatalog.Normalize)
+                              .Where(property => unknown.Contains(property, StringComparer.OrdinalIgnoreCase) is false)
+                              .Distinct(StringComparer.OrdinalIgnoreCase)
+                              .ToArray();
 
-        for (int frame = 0; frame < 240 && completion.IsCompleted is false; frame++)
+        // A verdict about an animation of nothing would be a claim about no animation at all - the
+        // engine would report it as instant, which reads as a fact about the transition.
+        if (known.Length == 0)
         {
-            engine.ComputeFrame(clockMs);
-            clockMs += FrameMs;
+            var nothing = properties.Count == 0
+                ? "No properties were given, so there was nothing to animate."
+                : "None of these is a property Bm.To animates, so there was nothing to run.";
 
-            // Lets the engine's own awaits run: without this the compositor hand-off, which is
-            // asynchronous, could still be in flight when the verdict is read.
-            if (frame % 8 == 0) await Task.Yield();
+            return NotAnalysed(properties, name, nothing + ignored);
         }
 
-        controls.Stop();
+        // Both runs start from the same page: every property the engine has never seen shows a value of
+        // the target's own shape, as it would on an element whose stylesheet or Initial gives it one.
+        var starts = BmotionPropertyCatalog.StartingStyles(known);
 
-        var offloaded = interop.WaapiCalls.Count > 0;
-        var timing = offloaded ? AsDictionary(interop.WaapiCalls[0].Timing) : null;
+        var onWebAssembly = await ObserveAsync(target, transition, starts, onWebAssembly: true);
+        var onServer = await ObserveAsync(target, transition, starts, onWebAssembly: false);
 
-        var reasons = BmotionPropertyCatalog.ExplainPlayback(properties, parsed.Transition, offloaded);
+        // Only WebAssembly has a frame loop, so that is where what needs one shows: the drivers still
+        // registered as the animation starts. On Server the same properties have already landed.
+        var loopKeys = onWebAssembly.FrameLoopKeys;
+        var loopProperties = known.Where(property => loopKeys.Contains(BmotionPropertyCatalog.EngineKeyOf(property), StringComparer.OrdinalIgnoreCase))
+                                  .ToArray();
+
+        // A driver under a key no named property maps to (an arc's rotation, say) still means the frame
+        // loop has the animation: blaming every property is truer than blaming none.
+        if (loopKeys.Length > 0 && loopProperties.Length == 0) loopProperties = known;
+
+        var browserProperties = known.Except(loopProperties, StringComparer.OrdinalIgnoreCase).ToArray();
+
+        var browser = onWebAssembly.Browser ?? onServer.Browser;
+
+        BmotionPlaybackPath? shape = browser is null
+            ? null
+            : browser.Recorded ? BmotionPlaybackPath.Recorded : BmotionPlaybackPath.Timeline;
+
+        var path = (shape, loopProperties.Length > 0) switch
+        {
+            ({ } played, false) => Describe(played),
+            ({ } played, true) => $"{Describe(played)} + frame loop only (instant on Blazor Server)",
+            (null, true) => "Frame loop only (instant on Blazor Server)",
+            _ => "Instant"
+        };
+
+        var reasons = new List<string>();
+        string[]? howToOffload = null;
+        string[]? howToTimeline = null;
+
+        if (shape is { } browserShape)
+        {
+            // What the browser cannot interpolate exactly whatever the transition is a fact about the
+            // property, which the catalog has already measured - so it is only asked for when it matters.
+            var recordedOnTheirOwn = browserShape == BmotionPlaybackPath.Recorded
+                ? (await BmotionPropertyCatalog.GetAsync()).Where(property => property.BrowserPlayback == "Recorded")
+                                                           .Select(property => property.Name)
+                                                           .ToArray()
+                : [];
+
+            var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(browserProperties, transition, browserShape, recordedOnTheirOwn);
+
+            reasons.Add(loopProperties.Length > 0 ? $"{string.Join(", ", browserProperties)}: {reason}" : reason);
+
+            if (browserShape == BmotionPlaybackPath.Recorded && remedies.Length > 0) howToTimeline = remedies;
+        }
+
+        if (loopProperties.Length > 0)
+        {
+            var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(loopProperties, transition, BmotionPlaybackPath.FrameLoop);
+
+            reasons.Add(shape is not null ? $"{string.Join(", ", loopProperties)}: {reason}" : reason);
+            howToOffload = remedies;
+        }
+
+        if (shape is null && loopProperties.Length == 0)
+        {
+            var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(known, transition, BmotionPlaybackPath.Instant);
+
+            reasons.Add(reason);
+
+            if (remedies.Length > 0) howToOffload = remedies;
+        }
 
         return new BmotionPlaybackDto
         {
             Properties = [.. properties],
-            Transition = parsed.Canonical,
-            Path = offloaded ? "Compositor (Web Animations API)" : "C# frame loop (requestAnimationFrame)",
-            WorksOnBlazorServer = offloaded,
-            Reason = reasons.Reason + (unknown.Length > 0
-                ? $" Ignored, because Bm.To has no such argument: {string.Join(", ", unknown)}."
-                : string.Empty),
-            // The timing is whatever the engine handed the interop layer, so the duration is read
-            // defensively: a value of an unexpected shape leaves it unreported rather than throwing
-            // out of a tool whose whole answer is the path, not the milliseconds.
-            CompositorDurationMs = timing is not null
-                                && timing.TryGetValue("duration", out var duration)
-                                && double.TryParse(duration?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var durationMs)
-                ? durationMs
-                : null,
-            CompositorEasing = timing is not null && timing.TryGetValue("easing", out var easing)
-                ? easing?.ToString()
-                : null,
-            HowToOffload = offloaded ? null : reasons.Remedies
+            Transition = name,
+            Path = path,
+            OnWebAssembly = onWebAssembly.Verdict,
+            OnBlazorServer = onServer.Verdict,
+            // Server plays it as WebAssembly does only when nothing waited for a frame loop, and the
+            // browser was handed it on both or on neither.
+            WorksOnBlazorServer = loopProperties.Length == 0 && (onWebAssembly.Browser is null) == (onServer.Browser is null),
+            FrameLoopProperties = loopProperties.Length > 0 ? loopProperties : null,
+            Reason = string.Join(" ", reasons) + ignored,
+            BrowserKeyframes = browser?.Keyframes,
+            BrowserDurationMs = browser?.DurationMs,
+            BrowserEasing = browser?.Easing,
+            HowToOffload = howToOffload,
+            HowToPlayAsTimeline = howToTimeline
+        };
+
+        static string Describe(BmotionPlaybackPath played)
+            => played == BmotionPlaybackPath.Recorded ? "Browser (recorded)" : "Browser (timeline)";
+    }
+
+    /// <summary>
+    /// What one runtime did with an animation the moment it started.
+    /// </summary>
+    /// <param name="Browser">The Web Animation the browser was handed, or null when there was none.</param>
+    /// <param name="FrameLoopKeys">The engine keys the frame loop drives - only ever any on WebAssembly.</param>
+    internal sealed record PlaybackObservation(BrowserAnimation? Browser, string[] FrameLoopKeys)
+    {
+        /// <summary>The runtime's verdict in one phrase, as the playback answer reports it.</summary>
+        public string Verdict => (Browser, FrameLoopKeys.Length > 0) switch
+        {
+            ({ Recorded: true }, false) => "Browser (recorded)",
+            ({ }, false) => "Browser (timeline)",
+            ({ Recorded: true }, true) => "Browser (recorded) + frame loop",
+            ({ }, true) => "Browser (timeline) + frame loop",
+            (null, true) => "Frame loop",
+            _ => "Instant"
         };
     }
+
+    /// <summary>The Web Animation the engine handed the browser, as far as the verdict needs it.</summary>
+    /// <param name="Recorded">True for a recording, false for a two-keyframe timeline.</param>
+    /// <param name="Keyframes">How many keyframes it carried.</param>
+    /// <param name="DurationMs">Its duration, when the timing reported one readably.</param>
+    /// <param name="Easing">Its easing: the curve for a timeline, <c>linear</c> for a recording.</param>
+    internal sealed record BrowserAnimation(bool Recorded, int Keyframes, double? DurationMs, string? Easing);
+
+    /// <summary>
+    /// Starts <paramref name="target"/> on a fresh engine and reports what the engine did with it as it
+    /// started: what it handed the browser, and what it left to the frame loop. The verdict is read
+    /// before a single frame is drawn - the engine takes it while the animation starts - and the
+    /// animation is stopped straight after, since nothing here waits for the motion itself.
+    /// <para>
+    /// Shared by <see cref="AnalyzePlaybackAsync(IReadOnlyCollection{string}, BmTransition, string)"/>
+    /// and the property catalog's probe, so the two cannot measure the same thing differently.
+    /// </para>
+    /// </summary>
+    /// <param name="target">What to animate.</param>
+    /// <param name="transition">How.</param>
+    /// <param name="computedStyles">What the page shows for the properties the engine has never seen.</param>
+    /// <param name="onWebAssembly">True to run as Blazor WebAssembly, with a frame loop; false to run as Blazor Server.</param>
+    internal static async Task<PlaybackObservation> ObserveAsync(
+        BmProps target, BmTransition transition, IReadOnlyDictionary<string, string> computedStyles, bool onWebAssembly)
+    {
+        var interop = new HeadlessBmotionInterop { IsInProcess = onWebAssembly, ComputedStyles = computedStyles };
+        await using var engine = new BmotionAnimationEngine(interop);
+        var service = new BmotionAnimateService(engine, interop);
+
+        var controls = await service.AnimateAsync(".bmotion-target", target, transition);
+
+        // The hand-off to the browser is asynchronous; give its continuations a turn before reading it.
+        await Task.Yield();
+        await Task.Yield();
+
+        // Read before anything ticks: a frame-loop driver is registered from the moment the animation
+        // starts until its last frame, and no frame is ever drawn here.
+        var loopKeys = engine.GetDiagnostics()
+                             .SelectMany(element => element.ActiveProperties)
+                             .Distinct(StringComparer.OrdinalIgnoreCase)
+                             .ToArray();
+
+        controls.Stop();
+
+        return new PlaybackObservation(interop.WaapiCalls.Count > 0 ? DescribeBrowserAnimation(interop.WaapiCalls[0]) : null, loopKeys);
+    }
+
+    /// <summary>
+    /// Reads the shape of a Web Animation off what the engine handed the interop. A recording is the
+    /// one shape whose keyframes carry their own offsets - it sends only the frames a straight line
+    /// cannot reproduce, so they are unevenly spaced - and it plays them with a linear easing. A
+    /// timeline's keyframes sit at the two ends and need no offsets; its easing is the curve.
+    /// </summary>
+    private static BrowserAnimation DescribeBrowserAnimation(HeadlessBmotionInterop.WaapiCall call)
+    {
+        var keyframes = (call.Keyframes as System.Collections.IEnumerable)?.Cast<object>().ToArray() ?? [];
+        var timing = AsDictionary(call.Timing);
+
+        var recorded = keyframes.Any(keyframe => keyframe is IDictionary<string, object> values && values.ContainsKey("offset"));
+
+        // The timing is whatever the engine handed the interop layer, so it is read defensively: a
+        // value of an unexpected shape leaves it unreported rather than throwing out of a tool whose
+        // whole answer is the path, not the milliseconds.
+        double? durationMs = timing is not null
+                          && timing.TryGetValue("duration", out var duration)
+                          && double.TryParse(duration?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null;
+
+        var easing = timing is not null && timing.TryGetValue("easing", out var value) ? value?.ToString() : null;
+
+        return new BrowserAnimation(recorded, keyframes.Length, durationMs, easing);
+    }
+
+    /// <summary>
+    /// The answer for a playback question with nothing to run: an unreadable transition, or no property
+    /// Bm.To has. The explanation goes in both <c>Error</c> and <c>Reason</c>, so a caller that only
+    /// renders the human-facing field still sees it, and no verdict is claimed.
+    /// </summary>
+    private static BmotionPlaybackDto NotAnalysed(IReadOnlyCollection<string> properties, string transition, string error)
+        => new()
+        {
+            Properties = [.. properties],
+            Transition = transition,
+            Path = "Not analysed",
+            WorksOnBlazorServer = false,
+            Reason = error,
+            Error = error
+        };
 
     /// <summary>
     /// Plays a transition on the engine and records every value it produced, against the frame clock
@@ -522,4 +705,26 @@ public static class BmotionMotionLab
     }
 
     private static double Round(double value) => Math.Round(value, 4, MidpointRounding.AwayFromZero);
+}
+
+/// <summary>Where the engine plays an animation, as <see cref="BmotionMotionLab"/> measures it.</summary>
+public enum BmotionPlaybackPath
+{
+    /// <summary>
+    /// A Web Animation of two keyframes with the curve as its easing: one tween or zero-velocity spring
+    /// for every key, over values the browser interpolates exactly as the engine does. Every runtime.
+    /// </summary>
+    Timeline,
+
+    /// <summary>
+    /// The frames the engine's own drivers draw, simplified and played linearly by the browser: what the
+    /// frame loop can play but no single curve describes. Every runtime, at the cost of more keyframes.
+    /// </summary>
+    Recorded,
+
+    /// <summary>The C# per-frame loop: Blazor WebAssembly only, and an instant state change on Blazor Server.</summary>
+    FrameLoop,
+
+    /// <summary>Set at once with nothing animated, on every runtime alike: a transition with no length.</summary>
+    Instant
 }
