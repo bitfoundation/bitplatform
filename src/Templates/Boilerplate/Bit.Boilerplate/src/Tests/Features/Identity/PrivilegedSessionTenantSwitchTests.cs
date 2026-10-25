@@ -12,9 +12,9 @@ namespace Boilerplate.Tests.Features.Identity;
 /// which filters <c>role.TenantId == null || role.TenantId == tenantId</c>) - and the flag it produces is sticky, so
 /// that once-privileged sessions do not lose their slot on every refresh. Those two together are why
 /// <c>IdentityController.Refresh</c> clears <c>userSession.Privileged</c> when the session changes tenant: without
-/// that, a privilege earned under one tenant's claims would be kept under every other tenant's, and since creating a
-/// tenant is self-service and makes the creator its t-admin with an unlimited claim, any account could lift its own
-/// session cap once per device.
+/// that, a privilege earned under one tenant's claims would be kept under every other tenant's, so a higher cap in any
+/// one tenant would lift it in all of them, once per device. Creating a tenant grants no such cap: its creator's
+/// t-admin role falls back to the shipped default.
 /// </para>
 /// </summary>
 [TestClass, TestCategory("IntegrationTest")]
@@ -23,11 +23,12 @@ public partial class PrivilegedSessionTenantSwitchTests
     public TestContext TestContext { get; set; } = default!;
 
     /// <summary>
-    /// The regression guard for that clearing: fill the cap, get refused, mint your own tenant, and come back.
+    /// The regression guard for that clearing: fill the cap, get refused, mint your own tenant (which lifts nothing),
+    /// have its t-admin role raised to unlimited, and come back.
     /// <para>
     /// <c>IdentityController.Refresh</c> sets <c>userSession.Privileged = false</c> whenever the session actually
     /// changes tenant, so the flag is re-earned below against the claims of the tenant being entered. This test drives
-    /// the round trip that the clearing exists for - into a self-created tenant carrying an unlimited claim and back
+    /// the round trip that the clearing exists for - into a tenant whose t-admin role carries an unlimited claim and back
     /// into one that caps her at three - and requires the privileged-session claim to come back <c>false</c>. Remove
     /// that one line and the final assertion fails; verified.
     /// </para>
@@ -77,24 +78,30 @@ public partial class PrivilegedSessionTenantSwitchTests
                 $"With {maxPrivilegedSessions} privileged sessions already in place, the next sign-in must not be privileged - otherwise the rest of this test proves nothing.");
 
             // She mints a tenant of her own. Create is gated on elevated access only, which is a code to her own
-            // address, and it makes her its t-admin with MAX_PRIVILEGED_SESSIONS = UNLIMITED.
+            // address, and it makes her its t-admin.
             await TestAccountUtils.Elevate(cappedClient, email, TestContext.CancellationToken);
 
             var ownTenant = await cappedClient.GetController<ITenantController>()
                 .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
-            // Inside her own tenant she is legitimately unlimited, so this one IS expected to be privileged.
             var insideOwnTenant = await SwitchTenant(cappedClient, ownTenant.Id, TestContext.CancellationToken);
 
-            Assert.AreEqual("true", ReadPrivilegedClaim(insideOwnTenant),
-                "A t-admin of her own tenant carries MAX_PRIVILEGED_SESSIONS = UNLIMITED there, so this step is supposed to succeed. It is the round trip that follows which must not stick.");
+            Assert.AreEqual("false", ReadPrivilegedClaim(insideOwnTenant),
+                "Creating a tenant is self service, so it must not lift its creator's privileged-session cap: any account could share itself across devices inside a tenant of its own.");
+
+            await GrantUnlimitedPrivilegedSessions(server, ownTenant.Id, TestContext.CancellationToken);
+
+            var insideRaisedTenant = await SwitchTenant(cappedClient, ownTenant.Id, TestContext.CancellationToken);
+
+            Assert.AreEqual("true", ReadPrivilegedClaim(insideRaisedTenant),
+                "Her t-admin role now carries MAX_PRIVILEGED_SESSIONS = UNLIMITED in this tenant, so this step is supposed to succeed. It is the round trip that follows which must not stick.");
 
             // ... and back into the tenant that caps her at three, where three privileged sessions already exist.
             var backInCappedTenant = await SwitchTenant(cappedClient, TenantConfiguration.FallbackTenantId, TestContext.CancellationToken);
 
 
             Assert.AreEqual("false", ReadPrivilegedClaim(backInCappedTenant),
-                "Privilege earned under her own tenant's unlimited claim followed her back into a tenant that grants her nothing. The limit is tenant-scoped (the claim only resolves inside the role's tenant) but the count and the Privileged flag are global, so any registered account can lift its own privileged-session cap with two API calls, repeatable per device.");
+                "Privilege earned under one tenant's unlimited claim followed her back into a tenant that grants her nothing. The limit is tenant-scoped (the claim only resolves inside the role's tenant) but the count and the Privileged flag are global, so a higher cap in any one tenant would lift it in all of them, repeatable per device.");
         }
         finally
         {
@@ -167,6 +174,24 @@ public partial class PrivilegedSessionTenantSwitchTests
             TenantId = TenantConfiguration.FallbackTenantId,
             UserId = userId,
             AcceptedOn = DateTimeOffset.UtcNow
+        }, cancellationToken);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private static async Task GrantUnlimitedPrivilegedSessions(AppTestServer server, Guid tenantId, CancellationToken cancellationToken)
+    {
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var tenantAdminRole = await dbContext.Roles.IgnoreQueryFilters()
+            .SingleAsync(role => role.TenantId == tenantId && role.Name == AppRoles.TenantAdmin, cancellationToken);
+
+        await dbContext.RoleClaims.AddAsync(new()
+        {
+            RoleId = tenantAdminRole.Id,
+            ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
+            ClaimValue = AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS.ToString(CultureInfo.InvariantCulture)
         }, cancellationToken);
 
         await dbContext.SaveChangesAsync(cancellationToken);
