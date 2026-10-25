@@ -61,6 +61,8 @@ interface StepGeometry {
     sequence: number;
     activation: number;
     popoverRadius: number | null;
+    // A target selector the browser cannot parse. Reported at once rather than waited on.
+    invalidSelector?: string | null;
 }
 
 interface BrowserEnvironment {
@@ -74,6 +76,9 @@ interface Session {
     id: string;
     ref: DotNetObjectReference | null;
     targets: Element[];
+    // The ancestors of the (first) target that clip its overflow, found when the targets are bound rather than on
+    // every frame: overflow styles rarely change, and walking the tree costs a style lookup per level.
+    clips: Element[];
     popover: HTMLElement | null;
     spec: StepActivation | null;
     // Observers and listeners, all torn down together in clearStep().
@@ -86,6 +91,13 @@ interface Session {
     advanceListener: ((event: Event) => void) | null;
     advanceElement: Element | null;
     advanceEventName: string | null;
+    // While waiting: re-checks once a CSS transition or animation ends, for an element that is in the DOM
+    // but only becomes visible as it animates in, which no mutation reports.
+    settleListener: (() => void) | null;
+    // While a step shows: DOM changes and the end of transitions, which move or hide a target without
+    // resizing it or the document (a sibling growing inside a fixed-height pane, a visibility change).
+    layoutObserver: MutationObserver | null;
+    layoutListener: (() => void) | null;
     waitTimer: number | null;
     advanceTimer: number | null;
     frameHandle: number;
@@ -157,6 +169,7 @@ export function attach(sessionId: string, dotNetRef: DotNetObjectReference) {
         id: sessionId,
         ref: dotNetRef,
         targets: [],
+        clips: [],
         popover: null,
         spec: null,
         resizeObserver: null,
@@ -168,6 +181,9 @@ export function attach(sessionId: string, dotNetRef: DotNetObjectReference) {
         advanceListener: null,
         advanceElement: null,
         advanceEventName: null,
+        settleListener: null,
+        layoutObserver: null,
+        layoutListener: null,
         waitTimer: null,
         advanceTimer: null,
         frameHandle: 0,
@@ -202,12 +218,20 @@ export async function activateStep(spec: StepActivation): Promise<StepGeometry> 
     session.spec = spec;
     session.trapFocus = !!spec.trapFocus;
 
-    const elements = resolveAll(spec);
+    // A selector the browser cannot parse will never match, so waiting for it would only delay the
+    // inevitable by the whole timeout. It is reported with the first measurement instead, and .NET names
+    // the step and applies the timeout behaviour straight away.
+    const invalid = invalidSelectorOf(spec);
+    const elements = invalid === null ? resolveAll(spec) : [];
 
     // Nothing found and the caller is willing to wait: watch the DOM instead of polling it. The
     // keyboard is wired up straight away so Escape can still leave a tour stuck on a missing target.
-    if (elements.length === 0 && wantsTarget(spec) && spec.waitForTarget) {
-        attachKeyboard(session, spec);
+    if (elements.length === 0 && wantsTarget(spec) && spec.waitForTarget && invalid === null) {
+        // Nothing is on screen to protect while the step waits, and the user may be the one who has to make
+        // the element appear (open the menu it lives in), so the page keeps its keyboard: no trap, and keys
+        // pressed in the application stay the application's. The step's own settings return with the target.
+        session.trapFocus = false;
+        attachKeyboard(session, { ...spec, interaction: 'free', trapFocus: false });
         startWaiting(session, spec);
         return emptyGeometry(spec.activation);
     }
@@ -226,6 +250,7 @@ export async function activateStep(spec: StepActivation): Promise<StepGeometry> 
     attachAdvanceTrigger(session, spec);
 
     const geometry = measureSession(session);
+    geometry.invalidSelector = invalid;
     session.lastFrame = geometry;
     return geometry;
 }
@@ -239,19 +264,15 @@ export function measure(sessionId: string): StepGeometry {
     const session = sessions.get(sessionId);
     if (!session) return emptyGeometry();
 
-    // Re-resolve first: selector targets are routinely replaced by a Blazor re-render.
+    // Re-resolve first: selector targets are routinely replaced by a Blazor re-render. When nothing is found
+    // the old targets are kept and measure as missing, which .NET handles as a lost target.
     if (session.spec) {
         const elements = resolveAll(session.spec);
         if (elements.length > 0) {
             const changed = elements.length !== session.targets.length
                 || elements.some((el, i) => el !== session.targets[i]);
 
-            if (changed) {
-                session.targets = elements;
-                observe(session);
-                // The trigger listened on the old node; a pending advance has already fired.
-                if (!session.advanceTimer) attachAdvanceTrigger(session, session.spec);
-            }
+            if (changed) rebind(session, elements);
         }
     }
 
@@ -286,6 +307,13 @@ function wantsTarget(spec: StepActivation): boolean {
     return !!spec.target && spec.target.kind !== 'None';
 }
 
+/**
+ * Finds the element a descriptor points at, but only one that is actually rendered: an element that is
+ * display:none, inside a closed details element, visibility:hidden or has no size cannot be pointed at, so
+ * it counts as missing and the step's missing-target behaviour decides (wait for it to show, skip, centre).
+ * A selector matching several elements picks the first rendered one, which is what a responsive layout
+ * with a desktop and a mobile copy of the same control needs.
+ */
 function resolveOne(descriptor: TargetDescriptor | null | undefined): Element | null {
     if (!descriptor) return null;
 
@@ -293,17 +321,74 @@ function resolveOne(descriptor: TargetDescriptor | null | undefined): Element | 
         if (descriptor.kind === 'Element') {
             // Blazor revives an ElementReference into the real element for us.
             const element = descriptor.element;
-            return element instanceof Element && element.isConnected ? element : null;
+            return element instanceof Element && isRendered(element) ? element : null;
         }
 
         if (descriptor.kind === 'Selector' && descriptor.selector) {
-            return document.querySelector(descriptor.selector);
+            // The first match is nearly always the one, and costs a single lookup.
+            const first = document.querySelector(descriptor.selector);
+            if (!first) return null;
+            if (isRendered(first)) return first;
+
+            const all = document.querySelectorAll(descriptor.selector);
+            for (let i = 1; i < all.length; i++) {
+                if (isRendered(all[i])) return all[i];
+            }
         }
     } catch (error) {
         warn('Could not resolve a target.', error);
     }
 
     return null;
+}
+
+/** True when an element has a box on screen that a spotlight can be drawn around. */
+function isRendered(element: Element): boolean {
+    if (!element.isConnected) return false;
+
+    const rects = element.getClientRects();
+    let sized = false;
+    for (let i = 0; i < rects.length; i++) {
+        if (rects[i].width > 0 || rects[i].height > 0) {
+            sized = true;
+            break;
+        }
+    }
+
+    if (!sized) return false;
+
+    try {
+        const visibility = getComputedStyle(element).visibility;
+        return visibility !== 'hidden' && visibility !== 'collapse';
+    } catch {
+        return true;
+    }
+}
+
+/** The first target selector of a step that the browser cannot parse, or null when every one is valid. */
+function invalidSelectorOf(spec: StepActivation): string | null {
+    const descriptors = [spec.target, ...(spec.additionalTargets || [])];
+
+    for (const descriptor of descriptors) {
+        if (!descriptor || descriptor.kind !== 'Selector' || !descriptor.selector) continue;
+
+        try {
+            document.querySelector(descriptor.selector);
+        } catch {
+            return descriptor.selector;
+        }
+    }
+
+    return null;
+}
+
+/** Points the step at new target elements: observers, and the advance trigger, move to them. */
+function rebind(session: Session, elements: Element[]) {
+    session.targets = elements;
+    observe(session);
+
+    // The trigger listened on the old node. A pending advance is kept: it was heard, and is on its way.
+    if (session.spec) attachAdvanceTrigger(session, session.spec);
 }
 
 function resolveAll(spec: StepActivation): Element[] {
@@ -341,6 +426,7 @@ function startWaiting(session: Session, spec: StepActivation) {
             .then(() => {
                 if (session.disposed || session.spec !== spec) return;
                 observe(session);
+                session.trapFocus = !!spec.trapFocus;
                 attachKeyboard(session, spec);
                 attachAdvanceTrigger(session, spec);
                 push(session, measureSession(session));
@@ -353,21 +439,29 @@ function startWaiting(session: Session, spec: StepActivation) {
         if (elements.length > 0) finish(elements);
     };
 
-    session.mutationObserver = new MutationObserver(() => {
-        // Mutation callbacks fire in bursts; coalescing onto a frame keeps querySelector cheap.
-        if (session.frameHandle) return;
+    // Mutation callbacks fire in bursts; coalescing onto a frame keeps querySelector cheap.
+    const scheduleCheck = () => {
+        if (settled || session.frameHandle) return;
         session.frameHandle = requestAnimationFrame(() => {
             session.frameHandle = 0;
             check();
         });
-    });
+    };
+
+    session.mutationObserver = new MutationObserver(scheduleCheck);
 
     session.mutationObserver.observe(document.documentElement, {
         childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: [ANCHOR_ATTRIBUTE, 'id', 'class', 'hidden', 'style']
+        attributeFilter: [ANCHOR_ATTRIBUTE, 'id', 'class', 'hidden', 'style', 'open']
     });
+
+    // An element that exists but is still hidden may become visible by animating in (a menu that scales up,
+    // a drawer that slides out), which changes no attribute. The end of the transition says it is done.
+    session.settleListener = scheduleCheck;
+    document.addEventListener('transitionend', scheduleCheck, true);
+    document.addEventListener('animationend', scheduleCheck, true);
 
     if (spec.waitTimeoutMs > 0) {
         session.waitTimer = window.setTimeout(() => {
@@ -388,6 +482,12 @@ function stopWaiting(session: Session) {
         session.mutationObserver = null;
     }
 
+    if (session.settleListener) {
+        document.removeEventListener('transitionend', session.settleListener, true);
+        document.removeEventListener('animationend', session.settleListener, true);
+        session.settleListener = null;
+    }
+
     if (session.waitTimer) {
         clearTimeout(session.waitTimer);
         session.waitTimer = null;
@@ -405,6 +505,8 @@ function stopWaiting(session: Session) {
 
 function observe(session: Session) {
     disconnectObservers(session);
+
+    session.clips = session.targets.length > 0 ? clippingAncestors(session.targets[0]) : [];
 
     const schedule = () => scheduleFrame(session);
 
@@ -432,6 +534,32 @@ function observe(session: Session) {
         window.visualViewport.addEventListener('resize', schedule, { passive: true });
         window.visualViewport.addEventListener('scroll', schedule, { passive: true });
     }
+
+    // A target can move or disappear with nothing resized: a sibling growing inside a fixed-height pane,
+    // a class that sets visibility: hidden. Mutations and finished transitions catch those. The tour's own
+    // DOM is ignored, or every placement it renders would schedule a frame of its own.
+    if (typeof MutationObserver === 'function') {
+        session.layoutObserver = new MutationObserver((records) => {
+            const host = session.popover ? session.popover.parentElement : null;
+            for (const record of records) {
+                if (!host || !host.contains(record.target)) {
+                    schedule();
+                    return;
+                }
+            }
+        });
+
+        session.layoutObserver.observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class', 'style', 'hidden', 'open']
+        });
+    }
+
+    session.layoutListener = schedule;
+    document.addEventListener('transitionend', schedule, true);
+    document.addEventListener('animationend', schedule, true);
 }
 
 function disconnectObservers(session: Session) {
@@ -456,6 +584,17 @@ function disconnectObservers(session: Session) {
         if (window.visualViewport) window.visualViewport.removeEventListener('resize', session.resizeListener);
         session.resizeListener = null;
     }
+
+    if (session.layoutObserver) {
+        session.layoutObserver.disconnect();
+        session.layoutObserver = null;
+    }
+
+    if (session.layoutListener) {
+        document.removeEventListener('transitionend', session.layoutListener, true);
+        document.removeEventListener('animationend', session.layoutListener, true);
+        session.layoutListener = null;
+    }
 }
 
 function scheduleFrame(session: Session) {
@@ -465,16 +604,21 @@ function scheduleFrame(session: Session) {
         session.frameHandle = 0;
         if (session.disposed) return;
 
-        // A target can be removed by a re-render at any moment.
-        if (session.targets.length > 0 && session.targets.every((el) => !el.isConnected)) {
+        let geometry = measureSession(session);
+
+        // A target can be removed by a re-render, or hidden (a panel collapsed, a layout switched to its
+        // mobile form), at any moment.
+        if (!geometry.found && session.targets.length > 0) {
             const recovered = session.spec ? resolveAll(session.spec) : [];
 
             if (recovered.length > 0) {
-                // Same element, new DOM node: rebind rather than reporting it as lost.
-                session.targets = recovered;
-                observe(session);
-                // The trigger listened on the old node; a pending advance has already fired.
-                if (session.spec && !session.advanceTimer) attachAdvanceTrigger(session, session.spec);
+                // Same element on a new DOM node, or its responsive twin: rebind rather than report it lost.
+                rebind(session, recovered);
+                geometry = measureSession(session);
+            } else if (session.advanceTimer) {
+                // The user just acted on the target and the step is about to move on. The action that
+                // advances it is often the very thing that hid the target; that is not a loss.
+                return;
             } else {
                 session.targets = [];
                 invoke(session, 'OnTargetLost', activationOf(session));
@@ -482,7 +626,6 @@ function scheduleFrame(session: Session) {
             }
         }
 
-        const geometry = measureSession(session);
         if (sameFrame(session.lastFrame, geometry)) return;
 
         push(session, geometry);
@@ -520,15 +663,24 @@ function activationOf(session: Session): number {
 }
 
 function measureSession(session: Session): StepGeometry {
-    const viewport = { x: 0, y: 0, width: viewportWidth(), height: viewportHeight() };
     const connectedPopover = session.popover && session.popover.isConnected ? session.popover : null;
+    const host = connectedPopover ? connectedPopover.parentElement : null;
+
+    // Everything is reported in the coordinates the host's position: fixed children are laid out in. That is the
+    // viewport, unless an ancestor of the host is transformed, filtered or contained, which makes it the containing
+    // block instead: the host fills its containing block, so its own box says where that is.
+    const hostBox = host ? host.getBoundingClientRect() : null;
+    const originX = hostBox ? hostBox.left : 0;
+    const originY = hostBox ? hostBox.top : 0;
+
+    const viewport = shift(visibleViewport(host), originX, originY);
     const popover = connectedPopover
         ? { width: connectedPopover.offsetWidth, height: connectedPopover.offsetHeight }
         : { width: 0, height: 0 };
     const popoverRadius = connectedPopover ? cornerRadius(connectedPopover) : null;
     const activation = activationOf(session);
 
-    const connected = session.targets.filter((element) => element.isConnected);
+    const connected = session.targets.filter(isRendered);
 
     if (connected.length === 0) {
         return {
@@ -543,13 +695,19 @@ function measureSession(session: Session): StepGeometry {
         };
     }
 
-    const target = unionRect(connected);
-    const visible = target.width > 0
+    // Only the part of the target its scrolling ancestors show is pointed at: a long table in a pane is spotlit
+    // where it can be seen, not across the rest of the page. A target scrolled entirely out of its pane keeps its
+    // whole box, and is reported as not visible.
+    const whole = unionRect(connected);
+    const shown = clipToAncestors(whole, session.clips);
+    const target = shift(shown || whole, originX, originY);
+    const visible = !!shown
+        && target.width > 0
         && target.height > 0
-        && target.x < viewport.width
-        && target.y < viewport.height
-        && target.x + target.width > 0
-        && target.y + target.height > 0;
+        && target.x < viewport.x + viewport.width
+        && target.y < viewport.y + viewport.height
+        && target.x + target.width > viewport.x
+        && target.y + target.height > viewport.y;
 
     return {
         found: true,
@@ -586,6 +744,76 @@ function cornerRadius(element: HTMLElement): number | null {
     } catch {
         return null;
     }
+}
+
+function shift(rect: BitBonboardingRect, dx: number, dy: number): BitBonboardingRect {
+    return dx === 0 && dy === 0 ? rect : { x: rect.x - dx, y: rect.y - dy, width: rect.width, height: rect.height };
+}
+
+/**
+ * The part of the layout viewport the user can actually see, in viewport coordinates: pinch zoom and the on-screen
+ * keyboard shrink it (the visual viewport), and so do the notch and the rounded corners of a phone when the page
+ * asks for the whole screen (viewport-fit=cover; the host carries the safe-area insets as its padding).
+ */
+function visibleViewport(host: Element | null): BitBonboardingRect {
+    const width = viewportWidth();
+    const height = viewportHeight();
+    let left = 0;
+    let top = 0;
+    let right = width;
+    let bottom = height;
+
+    const visual = window.visualViewport;
+    if (visual && visual.width > 0 && visual.height > 0) {
+        left = Math.max(left, visual.offsetLeft);
+        top = Math.max(top, visual.offsetTop);
+        right = Math.min(right, visual.offsetLeft + visual.width);
+        bottom = Math.min(bottom, visual.offsetTop + visual.height);
+    }
+
+    if (host) {
+        try {
+            const style = getComputedStyle(host);
+            left += parseFloat(style.paddingLeft) || 0;
+            top += parseFloat(style.paddingTop) || 0;
+            right -= parseFloat(style.paddingRight) || 0;
+            bottom -= parseFloat(style.paddingBottom) || 0;
+        } catch {
+            // Detached while measuring; the visual viewport alone is still right.
+        }
+    }
+
+    // A degenerate area (a keyboard taller than the screen, a measurement mid-rotation) would leave nowhere to place
+    // the popover at all; the whole viewport is the better answer then.
+    return right - left > 0 && bottom - top > 0
+        ? { x: left, y: top, width: right - left, height: bottom - top }
+        : { x: 0, y: 0, width, height };
+}
+
+/** The part of a rectangle every clipping ancestor shows, or null when one of them hides it entirely. */
+function clipToAncestors(rect: BitBonboardingRect, clips: Element[]): BitBonboardingRect | null {
+    let left = rect.x;
+    let top = rect.y;
+    let right = rect.x + rect.width;
+    let bottom = rect.y + rect.height;
+
+    for (const clip of clips) {
+        if (!clip.isConnected) continue;
+
+        // The client area: inside the borders, without the scrollbars.
+        const box = clip.getBoundingClientRect();
+        const clipLeft = box.left + clip.clientLeft;
+        const clipTop = box.top + clip.clientTop;
+
+        left = Math.max(left, clipLeft);
+        top = Math.max(top, clipTop);
+        right = Math.min(right, clipLeft + clip.clientWidth);
+        bottom = Math.min(bottom, clipTop + clip.clientHeight);
+
+        if (right <= left || bottom <= top) return null;
+    }
+
+    return { x: left, y: top, width: right - left, height: bottom - top };
 }
 
 function unionRect(elements: Element[]): BitBonboardingRect {
@@ -900,22 +1128,30 @@ function attachAdvanceTrigger(session: Session, spec: StepActivation) {
     if (!host) return;
 
     const listener = (event: Event) => {
-        if (session.disposed) return;
+        // One advance at a time: events while one is pending (a double click, every keystroke of an
+        // input event) belong to the advance already on its way.
+        if (session.disposed || session.advanceTimer) return;
 
         if (trigger.matchSelector) {
             const target = event.target as Element | null;
-            const match = target && typeof target.closest === 'function'
-                ? target.closest(trigger.matchSelector)
-                : null;
+            let match: Element | null = null;
+            try {
+                match = target && typeof target.closest === 'function' ? target.closest(trigger.matchSelector) : null;
+            } catch (error) {
+                warn('The advance trigger\'s match selector is not valid.', error);
+            }
             if (!match) return;
         }
 
-        // Fire once: the step is about to change anyway.
-        detachAdvanceTrigger(session);
-
+        // The listener stays armed: .NET may hold the user on the step (CanAdvance), and the next attempt
+        // has to be heard. A step that does change tears the listener down with everything else it owns.
         session.advanceTimer = window.setTimeout(() => {
             session.advanceTimer = null;
             invoke(session, 'OnAdvanceTriggered', spec.activation);
+
+            // A loss was held back while the advance was pending (see scheduleFrame). Should .NET keep the
+            // user on the step, the target is measured again; should it move on, the new step cancels this.
+            scheduleFrame(session);
         }, trigger.delayMs || 0);
     };
 
@@ -962,6 +1198,7 @@ function clearStep(session: Session) {
     }
 
     session.targets = [];
+    session.clips = [];
     session.spec = null;
     session.lastFrame = null;
 }
@@ -975,18 +1212,268 @@ function emptyGeometry(activation = 0): StepGeometry {
         targetVisible: false,
         sequence: ++sequence,
         activation,
-        popoverRadius: null
+        popoverRadius: null,
+        invalidSelector: null
     };
+}
+
+// ---------------------------------------------------------------------------
+// Beacons
+//
+// Every beacon is positioned here, in the browser: .NET says once which element a beacon sits on, and the
+// beacon follows it with no further interop. All beacons share one set of observers and one animation frame,
+// so ten beacons cost what one does, and an idle page costs nothing.
+// ---------------------------------------------------------------------------
+
+interface BeaconActivation {
+    beaconId: string;
+    target: TargetDescriptor;
+    position: string;
+    offsetX: number;
+    offsetY: number;
+}
+
+interface Beacon {
+    spec: BeaconActivation;
+    element: HTMLElement;
+    target: Element | null;
+    // The ancestors whose overflow can hide the target, so a beacon on a target scrolled out of its pane hides.
+    clips: Element[];
+    // The translation last written, from which the element's containing block is worked out: a beacon inside a
+    // transformed ancestor is positioned relative to that ancestor, not to the viewport.
+    tx: number;
+    ty: number;
+}
+
+const beacons = new Map<string, Beacon>();
+let beaconFrame = 0;
+let beaconResizeObserver: ResizeObserver | null = null;
+let beaconMutationObserver: MutationObserver | null = null;
+
+export function attachBeacon(spec: BeaconActivation, element: HTMLElement) {
+    if (!spec || !element) return;
+
+    beacons.set(spec.beaconId, { spec, element, target: null, clips: [], tx: 0, ty: 0 });
+    startBeaconObservers();
+    scheduleBeacons();
+}
+
+export function detachBeacon(beaconId: string) {
+    beacons.delete(beaconId);
+    if (beacons.size === 0) stopBeaconObservers();
+}
+
+function startBeaconObservers() {
+    if (beaconResizeObserver || beaconMutationObserver) return;
+
+    if (typeof ResizeObserver === 'function') {
+        beaconResizeObserver = new ResizeObserver(scheduleBeacons);
+        beaconResizeObserver.observe(document.documentElement);
+    }
+
+    // Targets that appear, disappear, are replaced by a re-render or move with nothing resized. Mutations of the
+    // beacons themselves (the translation written below) are ignored, or every placement would ask for another.
+    if (typeof MutationObserver === 'function') {
+        beaconMutationObserver = new MutationObserver((records) => {
+            for (const record of records) {
+                const node = record.target as Element;
+                if (!(node instanceof Element) || !node.classList.contains('bit-bonboarding-beacon')) {
+                    scheduleBeacons();
+                    return;
+                }
+            }
+        });
+
+        beaconMutationObserver.observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: [ANCHOR_ATTRIBUTE, 'id', 'class', 'style', 'hidden', 'open']
+        });
+    }
+
+    window.addEventListener('scroll', scheduleBeacons, { passive: true, capture: true });
+    window.addEventListener('resize', scheduleBeacons, { passive: true });
+    document.addEventListener('transitionend', scheduleBeacons, true);
+    document.addEventListener('animationend', scheduleBeacons, true);
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', scheduleBeacons, { passive: true });
+        window.visualViewport.addEventListener('scroll', scheduleBeacons, { passive: true });
+    }
+}
+
+function stopBeaconObservers() {
+    if (beaconResizeObserver) {
+        beaconResizeObserver.disconnect();
+        beaconResizeObserver = null;
+    }
+
+    if (beaconMutationObserver) {
+        beaconMutationObserver.disconnect();
+        beaconMutationObserver = null;
+    }
+
+    window.removeEventListener('scroll', scheduleBeacons, { capture: true });
+    window.removeEventListener('resize', scheduleBeacons);
+    document.removeEventListener('transitionend', scheduleBeacons, true);
+    document.removeEventListener('animationend', scheduleBeacons, true);
+    if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', scheduleBeacons);
+        window.visualViewport.removeEventListener('scroll', scheduleBeacons);
+    }
+
+    if (beaconFrame) {
+        cancelAnimationFrame(beaconFrame);
+        beaconFrame = 0;
+    }
+}
+
+function scheduleBeacons() {
+    if (beaconFrame || beacons.size === 0) return;
+
+    beaconFrame = requestAnimationFrame(() => {
+        beaconFrame = 0;
+        beacons.forEach(placeBeacon);
+    });
+}
+
+function placeBeacon(beacon: Beacon) {
+    const element = beacon.element;
+    if (!element.isConnected) return;
+
+    // Selector targets are re-queried whenever the one held is gone or hidden: a re-render replaces the node, a
+    // responsive layout swaps which copy is shown.
+    if (!beacon.target || !isRendered(beacon.target)) {
+        const found = resolveOne(beacon.spec.target);
+        if (found !== beacon.target) {
+            beacon.target = found;
+            beacon.clips = found ? clippingAncestors(found) : [];
+            if (found && beaconResizeObserver) beaconResizeObserver.observe(found);
+        }
+    }
+
+    const target = beacon.target;
+    if (!target) {
+        setBeaconState(element, false);
+        return;
+    }
+
+    const rect = target.getBoundingClientRect();
+    const rtl = directionOf(target) === 'rtl';
+    const point = anchorPoint(rect, beacon.spec.position, rtl);
+    point.x += (rtl ? -1 : 1) * (beacon.spec.offsetX || 0);
+    point.y += beacon.spec.offsetY || 0;
+
+    if (!isPointVisible(point.x, point.y, beacon.clips)) {
+        setBeaconState(element, false);
+        return;
+    }
+
+    const own = element.getBoundingClientRect();
+    const originX = own.left - beacon.tx;
+    const originY = own.top - beacon.ty;
+    const tx = point.x - originX - (own.width / 2);
+    const ty = point.y - originY - (own.height / 2);
+
+    if (!near(tx, beacon.tx) || !near(ty, beacon.ty)) {
+        beacon.tx = tx;
+        beacon.ty = ty;
+        element.style.transform = `translate3d(${round(tx)}px, ${round(ty)}px, 0)`;
+    }
+
+    setBeaconState(element, true);
+}
+
+/** Focuses a target, or the first control inside it; does nothing when there is nothing to focus. */
+export function focusTarget(descriptor: TargetDescriptor) {
+    const element = resolveOne(descriptor) as HTMLElement | null;
+    if (!element) return;
+
+    const focusable = element.matches(FOCUSABLE) ? element : element.querySelector<HTMLElement>(FOCUSABLE);
+    if (!focusable || typeof focusable.focus !== 'function') return;
+
+    try {
+        focusable.focus({ preventScroll: true });
+    } catch {
+        focusable.focus();
+    }
+}
+
+function setBeaconState(element: HTMLElement, visible: boolean) {
+    const state = visible ? 'visible' : 'hidden';
+    if (element.getAttribute('data-bonboarding-beacon-state') !== state) element.setAttribute('data-bonboarding-beacon-state', state);
+}
+
+function anchorPoint(rect: DOMRect, position: string, rtl: boolean): { x: number; y: number } {
+    const start = rtl ? rect.right : rect.left;
+    const end = rtl ? rect.left : rect.right;
+    const middleX = rect.left + (rect.width / 2);
+    const middleY = rect.top + (rect.height / 2);
+
+    switch (position) {
+        case 'top-start': return { x: start, y: rect.top };
+        case 'top': return { x: middleX, y: rect.top };
+        case 'start': return { x: start, y: middleY };
+        case 'center': return { x: middleX, y: middleY };
+        case 'end': return { x: end, y: middleY };
+        case 'bottom-start': return { x: start, y: rect.bottom };
+        case 'bottom': return { x: middleX, y: rect.bottom };
+        case 'bottom-end': return { x: end, y: rect.bottom };
+        default: return { x: end, y: rect.top };
+    }
+}
+
+function directionOf(element: Element): string {
+    try {
+        return getComputedStyle(element).direction;
+    } catch {
+        return 'ltr';
+    }
+}
+
+/** The ancestors that clip an element's overflow, nearest first. */
+function clippingAncestors(element: Element): Element[] {
+    const result: Element[] = [];
+
+    for (let node = element.parentElement; node && node !== document.documentElement && node !== document.body; node = node.parentElement) {
+        try {
+            const style = getComputedStyle(node);
+            if (style.overflowX !== 'visible' || style.overflowY !== 'visible') result.push(node);
+        } catch {
+            // Detached mid-walk; whatever was collected still applies.
+        }
+    }
+
+    return result;
+}
+
+/** True when a viewport point is inside the viewport and inside every clipping ancestor. */
+function isPointVisible(x: number, y: number, clips: Element[]): boolean {
+    if (x < 0 || y < 0 || x > viewportWidth() || y > viewportHeight()) return false;
+
+    for (const clip of clips) {
+        if (!clip.isConnected) continue;
+        const box = clip.getBoundingClientRect();
+        if (x < box.left - EPSILON || x > box.right + EPSILON || y < box.top - EPSILON || y > box.bottom + EPSILON) return false;
+    }
+
+    return true;
+}
+
+function round(value: number): number {
+    return Math.round(value * 100) / 100;
 }
 
 // ---------------------------------------------------------------------------
 // Storage
 // ---------------------------------------------------------------------------
 
-function storage(): Storage | null {
+type StorageArea = 'local' | 'session';
+
+function storage(area?: StorageArea): Storage | null {
     try {
         // Private browsing and blocked third-party storage both throw on access, not on use.
-        const probe = window.localStorage;
+        const probe = area === 'session' ? window.sessionStorage : window.localStorage;
         probe.getItem('__bit_bonboarding_probe__');
         return probe;
     } catch {
@@ -994,8 +1481,32 @@ function storage(): Storage | null {
     }
 }
 
-export function storageGet(key: string): string | null {
-    const store = storage();
+let storageListener: ((event: StorageEvent) => void) | null = null;
+
+/**
+ * Tells .NET about every entry another tab of the site changes, so the store can drop what it has cached. The
+ * storage event never fires in the tab that made the change, which is exactly what is wanted here.
+ */
+export function watchStorage(dotNetRef: DotNetObjectReference, area?: StorageArea) {
+    if (storageListener) window.removeEventListener('storage', storageListener);
+
+    const watched = storage(area);
+    storageListener = (event: StorageEvent) => {
+        if (!watched || event.storageArea !== watched) return;
+
+        try {
+            const promise = dotNetRef.invokeMethodAsync('OnStorageChanged', event.key);
+            if (promise && typeof promise.catch === 'function') promise.catch((error) => warn('A storage change could not be delivered.', error));
+        } catch (error) {
+            warn('A storage change could not be delivered.', error);
+        }
+    };
+
+    window.addEventListener('storage', storageListener);
+}
+
+export function storageGet(key: string, area?: StorageArea): string | null {
+    const store = storage(area);
     if (!store) return null;
 
     try {
@@ -1006,8 +1517,8 @@ export function storageGet(key: string): string | null {
     }
 }
 
-export function storageSet(key: string, value: string) {
-    const store = storage();
+export function storageSet(key: string, value: string, area?: StorageArea) {
+    const store = storage(area);
     if (!store) return;
 
     try {
@@ -1018,8 +1529,8 @@ export function storageSet(key: string, value: string) {
     }
 }
 
-export function storageRemove(key: string) {
-    const store = storage();
+export function storageRemove(key: string, area?: StorageArea) {
+    const store = storage(area);
     if (!store) return;
 
     try {
@@ -1029,8 +1540,8 @@ export function storageRemove(key: string) {
     }
 }
 
-export function storageKeys(prefix: string): string[] {
-    const store = storage();
+export function storageKeys(prefix: string, area?: StorageArea): string[] {
+    const store = storage(area);
     if (!store) return [];
 
     const keys: string[] = [];

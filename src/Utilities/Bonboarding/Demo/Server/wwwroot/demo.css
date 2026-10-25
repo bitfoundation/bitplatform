@@ -16,9 +16,13 @@
 
    A tour picks its palette independently of the page around it - Theme = Light stays light on a
    dark site - so the light and the dark palettes are spelled out in full below, with the values of
-   the site kit's own two palettes, rather than through the --bb-* roles, which follow the site. */
+   the site kit's own two palettes, rather than through the --bb-* roles, which follow the site.
 
-.bit-bonboarding-root {
+   .bit-bonboarding-themed is the library's other theme scope: the beacons, checklists and tour lists
+   that render on the page itself rather than in the tour layer. */
+
+.bit-bonboarding-root,
+.bit-bonboarding-themed {
     --bit-bonboarding-surface: #FFFFFF;
     --bit-bonboarding-surface-subtle: #F5F5F5;
     --bit-bonboarding-text: #1A1A1A;
@@ -60,7 +64,9 @@
    application's stylesheet - a tour that left its theme unset while the site is dark. That second
    selector is the whole of "the tours follow the site's theme switch". */
 .bit-bonboarding-root[data-bonboarding-theme="dark"],
-:root[bit-theme="dark"] .bit-bonboarding-root[data-bonboarding-theme="system"] {
+.bit-bonboarding-themed[data-bonboarding-theme="dark"],
+:root[bit-theme="dark"] .bit-bonboarding-root[data-bonboarding-theme="system"],
+:root[bit-theme="dark"] .bit-bonboarding-themed[data-bonboarding-theme="system"] {
     --bit-bonboarding-surface: #15191E;
     --bit-bonboarding-surface-subtle: #22272C;
     --bit-bonboarding-text: #E6ECF2;
@@ -374,5 +380,31 @@
 
     .event-log-kind {
         min-width: 0;
+    }
+}
+
+/* Links inside running text: underlined, since colour alone does not tell a link from the words around it
+   (WCAG 1.4.1). The site kit's lists leave this to each page. */
+.bb-detail-list a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+/* A live sample with a component beside it: a checklist next to the controls that tick it off. */
+.bb-demo-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+    gap: 1rem;
+    align-items: start;
+}
+
+.bb-demo-split > .bb-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+@media (max-width: 48rem) {
+    .bb-demo-split {
+        grid-template-columns: minmax(0, 1fr);
     }
 }

@@ -30,6 +30,12 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     private readonly Dictionary<string, BonboardingTourDefinition> _registered = new(StringComparer.Ordinal);
     private readonly List<BonboardingTourSession> _sessions = [];
 
+    /// <summary>Starts waiting for the running tour to end (<see cref="BonboardingBusyBehavior.Queue"/>), under <see cref="_sync"/>.</summary>
+    private readonly List<QueuedStart> _queue = [];
+
+    private readonly TimeProvider _time;
+
+    private long _queueSequence;
     private bool _disposed;
 
     public BonboardingService(
@@ -40,7 +46,8 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         IServiceProvider services,
         ILoggerFactory loggerFactory,
         IEnumerable<IBonboardingObserver> observers,
-        NavigationManager? navigation = null)
+        NavigationManager? navigation = null,
+        TimeProvider? time = null)
     {
         _options = options.Value;
         _interop = interop;
@@ -51,7 +58,83 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         _logger = loggerFactory.CreateLogger<BonboardingService>();
         _observers = observers.ToArray();
         _navigation = navigation;
+        _time = time ?? TimeProvider.System;
+
+        if (_store is IBonboardingStoreEvents events) events.Changed += OnStoreChanged;
     }
+
+    // ---- Changes made elsewhere ----------------------------------------------
+
+    /// <summary>Raised when stored records changed outside this scope, so a list of tours on screen can follow.</summary>
+    internal event EventHandler? RecordsChanged;
+
+    /// <summary>
+    /// The store says a record changed somewhere else - another tab, another device. Checklists refresh, and a tour that
+    /// was finished with there stops here, before it can write over that.
+    /// </summary>
+    private void OnStoreChanged(object? sender, BonboardingStoreChangedEventArgs e)
+    {
+        if (_disposed) return;
+
+        var id = e.TourId;
+        var checklistPrefix = BonboardingChecklistDefinition.StorageKeyPrefix;
+
+        if (id is null)
+        {
+            string[] checklists;
+            lock (_sync) checklists = _checklists.Select(checklist => checklist.Id).Distinct().ToArray();
+            foreach (var checklist in checklists) RaiseChecklistChanged(checklist);
+        }
+        else if (id.StartsWith(checklistPrefix, StringComparison.Ordinal))
+        {
+            RaiseChecklistChanged(id[checklistPrefix.Length..]);
+        }
+
+        if (id is null || !id.StartsWith(checklistPrefix, StringComparison.Ordinal))
+        {
+            _ = StopToursFinishedElsewhereAsync(id);
+        }
+
+        try
+        {
+            RecordsChanged?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "An onboarding record change handler threw.");
+        }
+    }
+
+    private async Task StopToursFinishedElsewhereAsync(string? tourId)
+    {
+        try
+        {
+            BonboardingTourSession[] live;
+            lock (_sync) live = _sessions.Where(session => session.IsLive && (tourId is null || session.Tour.Id == tourId)).ToArray();
+
+            foreach (var session in live)
+            {
+                var record = BonboardingRecordMigration.Apply(session.Tour, await ReadRecordAsync(session.Tour.Id, CancellationToken.None), _logger);
+                if (record is null) continue;
+
+                // Ended there since it started here: refused, snoozed, or completed. Progress written there is not an
+                // ending, and neither is a completion from before this run (completion is sticky, and this may be a replay).
+                var endedElsewhere = record.Dismissed
+                    || record.IsSnoozedAt(_time.GetUtcNow())
+                    || (record.Completed && record.CompletedAt > session.StartedAt);
+
+                // Cancelled, which writes nothing: the record the other tab wrote is the one that stands.
+                if (endedElsewhere) await session.CancelAsync(CancellationToken.None);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "BonboardingService could not reconcile a tour with a change made elsewhere.");
+        }
+    }
+
+    /// <summary>A start that waits its turn. <see cref="Once"/> starts re-check the store when their turn comes.</summary>
+    private sealed record QueuedStart(BonboardingTourSession Session, BonboardingStartOptions Options, bool Once, long Sequence);
 
     public IBonboardingTourSession? Active { get; private set; }
 
@@ -76,13 +159,40 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         ArgumentNullException.ThrowIfNull(tour);
         ArgumentException.ThrowIfNullOrWhiteSpace(tour.Id);
 
-        lock (_sync) _registered[tour.Id] = tour;
+        bool added;
+        lock (_sync)
+        {
+            added = !_registered.TryGetValue(tour.Id, out var existing) || !ReferenceEquals(existing, tour);
+            _registered[tour.Id] = tour;
+        }
+
+        // Declarative tours register on every parameter change; only a new definition is news.
+        if (added) RaiseRegistrationsChanged();
     }
 
     public void Unregister(string tourId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tourId);
-        lock (_sync) _registered.Remove(tourId);
+
+        bool removed;
+        lock (_sync) removed = _registered.Remove(tourId);
+
+        if (removed) RaiseRegistrationsChanged();
+    }
+
+    /// <summary>Raised when a tour is registered or unregistered, so a list of tours on screen can follow.</summary>
+    internal event EventHandler? RegistrationsChanged;
+
+    private void RaiseRegistrationsChanged()
+    {
+        try
+        {
+            RegistrationsChanged?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "An onboarding registration handler threw.");
+        }
     }
 
     public BonboardingTourDefinition? GetTour(string tourId)
@@ -96,12 +206,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         BonboardingTourDefinition tour, BonboardingStartOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(tour);
-        ObjectDisposedException.ThrowIf(_disposed, this);
-
-        if (tour.Steps.Count == 0)
-        {
-            throw new BonboardingException($"Tour '{tour.Id}' has no steps.") { TourId = tour.Id };
-        }
+        ThrowIfUnstartable(tour);
 
         var startOptions = options ?? new BonboardingStartOptions();
 
@@ -114,12 +219,36 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
             }
         }
 
+        return await StartCoreAsync(tour, startOptions, once: false, cancellationToken)
+            ?? throw new BonboardingException($"Tour '{tour.Id}' was not started: another tour is running and the start asked to skip.") { TourId = tour.Id };
+    }
+
+    private void ThrowIfUnstartable(BonboardingTourDefinition tour)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        if (tour.Steps.Count == 0)
+        {
+            throw new BonboardingException($"Tour '{tour.Id}' has no steps.") { TourId = tour.Id };
+        }
+
+        ThrowIfInvalid(tour);
+    }
+
+    /// <summary>
+    /// Creates the session and either starts it, replacing whatever runs, or queues it behind the running tour,
+    /// as <see cref="BonboardingStartOptions.WhenBusy"/> asks. <see langword="null"/> when it was skipped. The caller
+    /// has validated the definition and asked <c>CanStart</c> (or was told not to).
+    /// </summary>
+    private async Task<IBonboardingTourSession?> StartCoreAsync(
+        BonboardingTourDefinition tour, BonboardingStartOptions startOptions, bool once, CancellationToken cancellationToken)
+    {
         // Starting does not register the tour: a definition built on the fly (one per user, say)
         // would otherwise stay in RegisteredTours for the lifetime of the scope. Register it
         // explicitly to make it startable by id.
         var session = new BonboardingTourSession(
             tour, _options, _interop, _store, _localizer, _navigation, _services,
-            _loggerFactory.CreateLogger<BonboardingTourSession>(), PublishAsync);
+            _loggerFactory.CreateLogger<BonboardingTourSession>(), PublishAsync, _time);
 
         // The bookkeeping is one atomic step: the sessions to retire are chosen and the new one
         // takes their place before anything is awaited, so two starts racing each other (a double
@@ -127,15 +256,36 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         // A session that is still starting counts as well: it is Idle until the browser and the
         // store have answered, and that is exactly the window such a race falls into.
         BonboardingTourSession[] superseded;
+        var queued = false;
         lock (_sync)
         {
+            // Another tour on screen, paused, or starting. A queued start is not running anything yet, and the
+            // same tour is always replaced: that is a restart, not a conflict.
+            var busy = startOptions.StopOthers
+                && _sessions.Any(s => !s.IsFinished && !IsQueued(s) && s.Tour.Id != tour.Id);
+
+            if (busy && startOptions.WhenBusy == BonboardingBusyBehavior.Skip) return null;
+
+            queued = busy && startOptions.WhenBusy == BonboardingBusyBehavior.Queue;
+
+            // A queued start only retires an earlier queued start of the same tour; it waits for the rest.
             superseded = _sessions
-                .Where(s => !s.IsFinished && (startOptions.StopOthers || s.Tour.Id == tour.Id))
+                .Where(s => !s.IsFinished && (queued
+                    ? s.Tour.Id == tour.Id && IsQueued(s)
+                    : startOptions.StopOthers || s.Tour.Id == tour.Id))
                 .ToArray();
 
             session.Changed += OnSessionChanged;
             _sessions.Add(session);
-            Active = session;
+
+            if (queued)
+            {
+                _queue.Add(new QueuedStart(session, startOptions, once, ++_queueSequence));
+            }
+            else
+            {
+                Active = session;
+            }
         }
 
         RaiseSessionsChanged();
@@ -147,8 +297,267 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
             await old.CancelAsync(CancellationToken.None);
         }
 
+        if (queued)
+        {
+            await PublishAsync(new BonboardingEvent { Kind = BonboardingEventKind.TourQueued, Session = session, Timestamp = _time.GetUtcNow() });
+
+            // The running tour may have ended while this start was being queued.
+            StartNextQueued();
+            return session;
+        }
+
         await session.StartAsync(startOptions, cancellationToken);
         return session;
+    }
+
+    private bool IsQueued(BonboardingTourSession session) => _queue.Exists(entry => ReferenceEquals(entry.Session, session));
+
+    /// <summary>
+    /// Starts the queued tour whose turn it is, once nothing else runs: the highest priority, then the earliest.
+    /// Called whenever a session ends.
+    /// </summary>
+    private void StartNextQueued()
+    {
+        QueuedStart? next;
+        lock (_sync)
+        {
+            if (_disposed || _sessions.Any(s => !s.IsFinished && !IsQueued(s))) return;
+
+            next = _queue
+                .OrderByDescending(entry => entry.Session.Tour.Priority)
+                .ThenBy(entry => entry.Sequence)
+                .FirstOrDefault();
+
+            if (next is null) return;
+
+            _queue.Remove(next);
+            Active = next.Session;
+        }
+
+        RaiseSessionsChanged();
+        _ = RunQueuedAsync(next);
+    }
+
+    private async Task RunQueuedAsync(QueuedStart entry)
+    {
+        var tour = entry.Session.Tour;
+
+        try
+        {
+            // Asked again now: while it waited the user may have finished it elsewhere, snoozed it, or moved on to
+            // where it no longer applies. A start that no longer qualifies is cancelled, never thrown at anyone.
+            var eligible = entry.Options.Force
+                || ((!entry.Once || await IsDueOnceAsync(tour, CancellationToken.None))
+                    && (tour.CanStart is null || await tour.CanStart(new BonboardingTourContext(tour, _services))));
+
+            if (!eligible)
+            {
+                await entry.Session.CancelAsync(CancellationToken.None);
+                return;
+            }
+
+            await entry.Session.StartAsync(entry.Options, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "BonboardingService could not start the queued tour {TourId}.", tour.Id);
+            await entry.Session.CancelAsync(CancellationToken.None);
+        }
+    }
+
+    /// <summary>
+    /// True when a once-only start should run: the user has neither finished with the tour (in this version, or one
+    /// it migrates) nor snoozed it.
+    /// </summary>
+    private async Task<bool> IsDueOnceAsync(BonboardingTourDefinition tour, CancellationToken cancellationToken)
+    {
+        // Compare against this definition rather than the registry, which may not hold it yet.
+        var record = BonboardingRecordMigration.Apply(tour, await ReadRecordAsync(tour.Id, cancellationToken), _logger);
+
+        return record is null || (!record.IsClosed && !record.IsSnoozedAt(_time.GetUtcNow()));
+    }
+
+    /// <summary>
+    /// Refuses a definition with errors, listing every one of them, and logs its warnings. A tour with two steps of
+    /// the same id or a jump to nowhere would otherwise start and misbehave in front of a user.
+    /// </summary>
+    private void ThrowIfInvalid(BonboardingTourDefinition tour)
+    {
+        var issues = tour.Validate();
+        if (issues.Count == 0) return;
+
+        foreach (var warning in issues.Where(issue => issue.Severity == BonboardingValidationSeverity.Warning))
+        {
+            _logger.LogWarning("BonboardingService tour {TourId}: {Problem} ({Code})", tour.Id, warning.Message, warning.Code);
+        }
+
+        var errors = issues.Where(issue => issue.Severity == BonboardingValidationSeverity.Error).ToArray();
+        if (errors.Length == 0) return;
+
+        var message = $"Tour '{tour.Id}' is not valid:{string.Concat(errors.Select(error => $"{Environment.NewLine}- {error.Message}"))}";
+        _logger.LogError("BonboardingService refused to start an invalid tour. {Problems}", message);
+
+        throw new BonboardingException(message) { TourId = tour.Id, StepId = errors[0].StepId };
+    }
+
+    public async Task<bool> SignalAsync(string signal, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(signal);
+
+        BonboardingTourSession[] running;
+        (string Checklist, string Item)[] items;
+        lock (_sync)
+        {
+            running = _sessions.Where(session => session.IsActive).ToArray();
+            items = _checklists
+                .SelectMany(checklist => checklist.Items
+                    .Where(item => string.Equals(item.CompleteOnSignal, signal, StringComparison.Ordinal))
+                    .Select(item => (checklist.Id, item.Id)))
+                .Distinct()
+                .ToArray();
+        }
+
+        var handled = false;
+        foreach (var session in running)
+        {
+            handled |= await session.SignalAsync(signal);
+        }
+
+        foreach (var (checklist, item) in items)
+        {
+            handled |= await SetChecklistItemCoreAsync(checklist, item, done: true, cancellationToken);
+        }
+
+        return handled;
+    }
+
+    // ---- Checklists ---------------------------------------------------------
+
+    /// <summary>The checklists on screen, so a signal can tick their items off. A checklist rendered twice is here twice.</summary>
+    private readonly List<BonboardingChecklistDefinition> _checklists = [];
+
+    /// <summary>Where checklist progress goes when <see cref="BonboardingOptions.Persist"/> is off: this scope only.</summary>
+    private readonly BonboardingInMemoryStore _transientChecklists = new();
+
+    /// <summary>Raised with a checklist id whenever its stored progress changes, so the checklists on screen refresh.</summary>
+    internal event EventHandler<string>? ChecklistChanged;
+
+    internal void RegisterChecklist(BonboardingChecklistDefinition checklist)
+    {
+        lock (_sync) _checklists.Add(checklist);
+    }
+
+    internal void UnregisterChecklist(BonboardingChecklistDefinition checklist)
+    {
+        lock (_sync) _checklists.Remove(checklist);
+    }
+
+    private IBonboardingStore ChecklistStore => _options.Persist ? _store : _transientChecklists;
+
+    private static string ChecklistKey(string checklistId) => BonboardingChecklistDefinition.StorageKeyPrefix + checklistId;
+
+    public async Task SetChecklistItemAsync(string checklistId, string itemId, bool done = true, CancellationToken cancellationToken = default)
+        => await SetChecklistItemCoreAsync(checklistId, itemId, done, cancellationToken);
+
+    /// <summary>True when the item's stored state changed.</summary>
+    private async Task<bool> SetChecklistItemCoreAsync(string checklistId, string itemId, bool done, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(checklistId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(itemId);
+
+        var record = await ReadChecklistAsync(checklistId, cancellationToken);
+        var data = new Dictionary<string, string>(record?.Data ?? new Dictionary<string, string>(), StringComparer.Ordinal);
+        var now = _time.GetUtcNow();
+
+        if (done ? !data.TryAdd(itemId, now.ToString("O", System.Globalization.CultureInfo.InvariantCulture)) : !data.Remove(itemId))
+        {
+            return false;
+        }
+
+        await WriteChecklistAsync((record ?? new BonboardingRecord { TourId = ChecklistKey(checklistId) }) with { Data = data, UpdatedAt = now }, cancellationToken);
+        RaiseChecklistChanged(checklistId);
+        return true;
+    }
+
+    public async Task<IReadOnlyCollection<string>> GetCompletedChecklistItemsAsync(string checklistId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(checklistId);
+
+        var record = await ReadChecklistAsync(checklistId, cancellationToken);
+        return record?.Data is { Count: > 0 } data ? data.Keys.ToArray() : [];
+    }
+
+    public async Task DismissChecklistAsync(string checklistId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(checklistId);
+
+        var record = await ReadChecklistAsync(checklistId, cancellationToken);
+        if (record?.Dismissed == true) return;
+
+        await WriteChecklistAsync(
+            (record ?? new BonboardingRecord { TourId = ChecklistKey(checklistId) }) with { Dismissed = true, UpdatedAt = _time.GetUtcNow() },
+            cancellationToken);
+
+        RaiseChecklistChanged(checklistId);
+    }
+
+    public async Task<bool> IsChecklistDismissedAsync(string checklistId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(checklistId);
+        return (await ReadChecklistAsync(checklistId, cancellationToken))?.Dismissed == true;
+    }
+
+    public async Task ResetChecklistAsync(string checklistId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(checklistId);
+
+        try
+        {
+            await ChecklistStore.RemoveAsync(ChecklistKey(checklistId), cancellationToken);
+        }
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
+        {
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not reset checklist {ChecklistId}.", checklistId);
+        }
+
+        RaiseChecklistChanged(checklistId);
+    }
+
+    private async Task<BonboardingRecord?> ReadChecklistAsync(string checklistId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await ChecklistStore.GetAsync(ChecklistKey(checklistId), cancellationToken);
+        }
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
+        {
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not read checklist {ChecklistId}.", checklistId);
+            return null;
+        }
+    }
+
+    private async Task WriteChecklistAsync(BonboardingRecord record, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await ChecklistStore.SetAsync(record, cancellationToken);
+        }
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
+        {
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not save checklist {Key}.", record.TourId);
+        }
+    }
+
+    private void RaiseChecklistChanged(string checklistId)
+    {
+        try
+        {
+            ChecklistChanged?.Invoke(this, checklistId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "A checklist change handler threw.");
+        }
     }
 
     public Task<IBonboardingTourSession> StartAsync(string tourId, BonboardingStartOptions? options = null, CancellationToken cancellationToken = default)
@@ -163,24 +572,18 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         BonboardingTourDefinition tour, BonboardingStartOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(tour);
+        ThrowIfUnstartable(tour);
 
         var startOptions = options ?? new BonboardingStartOptions();
 
         if (!startOptions.Force)
         {
-            // Compare against this definition rather than the registry, which may not hold it yet.
-            var record = await ReadRecordAsync(tour.Id, cancellationToken);
-            if (record is not null && record.Version == tour.Version && record.IsClosed) return null;
+            if (!await IsDueOnceAsync(tour, cancellationToken)) return null;
+
+            if (tour.CanStart is not null && !await tour.CanStart(new BonboardingTourContext(tour, _services))) return null;
         }
 
-        if (!startOptions.Force && tour.CanStart is not null)
-        {
-            var allowed = await tour.CanStart(new BonboardingTourContext(tour, _services));
-            if (!allowed) return null;
-        }
-
-        // CanStart has already been consulted; skip the second evaluation inside StartAsync.
-        return await StartAsync(tour, CloneForced(startOptions), cancellationToken);
+        return await StartCoreAsync(tour, startOptions, once: true, cancellationToken);
     }
 
     public async Task<IBonboardingTourSession> RestartAsync(BonboardingTourDefinition tour, CancellationToken cancellationToken = default)
@@ -195,16 +598,6 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
             cancellationToken);
     }
 
-    private static BonboardingStartOptions CloneForced(BonboardingStartOptions source) => new()
-    {
-        StartAtStepId = source.StartAtStepId,
-        StartAtIndex = source.StartAtIndex,
-        Resume = source.Resume,
-        Force = true,
-        State = source.State,
-        StopOthers = source.StopOthers,
-    };
-
     // ---- Stopping and querying --------------------------------------------
 
     public async Task StopAllAsync(BonboardingTourEndReason reason = BonboardingTourEndReason.Cancelled, CancellationToken cancellationToken = default)
@@ -218,13 +611,18 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         // Paused sessions are still running as far as the application is concerned. A session that
         // is still starting is stopped too, but only ever as cancelled: it has shown nothing, so it
         // has nothing to complete, skip or dismiss.
+        //
+        // Queued starts go first, so a running tour that ends cannot hand its place to one of them on the way out.
         BonboardingTourSession[] unfinished;
-        lock (_sync) unfinished = _sessions.Where(s => !s.IsFinished).ToArray();
+        lock (_sync) unfinished = _sessions.Where(s => !s.IsFinished).OrderBy(s => IsQueued(s) ? 0 : 1).ToArray();
 
         foreach (var session in unfinished)
         {
             switch (session.IsLive ? reason : BonboardingTourEndReason.Cancelled)
             {
+                case BonboardingTourEndReason.Snoozed:
+                    await session.SnoozeAsync(BonboardingDefaults.SnoozeDuration, CancellationToken.None);
+                    break;
                 case BonboardingTourEndReason.Completed:
                     await session.CompleteAsync(CancellationToken.None);
                     break;
@@ -256,14 +654,11 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     {
         var record = await ReadRecordAsync(tourId, cancellationToken);
 
-        // A record written by an earlier version of the tour is not usable. The registered
-        // definition says which version is current, or failing that the one a session is running.
-        if (record is not null && (GetTour(tourId) ?? FindRunningTour(tourId)) is { } tour && record.Version != tour.Version)
-        {
-            return null;
-        }
-
-        return record;
+        // A record written by another version of the tour is only usable as the tour migrates it. The
+        // registered definition says which version is current, or failing that the one a session is running.
+        return (GetTour(tourId) ?? FindRunningTour(tourId)) is { } tour
+            ? BonboardingRecordMigration.Apply(tour, record, _logger)
+            : record;
     }
 
     private BonboardingTourDefinition? FindRunningTour(string tourId)
@@ -344,7 +739,11 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         if (sender is BonboardingTourSession ended)
         {
             ended.Changed -= OnSessionChanged;
-            lock (_sync) _sessions.Remove(ended);
+            lock (_sync)
+            {
+                _sessions.Remove(ended);
+                _queue.RemoveAll(entry => ReferenceEquals(entry.Session, ended));
+            }
         }
 
         if (ReferenceEquals(Active, sender))
@@ -353,6 +752,9 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         }
 
         RaiseSessionsChanged();
+
+        // The tour that was in the way has gone: whatever waited for it can start.
+        StartNextQueued();
     }
 
     private void RaiseSessionsChanged()
@@ -405,6 +807,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         {
             var sessions = _sessions.ToArray();
             _sessions.Clear();
+            _queue.Clear();
             return sessions;
         }
     }
@@ -412,5 +815,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     private void Cleanup()
     {
         Active = null;
+
+        if (_store is IBonboardingStoreEvents events) events.Changed -= OnStoreChanged;
     }
 }

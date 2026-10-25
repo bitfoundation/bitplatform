@@ -133,7 +133,10 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
     {
         var session = _session;
 
-        if (session is null || !session.IsActive || session.CurrentStep is null || session.CurrentOptions is null)
+        // A session waiting for a route renders nothing at all: the user has to be free to use the page to
+        // get to that route (or has deliberately left it), so nothing may dim it, block it or sit on it.
+        if (session is null || !session.IsActive || session.CurrentStep is null || session.CurrentOptions is null
+            || session.WaitReason == BonboardingWaitReason.Route)
         {
             _step = null;
             _options = null;
@@ -141,8 +144,12 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
 
             // Empty the live region between tours: a polite region only speaks when its text
             // changes, so a tour that starts again with the same first step would otherwise be silent.
+            // The same holds for a step the user comes back to after leaving its route.
             _announcement = null;
             _announcedKey = null;
+
+            // A popover that comes back is a dialog opening again, and takes focus again.
+            _focusedStepId = null;
             return;
         }
 
@@ -158,6 +165,7 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
             Options = _options,
             Title = Localizer.Localize(_step.Title),
             Description = Localizer.Localize(_step.Description),
+            ValidationMessage = Localizer.Localize(session.ValidationMessage),
         };
 
         var announcedKey = session.Id + "/" + _step.Id;
@@ -196,7 +204,11 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
 
         _ = InvokeAsync(() =>
         {
-            Snapshot();
+            // Only the measurement moved (a scroll, a resize, a moving target): the step, its options and its text
+            // are what they were, so the render context is kept - no allocation and no localizer lookups per frame -
+            // and the built-in card, which reads no geometry, is not rendered again. Positions read the session live.
+            if (e.Change != BonboardingTourSessionChange.Geometry || _renderContext is null) Snapshot();
+
             StateHasChanged();
         });
     }
@@ -231,6 +243,9 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
 
     private Task HandleOverlayClickAsync()
         => _session is null ? Task.CompletedTask : _session.OnOverlayClickAsync().AsTask();
+
+    private Task HandleCloseAsync()
+        => _session is null ? Task.CompletedTask : _session.DismissAsync();
 
     // ---- Computed presentation --------------------------------------------
 

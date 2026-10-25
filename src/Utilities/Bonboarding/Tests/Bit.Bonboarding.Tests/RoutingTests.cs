@@ -182,6 +182,36 @@ public class RoutingTests
     }
 
     [TestMethod]
+    public async Task A_Navigation_That_Takes_The_Target_Away_Is_A_Lost_Target()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        var tour = new BonboardingTourDefinition
+        {
+            Id = "swapped-page",
+            Steps =
+            [
+                new BonboardingStepDefinition
+                {
+                    Id = "a",
+                    Target = BonboardingStepTarget.Css("#a"),
+                    MissingTarget = BonboardingMissingTargetBehavior.Skip,
+                },
+                new BonboardingStepDefinition { Id = "b" },
+            ],
+        };
+
+        var session = await harness.Service.StartAsync(tour);
+
+        // The browser's Back button: another page replaced this one, and the target went with it.
+        harness.Interop.ExistingSelectors.Clear();
+        harness.Navigation!.SimulateUserNavigation("elsewhere");
+
+        Assert.AreEqual("b", session.CurrentStep!.Id, "A step whose target is gone applies its missing-target behaviour.");
+    }
+
+    [TestMethod]
     public async Task Ending_A_Tour_Unhooks_The_Navigation_Handler()
     {
         await using var harness = new BonboardingHarness();

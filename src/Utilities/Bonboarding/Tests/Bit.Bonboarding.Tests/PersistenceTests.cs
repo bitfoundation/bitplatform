@@ -50,6 +50,47 @@ public class PersistenceTests
     }
 
     [TestMethod]
+    public async Task Replaying_A_Completed_Tour_Does_Not_Un_Complete_It()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b", "#c");
+
+        var first = await harness.Service.StartAsync(Tour());
+        await first.CompleteAsync();
+        var completedAt = (await harness.Service.GetRecordAsync("persisted"))!.CompletedAt;
+
+        // Replayed from a help menu, then abandoned half way.
+        var replay = await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Force = true });
+        await replay.NextAsync();
+
+        Assert.IsTrue(await harness.Service.IsCompletedAsync("persisted"), "Completion is a fact about the user, not about the run in progress.");
+
+        await replay.DismissAsync();
+
+        var record = await harness.Service.GetRecordAsync("persisted");
+        Assert.IsTrue(record!.Completed);
+        Assert.AreEqual(completedAt, record.CompletedAt);
+        Assert.IsTrue(record.Dismissed, "The way the last run ended is still recorded.");
+    }
+
+    [TestMethod]
+    public async Task A_Completion_From_An_Older_Version_Is_Not_Carried_Over()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b", "#c");
+
+        var first = await harness.Service.StartAsync(Tour(version: 1));
+        await first.CompleteAsync();
+
+        var edited = await harness.Service.StartAsync(Tour(version: 2));
+        await edited.NextAsync();
+
+        var record = await harness.Service.GetRecordAsync("persisted");
+        Assert.IsFalse(record!.Completed);
+        Assert.IsNull(record.CompletedAt);
+    }
+
+    [TestMethod]
     public async Task Dismissal_Closes_The_Tour_Without_Completing_It()
     {
         await using var harness = new BonboardingHarness();

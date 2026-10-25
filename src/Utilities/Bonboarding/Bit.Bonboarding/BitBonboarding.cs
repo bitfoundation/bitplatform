@@ -29,6 +29,9 @@ public static class BitBonboarding
         // trimmer cannot see, so their members are rooted explicitly.
         PreserveInteropContracts();
 
+        // The clock snoozes and records are stamped with; replace it in tests to move time on.
+        services.TryAddSingleton(TimeProvider.System);
+
         services.TryAddScoped<BonboardingHostRegistry>();
         services.TryAddScoped<IBonboardingInterop, BonboardingInterop>();
         services.TryAddScoped<IBonboardingStore, BonboardingBrowserStore>();
@@ -95,6 +98,7 @@ public static class BitBonboarding
     // so the trimmer keeps them. The attributes take effect because this method is reachable from
     // AddBitBonboardingServices.
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingStepActivation))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingBeaconActivation))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingTargetDescriptor))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingAdvanceTriggerDescriptor))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingStepGeometry))]

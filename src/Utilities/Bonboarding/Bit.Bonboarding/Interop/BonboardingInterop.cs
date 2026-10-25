@@ -156,12 +156,58 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
 
     // ---- Storage -----------------------------------------------------------
 
+    /// <summary>The browser storage the JS side reads and writes, as <see cref="BonboardingOptions.StorageLocation"/> says.</summary>
+    private string StorageArea => _options.StorageLocation == BonboardingStorageLocation.Session ? "session" : "local";
+
+    /// <summary>The callbacks <see cref="WatchStorageAsync"/> registered, by key prefix.</summary>
+    private readonly ConcurrentDictionary<Func<string?, ValueTask>, string> _storageWatchers = new();
+
+    private bool _watchingStorage;
+
+    public async ValueTask WatchStorageAsync(string prefix, Func<string?, ValueTask> onChanged, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(prefix);
+        ArgumentNullException.ThrowIfNull(onChanged);
+
+        var module = await EnsureModuleAsync(cancellationToken).ConfigureAwait(false);
+        if (module is null) return;
+
+        _storageWatchers[onChanged] = prefix;
+
+        // One listener for the whole scope, however many watchers there are.
+        if (_watchingStorage) return;
+        _watchingStorage = true;
+
+        await module.InvokeVoidAsync("watchStorage", cancellationToken, _self, StorageArea).ConfigureAwait(false);
+    }
+
+    /// <summary>Another tab changed an entry of the watched storage; <paramref name="key"/> is null when it cleared it.</summary>
+    [JSInvokable]
+    public async ValueTask OnStorageChanged(string? key)
+    {
+        if (_disposed) return;
+
+        foreach (var (watcher, prefix) in _storageWatchers)
+        {
+            if (key is not null && !key.StartsWith(prefix, StringComparison.Ordinal)) continue;
+
+            try
+            {
+                await watcher(key).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "A storage change handler failed for key {Key}.", key);
+            }
+        }
+    }
+
     public async ValueTask<string?> GetStorageAsync(string key, CancellationToken cancellationToken = default)
     {
         var module = await EnsureModuleAsync(cancellationToken).ConfigureAwait(false);
         if (module is null) return null;
 
-        return await module.InvokeAsync<string?>("storageGet", cancellationToken, key).ConfigureAwait(false);
+        return await module.InvokeAsync<string?>("storageGet", cancellationToken, key, StorageArea).ConfigureAwait(false);
     }
 
     public async ValueTask SetStorageAsync(string key, string value, CancellationToken cancellationToken = default)
@@ -169,7 +215,7 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
         var module = await EnsureModuleAsync(cancellationToken).ConfigureAwait(false);
         if (module is null) return;
 
-        await module.InvokeVoidAsync("storageSet", cancellationToken, key, value).ConfigureAwait(false);
+        await module.InvokeVoidAsync("storageSet", cancellationToken, key, value, StorageArea).ConfigureAwait(false);
     }
 
     public async ValueTask RemoveStorageAsync(string key, CancellationToken cancellationToken = default)
@@ -177,7 +223,7 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
         var module = await EnsureModuleAsync(cancellationToken).ConfigureAwait(false);
         if (module is null) return;
 
-        await module.InvokeVoidAsync("storageRemove", cancellationToken, key).ConfigureAwait(false);
+        await module.InvokeVoidAsync("storageRemove", cancellationToken, key, StorageArea).ConfigureAwait(false);
     }
 
     public async ValueTask<IReadOnlyList<string>> ListStorageKeysAsync(
@@ -186,7 +232,29 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
         var module = await EnsureModuleAsync(cancellationToken).ConfigureAwait(false);
         if (module is null) return [];
 
-        return await module.InvokeAsync<string[]>("storageKeys", cancellationToken, prefix).ConfigureAwait(false);
+        return await module.InvokeAsync<string[]>("storageKeys", cancellationToken, prefix, StorageArea).ConfigureAwait(false);
+    }
+
+    // ---- Beacons ----------------------------------------------------------
+
+    public async ValueTask AttachBeaconAsync(BonboardingBeaconActivation activation, ElementReference beacon, CancellationToken cancellationToken = default)
+    {
+        var module = await EnsureModuleAsync(cancellationToken).ConfigureAwait(false);
+        if (module is null) return;
+
+        await module.InvokeVoidAsync("attachBeacon", cancellationToken, activation, beacon).ConfigureAwait(false);
+    }
+
+    public async ValueTask DetachBeaconAsync(string beaconId, CancellationToken cancellationToken = default)
+    {
+        if (_module is null) return;
+        await _module.InvokeVoidAsync("detachBeacon", cancellationToken, beaconId).ConfigureAwait(false);
+    }
+
+    public async ValueTask FocusTargetAsync(BonboardingTargetDescriptor target, CancellationToken cancellationToken = default)
+    {
+        if (_module is null) return;
+        await _module.InvokeVoidAsync("focusTarget", cancellationToken, target).ConfigureAwait(false);
     }
 
     // ---- Callbacks from the browser ---------------------------------------
@@ -281,6 +349,7 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
 
         _callbacks.Clear();
         _activations.Clear();
+        _storageWatchers.Clear();
         _module = null;
         _self?.Dispose();
         _self = null;

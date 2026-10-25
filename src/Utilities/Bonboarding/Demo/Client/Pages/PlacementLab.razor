@@ -67,7 +67,8 @@
             </label>
         </div>
 
-        <div class="playground">
+        @* A scroll container with nothing focusable inside: focusable itself, so the keyboard can scroll it. *@
+        <div class="playground" tabindex="0" role="region" aria-label="Placement playground: scroll to move the targets">
             <div class="playground-inner">
                 @foreach (var target in Targets)
                 {

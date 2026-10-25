@@ -100,14 +100,34 @@ public sealed class BonboardingStepDefinition : BonboardingStepOptions
     /// <summary>Branching hook for the back button. Falls back to the visit history when null.</summary>
     public Func<BonboardingStepContext, ValueTask<string?>>? ResolvePrevious { get; set; }
 
-    /// <summary>Blocks forward navigation while it returns <see langword="false"/>.</summary>
+    /// <summary>
+    /// Blocks forward navigation while it returns <see langword="false"/>. Set
+    /// <see cref="BonboardingStepContext.ValidationMessage"/> inside it, or <see cref="ValidationMessage"/> on the step,
+    /// to tell the user why; the message is shown in the popover and announced.
+    /// </summary>
     public Func<BonboardingStepContext, ValueTask<bool>>? CanAdvance { get; set; }
+
+    /// <summary>
+    /// Shown in the popover, and announced to screen readers, when <see cref="CanAdvance"/> holds the user on the
+    /// step, e.g. <c>"Give the project a name first."</c>. A message the hook sets on its context wins over this one.
+    /// Without either, a held advance is silent, as it always was.
+    /// </summary>
+    public string? ValidationMessage { get; set; }
 
     /// <summary>
     /// Advances the tour when the user interacts with the page, e.g. actually clicking the
     /// highlighted button. Implies <see cref="BonboardingInteractionMode.TargetOnly"/> unless overridden.
     /// </summary>
     public BonboardingAdvanceTrigger? AdvanceOn { get; set; }
+
+    /// <summary>
+    /// Advances the tour when the application raises this signal through
+    /// <see cref="IBonboardingService.SignalAsync"/> while the step is on screen: <c>"project-created"</c>, say, raised
+    /// by the code that creates projects, which needs no reference to the tour. <see cref="CanAdvance"/> still
+    /// decides, as it does for every way forward. A signal raised while the step is not showing is not remembered;
+    /// use <see cref="When"/> to skip a step whose task is already done.
+    /// </summary>
+    public string? AdvanceOnSignal { get; set; }
 
     /// <summary>Arbitrary payload carried through to callbacks, analytics and custom templates.</summary>
     public object? Data { get; set; }

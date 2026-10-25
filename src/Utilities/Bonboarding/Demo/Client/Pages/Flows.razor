@@ -80,8 +80,9 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Validation before advancing</h3>
     <p>
-        <code>CanAdvance</code> blocks the forward button until the step is satisfied. Here the tour will not move on
-        until the field contains something.
+        <code>CanAdvance</code> holds the user on the step until it is satisfied, and <code>ValidationMessage</code>
+        says why - shown in the card and read out by screen readers. Here the tour will not move on until the field
+        has a name of at least three characters.
     </p>
 
     <div class="bb-demo">
@@ -228,9 +229,15 @@
                 Id = "name",
                 Target = BonboardingStepTarget.Anchor("project-name"),
                 Title = "Name your project",
-                Description = "Next stays inert until this field has a value. Type something, then press Next.",
+                Description = "Press Next with the field empty, then type something and press Next again.",
                 Interaction = BonboardingInteractionMode.TargetOnly,
-                CanAdvance = _ => ValueTask.FromResult(!string.IsNullOrWhiteSpace(_projectName)),
+                ValidationMessage = "Give the project a name first.",
+                CanAdvance = ctx =>
+                {
+                    // The guard can explain itself more precisely than the step's message.
+                    if (_projectName.Trim().Length is > 0 and < 3) ctx.ValidationMessage = "Use at least three characters.";
+                    return ValueTask.FromResult(_projectName.Trim().Length >= 3);
+                },
             },
             new BonboardingStepDefinition
             {
