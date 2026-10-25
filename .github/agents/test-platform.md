@@ -245,8 +245,9 @@ the way the other library demos are set up and add it to the README's exports. R
 demo's own CD, delivers it.
 
 **Android.** `android -CdRun <run>`. Every Android job uploads an artifact called `android-bundle`, and a re-run job
-adds another, so the helper tells them apart by package and takes the newest of each. The device is the one AVD,
-`pixel_7_-_api_36_0`. `adb` is not on `PATH`: platform-tools is under `C:\Program Files (x86)\Android\android-sdk`,
+adds another, so the helper tells them apart by package and takes the newest of each. The device is the AVD with the
+newest Android, `pixel_7_-_api_36_0`, which the helper boots when no device is up. `adb` is not on `PATH`:
+platform-tools is under `C:\Program Files (x86)\Android\android-sdk`,
 where the helper finds it. It is a Google Play image, so after a cold boot it updates Android System WebView on its
 own; note the version (`adb shell dumpsys webviewupdate`) in the report, since a jump explains Android failures that no
 code change does. An APK signed with another key than the installed app, or older than it, goes in only
