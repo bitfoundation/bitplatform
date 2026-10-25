@@ -405,7 +405,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         catch (BcrdtFormatException ex)
         {
             // Relaying a message this build cannot read would hand every other client the same problem.
-            _logger.LogDebug(ex, "Dropped a malformed message on document {DocumentId} from connection {ConnectionId}.", document.Id, connection.Id);
+            _logger.LogDebug(ex, "Dropped a malformed message on document {DocumentId} from connection {ConnectionId}.", document.LogId, connection.Id);
             return Drop("malformed");
         }
 
@@ -587,13 +587,13 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
                 catch (Exception ex)
                 {
                     // A validator that fails has not accepted anything.
-                    _logger.LogError(ex, "Update validation threw for document {DocumentId}; the change was refused.", document.Id);
+                    _logger.LogError(ex, "Update validation threw for document {DocumentId}; the change was refused.", document.LogId);
                     accepted = false;
                 }
 
                 if (!accepted)
                 {
-                    _logger.LogInformation("Refused connection {ConnectionId} on document {DocumentId}: a change it sent was rejected.", connection.Id, document.Id);
+                    _logger.LogInformation("Refused connection {ConnectionId} on document {DocumentId}: a change it sent was rejected.", connection.Id, document.LogId);
                     connection.Refuse("A change was rejected by the server.");
                     return Drop("rejected");
                 }
@@ -610,14 +610,14 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
             }
             catch (BcrdtFormatException ex)
             {
-                _logger.LogDebug(ex, "Dropped a malformed update on document {DocumentId} from connection {ConnectionId}.", document.Id, connection.Id);
+                _logger.LogDebug(ex, "Dropped a malformed update on document {DocumentId} from connection {ConnectionId}.", document.LogId, connection.Id);
                 return Drop("malformed");
             }
             catch (InvalidOperationException ex)
             {
                 // Well-formed, but part of it could not be placed. What could be was applied; what
                 // could not would fail on every other replica in the same way, so it is not passed on.
-                _logger.LogWarning(ex, "Part of an update on document {DocumentId} could not be integrated.", document.Id);
+                _logger.LogWarning(ex, "Part of an update on document {DocumentId} could not be integrated.", document.LogId);
                 return Drop("unintegrable");
             }
 
@@ -657,7 +657,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         catch (BcrdtFormatException ex)
         {
             // Relaying it would hand every other client the same problem.
-            _logger.LogDebug(ex, "Dropped a malformed handshake on document {DocumentId} from connection {ConnectionId}.", document.Id, connection.Id);
+            _logger.LogDebug(ex, "Dropped a malformed handshake on document {DocumentId} from connection {ConnectionId}.", document.LogId, connection.Id);
             return false;
         }
         finally
@@ -774,7 +774,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Document {DocumentId} could not be flushed; it stays loaded and is tried again later.", document.Id);
+            _logger.LogWarning(ex, "Document {DocumentId} could not be flushed; it stays loaded and is tried again later.", document.LogId);
             lock (_gate)
             {
                 if (document.Pins == 0 && !document.Retired && !_disposed)
@@ -798,7 +798,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Document {DocumentId} did not unload cleanly.", document.Id);
+            _logger.LogError(ex, "Document {DocumentId} did not unload cleanly.", document.LogId);
         }
     }
 
@@ -826,7 +826,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Document {DocumentId} did not close cleanly.", document.Id);
+            _logger.LogError(ex, "Document {DocumentId} did not close cleanly.", document.LogId);
         }
     }
 
@@ -840,7 +840,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
                 .ConfigureAwait(false);
 
             document.Persistence.WriteFailed += error =>
-                _logger.LogError(error, "Writing document {DocumentId} to the store failed; the write is retried.", document.Id);
+                _logger.LogError(error, "Writing document {DocumentId} to the store failed; the write is retried.", document.LogId);
         }
         catch
         {
@@ -916,7 +916,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Document {DocumentId} did not close cleanly.", document.Id);
+                _logger.LogError(ex, "Document {DocumentId} did not close cleanly.", document.LogId);
             }
         }
 
@@ -948,6 +948,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         public HostedDocument(string id, Func<HostedDocument, Task> load)
         {
             Id = id;
+            LogId = id.Replace('\r', ' ').Replace('\n', ' ');
 
             // Started on the pool rather than inline: this runs under the host's gate, and a store's
             // load can do real work before its first await.
@@ -955,6 +956,12 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         }
 
         public string Id { get; }
+
+        /// <summary>
+        /// <see cref="Id"/> as it goes into log entries. The client names the document, so its line breaks
+        /// are flattened to keep it from forging entries of its own.
+        /// </summary>
+        public string LogId { get; }
 
         /// <summary>Serializes every use of <see cref="Crdt"/>, which is not thread-safe.</summary>
         public SemaphoreSlim Lock { get; } = new(1, 1);
