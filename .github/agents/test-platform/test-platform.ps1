@@ -954,7 +954,7 @@ function Install-BitUnderTest([string] $lab) {
     }
     else {
         Write-Host 'Installing bit from nuget.org...'
-        dotnet tool install Bit.Cli --tool-path $tools --prerelease | Out-Null
+        dotnet tool install Bit.Cli --tool-path $tools --version 10.7.0-pre-04 | Out-Null
     }
 
     if ($LASTEXITCODE -ne 0) {
