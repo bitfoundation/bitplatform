@@ -15,6 +15,13 @@
     </p>
 </div>
 
+<div class="bb-note">
+    On the right: tick <em>Break the component service</em> and choose a team - the dropdown says the options could
+    not be loaded, and the page logs why. Untick it (or press <em>Retry</em>) and the components arrive. Type a
+    subject, then press <em>Undo subject</em> to put back just that answer; the counter beside it follows
+    <code>DirtyFields</code>. <em>Raise ticket</em> on an empty form validates the fields where the page put them.
+</div>
+
 <div class="bb-split bb-page-wide">
     <div class="bb-demo">
         <div class="bb-demo-bar"><span class="bb-demo-label">Grouped, rendered whole</span></div>
@@ -57,7 +64,7 @@
             @if (_lastFailure is not null)
             {
                 <p class="demo-failure">
-                    Logged from <code>OnOptionsLoadFailed</code>: @_lastFailure
+                    Logged by the page's <code>OnOptionsLoadFailed</code> handler on <code>state.OptionsLoadFailed</code>: @_lastFailure
                 </p>
             }
 
@@ -105,12 +112,15 @@ var schema = BormBuilder.For<SupportTicket>()
     .Field(x => x.ReporterEmail, f => f.AsEmail().Required().Group("Who you are"))
     .Field(x => x.Team,      f => f.Group("Where it belongs").Options(Teams))
     .Field(x => x.Component, f => f.Group("Where it belongs")
-        // 2. A lookup that is allowed to fail. An options provider that throws used to take the
-        //    rendering component down with it; now it is recorded, announced, and shown in place of
-        //    the choices — and the next Invalidate retries.
+        // 2. A lookup that is allowed to fail. A provider that throws does not take the page down:
+        //    the failure is recorded (state.OptionsError(path)), raised as OptionsLoadFailed, and
+        //    "Options could not be loaded" is shown in place of the choices - and
+        //    state.InvalidateOptions(path) asks again.
         .OptionsFrom(async ctx => await components.ForTeamAsync(ctx.Value("Team") as string, ctx.CancellationToken),
                      value: c => c, label: c => c,
                      dependsOn: nameof(SupportTicket.Team)))
+    // AsSearch(): the same string, but a search box - a clear button, a search key on a phone's
+    // keyboard, and the browser's history of earlier searches.
     .Field(x => x.RelatedTicket, f => f.AsSearch().Suggest("SUP-1201", "SUP-1233"))
     // A counter drops the maxlength attribute, so a pasted subject keeps every character and the
     // count turns red instead of the answer being silently truncated.
@@ -124,12 +134,17 @@ state.OptionsLoadFailed += (path, ex) => logger.LogWarning(ex, "Options for {Pat
 // 3. The page owns the layout. BormField places one field wherever you want it while the
 //    schema keeps the label, the rules, the conditions and the accessibility wiring. The theme's
 //    custom properties live on .bit-borm-form, so the page's own wrapper carries the class.
+//    A name the schema does not have renders nothing - right for a schema chosen at run time;
+//    ThrowIfMissing="true" turns a typo in a fixed layout into an exception instead.
+//    BormErrorSummary State="state" and BormValidationMessages are there for a layout that
+//    wants the summary or a message list of its own.
 <div class="bit-borm-form">
     <div style="display:grid;grid-template-columns:1fr 1fr;">
         <BormField State="state" Name="ReporterName" />
         <BormField State="state" Name="ReporterEmail" />
     </div>
-    <BormField State="state" Name="Subject" />
+    <BormField State="state" Name="Subject" ThrowIfMissing="true" />
+    <button type="button" @onclick="() => state.SubmitAsync(Save)">Raise ticket</button>
 </div>
 
 // 4. Per-field undo, and dirtiness that is a comparison rather than a flag: typing a character and

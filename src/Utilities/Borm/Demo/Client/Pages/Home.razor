@@ -128,6 +128,31 @@
                 </p>
                 <a href="custom-renderer" class="btn btn-outline">Custom renderer →</a>
             </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Rules written as text</h3>
+                <p class="bb-card-desc">
+                    Totals, conditions and rules as expressions - <code>{Quantity} * {UnitPrice}</code>,
+                    <code>{Total} &gt;= 10000</code> - that travel in JSON Schema, so a form the server sends can compute
+                    and judge with no code behind it.
+                </p>
+                <a href="expressions" class="btn btn-outline">Expressions →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Long forms that keep their work</h3>
+                <p class="bb-card-desc">
+                    Drafts and autosave, a guard before the user leaves unsaved changes, undo and redo of every answer,
+                    and repeaters of hundreds of rows shown a page at a time.
+                </p>
+                <a href="drafts" class="btn btn-outline">Drafts &amp; autosave →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A designer for the form's owners</h3>
+                <p class="bb-card-desc">
+                    <code>BormDesigner</code> builds a form by clicking - fields, rules, conditions, a live preview and
+                    the JSON Schema - for the people who own the questions but not the code.
+                </p>
+                <a href="designer" class="btn btn-outline">Form designer →</a>
+            </section>
         </div>
     </section>
 
@@ -254,9 +279,10 @@ state.Reset(draft);                            <span class="c">// written back, 
             <details>
                 <summary>Which render modes does it work in?</summary>
                 <p>
-                    Any interactive one, on .NET 8, 9 and 10: WebAssembly, Server, Auto and Hybrid. A form prerenders
-                    as plain HTML and becomes interactive with the page; in static server rendering it cannot respond to
-                    input, so give its page an interactive render mode.
+                    Every one, on .NET 8, 9 and 10: WebAssembly, Server, Auto and Hybrid. A form prerenders as plain
+                    HTML and becomes interactive with the page. On a page rendered on the server alone, a form with a
+                    <code>FormName</code> posts like any HTML form and is judged there exactly as it would be in the
+                    browser - <a href="static-form">see it work</a>.
                 </p>
             </details>
             <details>
@@ -276,11 +302,13 @@ state.Reset(draft);                            <span class="c">// written back, 
                 </p>
             </details>
             <details>
-                <summary>Is it trimming or AOT safe?</summary>
+                <summary>Does it work in a trimmed app?</summary>
                 <p>
-                    No. Generating a schema reads a model's properties by reflection, so <code>Bit.Borm</code> is not
-                    marked as trimmable: a trimmed app keeps it whole, and the models it binds to are kept by the app that
-                    declares them.
+                    Yes, though it is not marked as trimmable: a bound model is read, written and generated from by
+                    reflection over its properties, which no annotation can describe. The default partial trimming keeps
+                    <code>Bit.Borm</code> and your app's own assembly whole, and this site is published that way. With
+                    <code>TrimMode</code> full, keep <code>Bit.Borm</code> and the assemblies holding your models with
+                    <code>&lt;TrimmerRootAssembly&gt;</code>.
                 </p>
             </details>
         </div>

@@ -36,6 +36,25 @@
     <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How the edit context behaves</h3>
+    <ul class="bb-detail-list">
+        <li><strong>The form stays the source of truth.</strong> Values are written through the field context, never the
+            <code>EditContext</code>, so conditions, computed values and dirty tracking stay right.
+            <code>Context.ValueExpression&lt;T&gt;()</code> names the property that owns the field - the model, a nested object, a
+            list's row, or a dictionary key - so Blazor files the field's messages under the right identifier. Ask for the
+            property's own type: <code>ValueExpression&lt;string&gt;()</code> over an <code>int</code> throws rather than read it wrongly.</li>
+        <li><strong>A message reaches the context when the form would show it</strong> - the field touched, or the form submitted.
+            Only errors are copied: an <code>EditContext</code> has no severity, so warnings stay Borm's.</li>
+        <li><strong><code>EditContext.Validate()</code> runs the form's validation</strong>, which is what a hand-written submit
+            button over the context does.</li>
+        <li><code>Context.EditContext</code> and <code>Context.FieldIdentifier</code> are there for a component that wants them,
+            and null while the view provides no context. For a state rendered without a view, construct a
+            <code>BormEditContextAdapter</code> over it and cascade its <code>EditContext</code>.</li>
+    </ul>
+    <p class="bb-card-desc">Off by default: a form that does not use these controls has no cascade in its tree.</p>
+</div>
+
 @code {
     private const string Source =
 """

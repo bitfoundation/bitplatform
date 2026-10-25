@@ -63,6 +63,7 @@
 """
 var schema = BormBuilder.For<TripRequest>()
     .Title("Request a trip")
+    .Columns(2)
 
     // [Compare] on the model already wires the rule *and* its revalidation, exactly as the
     // builder's MatchesField(...) does. Nothing extra to declare.

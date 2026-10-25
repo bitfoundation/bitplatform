@@ -15,6 +15,15 @@
     </p>
 </div>
 
+<div class="bb-note">
+    Press <em>Load record from server</em>: two lines arrive and the readout says <code>dirty=False</code> - they are the
+    new baseline, not changes. Edit a price and it turns dirty; <em>Save &amp; rebase</em> makes the edit the baseline
+    again. Type a two-letter, lower-case customer name and press <em>Check just the customer</em>: only that field is
+    judged, and it breaks two rules. Tick <em>One error per field</em> and the two complaints become one - every rule
+    still runs, the user just reads one at a time. <em>Stash a draft</em>, change things, then
+    <em>Restore the draft</em>. The readout under the form is <code>GetFieldState("Customer")</code>, live.
+</div>
+
 <div class="bb-demo">
     <div class="bb-demo-bar">
         <span class="bb-demo-label">Live form</span>
@@ -49,6 +58,12 @@
     <summary class="btn btn-secondary">View source</summary>
     <pre class="bb-code"><code>@Source</code></pre>
 </details>
+
+<div class="bb-note">
+    When the server refuses a save, its errors go back onto the fields they belong to - see
+    <a href="saving">saving &amp; server errors</a>. Every member of <code>BormState</code> is listed in the
+    <a href="api-reference">API reference</a>.
+</div>
 
 @code {
     private const string Source =
@@ -101,6 +116,22 @@ state.SingleErrorPerField = true;
 // A read-only wizard keeps Back and Next (reading a form is not editing it) and loses Submit and
 // Reset.
 state.ReadOnly = true;
+
+// --- Typed, and in one go -----------------------------------------------------------------------
+// For<TModel>() addresses the same state by expression, so a rename renames every read and write
+// and a typo does not compile.
+var order = state.For<Invoice>();
+order.SetValue(x => x.Lines[0].Quantity, 3);
+var customer = order.GetFieldState(x => x.Customer);
+await order.FocusAsync(x => x.Customer);
+
+// SetValues and Batch write many values as one change: one re-render, and one step to undo.
+state.SetValues(new Dictionary<string, object?> { ["Lines[0].Quantity"] = 3, ["Lines[1].Quantity"] = 5 });
+state.Batch(() =>
+{
+    state.SetValue("Customer", "Contoso Ltd");
+    state.SetValue("Lines[0].UnitPrice", 18.00m);
+});
 """;
 
     private readonly Invoice _model = new();

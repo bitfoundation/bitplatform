@@ -20,6 +20,17 @@
     </p>
 </div>
 
+<div class="bb-note">
+    Try each of these, then submit:
+    <ol class="bb-detail-list">
+        <li>Choose a <em>Single</em> room for three guests - the complaint lands under <em>both</em> fields the rule names.</li>
+        <li>Move the check-out date to before the check-in date - a rule naming one member lands on that field alone.</li>
+        <li>Make the stay longer than 28 nights - a rule naming no member at all is about the booking as a whole, so it
+            is listed in the error summary at the top, with no field to link to, rather than under any one box.</li>
+        <li>Type two spaces in the guest's name - that one comes from the FluentValidation validator beside the model.</li>
+    </ol>
+</div>
+
 <div class="bb-demo">
     <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
     <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Book the room" ShowErrorSummary="true" />
@@ -68,12 +79,27 @@ public class RoomBooking : IValidatableObject
     }
 }
 
-// The attributes are already field rules through the generator, so only the cross-property layer is
-// added — running Validator over the properties again would put two differently-worded copies of
-// "required" under the same box. Pass includePropertyAttributes: true when the schema came from
-// somewhere that never saw them (a JSON Schema document rendered over a typed model).
-var state = new BormState(BormSchemaGenerator.Generate<RoomBooking>(),
-                          new BormModelDataAccessor(model))
+// BormBuilder.For<T>() reads the same attributes the generator does ([Required], [Range],
+// [EmailAddress], [Display]), so they are field rules already; the builder only adds what the
+// attributes cannot say - the room types and two columns.
+var schema = BormBuilder.For<RoomBooking>()
+    .Title("Room booking")
+    .Columns(2)
+    .Field(x => x.GuestName)
+    .Field(x => x.Email)
+    .Field(x => x.CheckIn)
+    .Field(x => x.CheckOut)
+    .Field(x => x.RoomType, f => f
+        .AsRadio()
+        .Options(("single", "Single (sleeps 1)"), ("double", "Double (sleeps 2)"), ("suite", "Suite (sleeps 4)")))
+    .Field(x => x.Guests, f => f.Help("Try more guests than the room sleeps."))
+    .Build();
+
+// Only the cross-property layer is added - running Validator over the properties again would put two
+// differently-worded copies of "required" under the same box. Pass includePropertyAttributes: true
+// when the schema came from somewhere that never saw them (a JSON Schema document rendered over a
+// typed model).
+var state = new BormState(schema, new BormModelDataAccessor(model))
     // The two integrations combine rather than replace each other, so a model whose rules are split
     // across both layers gets both. Either order works.
     .UseDataAnnotations()

@@ -113,15 +113,19 @@ Then render a `BormView` with a `Definition` and a `Model`, as above. The full w
 
 The demo site, [borm.bitplatform.dev](https://borm.bitplatform.dev), opens on an overview with a live form, and its
 documentation - starting at `/getting-started` - is a set of working forms, one per topic of this guide:
-`/quickstart` (a schema from a C# type), `/builder` (the fluent builder and conditions), `/array` (repeaters and
-computed totals), `/wizard`, `/tabs-review` (tabs, accordion, sections and a review step), `/layout`, `/field-polish`,
-`/combobox-tags`, `/search-lookup`, `/per-row-conditions`, `/settled-answers`, `/composition`, `/state-api`,
-`/expressions` (with a console that evaluates any expression), `/drafts` (autosave and the unsaved-changes guard),
-`/validation`, `/dependent-fields`, `/cascading`, `/files`, `/json-schema` (a live JSON Schema editor with round-trip
-export), `/data-annotations`, `/fluent-validation`, `/custom-renderer`, `/blazor-inputs` (Blazor's own inputs through
-the provided `EditContext`) and `/localization`. Every page can
-show its own source, and Ctrl+K (or `/`) searches them all. The site re-tints Borm's `--bit-borm-*` tokens to its own
-light and dark theme, which is what [Theming](#theming) describes.
+`/quickstart` (a schema from a C# type), `/builder` (the fluent builder), `/conditions` (every kind of condition),
+`/json-schema` (a live JSON Schema editor with round-trip export and the schema's checks), `/designer` (the visual
+designer), `/field-types` (every built-in control), `/layout`, `/field-polish`, `/combobox-tags`, `/search-lookup`,
+`/files`, `/rich-fields` (masks, Markdown, signatures and uploads), `/composition`, `/custom-renderer`,
+`/blazor-inputs` (Blazor's own inputs through the provided `EditContext`), `/theming` (the tokens, colour modes and
+accessibility), `/localization`, `/static-form` (a form with no interactivity), `/array` (repeaters and computed
+totals), `/per-row-conditions`, `/wizard`, `/tabs-review` (tabs, accordion, sections and a review step),
+`/undo-long-lists`, `/validation`, `/dependent-fields`, `/settled-answers`, `/data-annotations`, `/fluent-validation`,
+`/cascading`, `/state-api`, `/saving` (how a submit ends, and a server's errors), `/expressions` (with a console that
+evaluates any expression), `/drafts` (autosave and the unsaved-changes guard), `/api-reference` (`BormView` and
+`BormState` at a glance) and `/mcp-server`. Every page can show its own source, and Ctrl+K (or `/`) searches them
+all. The site re-tints Borm's `--bit-borm-*` tokens to its own light and dark theme, which is what
+[Theming](#theming) describes.
 
 To run it locally:
 

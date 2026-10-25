@@ -34,6 +34,39 @@
     <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What one undo takes back</h3>
+    <ul class="bb-detail-list">
+        <li>Everything one answer set off: the value, a field a condition then hid and cleared, a sibling a change handler
+            filled in. They come back together, and the handler is not run again. Computed values are not recorded; they follow.</li>
+        <li>Adding, removing, moving, copying and clearing rows are changes like any other, and undoing a removal puts back the
+            same row - with whatever it held - rather than a copy.</li>
+        <li>Two writes to one field within a second are one change, so a field that writes as the user types is not undone a
+            character at a time; the tidying a field does as it is left (<code>Trim()</code>, a mask) belongs to that answer.</li>
+        <li>A value put back is judged again, so an error the user was shown comes back with the value that caused it.
+            <code>Reset()</code> and restoring a draft start the history again.</li>
+    </ul>
+    <p class="bb-card-desc">
+        The buttons are named for the field they act on ("Undo the change to Product"), keep the focus so they can be pressed
+        again, and announce what they did. Ctrl+Z inside a text box still undoes the typing in that box, as the browser always
+        has. For buttons of your own: <code>state.UndoAsync()</code>, <code>RedoAsync()</code>, <code>CanUndo</code>,
+        <code>CanRedo</code> and <code>NextUndoPath</code>; <code>HistoryLimit</code> is how many changes are kept - none by
+        default, 100 once <code>ShowUndo</code> is on.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Paged, not virtualised</h3>
+    <p class="bb-card-desc">
+        <code>PageSize(20)</code> shows twenty rows at a time, with Previous and Next, a page picker and the rows on screen
+        ("21–40 of 500"), and says how many rows on other pages need attention, with a button to the first of them. Every way of
+        reaching a row still reaches it: the error summary's links and focus-the-first-error turn to the row's page first, and
+        adding, copying or moving a row turns to the page it lands on. A virtualised list would leave the rows out of view out
+        of the page, where neither the keyboard, the error summary nor a screen reader could reach them; a page is always
+        whole. <code>x-pageSize</code> carries it through JSON Schema.
+    </p>
+</div>
+
 @code {
     private const string Source =
 """

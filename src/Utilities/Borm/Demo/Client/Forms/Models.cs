@@ -414,6 +414,61 @@ public class CustomerRecord
     public string? Notes { get; set; }
 }
 
+/// <summary>
+/// Model for the conditions demo: a conference registration whose questions depend on earlier answers -
+/// shown, required, disabled or locked by every kind of condition the library has.
+/// </summary>
+public class ConferenceRegistration
+{
+    [Display(Name = "Full name")]
+    public string Name { get; set; } = "";
+
+    [Display(Name = "Coming as")]
+    public string Role { get; set; } = "attendee";
+
+    public string? Company { get; set; }
+
+    [Display(Name = "Talk title")]
+    public string? TalkTitle { get; set; }
+
+    [Display(Name = "Travelling from")]
+    public string? Country { get; set; }
+
+    [Display(Name = "I need a visa invitation letter")]
+    public bool VisaLetter { get; set; }
+
+    [Display(Name = "Ticket")]
+    public string TicketType { get; set; } = "standard";
+
+    [Display(Name = "I need a hotel room")]
+    public bool NeedsHotel { get; set; }
+
+    [Display(Name = "Nights")]
+    public int? Nights { get; set; }
+
+    [Display(Name = "Late checkout on the last day")]
+    public bool LateCheckout { get; set; }
+
+    [Display(Name = "Payment received")]
+    public bool Paid { get; set; }
+}
+
+/// <summary>
+/// Model for the saving demo: account settings sent to a server that may accept them, refuse them with
+/// a reason per field, fail, or take its time. Filled in, so the first save goes straight to the server.
+/// </summary>
+public class AccountSettings
+{
+    [Required, Display(Name = "Username")]
+    public string Username { get; set; } = "ada";
+
+    [Required, EmailAddress]
+    public string Email { get; set; } = "ada@example.com";
+
+    [Display(Name = "Display name")]
+    public string DisplayName { get; set; } = "Ada Lovelace";
+}
+
 /// <summary>Model for the drafts demo: a form long enough that losing it halfway through would hurt.</summary>
 public class MembershipApplication
 {

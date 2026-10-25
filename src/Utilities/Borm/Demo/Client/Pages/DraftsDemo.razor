@@ -47,6 +47,49 @@
     <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What a draft is</h3>
+    <ul class="bb-detail-list">
+        <li>
+            <strong>It holds</strong> every value the schema binds to, one per path (<code>Lines[2].Quantity</code>), each
+            repeater's row count, the wizard step or open tab, the form's version and when it was saved. Types come back as
+            they went - enums, dates, a timestamp's offset, a multi-select's list. Computed values are computed again.
+        </li>
+        <li>
+            <strong>It never holds</strong> files - a browser file cannot outlive the page that chose it - or sensitive values:
+            passwords, and fields marked <code>Sensitive()</code> (<code>x-sensitive</code>), unless
+            <code>BormDraftOptions.IncludeSensitive</code> asks. <code>ExcludeHidden</code> also leaves out the answers of
+            branches the user hid.
+        </li>
+        <li>
+            <strong>Restoring</strong> writes the answers as unsaved changes on top of what the form opened with, so
+            <code>IsFormDirty</code> and the guard stay meaningful and <code>Reset()</code> takes them away. Change handlers stay
+            silent, and a cascading select keeps the answer it is given. <code>BormDraft.Restore</code> returns what happened:
+            <code>Restored</code>, <code>SavedAt</code>, <code>Version</code>, and the <code>Skipped</code> paths the form can
+            no longer hold - shown in the status line above - rather than errors the user never made.
+        </li>
+        <li>
+            <strong>Versions</strong>: a draft records <code>BormDefinition.Version</code> (<code>.Version("1")</code> here,
+            <code>x-version</code> in JSON Schema). When a newer form meets an older draft, <code>Migrate</code> brings it up to date first:
+        </li>
+    </ul>
+    <pre class="bb-code">BormDraft.Restore(state, json, <span class="k">new</span> BormDraftOptions
+{
+    Migrate = m =&gt;
+    {
+        <span class="k">if</span> (m.FromVersion == <span class="s">"1"</span>) m.Rename(<span class="s">"Phone"</span>, <span class="s">"Contact.Phone"</span>).Remove(<span class="s">"Fax"</span>);
+    }
+});</pre>
+    <p class="bb-card-desc">
+        <code>BormAutosave</code> saves only while there are unsaved changes, a moment after the last one
+        (<code>DelayMilliseconds</code>), and once more as the page goes away if a save was waiting; a draft just restored is
+        not saved again. A text box commits when it is left, so fields whose half-typed answers a draft should keep say
+        <code>UpdateOnInput(300)</code>, as these do. <code>BormUnsavedChangesGuard</code> gives an external navigation the
+        browser's own "leave site?" prompt, and asks an in-app one through <code>OnConfirm</code> - a dialog of yours - or
+        the browser's <code>confirm()</code>. A draft is personal data: keep it where the user's other data is kept.
+    </p>
+</div>
+
 @code {
     private const string Source =
 """

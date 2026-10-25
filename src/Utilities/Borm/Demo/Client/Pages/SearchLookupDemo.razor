@@ -39,6 +39,30 @@
     <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How the lookup behaves</h3>
+    <ul class="bb-detail-list">
+        <li>The service is asked once <code>minLength</code> characters are typed and the user pauses for
+            <code>debounceMilliseconds</code>. A search typed past is cancelled through <code>ctx.CancellationToken</code>, and its
+            answer never lands over a newer one. A <code>minLength</code> of 0 searches with empty text - "the top results".</li>
+        <li>A field that opens holding a value is asked once with no <code>SearchText</code> and the value in
+            <code>ctx.CurrentValue</code>, so the box can show a name instead of a bare id. A chosen option is remembered, so its
+            label stays after a later search no longer returns it.</li>
+        <li>Nothing is written to the model per keystroke - only a choice, or leaving the box. Text committed before its results
+            arrived is searched for exactly and matched if it is a result; text that names no result is refused, and the model
+            keeps its last value. <code>SearchFrom(..., allowCustom: true)</code> stores such text as typed instead.</li>
+        <li>A submit, or a wizard's Next, pressed while that search is out waits for its answer rather than sending the value from
+            before. Until enough is typed the box tells assistive technology how much is needed; then how many results there are.</li>
+        <li>For a control of your own, <code>state.SearchOptionsAsync(field, path, text)</code> runs the same search and
+            <code>state.TrackEntryAsync(task)</code> makes a submit wait for an entry still being committed.</li>
+    </ul>
+    <p class="bb-card-desc">
+        A search provider is code, so it is not exported to JSON Schema; check the chosen id on the server, where the same
+        lookup lives. For a list short enough to load whole, use <a href="cascading"><code>OptionsFrom</code></a> and a
+        <a href="combobox-tags">combobox</a>.
+    </p>
+</div>
+
 @code {
     private const string Source =
 """

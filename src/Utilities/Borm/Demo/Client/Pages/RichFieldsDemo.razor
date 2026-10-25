@@ -36,6 +36,50 @@
     <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Masks</h3>
+    <p class="bb-card-desc">
+        In a mask <code>0</code> is a digit, <code>A</code> a letter written in capitals, <code>a</code> a letter as typed and
+        <code>*</code> either; a backslash makes the next character literal, and anything else is literal already. When the user
+        leaves the box, what they typed is put into the shape - separators they typed differently are passed over. A value that
+        does not fit is left as typed and reported with the shape to write it in. <code>storeRaw: true</code> keeps only what
+        filled the slots in the model, while the box and a review show it formatted; a mask of digits alone brings up the
+        number pad. The box is deliberately not rewritten under the caret as the user types: that needs script, and assistive
+        technology describes it badly. <code>x-mask</code> and <code>x-maskStoresRaw</code> carry it through JSON Schema.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Markdown and signatures</h3>
+    <p class="bb-card-desc">
+        <code>AsMarkdown()</code> understands paragraphs, headings, lists, quotes, code, rules, <code>**bold**</code>,
+        <code>*italic*</code>, <code>~~struck~~</code> and links. Everything the user wrote is HTML-encoded, only those elements
+        are written, a link goes only to <code>http</code>, <code>https</code> or <code>mailto</code>, and links carry
+        <code>rel="nofollow noopener noreferrer"</code>. The value is the Markdown text, so length rules count what was typed;
+        <code>BormMarkdown.ToHtml</code> renders it anywhere else and <code>ToPlainText</code> takes the formatting out. It is
+        not a WYSIWYG editor - that needs script, and Borm has none.
+    </p>
+    <p class="bb-card-desc">
+        <code>AsSignature()</code> is drawn with a mouse, a finger or a pen - the page does not scroll while signing - or typed
+        in a handwriting face. Either way the value is an SVG <code>data:</code> URL an <code>&lt;img&gt;</code> shows as it is,
+        and only a value in that shape is ever shown; <code>BormSignature</code> builds, checks and decodes them. A signature is
+        personal data: mark it <code>Sensitive()</code> to keep it out of drafts.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Uploads</h3>
+    <p class="bb-card-desc">
+        With <code>UploadWith</code>, each file is judged by <code>Accept</code> and <code>MaxFileSize</code> first, then sent,
+        listed with a progress bar and a Cancel button while it goes, Remove once it is there, and Retry - with the reason - if
+        the uploader throws. The field holds what the uploader returned (a list of them for a field taking several), never the
+        file, so it is an answer like any other: it goes into a draft and reaches the server as an id. A submit pressed while a
+        file is on its way waits for it; Cancel, clearing the field or leaving the form cancels
+        <code>upload.CancellationToken</code>. <code>state.UploadsFor(path)</code> lists them for a control of your own. To keep
+        the <code>IBrowserFile</code> on the model instead and read it at submit, see <a href="files">file upload</a>.
+    </p>
+</div>
+
 @code {
     private const string Source =
 """
