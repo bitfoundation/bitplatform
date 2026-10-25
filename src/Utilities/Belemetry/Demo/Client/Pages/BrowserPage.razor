@@ -30,12 +30,28 @@
         <code>history.pushState</code>, <code>replaceState</code>, <code>popstate</code> and Blazor's enhanced
         navigation - as a log record with the event name <code>browser.page_view</code>, carrying
         <code>url.full</code>, <code>url.path</code>, <code>page.title</code>, <code>page.referrer</code> and
-        <code>browser.navigation.type</code> (<code>initial</code>, <code>push</code>, <code>replace</code>,
-        <code>pop</code>, <code>hash</code> or <code>manual</code>). Fragment-only changes count only with
-        <code>TrackHashChanges</code>. With <code>TrackPageVisitTime</code> the time spent on each page is recorded
-        too, as a <code>browser.page_visit_time</code> event carrying <code>page.visit.duration</code> (milliseconds)
-        when the next page view starts or the page is hidden - what Application Insights shows as the
-        <code>PageVisitTime</code> event.
+        <code>browser.navigation.type</code>:
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th scope="col">Type</th><th scope="col">When</th></tr></thead>
+            <tbody>
+                <tr><td><code>initial</code></td><td>The document load</td></tr>
+                <tr><td><code>push</code> / <code>replace</code></td><td><code>history.pushState</code> / <code>replaceState</code> - a Blazor link click, <code>NavigationManager.NavigateTo</code>, an enhanced navigation</td></tr>
+                <tr><td><code>pop</code></td><td>The browser's back and forward buttons within the app (<code>popstate</code>)</td></tr>
+                <tr><td><code>hash</code></td><td>A change of the fragment alone - recorded only with <code>TrackHashChanges</code> (off by default)</td></tr>
+                <tr><td><code>manual</code></td><td><code>TrackPageView</code> from C# or JavaScript</td></tr>
+                <tr><td><code>restore</code></td><td>The page came back from the back/forward cache (a <code>pageshow</code> with <code>persisted</code>): no navigation event fires, but to the user it is a new visit</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        With <code>TrackPageVisitTime</code> (off by default) the time spent on each page is recorded too, as a
+        <code>browser.page_visit_time</code> event carrying <code>page.visit.duration</code> (milliseconds) - emitted
+        for the previous page when the next page view starts, and for the current one when it is hidden. The next
+        visit starts when the page is shown again, so time in a background tab or in the back/forward cache is
+        counted nowhere and nothing is counted twice. Application Insights shows it as the
+        <code>PageVisitTime</code> event, the shape its own JavaScript SDK uses.
     </p>
     <p>
         For views the URL does not show - a dialog, a wizard step, a tab - call <code>IBelemetry.TrackPageView</code>.
@@ -96,8 +112,8 @@
         Feature <code>Performance</code>. The five Core Web Vitals and their companions are measured from the
         Performance Timeline and recorded as <code>browser.web_vital</code> events with <code>web_vital.name</code>,
         <code>web_vital.value</code>, <code>web_vital.delta</code>, <code>web_vital.rating</code>
-        (<code>good</code>, <code>needs-improvement</code> or <code>poor</code>, on the official thresholds) and
-        <code>web_vital.id</code>:
+        (<code>good</code>, <code>needs-improvement</code> or <code>poor</code>, on the official thresholds),
+        <code>web_vital.id</code> and <code>web_vital.navigation_type</code>:
     </p>
     <div class="bb-scroll">
         <table class="bb-table">
@@ -116,6 +132,15 @@
         another tab and back after pressing the button. A shift that follows your input within 500 ms does not count
         (the spec's <code>hadRecentInput</code>), so the spacer this button inserts is excluded; the shift when it is
         removed 1.5 s later is the one CLS records.
+    </p>
+    <p>
+        A page restored from the back/forward cache is a new visit to the user, but the browser keeps its old
+        timeline. So, as Google's <code>web-vitals</code> library does, a restore starts a new generation of vitals
+        under new ids: FCP and LCP measured from the restore to the next painted frame, CLS and INP counted from zero,
+        and <code>web_vital.navigation_type = back-forward-cache</code> (otherwise it is the navigation's own type:
+        <code>navigate</code>, <code>reload</code>, <code>back-forward</code> or <code>prerender</code>). To try it, go
+        to another site in this tab and press Back: when the browser restores this page from its cache, the page view
+        feed above shows a view of type <code>restore</code>, and new vitals follow.
     </p>
     <div class="bb-demo">
         <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">Performance - web vitals</span></span></div>
@@ -178,6 +203,25 @@
         <code>PropagateTraceContextTo</code> (same-origin by default) the script adds a W3C <code>traceparent</code>
         header, so the browser span and the server's request span join one trace.
     </p>
+    <ul class="bb-detail-list">
+        <li>
+            <strong>Failures.</strong> A 4xx or 5xx answer sets <code>error.type</code> to the status code; a request
+            that never got an answer sets it to the error's name - <code>TypeError</code> for a network failure of
+            <code>fetch</code>, <code>NetworkError</code> or <code>TimeoutError</code> for an XHR - and all of them get an
+            error status.
+        </li>
+        <li>
+            <strong>Aborted requests are not failures.</strong> A request the app cancelled itself - a superseded
+            search, a navigation away - keeps <code>error.type = AbortError</code> but no error status, so it does not
+            count against the dependency's success rate.
+        </li>
+        <li>
+            <strong>Unknown methods.</strong> A method outside the HTTP conventions' list (a typo, a custom verb) is
+            recorded as <code>http.request.method = _OTHER</code> with the original in
+            <code>http.request.method_original</code>, and the span is named <code>HTTP</code> - so a stray method cannot
+            multiply the span names a backend groups by.
+        </li>
+    </ul>
     <p>
         The echo endpoint below answers with the <code>traceparent</code> it received: its trace id is the trace id
         of the browser span in the feed. URLs in <code>IgnoreUrls</code> (the Blazor framework routes by default, plus
@@ -192,6 +236,7 @@
             <button type="button" class="btn btn-primary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => CallAsync("fetch", "/api/demo/echo"))">fetch /api/demo/echo</button>
             <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => CallAsync("xhr", "/api/demo/echo"))">XHR /api/demo/echo</button>
             <button type="button" class="btn demo-btn-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => CallAsync("fetch", "/api/demo/fail"))">fetch /api/demo/fail (500)</button>
+            <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="AbortAsync">fetch, aborted after 300 ms (AbortError)</button>
         </div>
         @if (_call is not null)
         {
@@ -223,10 +268,18 @@
         <code>exception.type</code>, <code>exception.message</code> and <code>exception.stacktrace</code> - scrubbed by
         the <a href="/privacy">privacy rules</a> first. Messages matching <code>IgnoreErrorMessages</code> are dropped;
         the default list has the harmless <code>ResizeObserver loop</code> warning every browser raises and the
-        empty <code>Script error.</code> of a cross-origin script. Handled .NET exceptions go through
-        <code>IBelemetry.TrackException</code>. An error thrown in a loop is recorded once per
-        <code>Errors.DuplicateWindow</code> (5 s), and at most <code>Errors.MaxPerMinute</code> (100) errors a minute
-        leave the page, so a broken timer cannot flood the queue or the backend.
+        empty <code>Script error.</code> of a cross-origin script (no message, no stack, nothing to act on).
+        Handled .NET exceptions go through <code>IBelemetry.TrackException</code>.
+    </p>
+    <p>
+        An error thrown in a loop - a timer, a render loop, a retry - would fill the queue, evict every other record
+        and cost the backend one record per occurrence from every client. So an error identical to one just recorded
+        (same scope, type, message and first stack lines) is suppressed for <code>Errors.DuplicateWindow</code> (5 s),
+        and at most <code>Errors.MaxPerMinute</code> (100) errors a minute leave the page, with a burst of as many;
+        what is held back is counted as <code>error_limit</code> by <code>getStats()</code>. The .NET pipeline of a
+        WebAssembly or Hybrid app applies the same two rules to its own error logs and <code>TrackException</code>
+        calls; the server pipeline serves every user at once and is not capped. Zero switches a rule off. Very long
+        messages and stack traces are cut at <code>MaxValueLength</code> - see <a href="/privacy">Privacy</a>.
     </p>
     <div class="bb-demo">
         <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">Errors</span></span></div>
@@ -291,8 +344,17 @@
         <code>BitBelemetry.getStats()</code> says what the script dropped since the page loaded and why
         (<code>not_consented</code>, <code>error_limit</code>, <code>queue_full</code>, <code>sampled_out</code>, ...)
         and what became of its requests (<code>delivered</code>, <code>rejected</code>, <code>kept</code> for a later
-        retry, <code>dropped</code>) - the first thing to look at when telemetry does not arrive. On the .NET side the
-        same counts are metrics on the <code>Bit.Belemetry</code> meter, once it is added to <code>Metrics.Meters</code>.
+        retry, <code>dropped</code>) - the first thing to look at when telemetry does not arrive. <code>queued</code> is
+        what waits for the next export, and <code>pending</code> what is held until a consent decision. On the .NET
+        side the same counts are metrics on the <code>Bit.Belemetry</code> meter, once it is added to
+        <code>Metrics.Meters</code> (this demo does - see <a href="/dotnet">.NET instrumentation</a>).
+    </p>
+    <p>
+        The script exports in batches: every <code>Browser.FlushInterval</code> (5 s; 2 s in this demo), as soon as
+        <code>MaxBatchSize</code> (100) records are queued, and whenever the page is hidden. At most
+        <code>MaxQueueSize</code> (1024) records wait; past it the oldest go first (<code>queue_full</code>).
+        <code>Browser.Debug</code> writes the script's own diagnostics to <code>console.debug</code>. The
+        <a href="/troubleshooting">Troubleshooting</a> page puts all of this together.
     </p>
     <div class="bb-demo">
         <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">getStats()</span></span></div>
@@ -307,9 +369,42 @@
 </div>
 
 <div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The JavaScript API</h3>
+    <p>
+        <code>_content/Bit.Belemetry/bit-belemetry.js</code> is an ES module, and it also sets
+        <code>window.BitBelemetry</code>, so plain scripts, static SSR pages and pages without Blazor can use it. In a
+        Blazor app the .NET API covers the same ground; these are for everything else. Every call is safe before
+        <code>start</code> and never throws into the page.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th scope="col">Export</th><th scope="col">What it does</th></tr></thead>
+            <tbody>
+                <tr><td><code>start(config)</code></td><td>Starts the script with a browser configuration (shape on the <a href="/semantic-conventions">Semantic conventions</a> page). Idempotent: a second call only updates the consent defaults and the transport. <code>&lt;BelemetryScript /&gt;</code> and <code>&lt;BelemetryInitializer /&gt;</code> call it for you</td></tr>
+                <tr><td><code>setConsent(features)</code></td><td>Records the decision, a bit mask of <code>BitBelemetry.Features</code>: persists it, purges what was revoked, installs or removes instrumentations</td></tr>
+                <tr><td><code>getConsent()</code> / <code>isConsentDecided()</code></td><td>The effective grant (narrowed to the configured features and by Global Privacy Control), and whether the user has decided</td></tr>
+                <tr><td><code>setUser(id)</code></td><td>The authenticated <code>user.id</code>, or <code>null</code> to clear it; kept only with <code>UserTracking</code></td></tr>
+                <tr><td><code>trackEvent(name, attributes?)</code></td><td>A custom event (feature <code>Events</code>)</td></tr>
+                <tr><td><code>trackPageView(name?, url?, attributes?)</code></td><td>A manual page view, of type <code>manual</code></td></tr>
+                <tr><td><code>trackException(type, message, stack?, attributes?)</code></td><td>A handled error (feature <code>Errors</code>)</td></tr>
+                <tr><td><code>addProcessor(fn)</code></td><td>Runs <code>fn(record)</code> on every record as it is exported; change it in place, or return <code>false</code> to drop it. Returns the function that removes it - see <a href="/processors">Processors</a></td></tr>
+                <tr><td><code>setAttributes(attributes)</code></td><td>Attributes added to every record from now on; a <code>null</code> value removes one key, <code>setAttributes(null)</code> all of them</td></tr>
+                <tr><td><code>flush()</code></td><td>A promise that resolves when everything queued has been handed to the transport</td></tr>
+                <tr><td><code>getContext()</code></td><td><code>{ consent, decided, sessionId, pseudoId, userId }</code></td></tr>
+                <tr><td><code>getStats()</code></td><td>What was dropped and why, what became of the requests, and what is queued and pending - the Diagnostics card above</td></tr>
+                <tr><td><code>Features</code></td><td>The feature bits and groups, the same numbers as <code>BelemetryFeatures</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <CodeSnippet Code="@JsApiCode" Language="JavaScript" />
+</div>
+
+<div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> API</h3>
     <p>Every option of the script lives on <code>options.Browser</code>:</p>
     <ApiTable TypeName="BelemetryBrowserOptions" />
+    <p>The error limits, on <code>options.Errors</code> - applied by the script, and by the .NET pipeline of WebAssembly and Hybrid apps:</p>
+    <ApiTable TypeName="BelemetryErrorOptions" />
     <p>Manual telemetry from C#:</p>
     <ApiTable TypeName="IBelemetry" />
 </div>
@@ -406,6 +501,22 @@
             var traceId = parts is { Length: 4 } ? parts[1] : null;
 
             _call = new($"{(api == "xhr" ? "XHR" : "fetch")} GET {url}", result.Status, result.Ms, traceparent, traceId);
+        }
+        catch
+        {
+            _call = null;
+        }
+    }
+
+    private async Task AbortAsync()
+    {
+        // The echo answers after 2 s; the page gives up after 300 ms, as a superseded search would.
+        const string url = "/api/demo/echo?delay=2000";
+
+        try
+        {
+            var result = await JS.InvokeAsync<JsFetchResult>("blDemo.fetchAbort", url, 300);
+            _call = new($"fetch GET {url}, aborted by the page ({result.Body})", result.Status, result.Ms, null, null);
         }
         catch
         {
@@ -589,8 +700,13 @@
     private const string ErrorsCode = """
         builder.Services.AddBitBelemetryServices(options =>
         {
-            // Regular expressions of messages never recorded.
-            options.Browser.IgnoreErrorMessages.Add("^Script error\\.?$");
+            // Regular expressions of messages never recorded ("ResizeObserver loop" and
+            // "^Script error\.?$" are in the list already).
+            options.Browser.IgnoreErrorMessages.Add("^Extension context invalidated");
+
+            // Error floods: one record per identical error per window, and a rate limit.
+            options.Errors.DuplicateWindow = TimeSpan.FromSeconds(10);   // default 5 s; TimeSpan.Zero records every one
+            options.Errors.MaxPerMinute = 50;                            // default 100; 0 is unlimited
         });
 
         // A handled .NET exception:
@@ -633,5 +749,26 @@
     private const string EventsJsCode = """
         // window.BitBelemetry is set by the module, also on pages without Blazor.
         BitBelemetry.trackEvent('video.played', { 'video.id': 'intro', 'video.position_s': 12 });
+        """;
+
+    private const string JsApiCode = """
+        // A page without Blazor: the module, started from a configuration of your own.
+        import * as BitBelemetry from '/_content/Bit.Belemetry/bit-belemetry.js';
+
+        BitBelemetry.start({
+            service: { name: 'marketing-site' },
+            exporters: [{ type: 'otlp', endpoint: 'https://otel.example.com', protocol: 'http/json' }],
+        });
+
+        // The banner's answer, remembered in localStorage.
+        BitBelemetry.setConsent(BitBelemetry.Features.Diagnostics | BitBelemetry.Features.PageViews);
+
+        BitBelemetry.setUser('42');
+        BitBelemetry.trackEvent('newsletter.subscribed', { 'newsletter.topic': 'releases' });
+        BitBelemetry.trackException('PaymentError', 'The card was declined');
+
+        await BitBelemetry.flush();
+        console.log(BitBelemetry.getContext());   // { consent, decided, sessionId, pseudoId, userId }
+        console.log(BitBelemetry.getStats());     // { dropped, requests, queued, pending }
         """;
 }

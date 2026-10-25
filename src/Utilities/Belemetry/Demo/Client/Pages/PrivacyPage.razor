@@ -1,5 +1,7 @@
 ﻿@page "/privacy"
 @inject IJSRuntime JS
+@inject IBelemetry Belemetry
+@inject ILogger<PrivacyPage> Logger
 
 <PageTitle>Privacy · Belemetry</PageTitle>
 
@@ -16,9 +18,10 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> See it happen</h3>
     <p>
-        Each button below makes a real request, or throws a real error, carrying something that must not be recorded.
-        Open a record in the feed to see what was actually exported: the server received the original URL, the
-        telemetry did not.
+        Each button below makes a real request, throws a real error, or records a real event or log, carrying something
+        that must not be recorded. Open a record in the feed to see what was actually exported: the server received
+        the original URL, the telemetry did not. The first four go through the browser script's rules, the last two
+        through the .NET pipeline's - running in WebAssembly here - which are the same rules.
     </p>
     <div class="bb-demo">
         <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">the privacy rules</span></span></div>
@@ -27,6 +30,8 @@
             <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => FetchAsync(PatternsUrl))">An e-mail and an IP in the query</button>
             <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => FetchAsync(FragmentUrl))">A token in the fragment</button>
             <button type="button" class="btn demo-btn-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ThrowAsync">An error mentioning a card</button>
+            <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="TrackSignUp">TrackEvent with credentials (C#)</button>
+            <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="LogContact">ILogger with an e-mail (C#)</button>
         </div>
         <div class="bb-scroll">
             <table class="bb-table">
@@ -36,12 +41,33 @@
                     <tr><td><code>@PatternsUrl</code></td><td><code>.../api/demo/echo?q=[email]&amp;from=[ip]</code></td></tr>
                     <tr><td><code>@FragmentUrl</code></td><td><code>.../api/demo/echo</code></td></tr>
                     <tr><td><code>@ErrorMessage</code></td><td><code>Payment failed for [email] with card [card]</code></td></tr>
+                    <tr>
+                        <td>
+                            <code>password = "hunter2"</code>, <code>user.password = "hunter2"</code>,
+                            <code>http.request.header.authorization = "Bearer abc123"</code>,
+                            <code>password_policy = "min 12 characters"</code>, <code>contact = "jane.doe&#64;example.com"</code>
+                        </td>
+                        <td>
+                            <code>REDACTED</code>, <code>REDACTED</code>, <code>REDACTED</code>,
+                            <code>min 12 characters</code> (not a credential name), <code>[email]</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>"Confirmation sent to {Email} from {ClientIp}"</code> with <code>jane.doe&#64;example.com</code>, <code>203.0.113.7</code></td>
+                        <td>Body <code>Confirmation sent to [email] from [ip]</code>; attributes <code>Email = [email]</code>, <code>ClientIp = [ip]</code></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
         <TelemetryFeedView Compact="true" Match="@IsPrivacyRecord"
-                           EmptyText="Nothing yet - press a button, then open the record and read its url.full or exception.message." />
+                           EmptyText="Nothing yet - press a button, then open the record and read its url.full, exception.message or attributes." />
     </div>
+    <p>
+        The rules run in a fixed order, per attribute: blocked keys are removed; the ids (<code>session.id</code>,
+        <code>enduser.pseudo.id</code>, <code>user.id</code>) are left to consent; a credential name gets
+        <code>REDACTED</code>; URL attributes get parameter redaction; every other string is pattern-scrubbed. Long
+        values are cut right after, and your <a href="/processors">processors</a> see the result.
+    </p>
 </div>
 
 <div class="bb-card">
@@ -58,11 +84,40 @@
         }
     </div>
     <p>
+        The list covers the signatures and credentials of pre-signed storage URLs too - Amazon S3's
+        <code>X-Amz-Signature</code>, <code>X-Amz-Credential</code> and <code>X-Amz-Security-Token</code>, Google Cloud
+        Storage's <code>X-Goog-Signature</code> and <code>X-Goog-Credential</code>, and an Azure SAS's
+        <code>sig</code> - so a download link in a fetch span cannot be replayed from the telemetry. The
+        <code>url.query</code> attribute gets the same redaction as a whole URL, and a user name and password in a
+        URL's authority (<code>https://user:secret&#64;host/</code>) are always dropped.
+    </p>
+    <p>
         <code>StripQueryString</code> (off) drops the query entirely, for apps whose query strings are mostly
-        personal. <code>StripFragment</code> (on) drops the <code>#...</code> part, because OAuth implicit and hybrid
-        flows return tokens there; with it off, parameters in the fragment are redacted like the query's.
+        personal - and <code>url.query</code> with it. <code>StripFragment</code> (on) drops the <code>#...</code> part,
+        because OAuth implicit and hybrid flows return tokens there; with it off, parameters in the fragment are
+        redacted like the query's.
     </p>
     <CodeSnippet Code="@QueryCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Credential names</h3>
+    <p>
+        Some values are secret whatever they look like: a password has no pattern to recognize. The value of every
+        attribute named in <code>RedactedAttributes</code> becomes <code>REDACTED</code>, in every record and span
+        event, on both sides. A name matches a key whole or its last dot-separated segment, case-insensitively - so
+        the default <code>password</code> covers a structured log value <code>{Password}</code> and
+        <code>user.password</code> alike, and <code>authorization</code> covers
+        <code>http.request.header.authorization</code>, while <code>password_policy</code> is left alone. A trailing
+        <code>*</code> matches a prefix instead (<code>http.request.header.*</code>). The defaults:
+    </p>
+    <div class="demo-badges">
+        @foreach (var name in _defaultRedactedAttributes)
+        {
+            <span class="bb-badge">@name</span>
+        }
+    </div>
+    <CodeSnippet Code="@RedactedCode" Language="C#" Expanded="true" />
 </div>
 
 <div class="bb-card">
@@ -71,17 +126,18 @@
         With <code>ScrubPatterns</code> (on) these patterns are replaced wherever free text can carry them - log
         bodies, span status messages, and every string attribute (structured log values and event attributes
         included), in the browser script and in the .NET pipeline alike. Only the session and user ids,
-        <code>server.address</code> and <code>user_agent.original</code> are kept verbatim.
+        <code>server.address</code> and <code>user_agent.original</code> (whose four-part browser versions read as
+        addresses) are kept verbatim. The patterns are applied in the order of the table.
     </p>
     <div class="bb-scroll">
         <table class="bb-table">
             <thead><tr><th scope="col">Pattern</th><th scope="col">Becomes</th><th scope="col">Notes</th></tr></thead>
             <tbody>
-                <tr><td>E-mail addresses</td><td><code>[email]</code></td><td><code>name&#64;domain.tld</code></td></tr>
-                <tr><td>JSON Web Tokens</td><td><code>[jwt]</code></td><td>Three base64url segments starting with <code>eyJ</code></td></tr>
                 <tr><td>Bearer tokens</td><td><code>Bearer [token]</code></td><td><code>Bearer</code> followed by a token, case-insensitive</td></tr>
+                <tr><td>JSON Web Tokens</td><td><code>[jwt]</code></td><td>Three base64url segments starting with <code>eyJ</code></td></tr>
+                <tr><td>E-mail addresses</td><td><code>[email]</code></td><td><code>name&#64;domain.tld</code></td></tr>
                 <tr><td>Payment card numbers</td><td><code>[card]</code></td><td>13 to 19 digits, optionally grouped with spaces or dashes, and only when the Luhn checksum holds - so order numbers and timestamps survive</td></tr>
-                <tr><td>IPv4 addresses</td><td><code>[ip]</code></td><td>Except after <code>Version=</code>, so .NET assembly versions in stack traces stay readable, and except the host of a URL and <code>server.address</code>: they name the server that was called, not the user</td></tr>
+                <tr><td>IPv4 addresses</td><td><code>[ip]</code></td><td>Except after <code>Version=</code>, so .NET assembly versions in stack traces stay readable; except in a value whose key is named like a version (<code>AppVersion</code>, <code>app.version</code>, <code>build_version</code>), where the other patterns still apply; and except the host of a URL and <code>server.address</code> - <code>http://10.0.0.5:5000/api</code> stays readable in a dependency, because it names the server that was called, not the user</td></tr>
             </tbody>
         </table>
     </div>
@@ -96,8 +152,11 @@
     <p>
         <code>BlockedAttributes</code> removes attributes by exact key from every record and span event, on both
         sides: the browser script gets the list in its configuration, and the .NET pipeline applies it to its own
-        logs and spans, <code>IBelemetry</code> calls, and browser records relayed to it. Use a
-        <a href="/processors">processor</a> on the .NET side for anything more selective.
+        logs and spans, <code>IBelemetry</code> calls, and browser records relayed to it. The ids
+        (<code>session.id</code>, <code>enduser.pseudo.id</code>, <code>user.id</code>) are governed by consent and
+        untouched by every other privacy rule, but blocking one is the operator's explicit choice: a blocked id is
+        never added to a record, and is removed from relayed browser records that carry it. Use a
+        <a href="/processors">processor</a> for anything more selective.
     </p>
     <p>
         <code>CollectUserAgent</code> (on) puts the browser's user agent string in the browser resource as
@@ -106,6 +165,18 @@
         from deriving a location from the client IP; Belemetry never records the client IP itself.
     </p>
     <CodeSnippet Code="@AttributesCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Long values</h3>
+    <p>
+        <code>options.MaxValueLength</code> (32768 characters) cuts longer attribute values, log bodies and span status
+        messages - the OpenTelemetry attribute value length limit, applied to bodies too - so one serialized object
+        or a huge stack trace cannot make a request too large to deliver. The cut comes after the privacy rules, so it
+        never hides an e-mail address from them, and never splits a character in two. Zero keeps strings whole. Azure
+        Monitor applies its own, smaller limits on top (see <a href="/azure-mapping">Azure mapping</a>).
+    </p>
+    <CodeSnippet Code="@MaxValueLengthCode" Language="C#" />
 </div>
 
 <div class="bb-card">
@@ -119,13 +190,42 @@
     private const string FragmentUrl = "/api/demo/echo#access_token=abc123&token_type=bearer";
     private const string ErrorMessage = "Payment failed for jane.doe@example.com with card 4111 1111 1111 1111";
 
-    // The library's own default, read from a fresh options object so this list cannot drift from it.
+    private const string SignUpEvent = "demo.privacy.signup";
+
+    // The library's own defaults, read from a fresh options object so these lists cannot drift from them.
     private static readonly string[] _defaultRedacted = [.. new BelemetryPrivacyOptions().RedactQueryParameters];
+    private static readonly string[] _defaultRedactedAttributes = [.. new BelemetryPrivacyOptions().RedactedAttributes];
 
     private static bool IsPrivacyRecord(TelemetryRecord r)
-        => r.Source == "browser"
-        && ((r.Scope == "bit.belemetry.http" && r.Attributes.TryGetValue("url.full", out var url) && url.Contains("/api/demo/echo", StringComparison.Ordinal))
-            || (r.Kind == "Error" && r.Scope == "bit.belemetry.errors"));
+        => (r.Source == "browser"
+            && ((r.Scope == "bit.belemetry.http" && r.Attributes.TryGetValue("url.full", out var url) && url.Contains("/api/demo/echo", StringComparison.Ordinal))
+                || (r.Kind == "Error" && r.Scope == "bit.belemetry.errors")))
+        || (r.Source == "wasm" && (r.Name == SignUpEvent || r.Scope == typeof(PrivacyPage).FullName));
+
+    private void TrackSignUp()
+    {
+        try
+        {
+            // What a careless call site would send: the .NET pipeline redacts the credential names and scrubs the rest.
+            Belemetry.TrackEvent(SignUpEvent, new Dictionary<string, object?>
+            {
+                ["password"] = "hunter2",
+                ["user.password"] = "hunter2",
+                ["http.request.header.authorization"] = "Bearer abc123",
+                ["password_policy"] = "min 12 characters",
+                ["contact"] = "jane.doe@example.com",
+            });
+        }
+        catch
+        {
+            // Telemetry never takes the page down.
+        }
+    }
+
+    private void LogContact()
+    {
+        try { Logger.LogInformation("Confirmation sent to {Email} from {ClientIp}", "jane.doe@example.com", "203.0.113.7"); } catch { }
+    }
 
     private async Task FetchAsync(string url)
     {
@@ -146,6 +246,28 @@
 
             options.Privacy.StripQueryString = false;   // the default; true drops every query string
             options.Privacy.StripFragment = true;       // the default
+        });
+        """;
+
+    private const string RedactedCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            // Add names of your own: whole keys or last segments, case-insensitive.
+            options.Privacy.RedactedAttributes.Add("ssn");
+            options.Privacy.RedactedAttributes.Add("http.request.header.*");   // a prefix: every request header
+
+            // Or keep a default's values, when "token" means something harmless in your app.
+            options.Privacy.RedactedAttributes.Remove("token");
+        });
+
+        // Anywhere: the value never leaves the process.
+        logger.LogInformation("Password reset for {UserName} with {Password}", userName, password);   // Password = REDACTED
+        """;
+
+    private const string MaxValueLengthCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.MaxValueLength = 8192;   // default 32768 characters; 0 keeps strings whole
         });
         """;
 

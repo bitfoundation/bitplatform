@@ -31,6 +31,13 @@
         unload flush is wired up. Place it once, next to the router.
     </p>
     <CodeSnippet Code="@AppRazorCode" Language="Razor" Expanded="true" />
+    <div class="bb-note bb-note-warn">
+        <p>
+            Add <code>@@using Bit.Belemetry</code> to <code>_Imports.razor</code>. Without it
+            <code>&lt;BelemetryInitializer /&gt;</code> compiles as an unknown HTML element - a warning, not an error -
+            and telemetry silently never starts.
+        </p>
+    </div>
 </div>
 
 <div class="bb-card">
@@ -49,6 +56,15 @@
             whenever it starts. What it cannot see is a JavaScript error thrown before it started.
         </p>
     </div>
+    <p>
+        To catch those too, start the script on load the way <code>&lt;BelemetryScript /&gt;</code> does in a Blazor
+        Web App: write the browser configuration into <code>index.html</code> yourself, as a
+        <code>&lt;script type="application/json" id="bit-belemetry-config"&gt;</code> element before the module (its
+        shape is on the <a href="/semantic-conventions">Semantic conventions</a> page). That element then fixes the
+        exporters; the later <code>start</code> from <code>&lt;BelemetryInitializer /&gt;</code> is a second start, which
+        only updates the consent defaults and the transport, and connects .NET.
+    </p>
+    <CodeSnippet Code="@ConfigElementCode" Language="HTML" />
 </div>
 
 <div class="bb-card">
@@ -62,9 +78,16 @@
     <div class="bb-note bb-note-warn">
         <p>
             A WebAssembly app's configuration is downloaded by every visitor, so exporter headers - API keys
-            included - are public. For a vendor that needs a key, put a collector in between that adds it.
+            included, <code>Headers</code> and <code>BrowserHeaders</code> alike - are public. For a vendor that needs
+            a key, put a collector in between that adds it.
         </p>
     </div>
+    <p>
+        The .NET pipeline exports with the browser's <code>fetch</code> too, so an OTLP exporter set to
+        <code>BelemetryOtlpProtocol.Grpc</code> cannot work here as it is: it is turned into OTLP/HTTP to its
+        <code>BrowserEndpoint</code> (which must be absolute), and one without a <code>BrowserEndpoint</code> is skipped
+        with a startup warning.
+    </p>
 </div>
 
 <div class="bb-card">
@@ -77,15 +100,22 @@
                 <tr><td>Unload</td><td>On <code>pagehide</code> or when the tab is hidden, the script asks .NET for its pending records already serialized, and sends them with <code>fetch(..., { keepalive: true })</code> - async .NET work does not survive the page going away</td></tr>
                 <tr><td>Offline persistence</td><td><code>localStorage</code>, up to <code>Persistence.BrowserMaxBytes</code> (1 MB)</td></tr>
                 <tr><td>Consent</td><td>App-wide: one decision governs the script and the .NET pipeline alike</td></tr>
+                <tr><td>Error floods</td><td>Both the script and the .NET pipeline apply <code>options.Errors</code>: an identical error within <code>DuplicateWindow</code> (5 s) is recorded once, and at most <code>MaxPerMinute</code> (100) errors a minute leave the tab</td></tr>
                 <tr><td><code>OTEL_*</code> variables</td><td>Ignored - there is no process environment in the browser</td></tr>
             </tbody>
         </table>
     </div>
     <p>
-        HTTP calls made with .NET's <code>HttpClient</code> are traced by the .NET pipeline (the
-        <code>System.Net.Http</code> source is on by default) and already carry a <code>traceparent</code>;
-        the script sees that header and leaves those requests alone, so each call is recorded once.
+        Calls made with .NET's <code>HttpClient</code> are recorded once either way. The WebAssembly SDK turns
+        <code>HttpClient</code>'s own tracing off (<code>HttpActivityPropagationSupport</code>), so by default its
+        requests go out through the browser's <code>fetch</code> and the script records them as fetch spans, adding
+        a <code>traceparent</code> only where <code>Browser.PropagateTraceContextTo</code> allows. Set the switch to
+        <code>true</code> in the project and .NET traces them instead, as <code>System.Net.Http</code> spans inside
+        the current activity's trace; they then carry a <code>traceparent</code>, and the script leaves any request
+        that has one alone. The price: <code>HttpClient</code> then sends <code>traceparent</code> to every origin it
+        calls, and a cross-origin API that does not allow the header in CORS fails.
     </p>
+    <CodeSnippet Code="@HttpTracingCode" Language="XML" />
 </div>
 
 <div class="bb-card">
@@ -137,6 +167,25 @@
             ...
             <script type="module" src="_content/Bit.Belemetry/bit-belemetry.js"></script>
         </head>
+        """;
+
+    private const string ConfigElementCode = """
+        <!-- wwwroot/index.html - the script starts as soon as the module loads, before Blazor -->
+        <head>
+            ...
+            <script type="application/json" id="bit-belemetry-config">
+                { "service": { "name": "MyApp" },
+                  "exporters": [ { "type": "otlp", "endpoint": "https://otel.example.com" } ] }
+            </script>
+            <script type="module" src="_content/Bit.Belemetry/bit-belemetry.js"></script>
+        </head>
+        """;
+
+    private const string HttpTracingCode = """
+        <!-- Client.csproj: let .NET trace HttpClient itself (off in WebAssembly by default) -->
+        <PropertyGroup>
+            <HttpActivityPropagationSupport>true</HttpActivityPropagationSupport>
+        </PropertyGroup>
         """;
 
     private const string CollectorCode = """
