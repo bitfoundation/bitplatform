@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.AspNetCore.Components;
 
 namespace Bit.Bortable.Tests;

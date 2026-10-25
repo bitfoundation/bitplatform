@@ -18,7 +18,8 @@ well and leaves out everything that only exists in a real browser:
   never run.
 
 This suite boots the demo (`Bit.Bortable.Demo.Server`, which prerenders the pages and runs them on WebAssembly) and
-drives it in Chromium with Playwright, with real mouse drags. It asserts **effects**: the order readouts the demo binds
+drives it with Playwright, with real mouse drags - in Chromium by default, and in Firefox or WebKit on request
+(`BORTABLE_E2E_BROWSER`, below). It asserts **effects**: the order readouts the demo binds
 to each list (what .NET holds), the items of each list in DOM order (what the browser shows), the placeholder and the
 classes the drag states put on the items mid-drag, and the lines of the event log.
 
@@ -35,7 +36,7 @@ classes the drag states put on the items mid-drag, and the lines of the event lo
 | `EventsTests` | A drag within a list logs `start` when it begins and `update` and `end`, with the old and new index, when it is dropped; a drag across lists logs `start`, then `remove`, `add` and `end` with the source and destination; a drag taken back home logs only `start` and `end`. |
 | `PluginTests` | MultiDrag: a click toggles an item's selection; dragging a selected item moves the whole selection as a block, in its original order, within a list and into another list, and spends the selection; dragging an unselected item drops the selection and moves only that item. Swap: the item under the pointer is highlighted (and only that one, following the pointer) while nothing moves, the drop trades the two items' places within a list and across lists, and a drag released with no target highlighted changes nothing. |
 | `BrowserLayerTests` | `bit-bortable.js` called directly, on lists built for the test: a list with a single item sorts along a flex row, down a flex column, and along the row an inline or floated item makes; right-to-left rows and reversed flex directions are measured in their own order; only a drag of the lists' own, in progress, is allowed to drop - and only on a list that takes it - while dragged text keeps its default; a drag started inside an item that is not draggable itself reaches the app's listeners unmarked; an invalid handle selector starts no drag and throws nothing. |
-| `KeyboardTests` | With the real keyboard: a list is one tab stop and the arrows move the focus; Space picks an item up, the arrows move it live, Space drops it, with the focus following the item and every step read out by the live region; Escape puts it back; an arrow past the list carries the item into the list beside it, and a cancel brings it home; keys pressed on a control inside an item are left to it. |
+| `KeyboardTests` | With the real keyboard: a list is one tab stop and the arrows move the focus; Space picks an item up, the arrows move it live, Space drops it, with the focus following the item and every step read out by the live region; keys pressed faster than the steps come back (and while the last one still slides) each move the item one place; Escape puts it back; an arrow past the list carries the item into the list beside it, and a cancel brings it home; keys pressed on a control inside an item are left to it. |
 | `PointerTests` | Drags without the browser's drag and drop: real touch events (CDP) - a long press picks an item up and a finger drags it, within a list and into another, while a swipe drags nothing; a handle with no touch delay drags at once, the row outside it does not; a pen (CDP pen events) drags without the long press; the mouse with `ForceFallback` drags a preview and starts no native drag; Escape puts a pointer drag back. |
 | `RulesTests` | The rules page: a column `CanDrop` refuses is marked refused and a release there puts the card back (`RevertOnSpill`); a full column (`MaxItems`) does not take the drag; a drop the server refuses (`ConfirmDrop`) slides back and an approved one stays. The accessibility page's buttons move items without dragging and are announced. |
 | `LargeListTests` | Three hundred rows in a scrolling panel: a pointer drag held at the panel's edge scrolls it and carries the row along; a drag of 60 pointer moves sends one position per row crossed to .NET, with and without `IsolateItems` (the counts and round-trip times go to the test output). |
@@ -81,6 +82,8 @@ dotnet test --filter "FullyQualifiedName~.SharedListTests."
 dotnet test --filter "FullyQualifiedName~Dragging_from_A_into_B"
 # Everything but the page sweep
 dotnet test --filter "FullyQualifiedName!~Every_demo_page"
+# In Firefox, or WebKit (after 'playwright.ps1 install firefox webkit')
+BORTABLE_E2E_BROWSER=firefox dotnet test
 ```
 
 The built test assembly is also an executable test host, which takes the same options:
@@ -123,5 +126,6 @@ On a build server (`CI=true`) the same tests **fail** instead, so a suite that n
 |---|---|
 | `BORTABLE_E2E_CONFIGURATION` | Build configuration of the demo server to boot; defaults to the test assembly's own. |
 | `BORTABLE_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE, or a published copy) instead of booting one. |
-| `BORTABLE_E2E_CHANNEL` / `BORTABLE_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`) or a specific Chromium binary. Without either, the Chromium Playwright installed is used, falling back to an installed Chrome, then Edge. |
+| `BORTABLE_E2E_BROWSER` | The engine: `chromium` (the default), `firefox` or `webkit`, each the one Playwright installed (`playwright.ps1 install firefox webkit`). The touch and pen tests send their input through the Chrome DevTools Protocol, so they report **Inconclusive** outside Chromium. |
+| `BORTABLE_E2E_CHANNEL` / `BORTABLE_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`) or a specific browser binary (of the `BORTABLE_E2E_BROWSER` engine). Without either, the Chromium Playwright installed is used, falling back to an installed Chrome, then Edge. |
 | `BORTABLE_E2E_HEADED=1` | Show the browser. |

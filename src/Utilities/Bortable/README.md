@@ -958,7 +958,9 @@ The browser layer marks the drags of the lists with a data type of their own, `a
 lets an item start one. Any other drag - a file, selected text, a link or an element of your own inside an item -
 is left alone: a list neither starts a sort for it nor allows it to be dropped, and its events reach your own
 handlers, around the list or inside its items. The `dragover` and `drop` events of a list's drag stop at the list
-that takes them.
+that takes them. A browser that carries none of a drag's data to the events of the drag (WebKit on Windows shows
+only standard types while it runs) hides that mark: there, the drag in progress, which started from a list's item, is
+taken for the list's - unless it carries files - as SortableJS does everywhere.
 
 ### Live reordering within a list
 

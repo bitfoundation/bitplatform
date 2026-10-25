@@ -1,4 +1,4 @@
-using Bit.Bortable.Tests.E2E.Infrastructure;
+﻿using Bit.Bortable.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 
@@ -76,6 +76,39 @@ public sealed class KeyboardTests : BortableTest
         StringAssert.StartsWith(await AnnouncedAsync(page), "Dropped Item 2 at position 4 of 6");
         Assert.AreEqual("Item 2", await FocusedAsync(page));
         await Expect(page.Locator(".bit-bortable-chosen")).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task Keys_pressed_faster_than_the_steps_come_back_each_move_the_item_one_place()
+    {
+        var page = await OpenAsync("/large-list");
+        await page.Locator("#large-list > [data-bortable-item]").First.FocusAsync();
+        await PressKeyAsync(page, " ");
+
+        // Without waiting in between: each press lands while the step before it is still in flight in .NET, or its
+        // slide still runs - and the item, seen mid-slide, is still where it was.
+        for (int i = 0; i < 12; i++) await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("ArrowUp");
+        await page.Keyboard.PressAsync("ArrowUp");
+        await page.Keyboard.PressAsync(" ");
+        await WaitForQuietAsync(page);
+
+        var index = await page.EvaluateAsync<int>(
+            "() => [...document.querySelectorAll('#large-list > [data-bortable-item]')].findIndex(e => e.querySelector('.large-name').textContent === 'Row 1')");
+        Assert.AreEqual(10, index, "Row 1 took one step per arrow pressed.");
+        await Expect(page.Locator("#large-order")).ToHaveTextAsync("Row 2, Row 3, Row 4, Row 5, Row 6");
+        await Expect(page.Locator(".bit-bortable-chosen")).ToHaveCountAsync(0);
+
+        // The panel scrolled along with the row, below the rows first in view, whether the browser kept the focus on the
+        // moved element (Firefox, WebKit) or took it away and had it given back (Chromium).
+        await EventuallyAsync(() => page.EvaluateAsync<bool>(
+            """
+            () => {
+              const panel = document.getElementById('large-panel').getBoundingClientRect();
+              const row = [...document.querySelectorAll('#large-list > [data-bortable-item]')].find(e => e.querySelector('.large-name').textContent === 'Row 1').getBoundingClientRect();
+              return row.top >= panel.top - 1 && row.bottom <= panel.bottom + 1;
+            }
+            """), "Row 1 is scrolled into view in its panel");
     }
 
     [TestMethod]

@@ -1,4 +1,4 @@
-namespace Bit.Bortable;
+﻿namespace Bit.Bortable;
 
 /// <summary>
 /// What a list tells <c>bit-bortable.js</c> about itself when it registers, and again whenever one of these values

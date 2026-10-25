@@ -1,4 +1,4 @@
-namespace Bit.Bortable;
+﻿namespace Bit.Bortable;
 
 /// <summary>
 /// What a finished drag still has to tell the app. It is worked out while the drag handlers are serialized

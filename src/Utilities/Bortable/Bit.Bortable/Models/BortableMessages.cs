@@ -1,4 +1,4 @@
-namespace Bit.Bortable;
+﻿namespace Bit.Bortable;
 
 /// <summary>
 /// The texts a <see cref="Bortable{TItem}"/> list gives assistive technology: the instructions every item points to,

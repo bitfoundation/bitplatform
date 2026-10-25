@@ -1,4 +1,4 @@
-namespace Bit.Bortable;
+﻿namespace Bit.Bortable;
 
 /// <summary>How a drag of a <see cref="Bortable{TItem}"/> list was made, as its events report it.</summary>
 public enum BortableInput

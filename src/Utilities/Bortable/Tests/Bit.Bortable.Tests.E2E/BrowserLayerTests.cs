@@ -1,4 +1,4 @@
-using Bit.Bortable.Tests.E2E.Infrastructure;
+﻿using Bit.Bortable.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 
 namespace Bit.Bortable.Tests.E2E;
@@ -97,6 +97,13 @@ public sealed class BrowserLayerTests : BortableTest
         var idle = await DragOversCancelledAsync(page, ("#disable-sort-target", "application/x-bit-bortable"));
         Assert.IsFalse(idle[0], "A drag no list started was allowed to drop.");
 
+        // Whether the browser shows the mark to the events of the drag (WebKit on Windows carries none of a drag's data).
+        await page.EvaluateAsync("""
+            () => document.addEventListener('dragover', e => {
+              if (e.isTrusted) window.__markShown ??= e.dataTransfer.types.includes('application/x-bit-bortable');
+            }, true)
+            """);
+
         // A drag from the target list: the Put="false" source does not take it, the target does.
         await PressAsync(page, (await BoxAsync(Item(page, "disable-sort-target", "Item A"))).Centre);
         await EventuallyAsync(async () => (await DragOversCancelledAsync(page, ("#disable-sort-target", "application/x-bit-bortable")))[0],
@@ -106,9 +113,11 @@ public sealed class BrowserLayerTests : BortableTest
             ("#disable-sort-target", "text/plain"),
             ("#disable-sort-source", "application/x-bit-bortable"),
             ("h1", "application/x-bit-bortable"));
+        bool markShown = await page.EvaluateAsync<bool>("() => window.__markShown !== false");
         await ReleaseAsync(page);
 
-        Assert.IsFalse(during[0], "Text dragged over the list was swallowed.");
+        // Where the browser hides the mark, the drag in progress is the list's own whatever it carries.
+        if (markShown) Assert.IsFalse(during[0], "Text dragged over the list was swallowed.");
         Assert.IsFalse(during[1], "A list that refuses the item allowed its drop.");
         Assert.IsFalse(during[2], "The page outside the lists allowed the drop.");
     }

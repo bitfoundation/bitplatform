@@ -1,4 +1,4 @@
-// A Renderer is the framework's own extension point for running components outside a browser -
+﻿// A Renderer is the framework's own extension point for running components outside a browser -
 // bUnit and the static HTML renderer are built on it - and it lives in the RenderTree namespace the
 // analyzer guards against everyday use. Hosting the real Bortable is the whole point here, and so is
 // reading back the frames it rendered: they are where its event handlers are found.

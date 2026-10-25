@@ -9,8 +9,8 @@
 
 /* The library's drag states, tinted with the site's brand color. html:root rather than :root:
    bit-bortable.css declares the same property on :root and is linked after this file, so a plain
-   :root here would lose. It has to be set on the root itself, too: the library derives its state
-   colors from it there, and those derived values are what every list inherits. */
+   :root here would lose. Every list inherits it from there, and each state color is worked out
+   from it on the item that wears the state. */
 html:root {
     --bit-bortable-accent-rgb: 18, 118, 198;
 }
@@ -136,18 +136,23 @@ html:root[bit-theme="dark"] {
 }
 
 /* The library's swap and selection states, restated for the cards: .demo-item paints its own
-   background, border and shadow, and these have to win over it, over .tinted and over :hover. */
+   background, border and shadow, and these have to win over it, over .tinted and over :hover.
+   bit-bortable.css declares no --bit-bortable-swap-* or -selected-* property, only uses them with
+   its defaults as fallbacks, so the same fallbacks are repeated here: a var() of an undeclared
+   property with none would void the whole declaration, leaving the card bare. */
 .demo-item.bit-bortable-swap-highlight,
 .nested-item.bit-bortable-swap-highlight {
-    background: linear-gradient(var(--bit-bortable-swap-bg), var(--bit-bortable-swap-bg)), var(--bb-surface);
-    outline: var(--bit-bortable-swap-outline);
+    --demo-swap-bg: var(--bit-bortable-swap-bg, rgba(var(--bit-bortable-accent-rgb), 0.18));
+    background: linear-gradient(var(--demo-swap-bg), var(--demo-swap-bg)), var(--bb-surface);
+    outline: var(--bit-bortable-swap-outline, 2px dashed rgba(var(--bit-bortable-accent-rgb), 0.6));
     outline-offset: -2px;
 }
 
 .demo-item.bit-bortable-selected {
+    --demo-selected-bg: var(--bit-bortable-selected-bg, rgba(var(--bit-bortable-accent-rgb), 0.25));
     border-color: transparent;
-    background: linear-gradient(var(--bit-bortable-selected-bg), var(--bit-bortable-selected-bg)), var(--bb-surface);
-    box-shadow: var(--bit-bortable-selected-ring);
+    background: linear-gradient(var(--demo-selected-bg), var(--demo-selected-bg)), var(--bb-surface);
+    box-shadow: var(--bit-bortable-selected-ring, inset 0 0 0 2px rgba(var(--bit-bortable-accent-rgb), 0.8));
 }
 
 /* The drag handle of the Handle page: the only part of a row that starts a drag. */

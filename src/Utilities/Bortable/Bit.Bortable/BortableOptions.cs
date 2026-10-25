@@ -1,4 +1,4 @@
-namespace Bit.Bortable;
+﻿namespace Bit.Bortable;
 
 /// <summary>
 /// App-wide defaults for every <see cref="Bortable{TItem}"/> list. A value set here replaces the parameter's own

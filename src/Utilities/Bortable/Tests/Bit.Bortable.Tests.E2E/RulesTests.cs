@@ -1,4 +1,4 @@
-using Bit.Bortable.Tests.E2E.Infrastructure;
+﻿using Bit.Bortable.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 

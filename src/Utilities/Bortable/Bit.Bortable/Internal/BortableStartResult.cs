@@ -1,4 +1,4 @@
-namespace Bit.Bortable;
+﻿namespace Bit.Bortable;
 
 /// <summary>What a list answers the browser layer when a drag of one of its items starts.</summary>
 internal sealed class BortableStartResult

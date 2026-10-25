@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 
 namespace Bit.Bortable.Tests;
 

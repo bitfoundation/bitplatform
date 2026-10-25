@@ -1,4 +1,4 @@
-# Bortable improvement programme: progress record
+﻿# Bortable improvement programme: progress record
 
 This file tracks the audit, the competitor matrix, the gap backlog and the verification evidence of the effort to
 make Bortable a complete sortable and drag-and-drop library. It is a working record for maintainers, not user
@@ -252,13 +252,36 @@ Release checks (all run, all passing):
   trip 6.6 ms, slowest 22.9 ms - with `IsolateItems` 4.6 ms and 7.5 ms. Under Playwright, Chromium fires `dragover`
   only on a move; a real browser also repeats it every 50 ms while the pointer rests, none of which reaches .NET now.
 
+### Round 11 - every demo page in Chromium, Firefox and WebKit
+
+The E2E suite gained `BORTABLE_E2E_BROWSER` (`chromium` | `firefox` | `webkit`; the CDP touch and pen tests are
+Inconclusive outside Chromium) and ran in all three engines; on top of it, Playwright scripts swept every page in each
+engine: load without console errors, narrow widths (320, 375, 768) without overflow, dark mode, mid-drag states,
+touch and pen drags through synthetic pointer events (so the pointer engine ran in Firefox and WebKit too), the
+rules board, the event log, the threshold sliders, keyboard drags on every plugin page, selection ranges, the large
+list's auto-scroll and keyboard. Findings and their fate:
+
+| # | Finding | Fix | Evidence |
+| --- | --- | --- | --- |
+| X1 | WebKit (Playwright's Windows build) carries none of a drag's data to the events of the drag - `types` lists only `text/plain`, `text/uri-list`, `text/html` - so no native drag was ever allowed to drop: 35 of the suite's tests failed there | The first drag event after the session's own `dragstart` decides whether the browser shows the mark; where it does not, the drag in progress is taken for the lists' (never one carrying files), as SortableJS does. A `dragstart` the lists do not own ends a native session whose end was lost | WebKit suite green; `BrowserLayerTests` adjusted for the one check such a browser cannot make |
+| X2 | An interrupted FLIP slide's `transitioncancel` arrives a frame later at every listener on the element, and the new slide's took it for its own end: the item kept sliding (on the stylesheet's transition) while the hit test and the keyboard took it for settled | A transition event that arrives while the item is still offset (translated) is ignored: a slide's own end leaves none | `KeyboardTests` (below) |
+| X3 | Arrow keys pressed faster than the steps return were lost: each one's target was measured at keydown, from items seen mid-slide, and a waiting step was replaced by the next - 15 presses moved an item one place | Arrows, Home and End queue as keys and are resolved when their turn comes, from the laid-out boxes (`layoutRect`, the slides' offsets taken off); a held key's repeats are let go while a step is in flight | `KeyboardTests.Keys_pressed_faster_than_the_steps_come_back_each_move_the_item_one_place` |
+| X7 | In WebKit (and Firefox), a keyboard-dragged item could leave its scroll container's view: a moved element keeps the focus there (Chromium takes it away, and the refocus scrolled), and nothing else brought it into view | Every step reveals the item (`scrollIntoView` nearest, a scroll margin covering the slide still to come), and again once its slide is over, for WebKit, which leaves the margin out | `KeyboardTests.Keys_pressed_faster_than_the_steps_come_back_each_move_the_item_one_place` |
+| X4 | The demo's card styles for the swap target and the multi-drag selection used `--bit-bortable-swap-*` / `-selected-*` without fallbacks, properties the library only uses as fallbacks: the declarations were void, so a selected card showed bare and the swap target lost its outline | The library's fallbacks repeated in `demo.css` | screenshots; a static check of every `var()` in the demo's CSS |
+| X5 | `/accessibility` said → carries an item to the Sprint; where the columns stack, ↓ does | Text says both | narrow-width keyboard check |
+| X6 | `LargeListTests` asserted Row 1 past index 15, which it reaches only when the panel has scrolled a little more than the poll waits for | Asserted past the rows that were in view at pick-up, the stated intent | - |
+
+Not defects of the library or the demo: under heavy memory pressure (other sessions' browsers on the machine) Chromium
+pages sometimes never became interactive - WebAssembly downloads took 20-25 s and renderers crashed - and the
+shared site kit's search ranks "Swap thresholds" above "Swap" for "swap" (every Utilities demo has the same palette).
+
 ## Remaining limitations and follow-ups
 
 - Virtualization (G19) and tree-specific drop-on-node / expand-on-hover (G20) are deliberate boundaries, documented.
 - Keyboard dragging in screen readers' browse modes depends on the reader passing keys through; `MoveAsync` /
   `MoveToAsync` buttons are the documented alternative (demonstrated on `/accessibility`). Not yet verified by hand
   with NVDA/JAWS/VoiceOver - recommended before a stable release.
-- The E2E suite runs Chromium only (as the existing CI workflow does); Firefox and WebKit, and real mobile devices
-  for the touch engine, have not been exercised.
+- The E2E suite runs in Chromium, Firefox and WebKit (round 11), but the CI workflow still runs Chromium only, and the
+  touch engine has run on real touch input only in Chromium (CDP) - not yet on real mobile devices.
 - `Over` positions are measured against the layout at the time of the step; content that resizes mid-drag (images
   loading) is measured again on the next pointer move, not before.

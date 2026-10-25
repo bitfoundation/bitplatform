@@ -1,4 +1,4 @@
-using Bit.Bortable.Tests.E2E.Infrastructure;
+﻿using Bit.Bortable.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 
@@ -21,6 +21,9 @@ public sealed class PointerTests : BortableTest
 
     private async Task<(IPage Page, ICDPSession Cdp)> OpenTouchAsync()
     {
+        if (E2EEnvironment.IsChromium is false)
+            Assert.Inconclusive($"Touch and pen input is sent through the Chrome DevTools Protocol, which {E2EEnvironment.Browser} does not speak.");
+
         var page = await OpenAsync("/touch", new BrowserNewContextOptions
         {
             ViewportSize = new ViewportSize { Width = 1280, Height = 1400 },

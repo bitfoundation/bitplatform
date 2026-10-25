@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.Json;
 using Bit.Bortable.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
@@ -44,6 +44,8 @@ public sealed class LargeListTests : BortableTest
         await WaitForQuietAsync(page);
 
         var panel = await BoxAsync(page.Locator("#large-panel"));
+        var inView = await page.EvaluateAsync<int>(
+            "() => { const p = document.getElementById('large-panel').getBoundingClientRect(); return [...document.querySelectorAll('#large-list > [data-bortable-item]')].filter(e => e.getBoundingClientRect().top < p.bottom).length; }");
         await PressAsync(page, (await BoxAsync(Row(page, "Row 1"))).Centre);
         // Into the bottom edge band of the panel, and held there.
         await page.Mouse.MoveAsync((float)(panel.X + panel.Width / 2), (float)(panel.Bottom - 8), new MouseMoveOptions { Steps = 20 });
@@ -52,10 +54,11 @@ public sealed class LargeListTests : BortableTest
         await WaitForQuietAsync(page);
         await ReleaseAsync(page);
 
-        // Row 1 went down with the scroll, far past the rows that were in view when it was picked up.
+        // Row 1 went down with the scroll, past the rows that were in view when it was picked up. How far past depends on
+        // how long the panel scrolled before the poll above saw it, so only that bound is held.
         var index = await page.EvaluateAsync<int>(
             "() => [...document.querySelectorAll('#large-list > [data-bortable-item]')].findIndex(e => e.querySelector('.large-name').textContent === 'Row 1')");
-        Assert.IsGreaterThan(15, index, $"Row 1 is at {index}.");
+        Assert.IsGreaterThan(inView, index, $"Row 1 is at {index}, and {inView} rows were in view when it was picked up.");
         await Expect(page.Locator("#large-order")).Not.ToContainTextAsync("Row 1,");
     }
 

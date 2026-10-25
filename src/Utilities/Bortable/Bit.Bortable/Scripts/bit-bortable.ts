@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * Bit.Bortable browser layer.
  *
  * The sorting engine - which lists take a drag, what a position means, every change to the bound lists and every
@@ -183,6 +183,8 @@ interface Session {
     started: Promise<void>;
     /** When the last dragover was seen: a mouse move long after it means the browser lost the dragend. */
     lastOver: number;
+    /** Native: whether the browser keeps the drag's mark from the events of the drag (null until the first of them). */
+    unmarked: boolean | null;
 }
 
 // --- Registration ----------------------------------------------------------------------------------------
@@ -655,11 +657,27 @@ function resetHandle(itemEl: Element): void {
 
 // --- Native drag routing ---------------------------------------------------------------------------------
 
-/** Whether a native drag event belongs to the drag in progress. */
+/**
+ * Whether a native drag event belongs to the drag in progress. A list's own drag carries its mark, but some browsers
+ * (WebKit on Windows) carry none of a drag's data to the events of the drag, the mark included. There is one drag at
+ * a time, so the first event after the session's own dragstart is about that drag: when it comes without the mark,
+ * the browser hides it, and from then on the drag is told by being the one in progress, as SortableJS tells it -
+ * unless it carries files, which only come from outside the page.
+ */
 function isSessionDrag(e: DragEvent): Session | null {
     const s = session;
-    if (!s || s.state === 'ended' || s.state === 'refused') return null;
-    return e.dataTransfer?.types.includes(DRAG_TYPE) ? s : null;
+    if (!s || s.mode !== 'native' || s.state === 'ended' || s.state === 'refused') return null;
+    const types = e.dataTransfer?.types;
+    if (!types) return null;
+    const marked = types.includes(DRAG_TYPE);
+    s.unmarked ??= !marked;
+    return marked || (s.unmarked && !types.includes('Files')) ? s : null;
+}
+
+/** A drag the lists do not own has started: a native drag of theirs still open is over, and its end was lost. */
+function endLostNativeDrag(): void {
+    const s = session;
+    if (s && s.mode === 'native' && (s.state === 'active' || s.state === 'starting')) void finish(s, 'abandon');
 }
 
 document.addEventListener('dragstart', (e: DragEvent) => {
@@ -668,10 +686,16 @@ document.addEventListener('dragstart', (e: DragEvent) => {
     // A native drag of something inside an item that is not itself draggable right now (a link or an image
     // outside the handle, an element of the app's own, or anything in a filtered item) stays a plain browser
     // drag: left unmarked, it reaches every listener as usual, and no list treats it as a sort.
-    if (!(item instanceof HTMLElement) || item.getAttribute('draggable') !== 'true' || !e.dataTransfer) return;
+    if (!(item instanceof HTMLElement) || item.getAttribute('draggable') !== 'true' || !e.dataTransfer) {
+        endLostNativeDrag();
+        return;
+    }
     const list = listOfItem(item);
     const key = item.getAttribute(KEY);
-    if (!list || !key) return;
+    if (!list || !key) {
+        endLostNativeDrag();
+        return;
+    }
 
     // The mark the lists recognise the drag by. Setting data also makes older browsers (Firefox) start the drag.
     e.dataTransfer.setData(DRAG_TYPE, list.opts.id);
@@ -771,6 +795,7 @@ function startSession(start: SessionStart): Session {
         sent: null,
         started: Promise.resolve(),
         lastOver: performance.now(),
+        unmarked: null,
     };
     session = s;
     return s;
@@ -1030,6 +1055,12 @@ interface KeyStep {
     index: number;
     /** Whether the focus follows the item afterwards: not when the step was made by moving the focus elsewhere. */
     refocus?: boolean;
+    /**
+     * An arrow, Home or End: where it takes the item is worked out when the step is taken, from where the steps before
+     * it left the item - not from where the item was when the key was pressed, or quick presses would all aim at the
+     * same place.
+     */
+    key?: string;
 }
 
 /** A registered list by its id, if it is on the page. */
@@ -1058,6 +1089,25 @@ function itemsOf(listEl: Element): HTMLElement[] {
 function visible(el: Element): boolean {
     const r = el.getBoundingClientRect();
     return r.width > 0 || r.height > 0;
+}
+
+/**
+ * Where an element is laid out on screen: its box without the offset of the FLIP slides running on it or on the items
+ * around it. The keys move the item by where things are, not by where they are seen mid-slide - a key pressed while
+ * the last step still slides would otherwise take the item that slid into its old place for the next one.
+ */
+function layoutRect(el: Element): DOMRect {
+    const r = el.getBoundingClientRect();
+    let dx = 0, dy = 0;
+    for (let a: Element | null = el; a; a = a.parentElement) {
+        if (!animations.has(a)) continue;
+        const transform = getComputedStyle(a).transform;
+        if (!transform || transform === 'none') continue;
+        const m = new DOMMatrixReadOnly(transform);
+        dx += m.m41;
+        dy += m.m42;
+    }
+    return dx || dy ? new DOMRect(r.left - dx, r.top - dy, r.width, r.height) : r;
 }
 
 const ARROWS: Record<string, [number, number]> = {
@@ -1144,8 +1194,8 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
     const items = itemsOf(list.el).filter(visible);
     let next: HTMLElement | null = null;
     if (e.key in ARROWS) {
-        next = nearestInDirection(item.getBoundingClientRect(),
-            items.filter(i => i !== item).map(i => ({ value: i, rect: i.getBoundingClientRect() })), ARROWS[e.key]);
+        next = nearestInDirection(layoutRect(item),
+            items.filter(i => i !== item).map(i => ({ value: i, rect: layoutRect(i) })), ARROWS[e.key]);
     } else if (e.key === 'Home' || e.key === 'End') {
         next = e.key === 'Home' ? items[0] : items[items.length - 1];
     } else {
@@ -1194,15 +1244,22 @@ async function pickUp(list: ListState, item: HTMLElement): Promise<void> {
 
     // A key pressed before .NET had answered the pick waited for its id: without it, .NET would take a drop for one
     // about no drag at all, and this drag would never end.
-    const waiting = pendingSteps.get(s);
-    pendingSteps.delete(s);
+    const waiting = pendingSteps.get(s)?.shift();
     if (waiting) void keyStep(s, waiting);
 }
 
-// The step a keyboard drag waits to take once the one in flight returns: the latest arrow, or the end.
-const pendingSteps = new WeakMap<Session, KeyStep>();
+// The steps a keyboard drag waits to take, in order, once the one in flight returns: every key pressed meanwhile, up
+// to the end.
+const pendingSteps = new WeakMap<Session, KeyStep[]>();
 
 function keyDuringDrag(s: Session, e: KeyboardEvent): void {
+    // A held key repeats faster than a step may come back from .NET (on Blazor Server, far faster): the repeats that
+    // arrive meanwhile are let go, so the item moves at the pace of the steps and stops when the key is released.
+    if (e.repeat && (s.busy || s.state === 'starting') && (e.key in ARROWS || e.key === 'Home' || e.key === 'End')) {
+        e.preventDefault();
+        return;
+    }
+
     let step: KeyStep | null = null;
     switch (e.key) {
         case ' ':
@@ -1221,18 +1278,19 @@ function keyDuringDrag(s: Session, e: KeyboardEvent): void {
             // The focus moves on, and is not brought back; the item stays where it is now.
             void keyStep(s, { action: 'drop', list: null, index: -1, refocus: false });
             return;
-        case 'Home':
-        case 'End': {
-            const list = listById(s.listId);
-            if (list) step = { action: 'to', list: null, index: e.key === 'Home' ? 0 : Math.max(0, itemsOf(list.el).length - 1) };
-            break;
-        }
         default:
-            if (e.key in ARROWS) step = arrowStep(s, ARROWS[e.key]);
+            if (e.key in ARROWS || e.key === 'Home' || e.key === 'End') step = { action: 'to', list: null, index: -1, key: e.key };
             else return;
     }
     e.preventDefault();
-    if (step) void keyStep(s, step);
+    void keyStep(s, step);
+}
+
+/** Where an arrow, Home or End takes the dragged item from where it is now; null when it goes nowhere. */
+function stepOfKey(s: Session, key: string): KeyStep | null {
+    if (key in ARROWS) return arrowStep(s, ARROWS[key]);
+    const list = listById(s.listId);
+    return list ? { action: 'to', list: null, index: key === 'Home' ? 0 : Math.max(0, itemsOf(list.el).length - 1) } : null;
 }
 
 /**
@@ -1250,11 +1308,11 @@ function arrowStep(s: Session, dir: [number, number]): KeyStep | null {
     const swapList = listById(s.swapListId);
     const cursorList = list.opts.swap && swapList ? swapList : list;
     const cursor = (list.opts.swap && swapList ? itemByKey(swapList.el, s.swapKey) : null) ?? itemEl;
-    const from = cursor.getBoundingClientRect();
+    const from = layoutRect(cursor);
 
     const items = itemsOf(cursorList.el);
     const within = nearestInDirection(from,
-        items.filter(i => i !== itemEl && visible(i)).map(i => ({ value: i, rect: i.getBoundingClientRect() })), dir);
+        items.filter(i => i !== itemEl && visible(i)).map(i => ({ value: i, rect: layoutRect(i) })), dir);
     if (within) return { action: 'to', list: cursorList.opts.id, index: items.indexOf(within) };
 
     // Past the end of the list: the nearest list beyond it that takes the drag (never one inside the item itself).
@@ -1262,9 +1320,9 @@ function arrowStep(s: Session, dir: [number, number]): KeyStep | null {
     for (const other of lists.values()) {
         if (other === cursorList || !other.el.isConnected || !s.accepting.has(other.opts.id)) continue;
         if (itemEl.contains(other.el) || other.el.closest(`[${PLACEHOLDER}]`)) continue;
-        others.push({ value: other, rect: other.el.getBoundingClientRect() });
+        others.push({ value: other, rect: layoutRect(other.el) });
     }
-    const next = nearestInDirection(cursorList.el.getBoundingClientRect(), others, dir);
+    const next = nearestInDirection(layoutRect(cursorList.el), others, dir);
     if (!next) return null;
 
     const theirs = itemsOf(next.el).filter(visible);
@@ -1282,7 +1340,7 @@ function nearestItem(items: HTMLElement[], from: DOMRect): HTMLElement | null {
     let nearest: HTMLElement | null = null;
     let best = Infinity;
     for (const item of items) {
-        const d = distanceSquared(item.getBoundingClientRect(), cx, cy);
+        const d = distanceSquared(layoutRect(item), cx, cy);
         if (d < best) { best = d; nearest = item; }
     }
     return nearest;
@@ -1293,8 +1351,8 @@ function insertionIndex(list: ListState, items: HTMLElement[], from: DOMRect): n
     const nearest = nearestItem(items, from);
     if (!nearest) return 0;
     const cx = from.left + from.width / 2, cy = from.top + from.height / 2;
-    const r = nearest.getBoundingClientRect();
-    const entries = items.map((el, index) => ({ el, index, rect: el.getBoundingClientRect() }));
+    const r = layoutRect(nearest);
+    const entries = items.map((el, index) => ({ el, index, rect: layoutRect(el) }));
     const vertical = isVertical(list.el, list.opts.direction, entries, null);
     const reversed = isReversed(list.el, vertical, entries);
     const after = vertical ? cy > r.top + r.height / 2 : cx > r.left + r.width / 2;
@@ -1304,13 +1362,22 @@ function insertionIndex(list: ListState, items: HTMLElement[], from: DOMRect): n
 /** Takes one step of a keyboard drag, or, while one is in flight, keeps it for when that one returns. */
 async function keyStep(s: Session, step: KeyStep): Promise<void> {
     if (s.busy || s.state === 'starting') {
-        // The latest arrow replaces a waiting one; a drop or a cancel is never replaced by an arrow. Until the pick has
-        // been answered (and the drag has its id) every step waits, as it would behind any other step in flight.
-        const waiting = pendingSteps.get(s);
-        if (!waiting || waiting.action === 'to' || step.action !== 'to') pendingSteps.set(s, step);
+        // Every key pressed meanwhile takes its turn, in order, up to the one that ends the drag. Until the pick has been
+        // answered (and the drag has its id) every step waits, as it would behind any other step in flight.
+        const queue = pendingSteps.get(s) ?? [];
+        if (!queue.some(waiting => waiting.action !== 'to')) queue.push(step);
+        pendingSteps.set(s, queue);
         return;
     }
 
+    const taken = step.key ? stepOfKey(s, step.key) : step;
+    if (taken) await takeKeyStep(s, taken);
+
+    const next = pendingSteps.get(s)?.shift();
+    if (next && s.state === 'active') await keyStep(s, next);
+}
+
+async function takeKeyStep(s: Session, step: KeyStep): Promise<void> {
     const list = listById(s.listId) ?? s.home;
     const target = listById(step.list) ?? list;
     const flip = armFlip(Array.from(new Set([list.el, target.el, s.home.el].filter(el => el.isConnected))));
@@ -1340,10 +1407,6 @@ async function keyStep(s: Session, step: KeyStep): Promise<void> {
     } finally {
         s.busy = null;
     }
-
-    const next = pendingSteps.get(s);
-    pendingSteps.delete(s);
-    if (next && s.state === 'active') await keyStep(s, next);
 }
 
 function end(s: Session): void {
@@ -1365,9 +1428,41 @@ function follow(s: Session, result: KeyResult, refocus: boolean): void {
     const item = list ? itemByKey(list.el, s.key) : null;
     if (item) {
         s.itemEl = item;
-        if (refocus && document.activeElement !== item) item.focus();
+        if (refocus) {
+            // A moved item keeps the focus in some browsers and loses it in others, so the focus alone does not bring it
+            // into view: it is revealed in every case.
+            if (document.activeElement !== item) item.focus({ preventScroll: true });
+            reveal(item);
+        }
     }
     if (s.state === 'active') markOver(s, list);
+}
+
+let revealTimer = 0;
+
+/**
+ * Scrolls an item into view, as little as it takes, where it is laid out: a slide that has only just started still
+ * shows it at its old place, so the scroll margin stretches the box revealed over the distance left to slide. A
+ * browser that leaves the margin out of the scroll (WebKit) reveals the item where it is seen; the item is revealed
+ * again once its slide is over, when the two are the same.
+ */
+function reveal(item: HTMLElement): void {
+    const seen = item.getBoundingClientRect();
+    const laid = layoutRect(item);
+    const dx = seen.left - laid.left, dy = seen.top - laid.top;
+    const style = item.style;
+    const margin = style.scrollMargin;
+    style.scrollMargin = `${Math.max(0, dy)}px ${Math.max(0, -dx)}px ${Math.max(0, -dy)}px ${Math.max(0, dx)}px`;
+    item.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    style.scrollMargin = margin;
+
+    clearTimeout(revealTimer);
+    if (!dx && !dy) return;
+    const duration = item.parentElement ? durationOf(item.parentElement) : 0;
+    // Not when the focus has moved on meanwhile: the page then goes where the focus went.
+    revealTimer = window.setTimeout(() => {
+        if (item.isConnected && document.activeElement === item) item.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }, duration + 20);
 }
 
 /** The id of the list that renders an item with `key` (keys are unique across the lists of a page). */
@@ -1856,8 +1951,10 @@ export function play(listEl: Element | null, duration: number): void {
 
         let timer = 0;
         const done = (e?: Event): void => {
-            // transitionend bubbles: ignore the ones from nested items.
-            if (e && (e.target !== child || (e as TransitionEvent).propertyName !== 'transform')) return;
+            // transitionend bubbles: ignore the ones from nested items. And an event that comes while the item is still
+            // offset is about the slide this one interrupted, whose transitioncancel the browser sends a frame later - to
+            // every listener on the element, this one included.
+            if (e && (e.target !== child || (e as TransitionEvent).propertyName !== 'transform' || translated(child))) return;
             child.removeEventListener('transitionend', done);
             child.removeEventListener('transitioncancel', done);
             clearTimeout(timer);
@@ -1870,6 +1967,14 @@ export function play(listEl: Element | null, duration: number): void {
         // Fallback for transitions that never report back (the element was removed, for one).
         timer = window.setTimeout(done, duration + 100);
     }
+}
+
+/** Whether an element is moved off its place by a translation (a slide on its way); a scale or a rotation does not count. */
+function translated(el: Element): boolean {
+    const transform = getComputedStyle(el).transform;
+    if (!transform || transform === 'none') return false;
+    const m = new DOMMatrixReadOnly(transform);
+    return Math.abs(m.m41) >= 0.5 || Math.abs(m.m42) >= 0.5;
 }
 
 /** Forgets a snapshot that will not be played. */
