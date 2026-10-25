@@ -219,6 +219,29 @@ public class BinkCanvasInteropTests : BunitContext
     }
 
     [TestMethod]
+    public void The_low_latency_hint_is_asked_for_only_when_the_application_turns_it_on()
+    {
+        // Chromium shows a desynchronized canvas that is not fully opaque as solid black inside an ancestor that clips
+        // to rounded corners. Asking for it on every canvas turned the landing page's sketch black inside its frame.
+        SetupAttachedModule();
+        IRenderedComponent<BinkCanvas> plain = Render<BinkCanvas>();
+        IRenderedComponent<BinkCanvas> lowLatency = Render<BinkCanvas>(p => p.Add(c => c.LowLatency, true));
+        plain.WaitForAssertion(() => Assert.AreEqual(2, JSInterop.Invocations.Count(i => i.Identifier == "attach")));
+
+        BinkInteropOptions OptionsOf(IRenderedComponent<BinkCanvas> canvas) => Assert.IsExactInstanceOfType<BinkInteropOptions>(
+            JSInterop.Invocations.Single(i => i.Identifier == "attach" && Equals(i.Arguments[0], canvas.Instance.ElementId)).Arguments[2]);
+        Assert.IsFalse(OptionsOf(plain).LowLatency);
+        Assert.IsTrue(OptionsOf(lowLatency).LowLatency);
+    }
+
+    [TestMethod]
+    public void Whether_the_browser_honored_the_low_latency_hint_reaches_the_capabilities()
+    {
+        Assert.IsTrue(new BinkAttachResult { LowLatency = true }.ToCapabilities().LowLatencyCanvas);
+        Assert.IsFalse(new BinkAttachResult().ToCapabilities().LowLatencyCanvas);
+    }
+
+    [TestMethod]
     public void Switching_tools_through_the_api_closes_the_inline_text_editor()
     {
         var document = new BinkDocument();

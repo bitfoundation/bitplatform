@@ -11,8 +11,8 @@
    are saved with the document and exported exactly as drawn, and the palettes offer dark inks
    chosen for a light page. So every canvas but the landing page's sketch (see "The landing page's
    live canvas" below) is a white sheet in both themes - the way a word processor keeps its page
-   white in dark mode - and whatever is printed ON the paper (a signature
-   line, ruled lines, a hint) takes the paper's own colours below rather than the theme's.
+   white in dark mode - and whatever is printed ON the paper (a signature line, ruled lines, a
+   hint) takes the paper's own colours below rather than the theme's.
    ============================================================================================ */
 
 :root {
@@ -476,20 +476,17 @@
     border-top: 1px solid var(--bb-border);
 }
 
-/* The one canvas that follows the theme instead of being a white sheet: it has a single black pen
-   and nothing drawn on it is saved or exported, so there is no palette chosen for a light page to
-   keep. Its document has no background, so the theme's surface shows through, and in the dark
-   theme its layers are shown inverted - the ink stays black in the document and reads white. */
+/* The one canvas that follows the theme instead of being a white sheet: it has a single pen and
+   nothing drawn on it is saved or exported, so there is no palette chosen for a light page to
+   keep. Its document has no background, so the frame's surface shows through, and its pen writes
+   in the theme's text colour, which Pages/Home.razor swaps - along with the ink already drawn -
+   whenever the theme changes. The canvas pixels themselves are never filtered. */
 .bink-hero-live .bink-surface {
-    background: var(--bb-surface);
+    background: none;
 }
 
 .bink-hero-live .bink-surface-hint {
     color: var(--bb-text-muted);
-}
-
-:root[bit-theme="dark"] .bink-hero-live .bit-bink-layer {
-    filter: invert(1);
 }
 
 /* ---------- Narrow editors ---------- */
@@ -521,11 +518,22 @@
 /* ---------- Forced colors ----------
 
    The swatches and the participant dots ARE their colour - repainted with the system palette they
-   would all look the same - so they keep it, inside a ring in the system's own colours. */
+   would all look the same - so they keep it, inside a ring in the system's own colours.
+
+   The landing page's sketch keeps the theme's surface for the same kind of reason: its ink is the
+   theme's text colour, drawn into canvas pixels the system palette never reaches, so the system's
+   Canvas colour behind it could be that very colour. Its row is the one place that names the
+   surface again, because the ink is chosen against --bb-surface, not against whatever its frame
+   happens to be painted with. */
 @media (forced-colors: active) {
     .bink-swatch,
-    .bink-participant-dot {
+    .bink-participant-dot,
+    .bink-hero-live .bink-surface {
         forced-color-adjust: none;
+    }
+
+    .bink-hero-live .bink-surface {
+        background: var(--bb-surface);
     }
 
     .bink-swatch {
