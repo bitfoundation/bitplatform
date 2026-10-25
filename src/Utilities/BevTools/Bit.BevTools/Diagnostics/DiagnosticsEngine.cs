@@ -23,6 +23,9 @@ internal sealed class DiagnosticContext(BevToolsSession session, IReadOnlyList<B
 {
     public DateTimeOffset Now { get; } = DateTimeOffset.UtcNow;
 
+    /// <summary>For the built-in rules that need more than the contract offers (the prerendering summary, the HTTP log).</summary>
+    internal BevToolsSession Session => session;
+
     public IReadOnlyList<BevComponentSnapshot> Components => components;
 
     public IReadOnlyList<BevToolsEvent> Events { get; } = events;
@@ -68,9 +71,18 @@ internal sealed class DiagnosticsEngine
     private readonly List<IBevDiagnosticRule> _rules = [];
     private readonly Dictionary<string, BevDiagnosticRecord> _findings = new(StringComparer.Ordinal);
     private readonly object _lock = new();
+
+    // The panel, a frontend's snapshot and an export can ask from different threads: one run at a time keeps the run
+    // bookkeeping consistent and never runs the rules (an extension's included) concurrently with themselves.
+    private readonly object _runLock = new();
     private long _lastRunTicks;
     private long _lastRunVersion = -1;
-    private bool _serviceGraphAnalyzed;
+
+    /// <summary>Something was captured since the last evaluation: the findings may be behind the data.</summary>
+    public bool IsStale => _session.IsEnabled && _lastRunVersion != _session.Version;
+    // The service graph is analysed once (it does not change) and its findings are re-reported on every evaluation, so
+    // they stay as recently seen as the rules' and are never the first evicted when per-occurrence findings pile up.
+    private List<BevDiagnostic>? _serviceGraphFindings;
 
     public DiagnosticsEngine(BevToolsSession session, BitBevToolsOptions options, BevToolsRegistry registry)
     {
@@ -109,6 +121,14 @@ internal sealed class DiagnosticsEngine
     }
 
     public void Evaluate(bool force = false)
+    {
+        lock (_runLock)
+        {
+            EvaluateCore(force);
+        }
+    }
+
+    private void EvaluateCore(bool force)
     {
         if (!_session.IsEnabled)
         {
@@ -152,10 +172,14 @@ internal sealed class DiagnosticsEngine
             }
         }
 
-        if (!_serviceGraphAnalyzed && _session.Registry.ServiceGraph is { } graph)
+        if (_serviceGraphFindings is null && _session.Registry.ServiceGraph is { } graph)
         {
-            _serviceGraphAnalyzed = true;
-            produced.AddRange(graph.Analyze());
+            _serviceGraphFindings = graph.Analyze().ToList();
+        }
+
+        if (_serviceGraphFindings is not null)
+        {
+            produced.AddRange(_serviceGraphFindings);
         }
 
         Merge(produced);
@@ -278,7 +302,7 @@ internal sealed class DiagnosticsEngine
         lock (_lock)
         {
             _findings.Clear();
-            _serviceGraphAnalyzed = false;
+            _serviceGraphFindings = null;
         }
 
         _session.Touch();

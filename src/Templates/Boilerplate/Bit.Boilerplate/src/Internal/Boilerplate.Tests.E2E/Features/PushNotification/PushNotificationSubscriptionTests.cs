@@ -152,6 +152,31 @@ public class PushNotificationSubscriptionTests
         }
     }
 
+    [TestMethod]
+    [DataRow(DeployedApps.AdminPanelApi, DisplayName = "AdminPanelApi")]
+    [DataRow(DeployedApps.TodoApi, DisplayName = "TodoApi")]
+    [DataRow(DeployedApps.Sales, DisplayName = "Sales (integrated API)")]
+    public async Task ASubscriptionAddressedOutsideThePushServices_Should_BeRefused(string api)
+    {
+        DeployedApiClientProvider.SkipWithoutGlobalAdminCredentials();
+
+        var subscription = NewBrowserSubscription();
+        subscription.Endpoint = "https://169.254.169.254/latest/meta-data";
+
+        await using var apiClient = DeployedApiClientProvider.CreateApiClientFor(api);
+
+        try
+        {
+            await Assert.ThrowsExactlyAsync<BadRequestException>(
+                () => apiClient.Services.GetRequiredService<IPushNotificationController>().Subscribe(subscription, TestContext.CancellationToken),
+                $"{api} accepted a push subscription addressed to the cloud metadata service, so its push jobs could be made to call any address.");
+        }
+        finally
+        {
+            await Unsubscribe(api, subscription);
+        }
+    }
+
     /// <summary>
     /// A subscription the server will accept and nothing will ever be delivered to: <c>browser</c> takes the Web Push
     /// triple, and the endpoint's keys are read by AdsPush rather than stored as given, so the public key has to be a

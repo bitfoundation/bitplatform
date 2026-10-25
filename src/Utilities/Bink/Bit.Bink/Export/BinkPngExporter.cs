@@ -15,7 +15,12 @@ public sealed record BinkPngExportOptions : BinkExportOptions
     /// </summary>
     public float Scale { get; init; } = 1f;
 
-    /// <summary>Maximum output pixels; export fails rather than allocating more. Guards against absurd scales.</summary>
+    /// <summary>
+    /// Maximum output pixels; export fails rather than allocating more. Guards against absurd scales. Embedded
+    /// images are held to the same limit: each one, and all of them together, may decode to at most this many
+    /// pixels, and an image that would go past it is skipped and reported in
+    /// <see cref="BinkPngExportResult.SkippedImages"/> rather than failing the export.
+    /// </summary>
     public long MaxPixels { get; init; } = 80_000_000;
 
     /// <summary>PNG compression level.</summary>
@@ -33,7 +38,10 @@ public sealed record BinkPngExportOptions : BinkExportOptions
 /// <param name="Width">Width in pixels.</param>
 /// <param name="Height">Height in pixels.</param>
 /// <param name="SkippedTextElements">Text elements that were not drawn because no text renderer was supplied.</param>
-/// <param name="SkippedImages">Images that could not be decoded by the built-in decoder.</param>
+/// <param name="SkippedImages">
+/// Images that could not be decoded by the built-in decoder, or that were left out because decoding them would
+/// have gone past <see cref="BinkPngExportOptions.MaxPixels"/> or was far larger than where they are drawn.
+/// </param>
 public readonly record struct BinkPngExportResult(byte[] Bytes, int Width, int Height, int SkippedTextElements, int SkippedImages)
 {
     /// <summary>True when everything in the document was drawn.</summary>
@@ -94,7 +102,14 @@ public static class BinkPngExporter
         surface.Clear(background);
 
         Matrix3x2 transform = Matrix3x2.CreateTranslation(-region.X, -region.Y) * Matrix3x2.CreateScale(scale);
-        var context = new BinkRasterRenderContext(surface, transform) { TextRasterizer = options.TextRasterizer };
+        // Embedded images come from the document, which may be untrusted: a few bytes can claim a huge image, so
+        // what they may decode to is bounded by the same limit as the output.
+        var context = new BinkRasterRenderContext(surface, transform)
+        {
+            TextRasterizer = options.TextRasterizer,
+            MaxImagePixels = options.MaxPixels,
+            ImagePixelBudget = options.MaxPixels,
+        };
 
         var renderOptions = new BinkRenderOptions
         {

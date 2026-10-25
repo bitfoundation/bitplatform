@@ -1,0 +1,55 @@
+﻿@page "/errors"
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<PageTitle>Errors - BevTools samples</PageTitle>
+
+<h1>Errors</h1>
+
+<p>
+    The <em>Errors</em> panel groups every error by where it came from - a component, a JS interop call (the
+    <NavLink href="interop">JS interop</NavLink> page has one), the page itself, Blazor's own log - with the component
+    that raised it. Repeat one three times and <em>Diagnostics</em> reports it as a repeated error.
+</p>
+
+<section>
+    <h2>Thrown by a component</h2>
+    <p>An <code>ErrorBoundary</code> catches it; the rest of the page keeps working.</p>
+    <ErrorBoundary @ref="_boundary">
+        <ChildContent>
+            <SampleFaultyWidget />
+        </ChildContent>
+        <ErrorContent>
+            <p class="status">SampleFaultyWidget failed. <button @onclick="() => _boundary?.Recover()">Recover</button></p>
+        </ErrorContent>
+    </ErrorBoundary>
+</section>
+
+<section>
+    <h2>Unhandled in the page</h2>
+    <p>An error and a rejected promise nobody catches, reported by the browser bridge.</p>
+    <button @onclick="ThrowUnhandledAsync">Throw in JS</button>
+</section>
+
+@code {
+    private ErrorBoundary? _boundary;
+    private IJSObjectReference? _module;
+
+    private async Task ThrowUnhandledAsync()
+    {
+        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Bit.BevTools.Samples.Core/samples.js");
+        await _module.InvokeVoidAsync("throwUnhandled");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_module is not null) await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone; so is the module.
+        }
+    }
+}

@@ -6,7 +6,7 @@ namespace Bit.Blex.Blazor;
 /// <see cref="IBlexStorage"/> backed by the browser's <c>localStorage</c>/<c>sessionStorage</c>
 /// via a tiny JS bridge. Used by Blex persistence to survive page reloads in Blazor WebAssembly.
 /// </summary>
-public sealed class BlexBrowserStorage : IBlexStorage, IBlexExternalStorageChange, IAsyncDisposable
+public sealed class BlexBrowserStorage : IBlexStorage, IBlexExternalStorageChange, IBlexStorageSuspension, IAsyncDisposable
 {
     private readonly IJSRuntime _js;
     private readonly string _area;
@@ -22,6 +22,9 @@ public sealed class BlexBrowserStorage : IBlexStorage, IBlexExternalStorageChang
     private int _watchHandle;
 
     private bool _watching;
+
+    /// <summary>Handle of this instance's page-hide listener inside the shared JS module (0 = none).</summary>
+    private int _hideHandle;
 
     /// <summary>Creates a storage instance over the given Web Storage area.</summary>
     public BlexBrowserStorage(IJSRuntime js, BlexBrowserStorageKind kind = BlexBrowserStorageKind.Local)
@@ -61,6 +64,32 @@ public sealed class BlexBrowserStorage : IBlexStorage, IBlexExternalStorageChang
         ExternalChange?.Invoke(key);
         return Task.CompletedTask;
     }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Raised on the page's <c>pagehide</c>, and when it becomes hidden (<c>visibilitychange</c>): a tab sent
+    /// to the background may be discarded without ever seeing <c>pagehide</c>, the usual fate of one on a phone.
+    /// </remarks>
+    public event Action? Suspending;
+
+    /// <inheritdoc />
+    /// <remarks>Both areas: a reload keeps <c>sessionStorage</c> too, and loses what was never written to it.</remarks>
+    public async ValueTask StartWatchingSuspensionAsync(CancellationToken cancellationToken = default)
+    {
+        if (_hideHandle > 0)
+            return;
+
+        var module = await ModuleAsync(cancellationToken);
+        _self ??= DotNetObjectReference.Create(this);
+        _hideHandle = await module.InvokeAsync<int>("watchHide", cancellationToken, _self);
+    }
+
+    /// <summary>
+    /// Invoked from JS as the page is hidden or unloaded. Synchronous on purpose: on WebAssembly the module
+    /// calls it with <c>invokeMethod</c>, so the writes it starts reach storage before the handler returns.
+    /// </summary>
+    [JSInvokable]
+    public void OnPageHiding() => Suspending?.Invoke();
 
     private async ValueTask<IJSObjectReference> ModuleAsync(CancellationToken ct)
         => _module ??= await _js.InvokeAsync<IJSObjectReference>(
@@ -102,6 +131,12 @@ public sealed class BlexBrowserStorage : IBlexStorage, IBlexExternalStorageChang
                     await _module.InvokeVoidAsync("unwatch", _watchHandle);
                     _watching = false;
                     _watchHandle = 0;
+                }
+
+                if (_hideHandle > 0)
+                {
+                    await _module.InvokeVoidAsync("unwatchHide", _hideHandle);
+                    _hideHandle = 0;
                 }
 
                 await _module.DisposeAsync();

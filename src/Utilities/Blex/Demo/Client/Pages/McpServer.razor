@@ -4,10 +4,11 @@
          Lead="This site hosts a Model Context Protocol server, so an AI agent can work against Blex's real API, docs and generator instead of guessing at them.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect a client</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect a client</h2>
         <p>
             Point an MCP client at <code>https://blex.bitplatform.dev/mcp</code> - or at
-            <code>http://localhost:5280/mcp</code> when you run the documentation site locally. It speaks the
+            <code>http://localhost:5280/mcp</code> when you run the documentation site locally - plain HTTP, so the
+            development certificate does not come into it. It speaks the
             streamable HTTP transport, needs no authentication, and every tool on it is read-only.
         </p>
 
@@ -16,7 +17,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Tools</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Tools</h2>
         <p>
             One rule holds across the reference tools: pass the key of the thing you want and you get that thing;
             leave it out and you get the index of what there is. Every tool is also a plain HTTP GET under
@@ -27,7 +28,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> InspectBlexStore</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> InspectBlexStore</h2>
         <p>
             The one question documentation cannot answer is "what does the generator do with <em>this</em> class?".
             <code>InspectBlexStore</code> answers it by running the real <code>Bit.Blex.Generators</code> over the
@@ -39,7 +40,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Resources and prompts</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Resources and prompts</h2>
         <ApiTable Rows="@Resources" MemberHeader="Resource" />
         <ApiTable Rows="@Prompts" MemberHeader="Prompt" />
 
@@ -59,10 +60,10 @@
         new("GetBlexSetupGuide", "The wiring for one hosting model - <code>server</code>, <code>wasm</code>, <code>auto</code>, <code>standalone-wasm</code>, <code>maui-hybrid</code> or <code>maui</code> - as the real files of a working project."),
         new("GetBlexGuideSection", "One section of the reference guide (the README) as Markdown."),
         new("GetBlexDocsPage", "One page of this site as Markdown, rendered by the same component you are reading."),
-        new("GetBlexApi", "One public type in full - every member with its type, its real default value and its documentation - read out of the shipped assemblies."),
+        new("GetBlexApi", "One public type in full - every member with its type, its real default value and its documentation, and the protected members of a type you derive from - read out of the shipped assemblies."),
         new("GetBlexDiagnostics", "One <code>BLEX</code> diagnostic with its cause, a rejected store and the fix."),
         new("InspectBlexStore", "Runs the real generator over store source and returns its diagnostics and the members it generates."),
-        new("GetBlexSourceFile", "One source file of this site or of the standalone sample, verbatim."),
+        new("GetBlexSourceFile", "One source file of this site or of the samples, verbatim."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> Resources =
@@ -71,7 +72,7 @@
         new("blex://docs/{slug}", "A documentation page. Every page is also listed as a concrete resource."),
         new("blex://api, blex://api/{typeName}", "The type index, or one type in full."),
         new("blex://diagnostics, blex://diagnostics/{code}", "The diagnostics table, or one diagnostic in full."),
-        new("blex://source/{path}", "A source file of the demo or the sample."),
+        new("blex://source/{+path}", "A source file of the demo or the sample, e.g. blex://source/Demo/Client/Stores/CartStore.cs."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> Prompts =

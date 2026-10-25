@@ -1,0 +1,55 @@
+﻿@page "/"
+@inject IImageCapabilityProvider Capabilities
+
+<PageTitle>Bmage samples</PageTitle>
+
+<h1>Bmage samples</h1>
+
+<p>
+    One set of pages hosted unchanged by three Blazor Web Apps - <strong>Server</strong> (Interactive Server),
+    <strong>Wasm</strong> (Interactive WebAssembly) and <strong>Auto</strong> (Interactive Auto), each prerendering
+    first, so each one also shows what Bmage does before a browser is reachable - and by a <strong>MAUI</strong>
+    Blazor Hybrid app for Android, iOS, macOS and Windows, where .NET runs in the app's own process and reaches the
+    WebView over JS interop.
+</p>
+
+<div class="card">
+    <h2>Where this page is running</h2>
+    <dl>
+        <dt>Renderer</dt>
+        <dd id="renderer">@RendererInfo.Name</dd>
+        <dt>Interactive</dt>
+        <dd id="interactive">@(RendererInfo.IsInteractive ? "yes" : "no, prerendered")</dd>
+        <dt>Bmage environment</dt>
+        <dd id="environment">@(_environment?.ToString() ?? "probing…")</dd>
+    </dl>
+</div>
+
+<h2>Samples</h2>
+<ul>
+    <li><NavLink href="engine">Engine</NavLink> - draw, process and encode with the managed engine, wherever the component runs</li>
+    <li><NavLink href="capabilities">Capabilities</NavLink> - the browser probe: formats, canvas limits and platform features</li>
+    <li><NavLink href="process">Process</NavLink> - <code>ImageLoader</code>, <code>ImagePipeline</code> and <code>ImageExporter</code>: load, transform, encode, preview and download</li>
+    <li><NavLink href="editor">Editor</NavLink> - the <code>BmageEditor</code> component: load, edit, undo and export</li>
+</ul>
+
+@code {
+    private ImageEnvironment? _environment;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // While prerendering there is no browser to probe, and the provider reports Prerendering instead of throwing.
+        if (RendererInfo.IsInteractive is false)
+        {
+            _environment = (await Capabilities.GetAsync()).Environment;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false || RendererInfo.IsInteractive is false) return;
+
+        _environment = (await Capabilities.GetAsync()).Environment;
+        StateHasChanged();
+    }
+}

@@ -23,7 +23,7 @@ public static class McpPrompts
     [Description("Builds an image feature with Bit.Bmage - an upload, a thumbnail, an avatar, an annotation tool, a server endpoint - using its real API, and verifies the result before finishing.")]
     public static string BuildWithBmage(
         [Description("What the feature should do, in your own words - e.g. 'let users upload an avatar, crop it to a circle and keep it under 100 KB'.")] string request,
-        [Description("The app's hosting model: wasm, server, auto, standalone-wasm or headless. Pass 'unknown' to have it determined from the project first.")] string renderMode = "unknown")
+        [Description("The app's hosting model: wasm, server, auto, standalone-wasm, hybrid or headless. Pass 'unknown' to have it determined from the project first.")] string renderMode = "unknown")
     {
         return $"""
             Build this with Bit.Bmage: {request}
@@ -34,8 +34,8 @@ public static class McpPrompts
 
             1. If the hosting model is 'unknown', determine it from the project before writing anything: look for
                AddInteractiveServerComponents / AddInteractiveWebAssemblyComponents in Program.cs, a separate .Client
-               project, or no Blazor at all (an API, a console app). It decides which registration to use and whether
-               WebP/AVIF exist at all.
+               project, AddMauiBlazorWebView in MauiProgram.cs (hybrid), or no Blazor at all (an API, a console app). It
+               decides which registration to use and whether WebP/AVIF exist at all.
             2. Call `GetBmageRecipes` and look for a recipe that already covers the request. If one does, fetch it with
                `GetBmageRecipe` and follow its shape - including its Notes, which carry the caveat the code cannot show.
                If none fits, call `SearchBmage` with the request as written.
@@ -61,7 +61,7 @@ public static class McpPrompts
     [McpServerPrompt(Name = "add-bmage-to-app")]
     [Description("Walks through adding Bit.Bmage to an existing app, in the right order for its hosting model - both DI containers of a Web App, the editor's stylesheet, AOT for WebAssembly, or the headless registration for a server.")]
     public static string AddBmageToApp(
-        [Description("The app's hosting model: wasm, server, auto, standalone-wasm or headless. Pass 'unknown' to have it determined from the project first.")] string renderMode = "unknown",
+        [Description("The app's hosting model: wasm, server, auto, standalone-wasm, hybrid or headless. Pass 'unknown' to have it determined from the project first.")] string renderMode = "unknown",
         [Description("Whether the app needs the BmageEditor component: 'yes', 'no' or 'unknown'.")] string needsEditor = "unknown")
     {
         return $"""
@@ -71,12 +71,13 @@ public static class McpPrompts
 
             1. If the hosting model is 'unknown', determine it from the project first: look for
                AddInteractiveServerComponents / AddInteractiveWebAssemblyComponents in Program.cs, a separate .Client
-               project, or no Blazor at all. Continue with what you find.
+               project, AddMauiBlazorWebView in MauiProgram.cs (hybrid), or no Blazor at all. Continue with what you find.
             2. Call `GetBmageSetupGuide` with that hosting model and follow it: the package (Bit.Bmage, in the project that
                runs in the browser), the registration, and the namespaces for _Imports.razor.
             3. Register in the right containers. A Blazor Web App registers AddBitBmageServices in BOTH the server and the
-               client project, through one shared extension method - the prerender pass needs it on the server. A server,
-               console app or worker registers AddBitBmageHeadlessServices instead.
+               client project, through one shared extension method - the prerender pass needs it on the server. A Blazor
+               Hybrid app registers it once, in MauiProgram.cs. A server, console app or worker registers
+               AddBitBmageHeadlessServices instead.
             4. If the editor is used, link `_content/Bit.Bmage/bit-bmage-editor.css` from App.razor or index.html,
                and do not add a script tag for bit-bmage.js.
             5. If any project runs on WebAssembly, enable RunAOTCompilation for publishing in that project.

@@ -8,18 +8,19 @@
     <p class="bb-overline">Scenario · State</p>
     <h1>Checkout</h1>
     <p class="bb-subtitle">
-        A cart, a validated form and a few application settings. <code>CartState</code> and <code>AppState</code> are
-        ordinary scoped services that implement <code>IBevStateProvider</code>, so every action on them is a named state
-        change in BevTools, with a before/after diff and the click that made it.
+        A cart, two forms and a few application settings. <code>CartState</code> and <code>AppState</code> are ordinary
+        scoped services that implement <code>IBevStateProvider</code>, so every action on them is a named state change
+        in BevTools, with a before/after diff and the click that made it. The forms show what validates them and what
+        does not, and the coupon box has an accessibility problem to find.
     </p>
 </div>
 
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The checkout</h3>
     <p class="bb-card-desc">
-        Add, remove, apply the coupon or clear the cart, then fill the form in and place the order - nothing is sent
-        anywhere. The two toggles change <code>AppState</code> values only; the site's own light/dark theme is the
-        button in the header.
+        Add, remove, apply the coupon (the ✓ button) or clear the cart, then fill the shipping form in and place the
+        order - nothing is sent anywhere. The newsletter form below it subscribes even with an empty address. The two
+        toggles change <code>AppState</code> values only; the site's own light/dark theme is the button in the header.
     </p>
 
     <div class="bb-demo">
@@ -35,19 +36,22 @@
                 }
                 else
                 {
-                    <div class="bb-scroll">
-                        <table class="bb-table demo-cart">
-                            <tbody>
-                                @foreach (var line in Cart.Lines)
-                                {
-                                    <tr><td>@line.Product.Name</td><td class="bb-nowrap">× @line.Quantity</td><td class="bb-nowrap">@line.LineTotal.ToString("C")</td><td class="bb-table-action"><button type="button" class="bb-icon-btn" aria-label="Remove @line.Product.Name" @onclick="() => Cart.Remove(line.Product.Id)">✕</button></td></tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                    <ul class="demo-cart">
+                        @foreach (var line in Cart.Lines)
+                        {
+                            <li>
+                                <span class="demo-cart-name">@line.Product.Name</span>
+                                <span class="bb-nowrap">× @line.Quantity · @line.LineTotal.ToString("C")</span>
+                                <button type="button" class="bb-icon-btn" aria-label="Remove @line.Product.Name" @onclick="() => Cart.Remove(line.Product.Id)">✕</button>
+                            </li>
+                        }
+                    </ul>
                     <div><strong>Total @Cart.Total.ToString("C")</strong> @(Cart.CouponCode is null ? "" : $"(coupon {Cart.CouponCode})")</div>
                     <div class="bb-toolbar">
-                        <button type="button" class="btn btn-secondary" @onclick='() => Cart.ApplyCoupon("SAVE10")'>Apply coupon</button>
+                        @* Planted problem 22: the field's only label is its placeholder, and the button's only content is
+                           a glyph hidden from screen readers, so neither has a name a screen reader can announce. *@
+                        <input class="demo-coupon" placeholder="Coupon code" @bind="_coupon" />
+                        <button type="button" class="btn btn-secondary" @onclick="() => Cart.ApplyCoupon(_coupon)"><span aria-hidden="true">✓</span></button>
                         <button type="button" class="btn btn-secondary" @onclick="Cart.Clear">Clear</button>
                     </div>
                 }
@@ -76,6 +80,7 @@
                 {
                     <p class="bb-note bb-note-success">Order placed for @_model.FullName. (Nothing was actually sent.)</p>
                 }
+                <NewsletterSignup />
             </div>
         </div>
     </div>
@@ -92,6 +97,37 @@
     </p>
     <div class="bb-try">
         <a href="problems#problem-10" class="btn btn-outline">Problem 10 →</a>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Forms: what validates each form</h3>
+    <p class="bb-card-desc">
+        Press <em>Place order</em> with the form empty, then <em>Subscribe</em> with the newsletter field empty, and open
+        <strong>Forms</strong>. It lists every <code>EditForm</code> on the page with its model:
+    </p>
+    <ul class="bb-detail-list">
+        <li>The shipping form is <em>validated by DataAnnotationsValidator</em> and its messages are <em>shown by ValidationSummary</em>; the table has a row per field - modified or not, how many changes, and its validation messages.</li>
+        <li>The newsletter form is <em>validated by nothing</em>, next to its model's rules (<em>Email: Required, EmailAddress</em>): it has no <code>&lt;DataAnnotationsValidator /&gt;</code>, so <code>OnValidSubmit</code> always runs. <strong>Diagnostics</strong> reports <em>NewsletterModel's validation attributes are never checked</em>.</li>
+        <li>The <strong>Timeline</strong> records every validation with its outcome: <em>Form validated: NewsletterModel is valid</em>.</li>
+    </ul>
+    <div class="bb-try">
+        <a href="problems#problem-17" class="btn btn-outline">Problem 17 →</a>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Browser → Accessibility: a coupon box nobody can name</h3>
+    <p class="bb-card-desc">
+        Add something to the cart, then open <strong>Browser</strong> and press <em>Check the page</em>. Two findings
+        point at the coupon box, each naming the component that rendered it (<code>Checkout</code>) and the WCAG
+        criterion, with <em>Show</em> to outline the element: the field has no label - a placeholder disappears as soon as
+        something is typed, so it is not one - and the ✓ button has no accessible name, because its only content is
+        hidden from screen readers. <strong>Diagnostics</strong> repeats them. What markup cannot decide - contrast, focus
+        order, whether a name makes sense - the panel leaves to a person.
+    </p>
+    <div class="bb-try">
+        <a href="problems#problem-22" class="btn btn-outline">Problem 22 →</a>
     </div>
 </div>
 
@@ -123,11 +159,18 @@
 
 <span class="c">// Program.cs - registers it as a scoped service and as a state provider</span>
 builder.Services.AddBevToolsStateProvider&lt;CartState&gt;();</pre>
+    <p class="bb-card-desc">
+        A store that cannot implement the interface - a library's, or one you would rather keep free of BevTools - gets
+        an adapter instead: <code>AddBevToolsStateProvider&lt;TService&gt;(name, snapshot, subscribe)</code>, or an
+        extension's <code>AddStateProvider</code>, which is how the <code>FilterState</code> of the Products page
+        appears in the State panel (see <a href="extending">Extending</a>).
+    </p>
 </div>
 
 @code {
     private readonly CheckoutModel _model = new();
     private bool _submitted;
+    private string _coupon = "SAVE10";
 
     private void ToggleTheme() => AppState.Theme = AppState.Theme == "light" ? "dark" : "light";
 

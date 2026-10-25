@@ -1,0 +1,135 @@
+﻿@page "/routing/{Section?}/{Id:int?}"
+@inject IJSRuntime JS
+
+<PageTitle>Routing &amp; sign-in · BevTools</PageTitle>
+
+<div class="bb-intro">
+    <p class="bb-overline">Scenario · Navigation</p>
+    <h1>Routing &amp; sign-in</h1>
+    <p class="bb-subtitle">
+        A page that takes route values and a query string, a sign-in, a guard that asks before you leave, and a
+        redirect loop. BevTools → <strong>Routing</strong> answers which page this is, how the app got here and what
+        can stop it leaving; <strong>State → Authentication</strong> answers who is signed in.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The page</h3>
+    <p class="bb-card-desc">
+        The links navigate to this same page with other values: its one <code>@@page</code> template is
+        <code>/routing/{Section?}/{Id:int?}</code>, and it reads the query through
+        <code>[SupplyParameterFromQuery]</code> properties. The last link carries an <code>access_token</code>, which
+        BevTools redacts wherever the address appears.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span><RendererStatus /></div>
+
+        <div class="bb-toolbar">
+            <a class="btn btn-secondary" href="routing">/routing</a>
+            <a class="btn btn-secondary" href="routing/orders/1042">/routing/orders/1042</a>
+            <a class="btn btn-secondary" href="routing/products?q=lamp&amp;page=2">/routing/products?q=lamp&amp;page=2</a>
+            <a class="btn btn-secondary" href="routing/orders/1042?access_token=demo-token-in-a-link">…?access_token=…</a>
+        </div>
+
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead><tr><th>Section</th><th>Id</th><th>q</th><th>page</th><th>access_token</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>@(Section ?? "–")</td>
+                        <td>@(Id?.ToString() ?? "–")</td>
+                        <td>@(Q ?? "–")</td>
+                        <td>@(PageNumber?.ToString() ?? "–")</td>
+                        <td>@(AccessToken is null ? "–" : "given (not shown here either)")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <DemoSignIn />
+
+        <div class="bb-toolbar">
+            <label class="bb-check"><input type="checkbox" @bind="_guard" /> ask before leaving this page (a NavigationLock)</label>
+            <a class="btn btn-outline" href="loop/account">Open the account page (it redirects in a loop)</a>
+        </div>
+        @if (_guard)
+        {
+            <NavigationLock ConfirmExternalNavigation="true" OnBeforeInternalNavigation="ConfirmLeaving" />
+        }
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Routing: which page is this?</h3>
+    <ul class="bb-detail-list">
+        <li><em>Current route</em>: the address, the page component (<code>Routing</code>), its template - labelled <em>inferred</em>, because this router does not report the template it matched and the page has only one - the route values (<code>Section</code>, <code>Id</code>), the query and the layout. Follow the last link: the address shows <code>access_token=«redacted»</code>.</li>
+        <li><em>Route table</em>: every page of the router's assemblies with its template, authorization, render mode and layout.</li>
+        <li><em>Navigation history</em>: each navigation, how long it took and what it rendered - renders and render time - newest first.</li>
+        <li>Select <code>Routing</code> in <strong>Components</strong>: the query values are parameters there too, and <code>AccessToken</code> is redacted by its name.</li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Routing → Navigation guards: what can stop a navigation</h3>
+    <p class="bb-card-desc">
+        Tick <em>ask before leaving this page</em> and open <strong>Routing</strong>: <em>Navigation guards</em> lists
+        the <code>NavigationLock</code>, whether it asks before the browser leaves the site, the callback it runs before
+        an internal navigation (<code>Routing.ConfirmLeaving</code>) and the component that registered it. Then click
+        any link: the callback asks you to confirm, and <em>Cancel</em> keeps you here. BevTools only reads the guards;
+        registering one of its own would make every navigation wait for .NET.
+    </p>
+    <div class="bb-try">
+        <a href="problems#problem-23" class="btn btn-outline">Problem 23 →</a>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> State → Authentication: who is signed in</h3>
+    <p class="bb-card-desc">
+        Press <em>Sign in as Ada</em>, then open <strong>State</strong> and select <em>Authentication</em>, a state
+        provider BevTools adds by itself from the app's <code>AuthenticationStateProvider</code>: the user, the
+        authentication type, the roles and the claims, with a change history - anonymous → authenticated - and the
+        timeline entry of each change. The <code>access_token</code> claim is redacted; the others are shown.
+        <strong>Routing → Authentication</strong> shows the same at a glance, next to the route table.
+    </p>
+    <div class="bb-try">
+        <a href="problems#problem-13" class="btn btn-outline">Problem 13 →</a>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Diagnostics: a redirect loop</h3>
+    <p class="bb-card-desc">
+        <em>Open the account page</em>: it sends a visitor without a session to the login page, which sends them back,
+        a few times before the demo stops it. <strong>Diagnostics</strong> reports a <em>navigation loop</em> between the
+        two addresses, every navigation made from code rather than by a click; <em>Navigation history</em> lists each
+        hop and what it rendered.
+    </p>
+    <div class="bb-try">
+        <a href="problems#problem-18" class="btn btn-outline">Problem 18 →</a>
+        <a href="problems#problem-12" class="btn btn-outline">Problem 12 →</a>
+    </div>
+</div>
+
+@code {
+    private bool _guard;
+
+    [Parameter] public string? Section { get; set; }
+
+    [Parameter] public int? Id { get; set; }
+
+    [SupplyParameterFromQuery] public string? Q { get; set; }
+
+    [SupplyParameterFromQuery(Name = "page")] public int? PageNumber { get; set; }
+
+    [SupplyParameterFromQuery(Name = "access_token")] public string? AccessToken { get; set; }
+
+    private async Task ConfirmLeaving(LocationChangingContext context)
+    {
+        if (!await JS.InvokeAsync<bool>("confirm", "Leave this page? The Routing page's NavigationLock asks."))
+        {
+            context.PreventNavigation();
+        }
+    }
+}

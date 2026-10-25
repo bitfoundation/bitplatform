@@ -87,7 +87,7 @@ public partial class AppDiagnosticModal
 
         try
         {
-            await authManager.SignOut(default);
+            await authManager.SignOutAll(default);
         }
         catch (Exception exp)
         {

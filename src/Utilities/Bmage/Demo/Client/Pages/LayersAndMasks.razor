@@ -1,0 +1,536 @@
+﻿@page "/layers-and-masks"
+@using System.Drawing
+@implements IDisposable
+
+@* Masks, layers and blend modes on one live scene. Every choice is an immutable value added to an
+   ImageDocument, and the readouts show what the engine sees: the document as JSON - the edit a server
+   could replay - and the memory the run is expected to take, computed before a pixel moves. *@
+
+<PageTitle>Layers and masks · Bmage</PageTitle>
+
+<div class="bb-intro">
+    <h1>Layers and masks</h1>
+    <p class="bb-subtitle">
+        A <strong>mask</strong> says where an edit applies; a <strong>layer</strong> adds pixels, a colour or
+        an edit on top of the photo, with any of the W3C <strong>blend modes</strong>. Both are values, like
+        operations, so they get undo, proxy previews and JSON for free.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <p>
+        Pick a selective edit and a layer. The edit runs only through its mask, in one pass over the rows
+        the mask reaches; the layer is composited on top through its blend mode, opacity and mask.
+    </p>
+
+    @if (_error is not null)
+    {
+        <div class="bb-note bb-note-danger demo-error" role="alert">@_error</div>
+    }
+
+    <div class="bb-demo bb-page-wide">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <div class="demo-split">
+            <div>
+                @if (_preview is null)
+                {
+                    <div class="bb-toolbar">
+                        <button type="button" class="btn btn-primary" disabled="@(_busy || IsHydrating)" @onclick="StartAsync">
+                            <Icon Path="@Icons.Play" />
+                            Run on a sample image
+                        </button>
+                        <span class="demo-small bb-muted">A generated 900 &times; 600 scene; every change renders the document again.</span>
+                    </div>
+                }
+                else
+                {
+                    <ImagePreview Image="_preview" Version="_previewVersion" Alt="The sample scene with the selected mask and layer applied" Class="pipeline-preview" />
+                }
+
+                <div class="bb-stats demo-stats-compact playground-stats">
+                    <div class="bb-stat">
+                        <span class="bb-stat-label">Took</span>
+                        <span class="bb-stat-value">@(_elapsed is { } e ? $"{e.TotalMilliseconds:0} ms" : "—")</span>
+                    </div>
+                    <div class="bb-stat">
+                        <span class="bb-stat-label">Estimated peak</span>
+                        <span class="bb-stat-value">@PeakText</span>
+                    </div>
+                    <div class="bb-stat">
+                        <span class="bb-stat-label">The edit as JSON</span>
+                        <span class="bb-stat-value">@($"{Json.Length:N0} chars")</span>
+                    </div>
+                </div>
+
+                <p class="bb-overline demo-label playground-label">
+                    The document
+                    @if (_busy)
+                    {
+                        <span class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Rendering&hellip;</span>
+                    }
+                </p>
+                <pre class="demo-readout layers-json">@Json</pre>
+            </div>
+
+            <div class="demo-panel">
+                <p class="bb-overline demo-label">Selective edit</p>
+                <div class="demo-field" role="group" aria-label="Selective edit">
+                    <div class="bb-segmented">
+                        @foreach (var option in EditOptions)
+                        {
+                            <button type="button" aria-pressed="@(_edit == option ? "true" : "false")" @onclick="() => Set(() => _edit = option)">@option</button>
+                        }
+                    </div>
+                </div>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="feather">Feather <span class="demo-field-value">@_feather px</span></label>
+                    <input id="feather" type="range" min="0" max="40" step="1" value="@_feather" @oninput="e => SetNumber(v => _feather = (int)v, e)" />
+                </div>
+                <div class="demo-field demo-field-inline">
+                    <input id="invert" type="checkbox" checked="@_invert" @onchange="e => Set(() => _invert = (bool)(e.Value ?? false))" />
+                    <label class="demo-field-label" for="invert">Invert the mask</label>
+                </div>
+
+                <hr class="demo-divider" />
+                <p class="bb-overline demo-label">Layer</p>
+                <div class="demo-field" role="group" aria-label="Layer">
+                    <div class="bb-segmented">
+                        @foreach (var option in LayerOptions)
+                        {
+                            <button type="button" aria-pressed="@(_layer == option ? "true" : "false")" @onclick="() => Set(() => _layer = option)">@option</button>
+                        }
+                    </div>
+                </div>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="blend">Blend mode</label>
+                    <select id="blend" disabled="@(_layer == "None")" @onchange="OnBlendChanged">
+                        @foreach (var mode in BlendModes)
+                        {
+                            <option value="@mode" selected="@(EffectiveBlend == mode)">@mode</option>
+                        }
+                    </select>
+                </div>
+                <div class="demo-field">
+                    <label class="demo-field-label" for="opacity">Opacity <span class="demo-field-value">@_opacity.ToString("0.00")</span></label>
+                    <input id="opacity" type="range" min="0" max="1" step="0.05" disabled="@(_layer == "None")"
+                           value="@_opacity.ToString(System.Globalization.CultureInfo.InvariantCulture)" @oninput="e => SetNumber(v => _opacity = (float)v, e)" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Selective edits</h3>
+    <p>
+        <code>Masked</code> applies any operation, or a whole sub-pipeline, only where a mask covers the
+        image, fading with its coverage. Where the mask is 0 the pixels are untouched, where it is 255 they
+        are exactly what the edit alone produces. A run of adjustments goes in one pass, and only across the
+        rows and columns the mask can reach, so darkening a sky never touches the ground.
+    </p>
+    <CodeSnippet Code="@MaskedSnippet" Language="C#" Expanded="true" />
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Masks">
+        <table class="bb-table">
+            <thead>
+                <tr><th scope="col">Mask</th><th scope="col">Covers</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>RectangleMask</code>, <code>EllipseMask</code></th><td>A shape, optionally with rounded corners. <code>Mask.Ellipse()</code> is the one inscribed in the whole image.</td></tr>
+                <tr><th scope="row"><code>PolygonMask</code>, <code>PathMask</code></th><td>A lasso, or any vector outline - text from a font included, for a knockout.</td></tr>
+                <tr><th scope="row"><code>BrushMask</code></th><td>Brush strokes, painted and erased in order, as a selective-adjustment brush paints.</td></tr>
+                <tr><th scope="row"><code>LinearGradientMask</code></th><td>A graduated filter: covered up to its start, fading to nothing at its end.</td></tr>
+                <tr><th scope="row"><code>RadialGradientMask</code></th><td>A radial filter, rotatable, solid within its hardness and fading to its edge.</td></tr>
+                <tr><th scope="row"><code>LuminanceRangeMask</code></th><td>Pixels by brightness: recover the highlights, lift the shadows.</td></tr>
+                <tr><th scope="row"><code>ColorRangeMask</code></th><td>Pixels close to a colour, by perceptual distance.</td></tr>
+                <tr><th scope="row"><code>FloodMask</code></th><td>The magic wand: the region of similar colour connected to a point, or every pixel of its colour. See <a href="retouch">retouching and selections</a>.</td></tr>
+                <tr><th scope="row"><code>BitmapMask</code></th><td>Another image's alpha or luminance, stretched over the photo: the output of a segmentation or background removal model.</td></tr>
+                <tr><th scope="row"><code>CombinedMask</code></th><td>Two masks united, intersected, subtracted or excluded - <code>a.Union(b)</code>.</td></tr>
+                <tr><th scope="row"><code>MorphedMask</code></th><td>Another mask grown, shrunk or outlined by an exact distance - <code>a.Expand(4)</code>, <code>a.Contract(3)</code>, <code>a.Border(6)</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Every mask takes <code>Feather</code>, <code>Inverted</code> and <code>Opacity</code>, and its
+        coordinates are in pixels or, with <code>Units = MaskUnits.Relative</code>, fractions of the image,
+        so one pipeline fits uploads of any size. <code>ApplyMask</code> multiplies the alpha by a mask
+        instead: a round avatar is <code>.Cover(512, 512).ApplyMask(Mask.Ellipse())</code>.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Layers and blend modes</h3>
+    <p>
+        An <code>ImageDocument</code> composites its layers onto the pipeline's output, bottom first, and draws
+        the annotations over them. A layer has a blend mode, an opacity, an optional mask and a visibility, and
+        the editor previews and exports it like any other edit.
+    </p>
+    <CodeSnippet Code="@LayerSnippet" Language="C#" Expanded="true" />
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Layers">
+        <table class="bb-table">
+            <thead>
+                <tr><th scope="col">Layer</th><th scope="col">What it adds</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>ImageLayer</code></th><td>Pixels placed in a rectangle, rotated, after a pipeline of their own: a logo, a texture, a sticker.</td></tr>
+                <tr><th scope="row"><code>FillLayer</code></th><td>A colour over the whole image, usually shaped by a mask: a colour wash, a gradient fade, a duotone.</td></tr>
+                <tr><th scope="row"><code>AdjustmentLayer</code></th><td>An edit of everything beneath it, which can be reordered, hidden or faded without touching anything else.</td></tr>
+                <tr><th scope="row"><code>PaintLayer</code></th><td>Brush strokes with hardness and pen pressure, and an eraser that removes the layer's own paint - kept as strokes, not pixels.</td></tr>
+                <tr><th scope="row"><code>GroupLayer</code></th><td>Other layers, bottom first, shown, hidden, faded, masked and moved as one - groups nest up to ten deep.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Every layer has a <code>Name</code>, a <code>BlendMode</code>, an <code>Opacity</code>, an optional
+        <code>Mask</code>, <code>IsVisible</code> and <code>IsLocked</code>, and can be clipped to the layer
+        below it. The document edits them by id, into and out of groups as well:
+    </p>
+    <CodeSnippet Code="@DocumentLayersSnippet" Language="C#" Expanded="true" />
+    <h4>Groups and clipping</h4>
+    <p>
+        A group <strong>passes through</strong> by default: its layers blend onto what is beneath exactly as
+        they would without it, an adjustment layer inside it edits everything below, and the group's opacity
+        and mask fade the result back. Set <code>Isolated</code>, or give the group a blend mode other than
+        <code>SourceOver</code>, and its layers composite on their own first - an adjustment inside then edits
+        only the group - and that picture is blended in as one.
+    </p>
+    <p>
+        <code>ClipToLayerBelow</code> limits a layer to where the nearest unclipped layer below it - its base -
+        has pixels: a texture inside lettering, a colour on one sticker, an adjustment of one layer alone. The
+        <strong>Clipped group</strong> above is both: a fill clipped to the badge, so only the badge takes the
+        gradient, grouped so the blend mode and opacity apply to the pair.
+    </p>
+    <CodeSnippet Code="@GroupSnippet" Language="C#" Expanded="true" />
+    <p>
+        The blend modes are those of CSS <code>mix-blend-mode</code>: <code>Multiply</code>, <code>Screen</code>,
+        <code>Overlay</code>, <code>Darken</code>, <code>Lighten</code>, <code>ColorDodge</code>,
+        <code>ColorBurn</code>, <code>HardLight</code>, <code>SoftLight</code>, <code>Difference</code>,
+        <code>Exclusion</code>, <code>Hue</code>, <code>Saturation</code>, <code>Color</code> and
+        <code>Luminosity</code>, with <code>Add</code> for light effects. <code>ImageCanvas.DrawImage</code>
+        takes them too, and <code>LayerCompositor.Flatten</code> builds an image from layers alone.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Saving and replaying an edit</h3>
+    <p>
+        <code>BmageJson</code> writes a document - pipeline, layers, masks and annotations - as plain JSON, and
+        reads it back as the same edit. Send the edit rather than the pixels, and replay it on the original
+        file at full resolution on the server, or store it and reopen the editor where the user left off. It
+        uses no reflection, so it is safe to trim and to compile ahead of time; images are referenced, never
+        embedded.
+    </p>
+    <CodeSnippet Code="@JsonSnippet" Language="C#" Expanded="true" />
+    <p>
+        Malformed input is refused with an <code>ImageDocumentFormatException</code> that names where it went
+        wrong, such as <code>$.pipeline[2].rectangle</code>. A custom operation, mask, layer or annotation is
+        written once it has a codec (<code>BmageJsonOptions.Add</code>, shown on
+        <a href="/pipelines">Pipelines</a>); until then serialising one throws rather than silently dropping a step.
+    </p>
+    <p>
+        When the images should travel with the edit, <code>BmageProject</code> writes the original, the document
+        and every image it refers to into one <code>.bmage</code> file that reopens with every layer, mask and
+        stroke still editable - <a href="/retouch">Retouching and selections</a> saves and opens one.
+    </p>
+</div>
+
+@code {
+    private static readonly string[] EditOptions = ["None", "Graduated sky", "Spotlight", "Lift shadows", "Colour pop"];
+    private static readonly string[] LayerOptions = ["None", "Colour wash", "Sunset glow", "Watermark", "Adjustment", "Clipped group"];
+    private static readonly BlendMode[] BlendModes = [.. Enum.GetValues<BlendMode>().Where(m => m is not (BlendMode.Copy or BlendMode.Erase))];
+
+    private static readonly System.Drawing.Size SourceSize = new(900, 600);
+    private ImageBuffer? _source;
+    private ImageBuffer? _stamp;
+    private ImageBuffer? _preview;
+    private long _previewVersion;
+    private string _edit = "Graduated sky";
+    private string _layer = "Colour wash";
+    private BlendMode? _blend;
+    private int _feather = 12;
+    private bool _invert;
+    private float _opacity = 0.6f;
+    private bool _busy;
+    private string? _error;
+    private TimeSpan? _elapsed;
+    private int _run;
+    private readonly Debouncer _debounce = new(120);
+
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    /// <summary>The blend mode each layer looks best with, until the reader picks another.</summary>
+    private BlendMode EffectiveBlend => _blend ?? _layer switch
+    {
+        "Colour wash" => BlendMode.Color,
+        "Sunset glow" => BlendMode.Screen,
+        "Watermark" => BlendMode.Overlay,
+        _ => BlendMode.SourceOver,
+    };
+
+    private Mask? EditMask => _edit switch
+    {
+        "Graduated sky" => Mask.Gradient(new(0, 0), new(0, 0.55f)),
+        "Spotlight" => new RadialGradientMask(new Vector2(0.3f, 0.55f), 0.22f, 0.38f) { Units = MaskUnits.Relative, Hardness = 0.35f },
+        "Lift shadows" => new LuminanceRangeMask(0f, 0.3f) { Softness = 0.15f },
+        "Colour pop" => new ColorRangeMask(new Rgba32(186, 52, 60)) { Tolerance = 0.12f, Softness = 0.08f },
+        _ => null,
+    };
+
+    private ImagePipeline Pipeline
+    {
+        get
+        {
+            var pipeline = ImagePipeline.Create();
+            if (EditMask is not { } mask) return pipeline;
+            mask = mask with { Feather = _feather, Inverted = _invert };
+            return _edit switch
+            {
+                "Graduated sky" => pipeline.Masked(mask, sky => sky.Exposure(-0.8f).Saturation(0.35f)),
+                "Spotlight" => pipeline.Masked(mask.Invert(), around => around.Exposure(-1.2f).Saturation(-0.4f)),
+                "Lift shadows" => pipeline.Masked(mask, shadows => shadows.Exposure(0.9f).Vibrance(0.3f)),
+                // Everything but the red coat loses its colour.
+                "Colour pop" => pipeline.Masked(mask.Invert(), rest => rest.Grayscale()),
+                _ => pipeline,
+            };
+        }
+    }
+
+    private Layer? Layer => _layer switch
+    {
+        "Colour wash" => (Layer)new FillLayer(new Rgba32(40, 110, 220)) { Name = "Colour wash" },
+        "Sunset glow" => new FillLayer(new Rgba32(255, 120, 40)) { Name = "Sunset glow", Mask = Mask.Gradient(new(0, 0.75f), new(0, 0.3f)) },
+        "Watermark" => _stamp is { } stamp
+            ? new ImageLayer { Image = stamp, Bounds = new RectangleF(SourceSize.Width - 230, SourceSize.Height - 230, 200, 200), Rotation = -12, Name = "Watermark" }
+            : null,
+        "Adjustment" => new AdjustmentLayer(ImagePipeline.Create().Contrast(0.45f).Vibrance(0.6f)) { Name = "Punch", Mask = Mask.Ellipse() with { Feather = 30 } },
+        // A fill clipped to the badge below it, so only the badge takes the gradient; the group carries the
+        // blend mode and opacity for the pair.
+        "Clipped group" => _stamp is { } badge
+            ? new GroupLayer(
+              [
+                  new ImageLayer { Image = badge, Bounds = new RectangleF(SourceSize.Width / 2 - 130, SourceSize.Height / 2 - 130, 260, 260), Name = "Badge" },
+                  new FillLayer(new Rgba32(230, 60, 120))
+                  {
+                      Name = "Badge tint",
+                      ClipToLayerBelow = true,
+                      BlendMode = BlendMode.Color,
+                      Mask = Mask.Gradient(new(0, 0.3f), new(0, 0.7f)),
+                  },
+              ]) { Name = "Clipped group" }
+            : null,
+        _ => null,
+    } is { } layer ? layer with { BlendMode = EffectiveBlend, Opacity = _opacity } : null;
+
+    private ImageDocument Document
+    {
+        get
+        {
+            var document = ImageDocument.Create(SourceSize).WithPipeline(Pipeline);
+            return Layer is { } layer ? document.AddLayer(layer) : document;
+        }
+    }
+
+    private string Json => BmageJson.Serialize(Document, new BmageJsonOptions
+    {
+        Indented = true,
+        ImageReferences = _ => "watermark.png",
+    });
+
+    private string PeakText
+    {
+        get
+        {
+            var bytes = Pipeline.EstimateMemory(SourceSize).PeakBytes;
+            return $"{bytes / (1024.0 * 1024.0):0.0} MB";
+        }
+    }
+
+    private const string MaskedSnippet = """
+        // Darken and enrich the sky, fading out towards the horizon.
+        pipeline.Masked(Mask.Gradient(new(0, 0), new(0, 0.55f)), sky => sky.Exposure(-0.8f).Saturation(0.35f));
+
+        // Spotlight a subject: darken everything outside a soft ellipse.
+        var subject = new RadialGradientMask(new Vector2(0.3f, 0.55f), 0.22f, 0.38f) { Units = MaskUnits.Relative };
+        pipeline.Masked(subject.Invert(), around => around.Exposure(-1.2f));
+
+        // Recover blown highlights only.
+        pipeline.Masked(new LuminanceRangeMask(0.8f, 1f), p => p.Exposure(-0.5f));
+
+        // A cut-out from a background removal model's matte.
+        pipeline.ApplyMask(new BitmapMask(matte) { Feather = 1.5f });
+        """;
+
+    private const string LayerSnippet = """
+        var document = ImageDocument.Create(photo)
+            .AddOperation(new CropOperation(0, 0, 1600, 900))
+            // A logo, blended into the photo.
+            .AddLayer(new ImageLayer { Image = logo, Bounds = new RectangleF(1380, 680, 180, 180), BlendMode = BlendMode.Overlay })
+            // A warm glow rising from the horizon.
+            .AddLayer(new FillLayer(new Rgba32(255, 120, 40)) { BlendMode = BlendMode.Screen, Opacity = 0.5f, Mask = Mask.Gradient(new(0, 0.75f), new(0, 0.3f)) })
+            // More contrast in the shadows only.
+            .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Contrast(0.3f)) { Mask = new LuminanceRangeMask(0f, 0.35f) });
+
+        using var rendered = new DocumentRenderer().Render(document, photo);
+
+        // In the editor, the same through the BmageEditorContext a Toolbar, Panel or Footer receives:
+        await context.AddLayerAsync(new FillLayer(new Rgba32(40, 110, 220)) { BlendMode = BlendMode.Color, Opacity = 0.4f });
+        await context.UpdateLayerAsync(layer with { Opacity = value }, transient: true);   // while a slider is dragged
+        """;
+
+    private const string DocumentLayersSnippet = """
+        document = document
+            .UpdateLayer(logo with { Opacity = 0.5f, IsVisible = true })
+            .MoveLayer(logo.Id, 0)                       // to the bottom of the stack
+            .DuplicateLayer(glow.Id, out var copyId)
+            .RemoveLayer(copyId!.Value);
+
+        var found = document.FindLayer(logo.Id);         // also inside groups
+        """;
+
+    private const string GroupSnippet = """
+        // Group layers already in the document, then fade them together.
+        document = document.GroupLayers([plate.Id, caption.Id], out var groupId, name: "Caption");
+        document = document.UpdateLayer(document.FindLayer(groupId!.Value)! with { Opacity = 0.8f });
+
+        document = document.MoveLayerIntoGroup(logo.Id, groupId.Value);   // on top of the group's layers
+        document = document.MoveLayerOutOfGroup(logo.Id);                 // directly above the group again
+        document = document.Ungroup(groupId.Value);                       // its layers, where it was
+
+        // Or build one: a texture shown only inside lettering, and the pair blended as one picture.
+        var title = new GroupLayer(
+        [
+            new ImageLayer { Image = lettering, Bounds = titleArea },
+            new ImageLayer { Image = woodTexture, Bounds = titleArea, ClipToLayerBelow = true },
+        ]) { Isolated = true, BlendMode = BlendMode.Overlay };
+        """;
+
+    private const string JsonSnippet = """
+        // In the browser: the edit, not the pixels, goes to the server.
+        var json = BmageJson.Serialize(editor.Document!, new BmageJsonOptions
+        {
+            ImageReferences = image => uploads.IdOf(image),
+        });
+
+        // On the server: replay it on the original upload at full resolution.
+        var document = BmageJson.DeserializeDocument(json, new BmageJsonOptions
+        {
+            ImageResolver = id => uploads.Load(id),
+        });
+        using var original = await processor.DecodeAsync(upload);
+        using var rendered = new DocumentRenderer(fonts).Render(document, original);
+
+        // Or reopen the editor where the user left off, through its BmageEditorContext.
+        await context.RestoreDocumentAsync(document);
+        """;
+
+    private async Task StartAsync()
+    {
+        _busy = true;
+        StateHasChanged();
+        await Task.Yield();
+        _source ??= SampleImages.Landscape(SourceSize.Width, SourceSize.Height);
+        _stamp ??= DrawStamp();
+        await RunAsync();
+    }
+
+    /// <summary>A badge to use as the watermark: rings around a star, light on dark, so every blend mode shows something.</summary>
+    private static ImageBuffer DrawStamp()
+    {
+        using var canvas = ImageCanvas.Create(240, 240);
+        canvas.FillCircle(new Vector2(120, 120), 112, new Rgba32(20, 24, 40, 230));
+        canvas.DrawEllipse(new RectangleF(20, 20, 200, 200), new Rgba32(250, 236, 200), new StrokeStyle { Width = 10 });
+        var star = new Vector2[10];
+        for (var i = 0; i < star.Length; i++)
+        {
+            var angle = -MathF.PI / 2 + i * MathF.PI / 5;
+            var radius = i % 2 == 0 ? 78f : 32f;
+            star[i] = new Vector2(120 + radius * MathF.Cos(angle), 120 + radius * MathF.Sin(angle));
+        }
+        canvas.FillPolygon(star, new Rgba32(255, 214, 110));
+        return canvas.Snapshot();
+    }
+
+    private void Set(Action change)
+    {
+        var layer = _layer;
+        change();
+        // A new kind of layer starts from the blend mode that suits it.
+        if (_layer != layer) _blend = null;
+        Schedule();
+    }
+
+    private void SetNumber(Action<double> set, ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v))
+        {
+            set(v);
+            Schedule();
+        }
+    }
+
+    private void OnBlendChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<BlendMode>(e.Value?.ToString(), out var mode))
+        {
+            _blend = mode;
+            Schedule();
+        }
+    }
+
+    // The JSON and the estimate follow every change at once - they cost nothing - while the pixels wait
+    // for the reader to stop dragging.
+    private void Schedule()
+    {
+        if (_source is null) return;
+        _debounce.Schedule(async _ => await RunAsync());
+    }
+
+    private async Task RunAsync()
+    {
+        if (_source is not { } source) return;
+        var run = ++_run;
+        _busy = true;
+        _error = null;
+        StateHasChanged();
+        try
+        {
+            var started = System.Diagnostics.Stopwatch.StartNew();
+            var result = await new DocumentRenderer().RenderAsync(Document, source);
+            started.Stop();
+            if (run != _run)
+            {
+                result.Dispose();
+                return;
+            }
+            _preview?.Dispose();
+            _preview = result;
+            _previewVersion++;
+            _elapsed = started.Elapsed;
+        }
+        catch (Exception ex) when (run == _run)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception)
+        {
+            // Superseded: the newer run reports its own outcome.
+        }
+        finally
+        {
+            if (run == _run)
+            {
+                _busy = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        _run++;
+        _debounce.Dispose();
+        _preview?.Dispose();
+        _source?.Dispose();
+        _stamp?.Dispose();
+    }
+}

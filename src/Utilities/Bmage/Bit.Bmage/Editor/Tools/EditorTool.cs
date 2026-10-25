@@ -33,6 +33,24 @@ public enum EditorToolKind
     Text,
     /// <summary>Numbered step marker.</summary>
     Step,
+    /// <summary>Paint onto a paint layer with a round brush, soft or hard, following pen pressure.</summary>
+    Brush,
+    /// <summary>Erase paint from the paint layer, leaving the image below untouched.</summary>
+    Eraser,
+    /// <summary>Pick the colour under the pointer for the drawing tools.</summary>
+    Eyedropper,
+    /// <summary>Fill the region of similar colour under the pointer with the fill colour, as a new layer.</summary>
+    Fill,
+    /// <summary>Make the region of similar colour under the pointer transparent.</summary>
+    MagicEraser,
+    /// <summary>Select a rectangle of pixels: Shift adds to the selection, Alt takes away from it.</summary>
+    SelectRectangle,
+    /// <summary>Select an ellipse of pixels.</summary>
+    SelectEllipse,
+    /// <summary>Select a freehand region by drawing around it.</summary>
+    Lasso,
+    /// <summary>Select the region of similar colour under the pointer.</summary>
+    MagicWand,
 }
 
 /// <summary>The current drawing style shared by the annotation tools.</summary>
@@ -50,6 +68,15 @@ public sealed record EditorToolSettings
     public RedactionMode RedactionMode { get; init; } = RedactionMode.Solid;
     public float RedactionStrength { get; init; } = 14f;
     public Rgba32 HighlightColor { get; init; } = new(255, 235, 59, 110);
+
+    /// <summary>The brush and eraser diameter in image pixels.</summary>
+    public float BrushSize { get; init; } = 24f;
+
+    /// <summary>How crisp the brush's edge is, in [0,1].</summary>
+    public float BrushHardness { get; init; } = 0.8f;
+
+    /// <summary>How far a colour may differ and still be filled or erased by the fill and magic eraser tools, in [0,1].</summary>
+    public float Tolerance { get; init; } = 0.12f;
 
     /// <summary>Builds the shape style used by the outline tools.</summary>
     public ShapeStyle ToShapeStyle() => new()
@@ -85,6 +112,9 @@ public sealed class ToolDrag
     public Vector2 Current { get; set; }
     /// <summary>The sampled path, for freehand strokes.</summary>
     public List<Vector2> Points { get; } = [];
+
+    /// <summary>The pen pressure at each of <see cref="Points"/>, when a pen drew them; empty otherwise.</summary>
+    public List<float> Pressures { get; } = [];
 
     /// <summary>True when shift is held, which constrains shapes to squares and angles to 15 degree steps.</summary>
     public bool ShiftKey { get; set; }

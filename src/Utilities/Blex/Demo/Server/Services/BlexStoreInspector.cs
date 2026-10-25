@@ -3,6 +3,7 @@ using Bit.Blex.Generators;
 using Bit.Blex.Demo.Server.Dtos;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Bit.Blex.Demo.Server.Services;
 
@@ -84,7 +85,12 @@ public static class BlexStoreInspector
         var run = driver.GetRunResult();
         var generatedTrees = run.GeneratedTrees.ToHashSet();
 
-        var generatorDiagnostics = run.Results.SelectMany(result => result.Diagnostics).ToArray();
+        // The driver hands its diagnostics back as reported; a build drops the warnings a #pragma silences
+        // only when it reports them, so that filter is applied here - or a store that deliberately silences a
+        // warning would be told about it all the same.
+        var generatorDiagnostics = run.Results.SelectMany(result => result.Diagnostics)
+            .Where(diagnostic => IsSuppressedByPragma(diagnostic, userTree) is false)
+            .ToArray();
 
         // Only what the compiler says is broken: a pasted fragment trips over nullable and unused-variable
         // warnings that say nothing about Blex. Generator diagnostics are kept whatever their severity.
@@ -183,6 +189,38 @@ public static class BlexStoreInspector
             },
             _ => null
         };
+    }
+
+    /// <summary>
+    /// Whether a <c>#pragma warning disable</c> in the submitted source covers a warning where it is reported:
+    /// the last pragma before that point naming its id (or naming none, which means every warning) decides.
+    /// Errors cannot be silenced this way, in a build or here.
+    /// </summary>
+    private static bool IsSuppressedByPragma(Diagnostic diagnostic, SyntaxTree userTree)
+    {
+        if (diagnostic.Severity != DiagnosticSeverity.Warning) return false;
+
+        // The generator's locations carry a path and a span but no tree (see ToDto).
+        var span = diagnostic.Location.GetLineSpan();
+        if (span.IsValid is false || span.Path != userTree.FilePath) return false;
+
+        var position = userTree.GetText().Lines.GetPosition(span.StartLinePosition);
+        var suppressed = false;
+
+        var pragmas = userTree.GetRoot().DescendantTrivia()
+            .Select(trivia => trivia.GetStructure())
+            .OfType<PragmaWarningDirectiveTriviaSyntax>()
+            .Where(pragma => pragma.SpanStart < position)
+            .OrderBy(pragma => pragma.SpanStart);
+
+        foreach (var pragma in pragmas)
+        {
+            if (pragma.ErrorCodes.Count > 0 && pragma.ErrorCodes.Any(code => code.ToString().Trim() == diagnostic.Id) is false) continue;
+
+            suppressed = pragma.DisableOrRestoreKeyword.IsKind(SyntaxKind.DisableKeyword);
+        }
+
+        return suppressed;
     }
 
     private static BlexInspectionDiagnosticDto ToDto(Diagnostic diagnostic, string source, SyntaxTree userTree)

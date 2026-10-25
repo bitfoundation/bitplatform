@@ -11,7 +11,26 @@
     <Project Path="Demo/Server/Bit.Blex.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Samples/">
-    <Project Path="Samples/Bit.Blex.Samples.Wasm/Bit.Blex.Samples.Wasm.csproj" />
+    <Project Path="Samples/Core/Bit.Blex.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Auto/">
+    <Project Path="Samples/Auto/Bit.Blex.Samples.Auto.Client/Bit.Blex.Samples.Auto.Client.csproj" />
+    <Project Path="Samples/Auto/Bit.Blex.Samples.Auto/Bit.Blex.Samples.Auto.csproj" />
+  </Folder>
+  <Folder Name="/Samples/MAUI/">
+    <Project Path="Samples/MAUI/Bit.Blex.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Samples/Server/">
+    <Project Path="Samples/Server/Bit.Blex.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Standalone/">
+    <Project Path="Samples/Standalone/Bit.Blex.Samples.Standalone.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Wasm/">
+    <Project Path="Samples/Wasm/Bit.Blex.Samples.Wasm.Client/Bit.Blex.Samples.Wasm.Client.csproj" />
+    <Project Path="Samples/Wasm/Bit.Blex.Samples.Wasm/Bit.Blex.Samples.Wasm.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Blex.Tests/Bit.Blex.Tests.csproj" />

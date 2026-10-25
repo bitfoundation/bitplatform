@@ -73,51 +73,8 @@ public sealed class OrientationOperation : ImageOperation, IGeometricOperation
         output.Metadata = source.Metadata;
         try
         {
-            var src = source.Pixels;
-            var dst = output.Pixels;
-            var ow = outSize.Width;
-            for (var y = 0; y < h; y++)
-            {
-                if ((y & 63) == 0) { context.ThrowIfCancellationRequested(); context.ReportProgress(y / (double)h); }
-                var row = src.Slice(y * w, w);
-                switch (o)
-                {
-                    // Mirrors copy the row and reverse it in place, which the runtime vectorises.
-                    case Orientation.FlipHorizontal:
-                    {
-                        var d = dst.Slice(y * ow, ow);
-                        row.CopyTo(d);
-                        d.Reverse();
-                        break;
-                    }
-                    case Orientation.FlipVertical:
-                        row.CopyTo(dst.Slice((h - 1 - y) * ow, ow));
-                        break;
-                    case Orientation.Rotate180:
-                    {
-                        var d = dst.Slice((h - 1 - y) * ow, ow);
-                        row.CopyTo(d);
-                        d.Reverse();
-                        break;
-                    }
-                    case Orientation.Rotate90:
-                        // (x,y) -> (h-1-y, x)
-                        for (var x = 0; x < w; x++) dst[x * ow + (h - 1 - y)] = row[x];
-                        break;
-                    case Orientation.Rotate270:
-                        // (x,y) -> (y, w-1-x)
-                        for (var x = 0; x < w; x++) dst[(w - 1 - x) * ow + y] = row[x];
-                        break;
-                    case Orientation.Transpose:
-                        // (x,y) -> (y, x)
-                        for (var x = 0; x < w; x++) dst[x * ow + y] = row[x];
-                        break;
-                    case Orientation.Transverse:
-                        // (x,y) -> (h-1-y, w-1-x)
-                        for (var x = 0; x < w; x++) dst[(w - 1 - x) * ow + (h - 1 - y)] = row[x];
-                        break;
-                }
-            }
+            // Each source row lands in its own pixels of the output, so bands of source rows run side by side.
+            ParallelRows.For(context, 0, h, w / 2, (start, end, band) => Reorient(source, output, o, start, end, band));
             context.ReportProgress(1);
             return output;
         }
@@ -125,6 +82,57 @@ public sealed class OrientationOperation : ImageOperation, IGeometricOperation
         {
             output.Dispose();
             throw;
+        }
+    }
+
+    /// <summary>Moves source rows <paramref name="start"/> to <paramref name="end"/> to where the orientation puts them.</summary>
+    private static void Reorient(ImageBuffer source, ImageBuffer output, Orientation o, int start, int end, OperationContext context)
+    {
+        int w = source.Width, h = source.Height;
+        var src = source.Pixels;
+        var dst = output.Pixels;
+        var ow = output.Width;
+        for (var y = start; y < end; y++)
+        {
+            if (((y - start) & 63) == 0) { context.ThrowIfCancellationRequested(); context.ReportProgress(y / (double)h); }
+            var row = src.Slice(y * w, w);
+            switch (o)
+            {
+                // Mirrors copy the row and reverse it in place, which the runtime vectorises.
+                case Orientation.FlipHorizontal:
+                {
+                    var d = dst.Slice(y * ow, ow);
+                    row.CopyTo(d);
+                    d.Reverse();
+                    break;
+                }
+                case Orientation.FlipVertical:
+                    row.CopyTo(dst.Slice((h - 1 - y) * ow, ow));
+                    break;
+                case Orientation.Rotate180:
+                {
+                    var d = dst.Slice((h - 1 - y) * ow, ow);
+                    row.CopyTo(d);
+                    d.Reverse();
+                    break;
+                }
+                case Orientation.Rotate90:
+                    // (x,y) -> (h-1-y, x)
+                    for (var x = 0; x < w; x++) dst[x * ow + (h - 1 - y)] = row[x];
+                    break;
+                case Orientation.Rotate270:
+                    // (x,y) -> (y, w-1-x)
+                    for (var x = 0; x < w; x++) dst[(w - 1 - x) * ow + y] = row[x];
+                    break;
+                case Orientation.Transpose:
+                    // (x,y) -> (y, x)
+                    for (var x = 0; x < w; x++) dst[x * ow + y] = row[x];
+                    break;
+                case Orientation.Transverse:
+                    // (x,y) -> (h-1-y, w-1-x)
+                    for (var x = 0; x < w; x++) dst[(w - 1 - x) * ow + (h - 1 - y)] = row[x];
+                    break;
+            }
         }
     }
 

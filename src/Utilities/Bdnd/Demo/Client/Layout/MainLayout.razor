@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @implements IDisposable
-@inject NavigationManager Navigation
+@inject NavigationManager Nav
 @inject IJSRuntime JS
 
 @* The app shell - part of the site kit every Utilities demo shares (see wwwroot/app.css): a skip
@@ -16,23 +16,45 @@
 
 <div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
     @* First in the tab order on purpose: a keyboard reader lands here before the navigation and
-       can jump straight past the chrome to the page. *@
-    <a class="bb-skip-link" href="#bb-main">Skip to content</a>
+       can jump straight past the chrome to the page. The click itself is site.js's - it moves focus
+       to <main>, which the router would not - so the href only has to be right for a link opened
+       some other way. It names the page it is on: a bare "#bb-main" would resolve against
+       <base href="/"> to the home page. *@
+    <a class="bb-skip-link" href="@($"{DocsCatalog.PathOf(Nav)}#bb-main")">Skip to content</a>
 
-    <Header />
+    @* The header's menu and the docs layout's nav panel are both drawers over the page at narrow
+       widths; this is how each one hears that the other opened. *@
+    <CascadingValue Value="_drawers" IsFixed="true">
+        <Header />
 
-    <div class="bb-site-content">
-        <main id="bb-main" tabindex="-1">
-            <article>
-                @Body
-            </article>
-        </main>
-    </div>
+        <div class="bb-site-content">
+            <main id="bb-main" tabindex="-1">
+                <article>
+                    @Body
+                </article>
+            </main>
+        </div>
+    </CascadingValue>
 
     <Footer />
 </div>
 
 @code {
+    private readonly Drawers _drawers = new();
+
+    /// <summary>
+    /// Keeps the site's drawers - the header menu, the docs nav panel - to one open at a time: opening one
+    /// closes the other, rather than stacking two scrims and two panels that each claim the page. The kit's
+    /// drawers live in different components (one in the header, one in the docs layout), so they meet here.
+    /// </summary>
+    public sealed class Drawers
+    {
+        /// <summary>Raised with the drawer that just opened; every other drawer closes itself.</summary>
+        public event Action<object>? Opened;
+
+        public void Open(object owner) => Opened?.Invoke(owner);
+    }
+
     private IDisposable? _navigation;
     private bool _reloading;
 
@@ -42,14 +64,14 @@
     protected override void OnInitialized()
     {
         if (RendererInfo.IsInteractive is false) return;
-        if (WrongRenderer(Navigation.Uri))
+        if (WrongRenderer(Nav.Uri))
         {
             // already at the address: a reload (a forced load of the same address with a #fragment would only scroll)
             _reloading = true;
             _ = JS.InvokeVoidAsync("location.reload");
             return;
         }
-        _navigation = Navigation.RegisterLocationChangingHandler(OnLocationChanging);
+        _navigation = Nav.RegisterLocationChangingHandler(OnLocationChanging);
     }
 
     private ValueTask OnLocationChanging(LocationChangingContext context)
@@ -67,14 +89,14 @@
         // The forced load goes through the location-changing handlers too; this one lets it pass. The page unloads
         // right after, so the flag is never reset.
         _reloading = true;
-        Navigation.NavigateTo(uri, forceLoad: true, replace: replace);
+        Nav.NavigateTo(uri, forceLoad: true, replace: replace);
     }
 
     private bool WrongRenderer(string uri)
     {
-        var absolute = Navigation.ToAbsoluteUri(uri).GetLeftPart(UriPartial.Path);
-        if (absolute.StartsWith(Navigation.BaseUri, StringComparison.OrdinalIgnoreCase) is false) return false; // another site
-        var path = Navigation.ToBaseRelativePath(absolute);
+        var absolute = Nav.ToAbsoluteUri(uri).GetLeftPart(UriPartial.Path);
+        if (absolute.StartsWith(Nav.BaseUri, StringComparison.OrdinalIgnoreCase) is false) return false; // another site
+        var path = Nav.ToBaseRelativePath(absolute);
         var serverPage = path.Equals("hosting/server-check", StringComparison.OrdinalIgnoreCase)
                          || path.StartsWith("hosting/server-check/", StringComparison.OrdinalIgnoreCase);
         return serverPage != (RendererInfo.Name == "Server");

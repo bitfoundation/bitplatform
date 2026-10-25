@@ -9,9 +9,11 @@ namespace Boilerplate.Server.Api;
 public partial class ServerApiSettings : ServerSharedSettings
 {
     [Required]
+    [ValidateObjectMembers]
     public AppIdentityOptions Identity { get; set; } = default!;
 
     [Required]
+    [ValidateObjectMembers]
     public EmailOptions Email { get; set; } = default!;
 
     /// <summary>
@@ -90,23 +92,6 @@ public partial class ServerApiSettings : ServerSharedSettings
         if (Email is null)
             throw new InvalidOperationException("Email configuration is required.");
 
-        Validator.TryValidateObject(Identity, new ValidationContext(Identity), validationResults, true);
-        Validator.TryValidateObject(Email, new ValidationContext(Email), validationResults, true);
-        if (Sms is not null)
-        {
-            Validator.TryValidateObject(Sms, new ValidationContext(Sms), validationResults, true);
-        }
-        //#if (notification == true)
-        if (AdsPushVapid is not null)
-        {
-            Validator.TryValidateObject(AdsPushVapid, new ValidationContext(AdsPushVapid), validationResults, true);
-        }
-        //#endif
-        if (SupportedAppVersions is not null)
-        {
-            Validator.TryValidateObject(SupportedAppVersions, new ValidationContext(SupportedAppVersions), validationResults, true);
-        }
-
         //#if (signalR == true)
         if (AiChatImagesRetention <= TimeSpan.Zero)
         {
@@ -151,6 +136,11 @@ public partial class ServerApiSettings : ServerSharedSettings
 
         return validationResults;
     }
+}
+
+[OptionsValidator]
+public partial class ServerApiSettingsValidator : IValidateOptions<ServerApiSettings>
+{
 }
 
 public partial class AppIdentityOptions : IdentityOptions

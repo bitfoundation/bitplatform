@@ -6,12 +6,17 @@
       "Bit.Butil.Build\\Bit.Butil.Build.csproj",
       "Demo\\Client\\Bit.Butil.Demo.Client.csproj",
       "Demo\\Server\\Bit.Butil.Demo.Server.csproj",
-      "Samples\\Bit.Butil.Samples.Core\\Bit.Butil.Samples.Core.csproj",
-      "Samples\\Bit.Butil.Samples.Web\\Bit.Butil.Samples.Web.csproj",
-      "tests\\Bit.Butil.Tests.Benchmarks\\Bit.Butil.Tests.Benchmarks.csproj",
-      "tests\\Bit.Butil.Tests.E2E\\Bit.Butil.Tests.E2E.csproj",
-      "tests\\Bit.Butil.Tests.Manual\\Bit.Butil.Tests.Manual.csproj",
-      "tests\\Bit.Butil.Tests.Mcp\\Bit.Butil.Tests.Mcp.csproj"
+      "Samples\\Auto\\Bit.Butil.Samples.Auto\\Bit.Butil.Samples.Auto.csproj",
+      "Samples\\Auto\\Bit.Butil.Samples.Auto.Client\\Bit.Butil.Samples.Auto.Client.csproj",
+      "Samples\\Core\\Bit.Butil.Samples.Core.csproj",
+      "Samples\\Server\\Bit.Butil.Samples.Server.csproj",
+      "Samples\\Wasm\\Bit.Butil.Samples.Wasm\\Bit.Butil.Samples.Wasm.csproj",
+      "Samples\\Wasm\\Bit.Butil.Samples.Wasm.Client\\Bit.Butil.Samples.Wasm.Client.csproj",
+      "Samples\\Web\\Bit.Butil.Samples.Web.csproj",
+      "Tests\\Bit.Butil.Tests.Benchmarks\\Bit.Butil.Tests.Benchmarks.csproj",
+      "Tests\\Bit.Butil.Tests.E2E\\Bit.Butil.Tests.E2E.csproj",
+      "Tests\\Bit.Butil.Tests.Manual\\Bit.Butil.Tests.Manual.csproj",
+      "Tests\\Bit.Butil.Tests.Mcp\\Bit.Butil.Tests.Mcp.csproj"
     ]
   }
 }

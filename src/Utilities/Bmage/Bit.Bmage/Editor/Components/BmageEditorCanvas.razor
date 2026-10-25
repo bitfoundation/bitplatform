@@ -57,6 +57,17 @@
              aria-hidden="true"></div>
     }
 
+    @if (SelectionOutline is { Length: > 0 } outline && Image is not null)
+    {
+        @* The pixel selection's outline, in the canvas's own coordinates, so it zooms and pans with the image: a light
+           line under a dark dashed one reads on any photo. *@
+        <svg class="bmg-selection-outline" style="@BoxStyle(new RectangleF(PointF.Empty, ShownSize))"
+             viewBox="@($"0 0 {Css(ShownSize.Width)} {Css(ShownSize.Height)}")" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <path class="bmg-ants-under" d="@outline" />
+            <path class="bmg-ants" d="@outline" />
+        </svg>
+    }
+
     @if (Busy)
     {
         <div class="bmg-busy" role="status" aria-live="polite">
@@ -124,6 +135,12 @@
 
     /// <summary>Bounds of the selected annotation, in image coordinates.</summary>
     [Parameter] public RectangleF? SelectionBounds { get; set; }
+
+    /// <summary>
+    /// The outline of a pixel selection, as SVG path data in the image's display coordinates, or null when there is
+    /// none. Drawn as marching ants over the image.
+    /// </summary>
+    [Parameter] public string? SelectionOutline { get; set; }
 
     /// <summary>Shows a busy indicator over the canvas.</summary>
     [Parameter] public bool Busy { get; set; }

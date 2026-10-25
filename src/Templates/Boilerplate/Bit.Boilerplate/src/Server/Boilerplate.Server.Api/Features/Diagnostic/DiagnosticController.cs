@@ -6,6 +6,7 @@ using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Attachments;
 using Boilerplate.Server.Shared.Infrastructure.Services;
 //#if (notification == true)
+using Microsoft.AspNetCore.RateLimiting;
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
 
@@ -43,6 +44,9 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
     /// </para>
     /// </summary>
     [HttpGet, AllowAnonymous]
+    //#if (notification == true)
+    [EnableRateLimiting(RateLimitOptionsExtensions.PUSH_NOTIFICATION)]
+    //#endif
     public async Task<IAsyncEnumerable<string>> PerformDiagnostic([FromQuery] string? signalRConnectionId, [FromQuery] string? pushNotificationSubscriptionDeviceId, CancellationToken cancellationToken)
     {
         Response.Headers.CacheControl = "no-store";
@@ -121,7 +125,7 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
     }
 
     //#if (notification == true)
-    [HttpPost("{deviceId}"), AllowAnonymous]
+    [HttpPost("{deviceId}"), AllowAnonymous, EnableRateLimiting(RateLimitOptionsExtensions.PUSH_NOTIFICATION)]
     public async Task<bool> SendTestPushNotification(string deviceId, CancellationToken cancellationToken)
     {
         if (await PushSubscriptionExists(deviceId, cancellationToken) is false)
@@ -134,13 +138,15 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
 
     private async Task<bool> PushSubscriptionExists(string deviceId, CancellationToken cancellationToken)
     {
-        var subscription = await DbContext.PushNotificationSubscriptions
-            .FirstOrDefaultAsync(d => d.DeviceId == deviceId, cancellationToken);
+        var owners = await DbContext.PushNotificationSubscriptions
+            .Where(d => d.DeviceId == deviceId)
+            .Select(d => d.UserSessionId)
+            .ToArrayAsync(cancellationToken);
 
-        if (subscription?.UserSessionId is not null && subscription.UserSessionId != CallerUserSessionId)
+        if (owners.Length > 0 && owners.Any(owner => owner is null || owner == CallerUserSessionId) is false)
             throw new ResourceNotFoundException().WithData("Reason", "The push notification subscription belongs to another user session.");
 
-        return subscription is not null;
+        return owners.Length > 0;
     }
 
     private async Task RequestTestPush(string deviceId, CancellationToken cancellationToken)

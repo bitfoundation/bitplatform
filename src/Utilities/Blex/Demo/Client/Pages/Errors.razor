@@ -8,7 +8,7 @@
          Lead="Blex refuses to let a misbehaving observer break dispatch. Everything it swallows is handed to you instead.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The problem</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The problem</h2>
         <p>
             A dispatch fans out to middleware, the DevTools bridge, persistence, history and every
             subscriber. If any one of them throws and the exception escapes, the observers registered
@@ -27,13 +27,13 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> BlexError</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> BlexError</h2>
         <CodeBlock Code="@Record" />
         <ApiTable Rows="@ErrorRows" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What gets reported</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What gets reported</h2>
         <div class="bb-scroll">
             <table class="bb-table">
                 <thead><tr><th>Source</th><th>Raised when</th></tr></thead>
@@ -41,13 +41,19 @@
                     <tr><td class="bb-table-key"><code>subscriber</code></td><td>A handler passed to <code>Subscribe</code> / <code>SubscribeTo</code> / <code>SubscribeToAction</code> threw. <code>Detail</code> is the qualified action name.</td></tr>
                     <tr><td class="bb-table-key"><code>async reactor</code></td><td>A <code>SubscribeAsync</code> handler's task faulted.</td></tr>
                     <tr><td class="bb-table-key"><code>middleware</code></td><td>A middleware's <code>BeforeAction</code> or <code>OnAction</code> threw. The pipeline continues with the next middleware.</td></tr>
-                    <tr><td class="bb-table-key"><code>persistence</code></td><td>Rehydrating, applying, serializing, scheduling or writing a persisted slice failed. <code>Detail</code> names the store or key.</td></tr>
-                    <tr><td class="bb-table-key"><code>restore</code></td><td>A store's slice could not be deserialized during <code>RestoreGlobalState</code>. That store is skipped; the others still restore.</td></tr>
-                    <tr><td class="bb-table-key"><code>devtools</code></td><td>A time-travel snapshot from the extension was malformed, a sanitizer threw, or the JS bridge failed to load or send.</td></tr>
-                    <tr><td class="bb-table-key"><code>history</code></td><td>A <code>BlexHistory.Changed</code> handler threw while recording or after an external restore, or a history filter threw.</td></tr>
+                    <tr><td class="bb-table-key"><code>persistence</code></td><td>Rehydrating, unprotecting, applying, serializing, protecting, scheduling or writing a persisted slice failed - including the hydration of a store that registered after startup (its saves stay held until it hydrates) and the save a leaving store still owed. <code>Detail</code> names the store or key.</td></tr>
+                    <tr><td class="bb-table-key"><code>restore</code></td><td>A store's slice could not be deserialized during <code>RestoreGlobalState</code>, or a <code>StateRestored</code> handler threw. A failing store is skipped; the others still restore.</td></tr>
+                    <tr><td class="bb-table-key"><code>devtools</code></td><td>A time-travel snapshot from the extension was malformed, a sanitizer threw, the JS bridge failed to load or send, or an action typed into the dispatcher could not be dispatched - not JSON, no <code>type</code>, an unknown action, a missing argument, or an action that threw.</td></tr>
+                    <tr><td class="bb-table-key"><code>history</code></td><td>A <code>BlexHistory.Changed</code> handler threw while recording or after an external restore, or a history filter, <code>groupBy</code> or scope predicate threw.</td></tr>
                     <tr><td class="bb-table-key"><code>reset</code></td><td>A store failed to reset during <code>BlexManager.ResetAll()</code>. That store is skipped; the rest still reset.</td></tr>
-                    <tr><td class="bb-table-key"><code>register</code></td><td>Two stores were registered under the same name, so their state slices, DevTools entries and storage keys collide.</td></tr>
-                    <tr><td class="bb-table-key"><code>prerender</code></td><td>Handing a store's state across the prerender-to-interactive boundary failed. The store simply renders from its own state instead - the worst case is rendering twice.</td></tr>
+                    <tr><td class="bb-table-key"><code>register</code></td><td>Two stores were registered under the same name, so their state slices, DevTools entries and storage keys collide - or a <code>StoreRegistered</code> handler threw.</td></tr>
+                    <tr><td class="bb-table-key"><code>unregister</code></td><td>A <code>StoreUnregistered</code> handler threw as a store left the manager. <code>Detail</code> names the store.</td></tr>
+                    <tr><td class="bb-table-key"><code>dispose</code></td><td>Cancelling a store's in-flight effects threw while the store was disposed - a scope closing, or the container being torn down. The rest of the disposal carries on. <code>Detail</code> names the store.</td></tr>
+                    <tr><td class="bb-table-key"><code>prerender</code></td><td>Handing a store's state - or the query cache - across the prerender-to-interactive boundary failed. The store simply renders from its own state instead, and a query fetches again - the worst case is rendering twice.</td></tr>
+                    <tr><td class="bb-table-key"><code>dispatcher</code></td><td>A store changed outside the dispatcher its state belongs to (a timer, a background task, a SignalR handler). The change applied, but raced the renderer. <code>Detail</code> names the store. See <a href="stores#dispatcher">Threads and the dispatcher</a>.</td></tr>
+                    <tr><td class="bb-table-key"><code>mutation</code></td><td>With <code>DetectInPlaceMutations</code> on: an action changed state without assigning a property. <code>Detail</code> is the qualified action name.</td></tr>
+                    <tr><td class="bb-table-key"><code>query</code></td><td>A query observer's or mutation's handler threw, a mutation callback threw, or a handed-over query could not be read. <code>Detail</code> is the query key, when there is one.</td></tr>
+                    <tr><td class="bb-table-key"><code>startup</code></td><td>Native .NET MAUI only: the startup initializer <code>UseBitBlex()</code> registers could not resolve the stores, the persistor or the history at <code>MauiApp.Build()</code> - typically scoped registrations under <code>ValidateScopes</code>. The app starts anyway; <code>Detail</code> says which registration to change. A failed hydration there is reported as <code>persistence</code>. See <a href="maui">.NET MAUI</a>.</td></tr>
                 </tbody>
             </table>
         </div>
@@ -64,7 +70,7 @@
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">Count</span>
-                    <span class="bb-stat-value demo-accent">@Counter.Count</span>
+                    <span class="bb-stat-value demo-accent"><Persisted>@Counter.Count</Persisted></span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Errors captured</span>
@@ -93,7 +99,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Guarantees</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Guarantees</h2>
         <ul class="bb-detail-list">
             <li>
                 <strong>The mutation is recorded even if a subscriber throws.</strong> A standalone
@@ -120,7 +126,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A realistic handler</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A realistic handler</h2>
         <CodeBlock Code="@Logging" />
 
         <Callout Kind="Callout.CalloutKind.Gotcha" Title="OnError is captured on the singleton options">
@@ -135,8 +141,35 @@
         </Callout>
     </div>
 
+    <div class="bb-card" id="observability">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Logging and tracing</h2>
+        <p>
+            <code>options.UseLogging()</code> does the handler above for you, through the host's
+            <code>ILogger</code> (category <code>Bit.Blex</code>): every action at <code>Debug</code> - or
+            the level you pass, <code>LogLevel.None</code> for failures only - every action failure as an
+            error, and every isolated failure as a warning, before your own <code>OnError</code> sees it too.
+            Names only: arguments and state never reach the log.
+        </p>
+        <p>
+            Tracing and metrics go through the standard <code>ActivitySource</code> and <code>Meter</code>
+            named <code>BlexDiagnostics.SourceName</code>, so OpenTelemetry, dotnet-counters and Application
+            Insights pick them up with no Blex-specific code - and with nothing listening, an action pays two
+            flag reads.
+        </p>
+        <CodeBlock Code="@Telemetry" FileName="Program.cs" />
+        <ApiTable Title="What is recorded" Rows="@TelemetryRows" />
+        <Callout Kind="Callout.CalloutKind.Note" Title="Safe to export by design">
+            <p>
+                Only names are recorded - never action arguments or state. A store's metric tag is its
+                declared name, without a scoped instance's key (which goes on the span only), so a thousand
+                open documents are one series. A query is named by its key's first part: <code>["todos", 42]</code>
+                is <code>"todos"</code>, so keep that part a fixed word rather than an id.
+            </p>
+        </Callout>
+    </div>
+
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Setting it per scope</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Setting it per scope</h2>
         <p>
             <code>OnError</code> is also a settable property on <code>BlexManager</code>, so a scoped
             component or service can install its own handler where a scoped dependency is genuinely
@@ -149,7 +182,9 @@
                 This is about the <em>observers</em> of an action. An exception thrown by your own
                 <code>[BlexAction]</code> method body propagates to the caller as usual - only
                 <code>[BlexEffect]</code> bodies capture their exception, into the generated
-                <code>XxxError</code> property.
+                <code>XxxError</code> property. Either way it reaches <a href="middleware">OnActionError</a>,
+                and what the body changed before the throw stays changed unless the store is
+                <a href="actions#rollback"><code>RollbackOnError</code></a>.
             </p>
         </Callout>
     </div>
@@ -183,7 +218,7 @@
 
     private static readonly IReadOnlyList<ApiTable.Row> ErrorRows =
     [
-        new("string Source", "Which part of the pipeline failed: <code>subscriber</code>, <code>async reactor</code>, <code>middleware</code>, <code>persistence</code>, <code>restore</code>, <code>devtools</code>, <code>history</code>, <code>reset</code>, <code>register</code> or <code>prerender</code>."),
+        new("string Source", "Which part of the pipeline failed: <code>subscriber</code>, <code>async reactor</code>, <code>middleware</code>, <code>persistence</code>, <code>restore</code>, <code>devtools</code>, <code>history</code>, <code>reset</code>, <code>register</code>, <code>unregister</code>, <code>dispose</code>, <code>prerender</code>, <code>dispatcher</code>, <code>mutation</code>, <code>query</code> or <code>startup</code> - the table above says when each is raised."),
         new("Exception Exception", "The captured exception."),
         new("string? Detail", "Context - usually the store name, storage key or qualified action name."),
     ];
@@ -235,6 +270,23 @@
             };
         });
         """;
+
+    private const string Telemetry = """
+        builder.Services.AddBitBlexServices(options => options.UseLogging());
+
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(tracing => tracing.AddSource(BlexDiagnostics.SourceName))
+            .WithMetrics(metrics => metrics.AddMeter(BlexDiagnostics.SourceName));
+        """;
+
+    private static readonly IReadOnlyList<ApiTable.Row> TelemetryRows =
+    [
+        new("Span \"{store}/{action}\"", "Every action and effect; one that runs inside another is its child. Tags <code>blex.store</code>, <code>blex.action</code>, <code>blex.store.instance</code>. Failed: status <code>Error</code> and <code>error.type</code>. Cancelled: <code>blex.cancelled</code>. An effect's retries are <code>blex.effect.retry</code> events."),
+        new("Span \"query {resource}\"", "Every query fetch, its retries included, with <code>blex.query.outcome</code>: <code>success</code>, <code>error</code> or <code>cancelled</code>."),
+        new("blex.actions / blex.action.errors", "Counters by <code>blex.store</code> and <code>blex.action</code>."),
+        new("blex.action.duration", "Histogram, in seconds - an async action's includes its awaits."),
+        new("blex.query.fetches / blex.query.duration", "By <code>blex.query.resource</code> and <code>blex.query.outcome</code>."),
+    ];
 
     private const string PerScope = """
         [Inject] private BlexManager Manager { get; set; } = default!;

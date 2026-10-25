@@ -31,7 +31,10 @@ public partial class WebContentSecurityPolicyTests : AppTestBase
         await WaitUntilInteractive(page);
 
         // The standalone apps have no server to prerender it: AppHeadCoordinator adds it through HeadOutlet once Blazor starts.
-        await Expect(page.Locator("head meta[http-equiv='Content-Security-Policy']")).ToHaveCountAsync(1);
+        if (app is App.AdminPanelWasmStandalone or App.TodoAot)
+        {
+            await Expect(page.Locator("head meta[http-equiv='Content-Security-Policy']")).ToHaveCountAsync(1);
+        }
 
         // Lazy loaded parts (fonts, images, the SignalR connection) come after the first render.
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new() { Timeout = (float)TimeSpan.FromMinutes(1).TotalMilliseconds });

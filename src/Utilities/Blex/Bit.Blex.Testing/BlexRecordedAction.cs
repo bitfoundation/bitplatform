@@ -9,10 +9,15 @@ namespace Bit.Blex.Testing;
 /// <param name="Sequence">The monotonic action sequence number.</param>
 /// <param name="State">The global state tree right after the action.</param>
 /// <param name="Args">The action's arguments (parameter name/value pairs), if any.</param>
+/// <param name="IsNested">
+/// Whether it ran inside another action's body (see <see cref="BlexActionContext.IsNested"/>), so that
+/// replaying the outer action runs it again.
+/// </param>
 public sealed record BlexRecordedAction(
     IBlexStore Store,
     string ActionName,
     string QualifiedName,
     int Sequence,
     JsonObject State,
-    IReadOnlyList<BlexActionArg> Args);
+    IReadOnlyList<BlexActionArg> Args,
+    bool IsNested = false);

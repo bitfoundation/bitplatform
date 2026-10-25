@@ -227,6 +227,41 @@ public sealed class ReviewRegressionTests
         Assert.IsTrue(error is null or OperationCanceledException, $"unexpected {error?.GetType().Name}: {error?.Message}");
     }
 
+    /// <summary>Holds a render at its first row until released, and says when it got there.</summary>
+    private sealed class GateOperation : PointOperation
+    {
+        public ManualResetEventSlim Reached { get; } = new();
+
+        public ManualResetEventSlim Open { get; } = new();
+
+        public override string Name => "Gate";
+
+        public override void ProcessRow(Span<Vector4> pixels)
+        {
+            Reached.Set();
+            Open.Wait(TimeSpan.FromSeconds(30));
+        }
+    }
+
+    [TestMethod]
+    public async Task DisposingDuringAnExportKeepsTheOriginalUntilTheExportIsDone()
+    {
+        var gate = new GateOperation();
+        var session = new ImageEditSession(TestImages.Gradient(64, 64));
+        session.AddOperation(gate);
+        var original = session.Original;
+        var export = Task.Run(async () => await session.RenderFullAsync());
+        Assert.IsTrue(gate.Reached.Wait(TimeSpan.FromSeconds(30)), "the export started");
+
+        session.Dispose();
+        Assert.IsFalse(original.IsDisposed, "the export is still reading the original");
+
+        gate.Open.Set();
+        using (await export) { }
+        for (var i = 0; i < 200 && !original.IsDisposed; i++) await Task.Delay(10);
+        Assert.IsTrue(original.IsDisposed, "and it is released once the export is done");
+    }
+
     // ---------------------------------------------------------------- codecs
 
     [TestMethod]

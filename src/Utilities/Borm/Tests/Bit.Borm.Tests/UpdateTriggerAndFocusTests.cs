@@ -34,6 +34,92 @@ public class UpdateTriggerTests : BunitContext
         Assert.AreEqual("Ada", state.GetValue("name"));
     }
 
+    /// <summary>
+    /// On a Blazor Server circuit every keystroke is a round trip. A box written as the user types whose value
+    /// the control renders itself (<c>value="@x"</c> plus an <c>oninput</c> handler) has each render's value put
+    /// back into it - after the keys typed since, which it erases: typed fast over a slow link, letters vanish. A
+    /// binding marks the value as the browser's: its <c>input</c> handler names the attribute it updates, and the
+    /// renderer takes each event's value as what the box holds, writing only a value that differs from it. bUnit
+    /// sends no browser value with its events, so the flag the renderer acts on is what is checked.
+    /// </summary>
+    [TestMethod]
+    public void Every_control_written_as_the_user_types_leaves_the_text_to_the_browser()
+    {
+        var form = BormBuilder.Create()
+            .Text("title", f => f.UpdateOnInput())
+            .TextArea("summary", f => f.UpdateOnInput())
+            .Number("seats", f => f.UpdateOnInput())
+            .Date("starts", f => f.UpdateOnInput())
+            .Number("volume", f => f.AsRange())
+            .Tags("skills")
+            .Text("name")
+            .Build();
+        var (view, _) = RenderForm(form);
+
+        foreach (var (owner, updates) in InputHandlers(view))
+        {
+            Assert.AreEqual("value", updates, $"{owner}: its input handler does not leave the value to the browser");
+        }
+
+        Assert.AreEqual(6, InputHandlers(view).Count, "one per control written as the user types; the change-driven field has none");
+    }
+
+    /// <summary>
+    /// The other half of that binding: a rendered value that differs from what the browser sent is written into the
+    /// box, so it has to be the text the user typed for as long as the model holds what that text says. A
+    /// debounced field has not written it yet, and the model's 1 is the "1." being typed: rendering the model's text
+    /// instead emptied a debounced box on every keystroke. A change the user did not type - the field tidied on
+    /// blur, a value set from code - is shown.
+    /// </summary>
+    [TestMethod]
+    public async Task A_bound_box_shows_what_was_typed_until_something_else_changes_the_value()
+    {
+        var form = BormBuilder.Create()
+            .Text("username", f => f.UpdateOnInput(debounceMilliseconds: 60_000).Trim())
+            .Number("price", f => f.UpdateOnInput())
+            .Build();
+        var (view, state) = RenderForm(form);
+
+        // Still waiting out its debounce, so the model has nothing yet.
+        _ = view.Find("#borm_username").InputAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = " ada " });
+        view.WaitForAssertion(() => Assert.AreEqual(" ada ", view.Find("#borm_username").GetAttribute("value")));
+        Assert.IsNull(state.GetValue("username"));
+
+        // Leaving the box writes it and tidies it: that is the model's doing, and the box shows it.
+        await view.Find("#borm_username").BlurAsync(new Microsoft.AspNetCore.Components.Web.FocusEventArgs());
+        Assert.AreEqual("ada", state.GetValue("username"));
+        Assert.AreEqual("ada", view.Find("#borm_username").GetAttribute("value"));
+
+        await view.Find("#borm_price").InputAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = "1." });
+        Assert.AreEqual(1d, state.GetValue("price"));
+        Assert.AreEqual("1.", view.Find("#borm_price").GetAttribute("value"));
+
+        await view.InvokeAsync(() => state.SetValue("price", 2.5));
+        view.WaitForAssertion(() => Assert.AreEqual("2.5", view.Find("#borm_price").GetAttribute("value")));
+    }
+
+    /// <summary>Every <c>oninput</c> handler the form's controls bound, with the attribute it updates.</summary>
+    private List<(string Owner, string? Updates)> InputHandlers(Bunit.IRenderedComponent<BormView> view)
+    {
+#pragma warning disable BL0006 // the render tree is the only place the flag the renderer acts on is visible
+        var current = typeof(Microsoft.AspNetCore.Components.RenderTree.Renderer).GetMethod("GetCurrentRenderTreeFrames",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, [typeof(int)])!;
+        var found = new List<(string, string?)>();
+        foreach (var control in view.FindComponents<BormInputBase>())
+        {
+            var frames = (Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame>)current.Invoke(Renderer, [control.ComponentId])!;
+            foreach (var frame in frames.Array.Take(frames.Count))
+            {
+                if (frame.FrameType == Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Attribute && frame.AttributeName == "oninput")
+                {
+                    found.Add((control.Instance.GetType().Name, frame.AttributeEventUpdatesAttributeName));
+                }
+            }
+        }
+#pragma warning restore BL0006
+        return found;
+    }
+
     [TestMethod]
     public void A_change_driven_field_with_a_counter_listens_to_input_without_writing()
     {

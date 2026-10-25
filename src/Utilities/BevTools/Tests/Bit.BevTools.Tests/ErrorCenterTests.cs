@@ -136,6 +136,46 @@ public class ErrorCenterTests
         }
     }
 
+    /// <summary>
+    /// A WebAssembly runtime without the app's symbols loaded - every browser Blazor does not debug in, WebKit
+    /// included - writes stack traces with no "in file:line", so the location used to be lost. The frames still carry
+    /// their methods and IL offsets, and BevTools reads the app's symbols itself.
+    /// </summary>
+    [TestMethod]
+    public void A_stack_trace_without_file_names_still_gets_its_location_from_the_frames()
+    {
+        var (session, scope) = TestHelpers.CreateSession();
+        using (scope)
+        {
+            var thrown = Capture(ThrowFromApplicationCode);
+            var withLines = new System.Diagnostics.StackTrace(thrown, fNeedFileInfo: true).GetFrame(0)!;
+            var textOnly = string.Join("\n", thrown.StackTrace!.Split('\n').Select(l => System.Text.RegularExpressions.Regex.Replace(l, @" in [^\r\n]+:line \d+", "")));
+            Assert.DoesNotContain(":line ", textOnly, StringComparison.Ordinal, "precondition: the text names no file, as on such a runtime");
+
+            var record = session.Errors.Record(thrown, "render", stackTrace: textOnly);
+
+            Assert.AreEqual(System.IO.Path.GetFileName(withLines.GetFileName()) + ":" + withLines.GetFileLineNumber(), record.SourceLocation);
+            // Grouped by the stack's own frame, as before: whether the symbols had arrived yet must not split a failure.
+            Assert.EndsWith("|" + BevErrorGroups.StackAnchor(textOnly).Frame, record.Group);
+        }
+    }
+
+    private static void ThrowFromApplicationCode() => throw new InvalidOperationException("Thrown where no stack text says.");
+
+    private static Exception Capture(Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
+
+        throw new AssertFailedException("did not throw");
+    }
+
     private static BevHttpRecord Request(BevToolsSession session, int statusCode) => new()
     {
         Id = session.Http.NextId(),

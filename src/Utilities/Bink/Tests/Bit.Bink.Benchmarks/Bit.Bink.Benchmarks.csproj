@@ -13,6 +13,10 @@
         <Optimize>true</Optimize>
         <!-- Not a unit-test project: it's a console harness run manually (dotnet run -c Release), so it
              deliberately does NOT set IsTestProject. -->
+        <!-- Signed with the repository key, which is what the library's InternalsVisibleTo for this assembly names:
+             the retained-rendering benchmarks record with the canvas's internal resource cache. -->
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
     <ItemGroup>

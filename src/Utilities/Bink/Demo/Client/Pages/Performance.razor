@@ -44,6 +44,7 @@
 
     <div class="bink-surface">
         <BinkCanvas @ref="_canvas"
+                   ViewportChanged="_status?.ViewportChanged ?? default"
                    Document="_document"
                    Height="420px"
                    Brush="_brush"
@@ -54,7 +55,7 @@
                    Ready="() => StateHasChanged()" />
     </div>
 
-    <CanvasStatus Canvas="_canvas" />
+    <CanvasStatus @ref="_status" Canvas="_canvas" />
 </div>
 
 @if (_results.Count > 0)
@@ -81,7 +82,8 @@
 <div class="bb-note">
     Drawing on a loaded document stays smooth because the live stroke is rendered on a separate overlay canvas:
     the thousands of committed strokes are not touched until the pen lifts. Pointer input is batched once per
-    animation frame and never triggers a Blazor render.
+    animation frame and never triggers a Blazor render. The status line says whether this page took the zero-copy
+    render path, which WebAssembly does.
 </div>
 
 <div class="bb-card">
@@ -89,7 +91,10 @@
     <p class="bb-card-desc">
         The document is built in one batch, so it raises a single change and the canvas redraws once. A redraw is a
         recording of canvas commands; with <code>ClipBounds</code> set to the visible rectangle it records only the
-        elements whose bounds intersect it, which is what a pan or a committed stroke really costs.
+        elements whose bounds intersect it, which is what a pan or a committed stroke really costs. Moving every
+        stroke is one frame of dragging a selection of the whole page: each element gets a new transform and its points
+        are never touched, and undoing it puts the exact transforms back. The two SVG exports write the same file, once
+        as a string and once straight to a stream.
     </p>
     <pre class="bb-code"><span class="k">using</span> (_document.BeginBatch(<span class="s">"Generate"</span>))
 {
@@ -97,13 +102,35 @@
 }
 
 <span class="k">var</span> culled = <span class="k">new</span> BinkCanvasRenderContext(1 &lt;&lt; 16);
-BinkDocumentRenderer.Render(_document, culled, <span class="k">new</span> BinkRenderOptions { ClipBounds = visible });</pre>
+BinkDocumentRenderer.Render(_document, culled, <span class="k">new</span> BinkRenderOptions { ClipBounds = visible });
+
+_document.ReplaceElements(_document.AllElements.Select(e =&gt; e.Translate(<span class="k">new</span> Vector2(12f, 0f))), <span class="s">"Move"</span>);
+BinkSvgExporter.Export(_document, stream);   <span class="c">// for a large drawing: no string the size of the file</span></pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Why it stays fast</h3>
+    <ul class="bb-detail-list">
+        <li><strong>Two canvases.</strong> Committed elements live on a document canvas, the live stroke and tool previews on an overlay; drawing redraws only the overlay.</li>
+        <li><strong>Input never re-renders Blazor.</strong> Samples arrive once per animation frame and go straight to the tool; processing a frame of 64 samples allocates nothing.</li>
+        <li><strong>Geometry is cached</strong> per stroke and brush, and an element's bounds never build its outline, so loading a document does not build every outline up front.</li>
+        <li><strong>Paths are sent once.</strong> The browser keeps every path it has drawn, and a redraw names it by a slot: about eight numbers an element instead of every coordinate, which is what keeps Blazor Server fast too.</li>
+        <li><strong>Edits are transforms.</strong> Moving, resizing and rotating change a matrix per element, and a long drag is folded into one replacement per element in history.</li>
+        <li><strong>Element lookup is constant time</strong>, each layer indexing its elements by id, so dragging thousands of selected strokes stays interactive.</li>
+    </ul>
+    <p class="bb-card-desc">
+        To keep a very large document responsive: keep the view meaningful (culling is what makes ten thousand strokes
+        interactive; a zoomed-out view of everything is the expensive case by definition), add many elements in one
+        <code>BeginBatch</code>, export large SVG to a stream, and raise <code>BinkDocumentLimits</code> deliberately
+        rather than by default.
+    </p>
 </div>
 
 @code {
     private sealed record Measurement(string Name, string Value, string Detail);
 
     private BinkCanvas? _canvas;
+    private CanvasStatus? _status;
     private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 1600, Height = 1000, Background = BinkColor.White });
     private readonly BinkBrush _brush = new BinkPenBrush { Width = 3f, Color = BinkColor.Parse("#dc2626") };
     private readonly IBinkTool _tool = new BinkDrawTool();
@@ -259,16 +286,72 @@ BinkDocumentRenderer.Render(_document, culled, <span class="k">new</span> BinkRe
         _results.Add(new Measurement("Load", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
             $"{reloaded.ElementCount:N0} elements restored"));
 
+        await StepAsync("Moving every stroke");
+        // One frame of dragging a selection of everything: a new transform per element, never a rewrite of its
+        // points. The undo is what a drag of that size costs to take back.
+        if (_canvas is not null)
+        {
+            List<BinkElement> moved = [.. _document.AllElements.Select(e => e.Translate(new Vector2(12f, 0f)))];
+            stopwatch.Restart();
+            _document.ReplaceElements(moved, "Move");
+            stopwatch.Stop();
+            double moveMs = stopwatch.Elapsed.TotalMilliseconds;
+
+            stopwatch.Restart();
+            _canvas.History.Undo();
+            stopwatch.Stop();
+            // The measurement is not an edit anyone made: nothing of it is left to undo or redo.
+            _canvas.History.Clear();
+            _results.Add(new Measurement("Move every stroke", $"{moveMs:0} ms",
+                $"one frame of dragging {moved.Count:N0} strokes: a transform each, no point rewritten"));
+            _results.Add(new Measurement("Undo that move", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+                "puts back the exact transforms the history recorded"));
+        }
+
         await StepAsync("Exporting SVG");
-        // SVG export.
+        // SVG export, as a string and then straight to a stream. A string holds the whole file in memory while it is
+        // built; the stream overload writes as it goes.
+        long allocated = GC.GetAllocatedBytesForCurrentThread();
         stopwatch.Restart();
         string svg = BinkSvgExporter.Export(_document);
         stopwatch.Stop();
+        long stringBytes = GC.GetAllocatedBytesForCurrentThread() - allocated;
         _results.Add(new Measurement("Export SVG", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
-            $"{svg.Length / 1024.0:N0} KB of vector paths"));
+            $"{svg.Length / 1024.0:N0} KB of vector paths, {stringBytes / 1048576.0:N0} MB allocated as a string"));
+        svg = string.Empty;
+
+        await StepAsync("Exporting SVG to a stream");
+        // A stream that only counts what reaches it, standing in for a file or a response body, so what is measured is
+        // the exporter's own memory rather than a buffer holding the output.
+        var sink = new CountingStream();
+        allocated = GC.GetAllocatedBytesForCurrentThread();
+        stopwatch.Restart();
+        BinkSvgExporter.Export(_document, sink);
+        stopwatch.Stop();
+        long streamBytes = GC.GetAllocatedBytesForCurrentThread() - allocated;
+        _results.Add(new Measurement("Export SVG to a stream", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{sink.Length / 1024.0:N0} KB written, {streamBytes / 1048576.0:N1} MB allocated: the file never exists as one string"));
 
         _busy = false;
         _step = null;
         StateHasChanged();
+    }
+
+    /// <summary>A write-only stream that keeps nothing and counts the bytes written to it.</summary>
+    private sealed class CountingStream : Stream
+    {
+        private long _length;
+
+        public override bool CanRead => false;
+        public override bool CanSeek => false;
+        public override bool CanWrite => true;
+        public override long Length => _length;
+        public override long Position { get => _length; set => throw new NotSupportedException(); }
+        public override void Flush() { }
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => _length += count;
+        public override void Write(ReadOnlySpan<byte> buffer) => _length += buffer.Length;
     }
 }

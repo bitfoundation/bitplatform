@@ -42,28 +42,31 @@
                         }
                         @* The flyout is positioned against the popup (not this wrapper), so it opens flush
                            with the popup's top-right corner whatever the trigger's row. *@
-                        <div class="menu-sub @(isUtilitiesMenuOpen ? "open" : null)">
-                            <button type="button"
-                                    class="menu-item menu-sub-trigger"
-                                    aria-haspopup="true"
-                                    aria-controls="header-utilities-menu"
-                                    aria-expanded="@(isUtilitiesMenuOpen ? "true" : "false")"
-                                    @onclick=@WrapHandled(ToggleUtilitiesMenu)>
-                                <div class="menu-item-content">
-                                    <div class="item-title">Utilities</div>
-                                    <div class="item-desc">@utilitiesMenuDescription</div>
+                        @foreach (var subMenu in productSubMenus)
+                        {
+                            <div class="menu-sub @(openSubMenu == subMenu ? "open" : null)">
+                                <button type="button"
+                                        class="menu-item menu-sub-trigger @(IsSubMenuActive(subMenu) ? "active" : null)"
+                                        aria-haspopup="true"
+                                        aria-controls="header-@(subMenu.Id)-menu"
+                                        aria-expanded="@(openSubMenu == subMenu ? "true" : "false")"
+                                        @onclick=@WrapHandled(() => ToggleSubMenu(subMenu))>
+                                    <div class="menu-item-content">
+                                        <div class="item-title">@subMenu.Title</div>
+                                        <div class="item-desc">@subMenu.Description</div>
+                                    </div>
+                                    <svg class="menu-sub-chevron" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </button>
+                                <div class="menu-sub-popup" id="header-@(subMenu.Id)-menu">
+                                    @foreach (var item in subMenu.Items)
+                                    {
+                                        @ProductMenuItemTemplate(item, HandleProductMenuItemClick)
+                                    }
                                 </div>
-                                <svg class="menu-sub-chevron" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                            </button>
-                            <div class="menu-sub-popup" id="header-utilities-menu">
-                                @foreach (var item in utilityMenuItems)
-                                {
-                                    @ProductMenuItemTemplate(item, HandleProductMenuItemClick)
-                                }
                             </div>
-                        </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -127,30 +130,33 @@
                     {
                         @ProductMenuItemTemplate(item, ToggleHeaderMenu)
                     }
-                    <div class="header-nav-sub">
-                        <button type="button"
-                                class="menu-item header-nav-utilities-trigger"
-                                aria-controls="@(isMobileUtilitiesOpen ? "header-nav-utilities" : null)"
-                                aria-expanded="@(isMobileUtilitiesOpen ? "true" : "false")"
-                                @onclick=@WrapHandled(ToggleMobileUtilities)>
-                            <div class="menu-item-content">
-                                <div class="item-title">Utilities</div>
-                                <div class="item-desc">@utilitiesMenuDescription</div>
-                            </div>
-                            <svg class="ps-chevron @(isMobileUtilitiesOpen ? "open" : null)" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </button>
-                        @if (isMobileUtilitiesOpen)
-                        {
-                            <div class="header-nav-utilities" id="header-nav-utilities">
-                                @foreach (var item in utilityMenuItems)
-                                {
-                                    @ProductMenuItemTemplate(item, ToggleHeaderMenu)
-                                }
-                            </div>
-                        }
-                    </div>
+                    @foreach (var subMenu in productSubMenus)
+                    {
+                        <div class="header-nav-sub">
+                            <button type="button"
+                                    class="menu-item header-nav-sub-trigger @(IsSubMenuActive(subMenu) ? "active" : null)"
+                                    aria-controls="@(openMobileSubMenu == subMenu ? $"header-nav-{subMenu.Id}" : null)"
+                                    aria-expanded="@(openMobileSubMenu == subMenu ? "true" : "false")"
+                                    @onclick=@WrapHandled(() => ToggleMobileSubMenu(subMenu))>
+                                <div class="menu-item-content">
+                                    <div class="item-title">@subMenu.Title</div>
+                                    <div class="item-desc">@subMenu.Description</div>
+                                </div>
+                                <svg class="ps-chevron @(openMobileSubMenu == subMenu ? "open" : null)" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                            @if (openMobileSubMenu == subMenu)
+                            {
+                                <div class="header-nav-sub-list" id="header-nav-@(subMenu.Id)">
+                                    @foreach (var item in subMenu.Items)
+                                    {
+                                        @ProductMenuItemTemplate(item, ToggleHeaderMenu)
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
                 </div>
             }
         </div>

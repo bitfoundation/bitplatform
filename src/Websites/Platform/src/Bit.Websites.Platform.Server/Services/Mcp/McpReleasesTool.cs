@@ -45,7 +45,7 @@ public partial class McpReleasesTool
                 ["version"] = new JsonObject
                 {
                     ["type"] = "string",
-                    ["description"] = "The version to check, such as 10.6.0 or 10.7.0-pre-03."
+                    ["description"] = "The version to check, such as 10.6.0 or 10.7.0-pre-04."
                 }
             }
         }),
@@ -75,7 +75,7 @@ public partial class McpReleasesTool
             return Failed("Pass version: the bit platform version the project is on, as its bit.json records it.");
 
         if (VersionRegex().Match(version) is not { Success: true } match)
-            return Failed($"{version} is not a bit platform version. Pass it as bit.json records it, such as 10.6.0 or 10.7.0-pre-03.");
+            return Failed($"{version} is not a bit platform version. Pass it as bit.json records it, such as 10.6.0 or 10.7.0-pre-04.");
 
         var number = Version.Parse(match.Groups["version"].Value);
         var isPrerelease = match.Groups["prerelease"].Success;

@@ -33,7 +33,14 @@
     <HeadOutlet @rendermode="RenderMode" />
 </head>
 
-<body>
+@* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
+   page load rather than an enhanced one. Enhanced navigation fetches and merges the next page while
+   the runtime is still starting, and the router the runtime then attaches can render the address
+   it read before the merge. Nothing is prerendered here, so the boot screen below has no link to
+   follow; the attribute keeps this demo's shell the same as every other one the site kit runs in.
+   Once the app is interactive its router handles every link itself and this attribute is not
+   consulted. *@
+<body data-enhance-nav="false">
     @* Shown until the app's shell replaces it (demo.css hides it once a .page exists): nothing is
        prerendered, so this is what the first response carries while the runtime downloads. *@
     <div class="bd-boot">

@@ -25,7 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Bit.Brouter.Demo\Server\Bit.Brouter.Demo.Server.csproj" />
+        <ProjectReference Include="..\..\Demo\Server\Bit.Brouter.Demo.Server.csproj" />
     </ItemGroup>
 
 </Project>

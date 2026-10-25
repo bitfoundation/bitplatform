@@ -17,13 +17,13 @@ public class McpCompletionTests
         CollectionAssert.Contains((await CompleteResourceAsync("blex://guide/{heading}", "heading", "")).Values.ToArray(), "Persistence");
         CollectionAssert.Contains((await CompleteResourceAsync("blex://api/{typeName}", "typeName", "")).Values.ToArray(), "BlexOptions");
         CollectionAssert.Contains((await CompleteResourceAsync("blex://diagnostics/{code}", "code", "")).Values.ToArray(), "BLEX001");
-        CollectionAssert.Contains((await CompleteResourceAsync("blex://source/{path}", "path", "")).Values.ToArray(), "Demo/Client/Stores/CartStore.cs");
+        CollectionAssert.Contains((await CompleteResourceAsync("blex://source/{+path}", "path", "")).Values.ToArray(), "Demo/Client/Stores/CartStore.cs");
     }
 
     [TestMethod]
     public async Task Completion_narrows_as_a_person_types_and_prefixes_rank_first()
     {
-        var completion = await CompleteResourceAsync("blex://api/{typeName}", "typeName", "blexopt");
+        var completion = await CompleteResourceAsync("blex://api/{typeName}", "typeName", "blexoptio");
 
         CollectionAssert.AreEqual(new[] { "BlexOptions" }, completion.Values.ToArray());
 

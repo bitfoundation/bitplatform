@@ -37,7 +37,13 @@
     <HeadOutlet @rendermode="InteractiveAuto" />
 </head>
 
-<body>
+@* data-enhance-nav="false": a link followed before the runtime has started - the Server circuit on a
+   first visit, the WebAssembly runtime on later ones - is a plain page load rather than an enhanced
+   one. Enhanced navigation fetches and merges the next page while the runtime is still starting, and
+   the router the runtime then attaches can render the address it read before the merge - the URL
+   says /getting-started and the page is the landing page. Once the app is interactive its router
+   handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
     @* InteractiveAuto: the first visit runs on the server while the WebAssembly runtime downloads,
        later ones in the browser - which is why both projects register the Bonboarding services. The
        pages are prerendered either way, so the first response carries the docs. *@

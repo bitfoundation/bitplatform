@@ -87,7 +87,6 @@ public partial class NotAuthorizedPage
 
     private async Task SignIn()
     {
-        await AuthManager.SignOut(CurrentCancellationToken);
         var returnUrl = ReturnUrl is null ? NavigationManager.GetRelativePath() : GetSafeReturnUrl();
         await signInModalService.SignIn(returnUrl);
 

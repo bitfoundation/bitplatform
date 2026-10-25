@@ -27,6 +27,7 @@ public static class BlexCompletions
         "the store resets when switching from server to WebAssembly",
         "an effect keeps running after the user navigated away",
         "undo restores the wrong state",
+        "undo also reverts the session or the theme",
         "Redux DevTools shows nothing",
         "a store resolved during prerendering throws a missing-service exception"
     ];
@@ -40,7 +41,9 @@ public static class BlexCompletions
         "log every action to the console",
         "block every action while a read-only mode is on",
         "sync a setting across browser tabs",
-        "react in one store to an action of another"
+        "react in one store to an action of another",
+        "one form store per open dialog",
+        "state that can only change through actions"
     ];
 
     /// <summary>The values matching what has been typed so far, for the argument with that name.</summary>

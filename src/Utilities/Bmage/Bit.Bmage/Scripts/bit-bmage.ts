@@ -74,6 +74,251 @@ function get2d(canvas: AnyCanvas, options?: CanvasRenderingContext2DSettings): C
     return ctx;
 }
 
+// ---- Codec workers ----
+//
+// Decoding, encoding and resizing run in a few Web Workers (bit-bmage-worker.js) wherever the browser can do them
+// there: workers with a 2D OffscreenCanvas, which every current browser has. The page's thread, which on WebAssembly is
+// also .NET's, stays free to paint and handle input while a photo is decoded or encoded, and a batch decodes and
+// encodes several images at once on as many cores. Buffers are transferred, never copied. Wherever workers are
+// missing, blocked by a Content Security Policy, or fail at a piece of work, that work runs on the page's thread
+// exactly as before.
+
+/** A worker's answer: the result, or the error and the input handed back whole. */
+interface WorkerReply {
+    id: number;
+    ok: boolean;
+    data?: ArrayBuffer;
+    width?: number;
+    height?: number;
+    type?: string;
+    error?: string;
+    input?: ArrayBuffer;
+}
+
+/**
+ * What a piece of work came to: done, or not done in a worker. Work that was not done carries the input back when it
+ * was sent and returned; without one, it was never sent and the caller's own bytes are still whole.
+ */
+interface WorkerOutcome { done: boolean; reply?: WorkerReply; input?: ArrayBuffer }
+
+/** A piece of work waiting for a worker. */
+interface WorkerJob { message: Record<string, unknown>; input: ArrayBuffer; resolve: (reply: WorkerReply) => void }
+
+/** One worker: probed before it gets any work, then one job at a time. */
+interface WorkerSlot {
+    worker: Worker;
+    probeId: number;
+    ready: boolean;
+    retiring: boolean;
+    job: { id: number; resolve: (reply: WorkerReply) => void } | null;
+    stopProbe?: () => void;
+}
+
+/**
+ * The pool. Work waits in a queue for an idle worker; while every worker is busy another is started, up to the limit,
+ * and it takes work only once it has answered a probe, so nothing is ever sent to a worker that cannot run it. A worker
+ * that fails takes only its own job with it; the rest carry on, and when no worker is left the queue goes back to the
+ * page.
+ */
+class CodecWorkers {
+    private readonly slots: WorkerSlot[] = [];
+    private readonly queue: WorkerJob[] = [];
+    private nextId = 1;
+    private limit = defaultWorkerLimit();
+    // Set once a worker failed to start: workers cannot run here, so no more are tried until the pool is reconfigured.
+    private broken = false;
+    private firstStart: Promise<boolean> | null = null;
+    private onFirstReady: ((ok: boolean) => void) | null = null;
+
+    /** Sets how many workers may run: 0 keeps all codec work on the page's thread. Running work always finishes. */
+    configure(maxWorkers: number) {
+        this.limit = Math.max(0, Math.floor(maxWorkers));
+        // Workers past the limit finish what they hold, then stop.
+        for (const slot of this.slots.filter((s) => !s.retiring).slice(this.limit)) this.retire(slot);
+        if (this.limit === 0) this.settleFirstStart(false);
+        if (this.slots.length === 0) {
+            // Started afresh on the next piece of work.
+            this.firstStart = null;
+            this.broken = false;
+        }
+        this.dispatch();
+    }
+
+    /**
+     * Runs work in a worker, or reports that it was not done there. Owned bytes are transferred as they are; borrowed
+     * ones are copied first, and only once a worker is there to take them.
+     */
+    async run(message: Record<string, unknown>, bytes: Uint8Array | Uint8ClampedArray, owned: boolean): Promise<WorkerOutcome> {
+        if (!(await this.available())) return { done: false };
+        const input = workerInput(bytes, owned);
+        const length = input.byteLength;
+        const reply = await new Promise<WorkerReply>((resolve) => {
+            this.queue.push({ message, input, resolve });
+            this.dispatch();
+        });
+        if (reply.ok) return { done: true, reply };
+        // A format the browser cannot write fails the same way everywhere; say so rather than trying again.
+        if (reply.error?.startsWith('unsupported-format:')) throw new Error(reply.error);
+        const returned = reply.input ?? input;
+        // A worker that died holding the input took it along: a transferred buffer reads as empty afterwards. When that
+        // buffer was a copy, the caller's bytes are still whole and the page can do the work; only when they were
+        // handed over as they were is the image gone.
+        if (returned.byteLength === 0 && length > 0) {
+            if (input !== bytes.buffer) return { done: false };
+            throw new Error('The codec worker stopped while it was working on this image.');
+        }
+        return { done: false, input: returned };
+    }
+
+    private available(): Promise<boolean> {
+        if (this.limit === 0) return Promise.resolve(false);
+        if (this.slots.some((s) => s.ready && !s.retiring)) return Promise.resolve(true);
+        if (this.broken || typeof Worker === 'undefined' || typeof OffscreenCanvas === 'undefined') return Promise.resolve(false);
+        return this.firstStart ??= new Promise<boolean>((resolve) => {
+            this.onFirstReady = resolve;
+            this.spawn();
+        });
+    }
+
+    private settleFirstStart(ok: boolean) {
+        const resolve = this.onFirstReady;
+        this.onFirstReady = null;
+        resolve?.(ok);
+    }
+
+    /** Hands queued work to idle workers, starts another worker while all are busy, and gives up to the page when none is left. */
+    private dispatch() {
+        while (this.queue.length > 0) {
+            const idle = this.slots.find((s) => s.ready && !s.retiring && s.job === null);
+            if (idle) {
+                this.send(idle, this.queue.shift()!);
+                continue;
+            }
+            const live = this.slots.filter((s) => !s.retiring).length;
+            if (live < this.limit && !this.broken) this.spawn();
+            else if (live === 0) {
+                // No worker is coming: the work goes back, never sent, to be done on the page.
+                for (const job of this.queue.splice(0)) job.resolve({ id: 0, ok: false, error: 'No codec worker is available.', input: job.input });
+            }
+            return;
+        }
+    }
+
+    private send(slot: WorkerSlot, job: WorkerJob) {
+        const id = this.nextId++;
+        slot.job = { id, resolve: job.resolve };
+        try {
+            slot.worker.postMessage({ ...job.message, id, input: job.input }, [job.input]);
+        } catch (e) {
+            // Nothing was sent, so the input is still whole.
+            slot.job = null;
+            job.resolve({ id, ok: false, error: String(e), input: job.input });
+        }
+    }
+
+    /** Starts a worker and asks it, within a few seconds, whether it has an OffscreenCanvas that can encode. */
+    private spawn() {
+        let worker: Worker;
+        try {
+            worker = new Worker(new URL('./bit-bmage-worker.js', import.meta.url));
+        } catch {
+            // Blocked outright, by a Content Security Policy for example.
+            this.broken = true;
+            if (!this.slots.some((s) => s.ready)) this.settleFirstStart(false);
+            this.dispatch();
+            return;
+        }
+        const slot: WorkerSlot = { worker, probeId: this.nextId++, ready: false, retiring: false, job: null };
+        const timer = setTimeout(() => this.fail(slot), 5000);
+        slot.stopProbe = () => clearTimeout(timer);
+        worker.onmessage = (event: MessageEvent<WorkerReply>) => this.receive(slot, event.data);
+        worker.onerror = (event) => {
+            event.preventDefault?.();
+            this.fail(slot);
+        };
+        // A reply that cannot be read leaves its job waiting forever otherwise.
+        worker.onmessageerror = () => this.fail(slot);
+        this.slots.push(slot);
+        worker.postMessage({ id: slot.probeId, op: 'probe' });
+    }
+
+    private receive(slot: WorkerSlot, reply: WorkerReply) {
+        if (!slot.ready && reply.id === slot.probeId) {
+            slot.stopProbe?.();
+            if (!reply.ok) {
+                this.fail(slot);
+                return;
+            }
+            slot.ready = true;
+            this.settleFirstStart(true);
+            this.dispatch();
+            return;
+        }
+        const job = slot.job;
+        if (!job || job.id !== reply.id) return;
+        slot.job = null;
+        job.resolve(reply);
+        if (slot.retiring) this.remove(slot);
+        this.dispatch();
+    }
+
+    /** A worker that could not start, or stopped: its own job fails, the others carry on. */
+    private fail(slot: WorkerSlot) {
+        if (!this.remove(slot)) return;
+        // One that never started means none will here.
+        if (!slot.ready) {
+            this.broken = true;
+            if (!this.slots.some((s) => s.ready)) this.settleFirstStart(false);
+        }
+        const job = slot.job;
+        slot.job = null;
+        // Its input went with it, so this one job cannot be done on the page either.
+        job?.resolve({ id: job.id, ok: false, error: 'The codec worker stopped.' });
+        this.dispatch();
+    }
+
+    private retire(slot: WorkerSlot) {
+        if (slot.job === null) this.remove(slot);
+        else slot.retiring = true;
+    }
+
+    private remove(slot: WorkerSlot) {
+        const index = this.slots.indexOf(slot);
+        if (index < 0) return false;
+        this.slots.splice(index, 1);
+        slot.stopProbe?.();
+        slot.worker.terminate();
+        return true;
+    }
+}
+
+/** One worker per spare core, at most four: codec work is bursty, and each worker holds a canvas while it runs. */
+function defaultWorkerLimit() {
+    const cores = typeof navigator !== 'undefined' && navigator.hardwareConcurrency ? navigator.hardwareConcurrency : 2;
+    return Math.max(1, Math.min(4, cores - 1));
+}
+
+const codecWorkers = new CodecWorkers();
+
+/**
+ * Sets how many Web Workers the codecs may use: 0 runs every decode, encode and resize on the page's thread.
+ * Called from .NET when BitBmageOptions.MaxCodecWorkers is set.
+ */
+export function configureWorkers(maxWorkers: number) {
+    codecWorkers.configure(maxWorkers);
+}
+
+/**
+ * A buffer to transfer to a worker. Data this module owns (a staged entry, about to be replaced by the result) goes
+ * as it is when the view covers its whole buffer. Data a caller handed in is copied, so the caller's array is never
+ * left detached: the transfer moves a buffer, and the caller may still be holding it.
+ */
+function workerInput(bytes: Uint8Array | Uint8ClampedArray, owned: boolean): ArrayBuffer {
+    return owned && bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength && bytes.buffer instanceof ArrayBuffer
+        ? bytes.buffer
+        : bytes.slice().buffer as ArrayBuffer;
+}
+
 /** Blob -> ArrayBuffer, tolerating older browsers without Blob.arrayBuffer. */
 async function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
     if (blob.arrayBuffer) return await blob.arrayBuffer();
@@ -163,11 +408,18 @@ function bitmapSize(bitmap: ImageBitmap | HTMLImageElement) {
  * Returns a ByteResult whose info() gives the dimensions and bytes() streams the pixels.
  */
 export async function decode(bytes: any, options?: DecodeOptions) {
-    const { data, width, height } = await decodePixels(bytes, options);
+    const { data, width, height } = await decodePixels(bytes, options, false);
     return new ByteResult(new Uint8Array(data.buffer, data.byteOffset, data.byteLength), { width, height });
 }
 
-async function decodePixels(bytes: Uint8Array, options?: DecodeOptions) {
+async function decodePixels(bytes: Uint8Array, options: DecodeOptions | undefined, owned: boolean) {
+    const outcome = await codecWorkers.run({ op: 'decode', options: options ?? {} }, bytes, owned);
+    if (outcome.done) return { data: new Uint8ClampedArray(outcome.reply!.data!), width: outcome.reply!.width!, height: outcome.reply!.height! };
+    return await decodePixelsHere(outcome.input ? new Uint8Array(outcome.input) : bytes, options);
+}
+
+/** Decodes on the page's thread, where an <img> element can stand in for createImageBitmap. */
+async function decodePixelsHere(bytes: Uint8Array, options?: DecodeOptions) {
     const blob = new Blob([bytes as BlobPart], options?.mimeType ? { type: options.mimeType } : undefined);
     const bitmap = await decodeToBitmap(blob, options);
     try {
@@ -228,7 +480,7 @@ export async function identify(bytes: any, mimeType?: string) {
  * Returns a ByteResult, or throws when the browser cannot produce that format.
  */
 export async function encode(pixels: any, width: number, height: number, mimeType: string, quality?: number, background?: string) {
-    const { data, type } = await encodePixels(pixels, width, height, mimeType, quality, background);
+    const { data, type } = await encodePixels(pixels, width, height, mimeType, quality, background, false);
     return new ByteResult(data, { mimeType: type, width, height });
 }
 
@@ -237,7 +489,13 @@ function asClamped(bytes: Uint8Array | Uint8ClampedArray): Uint8ClampedArray<Arr
     return new Uint8ClampedArray(bytes.buffer as ArrayBuffer, bytes.byteOffset, bytes.byteLength);
 }
 
-async function encodePixels(pixels: Uint8Array | Uint8ClampedArray, width: number, height: number, mimeType: string, quality?: number, background?: string) {
+async function encodePixels(pixels: Uint8Array | Uint8ClampedArray, width: number, height: number, mimeType: string, quality: number | undefined, background: string | undefined, owned: boolean) {
+    const outcome = await codecWorkers.run({ op: 'encode', width, height, mimeType, quality, background }, pixels, owned);
+    if (outcome.done) return { data: new Uint8Array(outcome.reply!.data!), type: outcome.reply!.type ?? mimeType };
+    return await encodePixelsHere(outcome.input ? new Uint8Array(outcome.input) : pixels, width, height, mimeType, quality, background);
+}
+
+async function encodePixelsHere(pixels: Uint8Array | Uint8ClampedArray, width: number, height: number, mimeType: string, quality?: number, background?: string) {
     // Not pooled: a context's attributes are fixed by its first getContext call, and this one opts out of
     // willReadFrequently. Returned to the pool, it would make later pixel reads on that canvas slow.
     const canvas = createCanvas(width, height);
@@ -701,7 +959,15 @@ const zoomPerPixel = Math.log(1.1) / 100;
 export function suppressTouchScrolling(element: any, dotNetRef?: DotNetObject) {
     if (!element || element.__bitBmageHandlers) return;
     const cancel = (e: Event) => { if (e.cancelable) e.preventDefault(); };
-    const keys = (e: KeyboardEvent) => { if (e.target === element && scrollKeys.has(e.key)) e.preventDefault(); };
+    // Keys the editor answers itself while the canvas has focus: the scrolling keys, and select all, deselect and invert
+    // selection, which would otherwise select the page's text, add a bookmark or open the developer tools. A browser
+    // that keeps Ctrl+Shift+I for itself still opens them; the selection is inverted either way.
+    const keys = (e: KeyboardEvent) => {
+        if (e.target !== element) return;
+        const command = (e.ctrlKey || e.metaKey) && !e.altKey;
+        const selectionKey = command && (e.key === 'a' || e.key === 'A' || e.key === 'd' || e.key === 'D' || (e.shiftKey && (e.key === 'i' || e.key === 'I')));
+        if (scrollKeys.has(e.key) || selectionKey) e.preventDefault();
+    };
     const pointers = new Set<number>();
     const down = (e: PointerEvent) => {
         if (e.button > 0) return;
@@ -827,6 +1093,12 @@ const pixelTransport = {
     /** Resizes staged pixels with the browser's high quality resampler. */
     async scale(id: number, width: number, height: number) {
         const entry = stagedEntry(id);
+        const outcome = await codecWorkers.run({ op: 'scale', width: entry.width, height: entry.height, targetWidth: width, targetHeight: height }, entry.data, true);
+        if (outcome.done) {
+            Object.assign(entry, { data: new Uint8ClampedArray(outcome.reply!.data!), width, height });
+            return;
+        }
+        if (outcome.input) entry.data = new Uint8Array(outcome.input);
         const source = new ImageData(asClamped(entry.data), entry.width, entry.height);
         // Firefox's high quality resize returns the wrong alpha for half transparent pixels unless the
         // premultiplication is asked for explicitly.
@@ -859,14 +1131,14 @@ const pixelTransport = {
         if (maxPixels > 0) options.maxPixels = maxPixels;
         if (sourceWidth > 0) options.sourceWidth = sourceWidth;
         if (sourceHeight > 0) options.sourceHeight = sourceHeight;
-        const { data, width, height } = await decodePixels(entry.data as Uint8Array, options);
+        const { data, width, height } = await decodePixels(entry.data as Uint8Array, options, true);
         Object.assign(entry, { data, width, height });
     },
 
     /** Encodes staged pixels, replacing them with the file; throws as encode() does when the format is unsupported. */
     async encode(id: number, mimeType: string, quality: number, background: string | null) {
         const entry = stagedEntry(id);
-        const { data, type } = await encodePixels(entry.data, entry.width, entry.height, mimeType, quality, background ?? undefined);
+        const { data, type } = await encodePixels(entry.data, entry.width, entry.height, mimeType, quality, background ?? undefined, true);
         Object.assign(entry, { data, type });
     },
 

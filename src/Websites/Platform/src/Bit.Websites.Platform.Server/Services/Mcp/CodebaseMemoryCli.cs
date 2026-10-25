@@ -18,11 +18,11 @@ public partial class CodebaseMemoryCli
     internal static readonly string[] IndexedPaths =
     [
         "src/Besql",
-        "src/Cli/Minifier",
         "src/ResxTranslator",
         "src/Templates/Boilerplate/Bit.Boilerplate",
         "src/Toolings/BlazorES2019",
         "src/Toolings/CodeAnalyzers",
+        "src/Toolings/Minifier",
         "src/Toolings/SourceGenerators",
         "src/Websites"
     ];

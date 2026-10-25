@@ -130,9 +130,10 @@
     <p>
         <code>Cover</code> fills the preset exactly, cropping the overflow rather than distorting.
         The look is a run of per-pixel adjustments, which the optimiser fuses into a single pass over
-        the pixels. The caption is then drawn straight onto the result through
-        <code>ImageCanvas</code>, measured first so the gradient scrim behind it is exactly as tall as
-        the text that wraps.
+        the pixels - <strong>Duotone</strong> maps the photo's luminance onto two colours, the poster
+        look, with <code>Duotone(shadows, highlights)</code>. The caption is then drawn straight onto
+        the result through <code>ImageCanvas</code>, measured first so the gradient scrim behind it is
+        exactly as tall as the text that wraps.
     </p>
     <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
     <div class="bb-note">
@@ -156,7 +157,7 @@
         new("LinkedIn", 1200, 627),
     ];
 
-    private static readonly string[] Looks = ["None", "Mono", "Sepia", "Punch", "Fade"];
+    private static readonly string[] Looks = ["None", "Mono", "Sepia", "Punch", "Fade", "Duotone"];
 
     private ImageBuffer? _source;
     private ImageBuffer? _result;
@@ -297,6 +298,8 @@
                 "Sepia" => pipeline.Sepia(0.85f).Contrast(0.06f),
                 "Punch" => pipeline.Saturation(0.3f).Contrast(0.18f).ShadowsHighlights(0.1f, -0.12f),
                 "Fade" => pipeline.Saturation(-0.25f).Brightness(0.06f).Contrast(-0.12f),
+                // The poster look: shadows mapped to deep indigo, highlights to coral.
+                "Duotone" => pipeline.Contrast(0.1f).Duotone(new Rgba32(36, 24, 96), new Rgba32(255, 138, 112)),
                 _ => pipeline,
             };
 

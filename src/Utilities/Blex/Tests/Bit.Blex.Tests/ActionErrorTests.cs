@@ -80,6 +80,25 @@ public class ActionErrorTests
     }
 
     [TestMethod]
+    public async Task AnActionFailedHandlerAlone_StillReceivesTheArguments()
+    {
+        // Nothing else observes the manager: no middleware, no DevTools, no subscriber. A crash
+        // reporter wired through OnActionError alone must still learn which input failed.
+        var manager = new BlexManager();
+        var store = new FailingStore();
+        manager.Register(store);
+
+        var seen = new List<BlexActionErrorContext>();
+        manager.ActionFailed += seen.Add;
+
+        await store.Load("orders");
+
+        var reported = Assert.ContainsSingle(seen);
+        Assert.AreEqual("key", reported.Args[0].Name);
+        Assert.AreEqual("orders", reported.Args[0].Value);
+    }
+
+    [TestMethod]
     public async Task CancellationIsNotAFailure()
     {
         var middleware = new RecordingMiddleware();

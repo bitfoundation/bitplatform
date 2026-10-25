@@ -74,9 +74,16 @@ public partial class ImageEditorModal
                 await editor.ApplyCropAsync();
             }
 
+            // Nothing was edited, so the picked file goes up as it is instead of a re-encoded copy of it.
+            if (editor.Session.History.CanUndo is false)
+            {
+                KeepOriginal();
+                return;
+            }
+
             var format = editor.BrowserCapabilities?.ChooseEncodableFormat([ImageFormat.WebP]) ?? ImageFormat.Jpeg;
 
-            var image = await editor.ExportAsync(new ImageExportOptions { Format = format, Quality = 0.92, MaxFileSize = MaxFileSize });
+            var image = await editor.ExportAsync(new ImageExportOptions { Format = format, Quality = 1, MaxFileSize = MaxFileSize, MaxFileSizeStrategy = MaxFileSizeStrategy.QualityOnly });
 
             if (image is null) return;
 

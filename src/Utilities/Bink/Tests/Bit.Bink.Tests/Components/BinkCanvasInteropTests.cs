@@ -108,7 +108,7 @@ public class BinkCanvasInteropTests : BunitContext
         // The managed exporter treats an empty selection as "no filter", but the browser path handed the empty
         // selection to the renderer as a filter, so the same options produced a blank image once attached.
         BunitJSModuleInterop module = SetupAttachedModule();
-        module.Setup<byte[]>("renderToImage", _ => true).SetResult([0x89, (byte)'P', (byte)'N', (byte)'G']);
+        module.Setup<IJSStreamReference>("renderToImage", _ => true).SetResult(new TestStreamReference([0x89, (byte)'P', (byte)'N', (byte)'G']));
         IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>();
         canvas.Instance.CurrentDocument.AddElement(new BinkStroke(BinkStrokePoints.FromPositions([new Vector2(10, 10), new Vector2(90, 60)]), new BinkPenBrush()));
         // The first document draw only happens once the surface is attached, which is when the browser path is taken.
@@ -216,6 +216,29 @@ public class BinkCanvasInteropTests : BunitContext
 
         JSRuntimeInvocation update = Assert.ContainsSingle(i => i.Identifier == "setOptions", JSInterop.Invocations);
         Assert.IsFalse(Assert.IsExactInstanceOfType<BinkInteropOptions>(update.Arguments[1]).HandleKeyboard);
+    }
+
+    [TestMethod]
+    public void The_low_latency_hint_is_asked_for_only_when_the_application_turns_it_on()
+    {
+        // Chromium shows a desynchronized canvas that is not fully opaque as solid black inside an ancestor that clips
+        // to rounded corners. Asking for it on every canvas turned the landing page's sketch black inside its frame.
+        SetupAttachedModule();
+        IRenderedComponent<BinkCanvas> plain = Render<BinkCanvas>();
+        IRenderedComponent<BinkCanvas> lowLatency = Render<BinkCanvas>(p => p.Add(c => c.LowLatency, true));
+        plain.WaitForAssertion(() => Assert.AreEqual(2, JSInterop.Invocations.Count(i => i.Identifier == "attach")));
+
+        BinkInteropOptions OptionsOf(IRenderedComponent<BinkCanvas> canvas) => Assert.IsExactInstanceOfType<BinkInteropOptions>(
+            JSInterop.Invocations.Single(i => i.Identifier == "attach" && Equals(i.Arguments[0], canvas.Instance.ElementId)).Arguments[2]);
+        Assert.IsFalse(OptionsOf(plain).LowLatency);
+        Assert.IsTrue(OptionsOf(lowLatency).LowLatency);
+    }
+
+    [TestMethod]
+    public void Whether_the_browser_honored_the_low_latency_hint_reaches_the_capabilities()
+    {
+        Assert.IsTrue(new BinkAttachResult { LowLatency = true }.ToCapabilities().LowLatencyCanvas);
+        Assert.IsFalse(new BinkAttachResult().ToCapabilities().LowLatencyCanvas);
     }
 
     [TestMethod]

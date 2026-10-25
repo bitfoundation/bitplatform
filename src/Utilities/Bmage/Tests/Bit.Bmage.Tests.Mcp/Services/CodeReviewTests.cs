@@ -150,6 +150,9 @@ public class CodeReviewTests
         Single(Review("using var preview = _editor.Session.Preview;"), "borrowed-buffer-disposed");
 
         None(Review("using var copy = _editor.Session.Preview.Clone();"), "borrowed-buffer-disposed");
+        // Rendered from the original, not the original: the result is the caller's to dispose.
+        None(Review("using var rendered = new DocumentRenderer().Render(project.Document, project.Original);"), "borrowed-buffer-disposed");
+        Single(Review("using (session.Original) { }"), "borrowed-buffer-disposed");
     }
 
     [TestMethod]
@@ -194,10 +197,13 @@ public class CodeReviewTests
 
         // The demo's own stylesheets are not the editor's, and must not be mistaken for a wrong path to it.
         None(Review("<link rel=\"stylesheet\" href=\"css/bmage-samples.css\" />"), "editor-stylesheet-wrong-path");
+        // Nor are those of an app project that happens to be called Bit.Bmage.Something, like the samples' shared pages.
+        None(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Samples.Core/app.css\" />"), "editor-stylesheet-wrong-path");
 
         // The editor ships inside Bit.Bmage: there is no Bit.Bmage.Editor package, so no _content folder of that name.
         Assert.AreEqual("Error", Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Editor/bit-bmage-editor.css\" />"), "editor-stylesheet-wrong-path").Severity);
         Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage.css\" />"), "editor-stylesheet-wrong-path");
+        Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Editor/editor.css\" />"), "editor-stylesheet-wrong-path");
     }
 
     [TestMethod]

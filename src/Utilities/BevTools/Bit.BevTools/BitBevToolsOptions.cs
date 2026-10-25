@@ -15,6 +15,27 @@ public enum BevToolsTheme
     Light,
 }
 
+/// <summary>
+/// How much of the application's own values BevTools reads: component parameters, cascading values and fields, state
+/// provider snapshots, authentication claims, HTTP header values and browser storage previews. Structure, counts,
+/// timings, causes, events, requests and errors are recorded at every level; secrets are redacted at every level.
+/// </summary>
+public enum BevValueAccess
+{
+    /// <summary>Values are read and shown, objects can be expanded member by member, with redaction.</summary>
+    Full,
+
+    /// <summary>
+    /// Only scalar values are shown (numbers, booleans, enums, dates, strings that do not look like credentials);
+    /// objects and collections show their type and size and are never walked or printed through <c>ToString</c>.
+    /// Forced re-render detection needs <see cref="Full"/>, since it compares parameters member by member.
+    /// </summary>
+    Shallow,
+
+    /// <summary>No application value is read: parameters, cascading values, fields and state show names and types only.</summary>
+    None,
+}
+
 /// <summary>Thresholds used by the built-in diagnostics rules. All are evidence-based; raise them for noisy apps.</summary>
 public sealed class BevDiagnosticsOptions
 {
@@ -40,6 +61,21 @@ public sealed class BevDiagnosticsOptions
 
     public int DuplicateHttpWindowMs { get; set; } = 1000;
 
+    /// <summary>
+    /// Requests to one endpoint that differ only in their query values (a search box, a filter) within
+    /// <see cref="HttpBurstWindowMs"/> that count as a burst: the pattern of a request per keystroke.
+    /// </summary>
+    public int HttpBurstCount { get; set; } = 4;
+
+    public int HttpBurstWindowMs { get; set; } = 2000;
+
+    /// <summary>
+    /// Requests to one endpoint, each for a different id in its path (a number, GUID or hash segment), within
+    /// <see cref="HttpBurstWindowMs"/> that count as one request per item: the N+1 pattern of a list whose rows each
+    /// load their own data.
+    /// </summary>
+    public int HttpPerItemCount { get; set; } = 5;
+
     public double SlowHttpMs { get; set; } = 2000;
 
     public double SlowJsInteropMs { get; set; } = 250;
@@ -55,6 +91,15 @@ public sealed class BevDiagnosticsOptions
 
     /// <summary>Rule ids that are disabled.</summary>
     public HashSet<string> DisabledRules { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Runs the rules as data arrives (at most once a second) while the panel is closed too. Off by default: they then
+    /// run while the panel is open, when a frontend reads the session and when it is exported - and most of them look
+    /// back over a window of 10 to 60 seconds, so an export made after a longer quiet spell misses what they would have
+    /// found in the activity before it. Turn it on for a run whose export a CI gate checks (<see cref="BevSessionCheck"/>);
+    /// it needs the panel component on the page, open or not.
+    /// </summary>
+    public bool EvaluateWhileClosed { get; set; }
 }
 
 public sealed class BevToolsUiOptions
@@ -79,6 +124,13 @@ public sealed class BevToolsUiOptions
 
     /// <summary>Show a small floating badge when the panel is closed.</summary>
     public bool ShowBadge { get; set; } = true;
+
+    /// <summary>
+    /// The link that opens a source location in an editor, with <c>{path}</c>, <c>{line}</c> and <c>{column}</c> filled in:
+    /// VS Code by default; <c>vscode-insiders://file/{path}:{line}:{column}</c>, or null for no links (paths are still
+    /// shown). Locations come from the app's symbols (PDB), so there are none in a build without them.
+    /// </summary>
+    public string? EditorUrlTemplate { get; set; } = "vscode://file/{path}:{line}:{column}";
 }
 
 /// <summary>Configuration for <c>AddBitBevToolsServices</c>.</summary>
@@ -136,6 +188,13 @@ public sealed class BitBevToolsOptions
     /// <summary>Capture request/response header names and values (sensitive headers are always redacted). Bodies are never captured.</summary>
     public bool CaptureHttpHeaders { get; set; } = true;
 
+    /// <summary>
+    /// Name the component (and the application method it called through) that sent each HTTP request, read from the
+    /// stack when the request starts: a stack walk per request, not per render. Off, a request is attributed only to the
+    /// UI event it ran in.
+    /// </summary>
+    public bool CaptureHttpCallers { get; set; } = true;
+
     /// <summary>Wrap <c>IJSRuntime</c> instances injected into components to attribute JS interop calls to components.</summary>
     public bool TrackJsInterop { get; set; } = true;
 
@@ -149,6 +208,13 @@ public sealed class BitBevToolsOptions
 
     /// <summary>Install the browser bridge (JS errors, online/offline, reconnect state, storage inspection, keyboard shortcut).</summary>
     public bool EnableBrowserBridge { get; set; } = true;
+
+    /// <summary>
+    /// Count the page's WebSocket traffic in the browser bridge: the Blazor Server circuit and the app's own SignalR hub
+    /// connections, by direction and SignalR message kind (render batches, JS interop, pings), with render batch sizes
+    /// and the time the browser takes to apply them. Only sizes and message kinds are read, never payloads.
+    /// </summary>
+    public bool TrackWebSockets { get; set; } = true;
 
     /// <summary>
     /// Register the frameworks own components ActivitySource and meters when the host has not already done so.
@@ -169,6 +235,15 @@ public sealed class BitBevToolsOptions
     public int MaxCollectionItems { get; set; } = 100;
 
     public int MaxStringLength { get; set; } = 500;
+
+    /// <summary>
+    /// How much of the application's own values BevTools reads (see <see cref="BevValueAccess"/>). Null (default)
+    /// means <see cref="BevValueAccess.Full"/> in Development and in a process that serves one user (Blazor WebAssembly,
+    /// Blazor Hybrid), where the panel only ever shows people their own data, and <see cref="BevValueAccess.None"/> when
+    /// BevTools runs outside Development in a process that serves many users: there the objects a circuit reaches can
+    /// hold other users' data (a singleton cache, a shared service), so values stay unread unless the app says otherwise.
+    /// </summary>
+    public BevValueAccess? ValueAccess { get; set; }
 
     /// <summary>Member/header/query names matching any of these (case-insensitive substring) are redacted.</summary>
     public List<string> SensitiveNamePatterns { get; } =

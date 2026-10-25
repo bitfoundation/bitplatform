@@ -144,7 +144,10 @@ public class ProcessingTests : DemoTest
                 if (!img) return null;
                 const blob = await (await fetch(img.src)).blob();
                 const bmp = await createImageBitmap(blob);
-                const canvas = new OffscreenCanvas(bmp.width, bmp.height);
+                // A canvas element, not an OffscreenCanvas: Playwright's WebKit on Windows has none.
+                const canvas = document.createElement('canvas');
+                canvas.width = bmp.width;
+                canvas.height = bmp.height;
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, bmp.width, bmp.height);
                 ctx.drawImage(bmp, 0, 0);
@@ -275,7 +278,8 @@ public class EditorTests : DemoTest
         var layers = await page.Locator(".bmg-layer-name").AllInnerTextsAsync();
         Assert.Contains("Redaction", layers);
         Assert.Contains("Arrow", layers);
-        Assert.HasCount(5, layers);
+        Assert.Contains("Callout", layers);
+        Assert.HasCount(7, layers);
 
         // The redaction must have replaced the pixels, not merely covered them in the DOM.
         var redacted = await page.EvaluateAsync<int[]>("""
@@ -296,15 +300,15 @@ public class EditorTests : DemoTest
         await page.WaitForTimeoutAsync(2500);
 
         await page.GetByRole(AriaRole.Tab, new PageGetByRoleOptions { Name = "Layers" }).ClickAsync();
-        Assert.AreEqual(5, await page.Locator(".bmg-layer").CountAsync());
+        Assert.AreEqual(7, await page.Locator(".bmg-layer").CountAsync());
 
         await page.Locator(".bmg-tool[title=Undo]").ClickAsync();
         await page.WaitForTimeoutAsync(1200);
-        Assert.AreEqual(4, await page.Locator(".bmg-layer").CountAsync());
+        Assert.AreEqual(6, await page.Locator(".bmg-layer").CountAsync());
 
         await page.Locator(".bmg-tool[title=Redo]").ClickAsync();
         await page.WaitForTimeoutAsync(1200);
-        Assert.AreEqual(5, await page.Locator(".bmg-layer").CountAsync());
+        Assert.AreEqual(7, await page.Locator(".bmg-layer").CountAsync());
     }
 
     [TestMethod]
@@ -389,6 +393,50 @@ public class EditorTests : DemoTest
 }
 
 [TestClass]
+public class LayersAndMasksTests : DemoTest
+{
+    /// <summary>
+    /// Every selective edit and every layer of the playground renders in the browser, and the document readout shows
+    /// the edit the engine ran.
+    /// </summary>
+    [TestMethod]
+    public async Task EveryMaskAndLayerRendersInTheBrowser()
+    {
+        var page = await OpenAsync("layers-and-masks");
+        var errors = CollectErrors(page);
+
+        // The button waits for the page to be interactive, which on a slow engine running a Debug build takes a while.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Run on a sample image" }).ClickAsync(new LocatorClickOptions { Timeout = 60_000 });
+        await page.WaitForSelectorAsync("img.preview-image", new PageWaitForSelectorOptions { Timeout = 60_000 });
+
+        async Task ChooseAsync(string name)
+        {
+            await page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true }).ClickAsync();
+            // The render is debounced, then shows a spinner until it is done.
+            await page.WaitForTimeoutAsync(250);
+            await page.WaitForSelectorAsync(".working", new PageWaitForSelectorOptions { State = WaitForSelectorState.Detached, Timeout = 60_000 });
+        }
+
+        foreach (var edit in new[] { "Spotlight", "Lift shadows", "Colour pop", "Graduated sky" })
+            await ChooseAsync(edit);
+        foreach (var layer in new[] { "Sunset glow", "Watermark", "Adjustment", "Colour wash" })
+            await ChooseAsync(layer);
+
+        await page.SelectOptionAsync("#blend", "Multiply");
+        await page.WaitForTimeoutAsync(250);
+        await page.WaitForSelectorAsync(".working", new PageWaitForSelectorOptions { State = WaitForSelectorState.Detached, Timeout = 60_000 });
+
+        var json = await page.Locator(".layers-json").InnerTextAsync();
+        StringAssert.Contains(json, "\"type\": \"masked\"");
+        StringAssert.Contains(json, "\"type\": \"linearGradient\"");
+        StringAssert.Contains(json, "\"type\": \"fill\"");
+        StringAssert.Contains(json, "\"blendMode\": \"Multiply\"");
+        Assert.IsEmpty(errors, string.Join(" | ", errors));
+        Assert.IsEmpty(await page.Locator(".demo-error").AllInnerTextsAsync());
+    }
+}
+
+[TestClass]
 public class DemoPageTests : DemoTest
 {
     /// <summary>Every page must render without a JavaScript error or an error banner.</summary>
@@ -397,6 +445,7 @@ public class DemoPageTests : DemoTest
     [DataRow("getting-started")]
     [DataRow("hosting")]
     [DataRow("pipelines")]
+    [DataRow("layers-and-masks")]
     [DataRow("formats")]
     [DataRow("capabilities")]
     [DataRow("metadata")]
@@ -405,6 +454,7 @@ public class DemoPageTests : DemoTest
     [DataRow("optimize")]
     [DataRow("product")]
     [DataRow("social")]
+    [DataRow("retouch")]
     [DataRow("batch")]
     [DataRow("editor")]
     [DataRow("headless")]
@@ -431,9 +481,11 @@ public class DemoPageTests : DemoTest
     [DataRow("")]
     [DataRow("getting-started")]
     [DataRow("pipelines")]
+    [DataRow("layers-and-masks")]
     [DataRow("capabilities")]
     [DataRow("avatar")]
     [DataRow("optimize")]
+    [DataRow("retouch")]
     [DataRow("editor")]
     [DataRow("headless")]
     [DataRow("mcp-server")]

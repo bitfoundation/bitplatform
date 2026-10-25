@@ -43,8 +43,7 @@ public partial class McpFeedbackTool
             user has agreed that the report should be sent - never to take a note, and never to ask whether something
             is a bug. Write the report so that it stands on its own without the conversation it came out of: what you
             did, what happened, what you expected instead, the versions involved and the shortest repro you have,
-            marking plainly what you measured and what you are only inferring. Nobody can reply unless the user gives
-            you an address to put in email.
+            marking plainly what you measured and what you are only inferring.
             """,
         InputSchema = BuildInputSchema(),
         Annotations = new()
@@ -78,7 +77,6 @@ public partial class McpFeedbackTool
 
         var title = Argument(request, "title");
         var report = Argument(request, "report");
-        var email = Argument(request, "email");
 
         if (title is null || report is null)
             return Failed("Both title and report are required and neither may be empty. Nothing was sent.");
@@ -98,14 +96,14 @@ public partial class McpFeedbackTool
 
         // The agent will tell the user their report is with the team, so it is told whether it actually is -
         // the reason lands in this site's logs, where the caller could do nothing with it anyway.
-        if (await telegramBotService.SendMcpFeedbackMessage(title, report, version?.Name, email, cancellationToken) is false)
+        if (await telegramBotService.SendMcpFeedbackMessage(title, report, version?.Name, cancellationToken) is false)
             return Failed("The report could not be delivered to the team. Open an issue on https://github.com/bitfoundation/bitplatform instead.");
 
         logger.LogInformation("A report titled {FeedbackTitle} was sent to the team through the {ToolName} tool.", title, ToolName);
 
         return new CallToolResult
         {
-            Content = [new TextContentBlock { Text = "The report reached the bit platform team. Tell the user it was sent, and that there will be no reply unless an address went with it." }]
+            Content = [new TextContentBlock { Text = "The report reached the bit platform team. Tell the user it was sent." }]
         };
     }
 
@@ -123,11 +121,6 @@ public partial class McpFeedbackTool
             {
                 ["type"] = "string",
                 ["description"] = $"The report itself, at most {maxReportLength} characters."
-            },
-            ["email"] = new JsonObject
-            {
-                ["type"] = "string",
-                ["description"] = "Optional, and only ever an address the user gave you: it is the single way back to them."
             }
         },
         ["required"] = new JsonArray("title", "report")

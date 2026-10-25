@@ -72,6 +72,10 @@ public static class SmartCrop
     /// rectangle from a detector, or the product's bounding box, when you have one.
     /// </summary>
     public static SmartCropResult FindCrop(ImageBuffer image, AspectRatio ratio, Rectangle mustInclude, SmartCropOptions? options = null)
+        => FindCrop(image, ratio, mustInclude, options, OperationContext.Default);
+
+    /// <summary>Finds the best crop, shrinking the image for analysis with the allocator, limits and threads of <paramref name="context"/>.</summary>
+    internal static SmartCropResult FindCrop(ImageBuffer image, AspectRatio ratio, Rectangle mustInclude, SmartCropOptions? options, OperationContext context)
     {
         ArgumentNullException.ThrowIfNull(image);
         options ??= SmartCropOptions.Default;
@@ -95,7 +99,7 @@ public static class SmartCrop
         else
         {
             small = new ResizeOperation(analysisWidth, analysisHeight, ResizeMode.Stretch, ResamplingFilter.Box)
-                .Apply(image, OperationContext.Default);
+                .Apply(image, context.WithProgress(null).WithMutation(false));
             ownsSmall = true;
         }
 
@@ -338,7 +342,7 @@ public sealed class SmartCropOperation : ImageOperation
 
     public override ImageBuffer Apply(ImageBuffer source, OperationContext context)
     {
-        var result = SmartCrop.FindCrop(source, Ratio, Options);
+        var result = SmartCrop.FindCrop(source, Ratio, Rectangle.Empty, Options, context);
         context.ThrowIfCancellationRequested();
         return result.ToOperation().Apply(source, context);
     }

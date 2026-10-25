@@ -126,4 +126,15 @@ public sealed class BlexPersistenceOptions
     /// <see cref="SyncAcrossTabs"/> is on.
     /// </summary>
     public Action<string, JsonObject>? OnExternalChange { get; set; }
+
+    /// <summary>
+    /// Encrypts (and tamper-proofs) every payload before it reaches storage, and checks it on the way back. Defaults
+    /// to <c>null</c>: payloads are stored as plain JSON. See <see cref="IBlexStateProtector"/>.
+    /// </summary>
+    /// <remarks>
+    /// Turning it on for an app that already stored plain payloads discards those once (the protector cannot vouch
+    /// for them), unless its <see cref="IBlexStateProtector.UnprotectAsync"/> chooses to accept them. Cross-tab changes
+    /// are read through it too.
+    /// </remarks>
+    public IBlexStateProtector? Protector { get; set; }
 }

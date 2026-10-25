@@ -1,0 +1,82 @@
+﻿@page "/toolings/blazor-es2019"
+@inherits AppComponentBase
+
+<PageOutlet Url="toolings/blazor-es2019"
+            Title="bit BlazorES2019 - Toolings"
+            Description="bit BlazorES2019 builds Blazor's own scripts for ES2019, so Blazor apps also run on older iPhones, Macs and Android WebViews that the stock scripts leave with a blank page." />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Element="h1" Gutter>bit BlazorES2019</BitText>
+    <br />
+    <BitText Typography="BitTypography.H5" Gutter>Blazor for the devices people really have</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        Not everyone has this year's phone. Many people keep a device for years, and many of those devices can't update their browser any more.
+        We care that apps built with bit work for them too, so bit BlazorES2019 brings Blazor back to the older iPhones, Macs and Android devices
+        that its own scripts leave behind.
+    </BitText>
+    <CodeBox>dotnet add package Bit.BlazorES2019</CodeBox>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>The problem</BitText>
+            .NET itself runs on Safari 15, Chrome and Edge 95, Firefox 100, iOS 15, macOS 12 and Android 8 with WebView 84.
+            Blazor's own scripts, <code>blazor.web.js</code>, <code>blazor.webassembly.js</code>, <code>blazor.server.js</code> and <code>blazor.webview.js</code>,
+            are compiled for ES2022 and newer (ES2024 in .NET 10), which raises the bar:
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th></th><th>.NET needs</th><th>Blazor's scripts need</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Safari</td><td>15</td><td>16.4</td></tr>
+                        <tr><td>iOS</td><td>15</td><td>16.4</td></tr>
+                        <tr><td>Android WebView</td><td>84</td><td>94</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <br />
+            So an iPhone that stopped at iOS 15 shows a blank page, although .NET runs on it just fine.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>The fix</BitText>
+            bit BlazorES2019 is the same Blazor scripts, built from the source of the official ASP.NET Core repository with only the compile target changed to ES2019.
+            Our release pipelines build them for every bit release, for .NET 9 and .NET 10, so nothing else about Blazor changes.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>How to use it</BitText>
+            <b>1.</b> Install the package in the project that serves Blazor's script: the server project of a Blazor Web App,
+            the project of a standalone Blazor WebAssembly app, or the MAUI project of a Blazor Hybrid app.
+            <CodeBox>dotnet add package Bit.BlazorES2019</CodeBox>
+            <b>2.</b> Load its script from <code>_framework/</code> instead of Blazor's own:
+            <ul>
+                <li><code>bit.blazor.web.es2019.js</code> instead of <code>blazor.web.js</code></li>
+                <li><code>bit.blazor.webassembly.es2019.js</code> instead of <code>blazor.webassembly.js</code></li>
+                <li><code>bit.blazor.server.es2019.js</code> instead of <code>blazor.server.js</code></li>
+                <li><code>bit.blazor.webview.es2019.js</code> instead of <code>blazor.webview.js</code></li>
+            </ul>
+            <CodeBox>&lt;script src="_framework/bit.blazor.web.es2019.js">&lt;/script></CodeBox>
+            <b>3.</b> For Blazor WebAssembly on those older browsers, also turn off WebAssembly SIMD in the client project:
+            <CodeBox>&lt;PropertyGroup>
+    &lt;WasmEnableSIMD>false&lt;/WasmEnableSIMD>
+&lt;/PropertyGroup></CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Older devices across bit</BitText>
+            bit Boilerplate loads these scripts out of the box, and the JavaScript that bit BlazorUI, Bswup, Butil and the utilities ship is built for ES2019 as well,
+            so an app made with bit reaches the same devices from end to end.
+            The script that builds them is in the <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/BlazorES2019" target="_blank" rel="noopener">bit BlazorES2019's README</a>.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Minifier" PrevUrl="@Urls.Minifier" Next="Code Analyzers" NextUrl="@Urls.CodeAnalyzers" />

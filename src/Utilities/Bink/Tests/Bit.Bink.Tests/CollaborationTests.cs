@@ -31,6 +31,9 @@ internal sealed class TestTransport(TestHub hub) : IBinkCollaborationTransport
 
     public int SentCount { get; private set; }
 
+    /// <summary>Every message sent, in order, so a test can look at what went over the wire.</summary>
+    public List<BinkCollaborationMessage> Sent { get; } = new();
+
     public event Func<BinkCollaborationMessage, Task>? MessageReceived;
 
     public event Action<bool>? ConnectionChanged;
@@ -46,6 +49,7 @@ internal sealed class TestTransport(TestHub hub) : IBinkCollaborationTransport
     {
         if (!_connected) throw new InvalidOperationException("Offline.");
         SentCount++;
+        Sent.Add(message);
         await hub.BroadcastAsync(this, message).ConfigureAwait(false);
     }
 
@@ -565,6 +569,43 @@ public class CollaborationRegressionTests
 
         Assert.AreSequenceEqual(alex.AllElements.Select(e => e.Id), sam.AllElements.Select(e => e.Id));
         Assert.AreSequenceEqual(alex.AllElements.Select(e => e.Id), zoe.AllElements.Select(e => e.Id));
+    }
+
+    /// <summary>
+    /// A request nobody answers, because no participant serves snapshots, used to leave the session waiting for
+    /// ever: every change was logged for a replay that never came, and nothing could ask for a snapshot again. The
+    /// request is given up on after thirty seconds, after which an answer that finally comes is treated as one
+    /// nobody asked for, and a fresh request is answered as before.
+    /// </summary>
+    [TestMethod]
+    public async Task A_snapshot_request_that_nobody_answers_is_given_up_on()
+    {
+        var local = new BinkDocument(new BinkDocumentSettings { Width = 200, Height = 200 });
+        local.AddElement(TestData.Stroke(new Vector2(0, 0), new Vector2(20, 20)));
+        var other = new BinkDocument(local.Settings) { Id = local.Id };
+        var transport = new ManualTransport();
+        var clock = new ManualClock(new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
+        await using var session = new BinkCollaborationSession(local, transport, "local") { Clock = clock };
+        long sequence = 1;
+        Task Answer() => transport.DeliverAsync(new BinkCollaborationMessage
+        {
+            Kind = BinkCollaborationMessageKind.Snapshot,
+            SenderId = "peer",
+            RecipientId = "local",
+            DocumentId = local.Id,
+            Sequence = sequence++,
+            Snapshot = BinkSerializer.Serialize(other),
+        });
+
+        await session.RequestSnapshotAsync();
+        clock.Now += TimeSpan.FromSeconds(31);
+        await Answer();
+        Assert.AreEqual(1, local.ElementCount, "An answer that comes after the request was given up on is not applied over what was drawn meanwhile.");
+
+        await session.RequestSnapshotAsync();
+        clock.Now += TimeSpan.FromSeconds(29);
+        await Answer();
+        Assert.AreEqual(0, local.ElementCount, "A fresh request is answered as before.");
     }
 
     [TestMethod]

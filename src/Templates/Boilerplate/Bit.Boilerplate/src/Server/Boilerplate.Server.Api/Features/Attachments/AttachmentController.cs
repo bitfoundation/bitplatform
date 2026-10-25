@@ -32,6 +32,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     /// <summary>The largest upload every endpoint here accepts; the Dev MCP reports this value rather than a copy of it.</summary>
     public const int MaxUploadSizeBytes = 11 * 1024 * 1024;
 
+    public static readonly MagickFormat[] AllowedImageFormats = [MagickFormat.Jpeg, MagickFormat.Png, MagickFormat.WebP, MagickFormat.Gif, MagickFormat.Avif, MagickFormat.Bmp];
+
     // For open telemetry metrics
     private static readonly Histogram<double> updateResizeDurationHistogram = Meter.Current.CreateHistogram<double>("attachment.resize_duration", "ms", "Elapsed time to resize and persist an uploaded image");
 
@@ -104,23 +106,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         if (await blobStorage.ObjectExists(filePath, cancellationToken) is false)
             throw new ResourceNotFoundException().WithData("Reason", "The attachment does not exist.");
 
-        var mimeType = kind switch
-        {
-            //#if (module == "Sales" || module == "Admin")
-            AttachmentKind.ProductPrimaryImageMedium => "image/webp",
-            //#endif
-            //#if (signalR == true)
-            AttachmentKind.AiChatImage => "image/webp",
-            //#endif
-            AttachmentKind.UserProfileImageSmall => "image/webp",
-            // Only the *Original kinds keep the uploaded format, so only they pay for the lookup - the kinds every
-            // rendered page asks for are answered above without touching the database.
-            _ => await DbContext.Attachments.Where(att => att.Id == attachmentId && att.Kind == kind)
-                                            .Select(att => att.ContentType)
-                                            .FirstOrDefaultAsync(cancellationToken) ?? "application/octet-stream"
-        };
-
-        return File(await blobStorage.OpenRead(filePath, cancellationToken), mimeType, enableRangeProcessing: true);
+        return File(await blobStorage.OpenRead(filePath, cancellationToken), "image/webp", enableRangeProcessing: true);
     }
 
     [HttpDelete]
@@ -231,6 +217,18 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         if (file is null)
             throw new BadRequestException().WithData("Reason", "No file provided.");
 
+        try
+        {
+            using var formatStream = file.OpenReadStream();
+
+            if (AllowedImageFormats.Contains(new MagickImageInfo(formatStream).Format) is false)
+                return BadRequest(Localizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
+        }
+        catch (MagickException)
+        {
+            return BadRequest(Localizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
+        }
+
         string? altText = null; // AI-generated alt text, when the analysis agent is configured.
 
         var preparedUploads = new List<(Attachment Attachment, byte[] Bytes)>();
@@ -264,7 +262,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             // Every kind is decoded, including the ones that are not resized: stripping the metadata means re-encoding,
-            // so the *Original kinds keep the uploaded FORMAT rather than the uploaded bytes.
+            // so the *Original kinds keep the uploaded pixels, at full size, as a WebP at full quality.
             // Process-wide ImageMagick ResourceLimits are configured at startup (Program.Services.cs), so what a
             // decode of an untrusted upload can cost is bounded, and anything Magick.NET cannot decode throws here.
             // OpenReadStream hands out a NEW stream per call and MagickImage does not take ownership of it.
@@ -283,6 +281,10 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             }
             using MagickImage sourceImage = decodedImage;
 
+            // A phone photo's pixels are stored sideways with an EXIF tag that says how to turn them, and Strip below
+            // drops that tag.
+            sourceImage.AutoOrient();
+
             if (imageResizeContext.NeedsResize)
             {
                 if (imageResizeContext.ShrinkOnly is false &&
@@ -292,18 +294,22 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 sourceImage.Resize(new MagickGeometry(imageResizeContext.Width, imageResizeContext.Height) { Greater = imageResizeContext.ShrinkOnly });
             }
 
-            // Drops EXIF - GPS coordinates, capture time, camera serial - along with XMP, IPTC, comments and the ICC
-            // profile. A phone photo carries all of it, and the WebP re-encode below does NOT drop it on its own.
+            // Drops EXIF - GPS coordinates, capture time, camera serial - along with XMP, IPTC and comments. A phone
+            // photo carries all of it, and the WebP re-encode below does NOT drop it on its own. The ICC profile goes
+            // back on: without it a wide-gamut photo, such as an iPhone's, shows washed-out colors.
+            var colorProfile = sourceImage.GetColorProfile();
             sourceImage.Strip();
+            if (colorProfile is not null)
+            {
+                sourceImage.SetProfile(colorProfile);
+            }
 
-            var storedBytes = imageResizeContext.NeedsResize
-                ? sourceImage.ToByteArray(MagickFormat.WebP)
-                : sourceImage.ToByteArray();
+            if (imageResizeContext.NeedsResize is false)
+            {
+                sourceImage.Quality = 100;
+            }
 
-            // The format these bytes really are, which for the *Original kinds is the only record of it.
-            attachment.ContentType = imageResizeContext.NeedsResize
-                ? "image/webp"
-                : MagickFormatInfo.Create(sourceImage.Format)?.MimeType;
+            var storedBytes = sourceImage.ToByteArray(MagickFormat.WebP);
 
             updateResizeDurationHistogram.Record(stopwatch.Elapsed.TotalMilliseconds, new KeyValuePair<string, object?>("kind", kind.ToString()));
 
@@ -368,28 +374,22 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         //  ---------------------------------------------------------------------------------------------
         //  PHASE 2 - everything validated; now mutate.
         //
-        //  A re-upload updates the rows in place instead of deleting and re-inserting them: Attachment's key is
+        //  A re-upload keeps the rows it finds instead of deleting and re-inserting them: Attachment's key is
         //  composite - { Id, Kind } (AttachmentConfiguration) - and EF cannot track a second instance with a key it
-        //  already tracks, even when the tracked one is marked Deleted. Only ContentType can actually differ,
+        //  already tracks, even when the tracked one is marked Deleted. Nothing in an existing row can differ,
         //  since GetFilePath is a pure function of those same two values.
         //
         //  For the same reason there is no stale blob to clean up: the new key IS the old key, so the writes
         //  below overwrite in place.
         //  ---------------------------------------------------------------------------------------------
-        var existingAttachments = await DbContext.Attachments
+        var existingKinds = await DbContext.Attachments
             .Where(att => att.Id == attachmentId)
-            .ToDictionaryAsync(att => att.Kind, cancellationToken);
+            .Select(att => att.Kind)
+            .ToArrayAsync(cancellationToken);
 
-        foreach (var (attachment, _) in preparedUploads)
+        foreach (var (attachment, _) in preparedUploads.Where(upload => existingKinds.Contains(upload.Attachment.Kind) is false))
         {
-            if (existingAttachments.TryGetValue(attachment.Kind, out var existingAttachment))
-            {
-                existingAttachment.ContentType = attachment.ContentType;
-            }
-            else
-            {
-                await DbContext.Attachments.AddAsync(attachment, cancellationToken);
-            }
+            await DbContext.Attachments.AddAsync(attachment, cancellationToken);
         }
 
         await DbContext.SaveChangesAsync(cancellationToken);
@@ -400,9 +400,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         {
             foreach (var (attachment, storedBytes) in preparedUploads)
             {
-                // SetBytes would leave the content type to be guessed from the key, which not every kind names.
+                // SetBytes would leave the content type to be guessed from the key.
                 using MemoryStream storedStream = new(storedBytes);
-                await blobStorage.SetObject(attachment.Path, storedStream, attachment.ContentType, cancellationToken: cancellationToken);
+                await blobStorage.SetObject(attachment.Path, storedStream, "image/webp", cancellationToken: cancellationToken);
                 wroteAnyBlob = true;
             }
         }
@@ -451,9 +451,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     }
 
     /// <summary>
-    /// A pure function of { Id, Kind }: no part of the key comes from the uploaded file, so a png -> jpg re-upload
-    /// lands on the very key it replaces and leaves no blob behind that no row names. The *Original kinds therefore
-    /// carry no extension, and <c>Attachment.ContentType</c> is what records the format they were stored in.
+    /// A pure function of { Id, Kind }: no part of the key comes from the uploaded file, so a re-upload lands on the
+    /// very key it replaces and leaves no blob behind that no row names. Every kind is stored as WebP.
     /// <br/>
     /// Environment variables are expanded over the CONFIGURED directory prefix only, never over anything the client
     /// influenced - a file name ending ".%TEMP%" used to expand a server environment value into the storage key.
@@ -481,17 +480,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
         directory = Environment.ExpandEnvironmentVariables(directory);
 
-        return kind switch
-        {
-            //#if (module == "Sales" || module == "Admin")
-            AttachmentKind.ProductPrimaryImageMedium => $"{directory}{attachmentId}_{kind}.webp",
-            //#endif
-            //#if (signalR == true)
-            AttachmentKind.AiChatImage => $"{directory}{attachmentId}_{kind}.webp",
-            //#endif
-            AttachmentKind.UserProfileImageSmall => $"{directory}{attachmentId}_{kind}.webp",
-            _ => $"{directory}{attachmentId}_{kind}" // The *Original kinds; their format lives in Attachment.ContentType.
-        };
+        return $"{directory}{attachmentId}_{kind}.webp";
     }
 
     //#if (signalR == true)

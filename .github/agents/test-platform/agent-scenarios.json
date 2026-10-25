@@ -156,7 +156,10 @@
         "Customers earn 1 point per 1 USD spent. Points expire 12 months after they were earned. 100 points give 5 USD off the next order. Points can't be transferred between users. We haven't decided yet whether returning an order takes the points back."
       ],
       "handoff": {
-        "prompt": "Implement the loyalty points feature."
+        "prompt": "Implement the loyalty points feature.",
+        "turns": [
+          "The app has no orders yet. They come in a later release, so build what doesn't need them now and leave earning and redeeming ready to plug into them. Returning an order doesn't take its points back. For anything else, go with your recommendations."
+        ]
       },
       "checks": [
         {

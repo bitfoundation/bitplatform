@@ -73,9 +73,9 @@ public static partial class Program
 
             services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientWebSettings>>().Value);
 
+            services.AddSingleton<IValidateOptions<ClientWebSettings>, ClientWebSettingsValidator>();
             services.AddOptions<ClientWebSettings>()
                 .Bind(configuration)
-                .ValidateDataAnnotations()
                 .ValidateOnStart();
         }
     }

@@ -1,17 +1,18 @@
 ﻿@page "/computed"
+@using System.Globalization
 @inherits BlexComponentBase
 @inject CartStore Cart
 
 <DocPage Href="computed" Title="Computed state"
-         Lead="Derived values that recompute only when they have to, and invalidate themselves whenever state changes.">
+         Lead="Derived values that recompute only when they have to - when the state they read changes.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The convention</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The convention</h2>
         <p>
             Mark a parameterless method named <code>ComputeXxx()</code> or <code>GetXxx()</code> with
             <code>[BlexComputed]</code> and the generator emits a memoized public property <code>Xxx</code>.
-            The value is calculated on first read, cached, and thrown away the moment any
-            <code>[BlexState]</code> field on that store changes.
+            The value is calculated on first read, cached, and thrown away the moment a
+            <code>[BlexState]</code> property it reads changes.
         </p>
 
         <CodeBlock Code="@Basic" />
@@ -21,24 +22,24 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Memoization in practice</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Memoization in practice</h2>
         <p>
-            Reading a computed property ten times evaluates it once. Only a state change makes it stale.
-            The counters below are incremented <em>inside</em> the compute methods, so they show exactly
-            how often each one actually ran.
+            Reading a computed property ten times evaluates it once. Only a change to the state it reads
+            makes it stale. The counters below are incremented <em>inside</em> the compute methods, so they
+            show exactly how often each one actually ran.
         </p>
 
         <DemoCard Title="Count the evaluations"
-                  Description="Read the values repeatedly - the counters stay put. Change the state and they tick over exactly once."
+                  Description="Read the values repeatedly - the counters stay put. Change a quantity and both tick over exactly once; toggle the discount and only Total does, since Subtotal never reads it."
                   Source="@DemoSource">
             <div class="bb-stats">
                 <div class="bb-stat">
                     <span class="bb-stat-label">Subtotal</span>
-                    <span class="bb-stat-value">@Cart.Subtotal.ToString("C")</span>
+                    <span class="bb-stat-value">@Cart.Subtotal.ToString("C", Dollars)</span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Total</span>
-                    <span class="bb-stat-value demo-accent">@Cart.Total.ToString("C")</span>
+                    <span class="bb-stat-value demo-accent">@Cart.Total.ToString("C", Dollars)</span>
                 </div>
                 <div class="bb-stat">
                     <span class="bb-stat-label">Items</span>
@@ -72,10 +73,12 @@
                 {
                     <li>
                         <span class="demo-list-name">@line.Name</span>
-                        <span class="demo-list-meta">@line.UnitPrice.ToString("C") each</span>
-                        <button class="btn btn-secondary" @onclick="() => Cart.SetQuantity(line.Sku, line.Quantity - 1)">−</button>
+                        <span class="demo-list-meta">@line.UnitPrice.ToString("C", Dollars) each</span>
+                        <button class="btn btn-secondary" aria-label="@($"One {line.Name} fewer")" disabled="@(line.Quantity == 0)"
+                                @onclick="() => Cart.SetQuantity(line.Sku, line.Quantity - 1)">−</button>
                         <span class="demo-qty">@line.Quantity</span>
-                        <button class="btn btn-secondary" @onclick="() => Cart.SetQuantity(line.Sku, line.Quantity + 1)">+</button>
+                        <button class="btn btn-secondary" aria-label="@($"One more {line.Name}")"
+                                @onclick="() => Cart.SetQuantity(line.Sku, line.Quantity + 1)">+</button>
                     </li>
                 }
             </ul>
@@ -83,37 +86,56 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Composing computed values</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Composing computed values</h2>
         <p>
             A computed method may read other computed properties. <code>ComputeTotal()</code> above reads
-            <code>Subtotal</code>, so the first read of <code>Total</code> after a change evaluates both,
-            in dependency order, with no wiring on your part.
+            <code>Subtotal</code>, so the first read of <code>Total</code> after a change to <code>Lines</code>
+            evaluates both, in dependency order, with no wiring on your part. After a change to
+            <code>DiscountRate</code> only <code>Total</code> runs again, against the <code>Subtotal</code> still
+            memoized - the demo above shows exactly that.
         </p>
 
-        <Callout Kind="Callout.CalloutKind.Gotcha" Title="Invalidation is store-wide, not per-dependency">
+        <Callout Kind="Callout.CalloutKind.Note" Title="A write invalidates only what reads it">
             <p>
-                Blex does not track which fields a computed method touched. <em>Any</em> state change
-                on the store invalidates <em>every</em> computed value on it. That keeps invalidation
-                correct and free of bookkeeping, but it means an expensive computation on a busy store
-                recomputes more often than strictly necessary. If that matters, split the store, or cache
-                inside the method against the specific inputs.
+                The source generator reads each computed method's body: a write to <code>DiscountRate</code>
+                invalidates the computed values that read <code>DiscountRate</code> (or its backing field), directly
+                or through another computed - not one derived from <code>Lines</code> alone. A computed that reads
+                state the generator cannot follow - through a helper method of the store, a service field, a
+                primary-constructor parameter, <code>this</code> passed along, an effect's flags - is invalidated
+                by every write, as all were before. Only reads count: a statement that just writes another member -
+                the demo's <code>SubtotalEvaluations++</code> - does not make the computed depend on it. Keep an
+                expensive computed's reads in its own body (or in other computeds) and it recomputes only when its
+                inputs move. What it reads has to change through its property, the way all state does: a backing
+                field written directly or a list changed in place is a write nothing sees - not even by accident,
+                through another field's write, as before.
+            </p>
+        </Callout>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Read inside an action, it already sees the action's writes">
+            <p>
+                An action batches its notification until it finishes, but not its invalidation: every write
+                marks the computed values stale on the spot. Validation after a write -
+                <code>Balance -= amount; if (Doubled &lt; 0) throw ...</code> - reads the new value, never the
+                one memoized before the action began.
             </p>
         </Callout>
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Rules</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Rules</h2>
         <ul class="bb-detail-list">
             <li>The method must be <strong>parameterless</strong> - a computed value backs a property, so there is nowhere to pass arguments (<code>BLEX004</code>).</li>
             <li>The name must start with <code>Compute</code> or <code>Get</code> and have something after it (<code>BLEX003</code>).</li>
             <li>It must be an instance method, not <code>static</code> (<code>BLEX008</code>).</li>
+            <li>It must not be generic - a property cannot carry type parameters (<code>BLEX014</code>).</li>
+            <li>It must return a value - a <code>void</code> method leaves the property nothing to memoize (<code>BLEX017</code>).</li>
             <li>The generated property name must not collide with anything else on the store (<code>BLEX005</code>).</li>
-            <li>Any return type is allowed, including collections and records.</li>
+            <li>Any other return type is allowed, including collections and records.</li>
         </ul>
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Computed values are not serialized</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Computed values are not serialized</h2>
         <p>
             Only <code>[BlexState]</code> fields go into <code>SerializeState()</code>. Computed values are
             derived, so they are recalculated after a restore rather than stored - which means a
@@ -134,6 +156,9 @@
 </DocPage>
 
 @code {
+    // The site runs with invariant globalization, whose currency symbol is the generic "¤"; the cart is in dollars.
+    private static readonly NumberFormatInfo Dollars = new() { CurrencySymbol = "$" };
+
     private string? _lastRead;
 
     protected override void OnInitialized() => Subscribe(Cart);
@@ -144,7 +169,7 @@
         for (var i = 0; i < 10; i++)
             sink += Cart.Subtotal + Cart.Total;
 
-        _lastRead = $"Read Subtotal and Total 10 times each (sum {sink:C}) - evaluation counters did not move.";
+        _lastRead = $"Read Subtotal and Total 10 times each (sum {sink.ToString("C", Dollars)}) - evaluation counters did not move.";
     }
 
     private void ResetCounters()
@@ -186,12 +211,32 @@
             }
         }
 
-        // Called by BlexStoreBase after every state change.
+        // A restore, a reset, a rollback, an effect's loading flags: every computed value goes stale.
         protected override void InvalidateComputed()
         {
             __SubtotalValid = false;
             __TotalValid = false;
             __ItemCountValid = false;
+        }
+
+        // A property setter: only the computed values that read that property -
+        // Total reads DiscountRate itself and Lines through Subtotal.
+        protected override void InvalidateComputed(string? propertyName)
+        {
+            switch (propertyName)
+            {
+                case "Lines":
+                    __SubtotalValid = false;
+                    __TotalValid = false;
+                    __ItemCountValid = false;
+                    break;
+                case "DiscountRate":
+                    __TotalValid = false;
+                    break;
+                default:
+                    InvalidateComputed();
+                    break;
+            }
         }
         """;
 
