@@ -71,16 +71,6 @@ const cases = [
     { id: 'pdf417compact-bytes', format: 'Pdf417', bcid: 'pdf417compact', options: 'columns=4 binarytext', data: bytes([0, 7, 64, 128, 200, 255, 13, 10, 31, 99]), expectedBytes: [0, 7, 64, 128, 200, 255, 13, 10, 31, 99] },
     { id: 'pdf417compact-one-column', format: 'Pdf417', bcid: 'pdf417compact', options: 'columns=1', data: 'ONE', expected: 'ONE' },
 
-    // MicroPDF417: one to four columns between row address patterns, no start or stop pattern, its error correction
-    // fixed by the symbol's size.
-    { id: 'micropdf417-1col', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=1', data: 'MICRO 1', expected: 'MICRO 1' },
-    { id: 'micropdf417-2col', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=2', data: 'MicroPDF417, two columns', expected: 'MicroPDF417, two columns' },
-    { id: 'micropdf417-3col', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=3', data: 'MicroPDF417 in three columns, with a centre row address pattern.', expected: 'MicroPDF417 in three columns, with a centre row address pattern.' },
-    { id: 'micropdf417-4col', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=4', data: 'MicroPDF417 four columns wide: the largest variant carries the most text of all, here some ninety characters long.', expected: 'MicroPDF417 four columns wide: the largest variant carries the most text of all, here some ninety characters long.' },
-    { id: 'micropdf417-numeric', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=2', data: '0123456789012345678901234567890123456789', expected: '0123456789012345678901234567890123456789' },
-    { id: 'micropdf417-bytes', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=3 binarytext', data: bytes([0, 1, 2, 3, 250, 251, 252, 253, 254, 255, 128, 129]), expectedBytes: [0, 1, 2, 3, 250, 251, 252, 253, 254, 255, 128, 129] },
-    { id: 'micropdf417-utf8', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=4', data: 'Grüße aus Köln ☃', expected: 'Grüße aus Köln ☃' },
-
     // QR Code: versions with and without version information, every error correction level and every mode.
     { id: 'qr-v1-numeric', format: 'QrCode', bcid: 'qrcode', options: 'eclevel=L version=1', data: '01234567890123456789', expected: '01234567890123456789' },
     { id: 'qr-v2-alphanumeric', format: 'QrCode', bcid: 'qrcode', options: 'eclevel=M version=2', data: 'HTTPS://BITPLATFORM.DEV/BBSCANNER', expected: 'HTTPS://BITPLATFORM.DEV/BBSCANNER' },

@@ -4,8 +4,8 @@
 /// The Aztec Code entry point: finds a bullseye, samples the symbol around it and decodes it.
 /// </summary>
 /// <remarks>
-/// Compact and full range symbols are read at any rotation. A symbol written mirrored, or an Aztec Rune (the
-/// bullseye and mode message alone, carrying a single byte), is not.
+/// Compact and full range symbols are read at any rotation, both as printed and mirrored. An Aztec Rune (the
+/// bullseye and mode message alone, carrying a single byte) is read too.
 /// </remarks>
 public sealed class BbAztecReader : IBbMatrixDecoder
 {

@@ -148,7 +148,9 @@ options.Formats = BbBarcodeFormat.QrCode;
 
         try
         {
-            await using var stream = args.File.OpenReadStream(_scanner.MaxImageFileSize);
+            // Zero is no limit to the scanner, but no bytes at all to OpenReadStream.
+            var limit = _scanner.MaxImageFileSize > 0 ? _scanner.MaxImageFileSize : long.MaxValue;
+            await using var stream = args.File.OpenReadStream(limit);
             var results = await _scanner.ScanImageAsync(stream);
             if (results.Count == 0)
             {

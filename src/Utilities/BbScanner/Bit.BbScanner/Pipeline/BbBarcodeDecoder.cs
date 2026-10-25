@@ -455,7 +455,11 @@ public sealed class BbBarcodeDecoder : IDisposable
 
         foreach (var symbol in symbols)
         {
-            if (!suppressDuplicates || _duplicateFilter.ShouldReport(symbol.Payload.Text, symbol.Format, timestamp))
+            // The filter decides once per value in a frame: a second copy of a code follows the first, which the
+            // filter has just recorded and would otherwise take the copy for a repeat of.
+            if (!suppressDuplicates ||
+                IsReported(results!, symbol) ||
+                _duplicateFilter.ShouldReport(symbol.Payload.Text, symbol.Format, timestamp))
             {
                 results!.Add(ToResult(symbol, offsetX, offsetY, step, frameWidth, frameHeight));
             }
@@ -671,6 +675,20 @@ public sealed class BbBarcodeDecoder : IDisposable
             if (earlier.Format == symbol.Format &&
                 string.Equals(earlier.Payload.Text, symbol.Payload.Text, StringComparison.Ordinal) &&
                 (earlier.Points.Length < 3 || IsInsideConvex(center, earlier.Points)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Whether the same value from the same symbology is already among this frame's results.</summary>
+    private static bool IsReported(List<BbBarcodeResult> results, BbSymbolDecodeResult symbol)
+    {
+        foreach (var result in results)
+        {
+            if (result.Format == symbol.Format && string.Equals(result.Text, symbol.Payload.Text, StringComparison.Ordinal))
             {
                 return true;
             }

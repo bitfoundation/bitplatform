@@ -423,7 +423,9 @@ same limits, and returns every symbol in it rather than raising `OnScan`; a refu
 
     private async Task ScanAsync(InputFileChangeEventArgs args)
     {
-        await using var stream = args.File.OpenReadStream(_scanner.MaxImageFileSize);
+        // Zero is no limit to the scanner, but no bytes at all to OpenReadStream.
+        var limit = _scanner.MaxImageFileSize > 0 ? _scanner.MaxImageFileSize : long.MaxValue;
+        await using var stream = args.File.OpenReadStream(limit);
         foreach (var result in await _scanner.ScanImageAsync(stream))
         {
             Console.WriteLine($"{result.Format}: {result.Text}");

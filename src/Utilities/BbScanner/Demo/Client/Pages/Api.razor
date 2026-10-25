@@ -32,12 +32,19 @@
                 <tr><td class="bb-table-key">DeviceId</td><td class="bb-mono bb-table-key">string?</td><td class="bb-mono bb-table-key">null</td><td>A specific camera to open.</td></tr>
                 <tr><td class="bb-table-key">AutoStart</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Open the camera as soon as the component is ready.</td></tr>
                 <tr><td class="bb-table-key">DuplicateSuppressionWindow</td><td class="bb-mono bb-table-key">TimeSpan?</td><td class="bb-mono bb-table-key">null (2s)</td><td>How long an identical value stays suppressed. Set, it overrides <code>Options</code>; unset, <code>Options</code> decides, else 2 s.</td></tr>
+                <tr><td class="bb-table-key">MaxSymbolsPerFrame</td><td class="bb-mono bb-table-key">int</td><td class="bb-mono bb-table-key">1</td><td>The most symbols read from one frame or image; more reads every code in view, each reported and outlined on its own.</td></tr>
+                <tr><td class="bb-table-key">AfterScan</td><td class="bb-mono bb-table-key">BbAfterScan</td><td class="bb-mono bb-table-key">Continue</td><td>What happens after a reported scan: keep scanning, <code>Pause</code> (camera stays open) or <code>Stop</code> (camera released).</td></tr>
+                <tr><td class="bb-table-key">AcceptResult</td><td class="bb-mono bb-table-key">Func&lt;BbBarcodeResult, bool&gt;?</td><td class="bb-mono bb-table-key">null</td><td>Decides which results are reported; one it turns down is ignored as if it were not there.</td></tr>
+                <tr><td class="bb-table-key">Feedback</td><td class="bb-mono bb-table-key">BbScanFeedback</td><td class="bb-mono bb-table-key">None</td><td><code>Vibrate</code>, <code>Beep</code> or both on every reported scan, where the browser allows it.</td></tr>
+                <tr><td class="bb-table-key">ReleaseCameraWhenHidden</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">false</td><td>Close the camera while the page is hidden and reopen it when the page is shown again.</td></tr>
+                <tr><td class="bb-table-key">Texts</td><td class="bb-mono bb-table-key">BbScannerTexts?</td><td class="bb-mono bb-table-key">null (English)</td><td>Every label, status, notice, error message and announcement, for another language.</td></tr>
                 <tr><td class="bb-table-key">ShowControls</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Built-in control bar.</td></tr>
                 <tr><td class="bb-table-key">ShowStatusBar</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Built-in status bar.</td></tr>
                 <tr><td class="bb-table-key">ShowReticle</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Corner reticle over the scan region.</td></tr>
                 <tr><td class="bb-table-key">ShowMask</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Dim outside the scan region.</td></tr>
                 <tr><td class="bb-table-key">HighlightResults</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Outline a decoded symbol in place.</td></tr>
                 <tr><td class="bb-table-key">EnableFileScanning</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">true</td><td>Offer still image scanning.</td></tr>
+                <tr><td class="bb-table-key">MaxImageFileSize</td><td class="bb-mono bb-table-key">long</td><td class="bb-mono bb-table-key">32 MB</td><td>The largest image file accepted, checked before it is decoded. Zero accepts any size.</td></tr>
                 <tr><td class="bb-table-key">Fill</td><td class="bb-mono bb-table-key">bool</td><td class="bb-mono bb-table-key">false</td><td>Fill the parent instead of keeping the camera's aspect ratio.</td></tr>
                 <tr><td class="bb-table-key">AriaLabel</td><td class="bb-mono bb-table-key">string</td><td class="bb-mono bb-table-key">"Barcode scanner"</td><td>Accessible name for the region.</td></tr>
                 <tr><td class="bb-table-key">CssClass</td><td class="bb-mono bb-table-key">string?</td><td class="bb-mono bb-table-key">null</td><td>Extra classes on the root element.</td></tr>
@@ -78,7 +85,13 @@ Task&lt;<span class="k">bool</span>&gt;      SetTorchAsync(<span class="k">bool<
 Task&lt;<span class="k">bool</span>&gt;      SetZoomAsync(<span class="k">double</span> zoom)
 Task            OpenFilePickerAsync()
 Task&lt;IReadOnlyList&lt;BbCameraDevice&gt;&gt; GetCamerasAsync()
+Task&lt;BbCameraPermission&gt;             GetCameraPermissionAsync()
+<span class="k">void</span>            ResetDuplicateFilter()
 BbBarcodeResult?  DecodeImage(ReadOnlySpan&lt;<span class="k">byte</span>&gt; pixels, <span class="k">int</span> width, <span class="k">int</span> height, BbPixelFormat format)
+IReadOnlyList&lt;BbBarcodeResult&gt;        DecodeAllInImage(ReadOnlySpan&lt;<span class="k">byte</span>&gt; pixels, <span class="k">int</span> width, <span class="k">int</span> height, BbPixelFormat format, <span class="k">int</span> maxSymbols = 16)
+Task&lt;IReadOnlyList&lt;BbBarcodeResult&gt;&gt;  ScanImageAsync(Stream image, <span class="k">int</span> maxSymbols = 16, CancellationToken cancellationToken = <span class="k">default</span>)
+Task&lt;IReadOnlyList&lt;BbBarcodeResult&gt;&gt;  ScanImageAsync(ReadOnlyMemory&lt;<span class="k">byte</span>&gt; image, <span class="k">string</span>? contentType = <span class="k">null</span>, <span class="k">int</span> maxSymbols = 16, CancellationToken cancellationToken = <span class="k">default</span>)
+Task&lt;IReadOnlyList&lt;BbBarcodeResult&gt;&gt;  ScanCurrentFrameAsync(<span class="k">int</span> maxSymbols = 16)
 
 BbScannerStatus   Status
 BbCameraInfo?     Camera

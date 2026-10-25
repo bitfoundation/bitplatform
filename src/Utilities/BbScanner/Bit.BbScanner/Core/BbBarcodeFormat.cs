@@ -85,17 +85,11 @@ public enum BbBarcodeFormat
     /// </summary>
     MicroQrCode = 1 << 17,
 
-    /// <summary>
-    /// MicroPDF417 (ISO/IEC 24728): one to four columns of PDF417 codewords between row address patterns, with no start
-    /// or stop pattern, on small items and in GS1 composite symbols.
-    /// </summary>
-    MicroPdf417 = 1 << 18,
-
     /// <summary>All linear (one dimensional) symbologies.</summary>
     AllLinear = Code128 | Code39 | Ean13 | Ean8 | UpcA | UpcE | Itf | Codabar | Code93 | DataBar | DataBarLimited | DataBarExpanded,
 
     /// <summary>All matrix (two dimensional) symbologies.</summary>
-    AllMatrix = QrCode | DataMatrix | Pdf417 | Aztec | MaxiCode | MicroQrCode | MicroPdf417,
+    AllMatrix = QrCode | DataMatrix | Pdf417 | Aztec | MaxiCode | MicroQrCode,
 
     /// <summary>Every supported symbology.</summary>
     All = AllLinear | AllMatrix,

@@ -134,7 +134,7 @@
                         <button class="btn btn-secondary" type="button" disabled="@(_camera?.SupportsTorch != true)" @onclick="ToggleTorch">
                             @(_scanner?.IsTorchOn == true ? "Torch off" : "Torch on")
                         </button>
-                        <button class="btn btn-secondary" type="button" id="scan-full-frame" disabled="@(_camera is null)" @onclick="ScanFullFrame">
+                        <button class="btn btn-secondary" type="button" id="scan-full-frame" disabled="@(!CanScanFrame)" @onclick="ScanFullFrame">
                             Scan full frame
                         </button>
                     </div>
@@ -181,9 +181,12 @@
     private BbCameraFacing _facing = BbCameraFacing.Rear;
     private IReadOnlyList<BbBarcodeResult>? _captured;
 
+    // A frame exists only while the track runs; the camera info outlives a restart that is still Starting.
+    private bool CanScanFrame => _scanner?.Status is BbScannerStatus.Scanning or BbScannerStatus.Paused;
+
     private async Task ScanFullFrame()
     {
-        if (_scanner is not null && _camera is not null)
+        if (_scanner is not null && CanScanFrame)
         {
             _captured = await _scanner.ScanCurrentFrameAsync();
         }

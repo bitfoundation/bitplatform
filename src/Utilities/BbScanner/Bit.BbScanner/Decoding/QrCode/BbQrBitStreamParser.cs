@@ -291,7 +291,13 @@ public static class BbQrBitStreamParser
                 break;
             }
 
+            // M4's three mode bits can say 4 to 7, which name no mode.
             var mode = modeBits == 0 ? 0 : bits.ReadBits(modeBits);
+            if (mode > 3)
+            {
+                return null;
+            }
+
             var width = MicroCountBits[(4 * mode) + microVersion - 1];
             if (width == 0 || bits.Available < width)
             {
