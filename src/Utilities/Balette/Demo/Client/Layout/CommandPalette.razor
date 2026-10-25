@@ -59,9 +59,9 @@
                        aria-activedescendant="@(_results.Length > 0 ? $"bb-palette-option-{_activeIndex}" : null)"
                        autocomplete="off"
                        spellcheck="false"
-                       @bind:get="_query"
-                       @bind:set="OnInput"
-                       @bind:event="oninput" />
+                       @bind="_query"
+                       @bind:event="oninput"
+                       @bind:after="OnInput" />
                 <button type="button" class="bb-palette-esc" @ref="_escape" @onclick="() => Close()" aria-label="Close search">Esc</button>
             </div>
 
@@ -244,9 +244,10 @@
     /// </summary>
     private void LockScroll(bool locked) => _ = JSRuntime.InvokeVoidAsync("bitDemoSite.lockScroll", locked);
 
-    private void OnInput(string? value)
+    // A binding rather than value + @oninput: on Blazor Server, a render answering an earlier key would otherwise write its
+    // older value over the keys typed since; the binding tells the renderer what the field holds.
+    private void OnInput()
     {
-        _query = value ?? "";
         _results = _query.Trim().Length == 0 ? Suggest() : Find(_query.Trim());
         _activeIndex = 0;
     }

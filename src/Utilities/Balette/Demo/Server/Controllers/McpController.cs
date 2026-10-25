@@ -42,9 +42,11 @@ namespace Bit.Balette.Demo.Server.Controllers;
 [Route("api/[controller]/[action]")]
 public class McpController : ControllerBase
 {
-    // The README's longest sections and the demo's longest pages land far below the cap; it is
-    // there so a pathological answer cannot dominate a client's context window.
-    private const int MaxDocumentLength = 40_000;
+    // The longest real answers are the demo's longest pages (PagesAndFlows.razor, Commands.razor) at
+    // about 40,000 characters each; the README's longest sections land far below them. The cap sits
+    // above all of them so each arrives whole, and is there so a pathological answer cannot dominate
+    // a client's context window.
+    private const int MaxDocumentLength = 60_000;
 
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBalette), Title = "Search everything about Bit.Balette", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]

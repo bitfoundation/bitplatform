@@ -188,7 +188,10 @@ public sealed class FlowTests : BaletteTest
     [TestMethod]
     public async Task A_recent_command_survives_a_reload()
     {
-        var page = await OpenAsync("/");
+        // The command writes the page's address to the clipboard, which headless Chromium refuses without the permission.
+        var options = DefaultContextOptions();
+        if (E2EEnvironment.IsChromium) options.Permissions = ["clipboard-read", "clipboard-write"];
+        var page = await OpenAsync("/", options);
         await OpenPaletteAsync(page);
         await TypeAsync(page, "copy share");
         await ExpectFirstItemAsync(page, "actions.copy-share-link");
@@ -244,7 +247,7 @@ public sealed class FlowTests : BaletteTest
         await TypeAsync(page, "large registry");
         await ExpectFirstItemAsync(page, "navigation.large-registry");
         await page.Keyboard.PressAsync("Enter");
-        await page.WaitForURLAsync("**/performance");
+        await ExpectUrlAsync(page, "/performance");
         await ExpectClosedAsync(page);
         await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Large registry");
 
@@ -253,7 +256,7 @@ public sealed class FlowTests : BaletteTest
         await TypeAsync(page, "modes and sources");
         await ExpectFirstItemAsync(page, "navigation.modes-and-sources");
         await Items(page).First.ClickAsync();
-        await page.WaitForURLAsync("**/modes");
+        await ExpectUrlAsync(page, "/modes");
         await ExpectClosedAsync(page);
         await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Modes & sources");
     }
