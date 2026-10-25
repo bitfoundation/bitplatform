@@ -443,9 +443,10 @@ Commands can also be written next to the markup they belong to, as children of t
 </Balette>
 ```
 
-`BaletteGroup` applies its heading, and its priority and tags to the items that do not set their own.
-`BaletteItem` has a parameter for every member of the model; `Keywords` is a comma or space separated string, and
-nested items turn their parent into a page. `OnExecute` receives the `BaletteCommandContext`, and the palette closes
+`BaletteGroup` applies its heading to its items, its priority to the items that do not set their own, and adds its tags
+to theirs. `BaletteItem` has a parameter for most members of the model; `Keywords` is a comma or space separated string,
+and nested items turn their parent into a page. `Data`, `VisibleWhen`, `ExcludeFromHistory`, `Actions`, `ForceLoad`,
+lazily loaded children, page sources and handlers that answer with a prompt, a page or a toast need the builder. `OnExecute` receives the `BaletteCommandContext`, and the palette closes
 afterwards unless `KeepOpen` is set; an item with `Href` and no `OnExecute` navigates. An item only re-registers
 when one of its parameters actually changed, so re-rendering the layout is cheap.
 

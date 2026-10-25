@@ -17,6 +17,9 @@
 
 <PaletteBar />
 
+@* Save draft claims Alt+Q while this page is on screen; the conflicts section registers a second command on the same keys. *@
+<BaletteCommands Commands="_pageCommands" />
+
 <section class="bb-card" id="shortcuts">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Inside the palette</h3>
     <div class="bb-scroll">
@@ -214,6 +217,22 @@
         <li>one browsers keep for themselves and never hand to a page (<kbd>@Mod</kbd> <kbd>W</kbd>, <kbd>@Mod</kbd>
             <kbd>T</kbd>, <kbd>@Mod</kbd> <kbd>N</kbd>, <kbd>Ctrl</kbd> <kbd>Tab</kbd>…).</li>
     </ul>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Two commands, one shortcut</span></div>
+        <p>
+            This page registers <em>Save draft</em> on <kbd>Alt</kbd> <kbd>Q</kbd>. Register <em>Save and publish</em> on the
+            same keys and, with the palette closed, <kbd>Alt</kbd> <kbd>Q</kbd> runs it instead - the later registration
+            wins - while the browser's console shows the palette's warning naming both. Dispose it and the keys are
+            <em>Save draft</em>'s again.
+        </p>
+        <div class="bb-try">
+            <button type="button" class="btn btn-secondary" @onclick="ToggleOverride">@(_override is null ? "Register \"Save and publish\" on Alt+Q" : "Dispose \"Save and publish\"")</button>
+        </div>
+        <p class="bb-muted demo-small" role="status">
+            <kbd>Alt</kbd> <kbd>Q</kbd> runs <strong>@(_override is null ? "Save draft" : "Save and publish")</strong>
+            · Last pressed: <strong>@(_conflictLast ?? "not yet")</strong>
+        </p>
+    </div>
 </section>
 
 <section class="bb-card" id="platform">
@@ -325,6 +344,9 @@
     private string? _last;
     private BaletteKeyboardShortcut? _pending;
     private string _shortcutText = "Mod+Shift+K";
+    private List<BaletteCommand> _pageCommands = [];
+    private IDisposable? _override;
+    private string? _conflictLast;
 
     private string Mod => Palette.IsMac ? "⌘" : "Ctrl";
 
@@ -333,6 +355,13 @@
 
     protected override void OnInitialized()
     {
+        _pageCommands =
+        [
+            BaletteCmd.New("Save draft").Group("This page").Shortcut("Alt+Q").Keywords("store", "keep")
+                .Description("Registered by Pages/Keyboard.razor on Alt+Q, which the conflicts section lets a second command claim.")
+                .Handler(() => SaveWith("Save draft")),
+        ];
+
         Palette.CommandsChanged += Refresh;
         Palette.CommandExecuted += OnExecuted;
         // Every hint on this page reads IsMac, which is only known once the palette has started in the browser.
@@ -343,6 +372,30 @@
     private void OnExecuted(object? sender, BaletteCommandExecutedEventArgs e)
     {
         _last = $"{e.Command.Title} at {DateTime.Now:HH:mm:ss}";
+        Refresh();
+    }
+
+    /// <summary>
+    /// A second command on Alt+Q, registered after the page's own, so it wins the keys until its handle is disposed. The
+    /// palette logs the conflict once, as a warning.
+    /// </summary>
+    private void ToggleOverride()
+    {
+        if (_override is not null)
+        {
+            _override.Dispose();
+            _override = null;
+            return;
+        }
+
+        _override = Palette.Register(BaletteCmd.New("Save and publish").Group("This page").Shortcut("Alt+Q").Keywords("store", "release")
+            .Description("Registered by a button on Pages/Keyboard.razor on the keys Save draft has: the later registration wins.")
+            .Handler(() => SaveWith("Save and publish")));
+    }
+
+    private void SaveWith(string title)
+    {
+        _conflictLast = $"{title} at {DateTime.Now:HH:mm:ss}";
         Refresh();
     }
 
@@ -360,5 +413,6 @@
         Palette.CommandExecuted -= OnExecuted;
         Palette.PlatformDetected -= Refresh;
         Palette.SequencePending -= OnSequencePending;
+        _override?.Dispose();
     }
 }

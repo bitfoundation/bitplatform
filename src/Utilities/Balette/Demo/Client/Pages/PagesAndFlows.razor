@@ -91,10 +91,16 @@
                     <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.ExecuteAsync(TodoId)'>Run</button></td>
                 </tr>
                 <tr>
-                    <td class="bb-table-key">Confirmation</td>
-                    <td><code>.Destructive("message")</code>, or <code>.Confirm("message")</code> without the danger colour</td>
-                    <td><em>Delete project</em> - the first <kbd>Enter</kbd> asks, the second runs, <kbd>Esc</kbd> or moving away disarms</td>
+                    <td class="bb-table-key">Destructive</td>
+                    <td><code>.Destructive("message")</code></td>
+                    <td><em>Delete project</em> - in the danger colour; the first <kbd>Enter</kbd> asks, the second runs, <kbd>Esc</kbd> or moving away disarms</td>
                     <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("delete project")'>Search</button></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Confirmation</td>
+                    <td><code>.Confirm("message")</code></td>
+                    <td><em>Sign out other devices</em> - the same second <kbd>Enter</kbd>, for a command that deserves a pause but is not dangerous</td>
+                    <td class="bb-table-action"><button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("sign out")'>Search</button></td>
                 </tr>
                 <tr>
                     <td class="bb-table-key">Toast</td>
@@ -583,6 +589,15 @@
                         : "Enter an https:// address.",
                     placeholder: "https://example.com/hooks/balette",
                     initialValue: "https://"))),
+
+            BaletteCmd.New("Sign out other devices").Group("This page").Keywords("logout", "sessions", "confirm")
+                .Description("Confirm without Destructive: a second Enter is needed, and the row keeps its usual colour.")
+                .Confirm("Sign out every other browser and device?")
+                .Handler(_ =>
+                {
+                    State.Record("Signed out other devices (not really)");
+                    return Task.FromResult(BaletteCommandResult.Toast("Other devices signed out"));
+                }),
 
             BaletteCmd.New("Add a to-do…").Group("This page").Keywords("task", "todo", "note")
                 .Description("A prompt that registers a command and answers Reset: back to the root, where the new to-do is listed ahead of every group.")

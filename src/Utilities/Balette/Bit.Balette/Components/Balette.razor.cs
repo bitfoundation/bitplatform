@@ -74,6 +74,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private TimeSpan _lastSearchCost;
 
     private List<BaletteCommand> _all = [];
+    // The snapshot the shortcut problems were last looked for in.
+    private List<BaletteCommand>? _warnedSnapshot;
     private int _declarativeVersion;
     private (int Registry, int Declarative, IEnumerable<BaletteCommand>? Parameter)? _snapshotKey;
     private Dictionary<string, BaletteCommand> _allById = new(StringComparer.Ordinal);
@@ -2508,10 +2510,18 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
         var shortcuts = GlobalShortcutStrings();
         var key = string.Join('\n', shortcuts);
-        if (key != _syncedShortcuts)
+        var claimedChanged = key != _syncedShortcuts;
+        if (claimedChanged)
         {
             _syncedShortcuts = key;
             InvokeInBackground("setCommandShortcuts", shortcuts);
+        }
+
+        // A new snapshot can bring a conflict without changing which keys are claimed: a second command registered on
+        // keys another one already has. Each problem is still reported once.
+        if (claimedChanged || !ReferenceEquals(_warnedSnapshot, _all))
+        {
+            _warnedSnapshot = _all;
             WarnAboutShortcutProblems();
         }
     }

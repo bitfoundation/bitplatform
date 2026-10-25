@@ -21,6 +21,10 @@
 
 <PaletteBar />
 
+@* Records stored the way they are written - accents, Arabic-script letters, digits - to try the folding below on, in the
+   lab and in the palette. They exist only while this page is on screen. *@
+<BaletteCommands Commands="FoldingSamples" />
+
 <div class="bb-demo bb-page-wide">
     <div class="bb-demo-bar"><span class="bb-demo-label">Search lab</span></div>
     <div class="bb-fields" role="toolbar" aria-label="Search lab">
@@ -150,7 +154,9 @@
     <p>
         <code>BaletteFuzzyMatcher.Normalize</code> (on by default) matches what people type against what is stored. Every
         mapping is one character to one, so the highlighting stays exact, and the operators follow the same rules. The
-        language names under <em>Preferences › Language</em> are written as their speakers write them:
+        language names under <em>Preferences › Language</em> are written as their speakers write them, and while this page is
+        open the palette also lists a few <em>Folding samples</em> - <em>Café Central</em>, <em>كتاب</em>,
+        <em>Order 12</em>… - stored exactly as shown:
     </p>
     <div class="bb-scroll">
         <table class="bb-table">
@@ -170,6 +176,7 @@
             </tbody>
         </table>
     </div>
+    <p class="bb-muted demo-small">Try puts the query in the lab at the top of the page; its <em>Open the palette with it</em> button runs it in the palette.</p>
     <ul class="bb-detail-list">
         <li>Latin letters lose their diacritics - unless the term types one itself, as in fzf: <code>café</code> means that
             letter, so a term with an accent is matched as written.</li>
@@ -356,11 +363,42 @@
 
     private static readonly (string Query, string Finds, string Why)[] FoldingExamples =
     [
-        ("turkce", "Türkçe", "Latin letters lose their diacritics."),
-        ("portugues brasil", "Português (Brasil)", "Two terms, both folded."),
-        ("فارسي", "فارسی", "Typed with the Arabic yeh (ي), stored with the Persian one (ی)."),
+        ("cafe", "Café Central", "Latin letters lose their diacritics."),
+        ("lodz", "Łódź office", "Letters with a stroke too, as in fzf."),
+        ("turkce", "Türkçe", "Under Preferences › Language, found from the root."),
+        ("sao paulo", "São Paulo office", "Two terms, both folded."),
+        ("علی", "علي", "Typed with the Persian yeh (ی), stored with the Arabic one (ي)."),
+        ("فارسي", "فارسی", "The other way round: typed with the Arabic yeh, stored with the Persian one."),
+        ("کتاب", "كتاب", "Typed with the Persian kaf (ک), stored with the Arabic one (ك)."),
+        ("اسم", "إسم", "Alef with hamza or madda is plain alef."),
         ("العربيه", "العربية", "Typed with heh (ه), stored with teh marbuta (ة)."),
+        ("۱۲", "Order 12", "Persian digits are ASCII digits."),
+        ("٣", "Step 3", "Arabic-Indic digits too."),
+        ("ｏｒｄｅｒ", "Order 12", "Fullwidth letters, which some input methods type, are ASCII."),
     ];
+
+    // Registered by this page (BaletteCommands above) so every row of the folding table has something to find.
+    private static readonly BaletteCommand[] FoldingSamples =
+    [
+        FoldingSample("sample:cafe", "Café Central", "Stored with é"),
+        FoldingSample("sample:lodz", "Łódź office", "Stored with Ł, ó and ź"),
+        FoldingSample("sample:sao-paulo", "São Paulo office", "Stored with ã"),
+        FoldingSample("sample:ali", "علي", "Stored with the Arabic yeh"),
+        FoldingSample("sample:ketab", "كتاب", "Stored with the Arabic kaf"),
+        FoldingSample("sample:esm", "إسم", "Stored with alef with hamza below"),
+        FoldingSample("sample:order-12", "Order 12", "Stored with ASCII digits"),
+        FoldingSample("sample:step-3", "Step 3", "Stored with an ASCII digit"),
+    ];
+
+    private static BaletteCommand FoldingSample(string id, string title, string subtitle) =>
+        BaletteCmd.New(title)
+            .Id(id)
+            .Subtitle(subtitle)
+            .Group("Folding samples")
+            .Priority(BaletteCommandPriority.Low)
+            .ExcludeFromHistory()
+            .Handler(_ => Task.FromResult(BaletteCommandResult.Toast($"Found “{title}”", keepOpen: true)))
+            .Build();
 
     private static readonly string[] Typos = ["settigns", "langauge", "shortcts"];
 

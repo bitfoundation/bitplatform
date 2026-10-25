@@ -162,6 +162,14 @@
                 </p>
                 <a href="performance" class="btn btn-outline">Large registry →</a>
             </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Options &amp; security</h3>
+                <p class="bb-card-desc">
+                    Every option with this site's value beside the default, the parameters one palette overrides, and what
+                    keeps text, links and history safe - with a refused <code>javascript:</code> link to try.
+                </p>
+                <a href="options" class="btn btn-outline">Options &amp; security →</a>
+            </section>
         </div>
     </section>
 
@@ -365,7 +373,7 @@
 </div>
 
 @code {
-    // Queries the hero opens the palette with: fuzzy word starts, a nested page, and the three modes.
+    // Queries the hero opens the palette with: fuzzy word starts, a nested page, and the four modes.
     private static readonly (string Query, string Label)[] TryQueries =
     [
         ("rc", "Fuzzy: R and C at two word starts"),
@@ -373,6 +381,7 @@
         (">", "Commands mode"),
         ("#105", "Issues mode: an issue by number"),
         ("@ada", "People mode: an async source"),
+        ("?", "Help mode: the Help group only"),
     ];
 
     protected override void OnInitialized() => State.Changed += Refresh;

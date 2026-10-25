@@ -1,6 +1,7 @@
 ﻿@page "/options"
 @using System.Globalization
 @inject BaletteOptions Options
+@inject IBaletteService Palette
 
 <PageTitle>Options and security · Balette</PageTitle>
 
@@ -14,6 +15,9 @@
 </div>
 
 <PaletteBar />
+
+@* A link the palette must refuse, listed while this page is on screen - see the security section. *@
+<BaletteCommands Commands="SecurityCommands" />
 
 <div class="bb-demo">
     <div class="bb-demo-bar"><span class="bb-demo-label">Search the options</span></div>
@@ -141,6 +145,18 @@
             <code>_content/Bit.Balette/bit-balette.js</code>, with no inline scripts and no <code>eval</code>:
             <code>script-src 'self'</code> is enough.</li>
     </ul>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">A link that is refused</span></div>
+        <p>
+            This page registers <em>Follow a javascript: link</em>, whose <code>Href</code> is
+            <code>@UnsafeHref</code> - the kind of value an API could hand a source. Its subtitle shows the address as plain
+            text, and choosing it runs nothing: the palette answers with its generic failure message and logs a warning,
+            naming the command and the scheme, to the browser's console.
+        </p>
+        <div class="bb-try">
+            <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("javascript link")'>Search "javascript link"</button>
+        </div>
+    </div>
     <pre class="bb-code">@SecurityExample</pre>
 </section>
 
@@ -149,6 +165,18 @@
 
     // A fresh instance: what an app that sets nothing gets.
     private static readonly BaletteOptions Defaults = new();
+
+    private const string UnsafeHref = "javascript:alert('This never runs')";
+
+    // Not in AllowedUrlSchemes, so choosing it is refused and logged rather than followed.
+    private static readonly BaletteCommand[] SecurityCommands =
+    [
+        BaletteCmd.New("Follow a javascript: link").Group("This page").Keywords("unsafe", "href", "xss", "security")
+            .Subtitle(UnsafeHref)
+            .Description("An Href whose scheme BaletteOptions.AllowedUrlSchemes does not allow: refused, logged and reported, never followed.")
+            .Href(UnsafeHref)
+            .Build(),
+    ];
 
     private static readonly string[] FinderQueries = ["history", "shortcut", "source", "^show", ""];
 

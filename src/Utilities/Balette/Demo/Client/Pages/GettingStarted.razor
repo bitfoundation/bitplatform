@@ -74,8 +74,9 @@
         symbols - <kbd>⌘</kbd> <kbd>K</kbd> on a Mac, <kbd>Ctrl</kbd> <kbd>K</kbd> elsewhere - and declares it with
         <code>aria-keyshortcuts</code>. <code>Label</code> is its text, <code>Query</code> opens the palette with a query
         already typed (a mode prefix included), <code>PageCommandId</code> opens it on a command's page,
-        <code>ShowShortcut="false"</code> drops the hint, and <code>ChildContent</code> replaces the whole content. Any
-        other attribute lands on the button. These three are live:
+        <code>ShowShortcut="false"</code> drops the hint, <code>IsMac</code> forces one platform's symbols instead of the
+        detected one, <code>Class</code> adds classes, and <code>ChildContent</code> replaces the whole content. Any other
+        attribute lands on the button. These three are live:
     </p>
     <pre class="bb-code">@TriggerExample</pre>
     <div class="bb-try">

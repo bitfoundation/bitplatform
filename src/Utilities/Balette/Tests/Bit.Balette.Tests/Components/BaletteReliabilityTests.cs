@@ -315,6 +315,23 @@ public class BaletteReliabilityTests : BunitContext
     }
 
     [TestMethod]
+    public async Task A_conflict_registered_after_the_palette_started_is_logged_once()
+    {
+        _service.Register(BaletteCmd.New("Save draft").Id("save-draft").Shortcut("Alt+Q"));
+        var cut = Render<Balette>();
+        Assert.IsEmpty(_log.Messages(LogLevel.Warning).Where(m => m.Contains("'alt+q'")));
+
+        // The keys claimed stay the same - only who claims them changes - and the conflict is still reported.
+        var page = await cut.InvokeAsync(() => _service.Register(BaletteCmd.New("Save and publish").Id("save-and-publish").Shortcut("Alt+Q")));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(_log.Messages(LogLevel.Warning).Where(m => m.Contains("'alt+q'") && m.Contains("'save-and-publish'"))));
+
+        // Once: registering it again reports nothing new.
+        await cut.InvokeAsync(page.Dispose);
+        await cut.InvokeAsync(() => _service.Register(BaletteCmd.New("Save and publish").Id("save-and-publish").Shortcut("Alt+Q")));
+        Assert.ContainsSingle(_log.Messages(LogLevel.Warning).Where(m => m.Contains("'alt+q'")));
+    }
+
+    [TestMethod]
     public void A_shortcut_the_toggle_takes_and_a_sequence_that_cannot_complete_are_logged()
     {
         _service.Register(

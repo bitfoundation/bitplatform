@@ -385,6 +385,32 @@ screenshots at 1280 and 390 px: busy, failure, retry, webhook, to-do, paging, fa
 German and Persian, the options finder. The only console output is the status source's deliberate warning, and no page
 overflows sideways.
 
+## Iteration 13 (2026-10-25) - a second pass over the demo pages
+
+Each page was read again against the public API, looking for what was described but could not be tried, and for
+descriptions the code contradicts.
+
+| Page | Changed |
+|---|---|
+| Home | An *Options & security* card, so every docs page has one; a `?` chip for the Help mode next to the other three. |
+| Getting started | `BaletteTrigger`'s `IsMac` and `Class`. |
+| Registering commands | `Palette.Register` and disposing its handle, live (*Say hello*), with `Unregister` pointed at; the counter's rows draw their icons with `Icon(RenderFragment)` - until now only `IconCss` was used; the priority levels' values. The claim that `BaletteItem` has a parameter for every member was wrong (no `Data`, `VisibleWhen`, `ExcludeFromHistory`, `Actions`, `ForceLoad`, lazy children or page sources, and only `Close`/`KeepOpen` results): a table of `BaletteItem`'s and `BaletteGroup`'s parameters and what needs the builder instead - in the README and the XML docs too. |
+| Nested pages & flows | `.Confirm(...)` without `Destructive`, live (*Sign out other devices*), on its own row next to the destructive one. |
+| Search & ranking | Page-scoped *Folding samples* (Café Central, Łódź, São Paulo, علي, كتاب, إسم, Order 12, Step 3), so every row of the README's folding table - Latin diacritics, both yeh and kaf, hamza, Persian and Arabic-Indic digits, fullwidth letters - can be tried in the lab and the palette. |
+| Keyboard & shortcuts | Conflicts, live: *Save draft* on `Alt+Q`, then *Save and publish* registered on the same keys wins until its handle is disposed, with the palette's warning in the console. |
+| Options & security | A `javascript:` link, live: listed with its address as text, refused when chosen, reported with the generic failure and logged. |
+| Localization & RTL | `ConfirmPrefix` is shown before any armed row, not only a destructive one. |
+
+**Found by the new conflict sample**: a conflict created after the palette started was never logged. The check ran only
+when the set of claimed keys changed, and a second command on keys another one already claims leaves that set as it was.
+It now also runs on every new registry snapshot (each problem is still reported once); a new test fails without the fix.
+
+**Verified**: `Bit.Balette.Tests` 831 passed (277 per framework). E2E in Chromium on WebAssembly: the page walk, global
+shortcuts, flows, search features, inline palettes and open/close suites passed (49, then 31 on the final build). Every new
+sample was driven by a Playwright script - register and dispose, the SVG icons, the second `Enter` of a `Confirm`, each
+folding row in the lab and the palette, `Alt+Q` before, during and after the override with its warning, the refused link
+with no alert and its warning - with no console error.
+
 ## Where it stands
 
 Ten iterations, the mission's limit, and an eleventh across browser engines. Every P0 and P1 finding is fixed and
