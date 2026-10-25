@@ -1,29 +1,96 @@
 ﻿using System.Net;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Bit.Blow.Demo.Client.Examples;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.Blow.Tests.Mcp;
 
 /// <summary>
-/// The demo's code viewer: every source a "View code" panel shows goes through the highlighter without its safety
-/// net, so a lexer bug fails here rather than shipping as an uncoloured snippet; and the colours tell apart what a
-/// reader has to - a member from a type, C# from text.
+/// The demo's code viewer: every source a "View code" panel or a page shows goes through the highlighter without
+/// its safety net, so a lexer bug fails here rather than shipping as an uncoloured snippet; and the colours tell
+/// apart what a reader has to - a member from a type, C# from text.
 /// </summary>
 [TestClass]
 public class DemoCodeHighlighterTests
 {
-    /// <summary>Every source the demo's "View code" panels show, keyed by route.</summary>
+    /// <summary>Every source the demo's "View code" panels show, keyed by route, and every component on its own.</summary>
     public static IEnumerable<object[]> Sources =>
-        DemoSources.ByRoute.Select(route => new object[] { $"/{route.Key}", route.Value });
+        DemoSources.ByRoute.Select(route => new object[] { $"/{route.Key}", route.Value })
+            .Concat(DemoSources.Components.Select(component => new object[] { component.Key, component.Value }));
+
+    /// <summary>
+    /// Every snippet a page shows in a CodeBlock of its own, in the language the block is given. In the page's source
+    /// it is one string literal, which the page's own test lexes as a single string: it is read here from the page's
+    /// field instead.
+    /// </summary>
+    public static IEnumerable<object[]> Snippets =>
+        from type in typeof(DemoSources).Assembly.GetTypes()
+        from route in type.GetCustomAttributes<RouteAttribute>()
+        let key = route.Template.TrimStart('/')
+        where DemoSources.ByRoute.ContainsKey(key)
+        from block in Regex.Matches(DemoSources.ByRoute[key], "<CodeBlock\\b[^>]*>")
+        let name = Regex.Match(block.Value, "\\bCode=\"@(\\w+)\"").Groups[1].Value
+        where name.Length > 0
+        let language = Regex.Match(block.Value, "\\bLanguage=\"(\\w+)\"")
+        select new object[]
+        {
+            $"/{key}: {name}",
+            (string)type.GetField(name, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)!.GetValue(null)!,
+            language.Success ? language.Groups[1].Value : "razor",
+        };
 
     [TestMethod]
     [DynamicData(nameof(Sources))]
     public void Every_demo_source_is_highlighted_without_a_lexer_error_and_keeps_its_text(string name, string code)
     {
-        var html = SyntaxHighlighter.HighlightOrThrow(code);
+        AssertHighlighted(name, code, "razor");
+    }
 
-        Assert.AreEqual(code.Replace("\r\n", "\n"), WebUtility.HtmlDecode(Regex.Replace(html, "<[^>]+>", "")), $"{name}: the highlighted text differs from the source");
-        Assert.Contains("class=\"tok-", html, $"{name} is not coloured");
+    [TestMethod]
+    [DynamicData(nameof(Snippets))]
+    public void Every_snippet_a_page_shows_is_highlighted_without_a_lexer_error_and_keeps_its_text(string name, string code, string language)
+    {
+        AssertHighlighted(name, code, language);
+    }
+
+    [TestMethod]
+    public void The_snippets_of_the_pages_are_found()
+    {
+        var names = Snippets.Select(snippet => (string)snippet[0]).ToArray();
+
+        // The landing page's hero and walkthrough, and Getting started's - its first flow, and the C# of the flow API.
+        CollectionAssert.IsSubsetOf(new[] { "/: HeroCode", "/: FlowApiCode", "/getting-started: FirstFlowCode", "/getting-started: FlowApiCode" }, names);
+        Assert.AreEqual("csharp", Snippets.Single(snippet => (string)snippet[0] == "/getting-started: FlowApiCode")[2]);
+    }
+
+    [TestMethod]
+    public void A_language_other_than_razor_or_csharp_throws_rather_than_being_read_as_razor()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => SyntaxHighlighter.Highlight("var x = a < b;", "cs"));
+        Assert.ThrowsExactly<ArgumentException>(() => SyntaxHighlighter.HighlightOrThrow("var x = a < b;", "c#"));
+        Assert.Contains("[key:var]", Tokens("var x = 1;", "CSharp"), "the language's name is matched regardless of case");
+    }
+
+    [TestMethod]
+    public void A_script_or_a_style_is_text_up_to_its_end_tag()
+    {
+        var tokens = Tokens("""
+            <style>
+                .icon { background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'></svg>"); }
+                @@media (max-width: 600px) { .icon { color: @Color; } }
+            </style>
+            <script>if (a<b) { go(); }</script>
+            <div>@Now</div>
+            """);
+
+        Assert.DoesNotContain("[tag:svg]", tokens, "a tag in a style's text is taken for an element");
+        Assert.Contains("@@media", tokens, "an escaped @ in a style is not text");
+        Assert.Contains("[raz:@]Color;", tokens, "an expression in a style is not C#");
+        Assert.Contains("</svg>\"); }", tokens);
+        Assert.Contains("[pun:</][tag:style][pun:>]", tokens, "the style's end tag is not a tag");
+        Assert.Contains("[pun:>]if (a<b) { go(); }[pun:</][tag:script][pun:>]", tokens, "a comparison in a script is taken for a tag");
+        Assert.Contains("[tag:div][pun:>][raz:@]Now[pun:</][tag:div]", tokens, "the markup after the script is not markup");
     }
 
     [TestMethod]
@@ -156,6 +223,15 @@ public class DemoCodeHighlighterTests
         Assert.Contains("[key:var] c = [num:1];", tokens, "the code after a hole across lines is not C#");
     }
 
+    // Highlights `code` without the safety net, and checks that every character of it is kept and some are coloured.
+    private static void AssertHighlighted(string name, string code, string language)
+    {
+        var html = SyntaxHighlighter.HighlightOrThrow(code, language);
+
+        Assert.AreEqual(code.Replace("\r\n", "\n"), WebUtility.HtmlDecode(Regex.Replace(html, "<[^>]+>", "")), $"{name}: the highlighted text differs from the source");
+        Assert.Contains("class=\"tok-", html, $"{name} is not coloured");
+    }
+
     /// <summary>
     /// The highlighted text with each token written as <c>[kind:text]</c>, adjacent tokens of one kind as one -
     /// the quotes and the text of a string are a single <c>[str:"node"]</c> - and the entities decoded.
@@ -164,7 +240,10 @@ public class DemoCodeHighlighterTests
     {
         var tokens = Regex.Replace(SyntaxHighlighter.HighlightOrThrow(code, language), "<span class=\"tok-(\\w+)\">([^<]*)</span>", "[$1:$2]");
         string merged;
-        while ((merged = Regex.Replace(tokens, @"\[(\w+):([^\]]*)\]\[\1:", "[$1:$2")) != tokens) tokens = merged;
+        while ((merged = Regex.Replace(tokens, @"\[(\w+):([^\]]*)\]\[\1:", "[$1:$2")) != tokens)
+        {
+            tokens = merged;
+        }
         return WebUtility.HtmlDecode(tokens);
     }
 }

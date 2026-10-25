@@ -77,12 +77,13 @@
 }
 
 /* A canvas fills its container, so the container is what has the height: as much of the window as
-   the header and the page's title block leave, so the whole flow - the
-   controls and the minimap at its bottom included - is on screen without scrolling; within bounds
-   that keep a flow usable on a phone and stop it towering over a reader on a tall monitor. */
+   the header and the page's title block leave, so the whole flow - the controls and the minimap at
+   its bottom included - is on screen without scrolling; within bounds that keep a flow usable on a
+   phone and stop it towering over a reader on a tall monitor. The "View code" toggle is under the
+   frame, so it takes none of that height. */
 .demo-canvas {
     position: relative;
-    height: clamp(24rem, calc(100vh - 25rem), 46rem);
+    height: clamp(24rem, calc(100vh - 21.75rem), 46rem);
 }
 
 /* On a phone a minimap's fixed size is a third of the canvas or more, and it sits on the very nodes it maps. The
@@ -223,7 +224,10 @@
     border-top: 1px solid var(--bb-border);
 }
 
-/* The getting-started page's first flow: the same frame as every other sample, a little shorter. */
-.demo-canvas.demo-canvas--short {
-    height: 22rem;
+/* A walkthrough step shown in two languages - markup, then C# - as two blocks in the one grid cell. */
+.home-code-stack {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    min-width: 0;
 }

@@ -49,10 +49,11 @@
         <EmbeddedResource Include="..\..\Bit.Bdnd\Scripts\bit-bdnd.ts" LogicalName="BdndSource/Library/Scripts/bit-bdnd.ts" />
 
         <!-- Every demo page - each one is a working drag-and-drop example - plus what they share and the
-             client half of the hosting. The MCP page describes this server rather than the library, and
-             the not-found page teaches nothing about dragging. -->
+             client half of the hosting. The MCP page describes this server rather than the library, the
+             not-found page teaches nothing about dragging, and the code viewer (CodeBlock and its
+             SyntaxHighlighter) is the site's chrome, not an example. -->
         <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
+                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor;..\Client\Examples\CodeBlock.razor;..\Client\Examples\SyntaxHighlighter.cs">
             <LogicalName>BdndSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 

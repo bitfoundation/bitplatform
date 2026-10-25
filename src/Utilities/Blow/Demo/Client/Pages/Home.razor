@@ -42,23 +42,7 @@
                     <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
                     <span class="bb-browser-url">Workflow.razor</span>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BlowCanvas</span> Nodes=<span class="s">"_nodes"</span> Edges=<span class="s">"_edges"</span> FitViewOnInit=<span class="s">"true"</span>&gt;
-    &lt;<span class="k">BlowBackground</span> /&gt;
-    &lt;<span class="k">BlowControls</span> /&gt;
-&lt;/<span class="k">BlowCanvas</span>&gt;
-
-<span class="k">private</span> List&lt;BlowNode&gt; _nodes =
-[
-    <span class="k">new</span>() { Id = <span class="s">"1"</span>, Type = <span class="s">"input"</span>, Label = <span class="s">"Request"</span>, Position = <span class="k">new</span>(0, 0) },
-    <span class="k">new</span>() { Id = <span class="s">"2"</span>, Label = <span class="s">"Review"</span>, Position = <span class="k">new</span>(-90, 110) },
-    <span class="k">new</span>() { Id = <span class="s">"3"</span>, Type = <span class="s">"output"</span>, Label = <span class="s">"Approve"</span>, Position = <span class="k">new</span>(0, 220) },
-];
-
-<span class="k">private</span> List&lt;BlowEdge&gt; _edges =
-[
-    <span class="k">new</span>() { Id = <span class="s">"e1-2"</span>, Source = <span class="s">"1"</span>, Target = <span class="s">"2"</span>, Animated = <span class="k">true</span> },
-    <span class="k">new</span>() { Id = <span class="s">"e2-3"</span>, Source = <span class="s">"2"</span>, Target = <span class="s">"3"</span>, Label = <span class="s">"ok"</span> },
-];</pre>
+                <CodeBlock Code="@HeroCode" />
                 <div class="home-hero-flow">
                     <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" AriaLabel="A live approval workflow">
                         <BlowBackground />
@@ -189,13 +173,7 @@
                     </p>
                     <a href="getting-started">Getting started →</a>
                 </div>
-                <pre class="bb-code">dotnet add package Bit.Blow
-
-<span class="c">&lt;!-- App.razor or index.html --&gt;</span>
-&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"_content/Bit.Blow/bit-blow.css"</span> /&gt;
-
-<span class="c">@@* _Imports.razor *@@</span>
-<span class="k">@@using</span> Bit.Blow</pre>
+                <CodeBlock Code="@InstallCode" />
             </div>
             <div class="bb-walkthrough-row">
                 <div class="bb-walkthrough-copy">
@@ -208,20 +186,7 @@
                     </p>
                     <a href="custom-nodes">Custom nodes →</a>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BlowCanvas</span> Nodes=<span class="s">"_nodes"</span> Edges=<span class="s">"_edges"</span>&gt;
-    &lt;<span class="k">NodeTemplate</span> Context=<span class="s">"node"</span>&gt;
-        @@if (node.Type == <span class="s">"color"</span>)
-        {
-            &lt;<span class="k">BlowHandle</span> Type=<span class="s">"BlowHandleType.Target"</span> Position=<span class="s">"BlowPosition.Left"</span> /&gt;
-            &lt;<span class="k">div</span>&gt;@@node.Label&lt;/<span class="k">div</span>&gt;
-            &lt;<span class="k">BlowHandle</span> Type=<span class="s">"BlowHandleType.Source"</span> Id=<span class="s">"a"</span> Position=<span class="s">"BlowPosition.Right"</span> /&gt;
-        }
-        <span class="k">else</span>
-        {
-            &lt;<span class="k">BlowDefaultNode</span> Node=<span class="s">"node"</span> /&gt;
-        }
-    &lt;/<span class="k">NodeTemplate</span>&gt;
-&lt;/<span class="k">BlowCanvas</span>&gt;</pre>
+                <CodeBlock Code="@CustomNodeCode" />
             </div>
             <div class="bb-walkthrough-row">
                 <div class="bb-walkthrough-copy">
@@ -234,12 +199,10 @@
                     </p>
                     <a href="examples/use-reactflow">Use the flow API →</a>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BlowCanvas</span> @@ref=<span class="s">"_flow"</span> Nodes=<span class="s">"_nodes"</span> Edges=<span class="s">"_edges"</span>
-            NodesChanged=<span class="s">"Save"</span> OnConnect=<span class="s">"OnConnect"</span> /&gt;
-
-_flow.FitView();
-<span class="k">await</span> _flow.SetCenterAsync(x: 400, y: 200, zoom: 1.5, durationMs: 300);
-BlowSnapshot snapshot = _flow.ToObject();   <span class="c">// nodes, edges and viewport</span></pre>
+                <div class="home-code-stack">
+                    <CodeBlock Code="@EventsCode" />
+                    <CodeBlock Language="csharp" Code="@FlowApiCode" />
+                </div>
             </div>
         </div>
     </section>
@@ -372,4 +335,66 @@ BlowSnapshot snapshot = _flow.ToObject();   <span class="c">// nodes, edges and 
         new() { Id = "e1-2", Source = "1", Target = "2", Animated = true },
         new() { Id = "e2-3", Source = "2", Target = "3", Label = "ok" },
     ];
+
+    // The snippets the page shows, coloured by CodeBlock.
+
+    private const string HeroCode = """
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground />
+            <BlowControls />
+        </BlowCanvas>
+
+        @code {
+            private List<BlowNode> _nodes =
+            [
+                new() { Id = "1", Type = "input", Label = "Request", Position = new(0, 0) },
+                new() { Id = "2", Label = "Review", Position = new(-90, 110) },
+                new() { Id = "3", Type = "output", Label = "Approve", Position = new(0, 220) },
+            ];
+
+            private List<BlowEdge> _edges =
+            [
+                new() { Id = "e1-2", Source = "1", Target = "2", Animated = true },
+                new() { Id = "e2-3", Source = "2", Target = "3", Label = "ok" },
+            ];
+        }
+        """;
+
+    private const string InstallCode = """
+        dotnet add package Bit.Blow
+
+        <!-- App.razor or index.html -->
+        <link rel="stylesheet" href="_content/Bit.Blow/bit-blow.css" />
+
+        @* _Imports.razor *@
+        @using Bit.Blow
+        """;
+
+    private const string CustomNodeCode = """
+        <BlowCanvas Nodes="_nodes" Edges="_edges">
+            <NodeTemplate Context="node">
+                @if (node.Type == "color")
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" />
+                    <div>@node.Label</div>
+                    <BlowHandle Type="BlowHandleType.Source" Id="a" Position="BlowPosition.Right" />
+                }
+                else
+                {
+                    <BlowDefaultNode Node="node" />
+                }
+            </NodeTemplate>
+        </BlowCanvas>
+        """;
+
+    private const string EventsCode = """
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges"
+                    NodesChanged="Save" OnConnect="OnConnect" />
+        """;
+
+    private const string FlowApiCode = """
+        _flow.FitView();
+        await _flow.SetCenterAsync(x: 400, y: 200, zoom: 1.5, durationMs: 300);
+        BlowSnapshot snapshot = _flow.ToObject();   // nodes, edges and viewport
+        """;
 }

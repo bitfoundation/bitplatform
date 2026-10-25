@@ -56,16 +56,7 @@
         edits the lists you hand it in place as the user works.
     </p>
     <div class="bb-demo blow-demo">
-        <div class="bb-demo-bar">
-            <span class="bb-demo-label">Live</span>
-            <button type="button" class="btn btn-secondary" @onclick="AddStep">Add step</button>
-        </div>
-        <div class="demo-canvas demo-canvas--short">
-            <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-                <BlowBackground />
-                <BlowControls />
-            </BlowCanvas>
-        </div>
+        <FirstFlow />
     </div>
 
     <CodeBlock Code="@FirstFlowCode" />
@@ -144,42 +135,8 @@
 
     private const string StylesheetCode = """<link rel="stylesheet" href="_content/Bit.Blow/bit-blow.css" />""";
 
-    private const string FirstFlowCode = """
-        <button @onclick="AddStep">Add step</button>
-
-        <div style="height: 400px">
-            <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-                <BlowBackground />
-                <BlowControls />
-            </BlowCanvas>
-        </div>
-
-        @code {
-            private BlowCanvas? _flow;
-            private int _next = 4;
-
-            private List<BlowNode> _nodes =
-            [
-                new BlowNode { Id = "1", Type = "input", Label = "Order placed", Position = new(0, 0) },
-                new BlowNode { Id = "2", Label = "Payment", Position = new(0, 100) },
-                new BlowNode { Id = "3", Type = "output", Label = "Shipped", Position = new(0, 200) },
-            ];
-
-            private List<BlowEdge> _edges =
-            [
-                new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
-                new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Animated = true },
-            ];
-
-            private async Task AddStep()
-            {
-                if (_flow is null) return;
-                var id = (_next++).ToString();
-                _flow.AddNodes(new BlowNode { Id = id, Label = $"Step {id}", Position = new(220, (_next - 5) * 70) });
-                await _flow.FitViewAsync(300);
-            }
-        }
-        """;
+    // The live sample, as written: the component the page renders for it.
+    private static readonly string FirstFlowCode = DemoSources.Components["FirstFlow.razor"];
 
     private const string FlowApiCode = """
         _flow.FitView();
@@ -193,28 +150,4 @@
         BlowSnapshot snapshot = _flow.ToObject();
         await _flow.RestoreAsync(snapshot);
         """;
-
-    private BlowCanvas? _flow;
-    private int _next = 4;
-
-    private List<BlowNode> _nodes =
-    [
-        new BlowNode { Id = "1", Type = "input", Label = "Order placed", Position = new(0, 0) },
-        new BlowNode { Id = "2", Label = "Payment", Position = new(0, 100) },
-        new BlowNode { Id = "3", Type = "output", Label = "Shipped", Position = new(0, 200) },
-    ];
-
-    private List<BlowEdge> _edges =
-    [
-        new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
-        new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Animated = true },
-    ];
-
-    private async Task AddStep()
-    {
-        if (_flow is null) return;
-        var id = (_next++).ToString();
-        _flow.AddNodes(new BlowNode { Id = id, Label = $"Step {id}", Position = new(220, (_next - 5) * 70) });
-        await _flow.FitViewAsync(300);
-    }
 }

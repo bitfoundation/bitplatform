@@ -35,19 +35,19 @@ public sealed class DemoPagesTests : BlowTest
                 $"{path} has {flows} flow(s) but never loaded bit-blow.js");
         }
 
-        // "View code" comes after the page's sample, outside its frame, and shows the page's own source, stripped of
-        // its routing directive and coloured.
+        // "View code" comes after the page's samples, outside their frames - a page with a toggle has a sample frame -
+        // and shows the page's own source, stripped of its routing directive and coloured.
         var toggle = page.Locator(".demo-code__toggle");
         if (await toggle.CountAsync() > 0)
         {
             Assert.IsTrue(await page.EvaluateAsync<bool>(
                 """
                 () => {
-                    const code = document.querySelector('.demo-code');
-                    return [...document.querySelectorAll('.bb-demo')].every(demo => {
+                    const demos = [...document.querySelectorAll('.bb-demo')];
+                    return demos.length > 0 && [...document.querySelectorAll('.demo-code')].every(code => demos.every(demo => {
                         const position = demo.compareDocumentPosition(code);
                         return (position & Node.DOCUMENT_POSITION_FOLLOWING) && !(position & Node.DOCUMENT_POSITION_CONTAINED_BY);
-                    });
+                    }));
                 }
                 """),
                 $"{path}: the code toggle is not under the sample");
@@ -161,7 +161,10 @@ public sealed class DemoPagesTests : BlowTest
         Assert.IsGreaterThan(0, await code.Locator(".tok-key", new() { HasText = "private" }).CountAsync(), "the keywords are not coloured");
         Assert.IsGreaterThan(0, await code.Locator(".tok-str").CountAsync(), "the strings are not coloured");
 
+        // Closing hides the source rather than dropping it, so that opening the panel again does not lex the page again.
         await page.GetByRole(AriaRole.Button, new() { Name = "Hide code" }).ClickAsync();
-        await Expect(code).ToHaveCountAsync(0);
+        await Expect(code).ToBeHiddenAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "View code" }).ClickAsync();
+        await Expect(code).ToBeVisibleAsync();
     }
 }

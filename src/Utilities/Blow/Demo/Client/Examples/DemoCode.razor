@@ -15,16 +15,14 @@
         @(_open ? "Hide code" : "View code")
     </button>
 
-    @if (_open)
+    @if (_source is not null)
     {
-        @if (_source is null)
-        {
-            <div class="bb-empty demo-code__empty">Source for this page is not available.</div>
-        }
-        else
-        {
-            <CodeBlock Code="@_source" Class="demo-code__pre" />
-        }
+        @* Kept once shown, and hidden while the panel is closed, so that opening it again does not lex the page again. *@
+        <CodeBlock Code="@_source" Class="demo-code__pre" hidden="@(!_open)" />
+    }
+    else if (_open)
+    {
+        <div class="bb-empty demo-code__empty">Source for this page is not available.</div>
     }
 </div>
 
