@@ -3,7 +3,6 @@
         "ms-dotnettools.csharp",
         "Anthropic.claude-code",
         "EditorConfig.EditorConfig",
-        "ms-azuretools.vscode-docker",
         "microsoft-aspire.aspire-vscode",
         "ms-vscode-remote.remote-containers",
         "ms-dotnettools.blazorwasm-companion",
