@@ -946,6 +946,7 @@
                         "src/Tests/Features/Identity/ExternalSignInHealthChecksTests.cs",
                         "src/Tests/Features/Identity/GoogleRecaptchaHealthCheckTests.cs",
                         "src/Tests/Features/Attachments/UserProfilePictureWebPTests.cs",
+                        "src/Tests/Features/Attachments/ImageEditorUITests.cs",
                         "src/Tests/Features/WellKnown/AppleAppSiteAssociationTests.cs",
                         "src/Tests/Features/Theme/ThemeTogglePersistenceUITests.cs",
                         "src/Tests/Features/TimeZone/TimeZoneSelectionUITests.cs",
