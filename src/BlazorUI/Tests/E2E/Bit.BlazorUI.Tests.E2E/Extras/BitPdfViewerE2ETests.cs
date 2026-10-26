@@ -721,8 +721,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
         var rows = Page.Locator("#pdv-main .bit-pdv-row");
         await Expect(rows).ToHaveCountAsync(2);
         await Expect(rows.First.Locator("[data-page]")).ToHaveCountAsync(2);
-        var (s1, s2) = await BoxesAsync();
-        Assert.IsTrue(s2.X > s1.X + s1.Width - 1 && Math.Abs(s2.Y - s1.Y) < 2, "an odd spread does not put pages 1 and 2 side by side");
+        await Page.WaitForFunctionAsync("() => { const a = document.querySelector('#pdv-main [data-page=\"1\"]').getBoundingClientRect(); const b = document.querySelector('#pdv-main [data-page=\"2\"]').getBoundingClientRect(); return b.left > a.right - 1 && Math.abs(b.top - a.top) < 2; }");
 
         await spread.SelectOptionAsync("Even");
         await Expect(rows.First.Locator("[data-page]")).ToHaveCountAsync(1);
