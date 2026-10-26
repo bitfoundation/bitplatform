@@ -8,7 +8,8 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(here, "dist");
 const wwwroot = path.resolve(here, "../Bit.BevTools/wwwroot");
-const own = ["manifest.json", "devtools.html", "devtools.js", "panel.html", "panel.js", "devtools-source.js"];
+const own = ["manifest.json", "devtools.html", "devtools.js", "panel.html", "panel.js", "devtools-source.js",
+    "icon-16.png", "icon-32.png", "icon-48.png", "icon-128.png"];
 const companion = ["bit-bevtools-companion.js", "bit-bevtools-companion.css"];
 
 for (const file of companion) {

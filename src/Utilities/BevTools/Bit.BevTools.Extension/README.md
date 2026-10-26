@@ -38,6 +38,7 @@ A page whose BevTools is off exposes no hub, and the panel says so.
 | `devtools.html` / `devtools.js` | Creates the **Blazor** panel |
 | `panel.html` / `panel.js` | Hosts the companion with the DevTools source; starts over after each navigation |
 | `devtools-source.js` | The companion's source over `inspectedWindow.eval`, with a page-side mailbox for asynchronous answers |
+| `icon-16.png` … `icon-128.png` | The extension's icon (the BevTools mark), as the browser's extension pages and stores show it |
 | `build.mjs` | Copies these files and the companion bundle into `dist/` |
 
 Tests: `Tests/bit-bevtools-js/extension.test.js` (requests, answers, picking, the Elements selection, and that request
