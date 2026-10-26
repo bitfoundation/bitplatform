@@ -14,7 +14,7 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install the package</h3>
     <p>Bit.Bonboarding targets .NET 8, .NET 9 and .NET 10, and depends on nothing but Blazor itself.</p>
-    <pre class="bb-code">dotnet add package Bit.Bonboarding</pre>
+    <pre class="bb-code" tabindex="0">dotnet add package Bit.Bonboarding</pre>
 </section>
 
 <section class="bb-card">
@@ -23,7 +23,7 @@
         Everything is registered as scoped - per circuit on Blazor Server, per application on WebAssembly - which
         matches the lifetime of a user's onboarding state. Global defaults are set in the same call.
     </p>
-    <pre class="bb-code"><span class="k">using</span> Bit.Bonboarding;
+    <pre class="bb-code" tabindex="0"><span class="k">using</span> Bit.Bonboarding;
 
 builder.Services.AddBitBonboardingServices(options =>
 {
@@ -46,7 +46,7 @@ builder.Services.AddBitBonboardingServices(options =>
         so your overrides of its <code>--bit-bonboarding-*</code> variables win. There is no script tag to add: the
         library imports its own JavaScript module.
     </p>
-    <pre class="bb-code">&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"@@Assets["_content/Bit.Bonboarding/bit-bonboarding.css"]"</span> /&gt;</pre>
+    <pre class="bb-code" tabindex="0">&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"@@Assets["_content/Bit.Bonboarding/bit-bonboarding.css"]"</span> /&gt;</pre>
 </section>
 
 <section class="bb-card">
@@ -56,7 +56,7 @@ builder.Services.AddBitBonboardingServices(options =>
         navigation - the main layout, or beside the router as this site does - because a host on a page would be
         disposed by the navigation a multi-page tour performs. Then import the namespace in <code>_Imports.razor</code>.
     </p>
-    <pre class="bb-code"><span class="c">@@* MainLayout.razor *@@</span>
+    <pre class="bb-code" tabindex="0"><span class="c">@@* MainLayout.razor *@@</span>
 &lt;<span class="k">div</span> class=<span class="s">"page"</span>&gt;
     @@Body
 &lt;/<span class="k">div</span>&gt;
@@ -80,7 +80,7 @@ builder.Services.AddBitBonboardingServices(options =>
         <button type="button" class="btn btn-primary" data-bonboarding-anchor="probe" @onclick="RunAsync">Test the setup</button>
     </div>
 
-    <pre class="bb-code">@ProbeExample</pre>
+    <pre class="bb-code" tabindex="0">@ProbeExample</pre>
 
     <div class="bb-note">
         If the card appears but sits in the wrong place, the stylesheet is not loaded. If nothing appears at all,
@@ -150,7 +150,7 @@ builder.Services.AddBitBonboardingServices(options =>
         </table>
     </div>
 
-    <pre class="bb-code">@TargetingExample</pre>
+    <pre class="bb-code" tabindex="0">@TargetingExample</pre>
 </section>
 
 <section class="bb-card">
@@ -160,7 +160,7 @@ builder.Services.AddBitBonboardingServices(options =>
         hydration - in two different scopes. Start tours from <code>OnAfterRenderAsync(firstRender: true)</code>, from a
         user action, or with <code>AutoStart</code>, which already does the right thing.
     </p>
-    <pre class="bb-code">&lt;<span class="k">BonboardingTour</span> Id=<span class="s">"welcome"</span> AutoStart=<span class="s">"BonboardingAutoStart.Once"</span>&gt;
+    <pre class="bb-code" tabindex="0">&lt;<span class="k">BonboardingTour</span> Id=<span class="s">"welcome"</span> AutoStart=<span class="s">"BonboardingAutoStart.Once"</span>&gt;
     ...
 &lt;/<span class="k">BonboardingTour</span>&gt;
 
@@ -187,7 +187,7 @@ builder.Services.AddBitBonboardingServices(options =>
         startup. A ready-made list of tours with Start, Resume and Replay buttons is on the
         <a href="guidance">guidance page</a>.
     </p>
-    <pre class="bb-code">@ReplayExample</pre>
+    <pre class="bb-code" tabindex="0">@ReplayExample</pre>
 </section>
 
 <section class="bb-card">
