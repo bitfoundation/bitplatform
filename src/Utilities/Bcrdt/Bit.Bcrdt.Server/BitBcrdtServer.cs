@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -85,6 +86,24 @@ public static class BitBcrdtServer
         services.TryAddSingleton(provider => new BcrdtDocumentHost(
             options?.Invoke(provider),
             provider.GetService<ILogger<BcrdtDocumentHost>>()));
+        return services;
+    }
+
+    /// <summary>
+    /// Registers a <see cref="BcrdtPresenceCircuitHandler"/>, so that a Blazor Server user whose browser connection
+    /// drops stops being listed as present at once, rather than when their circuit expires.
+    /// </summary>
+    /// <remarks>
+    /// Scoped, as Blazor expects every <see cref="CircuitHandler"/> to be: each circuit resolves its own, beside its
+    /// own <see cref="IBcrdtCollaborationService"/>. Registering it more than once adds it once.
+    /// </remarks>
+    /// <param name="services">The container to register with.</param>
+    /// <returns>The container, for chaining.</returns>
+    public static IServiceCollection AddBitBcrdtCircuitPresence(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, BcrdtPresenceCircuitHandler>());
         return services;
     }
 }

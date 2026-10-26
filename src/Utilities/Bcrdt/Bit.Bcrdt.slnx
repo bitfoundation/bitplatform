@@ -11,6 +11,23 @@
     <Project Path="Demo/Samples/Bit.Bcrdt.Demo.Samples.csproj" />
     <Project Path="Demo/Server/Bit.Bcrdt.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="Samples/Core/Bit.Bcrdt.Samples.Core.csproj" />
+    <Project Path="Samples/Maui/Bit.Bcrdt.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Samples/Auto/">
+    <Project Path="Samples/Auto/Bit.Bcrdt.Samples.Auto.Client/Bit.Bcrdt.Samples.Auto.Client.csproj" />
+    <Project Path="Samples/Auto/Bit.Bcrdt.Samples.Auto/Bit.Bcrdt.Samples.Auto.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Server/">
+    <Project Path="Samples/Server/Bit.Bcrdt.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Wasm/">
+    <Project Path="Samples/Wasm/Bit.Bcrdt.Samples.Wasm.Client/Bit.Bcrdt.Samples.Wasm.Client.csproj" />
+    <Project Path="Samples/Wasm/Bit.Bcrdt.Samples.Wasm/Bit.Bcrdt.Samples.Wasm.csproj" />
+  </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Bcrdt.Tests/Bit.Bcrdt.Tests.csproj" />
     <Project Path="Tests/Bit.Bcrdt.Tests.Mcp/Bit.Bcrdt.Tests.Mcp.csproj" />

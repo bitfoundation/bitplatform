@@ -318,6 +318,26 @@
     <Project Path="Utilities/Bcrdt/Demo/Client/Bit.Bcrdt.Demo.Client.csproj" />
     <Project Path="Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bcrdt/Samples/" />
+  <Folder Name="/Utilities/Bcrdt/Samples/Auto/">
+    <Project Path="Utilities/Bcrdt/Samples/Auto/Bit.Bcrdt.Samples.Auto/Bit.Bcrdt.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bcrdt/Samples/Auto/Bit.Bcrdt.Samples.Auto.Client/Bit.Bcrdt.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bcrdt/Samples/Core/">
+    <Project Path="Utilities/Bcrdt/Samples/Core/Bit.Bcrdt.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bcrdt/Samples/Maui/">
+    <Project Path="Utilities/Bcrdt/Samples/Maui/Bit.Bcrdt.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/Bcrdt/Samples/Server/">
+    <Project Path="Utilities/Bcrdt/Samples/Server/Bit.Bcrdt.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bcrdt/Samples/Wasm/">
+    <Project Path="Utilities/Bcrdt/Samples/Wasm/Bit.Bcrdt.Samples.Wasm/Bit.Bcrdt.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bcrdt/Samples/Wasm/Bit.Bcrdt.Samples.Wasm.Client/Bit.Bcrdt.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bcrdt/Tests/">
     <Project Path="Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests/Bit.Bcrdt.Tests.csproj" />
     <Project Path="Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.Mcp/Bit.Bcrdt.Tests.Mcp.csproj" />

@@ -26,5 +26,7 @@ app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}");
 - The hub scales out with a SignalR backplane. The WebSocket relay's rooms are process-local: use sticky sessions or
   a broker behind a load balancer. Every WebSocket client gets its own bounded outbound queue, so one slow client
   cannot hold up the others.
+- In Blazor Server, `builder.Services.AddBitBcrdtCircuitPresence()` withdraws a user from everybody's presence list
+  as soon as their browser connection drops, rather than when their circuit expires minutes later.
 
 The full guide is in the [Bcrdt README](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bcrdt).

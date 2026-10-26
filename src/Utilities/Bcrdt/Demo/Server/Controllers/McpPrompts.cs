@@ -110,7 +110,7 @@ public static class McpPrompts
                a nested text created on two replicas at once keeps one of the two, a set add of an element already present
                is a no-op. The fix is a different data type - a nested `BcrdtText` created once - not a retry.
             3. Call `SearchBcrdt` with the symptom, and read the guide section it points to - "Offline and reconnection",
-               "Presence" (a Blazor Server circuit keeps publishing until its CircuitHandler suspends it), "Binding to
+               "Presence" (a Blazor Server circuit keeps publishing until AddBitBcrdtCircuitPresence's CircuitHandler suspends it), "Binding to
                inputs" (writing an input's whole value replaces the text), "Undo" (only origins in TrackedOrigins are
                captured), "Writing a transport" (a partial message is rejected for good).
             4. For an update or message that is rejected or looks wrong, decode it with `InspectBcrdtUpdate`: it reports
