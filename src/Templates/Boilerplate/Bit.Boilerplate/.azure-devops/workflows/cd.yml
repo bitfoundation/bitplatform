@@ -111,7 +111,7 @@ jobs:
     displayName: 'Create the database migrations bundle'
     inputs:
       targetType: 'inline'
-      script: 'dnx dotnet-ef@10.0.14 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose'
+      script: 'dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload migrations bundle

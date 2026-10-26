@@ -342,7 +342,7 @@ Nothing in this project applies them to a deployed database, so apply them befor
 A migrations bundle is one executable that holds the migrations. Build it in the `Boilerplate.Server.Api` project directory, with the `-r` value that matches the machine it will run on:
 
 ```bash
-dnx dotnet-ef@10.0.14 -- migrations bundle --self-contained -r linux-x64
+dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations bundle --self-contained -r linux-x64
 ```
 
 Copy the `efbundle` file it creates into the deployed app's folder, where it finds the app's settings and certificate, and run it there before the new version starts. When the app's settings don't hold the production connection string, give it to the bundle in the `ConnectionStrings__<name>` environment variable the app reads it from.

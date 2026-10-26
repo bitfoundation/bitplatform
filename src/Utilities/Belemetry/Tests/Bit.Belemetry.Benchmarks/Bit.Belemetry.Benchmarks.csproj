@@ -20,7 +20,7 @@
     <ItemGroup>
         <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
         <!-- AddLogging: the recording benchmarks go through a real logger factory, as an app does. -->
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="11.0.0-rc.2.26504.105" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="11.0.0-rc.3.26522.148" />
     </ItemGroup>
 
     <ItemGroup>

@@ -37,7 +37,7 @@
         "sdkVersion": {
             "type": "generated",
             "generator": "switch",
-            "replaces": "\"version\": \"11.0.100-rc.2.26504.105\"",
+            "replaces": "\"version\": \"11.0.100-rc.3.26522.148\"",
             "parameters": {
                 "evaluator": "C++",
                 "datatype": "string",
@@ -48,7 +48,7 @@
                     },
                     {
                         "condition": "",
-                        "value": "\"version\": \"11.0.100-rc.2.26504.105\""
+                        "value": "\"version\": \"11.0.100-rc.3.26522.148\""
                     }
                 ]
             }
@@ -75,7 +75,7 @@
         "devContainerImage": {
             "type": "generated",
             "generator": "switch",
-            "replaces": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.2",
+            "replaces": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3",
             "parameters": {
                 "evaluator": "C++",
                 "datatype": "string",
@@ -86,7 +86,7 @@
                     },
                     {
                         "condition": "",
-                        "value": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.2"
+                        "value": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3"
                     }
                 ]
             }

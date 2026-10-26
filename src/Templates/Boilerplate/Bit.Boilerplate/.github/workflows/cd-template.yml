@@ -83,7 +83,7 @@ jobs:
 #if (api == "Integrated" && database != "Sqlite" && database != "Other")
 
       - name: Create the database migrations bundle
-        run: dnx dotnet-ef@10.0.14 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose
+        run: dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose
 
       - name: Upload migrations bundle
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -196,7 +196,7 @@ jobs:
 #if (database != "Sqlite" && database != "Other")
 
       - name: Create the database migrations bundle
-        run: dnx dotnet-ef@10.0.14 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose
+        run: dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose
 
       - name: Upload migrations bundle
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

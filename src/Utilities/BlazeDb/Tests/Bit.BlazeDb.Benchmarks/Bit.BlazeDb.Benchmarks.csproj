@@ -20,7 +20,7 @@
     <ItemGroup>
         <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
         <!-- The baseline every number is measured against: native SQLite, in memory, with prepared statements. -->
-        <PackageReference Include="Microsoft.Data.Sqlite" Version="11.0.0-rc.2.26504.105" />
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="11.0.0-rc.3.26522.148" />
     </ItemGroup>
 
     <ItemGroup>

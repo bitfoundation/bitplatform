@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-rc.2.26504.105" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-rc.3.26522.148" />
     <ProjectReference Include="..\Bit.Bmage.Samples.Wasm.Client\Bit.Bmage.Samples.Wasm.Client.csproj" />
     <ProjectReference Include="..\..\Core\Bit.Bmage.Samples.Core.csproj" />
   </ItemGroup>
