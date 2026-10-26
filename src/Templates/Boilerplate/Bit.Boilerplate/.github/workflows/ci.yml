@@ -42,7 +42,7 @@ jobs:
     - name: Install the bit CLI
       shell: pwsh
       run: |
-        dotnet tool install Bit.Cli --version 11.0.0-pre-11 --tool-path "$env:RUNNER_TEMP/bit-cli"
+        dotnet tool install Bit.Cli --version 11.0.0-pre-12 --tool-path "$env:RUNNER_TEMP/bit-cli"
         Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
     - name: Set up and build with bit setup
@@ -67,7 +67,7 @@ jobs:
     - name: Install the bit CLI
       shell: pwsh
       run: |
-        dotnet tool install Bit.Cli --version 11.0.0-pre-11 --tool-path "$env:RUNNER_TEMP/bit-cli"
+        dotnet tool install Bit.Cli --version 11.0.0-pre-12 --tool-path "$env:RUNNER_TEMP/bit-cli"
         Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
     - name: Prepare this machine and build with bit setup
