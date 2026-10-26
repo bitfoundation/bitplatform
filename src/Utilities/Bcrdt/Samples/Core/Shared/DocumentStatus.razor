@@ -15,7 +15,7 @@
         <span class="muted">@Document.ConnectionStatus</span>
         @* A deliberate disconnect. The document stays editable, and the handshake on reconnect sends each side whatever
            the other wrote meanwhile. *@
-        <button type="button" @onclick="ToggleAsync">@(_online ? "Go offline" : "Go online")</button>
+        <button type="button" @onclick="ToggleAsync">@(IsOffline ? "Go online" : "Go offline")</button>
     }
 
     @if (Document.IsReadOnly)
@@ -27,7 +27,9 @@
 @code {
     [CascadingParameter] public BcrdtCollaborativeDocument Document { get; set; } = default!;
 
-    private bool _online = true;
+    // Read off the connection rather than remembered from the last click: one the hub refused, or that gave up, offers
+    // to reconnect, and one still retrying offers to stop.
+    private bool IsOffline => Document.ConnectionStatus is BcrdtConnectionStatus.Disconnected or BcrdtConnectionStatus.Faulted;
 
     // Re-render, coalesced, whenever the connection changes status. BcrdtPresenceView follows presence by itself.
     protected override void OnInitialized()
@@ -37,8 +39,7 @@
 
     private async Task ToggleAsync()
     {
-        _online = !_online;
-        if (_online) await Document.ConnectAsync();
+        if (IsOffline) await Document.ConnectAsync();
         else await Document.DisconnectAsync();
     }
 }

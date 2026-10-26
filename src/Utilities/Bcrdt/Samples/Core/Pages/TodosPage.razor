@@ -15,58 +15,73 @@
     <ChildContent>
         @{
             BcrdtArray items = document.Array("items");
+            List<BcrdtMap> list = Ordered(items);
         }
 
         <DocumentStatus />
 
-        <div class="row">
-            <input type="text" aria-label="New item" placeholder="New item…" @bind="_draft" @bind:event="oninput"
-                   @onkeydown="args => OnDraftKey(items, args)" />
-            <button type="button" @onclick="() => Add(items)">Add</button>
-        </div>
+        @* A disabled fieldset disables every control in it: the server drops what a read-only replica writes. *@
+        <fieldset class="bare" disabled="@document.IsReadOnly">
+            <div class="row">
+                <input type="text" aria-label="New item" placeholder="New item…" @bind="_draft" @bind:event="oninput"
+                       @onkeydown="args => OnDraftKey(items, args)" />
+                <button type="button" @onclick="() => Add(items)">Add</button>
+            </div>
 
-        <ul class="todos">
-            @for (int index = 0; index < items.Count; index++)
-            {
-                int position = index;
-                if (items.GetMap(position) is not { } item) continue;
+            <ul class="todos">
+                @for (int index = 0; index < list.Count; index++)
+                {
+                    BcrdtMap item = list[index];
 
-                @* Keyed by the item itself: remote insertions and deletions shift positions, and a row reused for a
-                   different item would send a half-typed title to the wrong one. *@
-                <li @key="item" class="row">
-                    <input type="checkbox" aria-label="Done"
-                           checked="@(item.Get<bool>("done"))"
-                           @onchange="@(args => item.Set("done", args.Value is true))" />
+                    @* Keyed by the item itself: remote insertions and deletions shift positions, and a row reused for a
+                       different item would send a half-typed title to the wrong one. *@
+                    <li @key="item" class="row">
+                        <input type="checkbox" aria-label="Done"
+                               checked="@(item.Get<bool>("done"))"
+                               @onchange="@(args => item.Set("done", args.Value is true))" />
 
-                    @* Sent when the field loses focus or Enter is pressed: a map key is last-writer-wins. *@
-                    <input type="text" aria-label="Title"
-                           value="@(item.Get<string>("title"))"
-                           @onchange="@(args => item.Set("title", args.Value as string ?? string.Empty))" />
+                        @* Sent when the field loses focus or Enter is pressed: a map key is last-writer-wins. *@
+                        <input type="text" aria-label="Title"
+                               value="@(item.Get<string>("title"))"
+                               @onchange="@(args => item.Set("title", args.Value as string ?? string.Empty))" />
 
-                    <button type="button" disabled="@(position == 0)" @onclick="() => items.Move(position, position - 1)">↑</button>
-                    @* Move's destination is a position in the list before the element is lifted out, so one step down is + 2. *@
-                    <button type="button" disabled="@(position == items.Count - 1)" @onclick="() => items.Move(position, position + 2)">↓</button>
-                    <button type="button" aria-label="Delete" @onclick="() => items.Delete(position)">✕</button>
-                </li>
-            }
-        </ul>
+                        @* Each button acts on the item, never on a position read while rendering: by the time the
+                           click arrives, a peer may have added, moved or deleted items above it. *@
+                        <button type="button" disabled="@(index == 0)" @onclick="() => Move(document, items, item, -1)">↑</button>
+                        <button type="button" disabled="@(index == list.Count - 1)" @onclick="() => Move(document, items, item, 1)">↓</button>
+                        <button type="button" aria-label="Delete" @onclick="() => Delete(items, item)">✕</button>
+                    </li>
+                }
+            </ul>
+        </fieldset>
 
-        <p class="muted">@items.Count items, @Done(items) done</p>
+        <p class="muted">@list.Count items, @Done(list) done</p>
     </ChildContent>
 </BcrdtCollaborationScope>
 
 @code {
     private string _draft = "";
 
+    // Where an item stands is a key of its own, "order", rather than its place in the array. Moving an item writes
+    // that one key, so a peer's edit of its title or done flag at the same time is kept, and two people moving it at
+    // once leave it in one place or the other. BcrdtArray.Move deletes the item and inserts a copy instead, which
+    // would lose the first and duplicate it in the second. Items that share an order - two added at once - keep the
+    // array's order, which every replica agrees on.
+    private static List<BcrdtMap> Ordered(BcrdtArray items) =>
+        [.. items.OfType<BcrdtMap>().OrderBy(Order)];
+
+    private static double Order(BcrdtMap item) => item.Get<double>("order");
+
     private void Add(BcrdtArray items)
     {
         if (string.IsNullOrWhiteSpace(_draft)) return;
 
         // A detached map is filled in before it is inserted, and its writes replay when it joins the document - so the
-        // element and both of its keys reach the others as one update, not three.
+        // element and all of its keys reach the others as one update.
         var item = new BcrdtMap();
         item.Set("title", _draft.Trim());
         item.Set("done", false);
+        item.Set("order", Ordered(items) is [.., var last] ? Order(last) + 1 : 0d);
         items.Push(item);
 
         _draft = "";
@@ -78,6 +93,49 @@
         if (args.Key is "Enter" && !args.IsComposing) Add(items);
     }
 
-    private static int Done(BcrdtArray items) =>
-        Enumerable.Range(0, items.Count).Count(index => items.GetMap(index)?.Get<bool>("done") == true);
+    private static void Move(BcrdtCollaborativeDocument document, BcrdtArray items, BcrdtMap item, int step)
+    {
+        // The list as it stands now, not as it was rendered.
+        List<BcrdtMap> list = Ordered(items);
+        int from = list.IndexOf(item);
+        int to = from + step;
+        if (from < 0 || to < 0 || to >= list.Count) return;
+
+        list.RemoveAt(from);
+        list.Insert(to, item);
+
+        // Halfway between its new neighbours; at either end, half a step past the only one it has.
+        double before = to > 0 ? Order(list[to - 1]) : Order(list[to + 1]) - 1;
+        double after = to < list.Count - 1 ? Order(list[to + 1]) : Order(list[to - 1]) + 1;
+        double order = (before + after) / 2;
+
+        if (before < order && order < after)
+        {
+            item.Set("order", order);
+            return;
+        }
+
+        // No room between them - the neighbours share an order, or halving has run out of precision - so the whole
+        // list is numbered afresh, as one update.
+        using BcrdtCollaborativeTransaction transaction = document.BeginTransaction();
+        for (int index = 0; index < list.Count; index++)
+        {
+            if (Order(list[index]) != index) list[index].Set("order", (double)index);
+        }
+    }
+
+    private static void Delete(BcrdtArray items, BcrdtMap item)
+    {
+        // Found by identity when the click arrives: gone already if a peer deleted it first.
+        for (int index = 0; index < items.Count; index++)
+        {
+            if (ReferenceEquals(items.GetMap(index), item))
+            {
+                items.Delete(index);
+                return;
+            }
+        }
+    }
+
+    private static int Done(List<BcrdtMap> list) => list.Count(item => item.Get<bool>("done"));
 }

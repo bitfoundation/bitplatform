@@ -272,10 +272,10 @@ document.Map.Set(<span class="s">"description"</span>, <span class="s">"..."</sp
     </p>
     <p class="bb-card-desc">
         On Blazor Server a circuit outlives its browser tab for a while, and keeps publishing presence until it goes. To
-        withdraw a user the moment the connection drops, call <code>document.Presence.Suspend()</code> from a
-        <code>CircuitHandler</code>'s <code>OnConnectionDownAsync</code> and <code>Resume()</code> from
-        <code>OnConnectionUpAsync</code>. The engine needs no JavaScript at all, so it runs as well in a background
-        service or a console app.
+        withdraw a user the moment the connection drops, call <code>builder.Services.AddBitBcrdtCircuitPresence()</code>
+        from <code>Bit.Bcrdt.Server</code>: its <code>CircuitHandler</code> calls <code>document.Presence.Suspend()</code>
+        on every open document when the connection goes down, and <code>Resume()</code> when it comes back. The engine
+        needs no JavaScript at all, so it runs as well in a background service or a console app.
     </p>
 </div>
 

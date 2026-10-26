@@ -1,4 +1,5 @@
 ﻿using Bit.Bcrdt.Samples.Core;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -28,17 +29,23 @@ public static class IServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Connects documents through the <c>BcrdtHub</c> of the server that served the page. See <see cref="SamplesRelay"/>.
+    /// Connects documents through the <c>BcrdtHub</c> of the web host. See <see cref="SamplesRelay"/>.
     /// </summary>
     /// <remarks>
     /// Registered ahead of the transports <see cref="BcrdtCollaborationBuilder"/> registers itself, and per scope,
-    /// because it reads the page's address from the scope's <c>NavigationManager</c>.
+    /// because in the browser it reads the page's address from the scope's <see cref="NavigationManager"/>.
     /// </remarks>
-    public static BcrdtCollaborationBuilder UseSamplesRelay(this BcrdtCollaborationBuilder collaboration)
+    /// <param name="hubAddress">
+    /// Where the hub is, resolved from the scope's services. Omitted, it is the page's own address, which is right in
+    /// the browser and only there: on a server that address comes from the browser, so a server passes one of its own
+    /// - <see cref="SamplesRelay.LocalHubAddress"/>.
+    /// </param>
+    public static BcrdtCollaborationBuilder UseSamplesRelay(this BcrdtCollaborationBuilder collaboration, Func<IServiceProvider, Uri>? hubAddress = null)
     {
         ArgumentNullException.ThrowIfNull(collaboration);
 
-        collaboration.Services.TryAddScoped<IBcrdtTransportFactory, SamplesRelay>();
+        hubAddress ??= services => new Uri(new Uri(services.GetRequiredService<NavigationManager>().BaseUri), "hub/bcrdt");
+        collaboration.Services.TryAddScoped<IBcrdtTransportFactory>(services => new SamplesRelay(() => hubAddress(services)));
 
         return collaboration;
     }

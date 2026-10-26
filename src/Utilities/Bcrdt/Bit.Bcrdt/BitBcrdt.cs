@@ -118,11 +118,11 @@ public static class BitBcrdt
     /// <para>
     /// One Server-specific consequence: a circuit outlives its browser tab by the circuit retention
     /// period, and its documents keep publishing presence until then, so a person who closed the tab
-    /// stays listed for minutes. To withdraw them as soon as the connection drops, register a
-    /// <c>CircuitHandler</c> that calls <see cref="BcrdtPresenceService.Suspend"/> on every open
-    /// document in <c>OnConnectionDownAsync</c> and <see cref="BcrdtPresenceService.Resume"/> in
-    /// <c>OnConnectionUpAsync</c>. It is not registered here because this package also runs in
-    /// WebAssembly, where circuits do not exist.
+    /// stays listed for minutes. To withdraw them as soon as the connection drops, also call
+    /// <c>AddBitBcrdtCircuitPresence</c> from <c>Bit.Bcrdt.Server</c>, whose circuit handler calls
+    /// <see cref="BcrdtPresenceService.Suspend"/> on every open document when the connection goes down
+    /// and <see cref="BcrdtPresenceService.Resume"/> when it comes back. It is not registered here
+    /// because this package also runs in WebAssembly, where circuits do not exist.
     /// </para>
     /// </remarks>
     public static IServiceCollection AddBitBcrdtServices(

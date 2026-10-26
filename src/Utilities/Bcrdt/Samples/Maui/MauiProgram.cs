@@ -20,8 +20,11 @@ public static class MauiProgram
         // process, so the collaboration service is registered here alone. Local-first: every document is kept
         // in the app's data directory and stays fully editable with no server at all.
         //
-        // To edit alongside the browser tabs of a web sample, give it that sample's hub as well (from the
-        // Android emulator the host machine is 10.0.2.2, and plain HTTP has to be allowed there):
+        // To edit alongside the browser tabs of a web sample, give it that sample's hub as well. From the Android
+        // emulator the host machine is 10.0.2.2. The web samples answer their hub over plain HTTP rather than
+        // redirecting it to an HTTPS certificate the emulator does not trust (see their Program.cs), and Android
+        // allows plain HTTP once the <application> of Platforms/Android/AndroidManifest.xml has
+        // android:usesCleartextTraffic="true":
         //     .UseTransport(new Bit.Bcrdt.SignalR.BcrdtSignalRTransportFactory("http://10.0.2.2:5191/hub/bcrdt"))
         builder.Services.AddCoreServices(collaboration => collaboration
             .UseStore(new BcrdtFileSystemDocumentStore(Path.Combine(FileSystem.AppDataDirectory, "documents"))));

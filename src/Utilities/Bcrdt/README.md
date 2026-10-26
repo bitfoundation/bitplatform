@@ -102,7 +102,7 @@ understanding what it will decide. See [Choosing a data type](#choosing-a-data-t
 |---|---|
 | `Bit.Bcrdt` | The engine: identity, clocks and state vectors, the YATA engine with `BcrdtText`, `BcrdtArray`, `BcrdtMap` and `BcrdtSet`, updates, snapshots and selective undo; presence and awareness; the store abstraction with in-memory, file-system and browser (IndexedDB) stores; the sync protocol and `BcrdtSyncProvider`; `IBcrdtCollaborationService` and `AddBitBcrdtServices`; the text-input and object bindings; the in-memory and WebSocket client transports; and metrics. And the Blazor components, in the `Bit.Bcrdt.Blazor` namespace: `BcrdtComponentBase`, `BcrdtCollaborationScope`, `BcrdtTextArea` and `BcrdtPresenceView`. |
 | `Bit.Bcrdt.SignalR` | The SignalR client transport. No ASP.NET Core server dependency, so it runs in WebAssembly and Hybrid apps. |
-| `Bit.Bcrdt.Server` | The ASP.NET Core relays - `BcrdtHub` for the SignalR transport and `MapBitBcrdtWebSocket` for the WebSocket transport - with per-document read-only or read-write access, and `BcrdtDocumentHost`, which keeps a persisted, always-present replica of every document the relays carry. |
+| `Bit.Bcrdt.Server` | The ASP.NET Core relays - `BcrdtHub` for the SignalR transport and `MapBitBcrdtWebSocket` for the WebSocket transport - with per-document read-only or read-write access; `BcrdtDocumentHost`, which keeps a persisted, always-present replica of every document the relays carry; and `BcrdtPresenceCircuitHandler`, which withdraws a Blazor Server user's presence while their browser connection is down. |
 | `Bit.Bcrdt.Testing` | A deterministic, seeded network simulator (loss, duplication, reordering, partitions, offline peers), random operation generators, a convergence harness and an update corrupter for fuzzing. |
 
 Dependencies point strictly downward. The engine knows nothing about transports, storage or Blazor - nothing in it
@@ -372,9 +372,10 @@ heartbeat, so a crashed tab disappears from everyone's list without any server b
 user id into a fixed palette, so every participant agrees on everyone's colour with no coordination.
 
 In Blazor Server a circuit outlives its browser tab by the circuit retention period, and its documents keep publishing
-presence until then. To withdraw a user as soon as the connection drops, register a `CircuitHandler` that calls
-`BcrdtPresenceService.Suspend` on every open document in `OnConnectionDownAsync` and `Resume` in
-`OnConnectionUpAsync`.
+presence until then. To withdraw a user as soon as the connection drops, call
+`builder.Services.AddBitBcrdtCircuitPresence()` from `Bit.Bcrdt.Server`: it registers `BcrdtPresenceCircuitHandler`, which
+calls `BcrdtPresenceService.Suspend` on every document the circuit has open when the connection goes down, and `Resume`
+when it comes back.
 
 ---
 
@@ -1356,7 +1357,7 @@ called without input. Every tool is read-only, and every one is also a plain HTT
 |---|---|
 | `Bit.Bcrdt` | The engine, presence, persistence, sync, collaboration service, bindings and the in-memory and WebSocket client transports; the Blazor components and `BcrdtComponentBase` in `Blazor/` (TypeScript in `Scripts/`, compiled into `wwwroot/` on build). |
 | `Bit.Bcrdt.SignalR` | The SignalR client transport. |
-| `Bit.Bcrdt.Server` | The ASP.NET Core relays: the SignalR hub and the WebSocket endpoint. |
+| `Bit.Bcrdt.Server` | The ASP.NET Core relays: the SignalR hub and the WebSocket endpoint, the document host behind them, and the Blazor Server presence circuit handler. |
 | `Bit.Bcrdt.Testing` | The network simulator, operation generators, convergence harness and update corrupter. |
 | `Demo` | The demo (`Client` + prerendering `Server` host): side-by-side replicas over the in-memory transport, a live page across tabs through the server's relays, and the MCP server. |
 | `Samples` | The hosting samples: the `Core` pages hosted under `Server`, `Wasm` and `Auto` (each with its own relay) and `Maui` (local-first, file-system store). |

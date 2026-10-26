@@ -1,4 +1,7 @@
 ﻿@page "/Error"
+@* Rendered on the server alone, never by the interactive router, which knows the Core assembly's pages only and would
+   replace this one with the not-found page as soon as the app turned interactive. See App.razor. *@
+@attribute [ExcludeFromInteractiveRouting]
 @using System.Diagnostics
 
 <PageTitle>Error - Bcrdt samples</PageTitle>

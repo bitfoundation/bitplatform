@@ -143,3 +143,11 @@ fieldset {
     border: 1px solid #e3e4e8;
     border-radius: 5px;
 }
+
+/* A fieldset that is there only to disable the controls in it, for a read-only replica. */
+fieldset.bare {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
