@@ -150,6 +150,21 @@
     <Project Path="Utilities/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj" />
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bdnd/Samples/" />
+  <Folder Name="/Utilities/Bdnd/Samples/Auto/">
+    <Project Path="Utilities/Bdnd/Samples/Auto/Bit.Bdnd.Samples.Auto/Bit.Bdnd.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bdnd/Samples/Auto/Bit.Bdnd.Samples.Auto.Client/Bit.Bdnd.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bdnd/Samples/Core/">
+    <Project Path="Utilities/Bdnd/Samples/Core/Bit.Bdnd.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bdnd/Samples/Server/">
+    <Project Path="Utilities/Bdnd/Samples/Server/Bit.Bdnd.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bdnd/Samples/Wasm/">
+    <Project Path="Utilities/Bdnd/Samples/Wasm/Bit.Bdnd.Samples.Wasm/Bit.Bdnd.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bdnd/Samples/Wasm/Bit.Bdnd.Samples.Wasm.Client/Bit.Bdnd.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/BlazeDb/">
     <File Path="Utilities/BlazeDb/README.md" />
     <Project Path="Utilities/BlazeDb/Demo/Client/Bit.BlazeDb.Demo.Client.csproj" />
