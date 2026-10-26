@@ -174,6 +174,21 @@
     <Project Path="Utilities/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj" />
     <Project Path="Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests/Bit.BlazeDb.Tests.csproj" />
   </Folder>
+  <Folder Name="/Utilities/BlazeDb/Samples/" />
+  <Folder Name="/Utilities/BlazeDb/Samples/Auto/">
+    <Project Path="Utilities/BlazeDb/Samples/Auto/Bit.BlazeDb.Samples.Auto/Bit.BlazeDb.Samples.Auto.csproj" />
+    <Project Path="Utilities/BlazeDb/Samples/Auto/Bit.BlazeDb.Samples.Auto.Client/Bit.BlazeDb.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BlazeDb/Samples/Core/">
+    <Project Path="Utilities/BlazeDb/Samples/Core/Bit.BlazeDb.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BlazeDb/Samples/Server/">
+    <Project Path="Utilities/BlazeDb/Samples/Server/Bit.BlazeDb.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BlazeDb/Samples/Wasm/">
+    <Project Path="Utilities/BlazeDb/Samples/Wasm/Bit.BlazeDb.Samples.Wasm/Bit.BlazeDb.Samples.Wasm.csproj" />
+    <Project Path="Utilities/BlazeDb/Samples/Wasm/Bit.BlazeDb.Samples.Wasm.Client/Bit.BlazeDb.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Blow/">
     <File Path="Utilities/Blow/README.md" />
     <Project Path="Utilities/Blow/Demo/Client/Bit.Blow.Demo.Client.csproj" />

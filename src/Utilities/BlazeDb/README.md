@@ -119,6 +119,19 @@ fonts. Every page drives the real engine in your browser rather than describing 
 | `/roadmap` | What ships - each item linked to the page that drives it - what never will, and how the repository is laid out. |
 | `/mcp-server` | The MCP server this site hosts for AI agents. |
 
+[`Samples`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/) is the hosting
+harness rather than the docs: one shared [Core](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/Core/)
+project of pages (a todo list kept current by a live query, `BlazeDbQuery` with `Explain()`, change notifications,
+and flushes, checkpoints and exports), hosted unchanged under
+[Server](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/Server/),
+[Wasm](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/Wasm/),
+[Auto](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/Auto/) and
+[Maui](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/Maui/), a Blazor Hybrid
+app for Android, iOS, macOS and Windows. The pages are the same everywhere; where the database lives is not, and each
+host is a minimal example of the wiring its [hosting model](#hosting-models) needs: files on the server shared by every
+circuit behind one lock (Server), OPFS in the browser tab with a placeholder wherever the page renders on the server
+(Wasm and Auto), and files in the app's data directory (Maui).
+
 ## MCP server
 
 The demo hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at
