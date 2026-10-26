@@ -99,7 +99,7 @@ public sealed class GlobalShortcutTests : BaletteTest
         await Assertions.Expect(Prompt(page)).ToContainTextAsync("New project name");
         await Assertions.Expect(Input(page)).ToHaveValueAsync("Acme Dashboard");
 
-        await Input(page).FillAsync("Renamed by F2");
+        await ReplaceQueryAsync(page, "Acme Dashboard", "Renamed by F2");
         await page.Keyboard.PressAsync("Enter");
         await ExpectClosedAsync(page);
         await Assertions.Expect(page.Locator("main")).ToContainTextAsync("Project: Renamed by F2");

@@ -81,7 +81,7 @@ public sealed class FlowTests : BaletteTest
         // The caret is at the end of the current name, ready to edit it rather than replace it by accident.
         Assert.AreEqual("14,14", await page.EvaluateAsync<string>("() => { const i = document.querySelector('[data-balette=\"input\"]'); return i.selectionStart + ',' + i.selectionEnd; }"));
 
-        await Input(page).FillAsync("Zeta Board");
+        await ReplaceQueryAsync(page, "Acme Dashboard", "Zeta Board");
         await page.Keyboard.PressAsync("Enter");
 
         await ExpectClosedAsync(page);
