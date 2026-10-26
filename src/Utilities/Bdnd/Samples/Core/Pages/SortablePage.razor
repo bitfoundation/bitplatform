@@ -1,0 +1,83 @@
+﻿@page "/sortable"
+
+<PageTitle>Sortable · Bdnd samples</PageTitle>
+
+<h1>Sortable</h1>
+
+<p>
+    Each card sits in a drop target with <code>Edges="BdndEdges.Vertical"</code>, which reports the edge a drag is
+    closest to: a line drawn from its <code>data-bit-bdnd-edge</code> attribute shows where the card will land, and
+    <code>BdndList.InsertionIndex</code> and <code>BdndList.Move</code> turn the drop into a move - within a list or
+    across the two. Nothing is measured, so a drag costs no extra round trip on Server or in the MAUI app. With the
+    keyboard, the arrow keys step through the places between the cards.
+</p>
+
+<BdndProvider>
+    <div class="board">
+        @foreach (var list in _lists)
+        {
+            @* The list is a drop target too: a drop below its cards, or on an empty list, puts the card at its end. *@
+            <BdndDropTarget TItem="Card" Accept="card" Tag="section" Label="@($"the end of {list.Name}")" class="list"
+                            OnDrop="@(e => DropAtEnd(e, list))" Context="listDrop">
+                <h2>@list.Name</h2>
+                @for (var i = 0; i < list.Cards.Count; i++)
+                {
+                    var index = i;
+                    var card = list.Cards[i];
+                    <BdndDropTarget TItem="Card" Accept="card" Edges="BdndEdges.Vertical" Label="@card.Title" class="slot"
+                                    OnDrop="@(e => DropOn(e, list, index))" @key="card" Context="slot">
+                        <BdndDraggable TItem="Card" Type="card" Item="card" Label="@card.Title" class="item" Context="drag">
+                            @card.Title
+                        </BdndDraggable>
+                    </BdndDropTarget>
+                }
+                @if (list.Cards.Count == 0)
+                {
+                    <p class="muted">Drop cards here</p>
+                }
+            </BdndDropTarget>
+        }
+    </div>
+</BdndProvider>
+
+<p id="order" class="muted">@string.Join(" | ", _lists.Select(l => $"{l.Name}: {string.Join(", ", l.Cards.Select(c => c.Title))}"))</p>
+
+@code {
+    public sealed record Card(string Title);
+
+    private sealed record CardList(string Name, List<Card> Cards);
+
+    private readonly CardList[] _lists =
+    [
+        new("Backlog", [new("Write the docs"), new("Review the PR"), new("Fix the build"), new("Plan the sprint")]),
+        new("Done", [new("Ship the release")]),
+    ];
+
+    // Dropped on a card: before or after it, as the edge says.
+    private void DropOn(BdndDropEventArgs<Card> e, CardList list, int index)
+    {
+        if (e.Item is not { } card || Find(card) is not (CardList from, int fromIndex)) return;
+
+        BdndList.Move(from.Cards, fromIndex, list.Cards, BdndList.InsertionIndex(index, e.ClosestEdge));
+    }
+
+    // Dropped on the list itself: at its end - unless one of its cards took the drop already, since drops reach the
+    // innermost target first.
+    private void DropAtEnd(BdndDropEventArgs<Card> e, CardList list)
+    {
+        if (e.Monitor.DidDrop() || e.Item is not { } card || Find(card) is not (CardList from, int fromIndex)) return;
+
+        BdndList.Move(from.Cards, fromIndex, list.Cards, list.Cards.Count);
+    }
+
+    private (CardList List, int Index)? Find(Card card)
+    {
+        foreach (var list in _lists)
+        {
+            var index = list.Cards.IndexOf(card);
+            if (index >= 0) return (list, index);
+        }
+
+        return null;
+    }
+}

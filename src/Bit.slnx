@@ -221,6 +221,26 @@
     <Project Path="Utilities/Bdnd/Demo/Client/Bit.Bdnd.Demo.Client.csproj" />
     <Project Path="Utilities/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bdnd/Samples/" />
+  <Folder Name="/Utilities/Bdnd/Samples/Auto/">
+    <Project Path="Utilities/Bdnd/Samples/Auto/Bit.Bdnd.Samples.Auto/Bit.Bdnd.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bdnd/Samples/Auto/Bit.Bdnd.Samples.Auto.Client/Bit.Bdnd.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bdnd/Samples/Core/">
+    <Project Path="Utilities/Bdnd/Samples/Core/Bit.Bdnd.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bdnd/Samples/Maui/">
+    <Project Path="Utilities/Bdnd/Samples/Maui/Bit.Bdnd.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/Bdnd/Samples/Server/">
+    <Project Path="Utilities/Bdnd/Samples/Server/Bit.Bdnd.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bdnd/Samples/Wasm/">
+    <Project Path="Utilities/Bdnd/Samples/Wasm/Bit.Bdnd.Samples.Wasm/Bit.Bdnd.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bdnd/Samples/Wasm/Bit.Bdnd.Samples.Wasm.Client/Bit.Bdnd.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bdnd/Tests/">
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj" />
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj" />

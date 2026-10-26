@@ -1,0 +1,17 @@
+﻿@inherits LayoutComponentBase
+
+<nav class="topbar">
+    <NavLink href="" Match="NavLinkMatch.All" class="brand">Bdnd samples</NavLink>
+    <NavLink href="dustbin">Dustbin</NavLink>
+    <NavLink href="sortable">Sortable</NavLink>
+    <NavLink href="previews">Previews</NavLink>
+    <NavLink href="native">Native drops</NavLink>
+    @* Which renderer produced this markup: Static while prerendering, then Server, WebAssembly or WebView. *@
+    <span class="renderer" data-renderer="@RendererInfo.Name" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+        @RendererInfo.Name@(RendererInfo.IsInteractive ? null : " (prerendered)")
+    </span>
+</nav>
+
+<main>
+    @Body
+</main>

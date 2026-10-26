@@ -1,0 +1,35 @@
+﻿@page "/"
+
+<PageTitle>Bdnd samples</PageTitle>
+
+<h1>Bdnd samples</h1>
+
+<p>
+    One set of pages hosted unchanged by three Blazor Web Apps - <strong>Server</strong> (Interactive Server),
+    <strong>Wasm</strong> (Interactive WebAssembly) and <strong>Auto</strong> (Interactive Auto), each prerendering
+    first - and by a <strong>MAUI</strong> Blazor Hybrid app for Android, iOS, macOS and Windows. Every drag works the
+    same in each: on WebAssembly its events are handled in the browser, on Server they cross the circuit, and in the
+    MAUI app they cross the web view's bridge to .NET.
+</p>
+
+<div class="card">
+    <h2>Where this page is running</h2>
+    <dl>
+        <dt>Renderer</dt>
+        <dd id="renderer">@RendererInfo.Name</dd>
+        <dt>Interactive</dt>
+        <dd id="interactive">@(RendererInfo.IsInteractive ? "yes" : "no, prerendered")</dd>
+    </dl>
+    <p class="muted">
+        Prerendered markup shows every draggable and drop target idle: they start working once the page is
+        interactive.
+    </p>
+</div>
+
+<h2>Samples</h2>
+<ul>
+    <li><NavLink href="dustbin">Dustbin</NavLink> - boxes dropped in bins that take some types and refuse others, with the mouse, a finger or the keyboard</li>
+    <li><NavLink href="sortable">Sortable</NavLink> - two lists with drop indicators, reordered and moved between with <code>BdndList</code></li>
+    <li><NavLink href="previews">Previews</NavLink> - a custom drag layer, a drag handle, and pointer drags for the mouse as well</li>
+    <li><NavLink href="native">Native drops</NavLink> - files, text and links dragged in from outside the page</li>
+</ul>
