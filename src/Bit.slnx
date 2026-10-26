@@ -322,6 +322,26 @@
     <Project Path="Utilities/Borm/Demo/Client/Bit.Borm.Demo.Client.csproj" />
     <Project Path="Utilities/Borm/Demo/Server/Bit.Borm.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Borm/Samples/" />
+  <Folder Name="/Utilities/Borm/Samples/Auto/">
+    <Project Path="Utilities/Borm/Samples/Auto/Bit.Borm.Samples.Auto/Bit.Borm.Samples.Auto.csproj" />
+    <Project Path="Utilities/Borm/Samples/Auto/Bit.Borm.Samples.Auto.Client/Bit.Borm.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Borm/Samples/Core/">
+    <Project Path="Utilities/Borm/Samples/Core/Bit.Borm.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Borm/Samples/Maui/">
+    <Project Path="Utilities/Borm/Samples/Maui/Bit.Borm.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/Borm/Samples/Server/">
+    <Project Path="Utilities/Borm/Samples/Server/Bit.Borm.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Borm/Samples/Wasm/">
+    <Project Path="Utilities/Borm/Samples/Wasm/Bit.Borm.Samples.Wasm/Bit.Borm.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Borm/Samples/Wasm/Bit.Borm.Samples.Wasm.Client/Bit.Borm.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Borm/Tests/">
     <Project Path="Utilities/Borm/Tests/Bit.Borm.Tests/Bit.Borm.Tests.csproj" />
     <Project Path="Utilities/Borm/Tests/Bit.Borm.Tests.Mcp/Bit.Borm.Tests.Mcp.csproj" />

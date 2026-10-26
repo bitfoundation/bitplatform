@@ -1,0 +1,64 @@
+﻿@page "/json-schema"
+
+<PageTitle>JSON Schema · Borm samples</PageTitle>
+
+<h1>JSON Schema</h1>
+
+<p class="muted">
+    This form has no C# behind it: it is the JSON Schema document below, imported into a <code>BormDefinition</code> and
+    bound to a dictionary. Its line totals, its total and its approval rule are expressions, so a server could send the
+    whole form - computing and judging included - as data. A quote of 10,000 or more needs an approver.
+</p>
+
+<BormView Definition="_definition" Data="_data" OnValidSubmit="Submitted" SubmitText="Send quote" ShowErrorSummary="true" />
+
+@if (_answers is not null)
+{
+    <div class="card answers">
+        <h2>Submitted</h2>
+        <pre>@_answers</pre>
+    </div>
+}
+
+<details class="card">
+    <summary>The schema</summary>
+    <pre>@Schema</pre>
+</details>
+
+@code {
+    private const string Schema = """
+    {
+      "title": "Quote",
+      "type": "object",
+      "required": ["customer"],
+      "properties": {
+        "customer": { "type": "string", "title": "Customer" },
+        "lines": {
+          "type": "array", "title": "Lines", "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["product"],
+            "properties": {
+              "product":   { "type": "string", "title": "Product" },
+              "quantity":  { "type": "integer", "title": "Quantity", "minimum": 1, "default": 1 },
+              "unitPrice": { "type": "number", "title": "Unit price", "minimum": 0 },
+              "lineTotal": { "type": "number", "title": "Line total", "x-computed": "{quantity} * {unitPrice}" }
+            }
+          }
+        },
+        "discount": {
+          "type": "number", "title": "Discount", "minimum": 0,
+          "x-rules": [{ "expression": "{discount} <= sum({lines[].lineTotal})", "message": "The discount cannot be more than the lines." }]
+        },
+        "total":    { "type": "number", "title": "Total", "x-computed": "round(sum({lines[].lineTotal}) - coalesce({discount}, 0), 2)" },
+        "approver": { "type": "string", "title": "Approved by", "x-visibleWhen": "{total} >= 10000", "x-requiredWhen": "{total} >= 10000" }
+      }
+    }
+    """;
+
+    private readonly BormDefinition _definition = BormJsonSchemaImporter.Import(Schema);
+    private readonly Dictionary<string, object?> _data = [];
+    private string? _answers;
+
+    private void Submitted(BormState state) => _answers = SampleDirectory.ToJson(_data);
+}

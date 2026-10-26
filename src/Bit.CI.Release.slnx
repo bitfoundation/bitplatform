@@ -189,6 +189,21 @@
     <Project Path="Utilities/Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj" />
     <Project Path="Utilities/Borm/Tests/Bit.Borm.Tests/Bit.Borm.Tests.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Borm/Samples/" />
+  <Folder Name="/Utilities/Borm/Samples/Auto/">
+    <Project Path="Utilities/Borm/Samples/Auto/Bit.Borm.Samples.Auto/Bit.Borm.Samples.Auto.csproj" />
+    <Project Path="Utilities/Borm/Samples/Auto/Bit.Borm.Samples.Auto.Client/Bit.Borm.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Borm/Samples/Core/">
+    <Project Path="Utilities/Borm/Samples/Core/Bit.Borm.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Borm/Samples/Server/">
+    <Project Path="Utilities/Borm/Samples/Server/Bit.Borm.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Borm/Samples/Wasm/">
+    <Project Path="Utilities/Borm/Samples/Wasm/Bit.Borm.Samples.Wasm/Bit.Borm.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Borm/Samples/Wasm/Bit.Borm.Samples.Wasm.Client/Bit.Borm.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bcrdt/">
     <File Path="Utilities/Bcrdt/README.md" />
     <Project Path="Utilities/Bcrdt/Demo/Client/Bit.Bcrdt.Demo.Client.csproj" />

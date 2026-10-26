@@ -1,0 +1,60 @@
+﻿@page "/builder"
+@inject SampleDirectory Directory
+
+<PageTitle>Builder · Borm samples</PageTitle>
+
+<h1>Builder</h1>
+
+<p class="muted">
+    <code>BormBuilder.For&lt;Profile&gt;()</code> builds the form field by field: each <code>Field</code> reads its label and
+    rules off the property, and the builder adds conditions, rules and renderers of its own. Type
+    <em>ada</em> or <em>admin</em> as the username to see the async rule fire - on Server it runs on the circuit, on
+    WebAssembly in the browser. Choose a business account for the company field, and rate it two stars or fewer to be
+    asked what to improve. The stars are a custom renderer registered in every host's container.
+</p>
+
+<BormView Definition="_definition" Model="_model" OnValidSubmit="Submitted" SubmitText="Save profile" ShowErrorSummary="true" />
+
+@if (_answers is not null)
+{
+    <div class="card answers">
+        <h2>Submitted</h2>
+        <pre>@_answers</pre>
+    </div>
+}
+
+@code {
+    private readonly Profile _model = new();
+    private BormDefinition _definition = default!;
+    private string? _answers;
+
+    protected override void OnInitialized()
+    {
+        _definition = BormBuilder.For<Profile>()
+            .Field(x => x.Username, f => f
+                .Required()
+                .Trim()
+                // The value is written once per pause in typing rather than once per keystroke, and the async rule
+                // runs with that write: a superseded check is cancelled.
+                .UpdateOnInput(debounceMilliseconds: 400)
+                .MustAsync(async ctx => await Directory.IsUsernameAvailableAsync((string?)ctx.Value ?? "", ctx.CancellationToken),
+                           "That username is taken.")
+                .Help("Try 'ada' or 'admin'."))
+            .Field(x => x.AccountKind, f => f.AsRadio().Label("Account type"))
+            .Field(x => x.CompanyName, f => f
+                .Required("A business account needs its company's name.")
+                .VisibleWhen(nameof(Profile.AccountKind), BormConditionOperator.Equals, nameof(AccountKind.Business)))
+            .Field(x => x.Rating, f => f
+                .CustomRenderer("rating")
+                .Attr("max", 5)
+                .Range(1, 5, "Pick from one to five stars."))
+            // An expression: the field shows, and is required, only while the rating is low.
+            .Field(x => x.Improvement, f => f
+                .AsTextArea()
+                .VisibleWhen("{Rating} >= 1 and {Rating} <= 2")
+                .RequiredWhen("{Rating} >= 1 and {Rating} <= 2"))
+            .Build();
+    }
+
+    private void Submitted(BormState state) => _answers = SampleDirectory.ToJson(_model);
+}

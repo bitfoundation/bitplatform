@@ -1,0 +1,44 @@
+﻿@inherits BormInputBase
+
+@* A custom renderer: a row of stars, registered under the key "rating" (AddCoreServices in
+   Extensions/IServiceCollectionExtensions.cs) and asked for with CustomRenderer("rating"). Each star is a native radio
+   button, hidden from sight but not from the keyboard or a screen reader: the group is one tab stop and the arrow keys
+   move through it. The group carries the field's id, state and messages, as the built-in radio group does; what it
+   looks like is app.css's, painted with the form's own --bit-borm-* tokens. *@
+<div id="@Context.ElementId"
+     class="rating"
+     @ref="Element"
+     tabindex="-1"
+     role="radiogroup"
+     aria-labelledby="@(Field.ShowLabel ? Context.LabelId : null)"
+     aria-label="@AriaLabel"
+     aria-required="@AriaRequired"
+     aria-invalid="@AriaInvalid"
+     aria-describedby="@DescribedBy">
+    @for (var n = 1; n <= Max; n++)
+    {
+        var star = n;
+        <label class="@(star <= Current ? "rating__star rating__star--on" : "rating__star")">
+            <input type="radio"
+                   name="@_group"
+                   value="@star"
+                   checked="@(star == Current)"
+                   disabled="@DisabledOrReadOnly"
+                   @onchange="@(() => Context.SetValueAsync(star))"
+                   @onblur="OnBlur" />
+            <span aria-hidden="true">@(star <= Current ? "★" : "☆")</span>
+            <span class="rating__name">@(star == 1 ? "1 star" : $"{star} stars")</span>
+        </label>
+    }
+</div>
+
+@code {
+    private static int s_groups;
+
+    // One name per control, so two ratings on a page are separate groups.
+    private readonly string _group = "rating-" + Interlocked.Increment(ref s_groups);
+
+    // Attr("max", 5) on the field arrives in its Attributes.
+    private int Max => Field.Attributes.TryGetValue("max", out var max) && max is int i ? i : 5;
+    private int Current => Context.Value is int value ? value : 0;
+}

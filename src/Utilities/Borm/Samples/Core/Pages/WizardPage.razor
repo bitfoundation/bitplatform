@@ -1,0 +1,52 @@
+﻿@page "/wizard"
+
+<PageTitle>Wizard · Borm samples</PageTitle>
+
+<h1>Wizard</h1>
+
+<p class="muted">
+    Each step is validated before the next one opens. The <em>Company</em> step is only there for a business trip - while
+    it is hidden its fields are neither shown nor validated, and the steps after it renumber themselves - and the last
+    step reads every answer back before the booking is sent.
+</p>
+
+<BormView Definition="_definition" Model="_model" OnValidSubmit="Submitted" SubmitText="Book the trip" />
+
+@if (_answers is not null)
+{
+    <div class="card answers">
+        <h2>Submitted</h2>
+        <pre>@_answers</pre>
+    </div>
+}
+
+@code {
+    private readonly TripBooking _model = new();
+    private string? _answers;
+
+    // Each Field reads its label and its DataAnnotations rules off the property; the builder adds the rest.
+    private readonly BormDefinition _definition = BormBuilder.For<TripBooking>()
+        .Field(x => x.FullName)
+        .Field(x => x.Email)
+        .Field(x => x.Destination, f => f
+            .AsSelect()
+            .Options([.. SampleDirectory.Destinations.Select(d => (d, d))])
+            .Required())
+        .Field(x => x.Departure, f => f.Required())
+        .Field(x => x.ReturnDate, f => f
+            .Required()
+            .Must("{ReturnDate} >= {Departure}", "The return cannot come before the departure."))
+        .Field(x => x.Kind, f => f.AsRadio())
+        .Field(x => x.CostCentre, f => f.Required())
+        .Field(x => x.PurchaseOrder)
+        .Review("summary", "Check your booking")
+        .Step("traveller", s => s.Title("Traveller").Fields("FullName", "Email"))
+        .Step("trip", s => s.Title("Trip").Fields("Destination", "Departure", "ReturnDate", "Kind"))
+        .Step("company", s => s.Title("Company")
+            .Fields("CostCentre", "PurchaseOrder")
+            .VisibleWhen(nameof(TripBooking.Kind), BormConditionOperator.Equals, nameof(TripKind.Business)))
+        .Step("review", s => s.Title("Review").Fields("summary"))
+        .Build();
+
+    private void Submitted(BormState state) => _answers = SampleDirectory.ToJson(_model);
+}

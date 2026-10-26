@@ -1,0 +1,49 @@
+﻿@page "/static-form"
+@attribute [ExcludeFromInteractiveRouting]
+
+<PageTitle>Static form · Borm samples</PageTitle>
+
+<h1>Static form</h1>
+
+<p class="muted">
+    In the web hosts this page has no interactive render mode: it is rendered on the server, and its form posts back like
+    any HTML form. A <code>FormName</code> is all it takes - the page's <code>[SupplyParameterFromForm]</code> model binds
+    what each control posts, and the form judges it on the server exactly as it would interactively. Submit it empty to
+    get the page back with every message in place. The MAUI app has no server to post to, so there it runs interactive.
+</p>
+
+<BormView Definition="_definition" Model="Model" FormName="volunteer" OnValidSubmit="Submitted" SubmitText="Apply" ShowErrorSummary="true" />
+
+@if (_answers is not null)
+{
+    <div class="card answers">
+        <h2>Submitted</h2>
+        <pre>@_answers</pre>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromForm(FormName = "volunteer")]
+    public VolunteerApplication? Model { get; set; }
+
+    private BormDefinition _definition = default!;
+    private string? _answers;
+
+    protected override void OnInitialized()
+    {
+        Model ??= new();
+        _definition = BormBuilder.For<VolunteerApplication>()
+            .Field(x => x.FullName, f => f.Required())
+            .Field(x => x.Email, f => f.Required().Email())
+            // A text box that brings up the number pad rather than a number box: a browser posts a number box holding
+            // letters as nothing at all, so what the user typed would be lost before the server could refuse it.
+            .Field(x => x.Hours, f => f.Range(1, 40).As(BormFieldType.Text).InputMode("numeric"))
+            .Field(x => x.Team, f => f
+                .AsRadio()
+                .Options(("events", "Events"), ("kitchen", "Kitchen"), ("drivers", "Drivers"))
+                .Required())
+            .Build();
+    }
+
+    private void Submitted(BormState state) => _answers = SampleDirectory.ToJson(Model);
+}

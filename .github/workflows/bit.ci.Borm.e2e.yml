@@ -37,8 +37,9 @@ jobs:
       with:
         node-version: 24
 
+    # The workloads of what this job builds, not of the whole solution, whose MAUI sample would bring maui-android.
     - name: dotnet workload restore
-      run: cd src/Utilities/Borm && dotnet workload restore
+      run: cd src/Utilities/Borm && dotnet workload restore Demo/Server/Bit.Borm.Demo.Server.csproj
 
     - name: Build the demo and the E2E suite
       run: |
