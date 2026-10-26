@@ -30,11 +30,13 @@ public sealed class BitPdfSource
 
     internal Func<CancellationToken, Task<Stream>>? StreamFactory { get; private init; }
 
+    internal BitPdfRangeLoadingOptions? RangeLoading { get; private init; }
+
     private BitPdfSource() { }
 
     private BitPdfSource With(Action<Builder> configure)
     {
-        var builder = new Builder { Bytes = Bytes, Url = Url, FileName = FileName, Password = Password, Headers = Headers, StreamFactory = StreamFactory };
+        var builder = new Builder { Bytes = Bytes, Url = Url, FileName = FileName, Password = Password, Headers = Headers, StreamFactory = StreamFactory, RangeLoading = RangeLoading };
         configure(builder);
         return new BitPdfSource
         {
@@ -44,12 +46,14 @@ public sealed class BitPdfSource
             Password = builder.Password,
             Headers = builder.Headers,
             StreamFactory = builder.StreamFactory,
+            RangeLoading = builder.RangeLoading,
         };
     }
 
     private sealed class Builder
     {
         public Func<CancellationToken, Task<Stream>>? StreamFactory { get; set; }
+        public BitPdfRangeLoadingOptions? RangeLoading { get; set; }
         public byte[]? Bytes { get; set; }
         public string? Url { get; set; }
         public string? FileName { get; set; }
@@ -69,6 +73,23 @@ public sealed class BitPdfSource
     /// </summary>
     public BitPdfSource WithHeaders(IReadOnlyDictionary<string, string>? headers)
         => With(b => b.Headers = headers);
+
+    /// <summary>Returns a copy of this source which loads remote PDF bytes on
+    /// demand using validated HTTP Range requests. Only affects a URL source.
+    /// Null options use the defaults; the buffered default is otherwise unchanged.</summary>
+    /// <remarks>Keep this source in a field. The endpoint must support byte ranges,
+    /// consistent lengths and a stable strong ETag. Cross-origin WASM requests need
+    /// exposed Content-Range/ETag headers and preflight permission for Range,
+    /// If-Range and authentication headers. HTTP compression is unsupported.
+    /// Unsupported delivery falls back to buffered loading before publication,
+    /// subject to MaxFallbackSize. Later failures never silently replace the document.</remarks>
+    /// <exception cref="ArgumentOutOfRangeException">The chunk/cache size or fallback cap is invalid.</exception>
+    public BitPdfSource WithRangeLoading(BitPdfRangeLoadingOptions? options = null)
+    {
+        options ??= new();
+        options.Validate();
+        return With(b => b.RangeLoading = options);
+    }
 
     /// <summary>
     /// Opens a readable, seekable stream on demand, without buffering the complete PDF.

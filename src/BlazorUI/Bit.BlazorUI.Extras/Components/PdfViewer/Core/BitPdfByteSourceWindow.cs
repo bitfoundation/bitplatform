@@ -41,7 +41,7 @@ internal sealed class BitPdfByteSourceLease(Action release) : IDisposable
 }
 
 /// <summary>Source failures must not be treated as malformed PDF content.</summary>
-internal sealed class BitPdfByteSourceIOException(string message, Exception? inner = null)
+internal class BitPdfByteSourceIOException(string message, Exception? inner = null)
     : System.IO.IOException(message, inner);
 
 internal static class BitPdfByteSourceErrors
@@ -49,5 +49,6 @@ internal static class BitPdfByteSourceErrors
     public static bool IsContentError(Exception exception)
         => exception is not OperationCanceledException
             and not ObjectDisposedException
-            and not BitPdfByteSourceIOException;
+            and not BitPdfByteSourceIOException
+            and not BitPdfMissingDataException;
 }

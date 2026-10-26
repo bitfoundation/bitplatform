@@ -12,12 +12,17 @@ internal sealed class BitPdfOutlineBuilder
     private readonly IBitPdfXRef _xref;
     private readonly BitPdfDict _catalog;
     private readonly IReadOnlyDictionary<BitPdfDict, int> _pageIndex;
+    private readonly Func<BitPdfDict, int?>? _resolvePageIndex;
+    private readonly int? _pageCount;
 
-    public BitPdfOutlineBuilder(IBitPdfXRef xref, BitPdfDict catalog, IReadOnlyDictionary<BitPdfDict, int> pageIndex)
+    public BitPdfOutlineBuilder(IBitPdfXRef xref, BitPdfDict catalog, IReadOnlyDictionary<BitPdfDict, int> pageIndex,
+        Func<BitPdfDict, int?>? resolvePageIndex = null, int? pageCount = null)
     {
         _xref = xref;
         _catalog = catalog;
         _pageIndex = pageIndex;
+        _resolvePageIndex = resolvePageIndex;
+        _pageCount = pageCount;
     }
 
     public IReadOnlyList<BitPdfOutlineItem> Build()
@@ -131,16 +136,16 @@ internal sealed class BitPdfOutlineBuilder
 
     private int? ResolvePageOfTarget(object? target)
     {
-        if (target is BitPdfRef pageRef && _xref.Fetch(pageRef) is BitPdfDict pageDict
-            && _pageIndex.TryGetValue(pageDict, out int idx))
+        if (target is BitPdfRef pageRef && _xref.Fetch(pageRef) is BitPdfDict pageDict)
         {
-            return idx + 1;
+            if (_pageIndex.TryGetValue(pageDict, out int idx)) return idx + 1;
+            if (_resolvePageIndex?.Invoke(pageDict) is int resolved) return resolved + 1;
         }
         // Some destinations encode a 0-based page index directly. Clamp it to the
         // valid range so a corrupt/out-of-range index can't point past the document.
         if (target is double d)
         {
-            int count = _pageIndex.Count;
+            int count = _pageCount ?? _pageIndex.Count;
             if (count <= 0)
             {
                 return (int)d + 1;

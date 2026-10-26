@@ -28,7 +28,7 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
     ], rootObjNum: 1);
 
     [TestMethod]
-    public void BitPdfViewerShouldBuildHtmlPagesByDefault()
+    public async Task BitPdfViewerShouldBuildHtmlPagesByDefault()
     {
         var component = RenderComponent<BitPdfViewer>(parameters =>
         {
@@ -40,11 +40,11 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
         Assert.AreEqual(BitPdfRenderMode.Html, component.Instance.RenderMode);
         Assert.AreEqual(0, component.FindAll("[data-page='1'] canvas").Count);
         Assert.IsTrue(component.FindAll("[data-page='1'] .bit-pdv-html-page span").Count > 0);
-        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == PaintCall));
+        await component.InvokeAsync(() => Assert.AreEqual(0, Context.JSInterop.Invocations[PaintCall].Count));
     }
 
     [TestMethod]
-    public void BitPdfViewerShouldPaintACanvasPerPageInCanvasMode()
+    public async Task BitPdfViewerShouldPaintACanvasPerPageInCanvasMode()
     {
         var component = RenderComponent<BitPdfViewer>(parameters =>
         {
@@ -60,8 +60,8 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[data-page='1'] canvas[data-bit-pdv-canvas]").Count));
         StringAssert.Contains(component.Find("[data-page='1'] .bit-pdv-text-layer").TextContent, "Hello");
 
-        component.WaitForAssertion(() => Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == PaintCall)));
-        var paint = Context.JSInterop.Invocations.First(i => i.Identifier == PaintCall);
+        component.WaitForAssertion(() => Assert.IsTrue(Context.JSInterop.Invocations[PaintCall].Count > 0));
+        var paint = await component.InvokeAsync(() => Context.JSInterop.Invocations[PaintCall][0]);
         Assert.AreEqual(1.0, paint.Arguments[2]);
     }
 

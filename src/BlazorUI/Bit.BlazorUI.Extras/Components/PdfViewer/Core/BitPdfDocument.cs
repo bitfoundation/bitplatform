@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// A parsed PDF document: cross-reference resolution, the catalog, and the
 /// flattened list of pages. This is the entry point of the C# engine.
 /// </summary>
-public sealed class BitPdfDocument
+public sealed partial class BitPdfDocument
 {
     private readonly BitPdfXRef _xref;
     private List<BitPdfPage>? _pages;
@@ -70,13 +70,13 @@ public sealed class BitPdfDocument
     /// <summary>The document's pages in order.</summary>
     public IReadOnlyList<BitPdfPage> Pages
     {
-        get { _xref.ThrowIfSourceDisposed(); return _pages ??= BuildPages(); }
+        get { _xref.ThrowIfSourceDisposed(); return _xref.IsPartial ? (_partialPages ??= new PartialPageList(this)) : (_pages ??= BuildPages()); }
     }
 
     /// <summary>Number of pages.</summary>
     public int PageCount
     {
-        get { _xref.ThrowIfSourceDisposed(); return Pages.Count; }
+        get { _xref.ThrowIfSourceDisposed(); return _xref.IsPartial ? PartialPageCount : Pages.Count; }
     }
 
     /// <summary>The document outline (bookmarks), empty when none is present.</summary>
@@ -87,8 +87,9 @@ public sealed class BitPdfDocument
             _xref.ThrowIfSourceDisposed();
             if (_outline is null)
             {
-                _ = Pages; // ensure the page-index map is populated
-                _outline = new BitPdfOutlineBuilder(_xref, Catalog, _pageIndexByDict).Build();
+                if (!_xref.IsPartial) _ = Pages; // buffered documents use the complete page-index map
+                _outline = new BitPdfOutlineBuilder(_xref, Catalog, _pageIndexByDict,
+                    _xref.IsPartial ? ResolvePartialPageIndex : null, _xref.IsPartial ? PartialPageCount : null).Build();
             }
             return _outline;
         }
@@ -173,8 +174,9 @@ public sealed class BitPdfDocument
     /// </summary>
     public BitPdfDestination? ResolveDestination(object? dest)
     {
-        _ = Pages; // ensure the page-index map is populated
-        return new BitPdfOutlineBuilder(_xref, Catalog, _pageIndexByDict).ResolveDestination(dest);
+        if (!_xref.IsPartial) _ = Pages; // buffered documents use the complete page-index map
+        return new BitPdfOutlineBuilder(_xref, Catalog, _pageIndexByDict,
+                    _xref.IsPartial ? ResolvePartialPageIndex : null, _xref.IsPartial ? PartialPageCount : null).ResolveDestination(dest);
     }
 
     /// <summary>Parses <paramref name="bytes"/> into a document model.</summary>

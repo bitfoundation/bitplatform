@@ -3548,7 +3548,7 @@ internal static class TestPdf
     /// default grants everything, while <c>0</c> withholds every optional right
     /// (printing and copying included).
     /// </summary>
-    public static byte[] Encrypted(string userPassword, int permissions = -1)
+    public static byte[] Encrypted(string userPassword, int permissions = -1, int contentPadding = 0)
     {
         byte[] id0 = Encoding.Latin1.GetBytes("0123456789abcdef");
         int p = permissions;
@@ -3569,7 +3569,8 @@ internal static class TestPdf
 
         // The content stream is object 4; its key mixes in the object number.
         byte[] contentKey = ObjectKey(fileKey, 4, 0);
-        string content = Encoding.Latin1.GetString(Rc4(contentKey, Encoding.Latin1.GetBytes("BT ET")));
+        string plain = contentPadding == 0 ? "BT ET" : "BT ET\n%" + new string('a', contentPadding) + "\n";
+        string content = Encoding.Latin1.GetString(Rc4(contentKey, Encoding.Latin1.GetBytes(plain)));
 
         var bodies = new List<string>
         {
