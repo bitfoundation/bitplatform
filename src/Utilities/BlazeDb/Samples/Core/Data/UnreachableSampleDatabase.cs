@@ -1,6 +1,4 @@
-﻿using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb.Samples.Core.Data;
+﻿namespace Bit.BlazeDb.Samples.Core.Data;
 
 /// <summary>
 /// Registered by the servers of the Wasm and Auto hosts. The pages render there while they are prerendered - and,
@@ -18,9 +16,7 @@ public sealed class UnreachableSampleDatabase : SampleDatabase
 
     public override string? Unreachable => "The database lives in the browser tab, and this page is being rendered on the server.";
 
-    public override Task<T> UseAsync<T>(Func<BlazeDbDatabase, T> work) => throw new InvalidOperationException(Unreachable);
-
     public override Task<T> UseAsync<T>(Func<BlazeDbDatabase, Task<T>> work) => throw new InvalidOperationException(Unreachable);
 
-    protected override ValueTask<IBlazeDbStorage> CreateStorageAsync() => throw new InvalidOperationException(Unreachable);
+    protected override ValueTask<SampleStorage> CreateStorageAsync() => throw new InvalidOperationException(Unreachable);
 }

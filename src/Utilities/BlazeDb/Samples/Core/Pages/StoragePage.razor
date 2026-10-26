@@ -118,7 +118,16 @@ else
             _busy = false;
         }
 
-        await ReadStatusAsync();
+        // Read again either way - a failed flush is what LastBackgroundError reports. Whatever stopped the action
+        // can stop this too, and is shown the same way rather than thrown.
+        try
+        {
+            await ReadStatusAsync();
+        }
+        catch (Exception exception)
+        {
+            _result += $" Reading the status again failed: {exception.Message}";
+        }
     }
 
     private static string Size(long bytes) => bytes switch

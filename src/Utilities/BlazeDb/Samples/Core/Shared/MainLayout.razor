@@ -35,7 +35,7 @@
     {
         if (Database.Unreachable is null)
         {
-            await Database.UseAsync(_ => true);
+            await Database.UseAsync(_ => { });
         }
     }
 }

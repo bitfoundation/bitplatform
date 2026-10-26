@@ -74,6 +74,7 @@ else
 
 @code {
     private BlazeDbLiveQuery<Counts>? _counts;
+    private bool _disposed;
 
     private sealed record Counts(int Total, int Open, int Done, long UserVersion);
 
@@ -81,25 +82,30 @@ else
     {
         if (Database.Unreachable is not null) return;
 
-        _counts = await Database.UseAsync(db =>
+        await Database.UseAsync(db =>
         {
-            var counts = db.GetTable(TodoItem.Table).Watch(todos => new Counts(
+            // Left while the database was opening, or on a server while waiting its turn: a live query started
+            // now would go on re-running - and re-rendering - for a page that is gone.
+            if (_disposed) return;
+
+            _counts = db.GetTable(TodoItem.Table).Watch(todos => new Counts(
                 todos.Count,
                 todos.CountBy(TodoItem.Indexes.Done, false),
                 todos.CountBy(TodoItem.Indexes.Done, true),
                 db.UserVersion));
 
-            counts.Changed += OnCountsChanged;
-            return counts;
+            _counts.Changed += OnCountsChanged;
         });
     }
 
-    // Raised on the thread that committed - on a server, possibly another circuit's - so the re-render goes
-    // through this component's dispatcher.
-    private void OnCountsChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+    // Raised on the thread that committed - on a server, possibly another circuit's, inside the lock its write took.
+    // The re-render goes through this component's dispatcher from the thread pool: called right here, the
+    // dispatcher would render on that thread, keeping the writer - and everyone waiting for the lock - waiting too.
+    private void OnCountsChanged(object? sender, EventArgs e) => _ = Task.Run(() => InvokeAsync(StateHasChanged));
 
     public void Dispose()
     {
+        _disposed = true;
         if (_counts is null) return;
 
         _counts.Changed -= OnCountsChanged;

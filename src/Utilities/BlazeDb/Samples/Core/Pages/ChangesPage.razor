@@ -1,4 +1,5 @@
 ﻿@page "/changes"
+@using System.Collections.Concurrent
 @implements IDisposable
 @inject SampleDatabase Database
 
@@ -40,7 +41,7 @@ else
             @foreach (var entry in _log)
             {
                 <li @key="entry" class="@(entry.Changes.Count == 0 ? "muted" : null)">
-                    <strong>@entry.What</strong> <span class="muted">@entry.At.ToString("T")</span>
+                    <strong>@entry.What</strong> <span class="muted">@ViewerTime.Format(entry.At, RendererInfo, "T")</span>
                     @if (entry.Changes.Count > 0)
                     {
                         <ul>
@@ -61,10 +62,14 @@ else
     private const string Category = "Changes";
 
     private readonly List<Entry> _log = [];
+    // What was reported but is not in the log yet, in the order it was reported.
+    private readonly ConcurrentQueue<Entry> _reported = new();
     private int _notifications;
     private bool _acting;
     private Action? _unsubscribe;
+    private bool _disposed;
 
+    // At is in UTC.
     private sealed record Entry(DateTime At, string What, List<string> Changes);
 
     protected override async Task OnInitializedAsync()
@@ -73,24 +78,29 @@ else
 
         await Database.UseAsync(db =>
         {
+            // Left while the database was opening, or on a server while waiting its turn: subscribing now would
+            // keep logging - and re-rendering - for a page that is gone.
+            if (_disposed) return;
+
             db.Changed += OnChanged;
             _unsubscribe = () => db.Changed -= OnChanged;
-            return true;
         });
     }
 
     // Runs synchronously on the thread that committed, once the commit is complete: inside Act below for this
-    // page's own commits, and on a server inside another circuit's write for theirs. The log itself is only ever
-    // touched on this component's dispatcher.
+    // page's own commits, and on a server inside another circuit's write - and the lock it took - for theirs. The
+    // log itself is only ever touched on this component's dispatcher, reached from the thread pool: called right
+    // here, the dispatcher would render on that thread, keeping the writer waiting too. The queue keeps the
+    // entries in the order their commits were made, whichever reaches the dispatcher first.
     private void OnChanged(object? sender, BlazeDbChangedEventArgs e)
     {
         Interlocked.Increment(ref _notifications);
 
-        var entry = new Entry(DateTime.Now,
-                              $"{(_acting ? "This page" : "Elsewhere")}: {e.Changes.Count} {(e.Changes.Count == 1 ? "change" : "changes")} in one commit",
-                              [.. e.Changes.Select(Describe)]);
+        _reported.Enqueue(new Entry(DateTime.UtcNow,
+                                    $"{(_acting ? "This page" : "Elsewhere")}: {e.Changes.Count} {(e.Changes.Count == 1 ? "change" : "changes")} in one commit",
+                                    [.. e.Changes.Select(Describe)]));
 
-        _ = InvokeAsync(() => Add(entry));
+        _ = Task.Run(() => InvokeAsync(ShowReported));
     }
 
     private static string Describe(BlazeDbRowChange change) => change switch
@@ -170,14 +180,20 @@ else
 
         if (reported is false)
         {
-            Add(new Entry(DateTime.Now, $"{what}: nothing reported", []));
+            _reported.Enqueue(new Entry(DateTime.UtcNow, $"{what}: nothing reported", []));
         }
+
+        // This page's own commits are logged now, rather than once their turn on the dispatcher comes.
+        ShowReported();
     }
 
-    private void Add(Entry entry)
+    private void ShowReported()
     {
-        _log.Insert(0, entry);
-        if (_log.Count > 30) _log.RemoveAt(_log.Count - 1);
+        while (_reported.TryDequeue(out var entry))
+        {
+            _log.Insert(0, entry);
+            if (_log.Count > 30) _log.RemoveAt(_log.Count - 1);
+        }
 
         StateHasChanged();
     }
@@ -185,5 +201,9 @@ else
     private static TodoItem New(string title) =>
         new() { Id = Guid.NewGuid(), Title = title, Category = Category, CreatedAt = DateTime.UtcNow };
 
-    public void Dispose() => _unsubscribe?.Invoke();
+    public void Dispose()
+    {
+        _disposed = true;
+        _unsubscribe?.Invoke();
+    }
 }

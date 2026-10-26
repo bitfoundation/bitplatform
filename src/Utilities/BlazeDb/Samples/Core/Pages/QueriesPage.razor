@@ -36,7 +36,7 @@ else
         {
             <label>
                 Hours
-                <input id="hours" type="number" min="1" max="720" @bind="_hours" @bind:after="RefreshAsync" />
+                <input id="hours" type="number" min="1" max="@MaxHours" @bind="Hours" @bind:after="RefreshAsync" />
             </label>
         }
         else if (_source is Source.Prefix)
@@ -83,9 +83,10 @@ else
             Newest first
         </label>
 
+        @* Empty takes every row; 0 takes none. *@
         <label>
             Take
-            <input id="take" type="number" min="0" max="100" @bind="_take" @bind:after="RefreshAsync" />
+            <input id="take" type="number" min="0" max="@MaxTake" placeholder="All" @bind="Take" @bind:after="RefreshAsync" />
         </label>
     </div>
 
@@ -107,7 +108,7 @@ else
                     <td>@todo.Title</td>
                     <td>@todo.Category</td>
                     <td>@(todo.Done ? "yes" : "no")</td>
-                    <td>@todo.CreatedAt.ToLocalTime().ToString("g")</td>
+                    <td>@ViewerTime.Format(todo.CreatedAt, RendererInfo, "g")</td>
                 </tr>
             }
         </tbody>
@@ -117,6 +118,9 @@ else
 @code {
     private enum Source { Recent, Prefix, Category, CategoryStatus }
 
+    private const int MaxHours = 720;
+    private const int MaxTake = 100;
+
     private BlazeDbLiveQuery<QueryView>? _view;
     private Source _source = Source.Recent;
     private int _hours = 24;
@@ -125,25 +129,38 @@ else
     private bool _done;
     private bool _openOnly;
     private bool _newestFirst = true;
-    private int _take = 10;
+    private int? _take = 10;
+    private bool _disposed;
 
     private sealed record QueryView(List<TodoItem> Rows, string Code, string Explain);
+
+    // The inputs' min and max are a hint to the browser, not a limit on what @bind sets: a value is kept in range
+    // here, before Run - which a commit can start on another thread at any time - reads it. Out of range, it would
+    // throw there: from DateTime.AddHours, or from Take for a negative count.
+    private int Hours { get => _hours; set => _hours = Math.Clamp(value, 1, MaxHours); }
+
+    private int? Take { get => _take; set => _take = value is { } take ? Math.Clamp(take, 0, MaxTake) : null; }
 
     protected override async Task OnInitializedAsync()
     {
         if (Database.Unreachable is not null) return;
 
-        _view = await Database.UseAsync(db =>
+        await Database.UseAsync(db =>
         {
-            var view = db.GetTable(TodoItem.Table).Watch(Run);
-            view.Changed += OnViewChanged;
-            return view;
+            // Left while the database was opening, or on a server while waiting its turn: a live query started
+            // now would go on re-running - and re-rendering - for a page that is gone.
+            if (_disposed) return;
+
+            _view = db.GetTable(TodoItem.Table).Watch(Run);
+            _view.Changed += OnViewChanged;
         });
     }
 
     // Builds the query from the form, runs it, and writes down the C# that builds the same query.
     private QueryView Run(BlazeDbTable<Guid, TodoItem> todos)
     {
+        var (hours, take) = (_hours, _take);
+
         var query = BlazeDbQuery<Guid, TodoItem>.From(todos);
         List<string> code = ["BlazeDbQuery<Guid, TodoItem>.From(todos)"];
 
@@ -151,8 +168,8 @@ else
         {
             case Source.Recent:
                 // An ordered range comes in index order, either way round: newest first needs no sort.
-                query.UseIndex(TodoItem.Indexes.CreatedAt, DateTime.UtcNow.AddHours(-_hours), BlazeDbBound<DateTime>.Unbounded, descending: _newestFirst);
-                code.Add($".UseIndex(TodoItem.Indexes.CreatedAt, DateTime.UtcNow.AddHours(-{_hours}), BlazeDbBound<DateTime>.Unbounded, descending: {Bool(_newestFirst)})");
+                query.UseIndex(TodoItem.Indexes.CreatedAt, DateTime.UtcNow.AddHours(-hours), BlazeDbBound<DateTime>.Unbounded, descending: _newestFirst);
+                code.Add($".UseIndex(TodoItem.Indexes.CreatedAt, DateTime.UtcNow.AddHours(-{hours}), BlazeDbBound<DateTime>.Unbounded, descending: {Bool(_newestFirst)})");
                 break;
             case Source.Prefix:
                 query.UseIndexPrefix(TodoItem.Indexes.Title, _prefix);
@@ -180,27 +197,27 @@ else
             code.Add(".OrderBy(t => t.CreatedAt, descending: true)");
         }
 
-        if (_take > 0)
+        if (take is { } count)
         {
-            query.Take(_take);
-            code.Add($".Take({_take})");
+            query.Take(count);
+            code.Add($".Take({count})");
         }
 
         return new(query.ToList(), string.Join(Environment.NewLine + "    ", code) + ";", query.Explain());
     }
 
-    private Task RefreshAsync() => Database.UseAsync(_ =>
-    {
-        _view?.Refresh();
-        return true;
-    });
+    private Task RefreshAsync() => Database.UseAsync(_ => _view?.Refresh());
 
-    private void OnViewChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+    // Raised on the thread that committed - on a server, possibly another circuit's, inside the lock its write took.
+    // The re-render goes through this component's dispatcher from the thread pool: called right here, the
+    // dispatcher would render on that thread, keeping the writer - and everyone waiting for the lock - waiting too.
+    private void OnViewChanged(object? sender, EventArgs e) => _ = Task.Run(() => InvokeAsync(StateHasChanged));
 
     private static string Bool(bool value) => value ? "true" : "false";
 
     public void Dispose()
     {
+        _disposed = true;
         if (_view is null) return;
 
         _view.Changed -= OnViewChanged;

@@ -58,7 +58,7 @@ else
                     <span class="title">@todo.Title</span>
                 </label>
                 <span class="tag">@todo.Category</span>
-                <time class="muted" datetime="@todo.CreatedAt.ToString("O")">@todo.CreatedAt.ToLocalTime().ToString("g")</time>
+                <time class="muted" datetime="@todo.CreatedAt.ToString("O")">@ViewerTime.Format(todo.CreatedAt, RendererInfo, "g")</time>
                 <button type="button" class="btn link" aria-label="Delete @todo.Title" @onclick="() => DeleteAsync(todo.Id)">Delete</button>
             </li>
         }
@@ -85,6 +85,7 @@ else
     private bool? _status;
     private string? _category;
     private string? _message;
+    private bool _disposed;
 
     private sealed record TodoView(List<TodoItem> Rows, string Source, int Total, int Open, int Done, List<KeyValuePair<string, int>> Categories);
 
@@ -92,11 +93,14 @@ else
     {
         if (Database.Unreachable is not null) return;
 
-        _view = await Database.UseAsync(db =>
+        await Database.UseAsync(db =>
         {
-            var view = db.GetTable(TodoItem.Table).Watch(Read);
-            view.Changed += OnViewChanged;
-            return view;
+            // Left while the database was opening, or on a server while waiting its turn: a live query started
+            // now would go on re-running - and re-rendering - for a page that is gone.
+            if (_disposed) return;
+
+            _view = db.GetTable(TodoItem.Table).Watch(Read);
+            _view.Changed += OnViewChanged;
         });
     }
 
@@ -132,11 +136,7 @@ else
         var title = _title.Trim();
         if (title.Length == 0) return;
 
-        await Database.UseAsync(db =>
-        {
-            db.GetTable(TodoItem.Table).Insert(new TodoItem { Id = Guid.NewGuid(), Title = title, Category = _newCategory, CreatedAt = DateTime.UtcNow });
-            return true;
-        });
+        await Database.UseAsync(db => db.GetTable(TodoItem.Table).Insert(new TodoItem { Id = Guid.NewGuid(), Title = title, Category = _newCategory, CreatedAt = DateTime.UtcNow }));
 
         _title = "";
         _message = null;
@@ -175,19 +175,19 @@ else
         (_status, _category) = (status, category);
 
         // Re-runs the live query now, as a commit would, with the new filter.
-        await Database.UseAsync(_ =>
-        {
-            _view!.Refresh();
-            return true;
-        });
+        await Database.UseAsync(_ => _view!.Refresh());
     }
 
-    private void OnViewChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+    // Raised on the thread that committed - on a server, possibly another circuit's, inside the lock its write took.
+    // The re-render goes through this component's dispatcher from the thread pool: called right here, the
+    // dispatcher would render on that thread, keeping the writer - and everyone waiting for the lock - waiting too.
+    private void OnViewChanged(object? sender, EventArgs e) => _ = Task.Run(() => InvokeAsync(StateHasChanged));
 
     private static string Bool(bool value) => value ? "true" : "false";
 
     public void Dispose()
     {
+        _disposed = true;
         if (_view is null) return;
 
         _view.Changed -= OnViewChanged;
