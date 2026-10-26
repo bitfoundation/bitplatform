@@ -76,11 +76,23 @@
 
 @code {
     private IReadOnlyList<BaletteCommand> _commands = [];
+    private (string? Assignee, string ProjectName)? _shown;
 
     protected override void OnInitialized()
     {
-        _commands = BuildCommands();
+        UpdateCommands();
         State.Changed += OnStateChanged;
+    }
+
+    // A new list re-registers every command, so one is built only when a value the commands show has changed: most
+    // changes - a person found, an export run - touch none of them.
+    private void UpdateCommands()
+    {
+        var shown = (State.Assignee, State.ProjectName);
+        if (_shown == shown) return;
+
+        _shown = shown;
+        _commands = BuildCommands();
     }
 
     private BaletteCommand[] BuildCommands() =>
@@ -160,7 +172,7 @@
 
     private void OnStateChanged()
     {
-        _commands = BuildCommands();
+        UpdateCommands();
         _ = InvokeAsync(StateHasChanged);
     }
 

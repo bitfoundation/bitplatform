@@ -22,6 +22,12 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     /// <summary>How long a handler runs before the palette shows it is busy: long enough that a quick one never flickers.</summary>
     private static readonly TimeSpan BusyDelay = TimeSpan.FromMilliseconds(150);
 
+    /// <summary>
+    /// How long a toast shows before the palette it closes goes away: long enough to read a short confirmation. Tests
+    /// lengthen it, so that nothing they do lands after the close by chance.
+    /// </summary>
+    internal TimeSpan ToastCloseDelay { get; set; } = TimeSpan.FromMilliseconds(900);
+
     private readonly string _id = $"bit-balette-{Guid.NewGuid():N}"[..20];
     private readonly List<BaletteCommand> _declarative = [];
     private readonly List<BalettePageFrame> _pages = [];
@@ -59,6 +65,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private CancellationTokenSource? _debounceCts;
     private CancellationTokenSource? _executeCts;
     private CancellationTokenSource? _toastCts;
+    // The close a toast scheduled (see ApplyResultAsync). Whatever the user does in the palette meanwhile calls it off:
+    // opening or closing it, typing, a key, a command - from a click, a shortcut or code - and a page change.
     private CancellationTokenSource? _autoCloseCts;
     private bool _executing;
     private bool _busy;
@@ -796,8 +804,9 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         }
 
         // Esc while a toast's close is pending is the close it was waiting for, not a step back from the page the
-        // command ran on. Any other key means the palette is in use again.
-        if (key == "Escape" && _autoCloseCts is not null)
+        // command ran on - unless that close would change nothing: an inline palette that keeps its place goes back a
+        // page or clears its query, as always. Any other key means the palette is in use again.
+        if (key == "Escape" && _autoCloseCts is not null && (!Inline || Options.ResetOnClose))
         {
             await CloseCoreAsync();
             return;
@@ -1335,6 +1344,9 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     /// </param>
     private async Task ExecuteCommandAsync(BaletteCommand cmd, bool fromCode)
     {
+        // Whatever it does - runs, arms a confirmation, toggles a row, explains why it is disabled - the palette is in use.
+        CancelAutoClose();
+
         if (_executing)
         {
             return;
@@ -1445,7 +1457,6 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return;
         }
 
-        CancelAutoClose();
         var cts = _executeCts = new CancellationTokenSource();
         var startPage = CurrentPage;
         var ctx = CreateContext(cmd, promptValue, cts.Token, selected);
@@ -1580,13 +1591,12 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                     // from the keyboard, nothing else renders until the whole flow - the close included - is over.
                     StateHasChanged();
 
-                    // Anything done in the palette meanwhile - closing and reopening it, typing, a key, another command,
-                    // another page - calls the close off: it would close the palette under the user (or, inline, reset it).
-                    _autoCloseCts?.Cancel();
+                    // Anything done in the palette meanwhile calls the close off (see _autoCloseCts): it would close the
+                    // palette under the user (or, inline, reset it).
                     var autoClose = _autoCloseCts = new CancellationTokenSource();
                     try
                     {
-                        await Task.Delay(900, autoClose.Token);
+                        await Task.Delay(ToastCloseDelay, autoClose.Token);
                     }
                     catch (OperationCanceledException)
                     {
@@ -1594,7 +1604,13 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                         return;
                     }
 
-                    _autoCloseCts = null;
+                    // Called off too late to stop the delay - by an action that reached the renderer while this waited
+                    // for it - or taken over by a later toast's close.
+                    if (_autoCloseCts != autoClose)
+                    {
+                        return;
+                    }
+
                     await CloseCoreAsync();
                 }
 

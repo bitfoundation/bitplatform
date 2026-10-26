@@ -27,7 +27,7 @@
 </div>
 
 @* One palette for the whole app, in the layout every page renders in, with the app-wide commands. A new list is
-   handed to BaletteCommands whenever the state changes, so the Theme setting's value and the Compact rows switch
+   handed to BaletteCommands whenever a value they show changes, so the Theme setting's value and the Compact rows switch
    are never stale. The palette renders a closed <dialog> while prerendering and attaches its keyboard handling
    once it is interactive. *@
 <BaletteCommands Commands="_appCommands" />
@@ -44,12 +44,24 @@
 
 @code {
     private IReadOnlyList<BaletteCommand> _appCommands = [];
+    private (string Theme, bool Compact)? _shown;
     private string? _appliedTheme;
 
     protected override void OnInitialized()
     {
-        _appCommands = BuildCommands();
+        UpdateCommands();
         State.Changed += OnStateChanged;
+    }
+
+    // A new list re-registers every command, so one is built only when a value the commands show has changed: most
+    // changes - a person found, a message sent - touch none of them.
+    private void UpdateCommands()
+    {
+        var shown = (State.Theme, State.Compact);
+        if (_shown == shown) return;
+
+        _shown = shown;
+        _appCommands = BuildCommands();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -104,7 +116,7 @@
 
     private void OnStateChanged()
     {
-        _appCommands = BuildCommands();
+        UpdateCommands();
         _ = InvokeAsync(StateHasChanged);
     }
 

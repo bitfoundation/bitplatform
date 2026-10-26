@@ -74,10 +74,11 @@
             }, minQueryLength: 0, applyMatcher: true)],
         }));
 
+        // Built once: the source reads the list it is given again on every search, and a lazy query would build every command again too.
         _registrations.Add(Palette.RegisterSource(new BaletteStaticSource("Documentation",
-            SampleData.DocTopics.Select(t => BaletteCmd.New(t.Title).Id($"docs:{t.Anchor}").Subtitle(t.Summary)
+            [.. SampleData.DocTopics.Select(t => BaletteCmd.New(t.Title).Id($"docs:{t.Anchor}").Subtitle(t.Summary)
                 .Href($"https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette#{t.Anchor}", newTab: true)
-                .Build()))));
+                .Build())])));
     }
 
     private BaletteCommand ToCommand(SampleData.Issue issue) =>
