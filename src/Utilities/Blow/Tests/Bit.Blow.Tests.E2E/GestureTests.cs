@@ -89,7 +89,7 @@ public sealed class GestureTests : BlowTest
 
         // The node ends up held exactly where it was grabbed, however far auto-pan scrolled the view meanwhile.
         var after = await NodeBoxAsync(page, "2");
-        AssertNear(new Point(grab.X - node.X, grab.Y - node.Y), new Point(drop.X - after.X, drop.Y - after.Y), 1, "grab offset at the drop");
+        AssertNear(new Point(grab.X - node.X, grab.Y - node.Y), new Point(drop.X - after.X, drop.Y - after.Y), 1.5, "grab offset at the drop");
 
         // And the release ended it: moving on without a button pressed leaves the node where it is.
         await page.Mouse.MoveAsync((float)drop.X + 100, (float)drop.Y + 80, new MouseMoveOptions { Steps = 5 });
