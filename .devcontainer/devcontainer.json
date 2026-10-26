@@ -26,7 +26,6 @@
     "vscode": {
       "extensions": [
         "ms-dotnettools.csharp",
-        "ms-dotnettools.csdevkit",
         "ms-azuretools.vscode-docker",
         "ms-vscode-remote.remote-containers",
         "ms-dotnettools.blazorwasm-companion",

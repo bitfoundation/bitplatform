@@ -352,9 +352,8 @@ dotnet test --logger "console;verbosity=detailed"
 ```
 
 ### From VS Code:
-1. Install the **C# Dev Kit** extension
-2. Tests appear in the **Testing** sidebar
-3. Click the play button to run tests
+1. Install the **C#** extension (`ms-dotnettools.csharp`)
+2. Click **Run Test** or **Debug Test** above a test method or class
 
 ### Playwright-Specific Commands:
 ```powershell
