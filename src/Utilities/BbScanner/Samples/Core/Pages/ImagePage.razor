@@ -1,5 +1,5 @@
 ﻿@page "/image"
-@using Bit.BbScanner.TestKit
+@implements IDisposable
 
 <PageTitle>Images - BbScanner samples</PageTitle>
 
@@ -23,7 +23,8 @@
     <h2>Pick or drop an image</h2>
     <p>
         The scanner's own <em>Scan image</em> button, an image file dropped onto it, or a button of the page's own
-        through <code>OpenFilePickerAsync</code>. Results arrive through <code>OnScan</code>.
+        through <code>OpenFilePickerAsync</code>. Results arrive through <code>OnScan</code>. Off WebAssembly
+        <code>OpenFilePickerAsync</code> does nothing, so the page's button says why instead.
     </p>
     <div class="toolbar">
         <button type="button" @onclick="OpenPickerAsync">Choose an image</button>
@@ -34,7 +35,8 @@
     <h2>Blazor's InputFile</h2>
     <p>
         <code>ScanImageAsync</code> reads an image the application holds - an upload, a download, a file from
-        <code>InputFile</code> - and returns every symbol in it instead of raising <code>OnScan</code>.
+        <code>InputFile</code> - and returns every symbol in it instead of raising <code>OnScan</code>. Off WebAssembly
+        it throws <code>NotSupported</code> before reading the stream, so a file is not uploaded just to be refused.
     </p>
     <InputFile accept="image/*" OnChange="ScanFileAsync" />
 </section>
@@ -59,16 +61,34 @@
 
 @code {
     private readonly List<BbBarcodeResult> _results = [];
+    private readonly CancellationTokenSource _leaving = new();
     private BbScanner? _scanner;
     private BbScannerException? _error;
 
     private void HandleScan(BbBarcodeResult result)
     {
         _error = null;
-        _results.Insert(0, result);
+        ResultList.Prepend(_results, [result]);
     }
 
-    private Task OpenPickerAsync() => _scanner?.OpenFilePickerAsync() ?? Task.CompletedTask;
+    private async Task OpenPickerAsync()
+    {
+        _error = null;
+        if (!OperatingSystem.IsBrowser())
+        {
+            // OpenFilePickerAsync does nothing off WebAssembly, where the scanner has no picker to open: say so,
+            // rather than leave a button that looks broken.
+            _error = new BbScannerException(
+                BbScannerErrorKind.NotSupported,
+                $"The scanner's file picker needs Blazor WebAssembly; this page is running on the {RendererInfo.Name} renderer.");
+            return;
+        }
+
+        if (_scanner is not null)
+        {
+            await _scanner.OpenFilePickerAsync();
+        }
+    }
 
     private async Task ScanFileAsync(InputFileChangeEventArgs args)
     {
@@ -82,14 +102,14 @@
         {
             // Zero is no limit to the scanner, but no bytes at all to OpenReadStream.
             var limit = _scanner.MaxImageFileSize > 0 ? _scanner.MaxImageFileSize : long.MaxValue;
-            await using var stream = args.File.OpenReadStream(limit);
-            var results = await _scanner.ScanImageAsync(stream);
+            await using var stream = args.File.OpenReadStream(limit, _leaving.Token);
+            var results = await _scanner.ScanImageAsync(stream, cancellationToken: _leaving.Token);
             if (results.Count == 0)
             {
                 _error = new BbScannerException(BbScannerErrorKind.InvalidImage, $"No barcode found in {args.File.Name}.");
             }
 
-            _results.InsertRange(0, results);
+            ResultList.Prepend(_results, results);
         }
         catch (BbScannerException ex)
         {
@@ -101,6 +121,15 @@
             // InputFile's own size limit, which is the scanner's.
             _error = new BbScannerException(BbScannerErrorKind.InvalidImage, ex.Message, ex);
         }
+        catch (JSException ex)
+        {
+            // The browser could no longer read the file: it was moved or deleted after it was chosen.
+            _error = new BbScannerException(BbScannerErrorKind.InvalidImage, ex.Message, ex);
+        }
+        catch (Exception ex) when ((ex is OperationCanceledException or ObjectDisposedException) && _leaving.IsCancellationRequested)
+        {
+            // The page was left while the file was read, and the scanner went with it: there is nobody to tell.
+        }
     }
 
     private void DecodeGeneratedImage()
@@ -111,8 +140,8 @@
             return;
         }
 
-        var qr = SymbolCatalog.All.First(s => s.Format == BbBarcodeFormat.QrCode);
-        using var upright = qr.Render();
+        var qr = SampleCatalog.All.First(s => s.Format == BbBarcodeFormat.QrCode);
+        using var upright = SampleCatalog.RenderMatrix(qr, scale: 4);
         using var turned = ImageTransforms.Rotate(upright, 20);
 
         // The packed RGBA an application gets from a canvas or a camera.
@@ -124,6 +153,12 @@
             return;
         }
 
-        _results.Insert(0, result);
+        ResultList.Prepend(_results, [result]);
+    }
+
+    public void Dispose()
+    {
+        _leaving.Cancel();
+        _leaving.Dispose();
     }
 }

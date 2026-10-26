@@ -10,12 +10,25 @@
     @* No link to _content/Bit.BbScanner/bit-bbscanner.css: Bit.BbScanner's JS initializer adds it to the page by itself. *@
     <link rel="stylesheet" href="_content/Bit.BbScanner.Samples.Core/app.css" />
     <link rel="icon" type="image/svg+xml" href="_content/Bit.BbScanner.Samples.Core/favicon.svg" />
-    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+    <HeadOutlet @rendermode="PageRenderMode" />
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveWebAssembly" />
+    <Routes @rendermode="PageRenderMode" />
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
     <script src="_framework/blazor.web.js"></script>
 </body>
 
 </html>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    // Interactive everywhere except the error page, which renders statically: an interactive router would start on
+    // the address that failed and render the failing page again in place of the error.
+    private IComponentRenderMode? PageRenderMode => HttpContext.AcceptsInteractiveRouting() ? InteractiveWebAssembly : null;
+}

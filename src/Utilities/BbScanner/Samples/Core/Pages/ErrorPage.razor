@@ -1,7 +1,10 @@
 ﻿@page "/Error"
+@attribute [ExcludeFromInteractiveRouting]
 
 @* Target of UseExceptionHandler("/Error") in the web hosts' Program.cs, outside Development. It lives here rather than
-   in a host project because the router (Routes.razor) only knows the pages of this assembly. *@
+   in a host project because the router (Routes.razor) only knows the pages of this assembly. It renders statically
+   (each host's App.razor drops the render mode for it): an interactive router would start on the address that failed
+   and render the failing page again in its place. *@
 
 <PageTitle>Error - BbScanner samples</PageTitle>
 

@@ -1,4 +1,5 @@
 ﻿@page "/decoder"
+@implements IDisposable
 
 <PageTitle>Decoder - BbScanner samples</PageTitle>
 
@@ -19,7 +20,7 @@
         Still image tuning (<code>BbScannerOptions.ForStillImages()</code>)
     </label>
     <button type="button" disabled="@_decoding" @onclick="DecodeAllAsync">Decode again</button>
-    <span class="muted">@_rows.Count(r => r.Read) of @SymbolCatalog.All.Count read, @_total.TotalMilliseconds.ToString("0.0") ms in all</span>
+    <span class="muted">@_rows.Count(r => r.Read) of @Symbols.Count read, @_total.TotalMilliseconds.ToString("0.0") ms in all</span>
 </div>
 
 <p class="muted">
@@ -32,7 +33,7 @@
     @foreach (var row in _rows)
     {
         <figure class="symbol">
-            <SymbolImage Path="@row.Path" Width="row.Width" Height="row.Height" Label="@($"{row.Symbol.Caption} encoding {row.Symbol.Text}")" />
+            <SymbolImage Path="@row.Path" Width="row.Width" Height="row.Height" Label="@($"{row.Symbol.Caption} encoding {row.Symbol.Value}")" />
             <figcaption>
                 <strong>@row.Symbol.Caption</strong>
                 @if (row.Read)
@@ -43,52 +44,85 @@
                 {
                     <span class="badge badge-error">@(row.Result is null ? "not read" : $"misread as {row.Result.Format}")</span>
                 }
-                <span class="value">@(row.Result?.Text ?? row.Symbol.Text)</span>
+                <span class="value">@(row.Result?.Text ?? row.Symbol.Value)</span>
             </figcaption>
         </figure>
     }
 </div>
 
 @code {
-    private sealed record Row(SampleSymbol Symbol, string Path, int Width, int Height, BbBarcodeResult? Result, TimeSpan Time)
+    private sealed record Row(BarcodeSample Symbol, string Path, int Width, int Height, BbBarcodeResult? Result, TimeSpan Time)
     {
-        public bool Read => Result is not null && Result.Format == Symbol.Format && Result.Text == Symbol.Text;
+        public bool Read => Result is not null && Result.Format == Symbol.Format && Result.Text == Symbol.Value;
     }
+
+    /// <summary>One symbol of each symbology, from the catalog the demo draws its samples from.</summary>
+    private static readonly IReadOnlyList<BarcodeSample> Symbols = [.. SampleCatalog.All.DistinctBy(s => s.Format)];
 
     private readonly List<Row> _rows = [];
     private bool _stillImageTuning;
     private bool _decoding;
+    private bool _disposed;
     private TimeSpan _total;
 
-    protected override Task OnInitializedAsync() => DecodeAllAsync();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Not OnInitializedAsync, which prerendering runs as well: the server would decode every symbol for markup the
+        // interactive render then clears and fills again, and hold the first response back until it had.
+        if (firstRender)
+        {
+            await DecodeAllAsync();
+        }
+    }
 
     private async Task DecodeAllAsync()
     {
+        if (_decoding)
+        {
+            return;
+        }
+
         _decoding = true;
         _rows.Clear();
         _total = TimeSpan.Zero;
 
-        var options = _stillImageTuning ? BbScannerOptions.ForStillImages() : new BbScannerOptions();
-        options.Formats = BbBarcodeFormat.All;
-        options.DuplicateSuppressionWindow = TimeSpan.Zero;
-
-        // One decoder for every symbol: it owns the scratch state a frame needs and reuses it, which is what keeps a
-        // camera loop free of garbage. It is not thread safe - one per scanning session.
-        using var decoder = new BbBarcodeDecoder(options);
-        foreach (var symbol in SymbolCatalog.All)
+        try
         {
-            using var image = symbol.Render();
-            var result = decoder.Decode(image.View, suppressDuplicates: false);
-            var time = decoder.LastFrame.Total;
-            _total += time;
-            _rows.Add(new Row(symbol, SymbolImage.Trace(image), image.Width, image.Height, result, time));
+            var options = _stillImageTuning ? BbScannerOptions.ForStillImages() : new BbScannerOptions();
+            options.Formats = BbBarcodeFormat.All;
+            options.DuplicateSuppressionWindow = TimeSpan.Zero;
 
-            // Hand the thread back between symbols, so each row shows as soon as it is read - on WebAssembly the
-            // decoder and the renderer share the one thread.
-            StateHasChanged();
-            await Task.Yield();
+            // One decoder for every symbol: it owns the scratch state a frame needs and reuses it, which is what keeps a
+            // camera loop free of garbage. It is not thread safe - one per scanning session.
+            using var decoder = new BbBarcodeDecoder(options);
+            foreach (var symbol in Symbols)
+            {
+                using var image = SampleCatalog.Render(symbol, scale: 4, linearScale: 3, height: 60);
+                var result = decoder.Decode(image.View, suppressDuplicates: false);
+                var time = decoder.LastFrame.Total;
+                _total += time;
+                _rows.Add(new Row(symbol, SymbolImage.Trace(image), image.Width, image.Height, result, time));
+
+                // Hand the thread back between symbols, so each row shows as soon as it is read - on WebAssembly the
+                // decoder and the renderer share the one thread.
+                StateHasChanged();
+                await Task.Yield();
+
+                // Left mid-pass: the rest would be decoded for a page nobody sees.
+                if (_disposed)
+                {
+                    return;
+                }
+            }
+        }
+        finally
+        {
+            _decoding = false;
         }
 
-        _decoding = false;
+        // Started from OnAfterRenderAsync, whose completion renders nothing: render once more for the enabled button.
+        StateHasChanged();
     }
+
+    public void Dispose() => _disposed = true;
 }

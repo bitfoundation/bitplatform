@@ -22,9 +22,12 @@
 <section>
     <h2>Camera</h2>
     <p>
-        Point the camera at a QR code, an EAN-13 or any other common symbology - the symbols on the
-        <NavLink href="decoder">decoder</NavLink> page, shown on another screen, will do. <em>Scan image</em> reads a
-        photo instead, without opening the camera.
+        Point the camera at a QR code, an EAN-13 or any other common symbology - the QR Code, Data Matrix, Code 128,
+        Code 39, EAN, UPC and ITF symbols on the <NavLink href="decoder">decoder</NavLink> page, shown on another
+        screen, will do. This scanner keeps to <code>BbBarcodeFormat.Common</code>, the default: PDF417, Aztec,
+        MaxiCode, Micro QR, Codabar, Code 93 and GS1 DataBar each cost every frame time of their own, so an app asks
+        for them by name through <code>Formats</code>, and the camera here passes them by. <em>Scan image</em> reads
+        a photo instead, without opening the camera.
     </p>
 
     <div class="surface">
@@ -59,10 +62,6 @@
     private void HandleScan(BbBarcodeResult result)
     {
         _error = null;
-        _results.Insert(0, result);
-        if (_results.Count > 20)
-        {
-            _results.RemoveAt(_results.Count - 1);
-        }
+        ResultList.Prepend(_results, [result]);
     }
 }

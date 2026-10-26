@@ -28,9 +28,26 @@ else
 }
 
 @code {
+    /// <summary>How many results a page keeps; the oldest are dropped as new ones arrive.</summary>
+    public const int Capacity = 20;
+
     /// <summary>The results to list, newest first.</summary>
     [Parameter]
     public IReadOnlyList<BbBarcodeResult> Results { get; set; } = [];
+
+    /// <summary>
+    /// Puts <paramref name="latest"/> at the top of <paramref name="results"/>, in order, and drops what falls past
+    /// <see cref="Capacity"/>, so a page scanned all afternoon redraws a short table and holds little memory - on a
+    /// circuit, the server's.
+    /// </summary>
+    public static void Prepend(List<BbBarcodeResult> results, IEnumerable<BbBarcodeResult> latest)
+    {
+        results.InsertRange(0, latest);
+        if (results.Count > Capacity)
+        {
+            results.RemoveRange(Capacity, results.Count - Capacity);
+        }
+    }
 
     private static string Describe(BbBarcodeResultMetadata? metadata)
     {

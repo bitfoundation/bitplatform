@@ -200,16 +200,16 @@ public class BbScannerTests : BunitContext
     }
 
     [TestMethod]
-    public async Task An_image_stream_over_the_size_limit_is_refused_while_it_is_read()
+    public async Task An_image_stream_is_not_read_outside_a_browser()
     {
-        var scanner = RenderPrerendered(parameters => parameters.Add(p => p.MaxImageFileSize, 1024));
+        var scanner = RenderPrerendered();
         using var stream = new MemoryStream(new byte[4096]);
 
         var error = await Assert.ThrowsExactlyAsync<BbScannerException>(() =>
             scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(stream)));
 
-        Assert.AreEqual(BbScannerErrorKind.InvalidImage, error.Kind);
-        Assert.Contains("larger than", error.Message);
+        Assert.AreEqual(BbScannerErrorKind.NotSupported, error.Kind);
+        Assert.AreEqual(0, stream.Position, "An upload over a circuit must not cross the network only to be refused.");
     }
 
     [TestMethod]
