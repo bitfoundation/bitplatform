@@ -599,6 +599,8 @@ public partial class AppAiChatPanel : IAiChatCardHost
         {
             var timeZoneId = (await TimeZoneService.GetCurrentTimeZone()).Id;
 
+            await hubConnection.EnsureConnected(PubSubService, ownCancellationToken);
+
             await foreach (var response in hubConnection.StreamAsync<string>(SharedAppMessages.StartChat,
                                                                              new StartChatRequest()
                                                                              {

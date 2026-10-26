@@ -88,6 +88,10 @@ public partial class ClientAppMessages
     /// </summary>
     public const string IS_ONLINE_CHANGED = nameof(IS_ONLINE_CHANGED);
 
+    //#if (signalR == true)
+    public const string CONNECT_SIGNALR = nameof(CONNECT_SIGNALR);
+    //#endif
+
     /// <summary>
     /// A publisher that publishes this message notifies that the page data has changed.
     /// </summary>

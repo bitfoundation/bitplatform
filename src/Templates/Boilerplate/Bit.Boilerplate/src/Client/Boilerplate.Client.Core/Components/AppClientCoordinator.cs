@@ -45,6 +45,9 @@ public partial class AppClientCoordinator : AppComponentBase
     //#endif
 
     private List<Action> unsubscribes = [];
+    //#if (signalR == true)
+    private Task signalRStart = Task.CompletedTask;
+    //#endif
 
     protected override async Task OnInitAsync()
     {
@@ -120,6 +123,17 @@ public partial class AppClientCoordinator : AppComponentBase
             AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
             //#if (signalR == true)
             SubscribeToSignalRSharedAppMessages();
+            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.CONNECT_SIGNALR, async payload =>
+            {
+                if (hubConnection.State is HubConnectionState.Disconnected)
+                {
+                    signalRStart = EnsureSignalRStarted();
+                }
+
+                await signalRStart;
+
+                (payload as TaskCompletionSource)?.TrySetResult();
+            }));
             //#endif
             await PropagateAuthState(firstRun: true, AuthenticationStateTask);
 
@@ -267,7 +281,15 @@ public partial class AppClientCoordinator : AppComponentBase
             List<Task> propagations = [];
 
             //#if (signalR == true)
-            propagations.Add(EnsureSignalRStarted());
+            if (firstRun && hubConnection.State is HubConnectionState.Disconnected)
+            {
+                signalRStart = StartSignalRAfterStartup(CurrentCancellationToken);
+            }
+            else
+            {
+                signalRStart = EnsureSignalRStarted();
+                propagations.Add(signalRStart);
+            }
             //#endif
 
             //#if (notification == true)
@@ -422,6 +444,23 @@ public partial class AppClientCoordinator : AppComponentBase
         hubConnection.Closed += HubConnectionStateChange;
         hubConnection.Reconnected += HubConnectionConnected;
         hubConnection.Reconnecting += HubConnectionStateChange;
+    }
+
+    private async Task StartSignalRAfterStartup(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (hubConnection.State is HubConnectionState.Disconnected)
+        {
+            await EnsureSignalRStarted();
+        }
     }
 
     private async Task EnsureSignalRStarted()

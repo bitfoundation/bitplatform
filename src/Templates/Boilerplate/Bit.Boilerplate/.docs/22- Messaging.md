@@ -367,7 +367,7 @@ The **AppClientCoordinator** is responsible for initializing and coordinating al
 
 ### Key Responsibilities
 
-1. **Initialize SignalR Connection**
+1. **Initialize SignalR Connection**: 5 seconds after the app starts, so it stays out of the first render's way. A sign in or sign out connects right away, and a feature that needs the connection sooner calls `hubConnection.EnsureConnected(PubSubService, cancellationToken)` (as the AI chat panel does), which publishes `CONNECT_SIGNALR` and waits for the connection attempt.
 2. **Subscribe to SignalR Events** (via `SubscribeToSignalRSharedAppMessages` method)
 3. **Manage Authentication State Propagation**
 4. **Handle Push Notification Subscriptions**
@@ -419,7 +419,10 @@ public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> ta
         _ = appInsights.ClearAuthenticatedUserContext();
 
     // Start SignalR connection
-    await EnsureSignalRStarted();
+    if (firstRun && hubConnection.State is HubConnectionState.Disconnected)
+        signalRStart = StartSignalRAfterStartup(CurrentCancellationToken);
+    else
+        await EnsureSignalRStarted();
 
     // Subscribe to push notifications
     await pushNotificationService.Subscribe(CurrentCancellationToken);

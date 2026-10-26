@@ -123,6 +123,8 @@ public partial class DiagnosticReport
         AddClientLines();
         StateHasChanged();
 
+        await hubConnection.EnsureConnected(PubSubService, CurrentCancellationToken);
+
         // Throws with its own message when the connection is not up, which is what the user needs to be told anyway.
         serverLines.AddRange(await hubConnection.InvokeAsync<string[]>(SharedAppMessages.GetDiagnosticReport, CurrentCancellationToken));
     }
