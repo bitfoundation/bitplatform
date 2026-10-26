@@ -23,6 +23,18 @@ public sealed class AccessibilityTests : BaletteTest
     private static Task UseLibraryDefaultsAsync(IPage page) => page.EvaluateAsync(
         "() => document.querySelectorAll('link[rel=stylesheet][href*=\"demo\"]').forEach(l => l.remove())");
 
+    private static async Task StepBackAndSearchAsync(IPage page, string restoredQuery, string query)
+    {
+        await page.Keyboard.PressAsync("Escape");
+        await Assertions.Expect(Crumbs(page)).ToHaveCountAsync(0);
+        await Assertions.Expect(Input(page)).ToHaveValueAsync(restoredQuery);
+        for (var i = 0; i < restoredQuery.Length; i++)
+        {
+            await page.Keyboard.PressAsync("Backspace");
+        }
+        await TypeAsync(page, query);
+    }
+
     private async Task AuditEveryStateAsync(ColorScheme scheme, bool libraryDefaults)
     {
         var options = DefaultContextOptions();
@@ -54,16 +66,14 @@ public sealed class AccessibilityTests : BaletteTest
         await Assertions.Expect(Crumbs(page)).ToHaveCountAsync(1);
         await ExpectNoViolationsAsync(page, $"a nested page ({what})");
 
-        await page.Keyboard.PressAsync("Escape");
-        await Input(page).FillAsync("set labels");
+        await StepBackAndSearchAsync(page, "theme", "set labels");
         await ExpectFirstItemAsync(page, "actions.set-labels");
         await page.Keyboard.PressAsync("Enter");
         await page.Keyboard.PressAsync("Enter");
         await Assertions.Expect(Item(page, "label:bug")).ToHaveAttributeAsync("aria-checked", "true");
         await ExpectNoViolationsAsync(page, $"a multi-select page ({what})");
 
-        await page.Keyboard.PressAsync("Escape");
-        await Input(page).FillAsync("rename");
+        await StepBackAndSearchAsync(page, "set labels", "rename");
         await ExpectFirstItemAsync(page, "actions.rename-project");
         await page.Keyboard.PressAsync("Enter");
         await Assertions.Expect(Prompt(page)).ToBeVisibleAsync();
