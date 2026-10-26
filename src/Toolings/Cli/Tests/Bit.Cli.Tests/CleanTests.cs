@@ -93,6 +93,19 @@ public class CleanTests
         Assert.IsFalse(ProjectProcesses.IsUnder("/home/me/Shopping/bin/Shop", "/home/me/Shop"));
     }
 
+    [TestMethod]
+    public void Mentions_Should_MatchTheFolderAndPathsInsideIt()
+    {
+        Assert.IsTrue(ProjectProcesses.Mentions(@"""dotnet"" watch --project C:\Projects\Shop\src\Server\Shop.Server.AppHost\Shop.Server.AppHost.csproj --", @"C:\Projects\Shop"));
+        Assert.IsTrue(ProjectProcesses.Mentions(@"aspire.exe run --apphost ""c:\projects\shop""", @"C:\Projects\Shop\"));
+        Assert.IsTrue(ProjectProcesses.Mentions(@"dotnet build C:\Projects\Shop", @"C:\Projects\Shop"));
+        Assert.IsTrue(ProjectProcesses.Mentions("dotnet run --project /home/me/Shop/src/Shop.csproj", "/home/me/Shop"));
+
+        Assert.IsFalse(ProjectProcesses.Mentions(@"dotnet build C:\Projects\Shop2\Shop2.slnx", @"C:\Projects\Shop"));
+        Assert.IsFalse(ProjectProcesses.Mentions(@"dotnet build C:\Projects\Shop.slnx C:\Projects\Shopping", @"C:\Projects\Shop"));
+        Assert.IsFalse(ProjectProcesses.Mentions("dotnet build-server shutdown", ""));
+    }
+
     private static void AssertRanOnlyTheScript(TestHost host, string folder, string fileName, string arguments)
     {
         var call = host.Runner.Calls.Single();

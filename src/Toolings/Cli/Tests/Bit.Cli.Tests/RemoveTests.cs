@@ -152,7 +152,7 @@ public class RemoveTests
 
             Assert.IsFalse(Directory.Exists(folder));
             Assert.IsTrue(node.WaitForExit(TimeSpan.FromSeconds(10)));
-            StringAssert.Contains(host.FlatOutput, $"after stopping MSBuild ({node.Id})");
+            StringAssert.Contains(host.FlatOutput, $"Stopped MSBuild process {node.Id}");
         }
         finally
         {
@@ -220,7 +220,7 @@ public class RemoveTests
 
             Assert.IsFalse(Directory.Exists(folder));
             Assert.IsTrue(holder.WaitForExit(TimeSpan.FromSeconds(10)));
-            StringAssert.Contains(host.FlatOutput, $"after stopping {name} ({holder.Id})");
+            StringAssert.Contains(host.FlatOutput, $"Stopped {name} process {holder.Id}");
         }
         finally
         {
@@ -281,6 +281,57 @@ public class RemoveTests
         {
             Stop(holder);
         }
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_StopWhatRunsTheProjectFromItsCommandLineOrItsFolder()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        var sdk = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "sdk")).FullName;
+        var appHost = Directory.CreateDirectory(Path.Combine(folder, "src", "Server", "Contoso.Server.AppHost")).FullName;
+        File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), Path.Combine(sdk, "aspire.exe"));
+        File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), Path.Combine(sdk, "dotnet.exe"));
+
+        using var aspire = Process.Start(new ProcessStartInfo(Path.Combine(sdk, "aspire.exe"), $"/k rem run --apphost \"{Path.Combine(appHost, "Contoso.Server.AppHost.csproj")}\"") { WorkingDirectory = host.WorkingDirectory, UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, CreateNoWindow = true })!;
+        using var watch = Process.Start(new ProcessStartInfo(Path.Combine(sdk, "dotnet.exe"), "/k rem watch") { WorkingDirectory = appHost, UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, CreateNoWindow = true })!;
+
+        try
+        {
+            Assert.AreEqual(0, await host.RunAsync("remove", folder, "--yes"), host.Output);
+
+            Assert.IsFalse(Directory.Exists(folder));
+            Assert.IsTrue(aspire.WaitForExit(TimeSpan.FromSeconds(10)));
+            Assert.IsTrue(watch.WaitForExit(TimeSpan.FromSeconds(10)));
+            StringAssert.Contains(host.FlatOutput, $"Stopped aspire process {aspire.Id}");
+            StringAssert.Contains(host.FlatOutput, $"Stopped dotnet process {watch.Id}");
+        }
+        finally
+        {
+            Stop(aspire);
+            Stop(watch);
+        }
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_DeleteAFileWhoseNameWindowsReadsAsADevice()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        var knownHosts = Path.Combine(Directory.CreateDirectory(Path.Combine(folder, "src", "Tests", "bin", "Debug", "net10.0")).FullName, "NUL");
+        File.WriteAllText($@"\\?\{knownHosts}", "[127.0.0.1]:52045 ssh-ed25519 AAAA");
+
+        Assert.AreEqual(0, await host.RunAsync("remove", folder, "--yes"), host.Output);
+
+        Assert.IsFalse(Directory.Exists(folder));
     }
 
     private static Process HoldFile(string shell, string file, bool byAChild = false)

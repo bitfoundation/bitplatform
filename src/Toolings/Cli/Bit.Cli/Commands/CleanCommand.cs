@@ -37,7 +37,7 @@ public static class CleanCommand
             cli.Console.Out.MarkupLine($"Cleaning [bold]{Markup.Escape(name)}[/] [grey]in {Markup.Escape(folder)}[/]");
 
             var steps = new StepRunner(cli);
-            await ProjectProcesses.StopAsync(cli, steps, folder, cancellationToken);
+            var stoppedBuilds = await ProjectProcesses.StopAsync(cli, steps, folder, cancellationToken);
 
             var spec = new ProcessSpec
             {
@@ -56,7 +56,7 @@ public static class CleanCommand
 
             if (cli.Environment.IsWindows && ProjectRenamer.FindBuildFolders(folder) is { Count: > 0 } left)
             {
-                var freed = ProjectProcesses.Free(cli, left);
+                var freed = ProjectProcesses.Free(cli, left, stoppedBuilds: stoppedBuilds);
 
                 if (freed.Stopped.Count > 0)
                 {

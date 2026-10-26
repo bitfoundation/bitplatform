@@ -59,7 +59,7 @@ public static class RemoveCommand
             var onlyEmptyFoldersLeft = false;
             IReadOnlyList<string> inFolder = [];
 
-            await ProjectProcesses.StopAsync(cli, steps, folder, cancellationToken);
+            var stoppedBuilds = await ProjectProcesses.StopAsync(cli, steps, folder, cancellationToken);
             LeaveFolder(folder);
 
             var result = await steps.RunAsync("remove", "Deleting the project folder", (_, token) => Task.Run(() =>
@@ -69,7 +69,7 @@ public static class RemoveCommand
 
                 if (failures.Count > 0)
                 {
-                    freed = ProjectProcesses.Free(cli, failures.Select(f => f.Path));
+                    freed = ProjectProcesses.Free(cli, failures.Select(f => f.Path), stoppedBuilds: stoppedBuilds);
 
                     if (freed.Stopped.Count > 0)
                     {
@@ -79,7 +79,7 @@ public static class RemoveCommand
 
                 if (emptyFoldersLeft)
                 {
-                    var inIt = ProjectProcesses.FreeFolder(cli, folder);
+                    var inIt = ProjectProcesses.FreeFolder(cli, folder, stoppedBuilds);
                     freed = freed with { Stopped = [.. freed.Stopped, .. inIt.Stopped] };
                     inFolder = inIt.Holders;
 

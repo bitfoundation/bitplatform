@@ -53,11 +53,25 @@ public static class FolderRemover
         try
         {
             ClearReadOnly(entry);
-            entry.Delete();
+            Delete(entry);
         }
         catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
         {
             failures.Add(new PathFailure(entry.FullName, exp.Message));
+        }
+    }
+
+    private static void Delete(FileSystemInfo entry)
+    {
+        var path = OperatingSystem.IsWindows() && entry.FullName.StartsWith(@"\\", StringComparison.Ordinal) is false ? $@"\\?\{entry.FullName}" : entry.FullName;
+
+        if (entry is DirectoryInfo)
+        {
+            Directory.Delete(path);
+        }
+        else
+        {
+            File.Delete(path);
         }
     }
 
