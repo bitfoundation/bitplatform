@@ -1266,6 +1266,26 @@ See the `Demo` samples app for runnable examples of basic animations, gestures, 
 drag, variants & stagger, keyframes, enter/exit transitions, presence switching, layout
 (FLIP) animations, scroll-linked motion values and programmatic control.
 
+[`Samples`](Samples/) is the hosting harness rather than the docs: one shared [Core](Samples/Core/) project of
+pages (gestures and drag, presence, layout and reorder, the programmatic API, and scroll), hosted unchanged under
+[Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/Maui/) (Blazor Hybrid on
+Android, iOS, macOS and Windows). Every page says which renderer it is on and whether the engine has its per-frame
+loop there. It does on WebAssembly. On Server and in the MAUI app interop is asynchronous, so the browser plays nearly
+everything and what needs the loop lands on its target at once. The web hosts prerender every page with
+`BmPrerenderMode.Animate`.
+
+```bash
+dotnet run --project src/Utilities/Bmotion/Samples/Server
+dotnet run --project src/Utilities/Bmotion/Samples/Wasm/Bit.Bmotion.Samples.Wasm
+dotnet run --project src/Utilities/Bmotion/Samples/Auto/Bit.Bmotion.Samples.Auto
+dotnet build -t:Run -f net10.0-android src/Utilities/Bmotion/Samples/Maui
+```
+
+`Bit.Bmotion.slnx` includes the MAUI sample, whose Android, iOS and Mac Catalyst (and, on Windows, Windows) targets
+need the `maui-*` workloads - `dotnet workload restore` from `src/Utilities/Bmotion` installs them. Without them the
+solution build fails with `NETSDK1147`; the library, the demo, the tests and the web samples still build as projects
+of their own.
+
 ---
 
 ## MCP server (for AI agents)

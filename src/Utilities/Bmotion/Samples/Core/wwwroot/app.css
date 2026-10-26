@@ -1,0 +1,555 @@
+﻿/* Styling for the Bmotion samples - enough to make the motion easy to see. The library has no stylesheet of its own to
+   style anything with: _content/Bit.Bmotion/bit-bmotion.css, which the web hosts link before this file, only plays the
+   enter animations prerendered with BmPrerenderMode.Animate. */
+
+:root {
+    --primary: #1276c6;
+    --primary-dark: #0d5a97;
+    --primary-soft: #e7f1fa;
+    --accent: #fd7f36;
+    --text: #1b1b1f;
+    --muted: #5b5b66;
+    --border: #e3e4e8;
+    --surface: #fff;
+    --background: #fafafa;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    color: var(--text);
+    background: var(--background);
+}
+
+code,
+kbd {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 0.9em;
+}
+
+kbd {
+    padding: 0 0.25rem;
+    border: 1px solid #c4c4cc;
+    border-radius: 3px;
+}
+
+/* The reading-progress bar of every page (Shared/MainLayout.razor), scaled along x by the page's scroll. */
+.scroll-progress {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 20;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    transform-origin: 0 50%;
+}
+
+.topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 1rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--primary);
+}
+
+.topbar a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.topbar a.brand {
+    font-weight: 600;
+}
+
+.topbar a.active {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.topbar .toggle {
+    margin-left: auto;
+    padding: 0.15rem 0.6rem;
+    border: 1px solid rgb(255 255 255 / 0.6);
+    border-radius: 999px;
+    color: #fff;
+    background: transparent;
+    font: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.topbar .toggle[aria-pressed="true"] {
+    color: var(--primary);
+    background: #fff;
+}
+
+.renderer {
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    color: #fff;
+    background: rgb(0 0 0 / 0.2);
+    font-size: 0.875rem;
+}
+
+main {
+    max-width: 60rem;
+    padding: 1rem 1.5rem 4rem;
+}
+
+/* <FocusOnNavigate> moves focus to the heading after each navigation so screen readers announce the page. The ring
+   shows only where the browser judges focus should be seen - after a keyboard navigation, not a click. */
+h1:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+section {
+    margin: 2rem 0;
+}
+
+.muted {
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+.facts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.25rem 1rem;
+    margin: 1rem 0;
+}
+
+.facts dt {
+    font-weight: 600;
+}
+
+.facts dd {
+    margin: 0;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin: 0.75rem 0;
+}
+
+main button,
+.btn {
+    display: inline-block;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+    color: var(--primary);
+    background: var(--surface);
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+main button:hover {
+    background: var(--primary-soft);
+}
+
+main button:disabled {
+    border-color: #c4c4cc;
+    color: #8a8a94;
+    background: var(--surface);
+    cursor: default;
+}
+
+main .btn-primary,
+main .btn-primary:hover {
+    color: #fff;
+    background: var(--primary);
+}
+
+/* A box to play in. */
+.stage {
+    position: relative;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.stage.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stage.stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Home: the sample tiles. */
+.tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+    padding: 0;
+    list-style: none;
+}
+
+.tile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
+}
+
+.tile a {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.tile span {
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+/* Gestures */
+.drag-area {
+    height: 14rem;
+    padding: 0;
+    background-image: radial-gradient(circle, #d6d8de 1px, transparent 1px);
+    background-size: 16px 16px;
+}
+
+.puck {
+    width: 64px;
+    height: 64px;
+    margin: 1rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+    cursor: grab;
+    touch-action: none;
+}
+
+/* 40px thumb travelling 4 x 60px: the stops in GesturesPage.razor. */
+.track {
+    position: relative;
+    width: 280px;
+    max-width: 100%;
+    height: 40px;
+    border-radius: 20px;
+    background: var(--primary-soft);
+}
+
+.tick {
+    position: absolute;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    margin: -3px 0 0 -3px;
+    border-radius: 50%;
+    background: #9cc3e6;
+    pointer-events: none;
+}
+
+/* Positioned, so it paints over the ticks rather than under them. */
+.thumb {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.25);
+    cursor: grab;
+    touch-action: none;
+}
+
+/* Presence: the dialog. The layer lets clicks through; the backdrop and the dialog take them back. */
+.dialog-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    pointer-events: none;
+}
+
+.backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgb(15 23 42 / 0.45);
+    pointer-events: auto;
+}
+
+.dialog {
+    position: relative;
+    max-width: 24rem;
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: 0 20px 50px rgb(0 0 0 / 0.3);
+    pointer-events: auto;
+}
+
+.dialog h2 {
+    margin-top: 0;
+}
+
+/* Presence: toasts. PopLayout positions a leaving toast absolutely, against this box. */
+.toast-stack {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 12rem;
+    padding: 1rem;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: min(20rem, 100%);
+    padding: 0.6rem 0.9rem;
+    border-radius: 8px;
+    color: #fff;
+    background: #1f2937;
+    box-shadow: 0 6px 16px rgb(0 0 0 / 0.2);
+}
+
+main .toast .dismiss {
+    padding: 0 0.35rem;
+    border: none;
+    color: #fff;
+    background: transparent;
+}
+
+/* Presence: steps */
+.step-stage {
+    min-height: 7rem;
+    overflow: hidden;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+/* Layout: the grid of numbers */
+.number-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
+    gap: 0.75rem;
+}
+
+.number-tile {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.tone-0 { background: #1276c6; }
+.tone-1 { background: #fd7f36; }
+.tone-2 { background: #2f9e44; }
+.tone-3 { background: #7048e8; }
+
+/* Layout: tabs */
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+}
+
+main .tab {
+    position: relative;
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 0;
+    color: var(--muted);
+    background: transparent;
+}
+
+main .tab[aria-selected="true"] {
+    color: var(--primary);
+}
+
+.underline {
+    position: absolute;
+    inset: auto 0 -1px 0;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--primary);
+}
+
+.tab-panel {
+    padding: 1rem 0;
+}
+
+/* Layout: the reorder list */
+.reorder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 24rem;
+}
+
+.reorder-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.reorder-row:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.grip {
+    color: var(--muted);
+    cursor: grab;
+    touch-action: none;
+}
+
+/* Programmatic */
+.dots {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 4.5rem;
+}
+
+.prog-dot,
+.seq-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary);
+}
+
+.seq-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.seq-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+}
+
+.seq-dots {
+    display: flex;
+    gap: 1rem;
+}
+
+.seq-dot {
+    background: var(--accent);
+}
+
+.loop-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 1rem;
+}
+
+.counter {
+    font-size: 2.5rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.blob {
+    fill: var(--primary);
+}
+
+/* Scroll */
+.scroll-readout {
+    position: sticky;
+    top: 0.75rem;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgb(255 255 255 / 0.92);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.08);
+}
+
+.journey {
+    display: grid;
+    gap: 35vh;
+    padding: 20vh 0;
+}
+
+.journey-card {
+    display: grid;
+    place-items: center;
+    height: 9rem;
+    border-radius: 12px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* The reveals come in from the side: clip them, so one waiting off its place never makes the page scroll sideways.
+   clip rather than hidden: hidden would make the list a scroll container. */
+.reveals {
+    display: grid;
+    gap: 1rem;
+    padding: 0;
+    overflow-x: clip;
+    list-style: none;
+}
+
+.reveal {
+    padding: 1rem;
+    border-left: 4px solid var(--accent);
+    border-radius: 4px;
+    background: var(--surface);
+}
+
+/* Shown by blazor.web.js and blazor.webview.js when an interactive session ends on an unhandled exception. */
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 30;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid #b91c1c;
+    background: #fde8e8;
+}
+
+#blazor-error-ui .dismiss {
+    float: right;
+    cursor: pointer;
+}

@@ -1,0 +1,89 @@
+﻿@page "/scroll"
+@inject BmotionScrollTracker Scroll
+@implements IAsyncDisposable
+
+<PageTitle>Scroll · Bmotion samples</PageTitle>
+
+<h1>Scroll</h1>
+
+<p>
+    The bar along the top of every page is the page's scroll, played by the browser on its own scroll timeline
+    (<code>Timeline="BmScrollTimeline.Page()"</code>). Its keyframes are worked out in C# once and handed over; after
+    that there is no scroll handler and no interop, so it follows the scroll as closely on Server and in the MAUI app as
+    on WebAssembly. Scroll down.
+</p>
+
+<div class="scroll-readout" aria-live="off">
+    @* The scroll position as a number in C#, for when it is needed there rather than on an element. Every scroll
+       event crosses to .NET - over the circuit on Server - and the count says how many have. *@
+    <span>BmotionScrollTracker: <strong id="scroll-progress">@_progress.ToString("P0", CultureInfo.InvariantCulture)</strong> scrolled</span>
+    <span class="muted"><span id="scroll-callbacks">@_callbacks</span> callbacks</span>
+</div>
+
+<section>
+    <h2>Each card's own journey</h2>
+    <p>
+        <code>BmScrollTimeline.View()</code> measures the element's journey through the viewport instead of the page's:
+        0 as it enters at the bottom, 1 as it leaves at the top. These cards fade and grow in on the way up, and back
+        out as they go. Only transforms and opacity can ride a scroll timeline - they are what the browser
+        interpolates by itself.
+    </p>
+
+    <div class="journey">
+        @foreach (var card in Enumerable.Range(1, 5))
+        {
+            <Bmotion Timeline="BmScrollTimeline.View()" Animate="Bm.To(opacity: [0, 1, 1, 0], scale: [0.85, 1, 1, 0.85])">
+                <div class="journey-card">Card @card</div>
+            </Bmotion>
+        }
+    </div>
+</section>
+
+<section>
+    <h2>Triggered by the viewport</h2>
+    <p>
+        <code>WhileInView</code> is a gesture rather than a timeline: the browser reports the element entering the
+        viewport, and it plays an ordinary animation from there. <code>BmPresets.Reveal()</code> packages the usual one,
+        once per element.
+    </p>
+
+    <ul class="reveals">
+        @foreach (var (index, text) in Reveals.Index())
+        {
+            <Bmotion @key="index" Preset="index % 2 == 0 ? RevealFromLeft : RevealFromRight">
+                <li class="reveal">@text</li>
+            </Bmotion>
+        }
+    </ul>
+</section>
+
+@code {
+    private static readonly BmPreset RevealFromLeft = BmPresets.Reveal(from: BmEdge.Left);
+    private static readonly BmPreset RevealFromRight = BmPresets.Reveal(from: BmEdge.Right);
+
+    private static readonly string[] Reveals =
+    [
+        "Each line waits off its place until the viewport reaches it.",
+        "Each line plays once, the first time it enters.",
+        "Scrolling back up leaves them where they are.",
+        "With reduced motion they fade in without moving.",
+    ];
+
+    private double _progress;
+    private int _callbacks;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await Scroll.ObserveAsync(info =>
+        {
+            _progress = info.ProgressY;
+            _callbacks++;
+            return InvokeAsync(StateHasChanged);
+        });
+    }
+
+    // The tracker is transient: this page owns it, and stops observing by disposing it.
+    public ValueTask DisposeAsync() => Scroll.DisposeAsync();
+}

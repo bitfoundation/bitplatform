@@ -1,0 +1,30 @@
+﻿@inject BmotionCapabilities Capabilities
+
+@* Where this page is running. The animation maths runs in C# wherever the components do; what the host decides is
+   whether that C# can talk to the page synchronously, once a frame, or only asynchronously. Without that the browser
+   plays every animation it can reproduce exactly - nearly all of them - and only what needs the per-frame loop
+   (per-frame callbacks, SVG d/points morphs, numbers animated in C#) lands on its target at once. *@
+
+<dl class="facts">
+    <dt>Renderer</dt>
+    <dd id="renderer">@RendererInfo.Name (@(RendererInfo.IsInteractive ? "interactive" : "prerendering"))</dd>
+    <dt>.NET runs on</dt>
+    <dd>@(OperatingSystem.IsBrowser() ? "the browser (WebAssembly)" : RuntimeInformation.OSDescription)</dd>
+    <dt>Per-frame loop</dt>
+    <dd id="frame-loop" data-frame-loop="@(Capabilities.IsPrerendering ? null : Capabilities.SupportsFrameLoop ? "true" : "false")">@FrameLoop</dd>
+    @ChildContent
+</dl>
+
+@code {
+    /// <summary>More facts, as dt/dd pairs.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string FrameLoop => Capabilities.IsPrerendering
+        ? "not yet: nothing runs while prerendering - the enter animations play in CSS until a runtime takes over"
+        : Capabilities.SupportsFrameLoop
+            ? "yes: interop is synchronous, so the engine can step an animation in C# every frame"
+            : RendererInfo.Name == "WebView"
+                ? "no: the WebView's interop is asynchronous, so it plays the animations the app hands it - with no network in between"
+                : "no: the circuit's interop is asynchronous, so the browser plays the animations the server hands it";
+}

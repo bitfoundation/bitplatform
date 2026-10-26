@@ -1,0 +1,204 @@
+﻿@page "/presence"
+@implements IDisposable
+
+<PageTitle>Presence · Bmotion samples</PageTitle>
+
+<h1>Presence</h1>
+
+<p>
+    Blazor removes an element as soon as a render leaves it out, so there is nothing left to animate. A presence
+    component keeps it in the page until its <code>Exit</code> has played, and only then lets it go. Content on its way
+    out is <code>inert</code>: nothing in a closing dialog can be focused or pressed a second time.
+</p>
+
+<section>
+    <h2>A dialog</h2>
+    <p>
+        <code>BmotionAnimatePresence</code> follows <code>IsPresent</code>. The backdrop fades
+        (<code>BmPresets.Fade()</code>) and the dialog rises into place (<code>BmPresets.Modal()</code>); closing it plays
+        both exits, then removes them and raises <code>OnExitComplete</code>. <kbd>Escape</kbd> closes it too.
+    </p>
+
+    <div class="toolbar">
+        <button type="button" id="open-dialog" @ref="_opener" @onclick="OpenDialog">Open the dialog</button>
+        <span class="muted">OnExitComplete: <span id="dialog-exits">@_dialogExits</span></span>
+    </div>
+
+    <BmotionAnimatePresence IsPresent="_dialogOpen" OnExitComplete="OnDialogGone">
+        @* The layer only centres the dialog: the backdrop and the dialog are what animate, so the dialog's own
+           transform is free for the preset. It lets clicks through, so an exiting (inert) dialog never blocks them. *@
+        <div class="dialog-layer">
+            <Bmotion Preset="FadePreset">
+                <div class="backdrop" @onclick="CloseDialog"></div>
+            </Bmotion>
+            <Bmotion Preset="ModalPreset">
+                <div class="dialog" id="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" @onkeydown="OnDialogKeyDown">
+                    <h2 id="dialog-title">Leaving gracefully</h2>
+                    <p>This dialog is still in the page while it closes, and is removed once its exit has finished.</p>
+                    <button type="button" id="close-dialog" @ref="_close" @onclick="CloseDialog">Close</button>
+                </div>
+            </Bmotion>
+        </div>
+    </BmotionAnimatePresence>
+</section>
+
+<section>
+    <h2>Toasts</h2>
+    <p>
+        <code>BmotionPresenceGroup</code> does the same for a list, by key: add an item and it enters, remove it and it
+        exits. In <code>PopLayout</code> mode a leaving toast steps out of the flow at once, and the others, laid out
+        with <code>Layout="BmLayout.Position"</code>, slide up into its place. Each one dismisses itself after
+        @(ToastLifetime.TotalSeconds) seconds.
+    </p>
+
+    <div class="toolbar">
+        <button type="button" id="add-toast" @onclick="AddToast">Notify</button>
+        <span class="muted">@_toasts.Count shown</span>
+    </div>
+
+    <div class="toast-stack" aria-live="polite">
+        <BmotionPresenceGroup Items="_toasts" ItemKey="@(t => t.Id)" Mode="BmPresenceMode.PopLayout" Context="toast">
+            <Bmotion Preset="ToastPreset" Layout="BmLayout.Position">
+                <div class="toast" role="status">
+                    <span>@toast.Text</span>
+                    <button type="button" class="dismiss" aria-label="Dismiss: @toast.Text" @onclick="() => Dismiss(toast)">✕</button>
+                </div>
+            </Bmotion>
+        </BmotionPresenceGroup>
+    </div>
+</section>
+
+<section>
+    <h2>Steps</h2>
+    <p>
+        <code>BmotionPresenceSwitch</code> is for content that is replaced rather than added or removed. Change
+        <code>Item</code> and the old step plays its exit, still showing the old item, before the new one enters
+        (<code>Mode</code> is <code>Wait</code> by default). Each step leaves the way you are going.
+    </p>
+
+    <div class="stage step-stage">
+        <BmotionPresenceSwitch Item="_step" Context="step">
+            <Bmotion Initial="Bm.To(opacity: 0, x: 48 * _direction)"
+                     Animate="Bm.To(opacity: 1, x: 0)"
+                     Exit="Bm.To(opacity: 0, x: -48 * _direction)"
+                     Transition="Bm.Tween(0.25, BmEase.InOut)">
+                <div class="step" id="step">
+                    <strong>Step @(step + 1) of @Steps.Length</strong>
+                    <span>@Steps[step]</span>
+                </div>
+            </Bmotion>
+        </BmotionPresenceSwitch>
+    </div>
+
+    <div class="toolbar">
+        <button type="button" id="step-back" disabled="@(_step == 0)" @onclick="() => Go(-1)">Back</button>
+        <button type="button" id="step-next" disabled="@(_step == Steps.Length - 1)" @onclick="() => Go(1)">Next</button>
+    </div>
+</section>
+
+@code {
+    private static readonly TimeSpan ToastLifetime = TimeSpan.FromSeconds(5);
+    private const int MaxToasts = 4;
+
+    private static readonly BmPreset FadePreset = BmPresets.Fade();
+    private static readonly BmPreset ModalPreset = BmPresets.Modal();
+    private static readonly BmPreset ToastPreset = BmPresets.Toast();
+
+    private static readonly string[] Messages = ["Draft saved", "Link copied", "Settings updated", "Upload finished", "Invite sent"];
+
+    private static readonly string[] Steps =
+    [
+        "Pick a plan",
+        "Tell us who you are",
+        "Choose a payment method",
+        "Review and confirm",
+    ];
+
+    private readonly CancellationTokenSource _disposed = new();
+    private readonly List<Toast> _toasts = [];
+    private int _nextToast = 1;
+
+    private bool _dialogOpen;
+    private int _dialogExits;
+    private ElementReference _opener;
+    private ElementReference _close;
+    // What takes focus after the next render: the Close button once the dialog is there, the opener once it is closing.
+    private Func<ElementReference>? _focusNext;
+
+    private int _step;
+    private int _direction = 1;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusNext is null) return;
+
+        var element = _focusNext();
+        _focusNext = null;
+        await element.FocusAsync();
+    }
+
+    private void OpenDialog()
+    {
+        _dialogOpen = true;
+        _focusNext = () => _close;
+    }
+
+    private void CloseDialog()
+    {
+        if (_dialogOpen is false) return;
+
+        _dialogOpen = false;
+        _focusNext = () => _opener;
+    }
+
+    private void OnDialogKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") CloseDialog();
+    }
+
+    private void OnDialogGone() => _dialogExits++;
+
+    private void AddToast()
+    {
+        var toast = new Toast(_nextToast, $"{Messages[(_nextToast - 1) % Messages.Length]} · #{_nextToast}");
+        _nextToast++;
+
+        _toasts.Add(toast);
+        if (_toasts.Count > MaxToasts) _toasts.RemoveAt(0);
+
+        _ = DismissLaterAsync(toast);
+    }
+
+    private async Task DismissLaterAsync(Toast toast)
+    {
+        try
+        {
+            await Task.Delay(ToastLifetime, _disposed.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        await InvokeAsync(() =>
+        {
+            if (_toasts.Remove(toast)) StateHasChanged();
+        });
+    }
+
+    private void Dismiss(Toast toast) => _toasts.Remove(toast);
+
+    private void Go(int direction)
+    {
+        _direction = direction;
+        _step += direction;
+    }
+
+    public void Dispose()
+    {
+        _disposed.Cancel();
+        _disposed.Dispose();
+    }
+
+    private sealed record Toast(int Id, string Text);
+}

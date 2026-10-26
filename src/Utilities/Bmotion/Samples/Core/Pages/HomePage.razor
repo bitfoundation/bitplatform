@@ -1,0 +1,75 @@
+﻿@page "/"
+
+<PageTitle>Bmotion samples</PageTitle>
+
+<h1>Bmotion samples</h1>
+
+<p>
+    One set of pages hosted unchanged by three Blazor Web Apps - <strong>Server</strong> (Interactive Server),
+    <strong>Wasm</strong> (Interactive WebAssembly) and <strong>Auto</strong> (Interactive Auto), each prerendering
+    first - and by a <strong>MAUI</strong> Blazor Hybrid app for Android, iOS, macOS and Windows. The animations are the
+    same in each: the engine's maths runs in C# wherever the components do, and the browser plays what it hands over.
+    What the host changes is whether the engine can also step an animation itself, once a frame.
+</p>
+
+<section>
+    <h2>This host</h2>
+    <HostFacts />
+</section>
+
+<section>
+    <h2>The samples</h2>
+    <p class="muted">
+        These cards came in one after another: a variant cascade, which a web host serves already playing as CSS
+        (<code>BmPrerenderMode.Animate</code>), before any runtime has started. Hover or press one; Hide and Show play
+        the cascade again from C#. <strong>Slow motion</strong> in the bar above plays the transitions on these pages at a
+        quarter of their speed.
+    </p>
+
+    <Bmotion Variants="_list" InitialState="hidden" State="@(_shown ? "visible" : "hidden")"
+             Transition="Bm.Tween(0.3, staggerChildren: 0.07)">
+        <ul class="tiles">
+            @foreach (var sample in _samples)
+            {
+                <Bmotion @key="sample.Href" Variants="_tile" WhileHover="Bm.To(y: -4)" WhileTap="Bm.To(scale: 0.97)">
+                    <li class="tile">
+                        <NavLink href="@sample.Href">@sample.Title</NavLink>
+                        <span>@sample.Summary</span>
+                    </li>
+                </Bmotion>
+            }
+        </ul>
+    </Bmotion>
+
+    <div class="toolbar">
+        <button type="button" id="toggle-tiles" @onclick="() => _shown = !_shown">@(_shown ? "Hide" : "Show")</button>
+    </div>
+</section>
+
+@code {
+    private bool _shown = true;
+
+    // The container's own fade; the transition on the container staggers the tiles under it.
+    private readonly BmVariants _list = new()
+    {
+        ["hidden"] = Bm.To(opacity: 0),
+        ["visible"] = Bm.To(opacity: 1),
+    };
+
+    private readonly BmVariants _tile = new()
+    {
+        ["hidden"] = Bm.To(opacity: 0, y: 16),
+        ["visible"] = Bm.To(opacity: 1, y: 0, transition: Bm.Spring(bounce: 0.3, duration: 0.5)),
+    };
+
+    private readonly Sample[] _samples =
+    [
+        new("gestures", "Gestures", "Hover, press and keyboard focus, a drag kept inside its box, and a slider that settles where a throw would land."),
+        new("presence", "Presence", "A dialog and toasts that animate out before Blazor removes them, and steps that swap one for another."),
+        new("layout", "Layout", "FLIP animations when a re-render moves things, a tab underline shared across elements, and drag-to-reorder."),
+        new("programmatic", "Programmatic", "Animating by selector with controls to pause and scrub, a sequence, and what needs the per-frame loop."),
+        new("scroll", "Scroll", "The page's scroll driving animations on the browser's own timeline, and the scroll position as a number in C#."),
+    ];
+
+    private sealed record Sample(string Href, string Title, string Summary);
+}

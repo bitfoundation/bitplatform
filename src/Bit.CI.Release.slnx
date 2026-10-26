@@ -76,6 +76,21 @@
     <Project Path="Utilities/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj" />
     <Project Path="Utilities/Bmotion/Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bmotion/Samples/" />
+  <Folder Name="/Utilities/Bmotion/Samples/Auto/">
+    <Project Path="Utilities/Bmotion/Samples/Auto/Bit.Bmotion.Samples.Auto/Bit.Bmotion.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bmotion/Samples/Auto/Bit.Bmotion.Samples.Auto.Client/Bit.Bmotion.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmotion/Samples/Core/">
+    <Project Path="Utilities/Bmotion/Samples/Core/Bit.Bmotion.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmotion/Samples/Server/">
+    <Project Path="Utilities/Bmotion/Samples/Server/Bit.Bmotion.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmotion/Samples/Wasm/">
+    <Project Path="Utilities/Bmotion/Samples/Wasm/Bit.Bmotion.Samples.Wasm/Bit.Bmotion.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bmotion/Samples/Wasm/Bit.Bmotion.Samples.Wasm.Client/Bit.Bmotion.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bink/">
     <File Path="Utilities/Bink/README.md" />
     <Project Path="Utilities/Bink/Demo/Client/Bit.Bink.Demo.Client.csproj" />

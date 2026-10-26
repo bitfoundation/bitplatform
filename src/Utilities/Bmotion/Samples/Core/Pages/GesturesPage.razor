@@ -1,0 +1,110 @@
+﻿@page "/gestures"
+
+<PageTitle>Gestures · Bmotion samples</PageTitle>
+
+<h1>Gestures</h1>
+
+<p>
+    Every host listens for gestures in the page and hands the overlay each one plays to the browser. What reaches .NET is
+    the event: a call in the same process on WebAssembly, a message over the circuit on Server, a message from the
+    WebView in the MAUI app. A drag is the one gesture that moves with the pointer, so it is where the difference shows.
+</p>
+
+<HostFacts>
+    <dt>A drag follows the pointer</dt>
+    <dd>@DragNote</dd>
+</HostFacts>
+
+<section>
+    <h2>Hover, press and focus</h2>
+    <p>
+        <code>WhileHover</code>, <code>WhileTap</code> and <code>WhileFocus</code> are overlays: they play while the
+        gesture lasts and revert when it ends. This button takes the first two from presets
+        (<code>BmPresets.HoverLift() + BmPresets.Press()</code>). <kbd>Tab</kbd> to it for the focus ring, which follows
+        keyboard focus only, and <kbd>Enter</kbd> or <kbd>Space</kbd> presses it as a pointer would.
+    </p>
+
+    <div class="stage row">
+        <Bmotion Preset="_button"
+                 WhileFocus='Bm.To(boxShadow: "0 0 0 4px rgba(18, 118, 198, 0.4)")'
+                 OnTap="() => _taps++"
+                 OnHoverStart="() => _hovers++">
+            <button type="button" class="btn-primary" id="press-me">Press me</button>
+        </Bmotion>
+        <span class="muted">OnTap: <span id="tap-count">@_taps</span> · OnHoverStart: @_hovers</span>
+    </div>
+</section>
+
+<section>
+    <h2>A drag kept inside its box</h2>
+    <p>
+        <code>BmDragConstraints.Parent()</code> measures the box at each drag start, so it stays right however the page
+        reflows. Past an edge <code>DragElastic</code> lets the puck stretch a little, and a release springs it back.
+        Throw it: the momentum carries it on and it bounces off the wall it reaches. The count is how many
+        <code>OnDrag</code> calls reached .NET during the last drag.
+    </p>
+
+    <div class="stage drag-area">
+        <Bmotion Drag="true"
+                 DragConstraints="InParent"
+                 DragElastic="0.2"
+                 WhileDrag="Bm.To(scale: 1.1)"
+                 OnDragStart="() => _moves = 0"
+                 OnDrag="() => _moves++"
+                 OnDragEnd="() => _drags++">
+            <div class="puck" id="puck"></div>
+        </Bmotion>
+    </div>
+    <p class="muted">Drags: @_drags · OnDrag calls in the last one: <span id="drag-moves">@_moves</span></p>
+</section>
+
+<section>
+    <h2>A slider that snaps</h2>
+    <p>
+        A <code>DragTransition</code> written as an inertia configures the momentum itself. Its
+        <code>modifyTarget</code> rounds the spot a throw would come to rest on to the nearest stop, so a fling
+        settles a few stops along and even a slow release clicks onto one.
+    </p>
+
+    <div class="stage">
+        <div class="track">
+            @for (var i = 0; i < Stops; i++)
+            {
+                <span class="tick" style="left: @(ThumbSize / 2 + i * StopSpacing)px"></span>
+            }
+            <Bmotion Drag="BmDrag.X"
+                     DragConstraints="InParent"
+                     DragElastic="0"
+                     DragTransition="_snap"
+                     WhileDrag="Bm.To(scale: 1.15)">
+                <div class="thumb" id="thumb"></div>
+            </Bmotion>
+        </div>
+    </div>
+</section>
+
+@code {
+    // The track is laid out in app.css to match: a 40px thumb travelling 4 × 60px.
+    private const int Stops = 5;
+    private const int StopSpacing = 60;
+    private const int ThumbSize = 40;
+
+    // Kept in fields rather than built in the markup: a drag is re-attached, which ends it, when its configuration
+    // changes, and OnDrag re-renders this page on every move.
+    private static readonly BmDragConstraints InParent = BmDragConstraints.Parent();
+    private static readonly BmPreset _button = BmPresets.HoverLift() + BmPresets.Press();
+    private static readonly BmInertia _snap = Bm.Inertia(modifyTarget: Bm.SnapTo(StopSpacing));
+
+    private int _taps;
+    private int _hovers;
+    private int _drags;
+    private int _moves;
+
+    private string DragNote => RendererInfo.Name switch
+    {
+        "WebAssembly" => "in this process: OnDrag runs on every pointer move, as it happens",
+        "Server" => "in the browser at once; .NET hears of each move a round trip later, and OnDrag runs at most once a frame",
+        "WebView" => "in the WebView at once; .NET in the app hears of each move asynchronously, with no network in between",
+        _ => "not yet: gestures start once a runtime takes over from the prerendered page",
+    };
+}

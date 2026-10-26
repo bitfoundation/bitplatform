@@ -1,0 +1,114 @@
+﻿@page "/layout"
+
+<PageTitle>Layout · Bmotion samples</PageTitle>
+
+<h1>Layout</h1>
+
+<p>
+    A re-render that moves an element is a jump: Blazor writes the new markup and the browser lays it out at once.
+    <code>Layout</code> turns the jump into motion - measure before the render, measure after it, and play the difference
+    (FLIP). @LayoutNote
+</p>
+
+<section>
+    <h2>Moving with the list</h2>
+    <p>
+        Each tile is a <code>&lt;Bmotion Layout="true"&gt;</code> with a <code>@@key</code>, so Blazor moves the same
+        element rather than rewriting another one, and Bmotion slides it from where it was. Nothing here animates a
+        position by hand: the list changes, and the grid lays itself out.
+    </p>
+
+    <div class="toolbar">
+        <button type="button" id="shuffle" @onclick="Shuffle">Shuffle</button>
+        <button type="button" id="sort" @onclick="Sort">Sort</button>
+    </div>
+
+    <div class="number-grid">
+        @foreach (var number in _numbers)
+        {
+            <Bmotion @key="number" Layout="true" Transition="Bm.Tween(0.4, BmEase.InOut)">
+                <div class="number-tile tone-@(number % 4)">@number</div>
+            </Bmotion>
+        }
+    </div>
+</section>
+
+<section>
+    <h2>One underline, many tabs</h2>
+    <p>
+        Only the selected tab renders an underline, so choosing another removes one element and adds another.
+        Because both have <code>LayoutId="tab-underline"</code>, the new one starts from the old one's box and travels
+        to its own: one underline, as far as anyone can tell.
+    </p>
+
+    <div class="tabs" role="tablist" aria-label="Seasons">
+        @foreach (var tab in Tabs)
+        {
+            <button type="button" role="tab" class="tab" aria-selected="@(tab == _tab ? "true" : "false")" @onclick="() => _tab = tab">
+                @tab
+                @if (tab == _tab)
+                {
+                    <Bmotion LayoutId="tab-underline" Layout="true" Transition="Bm.Tween(0.3, BmEase.InOut)">
+                        <span class="underline"></span>
+                    </Bmotion>
+                }
+            </button>
+        }
+    </div>
+    <p class="tab-panel" role="tabpanel">@TabText(_tab)</p>
+</section>
+
+<section>
+    <h2>Drag to reorder</h2>
+    <p>
+        <code>BmotionReorderGroup</code> makes every row draggable by its grip; the others make way as it passes, and the
+        new order is written to the bound list on release. From the keyboard, <kbd>Tab</kbd> to a row,
+        <kbd>Space</kbd> picks it up, the arrow keys move it, <kbd>Space</kbd> drops it and <kbd>Escape</kbd> puts it
+        back. A new order from anywhere else - Reverse here - animates the same way.
+    </p>
+
+    <div class="reorder-list">
+        <BmotionReorderGroup @bind-Items="_tasks" HandleSelector=".grip" Context="task" OnReorder="() => _reorders++">
+            <div class="reorder-row">
+                <span class="grip" aria-hidden="true">⠿</span>
+                <span>@task</span>
+            </div>
+        </BmotionReorderGroup>
+    </div>
+
+    <div class="toolbar">
+        <button type="button" id="reverse" @onclick="Reverse">Reverse</button>
+        <span class="muted">OnReorder: <span id="reorders">@_reorders</span></span>
+    </div>
+    <p class="muted" id="order">@string.Join(" → ", _tasks)</p>
+</section>
+
+@code {
+    private static readonly string[] Tabs = ["Spring", "Summer", "Autumn", "Winter"];
+
+    private List<int> _numbers = [.. Enumerable.Range(1, 12)];
+    private string _tab = Tabs[0];
+    private List<string> _tasks = ["Write the draft", "Ask for a review", "Fix the typos", "Publish", "Tell everyone"];
+    private int _reorders;
+
+    private string LayoutNote => RendererInfo.Name switch
+    {
+        "Server" => "On Server the measuring happens in the browser, a round trip after the render that moved an element; until then each element is held where it was, so nothing flashes at its new place first.",
+        "WebView" => "In the MAUI app the measuring happens in the WebView, after the render that moved an element; until then each element is held where it was.",
+        _ => "",
+    };
+
+    private void Shuffle() => _numbers = [.. _numbers.OrderBy(_ => Random.Shared.Next())];
+
+    private void Sort() => _numbers = [.. _numbers.Order()];
+
+    private void Reverse() => _tasks = [.. Enumerable.Reverse(_tasks)];
+
+    private static string TabText(string tab) => tab switch
+    {
+        "Spring" => "Longer days, and everything starts again.",
+        "Summer" => "The longest days, and the slowest evenings.",
+        "Autumn" => "The leaves turn and fall, and the evenings draw in.",
+        _ => "The shortest days, and the year turns over.",
+    };
+}
