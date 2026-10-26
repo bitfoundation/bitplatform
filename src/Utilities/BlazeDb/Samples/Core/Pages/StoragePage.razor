@@ -1,0 +1,131 @@
+﻿@page "/storage"
+@using System.Diagnostics
+@inject SampleDatabase Database
+
+<PageTitle>Storage · BlazeDb samples</PageTitle>
+
+<h1>Storage</h1>
+
+<p>
+    A commit changes memory at once and is appended to a write-ahead log, which reaches storage on a background
+    flush - within 100 ms by default - and a checkpoint compacts the log into a snapshot. The backend is the one
+    thing that differs between the hosts: the actions below run the same calls against whichever this one uses.
+</p>
+
+@if (_status is null)
+{
+    <DatabasePending />
+}
+else
+{
+    <div class="card">
+        <h2>This host's database</h2>
+        <dl>
+            <dt>Backend</dt>
+            <dd id="storage-backend">@Database.Backend</dd>
+            <dt>Where</dt>
+            <dd>@Database.BackendNote</dd>
+            <dt>Rows</dt>
+            <dd id="storage-rows">@_status.Rows</dd>
+            <dt>User version</dt>
+            <dd>@_status.UserVersion</dd>
+            <dt>Quota</dt>
+            <dd id="storage-quota">@(_status.Quota is { } quota ? $"{Size(quota.UsageBytes)} used of {Size(quota.QuotaBytes)} ({quota.UsedFraction:P1})" : "This backend cannot say.")</dd>
+            <dt>Background flush</dt>
+            <dd id="storage-flush">@(_status.LastBackgroundError?.Message ?? "Up to date: no standing failure.")</dd>
+        </dl>
+    </div>
+
+    <div class="row">
+        <button type="button" class="btn" id="flush" disabled="@_busy" @onclick="FlushAsync">Flush now</button>
+        <button type="button" class="btn" id="checkpoint" disabled="@_busy" @onclick="CheckpointAsync">Checkpoint</button>
+        <button type="button" class="btn" id="export" disabled="@_busy" @onclick="ExportAsync">Export</button>
+        <button type="button" class="btn" id="verify" disabled="@_busy" @onclick="VerifyAsync">Verify integrity</button>
+    </div>
+
+    @if (_result is not null)
+    {
+        <p class="card" id="result" role="status">@_result</p>
+    }
+}
+
+@code {
+    private Status? _status;
+    private string? _result;
+    private bool _busy;
+
+    private sealed record Status(int Rows, long UserVersion, BlazeDbStorageQuota? Quota, Exception? LastBackgroundError);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Database.Unreachable is not null) return;
+
+        await ReadStatusAsync();
+    }
+
+    private async Task ReadStatusAsync() =>
+        _status = await Database.UseAsync(async db => new Status(db.GetTable(TodoItem.Table).Count,
+                                                                 db.UserVersion,
+                                                                 await db.GetStorageQuotaAsync(),
+                                                                 db.LastBackgroundError));
+
+    // Waits for every commit made so far to reach storage, rather than for the next background flush.
+    private Task FlushAsync() => RunAsync("Flush", async db =>
+    {
+        await db.FlushAsync();
+        return "every commit made so far is in storage.";
+    });
+
+    // Writes a snapshot of every table and starts a new, empty log, so the next open replays nothing.
+    private Task CheckpointAsync() => RunAsync("Checkpoint", async db =>
+    {
+        await db.CheckpointAsync();
+        return "the log is compacted into a new snapshot.";
+    });
+
+    // The whole database as one checksummed file: ImportAsync turns it into a database on any backend.
+    private Task ExportAsync() => RunAsync("Export", async db =>
+    {
+        using var file = new MemoryStream();
+        await db.ExportAsync(file);
+        return $"{Size(file.Length)} - every table and the user version, in one checksummed file.";
+    });
+
+    // Compares every row with every index entry: an empty list is a healthy database.
+    private Task VerifyAsync() => RunAsync("Verify integrity", db =>
+    {
+        var issues = db.VerifyIntegrity();
+        return Task.FromResult(issues.Count == 0
+            ? "no issues: every row and every index entry agree."
+            : string.Join("; ", issues.Select(issue => $"{issue.Table} / {issue.Index ?? "primary key"}: {issue.Description}")));
+    });
+
+    private async Task RunAsync(string what, Func<BlazeDbDatabase, Task<string>> action)
+    {
+        _busy = true;
+        try
+        {
+            var watch = Stopwatch.StartNew();
+            var outcome = await Database.UseAsync(action);
+            _result = $"{what} took {watch.Elapsed.TotalMilliseconds:N1} ms: {outcome}";
+        }
+        catch (Exception exception)
+        {
+            _result = $"{what} failed: {exception.Message}";
+        }
+        finally
+        {
+            _busy = false;
+        }
+
+        await ReadStatusAsync();
+    }
+
+    private static string Size(long bytes) => bytes switch
+    {
+        < 1024 => $"{bytes:N0} bytes",
+        < 1024 * 1024 => $"{bytes / 1024d:N1} KB",
+        < 1024L * 1024 * 1024 => $"{bytes / (1024d * 1024):N1} MB",
+        _ => $"{bytes / (1024d * 1024 * 1024):N1} GB",
+    };
+}

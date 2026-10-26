@@ -1,0 +1,41 @@
+﻿@inherits LayoutComponentBase
+@inject SampleDatabase Database
+
+<div class="app">
+    <nav class="topbar">
+        <NavLink href="" Match="NavLinkMatch.All" class="brand">BlazeDb samples</NavLink>
+        <NavLink href="todos">Todos</NavLink>
+        <NavLink href="queries">Queries</NavLink>
+        <NavLink href="changes">Changes</NavLink>
+        <NavLink href="storage">Storage</NavLink>
+        @* Which renderer produced this markup: Static while prerendering, then Server, WebAssembly or WebView. *@
+        <span class="renderer" data-renderer="@RendererInfo.Name" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+            @RendererInfo.Name@(RendererInfo.IsInteractive ? null : " (prerendered)")
+        </span>
+    </nav>
+
+    <main>
+        @Body
+    </main>
+
+    @* Where the rows live is what tells the hosts apart, so every page says so. *@
+    <footer class="status" aria-live="polite">
+        Database: <strong id="backend">@Database.Backend</strong>
+        @if (Database.BackendNote is { } note)
+        {
+            <span> - @note</span>
+        }
+    </footer>
+</div>
+
+@code {
+    // The layout stays mounted across navigations: opening the database here, whichever page the app lands on,
+    // means the footer can say where it lives from the first render on.
+    protected override async Task OnInitializedAsync()
+    {
+        if (Database.Unreachable is null)
+        {
+            await Database.UseAsync(_ => true);
+        }
+    }
+}

@@ -1,0 +1,108 @@
+﻿@page "/"
+@implements IDisposable
+@inject SampleDatabase Database
+
+<PageTitle>BlazeDb samples</PageTitle>
+
+<h1>BlazeDb samples</h1>
+
+<p>
+    One set of pages hosted unchanged by three Blazor Web Apps - <strong>Server</strong> (Interactive Server),
+    <strong>Wasm</strong> (Interactive WebAssembly) and <strong>Auto</strong> (Interactive Auto), each prerendering
+    first - and by a <strong>MAUI</strong> Blazor Hybrid app for Android, iOS, macOS and Windows. The pages are the
+    same everywhere; where the database lives is not, and each host registers the <code>SampleDatabase</code> that
+    fits it:
+</p>
+
+<ul>
+    <li><strong>Server</strong> - in the server process, persisted to files. Every browser window shares it, and since
+        circuits run on many threads while the engine assumes one writer, every read and write takes one lock.</li>
+    <li><strong>Wasm</strong> - in the browser tab, persisted to OPFS (IndexedDB where the page cannot write OPFS). The
+        prerendered page shows a placeholder: there is no OPFS on the server.</li>
+    <li><strong>Auto</strong> - in the browser tab as well. The first visit runs on the server while the WebAssembly
+        runtime downloads, and shows the placeholder too; later visits run in the browser.</li>
+    <li><strong>MAUI</strong> - in the app process, persisted to files in the app's data directory. The components
+        render on the UI thread, which serializes them.</li>
+</ul>
+
+<div class="card">
+    <h2>Where this page is running</h2>
+    <dl>
+        <dt>Renderer</dt>
+        <dd id="renderer">@RendererInfo.Name</dd>
+        <dt>Interactive</dt>
+        <dd id="interactive">@(RendererInfo.IsInteractive ? "yes" : "no, prerendered")</dd>
+        <dt>Database</dt>
+        <dd id="database">@Database.Backend</dd>
+    </dl>
+    @if (Database.BackendNote is { } note)
+    {
+        <p>@note</p>
+    }
+</div>
+
+@if (_counts is null)
+{
+    <DatabasePending />
+}
+else
+{
+    <div class="card">
+        <h2>What it holds</h2>
+        @* A live query: it re-runs after every commit to the table, so these numbers follow the other pages - and on
+           the Server host, the other windows. *@
+        <dl>
+            <dt>Todos</dt>
+            <dd id="count-total">@_counts.Result.Total</dd>
+            <dt>Open</dt>
+            <dd id="count-open">@_counts.Result.Open</dd>
+            <dt>Done</dt>
+            <dd id="count-done">@_counts.Result.Done</dd>
+            <dt>User version</dt>
+            <dd id="user-version">@_counts.Result.UserVersion (migration 1 seeded the sample rows)</dd>
+        </dl>
+    </div>
+}
+
+<h2>Samples</h2>
+<ul>
+    <li><NavLink href="todos">Todos</NavLink> - a list kept current by a live query, filtered through hash and compound indexes, with optimistic concurrency and an atomic bulk delete</li>
+    <li><NavLink href="queries">Queries</NavLink> - <code>BlazeDbQuery</code>: ordered ranges, prefixes and lookups, filters, sorting and paging, with <code>Explain()</code></li>
+    <li><NavLink href="changes">Changes</NavLink> - <code>Changed</code> notifications: once per commit, net, and never for a rollback</li>
+    <li><NavLink href="storage">Storage</NavLink> - flushes, checkpoints, an export, the integrity check and the storage quota, against this host's backend</li>
+</ul>
+
+@code {
+    private BlazeDbLiveQuery<Counts>? _counts;
+
+    private sealed record Counts(int Total, int Open, int Done, long UserVersion);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Database.Unreachable is not null) return;
+
+        _counts = await Database.UseAsync(db =>
+        {
+            var counts = db.GetTable(TodoItem.Table).Watch(todos => new Counts(
+                todos.Count,
+                todos.CountBy(TodoItem.Indexes.Done, false),
+                todos.CountBy(TodoItem.Indexes.Done, true),
+                db.UserVersion));
+
+            counts.Changed += OnCountsChanged;
+            return counts;
+        });
+    }
+
+    // Raised on the thread that committed - on a server, possibly another circuit's - so the re-render goes
+    // through this component's dispatcher.
+    private void OnCountsChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        if (_counts is null) return;
+
+        _counts.Changed -= OnCountsChanged;
+        _counts.Dispose();
+    }
+}

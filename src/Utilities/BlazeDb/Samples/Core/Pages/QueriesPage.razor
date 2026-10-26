@@ -1,0 +1,209 @@
+﻿@page "/queries"
+@implements IDisposable
+@inject SampleDatabase Database
+
+<PageTitle>Queries · BlazeDb samples</PageTitle>
+
+<h1>Queries</h1>
+
+<p>
+    <code>BlazeDbQuery</code> takes its rows from one source - an ordered range, a prefix, a hash or compound lookup -
+    then filters, sorts and pages them in memory. <code>Explain()</code> says how it will run without the values it
+    compares against. There is no query language: the code below is the whole query, and it runs as a live query, so
+    the results follow every commit.
+</p>
+
+@if (_view is null)
+{
+    <DatabasePending />
+}
+else
+{
+    var view = _view.Result;
+
+    <div class="card form">
+        <label>
+            Source
+            <select id="source" @bind="_source" @bind:after="RefreshAsync">
+                <option value="@Source.Recent">Created in the last hours (ordered range)</option>
+                <option value="@Source.Prefix">Title starts with (ordered prefix)</option>
+                <option value="@Source.Category">Category (hash lookup)</option>
+                <option value="@Source.CategoryStatus">Category and status (compound lookup)</option>
+            </select>
+        </label>
+
+        @if (_source is Source.Recent)
+        {
+            <label>
+                Hours
+                <input id="hours" type="number" min="1" max="720" @bind="_hours" @bind:after="RefreshAsync" />
+            </label>
+        }
+        else if (_source is Source.Prefix)
+        {
+            @* Ordinal, as the index sorts: "Re" finds "Review the pull request", "re" finds nothing. *@
+            <label>
+                Prefix
+                <input id="prefix" @bind="_prefix" @bind:event="oninput" @bind:after="RefreshAsync" autocomplete="off" />
+            </label>
+        }
+        else
+        {
+            <label>
+                Category
+                <select id="category" @bind="_category" @bind:after="RefreshAsync">
+                    @foreach (var category in SampleData.Categories)
+                    {
+                        <option value="@category">@category</option>
+                    }
+                </select>
+            </label>
+        }
+
+        @if (_source is Source.CategoryStatus)
+        {
+            <label>
+                Status
+                <select id="status" @bind="_done" @bind:after="RefreshAsync">
+                    <option value="false">Open</option>
+                    <option value="true">Done</option>
+                </select>
+            </label>
+        }
+        else
+        {
+            <label class="check">
+                <input id="open-only" type="checkbox" @bind="_openOnly" @bind:after="RefreshAsync" />
+                Open only (a filter)
+            </label>
+        }
+
+        <label class="check">
+            <input id="newest-first" type="checkbox" @bind="_newestFirst" @bind:after="RefreshAsync" />
+            Newest first
+        </label>
+
+        <label>
+            Take
+            <input id="take" type="number" min="0" max="100" @bind="_take" @bind:after="RefreshAsync" />
+        </label>
+    </div>
+
+    <h2>The query</h2>
+    <pre id="code">@view.Code</pre>
+
+    <h2>Explain()</h2>
+    <pre id="explain">@view.Explain</pre>
+
+    <h2>@view.Rows.Count @(view.Rows.Count == 1 ? "row" : "rows")</h2>
+    <table id="results">
+        <thead>
+            <tr><th>Title</th><th>Category</th><th>Done</th><th>Created</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var todo in view.Rows)
+            {
+                <tr @key="todo.Id">
+                    <td>@todo.Title</td>
+                    <td>@todo.Category</td>
+                    <td>@(todo.Done ? "yes" : "no")</td>
+                    <td>@todo.CreatedAt.ToLocalTime().ToString("g")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private enum Source { Recent, Prefix, Category, CategoryStatus }
+
+    private BlazeDbLiveQuery<QueryView>? _view;
+    private Source _source = Source.Recent;
+    private int _hours = 24;
+    private string _prefix = "Re";
+    private string _category = SampleData.Categories[0];
+    private bool _done;
+    private bool _openOnly;
+    private bool _newestFirst = true;
+    private int _take = 10;
+
+    private sealed record QueryView(List<TodoItem> Rows, string Code, string Explain);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Database.Unreachable is not null) return;
+
+        _view = await Database.UseAsync(db =>
+        {
+            var view = db.GetTable(TodoItem.Table).Watch(Run);
+            view.Changed += OnViewChanged;
+            return view;
+        });
+    }
+
+    // Builds the query from the form, runs it, and writes down the C# that builds the same query.
+    private QueryView Run(BlazeDbTable<Guid, TodoItem> todos)
+    {
+        var query = BlazeDbQuery<Guid, TodoItem>.From(todos);
+        List<string> code = ["BlazeDbQuery<Guid, TodoItem>.From(todos)"];
+
+        switch (_source)
+        {
+            case Source.Recent:
+                // An ordered range comes in index order, either way round: newest first needs no sort.
+                query.UseIndex(TodoItem.Indexes.CreatedAt, DateTime.UtcNow.AddHours(-_hours), BlazeDbBound<DateTime>.Unbounded, descending: _newestFirst);
+                code.Add($".UseIndex(TodoItem.Indexes.CreatedAt, DateTime.UtcNow.AddHours(-{_hours}), BlazeDbBound<DateTime>.Unbounded, descending: {Bool(_newestFirst)})");
+                break;
+            case Source.Prefix:
+                query.UseIndexPrefix(TodoItem.Indexes.Title, _prefix);
+                code.Add($".UseIndexPrefix(TodoItem.Indexes.Title, \"{_prefix}\")");
+                break;
+            case Source.Category:
+                query.UseIndex(TodoItem.Indexes.Category, _category);
+                code.Add($".UseIndex(TodoItem.Indexes.Category, \"{_category}\")");
+                break;
+            case Source.CategoryStatus:
+                query.UseIndex(TodoItem.Indexes.CategoryDone, (_category, _done));
+                code.Add($".UseIndex(TodoItem.Indexes.CategoryDone, (\"{_category}\", {Bool(_done)}))");
+                break;
+        }
+
+        if (_openOnly && _source is not Source.CategoryStatus)
+        {
+            query.Where(t => t.Done is false);
+            code.Add(".Where(t => t.Done is false)");
+        }
+
+        if (_newestFirst && _source is not Source.Recent)
+        {
+            query.OrderBy(t => t.CreatedAt, descending: true);
+            code.Add(".OrderBy(t => t.CreatedAt, descending: true)");
+        }
+
+        if (_take > 0)
+        {
+            query.Take(_take);
+            code.Add($".Take({_take})");
+        }
+
+        return new(query.ToList(), string.Join(Environment.NewLine + "    ", code) + ";", query.Explain());
+    }
+
+    private Task RefreshAsync() => Database.UseAsync(_ =>
+    {
+        _view?.Refresh();
+        return true;
+    });
+
+    private void OnViewChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    private static string Bool(bool value) => value ? "true" : "false";
+
+    public void Dispose()
+    {
+        if (_view is null) return;
+
+        _view.Changed -= OnViewChanged;
+        _view.Dispose();
+    }
+}
