@@ -17,6 +17,8 @@
     <li>The arrow on a card moves it to the next column without a drag (<code>MoveToAsync</code>), under the same rules.</li>
 </ul>
 
+<HostFacts />
+
 <div class="toolbar">
     <label>
         <input type="checkbox" @bind="_approve" /> The server approves drops into Done
@@ -80,6 +82,7 @@
     private bool _approve = true;
     private string _server = "idle";
     private string _last = "nothing yet";
+    private int _ends;
 
     // Stands in for a call to a server that may refuse the move. The drop shows at once; a refusal puts every list the
     // drag changed back, and OnEnd then reports Canceled.
@@ -95,17 +98,23 @@
     }
 
     // The same rules decide a move made from code as a drag: Done refuses cards that do not come from In progress, a
-    // full In progress refuses more, and ConfirmDrop is asked. OnEnd follows with Input set to Api.
+    // full In progress refuses more, and ConfirmDrop is asked. OnEnd follows with Input set to Api - Canceled when a
+    // rule refused. A move that is not even tried, while a drag is under way or a drop waits for the server, returns
+    // false with no OnEnd.
     private async Task MoveAsync(Bortable<Card> list, Card card, string toId, int index)
     {
-        if (await list.MoveToAsync(card, toId, index) is false)
+        var ends = _ends;
+        if (await list.MoveToAsync(card, toId, index) is false && _ends == ends)
         {
-            _last = $"{card.Title}: refused";
+            _last = $"{card.Title}: not moved, another move is still under way";
         }
     }
 
     private void OnEnd(BortableEventArgs<Card> e)
-        => _last = e.Canceled ? $"{e.Item.Title}: cancelled, everything put back"
+    {
+        _ends++;
+        _last = e.Canceled ? $"{e.Item.Title}: cancelled, everything put back"
             : e.CrossedLists ? $"{e.Item.Title}: {e.FromId} to {e.ToId} ({e.Input.ToString().ToLowerInvariant()})"
             : $"{e.Item.Title}: #{e.OldIndex} to #{e.NewIndex} ({e.Input.ToString().ToLowerInvariant()})";
+    }
 }

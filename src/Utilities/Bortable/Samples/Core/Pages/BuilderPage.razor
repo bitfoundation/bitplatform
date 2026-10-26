@@ -12,6 +12,8 @@
     picked up, though the others can be dragged past it.
 </p>
 
+<HostFacts />
+
 <div class="columns">
     <div class="column">
         <h3>Palette</h3>
@@ -35,7 +37,7 @@
                 {
                     <button type="button" class="grip" aria-label="@($"Drag {field.Label}")">⠿</button>
                 }
-                <input aria-label="Label" @bind="field.Label" @bind:event="oninput" />
+                <input aria-label="@($"Label of field {_form.IndexOf(field) + 1}, {field.Kind}")" @bind="field.Label" @bind:event="oninput" />
                 <span class="muted">@field.Kind</span>
                 @if (field.Locked is false)
                 {

@@ -156,11 +156,16 @@ main button.icon {
     padding: 0.5rem 0.75rem;
     border: 1px solid #d5d7de;
     border-radius: 4px;
-    background: #fff;
 }
 
-.item.tinted {
-    background: #f1f7fc;
+/* The items' fill has no specificity (:where), so the stylesheet's drag states - the chosen item, the swap target, the
+   selection - tint over it, whichever of the two stylesheets comes later. */
+:where(.item) {
+    background-color: #fff;
+}
+
+:where(.item.tinted) {
+    background-color: #f1f7fc;
 }
 
 .empty {

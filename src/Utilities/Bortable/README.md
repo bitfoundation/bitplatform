@@ -940,8 +940,9 @@ the stylesheet from the server's `App.razor`.
 ### Blazor Hybrid
 
 Register the services in `MauiProgram.cs` and link the stylesheet from `wwwroot/index.html`, as the
-[MAUI sample](Samples/Maui/wwwroot/index.html) does. Drag and drop is the web view's own, so it works wherever the
-platform's web view supports HTML5 drag and drop.
+[MAUI sample](Samples/Maui/wwwroot/index.html) does. A finger or a pen drags with pointer events, which every
+platform's web view supports; only the mouse uses the web view's own HTML5 drag and drop. Where a web view's native
+mouse drag fails, set `ForceFallback` and the mouse drags with pointer events too.
 
 ### Prerendering
 
