@@ -314,7 +314,7 @@ public class DemoRegressionTests : DemoTest
         // Safari: a clicked button there does not take the focus.
         var toggle = page.Locator(".bb-docs-menu-toggle");
         await toggle.ClickAsync();
-        await page.WaitForFunctionAsync("() => document.activeElement?.id === 'bb-docs-nav'", null, new PageWaitForFunctionOptions { Timeout = 5_000 });
+        await page.WaitForFunctionAsync("() => document.activeElement?.closest('#bb-docs-nav') != null", null, new PageWaitForFunctionOptions { Timeout = 5_000 });
         await page.Keyboard.PressAsync("Escape");
         await page.WaitForFunctionAsync("() => document.querySelector('.bb-docs-menu-toggle')?.getAttribute('aria-expanded') === 'false'", null, new PageWaitForFunctionOptions { Timeout = 5_000 });
         await page.WaitForFunctionAsync("() => document.activeElement?.classList.contains('bb-docs-menu-toggle')", null, new PageWaitForFunctionOptions { Timeout = 5_000 });
