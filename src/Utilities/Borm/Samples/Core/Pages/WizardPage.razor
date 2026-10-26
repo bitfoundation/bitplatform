@@ -6,8 +6,8 @@
 
 <p class="muted">
     Each step is validated before the next one opens. The <em>Company</em> step is only there for a business trip - while
-    it is hidden its fields are neither shown nor validated, and the steps after it renumber themselves - and the last
-    step reads every answer back before the booking is sent.
+    it is hidden its fields are neither shown nor validated, turning the trip back into a leisure one clears them, and
+    the steps after it renumber themselves - and the last step reads every answer back before the booking is sent.
 </p>
 
 <BormView Definition="_definition" Model="_model" OnValidSubmit="Submitted" SubmitText="Book the trip" />
@@ -37,16 +37,20 @@
             .Required()
             .Must("{ReturnDate} >= {Departure}", "The return cannot come before the departure."))
         .Field(x => x.Kind, f => f.AsRadio())
-        .Field(x => x.CostCentre, f => f.Required())
-        .Field(x => x.PurchaseOrder)
+        // The step's condition on its fields as well: ClearOnHide follows a field's own condition, not its step's, and
+        // without it a trip turned back into a leisure one still submitted the business answers.
+        .Field(x => x.CostCentre, f => f.Required().VisibleWhen(BusinessTrip).ClearOnHide())
+        .Field(x => x.PurchaseOrder, f => f.VisibleWhen(BusinessTrip).ClearOnHide())
         .Review("summary", "Check your booking")
         .Step("traveller", s => s.Title("Traveller").Fields("FullName", "Email"))
         .Step("trip", s => s.Title("Trip").Fields("Destination", "Departure", "ReturnDate", "Kind"))
         .Step("company", s => s.Title("Company")
             .Fields("CostCentre", "PurchaseOrder")
-            .VisibleWhen(nameof(TripBooking.Kind), BormConditionOperator.Equals, nameof(TripKind.Business)))
+            .VisibleWhen(BusinessTrip))
         .Step("review", s => s.Title("Review").Fields("summary"))
         .Build();
+
+    private static readonly BormFieldCondition BusinessTrip = new(nameof(TripBooking.Kind), BormConditionOperator.Equals, nameof(TripKind.Business));
 
     private void Submitted(BormState state) => _answers = SampleDirectory.ToJson(_model);
 }

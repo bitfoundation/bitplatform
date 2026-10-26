@@ -6,7 +6,11 @@
     <NavLink href="builder">Builder</NavLink>
     <NavLink href="wizard">Wizard</NavLink>
     <NavLink href="json-schema">JSON Schema</NavLink>
-    <NavLink href="static-form">Static form</NavLink>
+    @* Not in the MAUI app: its router only runs interactive, so it has no route to a page excluded from that. *@
+    @if (RendererInfo.Name is not "WebView")
+    {
+        <NavLink href="static-form">Static form</NavLink>
+    }
     @* Which renderer produced this markup: Static while prerendering, then Server, WebAssembly or WebView. A page with
        no render mode - the static form and the error page - stays Static, and is not prerendered: it never becomes
        interactive. *@

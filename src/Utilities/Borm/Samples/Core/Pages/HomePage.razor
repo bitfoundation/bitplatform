@@ -9,7 +9,8 @@
     <strong>Wasm</strong> (Interactive WebAssembly) and <strong>Auto</strong> (Interactive Auto), each prerendering
     first - and by a <strong>MAUI</strong> Blazor Hybrid app for Android, iOS, macOS and Windows. Every form behaves the
     same in each: Borm makes every decision in C# and has no JavaScript, so its rules run in the browser on WebAssembly,
-    on the server over the circuit, and in the app's own process under MAUI.
+    on the server over the circuit, and in the app's own process under MAUI. Only the static form is left out of the
+    app, which has no server for it to post to.
 </p>
 
 <div class="card">
@@ -32,5 +33,8 @@
     <li><NavLink href="builder">Builder</NavLink> - the fluent builder: conditional fields, an async rule and a custom renderer</li>
     <li><NavLink href="wizard">Wizard</NavLink> - steps validated one at a time, a step only some answers need, and a review</li>
     <li><NavLink href="json-schema">JSON Schema</NavLink> - a form described as JSON, with a repeater and computed totals</li>
-    <li><NavLink href="static-form">Static form</NavLink> - a form that posts to the server with no interactivity at all</li>
+    @if (RendererInfo.Name is not "WebView")
+    {
+        <li><NavLink href="static-form">Static form</NavLink> - a form that posts to the server with no interactivity at all</li>
+    }
 </ul>

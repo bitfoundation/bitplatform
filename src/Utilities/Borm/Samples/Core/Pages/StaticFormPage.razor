@@ -9,7 +9,7 @@
     In the web hosts this page has no interactive render mode: it is rendered on the server, and its form posts back like
     any HTML form. A <code>FormName</code> is all it takes - the page's <code>[SupplyParameterFromForm]</code> model binds
     what each control posts, and the form judges it on the server exactly as it would interactively. Submit it empty to
-    get the page back with every message in place. The MAUI app has no server to post to, so there it runs interactive.
+    get the page back with every message in place. The MAUI app has no server to post to, so it leaves this page out.
 </p>
 
 <BormView Definition="_definition" Model="Model" FormName="volunteer" OnValidSubmit="Submitted" SubmitText="Apply" ShowErrorSummary="true" />
@@ -42,6 +42,8 @@
                 .AsRadio()
                 .Options(("events", "Events"), ("kitchen", "Kitchen"), ("drivers", "Drivers"))
                 .Required())
+            // A checkbox posts only when ticked, and the model's false stands for the box left empty.
+            .Field(x => x.Newsletter)
             .Build();
     }
 

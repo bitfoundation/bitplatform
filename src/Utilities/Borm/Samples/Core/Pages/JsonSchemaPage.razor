@@ -7,7 +7,8 @@
 <p class="muted">
     This form has no C# behind it: it is the JSON Schema document below, imported into a <code>BormDefinition</code> and
     bound to a dictionary. Its line totals, its total and its approval rule are expressions, so a server could send the
-    whole form - computing and judging included - as data. A quote of 10,000 or more needs an approver.
+    whole form - computing and judging included - as data. A quote of 10,000 or more needs an approver, who is cleared
+    again if the total drops below it.
 </p>
 
 <BormView Definition="_definition" Data="_data" OnValidSubmit="Submitted" SubmitText="Send quote" ShowErrorSummary="true" />
@@ -51,7 +52,7 @@
           "x-rules": [{ "expression": "{discount} <= sum({lines[].lineTotal})", "message": "The discount cannot be more than the lines." }]
         },
         "total":    { "type": "number", "title": "Total", "x-computed": "round(sum({lines[].lineTotal}) - coalesce({discount}, 0), 2)" },
-        "approver": { "type": "string", "title": "Approved by", "x-visibleWhen": "{total} >= 10000", "x-requiredWhen": "{total} >= 10000" }
+        "approver": { "type": "string", "title": "Approved by", "x-visibleWhen": "{total} >= 10000", "x-requiredWhen": "{total} >= 10000", "x-clearOnHide": true }
       }
     }
     """;
