@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Bit.Bswup.Demo\Server\Bit.Bswup.Demo.Server.csproj" />
+        <ProjectReference Include="..\..\Demo\Server\Bit.Bswup.Demo.Server.csproj" />
     </ItemGroup>
 
 </Project>

@@ -232,9 +232,9 @@
     <File Path="Bswup/README.md" />
     <Project Path="Bswup/Bit.Bswup/Bit.Bswup.csproj" />
   </Folder>
-  <Folder Name="/Bswup/Bit.Bswup.Demo/">
-    <Project Path="Bswup/Bit.Bswup.Demo/Client/Bit.Bswup.Demo.Client.csproj" />
-    <Project Path="Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj" />
+  <Folder Name="/Bswup/Demo/">
+    <Project Path="Bswup/Demo/Client/Bit.Bswup.Demo.Client.csproj" />
+    <Project Path="Bswup/Demo/Server/Bit.Bswup.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Bswup/Samples/">
     <Project Path="Bswup/Samples/BasicSample/Bit.Bswup.BasicSample.csproj" />
