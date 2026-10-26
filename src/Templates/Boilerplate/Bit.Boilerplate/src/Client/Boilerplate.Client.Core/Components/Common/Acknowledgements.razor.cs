@@ -151,7 +151,6 @@ public partial class Acknowledgements
     private static readonly Dependency[] IdeExtensions =
     [
         new("C# (ms-dotnettools.csharp)", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp", "https://github.com/dotnet/vscode-csharp", "MIT"),
-        new(".NET MAUI (VS Code)", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui", null, "Proprietary"),
         new("Aspire (VS Code)", "https://marketplace.visualstudio.com/items?itemName=microsoft-aspire.aspire-vscode", "https://github.com/microsoft/aspire", "MIT"),
         new(".NET Install Tool", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.vscode-dotnet-runtime", "https://github.com/dotnet/vscode-dotnet-runtime", "MIT"),
         new("Container Tools (Docker)", "https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker", "https://github.com/microsoft/vscode-docker", "MIT"),

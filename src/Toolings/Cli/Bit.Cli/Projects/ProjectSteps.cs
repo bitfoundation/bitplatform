@@ -745,7 +745,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> VsCodeExtensionsAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        var recommended = ExtensionsToInstall(ReadRecommendedExtensions(project.Directory));
+        var recommended = ReadRecommendedExtensions(project.Directory);
 
         if (recommended.Count == 0)
             return StepResult.Skipped("Skipped VS Code extensions", "the project recommends none");
@@ -793,20 +793,6 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private static string ExtensionNames(IReadOnlyList<string> extensions)
         => string.Join(", ", extensions.Take(3).Select(id => id[(id.IndexOf('.') + 1)..])) + (extensions.Count > 3 ? $" and {extensions.Count - 3} more" : "");
-
-    private static readonly string[] visualStudioLicensedExtensions = ["ms-dotnettools.csdevkit", "ms-dotnettools.dotnet-maui"];
-
-    public static IReadOnlyList<string> ExtensionsToInstall(IReadOnlyList<string> recommended)
-    {
-        List<string> extensions = [.. recommended.Where(id => visualStudioLicensedExtensions.Contains(id, StringComparer.OrdinalIgnoreCase) is false)];
-
-        if (extensions.Count < recommended.Count && extensions.Contains("ms-dotnettools.csharp", StringComparer.OrdinalIgnoreCase) is false)
-        {
-            extensions.Insert(0, "ms-dotnettools.csharp");
-        }
-
-        return extensions;
-    }
 
     public static IReadOnlyList<string> ReadRecommendedExtensions(string projectDirectory)
     {

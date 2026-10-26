@@ -625,28 +625,16 @@ public class ProjectStepTests
     {
         using var host = new TestHost();
         var project = CreateFakeProject(host, "Contoso");
-        WriteRecommendations(project, "ms-dotnettools.csdevkit", "Anthropic.claude-code", "ms-dotnettools.csdevkit");
+        WriteRecommendations(project, "ms-dotnettools.csharp", "Anthropic.claude-code", "ms-dotnettools.csharp");
 
-        CollectionAssert.AreEqual(new[] { "ms-dotnettools.csdevkit", "Anthropic.claude-code" }, ProjectSteps.ReadRecommendedExtensions(project.Directory).ToArray());
-    }
-
-    [TestMethod]
-    public void CSharpDevKitAndMaui_Should_StayRecommendedButNotBeInstalled()
-    {
-        CollectionAssert.AreEqual(new[] { "ms-dotnettools.csharp", "Anthropic.claude-code" },
-            ProjectSteps.ExtensionsToInstall(["ms-dotnettools.csdevkit", "Anthropic.claude-code", "ms-dotnettools.dotnet-maui"]).ToArray());
-
-        CollectionAssert.AreEqual(new[] { "Anthropic.claude-code", "ms-dotnettools.csharp" },
-            ProjectSteps.ExtensionsToInstall(["Anthropic.claude-code", "ms-dotnettools.csharp", "ms-dotnettools.csdevkit"]).ToArray());
-
-        CollectionAssert.AreEqual(new[] { "Anthropic.claude-code" }, ProjectSteps.ExtensionsToInstall(["Anthropic.claude-code"]).ToArray());
+        CollectionAssert.AreEqual(new[] { "ms-dotnettools.csharp", "Anthropic.claude-code" }, ProjectSteps.ReadRecommendedExtensions(project.Directory).ToArray());
     }
 
     [TestMethod]
     public async Task ExtensionsVsCodeBuildsIn_Should_CountAsInstalled()
     {
         using var host = new TestHost(HostOs.Linux);
-        var (project, vsCode) = FakeVsCode(host, "ms-dotnettools.csdevkit");
+        var (project, vsCode) = FakeVsCode(host, "ms-dotnettools.csharp");
         WriteRecommendations(project, "Anthropic.claude-code", "vscode.git");
         host.Runner.On(vsCode.Name, "--install-extension", spec =>
         {
@@ -688,8 +676,8 @@ public class ProjectStepTests
     public async Task VsCode_Should_GetOnlyTheExtensionsItLacks()
     {
         using var host = new TestHost(HostOs.Linux);
-        var (project, vsCode) = FakeVsCode(host, "ms-dotnettools.csharp", "ms-dotnettools.csdevkit");
-        WriteRecommendations(project, "ms-dotnettools.csdevkit", "Anthropic.claude-code", "ms-dotnettools.csharp");
+        var (project, vsCode) = FakeVsCode(host, "ms-dotnettools.csharp", "EditorConfig.EditorConfig");
+        WriteRecommendations(project, "EditorConfig.EditorConfig", "Anthropic.claude-code", "ms-dotnettools.csharp");
         host.Runner.On(vsCode.Name, "--install-extension", spec =>
         {
             vsCode.Installed.UnionWith(spec.Arguments.Where(a => a.StartsWith('-') is false));

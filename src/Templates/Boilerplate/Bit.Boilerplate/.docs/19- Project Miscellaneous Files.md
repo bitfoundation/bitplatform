@@ -503,8 +503,6 @@ You can add additional MCP servers to extend Copilot's capabilities further. For
 {
     "recommendations": [
         "ms-dotnettools.csharp",
-        "ms-dotnettools.csdevkit",
-        "ms-dotnettools.dotnet-maui",
         "ms-azuretools.vscode-docker",
         "ms-vscode-remote.remote-containers",
         "ms-dotnettools.blazorwasm-companion",
