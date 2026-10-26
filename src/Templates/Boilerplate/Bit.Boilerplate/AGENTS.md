@@ -104,6 +104,11 @@ Before implementing any changes, you **MUST** complete the following:
 <!--#else-->
 -   **Expose the running app to remote devices**: `localhost` is unreachable from other devices, so create a dev tunnel with the `devtunnel` CLI (`devtunnel host -p 5030 --allow-anonymous`) and use the printed public `*.devtunnels.ms` URL instead of a `localhost` URL.
 <!--#endif-->
+<!--#if (aspire == true && cloudflare == true)-->
+-   **Report the running app**: Once `aspire start` reports `serverweb` healthy, check that its URLs respond, then give the user a short list with one line on what each is for: the local `serverweb` URL, the public `cloudflare-tunnel-web` URL (for phones and teammates; it changes on every restart), the Aspire dashboard login URL, and the `smtp` (Mailpit) inbox URL where the app's outgoing emails land.
+<!--#elif (aspire == true)-->
+-   **Report the running app**: Once `aspire start` reports `serverweb` healthy, check that its URLs respond, then give the user a short list with one line on what each is for: the local `serverweb` URL, the Aspire dashboard login URL, and the `smtp` (Mailpit) inbox URL where the app's outgoing emails land.
+<!--#endif-->
 -   **Assume hot reload is working**: `.cs`, `.razor`, `.scss` and `.ts` changes are picked up automatically by the running app, so after an edit do NOT rebuild the project and do NOT reload/refresh the web app. Only rebuild or refresh if you can't see what you were expecting after your change.
 -   **Run tests**: Run `dotnet test` in the src/Tests directory.
 -   **Add new migrations**: Run `dnx dotnet-ef@10.0.13 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose` in src/Server/Boilerplate.Server.Api project directory.
