@@ -73,7 +73,9 @@ public static class McpPrompts
                the new version for the first time) the database must open on 'cache-storage'. Any other backend ranked
                first gives every returning user an empty database there, silently.
             4. Remove Bit.Besql's script tag and its `ConfigureSqliteJournalMode()` calls, move `dbContextInitializer` work
-               to `OnFirstUse` (migrations already run by default) and a compiled model to `options.Configure`.
+               to `OnFirstUse` (migrations already run by default) and a compiled model to `options.Configure`. If the
+               project lazy loads `System.Private.Xml.wasm`, keep it and load it in `BeforeFirstOpen` on the builder:
+               opening any Bsqlite connection needs it.
             5. Replace every synchronous EF call with its async overload: they worked under Besql and throw
                `BsqliteSynchronousApiNotSupportedException` under Bsqlite. Search the code for `SaveChanges()`,
                `.ToList()`, `.First(`, `.Single(`, `.Count()` and `CreateDbContext()`.

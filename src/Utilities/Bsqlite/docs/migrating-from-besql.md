@@ -34,6 +34,7 @@ write is stored when its transaction commits rather than by copying the whole fi
 | The rest of `optionsAction` - `UseModel`, logging, warnings | `options.Configure = (sp, builder) => ...` |
 | `dbContextInitializer: (sp, db) => db.Database.MigrateAsync()` | The default: `options.Schema = BsqliteSchemaStrategy.Migrate` |
 | Anything else the initializer did | `options.OnFirstUse = (db, ct) => ...` |
+| The factory lazy loading `System.Private.Xml.wasm` | `sqlite.BeforeFirstOpen((sp, ct) => sp.GetRequiredService<LazyAssemblyLoader>().LoadAssembliesAsync(["System.Private.Xml.wasm"]))` |
 | `lifetime: ServiceLifetime.Singleton` / `Scoped` | Always scoped - one scope is the whole app on WebAssembly and in Blazor Hybrid |
 | `IDbContextFactory<TContext>` | Unchanged; `IBsqliteDbContextFactory<TContext>` is the same instance |
 | `IBitBesqlStorage.Persist` / `Load` | Gone: every committed transaction is stored |
@@ -67,8 +68,12 @@ In the WebAssembly project, remove what was there only for Bit.Besql:
 
 - `<WasmBuildNative>true</WasmBuildNative>` - unless something else needs native relinking (AOT sets it on its own). With
   it left on, a native SQLite bundle the project brings for Blazor Hybrid is linked into `dotnet.native.wasm` for nothing.
-- `<BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />`, which Bit.Besql's factory loaded.
 - Anything that was switched off because native relinking was on - IL stripping after AOT, a minifier step.
+
+Keep `<BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />` if the project has it. Bit.Besql's factory loaded
+that assembly before its first context. Bsqlite needs it as well, for every connection and not only for EF Core, but does
+not load it on its own: the registration in step 3 loads it with `BeforeFirstOpen`, before the first database opens. If
+you drop the lazy load instead, the assembly downloads with the app, about 360 KB compressed with Brotli.
 
 ### 3. Register
 
@@ -89,12 +94,15 @@ After:
 using Bit.Bsqlite.Storage.CacheStorage;
 using Bit.Bsqlite.Storage.IndexedDb;
 using Bit.Bsqlite.Storage.Opfs;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 services.AddBitBsqliteServices(sqlite => sqlite
     .AddStorageProvider<BsqliteCacheStorageProvider>()   // where Bit.Besql left the data
     .AddStorageProvider<BsqliteOpfsStorageProvider>()
     .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
     .UseStorage(s => s.Prefer(BsqliteCacheStorageProvider.ProviderName))
+    .BeforeFirstOpen((sp, ct) => sp.GetRequiredService<LazyAssemblyLoader>()
+        .LoadAssembliesAsync(["System.Private.Xml.wasm"])) // only with the lazy load kept, see step 2
     .AddDatabase("Offline-Client.db"));                  // Bit.Besql's Data Source, see step 4
 
 services.AddBitBsqliteDbContext<OfflineDbContext>(options =>
@@ -243,8 +251,9 @@ and on the server when the app runs in Blazor Server mode. Moving it over:
    `Microsoft.EntityFrameworkCore.Sqlite`: the Blazor Server registration (step 5 of this list) uses it, and it brings the
    native SQLite the MAUI and Windows apps open their files with.
 2. In `Client.Web/wwwroot/index.html`, remove the `bit-besql.js` script.
-3. In `Client.Web.csproj`, remove `WasmBuildNative` and the `System.Private.Xml.wasm` lazy load that `offlineDb` turned on,
-   and let `WasmStripILAfterAOT` and `Bit.Minifier` apply as they do without an offline database.
+3. In `Client.Web.csproj`, remove `WasmBuildNative`, and let `WasmStripILAfterAOT` and `Bit.Minifier` apply as they do
+   without an offline database. Keep the `System.Private.Xml.wasm` lazy load that `offlineDb` turned on: the registration
+   in step 4 loads it with `BeforeFirstOpen`, through the `LazyAssemblyLoader` that `Client.Core` already registers.
 4. Replace `AddBesqlDbContextFactory<AppOfflineDbContext>` with Bsqlite's registration. The template's database is
    `App_Data/AppOffline.db` in the browser's `bit-Besql` cache, and
    `{local application data}/AC87AA5B-4B37-4E52-8468-2D5DF24AF256/App_Data/AppOffline.db` on devices:
@@ -258,6 +267,8 @@ and on the server when the app runs in Blazor Server mode. Moving it over:
        .ConfigureFileSystemStorage(o => o.RootDirectory = Path.Combine(
            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
            "AC87AA5B-4B37-4E52-8468-2D5DF24AF256"))
+       .BeforeFirstOpen((sp, ct) => sp.GetRequiredService<LazyAssemblyLoader>()
+           .LoadAssembliesAsync(["System.Private.Xml.wasm"]))
        .AddDatabase("App_Data/AppOffline.db"));
 
    services.AddBitBsqliteDbContext<AppOfflineDbContext>(options =>

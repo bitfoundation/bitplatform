@@ -30,6 +30,8 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
     private readonly BsqliteStorageMigrator _migrator;
     private readonly IBsqliteStorageBindingStore _bindings;
     private readonly ILogger _logger;
+    private readonly SemaphoreSlim _beforeFirstOpenGate = new(1, 1);
+    private bool _ranBeforeFirstOpen;
 
     public BsqliteSessionFactory(
         BsqliteStorageProviderResolver resolver,
@@ -52,6 +54,12 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
         _logger = logger ?? NullLogger<BsqliteSessionFactory>.Instance;
     }
 
+    /// <summary>
+    /// The steps <c>BsqliteBuilder.BeforeFirstOpen</c> added, bound to this scope's services: run
+    /// before the first open, and again on the next one if they fail.
+    /// </summary>
+    internal Func<CancellationToken, Task>? BeforeFirstOpen { get; init; }
+
     /// <inheritdoc />
     public async Task<BsqliteSession> OpenAsync(
         string databaseName,
@@ -59,6 +67,30 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
 
+        if (BeforeFirstOpen is { } beforeFirstOpen && !_ranBeforeFirstOpen)
+        {
+            await _beforeFirstOpenGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (!_ranBeforeFirstOpen)
+                {
+                    await beforeFirstOpen(cancellationToken).ConfigureAwait(false);
+                    _ranBeforeFirstOpen = true;
+                }
+            }
+            finally
+            {
+                _beforeFirstOpenGate.Release();
+            }
+        }
+
+        // A method of its own: on WebAssembly the runtime prepares the whole of a method before running
+        // any of it, the connection type included - and that type needs what the steps above may load.
+        return await OpenCoreAsync(databaseName, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<BsqliteSession> OpenCoreAsync(string databaseName, CancellationToken cancellationToken)
+    {
         var resolution = await _resolver
             .ResolveAsync(databaseName, _selection, cancellationToken)
             .ConfigureAwait(false);

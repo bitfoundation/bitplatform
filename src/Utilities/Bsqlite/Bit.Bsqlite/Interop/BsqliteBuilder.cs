@@ -22,6 +22,7 @@ public sealed class BsqliteBuilder
 
     private readonly List<string> _onOpenSql = [];
     private readonly List<BsqliteJsModule> _extensions = [];
+    private readonly List<Func<IServiceProvider, CancellationToken, Task>> _beforeFirstOpen = [];
     private readonly BsqliteFileSystemStorageOptions _fileSystem = new();
     private BsqliteStorageSelection? _selection;
     private string? _hostModuleUrl;
@@ -167,6 +168,38 @@ public sealed class BsqliteBuilder
     }
 
     /// <summary>
+    /// Adds a step to run once per scope - once for a WebAssembly application - before the first
+    /// database opens, whether through <see cref="BsqliteDatabase"/>, an EF Core context factory, or
+    /// <see cref="IBsqliteSessionFactory"/>: the place to load what opening needs.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// On WebAssembly, an application that keeps <c>System.Private.Xml.wasm</c> out of its startup
+    /// download with <c>BlazorWebAssemblyLazyLoad</c> loads it here, through <c>LazyAssemblyLoader</c>.
+    /// Opening needs it: every connection is a <c>DbConnection</c>, whose <c>GetSchema</c> returns a
+    /// <c>DataTable</c>, and the runtime cannot set the connection type up without the assembly that
+    /// type's XML support lives in.
+    /// </para>
+    /// <para>
+    /// Steps run in the order they were added, and must not open a database themselves: the open is
+    /// waiting for them. A failure reaches the caller of the open, and the next open runs every step
+    /// again.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// sqlite.BeforeFirstOpen((sp, ct) => sp.GetRequiredService&lt;LazyAssemblyLoader&gt;()
+    ///     .LoadAssembliesAsync(["System.Private.Xml.wasm"]));
+    /// </code>
+    /// </example>
+    public BsqliteBuilder BeforeFirstOpen(Func<IServiceProvider, CancellationToken, Task> step)
+    {
+        ArgumentNullException.ThrowIfNull(step);
+        _beforeFirstOpen.Add(step);
+        return this;
+    }
+
+    /// <summary>
     /// Adds a JavaScript module that registers user-defined functions, collations, or virtual
     /// tables on every open database. See <see cref="BsqliteWorkerTransportOptions.ExtensionModules"/>.
     /// </summary>
@@ -265,13 +298,24 @@ public sealed class BsqliteBuilder
             sp.GetRequiredService<IBsqliteStorageBindingStore>(),
             sp.GetRequiredService<BsqliteRuntimeHost>().Kind,
             sp.GetService<ILogger<BsqliteStorageProviderResolver>>()));
+        var beforeFirstOpen = _beforeFirstOpen.ToArray();
         Services.TryAddScoped<IBsqliteSessionFactory>(sp => new BsqliteSessionFactory(
             sp.GetRequiredService<BsqliteStorageProviderResolver>(),
             sp.GetRequiredService<IBsqliteTransportFactory>(),
             sp.GetRequiredService<BsqliteStorageSelection>(),
             sp.GetRequiredService<IBsqliteStorageBindingStore>(),
             sp.GetRequiredService<BsqliteStorageMigrator>(),
-            sp.GetService<ILogger<BsqliteSessionFactory>>()));
+            sp.GetService<ILogger<BsqliteSessionFactory>>())
+        {
+            // The session factory is scoped, so the steps run once per scope, with that scope's services.
+            BeforeFirstOpen = beforeFirstOpen.Length == 0 ? null : async cancellationToken =>
+            {
+                foreach (var step in beforeFirstOpen)
+                {
+                    await step(sp, cancellationToken).ConfigureAwait(false);
+                }
+            },
+        });
         Services.TryAddScoped(sp => (BsqliteSessionFactory)sp.GetRequiredService<IBsqliteSessionFactory>());
     }
 }

@@ -17,6 +17,12 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
   </ItemGroup>
 
+  <!-- Kept out of the startup download: every Bsqlite connection needs it, so BeforeFirstOpen loads it right before
+       the first database opens (Extensions/IServiceCollectionExtensions.cs). -->
+  <ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- The library, with every first-party storage backend: the demo moves its database between all four. -->
     <ProjectReference Include="..\..\Bit.Bsqlite\Bit.Bsqlite.csproj" />

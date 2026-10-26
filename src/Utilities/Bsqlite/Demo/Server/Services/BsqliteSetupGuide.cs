@@ -375,6 +375,10 @@ public static partial class BsqliteSetupGuide
         1. `dotnet remove package Bit.Besql`, then `dotnet add package Bit.Bsqlite` - the `cache-storage` backend that
            reads Besql's file ships in it.
         2. Remove `<script src="_content/Bit.Besql/bit-besql.js"></script>` from the host page; Bsqlite needs nothing there.
+           Keep a `<BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />` the project has: every Bsqlite
+           connection needs that assembly, so load it with `sqlite.BeforeFirstOpen((sp, ct) =>
+           sp.GetRequiredService<LazyAssemblyLoader>().LoadAssembliesAsync(["System.Private.Xml.wasm"]))`, which runs
+           before the first database opens, as Besql's factory did before its first context.
         3. Replace `AddBesqlDbContextFactory<TContext>(...)` with `AddBitBsqliteServices` and
            `AddBitBsqliteDbContext<TContext>`, naming the database exactly as Besql's `Data Source` - the import looks for
            `/data/cache/{that name}`.

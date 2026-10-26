@@ -63,6 +63,14 @@ Builder options:
 
 - `EnableForeignKeys(false)` - skip `PRAGMA foreign_keys = ON` on open. On by default, as with Microsoft.Data.Sqlite.
 - `OnOpen("PRAGMA cache_size = -16000")` - statements to run after every open.
+- `BeforeFirstOpen((sp, ct) => ...)` - work to finish before the first database opens, once per scope. An app that keeps
+  `System.Private.Xml.wasm` out of its startup download with `<BlazorWebAssemblyLazyLoad>` loads it here; opening a
+  database needs it:
+
+  ```csharp
+  .BeforeFirstOpen((sp, ct) => sp.GetRequiredService<LazyAssemblyLoader>()
+      .LoadAssembliesAsync(["System.Private.Xml.wasm"]))
+  ```
 - `AddExtensionModule("/my-functions.js")` - JavaScript that registers SQL functions; see [Extending](extending.md).
 - `UseBindingStore<T>()` - replace where sticky bindings are remembered.
 - `ConfigureFileSystemStorage(o => o.RootDirectory = ...)` - where a Blazor Hybrid app keeps its databases; by default a folder of the app's own under local application data.
