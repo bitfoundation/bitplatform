@@ -125,8 +125,10 @@ public sealed class PageBuilderTests : BdndTest
         await Expect(Tool(page, "Image")).ToHaveAttributeAsync("draggable", "false");
         await Expect(Tool(page, "Image")).Not.ToHaveAttributeAsync("tabindex", "0");
 
+        var heading = Block(page, "Heading 1");
+        await heading.EvaluateAsync("block => window.scrollBy(0, block.getBoundingClientRect().top - 120)");
         var bin = page.Locator(".builder-bin");
-        await DragAsync(page, Block(page, "Heading 1"), bin, () => Expect(bin).ToHaveTextAsync("Release to remove"));
+        await DragAsync(page, heading, bin, () => Expect(bin).ToHaveTextAsync("Release to remove"));
         await Expect(capacity).ToHaveTextAsync("5 of 6 blocks.");
         await Expect(Tool(page, "Image")).ToHaveAttributeAsync("draggable", "true");
     }
