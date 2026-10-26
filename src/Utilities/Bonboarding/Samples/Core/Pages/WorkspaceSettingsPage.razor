@@ -1,0 +1,36 @@
+﻿@page "/workspace/settings"
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Workspace settings - Bonboarding samples</PageTitle>
+
+<h1>Workspace settings</h1>
+
+<p>
+    The middle of the workspace tour. Start it from here and the engine first navigates back to the
+    <a href="workspace">workspace</a>, where its first step belongs.
+</p>
+
+<div class="row">
+    <button type="button" @onclick="StartTourAsync" disabled="@(RendererInfo.IsInteractive is false)">Run the workspace tour</button>
+</div>
+
+<section class="panel" data-bonboarding-anchor="members">
+    <h2>Members</h2>
+    <ul class="list">
+        <li>Ada (owner)</li>
+        <li>Grace</li>
+        <li>Linus</li>
+    </ul>
+</section>
+
+<section class="panel" data-bonboarding-anchor="api-keys">
+    <h2>API keys</h2>
+    <ul class="list">
+        <li><code>bit_live_••••••••3f9a</code></li>
+        <li><code>bit_test_••••••••c41e</code></li>
+    </ul>
+</section>
+
+@code {
+    private Task StartTourAsync() => BonboardingService.StartAsync(SampleTours.WorkspaceId);
+}

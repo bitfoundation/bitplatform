@@ -1,0 +1,8 @@
+﻿@* The root component every host renders: the App.razor of the web hosts with their render mode, and the MAUI host's
+   BlazorWebView. The one BonboardingRoot is in MainLayout. *@
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(NotFoundPage)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

@@ -1,0 +1,139 @@
+﻿@page "/progress"
+@implements IDisposable
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Progress - Bonboarding samples</PageTitle>
+
+<h1>Progress</h1>
+
+<p>
+    What the store holds for each tour, read back through <code>IBonboardingService</code>. Progress is written after
+    every step, which is what lets a tour resume after a reload - or, on Server, after the circuit is replaced.
+</p>
+
+<section class="panel">
+    <div class="row">
+        <h2>Stored records</h2>
+        <button type="button" @onclick="ResetAsync" disabled="@(_records is null)">Reset everything</button>
+    </div>
+
+    @if (_records is null)
+    {
+        @* The store is read through JS interop, which is not there while prerendering. *@
+        <p class="muted">Reading the store...</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr><th>Id</th><th>State</th><th>Updated</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var (id, record) in _records)
+                {
+                    <tr>
+                        <td><code>@id</code></td>
+                        <td>@Describe(record)</td>
+                        <td>@(record?.UpdatedAt.ToLocalTime().ToString("T") ?? "-")</td>
+                    </tr>
+                }
+                <tr>
+                    <td><code>checklist:@SampleTours.ChecklistId</code></td>
+                    <td>@(_checklistDismissed ? "dismissed; " : string.Empty)ticked off: @(_checklistTicked.Count == 0 ? "nothing" : string.Join(", ", _checklistTicked))</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="muted">
+            A checklist stores only what was ticked off - by a signal or by <code>SetChecklistItemAsync</code>. An item
+            done by its tour or by a condition is worked out again each time, from the tour's record or the condition.
+            After a reset the welcome tour is due again: it starts by itself the next time the app is loaded.
+        </p>
+    }
+</section>
+
+<section class="panel">
+    <h2>Events</h2>
+    @if (_log.Count == 0)
+    {
+        <p class="muted">Nothing yet. Run a tour, open the hint on the guidance page, or tick something off.</p>
+    }
+    else
+    {
+        <ol class="list log">
+            @foreach (var entry in _log)
+            {
+                <li><span class="muted">@entry.Time.ToString("T")</span> <strong>@entry.Kind</strong> @entry.Detail</li>
+            }
+        </ol>
+    }
+</section>
+
+@code {
+    private static readonly string[] RecordIds = [SampleTours.WelcomeId, SampleTours.WorkspaceId, SampleTours.ExportHintId];
+
+    private readonly List<LogEntry> _log = [];
+    private List<(string Id, BonboardingRecord? Record)>? _records;
+    private IReadOnlyCollection<string> _checklistTicked = [];
+    private bool _checklistDismissed;
+
+    // Subscribed in every render, but events only flow once the page is interactive.
+    protected override void OnInitialized() => BonboardingService.EventRaised += OnEvent;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        // The checklist's last item is done by being here, ticked off from another page than the checklist's own.
+        await BonboardingService.SetChecklistItemAsync(SampleTours.ChecklistId, "progress");
+
+        await LoadAsync();
+        StateHasChanged();
+    }
+
+    private async Task LoadAsync()
+    {
+        var records = new List<(string, BonboardingRecord?)>();
+        foreach (var id in RecordIds)
+        {
+            records.Add((id, await BonboardingService.GetRecordAsync(id)));
+        }
+
+        _records = records;
+        _checklistTicked = await BonboardingService.GetCompletedChecklistItemsAsync(SampleTours.ChecklistId);
+        _checklistDismissed = await BonboardingService.IsChecklistDismissedAsync(SampleTours.ChecklistId);
+    }
+
+    private async Task ResetAsync()
+    {
+        await BonboardingService.ResetAllAsync();
+        await LoadAsync();
+    }
+
+    private void OnEvent(object? sender, BonboardingEvent onboardingEvent)
+    {
+        var detail = onboardingEvent.Step is { } step ? $"{onboardingEvent.Tour.Id} / {step.Id}" : onboardingEvent.Tour.Id;
+        _log.Insert(0, new LogEntry(DateTime.Now, onboardingEvent.Kind, detail));
+        if (_log.Count > 30) _log.RemoveRange(30, _log.Count - 30);
+
+        _ = InvokeAsync(async () =>
+        {
+            await LoadAsync();
+            StateHasChanged();
+        });
+    }
+
+    private static string Describe(BonboardingRecord? record) => record switch
+    {
+        null => "never started",
+        { Completed: true } => "completed",
+        { Dismissed: true } => "dismissed",
+        { SnoozedUntil: { } until } => $"snoozed until {until.ToLocalTime():g}",
+        _ => $"in progress, at step {record.CurrentStepId ?? "?"}",
+    };
+
+    public void Dispose() => BonboardingService.EventRaised -= OnEvent;
+
+    private sealed record LogEntry(DateTime Time, BonboardingEventKind Kind, string Detail);
+}

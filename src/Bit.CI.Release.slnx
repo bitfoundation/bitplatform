@@ -206,6 +206,21 @@
     <Project Path="Utilities/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj" />
     <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bonboarding/Samples/" />
+  <Folder Name="/Utilities/Bonboarding/Samples/Auto/">
+    <Project Path="Utilities/Bonboarding/Samples/Auto/Bit.Bonboarding.Samples.Auto/Bit.Bonboarding.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bonboarding/Samples/Auto/Bit.Bonboarding.Samples.Auto.Client/Bit.Bonboarding.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bonboarding/Samples/Core/">
+    <Project Path="Utilities/Bonboarding/Samples/Core/Bit.Bonboarding.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bonboarding/Samples/Server/">
+    <Project Path="Utilities/Bonboarding/Samples/Server/Bit.Bonboarding.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bonboarding/Samples/Wasm/">
+    <Project Path="Utilities/Bonboarding/Samples/Wasm/Bit.Bonboarding.Samples.Wasm/Bit.Bonboarding.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bonboarding/Samples/Wasm/Bit.Bonboarding.Samples.Wasm.Client/Bit.Bonboarding.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bortable/">
     <File Path="Utilities/Bortable/README.md" />
     <Project Path="Utilities/Bortable/Demo/Client/Bit.Bortable.Demo.Client.csproj" />

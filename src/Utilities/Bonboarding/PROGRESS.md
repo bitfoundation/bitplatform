@@ -235,7 +235,8 @@ P3 specialised. "E2E" means the Playwright suite (Chromium, Firefox, WebKit).
 
 1. Run the new `bit.ci.Bonboarding.e2e.yml` workflow once on GitHub (it has only run locally) and the unit tests on
    net8.0/net9.0 there.
-2. Verify on MAUI Blazor Hybrid (WebView) on a device; nothing browser-only is used beyond `localStorage`.
+2. Verify on MAUI Blazor Hybrid (WebView) on a device - `Samples/Maui` builds for Android and Windows and is the app
+   to run; nothing browser-only is used beyond `localStorage`.
 3. A persisted global throttle for automatic tours, if users ask for one (deliberately not built; see round 2-3).
 4. A screen-reader pass by hand (NVDA, VoiceOver) over a tour, a hint and the checklist; automated rules cover only a
    part of it.

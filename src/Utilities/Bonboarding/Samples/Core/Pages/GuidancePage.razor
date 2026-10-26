@@ -1,0 +1,66 @@
+﻿@page "/guidance"
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Guidance - Bonboarding samples</PageTitle>
+
+<h1>Guidance</h1>
+
+<p>
+    Not all guidance takes over the screen. A beacon, a checklist and a tour list render on the page itself, use the same
+    engine, store and theme as the tours, and need nothing but the <code>BonboardingRoot</code> in the layout.
+</p>
+
+<section class="panel">
+    <h2>A beacon</h2>
+    <p class="muted">
+        The pulsing dot opens a hint about the button it sits on. Close the hint and the beacon goes away for good: it
+        has an id, so the hint is stored like a one-step tour.
+    </p>
+    <div class="row">
+        <button type="button" data-bonboarding-anchor="export">Export</button>
+        <button type="button" @onclick="SaveDraftAsync">Save a draft</button>
+    </div>
+
+    <BonboardingBeacon Id="@SampleTours.ExportHintId"
+                       Anchor="export"
+                       Title="Export is here"
+                       Description="Download every project as a CSV file. It used to live under the settings." />
+</section>
+
+<section class="panel">
+    <BonboardingChecklist Checklist="Checklist" Dismissible="true" />
+</section>
+
+<section class="panel">
+    @* Every registered tour: the welcome tour declared in the layout and the workspace tour the layout registers. *@
+    <BonboardingTourList Title="Guided tours" />
+</section>
+
+@code {
+    private BonboardingChecklistDefinition? _checklist;
+
+    private BonboardingChecklistDefinition Checklist => _checklist ??= new()
+    {
+        Id = SampleTours.ChecklistId,
+        Title = "Get started",
+        Items =
+        {
+            // Done once its tour is completed; pressing the item starts the tour.
+            new() { Id = "welcome", Title = "Take the welcome tour", TourId = SampleTours.WelcomeId },
+            new() { Id = "workspace", Title = "Take the workspace tour", TourId = SampleTours.WorkspaceId },
+            // Done while a condition holds: the checklist reads it again whenever a tour or a hint ends.
+            new()
+            {
+                Id = "export",
+                Title = "Read the hint on Export",
+                IsComplete = async context => await BonboardingService.IsClosedAsync(SampleTours.ExportHintId, context.CancellationToken),
+            },
+            // Done, for good, when the application raises the signal.
+            new() { Id = "draft", Title = "Save a draft", CompleteOnSignal = "draft-saved" },
+            // Pressing it goes to the progress page, which ticks it off itself.
+            new() { Id = "progress", Title = "Look at what was stored", Route = "progress" },
+        },
+    };
+
+    private Task SaveDraftAsync() => BonboardingService.SignalAsync("draft-saved");
+}
