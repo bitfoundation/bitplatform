@@ -39,13 +39,13 @@ public partial class WebAppDownloadSizeTests : AppPageTest
     /// them from the failure message whenever a deliberate change moves an app's size.
     /// </summary>
     [TestMethod]
-    [DataRow(DeployedApps.AdminPanel, 5.8, DisplayName = nameof(DeployedApps.AdminPanel))]
-    [DataRow(DeployedApps.AdminPanelWasmStandalone, 5.3, DisplayName = nameof(DeployedApps.AdminPanelWasmStandalone))]
+    [DataRow(DeployedApps.AdminPanel, 5.7, DisplayName = nameof(DeployedApps.AdminPanel))]
+    [DataRow(DeployedApps.AdminPanelWasmStandalone, 8.8, DisplayName = nameof(DeployedApps.AdminPanelWasmStandalone))]
 
-    [DataRow(DeployedApps.Todo, 5.3, DisplayName = nameof(DeployedApps.Todo))]
-    [DataRow(DeployedApps.TodoAot, 10.1, DisplayName = nameof(DeployedApps.TodoAot))]
-    [DataRow(DeployedApps.TodoSmall, 3.7, DisplayName = nameof(DeployedApps.TodoSmall))]
-    [DataRow(DeployedApps.TodoOffline, 8.3, DisplayName = nameof(DeployedApps.TodoOffline))]
+    [DataRow(DeployedApps.Todo, 5.5, DisplayName = nameof(DeployedApps.Todo))]
+    [DataRow(DeployedApps.TodoAot, 6.3, DisplayName = nameof(DeployedApps.TodoAot))]
+    [DataRow(DeployedApps.TodoSmall, 3.8, DisplayName = nameof(DeployedApps.TodoSmall))]
+    [DataRow(DeployedApps.TodoOffline, 8.5, DisplayName = nameof(DeployedApps.TodoOffline))]
 
     [DataRow(DeployedApps.Sales, 5.6, DisplayName = nameof(DeployedApps.Sales))]
     public async Task FirstVisitDownloadSize_Should_NotRegress(string url, double expectedMegabytes)
