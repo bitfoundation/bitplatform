@@ -147,6 +147,30 @@ internal sealed class GatedStore : IBonboardingStore
         => _inner.ClearAsync(cancellationToken);
 }
 
+/// <summary>
+/// An in-memory store whose reads finish later, as a server-backed store's do, so two changes started together both
+/// read before either writes.
+/// </summary>
+internal sealed class SlowReadStore : IBonboardingStore
+{
+    private readonly BonboardingInMemoryStore _inner = new();
+
+    public async ValueTask<BonboardingRecord?> GetAsync(string tourId, CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(20, cancellationToken);
+        return await _inner.GetAsync(tourId, cancellationToken);
+    }
+
+    public ValueTask SetAsync(BonboardingRecord record, CancellationToken cancellationToken = default)
+        => _inner.SetAsync(record, cancellationToken);
+
+    public ValueTask RemoveAsync(string tourId, CancellationToken cancellationToken = default)
+        => _inner.RemoveAsync(tourId, cancellationToken);
+
+    public ValueTask ClearAsync(CancellationToken cancellationToken = default)
+        => _inner.ClearAsync(cancellationToken);
+}
+
 /// <summary>Collects every event the service publishes, for assertions on analytics behaviour.</summary>
 internal sealed class RecordingObserver : IBonboardingObserver
 {

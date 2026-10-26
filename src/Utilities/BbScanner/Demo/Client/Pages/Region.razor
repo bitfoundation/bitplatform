@@ -5,9 +5,10 @@
 <div class="bb-intro">
     <h1>Scan region</h1>
     <p class="bb-subtitle">
-        A region is expressed in normalized coordinates, so it survives whatever resolution the
-        browser negotiates. Cropping happens before any pixel is touched, which makes every later
-        stage cheaper in proportion to the area removed.
+        A region is expressed in normalized coordinates - 0 to 1 across and down the frame - so it
+        survives whatever resolution the browser negotiates. Cropping happens before any pixel is
+        touched, which makes every later stage cheaper in proportion to the area removed. The reticle
+        frames the region and <code>ShowMask</code> dims the rest; still images are always searched in full.
     </p>
 </div>
 
@@ -38,6 +39,13 @@
                         <button type="button" aria-pressed="@Pressed("Linear band")" @onclick='() => Set(new BbScanRegion(0.05, 0.35, 0.9, 0.3), "Linear band")'>Linear band</button>
                         <button type="button" aria-pressed="@Pressed("Right half")" @onclick='() => Set(new BbScanRegion(0.5, 0, 0.5, 1), "Right half")'>Right half</button>
                     </div>
+                    <p class="bb-card-desc">
+                        <em>Full frame</em> is <code>BbScanRegion.Full</code>, the default. <em>Centred square</em>
+                        is <code>BbScanRegion.CenteredSquare(0.7)</code>, the usual aiming box. <em>Linear band</em>,
+                        a wide strip across the middle, suits a one dimensional barcode held level; <em>Right half</em>
+                        shows that a region need not be centred. Watch <em>Decoded size</em> and the frame time in
+                        the diagnostics under the scanner shrink with the region.
+                    </p>
                 </section>
 
                 <section class="scan-panel">
@@ -59,9 +67,21 @@
                         <input type="range" min="0.1" max="1" step="0.05" value="@_h" @onchange="e => Update(h: ToDouble(e))" />
                     </label>
                     <label class="bb-check">
-                        <input type="checkbox" checked="@_showMask" @onchange="e => _showMask = (bool)(e.Value ?? true)" />
-                        Dim the area outside the region
+                        <input type="checkbox" checked="@_keepSquare" @onchange="e => Update(keepSquare: (bool)(e.Value ?? false))" />
+                        Keep it square in pixels (<code>KeepSquare</code>)
                     </label>
+                    <label class="bb-check">
+                        <input type="checkbox" checked="@_showMask" @onchange="e => _showMask = (bool)(e.Value ?? true)" />
+                        Dim the area outside the region (<code>ShowMask</code>)
+                    </label>
+                    <p class="bb-card-desc">
+                        <code>new BbScanRegion(x, y, width, height)</code>, each a fraction of the frame. The same
+                        fraction of a wide frame's width and height are different numbers of pixels, so a square in
+                        fractions is a rectangle on screen; <code>KeepSquare</code> narrows it along the longer axis
+                        to the largest square it holds. <code>CenteredSquare</code> sets it: on a 1280×720 frame,
+                        <code>CenteredSquare(0.7)</code> searches 504×504 pixels. <code>ForFrame</code> gives the
+                        region as it applies to a frame of a given size.
+                    </p>
                 </section>
 
                 <section class="scan-panel">
@@ -69,7 +89,9 @@
                     <p class="bb-card-desc">
                         Corner points are always reported in the coordinates of the frame the camera
                         produced, not of the cropped region, so an overlay drawn from them lines up with
-                        what the user sees.
+                        what the user sees. A matrix code reports its four outer corners, clockwise from the
+                        symbol's own top-left whichever way up it is held; a linear code reports the two ends
+                        of the line that read it. <code>BoundingBox</code> is the upright box round them.
                     </p>
                     @if (_last is not null)
                     {
@@ -85,6 +107,20 @@
     </div>
 </div>
 
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> In code</h3>
+    <pre class="bb-code"><span class="c">@@* An aiming square, 70 % of the shorter edge, square on any camera *@@</span>
+&lt;<span class="k">BbScanner</span> Region=<span class="s">"BbScanRegion.CenteredSquare(0.7)"</span> /&gt;
+
+<span class="c">@@* A band across the middle for a one dimensional barcode: x, y, width, height *@@</span>
+&lt;<span class="k">BbScanner</span> Region=<span class="s">"new BbScanRegion(0.05, 0.35, 0.9, 0.3)"</span> /&gt;</pre>
+    <p class="bb-card-desc">
+        <code>Region</code> can change while the camera runs; the next frame is searched with the new one. Values
+        outside 0 to 1 are clamped by <code>Normalized()</code>. <code>IsFull</code> says whether a region
+        covers the whole frame.
+    </p>
+</div>
+
 @code {
     private BbScanRegion _region = BbScanRegion.CenteredSquare(0.7);
     private BbScanDiagnostics _diagnostics;
@@ -96,6 +132,7 @@
     private double _y = 0.15;
     private double _w = 0.7;
     private double _h = 0.7;
+    private bool _keepSquare = true;
 
     private string Pressed(string label) => _label == label ? "true" : "false";
 
@@ -107,15 +144,17 @@
         _y = region.Y;
         _w = region.Width;
         _h = region.Height;
+        _keepSquare = region.KeepSquare;
     }
 
-    private void Update(double? x = null, double? y = null, double? w = null, double? h = null)
+    private void Update(double? x = null, double? y = null, double? w = null, double? h = null, bool? keepSquare = null)
     {
         _x = x ?? _x;
         _y = y ?? _y;
         _w = w ?? _w;
         _h = h ?? _h;
-        _region = new BbScanRegion(_x, _y, _w, _h).Normalized();
+        _keepSquare = keepSquare ?? _keepSquare;
+        _region = new BbScanRegion(_x, _y, _w, _h) { KeepSquare = _keepSquare }.Normalized();
         _label = "Custom";
     }
 
@@ -127,6 +166,6 @@
     private static string Describe(BbBarcodeResult result)
     {
         var corners = string.Join("\n  ", result.Corners.Select(p => p.ToString()));
-        return $"Format: {result.Format}\nFrame:  {result.FrameWidth}x{result.FrameHeight}\nBox:    {result.BoundingBox}\nPoints:\n  {corners}";
+        return $"Format: {result.Format}\nFrame:  {result.FrameWidth}x{result.FrameHeight}\nBox:    {result.BoundingBox}\nCenter: {result.BoundingBox.Center}\nPoints:\n  {corners}";
     }
 }

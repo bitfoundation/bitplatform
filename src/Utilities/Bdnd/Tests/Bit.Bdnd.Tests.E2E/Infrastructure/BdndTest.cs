@@ -28,7 +28,7 @@ public abstract class BdndTest
     /// (<c>preventDefault</c> and <c>dropEffect</c>), so the record is what the browser itself acts on.
     /// </para>
     /// </summary>
-    private const string BrowserProbe =
+    internal const string BrowserProbe =
         """
         (() => {
           const state = {
@@ -85,13 +85,30 @@ public abstract class BdndTest
 
     protected IBrowser Browser => Session.Browser!;
 
+    /// <summary>Whether the suite drives Chromium, the only engine whose DevTools protocol synthesizes touches.</summary>
+    protected bool IsChromium => Browser.BrowserType.Name == "chromium";
+
+    /// <summary>Skips a test that needs Chromium's DevTools protocol on the other engines.</summary>
+    protected void RequireChromium(string why)
+    {
+        if (IsChromium is false) Assert.Inconclusive($"{Browser.BrowserType.Name}: {why}");
+    }
+
     private PlaywrightSession.Session Session => _session ?? throw new InvalidOperationException("The session is opened in TestInitialize.");
+
+    /// <summary>Whether the tests drive the demo in the suite's browser (the hybrid tests drive an app of their own).</summary>
+    protected virtual bool UsesDemo => true;
 
     [TestInitialize]
     public async Task OpenSessionAsync()
     {
+        if (UsesDemo is false) return;
         _session = await PlaywrightSession.GetAsync();
-        if (_session.Unavailable is not { } reason) return;
+        if (_session.Unavailable is not { } reason)
+        {
+            await PlaywrightSession.EnsureBrowserAsync(_session);
+            return;
+        }
 
         // A build server must not report a suite that never ran as anything but a failure.
         if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + reason);
@@ -129,12 +146,13 @@ public abstract class BdndTest
     /// a request that leaves the demo's origin is answered with an empty response here, so a runner without
     /// internet access neither waits out a connection timeout nor logs a load error.
     /// </summary>
-    protected async Task<IPage> NewPageAsync()
+    protected async Task<IPage> NewPageAsync(bool hasTouch = false)
     {
         var context = await Browser.NewContextAsync(new BrowserNewContextOptions
         {
             ViewportSize = new ViewportSize { Width = 1280, Height = 900 },
             DeviceScaleFactor = 1,
+            HasTouch = hasTouch,
         });
         _contexts.Add(context);
 
@@ -158,9 +176,9 @@ public abstract class BdndTest
     /// (a page whose drags all happen in an iframe), its draggables and drop targets have been registered with the
     /// browser module (see <see cref="WaitForBdndAsync"/>).
     /// </summary>
-    protected async Task<IPage> OpenAsync(string path, bool bdnd = true)
+    protected async Task<IPage> OpenAsync(string path, bool bdnd = true, bool hasTouch = false)
     {
-        var page = await NewPageAsync();
+        var page = await NewPageAsync(hasTouch);
         var response = await GotoAsync(page, path);
         Assert.AreEqual(200, response?.Status, $"{path} answered {response?.Status}");
         await WaitForInteractiveAsync(page.MainFrame);
@@ -370,6 +388,33 @@ public abstract class BdndTest
         return (drops[0], drops[1]);
     }
 
+    // Touch, through the DevTools protocol: Chromium turns the touches into pointer events of type touch.
+
+    /// <summary>A DevTools session on <paramref name="page"/>, through which <see cref="TouchAsync"/> touches it.</summary>
+    protected static async Task<ICDPSession> TouchScreenAsync(IPage page) => await page.Context.NewCDPSessionAsync(page);
+
+    /// <summary>
+    /// Raises a touch event of <paramref name="type"/> (<c>touchStart</c>, <c>touchMove</c>, <c>touchEnd</c>,
+    /// <c>touchCancel</c>), with one finger at <paramref name="at"/> - or none, for an end or a cancel.
+    /// </summary>
+    protected static Task TouchAsync(ICDPSession cdp, string type, Point? at = null) =>
+        cdp.SendAsync("Input.dispatchTouchEvent", new Dictionary<string, object>
+        {
+            ["type"] = type,
+            ["touchPoints"] = at is { } p
+                ? new object[] { new Dictionary<string, object> { ["x"] = p.X, ["y"] = p.Y } }
+                : Array.Empty<object>(),
+        });
+
+    /// <summary>Moves a finger from <paramref name="from"/> to <paramref name="to"/> in <paramref name="steps"/> touch moves.</summary>
+    protected static async Task TouchMoveAsync(ICDPSession cdp, Point from, Point to, int steps = 8)
+    {
+        for (var i = 1; i <= steps; i++)
+        {
+            await TouchAsync(cdp, "touchMove", new Point(from.X + (to.X - from.X) * i / steps, from.Y + (to.Y - from.Y) * i / steps));
+        }
+    }
+
     /// <summary>
     /// A <c>DataTransfer</c> created in the page, standing in for one the operating system would hand over: a drag
     /// from outside the browser cannot be started with the mouse.
@@ -415,7 +460,13 @@ public abstract class BdndTest
         void Add(string problem) { lock (problems) problems.Add(problem); }
 
         page.Console += (_, message) => { if (message.Type == "error") Add($"console error: {message.Text} ({message.Location})"); };
-        page.PageError += (_, error) => Add("unhandled error: " + error);
+        page.PageError += (_, error) =>
+        {
+            // Firefox: blazor.web.js, sending on the circuit's socket as a Blazor Server page unloads (a forced load
+            // to another page) - the framework's, and harmless
+            if (error.Contains("WebSocket is not in the OPEN state", StringComparison.Ordinal)) return;
+            Add("unhandled error: " + error);
+        };
         page.RequestFailed += (_, request) =>
         {
             if (request.Url.StartsWith(origin, StringComparison.OrdinalIgnoreCase)) Add($"request failed: {request.Url} ({request.Failure})");

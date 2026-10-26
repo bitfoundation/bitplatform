@@ -34,10 +34,13 @@
 """
 var schema = BormBuilder.For<ContactSheet>()
     .Title("Contact sheet")
-    .Field(x => x.Name, f => f.Required())
+    .Field(x => x.Name, f => f.Required().Placeholder("Q3 suppliers"))
     .Array(x => x.Contacts, row => row
             .Field(c => c.Kind, f => f
                 .AsRadio()
+                // A default on the item template reaches every row the user adds, not only the
+                // rows the form was created with - so a new contact starts on Email.
+                .Default("email")
                 .Options(("email", "Email"), ("phone", "Phone"), ("post", "Post")))
 
             // "Kind" here is *this row's* Kind. Every row evaluates its own answer, so switching one
@@ -60,12 +63,10 @@ var schema = BormBuilder.For<ContactSheet>()
                 .RequiredWhen("Kind", BormConditionOperator.Equals, "post")
                 .ClearOnHide()),
 
-        // A row starts on Email, because the template declares a default — and defaults now reach
-        // every row the user adds, not only the ones the form was created with.
         f => f.Items(min: 1, message: "Add at least one contact.")
               .SeedMinItems()                // open with the row the schema requires, not with an error
-              .Attr("itemNoun", "contact")
-              .Attr("duplicable", true))     // "add another one like that"
+              .Attr("itemNoun", "contact")   // "Add contact", "Remove contact 2" - not "Add item"
+              .Attr("duplicable", true))     // a Duplicate button per row: "add another one like that"
     .Build();
 """;
 

@@ -66,7 +66,10 @@
         </li>
         <li>
             Each call gets a cancellation token that fires after 30 seconds. An exception is caught and reported in
-            Belemetry's diagnostics (<code>options.Debug</code>); it never reaches the app.
+            Belemetry's diagnostics (the <code>Bit.Belemetry</code> log category, at Debug - Information with
+            <code>options.Debug</code>); it never reaches the app. Every call is counted on the
+            <code>Bit.Belemetry</code> meter's <code>belemetry.records.exported</code>, under the exporter's
+            <code>Name</code>, as <code>delivered</code> or <code>failed</code> (see <a href="/dotnet">.NET instrumentation</a>).
         </li>
         <li>
             Retries and offline persistence belong to the built-in HTTP exporters. A custom exporter's

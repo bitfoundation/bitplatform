@@ -315,7 +315,7 @@ While you develop, you do **NOT** need to run `dotnet ef database update` or `Up
 `bit new` adds the `Initial` migration to `/src/Server/Boilerplate.Server.Api/Infrastructure/Data/Migrations/` when it creates the project. A project created any other way starts without one, and `MigrateAsync()` refuses to run until it exists. Open a terminal in the `Boilerplate.Server.Api` project directory and run:
 
 ```bash
-dnx dotnet-ef@10.0.13 -- migrations add Initial --output-dir Infrastructure/Data/Migrations --verbose
+dnx dotnet-ef@10.0.14 -- migrations add Initial --output-dir Infrastructure/Data/Migrations --verbose
 ```
 
 ### Adding Future Migrations
@@ -323,7 +323,7 @@ dnx dotnet-ef@10.0.13 -- migrations add Initial --output-dir Infrastructure/Data
 When you modify entities or configurations, create a new migration; the app applies it on its next start:
 
 ```bash
-dnx dotnet-ef@10.0.13 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose
+dnx dotnet-ef@10.0.14 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose
 ```
 
 If the model changes without a migration, `MigrateAsync()` stops the app with a "pending model changes" error until the migration is added.
@@ -342,7 +342,7 @@ Nothing in this project applies them to a deployed database, so apply them befor
 A migrations bundle is one executable that holds the migrations. Build it in the `Boilerplate.Server.Api` project directory, with the `-r` value that matches the machine it will run on:
 
 ```bash
-dnx dotnet-ef@10.0.13 -- migrations bundle --self-contained -r linux-x64
+dnx dotnet-ef@10.0.14 -- migrations bundle --self-contained -r linux-x64
 ```
 
 Copy the `efbundle` file it creates into the deployed app's folder, where it finds the app's settings and certificate, and run it there before the new version starts. When the app's settings don't hold the production connection string, give it to the bundle in the `ConnectionStrings__<name>` environment variable the app reads it from.
@@ -419,7 +419,7 @@ Add-Migration YourMigrationName -OutputDir Infrastructure\Data\Migrations -Conte
 
 Open a terminal in the `Boilerplate.Server.Web` project directory and run:
 ```bash
-dnx dotnet-ef@10.0.13 -- migrations add YourMigrationName --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dnx dotnet-ef@10.0.14 -- migrations add YourMigrationName --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 **Important Notes:**

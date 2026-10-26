@@ -3,7 +3,7 @@
 namespace Bit.Balette.Tests.E2E.Infrastructure;
 
 /// <summary>
-/// One Playwright driver, one launched Chromium and one running demo for the whole run. Tests isolate
+/// One Playwright driver, one launched browser and one running demo for the whole run. Tests isolate
 /// from each other with a browser context apiece (separate storage, cache and WebAssembly instance),
 /// which is far cheaper than a browser apiece and isolates just as well.
 /// </summary>
@@ -17,6 +17,22 @@ public static class PlaywrightSession
     private static readonly Lazy<Task<Session>> _session = new(StartAsync);
 
     public static Task<Session> GetAsync() => _session.Value;
+
+    /// <summary>
+    /// Launches the browser again when the previous test took it down. A crash of the browser process is that test's
+    /// failure; without this, every test after it would fail too, on a browser that is gone, and bury the one that
+    /// matters.
+    /// </summary>
+    public static async Task<string?> EnsureBrowserAsync(Session session)
+    {
+        if (session.Browser is { IsConnected: true }) return null;
+
+        var browser = await LaunchAsync(session.Playwright!);
+        if (browser is null) return $"{E2EEnvironment.Browser} exited and could not be launched again.";
+
+        session.Browser = browser;
+        return null;
+    }
 
     public static async Task StopAsync()
     {
@@ -51,7 +67,9 @@ public static class PlaywrightSession
         if (browser is null)
         {
             playwright.Dispose();
-            return Session.Fail("no Chromium-based browser could be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install chromium', or install Chrome or Edge.");
+            return Session.Fail(E2EEnvironment.IsChromium
+                ? "no Chromium-based browser could be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install chromium', or install Chrome or Edge."
+                : $"{E2EEnvironment.Browser} could not be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install {E2EEnvironment.Browser}'.");
         }
 
         try
@@ -68,6 +86,23 @@ public static class PlaywrightSession
 
     private static async Task<IBrowser?> LaunchAsync(IPlaywright playwright)
     {
+        if (E2EEnvironment.IsChromium is false)
+        {
+            // Firefox and WebKit are Playwright's own patched builds; there is no installed browser to fall back to.
+            try
+            {
+                return await playwright[E2EEnvironment.Browser].LaunchAsync(new BrowserTypeLaunchOptions
+                {
+                    ExecutablePath = E2EEnvironment.Executable,
+                    Headless = E2EEnvironment.Headed is false,
+                });
+            }
+            catch (PlaywrightException)
+            {
+                return null;
+            }
+        }
+
         // Preferred: the browser Playwright manages. Falling back to an installed one keeps the suite usable
         // where that download is blocked. A channel or an executable asked for explicitly is the only candidate.
         string?[] channels = E2EEnvironment.Channel is { } channel ? [channel]
@@ -101,6 +136,9 @@ public static class PlaywrightSession
     /// <summary>The shared browser and demo, or the reason the suite cannot run.</summary>
     public sealed record Session(IPlaywright? Playwright, IBrowser? Browser, DemoHost? Host, string? Unavailable)
     {
+        /// <summary>The browser now: <see cref="EnsureBrowserAsync"/> replaces one that exited.</summary>
+        public IBrowser? Browser { get; set; } = Browser;
+
         public static Session Fail(string reason) => new(null, null, null, reason);
     }
 }

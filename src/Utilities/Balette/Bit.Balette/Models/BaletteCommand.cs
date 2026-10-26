@@ -63,6 +63,13 @@ public class BaletteCommand
     /// <summary>Lazily resolved nested commands. Selecting this command opens a page listing them.</summary>
     public Func<BaletteCommandContext, CancellationToken, Task<IReadOnlyList<BaletteCommand>>>? ChildrenProvider { get; init; }
 
+    /// <summary>
+    /// Async sources searched as the user types while this command's page is open - a page that searches a server
+    /// instead of listing what it has (<c>Assign to…</c> over thousands of people). Their results are listed with the
+    /// page's other children; <see cref="BaletteSourceContext.ParentCommandId"/> is this command's id.
+    /// </summary>
+    public IReadOnlyList<IBaletteSource>? ChildSources { get; init; }
+
     /// <summary>Optional placeholder for the search box when this command's page is open.</summary>
     public string? ChildrenPlaceholder { get; init; }
 
@@ -124,7 +131,7 @@ public class BaletteCommand
     public IReadOnlyList<string> Tags { get; init; } = [];
 
     /// <summary>True when this command opens a nested page.</summary>
-    public bool HasChildren => Children is { Count: > 0 } || ChildrenProvider is not null;
+    public bool HasChildren => Children is { Count: > 0 } || ChildrenProvider is not null || ChildSources is { Count: > 0 };
 
     /// <summary>Returns a copy with changed values.</summary>
     public BaletteCommand With(Action<BaletteCommandBuilder> configure)
@@ -174,6 +181,13 @@ internal static class BaletteCommandIdGenerator
         while (slug.Contains("--", StringComparison.Ordinal))
         {
             slug = slug.Replace("--", "-", StringComparison.Ordinal);
+        }
+
+        // A title of symbols only ("🚀", "+", "→") has no letter to slug: its code points stand in, so two such titles
+        // in one group do not both derive the bare group and replace each other.
+        if (slug.Length == 0 && !string.IsNullOrWhiteSpace(title))
+        {
+            slug = "u" + string.Join('-', title.Trim().EnumerateRunes().Select(r => r.Value.ToString("x", System.Globalization.CultureInfo.InvariantCulture)));
         }
 
         var prefixParts = new List<string>(2);

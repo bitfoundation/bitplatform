@@ -136,22 +136,15 @@ public sealed class BinkAutosave : IAsyncDisposable
         {
             // A save under way may have serialized the document before the latest change, so this one follows it
             // rather than standing in for it.
-            _saving = saving = SaveAfterAsync(_saving, cancellationToken);
+            _saving = saving = SaveAfterAsync(_saving, force: true, cancellationToken);
         }
         await saving.ConfigureAwait(true);
     }
 
-    private async Task SaveAfterAsync(Task previous, CancellationToken cancellationToken)
+    private async Task SaveAfterAsync(Task previous, bool force, CancellationToken cancellationToken)
     {
-        try
-        {
-            await previous.ConfigureAwait(true);
-        }
-        catch (OperationCanceledException)
-        {
-            // Another caller's cancelled save is no concern of this one.
-        }
-        await SaveCoreAsync(force: true, cancellationToken).ConfigureAwait(true);
+        await SettleAsync(previous).ConfigureAwait(true);
+        await SaveCoreAsync(force, cancellationToken).ConfigureAwait(true);
     }
 
     /// <summary>
@@ -168,7 +161,6 @@ public sealed class BinkAutosave : IAsyncDisposable
         {
             _savedRevision = _document.Revision;
             _firstUnsaved = null;
-            _again = false;
         }
         await _store.DeleteAsync(Key, cancellationToken).ConfigureAwait(true);
     }
@@ -205,8 +197,14 @@ public sealed class BinkAutosave : IAsyncDisposable
         {
             if (!_saving.IsCompleted)
             {
-                // One write at a time; the one under way is followed by another for what changed meanwhile.
-                _again = true;
+                // One write at a time; the one under way is followed by another for what changed meanwhile, chained to
+                // it so it starts as soon as that one is over. A flag the ending save looked for on its way out could
+                // be set just after it looked.
+                if (!_again)
+                {
+                    _again = true;
+                    _saving = SaveAfterAsync(_saving, force, cancellationToken);
+                }
                 return _saving;
             }
             _saving = SaveCoreAsync(force, cancellationToken);
@@ -218,6 +216,8 @@ public sealed class BinkAutosave : IAsyncDisposable
     {
         // Yields first, so the work runs after SaveAsync has stored the task and released the lock.
         await Task.Yield();
+        // This save serializes what is there now; a change after this asks for one more.
+        lock (_gate) _again = false;
         long revision = _document.Revision;
         try
         {
@@ -233,7 +233,6 @@ public sealed class BinkAutosave : IAsyncDisposable
             }
             LastSaved = _options.TimeProvider.GetUtcNow();
             LastError = null;
-            Saved?.Invoke(this, EventArgs.Empty);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -244,31 +243,33 @@ public sealed class BinkAutosave : IAsyncDisposable
 #pragma warning restore CA1031
         {
             LastError = ex;
-            SaveFailed?.Invoke(this, ex);
             // Tried again after the longest wait, or sooner when the next change comes.
             if (!_disposed) _timer.Change(MaxDelay, Timeout.InfiniteTimeSpan);
+            SaveFailed?.Invoke(this, ex);
             return;
         }
-        finally
-        {
-            bool again;
-            lock (_gate)
-            {
-                again = _again;
-                _again = false;
-            }
-            if (again && !_disposed) _timer.Change(TimeSpan.Zero, Timeout.InfiniteTimeSpan);
-        }
+        // Outside the try, so a handler that throws is not taken for a failed save: its exception goes to whoever
+        // awaits this save.
+        Saved?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>Waits for a save under way. One a caller cancelled through <see cref="SaveNowAsync"/> is no concern of the waiter.</summary>
-    private async Task WaitForSaveAsync()
+    /// <summary>Waits for a save under way.</summary>
+    private Task WaitForSaveAsync() => SettleAsync(_saving);
+
+    /// <summary>
+    /// Waits for a save to end, however it ended. One a caller cancelled through <see cref="SaveNowAsync"/>, or whose
+    /// <see cref="Saved"/> or <see cref="SaveFailed"/> handler threw, ended with an exception for whoever awaited it,
+    /// and is no concern of the waiter.
+    /// </summary>
+    private static async Task SettleAsync(Task save)
     {
         try
         {
-            await _saving.ConfigureAwait(true);
+            await save.ConfigureAwait(true);
         }
-        catch (OperationCanceledException)
+#pragma warning disable CA1031 // The exception was that save's, not this waiter's.
+        catch (Exception)
+#pragma warning restore CA1031
         {
         }
     }

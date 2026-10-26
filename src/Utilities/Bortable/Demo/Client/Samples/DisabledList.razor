@@ -1,0 +1,34 @@
+﻿@* A list that can be locked: Disabled turns every drag of it off. *@
+
+<div class="demo-controls">
+    <label class="demo-check">
+        <input id="disabled-toggle" type="checkbox" @bind="_disabled" /> <code>Disabled</code> on the Archive
+    </label>
+</div>
+
+<div class="demo-columns">
+    <div class="demo-col">
+        <div class="demo-col-title">Archive@(_disabled ? " (disabled)" : "")</div>
+        <Bortable @bind-Items="_archive" TItem="string" Group="ds-disabled" Id="disabled-archive" AriaLabel="Archive"
+                  Disabled="_disabled"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">Desk</div>
+        <Bortable @bind-Items="_desk" TItem="string" Group="ds-disabled" Id="disabled-desk" AriaLabel="Desk"
+                  Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+</div>
+
+<p class="demo-order"><strong>Archive:</strong> <span id="disabled-archive-order">@string.Join(", ", _archive)</span></p>
+<p class="demo-order"><strong>Desk:</strong> <span id="disabled-desk-order">@string.Join(", ", _desk)</span></p>
+
+@code {
+    private IList<string> _archive = new List<string> { "2023 report", "2024 report" };
+    private IList<string> _desk = new List<string> { "Draft", "Notes" };
+    private bool _disabled = true;
+}

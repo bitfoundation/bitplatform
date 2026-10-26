@@ -1,0 +1,32 @@
+﻿@* A checklist of editable steps, reordered by the grip on the left: the inputs keep their own clicks and keys. *@
+
+<Bortable @bind-Items="_steps" TItem="Step" Handle=".handle" Id="handle-steps" AriaLabel="Checklist"
+          ItemLabel="s => s.Text"
+          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+    <ItemTemplate Context="step">
+        <span class="demo-row">
+            <span class="handle" title="Drag to reorder">☰</span>
+            <input type="checkbox" @bind="step.Done" aria-label="@($"{step.Text} done")" />
+            <input type="text" @bind="step.Text" @bind:event="oninput" aria-label="Step" />
+        </span>
+    </ItemTemplate>
+</Bortable>
+
+<p class="demo-order"><strong>Steps:</strong> <span id="handle-steps-order">@string.Join(", ", _steps.Select(s => s.Done ? $"{s.Text} ✓" : s.Text))</span></p>
+
+@code {
+    private IList<Step> _steps = new List<Step>
+    {
+        new() { Text = "Pack the tent" },
+        new() { Text = "Check the weather", Done = true },
+        new() { Text = "Fill the water bottles" },
+        new() { Text = "Charge the torch" },
+    };
+
+    // A class: the item is edited in place, and its @key - the object itself - stays the same while its text changes.
+    public sealed class Step
+    {
+        public required string Text { get; set; }
+        public bool Done { get; set; }
+    }
+}

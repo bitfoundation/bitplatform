@@ -16,10 +16,17 @@ internal static class BormRegex
 
     private static readonly ConcurrentDictionary<string, Regex?> Cache = new(StringComparer.Ordinal);
 
+    // Patterns arrive in documents, and a server importing schemas it is sent would otherwise keep a
+    // compiled regex for every pattern any of them ever contained, for the life of the process. A form
+    // uses a handful; past this many the cache starts again.
+    private const int CacheLimit = 1024;
+
     /// <summary>Returns a cached regex for <paramref name="pattern"/>, or null if the pattern does not compile.</summary>
     public static Regex? Create(string? pattern)
     {
         if (string.IsNullOrEmpty(pattern)) return null;
+        if (Cache.TryGetValue(pattern, out var cached)) return cached;
+        if (Cache.Count >= CacheLimit) Cache.Clear();
         return Cache.GetOrAdd(pattern, static p =>
         {
             try

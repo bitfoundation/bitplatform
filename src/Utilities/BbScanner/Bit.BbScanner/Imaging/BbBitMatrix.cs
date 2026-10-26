@@ -250,7 +250,9 @@ public sealed class BbBitMatrix : IDisposable
         _bits = null;
         if (bits is not null)
         {
-            ArrayPool<uint>.Shared.Return(bits);
+            // Cleared on the way back: a thresholded picture of the frame, which the shared pool would otherwise hand
+            // to whatever rents the array next.
+            ArrayPool<uint>.Shared.Return(bits, clearArray: true);
         }
     }
 }

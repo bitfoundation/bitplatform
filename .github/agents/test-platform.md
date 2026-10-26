@@ -201,6 +201,12 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    - A Linux-only Chromium wait that times out needs evidence before a fix: have the test log every request the page
      starts and finishes, run the job a few times on a branch of your own, and read what was still in flight. A
      network idle that never comes with nothing in flight is Chromium's event, not the app.
+   - A library's E2E failure on another branch than develop: run that library's E2E workflow on develop too
+     (`gh workflow run bit.ci.<Library>.e2e.yml --ref develop`) before calling it the branch's own. New tests of a
+     library sometimes reach develop without ever passing in CI.
+   - A WebAssembly demo or sample started from its build output answers its `_framework` files with empty 200s
+     outside Development, since its static web assets come from the build's development manifest. A probe of
+     your own starts it with `ASPNETCORE_ENVIRONMENT=Development`, as the suites do.
 
 4. Fix the cause. A timeout grows only when what it waits for is legitimately slow, and a retry that hides a race is
    not a fix. Template changes follow `src/Templates/Boilerplate/Bit.Boilerplate/AGENTS.md`, `[mirror]` comments
@@ -245,12 +251,14 @@ the way the other library demos are set up and add it to the README's exports. R
 demo's own CD, delivers it.
 
 **Android.** `android -CdRun <run>`. Every Android job uploads an artifact called `android-bundle`, and a re-run job
-adds another, so the helper tells them apart by package and takes the newest of each. The device is the one AVD,
-`pixel_7_-_api_36_0`. `adb` is not on `PATH`: platform-tools is under `C:\Program Files (x86)\Android\android-sdk`,
+adds another, so the helper tells them apart by package and takes the newest of each. The device is the AVD with the
+newest Android, `pixel_7_-_api_36_0`, which the helper boots when no device is up. `adb` is not on `PATH`:
+platform-tools is under `C:\Program Files (x86)\Android\android-sdk`,
 where the helper finds it. It is a Google Play image, so after a cold boot it updates Android System WebView on its
 own; note the version (`adb shell dumpsys webviewupdate`) in the report, since a jump explains Android failures that no
 code change does. An APK signed with another key than the installed app, or older than it, goes in only
-after uninstalling the app, which drops its data.
+after uninstalling the app, which drops its data, and so does one the AVD has no room for next to the old copy: its
+system app updates fill it up over time. The helper does both on its own.
 
 **Windows.** `windows`. The apps are Velopack installs in `%LocalAppData%\<AppId>`: the Boilerplate's
 `AdminPanel.Client.Windows`, `SalesModule.Client.Windows` and `TodoSample.Client.Windows`. The nav-panel version
@@ -313,6 +321,11 @@ What it needs, all of it already on this machine:
   rebuilt, the global admin needs the global `g-admin` role and two-factor sign-in on the secrets' authenticator key
   back (stored the way Identity keeps it: upper case, without the spaces); without them that sign-in stops with a 403
   from `/dev-mcp`.
+  The tenant admin of the secrets is seeded data the suite only reads, and it has been changed outside the suite
+  before: its email unconfirmed and the account taken out of the E2E tenant. The invitation journey then stops at
+  the sign-in's email code, or finds no invite section on its tenants page. Sign it in yourself to see which:
+  confirming the email is an ordinary sign-in with the mailed code, while putting it back into the tenant as its
+  admin is the user's call.
 - **The apps to itself.** The Android and Windows stages clear the apps' data, and the Windows stage moves the
   machine's own app data aside and puts it back at the end. The Android stage also clears the emulator's Chrome and
   texts the emulator the SMS the deployment sent. Don't run the helper's `android` or `windows` while those stages run.
@@ -444,6 +457,13 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
 - With `-Sha`, bit and the template come from that commit, as in CI: bit is packed into a feed the container mounts,
   and the project's `nuget.config` maps `Bit.Cli` to that feed alone, so a newer prerelease on nuget.org can't stand
   in for it. Without `-Sha`, it tests what nuget.org serves, which is what users get.
+- Right after a version is published, nuget.org takes a while to list every package of it, and a restore in that time
+  keeps the lists without it for half an hour. NuGet then takes the nearest version it has (NU1603), such as an
+  11.0 prerelease, and the project fails to build on dozens of missing BlazorUI types; `bit new` can also fail to get
+  the template at all. Wait until every `Bit.*` package the template takes lists the version, and if a restore ran
+  before that, `dotnet nuget locals http-cache --clear`.
+  `dotnet tool install` finds a new Bit.Cli a few minutes after the package itself is listed, so "bit could not
+  be installed" right after a publish is that wait; `dotnet tool search Bit.Cli --prerelease` shows when it ends.
 - `-PrereleasePackages` puts the packages of the newest Prerelease nuget packages run into that feed too, bit's
   aside, and maps every `Bit.*` to it: a template that already uses library changes nuget.org's build of its version
   doesn't have compiles against them.

@@ -1,5 +1,4 @@
 ﻿@page "/thresholds"
-@using System.Globalization
 
 <PageTitle>Thresholds · Bortable</PageTitle>
 
@@ -15,101 +14,64 @@
     </p>
 </div>
 
-<DemoCode />
-
 <div class="bb-demo">
-    <div class="threshold-controls">
-        <label>
-            SwapThreshold: <strong id="swap-threshold-value">@Format(_swapThreshold)</strong>
-            <input id="swap-threshold" type="range" min="0.1" max="1" step="0.05"
-                   value="@Format(_swapThreshold)" @oninput="OnSwapThresholdChanged" />
-        </label>
-
-        <label class="threshold-check">
-            <input id="invert-swap" type="checkbox" checked="@_invertSwap" @onchange="OnInvertSwapChanged" />
-            InvertSwap
-        </label>
-
-        <label>
-            InvertedSwapThreshold: <strong id="inverted-swap-threshold-value">@Format(_invertedSwapThreshold)</strong>
-            <input id="inverted-swap-threshold" type="range" min="0.1" max="1" step="0.05"
-                   value="@Format(_invertedSwapThreshold)" @oninput="OnInvertedSwapThresholdChanged" />
-        </label>
-
-        <label class="threshold-check">
-            <input id="show-zones" type="checkbox" checked="@_showZones" @onchange="OnShowZonesChanged" />
-            Show the swap zones
-        </label>
-    </div>
-
-    <div class="demo-columns">
-        <div class="demo-col">
-            <div class="demo-col-title">Vertical list</div>
-            <Bortable @bind-Items="_list" TItem="string" Id="thresholds-list"
-                      SwapThreshold="_swapThreshold"
-                      InvertSwap="_invertSwap"
-                      InvertedSwapThreshold="_invertedSwapThreshold"
-                      Direction="BortableDirection.Vertical"
-                      Class="@($"demo-list threshold-list {ZoneClass}")" Style="@ZoneStyle"
-                      ItemClass="demo-item" GhostClass="demo-ghost">
-                <ItemTemplate Context="item">@item</ItemTemplate>
-            </Bortable>
-        </div>
-        <div class="demo-col">
-            <div class="demo-col-title">Grid</div>
-            <Bortable @bind-Items="_grid" TItem="int" Id="thresholds-grid"
-                      SwapThreshold="_swapThreshold"
-                      InvertSwap="_invertSwap"
-                      InvertedSwapThreshold="_invertedSwapThreshold"
-                      Direction="BortableDirection.Horizontal"
-                      Class="@($"demo-grid threshold-grid {ZoneClass}")" Style="@ZoneStyle"
-                      GhostClass="demo-ghost">
-                <ItemTemplate Context="n">
-                    <div class="grid-square">@n</div>
-                </ItemTemplate>
-            </Bortable>
-        </div>
-    </div>
-
-    <p class="demo-order"><strong>List:</strong> <span id="thresholds-list-order">@string.Join(", ", _list)</span></p>
-    <p class="demo-order"><strong>Grid:</strong> <span id="thresholds-grid-order">@string.Join(", ", _grid)</span></p>
+    <ThresholdZones />
 </div>
 
-@code {
-    private double _swapThreshold = 0.65;
-    private bool _invertSwap;
-    private double _invertedSwapThreshold = 0.65;
-    private bool _showZones = true;
+<DemoCode For="typeof(ThresholdZones)" />
 
-    private IList<string> _list = new List<string>
-    {
-        "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"
-    };
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>
+            Set <code>SwapThreshold</code> to <code>1</code>: the whole item is the zone, and the dragged item swaps as
+            soon as the pointer enters the next one. Set it to <code>0.2</code>: the pointer has to reach the thin band in
+            the middle, and the edges around it do nothing.
+        </li>
+        <li>
+            Tick <code>InvertSwap</code>: the zones move to the edges, and entering the top or bottom part of an item puts
+            the dragged one before or after it - a "drop between the items" feel. <code>InvertedSwapThreshold</code>
+            sizes the two edge bands together.
+        </li>
+        <li>
+            Swap an item past the next one and move the pointer back a little: the area the dragged item has just left -
+            its shadow - swaps it back. That rule, ported from SortableJS, is what keeps a short item and a tall one from
+            trading places back and forth while the pointer sits still.
+        </li>
+        <li>The grid is measured left to right (<code>Direction="Horizontal"</code>), so its zones run across each square.</li>
+    </ul>
+</section>
 
-    private IList<int> _grid = Enumerable.Range(1, 9).ToList();
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Direction</h3>
+    <p class="bb-card-desc">
+        <code>Direction</code> is the axis the swap zones are measured along. <code>BortableDirection.Auto</code>, the
+        default, reads it from the layout of the first two items: side by side is horizontal, anything else vertical.
+        With a single item in view it reads the list instead: a flex row, or a grid of several columns, is horizontal, a
+        flex column vertical. Set it yourself when the layout says otherwise - in a grid, whose first two items sit side
+        by side although the list also runs down. The hit test itself is two-dimensional, so a grid sorts in every
+        direction whatever <code>Direction</code> says; <code>Direction</code> only decides which way the zones span.
+    </p>
+    <div class="bb-note">
+        An item that enters a list it is not in yet always uses the inverted zones, whatever <code>InvertSwap</code>
+        says, so it can be dropped before the first item as easily as after the last.
+    </div>
+</section>
 
-    // The zones are drawn by the page's stylesheet (.show-zones), sized from these two custom properties:
-    // a band of --zone across the middle of each item, or with InvertSwap two bands of --inverted-zone / 2
-    // at its edges - the same geometry the library hit-tests against.
-    private string ZoneClass => _showZones ? (_invertSwap ? "show-zones zones-inverted" : "show-zones") : "";
-
-    private string ZoneStyle => $"--zone: {Format(_swapThreshold)}; --inverted-zone: {Format(_invertedSwapThreshold)};";
-
-    private static string Format(double value) => value.ToString("0.00", CultureInfo.InvariantCulture);
-
-    private void OnSwapThresholdChanged(ChangeEventArgs e)
-    {
-        if (double.TryParse(e.Value?.ToString(), CultureInfo.InvariantCulture, out var v))
-            _swapThreshold = v;
-    }
-
-    private void OnInvertedSwapThresholdChanged(ChangeEventArgs e)
-    {
-        if (double.TryParse(e.Value?.ToString(), CultureInfo.InvariantCulture, out var v))
-            _invertedSwapThreshold = v;
-    }
-
-    private void OnInvertSwapChanged(ChangeEventArgs e) => _invertSwap = e.Value is true;
-
-    private void OnShowZonesChanged(ChangeEventArgs e) => _showZones = e.Value is true;
-}
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Parameters on this page</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>Default</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>SwapThreshold</code></td><td><code>1</code></td><td>How much of an item, from 0 to 1 and measured from its centre, is the active zone.</td></tr>
+                <tr><td class="bb-table-key"><code>InvertSwap</code></td><td><code>false</code></td><td>Moves the active zones to the item's edges.</td></tr>
+                <tr><td class="bb-table-key"><code>InvertedSwapThreshold</code></td><td><code>0</code></td><td>The size of the inverted zones, from 0 to 1; <code>0</code> uses <code>SwapThreshold</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>Direction</code></td><td><code>Auto</code></td><td>The axis the zones are measured along: <code>Auto</code>, <code>Horizontal</code> or <code>Vertical</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>Style</code></td><td></td><td>The container's inline style - here, the two custom properties this page's stylesheet draws the zones with.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>

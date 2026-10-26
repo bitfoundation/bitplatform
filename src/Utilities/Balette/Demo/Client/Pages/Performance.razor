@@ -5,6 +5,7 @@
 @inject IBaletteService Palette
 @inject BaletteOptions Options
 @inject BaletteRanker Ranker
+@inject IServiceProvider Services
 @inject DemoState State
 
 <PageTitle>Large registry · Balette</PageTitle>
@@ -12,9 +13,10 @@
 <div class="bb-intro">
     <h1>Large registry</h1>
     <p class="bb-subtitle">
-        Numbers measured here, in your browser, on this machine. Register a few thousand synthetic commands, open the
-        palette and type: every keystroke matches all of them. The table below times the same matcher and ranker the
-        palette runs, over the same registry, so you can see what a keystroke costs before you feel it.
+        Numbers measured here, in your browser, on this machine. Register a few thousand synthetic commands - or serve them
+        from a static source - open the palette and type: every keystroke matches all of them. The table below times the
+        same matcher and ranker the palette runs, over the same data, so you can see what a keystroke costs before you feel
+        it.
     </p>
 </div>
 
@@ -29,13 +31,14 @@
     <div class="bb-fields" role="toolbar" aria-label="Registry controls">
         <label class="bb-field">
             Commands
-            <select value="@_count" @onchange="OnCountChanged" disabled="@(_bulk is not null)" aria-label="Number of commands">
+            <select value="@_count" @onchange="OnCountChanged" disabled="@(_bulk is not null || _catalog is not null)" aria-label="Number of commands">
                 <option value="500">500</option>
                 <option value="2000">2,000</option>
                 <option value="10000">10,000</option>
             </select>
         </label>
-        <button type="button" class="btn btn-primary" disabled="@_busy" @onclick="ToggleBulk">@(_bulk is null ? $"Register {_count:N0} commands" : "Unregister them")</button>
+        <button type="button" class="btn btn-primary" disabled="@(_busy || _catalog is not null)" @onclick="ToggleBulk">@(_bulk is null ? $"Register {_count:N0} commands" : "Unregister them")</button>
+        <button type="button" class="btn btn-secondary" disabled="@(_busy || _bulk is not null)" @onclick="ToggleCatalog">@(_catalog is null ? $"Serve {_count:N0} from a static source" : "Remove the static source")</button>
         <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="MeasureAsync">Measure searches</button>
         <label class="bb-check">
             <input type="checkbox" checked="@State.Virtualize" @onchange="() => State.SetVirtualize(!State.Virtualize)" />
@@ -47,6 +50,10 @@
         <div class="bb-stat">
             <span class="bb-stat-value">@Palette.Commands.Count.ToString("N0", CultureInfo.InvariantCulture)</span>
             <span class="bb-stat-label">Commands in the registry</span>
+        </div>
+        <div class="bb-stat">
+            <span class="bb-stat-value">@(_catalog is null ? "-" : _catalogItems.Count.ToString("N0", CultureInfo.InvariantCulture))</span>
+            <span class="bb-stat-label">Items in the static source</span>
         </div>
         <div class="bb-stat">
             <span class="bb-stat-value">@(_registration is { } registration ? Ms(registration) : "-")</span>
@@ -63,7 +70,17 @@
         <div class="bb-scroll">
             <table class="bb-table">
                 <thead>
-                    <tr><th>Query</th><th class="demo-num">Matched</th><th class="demo-num">Match</th><th class="demo-num">Rank</th><th class="demo-num">Total</th></tr>
+                    <tr>
+                        <th>Query</th>
+                        <th class="demo-num">Matched</th>
+                        <th class="demo-num">Match</th>
+                        <th class="demo-num">Rank</th>
+                        <th class="demo-num">Total</th>
+                        @if (_measuredSource)
+                        {
+                            <th class="demo-num">Static source</th>
+                        }
+                    </tr>
                 </thead>
                 <tbody>
                     @foreach (var result in _results)
@@ -74,6 +91,10 @@
                             <td class="demo-num">@Ms(result.Match)</td>
                             <td class="demo-num">@Ms(result.Rank)</td>
                             <td class="demo-num"><strong>@Ms(result.Match + result.Rank)</strong></td>
+                            @if (_measuredSource)
+                            {
+                                <td class="demo-num">@(result.Source is { } source ? Ms(source) : "-")</td>
+                            }
                         </tr>
                     }
                 </tbody>
@@ -81,7 +102,12 @@
         </div>
         <p class="bb-soft demo-small">
             The median of @Repetitions runs over @_measuredOver.ToString("N0", CultureInfo.InvariantCulture) root commands. The
-            ranking here sorts every match; the palette keeps only the best @Options.MaxResults, which is cheaper still.
+            ranking here sorts every match; the palette keeps only the best @Options.MaxResults (<code>MaxResults</code>),
+            which is cheaper still.
+            @if (_measuredSource)
+            {
+                <span>The static source's column is one whole <code>SearchAsync</code>: matching its items and keeping the best of them.</span>
+            }
         </p>
     }
 </div>
@@ -89,16 +115,45 @@
 <div class="bb-note">
     On WebAssembly, search and painting share the page's only thread. When a search takes longer than a frame (8 ms),
     the palette lets the keystroke paint first and folds the keys typed meanwhile into one search, so the input never
-    lags behind the fingers. Only the best <code>MaxResults</code> rows are rendered, and <code>Virtualize</code>
-    renders just the visible ones when that limit is raised.
+    lags behind the fingers; navigation keys still act on the latest query. Only the best <code>MaxResults</code> rows are
+    rendered, and <code>Virtualize</code> renders just the visible ones when that limit is raised.
 </div>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The registration</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Registering, or serving from a source</h3>
     <pre class="bb-code">@RegistrationExample</pre>
     <p>
-        The handle comes back from <code>Register</code>; this page disposes it when you leave, so the registry is back to its
-        usual size on every other page.
+        Registered commands are part of the registry: listed on the empty query, found by every keystroke, reachable by
+        <code>Find</code>, <code>ExecuteAsync</code> and their shortcuts. A <code>BaletteStaticSource</code> keeps a large list
+        out of the registry instead: it is asked only once something is typed, matches its items with the palette's own
+        matcher and weights, and hands back only its best <code>maxResults</code> (50 by default), listed under its own name -
+        right for a catalogue of thousands of records, where only what was searched for should show. Both handles come back
+        from the service; this page disposes them when you leave, so the registry is back to its usual size on every other
+        page.
+    </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What keeps a keystroke cheap</h3>
+    <ul class="bb-detail-list">
+        <li>The registry is read once, not on every keystroke: the palette keeps a snapshot and takes a new one only when the
+            registry, the commands declared in its markup or its <code>Commands</code> parameter changed. Pass
+            <code>Commands</code> a new collection to change it, or call <code>Refresh()</code> after changing one in place.</li>
+        <li>Global shortcuts are re-evaluated when the snapshot changes, when the palette opens or closes, after a command ran
+            and on <code>Refresh()</code> - not while typing.</li>
+        <li>The query is parsed into terms once per keystroke, not once per command.</li>
+        <li>The matcher allocates nothing per field: it reuses per-thread buffers, rejects non-subsequences before the dynamic
+            programming starts, and avoids LINQ.</li>
+        <li>Ranking only sorts what it keeps: with <code>MaxResults</code> it holds the best rows in a heap and sorts those.</li>
+        <li>Results from async sources reuse the registry's matches for the same query instead of matching again.</li>
+        <li>With very large lists, also turn on <code>Virtualize</code> - recommended above about 500 visible rows. While it is
+            on, every row is <code>options.RowHeight</code> (@Options.RowHeight px) tall, whatever
+            <code>--bit-balette-row-height</code> says, and each option carries <code>aria-posinset</code> and
+            <code>aria-setsize</code>, since rows cannot be wrapped in their groups.</li>
+    </ul>
+    <p>
+        The benchmarks in <code>Tests/Bit.Balette.Benchmarks</code> measure the matcher, the ranker and a whole keystroke
+        over registries of different sizes, up to 20,000 commands.
     </p>
 </section>
 
@@ -114,17 +169,25 @@
             .Handler(_ => Task.FromResult(BaletteCommandResult.Toast($"Ran command {i}")))
             .Build());
 
-        _bulk = Palette.Register(many);   // ... and later: _bulk.Dispose();
+        // Every one of them a command of the registry...
+        _bulk = Palette.Register(many);           // ... and later: _bulk.Dispose();
+
+        // ... or none of them: a source the default mode asks once something is typed.
+        _catalog = Palette.RegisterSource(new BaletteStaticSource("Catalog", many.ToList(), maxResults: 50));
         """;
 
     private static readonly string[] Queries = ["c12", "cmd 1234", "command", "synthetic 19", "^command 7", "zzz"];
 
-    private sealed record Measurement(string Query, int Matched, TimeSpan Match, TimeSpan Rank);
+    private sealed record Measurement(string Query, int Matched, TimeSpan Match, TimeSpan Rank, TimeSpan? Source);
 
     private readonly List<Measurement> _results = [];
     private IDisposable? _bulk;
+    private IDisposable? _catalog;
+    private BaletteStaticSource? _catalogSource;
+    private List<BaletteCommand> _catalogItems = [];
     private int _count = 2000;
     private int _measuredOver;
+    private bool _measuredSource;
     private TimeSpan? _registration;
     private bool _busy;
 
@@ -138,6 +201,14 @@
         }
     }
 
+    private List<BaletteCommand> Synthetic(int count, string prefix) =>
+    [
+        .. Enumerable.Range(1, count).Select(i => BaletteCmd.New($"Command {i}").Id($"{prefix}:{i}").Group("Bulk").Subtitle($"Synthetic entry #{i}")
+            .Priority(BaletteCommandPriority.Lowest)
+            .Handler(_ => Task.FromResult(BaletteCommandResult.Toast($"Ran command {i}")))
+            .Build()),
+    ];
+
     private void ToggleBulk()
     {
         var started = Stopwatch.GetTimestamp();
@@ -149,13 +220,30 @@
         else
         {
             var count = _count;
-            var many = Enumerable.Range(1, count)
-                .Select(i => BaletteCmd.New($"Command {i}").Id($"bulk:{i}").Group("Bulk").Subtitle($"Synthetic entry #{i}")
-                    .Priority(BaletteCommandPriority.Lowest)
-                    .Handler(_ => Task.FromResult(BaletteCommandResult.Toast($"Ran command {i}")))
-                    .Build());
-            _bulk = Palette.Register(many);
+            _bulk = Palette.Register(Synthetic(count, "bulk"));
             State.Record($"Registered {count:N0} synthetic commands");
+        }
+
+        _registration = Stopwatch.GetElapsedTime(started);
+        _results.Clear();
+    }
+
+    private void ToggleCatalog()
+    {
+        var started = Stopwatch.GetTimestamp();
+        if (_catalog is not null)
+        {
+            _catalog.Dispose();
+            _catalog = null;
+            _catalogSource = null;
+            _catalogItems = [];
+        }
+        else
+        {
+            _catalogItems = Synthetic(_count, "catalog");
+            _catalogSource = new BaletteStaticSource("Catalog", _catalogItems, maxResults: 50);
+            _catalog = Palette.RegisterSource(_catalogSource);
+            State.Record($"Serving {_count:N0} synthetic commands from a static source");
         }
 
         _registration = Stopwatch.GetElapsedTime(started);
@@ -170,14 +258,18 @@
 
         var candidates = Palette.Commands.Where(c => c.Parent is null).ToList();
         _measuredOver = candidates.Count;
+        _measuredSource = _catalogSource is not null;
+        var context = new BaletteSourceContext(null, null, Services);
         foreach (var query in Queries)
         {
             // WebAssembly runs on the page's only thread: yielding between queries lets the table fill in as it goes
             // instead of the whole measurement showing as one freeze.
             await Task.Delay(1);
 
+            var parsed = BaletteQuery.Parse(query);
             var matchTimes = new List<TimeSpan>(Repetitions);
             var rankTimes = new List<TimeSpan>(Repetitions);
+            var sourceTimes = new List<TimeSpan>(Repetitions);
             var matched = 0;
             for (var run = 0; run < Repetitions; run++)
             {
@@ -185,7 +277,7 @@
                 var matches = new List<BaletteMatch>();
                 foreach (var command in candidates)
                 {
-                    if (Options.Matcher.Match(command, query, Options.Weights) is { } match)
+                    if (Options.Matcher.Match(command, parsed, Options.Weights) is { } match)
                     {
                         matches.Add(match);
                     }
@@ -197,9 +289,16 @@
                 Ranker.Rank(matches, hasQuery: true, _ => 0);
                 rankTimes.Add(Stopwatch.GetElapsedTime(started));
                 matched = matches.Count;
+
+                if (_catalogSource is { } source)
+                {
+                    started = Stopwatch.GetTimestamp();
+                    await source.SearchAsync(query, context, CancellationToken.None);
+                    sourceTimes.Add(Stopwatch.GetElapsedTime(started));
+                }
             }
 
-            _results.Add(new Measurement(query, matched, Median(matchTimes), Median(rankTimes)));
+            _results.Add(new Measurement(query, matched, Median(matchTimes), Median(rankTimes), sourceTimes.Count == 0 ? null : Median(sourceTimes)));
             StateHasChanged();
         }
 
@@ -220,5 +319,6 @@
     {
         Palette.CommandsChanged -= Refresh;
         _bulk?.Dispose();
+        _catalog?.Dispose();
     }
 }

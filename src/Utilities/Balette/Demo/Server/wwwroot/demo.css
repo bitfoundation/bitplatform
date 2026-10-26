@@ -328,6 +328,12 @@ html:root[bit-theme="dark"],
     font-weight: var(--fl-weight-semibold);
 }
 
+/* The settings page's inline palette: as wide as the list of settings above it. */
+.demo-inline-palette {
+    max-width: 560px;
+    margin: 0 0 1.25rem;
+}
+
 /* A list of settings: the label at the start, its control at the end. */
 .demo-settings {
     max-width: 560px;
@@ -443,4 +449,224 @@ html:root[bit-theme="dark"],
     max-height: 16rem;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+}
+
+/* The search lab's parsed query: each term as a chip, joined by "and" / "or". */
+.demo-terms {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem;
+    margin: 0 0 1rem;
+}
+
+.demo-terms .bb-badge code {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+}
+
+/* What the keyboard page's shortcut parser made of the text typed. */
+.demo-parsed {
+    max-width: 560px;
+    margin: 0 0 1.25rem;
+}
+
+/* ---------- The theming page's templated palette: every template but the detail pane ---------- */
+
+.demo-templated {
+    margin-top: .75rem;
+}
+
+.demo-tpl-header {
+    padding: 10px 16px 0;
+    font-size: 12px;
+    color: var(--bit-balette-fg-muted);
+}
+
+.demo-tpl-group {
+    letter-spacing: .08em;
+    color: var(--bit-balette-accent);
+}
+
+/* The row an ItemTemplate draws: the extension, the title over its folder, Enter on the active row. */
+.demo-tpl-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.demo-tpl-ext {
+    flex: none;
+    box-sizing: border-box;
+    width: 4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--bit-balette-accent-soft);
+    color: var(--bit-balette-accent);
+    font-family: var(--bit-balette-mono);
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.demo-tpl-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.demo-tpl-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.demo-tpl-sub {
+    font-size: 12px;
+    color: var(--bit-balette-fg-muted);
+}
+
+.demo-tpl-go {
+    margin-inline-start: auto;
+}
+
+/* The IconTemplate's square: the initial of the extension, coloured by it. */
+.demo-tpl-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background: var(--bit-balette-accent-soft);
+    color: var(--bit-balette-accent);
+    font-family: var(--bit-balette-mono);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.demo-tpl-icon[data-ext="md"] { background: rgba(34, 132, 34, .14); color: #228422; }
+.demo-tpl-icon[data-ext="json"] { background: rgba(237, 174, 18, .18); color: #8a6100; }
+.demo-tpl-icon[data-ext="dir"] { background: var(--bit-balette-kbd-bg); color: var(--bit-balette-fg-muted); }
+
+.demo-tpl-state {
+    margin: 0;
+    padding: 24px 16px;
+    text-align: center;
+    color: var(--bit-balette-fg-muted);
+}
+
+.demo-tpl-footer {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 16px;
+    border-top: 1px solid var(--bit-balette-border);
+    background: var(--bit-balette-bg-elevated);
+    font-size: 12px;
+    color: var(--bit-balette-fg-muted);
+}
+
+/* ---------- The theming page's unstyled palette: everything below is all the styling it has ---------- */
+
+.demo-unstyled-host {
+    max-width: 560px;
+    margin: 0 0 1.25rem;
+}
+
+.demo-unstyled {
+    padding: .75rem;
+    border: 2px dashed var(--bb-border-strong);
+    font-family: var(--bb-mono);
+    font-size: .875rem;
+    color: var(--bb-text);
+}
+
+.demo-unstyled [data-balette="input-row"] {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.demo-unstyled [data-balette="input"] {
+    flex: 1;
+    max-width: none;
+    font-family: inherit;
+}
+
+.demo-unstyled [data-balette="list"] {
+    max-height: 220px;
+    margin-top: .5rem;
+    overflow: auto;
+}
+
+.demo-unstyled [data-balette="group-heading"] {
+    margin: .5rem 0 .25rem;
+    font-size: .75rem;
+    text-transform: uppercase;
+    color: var(--bb-text-muted);
+}
+
+.demo-unstyled [data-balette="item"] {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .25rem .5rem;
+    cursor: pointer;
+}
+
+/* The row's inner parts keep their class names when unstyled - only the root's is dropped - so they can be reached too. */
+.demo-unstyled .bit-balette-item-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.demo-unstyled .bit-balette-item-subtitle {
+    font-size: .75rem;
+    opacity: .75;
+}
+
+.demo-unstyled [data-balette="item"][data-active] {
+    background: var(--bb-text);
+    color: var(--bb-surface);
+}
+
+.demo-unstyled [data-balette="item"][data-disabled] {
+    opacity: .55;
+}
+
+.demo-unstyled [data-balette="item"][data-destructive] {
+    text-decoration: underline wavy;
+}
+
+.demo-unstyled [data-balette="mark"] {
+    background: none;
+    color: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+/* ---------- The options page: a finder over the options, and the rows this site changed ---------- */
+
+.demo-options-finder {
+    margin: 0 0 1rem;
+}
+
+.demo-options tr.demo-changed > td {
+    background: var(--bb-primary-soft);
+}
+
+/* A short feed of what the palette reported, under the control that caused it. */
+.demo-events {
+    max-height: 10rem;
+    margin: 0;
 }

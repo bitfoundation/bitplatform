@@ -23,8 +23,13 @@
             <div class="bit-bonboarding-overlay" aria-hidden="true"></div>
         }
 
-        @* ---- Interaction layer: separate from the visuals so a hole can be click-through. ---- *@
-        @if (_options.Interaction == BonboardingInteractionMode.Blocked)
+        @* ---- Interaction layer: separate from the visuals so a hole can be click-through. While the
+           step waits for its target nothing is on screen to protect, and the user may be the one who
+           has to make it appear (by opening the menu it lives in), so nothing blocks the page. ---- *@
+        @if (_session.IsWaiting)
+        {
+        }
+        else if (_options.Interaction == BonboardingInteractionMode.Blocked)
         {
             <div class="bit-bonboarding-blocker" style="inset:0" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
         }
@@ -49,7 +54,7 @@
         <div @ref="_popoverElement"
              class="@BonboardingCss.Classes(Unstyled ? null : "bit-bonboarding-popover", _options.PopoverClass, PopoverClass)"
              role="dialog"
-             aria-modal="@(_options.Interaction == BonboardingInteractionMode.Blocked ? "true" : "false")"
+             aria-modal="@(_options.Interaction == BonboardingInteractionMode.Blocked && !_session.IsWaiting ? "true" : "false")"
              aria-label="@AriaLabel"
              aria-labelledby="@AriaLabelledBy"
              aria-describedby="@AriaDescribedBy"
@@ -74,7 +79,21 @@
                 {
                     <div class="bit-bonboarding-waiting">
                         <span class="bit-bonboarding-spinner" aria-hidden="true"></span>
-                        <span>@_options.Labels.WaitingAnnouncement</span>
+                        <span class="bit-bonboarding-waiting-text">@_options.Labels.WaitingAnnouncement</span>
+
+                        @* The wait may be long (or endless), and Escape is not a way out for a pointer user. *@
+                        @if (_options.ShowClose)
+                        {
+                            <button type="button"
+                                    class="bit-bonboarding-close"
+                                    aria-label="@_options.Labels.Close"
+                                    data-bonboarding-action="close"
+                                    @onclick="HandleCloseAsync">
+                                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                                    <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                                </svg>
+                            </button>
+                        }
                     </div>
                 }
             }

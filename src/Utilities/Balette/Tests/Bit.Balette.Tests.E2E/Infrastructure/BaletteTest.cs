@@ -1,4 +1,5 @@
-﻿using Microsoft.Playwright;
+﻿using System.Text.RegularExpressions;
+using Microsoft.Playwright;
 
 namespace Bit.Balette.Tests.E2E.Infrastructure;
 
@@ -21,6 +22,9 @@ public abstract class BaletteTest
     [
         "Unhandled exception",
         "crit: ",
+        // Blazor Server's: the circuit an exception ended.
+        "unhandled exception on the current circuit",
+        "Circuit has closed due to an error",
     ];
 
     private readonly List<IBrowserContext> _contexts = [];
@@ -40,7 +44,8 @@ public abstract class BaletteTest
     public async Task OpenSessionAsync()
     {
         _session = await PlaywrightSession.GetAsync();
-        if (_session.Unavailable is not { } reason) return;
+        var reason = _session.Unavailable ?? await PlaywrightSession.EnsureBrowserAsync(_session);
+        if (reason is null) return;
 
         // A build server must not report a suite that never ran as anything but a failure.
         if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + reason);
@@ -112,16 +117,27 @@ public abstract class BaletteTest
         page.GotoAsync(BaseUrl + path, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle, Timeout = 90_000 });
 
     /// <summary>
-    /// Waits until the page runs in the browser and the palette's browser layer listens for keys. Every page is
-    /// prerendered, so its markup - the trigger and the mode buttons included - is on screen long before anything
-    /// handles a click, and the layer that hears Ctrl+K starts a moment after the page turns interactive. The layout
-    /// says the first (data-interactive on the site shell's .page), the palette host the second (data-palette-ready).
+    /// Waits until the page runs in the browser and every palette on it - the layout's modal one, and an inline one where
+    /// a page has it - listens for keys. Every page is prerendered, so its markup - the trigger and the mode buttons
+    /// included - is on screen long before anything handles a click, and the layer that hears Ctrl+K starts a moment
+    /// after the page turns interactive. The layout says the first (data-interactive on the site shell's .page), each
+    /// palette the second (data-ready). Not the platform being detected: either palette reports that, the inline one on
+    /// /commands often first, and the modal one's listener was then still a few milliseconds away.
     /// </summary>
     protected static Task WaitForReadyAsync(IPage page) => page.WaitForFunctionAsync(
         """
         () => document.querySelector('.page')?.dataset.interactive === 'true'
-           && document.querySelector('[data-palette-ready]')?.dataset.paletteReady === 'true'
+           && document.querySelector('dialog[data-balette="dialog"]')?.dataset.ready === 'true'
+           && [...document.querySelectorAll('[data-balette="inline"]')].every(e => e.dataset.ready === 'true')
         """, null, new PageWaitForFunctionOptions { Timeout = 90_000 });
+
+    /// <summary>
+    /// Waits until the address ends with <paramref name="path"/>. Polls the page's URL rather than waiting for a navigation
+    /// event: Playwright's Firefox driver can miss the end of a client-side navigation on Blazor Server, and wait on long
+    /// after the page has moved and rendered.
+    /// </summary>
+    protected static Task ExpectUrlAsync(IPage page, string path) =>
+        Assertions.Expect(page).ToHaveURLAsync(new Regex(Regex.Escape(path) + "$"));
 
     protected static async Task ReloadAsync(IPage page)
     {
@@ -131,29 +147,33 @@ public abstract class BaletteTest
 
     // ---- The palette's stable hooks -------------------------------------------------------------------------------
 
+    // Every hook below is the layout's modal palette's: a page can hold an inline palette too (the settings section of
+    // /commands does), with the same hooks inside a section[data-balette='inline'].
+    private const string InDialog = "dialog[data-balette='dialog'] ";
+
     protected static ILocator Dialog(IPage page) => page.Locator("dialog[data-balette='dialog']");
 
-    protected static ILocator Input(IPage page) => page.Locator("[data-balette='input']");
+    protected static ILocator Input(IPage page) => page.Locator(InDialog + "[data-balette='input']");
 
-    protected static ILocator List(IPage page) => page.Locator("[data-balette='list']");
+    protected static ILocator List(IPage page) => page.Locator(InDialog + "[data-balette='list']");
 
-    protected static ILocator Items(IPage page) => page.Locator("[data-balette='item']");
+    protected static ILocator Items(IPage page) => page.Locator(InDialog + "[data-balette='item']");
 
-    protected static ILocator Item(IPage page, string id) => page.Locator($"[data-balette='item'][data-value='{id}']");
+    protected static ILocator Item(IPage page, string id) => page.Locator(InDialog + $"[data-balette='item'][data-value='{id}']");
 
-    protected static ILocator ActiveItem(IPage page) => page.Locator("[data-balette='item'][data-active='true']");
+    protected static ILocator ActiveItem(IPage page) => page.Locator(InDialog + "[data-balette='item'][data-active='true']");
 
-    protected static ILocator GroupHeadings(IPage page) => page.Locator("[data-balette='group-heading']");
+    protected static ILocator GroupHeadings(IPage page) => page.Locator(InDialog + "[data-balette='group-heading']");
 
-    protected static ILocator Crumbs(IPage page) => page.Locator("[data-balette='breadcrumbs'] [data-balette='crumb']");
+    protected static ILocator Crumbs(IPage page) => page.Locator(InDialog + "[data-balette='breadcrumbs'] [data-balette='crumb']");
 
-    protected static ILocator ModeChip(IPage page) => page.Locator("[data-balette='mode']");
+    protected static ILocator ModeChip(IPage page) => page.Locator(InDialog + "[data-balette='mode']");
 
-    protected static ILocator Toast(IPage page) => page.Locator("[data-balette='toast']");
+    protected static ILocator Toast(IPage page) => page.Locator(InDialog + "[data-balette='toast']");
 
-    protected static ILocator Prompt(IPage page) => page.Locator("[data-balette='prompt']");
+    protected static ILocator Prompt(IPage page) => page.Locator(InDialog + "[data-balette='prompt']");
 
-    protected static ILocator Detail(IPage page) => page.Locator("[data-balette='detail']");
+    protected static ILocator Detail(IPage page) => page.Locator(InDialog + "[data-balette='detail']");
 
     /// <summary>The bar every demo page opens with: the trigger and a button per mode (Components/PaletteBar.razor).</summary>
     protected static ILocator ModeButton(IPage page, string title) => page.Locator($".demo-palette-modes button[title='{title}']");
@@ -185,6 +205,25 @@ public abstract class BaletteTest
     /// <summary>Types into the palette's input one key at a time, as a person would: every key is its own input event.</summary>
     protected static Task TypeAsync(IPage page, string text) => Input(page).PressSequentiallyAsync(text);
 
+    /// <summary>
+    /// Waits until the input reads <paramref name="current"/>, deletes it key by key and types <paramref name="text"/>.
+    /// Not FillAsync where the palette has just written the input itself - a page pushed or popped, a command's result
+    /// keeping it open: the palette then moves the caret to the end after the render (focusInput, on Blazor Server a
+    /// round trip later), and when that lands between fill's select-all and its typing, the text is appended to the old
+    /// one. Backspacing from the end does not mind when the caret comes. One Backspace per character and no more: one
+    /// on an empty query goes back a page.
+    /// </summary>
+    protected static async Task ReplaceQueryAsync(IPage page, string current, string text)
+    {
+        await Assertions.Expect(Input(page)).ToHaveValueAsync(current);
+        for (var i = 0; i < current.Length; i++)
+        {
+            await page.Keyboard.PressAsync("Backspace");
+        }
+
+        await TypeAsync(page, text);
+    }
+
     protected static Task ExpectFirstItemAsync(IPage page, string id) =>
         Assertions.Expect(Items(page).First).ToHaveAttributeAsync("data-value", id);
 
@@ -198,8 +237,9 @@ public abstract class BaletteTest
         var state = await page.EvaluateAsync<string[]>(
             """
             () => {
-              const input = document.querySelector('[data-balette="input"]');
-              const active = document.querySelector('[data-balette="item"][data-active="true"]');
+              const dialog = document.querySelector('dialog[data-balette="dialog"]');
+              const input = dialog.querySelector('[data-balette="input"]');
+              const active = dialog.querySelector('[data-balette="item"][data-active="true"]');
               return [input.getAttribute('aria-activedescendant') ?? '', active?.id ?? '', active?.getAttribute('aria-selected') ?? '',
                       document.activeElement === input ? 'focused' : 'not focused'];
             }
@@ -211,7 +251,7 @@ public abstract class BaletteTest
 
     /// <summary>The ids of the rows listed right now, in order.</summary>
     protected static Task<string[]> ItemIdsAsync(IPage page) =>
-        page.EvaluateAsync<string[]>("() => [...document.querySelectorAll('[data-balette=\"item\"]')].map(e => e.dataset.value)");
+        page.EvaluateAsync<string[]>("() => [...document.querySelectorAll('dialog[data-balette=\"dialog\"] [data-balette=\"item\"]')].map(e => e.dataset.value)");
 
     /// <summary>What has the focus, described by its data-balette hook, else its tag, aria-label and id.</summary>
     protected static Task<string> FocusedAsync(IPage page) => page.EvaluateAsync<string>(

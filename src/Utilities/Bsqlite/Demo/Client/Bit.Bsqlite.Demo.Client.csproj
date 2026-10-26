@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
   </ItemGroup>
 
   <!-- Kept out of the startup download: every Bsqlite connection needs it, so BeforeFirstOpen loads it right before

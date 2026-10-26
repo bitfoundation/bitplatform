@@ -3,39 +3,85 @@
 <PageTitle>Keyboard Accessibility · Blow</PageTitle>
 
 <ExampleScaffold Title="Keyboard Accessibility"
-                 Summary="Nodes and edges are both in the tab order. Tab to one, press Enter or Space to select it (Shift to add to the selection), move a selection with the arrow keys, press Escape to clear it and Delete to remove it. Every change is announced through an aria-live region.">
+                 Summary="Nodes and edges are in the tab order, a focused node that is out of view is panned into it, and every change is announced through a live region. The toolbar switches each part of that - which elements Tab reaches, keyboard support as a whole, the pan and its speed - and makes an announcement of the page's own.">
     <Toolbar>
+        <label><input type="checkbox" checked="@_nodesFocusable" @onchange="@(e => _nodesFocusable = (bool)e.Value!)" /> Nodes focusable</label>
         <label><input type="checkbox" checked="@_edgesFocusable" @onchange="@(e => _edgesFocusable = (bool)e.Value!)" /> Edges focusable</label>
+        <label><input type="checkbox" checked="@_keyboardOff" @onchange="@(e => _keyboardOff = (bool)e.Value!)" /> Disable keyboard support</label>
+        <label><input type="checkbox" checked="@_autoPan" @onchange="@(e => _autoPan = (bool)e.Value!)" /> Pan to the focused node</label>
+        <label>over
+            <select disabled="@(!_autoPan)" @onchange="@(e => _autoPanDuration = int.TryParse(e.Value?.ToString(), out var duration) ? duration : 200)">
+                @foreach (var ms in new[] { 0, 200, 800 })
+                {
+                    <option value="@ms" selected="@(ms == _autoPanDuration)">@ms ms</option>
+                }
+            </select>
+        </label>
+        <button class="btn btn-secondary" @onclick="AnnounceSelection">Announce selection</button>
         <button class="btn btn-primary" @onclick="Reset">Reset</button>
     </Toolbar>
     <ChildContent>
+        @* Opens zoomed in on the start of the workflow, so the rest of it is out of view and tabbing on has to
+           bring it in. *@
         <BlowCanvas @ref="_flow"
                     Nodes="_nodes"
                     Edges="_edges"
-                    FitViewOnInit="true"
+                    DefaultViewport="StartView"
+                    NodesFocusable="_nodesFocusable"
                     EdgesFocusable="_edgesFocusable"
+                    DisableKeyboardA11y="_keyboardOff"
+                    AutoPanOnNodeFocus="_autoPan"
+                    AutoPanOnNodeFocusDuration="_autoPanDuration"
                     AriaLabel="Approval workflow"
                     OnSelectionChange="OnSelectionChange">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
-            <BlowPanel Anchor="BlowPanelPosition.TopRight">
+            <BlowPanel Anchor="BlowPanelPosition.TopLeft">
                 <div class="a11y-readout">
-                    <strong>Selection</strong>
-                    <div>@_selection</div>
+                    <div><strong>Selection</strong> @_selection</div>
+                    <div><strong>Announced by the page</strong> @(_announced ?? "-")</div>
                 </div>
             </BlowPanel>
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li><strong>Click the background</strong> to give the canvas focus, then press <strong>Tab</strong> again and again: focus moves through the edges, then the nodes. The workflow is wider than the view, and when focus reaches a node outside it the view slides along to show it.</li>
+        <li>Press <strong>Enter</strong> or <strong>Space</strong> to select the focused node or edge (<strong>Shift+Enter</strong> adds it to the selection) - the panel names what is selected. Move a selection with the <strong>arrow keys</strong>, clear it with <strong>Escape</strong> and remove it with <strong>Delete</strong>.</li>
+        <li>Untick <strong>Edges focusable</strong> or <strong>Nodes focusable</strong>, then Tab again: that kind is skipped.</li>
+        <li>Tick <strong>Disable keyboard support</strong>: Tab skips every node and edge, and the arrow keys no longer move a selection made with the mouse.</li>
+        <li>Untick <strong>Pan to the focused node</strong> and Tab out of view: focus moves on, but the view stays put. Set <strong>over</strong> to <em>0 ms</em> to jump instead of sliding, or <em>800 ms</em> to watch the slide.</li>
+        <li>Select something and press <strong>Announce selection</strong>: the page puts a sentence of its own in the canvas's live region, and a screen reader reads it out.</li>
+        <li><strong>Reset</strong> puts the workflow, the view and the panel back as they started.</li>
+        <li>With a screen reader on - Narrator, VoiceOver, NVDA - you hear each element's name and keys as focus arrives, and every selection, move and deletion as it happens. The <a href="examples/localization">Localization</a> example shows those announcements on screen.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>NodesFocusable</code> and <code>EdgesFocusable</code> (both true) put each kind in the tab order; focus follows the order they are drawn in, edges beneath nodes. A node or an edge's own <code>Focusable</code> takes out just that one.</li>
+        <li><code>DisableKeyboardA11y</code> (false) takes every node and edge out of the tab order and turns the arrow keys and connecting from the keyboard off; Delete and Escape still act on a selection.</li>
+        <li><code>AutoPanOnNodeFocus</code> (true) pans a node that takes keyboard focus into view - only as far as needed, so the reader keeps their place - over <code>AutoPanOnNodeFocusDuration</code> milliseconds (200; 0 jumps).</li>
+        <li><code>Announce(message)</code> puts a message of the app's own in the polite live region the canvas announces its changes in; saying the same thing twice is still read the second time.</li>
+        <li><code>AriaLabel</code> names the canvas itself ("Approval workflow" rather than the default "Flow diagram"), and a node's <code>AriaLabel</code> - on In review here - replaces its <code>Label</code> as its spoken name.</li>
+        <li><code>OnSelectionChange</code> fills the panel, which is a <code>BlowPanel</code> inside the canvas. <code>DefaultViewport</code> sets where the view opens; <strong>Reset</strong> returns there with <code>SetViewport</code>.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
-    .a11y-readout { min-width: 170px; padding: 8px 10px; font-size: 12px; background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
+    .a11y-readout { min-width: 170px; max-width: 240px; padding: 8px 10px; font-size: 12px; background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
+    .a11y-readout strong { display: block; }
+    .a11y-readout div + div { margin-top: 4px; }
 </style>
 
 @code {
+    // Zoomed in on the first two steps: the rest of the workflow runs off the right of the pane.
+    private static readonly BlowViewport StartView = new(60, 70, 1.25);
+
     private BlowCanvas? _flow;
+    private bool _nodesFocusable = true;
     private bool _edgesFocusable = true;
+    private bool _keyboardOff;
+    private bool _autoPan = true;
+    private int _autoPanDuration = 200;
     private string _selection = "nothing selected";
+    private string? _announced;
 
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
@@ -46,20 +92,40 @@
     {
         _nodes =
         [
-            new BlowNode { Id = "1", Type = "input",  Label = "Submitted", Position = new(40, 0) },
-            new BlowNode { Id = "2",                  Label = "In review", Position = new(0, 130), AriaLabel = "In review, awaiting approval" },
-            new BlowNode { Id = "3", Type = "output", Label = "Approved",  Position = new(200, 260) },
+            Step("1", "Submitted", 0, 95, "input"),
+            Step("2", "In review", 260, 95, ariaLabel: "In review, awaiting approval"),
+            Step("3", "Approved", 520, 10),
+            Step("4", "Rejected", 520, 180),
+            Step("5", "Notified", 780, 95),
+            Step("6", "Archived", 1040, 95, "output"),
         ];
 
         _edges =
         [
             new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "submit" },
             new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Label = "approve" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Label = "reject" },
+            new BlowEdge { Id = "e3-5", Source = "3", Target = "5" },
+            new BlowEdge { Id = "e4-5", Source = "4", Target = "5" },
+            new BlowEdge { Id = "e5-6", Source = "5", Target = "6", Label = "archive" },
         ];
 
         _selection = "nothing selected";
+        _announced = null;
+        _flow?.SetViewport(StartView);
         _flow?.Refresh(remeasure: true);
     }
+
+    private static BlowNode Step(string id, string label, double x, double y, string type = "default", string? ariaLabel = null) => new()
+    {
+        Id = id,
+        Type = type,
+        Label = label,
+        AriaLabel = ariaLabel,
+        Position = new(x, y),
+        SourcePosition = BlowPosition.Right,
+        TargetPosition = BlowPosition.Left,
+    };
 
     private void OnSelectionChange(BlowSelectionChange change)
     {
@@ -67,5 +133,12 @@
             .Concat(change.Edges.Select(e => e.Label ?? e.Id))
             .ToList();
         _selection = parts.Count == 0 ? "nothing selected" : string.Join(", ", parts);
+    }
+
+    private void AnnounceSelection()
+    {
+        if (_flow is null) return;
+        _announced = _selection == "nothing selected" ? "Nothing is selected." : $"Selected: {_selection}.";
+        _flow.Announce(_announced);
     }
 }

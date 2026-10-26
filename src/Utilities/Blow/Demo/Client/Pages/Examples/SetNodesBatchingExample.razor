@@ -3,50 +3,117 @@
 <PageTitle>setNodes Batching · Blow</PageTitle>
 
 <ExampleScaffold Title="setNodes Batching"
-                 Summary="Add many nodes in a single batched update. AddNodes appends them all and triggers one measure pass instead of one per node.">
+                 Summary="Add many nodes as one change rather than many: AddNodes takes the whole batch in one call, and EditAsync folds any number of calls into one edit. Either way the canvas raises NodesChanged once and records one undo step for the lot, which the counters here make visible.">
     <Toolbar>
-        <button class="btn btn-primary" @onclick="@(() => AddBatch(25))">Add 25</button>
-        <button class="btn btn-primary" @onclick="@(() => AddBatch(100))">Add 100</button>
+        <label>
+            Nodes
+            <select @bind="_count">
+                <option value="25">25</option>
+                <option value="100">100</option>
+                <option value="500">500</option>
+            </select>
+        </label>
+        <button class="btn btn-primary" @onclick="AddInOneCall">Add in one call</button>
+        <button class="btn btn-secondary" @onclick="AddOneByOne">Add one by one</button>
+        <button class="btn btn-secondary" @onclick="AddInOneEdit">Add in one edit</button>
+        <button class="btn btn-secondary" disabled="@(!_history.CanUndo)" @onclick="Undo">↶ Undo @_history.UndoLabel</button>
         <button class="btn btn-secondary" @onclick="Clear">Clear</button>
-        <span class="bb-muted">@_nodes.Count nodes</span>
+        <span class="snb-readout">@_nodes.Count nodes · NodesChanged raised @_nodesChanged times · @_history.UndoDepth undo steps</span>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" OnlyRenderVisibleElements="true">
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" OnlyRenderVisibleElements="true"
+                    HistoryEnabled="true" HistoryCapacity="1000"
+                    OnHistoryChanged="@(s => _history = s)"
+                    NodesChanged="@(_ => _nodesChanged++)">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
             <BlowMiniMap />
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li>Pick how many <strong>Nodes</strong> to add, then press <strong>Add in one call</strong>: the nodes appear together, <strong>NodesChanged</strong> goes up by one and there is one more undo step.</li>
+        <li>Press <strong>Add one by one</strong>: the same nodes, but the counter and the undo steps go up by one per node, and <strong>Undo</strong> takes back only the last one.</li>
+        <li>Press <strong>Add in one edit</strong>: the same calls one at a time again, wrapped in one edit - one event, one step, and <strong>Undo</strong> takes the whole batch back.</li>
+        <li>Add 500 a few times, then <strong>scroll</strong> to zoom in and <strong>drag the background</strong> to pan: only the nodes in view are drawn, while the minimap shows them all.</li>
+        <li><strong>Clear</strong> removes everything in one undoable step.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>AddNodes(params BlowNode[] nodes)</code> appends the whole array to <code>Nodes</code> and treats it as one edit: one <code>NodesChanged</code>, one <code>OnGraphChanged</code>, one undo step labelled <code>add</code>, and one measuring pass for the lot after the next render.</li>
+        <li>Called once per node, each call is an edit of its own - an event and an undo step each - though Blazor still renders the canvas once, after the handler.</li>
+        <li><code>EditAsync(action, label)</code> runs the action as a single edit: any number of <code>AddNodes</code> calls, or direct changes to the lists, inside it raise <code>NodesChanged</code> once at the end, are recorded as one undo step under the label you give (<code>add batch</code> here), and render once.</li>
+        <li><code>HistoryEnabled</code> keeps the undo stack, here with a <code>HistoryCapacity</code> of 1,000 so that adding 500 one by one does not push the earlier steps out; <code>OnHistoryChanged</code> reports the depth and the label of the step <code>UndoAsync()</code> would take back.</li>
+        <li><code>OnlyRenderVisibleElements</code> draws only the nodes and edges inside the view, which keeps a pan over hundreds of nodes smooth. The nodes have an explicit <code>Width</code> and <code>Height</code>, so their size is known before they are first drawn.</li>
+        <li>Clear empties both lists inside <code>EditAsync(..., label: "clear")</code>, so the canvas records it; changed directly in a handler of the page, the lists would be redrawn but the history would not know.</li>
+    </HowItWorks>
 </ExampleScaffold>
+
+<style>
+    .snb-readout { font-variant-numeric: tabular-nums; color: var(--bb-text-soft); }
+</style>
 
 @code {
     private BlowCanvas? _flow;
-    private List<BlowNode> _nodes = [];
-    private List<BlowEdge> _edges = [];
+    private readonly List<BlowNode> _nodes = [];
+    private readonly List<BlowEdge> _edges = [];
+    private BlowHistoryState _history;
+    private int _count = 25;
+    private int _nodesChanged;
     private int _id;
 
-    private void AddBatch(int count)
+    private BlowNode NextNode()
     {
-        var batch = new BlowNode[count];
-        for (var i = 0; i < count; i++)
+        _id++;
+        return new BlowNode
         {
-            _id++;
-            batch[i] = new BlowNode
-            {
-                Id = _id.ToString(),
-                Label = _id.ToString(),
-                Position = new(Random.Shared.Next(0, 900), Random.Shared.Next(0, 600)),
-                Width = 50, Height = 32,
-            };
-        }
-        _flow?.AddNodes(batch); // single batched update
+            Id = _id.ToString(),
+            Label = _id.ToString(),
+            Position = new(Random.Shared.Next(0, 1200), Random.Shared.Next(0, 800)),
+            Width = 50,
+            Height = 32,
+        };
     }
 
-    private void Clear()
+    private void AddInOneCall()
     {
-        _nodes.Clear();
-        _edges.Clear();
-        _id = 0;
-        _flow?.Refresh(remeasure: true);
+        if (_flow is null) return;
+        var batch = new BlowNode[_count];
+        for (var i = 0; i < batch.Length; i++) batch[i] = NextNode();
+        _flow.AddNodes(batch);
+        FitOnce();
+    }
+
+    private void AddOneByOne()
+    {
+        if (_flow is null) return;
+        for (var i = 0; i < _count; i++) _flow.AddNodes(NextNode());
+        FitOnce();
+    }
+
+    private async Task AddInOneEdit()
+    {
+        if (_flow is not { } flow) return;
+        await flow.EditAsync(() =>
+        {
+            for (var i = 0; i < _count; i++) flow.AddNodes(NextNode());
+        }, label: "add batch");
+        FitOnce();
+    }
+
+    private Task Undo() => _flow?.UndoAsync() ?? Task.CompletedTask;
+
+    private async Task Clear()
+    {
+        if (_flow is null) return;
+        await _flow.EditAsync(() =>
+        {
+            _nodes.Clear();
+            _edges.Clear();
+        }, label: "clear");
+    }
+
+    // The canvas opens empty, so the first batch is fitted to the view; later ones land in the same area.
+    private void FitOnce()
+    {
+        if (_nodes.Count == _count) _flow?.FitView();
     }
 }

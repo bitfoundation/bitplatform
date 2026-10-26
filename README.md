@@ -25,7 +25,7 @@ For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 Create a ready-to-run [bit Boilerplate](src/Templates/Boilerplate/Readme.md) project on Windows, macOS or Linux with the [bit CLI](src/Toolings/Cli/README.md):
 
 ```bash
-dotnet tool install --global Bit.Cli --version 10.7.0-pre-04
+dotnet tool install --global Bit.Cli --version 10.7.0
 bit new MyApp
 ```
 

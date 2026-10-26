@@ -4,8 +4,8 @@
 /// The demo server every test drives: Bit.Bcrdt.Demo.Server started from its build output on a free port,
 /// once for the whole run. The side-by-side pages keep every replica in the browser, on WebAssembly, talking
 /// over the library's in-memory transport, and every test opens its own browser context, so sharing the process
-/// shares nothing for them. The live page does go through the server, but its relays only forward messages
-/// between the tabs of one document and hold no copy of it, and each live test uses a room of its own.
+/// shares nothing for them. The live page does go through the server, whose document host keeps a replica of every
+/// live document, but each live test uses a room of its own, so no test ever meets another's document.
 /// </summary>
 public sealed class DemoHost : IAsyncDisposable
 {

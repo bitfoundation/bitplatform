@@ -17,7 +17,8 @@ public sealed class KeyboardTests : BormTest
     {
         var page = await OpenAsync("/builder");
 
-        // The page's heading has the focus after navigation, so the first Tab lands in the form.
+        // From the page's heading — where an in-app navigation puts the focus — the first Tab lands in the form.
+        await FocusHeadingAsync(page);
         await page.Keyboard.PressAsync("Tab");
         await Expect(Control(page, "FullName")).ToBeFocusedAsync();
         await page.Keyboard.TypeAsync("Ada Lovelace");
@@ -84,7 +85,7 @@ public sealed class KeyboardTests : BormTest
         // ...without disabling them: they are still reached by Tab and read out, just not editable.
         await Expect(reference).ToBeEnabledAsync();
         await Expect(reference).Not.ToBeEditableAsync();
-        await page.Locator("h1").FocusAsync();
+        await FocusHeadingAsync(page);
         await page.Keyboard.PressAsync("Tab");
         await Expect(reference).ToBeFocusedAsync();
         await page.Keyboard.TypeAsync("XYZ");

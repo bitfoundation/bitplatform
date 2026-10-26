@@ -31,6 +31,24 @@ public partial class ErrorPageStatusCodeTests
     }
 
     [TestMethod]
+    [DataRow("/_framework/missing-file.js")]
+    [DataRow("/_content/Bit.BlazorUI/missing-file.css")]
+    public async Task MissingStaticFile_Should_Answer404_WithoutTheNotFoundPage(string url)
+    {
+        await using var server = new AppTestServer();
+        await server.Build(
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
+            .Start(TestContext.CancellationToken);
+
+        using var httpClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { BaseAddress = server.WebAppAddress };
+
+        using var response = await httpClient.GetAsync(url, TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.IsNull(response.Headers.Location, "A script or a stylesheet that isn't there must not be answered with the not-found page.");
+    }
+
+    [TestMethod]
     public async Task SignedInOnlyPage_Should_Answer401_WithTheNotAuthorizedPage_ForAnAnonymousRequest()
     {
         await using var server = new AppTestServer();

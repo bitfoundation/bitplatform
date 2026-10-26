@@ -132,6 +132,31 @@ public interface IBlowContext
     /// entry of the handle that has just replaced it.
     /// </summary>
     void UnregisterHandle(string key, BlowHandleRegistration registration) => UnregisterHandle(key);
+
+    /// <summary>
+    /// True when the given handle's port already has as many edges as its connection limit allows, so it can
+    /// neither start nor accept another. A context that knows no limits answers false.
+    /// </summary>
+    bool IsHandleAtLimit(string nodeId, string? handleId, BlowHandleType handleType) => false;
+
+    /// <summary>
+    /// The most serious problem the canvas's <c>Validation</c> found at one port of a node, or null when it found
+    /// none - for a handle to mark itself.
+    /// </summary>
+    BlowValidationSeverity? ValidationSeverityAt(string nodeId, BlowHandleType handleType, string? handleId) => null;
+
+    /// <summary>
+    /// Tells the canvas a part inside it acted on the key being pressed, so the pane - which hears the same key press
+    /// next - leaves it alone.
+    /// </summary>
+    void MarkKeyHandled(string key) { }
+
+    /// <summary>
+    /// Tells the canvas the pointer pressed a part inside it that keeps the press from the pane (a handle, the minimap,
+    /// say), so what an earlier press or the keyboard left waiting ends as a press on the pane would end it: a
+    /// connection being made from the keyboard - which says so - and a node press whose click never came.
+    /// </summary>
+    void PointerPressed() { }
 }
 
 /// <summary>
@@ -146,6 +171,12 @@ public sealed class BlowHandleRegistration
 
     /// <summary>Raised when a connection involving this handle is completed.</summary>
     public EventCallback<BlowConnection> OnConnect { get; init; }
+
+    /// <summary>The handle's data type, overriding its declared port's; see <see cref="BlowPort.DataType"/>.</summary>
+    public string? DataType { get; init; }
+
+    /// <summary>The handle's connection limit, overriding its declared port's; see <see cref="BlowPort.MaxConnections"/>.</summary>
+    public int? MaxConnections { get; init; }
 
     /// <summary>Builds the registry key identifying one handle of one node.</summary>
     public static string Key(string nodeId, BlowHandleType type, string? handleId) =>

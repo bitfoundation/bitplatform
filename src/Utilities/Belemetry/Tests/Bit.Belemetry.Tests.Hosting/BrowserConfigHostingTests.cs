@@ -87,12 +87,14 @@ public class BrowserConfigHostingTests
         var azure = exporters.Single(e => e.GetProperty("type").GetString() == "azureMonitor");
         StringAssert.Contains(azure.GetProperty("connectionString").GetString(), HarnessServiceCollectionExtensions.InstrumentationKey);
 
-        // The exporter URLs are added to the fetch/XHR ignore list, so the script never traces its own exports.
+        // A server lists no exporter URL to ignore: its own exports never go through the page, the script recognizes
+        // the URLs of the exporters above by itself, and an internal collector's address has no business in a page. A
+        // WebAssembly client adds the URLs of its .NET exporters when it starts the script (bit-belemetry-js covers it).
         var ignored = root.GetProperty("dependencies").GetProperty("ignoreUrls").EnumerateArray().Select(u => u.GetString()!).ToList();
-        Assert.IsTrue(ignored.Any(pattern => Regex.IsMatch("http://localhost/test-collector/v1/traces", pattern)),
-            $"No ignoreUrls entry matches the OTLP traces URL: {string.Join(", ", ignored)}");
-        Assert.IsTrue(ignored.Any(pattern => Regex.IsMatch("http://localhost/test-collector/v2.1/track", pattern)),
-            $"No ignoreUrls entry matches the Azure ingestion URL: {string.Join(", ", ignored)}");
+        Assert.IsFalse(ignored.Any(pattern => Regex.IsMatch("http://localhost/test-collector/v1/traces", pattern)),
+            $"A server published an exporter URL: {string.Join(", ", ignored)}");
+        Assert.IsFalse(ignored.Any(pattern => Regex.IsMatch("http://localhost/test-collector/v2.1/track", pattern)),
+            $"A server published an exporter URL: {string.Join(", ", ignored)}");
     }
 
     [TestMethod]

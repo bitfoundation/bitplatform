@@ -52,8 +52,11 @@ await BonboardingService.StartOnceAsync(tour); // skipped if the user already fi
 - Collision-aware positioning computed in C#: shift before flip, arrow clamping, viewport padding.
 - Targets that render late or never: wait (mutation observer, no polling), skip, centre or fail.
 - Interactive steps that advance when the user actually uses the highlighted control.
-- Conditional and branching flows, where Back follows the path the user took.
+- Conditional and branching flows, where Back follows the path the user took, and validation that says why.
 - Route-aware tours that span pages.
+- Beacons that open hints or tours, onboarding checklists, and a list of tours to start again.
+- Automatic tours that queue by priority instead of interrupting, "remind me later", and definitions checked
+  before anyone sees them.
 - Accessibility built in: dialog semantics, focus trap and restoration, live-region announcements,
   reduced motion and forced colors.
 - Theming through CSS variables, per-step templates, or a fully headless popover.

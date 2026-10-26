@@ -42,11 +42,10 @@ internal sealed class BelemetryConsentService : IBelemetryConsent, IDisposable
 
         await _bridge.SetConsentAsync(features);
 
-        if (_settings.IsServer)
-        {
-            // Read back what the script decided (Global Privacy Control may have narrowed it).
-            if (await _bridge.GetContextAsync() is { } context) _bridge.Apply(context);
-        }
+        // Read back what the script decided: Global Privacy Control may have narrowed it. The script reports a change
+        // of its own only when its grant changed, and a grant it refused outright changes nothing there - so in
+        // WebAssembly and Hybrid the .NET pipeline would otherwise go on collecting what the browser refused.
+        if (await _bridge.GetContextAsync() is { } context) _bridge.Apply(context);
     }
 
     public ValueTask GrantAsync(BelemetryFeatures features) => SetAsync(Granted | features);

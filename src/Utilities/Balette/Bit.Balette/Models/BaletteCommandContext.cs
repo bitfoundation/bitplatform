@@ -36,7 +36,7 @@ public sealed class BaletteCommandContext
     /// <summary>Active mode prefix (e.g. <c>&gt;</c>), or null for the default mode.</summary>
     public string? ModePrefix { get; }
 
-    /// <summary>Text entered in a prompt step, when the command was reached via <see cref="BaletteCommandResult.Prompt"/>.</summary>
+    /// <summary>Text entered in a prompt step, when the command was reached via <see cref="BaletteCommandResult.PromptResult"/>.</summary>
     public string? PromptValue { get; }
 
     /// <summary>In multi-select pages, the set of checked commands.</summary>

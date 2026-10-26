@@ -178,6 +178,11 @@ public static partial class BbScannerSetupGuide
            scanner reports `NotSupported` with that reason when the page is not one.
         7. Narrow `Formats` to the symbologies the app needs, handle `OnScan`, and handle `OnError` - a denied
            permission arrives there as `BbScannerErrorKind.PermissionDenied`, a missing camera as `NoCamera`.
+        8. Publish the WebAssembly client compiled ahead of time: `<RunAOTCompilation>true</RunAOTCompilation>` in the
+           project that runs in the browser (the .Client project of a Blazor Web App), for Release, with the `wasm-tools`
+           workload installed. On Blazor's default IL interpreter the decoder is about a hundred times slower - a camera
+           frame takes around 100 ms instead of 1 to 2, and blocks the page while it does - so an app that scans with the
+           camera, above all on phones, should not ship without it. See the guide's "Performance" section.
         """;
 
     private const string ServerFiles = """

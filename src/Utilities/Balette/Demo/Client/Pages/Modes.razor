@@ -1,4 +1,5 @@
 ﻿@page "/modes"
+@using System.Globalization
 @implements IDisposable
 @inject IBaletteService Palette
 @inject BaletteOptions Options
@@ -12,7 +13,7 @@
         A mode is a prefix typed at the start of the query - <code>&gt;</code> in VS Code, <code>#</code> on GitHub - that
         scopes the palette to part of the registry, to its own asynchronous sources, or both. A source is anything that
         answers a query later: an API, a database, a search index. The palette debounces it, cancels it when the query
-        moves on, and merges what it returns.
+        moves on, pages it, times it out, and merges what it returns.
     </p>
 </div>
 
@@ -43,9 +44,30 @@
         </table>
     </div>
     <p>
-        On the empty query the palette lists every mode as a hint under <em>Modes</em>, so they can be discovered without
-        reading this page; picking a hint types its prefix. <code>ShowHint = false</code> keeps a mode out of that list.
+        The first four are registered at startup, in <code>options.Modes</code>. <code>$</code> is this page's own:
+        <code>Palette.RegisterMode</code> added it when the page opened, and disposing the handle it returned takes it away
+        again when you leave. The active mode is shown as a chip next to the breadcrumbs, and on the empty query of the default
+        mode every mode is listed as a hint under <em>Modes</em>, so they can be discovered without reading this page;
+        picking a hint types its prefix.
     </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Property</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Prefix</code></td><td>What is typed at the start of the query. The longest matching prefix wins, so <code>&gt;&gt;</code> and <code>&gt;</code> can coexist.</td></tr>
+                <tr><td class="bb-table-key"><code>Name</code> / <code>Description</code></td><td>The chip, and the hint's title and subtitle.</td></tr>
+                <tr><td class="bb-table-key"><code>Placeholder</code></td><td>The search box's placeholder while the mode is active.</td></tr>
+                <tr><td class="bb-table-key"><code>Tags</code></td><td>Only commands carrying one of these tags - <code>&gt;</code> lists those tagged <code>command</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>Groups</code></td><td>Only commands in these groups - <code>?</code> lists the Help group.</td></tr>
+                <tr><td class="bb-table-key"><code>HideRegistryCommands</code></td><td>No registry commands at all, only the mode's sources - <code>#</code>, <code>@@</code> and <code>$</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>Sources</code></td><td>Asked in this mode, instead of the default mode's sources.</td></tr>
+                <tr><td class="bb-table-key"><code>ShowHint</code></td><td>Whether the mode is listed under <em>Modes</em>; <code>options.ShowModeHints = false</code> drops the whole group.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>A mode scopes the registry and the sources; nested commands are never found from a mode.</p>
 </section>
 
 <section class="bb-card" id="sources">
@@ -83,21 +105,30 @@
         <div class="bb-card">
             <h4 class="demo-card-heading">Ordered</h4>
             <p class="bb-card-desc">
-                Without it, the source's order is kept and its rows are listed as one block under its name - right for a
-                server that already sorts by relevance. <em>Issues</em> puts open issues first, newest first, and asks on the
-                empty query too, so <code>#</code> opens on a list.
+                Without it - the default - the source's order is kept and its rows are listed as one block under its name,
+                right for a server that already sorts by relevance. <em>Issues</em> puts open issues first, newest first, and
+                asks on the empty query too (<code>MinQueryLength = 0</code>), so <code>#</code> opens on a list.
             </p>
         </div>
     </div>
+    <p>
+        Sources in <code>options.Sources</code> are asked in the default mode, and so are the ones registered at runtime with
+        <code>Palette.RegisterSource</code> or resolved from DI with <code>services.AddBitBaletteSource&lt;TSource&gt;()</code>
+        - those belong to the scope and stay registered whichever palette comes and goes. A mode asks its own
+        <code>Sources</code> instead, and a command's page can ask one too (<code>.Source(...)</code>, see
+        <a href="pages#navigating">nested pages</a>). Each search gets a <code>BaletteSourceContext</code>: the
+        <code>ModePrefix</code>, the <code>ParentCommandId</code> of the page that asked, and the user's <code>Services</code>.
+    </p>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Debounced and cancelled, live</h3>
     <p>
         Open the palette and type <code>@@ada lovelace</code> at your normal speed. The palette waits
-        <strong>@Options.DebounceMs ms</strong> after the last keystroke before it asks a source, so most keystrokes never
-        reach one; a search still running when the next one starts is cancelled through its token. Every call that did
-        reach a source is listed here, newest first.
+        <strong>@Options.DebounceMs ms</strong> (<code>DebounceMs</code>) after the last keystroke before it asks a source, so
+        most keystrokes never reach one; a search still running when the next one starts is cancelled through its token, so
+        a slow API never shows stale results. A spinner replaces the search icon while any source is pending. Every call that
+        did reach a source is listed here, newest first.
     </p>
 
     <div class="bb-demo">
@@ -108,6 +139,7 @@
         <div class="bb-try">
             <button type="button" class="btn btn-secondary" @onclick="@(() => Palette.OpenAsync("@"))">Open in People mode</button>
             <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("#")'>Open in Issues mode</button>
+            <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("$")'>Open in Packages mode</button>
             <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("theming")'>Search "theming" (documentation)</button>
         </div>
         <div class="bb-scroll">
@@ -137,17 +169,133 @@
     </div>
 </section>
 
+<section class="bb-card" id="paging">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Paging</h3>
+    <p>
+        A source with more results than it should send at once answers through <code>SearchPageAsync(query, cursor, ...)</code>:
+        the first page with a null <code>cursor</code>, each next one with the <code>NextCursor</code> of the page before. A
+        page with a cursor gets a row after the source's results - "Show 50 more…" when the page says
+        <code>TotalCount</code>, "Show more…" when it does not - which loads the next page, appends it without repeating
+        what is listed, and selects its first row. A source that implements only <code>SearchAsync</code> answers one page.
+    </p>
+    <p>
+        The <code>$</code> mode pages through @Packages.Length packages, @PageSize at a time, with a
+        <code>BaletteDelegateSource</code> - the ready-made source over a delegate:
+    </p>
+    <pre class="bb-code">@PagingExample</pre>
+    <div class="bb-try">
+        <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("$")'>Open in Packages mode</button>
+        <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("$acme")'>Search <code>$acme</code></button>
+    </div>
+</section>
+
+<section class="bb-card" id="failures">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> When a source fails</h3>
+    <p>
+        A source that throws, or that has not answered after <code>SourceTimeoutMs</code>
+        (@(Options.SourceTimeoutMs == 0 ? "never" : $"{Options.SourceTimeoutMs / 1000.0:0.#} s") here) - whether or not it
+        honours its token - is logged and leaves a row in place of its results, "Couldn’t search Service status" in the
+        danger colour, which asks it again when chosen. The other sources' results stay: one failing API does not take the
+        whole list with it. A next page that fails keeps the pages already listed, and its row to try again.
+    </p>
+    <p>
+        This page registered a <em>Service status</em> source in the default mode with <code>Palette.RegisterSource</code>:
+        <code>status</code> lists every service, and a service's name lists that one. Choose how it behaves, then search:
+    </p>
+    <div class="bb-segmented" role="group" aria-label="Service status source">
+        @foreach (var (value, label) in StatusBehaviours)
+        {
+            <button type="button" aria-pressed="@(_statusBehaviour == value ? "true" : "false")" @onclick="() => _statusBehaviour = value">@label</button>
+        }
+    </div>
+    <div class="bb-try">
+        <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("status")'>Search "status"</button>
+    </div>
+    <p class="bb-muted demo-small">
+        A source that hangs is cancelled through its token when the timeout passes, so the call log above shows it
+        <em>Cancelled</em> while the palette offers to try again.
+    </p>
+    <pre class="bb-code">@StatusExample</pre>
+</section>
+
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Registering them</h3>
     <pre class="bb-code">@RegistrationExample</pre>
     <p>
-        Sources in <code>options.Sources</code> are asked in the default mode; a mode's own <code>Sources</code> only in that
-        mode. <code>IBaletteService.RegisterMode</code> and <code>RegisterSource</code> add either at runtime and return a
-        handle that removes it again, and <code>AddBitBaletteSource&lt;T&gt;()</code> registers a source resolved from DI.
+        <code>RegisterMode</code> and <code>RegisterSource</code> return a handle that removes what they added. This page's
+        two are registered while it is on screen:
     </p>
+    <div class="bb-try">
+        <button type="button" class="btn btn-secondary" @onclick="ToggleRegistrations">@(_registered ? "Remove the $ mode and the status source" : "Register them again")</button>
+    </div>
+    <div class="bb-note">
+        Two ready-made sources cover the common cases: <code>BaletteDelegateSource</code> wraps a delegate - single page or
+        paged - and <code>BaletteStaticSource</code> serves a large in-memory list through the palette's matcher without
+        registering thousands of commands (see <a href="performance">Large registry</a>).
+    </div>
 </section>
 
 @code {
+    private const int PageSize = 10;
+
+    // Sixty packages: four vendors, fifteen areas.
+    private static readonly string[] Packages =
+    [
+        .. from vendor in new[] { "Acme", "Contoso", "Fabrikam", "Northwind" }
+           from area in new[] { "Core", "Http", "Json", "Logging", "Caching", "Auth", "Data", "Testing", "Blazor", "Grpc", "Metrics", "Search", "Storage", "Mail", "Queue" }
+           select $"{vendor}.{area}"
+    ];
+
+    private static readonly (string Name, string State)[] ServiceStates =
+    [
+        ("API", "Operational"),
+        ("Web app", "Operational"),
+        ("Database", "Degraded performance"),
+        ("Search index", "Operational"),
+        ("E-mail delivery", "Operational"),
+    ];
+
+    private static readonly (string Value, string Label)[] StatusBehaviours =
+    [
+        ("answers", "Answers"),
+        ("throws", "Throws"),
+        ("hangs", "Never answers"),
+    ];
+
+    private const string PagingExample = """
+        options.Modes.Add(new BaletteCommandMode
+        {
+            Prefix = "$",
+            Name = "Packages",
+            HideRegistryCommands = true,
+            Sources =
+            [
+                new BaletteDelegateSource("Packages", async (query, cursor, context, ct) =>
+                {
+                    var page = await Api.SearchPackagesAsync(query, after: cursor, take: 10, ct);
+                    return new BaletteSourcePage([.. page.Items.Select(ToCommand)], page.NextCursor, page.Total);
+                }, minQueryLength: 0, maxResults: 10),
+            ],
+        });
+        """;
+
+    private const string StatusExample = """
+        _status = Palette.RegisterSource(new StatusSource());   // asked in the default mode
+        // ... and when the page goes:
+        _status.Dispose();
+
+        public sealed class StatusSource : IBaletteSource
+        {
+            public string Name => "Service status";             // its heading, and its retry row's text
+
+            public async Task<IReadOnlyList<BaletteCommand>> SearchAsync(string query, BaletteSourceContext context, CancellationToken ct)
+            {
+                var services = await Api.GetStatusAsync(ct);     // throws, or never answers: a retry row
+                return [.. services.Where(s => s.Name.Contains(query)).Select(ToCommand)];
+            }
+        }
+        """;
+
     private const string RegistrationExample = """
         builder.Services.AddBitBaletteServices(options =>
         {
@@ -156,17 +304,23 @@
                 Prefix = "@",
                 Name = "People",
                 Description = "Find a teammate",
+                Placeholder = "Search people…",
                 HideRegistryCommands = true,       // only the source's rows
                 Sources = [new PeopleSource()],
             });
 
             options.Sources.Add(new DocsSource()); // also asked in the default mode
-            options.DebounceMs = 150;
+            options.DebounceMs = 150;              // quiet time before a source is asked
+            options.SourceTimeoutMs = 10_000;      // 0 waits for ever
         });
+
+        builder.Services.AddBitBaletteSource<OrdersSource>(); // a default-mode source resolved from DI
 
         public sealed class PeopleSource : IBaletteSource
         {
-            public string Name => "People";
+            public string Name => "People";        // the group heading of its results
+            public int MinQueryLength => 1;        // 0 also asks on the empty query
+            public int MaxResults => 20;
             public bool ApplyMatcher => true;      // re-rank with the palette's matcher
 
             public async Task<IReadOnlyList<BaletteCommand>> SearchAsync(
@@ -179,18 +333,113 @@
         }
         """;
 
-    // The delays the demo's sources simulate (Services/FakeData.cs); nothing in IBaletteSource reports one.
+    // The delays the demo's sources simulate (Services/FakeData.cs and this page); nothing in IBaletteSource reports one.
     private static readonly Dictionary<string, int> Latency = new()
     {
         ["People"] = 250,
         ["Issues"] = 180,
         ["Documentation"] = 300,
+        ["Packages"] = 200,
+        ["Service status"] = 200,
     };
+
+    private string _statusBehaviour = "answers";
+    private IDisposable? _packagesMode;
+    private IDisposable? _statusSource;
+    private bool _registered;
 
     protected override void OnInitialized()
     {
         SourceLog.Changed += Refresh;
         Palette.CommandsChanged += Refresh;
+        Register();
+    }
+
+    private void Register()
+    {
+        _packagesMode = Palette.RegisterMode(new BaletteCommandMode
+        {
+            Prefix = "$",
+            Name = "Packages",
+            Description = $"Browse {Packages.Length} packages, {PageSize} at a time",
+            Placeholder = "Search packages…",
+            HideRegistryCommands = true,
+            Sources = [new BaletteDelegateSource("Packages", SearchPackagesAsync, minQueryLength: 0, maxResults: PageSize)],
+        });
+        _statusSource = Palette.RegisterSource(new StatusSource(SourceLog, () => _statusBehaviour));
+        _registered = true;
+    }
+
+    private void ToggleRegistrations()
+    {
+        if (_registered)
+        {
+            _packagesMode?.Dispose();
+            _statusSource?.Dispose();
+            _registered = false;
+        }
+        else
+        {
+            Register();
+        }
+    }
+
+    /// <summary>
+    /// One page of the packages matching the query. The cursor is the offset of the page, which a real API would hand out
+    /// as an opaque token; the total is how many matched, which the "Show 50 more…" row counts down from.
+    /// </summary>
+    private async Task<BaletteSourcePage> SearchPackagesAsync(string query, string? cursor, BaletteSourceContext context, CancellationToken cancellationToken)
+    {
+        var offset = int.TryParse(cursor, NumberStyles.None, CultureInfo.InvariantCulture, out var from) ? from : 0;
+        var hits = Packages.Where(p => p.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+        var label = cursor is null ? query : $"{query} (page from #{offset + 1})";
+
+        var commands = await SourceLog.TrackAsync("Packages", label, async ct =>
+        {
+            await Task.Delay(200, ct);
+            return (IReadOnlyList<BaletteCommand>)[.. hits.Skip(offset).Take(PageSize).Select(name => BaletteCmd.New(name)
+                .Id($"package:{name}")
+                .Subtitle($"{2 + name.Length % 5}.{name.Length % 10}.0 · {(name.Length * 7919 % 900) + 100}k downloads")
+                .Kind(BaletteCommandKind.Navigation)
+                .Handler(_ => Task.FromResult(BaletteCommandResult.Toast($"Opened {name}")))
+                .Build())];
+        }, cancellationToken);
+
+        var next = offset + PageSize < hits.Count ? (offset + PageSize).ToString(CultureInfo.InvariantCulture) : null;
+        return new BaletteSourcePage(commands, next, hits.Count);
+    }
+
+    /// <summary>A default-mode source whose behaviour the page picks: it answers, throws, or never answers.</summary>
+    private sealed class StatusSource(SourceLog log, Func<string> behaviour) : IBaletteSource
+    {
+        public string Name => "Service status";
+
+        public Task<IReadOnlyList<BaletteCommand>> SearchAsync(string query, BaletteSourceContext context, CancellationToken cancellationToken)
+            => log.TrackAsync(Name, query, async ct =>
+            {
+                switch (behaviour())
+                {
+                    case "throws":
+                        await Task.Delay(200, ct);
+                        throw new HttpRequestException("502 Bad Gateway from status.internal");
+                    case "hangs":
+                        // Honours its token, which the palette cancels when SourceTimeoutMs passes.
+                        await Task.Delay(Timeout.Infinite, ct);
+                        break;
+                }
+
+                // Like a status page: "status" lists every service, a service's name that one.
+                await Task.Delay(200, ct);
+                var everything = query.Contains("status", StringComparison.OrdinalIgnoreCase);
+                return (IReadOnlyList<BaletteCommand>)[.. ServiceStates
+                    .Where(s => everything || s.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
+                    .Select(s => BaletteCmd.New(s.Name)
+                        .Id($"status:{s.Name}")
+                        .Subtitle(s.State)
+                        .ExcludeFromHistory()
+                        .Handler(_ => Task.FromResult(BaletteCommandResult.Toast($"{s.Name}: {s.State}", keepOpen: true)))
+                        .Build())];
+            }, cancellationToken);
     }
 
     private IEnumerable<(IBaletteSource Source, string Where)> AllSources()
@@ -213,6 +462,7 @@
     {
         SourceCallOutcome.Completed => "bb-badge bb-badge-success",
         SourceCallOutcome.Cancelled => "bb-badge bb-badge-warn",
+        SourceCallOutcome.Failed => "bb-badge bb-badge-danger",
         _ => "bb-badge",
     };
 
@@ -242,5 +492,7 @@
     {
         SourceLog.Changed -= Refresh;
         Palette.CommandsChanged -= Refresh;
+        _packagesMode?.Dispose();
+        _statusSource?.Dispose();
     }
 }

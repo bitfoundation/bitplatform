@@ -40,6 +40,14 @@ public class BaletteComponentTests : BunitContext
     }
 
     [TestMethod]
+    public void The_dialog_says_when_its_browser_layer_listens_for_keys()
+    {
+        var cut = RenderPalette();
+
+        cut.WaitForAssertion(() => Assert.AreEqual("true", cut.Find("dialog").GetAttribute("data-ready")));
+    }
+
+    [TestMethod]
     public async Task Opening_lists_registered_commands_grouped()
     {
         _service.Register(

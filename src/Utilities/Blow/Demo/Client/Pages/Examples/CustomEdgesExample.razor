@@ -3,28 +3,68 @@
 <PageTitle>Custom Edges · Blow</PageTitle>
 
 <ExampleScaffold Title="Custom Edges"
-                 Summary="A custom EdgeTemplate built on BlowBaseEdge: the stroke color and width come from each edge's data, and selected edges thicken. Connection lines use the same smooth-step style.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
-                DefaultEdgeType="BlowEdgeType.SmoothStep" ConnectionLineType="BlowEdgeType.SmoothStep">
-        <EdgeTemplate Context="ctx">
-            <BlowBaseEdge Path="@ctx.Geometry.Path"
-                      Stroke="@(EdgeColor(ctx.Edge))"
-                      StrokeWidth="@(ctx.Edge.Selected ? 4 : 2)"
-                      Label="@ctx.Edge.Label"
-                      LabelX="@ctx.Geometry.LabelX"
-                      LabelY="@ctx.Geometry.LabelY" />
-        </EdgeTemplate>
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
-            <BlowMiniMap />
-        </ChildContent>
-    </BlowCanvas>
+                 Summary="An EdgeTemplate draws every edge itself, here with BlowBaseEdge: each edge's colour comes from its Data, a selected edge thickens, and the label is drawn with BlowEdgeText on a plate tinted to match. Whatever the template leaves out - the arrowheads, say - the edge does not have.">
+    <Toolbar>
+        <label><input type="checkbox" @bind="_arrowheads" /> Arrowheads</label>
+        <label><input type="checkbox" @bind="_tintedLabels" /> Tinted labels</label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    DefaultEdgeType="BlowEdgeType.SmoothStep" ConnectionLineType="BlowEdgeType.SmoothStep">
+            <EdgeTemplate Context="ctx">
+                @{
+                    var colour = EdgeColour(ctx.Edge);
+                    var tinted = _tintedLabels && !string.IsNullOrEmpty(ctx.Edge.Label);
+                }
+                @* A custom edge has arrowheads only if it passes on the url the context resolved for it. *@
+                <BlowBaseEdge Path="@ctx.Path"
+                              Stroke="@colour"
+                              StrokeWidth="@(ctx.Edge.Selected ? 4 : 2)"
+                              MarkerEnd="@(_arrowheads ? ctx.MarkerEndUrl : null)"
+                              Label="@(tinted ? null : ctx.Edge.Label)"
+                              LabelX="@ctx.LabelX"
+                              LabelY="@ctx.LabelY" />
+                @if (tinted)
+                {
+                    @* BlowBaseEdge's label is the plain one; BlowEdgeText draws the same label with styles of its own. *@
+                    <BlowEdgeText X="ctx.LabelX" Y="ctx.LabelY"
+                                  Label="@ctx.Edge.Label"
+                                  Style="@($"fill:{colour};font-weight:600")"
+                                  BgStyle="@($"fill:color-mix(in srgb, {colour} 14%, var(--bit-blow-surface));fill-opacity:1;stroke:{colour};stroke-width:1")"
+                                  PaddingX="6"
+                                  PaddingY="3"
+                                  BorderRadius="8" />
+                }
+            </EdgeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+                <BlowMiniMap />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Each edge is drawn in the colour its data names, with its label on a plate tinted to match.</li>
+        <li><strong>Click</strong> an edge: it thickens to 4 pixels and takes the selection colour.</li>
+        <li>Untick <strong>Arrowheads</strong>: the template stops passing the arrowhead on, and every edge loses it, although each edge still asks for one.</li>
+        <li>Untick <strong>Tinted labels</strong>: the labels fall back to the plain plate <code>BlowBaseEdge</code> draws.</li>
+        <li><strong>Drag</strong> from a node's bottom dot to another node's top dot: the new edge is a smooth step, drawn by the same template in the theme's edge colour, since it carries no data.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>EdgeTemplate</code> replaces how every edge is drawn. It receives a <code>BlowEdgeContext</code>: the <code>Edge</code>, its computed <code>Path</code>, <code>LabelX</code> and <code>LabelY</code>, its two anchors and sides, and <code>MarkerStartUrl</code> / <code>MarkerEndUrl</code>.</li>
+        <li><code>BlowBaseEdge</code> draws the standard edge from a <code>Path</code>: the visible line with its <code>Stroke</code> and <code>StrokeWidth</code> (1.5 by default), the arrowheads given as <code>MarkerStart</code> and <code>MarkerEnd</code>, an optional plain <code>Label</code> at <code>LabelX</code>, <code>LabelY</code>, and an invisible <code>InteractionWidth</code>-wide path (14) that takes the clicks.</li>
+        <li>The colour is the edge's <code>Data</code> - any object of yours, here a CSS colour string - with <code>var(--bit-blow-edge-stroke)</code> for an edge without one. <code>Edge.Selected</code> picks the width; the canvas's selection colour still overrides the stroke.</li>
+        <li><code>MarkerEndUrl</code> is a ready-made <code>url(#...)</code> to the arrowhead the edge's <code>MarkerEnd</code>, <code>MarkerType</code> and colour settings ask for, so the template never needs the generated marker ids. Passing null leaves the edge without one.</li>
+        <li><code>BlowEdgeText</code> draws a label on its own plate at any point: <code>X</code>, <code>Y</code>, <code>Label</code>, <code>Style</code> for the text, <code>BgStyle</code> for the plate, <code>PaddingX</code>, <code>PaddingY</code>, <code>BorderRadius</code> and <code>ShowBg</code>.</li>
+        <li><code>DefaultEdgeType</code> and <code>ConnectionLineType</code> make new edges, and the line drawn while connecting, smooth steps like the edges already there. Around the template's markup the canvas still draws the selectable, focusable edge group.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 @code {
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+    private bool _arrowheads = true;
+    private bool _tintedLabels = true;
 
     protected override void OnInitialized()
     {
@@ -35,14 +75,15 @@
             new BlowNode { Id = "3", Label = "Path B", Position = new(420, 160) },
             new BlowNode { Id = "4", Type = "output", Label = "End", Position = new(250, 310) },
         ];
+        // Smooth-step like the edges drawn later: DefaultEdgeType applies to new edges only.
         _edges =
         [
-            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "warm", Data = "#ef4444" },
-            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Label = "cool", Data = "#3b82f6" },
-            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Label = "ok", Data = "#22c55e" },
-            new BlowEdge { Id = "e3-4", Source = "3", Target = "4", Label = "ok", Data = "#22c55e" },
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "warm", Type = BlowEdgeType.SmoothStep, Data = "#ef4444" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Label = "cool", Type = BlowEdgeType.SmoothStep, Data = "#3b82f6" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Label = "ok", Type = BlowEdgeType.SmoothStep, Data = "#22c55e" },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4", Label = "ok", Type = BlowEdgeType.SmoothStep, Data = "#22c55e" },
         ];
     }
 
-    private string EdgeColor(BlowEdge e) => (e.Data as string) ?? "var(--bit-blow-edge-stroke)";
+    private static string EdgeColour(BlowEdge edge) => (edge.Data as string) ?? "var(--bit-blow-edge-stroke)";
 }

@@ -55,6 +55,8 @@ export interface InteractionsConfig {
     events: string[];
     captureText: boolean;
     maxTextLength: number;
+    /** Whether 3 clicks on one element within a second also emit a `browser.rage_click` event. */
+    rageClicks: boolean;
 }
 
 export interface PerformanceConfig {
@@ -73,6 +75,10 @@ export interface DependenciesConfig {
 
 export interface ErrorsConfig {
     ignoreMessages: string[];
+    /** How long an error identical to one just recorded is suppressed; 0 records every occurrence. */
+    duplicateWindowMs: number;
+    /** The most error records per minute (with a burst of as many); 0 is unlimited. */
+    maxPerMinute: number;
 }
 
 export interface LogsConfig {
@@ -88,6 +94,8 @@ export interface PrivacyConfig {
     collectUserAgent: boolean;
     /** Attribute keys removed from every record (exact match). */
     blockedAttributes: string[];
+    /** Attribute names whose values become REDACTED: the whole key or its last segment, case-insensitive; `prefix*`. */
+    redactedAttributes: string[];
 }
 
 export interface SessionConfig {
@@ -132,6 +140,8 @@ export interface ResolvedConfig {
     sampling: SamplingConfig;
     batch: BatchConfig;
     persistence: PersistenceConfig;
+    /** The longest string kept in an attribute, a body or a status message; 0 keeps strings whole. */
+    maxValueLength: number;
     debug: boolean;
 }
 
@@ -150,24 +160,28 @@ export function createDefaults(): ResolvedConfig {
         features: Features.All,
         consent: { default: Features.None, persist: true, honorGlobalPrivacyControl: true, pendingLimit: 500 },
         pageViews: { trackHashChanges: false, trackVisitTime: false },
-        interactions: { events: ['click'], captureText: false, maxTextLength: 64 },
+        interactions: { events: ['click'], captureText: false, maxTextLength: 64, rageClicks: true },
         performance: { webVitals: true, documentLoad: true, resources: false, longTasks: false },
         dependencies: { fetch: true, xhr: true, propagateTraceContextTo: ['same-origin'], ignoreUrls: ['/_framework/', '/_blazor', '/_content/'] },
-        errors: { ignoreMessages: ['ResizeObserver loop'] },
+        errors: { ignoreMessages: ['ResizeObserver loop', '^Script error\\.?$'], duplicateWindowMs: 5000, maxPerMinute: 100 },
         logs: { captureConsole: false, consoleLevels: ['error', 'warn'] },
         privacy: {
             redactQueryParameters: ['token', 'code', 'password', 'pwd', 'secret', 'key', 'apikey', 'api_key', 'auth', 'authorization', 'session', 'sid', 'sig',
-                'signature', 'email', 'access_token', 'id_token', 'refresh_token'],
+                'signature', 'email', 'access_token', 'id_token', 'refresh_token', 'x-amz-signature', 'x-amz-credential', 'x-amz-security-token',
+                'x-goog-signature', 'x-goog-credential'],
             stripQueryString: false,
             stripFragment: true,
             scrubPatterns: true,
             collectUserAgent: true,
             blockedAttributes: [],
+            redactedAttributes: ['password', 'passwd', 'pwd', 'secret', 'client_secret', 'token', 'access_token', 'refresh_token', 'id_token',
+                'apikey', 'api_key', 'x-api-key', 'authorization', 'proxy-authorization', 'cookie', 'set-cookie'],
         },
         session: { inactivityTimeoutMinutes: 30, maxDurationMinutes: 1440 },
         sampling: { sessionRatio: 1 },
         batch: { maxQueueSize: 1024, maxBatchSize: 100, flushIntervalMs: 5000 },
         persistence: { enabled: true, maxBytes: 1048576, maxAgeHours: 48, retryIntervalMs: 60000 },
+        maxValueLength: 32768,
         debug: false,
     };
 }

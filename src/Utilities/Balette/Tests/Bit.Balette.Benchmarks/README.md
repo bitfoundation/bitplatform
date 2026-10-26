@@ -22,7 +22,9 @@ matcher therefore sees real word boundaries, shared prefixes and near misses.
 | `FuzzyMatcherBenchmarks` | `BaletteFuzzyMatcher.Match` on one field: short and long queries, titles, a description and a 2,000-character text, smart case, non-ASCII text, and the fast reject of a query that is not a subsequence. It runs for every searchable field of every command on every keystroke. |
 | `CommandMatchBenchmarks` | Matching one command that has every searchable field populated, for single and multi-term queries and the `'exact`, `^prefix`, `suffix$` and `!negate` operators. Each query is matched once parsed in advance, as the palette does, and once through the public string overload, which parses it on every call. |
 | `RankerBenchmarks` | `BaletteRanker.Rank` over 200, 2,000 and 20,000 matches: the public overload, which sorts everything; the best 150 (`MaxResults`), which is what the palette asks for; and the empty query, where only priority and frecency decide. |
-| `KeystrokeBenchmarks` | One keystroke end to end over 200, 2,000 and 20,000 commands: snapshot the registry, parse the query once, match every command and rank the matches down to 150. It covers an empty query, a first keystroke, a word, two terms and a query that matches nothing. |
+| `KeystrokeBenchmarks` | One keystroke end to end over 200, 2,000 and 20,000 commands, as `Balette.Rebuild` runs it: parse the query once, match the root page's commands and the nested ones found from the root, and rank the matches down to 150. The registry snapshot is taken once, outside the keystroke, as the palette does. It covers an empty query, a first keystroke, a word, two terms and a query that matches nothing. |
+| `NestedKeystrokeBenchmarks` | The same keystroke over 2,000 and 20,000 commands of which a quarter are nested two levels deep, so the nested-search pass (an ancestor chain per command, one more field to match) is measured on real work. |
+| `SnapshotBenchmarks` | The registry snapshot the palette takes when the registry changed - no longer on every keystroke. |
 | `ShortcutBenchmarks` | Parsing shortcut strings (`Mod+K`, `Ctrl+Shift+P`, `G I`) and computing the normalized form a pressed shortcut is compared against. This is not on the search path; it is here to show it stays negligible. |
 
 ## Running it
@@ -44,6 +46,23 @@ dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -
 Run with no `--filter` to get an interactive picker. Results (Markdown, CSV and HTML reports) are written to
 `BenchmarkDotNet.Artifacts` in the current directory. In the keystroke results the empty query shows as an empty
 `Query` cell.
+
+## The snapshot change (2026-10)
+
+The palette used to re-read the registry (copy it, rebuild its id and parent sets) and re-sync its global shortcuts on
+every keystroke; it now does so only when the registry changes. Measured with the short job on an AMD Ryzen 7 6800H,
+.NET 10.0.13, against the code before the change built and run the same way:
+
+| Commands | Query | Before | After | Allocated before | Allocated after |
+| ---: | --- | ---: | ---: | ---: | ---: |
+| 2,000 | `sett` | 906 us | 920 us | 124 KB | 81 KB |
+| 20,000 | `qjz` | 4.4 ms | 4.7 ms | 670 KB | 0.6 KB |
+| 20,000 | `sett` | 9.8 ms | 9.5 ms | 1.26 MB | 622 KB |
+| 20,000 | `open sett` | 10.5 ms | 8.9 ms | 944 KB | 285 KB |
+
+Time is within the noise of a short run either way - the keystroke now also runs normalization and the nested-search
+pass - while the garbage a keystroke leaves drops by half or more; the snapshot itself costs 1.2 ms at 20,000 commands,
+once per registry change. The tables below predate the change and were captured on another machine.
 
 ## Indicative results
 

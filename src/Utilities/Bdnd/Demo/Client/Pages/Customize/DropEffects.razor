@@ -6,29 +6,25 @@
     <h1>Customize - Drop Effects</h1>
     <p class="bb-subtitle">
         A drag source can advertise a drop effect through <code>DropEffect</code>, which sets the
-        native <code>dataTransfer.effectAllowed</code>. Drag the two boxes below and watch the
-        cursor: the <em>copy</em> box shows a “+” badge, the <em>move</em> box does not.
+        native <code>dataTransfer.effectAllowed</code>. Drag the boxes below and watch the
+        cursor over the bin: the <em>copy</em> box shows a “+” badge, the <em>move</em> box does not, and the
+        <em>link</em> box shows a shortcut arrow. The <em>copyMove</em> box allows both: it moves, and holding
+        <kbd>Ctrl</kbd> (<kbd>⌥</kbd> on macOS) while dragging turns it into a copy. Over a target that cannot take the
+        box - or over no target at all - the cursor is the no-drop one whatever the effect.
     </p>
 </div>
-
-<DemoCode />
 
 <div class="bb-demo">
     <BdndProvider>
         <div class="row-wrap">
-            <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("copy")"
-                           DropEffect="copy" Context="d">
-                <div class="box" style="width:11rem;opacity:@(d.IsDragging ? "0.4" : "1")">
-                    Copy me (effect = copy)
-                </div>
-            </BdndDraggable>
-
-            <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("move")"
-                           DropEffect="move" Context="d">
-                <div class="box" style="width:11rem;opacity:@(d.IsDragging ? "0.4" : "1")">
-                    Move me (effect = move)
-                </div>
-            </BdndDraggable>
+            @foreach (var effect in Effects)
+            {
+                <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="effect" DropEffect="@effect" Context="d">
+                    <div class="box" style="width:11rem;opacity:@(d.IsDragging ? "0.4" : "1")">
+                        @Verb(effect) me (effect = @effect)
+                    </div>
+                </BdndDraggable>
+            }
         </div>
 
         <BdndDropTarget TItem="string" Accept="@ItemTypes.Box" Context="t"
@@ -40,14 +36,28 @@
     </BdndProvider>
 </div>
 
+<DemoCode />
+
 <div class="bb-note">
-    The browser only offers the effects a source allows. With <code>DropEffect="copyMove"</code>
-    the user can switch to copying by holding <kbd>Ctrl</kbd> (<kbd>⌥</kbd> on macOS) during the drag;
-    the boxes above allow a single effect each, so modifier keys do not change them.
+    The browser only offers the effects a source allows, and draws the cursor from them: <code>move</code> (the
+    default), <code>copy</code>, <code>link</code>, or a pair the user picks from with a modifier key -
+    <code>copyMove</code>, <code>copyLink</code>, <code>linkMove</code> and <code>all</code>. A source that allows a
+    single effect is not changed by modifier keys. The effect is the browser's feedback only: what a drop does is up
+    to the code - see <a href="dustbin/copy-or-move">copy or move</a>, where <code>OnEnd</code> removes the moved box.
 </div>
 
 @code {
+    private static readonly string[] Effects = ["copy", "move", "link", "copyMove"];
+
     private string? _last;
 
     private void HandleDrop(BdndDropEventArgs<string> e) => _last = e.Item;
+
+    private static string Verb(string effect) => effect switch
+    {
+        "copy" => "Copy",
+        "move" => "Move",
+        "link" => "Link",
+        _ => "Copy or move",
+    };
 }

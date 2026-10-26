@@ -32,8 +32,9 @@ public partial class McpSearchTests
         ("minimap", "Mini map"),
         ("coming from react flow", "Coming from React Flow"),
         ("stylesheet link", "Setup checklist"),
-        // The stylesheet's classes are one hit between them, so the first focus rule stands for them all.
-        ("focus outline", ":focus-visible"),
+        // The stylesheet's classes are one hit between them, so the first focus rule stands for them all - whichever
+        // it is, :focus or :focus-visible.
+        ("focus outline", ":focus"),
     ];
 
     [TestMethod]

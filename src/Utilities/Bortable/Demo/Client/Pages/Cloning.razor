@@ -5,62 +5,97 @@
 <div class="bb-intro">
     <h1>Cloning</h1>
     <p class="bb-subtitle">
-        Drag from the Source list to the Target. With <code>Pull="BortablePull.Clone"</code> the item is copied
-        into the Target and the original stays in the Source - so the same item can be cloned again and again.
+        Drag from the Source list to the Target. With <code>Pull="BortablePull.Clone"</code> a copy of the item goes into
+        the Target and the original stays in the Source - so the same item can be cloned again and again. The
+        <code>Clone</code> factory makes the copy.
     </p>
 </div>
 
-<DemoCode />
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A clone source</h3>
+    <p class="bb-card-desc">
+        The Source still sorts within itself and takes items back from the Target - only what leaves it is a copy. The
+        Target is an ordinary list: what is dragged out of it moves.
+    </p>
 
-<div class="bb-demo">
-    <div class="demo-columns">
-        <div class="demo-col">
-            <div class="demo-col-title">Source (clone)</div>
-            <Bortable @bind-Items="_left" TItem="CloneDemoItem" Group="clone-shared" Id="clone-source"
-                      Pull="BortablePull.Clone" Clone="Duplicate"
-                      Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-                <ItemTemplate Context="item">@item.Name</ItemTemplate>
-            </Bortable>
-        </div>
-        <div class="demo-col">
-            <div class="demo-col-title">Target</div>
-            <Bortable @bind-Items="_right" TItem="CloneDemoItem" Group="clone-shared" Id="clone-target"
-                      Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
-                <ItemTemplate Context="item">@item.Name</ItemTemplate>
-            </Bortable>
-        </div>
+    <div class="bb-demo">
+        <CloneSource />
     </div>
 
-    <p class="demo-order"><strong>Source:</strong> <span id="clone-source-order">@string.Join(", ", _left.Select(i => i.Name))</span></p>
-    <p class="demo-order"><strong>Target:</strong> <span id="clone-target-order">@string.Join(", ", _right.Select(i => i.Name))</span></p>
-</div>
+    <DemoCode For="typeof(CloneSource)" />
+</section>
 
-@code {
-    private IList<CloneDemoItem> _left = new List<CloneDemoItem>
-    {
-        new() { Name = "Apple" },
-        new() { Name = "Banana" },
-        new() { Name = "Cherry" },
-        new() { Name = "Date" },
-        new() { Name = "Elderberry" },
-    };
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A read-only palette</h3>
+    <p class="bb-card-desc">
+        A form builder: the palette is a plain array. A read-only list - an array, a <code>ReadOnlyCollection&lt;T&gt;</code>,
+        an <code>ImmutableList&lt;T&gt;</code> - is shown and can be cloned from, but it is never sorted, never pulled
+        from and never dropped into, so the palette needs no <code>Sort</code> or <code>Put</code> of its own and is
+        bound one way, with <code>Items</code>. Every field dropped into the form is a new object, so the same field can
+        be added twice.
+    </p>
 
-    private IList<CloneDemoItem> _right = new List<CloneDemoItem>
-    {
-        new() { Name = "Item 1" },
-        new() { Name = "Item 2" },
-        new() { Name = "Item 3" },
-        new() { Name = "Item 4" },
-        new() { Name = "Item 5" },
-        new() { Name = "Item 6" },
-    };
+    <div class="bb-demo">
+        <FormBuilder />
+    </div>
 
-    // Produce a distinct object for every clone so each has a unique @key.
-    private CloneDemoItem Duplicate(CloneDemoItem item) => new() { Name = item.Name };
+    <DemoCode For="typeof(FormBuilder)" />
+</section>
 
-    // Reference type: default (reference) equality keeps every clone's @key unique.
-    public sealed class CloneDemoItem
-    {
-        public required string Name { get; init; }
-    }
-}
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>
+            Drag <em>Cherry</em> into the Target twice: two Cherries arrive, and the Source keeps its own. With the mouse,
+            the cursor shows a copy while the item is over the Target.
+        </li>
+        <li>Drag a Cherry from the Target back into the Source: it moves - the Target's own pull is the default, <code>Move</code>.</li>
+        <li>Drag <em>Banana</em> down the Source: it sorts as usual.</li>
+        <li>
+            Build a form from the palette, the same field more than once. The palette never changes, and
+            <strong>Last added</strong> comes from <code>OnAdd</code>, whose <code>IsClone</code> says the field is a copy.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How it works</h3>
+    <ul class="bb-detail-list">
+        <li>
+            The copy must be a distinct object: Blazor needs a unique <code>@@key</code> per item, so a copy that
+            <em>equals</em> an item already in the target is refused. That is why the items here are classes, compared by
+            reference - two records with the same values would be equal, and the second one refused.
+        </li>
+        <li>
+            Without a <code>Clone</code> factory, an item that implements <code>ICloneable</code> is copied with
+            <code>Clone()</code>, and anything else is shared as it is - fine for an immutable reference type, refused for
+            a value-equal duplicate such as the same string twice.
+        </li>
+        <li>
+            In the events that follow the drop, <code>Item</code> is the copy and <code>IsClone</code> is
+            <code>true</code>; <code>OnRemove</code> is not raised, because nothing left the source.
+        </li>
+        <li>
+            Combined with <a href="swap">swap mode</a>, a clone source gives its item away in the swap rather than a copy;
+            combined with <a href="multi-drag">multi-drag</a>, dragging into another list clones only the dragged item.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Parameters on this page</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>Here</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Pull</code></td><td><code>BortablePull.Clone</code></td><td>Items leave this list as copies; the originals stay. The other values are <code>Move</code> (the default) and <code>None</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>Clone</code></td><td><code>Duplicate</code>, <code>f =&gt; new Field(...)</code></td><td>The factory that makes the copy.</td></tr>
+                <tr><td class="bb-table-key"><code>Items</code></td><td><code>_palette</code>, an array</td><td>A read-only list: shown, cloned from, never changed.</td></tr>
+                <tr><td class="bb-table-key"><code>ItemLabel</code></td><td><code>f =&gt; f.Label</code></td><td>How announcements name an item; its <code>ToString()</code> without it.</td></tr>
+                <tr><td class="bb-table-key"><code>OnAdd</code></td><td><code>OnFieldAdded</code></td><td>Raised on the list an item was dropped into from another list.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>

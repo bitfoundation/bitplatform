@@ -16,6 +16,7 @@ public class BitAssembliesTests
             .Where(project => Path.GetRelativePath(src.FullName, project).Split(Path.DirectorySeparatorChar)
                 .Any(folder => folder is "Demo" or "Tests" or "tests" or "Samples" or "bin" or "obj" or "node_modules" || folder.Contains(".Demo", StringComparison.Ordinal)) is false)
             .Where(project => File.ReadAllText(project).Contains("<IsPackable>false</IsPackable>", StringComparison.Ordinal) is false)
+            .Where(project => File.ReadAllText(project).Contains("<PackAsTool>true</PackAsTool>", StringComparison.Ordinal) is false)
             .Select(project => Path.GetFileNameWithoutExtension(project))
             .Where(name => name.EndsWith("Generators", StringComparison.Ordinal) is false)
             .ToList();

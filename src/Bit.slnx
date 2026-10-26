@@ -184,6 +184,25 @@
     <Project Path="Utilities/Balette/Demo/Client/Bit.Balette.Demo.Client.csproj" />
     <Project Path="Utilities/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Balette/Samples/">
+    <Project Path="Utilities/Balette/Samples/Maui/Bit.Balette.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/Balette/Samples/Auto/">
+    <Project Path="Utilities/Balette/Samples/Auto/Bit.Balette.Samples.Auto/Bit.Balette.Samples.Auto.csproj" />
+    <Project Path="Utilities/Balette/Samples/Auto/Bit.Balette.Samples.Auto.Client/Bit.Balette.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Balette/Samples/Core/">
+    <Project Path="Utilities/Balette/Samples/Core/Bit.Balette.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Balette/Samples/Server/">
+    <Project Path="Utilities/Balette/Samples/Server/Bit.Balette.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Balette/Samples/Wasm/">
+    <Project Path="Utilities/Balette/Samples/Wasm/Bit.Balette.Samples.Wasm/Bit.Balette.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Balette/Samples/Wasm/Bit.Balette.Samples.Wasm.Client/Bit.Balette.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Balette/Tests/">
     <Project Path="Utilities/Balette/Tests/Bit.Balette.Tests/Bit.Balette.Tests.csproj" />
     <Project Path="Utilities/Balette/Tests/Bit.Balette.Tests.Mcp/Bit.Balette.Tests.Mcp.csproj" />
@@ -217,6 +236,7 @@
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj" />
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj" />
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj" />
+    <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.Harness.Hybrid/Bit.Bdnd.Tests.Harness.Hybrid.csproj" />
   </Folder>
   <Folder Name="/Utilities/BlazeDb/">
     <File Path="Utilities/BlazeDb/README.md" />
@@ -246,6 +266,7 @@
     <Project Path="Utilities/Blow/Tests/Bit.Blow.Tests/Bit.Blow.Tests.csproj" />
     <Project Path="Utilities/Blow/Tests/Bit.Blow.Tests.Mcp/Bit.Blow.Tests.Mcp.csproj" />
     <Project Path="Utilities/Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj" />
+    <Project Path="Utilities/Blow/Tests/Bit.Blow.Benchmarks/Bit.Blow.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/Utilities/Borm/">
     <File Path="Utilities/Borm/README.md" />
@@ -289,6 +310,7 @@
   <Folder Name="/Utilities/Bonboarding/Tests/">
     <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
     <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.Mcp/Bit.Bonboarding.Tests.Mcp.csproj" />
+    <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E/Bit.Bonboarding.Tests.E2E.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bortable/">
     <File Path="Utilities/Bortable/README.md" />
@@ -415,9 +437,9 @@
     <File Path="Bswup/README.md" />
     <Project Path="Bswup/Bit.Bswup/Bit.Bswup.csproj" />
   </Folder>
-  <Folder Name="/Bswup/Bit.Bswup.Demo/">
-    <Project Path="Bswup/Bit.Bswup.Demo/Client/Bit.Bswup.Demo.Client.csproj" />
-    <Project Path="Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj" />
+  <Folder Name="/Bswup/Demo/">
+    <Project Path="Bswup/Demo/Client/Bit.Bswup.Demo.Client.csproj" />
+    <Project Path="Bswup/Demo/Server/Bit.Bswup.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Bswup/Tests/">
     <Project Path="Bswup/Tests/Bit.Bswup.Tests.Mcp/Bit.Bswup.Tests.Mcp.csproj" />

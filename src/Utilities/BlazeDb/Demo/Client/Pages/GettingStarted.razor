@@ -31,11 +31,18 @@
     <CodeBlock Title="Quick start" Code="@QuickStartSnippet" />
     <Callout Tone="warn" Title="Rows are live objects.">
         A read hands back the instance the table holds, so <code>Update</code> takes a <em>new</em> instance (as
-        above): the table retracts the old index entries through the values of the row it currently holds. To write
-        a row changed in place, hand the table the values it had with <code>UpdateInPlace(row, previousValues)</code>.
+        above): the table retracts the old index entries through the values of the row it currently holds, and refuses
+        an instance whose indexed values were changed in place. To write a row changed in place, hand the table the
+        values it had with <code>UpdateInPlace(row, previousValues)</code> or <code>DeleteInPlace(key, previousValues)</code>.
+    </Callout>
+    <Callout Tone="info" Title="Null values are indexed like any other.">
+        A lookup with a null key returns the rows whose value is null, an ordered index lists them first (last when walked
+        descending), and a bounded <code>Range</code> excludes them. A single-property unique index allows any number of
+        nulls; a compound one, like <code>CategoryDone</code> made unique, compares the whole tuple, nulls included.
     </Callout>
     <div class="bb-try">
         <a href="schema" class="btn btn-outline">What the generator emits →</a>
+        <a href="writes" class="btn btn-outline">Every write, and what it promises →</a>
         <a href="todos" class="btn btn-outline">The same calls driving a live app →</a>
     </div>
 </Section>
@@ -47,20 +54,22 @@
         The database does not own its storage: dispose the storage after the database, which is what releases the
         writer lock for the next tab. <code>CreateAsync</code> throws <code>BlazeDbDatabaseLockedException</code>
         when another tab already holds it - open a read-only replica there instead, or fall back to
-        <code>BlazeDbInMemoryStorage</code> the way this site does. There is no script tag to add: each browser
-        backend imports its ES module from <code>_content/Bit.BlazeDb/</code> the first time it is used.
+        <code>BlazeDbInMemoryStorage</code> the way this site does (<a href="tabs">replicas, live</a>). There is no script
+        tag to add: each browser backend imports its ES module from <code>_content/Bit.BlazeDb/</code> the first time it is
+        used.
     </p>
     <Callout Tone="warn" Title="In a Blazor Web App, mind prerendering.">
         A prerendered component runs on the server first, where there is no OPFS, no IndexedDB and no Web Locks.
         Turn prerendering off for the pages that use the database - this site uses
         <code>new InteractiveWebAssemblyRenderMode(prerender: false)</code> for the whole app - or open the database
-        only once the component runs in the browser.
+        only once the component runs in the browser. Blazor Server, MAUI and the desktop persist through
+        <code>BlazeDbFileStorage</code> instead: <a href="hosting">every hosting model, and the threading model behind them</a>.
     </Callout>
 </Section>
 
 <Section Title="How a read and a write travel"
          Lead="Reads stop at the first layer. Only writes continue past it, and never on your thread.">
-    <div class="bd-diagram" role="img" aria-label="A write goes from your component to the in-memory row store and indexes, into the transaction buffer, then on a background loop to the log, snapshot and manifest files, through the four-method storage interface to OPFS, a directory or memory.">
+    <div class="bd-diagram" role="img" aria-label="A write goes from your component to the in-memory row store and indexes, into the transaction buffer, then on a background loop to the log, snapshot and manifest files, through the four-method storage interface to OPFS, IndexedDB, a directory or memory.">
         <div class="bd-dg-row">
             <div class="bd-dg-box">
                 <div class="bd-dg-title"><Icon Name="code" Size="14" /> Your component</div>
@@ -109,6 +118,10 @@
             <div class="bd-dg-box bd-dg-io">
                 <div class="bd-dg-title"><Icon Name="disk" Size="14" /> BlazeDbOpfsStorage</div>
                 <div class="bd-dg-note">Browser, private origin file system</div>
+            </div>
+            <div class="bd-dg-box bd-dg-io">
+                <div class="bd-dg-title"><Icon Name="disk" Size="14" /> BlazeDbIndexedDbStorage</div>
+                <div class="bd-dg-note">Browser, where OPFS cannot be written</div>
             </div>
             <div class="bd-dg-box bd-dg-io">
                 <div class="bd-dg-title"><Icon Name="disk" Size="14" /> BlazeDbFileStorage</div>

@@ -11,6 +11,7 @@
     --bit-borm-border: #d1d5db;
     --bit-borm-border-focus: var(--bit-borm-accent);
     --bit-borm-error: #dc2626;
+    --bit-borm-error-contrast: #ffffff;
     --bit-borm-error-surface: #fef2f2;
     --bit-borm-warning: #d97706;
     --bit-borm-text: #111827;
@@ -42,6 +43,7 @@
         --bit-borm-surface-disabled: #374151;
         --bit-borm-border: #4b5563;
         --bit-borm-error: #f87171;
+        --bit-borm-error-contrast: #111827;
         --bit-borm-error-surface: #2a1215;
         --bit-borm-warning: #fbbf24;
         --bit-borm-text: #f9fafb;
@@ -56,6 +58,7 @@
     --bit-borm-surface-disabled: #374151;
     --bit-borm-border: #4b5563;
     --bit-borm-error: #f87171;
+    --bit-borm-error-contrast: #111827;
     --bit-borm-error-surface: #2a1215;
     --bit-borm-warning: #fbbf24;
     --bit-borm-text: #f9fafb;
@@ -69,6 +72,7 @@
     --bit-borm-surface-disabled: #f3f4f6;
     --bit-borm-border: #d1d5db;
     --bit-borm-error: #dc2626;
+    --bit-borm-error-contrast: #ffffff;
     --bit-borm-error-surface: #fef2f2;
     --bit-borm-warning: #d97706;
     --bit-borm-text: #111827;
@@ -128,6 +132,11 @@
    apply to — every <select>, every file and colour input — so each editable one of those was painted as
    if it were locked. */
 .bit-borm-input[readonly]:not(:disabled) { background: var(--bit-borm-surface-muted); }
+/* A read-only number - a computed total - has no spin buttons to offer: Firefox and Safari drew them all the same,
+   arrows that did nothing on a box that then looked editable. */
+.bit-borm-input[type="number"][readonly] { appearance: textfield; -moz-appearance: textfield; }
+.bit-borm-input[type="number"][readonly]::-webkit-inner-spin-button,
+.bit-borm-input[type="number"][readonly]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .bit-borm-input--invalid { border-color: var(--bit-borm-error); }
 .bit-borm-field--invalid .bit-borm-label { color: var(--bit-borm-error); }
 
@@ -219,8 +228,9 @@ textarea.bit-borm-input { resize: vertical; min-height: 4.5rem; }
 }
 .bit-borm-tag__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bit-borm-tag__remove {
+    /* 24px: WCAG 2.2's minimum target size, met by the target itself rather than by its spacing. */
     display: inline-flex; align-items: center; justify-content: center;
-    inline-size: 1.15rem; block-size: 1.15rem; flex: none;
+    inline-size: 1.5rem; block-size: 1.5rem; flex: none;
     border: none; border-radius: 999px; background: transparent;
     color: var(--bit-borm-muted); font-size: .95rem; line-height: 1; cursor: pointer; padding: 0;
 }
@@ -246,12 +256,29 @@ textarea.bit-borm-input { resize: vertical; min-height: 4.5rem; }
     border-radius: var(--bit-borm-radius); padding: .35rem .6rem;
 }
 .bit-borm-file__size { color: var(--bit-borm-muted); font-variant-numeric: tabular-nums; }
+/* An upload: name and size first, then its progress or its outcome, then what can be done about it. */
+.bit-borm-file__item:has(.bit-borm-file__progress, .bit-borm-file__error, .bit-borm-file__done) { flex-wrap: wrap; align-items: center; justify-content: flex-start; }
+.bit-borm-file__item .bit-borm-file__name { flex: 1 1 auto; overflow-wrap: anywhere; }
+.bit-borm-file__progress { inline-size: 8rem; block-size: .5rem; accent-color: var(--bit-borm-accent); }
+.bit-borm-file__error { color: var(--bit-borm-error); flex-basis: 100%; }
+.bit-borm-file__done { color: var(--bit-borm-accent); font-weight: 600; }
+.bit-borm-file__item .bit-borm-btn { min-block-size: 1.5rem; }
 
 .bit-borm-messages { list-style: none; margin: .15rem 0 0; padding: 0; }
 .bit-borm-message { font-size: .8rem; }
-.bit-borm-message--error { color: var(--bit-borm-error); }
+/* Weight as well as colour, so an error reads as one to someone who cannot tell the colours apart. */
+.bit-borm-message--error { color: var(--bit-borm-error); font-weight: 600; }
 .bit-borm-message--warning { color: var(--bit-borm-warning); }
 .bit-borm-message--info { color: var(--bit-borm-muted); }
+/* The severity in words, from data-severity (localised through the message provider). Generated
+   content is read by screen readers but is no part of the message's text. An error's is read only —
+   the field's own invalid state already shows it — and a warning's or a note's is shown too, since
+   colour is otherwise all that tells them from an error. */
+.bit-borm-message[data-severity]::before { content: attr(data-severity) " "; font-weight: 600; }
+.bit-borm-message--error[data-severity]::before {
+    position: absolute; inline-size: 1px; block-size: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
 
 /* Error summary */
 .bit-borm-summary {
@@ -302,6 +329,98 @@ textarea.bit-borm-input { resize: vertical; min-height: 4.5rem; }
 .bit-borm-array__item-index { font-size: .75rem; font-weight: 600; color: var(--bit-borm-muted); }
 .bit-borm-array__item-actions { display: flex; flex-direction: column; gap: .3rem; }
 .bit-borm-array[disabled] { opacity: .6; }
+/* A paged repeater's pager: every control at least 24px, the success criterion's minimum target. */
+.bit-borm-array__pager { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.bit-borm-array__pager .bit-borm-btn { min-block-size: 1.5rem; }
+.bit-borm-array__page select { width: auto; min-inline-size: 4.5rem; min-block-size: 1.5rem; padding-block: .2rem; }
+.bit-borm-array__range { color: var(--bit-borm-muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+.bit-borm-array__elsewhere { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .4rem; color: var(--bit-borm-error); font-size: .85rem; }
+
+/* Markdown: the text area, a bar beneath it, and the preview */
+.bit-borm-markdown { display: flex; flex-direction: column; gap: .4rem; }
+.bit-borm-markdown__bar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .5rem; }
+.bit-borm-markdown__bar .bit-borm-btn { min-block-size: 1.5rem; }
+.bit-borm-markdown__help { font-size: .85rem; color: var(--bit-borm-muted); }
+/* The browser's own display, which is what draws the disclosure triangle: a flex box has none, and the summary read as
+   a line of plain text rather than something that opens. As wide as its text, a line tall enough to tap. */
+.bit-borm-markdown__help > summary { cursor: pointer; inline-size: fit-content; line-height: 1.5rem; }
+.bit-borm-markdown__help dl { display: grid; grid-template-columns: auto 1fr; gap: .25rem 1rem; margin: .4rem 0 0; }
+.bit-borm-markdown__help dd { margin: 0; }
+.bit-borm-markdown__preview {
+    border: 1px dashed var(--bit-borm-border); border-radius: var(--bit-borm-radius); padding: .6rem .8rem;
+    background: var(--bit-borm-surface); overflow-wrap: anywhere;
+}
+.bit-borm-markdown__preview > :first-child { margin-block-start: 0; }
+.bit-borm-markdown__preview > :last-child { margin-block-end: 0; }
+.bit-borm-markdown__preview blockquote { margin-inline: 0; padding-inline-start: .8rem; border-inline-start: 3px solid var(--bit-borm-border); color: var(--bit-borm-muted); }
+.bit-borm-markdown__preview pre { overflow-x: auto; padding: .5rem; background: var(--bit-borm-surface-muted); border-radius: var(--bit-borm-radius); }
+.bit-borm-markdown__preview a { color: var(--bit-borm-accent); }
+.bit-borm-markdown__empty { color: var(--bit-borm-muted); font-style: italic; margin: 0; }
+
+/* Signature: the pad (no scrolling while drawing on it), what was signed, and its buttons */
+.bit-borm-signature { display: flex; flex-direction: column; gap: .4rem; border-radius: var(--bit-borm-radius); }
+.bit-borm-signature:focus-visible { outline: 2px solid var(--bit-borm-accent); outline-offset: 2px; }
+.bit-borm-signature__pad {
+    display: block; inline-size: 100%; block-size: 10rem; touch-action: none; cursor: crosshair;
+    border: 1px solid var(--bit-borm-border); border-radius: var(--bit-borm-radius); background: var(--bit-borm-surface);
+}
+/* Every pointer event lands on the pad itself, so its offsets are always in the pad's own coordinates. */
+.bit-borm-signature__pad * { pointer-events: none; }
+.bit-borm-signature__pad path { fill: none; stroke: var(--bit-borm-text); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.bit-borm-signature__baseline { stroke: var(--bit-borm-border); stroke-dasharray: 4 4; }
+.bit-borm-signature--invalid .bit-borm-signature__pad { border-color: var(--bit-borm-error); }
+/* The image is dark ink: on a white card it reads in a dark theme too. */
+.bit-borm-signature__image {
+    max-inline-size: 100%; block-size: auto; max-block-size: 10rem; align-self: flex-start;
+    background: #fff; border: 1px solid var(--bit-borm-border); border-radius: var(--bit-borm-radius); padding: .25rem;
+}
+.bit-borm-signature__typed-preview { font-family: "Segoe Script", "Brush Script MT", "Lucida Handwriting", cursive; font-size: 2rem; margin: 0; }
+.bit-borm-signature__actions { display: flex; flex-wrap: wrap; gap: .4rem; }
+.bit-borm-signature__actions .bit-borm-btn { min-block-size: 1.5rem; }
+
+/* The form designer: palette, fields and properties side by side, the preview and the JSON beneath them. It carries
+   .bit-borm-form for the theme's tokens, but not a form's width: the preview inside it is the form. */
+.bit-borm-designer {
+    max-width: none;
+    display: grid; gap: 1rem; align-items: start;
+    grid-template-columns: minmax(10rem, 14rem) minmax(14rem, 1fr) minmax(16rem, 1.3fr);
+    grid-template-areas: "palette fields properties" "preview preview preview" "json json json";
+}
+@media (max-width: 60rem) {
+    .bit-borm-designer { grid-template-columns: minmax(0, 1fr); grid-template-areas: "palette" "fields" "properties" "preview" "json"; }
+}
+.bit-borm-designer > section {
+    min-inline-size: 0; padding: .75rem; background: var(--bit-borm-surface);
+    border: 1px solid var(--bit-borm-border); border-radius: var(--bit-borm-radius);
+}
+.bit-borm-designer__palette { grid-area: palette; }
+.bit-borm-designer__fields { grid-area: fields; }
+.bit-borm-designer__properties { grid-area: properties; }
+.bit-borm-designer__preview { grid-area: preview; }
+.bit-borm-designer__json { grid-area: json; display: flex; flex-direction: column; gap: .5rem; align-items: flex-start; }
+.bit-borm-designer__heading { margin: 0 0 .6rem; font-size: 1rem; }
+.bit-borm-designer__kinds { display: flex; flex-wrap: wrap; gap: .35rem; }
+.bit-borm-designer__kinds .bit-borm-btn, .bit-borm-designer__actions .bit-borm-btn { min-block-size: 1.5rem; min-inline-size: 1.5rem; }
+.bit-borm-designer__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .35rem; }
+.bit-borm-designer__item {
+    display: flex; align-items: center; gap: .4rem; padding: .25rem;
+    background: var(--bit-borm-surface-muted); border: 1px solid var(--bit-borm-border); border-radius: var(--bit-borm-radius);
+}
+.bit-borm-designer__item.is-selected { border-color: var(--bit-borm-accent); border-inline-start-width: 4px; }
+.bit-borm-designer__select {
+    flex: 1; min-inline-size: 0; min-block-size: 1.5rem; display: flex; flex-direction: column; gap: .1rem;
+    padding: .3rem .4rem; text-align: start; color: inherit; font: inherit; cursor: pointer;
+    background: none; border: 0; border-radius: var(--bit-borm-radius);
+}
+.bit-borm-designer__select:focus-visible { outline: 2px solid var(--bit-borm-accent); outline-offset: 1px; }
+.bit-borm-designer__label { font-weight: 600; overflow-wrap: anywhere; }
+.bit-borm-designer__meta { font-size: .8rem; color: var(--bit-borm-muted); overflow-wrap: anywhere; }
+.bit-borm-designer__actions { display: flex; gap: .2rem; flex-shrink: 0; }
+.bit-borm-designer__empty, .bit-borm-designer__note { color: var(--bit-borm-muted); font-size: .85rem; margin: 0 0 .5rem; }
+.bit-borm-designer__error { color: var(--bit-borm-error); font-size: .85rem; margin: 0 0 .5rem; }
+.bit-borm-designer__settings { margin-block-start: .75rem; }
+.bit-borm-designer__settings > summary { cursor: pointer; font-weight: 600; min-block-size: 1.5rem; }
+.bit-borm-designer__json-text { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .8rem; }
 
 /* Buttons */
 .bit-borm-btn {
@@ -315,7 +434,9 @@ textarea.bit-borm-input { resize: vertical; min-height: 4.5rem; }
    result of being pressed (the repeater's reorder arrows) does not drop the user's focus. */
 .bit-borm-btn:disabled, .bit-borm-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
 .bit-borm-btn--primary { background: var(--bit-borm-accent); color: var(--bit-borm-accent-contrast); border-color: var(--bit-borm-accent); }
-.bit-borm-btn--primary:hover:not(:disabled) { background: color-mix(in srgb, var(--bit-borm-accent) 85%, #000); }
+/* The same selector as the generic hover above, so it wins by coming later: with one :not() fewer it lost, and the
+   hovered primary button got the muted surface under its white text - a label that vanished under the pointer. */
+.bit-borm-btn--primary:hover:not(:disabled):not([aria-disabled="true"]) { background: color-mix(in srgb, var(--bit-borm-accent) 85%, #000); }
 .bit-borm-btn--danger { color: var(--bit-borm-error); border-color: color-mix(in srgb, var(--bit-borm-error) 40%, var(--bit-borm-border)); }
 .bit-borm-btn--ghost { border-color: transparent; color: var(--bit-borm-muted); }
 .bit-borm-btn--icon { padding: .3rem .55rem; line-height: 1; }
@@ -336,7 +457,7 @@ textarea.bit-borm-input { resize: vertical; min-height: 4.5rem; }
 .bit-borm-stepper__link {
     display: flex; align-items: center; gap: .5rem;
     background: none; border: none; padding: 0; margin: 0;
-    font: inherit; color: inherit; cursor: pointer; text-align: left;
+    font: inherit; color: inherit; cursor: pointer; text-align: start;
 }
 .bit-borm-stepper__link:hover .bit-borm-stepper__label { text-decoration: underline; }
 .bit-borm-stepper__link:focus-visible { outline: 2px solid var(--bit-borm-accent); outline-offset: 2px; border-radius: var(--bit-borm-radius); }
@@ -344,6 +465,73 @@ textarea.bit-borm-input { resize: vertical; min-height: 4.5rem; }
 .bit-borm-stepper__step.is-active .bit-borm-stepper__num { border-color: var(--bit-borm-accent); color: var(--bit-borm-accent); }
 .bit-borm-stepper__step.is-done .bit-borm-stepper__num { background: var(--bit-borm-accent); color: var(--bit-borm-accent-contrast); border-color: var(--bit-borm-accent); }
 .bit-borm-step-body { display: flex; flex-direction: column; gap: var(--bit-borm-gap); }
+
+/* Tabs, accordion and sections: a form's steps the user moves between freely. */
+/* One row, scrolling sideways when it does not fit: wrapped onto a second row on a narrow screen, the tabs of that row
+   sat between the active tab and its panel, which the tab no longer opened onto. The baseline is an inset shadow the
+   tabs paint over rather than a border, which the scrolling row would clip from under the active tab. */
+.bit-borm-tabs__list {
+    display: flex; gap: .25rem; margin: 0 0 1.25rem;
+    overflow-x: auto; scrollbar-width: thin;
+    box-shadow: inset 0 -1px 0 var(--bit-borm-border);
+}
+.bit-borm-tabs__tab {
+    display: inline-flex; flex: none; align-items: center; gap: .5rem; min-height: 2.5rem; padding: .5rem .9rem;
+    white-space: nowrap; border: 1px solid transparent; border-radius: var(--bit-borm-radius) var(--bit-borm-radius) 0 0;
+    background: none; font: inherit; color: var(--bit-borm-muted); cursor: pointer;
+}
+.bit-borm-tabs__tab:hover { color: var(--bit-borm-text); }
+.bit-borm-tabs__tab.is-active {
+    color: var(--bit-borm-text); font-weight: 600; background: var(--bit-borm-surface);
+    border-color: var(--bit-borm-border); border-block-end-color: var(--bit-borm-surface);
+}
+/* Inside the tab: outside it, the scrolling row would cut the ring off. */
+.bit-borm-tabs__tab:focus-visible { outline: 2px solid var(--bit-borm-accent); outline-offset: -2px; }
+/* The count beside a tab or section holding errors. It is backed by text for assistive technology, so
+   the colour is never the only thing saying something is wrong. Its text has a token of its own: white
+   on the dark theme's lighter red fell short of the 4.5:1 contrast small text needs. */
+.bit-borm-tabs__badge {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 1.4rem; height: 1.4rem;
+    padding: 0 .35rem; border-radius: 999px; font-size: .75rem; font-weight: 700;
+    background: var(--bit-borm-error); color: var(--bit-borm-error-contrast);
+}
+.bit-borm-section { border: 1px solid var(--bit-borm-border); border-radius: var(--bit-borm-radius); padding: 1rem 1.25rem; min-width: 0; }
+.bit-borm-section + .bit-borm-section { margin-block-start: var(--bit-borm-gap); }
+.bit-borm-section__title { display: flex; align-items: center; gap: .6rem; font-size: 1.05rem; font-weight: 650; margin: 0 0 1rem; }
+.bit-borm-section--collapsible { padding: 0; }
+.bit-borm-section--collapsible > .bit-borm-section__title {
+    margin: 0; padding: .9rem 1.25rem; cursor: pointer; min-height: 2.75rem; border-radius: var(--bit-borm-radius);
+}
+.bit-borm-section--collapsible > .bit-borm-section__title:focus-visible { outline: 2px solid var(--bit-borm-accent); outline-offset: 2px; }
+/* A flex summary draws no disclosure marker, and a closed section read as a plain box: a chevron at its end, pointing
+   down while it is closed and up once it is open. */
+.bit-borm-section--collapsible > .bit-borm-section__title::after {
+    content: ""; flex: none; margin-inline-start: auto; inline-size: .5rem; block-size: .5rem;
+    border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor;
+    transform: translateY(-25%) rotate(45deg); transition: transform .15s;
+}
+.bit-borm-section--collapsible[open] > .bit-borm-section__title::after { transform: translateY(25%) rotate(-135deg); }
+.bit-borm-section--collapsible[open] > .bit-borm-section__title { border-block-end: 1px solid var(--bit-borm-border); border-end-start-radius: 0; border-end-end-radius: 0; }
+.bit-borm-section--collapsible > .bit-borm-section__body { padding: 1rem 1.25rem; }
+.bit-borm-section.has-errors { border-color: var(--bit-borm-error); }
+
+/* A review: the answers read back, a description list per step. */
+.bit-borm-review { display: flex; flex-direction: column; gap: 1.25rem; margin-block-start: .5rem; }
+.bit-borm-review__header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-block-end: .5rem; }
+.bit-borm-review__heading { font-size: 1rem; font-weight: 650; }
+.bit-borm-review__list { margin: 0; display: flex; flex-direction: column; }
+.bit-borm-review__entry {
+    display: grid; grid-template-columns: minmax(8rem, 1fr) 2fr; gap: .25rem 1rem;
+    padding: .55rem 0; border-block-end: 1px solid var(--bit-borm-border);
+}
+.bit-borm-review__label { color: var(--bit-borm-muted); font-weight: 500; }
+.bit-borm-review__value { margin: 0; color: var(--bit-borm-text); overflow-wrap: anywhere; }
+.bit-borm-review__value .bit-borm-review__list { padding-inline-start: .75rem; border-inline-start: 2px solid var(--bit-borm-border); }
+.bit-borm-review__rows { margin: 0; padding-inline-start: 1.25rem; display: flex; flex-direction: column; gap: .5rem; }
+.bit-borm-review__empty { color: var(--bit-borm-muted); font-style: italic; }
+@media (max-width: 640px) {
+    .bit-borm-review__entry { grid-template-columns: 1fr; }
+}
 
 /* These containers are focusable only so a step change or an error jump has somewhere to land. The
    outline is deliberate — it tells the user where they now are — but the default browser one is drawn
@@ -364,7 +552,8 @@ textarea.bit-borm-input { resize: vertical; min-height: 4.5rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bit-borm-input, .bit-borm-btn, .bit-borm-switch, .bit-borm-switch::after { transition: none; }
+    .bit-borm-input, .bit-borm-btn, .bit-borm-switch, .bit-borm-switch::after,
+    .bit-borm-section--collapsible > .bit-borm-section__title::after { transition: none; }
 }
 
 /* Windows High Contrast Mode replaces every author background colour with a system one, and the

@@ -52,15 +52,21 @@ builder.Services.AddBitBaletteServices();
 
 ## Features
 
-- An fzf-style fuzzy matcher with word-boundary, camelCase and consecutive-run bonuses, smart case and highlighting.
-- Multi-term queries with `'exact`, `^prefix`, `suffix$` and `!negate` operators; weighted fields; priority and
-  frecency ranking.
-- Nested pages - static, lazily loaded, declarative or returned by a handler - with breadcrumbs.
+- An fzf-style fuzzy matcher with word-boundary, camelCase and consecutive-run bonuses, smart case and highlighting;
+  diacritics, Arabic and Persian letter variants and digits normalized; a second chance for typos.
+- Multi-term queries with `'exact`, `^prefix`, `suffix$`, `!negate` and `"quoted phrase"` operators; weighted fields;
+  priority and frecency ranking.
+- Nested pages - static, lazily loaded (cancellable, with a retry), declarative or returned by a handler - with
+  breadcrumbs, and nested commands found from the root.
 - Prefix modes (`>`, `#`, `@`, `?`) and debounced, cancellable async sources.
 - Prompts, multi-select, confirmation of destructive commands, toasts and a `Tab` action panel.
 - Recents and pins persisted to `localStorage` or any store you plug in.
-- Global shortcuts and sequences such as `G I`, matched in the browser, with platform-aware hints.
-- A native modal `<dialog>` with the WAI-ARIA combobox pattern and live announcements.
+- Global shortcuts and sequences such as `G I`, matched in the browser, with platform-aware hints; non-Latin keyboard
+  layouts, held keys and input methods handled; conflicts reported.
+- A native modal `<dialog>` with the WAI-ARIA combobox and grouped listbox patterns, live announcements, forced colours
+  and right-to-left layouts, audited with axe-core.
+- Failures logged through `ILogger` and reported in the palette without exposing exception text; unsafe link schemes
+  refused.
 - CSS-variable theming, light and dark, eight templates or a fully unstyled mode, localizable strings.
 - Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 8, 9 and 10; trimming and AOT
   friendly.

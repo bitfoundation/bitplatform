@@ -1,0 +1,23 @@
+<BdndProvider>
+    <div class="row-wrap">
+        @foreach (var name in _boxes)
+        {
+            <BdndDraggable TItem="string" Type="box" Item="name" Context="drag">
+                <div class="box" style="opacity:@(drag.IsDragging ? "0.4" : "1")">@name</div>
+            </BdndDraggable>
+        }
+    </div>
+
+    <BdndDropTarget TItem="string" Accept="box" OnDrop="HandleDrop" Context="drop" style="display:contents">
+        <div class="dustbin" style="margin-top:1.5rem;background:@(drop.IsOver ? "#15803d" : "#1f2430")">
+            @(drop.IsOver ? "Release to drop" : _label)
+        </div>
+    </BdndDropTarget>
+</BdndProvider>
+
+@code {
+    private readonly string[] _boxes = ["Glass", "Banana", "Paper"];
+    private string _label = "Drag a box here";
+
+    private void HandleDrop(BdndDropEventArgs<string> e) => _label = $"Dropped: {e.Item}";
+}

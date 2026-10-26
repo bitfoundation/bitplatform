@@ -42,11 +42,20 @@ public static class BbScannerFormatCatalog
         (nameof(BbScannerOptions.TryVerticalLines), "Also scans columns and tilted lines, so a rotated symbol is read."),
     ];
 
+    private static readonly (string Option, string Effect)[] _ean =
+    [
+        .. _linear,
+        (nameof(BbScannerOptions.RequireEanExtension), "Reports the symbol only together with its EAN-2 or EAN-5 add-on, which is otherwise read into Metadata.Extension whenever it is there."),
+    ];
+
     private static readonly Dictionary<BbBarcodeFormat, Known> _known = new()
     {
         [BbBarcodeFormat.QrCode] = new("QR Code", "https://bitplatform.dev", _matrix),
         [BbBarcodeFormat.DataMatrix] = new("Data Matrix", "BIT-BBSCANNER-DM", _matrix),
         [BbBarcodeFormat.Pdf417] = new("PDF417", "PDF FOUR ONE SEVEN", _matrix),
+        [BbBarcodeFormat.Aztec] = new("Aztec Code", "M1BITPLATFORM/AZTEC EABC123 AMSJFKKL 0641", _matrix),
+        [BbBarcodeFormat.MaxiCode] = new("MaxiCode", "MAXICODE DEMO PARCEL 1Z00004951", _matrix),
+        [BbBarcodeFormat.MicroQrCode] = new("Micro QR", "MICRO QR 42", _matrix),
         [BbBarcodeFormat.Code128] = new("Code 128", "BIT-BBSCANNER-128", _linear),
         [BbBarcodeFormat.Code39] = new("Code 39", "CODE39 DEMO",
         [
@@ -54,15 +63,24 @@ public static class BbScannerFormatCatalog
             (nameof(BbScannerOptions.Code39CheckDigit), "Requires and strips the optional modulo 43 check character."),
             (nameof(BbScannerOptions.Code39ExtendedMode), "Interprets the symbol as full ASCII, where pairs such as +A stand for a."),
         ]),
-        [BbBarcodeFormat.Ean13] = new("EAN-13", "4006381333931", _linear),
-        [BbBarcodeFormat.Ean8] = new("EAN-8", "96385074", _linear),
-        [BbBarcodeFormat.UpcA] = new("UPC-A", "036000291452", _linear),
-        [BbBarcodeFormat.UpcE] = new("UPC-E", "01234565", _linear),
+        [BbBarcodeFormat.Ean13] = new("EAN-13", "4006381333931", _ean),
+        [BbBarcodeFormat.Ean8] = new("EAN-8", "96385074", _ean),
+        [BbBarcodeFormat.UpcA] = new("UPC-A", "036000291452", _ean),
+        [BbBarcodeFormat.UpcE] = new("UPC-E", "01234565", _ean),
         [BbBarcodeFormat.Itf] = new("ITF", "1234567890",
         [
             .. _linear,
             (nameof(BbScannerOptions.ItfLengths), "The digit counts an ITF result may have. ITF has no check character, so this is the main guard against a truncated read."),
         ]),
+        [BbBarcodeFormat.Codabar] = new("Codabar", "31234000123457",
+        [
+            .. _linear,
+            (nameof(BbScannerOptions.CodabarStartStop), "Keeps the start and stop characters, A to D, in the decoded text instead of reporting only the data between them."),
+        ]),
+        [BbBarcodeFormat.Code93] = new("Code 93", "CODE 93 DEMO", _linear),
+        [BbBarcodeFormat.DataBar] = new("GS1 DataBar", "0109521234543213", _linear),
+        [BbBarcodeFormat.DataBarLimited] = new("GS1 DataBar Limited", "0115012345678907", _linear),
+        [BbBarcodeFormat.DataBarExpanded] = new("GS1 DataBar Expanded", "010952123454321310ABC123", _linear),
     };
 
     private static readonly Lazy<BbScannerFormatDto[]> _formats = new(Build);
@@ -84,6 +102,11 @@ public static class BbScannerFormatCatalog
             ?? (key is "qr" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.QrCode))
               : key is "dm" or "datamatrix" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataMatrix))
               : key is "interleaved2of5" or "i2of5" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.Itf))
+              : key is "rss14" or "rss" or "databaromnidirectional" or "databartruncated" or "databarstacked" or "databarstackedomnidirectional"
+                  ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataBar))
+              : key is "rsslimited" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataBarLimited))
+              : key is "microqr" or "mqr" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.MicroQrCode))
+              : key is "rssexpanded" or "databarexpandedstacked" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataBarExpanded))
               : null);
     }
 
@@ -94,7 +117,8 @@ public static class BbScannerFormatCatalog
 
         builder.AppendLine("# Symbologies Bit.BbScanner reads").AppendLine();
         builder.AppendLine("`BbBarcodeFormat` is a flags enum: combine members with `|`. The composites are " +
-                           $"`AllLinear` ({(int)BbBarcodeFormat.AllLinear}), `AllMatrix` ({(int)BbBarcodeFormat.AllMatrix}) " +
+                           $"`Common` ({(int)BbBarcodeFormat.Common}), `AllLinear` ({(int)BbBarcodeFormat.AllLinear}), " +
+                           $"`AllMatrix` ({(int)BbBarcodeFormat.AllMatrix}) " +
                            $"and `All` ({(int)BbBarcodeFormat.All}), and a new `BbScannerOptions` (and the `BbScanner` component) " +
                            $"starts with `{Describe(new BbScannerOptions().Formats)}`. Call `GetBbScannerFormats(format: \"...\")` " +
                            "for one symbology with the options that steer it.").AppendLine();
@@ -130,11 +154,11 @@ public static class BbScannerFormatCatalog
 
         if (dto.Active is false)
         {
-            builder.AppendLine("**The pipeline does not create this reader.** The registered PDF417 symbol character table is the library's " +
-                               "generated placeholder (`BbPdf417SymbolTable.Current.IsSpecificationTable` is false), so `BbBarcodeDecoder` " +
-                               "leaves PDF417 off: enabling the flag costs nothing and finds nothing. Register the ISO/IEC 15438 table with " +
-                               "`BbPdf417SymbolTable.Register(BbPdf417SymbolTable.FromPatterns(cluster0, cluster3, cluster6, isSpecificationTable: true))` " +
-                               "to make it read real symbols - see `GetBbScannerGuideSection(heading: \"PDF417 status\")`.").AppendLine();
+            builder.AppendLine("**The pipeline does not create this reader.** The application registered a PDF417 symbol character table " +
+                               "that is not the specification's (`BbPdf417SymbolTable.Current.IsSpecificationTable` is false), so " +
+                               "`BbBarcodeDecoder` leaves PDF417 off rather than misread with it. " +
+                               "`BbPdf417SymbolTable.Register(BbPdf417SymbolTable.Specification)` puts the shipped ISO/IEC 15438 table back - " +
+                               "see `GetBbScannerGuideSection(heading: \"PDF417 status\")`.").AppendLine();
         }
 
         builder.AppendLine("## Options that steer it").AppendLine();

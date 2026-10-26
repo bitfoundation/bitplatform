@@ -17,6 +17,7 @@
     <meta property="og:title" content="Belemetry - telemetry for every Blazor app" />
     <meta property="og:description" content="Browser and .NET telemetry for Blazor, OpenTelemetry-native without the OpenTelemetry packages: OTLP, Azure Monitor, per-feature consent." />
     <meta property="og:url" content="https://belemetry.bitplatform.dev" />
+    <meta property="og:image" content="https://belemetry.bitplatform.dev/icon-512.png" />
     <meta name="twitter:card" content="summary" />
 
     <ResourcePreloader />
@@ -39,7 +40,8 @@
        <BelemetryInitializer /> in Routes.razor connects it to .NET. *@
     <BelemetryScript Src="@Assets["_content/Bit.Belemetry/bit-belemetry.js"]" />
 
-    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
     <HeadOutlet @rendermode="InteractiveWebAssembly" />

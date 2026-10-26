@@ -1,5 +1,6 @@
 ﻿using Bunit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 namespace Bit.Bortable.Tests;
 
@@ -81,9 +82,66 @@ public class RenderingTests : BortableTestContext
         list.Render(p => p.Add(c => c.Class, "unrelated"));
         list.Render(p => p.Add(c => c.Handle, (string?)null));
 
-        // Once per distinct value: an unrelated re-render must not reinstall the listener.
-        var calls = Module.Invocations["setHandle"];
-        Assert.AreSequenceEqual([".grip", ".other", null], calls.Select(c => c.Arguments[1] as string));
+        // Once per distinct value: an unrelated re-render must not send the options again.
+        var calls = Module.Invocations["register"].Concat(Module.Invocations["configure"]);
+        Assert.AreSequenceEqual([".grip", ".other", null], calls.Select(c => ((BortableJsOptions)c.Arguments[^1]!).Handle));
+    }
+
+    [TestMethod]
+    public void TheInputOptionsAreSentToTheBrowserLayer()
+    {
+        var defaults = SentOptions(RenderList(["A"], "L1"))!;
+        Assert.AreEqual(0, defaults.Delay);
+        Assert.AreEqual(200, defaults.TouchDelay);
+        Assert.AreEqual(5, defaults.DelayTolerance);
+        Assert.IsFalse(defaults.ForceFallback);
+        Assert.AreEqual("bit-bortable-drag", defaults.DragClass);
+        Assert.IsTrue(defaults.Keyboard);
+
+        var custom = SentOptions(RenderList(["A"], "L2", p =>
+        {
+            p.Add(c => c.Delay, 100);
+            p.Add(c => c.TouchDelay, 0);
+            p.Add(c => c.DelayTolerance, -3);
+            p.Add(c => c.ForceFallback, true);
+            p.Add(c => c.DragClass, "my-preview");
+        }))!;
+        Assert.AreEqual(100, custom.Delay);
+        Assert.AreEqual(0, custom.TouchDelay);
+        Assert.AreEqual(0, custom.DelayTolerance, "A negative tolerance means none.");
+        Assert.IsTrue(custom.ForceFallback);
+        Assert.AreEqual("my-preview", custom.DragClass);
+    }
+
+    [TestMethod]
+    public void EveryItemIsRenderedWithAKeyOfItsOwn()
+    {
+        var list = RenderList(["A", "B", "C"]);
+
+        var keys = list.FindAll("[data-bortable-item]").Select(e => e.GetAttribute("data-bortable-key")).ToList();
+        Assert.HasCount(3, keys);
+        Assert.IsTrue(keys.All(k => !string.IsNullOrEmpty(k)));
+        Assert.HasCount(3, keys.Distinct());
+    }
+
+    [TestMethod]
+    public void TheListRegistersWithTheBrowserLayerThroughItsOwnBridge()
+    {
+        var list = RenderList(["A"], "L1");
+
+        var register = Module.Invocations["register"].Single();
+        Assert.IsInstanceOfType<DotNetObjectReference<BortableBridge>>(register.Arguments[1]);
+        Assert.AreEqual("L1", ((BortableJsOptions)register.Arguments[2]!).Id);
+    }
+
+    [TestMethod]
+    public async Task ADisposedListUnregistersFromTheBrowserLayer()
+    {
+        var list = RenderList(["A"], "L1");
+
+        await DisposeComponentsAsync();
+
+        Assert.ContainsSingle(Module.Invocations["unregister"]);
     }
 
     [TestMethod]
@@ -120,9 +178,11 @@ public class RenderingTests : BortableTestContext
     {
         var list = RenderList(["A", "B"], extra: p => p.AddChildContent("<p class=\"empty\">Drop here</p>"));
 
+        // The items, the child content, then the hidden keyboard instructions.
         var children = Container(list).Children;
-        Assert.HasCount(3, children);
+        Assert.HasCount(4, children);
         Assert.IsTrue(children[2].ClassList.Contains("empty"));
+        Assert.IsTrue(children[3].ClassList.Contains("bit-bortable-instructions"));
     }
 
     [TestMethod]
@@ -176,7 +236,7 @@ public class RenderingTests : BortableTestContext
         RenderList(["B"]);
         RenderList(["C"]);
 
-        // The module keeps no per-list state, so a tree with a list per node still imports it once.
+        // A tree with a list per node still imports the module once; each list then registers with it.
         Assert.ContainsSingle(JSInterop.Invocations["import"]);
     }
 

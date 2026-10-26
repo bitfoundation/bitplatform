@@ -89,7 +89,9 @@ public abstract class BlowTest
     /// minimap, the controls) starts out below the fold, where the mouse cannot reach it. Scrolling moves the
     /// pane on screen without resizing anything; the browser layer's scroll listener tells the canvas, which
     /// re-reads the pane rectangle every pointer and wheel position is converted with. That costs a frame and a
-    /// call into .NET, and nothing in the DOM changes when it is done, hence the short wait.
+    /// call into .NET, and nothing in the DOM changes when it is done, hence the short wait. The scroll is
+    /// instant: the site asks for smooth scrolling, and WebKit is still easing the page into place long after
+    /// the wait, so every point a test measured would have moved by the time it pressed there.
     /// </summary>
     protected static async Task ScrollFlowIntoViewAsync(IPage page)
     {
@@ -99,7 +101,7 @@ public abstract class BlowTest
               const pane = document.querySelector('.bit-blow');
               if (!pane) return false;
               const before = window.scrollY;
-              pane.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+              pane.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
               return window.scrollY !== before;
             }
             """);

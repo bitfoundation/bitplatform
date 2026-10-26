@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.Borm;
 
@@ -7,13 +8,17 @@ namespace Bit.Borm;
 /// override built-in mappings or register renderers for custom field keys, giving the same
 /// extensibility as JSON Forms' renderer set or react-jsonschema-form widgets.
 /// </summary>
+/// <remarks>
+/// The component types are annotated as Blazor annotates its own, so a trimmed app keeps the constructor and the
+/// parameters of every component registered here.
+/// </remarks>
 public interface IBormFieldRendererRegistry
 {
     /// <summary>Maps a field type to the component that renders its input control.</summary>
-    void Register(BormFieldType type, Type componentType);
+    void Register(BormFieldType type, [DynamicallyAccessedMembers(BormFieldRendererRegistry.Component)] Type componentType);
 
     /// <summary>Maps a custom renderer key (see <see cref="BormFieldDefinition.CustomRenderer"/>) to a component.</summary>
-    void RegisterCustom(string key, Type componentType);
+    void RegisterCustom(string key, [DynamicallyAccessedMembers(BormFieldRendererRegistry.Component)] Type componentType);
 
     /// <summary>
     /// Resolves the component type for a field, honouring custom renderer keys first.
@@ -23,17 +28,18 @@ public interface IBormFieldRendererRegistry
     /// <see cref="BormFieldDefinition.CustomRenderer"/> key has no registered component. Failing
     /// loudly beats silently rendering a text box the developer never asked for.
     /// </exception>
+    [return: DynamicallyAccessedMembers(BormFieldRendererRegistry.Component)]
     Type Resolve(BormFieldDefinition field);
 
     /// <summary>Resolves the component type for a field, returning false instead of throwing when none is registered.</summary>
-    bool TryResolve(BormFieldDefinition field, out Type componentType);
+    bool TryResolve(BormFieldDefinition field, [DynamicallyAccessedMembers(BormFieldRendererRegistry.Component)] out Type componentType);
 }
 
 /// <summary>Strongly-typed conveniences over <see cref="IBormFieldRendererRegistry"/>.</summary>
 public static class BormFieldRendererRegistryExtensions
 {
     /// <summary>Maps a field type to <typeparamref name="TComponent"/>.</summary>
-    public static IBormFieldRendererRegistry Register<TComponent>(
+    public static IBormFieldRendererRegistry Register<[DynamicallyAccessedMembers(BormFieldRendererRegistry.Component)] TComponent>(
         this IBormFieldRendererRegistry registry, BormFieldType type)
         where TComponent : IComponent
     {
@@ -42,7 +48,7 @@ public static class BormFieldRendererRegistryExtensions
     }
 
     /// <summary>Maps a custom renderer key to <typeparamref name="TComponent"/>.</summary>
-    public static IBormFieldRendererRegistry RegisterCustom<TComponent>(
+    public static IBormFieldRendererRegistry RegisterCustom<[DynamicallyAccessedMembers(BormFieldRendererRegistry.Component)] TComponent>(
         this IBormFieldRendererRegistry registry, string key)
         where TComponent : IComponent
     {

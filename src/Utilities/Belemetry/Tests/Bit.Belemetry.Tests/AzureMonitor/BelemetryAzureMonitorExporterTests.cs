@@ -36,9 +36,11 @@ public class BelemetryAzureMonitorExporterTests
             { "index": 1, "statusCode": 439, "message": "quota" } ] }
         """;
 
-        var retry = exporter.GetRetryForPartialSuccess(request, 206, response);
+        var retry = exporter.GetRetryForPartialSuccess(request, 206, response, out var rejected);
 
         Assert.IsNotNull(retry);
+        Assert.AreEqual(1, rejected, "The 400 is refused for good.");
+        Assert.AreEqual(2, retry.Count);
         using var body = JsonDocument.Parse(retry.Body);
         CollectionAssert.AreEqual(new[] { "b", "c" }, body.RootElement.EnumerateArray().Select(e => e.GetProperty("item").GetString()).ToArray());
         Assert.AreEqual(request.Url, retry.Url);
@@ -54,11 +56,15 @@ public class BelemetryAzureMonitorExporterTests
         var exporter = Create();
         var request = Request("a", "b");
 
-        Assert.IsNull(exporter.GetRetryForPartialSuccess(request, 200, """{"errors":[{"index":0,"statusCode":503}]}"""), "Only a 206 is partial.");
-        Assert.IsNull(exporter.GetRetryForPartialSuccess(request, 206, """{"errors":[{"index":0,"statusCode":400}]}"""), "Nothing retryable.");
-        Assert.IsNull(exporter.GetRetryForPartialSuccess(request, 206, """{"itemsAccepted":2}"""));
-        Assert.IsNull(exporter.GetRetryForPartialSuccess(request, 206, "not json"));
-        Assert.IsNull(exporter.GetRetryForPartialSuccess(request, 206, null));
+        Assert.IsNull(exporter.GetRetryForPartialSuccess(request, 200, """{"errors":[{"index":0,"statusCode":503}]}""", out var rejected), "Only a 206 is partial.");
+        Assert.AreEqual(0, rejected);
+        Assert.IsNull(exporter.GetRetryForPartialSuccess(request, 206, """{"errors":[{"index":0,"statusCode":400}]}""", out rejected), "Nothing retryable.");
+        Assert.AreEqual(1, rejected, "Nothing retried, yet not delivered either.");
+        Assert.IsNull(exporter.GetRetryForPartialSuccess(request, 206, """{"itemsAccepted":2}""", out rejected));
+        Assert.IsNull(exporter.GetRetryForPartialSuccess(request, 206, "not json", out rejected));
+        Assert.IsNull(exporter.GetRetryForPartialSuccess(request, 206, """{"errors":[{"index":"0","statusCode":503}]}""", out rejected), "An index that is not a number is unreadable, not a failed send.");
+        Assert.IsNull(exporter.GetRetryForPartialSuccess(request, 206, null, out rejected));
+        Assert.AreEqual(0, rejected);
     }
 
     [TestMethod]

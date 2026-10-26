@@ -3,38 +3,76 @@
 <PageTitle>Drag Handle · Blow</PageTitle>
 
 <ExampleScaffold Title="Drag Handle"
-                 Summary="The node only moves when you drag the small grip area. Dragging the body does nothing, so the body can host interactive content.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-        <NodeTemplate Context="node">
-            @if (node.Type == "draggable")
-            {
-                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
-                <div class="dh-node">
-                    <BlowDragHandle Class="dh-node__grip">⋮⋮</BlowDragHandle>
-                    <div class="dh-node__body">@node.Label</div>
-                </div>
-                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
-            }
-            else
-            {
-                <BlowDefaultNode Node="node" />
-            }
-        </NodeTemplate>
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
-        </ChildContent>
-    </BlowCanvas>
+                 Summary="Nodes that move only when dragged by a designated handle: a side grip on one card, the title bar on the other. Setting UseCustomDragHandle on a node and placing a BlowDragHandle in its template leaves the rest of the body free for content that needs the pointer itself.">
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <NodeTemplate Context="node">
+                @if (node.Type == "grip" && node.Data is CardData card)
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="dh-node">
+                        <BlowDragHandle Class="dh-node__grip">⋮⋮</BlowDragHandle>
+                        <div class="dh-node__body">
+                            <span>@node.Label</span>
+                            @* No nodrag needed: the body never starts a drag, so the list keeps the pointer. *@
+                            <select aria-label="@($"Status of {node.Label}")" value="@card.Status"
+                                    @onchange="e => card.Status = e.Value?.ToString() ?? card.Status">
+                                <option>To do</option>
+                                <option>Doing</option>
+                                <option>Done</option>
+                            </select>
+                        </div>
+                    </div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                }
+                else if (node.Type == "titled")
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="dh-card">
+                        <BlowDragHandle Class="dh-card__title">@node.Label</BlowDragHandle>
+                        <div class="dh-card__body">Only the title bar drags; the body just selects.</div>
+                    </div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                }
+                else
+                {
+                    <BlowDefaultNode Node="node" />
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag the ⋮⋮ grip</strong> of the first card, or the <strong>title bar</strong> of the second: the node moves.</li>
+        <li><strong>Drag the body</strong> of either card: the node is selected but stays put.</li>
+        <li><strong>Open the status list</strong> and pick a value: the body's pointer is free for its own content, so nothing moves.</li>
+        <li><strong>Drag the plain node</strong> at the bottom from any point on it, for comparison.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>UseCustomDragHandle = true</code> on a node stops its body from starting a drag. Pressing the body still selects the node.</li>
+        <li><code>BlowDragHandle</code> marks the part of the template that does start a drag. It can wrap any content, anywhere in the template - a narrow grip on the first card, the whole title bar on the second - and <code>Class</code> styles it; the stylesheet gives it the grab cursor.</li>
+        <li>Since the body never drags, a control in it needs no <code>nodrag</code> class: the status <code>&lt;select&gt;</code> keeps its pointer, and graph keys are ignored while it has focus.</li>
+        <li>The bottom node has neither the flag nor a template branch of its own: it is a built-in default node, which drags from anywhere.</li>
+        <li>The card bodies set <code>cursor: default</code>, so only the handles show the grab cursor that every node gets from the stylesheet.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
-    .dh-node { display:flex; align-items:stretch; }
-    .dh-node__grip { display:flex; align-items:center; padding:0 6px; cursor:grab; color:var(--bit-blow-text-muted); border-right:1px solid var(--bit-blow-border-subtle); user-select:none; }
-    .dh-node__grip:active { cursor:grabbing; }
-    .dh-node__body { padding:8px 12px; }
+    .dh-node { display:flex; align-items:stretch; text-align:left; }
+    .dh-node__grip { display:flex; align-items:center; padding:0 6px; color:var(--bit-blow-text-muted); border-right:1px solid var(--bit-blow-border-subtle); }
+    .dh-node__body { display:flex; flex-direction:column; gap:4px; padding:2px 10px; cursor:default; }
+    .dh-node__body select { font:inherit; color:var(--bit-blow-text); background:var(--bit-blow-surface); border:1px solid var(--bit-blow-border); border-radius:4px; }
+    /* The node's own padding is 10px 14px; the title bar reaches past it to span the whole card. */
+    .dh-card__title { margin:-10px -14px 6px; padding:4px 10px; font-weight:600; text-align:left; background:var(--bit-blow-surface-muted); border-bottom:1px solid var(--bit-blow-border-subtle); border-radius:6px 6px 0 0; }
+    .dh-card__body { max-width:170px; text-align:left; color:var(--bit-blow-text-muted); cursor:default; }
 </style>
 
 @code {
+    public sealed class CardData { public string Status { get; set; } = "To do"; }
+
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
 
@@ -42,9 +80,14 @@
     {
         _nodes =
         [
-            new BlowNode { Id = "1", Type = "draggable", Label = "Drag me by the grip", Position = new(120, 60), UseCustomDragHandle = true },
-            new BlowNode { Id = "2", Type = "draggable", Label = "Me too", Position = new(160, 220), UseCustomDragHandle = true },
+            new BlowNode { Id = "1", Type = "grip", Label = "Drag me by the grip", Position = new(0, 0), UseCustomDragHandle = true, Data = new CardData() },
+            new BlowNode { Id = "2", Type = "titled", Label = "Drag me by the title", Position = new(20, 150), UseCustomDragHandle = true },
+            new BlowNode { Id = "3", Label = "Drag me from anywhere", Position = new(30, 310) },
         ];
-        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e2-3", Source = "2", Target = "3" },
+        ];
     }
 }

@@ -56,6 +56,38 @@ public abstract class BcrdtAbstractType
     /// <summary>The block that holds this type inside its parent, or null for a root type.</summary>
     public BcrdtItem? ContainingItem { get; internal set; }
 
+    /// <summary>
+    /// How deeply collaborative types may nest: a root type is at depth zero, a type inside it at one.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Deleting, collecting, cloning or projecting a type visits everything inside it recursively, so
+    /// nesting has to stop somewhere short of the stack. Inserting a type deeper than this throws
+    /// <see cref="InvalidOperationException"/>; one arriving from a peer is reduced to a bare clock
+    /// range together with everything inside it - deterministically, because every replica sees the
+    /// same chain of containers - so a hostile update can neither crash a replica nor make replicas
+    /// disagree.
+    /// </para>
+    /// <para>
+    /// Real document models nest a handful of levels; a hundred and twenty-eight leaves generous room.
+    /// </para>
+    /// </remarks>
+    public const int MaxNestingDepth = 128;
+
+    /// <summary>How many containers this type sits inside: zero for a root, capped just past <see cref="MaxNestingDepth"/>.</summary>
+    internal int NestingDepth
+    {
+        get
+        {
+            int depth = 0;
+            for (BcrdtAbstractType type = this; type.ContainingItem?.Parent is BcrdtAbstractType parent; type = parent)
+            {
+                if (++depth > MaxNestingDepth) break;
+            }
+            return depth;
+        }
+    }
+
     /// <summary>Whether this sequence has ever carried a rich-text mark.</summary>
     /// <remarks>
     /// A plain-text document should not pay for attribute tracking it never uses, so the readers

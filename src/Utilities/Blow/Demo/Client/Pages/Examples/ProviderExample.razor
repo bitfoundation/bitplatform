@@ -3,36 +3,76 @@
 <PageTitle>Provider · Blow</PageTitle>
 
 <ExampleScaffold Title="Provider"
-                 Summary="A sidebar outside the canvas drives the flow through a shared reference - the Blazor equivalent of wrapping a flow in ReactFlowProvider so sibling components can call the flow API.">
-    <div class="provider">
-        <aside class="provider__sidebar">
-            <h4>Controls</h4>
-            <button class="btn btn-primary" @onclick="AddNode">Add node</button>
-            <button class="btn btn-secondary" @onclick="@(() => _flow?.FitView())">Fit view</button>
-            <button class="btn btn-secondary" @onclick="ConnectLast">Connect last two</button>
-            <p class="bb-muted">@_nodes.Count nodes · @_edges.Count edges</p>
-        </aside>
-        <div class="provider__canvas">
-            <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-                <BlowControls />
-            </BlowCanvas>
+                 Summary="A sidebar outside the canvas reads the graph and drives the flow - what wrapping a flow in ReactFlowProvider is for in React. Blazor needs no provider: the node and edge lists are already shared state, and a reference to the canvas can be handed to whatever needs to call it.">
+    <ChildContent>
+        <div class="provider">
+            <aside class="provider__sidebar" aria-label="Sidebar">
+                <h4>Sidebar</h4>
+                @* Disabled until OnInit hands the reference over: before that there is no canvas to call. *@
+                <button class="btn btn-primary" disabled="@(_flow is null)" @onclick="AddNode">Add node</button>
+                <button class="btn btn-secondary" disabled="@(_flow is null)" @onclick="Fit">Fit view</button>
+                <button class="btn btn-secondary" disabled="@(_flow is null)" @onclick="ConnectLast">Connect last two</button>
+                <p class="bb-muted">@_nodes.Count nodes · @_edges.Count edges</p>
+                <ul class="provider__nodes" aria-label="Nodes">
+                    @foreach (var node in _nodes)
+                    {
+                        <li>
+                            <button class="provider__node @(node.Selected ? "provider__node--selected" : null)"
+                                    aria-pressed="@(node.Selected ? "true" : "false")" disabled="@(_flow is null)"
+                                    @onclick="() => Focus(node)">
+                                @node.Label
+                            </button>
+                        </li>
+                    }
+                </ul>
+            </aside>
+            <div class="provider__canvas">
+                @* The three change callbacks do nothing but re-render this page, which is all the sidebar needs to
+                   follow what the user does on the canvas: its counts and its list read the lists the canvas edits. *@
+                <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                            OnInit="@(flow => _flow = flow)"
+                            NodesChanged="@(_ => { })" EdgesChanged="@(_ => { })" OnSelectionChange="@(_ => { })">
+                    <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                    <BlowControls />
+                </BlowCanvas>
+            </div>
         </div>
-    </div>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Add node</strong> adds the next node to the grid, and the view glides out to keep every node in sight.</li>
+        <li><strong>Connect last two</strong> joins the two newest nodes; pressing it again adds nothing, since they are already joined.</li>
+        <li><strong>Fit view</strong> fits the whole graph into the pane.</li>
+        <li>Press a node's name in the list: the view moves to that node, selects it and gives it keyboard focus, so the arrow keys move it straight away.</li>
+        <li>Work on the canvas - <strong>click</strong> to select, <strong>drag</strong> from a handle to connect, press <strong>Delete</strong> - and the counts and the list follow: the sidebar marks the selected nodes.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>The sidebar is ordinary markup beside the <code>BlowCanvas</code>, not inside it. Its counts and its list read the same <code>List&lt;BlowNode&gt;</code> and <code>List&lt;BlowEdge&gt;</code> the canvas was given and edits in place.</li>
+        <li><code>OnInit</code> hands over the canvas reference once it has rendered and measured; the sidebar's buttons are disabled until then. <code>@@ref</code> does the same job. To reach the canvas from another component, pass the reference down as a parameter or a cascading value - the part React's provider plays.</li>
+        <li><code>NodesChanged</code>, <code>EdgesChanged</code> and <code>OnSelectionChange</code> re-render the page after each completed edit and each change of selection - once when a drag is released, not on every pointer move - so the sidebar stays in step.</li>
+        <li>Add node and Connect last two call <code>AddNodes</code> and <code>AddEdges</code>, then <code>FitViewAsync(300)</code> eases the view over 300 ms to fit what is there now.</li>
+        <li>A name in the list calls <code>FocusNodeAsync(id, select: true, durationMs: 300)</code>: it centres the view on the node, makes it the selection and moves keyboard focus to it.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
     .provider { display:flex; height:100%; }
     /* Outside the canvas, so it takes the site's own surfaces rather than the flow's. */
-    .provider__sidebar { width:180px; padding:14px; border-right:1px solid var(--bb-border); background:var(--bb-surface-sunken); color:var(--bb-text); display:flex; flex-direction:column; gap:8px; }
+    .provider__sidebar { width:180px; padding:14px; border-right:1px solid var(--bb-border); background:var(--bb-surface-sunken); color:var(--bb-text); display:flex; flex-direction:column; gap:8px; overflow:auto; }
     .provider__sidebar h4 { margin:0 0 4px; }
+    .provider__sidebar p { margin:0; }
     .provider__canvas { flex:1; position:relative; }
+    .provider__nodes { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+    .provider__node { width:100%; padding:3px 8px; text-align:start; font:inherit; font-size:13px; color:inherit; background:none; border:1px solid transparent; border-radius:4px; cursor:pointer; }
+    .provider__node:hover { border-color:var(--bb-border); }
+    .provider__node--selected { font-weight:600; border-color:var(--bb-border); background:var(--bb-surface); }
 
     /* On a phone a fixed-width sidebar leaves the canvas a sliver: stack it above instead. */
     @@media (max-width: 640px) {
         .provider { flex-direction:column; }
-        .provider__sidebar { width:auto; flex-direction:row; flex-wrap:wrap; align-items:center; padding:10px; border-right:0; border-bottom:1px solid var(--bb-border); }
-        .provider__sidebar h4, .provider__sidebar p { flex-basis:100%; margin:0; }
+        .provider__sidebar { width:auto; max-height:40%; flex-direction:row; flex-wrap:wrap; align-items:center; padding:10px; border-right:0; border-bottom:1px solid var(--bb-border); }
+        .provider__sidebar h4, .provider__sidebar p, .provider__nodes { flex-basis:100%; margin:0; }
+        .provider__nodes { flex-direction:row; flex-wrap:wrap; }
+        .provider__nodes li { flex:none; }
         .provider__canvas { min-height:0; }
     }
 </style>
@@ -45,18 +85,26 @@
 
     protected override void OnInitialized()
     {
-        _nodes = [ new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(120, 40) } ];
+        _nodes = [ new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = At(1) } ];
     }
 
-    private void AddNode()
+    // Nodes go on a grid three wide, so each new one has a place of its own rather than a random one on top of another.
+    private static BlowXYPosition At(int id) => new(((id - 1) % 3) * 180, ((id - 1) / 3) * 110);
+
+    private async Task AddNode()
     {
+        if (_flow is null) return;
         _id++;
-        _flow?.AddNodes(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(Random.Shared.Next(40, 360), Random.Shared.Next(60, 300)) });
+        _flow.AddNodes(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = At(_id) });
+        // The grid grows past the view the first node was fitted to.
+        await _flow.FitViewAsync(300);
     }
+
+    private void Fit() => _flow?.FitView();
 
     private void ConnectLast()
     {
-        if (_nodes.Count < 2) return;
+        if (_flow is null || _nodes.Count < 2) return;
         var a = _nodes[^2];
         var b = _nodes[^1];
         var id = $"e{a.Id}-{b.Id}";
@@ -64,6 +112,11 @@
         // Pressing it twice must not add a second edge under the same id: the canvas would only
         // ever draw one of them.
         if (_edges.Any(e => e.Id == id || (e.Source == a.Id && e.Target == b.Id))) return;
-        _flow?.AddEdges(new BlowEdge { Id = id, Source = a.Id, Target = b.Id });
+        _flow.AddEdges(new BlowEdge { Id = id, Source = a.Id, Target = b.Id });
+    }
+
+    private async Task Focus(BlowNode node)
+    {
+        if (_flow is not null) await _flow.FocusNodeAsync(node.Id, select: true, durationMs: 300);
     }
 }

@@ -122,7 +122,7 @@ public class McpController : ControllerBase
         if (string.IsNullOrWhiteSpace(format)) return BbScannerFormatCatalog.RenderIndex();
 
         return BbScannerFormatCatalog.Render(format)
-            ?? $"Bit.BbScanner reads no symbology called '{format}'. The formats are: {string.Join(", ", BbScannerFormatCatalog.Formats.Select(f => f.Name))}; combine them with '|', or use the composites AllLinear, AllMatrix and All.";
+            ?? $"Bit.BbScanner reads no symbology called '{format}'. The formats are: {string.Join(", ", BbScannerFormatCatalog.Formats.Select(f => f.Name))}; combine them with '|', or use the composites Common, AllLinear, AllMatrix and All.";
     }
 
     [HttpGet]

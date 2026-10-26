@@ -14,6 +14,12 @@ public sealed class BdndDropEventArgs<TItem>
     public TItem? Item { get; init; }
 
     /// <summary>
+    /// The edge of the target the drag was closest to - one of the target's <see cref="BdndDropTarget{TItem}.Edges"/> -
+    /// or null when the target lists none. <see cref="BdndList.InsertionIndex"/> turns it into a list index.
+    /// </summary>
+    public BdndEdge? ClosestEdge { get; init; }
+
+    /// <summary>
     /// Set this inside an <c>OnDrop</c> handler to publish a drop result. It becomes available
     /// to the drag source via <c>monitor.GetDropResult()</c> in its <c>OnEnd</c> callback. An async
     /// handler may set it after an <c>await</c>: the drag ends - and <c>OnEnd</c> runs - once the async

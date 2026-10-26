@@ -3,18 +3,17 @@
 <PageTitle>Controlled vs Uncontrolled · Blow</PageTitle>
 
 <ExampleScaffold Title="Controlled vs Uncontrolled"
-                 Summary="Controlled: the page subscribes to NodesChanged/EdgesChanged and keeps its own view of the graph in step with every edit as it happens. Uncontrolled: the page subscribes to nothing - the canvas edits the lists it was handed on its own, and the page only learns what changed when it asks the canvas through a component reference. Toggle, drag, connect or delete, and compare.">
+                 Summary="The canvas always edits the lists it is given in place; what differs is whether the page is told. Controlled, the page handles NodesChanged and EdgesChanged and keeps its own view of the graph current after every edit. Uncontrolled, it handles nothing and learns what changed only when it asks the canvas.">
     <Toolbar>
-        <label><input type="checkbox" checked="@_controlled" @onchange="OnModeChanged" /> controlled</label>
-        @if (_controlled)
-        {
-            <span class="bb-muted">page state: @_nodeCount nodes, @_edgeCount edges (last change @_lastChange)</span>
-        }
-        else
+        <label><input type="checkbox" checked="@_controlled" @onchange="OnModeChanged" /> Controlled</label>
+        @if (!_controlled)
         {
             <button class="btn btn-secondary" @onclick="ReadFromCanvas">Ask the canvas</button>
-            <span class="bb-muted">last read: @_lastRead</span>
         }
+        <span class="cu-readout">
+            The page knows: @_known.Nodes nodes, @_known.Edges edges, Node 1 at (@_known.First.X.ToString("0"), @_known.First.Y.ToString("0"))
+            <span class="cu-when">- @_known.How</span>
+        </span>
     </Toolbar>
     <ChildContent>
         @* Uncontrolled hands the canvas empty callbacks, so it has nobody to notify. *@
@@ -25,28 +24,46 @@
             <BlowControls />
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li>With <strong>Controlled</strong> ticked, <strong>drag</strong> Node 1: the readout updates when you let go, not while the node moves.</li>
+        <li><strong>Drag from a handle</strong> to another node to connect them, or select something and press <strong>Delete</strong>: the counts follow each edit.</li>
+        <li>Untick <strong>Controlled</strong> and do the same: the canvas still works, but the readout stays where it was - the page was not told.</li>
+        <li>Press <strong>Ask the canvas</strong> to read the graph as it is now. Ticking <strong>Controlled</strong> again also catches up, since the page reads the graph on taking control.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>In both modes <code>Nodes</code> and <code>Edges</code> are the page's own lists, and the canvas adds, moves and removes items in them directly: nothing is copied, so there is no second graph to fall out of step.</li>
+        <li>Controlled hands the canvas <code>NodesChanged</code> and <code>EdgesChanged</code> handlers. They are raised once an edit is complete - a drag released, a connection made, something deleted, pasted or nudged with the keys - with the list itself, and the page re-renders after each.</li>
+        <li>Uncontrolled passes <code>default</code> for both callbacks, so nothing is raised and the page's copy of the counts goes stale. Ask the canvas reads the graph through the component reference with <code>ToObject(deep: false)</code>, a <code>BlowSnapshot</code> of the live nodes and edges, without copying them.</li>
+        <li><code>Nodes</code>/<code>NodesChanged</code> and <code>Edges</code>/<code>EdgesChanged</code> are bindable pairs, so <code>@@bind-Nodes="_nodes"</code> compiles too; since the list instance never changes, the binding is mostly a signal to persist.</li>
+        <li>For the kind of edit as well as the fact of one - who made it and what it touched - handle <code>OnGraphChanged</code> instead; <code>/examples/grouping</code> logs it.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
+<style>
+    .cu-readout { font-variant-numeric: tabular-nums; color: var(--bb-text); }
+    .cu-when { color: var(--bb-text-soft); }
+</style>
+
 @code {
+    // What the page holds about the graph: a copy taken when it was told, or when it asked.
+    private readonly record struct Known(int Nodes, int Edges, BlowXYPosition First, string How);
+
     private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private bool _controlled = true;
-    private int _nodeCount, _edgeCount;
-    private string _lastChange = "-";
-    private string _lastRead = "not yet";
+    private Known _known;
 
     protected override void OnInitialized()
     {
         _nodes =
         [
-            new BlowNode { Id = "1", Type = "input", Label = "Drag / connect me", Position = new(160, 40), Width = 180 },
-            new BlowNode { Id = "2", Label = "Node 2", Position = new(120, 200) },
-            new BlowNode { Id = "3", Label = "Node 3", Position = new(360, 200) },
+            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(160, 40) },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(60, 200) },
+            new BlowNode { Id = "3", Label = "Node 3", Position = new(300, 200) },
         ];
         _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
-        _nodeCount = _nodes.Count;
-        _edgeCount = _edges.Count;
+        Remember(_nodes, _edges, "as the page built it");
     }
 
     private void OnModeChanged(ChangeEventArgs e)
@@ -55,30 +72,24 @@
 
         // Taking control again starts from what the canvas holds now: anything edited while
         // uncontrolled went unreported.
-        if (_controlled)
-        {
-            _nodeCount = _nodes.Count;
-            _edgeCount = _edges.Count;
-            _lastChange = "synced on switching";
-        }
+        if (_controlled) Remember(_nodes, _edges, "read on taking control");
     }
 
-    private void OnNodesChanged(List<BlowNode> nodes)
-    {
-        _nodeCount = nodes.Count;
-        _lastChange = $"nodes @ {DateTime.Now:HH:mm:ss}";
-    }
+    private void OnNodesChanged(List<BlowNode> nodes) => Remember(nodes, _edges, $"told by NodesChanged at {DateTime.Now:HH:mm:ss}");
 
-    private void OnEdgesChanged(List<BlowEdge> edges)
-    {
-        _edgeCount = edges.Count;
-        _lastChange = $"edges @ {DateTime.Now:HH:mm:ss}";
-    }
+    private void OnEdgesChanged(List<BlowEdge> edges) => Remember(_nodes, edges, $"told by EdgesChanged at {DateTime.Now:HH:mm:ss}");
 
     private void ReadFromCanvas()
     {
         if (_flow is null) return;
         var snapshot = _flow.ToObject(deep: false);
-        _lastRead = $"{snapshot.Nodes.Count} nodes, {snapshot.Edges.Count} edges at {DateTime.Now:HH:mm:ss}";
+        Remember(snapshot.Nodes, snapshot.Edges, $"asked at {DateTime.Now:HH:mm:ss}");
+    }
+
+    private void Remember(IReadOnlyList<BlowNode> nodes, IReadOnlyList<BlowEdge> edges, string how)
+    {
+        // Node 1 may have been deleted; the readout then shows where it was last seen.
+        var first = nodes.FirstOrDefault(n => n.Id == "1")?.Position ?? _known.First;
+        _known = new Known(nodes.Count, edges.Count, first, how);
     }
 }

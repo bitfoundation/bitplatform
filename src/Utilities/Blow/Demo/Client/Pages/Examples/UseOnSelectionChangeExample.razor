@@ -3,29 +3,56 @@
 <PageTitle>Selection Change · Blow</PageTitle>
 
 <ExampleScaffold Title="Selection Change"
-                 Summary="OnSelectionChange fires whenever the selected nodes or edges change. Click to select, Shift-click to add to the selection, or drag across the empty pane to box-select, and the current selection is listed.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
-                SelectionOnDrag="true" OnSelectionChange="OnSelectionChange">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-        <BlowControls />
-        <BlowPanel Position="top-right">
-            <div class="sel-panel">
-                <div><strong>selected nodes:</strong> @(_nodeIds.Count == 0 ? "-" : string.Join(", ", _nodeIds))</div>
-                <div><strong>selected edges:</strong> @(_edgeIds.Count == 0 ? "-" : string.Join(", ", _edgeIds))</div>
-            </div>
-        </BlowPanel>
-    </BlowCanvas>
+                 Summary="OnSelectionChange reports the selected nodes and edges whenever the set really changes - by a click, a box, a key or your own code - so the page can show or act on it. SelectAsync changes the selection from code and raises it too.">
+    <Toolbar>
+        <button class="btn btn-secondary" @onclick="SelectEnds">Select input and output</button>
+        <button class="btn btn-secondary" @onclick="AddEdgesOfNode2">Add node 2's edges</button>
+        <button class="btn btn-secondary" @onclick="ClearSelection">Clear</button>
+        <button class="btn btn-secondary" @onclick="MarkNode3">Set node 3's Selected</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    SelectionOnDrag="true" OnSelectionChange="OnSelectionChange">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowPanel Position="top-right">
+                <div class="sel-panel">
+                    <div><strong>selected nodes:</strong> @(_nodeIds.Count == 0 ? "-" : string.Join(", ", _nodeIds))</div>
+                    <div><strong>selected edges:</strong> @(_edgeIds.Count == 0 ? "-" : string.Join(", ", _edgeIds))</div>
+                    <div class="sel-panel__count">OnSelectionChange raised @_changes time@(_changes == 1 ? "" : "s")</div>
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Click</strong> a node or an edge: the panel lists it. <strong>Shift+click</strong> adds to the selection, and <strong>clicking the background</strong> clears it.</li>
+        <li><strong>Drag across the empty background</strong> to draw a selection box: on this page a plain drag selects, so hold <strong>Space</strong> while dragging to pan instead.</li>
+        <li><strong>Click</strong> the node that is already selected: nothing changed, so the count in the panel stays where it was.</li>
+        <li>Press <strong>Ctrl+A</strong> (<strong>Cmd+A</strong>) with the canvas focused to select everything, and <strong>Escape</strong> to clear.</li>
+        <li><strong>Select input and output</strong> replaces the selection from code; <strong>Add node 2's edges</strong> adds to whatever is selected; <strong>Clear</strong> empties it. Each one updates the panel.</li>
+        <li><strong>Set node 3's Selected</strong> flips the flag directly: node 3 is drawn selected, but no event is raised, so the panel does not hear of it.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>OnSelectionChange</code> receives a <code>BlowSelectionChange</code> whose <code>Nodes</code> and <code>Edges</code> are the full current selection. It is raised only when the selected set really differs from the last one reported, so handling it is cheap.</li>
+        <li><code>SelectionOnDrag="true"</code> makes a plain drag on the pane draw the box; <code>PanActivationKey</code> (Space) held turns the drag back into a pan.</li>
+        <li><code>SelectAsync(nodes, edges)</code> makes those elements the selection; with <code>additive: true</code> it adds them instead, and called with nothing it clears. Elements that are hidden or have <code>Selectable = false</code> are passed over.</li>
+        <li>Setting <code>BlowNode.Selected</code> or <code>BlowEdge.Selected</code> yourself changes what is drawn but raises no <code>OnSelectionChange</code> - use <code>SelectAsync</code> when listeners should know.</li>
+        <li>Ctrl/Cmd+A comes from <code>SelectAllKeyEnabled</code> (on by default) and calls the same <code>SelectAllAsync()</code> an app can call itself.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
     .sel-panel { background:var(--bit-blow-surface); color:var(--bit-blow-text); border:1px solid var(--bit-blow-border); border-radius:8px; padding:8px 10px; font-size:12px; min-width:200px; box-shadow:0 2px 6px var(--bit-blow-shadow); }
+    .sel-panel__count { margin-top:4px; color:var(--bit-blow-text-muted); }
 </style>
 
 @code {
+    private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private List<string> _nodeIds = [];
     private List<string> _edgeIds = [];
+    private int _changes;
 
     protected override void OnInitialized()
     {
@@ -46,7 +73,33 @@
 
     private void OnSelectionChange(BlowSelectionChange change)
     {
+        _changes++;
         _nodeIds = change.Nodes.Select(n => n.Id).ToList();
         _edgeIds = change.Edges.Select(e => e.Id).ToList();
+    }
+
+    private async Task SelectEnds()
+    {
+        if (_flow is null) return;
+        await _flow.SelectAsync(nodes: _nodes.Where(n => n.Type is "input" or "output"));
+    }
+
+    private async Task AddEdgesOfNode2()
+    {
+        if (_flow is null) return;
+        await _flow.SelectAsync(edges: _edges.Where(e => e.Source == "2" || e.Target == "2"), additive: true);
+    }
+
+    private async Task ClearSelection()
+    {
+        if (_flow is null) return;
+        await _flow.SelectAsync();
+    }
+
+    // Deliberately past the canvas: the flag is drawn on the next render, but nobody is told.
+    private void MarkNode3()
+    {
+        var node = _nodes.FirstOrDefault(n => n.Id == "3");
+        if (node is not null) node.Selected = true;
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Bit.Bcrdt.Server;
 
@@ -56,5 +58,33 @@ public static class BitBcrdtServer
         ISignalRServerBuilder builder = services.AddSignalR();
         builder.AddHubOptions<THub>(options => options.MaximumReceiveMessageSize = maximumReceiveMessageSize);
         return builder;
+    }
+
+    /// <summary>
+    /// Registers a <see cref="BcrdtDocumentHost"/>, so that <see cref="BcrdtHub"/> keeps a persisted
+    /// replica of every document it carries.
+    /// </summary>
+    /// <remarks>
+    /// The host is a singleton, disposed - and its documents flushed to the store - when the application
+    /// stops. The WebSocket endpoint does not pick it up on its own, because its rooms are scoped to the
+    /// mapping; pass it in <see cref="BcrdtWebSocketEndpointOptions.DocumentHost"/>, resolved with
+    /// <c>app.Services.GetRequiredService&lt;BcrdtDocumentHost&gt;()</c>.
+    /// </remarks>
+    /// <param name="services">The container to register with.</param>
+    /// <param name="options">
+    /// Builds the host's settings - typically giving it a store - from the container. Omitted, documents
+    /// are kept in process memory only.
+    /// </param>
+    /// <returns>The container, for chaining.</returns>
+    public static IServiceCollection AddBitBcrdtDocumentHost(
+        this IServiceCollection services,
+        Func<IServiceProvider, BcrdtDocumentHostOptions>? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddSingleton(provider => new BcrdtDocumentHost(
+            options?.Invoke(provider),
+            provider.GetService<ILogger<BcrdtDocumentHost>>()));
+        return services;
     }
 }

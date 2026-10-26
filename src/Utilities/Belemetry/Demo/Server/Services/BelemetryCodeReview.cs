@@ -121,7 +121,7 @@ public static partial class BelemetryCodeReview
             if (IsCommented(code, m.Index)) continue;
 
             yield return (m.Index,
-                          $"The exporter header '{m.Groups["key"].Value}' looks like a credential. With the Direct transport (the default outside Hybrid) the browser script exports with the same headers, so it is written into every page for anyone to read.",
+                          $"The exporter header '{m.Groups["key"].Value}' looks like a credential. In a WebAssembly client the whole configuration ships to the browser, whose script exports with the same headers (Direct transport, the default outside Hybrid), and BrowserHeaders are written into every page on any host - either way anyone can read it. (A server keeps its Headers out of the page.)",
                           "Set options.Browser.Transport = BelemetryBrowserTransport.Relay (the browser hands its records to .NET), or set IncludeInBrowser = false on this exporter and give the browser a BrowserEndpoint without credentials (a collector).");
         }
     }

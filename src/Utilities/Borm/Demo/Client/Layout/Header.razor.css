@@ -298,3 +298,13 @@
         display: none;
     }
 }
+
+/* The end of a drawer's focus loop (see the markup): zero-size, but in the tab order - never display: none, which
+   would take it out of the order it is there for. The search palette's are styled the same way. */
+.bb-focus-sentinel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}

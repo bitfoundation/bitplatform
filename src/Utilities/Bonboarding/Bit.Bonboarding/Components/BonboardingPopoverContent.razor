@@ -43,6 +43,12 @@
         </div>
     }
 
+    @* An alert, so it is read out the moment the user is told no; it stays until the step changes. *@
+    @if (!string.IsNullOrEmpty(Model.ValidationMessage))
+    {
+        <p class="bit-bonboarding-validation" role="alert">@Model.ValidationMessage</p>
+    }
+
     @if (Model.Step.Footer is not null)
     {
         @Model.Step.Footer(Model)
@@ -73,10 +79,16 @@
                 {
                     @foreach (var action in actions)
                     {
+                        // aria-disabled rather than disabled while the handler runs: a disabled button drops
+                        // the focus of the keyboard user who just pressed it. The click is ignored anyway.
+                        var running = Model.IsRunning(action);
+
                         <button type="button"
                                 class="@BonboardingCss.Classes("bit-bonboarding-button", StyleClass(action.Style), action.CssClass)"
                                 data-bonboarding-action="@(action.Id ?? action.Label)"
                                 data-bonboarding-autofocus="@(action.AutoFocus ? "true" : null)"
+                                aria-busy="@(running ? "true" : null)"
+                                aria-disabled="@(running ? "true" : null)"
                                 disabled="@IsDisabled(action)"
                                 @onclick="() => Model.InvokeAsync(action)">@action.Label</button>
                     }
@@ -123,6 +135,18 @@
             && action.IsDisabled(new BonboardingStepContext(Model.Session, Model.Step, Model.Index, ServiceProvider));
 
     [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
+
+    private BonboardingStepRenderContext? _rendered;
+
+    /// <summary>
+    /// The host hands over a new context whenever the step, its options or the session's state change, and keeps the
+    /// same one while only the geometry moves, which this markup does not read. An action whose IsDisabled reads the
+    /// application's own state is asked again on every render, as it always was.
+    /// </summary>
+    protected override bool ShouldRender()
+        => !ReferenceEquals(_rendered, Model) || Model.Step.Actions?.Any(action => action.IsDisabled is not null) == true;
+
+    protected override void OnAfterRender(bool firstRender) => _rendered = Model;
 
     private static string StyleClass(BonboardingStepActionStyle style) => style switch
     {

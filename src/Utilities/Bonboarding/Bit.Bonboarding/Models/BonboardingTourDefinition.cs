@@ -38,6 +38,21 @@ public sealed class BonboardingTourDefinition : BonboardingStepOptions
     /// </summary>
     public int Version { get; set; } = 1;
 
+    /// <summary>
+    /// Order among tours waiting to start (see <see cref="BonboardingBusyBehavior.Queue"/>): when the running tour
+    /// ends, the queued tour with the highest priority starts first, and tours of equal priority start in the order
+    /// they were queued. It never interrupts a running tour. Default <c>0</c>.
+    /// </summary>
+    public int Priority { get; set; }
+
+    /// <summary>
+    /// Carries progress over a <see cref="Version"/> bump instead of discarding it. Called with a record written by
+    /// another version; return it (changed or not) to keep it, or <see langword="null"/> to discard it. Return the
+    /// record unchanged to edit a tour's wording without showing it again to users who finished it; map old step ids
+    /// to new ones when steps were renamed. The returned record is stamped with the current version.
+    /// </summary>
+    public Func<BonboardingRecord, BonboardingRecord?>? MigrateRecord { get; set; }
+
     /// <summary>Replaces the popover for every step that does not define its own template.</summary>
     public RenderFragment<BonboardingStepRenderContext>? Template { get; set; }
 
@@ -55,6 +70,14 @@ public sealed class BonboardingTourDefinition : BonboardingStepOptions
 
     /// <summary>Arbitrary payload carried through to callbacks and analytics.</summary>
     public object? Data { get; set; }
+
+    /// <summary>
+    /// Checks the definition for mistakes that would make the tour misbehave: duplicate or blank step ids, jumps to
+    /// steps that do not exist, steps with no way forward, and the like. <c>StartAsync</c> runs this itself: errors
+    /// stop the tour from starting with a <see cref="BonboardingException"/> that lists them, warnings are logged.
+    /// Call it from a unit test to catch them before a user does.
+    /// </summary>
+    public IReadOnlyList<BonboardingValidationIssue> Validate() => BonboardingTourValidator.Validate(this);
 
     /// <summary>Finds a step by id.</summary>
     public BonboardingStepDefinition? FindStep(string stepId) => Steps.FirstOrDefault(s => s.Id == stepId);

@@ -26,7 +26,8 @@ public static class BonboardingServerInstructions
 
     public static readonly string Text = $"""
         Bit.Bonboarding is an onboarding and product-tour library for Blazor: multi-step tours, spotlights, contextual
-        hints, branching and multi-page flows, persistence and built-in accessibility, with every decision made in C#.
+        hints, branching and multi-page flows, beacons, checklists and tour lists, persistence and built-in
+        accessibility, with every decision made in C#.
 
         Every answer here is read out of Bit.Bonboarding {BonboardingVersion} as it is loaded in this server - its compiled
         XML documentation, its README, its stylesheet, its placement engine and the demo's source files. Where what you
@@ -49,6 +50,9 @@ public static class BonboardingServerInstructions
         - Restyle through the `--bit-bonboarding-*` variables (`GetBonboardingThemeVariables`), not by overriding the
           library's selectors. To know where a popover will land, ask `InspectBonboardingPlacement` - it runs the
           library's own placement engine.
+        - A tour definition can be checked without a browser: `BonboardingTourDefinition.Validate()` lists the mistakes
+          `StartAsync` would refuse it for. Start automatic tours with `WhenBusy = BonboardingBusyBehavior.Queue` so they
+          never interrupt a tour the user is taking.
 
         Every tool on this server is read-only and cheap: none of them changes anything, anywhere, so there is no reason
         to ration them or to ask before calling one.

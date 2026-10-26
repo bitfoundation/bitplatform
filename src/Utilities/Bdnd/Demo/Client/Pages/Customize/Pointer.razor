@@ -1,0 +1,114 @@
+﻿@page "/customize/pointer"
+
+<PageTitle>Touch and pointer drags · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Touch and pointer drags</h1>
+    <p class="bb-subtitle">
+        Touch and pen drag every <code>BdndDraggable</code> through pointer events, since most touch browsers raise no
+        native drag events: press a box for a moment, then drag it. These boxes set
+        <code>PointerDrag="BdndPointerDrag.All"</code>, so the mouse drags them the same way - a copy of the box follows
+        the pointer, Escape cancels, and the tray scrolls while the pointer is near its top or bottom edge. The copy is
+        styled through <code>[data-bit-bdnd-preview]</code>; the "info" corner is a <code>data-bit-bdnd-no-drag</code>
+        region a press there never drags from.
+    </p>
+</div>
+
+<div class="bb-demo">
+    <BdndProvider>
+        <div class="row-wrap pointer-palette">
+            @foreach (var box in Boxes)
+            {
+                <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="box" Label="@box" PointerDrag="_mode"
+                               TouchDelay="_touchDelay" DragThreshold="_dragThreshold" AutoScroll="_autoScroll"
+                               class="box pointer-box" Context="drag">
+                    @box
+                    <button type="button" class="pointer-box__info" data-bit-bdnd-no-drag
+                            aria-label="@($"About {box}")" @onclick="() => ShowInfo(box)">i</button>
+                </BdndDraggable>
+            }
+        </div>
+
+        <div class="pointer-tray" tabindex="-1">
+            @for (var i = 1; i <= SlotCount; i++)
+            {
+                var slot = i;
+                <BdndDropTarget TItem="string" Accept="@ItemTypes.Box" Label="@($"Slot {slot}")" class="pointer-slot"
+                                OnDrop="@(e => Put(e.Item!, slot))" Context="drop">
+                    <span>Slot @slot</span>
+                    <span class="pointer-slot__content">@(_slots.TryGetValue(slot, out var content) ? content : "empty")</span>
+                </BdndDropTarget>
+            }
+        </div>
+    </BdndProvider>
+
+    <p class="demo-caption pointer-status">@_status</p>
+
+    <h2 class="demo-result-title">The boxes' parameters</h2>
+    <div class="bb-fields pointer-options">
+        <div class="bb-field">
+            <span id="pointer-mode">PointerDrag</span>
+            <span class="bb-segmented" role="group" aria-labelledby="pointer-mode">
+                @foreach (var mode in Enum.GetValues<BdndPointerDrag>())
+                {
+                    <button type="button" aria-pressed="@(_mode == mode ? "true" : "false")" @onclick="() => _mode = mode">@mode</button>
+                }
+            </span>
+        </div>
+        <label class="bb-field">
+            TouchDelay (ms)
+            <input type="number" min="0" max="2000" step="50" @bind="_touchDelay" />
+        </label>
+        <label class="bb-field">
+            DragThreshold (px)
+            <input type="number" min="0" max="50" @bind="_dragThreshold" />
+        </label>
+        <label class="bb-check">
+            <input type="checkbox" @bind="_autoScroll" /> AutoScroll
+        </label>
+    </div>
+    <p class="demo-caption pointer-mode-hint">@ModeHint</p>
+</div>
+
+<DemoCode />
+
+<div class="bb-note">
+    <code>TouchDelay</code> is how long a finger rests on a box before the drag starts (not on a
+    <code>BdndDragHandle</code>, which drags at once): moving more than <code>DragThreshold</code> pixels before then
+    gives the press up, so a swipe across the boxes still scrolls the page. The mouse and a pen on a handle start once
+    they have moved <code>DragThreshold</code> pixels, so a click stays a click. <code>AutoScroll</code> lets a pointer
+    drag scroll the innermost container under the pointer - the tray, here - or the page, faster the nearer its edge.
+</div>
+
+@code {
+    private static readonly string[] Boxes = ["Glass", "Banana", "Paper"];
+
+    private const int SlotCount = 20;
+
+    private readonly Dictionary<int, string> _slots = [];
+
+    private string _status = "Nothing put anywhere yet.";
+
+    // The draggables' parameters; the defaults of BdndDraggable but for PointerDrag.
+    private BdndPointerDrag _mode = BdndPointerDrag.All;
+    private int _touchDelay = 250;
+    private double _dragThreshold = 5;
+    private bool _autoScroll = true;
+
+    private string ModeHint => _mode switch
+    {
+        BdndPointerDrag.All =>
+            "All: the mouse, touch and pen all drag through pointer events - a copy follows the pointer, and the drag stays in the page.",
+        BdndPointerDrag.Touch =>
+            "Touch: touch and pen drag through pointer events; the mouse drags through the browser's native drag and drop.",
+        _ => "None: only the browser's native drag and drop - most touch browsers then drag nothing.",
+    };
+
+    private void ShowInfo(string box) => _status = $"{box} is a box.";
+
+    private void Put(string box, int slot)
+    {
+        _slots[slot] = box;
+        _status = $"{box} put in slot {slot}.";
+    }
+}

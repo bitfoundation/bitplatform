@@ -10,9 +10,10 @@
         Choose <em>when</em> a field revalidates, independently for before and after the first submit —
         the same <code>mode</code>/<code>reValidateMode</code> split React Hook Form popularised. The
         summary below lists every error in schema order and links to the control that needs fixing.
-        The username field is <em>debounced</em>, so its async availability check runs once you pause
-        rather than once per character — try <code>ada</code> or <code>admin</code> and watch the
-        indicator below.
+        The username field is <em>debounced</em>, so where a mode validates on change - after the first
+        submit, or with <em>Before submit</em> set to OnChange - its async availability check runs once
+        you pause rather than once per character; before it, OnBlur checks it as you leave the box. Try
+        <code>ada</code> or <code>admin</code> and watch the indicator below.
     </p>
 </div>
 
@@ -56,11 +57,44 @@
         saved: <strong>@_state.IsSubmitSuccessful</strong> ·
         errors: <strong>@_state.AllMessages.Count()</strong> ·
         @* Per field, not per form: a lookup on one box should not declare the whole form busy. *@
-        checking username: <strong>@(_state.IsValidatingField("Username") ? "yes — remote lookup in flight" : "no")</strong>
+        checking username: <strong>@(_state.IsValidatingField("Username") ? "yes — remote lookup in flight" : "no")</strong> ·
+        @* One word for one field: what a "✓ available" binds to, so it appears once the lookup has answered and not before. *@
+        username status: <strong>@UsernameStatus</strong>
     </p>
 </div>
 
-@if (_submitted)
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The three triggers</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Trigger</th><th>A field is checked</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>OnSubmit</code></td><td>Only when the form is submitted, or a wizard step advances.</td></tr>
+                <tr><td class="bb-table-key"><code>OnBlur</code></td><td>When the user leaves it, and on submit.</td></tr>
+                <tr><td class="bb-table-key"><code>OnChange</code></td><td>Whenever its value is written, when the user leaves it, and on submit. The default.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        <code>ValidationTrigger</code> applies until the first submit and <code>RevalidationTrigger</code> after it, so a form
+        can stay quiet while it is being filled in and turn eager once the user has asked for its verdict. Either way, a field
+        already showing an error is rechecked as soon as it changes, so the message goes the moment it is fixed.
+        A text box writes its value when the user leaves it unless it says <code>UpdateOnInput()</code>; that is why
+        <em>OnChange</em> on an ordinary text box looks like <em>OnBlur</em>.
+    </p>
+    <p class="bb-card-desc">
+        A field's synchronous rules run first and its asynchronous ones only when those found nothing: a username that
+        breaks its pattern is not sent to the server to ask whether it is taken (<code>RunAsyncRulesOnInvalidFields</code>
+        changes that). A lookup that is superseded - typed past, reset, or pressed Next on twice - is cancelled through
+        <code>ctx.CancellationToken</code> and its answer discarded. <code>GetFieldState(path).Status</code> says where a field
+        stands in one word: <code>Unvalidated</code>, <code>Pending</code>, <code>Invalid</code> or <code>Valid</code>.
+        Rules can also report a <em>warning</em> that does not block the submit - see <a href="expressions">expressions</a> -
+        and <code>SingleErrorPerField</code> shows only a field's first error - see <a href="state-api">editing an existing record</a>.
+    </p>
+</div>
+
+@* Only while it is still true: Reset, or a later submit that failed, takes back what this said. *@
+@if (_submitted && _state.IsSubmitSuccessful)
 {
     <div class="bb-note bb-note-success demo-result"><strong>Account created ✓</strong><pre>@_json</pre></div>
 }
@@ -117,6 +151,10 @@
         };
         _state.StateChanged += OnStateChanged;
     }
+
+    // A spinner or a tick beside one box, not a whole form that declares itself busy.
+    private bool CheckingUsername => _state.IsValidatingField("Username");
+    private bool UsernameAvailable => _state.GetFieldState("Username").Status == BormFieldStatus.Valid;
 }
 """;
 
@@ -155,6 +193,14 @@
     }
 
     private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private string UsernameStatus => _state.GetFieldState("Username").Status switch
+    {
+        BormFieldStatus.Pending => "Pending",
+        BormFieldStatus.Valid => "Valid ✓ available",
+        BormFieldStatus.Invalid => "Invalid",
+        _ => "Unvalidated"
+    };
 
     private void SetTrigger(bool before, ChangeEventArgs e)
     {

@@ -92,6 +92,25 @@ public sealed class BcrdtDocument : IDisposable
     public bool InTransaction => _currentTransaction is not null;
 
     /// <summary>
+    /// The undo managers over this document, so one releasing deleted content it kept can see whether
+    /// another still needs it.
+    /// </summary>
+    internal List<BcrdtUndoManager> UndoManagers { get; } = [];
+
+    /// <summary>
+    /// Whether this replica holds changes it received but cannot apply yet, because something they
+    /// build on - an earlier change by the same author, a block they were inserted next to, the
+    /// content a deletion targets - has not arrived.
+    /// </summary>
+    /// <remarks>
+    /// Such changes are kept and applied automatically as soon as what they wait for arrives, and they
+    /// are passed on to peers by <see cref="EncodeStateAsUpdate"/> in the meantime. A replica that stays
+    /// in this state is missing an update - a lost message, usually - and the next handshake
+    /// (<see cref="BcrdtSyncProvider.ResyncAsync"/>) asks for it.
+    /// </remarks>
+    public bool HasPendingUpdates => Store.PendingUpdate is not null || Store.PendingDeleteSet is not null;
+
+    /// <summary>
     /// Whether a transaction is open or still being settled, so that a change made now would not
     /// settle - and raise its events - before the call making it returns.
     /// </summary>
@@ -399,10 +418,24 @@ public sealed class BcrdtDocument : IDisposable
         }
     }
 
-    /// <summary>Reclaims the payloads of everything deleted in this transaction.</summary>
+    /// <summary>
+    /// Reclaims the payloads of everything deleted in this transaction, and of anything an undo stack
+    /// released during it.
+    /// </summary>
     private void CollectDeleted(BcrdtTransaction transaction)
     {
-        foreach ((ulong client, List<BcrdtDeleteRange> ranges) in transaction.DeleteSet.Clients)
+        CollectDeleted(transaction.DeleteSet);
+
+        if (transaction.ReleasedForCollection is { } released)
+        {
+            released.SortAndMerge();
+            CollectDeleted(released);
+        }
+    }
+
+    private void CollectDeleted(BcrdtDeleteSet deleteSet)
+    {
+        foreach ((ulong client, List<BcrdtDeleteRange> ranges) in deleteSet.Clients)
         {
             List<BcrdtAbstractStruct>? structs = Store.GetClientStructs(client);
             if (structs is null) continue;

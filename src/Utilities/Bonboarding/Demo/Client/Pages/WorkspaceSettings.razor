@@ -6,9 +6,16 @@
 <div class="bb-intro">
     <h1>Workspace settings</h1>
     <p class="bb-subtitle">
-        The second half of the multi-page tour lives here. Starting the tour from this page works just as well: the
-        engine navigates backwards to the first step's route.
+        The second half of the multi-page tour lives here: its "Now on the settings page" and "API keys" steps point at
+        the profile and API keys panels below. Starting the tour from this page works just as well: the engine navigates
+        backwards to the first step's route.
     </p>
+</div>
+
+<div class="bb-note">
+    Visiting this page also ticks "Review your API keys" off the <a href="guidance">guidance page</a>'s checklist, with
+    <code>SetChecklistItemAsync</code> - an application can complete a checklist item from anywhere, whether the checklist
+    is on screen or not.
 </div>
 
 <section class="bb-card">
@@ -57,4 +64,9 @@
 
 @code {
     private Task StartAsync() => BonboardingService.StartAsync(WorkspaceTour.Create());
+
+    // After the first render rather than in OnInitializedAsync, which also runs while prerendering, where the store
+    // cannot be written to.
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => firstRender ? BonboardingService.SetChecklistItemAsync(Guidance.ChecklistId, "api-keys") : Task.CompletedTask;
 }

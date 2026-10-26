@@ -66,10 +66,42 @@
     </div>
 
     <p>
-        The guide, the API, the theme variables and the sources are also exposed as <code>balette://</code> resources,
-        and three prompts - <code>add-balette-to-app</code>, <code>implement-balette-feature</code> and
-        <code>debug-balette-palette</code> - walk an agent through the common jobs in the right order.
+        Called without a key, the <code>Get…</code> tools answer with their index - the setup guides, the guide's sections, the
+        types, the files - to pick from.
     </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Resources and prompts</h3>
+    <p>The guide, the API, the theme variables and the sources are also exposed as resources:</p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Resource</th><th>Holds</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>balette://guide</code></td><td>The reference guide, whole</td></tr>
+                <tr><td class="bb-table-key"><code>balette://guide/{heading}</code></td><td>One section of it</td></tr>
+                <tr><td class="bb-table-key"><code>balette://api</code></td><td>The public API's index</td></tr>
+                <tr><td class="bb-table-key"><code>balette://api/{typeName}</code></td><td>One type, with its members</td></tr>
+                <tr><td class="bb-table-key"><code>balette://theme</code></td><td>The theme variables</td></tr>
+                <tr><td class="bb-table-key"><code>balette://source/{path}</code></td><td>One demo or library file</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>And three prompts walk an agent through the common jobs in the right order:</p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Prompt</th><th>Takes</th><th>Does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>add-balette-to-app</code></td><td><code>renderMode</code>: server, wasm, auto, standalone-wasm, hybrid or unknown</td><td>Adds Bit.Balette to an existing app, in the right order for its render mode - working the mode out first when it is unknown.</td></tr>
+                <tr><td class="bb-table-key"><code>implement-balette-feature</code></td><td><code>feature</code>, in your own words</td><td>Implements commands, nested pages, prompts, multi-select, modes, sources, shortcuts or theming with the real API.</td></tr>
+                <tr><td class="bb-table-key"><code>debug-balette-palette</code></td><td><code>symptom</code></td><td>Diagnoses <kbd>Ctrl</kbd> <kbd>K</kbd> doing nothing, an unstyled palette, a missing, oddly ranked or stale command, a silent shortcut or an empty source.</td></tr>
+            </tbody>
+        </table>
+    </div>
 </section>
 
 <section class="bb-card">

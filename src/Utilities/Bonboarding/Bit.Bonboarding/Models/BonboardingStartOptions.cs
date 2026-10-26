@@ -29,4 +29,12 @@ public sealed class BonboardingStartOptions
     /// several simultaneous sessions yourself.
     /// </summary>
     public bool StopOthers { get; set; } = true;
+
+    /// <summary>
+    /// What to do when another tour is already running (only when <see cref="StopOthers"/> is true). Default
+    /// <see cref="BonboardingBusyBehavior.Replace"/>, which suits a start the user asked for; use
+    /// <see cref="BonboardingBusyBehavior.Queue"/> for a start nobody asked for. A declarative tour's
+    /// <c>AutoStart</c> queues. Another session of the same tour is always replaced.
+    /// </summary>
+    public BonboardingBusyBehavior WhenBusy { get; set; } = BonboardingBusyBehavior.Replace;
 }
