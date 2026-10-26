@@ -35,8 +35,7 @@ public static class DoctorCommand
 
             if (error is not null)
             {
-                cli.Console.Fail(error);
-                return CliApp.ExitUsage;
+                return cli.UsageError("platforms-invalid", error);
             }
 
             var projectName = ProjectContext.FindProjectName(cli.Environment.CurrentDirectory);

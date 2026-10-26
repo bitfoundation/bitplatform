@@ -306,7 +306,7 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 
 ## Telemetry
 
-bit sends error reports to the bit platform team so failed runs get fixed: whether each step worked and how long it took, error codes like `NU1301`, the type and stack trace of a crash, the OS, .NET and bit versions, the bit version a run was handed over from, whether it runs in CI, through `dnx` or for a coding agent, and which hardware warnings it showed. A random ID, made on the first run, ties one machine's runs together.
+bit sends error reports to the bit platform team so failed runs get fixed: whether each step worked and how long it took, error codes like `NU1301`, which check refused a command, like `folder-not-empty` or `name-missing`, the type and stack trace of a crash, the OS, .NET and bit versions, the bit version a run was handed over from, whether it runs in CI, through `dnx` or for a coding agent, and which hardware warnings it showed. A random ID, made on the first run, ties one machine's runs together.
 
 It never sends project names, paths, user or machine names, file contents, `.resx` text, prompts, API keys, environment variable values, feed URLs, git remotes, exception messages or the output of the tools it runs.
 

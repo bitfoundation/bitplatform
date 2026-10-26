@@ -30,14 +30,12 @@ public static class RenameCommand
 
             if (string.IsNullOrEmpty(oldName))
             {
-                cli.Console.Fail($"{folder} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit rename in the project's folder.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("not-a-project", $"{folder} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit rename in the project's folder.");
             }
 
             if (ProjectName.Validate(newName) is { } nameError)
             {
-                cli.Console.Fail($"{nameError} Try: bit rename {ProjectName.Suggest(newName)}");
-                return CliApp.ExitUsage;
+                return cli.UsageError("name-invalid", $"{nameError} Try: bit rename {ProjectName.Suggest(newName)}");
             }
 
             if (string.Equals(oldName, newName, StringComparison.Ordinal))
@@ -56,8 +54,7 @@ public static class RenameCommand
 
                 if (inGit && string.IsNullOrWhiteSpace(status.Output) is false)
                 {
-                    cli.Console.Fail($"{folder} has changes that aren't committed. Commit or stash them first, so the rename can be reviewed with git diff and undone with git checkout.");
-                    return CliApp.ExitUsage;
+                    return cli.UsageError("uncommitted-changes", $"{folder} has changes that aren't committed. Commit or stash them first, so the rename can be reviewed with git diff and undone with git checkout.");
                 }
             }
 
@@ -65,8 +62,7 @@ public static class RenameCommand
             {
                 if (cli.IsInteractive is false || cli.Prompter.CanPrompt is false)
                 {
-                    cli.Console.Fail($"{folder} isn't in a git repository, so the rename can't be undone with git. Pass --yes to rename it anyway.");
-                    return CliApp.ExitUsage;
+                    return cli.UsageError("needs-yes", $"{folder} isn't in a git repository, so the rename can't be undone with git. Pass --yes to rename it anyway.");
                 }
 
                 if (cli.Prompter.Confirm($"{folder} isn't in a git repository, so the rename can't be undone with git. Rename {oldName} to {newName} anyway?", false) is false)

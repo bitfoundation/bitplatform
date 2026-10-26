@@ -185,6 +185,27 @@ public class TelemetryTests
     }
 
     [TestMethod]
+    public async Task AUsageError_Should_SayWhichCheckFailedWithoutItsMessage()
+    {
+        const string canary = "Canary7f3a1c";
+        using var host = new TestHost();
+        var (activities, telemetry) = StartWithMemoryExporter(host, TelemetryLevel.Errors);
+        host.Services.Telemetry = telemetry;
+        var folder = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, canary)).FullName;
+        File.WriteAllText(Path.Combine(folder, "keep.txt"), "");
+
+        var exitCode = await host.RunAsync("new", canary, "--yes");
+        telemetry.Complete(exitCode);
+
+        var root = activities.Single(a => a.DisplayName == "bit new");
+        var everything = string.Join('\n', root.TagObjects.Select(t => $"{t.Key}={t.Value}"));
+
+        Assert.AreEqual(CliApp.ExitUsage, exitCode);
+        Assert.AreEqual("folder-not-empty", root.GetTagItem(TelemetryFields.UsageError));
+        Assert.IsFalse(everything.Contains(canary, StringComparison.Ordinal), everything);
+    }
+
+    [TestMethod]
     public void ProcessOnlyVariables_Should_NotReachChildProcesses()
     {
         var original = Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_STATSBEAT_DISABLED");

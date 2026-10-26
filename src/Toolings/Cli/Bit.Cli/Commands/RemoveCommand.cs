@@ -28,14 +28,12 @@ public static class RemoveCommand
 
             if (string.IsNullOrEmpty(name) || IsProjectRoot(folder, name) is false)
             {
-                cli.Console.Fail($"{folder} isn't a bit Boilerplate project folder (no *.Web.slnf or src/Client/*.Client.Core). Run bit remove in the project's folder, or pass its path.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("not-a-project", $"{folder} isn't a bit Boilerplate project folder (no *.Web.slnf or src/Client/*.Client.Core). Run bit remove in the project's folder, or pass its path.");
             }
 
             if (Path.GetDirectoryName(folder) is null || string.Equals(folder, Path.TrimEndingDirectorySeparator(cli.Environment.HomeDirectory), StringComparison.OrdinalIgnoreCase))
             {
-                cli.Console.Fail($"{folder} is a drive's root or your home folder, so bit remove won't delete it.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("unsafe-folder", $"{folder} is a drive's root or your home folder, so bit remove won't delete it.");
             }
 
             var losses = await FindLossesAsync(cli, folder, cancellationToken);
@@ -47,8 +45,7 @@ public static class RemoveCommand
             else if (cli.IsInteractive is false || cli.Prompter.CanPrompt is false)
             {
                 WriteLosses(cli, losses);
-                cli.Console.Fail($"Deleting {folder} can't be undone. Pass --yes to delete it.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("needs-yes", $"Deleting {folder} can't be undone. Pass --yes to delete it.");
             }
             else if (cli.Prompter.Confirm(string.Join('\n', losses.Append($"Delete {folder} and everything in it?")), false) is false)
             {

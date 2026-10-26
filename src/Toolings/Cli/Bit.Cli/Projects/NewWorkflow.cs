@@ -33,35 +33,35 @@ public sealed partial class NewWorkflow(CliServices cli)
         foreach (var (option, value) in request.TemplateValues)
         {
             if (selection.Set(option, value) is { } error)
-                return UsageError(error);
+                return cli.UsageError("template-option-invalid", error);
         }
 
         var name = request.Name;
 
         if (name is null)
-            return UsageError($"Pass the project name: bit new <name>. {CreateProjectPage} builds the whole command.");
+            return cli.UsageError("name-missing", $"Pass the project name: bit new <name>. {CreateProjectPage} builds the whole command.");
 
         if (ProjectName.Validate(name) is { } nameError)
-            return UsageError($"{nameError} Try: bit new {ProjectName.Suggest(name)}");
+            return cli.UsageError("name-invalid", $"{nameError} Try: bit new {ProjectName.Suggest(name)}");
 
         if (request.GitHubRepo && string.Equals(selection["pipeline"], "GitHub", StringComparison.OrdinalIgnoreCase) is false)
-            return UsageError("--github-repo needs the GitHub pipeline (--pipeline GitHub).");
+            return cli.UsageError("github-repo-needs-github", "--github-repo needs the GitHub pipeline (--pipeline GitHub).");
 
         if (request.GitHubRepo && request.NoGit)
-            return UsageError("--github-repo pushes the project's git repository, so it can't go with --no-git.");
+            return cli.UsageError("github-repo-no-git", "--github-repo pushes the project's git repository, so it can't go with --no-git.");
 
         var directory = Path.GetFullPath(request.Output ?? name, cli.Environment.CurrentDirectory);
 
         if (Directory.Exists(directory) && Directory.EnumerateFileSystemEntries(directory).Any())
-            return UsageError($"{directory} already exists and isn't empty. Pick another name, or a folder with -o.");
+            return cli.UsageError("folder-not-empty", $"{directory} already exists and isn't empty. Pick another name, or a folder with -o.");
 
         var (platforms, platformError) = SharedOptions.ParsePlatforms(request.Platforms, cli.Environment.Os);
 
         if (platformError is not null)
-            return UsageError(platformError);
+            return cli.UsageError("platforms-invalid", platformError);
 
         if (request.PropertyError is not null)
-            return UsageError(request.PropertyError);
+            return cli.UsageError("properties-invalid", request.PropertyError);
 
         var ide = request.NoOpen ? IdeLocator.None : request.Ide;
         var requirements = request.TemplatePackage is null ? TemplateRequirements.Embedded : TemplateRequirements.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory));
@@ -573,12 +573,6 @@ public sealed partial class NewWorkflow(CliServices cli)
         }
 
         cli.Console.Out.WriteLine();
-    }
-
-    private int UsageError(string message)
-    {
-        cli.Console.Fail(message);
-        return CliApp.ExitUsage;
     }
 
     public static string? ReadSeedPassword(string readme) => SeedPasswordRegex().Match(readme) is { Success: true } match ? match.Groups["password"].Value : null;

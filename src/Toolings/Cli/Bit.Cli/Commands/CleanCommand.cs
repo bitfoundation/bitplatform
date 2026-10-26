@@ -24,16 +24,14 @@ public static class CleanCommand
 
             if (name is null)
             {
-                cli.Console.Fail($"{folder} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit clean in the project's folder.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("not-a-project", $"{folder} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit clean in the project's folder.");
             }
 
             var script = cli.Environment.IsWindows ? "Clean.bat" : "Clean.sh";
 
             if (File.Exists(Path.Combine(folder, script)) is false)
             {
-                cli.Console.Fail($"{folder} has no {script} to clean the project with.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("clean-script-missing", $"{folder} has no {script} to clean the project with.");
             }
 
             cli.Console.Out.MarkupLine($"Cleaning [bold]{Markup.Escape(name)}[/] [grey]in {Markup.Escape(folder)}[/]");

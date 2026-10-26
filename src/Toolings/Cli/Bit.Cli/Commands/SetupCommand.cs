@@ -37,8 +37,7 @@ public static class SetupCommand
 
             if (name is null)
             {
-                cli.Console.Fail($"{directory} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit setup in the project's folder.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("not-a-project", $"{directory} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit setup in the project's folder.");
             }
 
             var (platforms, error) = SharedOptions.ParsePlatforms(parseResult.GetValue(shared.Platforms), cli.Environment.Os);
@@ -46,8 +45,7 @@ public static class SetupCommand
 
             if ((error ?? propertyError) is { } usageError)
             {
-                cli.Console.Fail(usageError);
-                return CliApp.ExitUsage;
+                return cli.UsageError(error is null ? "properties-invalid" : "platforms-invalid", usageError);
             }
 
             NewWorkflow.WriteHeader(cli);

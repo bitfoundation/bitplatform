@@ -37,10 +37,10 @@ public sealed class TemplateDiff(CliServices cli)
         var to = request.To ?? (request.TemplatePackage is null ? BuildInfo.Version : TemplateSource.FolderVersion);
 
         if (name is null)
-            return UsageError($"{directory} isn't a bit Boilerplate project. Run bit diff in the project's folder, or pass --name.");
+            return cli.UsageError("not-a-project", $"{directory} isn't a bit Boilerplate project. Run bit diff in the project's folder, or pass --name.");
 
         if (from is null)
-            return UsageError($"{directory} has no bit.json that says which bit Boilerplate version made the project. Pass it: bit diff <from> [to].");
+            return cli.UsageError("version-unknown", $"{directory} has no bit.json that says which bit Boilerplate version made the project. Pass it: bit diff <from> [to].");
 
         if (string.Equals(from, to, StringComparison.OrdinalIgnoreCase) && request.TemplatePackage is null)
         {
@@ -60,7 +60,7 @@ public sealed class TemplateDiff(CliServices cli)
         if (Directory.Exists(output) && Directory.EnumerateFileSystemEntries(output).Any())
         {
             if (request.Output is not null)
-                return UsageError($"{output} already exists and isn't empty. Pick another folder with -o.");
+                return cli.UsageError("folder-not-empty", $"{output} already exists and isn't empty. Pick another folder with -o.");
 
             FolderRemover.Delete(output);
         }
@@ -243,11 +243,5 @@ public sealed class TemplateDiff(CliServices cli)
     private Task<ProcessResult> Git(string directory, string[] arguments, CancellationToken cancellationToken)
     {
         return cli.Runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = arguments, WorkingDirectory = directory, Timeout = TimeSpan.FromMinutes(5) }, cancellationToken);
-    }
-
-    private int UsageError(string message)
-    {
-        cli.Console.Fail(message);
-        return CliApp.ExitUsage;
     }
 }

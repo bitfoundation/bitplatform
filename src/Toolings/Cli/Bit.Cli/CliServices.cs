@@ -53,6 +53,13 @@ public sealed class CliServices : IDisposable
         Prompter = new NonInteractivePrompter();
     }
 
+    public int UsageError(string code, string message)
+    {
+        Telemetry.SetTag(TelemetryFields.UsageError, code);
+        Console.Fail(message);
+        return CliApp.ExitUsage;
+    }
+
     public void Dispose()
     {
         Log.Dispose();
