@@ -32,10 +32,6 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
 
     private static readonly TimeSpan heartbeatInterval = TimeSpan.FromSeconds(10);
 
-    // How long the keeper waits for the runtime to stop the containers. A runtime that never answers (a hung Docker
-    // Desktop) would otherwise keep the keeper, and its "stopping" file, around for good. The stop is then ended, and
-    // killed outright 5 seconds later if it ignores that, before the keeper clears its state. The two together must stay
-    // below the 2 minutes WaitWhileStopping waits, so a run that finds the keeper stopping waits for it instead of failing.
     private const int StopTimeoutSeconds = 90;
 
     // $1 = state directory, $2 = idle seconds, $3 = check interval seconds, $4 = container runtime (docker or podman),
