@@ -1,0 +1,257 @@
+﻿/* Minimal styling for the Blow samples - just enough to keep the pages readable. The canvas is styled by the
+   library's own stylesheet, _content/Bit.Blow/bit-blow.css, which every host page links before this one. */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    color: #1b1b1f;
+    background: #fafafa;
+}
+
+code,
+kbd {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 0.9em;
+}
+
+kbd {
+    padding: 0 0.25rem;
+    border: 1px solid #c4c4cc;
+    border-radius: 3px;
+}
+
+.topbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    padding: 0.75rem 1.5rem;
+    background: #1276c6;
+}
+
+.topbar a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.topbar a.active {
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+main {
+    max-width: 72rem;
+    padding: 1rem 1.5rem 4rem;
+}
+
+/* <FocusOnNavigate> moves focus to the heading after each navigation so screen readers announce the page. The ring
+   shows only where the browser judges focus should be seen - after a keyboard navigation, not a click. */
+h1:focus-visible {
+    outline: 2px solid #1276c6;
+    outline-offset: 2px;
+}
+
+section {
+    margin-bottom: 1.5rem;
+}
+
+/* The page's own buttons, not the canvas's control bar, which the library styles. */
+main button:not(.bit-blow-controls-button) {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid #1276c6;
+    border-radius: 4px;
+    color: #1276c6;
+    background: #fff;
+    font: inherit;
+    cursor: pointer;
+}
+
+main button:not(.bit-blow-controls-button):hover {
+    background: #e7f1fa;
+}
+
+main button.active {
+    color: #fff;
+    background: #1276c6;
+}
+
+main button:disabled {
+    border-color: #c4c4cc;
+    color: #8a8a94;
+    background: #fff;
+    cursor: default;
+}
+
+main button.link {
+    padding: 0;
+    border: none;
+    color: inherit;
+    background: none;
+    text-align: start;
+    text-decoration: underline dotted;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin: 0.5rem 0;
+}
+
+/* The canvas fills its container, so the container gives it a height. */
+.flow {
+    height: 26rem;
+    margin: 0.5rem 0;
+    border: 1px solid #e3e4e8;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.muted {
+    color: #5b5b66;
+    font-size: 0.875rem;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0 0.5rem;
+    border-radius: 999px;
+    background: #e7f1fa;
+    color: #0d5a97;
+    font-size: 0.875rem;
+}
+
+.badge-error {
+    background: #fde8e8;
+    color: #b91c1c;
+}
+
+.facts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.25rem 1rem;
+}
+
+.facts dt {
+    font-weight: 600;
+}
+
+.facts dd {
+    margin: 0;
+}
+
+.features {
+    padding-left: 1.25rem;
+}
+
+.features li {
+    margin-bottom: 0.35rem;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    gap: 0 2rem;
+}
+
+.log,
+.issues {
+    padding-left: 1.25rem;
+    font-size: 0.875rem;
+}
+
+.issues li {
+    margin-bottom: 0.25rem;
+}
+
+.json {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #e3e4e8;
+    border-radius: 6px;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 0.8rem;
+}
+
+.export {
+    display: block;
+    max-width: 100%;
+    max-height: 24rem;
+    border: 1px solid #e3e4e8;
+    border-radius: 6px;
+}
+
+/* Inside a node the text is the node's own size, set by the library: a muted line is only lighter. */
+.bit-blow-node .muted {
+    font-size: inherit;
+}
+
+/* The Dataflow page's nodes: a title, a field for a value, and one row per port with its handle on the row's side. */
+.dataflow .bit-blow-node {
+    min-width: 160px;
+    padding: 0;
+    text-align: start;
+}
+
+.df-node {
+    padding: 0.4rem 0;
+}
+
+.df-title {
+    padding: 0 0.6rem 0.25rem;
+    font-weight: 600;
+}
+
+.df-input {
+    width: calc(100% - 1.2rem);
+    margin: 0 0.6rem 0.25rem;
+}
+
+.df-port {
+    position: relative;
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.1rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.df-out {
+    justify-content: flex-end;
+}
+
+.df-value {
+    min-width: 2em;
+    text-align: end;
+}
+
+/* Handles take their colour from their data type through the handle's own colour property, so the canvas's valid and
+   invalid colours still take over while a connection is dragged. */
+.dataflow .bit-blow-handle[data-port-type="number"] {
+    --bit-blow-handle-bg: #2563eb;
+}
+
+.dataflow .bit-blow-handle[data-port-type="text"] {
+    --bit-blow-handle-bg: #d97706;
+}
+
+/* Shown by blazor.web.js and blazor.webview.js when an interactive session ends on an unhandled exception. */
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    inset: auto 0 0 0;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid #b91c1c;
+    background: #fde8e8;
+}
+
+#blazor-error-ui .dismiss {
+    float: right;
+    cursor: pointer;
+}

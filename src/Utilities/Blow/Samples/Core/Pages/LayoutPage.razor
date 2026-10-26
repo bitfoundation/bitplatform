@@ -1,0 +1,181 @@
+﻿@page "/layout"
+@using System.Diagnostics
+
+<PageTitle>Layout - Blow samples</PageTitle>
+
+<h1>Layout</h1>
+
+<p>
+    The layouts, the graph algorithms and the validator are pure functions over the node and edge lists: no UI, no
+    JavaScript and no layout engine underneath. They run wherever the page's C# runs - in the browser on WebAssembly,
+    on the server under Server, natively in the MAUI app - and the time each arrangement took on this host is shown
+    under the canvas. Connect two nodes against the flow to close a cycle, or delete an edge to strand a node: the
+    analysis and the marks on the graph follow every edit.
+</p>
+
+<HostFacts />
+
+<div class="toolbar">
+    @foreach (var (name, _) in _layouts)
+    {
+        <button type="button" class="@(name == _current ? "active" : null)" @onclick="() => Arrange(name)">@name</button>
+    }
+    <button type="button" @onclick="AddBranch">Add branch</button>
+    <button type="button" @onclick="Reset">Reset</button>
+</div>
+
+<div class="flow">
+    <BlowCanvas @ref="_flow"
+                Nodes="_nodes"
+                Edges="_edges"
+                FitViewOnInit="true"
+                DefaultEdgeType="BlowEdgeType.SmoothStep"
+                Validation="_validation"
+                OnGraphChanged="_ => Analyze()">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+    </BlowCanvas>
+</div>
+
+<p class="muted" role="status">@_timing</p>
+
+<div class="columns">
+    <section>
+        <h2>Statistics</h2>
+        <dl class="facts">
+            <dt>Nodes, edges</dt>
+            <dd>@_statistics.NodeCount, @_statistics.EdgeCount</dd>
+            <dt>Roots, leaves</dt>
+            <dd>@_statistics.RootCount, @_statistics.LeafCount</dd>
+            <dt>Pieces</dt>
+            <dd>@_statistics.ComponentCount</dd>
+            <dt>Acyclic</dt>
+            <dd>@(_statistics.IsAcyclic ? "yes" : "no")</dd>
+            <dt>Run order</dt>
+            <dd>@_order</dd>
+        </dl>
+    </section>
+
+    <section>
+        <h2>Problems (@_validation.Issues.Count)</h2>
+        @if (_validation.Issues.Count == 0)
+        {
+            <p class="muted">None: one flow from Start, with no cycle and nothing left over.</p>
+        }
+        else
+        {
+            <ul class="issues">
+                @foreach (var issue in _validation.Issues)
+                {
+                    <li>
+                        <span class="badge @(issue.Severity == BlowValidationSeverity.Error ? "badge-error" : null)">@issue.Severity</span>
+                        @issue.Message
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+</div>
+
+@code {
+    // The rules this graph is held to: well formed, no cycle, nothing unconnected, and everything reachable from Start.
+    private static readonly BlowGraphValidator Validator = new(
+        BlowValidationRules.Structure(),
+        BlowValidationRules.NoCycles(),
+        BlowValidationRules.NoIsolatedNodes(),
+        BlowValidationRules.AllReachableFrom(n => n.Id == "1"));
+
+    // One options object per layout, each of them an IBlowLayout. Held per page rather than shared: the options are
+    // mutable, and on Server a static would be shared by every circuit.
+    private readonly (string Name, IBlowLayout Layout)[] _layouts =
+    [
+        ("Layered", new BlowLayeredLayoutOptions { LayerGap = 90 }),
+        ("Tree", new BlowTreeLayoutOptions { LevelGap = 80 }),
+        ("Radial", new BlowRadialLayoutOptions()),
+        ("Force", new BlowForceLayoutOptions()),
+        ("Grid", new BlowGridLayoutOptions { ColumnGap = 50, RowGap = 50 }),
+        ("Circle", new BlowCircleLayoutOptions { NodeGap = 40 }),
+    ];
+
+    // Refilled in place rather than replaced: the canvas edits these very lists.
+    private readonly List<BlowNode> _nodes = [];
+    private readonly List<BlowEdge> _edges = [];
+
+    private BlowValidationResult _validation = BlowValidationResult.Empty;
+    private BlowGraphStatistics _statistics = new(0, 0, 0, 0, 0, 0, 0, 0, 0, true, 0);
+    private string _order = string.Empty;
+    private string _timing = string.Empty;
+    private string _current = "Layered";
+    private BlowCanvas? _flow;
+    private int _next;
+
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
+    {
+        _next = 8;
+        _nodes.Clear();
+        _nodes.Add(new BlowNode { Id = "1", Type = "input", Label = "Start" });
+        _nodes.AddRange(Enumerable.Range(2, 6).Select(i => new BlowNode { Id = i.ToString(), Label = $"Step {i}" }));
+
+        // A tree, and one more edge that gives Step 5 a second parent.
+        _edges.Clear();
+        _edges.AddRange(
+        [
+            Edge("1", "2"), Edge("1", "3"), Edge("2", "4"), Edge("2", "5"), Edge("3", "6"), Edge("3", "7"), Edge("3", "5"),
+        ]);
+
+        Arrange(_current);
+    }
+
+    private void AddBranch()
+    {
+        // From a random node, or a graph of its own when every node has been deleted.
+        var parent = _nodes.Count > 0 ? _nodes[Random.Shared.Next(_nodes.Count)] : null;
+        var id = (_next++).ToString();
+        _nodes.Add(new BlowNode { Id = id, Label = $"Step {id}" });
+        if (parent is not null)
+        {
+            _edges.Add(Edge(parent.Id, id));
+        }
+
+        Arrange(_current);
+    }
+
+    private void Arrange(string name)
+    {
+        _current = name;
+        var layout = _layouts.First(l => l.Name == name).Layout;
+
+        // The layered and tree layouts turn the handles to the direction of the flow; put them back first, so the
+        // others start from the built-in sides rather than from whatever the last layout left.
+        foreach (var node in _nodes)
+        {
+            node.SourcePosition = BlowPosition.Bottom;
+            node.TargetPosition = BlowPosition.Top;
+        }
+
+        var start = Stopwatch.GetTimestamp();
+        layout.Arrange(_nodes, _edges);
+        var elapsed = Stopwatch.GetElapsedTime(start);
+        _timing = $"{name}: {_nodes.Count} nodes arranged in {elapsed.TotalMilliseconds:0.00} ms on the {RendererInfo.Name} renderer.";
+
+        // The handle sides may have moved, so their anchors are measured again; then the whole graph is brought into view.
+        _flow?.UpdateNodeInternals();
+        _flow?.FitView();
+        Analyze();
+    }
+
+    private void Analyze()
+    {
+        _validation = Validator.Validate(_nodes, _edges);
+
+        var graph = new BlowGraphIndex(_nodes, _edges);
+        _statistics = BlowGraphAlgorithms.GetStatistics(graph);
+        var sorted = BlowGraphAlgorithms.TopologicalSort(graph);
+        _order = string.Join(", ", sorted.Order.Select(n => n.Label ?? n.Id))
+            + (sorted.Unordered.Count > 0 ? $"; blocked by a cycle: {string.Join(", ", sorted.Unordered.Select(n => n.Label ?? n.Id))}" : string.Empty);
+    }
+
+    private static BlowEdge Edge(string source, string target) => new() { Id = $"e{source}-{target}", Source = source, Target = target, Type = BlowEdgeType.SmoothStep };
+}
