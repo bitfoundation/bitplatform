@@ -61,7 +61,7 @@
     <form class="preview" @onsubmit:preventDefault>
         @foreach (var field in _form)
         {
-            <label>
+            <label @key="field">
                 <span>@field.Label</span>
                 @switch (field.Kind)
                 {
