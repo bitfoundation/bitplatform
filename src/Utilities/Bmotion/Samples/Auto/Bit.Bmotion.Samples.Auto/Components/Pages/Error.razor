@@ -1,6 +1,5 @@
 ﻿@page "/Error"
 @attribute [ExcludeFromInteractiveRouting]
-@using System.Diagnostics
 
 <PageTitle>Error</PageTitle>
 
@@ -13,12 +12,3 @@
 }
 
 <a href="" class="btn">Back to the samples</a>
-
-@code {
-    [CascadingParameter] private HttpContext? HttpContext { get; set; }
-
-    private string? RequestId { get; set; }
-
-    protected override void OnInitialized() =>
-        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
-}

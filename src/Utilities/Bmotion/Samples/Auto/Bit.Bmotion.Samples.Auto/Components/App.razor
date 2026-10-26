@@ -29,10 +29,3 @@
 </body>
 
 </html>
-
-@code {
-    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
-
-    // Interactive everywhere except the error page, which renders statically.
-    private IComponentRenderMode? PageRenderMode => HttpContext.AcceptsInteractiveRouting() ? InteractiveAuto : null;
-}
